@@ -1,15 +1,18 @@
-ONO_SOURCE = $(shell ls *.ono)
-BARD = ../../Programs/Bard/Programs/Mac/bard
-BCC  = ../../Programs/Bard/Programs/BCC.bc --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
+ZOR_SOURCE = $(shell ls *.zor)
+BARDVM = ../../Programs/Bard/Programs/Mac/bard
+BCC    = ../../Programs/Bard/Programs/BCC.bc --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
 
 all: go
 
 go: compile run
 
-compile: ../../Programs/ZorCompiler.bc
+compile: ../../Programs/Zorcom.bc
 
-../../Programs/ZorCompiler.bc: $(ONO_SOURCE)
-	$(BARD) $(BCC) ZorCompiler.bard
+../../Programs/Zorcom.bc: $(ZOR_SOURCE)
+	$(BARDVM) $(BCC) Zorcom.bard
 
 run:
-	$(BARD) ZorCompiler.bc
+	$(BARDVM) Zorcom.bc
+
+clean:
+	rm -f *.bc

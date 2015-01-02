@@ -1,0 +1,5 @@
+class Test
+  METHODS
+    method init
+      println "Hello Zor!"
+endClass

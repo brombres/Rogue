@@ -1,0 +1,132 @@
+$[include "Token.bard"]
+
+class Keywords
+  SETTINGS
+    lookup            = Table<<String,Integer>>(128)
+    name_lookup       = Table<<Integer,String>>(128)
+
+    definitions       = Table<<String,Token[]>>(128)
+    local_definitions = String[]
+
+  METHODS
+    method configure
+      if (lookup.count?) return
+      add( "alias",            Token.keyword_alias )
+      add( "and",              Token.keyword_and )
+      add( "as",               Token.keyword_as )
+      add( "aspect",           Token.keyword_aspect )
+      add( "augment",          Token.keyword_augment )
+      add( "case",             Token.keyword_case )
+      add( "catch",            Token.keyword_catch )
+      add( "CATEGORIES",       Token.keyword_CATEGORIES )
+      add( "compound",         Token.keyword_compound )
+      add( "contingent",       Token.keyword_contingent )
+      add( "class",            Token.keyword_class )
+      add( "delegate",         Token.keyword_delegate )
+      add( "downTo",           Token.keyword_downTo )
+      add( "ENUMERATE",        Token.keyword_ENUMERATE )
+      add( "enumeration",      Token.keyword_enumeration )
+      add( "else",             Token.keyword_else )
+      add( "elseIf",           Token.keyword_elseIf )
+      add( "endAspect",        Token.keyword_endAspect )
+      add( "endAugment",       Token.keyword_endAugment )
+      add( "endCompound",      Token.keyword_endCompound )
+      add( "endContingent",    Token.keyword_endContingent )
+      add( "endClass",         Token.keyword_endClass )
+      add( "endDelegate",      Token.keyword_endDelegate )
+      add( "endEnumeration",   Token.keyword_endEnumeration )
+      add( "endForEach",       Token.keyword_endForEach )
+      add( "endFunction",      Token.keyword_endFunction )
+      add( "endIf",            Token.keyword_endIf )
+      add( "endLambda",        Token.keyword_endLambda )
+      add( "endLoop",          Token.keyword_endLoop )
+      add( "endPrimitive",     Token.keyword_endPrimitive )
+      add( "endTry",           Token.keyword_endTry )
+      add( "endWhile",         Token.keyword_endWhile )
+      add( "endWhich",         Token.keyword_endWhich )
+      add( "endWhichIs",       Token.keyword_endWhichIs )
+      add( "escapeContingent", Token.keyword_escapeContingent )
+      add( "escapeForEach",    Token.keyword_escapeForEach )
+      add( "escapeIf",         Token.keyword_escapeIf )
+      add( "escapeLoop",       Token.keyword_escapeLoop )
+      add( "escapeTry",        Token.keyword_escapeTry )
+      add( "escapeWhich",      Token.keyword_escapeWhich )
+      add( "escapeWhile",      Token.keyword_escapeWhile )
+      add( "EXTERNAL",         Token.keyword_EXTERNAL )
+      add( "false",            Token.literal_Logical_false )
+      add( "forEach",          Token.keyword_forEach )
+      add( "function",         Token.keyword_function )
+      add( "if",               Token.keyword_if )
+      add( "in",               Token.keyword_in )
+      add( "instanceOf",       Token.keyword_instanceOf )
+      add( "INTERNAL",         Token.keyword_INTERNAL )
+      add( "is",               Token.keyword_is )
+      add( "isNot",            Token.keyword_isNot )
+      add( "local",            Token.keyword_local )
+      add( "loop",             Token.keyword_loop )
+      add( "METHODS",          Token.keyword_METHODS )
+      add( "method",           Token.keyword_method )
+      add( "necessary",        Token.keyword_necessary )
+      add( "nextIteration",    Token.keyword_nextIteration )
+      add( "noAction",         Token.keyword_noAction )
+      add( "not",              Token.keyword_not )
+      add( "notInstanceOf",    Token.keyword_notInstanceOf )
+      add( "null",             Token.keyword_null )
+      add( "of",               Token.keyword_of )
+      add( "or",               Token.keyword_or )
+      add( "others",           Token.keyword_others )
+      add( "pi",               Token.keyword_pi )
+      add( "primitive",        Token.keyword_primitive )
+      add( "prior",            Token.keyword_prior )
+      add( "PROPERTIES",       Token.keyword_PROPERTIES )
+      add( "return",           Token.keyword_return )
+      add( "satisfied",        Token.keyword_satisfied )
+      add( "SETTINGS",         Token.keyword_SETTINGS )
+      add( "sufficient",       Token.keyword_sufficient )
+      add( "task",             Token.keyword_task )
+      add( "this",             Token.keyword_this )
+      add( "throw",            Token.keyword_throw )
+      add( "trace",            Token.keyword_trace )
+      add( "tron",             Token.keyword_tron )
+      add( "troff",            Token.keyword_troff )
+      add( "true",             Token.literal_Logical_true )
+      add( "try",              Token.keyword_try )
+      add( "unsatisfied",      Token.keyword_unsatisfied )
+      add( "withTimeout",      Token.keyword_withTimeout )
+      add( "while",            Token.keyword_while )
+      add( "which",            Token.keyword_which )
+      add( "whichIs",          Token.keyword_whichIs )
+      add( "xor",              Token.keyword_xor )
+      add( "yield",            Token.keyword_yield )
+      add( "yieldAndWait",     Token.keyword_yieldAndWait )
+      add( "yieldWhile",       Token.keyword_yieldWhile )
+
+      add( "Real64",           Token.illegal_keyword )
+      add( "Real32",           Token.illegal_keyword )
+      add( "Int64",            Token.illegal_keyword )
+      add( "Int32",            Token.illegal_keyword )
+      add( "Boolean",          Token.illegal_keyword )
+      add( "var",              Token.illegal_keyword )
+
+    method add( identifier:String, token_type:Integer )
+      lookup[ identifier ] = token_type
+      name_lookup[ token_type ] = identifier
+
+    method clear_local_definitions
+      forEach (id in local_definitions) definitions.remove( id )
+      local_definitions.clear
+
+    method define( identifier:String, definition:Token[] )
+      definitions[ identifier ] = definition
+
+    method define_local( identifier:String, definition:Token[] )
+      definitions[ identifier ] = definition
+      local_definitions.add( identifier )
+
+    method contains( identifier:String )->Logical
+      return lookup.contains( identifier )
+
+    method get( identifier:String )->Integer
+      return lookup[identifier]
+endClass
+

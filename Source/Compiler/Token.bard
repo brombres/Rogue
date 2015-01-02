@@ -1,0 +1,465 @@
+$[include "Keywords.bard"]
+$[include "ZorError.bard"]
+
+class Token
+  ENUMERATE
+    # General non-statement
+    eol
+
+    definition       # Placeholder token, used to expand definitions during tokenization.
+    local_definition # Placeholder token, used to expand definitions during tokenization.
+    alias_arg_index  # Intermediate use
+
+    illegal_keyword  # used to flag an illegal keyword (e.g. Real64) as needing a descriptive error message
+
+    # Non-statement keywords
+    keyword_alias
+    keyword_aspect
+    keyword_augment
+    keyword_catch
+    keyword_CATEGORIES
+    keyword_class
+    keyword_case
+    keyword_compound
+    keyword_else
+    keyword_elseIf
+    keyword_endAspect
+    keyword_endAugment
+    keyword_endClass
+    keyword_endCompound
+    keyword_endContingent
+    keyword_endDelegate
+    keyword_endEnumeration
+    keyword_endForEach
+    keyword_endFunction
+    keyword_endIf
+    keyword_endLambda
+    keyword_endLoop
+    keyword_endPrimitive
+    keyword_endWhich
+    keyword_endWhichIs
+    keyword_endTry
+    keyword_endWhile
+    keyword_ENUMERATE
+    keyword_enumeration
+    keyword_EXTERNAL
+    keyword_in
+    keyword_INTERNAL
+    keyword_METHODS
+    keyword_method
+    keyword_of
+    keyword_others
+    keyword_primitive
+    keyword_PROPERTIES
+    keyword_satisfied
+    keyword_SETTINGS
+    keyword_task
+    keyword_unsatisfied
+    keyword_withTimeout
+
+    # Non-statement start symbols
+    symbol_close_brace
+    symbol_close_bracket
+    symbol_close_comment
+    symbol_close_paren
+    symbol_close_specialize
+
+    symbol_comma
+
+    last_non_statement
+
+    # general
+    comment
+    identifier
+    type_placeholder
+
+    # control
+    keyword_delegate
+    keyword_escapeContingent
+    keyword_escapeForEach
+    keyword_escapeIf
+    keyword_escapeLoop
+    keyword_escapeTry
+    keyword_escapeWhich
+    keyword_escapeWhile
+    keyword_contingent
+    keyword_forEach
+    keyword_function
+    keyword_if
+    keyword_loop
+    keyword_necessary
+    keyword_nextIteration
+    keyword_prior
+    keyword_return
+    keyword_sufficient
+    keyword_throw
+    keyword_trace
+    keyword_tron
+    keyword_troff
+    keyword_which
+    keyword_whichIs
+    keyword_try
+    keyword_while
+    keyword_yield
+    keyword_yieldAndWait
+    keyword_yieldWhile
+
+    # expressions
+    literal_Real
+    literal_Real_pi
+    literal_Integer
+    literal_Character
+    literal_Logical_true
+    literal_Logical_false
+    literal_String
+
+    keyword_and
+    keyword_as
+    keyword_downTo
+    keyword_instanceOf
+    keyword_is
+    keyword_isNot
+    keyword_local
+    keyword_not
+    keyword_notInstanceOf
+    keyword_or
+    keyword_pi
+    keyword_this
+    keyword_noAction
+    keyword_null
+    keyword_xor
+
+    symbol_arrow
+    symbol_at
+    symbol_backslash
+    symbol_colon
+    symbol_compare
+    symbol_dollar
+    symbol_downToGreaterThan
+    symbol_empty_braces
+    symbol_empty_brackets
+    symbol_eq
+    symbol_equals
+    symbol_fat_arrow
+    symbol_ge
+    symbol_gt
+    symbol_le
+    symbol_lt
+    symbol_ne
+    symbol_open_brace
+    symbol_open_bracket
+    symbol_open_directive
+    symbol_open_paren
+    symbol_open_specialize
+    symbol_period
+    symbol_question_mark
+    symbol_scope
+    symbol_semicolon
+    symbol_shl
+    symbol_shr
+    symbol_shrx
+    symbol_upTo
+    symbol_upToLessThan
+
+    first_definable_operator
+    symbol_plus
+    symbol_minus
+    symbol_times
+    symbol_divide
+    symbol_percent
+    symbol_power
+    symbol_ampersand
+    symbol_bitwise_or
+    symbol_bitwise_xor
+    symbol_bitwise_not
+    symbol_increment
+    symbol_decrement
+    last_definable_operator
+
+    first_shorthand_operator
+    symbol_add_assign
+    symbol_subtract_assign
+    symbol_multiply_assign
+    symbol_divide_assign
+    symbol_mod_assign
+    symbol_power_assign
+    symbol_bitwise_and_assign
+    symbol_bitwise_or_assign
+    symbol_bitwise_xor_assign
+    symbol_access_assign    # .=
+    last_shorthand_operator
+
+
+  PROPERTIES
+    filepath : String
+    type     : Integer
+    line     : Integer
+    column   : Integer
+
+
+  METHODS
+    method name_of( type:Integer )->String
+      which (type)
+        case eol: return "[EOL]"
+        case symbol_close_brace: return "}"
+        case symbol_close_bracket: return "]"
+        case symbol_close_comment: return "}"+"#"
+        case symbol_close_paren: return ")"
+        case symbol_close_specialize: return ">>"
+        case symbol_access_assign: return ".="
+        case symbol_add_assign: return "+="
+        case symbol_ampersand: return "&"
+        case symbol_arrow: return "->"
+        case symbol_at: return "@"
+        case symbol_backslash: return "\\"
+        case symbol_bitwise_and_assign: return "&="
+        case symbol_bitwise_not: return "!"
+        case symbol_bitwise_or: return "|"
+        case symbol_bitwise_or_assign: return "|="
+        case symbol_bitwise_xor: return "~"
+        case symbol_bitwise_xor_assign: return "~="
+        case symbol_colon: return ":"
+        case symbol_comma: return ","
+        case symbol_compare: return "<>"
+        case symbol_decrement: return "--"
+        case symbol_divide: return "/"
+        case symbol_divide_assign: return "/="
+        case symbol_dollar: return "$"
+        case symbol_downToGreaterThan: return "..>"
+        case symbol_empty_braces: return "{}"
+        case symbol_empty_brackets: return "[]"
+        case symbol_eq: return "=="
+        case symbol_equals: return "="
+        case symbol_fat_arrow: return "=>"
+        case symbol_ge: return ">="
+        case symbol_gt: return ">"
+        case symbol_increment: return "++"
+        case symbol_le: return "<="
+        case symbol_lt: return "<"
+        case symbol_minus: return "-"
+        case symbol_mod_assign: return "%="
+        case symbol_multiply_assign: return "*="
+        case symbol_ne: return "!="
+        case symbol_open_brace: return "{"
+        case symbol_open_bracket: return "["
+        case symbol_open_directive: return "$["
+        case symbol_open_paren: return "("
+        case symbol_open_specialize: return "<<"
+        case symbol_percent: return "%"
+        case symbol_period: return "."
+        case symbol_plus: return "+"
+        case symbol_power: return "^"
+        case symbol_power_assign: return "^="
+        case symbol_question_mark: return "?"
+        case symbol_scope: return "::"
+        case symbol_semicolon: return ";"
+        case symbol_shl: return ":<<:"
+        case symbol_shr: return ":>>:"
+        case symbol_shrx: return ":>>>:"
+        case symbol_subtract_assign: return "-="
+        case symbol_times: return "*"
+        case symbol_upTo: return ".."
+        case symbol_upToLessThan: return "..<"
+        others
+          local result = Keywords.name_lookup[type]
+          if (result?) return result
+          return "TOKEN(" + type + ")"
+      endWhich
+
+  METHODS
+    method init( filepath, line, column, type )
+
+    method init( existing:Token )
+      with_position_info( existing )
+      type = existing.type
+
+    method with_position_info( existing:Token )->Token
+      filepath = existing.filepath
+      line     = existing.line
+      column   = existing.column
+      return this
+
+    method error( message:String )->BardError
+      return BardError( filepath, line, column, message )
+
+    method to->String
+      return name_of(type)
+
+    method to_source_string->String
+      return to_String
+
+    method to->Real
+      throw UnsupportedMethodError("to->Real in Token")
+
+    method to->Integer
+      throw UnsupportedMethodError("to->Integer in Token")
+
+    method to->Character
+      throw UnsupportedMethodError("to->Character in Token")
+
+endClass
+
+class IdentifierToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( filepath, line, column, value )
+      value = value.consolidated
+      type = Token.identifier
+
+    method init( existing:Token, value )
+      prior.init( existing )
+      value = value.consolidated
+      type = Token.identifier
+
+    method clone->Token
+      return IdentifierToken(this,value)
+
+    method to->String
+      return value
+endClass
+
+class TypePlaceholderToken : IdentifierToken
+  METHODS
+    method init( filepath, line, column, value )
+      type = Token.type_placeholder
+
+    method init( existing:Token, value )
+      prior.init( existing, value )
+      type = Token.type_placeholder
+
+    method clone->Token
+      return TypePlaceholderToken(this,value)
+endClass
+
+class StringToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( filepath, line, column, value )
+      type = Token.literal_String
+
+    method init( existing:Token, value )
+      prior.init( existing )
+      type = Token.literal_String
+
+    method clone->Token
+      return StringToken(this,value)
+
+    method to_source_string->String
+      return //"// + value + //"//
+
+    method to->String
+      return value
+endClass
+
+
+class RealToken : Token
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( filepath, line, column, value )
+      type = Token.literal_Real
+
+    method init( existing:Token, value )
+      prior.init( existing )
+      type = Token.literal_Real
+
+    method clone->Token
+      return RealToken( this, value )
+
+    method to->String
+      return ""+value
+
+    method to->Real
+      return value
+endClass
+
+class IntegerToken : Token
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( filepath, line, column, value )
+      type = Token.literal_Integer
+
+    method init( existing:Token, value )
+      prior.init( existing )
+      type = Token.literal_Integer
+
+    method clone->Token
+      return IntegerToken( this, value )
+
+    method to->String
+      return ""+value
+
+    method to->Integer
+      return value
+endClass
+
+
+class CharacterToken : Token
+  PROPERTIES
+    value : Character
+
+  METHODS
+    method init( filepath, line, column, value )
+      type = Token.literal_Character
+
+    method init( filepath, line, column, _value:Integer )
+      # Kludge until inherited initializers are hidden by extended initializers 
+      type = Token.literal_Character
+      value = _value->Character
+
+    method init( existing:Token, value )
+      prior.init( existing )
+      type = Token.literal_Character
+
+    method clone->Token
+      return CharacterToken( this, value )
+
+    method to->String
+      return ""+value
+
+    method to_source_string->String
+      return //'$'// (value)
+
+    method to->Character
+      return value
+endClass
+
+class TokenList : Token[]
+  METHODS
+    method init
+      prior.init
+
+    method init( t:Token )
+      init
+      add( t )
+endClass
+
+class AliasArgIndexToken : Token
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( filepath, line, column, value )
+      type = Token.alias_arg_index
+
+    method init( existing:Token, value )
+      prior.init( existing )
+      type = Token.alias_arg_index
+
+    method clone->Token
+      return AliasArgIndexToken( this, value )
+
+    method to->String
+      return "alias arg #"+value
+
+    method to->Integer
+      return value
+endClass
+
