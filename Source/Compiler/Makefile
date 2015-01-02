@@ -1,18 +1,22 @@
 ZOR_SOURCE = $(shell ls *.zor)
 BARDVM = ../../Programs/Bard/Programs/Mac/bard
-BCC    = ../../Programs/Bard/Programs/BCC.bc --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
+BCC    = ../../Programs/Bard/Programs/BCC.bc
+BCC_ARGS = --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
 
 all: go
 
 go: compile run
 
-compile: ../../Programs/Zorcom.bc
+compile: ../../Programs/Zorc.bc
 
-../../Programs/Zorcom.bc: $(ZOR_SOURCE)
-	$(BARDVM) $(BCC) Zorcom.bard
+../../Programs/Zorc.bc: $(ZOR_SOURCE) $(BARDVM)
+	$(BARDVM) $(BCC) $(BCC_ARGS) Zorc.bard
+
+$(BARDVM): $(BCC)
+	cd ../../Programs/Bard && make
 
 run:
-	$(BARDVM) Zorcom.bc
+	$(BARDVM) Zorc.bc
 
 clean:
 	rm -f *.bc

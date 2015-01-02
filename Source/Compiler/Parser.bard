@@ -48,7 +48,7 @@ class Parser
             sufficient true
           endIf
 
-          forEach (source_folder in Zorcom.source_folders)
+          forEach (source_folder in Zorc.source_folders)
             f = File( source_folder, base ).add_path( filepath )
             if (f.exists)
               filepath = f.filepath
@@ -58,7 +58,7 @@ class Parser
 
         endIf
 
-        forEach (source_folder in Zorcom.source_folders)
+        forEach (source_folder in Zorc.source_folders)
           if (File(source_folder,filepath).exists)
             filepath = source_folder + filepath
             sufficient true
@@ -85,7 +85,7 @@ class Parser
 
       filepath = File.absolute_filepath( filepath )
 
-      Zorcom.add_source_folder( File.path(filepath) )
+      Zorc.add_source_folder( File.path(filepath) )
       pending_files.add( filepath )
 
     method parse_pending_files

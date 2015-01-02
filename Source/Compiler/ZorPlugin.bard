@@ -3,7 +3,7 @@ $[include "Type.bard"]
 class ZorPlugin
   # To enable a Zor plug-in, create a .bard file with an extended ZorPlugin as
   # well as a small [requisite singleton] that calls 
-  # Zorcom.add_plugin( PluginType() ).  Finally, recompile the Zorcom source 
+  # Zorc.add_plugin( PluginType() ).  Finally, recompile the Zorc source 
   # (presumably to a project-specific location) with a command-line 
   # "--include=plugin_filename.bard".
   METHODS

@@ -397,7 +397,7 @@ class Type
       create_init_settings_method
       create_init_defaults_method
 
-      forEach (plugin in Zorcom.plugins)
+      forEach (plugin in Zorc.plugins)
         plugin.prepare_methods( this )
       endForEach
 

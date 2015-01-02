@@ -5,7 +5,7 @@ $[include "Keywords.bard"]
 
 $[include "Standard/Standard.bard"]
 
-class Zorcom [singleton]
+class Zorc [singleton]
   PROPERTIES
     main_filepath        : String
     output_filepath      : String
@@ -16,7 +16,7 @@ class Zorcom [singleton]
     platform = "console" : String
 
     #plugins              : ZorPlugin[]
-    # A requisite singleton may call Zorcom.add_plugin(ZorPlugin) which
+    # A requisite singleton may call Zorc.add_plugin(ZorPlugin) which
       # will set this list up.  Otherwise it will be set up in init().
 
   METHODS
@@ -28,7 +28,7 @@ class Zorcom [singleton]
         if (main_filepath is null or main_filepath.ends_with(".bc"))
           println //USAGE//
           println
-          println //  B4 Zorcom.bc main_filepath.bard//
+          println //  B4 Zorc.bc main_filepath.bard//
           return
         endIf
 

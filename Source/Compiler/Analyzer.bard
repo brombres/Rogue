@@ -38,7 +38,7 @@ class Analyzer [singleton]
         endIf
       endForEach
 
-      target_rules.load( Zorcom.target_rules )
+      target_rules.load( Zorc.target_rules )
 
       # Assign property and method indices
       local next_method_index = 0
