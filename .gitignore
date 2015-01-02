@@ -1,0 +1,4 @@
+*.swp
+Source/Compiler/ZorCompiler.bc
+Programs/Bard/Programs/Mac
+Programs/Bard/Programs/Windows
