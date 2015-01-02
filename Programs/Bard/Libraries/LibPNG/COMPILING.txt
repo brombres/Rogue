@@ -1,0 +1,16 @@
+MAC:
+  1.  Edit scripts/makefile.darwin
+  2.  Remove "-arch ppc" flag and possibly change "CC=cc" to "CC=llvm-gcc".
+  3.  make -f scripts/makefile.darwin
+
+WINDOWS:
+  1.  Build zlib.lib separately.
+  2.  Copy zlib.lib and zlib *.h files to a new Source/zlib/ folder.
+  3.  Open cmd prompt, cd to <lpng> (e.g. Source/lpng1610).
+  4.  Run c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\vcvars32.bat
+  5.  Edit scripts/makefile.vcwin32 and change "-MD" to "-MT"
+  6.  nmake /f scripts\makefile.vcwin32
+  7.  Copy libpng.lib to Windows/ and *.h files to Include/
+  8.  nmake /f scripts\makefile.vcwin32 clean
+  9.  rm -rf zlib/
+

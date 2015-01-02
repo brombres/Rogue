@@ -1,0 +1,28 @@
+4
+#{
+class Hourglass
+  PROPERTIES
+    top    = 0
+    bottom = 10
+
+  METHODS
+    method init
+
+    method tick
+      if (top?)
+        --top
+        ++bottom
+      endIf
+
+    method turn_over
+      #local temp = top
+      top = bottom
+      bottom = top
+
+    method running->Logical
+      return top?
+endClass
+
+x = 3 + 4
+}#
+5

@@ -1,0 +1,26 @@
+
+#==============================================================================
+# Scene
+#==============================================================================
+class Scene : Entity
+  ENUMERATE
+    size_to_display
+    scale_to_fit
+    scale_to_fill
+
+  SETTINGS
+    current      : Scene
+
+  PROPERTIES
+    size         : Vector2
+    scale        : Vector2
+    scaling_mode : Integer
+
+  METHODS
+    method init( name )
+      scaling_mode = size_to_display
+      size = Display.size
+
+    method init( name, size, scaling_mode )
+endClass
+

@@ -1,0 +1,14 @@
+library StandardIO
+  HEADERS
+    <stdio.h>
+
+  FUNCTIONS
+    function printf( format:char[], args:[] )->int
+endLibrary
+
+function main->int
+  printf "Hello World!\n"
+  return 0
+
+local r : RECT
+GetClientBounds( r{} )

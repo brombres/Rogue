@@ -1,0 +1,57 @@
+class TokenReader
+  PROPERTIES
+    tokens   : Token[]
+    queue    = Token[]  # stored in reverse order
+    position : Integer
+    count    : Integer
+
+  METHODS
+    method init( tokens )
+      count = tokens.count
+
+    method has_another->Logical
+      return (position < count) or queue.count?
+
+    method peek->Token
+      if (queue.count?) return queue.last
+      if (position == count) return tokens.last
+      return tokens[ position ]
+
+    method peek( num_ahead:Integer )->Token
+      local queue_count = queue.count
+      if (queue_count?)
+        if (num_ahead < queue_count) return queue[ (queue_count - num_ahead) - 1 ]
+        else                         num_ahead -= queue_count
+      endIf
+      if (position+num_ahead >= count) return tokens.last
+      return tokens[ position + num_ahead ]
+
+    method push( t:Token )
+      queue.add( t )
+
+    method push( _tokens:Token[] )
+      local i = _tokens.count
+      while (i > 0)
+        --i
+        queue.add( _tokens[i] )
+      endWhile
+
+    method read->Token
+      if (queue.count?) return queue.remove_last
+      ++position
+      return tokens[ position - 1 ]
+
+    method source_string( i1:Integer, i2:Integer )->String
+      local buffer = StringBuilder()
+      local i = i1
+      while (i <= i2)
+        local lhs_is_letter = (buffer.count? and buffer.last.is_letter)
+        local token_as_string = tokens[i].to_source_string
+        local rhs_is_letter = token_as_string.count? and token_as_string[0].is_letter
+        if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
+        buffer.print( tokens[i].to_source_string )
+        ++i
+      endWhile
+      return buffer.to_String
+endClass
+

@@ -1,0 +1,122 @@
+class StdOut : Printer, Reader<<Character>> [singleton]
+  PROPERTIES
+    buffer = StringBuilder()
+    next_character = -2
+
+  METHODS
+    method flush->this
+      if (buffer.count?)
+        forEach (ch in buffer) native_write(ch)
+        buffer.clear
+      endIf
+      return this
+
+    method has_another->Logical
+      if (next_character == -2) next_character = native_read_character
+      return (next_character >= 0)
+
+    method indent->Integer
+      return buffer.indent
+
+    method indent( new_indent:Integer )->this
+      buffer.indent = new_indent
+      return this
+
+    method native_read_character->Integer
+      return Console.native_read_character
+
+    method native_write( value:Character )->this
+      Console.native_write( value )
+
+    method native_write( value:String )->this
+      Console.native_write( value )
+
+    method print( value:String )->this [default]
+      buffer.print( value )
+      return this
+
+    method print( value:Real )->this
+      buffer.print( value )
+      return this
+
+    method print( value:Real, decimal_places:Integer )->this
+      buffer.print( value, decimal_places )
+      return this
+
+    method print( value:Integer )->this
+      buffer.print( value )
+      return this
+
+    method print( value:Character )->this
+      buffer.print( value )
+      if (value == '\n') return flush
+      return this
+
+    method print( value:Object )->this
+      if (value?) buffer.print( value->String )
+      else        buffer.print( "null" )
+      return this
+
+    method print( value:Byte )->this
+      buffer.print( value->Integer )
+      return this
+
+    method print( value:Logical )->this
+      if (value) buffer.print( "true" )
+      else       buffer.print( "false" )
+      return this
+
+    method println( value:Object )->this
+      return print(value).print('\n').flush
+
+    method println( value:String )->this [default]
+      return print(value).print('\n').flush
+
+    method println( value:Real )->this
+      return print(value).print('\n').flush
+
+    method println( value:Real, decimal_places:Integer )->this
+      return print(value).print('\n').flush
+
+    method println( value:Integer )->this
+      return print(value).print('\n').flush
+
+    method println( value:Character )->this
+      return print(value).print('\n').flush
+
+    method println( value:Byte )->this
+      return print(value).print('\n').flush
+
+    method println( value:Logical )->this
+      return print(value).print('\n').flush
+
+    method println->this
+      return print('\n').flush
+
+    method read->Character
+      if (next_character == -2) return native_read_character
+      local result = next_character
+      next_character = -2
+      return result
+
+    method write( value:Character )->this
+      return print( value )
+
+    method write( value:String )->this
+      return print( value )
+
+    method write( value:StringBuilder )->this
+      # TODO: make native
+      flush
+      forEach (ch in value) native_write(ch)
+      return this
+endClass
+
+class Console : StdOut [singleton]
+  METHODS
+    method native_read_character->Integer           [native]
+    method native_write( value:Character )->Console [native]
+    method native_write( value:String )->Console    [native]
+endClass
+
+

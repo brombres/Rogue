@@ -1,0 +1,10 @@
+$[include "Core.bard"]
+$[include "Standard.bard"]
+$[include "Graphics.bard"]
+
+class Test
+  METHODS
+    method init
+      println "Hello World!"
+endClass
+

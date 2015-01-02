@@ -1,0 +1,134 @@
+class Math [singleton]
+  METHODS
+    method abs( n:Integer )->Integer
+      if (n >= 0) return n
+      return -n
+
+    method abs( n:Real )->Real
+      if (n >= 0) return n
+      return -n
+
+    method acos( n:Real )->Real [native]
+
+    method atan2( y:Real, x:Real )->Real [native]
+
+    method cos( radians:Real )->Real [native]
+
+    method floor( value:Real )->Real [native]
+
+    method max( a:Integer, b:Integer )->Integer
+      if (a >= b) return a
+      else        return b
+
+    method max( a:Integer, b:Integer, c:Integer )->Integer
+      if (a >= b)
+        if (a >= c) return a
+        else        return c
+      else
+        if (b >= c) return b
+        else        return c
+      endIf
+
+    method max( a:Real, b:Real )->Real
+      if (a >= b) return a
+      else        return b
+
+    method max( a:Real, b:Real, c:Real )->Real
+      if (a >= b)
+        if (a >= c) return a
+        else        return c
+      else
+        if (b >= c) return b
+        else        return c
+      endIf
+
+    method min( a:Integer, b:Integer )->Integer
+      if (a <= b) return a
+      else        return b
+
+    method min( a:Integer, b:Integer, c:Integer )->Integer
+      if (a <= b)
+        if (a <= c) return a
+        else        return c
+      else
+        if (b <= c) return b
+        else        return c
+      endIf
+
+    method min( a:Real, b:Real )->Real
+      if (a <= b) return a
+      else        return b
+
+    method min( a:Real, b:Real, c:Real )->Real
+      if (a <= b)
+        if (a <= c) return a
+        else        return c
+      else
+        if (b <= c) return b
+        else        return c
+      endIf
+
+    method round( value:Real )->Real
+      return floor( value + 0.5 )
+
+    method sign( value:Integer)->Integer
+      if (value > 0) return  1
+      if (value < 0) return -1
+      return 0
+
+    method sign( value:Real )->Real
+      if (value > 0) return  1
+      if (value < 0) return -1
+      return 0
+
+    method sin( radians:Real )->Real [native]
+
+    method sqrt( value:Real )->Real  [native]
+endClass
+
+compound Degrees( value:Real )
+  METHODS
+    method create( from_radians:Radians )
+      return Degrees( (from_radians.value * 180) / pi )
+
+    method cos->Real
+      return Math.cos( (value/180) * pi )
+
+    method operator+( n:Integer )->Degrees
+      return Degrees( value + n )
+
+    method sin->Real
+      return Math.sin( (value/180) * pi )
+
+    method to->Radians
+      return Radians( this )
+
+    method to->String
+      return value->String
+endCompound
+
+compound Radians( value:Real )
+  METHODS
+    method create( from_degrees:Degrees )
+      return Radians( (from_degrees.value / 180) * pi )
+
+    method cos->Real
+      return Math.cos( value )
+
+    method sin->Real
+      return Math.sin( value )
+
+    method to->Degrees
+      return Degrees( this )
+
+    method to->String
+      return value->String
+
+    method operator+( lhs:Radians, rhs:Radians )->Radians
+      return Radians( lhs.value + rhs.value )
+
+    method operator+( lhs:Radians, rhs:Degrees )->Radians
+      return Radians( lhs.value + (rhs.value/180.0)*pi )
+
+endCompound
+

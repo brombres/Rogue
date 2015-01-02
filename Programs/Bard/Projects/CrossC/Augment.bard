@@ -1,0 +1,12 @@
+class Augment
+  PROPERTIES
+    t      : Token
+    name   : String
+    tokens : Token[]
+
+    base_types = Type[]
+
+  METHODS
+    method init( t, name, tokens )
+endClass
+

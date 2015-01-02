@@ -1,0 +1,344 @@
+class StringBuilder : Printer, IndexedData<<Character>> [singleton]
+  PROPERTIES
+    characters : Character[]
+    indent     : Integer
+    mark_index : Integer
+
+  METHODS
+    method init
+      init( 40 )
+
+    method init( initial_capacity:Integer )
+      characters = Character[]( initial_capacity )
+
+    method init( initial_content:String )
+      init
+      this.print( initial_content )
+
+    method init( characters )
+
+    method align( field_width:Integer, fill_character=' ':Character )->StringBuilder
+      local content_width = (count - mark_index)
+      local remaining_count = Math.abs(field_width) - content_width
+      if (remaining_count <= 0) return this
+
+      loop (remaining_count) print fill_character
+
+      if (field_width < 0) return this # left justified; all done
+
+      # Right justified
+      if (fill_character == '0' and content_width >= 2 and this[mark_index] == '-' and this[mark_index+1].is_number)
+        # Right justifying with extra '0's should convert "-2.3" to "-002.3", not "00-2.3".
+        ++mark_index
+      endIf
+
+      characters.data.shift( mark_index, (count-remaining_count)-1, remaining_count )
+
+      local i = mark_index
+      while (remaining_count > 0)
+        characters[i] = fill_character
+        --remaining_count
+        ++i
+      endWhile
+
+      return this
+
+    method at_newline->Logical
+      return (characters.count == 0 or this[-1] == '\n')
+
+    method clone->StringBuilder
+      return StringBuilder(characters.count).print(this)
+
+    method count->Integer
+      return characters.count
+
+    method ends_with( ch:Character )->Logical
+      return (count? and this[count-1] == ch)
+
+    method ends_with_any_of( characters:String )->Logical
+      if (count == 0) return false
+      local ch = this[ count - 1 ]
+      forEach (other_ch in characters)
+        if (ch == other_ch) return true
+      endForEach
+      return false
+
+    method ensure_capacity( minimum_capacity:Integer )->StringBuilder
+      characters.ensure_capacity( minimum_capacity )
+      return this
+
+    method equals( other:Object )->Logical
+      if (other instanceOf StringBuilder)
+        return this.equals( other as StringBuilder )
+      else
+        return false
+      endIf
+
+    method equals( other:StringBuilder )->Logical
+      if (this is other) return true
+      if (this.count != other.count) return false
+
+      forEach (i of this)
+        if (this[i] != other[i]) return false
+      endForEach
+
+      return true
+
+    method get( index:Integer )->Character
+      return characters[index]
+
+    method hash_code->Integer
+      local code = 0
+      forEach (ch in characters) code = code * 7 + ch
+      return code
+
+    method indent->Integer
+      return @indent
+
+    method set_indent( new_indent:Integer )->StringBuilder
+      @indent = new_indent
+      return this
+
+    method mark->StringBuilder
+      mark_index = count
+      return this
+
+    method pad_with( fill_char:Character, fill_count:Integer )->StringBuilder
+      local i = fill_count
+      while (i > 0)
+        --i
+        this.write( fill_char )
+      endWhile
+
+      return this
+
+    method capacity->Integer
+      return characters.capacity
+
+    method clear->StringBuilder
+      characters.clear
+      return this
+
+    method last->Character
+      return this[ count - 1 ]
+
+      #{
+    method print( stack:DataStack, index:Integer, decimal_places:Integer )->StringBuilder
+      if (index > stack.frame_count - 1)
+        return this
+        # throw
+      endIf
+      Console.println("~~~~~~~~~~~~~~ "+this)
+
+      # index = index + stack.count - stack.frame_count
+
+      local type = stack.type(index)
+      # println("******" + (type == DataStack.type_real))
+      if (type == DataStack.type_object) this.print(stack[index]->Object)
+      if (type == DataStack.type_real) this.print(stack.get(index)->Real, decimal_places)
+      if (type == DataStack.type_integer) this.print(stack[index]->Integer)
+      if (type == DataStack.type_character) this.print(stack[index]->Character)
+      if (type == DataStack.type_byte) this.print(stack[index]->Byte)
+      if (type == DataStack.type_logical) this.print(stack[index]->Logical)
+      # println("~~~~~" + this)
+
+      return this
+      }#
+
+    method perform_indent
+      if (indent? and (characters.count == 0 or this[characters.count-1] == '\n'))
+        local i = 1
+        while (i <= indent)
+          characters.add(' ')
+          ++i
+        endWhile
+      endIf
+
+    method print( value:String )->StringBuilder [default]
+      if (value is null) value = "null"
+      if (value.count == 0) return this
+
+      if (indent?)
+        forEach (ch in value) print( ch )
+      else
+        write( value )
+      endIf
+      return this
+
+    method print( value:StringBuilder )->StringBuilder
+      if (value is null) print "null"; return this
+      if (value.count == 0) return this
+
+      if (indent?)
+        forEach (ch in value) print( ch )
+      else
+        write( value )
+      endIf
+      return this
+
+    method print( value:Real )->StringBuilder
+      return print( value, 4 )
+
+    method print( value:Real, decimal_places:Integer )->StringBuilder
+      perform_indent
+
+      local i1 = this.count
+      local is_negative = false
+
+      if (value < 0)
+        is_negative = true
+        value = -value
+      endIf
+
+      # Round off at appropriate decimal
+      value = value * (10.0 ^ decimal_places)
+      if (value % 1.0 >= 0.5) ++value
+
+      value = Math.floor( value )
+
+      if (decimal_places > 0)
+        local decimal_digits = 1
+        while (decimal_digits <= decimal_places)
+          write( ((value%10)->Integer + '0')->Character )
+          value = Math.floor(value / 10)
+          ++decimal_digits
+        endWhile
+        write('.')
+      endIf
+
+      if (value >= 1.0)
+        while (value >= 1.0)
+          write( (((value%10)->Integer) + '0')->Character )
+          value = Math.floor( value / 10 )
+        endWhile
+      else
+        write('0')
+      endIf
+
+      if (is_negative) write( '-' )
+
+      reverse( i1, count-1 )
+
+      return this
+
+    method print( value:Integer )->StringBuilder
+      perform_indent
+
+      if (value == 0)
+        write( '0' )
+
+      elseIf (value == -value)
+        # Only happens with special case -2147483648 (0x80000000), which 
+        # breaks the standard integer-to-character logic
+        return print( "-2147483648" )
+
+      else
+        local i1 = count
+
+        local is_negative = false
+        if (value < 0)
+          is_negative = true
+          value = -value
+        endIf
+
+        local first = true
+        while (first or value > 0)
+          first = false
+          write( ((value % 10) + '0')->Character )
+          value = (value / 10)->Integer
+        endWhile
+
+        if (is_negative) write( '-' )
+
+        reverse( i1, count-1 )
+
+      endIf
+
+      return this
+
+    method print( value:Character )->StringBuilder
+      if (value == '\n')
+        write( '\n' )
+      else
+        perform_indent
+        write( value )
+      endIf
+      return this
+
+    method print( value:Object )->StringBuilder
+      if (value?) return print( value->String )
+      else        return print( "null" )
+
+    method print( value:Byte )->StringBuilder
+      return print( value->Integer )
+
+    method print( value:Logical )->StringBuilder
+      if (value) return print( "true" )
+      else       return print( "false" )
+
+    method println( value:Object )->StringBuilder
+      return print(value).print('\n')
+
+    method println( value:String )->StringBuilder [default]
+      return print(value).print('\n')
+
+    method println( value:Real )->StringBuilder
+      return print(value).print('\n')
+
+    method println( value:Real, decimal_places:Integer )->StringBuilder
+      return print(value).print('\n')
+
+    method println( value:Integer )->StringBuilder
+      return print(value).print('\n')
+
+    method println( value:Character )->StringBuilder
+      return print(value).print('\n')
+
+    method println( value:Byte )->StringBuilder
+      return print(value).print('\n')
+
+    method println( value:Logical )->StringBuilder
+      return print(value).print('\n')
+
+    method println->StringBuilder
+      return print('\n')
+
+    method reverse
+      reverse( 0, characters.count-1 )
+
+    method reverse( i1:Integer, i2:Integer )
+      local i2 = characters.count - 1
+      while (i1 < i2)
+        local temp = this[i1]
+        this[i1] = this[i2]
+        this[i2] = temp
+        ++i1
+        --i2
+      endWhile
+
+    method set( index:Integer, ch:Character )
+      characters[index] = ch
+
+    method to->String
+      return String( characters )
+
+    method write( value:Character )->StringBuilder
+      characters.add( value )
+      return this
+
+    method write( value:String, i1=0:Integer, i2=-1:Integer )->this
+      if (value is null) return write( "null" )
+      if (i2 == -1) i2 = value.count - 1
+
+      forEach (i in i1..i2) characters.add( value[i] )
+      return this
+
+
+    method write( value:StringBuilder, i1=0:Integer, i2=-1:Integer )->this
+      if (value is null) return write( "null" )
+      if (i2 == -1) i2 = value.count - 1
+
+      forEach (i in i1..i2) characters.add( value[i] )
+      return this
+endClass
+

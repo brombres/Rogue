@@ -1,0 +1,1887 @@
+#==============================================================================
+# UI
+#==============================================================================
+$[include "Component.bard"]
+$[include "DebugConsole.bard"]
+$[include "Display.bard"]
+$[include "State.bard"]
+
+class UICloseEvent : Event
+endClass
+
+class KeyboardFocusEvent : Event
+  METHODS
+    method focus_gained->Logical
+      return false
+
+    method focus_lost->Logical
+      return false
+endClass
+
+class KeyboardFocusGainedEvent : KeyboardFocusEvent [singleton]
+  METHODS
+    method focus_gained->Logical
+      return true
+endClass
+
+class KeyboardFocusLostEvent : KeyboardFocusEvent [singleton]
+  METHODS
+    method focus_lost->Logical
+      return true
+endClass
+
+
+class UIManager [requisite singleton]
+  PROPERTIES
+    windows = Table<<Integer,Window>>()
+
+  METHODS
+    method init
+      # DRAW hook
+      StdOut = DebugConsole
+
+      EventQueue.set_event_dispatcher( EventType.draw,
+        delegate
+          local window_id = EventQueue.read_integer
+          local display_w = EventQueue.read_integer
+          local display_h = EventQueue.read_integer
+          local clip_x = EventQueue.read_integer
+          local clip_y = EventQueue.read_integer
+          local clip_w = EventQueue.read_integer
+          local clip_h = EventQueue.read_integer
+
+          local window = windows[ window_id ]
+
+          if (window?)
+            if (display_w != window.bounds.width or display_h != window.bounds.height)
+              window.size = XY(display_w,display_h)
+              window.needs_layout = true
+            endIf
+
+            Graphics.reset( display_w, display_h )
+            local state = window.state
+            if (state?) 
+              # Adjust Time.elapsed
+              local cur_time = Time.current
+              Time.elapsed = (cur_time - state.current_time) * state.time_scale
+              state.current_time = cur_time
+
+              state.update
+              state.draw
+            else
+              window.update
+              window.handle( DrawEvent )
+            endIf
+
+            DebugConsole.draw
+          endIf
+        endDelegate )
+
+      # POINTER_FOCUS hook
+      EventQueue.set_event_dispatcher( EventType.pointer_focus,
+        delegate
+          local window_id = EventQueue.read_integer
+          local gained    = EventQueue.read_integer?
+
+          local window = windows[ window_id ]
+
+          if (window?)
+            local e : PointerFocusEvent
+            if (gained?) e = PointerFocusGainedEvent
+            else         e = PointerFocusLostEvent
+
+            local state = window.state
+            if (state?) 
+              state.on( e )
+            else
+              window.handle( e )
+            endIf
+          endIf
+        endDelegate )
+
+      # POINTER_ACTION hook
+      EventQueue.set_event_dispatcher( EventType.pointer_action,
+        delegate
+          local action       = EventQueue.read_integer
+          local window_id    = EventQueue.read_integer
+          local x            = EventQueue.read_real
+          local y            = EventQueue.read_real
+          local button_index = EventQueue.read_integer
+
+          local window = windows[ window_id ]
+
+          if (window?)
+            local e : PointerEvent
+            which (action)
+              case 0: e = PointerMovementEvent(x,y)
+              case 1: e = PointerPressEvent(x,y,button_index)
+              case 2: e = PointerReleaseEvent(x,y,button_index)
+            endWhich
+
+            local state = window.state
+            if (state?) 
+              state.on( e )
+            else
+              window.handle( e )
+            endIf
+          endIf
+        endDelegate )
+
+      # KEY_ACTION hook
+      EventQueue.set_event_dispatcher( EventType.key_action,
+        delegate
+          local action    = EventQueue.read_integer
+          local window_id = EventQueue.read_integer
+          local unicode   = EventQueue.read_integer
+          local keycode   = EventQueue.read_integer
+          local syscode   = EventQueue.read_integer
+
+          local window = windows[ window_id ]
+
+          if (window?)
+            local e : KeyEvent
+            which (action)
+              case 0: e = KeyPressEvent( unicode, keycode, syscode, false )
+              case 1: e = KeyPressEvent( unicode, keycode, syscode, true )
+              case 2: e = KeyReleaseEvent( unicode, keycode, syscode )
+            endWhich
+
+            local state = window.state
+            if (state?) 
+              state.on( e )
+            else
+              window.handle( e )
+            endIf
+          endIf
+        endDelegate )
+
+    method configure
+      Graphics = UIGraphics
+
+    alias exit(error_code) => native_exit(error_code)
+
+    method native_exit( error_code:Integer ) [native]
+
+endClass
+
+class UIFrameStyle
+  ENUMERATE
+    default    = 0
+    maximize   = 1
+    fullscreen = 3
+endClass
+
+
+compound UIBorderSides( sides:Integer )
+  SETTINGS
+    none         = 0b0000
+    left         = 0b0001
+    top          = 0b0010
+    right        = 0b0100
+    bottom       = 0b1000
+    top_left     = 0b0011
+    top_right    = 0b0110
+    bottom_left  = 0b1001
+    bottom_right = 0b1100
+    all          = 0b1111
+
+  METHODS
+    method includes( other:UIBorderSides )->Logical
+      return (sides & other.sides)?
+
+    method operator+( other:UIBorderSides )->UIBorderSides
+      return UIBorderSides( sides | other.sides )
+
+    method operator|( other:UIBorderSides )->UIBorderSides
+      return UIBorderSides( sides | other.sides )
+endCompound
+
+#==============================================================================
+# Theme
+#==============================================================================
+class Theme
+  METHODS
+    method draw( component:Component )
+
+    method draw( label:Label )
+
+    method draw( window:Window )
+
+    method invoke_draw( component:Component ) [propagated]
+      # This method is called on a generic Theme and passed a generic 
+      # component.
+      component.dispatch_draw( this )
+endClass
+
+
+#==============================================================================
+# SupportsTheme
+#==============================================================================
+class SupportsTheme<<$ThemeType>>
+  METHODS
+    method dispatch_draw( theme:$ThemeType ) [propagated]
+      # Called on a generic Component with a specific Theme type parameter.
+      # Calls a draw() on a specific Theme with a specific Component parameter.
+      theme.draw( this )
+endClass
+
+
+#==============================================================================
+# UINode
+#==============================================================================
+aspect UINode<<$OfType>> : SupportsTheme<<Theme>>
+  PROPERTIES
+    parent    : $OfType
+    child     : $OfType
+    next      : $OfType
+
+  METHODS
+    method add( new_child:$OfType )->$OfType
+      new_child.detach.parent = this
+
+      if (child?)
+        local cur = child
+        while (cur.next?) cur = cur.next
+        cur.next = new_child
+      else
+        child = new_child
+      endIf
+      return this
+
+    method detach->$OfType
+      if (parent?)
+        if (parent.child is this)
+          parent.child = this.next
+        else
+          local cur = parent.child
+          while (cur.next isNot this) cur = cur.next
+          cur.next = this.next
+        endIf
+        parent = null
+      endIf
+      next = null
+      return this
+
+    method detach_children
+      while (child?) child.detach
+
+    method insert( new_child:$OfType )->$OfType
+      new_child.detach.parent = this
+      new_child.next = this.child
+      this.child = new_child
+      return this
+
+    method last_child->$OfType
+      local cur = child
+      while (cur.next?) cur .= next
+      return cur
+
+endAspect
+
+
+#==============================================================================
+# Component
+#==============================================================================
+class Component : UINode<<Component>>
+  SETTINGS
+    default_theme = Theme
+
+  PROPERTIES
+    # Current view bounds - can change as a result of a layout and is not
+    # necessarily the same as the fixed size.
+    position   : XY
+    size       : XY
+
+    fixed_position : XY  # Only applied when this is a child of a UIAbsoluteLayout
+    fixed_size     : XY  # Can be larger than 'size' for e.g. scrollable pages
+
+    alignment = Align.center : Integer
+
+    theme = default_theme : Theme
+
+    #{
+    margin_left, margin_right, margin_top, margin_bottom : Integer
+    alignment = Align.center : Integer
+
+    is_relative = true : Logical
+
+    draw_color = 0
+    fill_color = 0
+
+    inverted : Logical
+
+    relative_width  = 1.0
+    relative_height = 1.0
+    }#
+
+  METHODS
+    method init
+      init( XY(0,0) )
+
+    method init( width:Real, height:Real )
+      init( XY(width,height) )
+
+    method init( _size:Real )
+      init( XY(_size,_size) )
+
+    method init( @fixed_size )
+      size = fixed_size
+
+    method aligned( alignment )->this
+
+    method adjust_position( new_bounds:Box )
+      @position = Box(0,0,size).positioned_within( new_bounds, alignment ).position.floor
+
+    method bounds->Box
+      return Box( position, size )
+
+    method set_bounds( new_bounds:Box )
+      local w = fixed_size.x
+      local h = fixed_size.y
+
+      if (w == 0)
+        w = maximum_width
+        if (w == 0 or w > new_bounds.size.x)
+          w = new_bounds.size.x
+          local min_w = minimum_width
+          if (w < min_w) w = min_w
+        endIf
+      endIf
+
+      if (h == 0)
+        h = maximum_height
+        if (h == 0 or h > new_bounds.size.y)
+          h = new_bounds.size.y
+          local min_h = minimum_height
+          if (h < min_h) h = min_h
+        endIf
+      endIf
+
+      size = XY(w,h)
+      adjust_position( new_bounds )
+
+      #{
+    method close
+      noAction
+      }#
+
+    method draw
+      handle( DrawEvent )
+
+    method contains( e:PointerEvent )->Logical
+      if (not bounds.contains(e.position)) return false
+
+      # Components in a scrolled view can be partially obscured by their parent
+      if (parent?) return parent.contains( e )
+      else         return true
+
+    method content_bounds->Box
+      return bounds
+
+    method dispatch( e:DrawEvent )
+      local cur = child
+      while (cur?)
+        cur.handle( e )
+        if (e.consumed) return
+        cur = cur.next
+      endWhile
+
+    method dispatch( e:KeyEvent )
+      local cur = child
+      while (cur?)
+        cur.handle( e )
+        if (e.consumed) return
+        cur = cur.next
+      endWhile
+
+    method dispatch( e:PointerEvent )
+      reverse_dispatch(e,child)
+      #{
+      local is_relevant = (contains(e) or has_pointer_focus)
+      if (is_relevant)
+        before( e )
+        if (e.consumed) return true
+      endIf
+
+      on( e )
+      if (e.consumed) return true
+
+      if (reverse_dispatch(e,child)) return true
+
+      if (not is_relevant) return false
+
+      return e.consumed
+      }#
+
+    method dispatch( e:PointerFocusEvent )
+      local cur = child
+      while (cur?)
+        cur.handle( e )
+        if (e.consumed) return
+        cur = cur.next
+      endWhile
+
+    method dispatch( e:UICloseEvent )
+      local cur = child
+      while (cur?)
+        cur.handle( e )
+        if (e.consumed) return
+        cur = cur.next
+      endWhile
+
+    method dispatch( e:UpdateEvent )
+      local cur = child
+      while (cur?)
+        cur.handle( e )
+        if (e.consumed) return
+        cur = cur.next
+      endWhile
+
+    method handle( e:DrawEvent )
+      on( e )
+      if (not e.consumed) dispatch( e )
+
+    method handle( e:KeyEvent )
+      on( e )
+      if (not e.consumed) dispatch( e )
+
+    method handle( e:PointerEvent )
+      on( e )
+      if (not e.consumed) dispatch( e )
+
+    method handle( e:PointerFocusEvent )
+      on( e )
+      if (not e.consumed) dispatch( e )
+
+    method handle( e:UICloseEvent )
+      on( e )
+      if (not e.consumed) dispatch( e )
+
+    method handle( e:UpdateEvent )
+      on( e )
+      if (not e.consumed) dispatch( e )
+
+    method has_keyboard_focus->Logical
+      return has_keyboard_focus( this )
+
+    method has_keyboard_focus( component:Component )->Logical
+      if (parent?) return parent.has_keyboard_focus( component )
+      return false
+
+    method has_pointer_focus->Logical
+      return has_pointer_focus( this )
+
+    method has_pointer_focus( component:Component )->Logical
+      if (parent?) return parent.has_pointer_focus( component )
+      return false
+
+    method draw_default
+      if (theme?) theme.invoke_draw( this )
+
+    method refresh
+      update_layout
+      request_draw
+
+    method maximum_height->Real
+      return fixed_size.y
+
+    method maximum_width->Real
+      return fixed_size.x
+
+    method minimum_height->Real
+      return fixed_size.y
+
+    method minimum_width->Real
+      return fixed_size.x
+
+    method on( e:DrawEvent )
+      draw_default
+      #{
+      if ((UIGraphics.background_color & 0xff000000)?)
+        Graphics.bounds.fill( UIGraphics.background_color )
+      endIf
+
+      local sides = UIGraphics.border_sides.sides
+      local color = UIGraphics.border_color
+      if (sides? and (color & 0xff000000)?)
+        local x1 = bounds.position.x
+        local y1 = bounds.position.y
+        local x2 = x1 + (bounds.size.x - 1)
+        local y2 = y1 + (bounds.size.y - 1)
+        if ((sides & UIBorderSides.top)?)
+          Line( x1, y1, x2, y1 ).draw( color )
+          ++y1
+        endIf
+        if ((sides & UIBorderSides.bottom)?)
+          Line( x1, y2, x2, y2 ).draw( color )
+          --y2
+        endIf
+        if ((sides & UIBorderSides.left)?)  Line( x1, y1, x1, y2 ).draw( color )
+        if ((sides & UIBorderSides.right)?) Line( x2, y1, x2, y2 ).draw( color )
+      endIf
+      }#
+
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:KeyboardFocusEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:PointerFocusEvent )
+      noAction
+
+    method on( e:UICloseEvent )
+      noAction
+
+    method on( e:UpdateEvent )
+      noAction
+
+    method operator+( rhs:Component )->Component
+      if (rhs instanceOf HorizontalLayout) return rhs.insert( this )
+      return HorizontalLayout().add( this ).add( rhs )
+
+    method operator/( rhs:Component )->Component
+      if (rhs instanceOf VerticalLayout) return rhs.insert( this )
+      return VerticalLayout().add( this ).add( rhs )
+
+    method print_debug_info
+      if (child?)
+        Console.indent += 2
+        child.print_debug_info
+        Console.indent -= 2
+      endIf
+      if (next?) next.print_debug_info
+
+      #{
+    method release_keyboard_focus
+      UIManager.release_keyboard_focus
+      }#
+
+    method release_keyboard_focus
+      if (parent?) parent.release_keyboard_focus
+
+    method retain_keyboard_focus
+      retain_keyboard_focus( this )
+
+    method retain_keyboard_focus( component:Component )
+      if (parent?) parent.retain_keyboard_focus( component )
+
+    method release_pointer_focus
+      if (parent?) parent.release_pointer_focus
+
+    method request_draw
+      request_draw( bounds )
+
+    method request_draw( bounds:Box )
+      if (parent?) parent.request_draw( bounds )
+
+    method request_layout
+      if (parent?) parent.request_layout
+
+    method retain_pointer_focus
+      retain_pointer_focus( this )
+
+    method retain_pointer_focus( component:Component )
+      if (parent?) parent.retain_pointer_focus( component )
+
+    method reverse_dispatch( e:PointerEvent, cur:Component )
+      # Recursive method used to dispatch to children in reverse order.
+      if (cur is null) return
+      reverse_dispatch(e, cur.next)
+      if (e.consumed) return
+      cur.handle( e )
+
+    method update_layout
+      if (parent?) parent.update_layout( parent.bounds )
+      else         update_layout( bounds )
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+
+      local cur = child
+      while (cur?)
+        cur.update_layout( bounds )
+        cur = cur.next
+      endWhile
+
+      #method with_border( size=1:Real )->UIBorder
+      #return UIBorder( this, size )
+
+    method window->Window
+      if (not parent) return null
+      return parent.window
+
+    method with_margins( size:Real )->UIMargins
+      return UIMargins( this, size )
+
+    method with_margins( left:Real, top:Real, right:Real, bottom:Real )->UIMargins
+      return UIMargins( this, left, top, right, bottom )
+
+endClass
+
+class Window : Component
+  PROPERTIES
+    id : Integer
+    needs_layout = true
+
+    pointer_position : XY
+
+    pointer_focus  : Component
+    keyboard_focus : Component
+
+    state = State(this)
+
+  METHODS
+    method init( title:String, w:Real, h:Real, flags=0:Integer ) 
+      id = native_create( title, -1, -1, w, h, flags )
+      UIManager.windows[id] = this
+      visible = true
+      size = native_content_size( id )
+
+    method add( new_child:Component )->Component
+      needs_layout = true
+      return prior.add( new_child )
+
+    method on( e:PointerEvent )
+      pointer_position = e.position
+      prior.on( e )
+
+    method on( e:DrawEvent )
+      if (needs_layout)
+        needs_layout = false
+        update_layout
+      endIf
+      #trace Graphics.bounds
+      prior.on( e )
+
+    method handle( e:KeyEvent )
+      if (keyboard_focus?)
+        keyboard_focus.handle( e )
+      else
+        prior.handle( e )
+      endIf
+
+    method handle( e:PointerEvent )
+      if (e.is_press and keyboard_focus? and not keyboard_focus.contains(e)) 
+        keyboard_focus.request_draw
+        release_keyboard_focus
+        request_draw
+      endIf
+
+      if (pointer_focus?)
+        pointer_focus.handle( e )
+      else
+        prior.handle( e )
+      endIf
+
+    method has_keyboard_focus( component:Component )->Logical
+      return (component == keyboard_focus)
+
+    method has_pointer_focus( component:Component )->Logical
+      return (component == pointer_focus)
+
+    method native_content_size( window_id:Integer )->XY  [native]
+
+    method native_create( title:String, x:Integer, y:Integer, w:Integer, h:Integer, flags:Integer )->Integer  [native]
+
+    method native_show( window_id:Integer, setting:Logical ) [native]
+
+    method release_keyboard_focus
+      if (keyboard_focus?)
+        local component = keyboard_focus
+        keyboard_focus = null
+        component.on( KeyboardFocusLostEvent )
+      endIf
+
+    method request_layout
+      needs_layout = true
+
+    method retain_keyboard_focus( component:Component )
+      if (keyboard_focus?)
+        if (keyboard_focus is component) return
+        release_keyboard_focus
+      endIf
+
+      keyboard_focus = component
+      component.on( KeyboardFocusGainedEvent )
+
+    method release_pointer_focus
+      if (pointer_focus?)
+        local component = pointer_focus
+        pointer_focus = null
+        component.on( PointerFocusLostEvent )
+      endIf
+
+    method retain_pointer_focus( component:Component )
+      if (pointer_focus?)
+        if (pointer_focus is component) return
+        release_pointer_focus
+      endIf
+
+      pointer_focus = component
+      component.on( PointerFocusGainedEvent )
+
+    method state( @state )
+      state.window = this
+
+    method set_state( @state )
+      state.window = this
+
+    method set_visible( setting:Logical )
+      native_show( id, setting )
+
+    method visible( setting:Logical )
+      native_show( id, setting )
+
+    method update
+      handle( UpdateEvent )
+
+    method window->this
+endClass
+
+
+class HorizontalLayout : Component
+  METHODS
+    method maximum_height->Real
+      # Returns the max of all child max heights or 0 (unlimited) if any are 0.
+      local result = fixed_size.y
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        local cur_size = cur.maximum_height
+        if (cur_size == 0) return 0
+        result = Math.max( result, cur_size )
+
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method maximum_width->Real
+      # Returns the sum of all child max widths or 0 (unlimited) if any are 0.
+      local result = fixed_size.x
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        local cur_size = cur.maximum_width
+        if (cur_size == 0) return 0
+        result += cur_size
+
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method minimum_height->Real
+      # Returns the max of all child min heights.
+      local result = fixed_size.y
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        result = Math.max( result, cur.minimum_height )
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method minimum_width->Real
+      # Returns the sum of all child min widths.
+      local result = fixed_size.x
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        result += cur.minimum_width
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method operator+( rhs:Component )->Component
+      return add( rhs )
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds  # sets this.size and this.position
+
+      local min = 0.0 # sum of child min widths
+      local max = 0.0 # sum of child max widths
+      local unlimited_count = 0
+
+      local cur = child
+      while (cur?)
+        local cur_min  = cur.minimum_width
+        min += cur_min
+
+        cur.size = XY( cur_min, 0 )
+
+        local cur_max = cur.maximum_width
+        max += cur_max
+        if (cur_max == 0) ++unlimited_count
+
+        cur = cur.next
+      endWhile
+
+      # If we have room to fill, first distribute extra space to limited-width
+      # children up to their max width.
+      local available = size.x - min
+      if (available > 0 and max > min)
+        local total_diff = max - min
+        #local scale = 1.0
+        #if (available < total_diff) scale = available / total_diff
+# 314 36
+        cur = child
+        while (cur?)
+          local diff = cur.maximum_width - cur.minimum_width
+          if (diff > 0)
+            local extra = Math.floor( (diff / total_diff) * available )
+            cur.size = cur.size + XY( extra, 0 )
+            available -= extra
+            min += extra
+          endIf
+          cur = cur.next
+        endWhile
+      endIf
+
+      # If we still have room to fill, finally distribute extra space to
+      # unlimited-width children.
+      available = size.x - min
+      if (available > 0 and unlimited_count?)
+        cur = child
+        while (cur?)
+          if (cur.maximum_width == 0)
+            local extra = Math.floor( available / unlimited_count )
+            --unlimited_count
+            cur.size = cur.size + XY( extra, 0 )
+            available -= extra
+            min += extra
+          endIf
+          cur = cur.next
+        endWhile
+      endIf
+
+      # Lay out each child
+      local x = position.x
+      if (available > 0) x += Math.floor( available / 2 )
+      local y = position.y
+      local h = size.y
+      cur = child
+      while (cur?)
+        local w = cur.size.x
+        cur.update_layout( Box(x,y,w,h) )
+        x += w
+        cur = cur.next
+      endWhile
+
+endClass
+  
+
+class VerticalLayout : Component
+  METHODS
+    method maximum_height->Real
+      # Returns the sum of all child max heights or 0 (unlimited) if any are 0.
+      local result = fixed_size.y
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        local cur_size = cur.maximum_height
+        if (cur_size == 0) return 0
+        result += cur_size
+
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method maximum_width->Real
+      # Returns the max of all child max widths or 0 (unlimited) if any are 0.
+      local result = fixed_size.x
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        local cur_size = cur.maximum_width
+        if (cur_size == 0) return 0
+        result = Math.max( result, cur_size )
+
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method minimum_height->Real
+      # Returns the sum of all child min heights.
+      local result = fixed_size.y
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        result += cur.minimum_height
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method minimum_width->Real
+      # Returns the max of all child min widths.
+      local result = fixed_size.x
+      if (result?) return result
+
+      local cur = child
+      while (cur?)
+        result = Math.max( result, cur.minimum_width )
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method operator/( lhs:Component, rhs:Component )->Component
+      return add( rhs )
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds  # sets this.size and this.position
+
+      local min = 0.0 # sum of child min heights
+      local max = 0.0 # sum of child max heights
+      local unlimited_count = 0
+
+      local cur = child
+      while (cur?)
+        local cur_min  = cur.minimum_height
+        min += cur_min
+
+        cur.size = XY( 0, cur_min )
+
+        local cur_max = cur.maximum_height
+        max += cur_max
+        if (cur_max == 0) ++unlimited_count
+
+        cur = cur.next
+      endWhile
+
+      # If we have room to fill, first distribute extra space to limited-height
+      # children up to their max height.
+      local available = size.y - min
+      if (available > 0 and max > min)
+        local total_diff = max - min
+        cur = child
+        while (cur?)
+          local diff = cur.maximum_height - cur.minimum_height
+          if (diff > 0)
+            local extra = Math.floor( (diff / total_diff) * available )
+            cur.size = cur.size + XY( 0, extra )
+            available -= extra
+            min += extra
+          endIf
+          cur = cur.next
+        endWhile
+      endIf
+
+      # If we still have room to fill, finally distribute extra space to
+      # unlimited-height children.
+      available = size.y - min
+      if (available > 0 and unlimited_count?)
+        cur = child
+        while (cur?)
+          if (cur.maximum_height == 0)
+            local extra = Math.floor( available / unlimited_count )
+            --unlimited_count
+            cur.size = cur.size + XY( 0, extra )
+            available -= extra
+            min += extra
+          endIf
+          cur = cur.next
+        endWhile
+      endIf
+
+      # Lay out each child
+      local y = position.y
+      if (available > 0) y += Math.floor( available / 2 )
+      local x = position.x
+      local w = size.x
+      cur = child
+      while (cur?)
+        local h = cur.size.y
+        cur.update_layout( Box(x,y,w,h) )
+        y += h
+        cur = cur.next
+      endWhile
+
+endClass
+
+
+#{
+#==============================================================================
+# UIText
+#==============================================================================
+class UIText : Component
+  PROPERTIES
+    value           : String
+    formatted_value : String
+
+    word_wrap       : Logical
+
+  METHODS
+    method update_layout( new_bounds:Box )
+endClass
+
+class UIScroll
+  ENUMERATE
+    horizontal = 1
+    vertical   = 2
+    both       = 3
+endClass
+
+class UIScrollView : Component
+  PROPERTIES
+    horizontal_scroll_bar_enabled : Logical
+    vertical_scroll_bar_enabled   : Logical
+    has_corner_box                : Logical
+
+    scroll_position : XY
+
+  METHODS
+    method init( content:Component, options=UIScroll.both:Integer )
+      init( 0, 0, content, options )
+
+    method init( w:Real, h:Real, content:Component, options=UIScroll.both:Integer )
+      prior.init( w, h )
+      horizontal_scroll_bar_enabled = (options & UIScroll.horizontal)?
+      vertical_scroll_bar_enabled = (options & UIScroll.vertical)?
+      has_corner_box = ((options & UIScroll.both) == UIScroll.both)
+
+      content.fixed_position = XY(0,0)
+      add( content )
+
+      #method adjust_position( new_bounds:Box )
+      #trace size, position
+      #noAction
+
+    method content_bounds->Box
+      local right_crop = 0
+      local bottom_crop = 0
+      if (horizontal_scroll_bar_enabled) bottom_crop = theme.scroll_bar_height
+      if (vertical_scroll_bar_enabled)   right_crop  = theme.scroll_bar_width
+      return bounds.cropped( 0, 0, right_crop, bottom_crop )
+
+    method horizontal_scroll_bar_bounds->Box
+      local right_crop = 0
+      if (vertical_scroll_bar_enabled) right_crop = theme.scroll_bar_width
+      local top_crop = size.y - theme.scroll_bar_height
+      if (top_crop < 0) top_crop = 0
+      return bounds.cropped( 0, top_crop, right_crop, 0 )
+
+    #method horizontal_shuttle_bounds->Box
+
+
+    method draw
+      theme.draw_scroll_view( this )
+
+    method page_height->Real
+      if (child is null) return content_bounds.size.y
+      local h = child.maximum_height
+      if (h?) return h
+      return content_bounds.size.y
+
+    method page_width->Real
+      if (child is null) return content_bounds.size.x
+      local w = child.maximum_width
+      if (w?) return w
+      return content_bounds.size.x
+
+    method corner_box_bounds->Box
+      local corner_size = XY( theme.scroll_bar_width, theme.scroll_bar_height )
+      return Box( (position + size) - corner_size, corner_size )
+
+    method vertical_scroll_bar_bounds->Box
+      local bottom_crop = 0
+      if (horizontal_scroll_bar_enabled) bottom_crop = theme.scroll_bar_height
+      local left_crop = size.x - theme.scroll_bar_width
+      if (left_crop < 0) left_crop = 0
+      return bounds.cropped( left_crop, 0, 0, bottom_crop )
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+
+      # Update each child
+      local cur = child
+      while (cur?)
+        local new_child_pos = position + cur.fixed_position
+        cur.update_layout( Box(new_child_pos,child.size) )
+        cur = cur.next
+      endWhile
+
+    method visible_height->Real
+      return content_bounds.size.y
+
+    method visible_width->Real
+      return content_bounds.size.x
+
+endClass
+}#
+
+class UIMargins : Component
+  PROPERTIES
+    left, top, right, bottom : Real
+
+  METHODS
+    method init( content:Component, margin_size:Real )
+      left   = margin_size
+      right  = margin_size
+      top    = margin_size
+      bottom = margin_size
+      add( content )
+
+    method init( content:Component, left, top, right, bottom )
+      add( content )
+
+    method content_bounds->Box
+      return bounds.cropped( left, top, right, bottom )
+
+    method maximum_height->Real
+      local h = fixed_size.y
+      if (h?) return h
+
+      h = child.maximum_height
+      if (h == 0) return h
+
+      return h + top + bottom
+
+    method maximum_width->Real
+      local w = fixed_size.x
+      if (w?) return w
+
+      w = child.maximum_width
+      if (w == 0) return w
+
+      return w + left + right
+
+    method minimum_width->Real
+      local w = fixed_size.x
+      if (w?) return w
+
+      return child.minimum_width + left + right
+
+    method minimum_height->Real
+      local h = fixed_size.y
+      if (h?) return h
+
+      return child.minimum_height + top + bottom
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds  # sets this.size and this.position
+
+      local child_bounds = content_bounds
+
+      local cur = child
+      while (cur?)
+        cur.update_layout( child_bounds )
+        cur = cur.next
+      endWhile
+
+endClass
+
+#{
+class UIBorder : UIMargins
+  METHODS
+    method draw
+      theme.draw_border( this )
+endClass
+}#
+
+
+class UIMaxSize : Component
+  PROPERTIES
+    max_size : XY
+
+  METHODS
+    method init( content:Component, max_x:Real, max_y:Real )
+      max_size = XY(max_x,max_y)
+      add( content )
+
+    method maximum_height->Real
+      local max       = max_size.y
+      local child_max = child.maximum_height
+      if (max == 0 or (child_max? and max > child_max)) return child_max
+      return max
+
+    method maximum_width->Real
+      local max       = max_size.x
+      local child_max = child.maximum_width
+      if (max == 0 or (child_max? and max > child_max)) return child_max
+      return max
+
+    method minimum_height->Real
+      local max       = max_size.y
+      local child_min = child.minimum_height
+      if (max == 0 or max > child_min) return child_min
+      return max
+
+    method minimum_width->Real
+      local max       = max_size.x
+      local child_min = child.minimum_width
+      if (max == 0 or max > child_min) return child_min
+      return max
+endClass
+
+
+#{
+class UINativeComponent : Component
+  PROPERTIES
+    id              : Integer
+    screen_position : XY
+
+  METHODS
+    method close
+      native_close( id )
+      id = 0
+
+    method native_close( id:Integer )  [native]
+
+    method native_request_draw( id:Integer, x:Integer, y:Integer, w:Integer, h:Integer ) [native]
+
+    method native_set_position( id:Integer, x:Integer, y:Integer, width:Integer, height:Integer, adjust_for_frame:Logical ) [native]
+
+    method native_set_visible( id:Integer, setting:Logical )  [native]
+
+    method on( e:UIResizeEvent )
+      screen_position = e.bounds.position
+      @size = e.bounds.size
+
+      request_layout
+      request_draw
+
+    method request_draw( bounds:Box )
+      native_request_draw( id, position.x, position.y, size.x, size.y )
+
+    method visible( setting:Logical )
+      if (id?) native_set_visible( id, setting )
+
+endClass
+
+
+class UIFrame : UINativeComponent
+  PROPERTIES
+    window_style   : Integer
+    title          : String
+
+    needs_layout : Logical
+
+  METHODS
+    method init( title, window_style=0 )
+      init( title, window_style, Display.content_bounds )
+
+    method init( title, screen_bounds:Box, window_style=0 )
+      screen_bounds   = screen_bounds.floor
+      screen_position = screen_bounds.position
+      size = screen_bounds.size
+
+    method close
+      if (id?)
+        UIManager.windows.remove( id )
+        native_close( id )
+        id = 0
+      endIf
+
+    method create_component
+      id = native_create( title, window_style, screen_position.x, screen_position.y, bounds.size.x, bounds.size.y )
+      UIManager.windows[id] = this
+
+    method dispatch( e:KeyEvent )->Logical
+      if (keyboard_focus?)
+        return keyboard_focus.dispatch( e )
+      else
+        return prior.dispatch( e )
+      endIf
+
+    method dispatch( e:PointerEvent )->Logical
+      if (e.is_press and keyboard_focus? and not keyboard_focus.contains(e)) 
+        keyboard_focus.request_draw
+        release_keyboard_focus
+        request_draw
+      endIf
+
+      if (pointer_focus?)
+        pointer_focus.dispatch( e )
+        return true
+      endIf
+
+      return prior.dispatch( e )
+
+    method has_keyboard_focus( component:Component )->Logical
+      return (component == keyboard_focus)
+
+    method has_pointer_focus( component:Component )->Logical
+      return (component == pointer_focus)
+
+    method native_create( title:String, flags:Integer, x:Integer, y:Integer, w:Integer, h:Integer )->Integer [native]
+
+    method draw
+      if (needs_layout)
+        needs_layout = false
+        update_layout
+      endIf
+      theme.draw_frame( this )
+
+    method release_keyboard_focus
+      if (keyboard_focus?)
+        local component = keyboard_focus
+        keyboard_focus = null
+        component.on( KeyboardFocusLostEvent )
+      endIf
+
+    method request_layout
+      needs_layout = true
+
+    method retain_keyboard_focus( component:Component )
+      if (keyboard_focus?)
+        if (keyboard_focus is component) return
+        release_keyboard_focus
+      endIf
+
+      keyboard_focus = component
+      component.on( KeyboardFocusGainedEvent )
+
+    method release_pointer_focus
+      if (pointer_focus?)
+        local component = pointer_focus
+        pointer_focus = null
+        component.on( PointerFocusLostEvent )
+      endIf
+
+    method retain_pointer_focus( component:Component )
+      if (pointer_focus?)
+        if (pointer_focus is component) return
+        release_pointer_focus
+      endIf
+
+      pointer_focus = component
+      component.on( PointerFocusGainedEvent )
+
+    method open
+      update_layout
+      update_native_component
+      visible = true
+
+    method update_native_component
+      if (id == 0) create_component
+      else native_set_position( id, screen_position.x, screen_position.y, bounds.size.x, bounds.size.y, true )
+
+endClass
+}#
+
+class Spacer : Component
+  METHODS
+    method init( w:Real, h:Real )
+      prior.init( w, h )
+
+    method init( size:Real )
+      prior.init( size, size )
+endClass
+
+class Panel : Component
+  METHODS
+    method init( content:Component )
+      prior.init(0,0)
+      add( content )
+
+      #{
+    method bounds( new_bounds:Box )
+      position = new_bounds.position
+      size = new_bounds.size
+      }#
+endClass
+
+#{
+class UISpacerX : Spacer
+  METHODS
+    method init( w=0:Real )
+      init( w, 1 )
+endClass
+
+class UISpacerY : Spacer
+  METHODS
+    method init( h=0:Real )
+      init( 1, h )
+endClass
+}#
+
+class SelectableComponent : Component
+  PROPERTIES
+    targeted : Logical
+    selected : Logical
+    disabled : Logical
+
+    sticky   : Logical
+
+    state    : Integer
+
+    selection_delegate : Delegate()
+
+  METHODS
+    method adjust_state_for( e:PointerEvent )
+      if (disabled) return
+
+      local previously_selected = selected
+
+      if (this.contains(e))
+        targeted = true
+        retain_pointer_focus
+
+        if (e.is_press)                      selected = true
+        elseIf (e.is_release and not sticky) selected = false
+      else
+        targeted = false
+        if (e.is_release and not sticky) selected = false
+      endIf
+
+      if ((not selected or sticky) and not targeted) release_pointer_focus
+
+      if (selected and selected != previously_selected)
+        if (selection_delegate?) selection_delegate.call
+        on_select
+      endIf
+
+      request_draw
+
+    method on( e:PointerEvent )
+      local in_bounds = contains(e)
+      if (has_pointer_focus or in_bounds)
+        adjust_state_for( e )
+        e.consume
+      endIf
+
+    method on_select
+endClass
+
+
+class Button : SelectableComponent
+  PROPERTIES
+    label           : String
+
+  METHODS
+    method init( label, width=0:Integer, height=0:Integer )
+      prior.init( width, height )
+
+endClass
+
+
+class TextEdit : Button
+  PROPERTIES
+    text=""      : String
+    default_text : String
+    cursor       : Integer
+
+    draw_border = true   # kludge
+
+    editable     = true
+
+    selection_time : Real
+
+  METHODS
+    method init( text="", width=0:Integer, height=0:Integer, default_text="" )
+      prior.init( width, height )
+      cursor = text.count
+
+    method adjust_state_for( e:PointerEvent )
+      if (editable) prior.adjust_state_for( e )
+
+    method on( e:KeyEvent )
+      if (not editable) return
+
+      if (has_keyboard_focus)
+        if (e.is_press)
+          local original_cursor = cursor
+          local original_text = text
+          if (e.unicode >= 32 and e.unicode != 127)
+            text = text.leftmost(cursor) + e.unicode + text.substring(cursor)
+            ++cursor
+          elseIf (e.unicode?)
+            which (e.unicode)
+              case 10
+                release_keyboard_focus
+                on_commit
+
+              case 27
+                release_keyboard_focus
+
+              case 8
+                if (cursor > 0)
+                  text = text.leftmost(cursor-1) + text.substring(cursor)
+                  --cursor
+                endIf
+            endWhich
+          else
+            which (e.keycode)
+              case KeyEvent.keycode_left_arrow
+                if (cursor > 0) --cursor
+
+              case KeyEvent.keycode_right_arrow
+                if (cursor < text.count) ++cursor
+
+              case KeyEvent.keycode_up_arrow
+                cursor = 0
+
+              case KeyEvent.keycode_down_arrow
+                cursor = text.count
+
+              case KeyEvent.keycode_delete
+                if (cursor < text.count)
+                  text = text.leftmost(cursor) + text.substring(cursor+1)
+                endIf
+            endWhich
+          endIf
+          request_draw
+          if (original_text isNot text) on_modified
+          if (original_cursor != cursor) 
+            on_cursor_moved
+            selection_time = Time.current
+          endIf
+          e.consume
+        endIf
+      endIf
+
+    method on( e:PointerEvent )
+      if (not editable) return
+      if (not (contains(e) or has_pointer_focus)) return
+
+      prior.on( e )
+      if (not e.consumed) return
+
+      if (e.is_press)
+        retain_keyboard_focus
+        local original_cursor = cursor
+        cursor = point_to_cursor( e.position )
+        if (original_cursor != cursor)
+          on_cursor_moved
+          selection_time = Time.current
+        endIf
+        request_draw
+      endIf
+
+      e.consume
+
+    method font->Font
+      # Override this
+      return DebugFont
+
+    method text_bounds->Box
+      # Override this
+      return bounds
+
+    method on_cursor_moved
+
+    method on_commit
+
+    method on_modified
+
+    method retain_keyboard_focus
+      if (not has_keyboard_focus) selection_time = Time.current
+      prior.retain_keyboard_focus
+
+    method point_to_cursor( pos:XY )->Integer
+      local _font = font
+      local x = Math.floor( pos.x )
+      local cursor_pos = 0
+      local x_offset = x - text_bounds.position.x
+      forEach (i in 0..<text.count)
+        local subset_size = _font.measure(text,i,i).x/2
+        if (i > 0) subset_size += _font.measure( text, 0, i-1 ).x
+        if (x_offset <= subset_size) escapeForEach
+        ++cursor_pos
+      endForEach
+      return cursor_pos
+
+endClass
+
+class Label : Component
+  PROPERTIES
+    text  : String
+
+  METHODS
+    method init( text, width=0:Integer, height=0:Integer )
+      prior.init( width, height )
+endClass
+
+class View : Component
+  PROPERTIES
+    offset : XY
+
+    content      : Component
+    content_size : XY
+
+  METHODS
+    method init( content, w=0:Real, h=0:Real )
+      prior.init( w, h )
+
+      add( content )
+
+    method handle( e:DrawEvent )
+      Graphics.save_state
+      Graphics.intersect_clip( bounds )
+      prior.handle(e)
+      Graphics.restore_state
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+
+      # The content size will be at least the minimum size and will be expanded
+      # up to its maximum size or the fixed size of this view, whichever is
+      # smaller.
+      local min_w = content.minimum_width
+      local min_h = content.minimum_height
+      local max_w = content.maximum_width
+      local max_h = content.maximum_height
+      local w = this.size.x
+      local h = this.size.y
+      if (min_w > w) w = min_w
+      elseIf (max_w? and max_w < w) w = max_w
+      if (min_h > h) h = min_h
+      elseIf (max_h? and max_h < h) h = max_h
+
+      content_size = XY(w,h)
+
+      # Update the content child
+      content.update_layout( Box(position+offset,content_size) )
+
+      # Update every other child
+      local cur = child
+      while (cur?)
+        if (cur isNot content) cur.update_layout( Box(position,size) )
+        cur = cur.next
+      endWhile
+endClass
+
+class ScrollPosition
+  PROPERTIES
+    value : XY
+
+  METHODS
+    method x->Real
+      return value.x
+
+    method y->Real
+      return value.y
+endClass
+
+class ScrollView : Component
+  PROPERTIES
+    view     : View
+
+    scroll_position : ScrollPosition
+    # scroll_position is 0..<view.content_size
+
+    horizontal_scroll_bar : ScrollControl
+    vertical_scroll_bar   : ScrollControl
+
+  METHODS
+    method init( content:Component, w:Real, h:Real, enable_vertical_scroll=false:Logical, enable_horizontal_scroll=false:Logical, scroll_position=ScrollPosition() )
+      if (content instanceOf View) view = content as View
+      else view = View( content, 0, 0 )
+
+      prior.init( w, h )
+
+      local content = view : Component
+
+      if (enable_horizontal_scroll) horizontal_scroll_bar = ScrollControl(this,ScrollControl.horizontal,0,16); content = content / horizontal_scroll_bar
+      if (enable_vertical_scroll) vertical_scroll_bar = ScrollControl(this,ScrollControl.vertical,16,0); content = content + vertical_scroll_bar
+
+      if (enable_horizontal_scroll and enable_vertical_scroll)
+        content = (content + vertical_scroll_bar) / (horizontal_scroll_bar + Spacer(16))
+      else
+        if (enable_horizontal_scroll) content = content / horizontal_scroll_bar
+        if (enable_vertical_scroll)   content = content + vertical_scroll_bar
+      endIf
+
+      add( content )
+
+    method init( content:Component, enable_vertical_scroll=false:Logical, enable_horizontal_scroll=false:Logical, scroll_position=ScrollPosition() )
+      init( content, 0, 0, enable_vertical_scroll, enable_horizontal_scroll, scroll_position )
+
+    method dispatch( e:KeyEvent )
+      # Override dispatch() to let the scroll bars catch events before the view gets a chance.
+      if (horizontal_scroll_bar?)
+        horizontal_scroll_bar.handle( e )
+        if (e.consumed) return
+      endIf
+
+      if (vertical_scroll_bar?) vertical_scroll_bar.handle( e )
+
+      view.handle( e )
+      if (e.consumed) return
+
+    method dispatch( e:PointerEvent )
+      if (horizontal_scroll_bar?)
+        horizontal_scroll_bar.handle( e )
+        if (e.consumed) return
+      endIf
+
+      if (vertical_scroll_bar?) vertical_scroll_bar.handle( e )
+
+      view.handle( e )
+      if (e.consumed) return
+
+
+    method page_up
+      set_scroll_position( XY(scroll_position.x, scroll_position.y - (view.size.y / view.content_size.y) * 0.9) )
+
+    method page_down
+      set_scroll_position( XY(scroll_position.x, scroll_position.y + (view.size.y / view.content_size.y) * 0.9) )
+
+    method pixel_scroll_position->XY
+      return scroll_position.value * view.content_size
+
+    method set_pixel_scroll_position( pos:XY )
+      set_scroll_position( pos / content_size )
+
+    method set_scroll_position( pos:XY )
+      local x = pos.x
+      local x_max = 1.0 - view.size.x / view.content_size.x
+      if (x > x_max) x = x_max
+      if (x < 0) x = 0
+
+      local y = pos.y
+      local y_max = 1.0 - view.size.y / view.content_size.y
+      if (y > y_max) y = y_max
+      if (y < 0) y = 0
+
+      scroll_position.value = XY(x,y)
+      view.offset = XY(-x,-y) * view.content_size
+
+      child.update_layout( bounds )
+
+    method update_layout( new_bounds:Box )
+      prior.update_layout( new_bounds )
+      set_scroll_position( scroll_position.value )   # revalidate the current position
+
+endClass
+
+class ScrollControl : Button
+  ENUMERATE
+    horizontal = 1
+    vertical   = 2
+    both       = 3
+
+  PROPERTIES
+    scroll_view : ScrollView
+
+    dragging            : Logical
+
+    drag_start_pixel_scroll_position : XY
+    drag_start_position : XY
+
+    opacity = -1.0
+    orientation : Integer
+
+  METHODS
+    method init( scroll_view, orientation, w:Real, h:Real )
+      prior.init( w, h )
+
+    method on( e:PointerEvent )
+      prior.on( e )
+
+      if (e.is_press and this.contains(e))
+        local slider = shuttle_bounds
+        if (slider.contains(e.position))
+          dragging = true
+          drag_start_position = e.position
+          drag_start_pixel_scroll_position = pixel_scroll_position
+        else
+          if ((orientation & vertical)?)
+            if (e.position.y < slider.position.y)
+              scroll_view.page_up
+            else
+              scroll_view.page_down
+            endIf
+          endIf
+        endIf
+
+      elseIf (dragging)
+        local delta = e.position - drag_start_position
+        if (orientation != (horizontal | vertical))
+          if (orientation == horizontal) delta = delta.xv
+          else                           delta = delta.yv
+        endIf
+        set_pixel_scroll_position( drag_start_pixel_scroll_position + delta )
+
+        if (e.is_release) dragging = false
+
+      endIf
+
+    method on( e:UpdateEvent )
+      if (opacity != -1)
+        if ((orientation & horizontal)? and (scroll_view.view.content_size.x > scroll_view.view.size.x) or
+            (orientation & vertical)? and (scroll_view.view.content_size.y > scroll_view.view.size.y))
+          opacity += 0.04
+          if (opacity >= 1.0) opacity = 1.0
+        else
+          opacity -= 0.04
+          if (opacity <= 0) opacity = 0
+        endIf
+      endIf
+
+    method pixel_scroll_position->XY
+      return scroll_view.scroll_position.value * size
+
+    method set_pixel_scroll_position( pos:XY )
+      scroll_view.set_scroll_position( pos / size )
+
+    method shuttle_bounds->Box
+      if (orientation == (horizontal + vertical))
+        local x = position.x + size.x * scroll_view.scroll_position.x
+        local w = size.x * (scroll_view.view.size.x / scroll_view.view.content_size.x)
+        local y = position.y + size.y * scroll_view.scroll_position.y
+        local h = size.y * (scroll_view.view.size.y / scroll_view.view.content_size.y)
+        return Box(x,y,w,h)
+      elseIf (orientation == horizontal)
+        local x = position.x + size.x * scroll_view.scroll_position.x
+        local w = size.x * (scroll_view.view.size.x / scroll_view.view.content_size.x)
+        return Box(x,position.y,w,size.y)
+      else
+        local y = position.y + size.y * scroll_view.scroll_position.y
+        local h = size.y * (scroll_view.view.size.y / scroll_view.view.content_size.y)
+        return Box(position.x,y,size.x,h)
+      endIf
+
+    method update_layout( new_bounds:Box )
+      prior.update_layout( new_bounds )
+      if (opacity == -1)
+        # Determine correct initial opacity
+        if ((orientation & horizontal)? and (scroll_view.view.content_size.x > scroll_view.view.size.x) or
+            (orientation & vertical)? and (scroll_view.view.content_size.y > scroll_view.view.size.y))
+          opacity = 1
+        else
+          opacity = 0
+        endIf
+      endIf
+endClass
+
+class AbsoluteLayout : Component
+  # A component that does not try to alter the size or position of its children.
+  METHODS
+    method add( new_child:Component, child_position:XY )
+      new_child.fixed_position = child_position
+      prior.add( new_child )
+
+    method add( new_child:Component, x:Real, y:Real )
+      new_child.fixed_position = XY(x,y)
+      prior.add( new_child )
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+
+      # Update each child
+      local cur = child
+      while (cur?)
+        local new_child_pos = position + cur.fixed_position
+        cur.update_layout( Box(new_child_pos,child.size) )
+        cur = cur.next
+      endWhile
+endClass
+

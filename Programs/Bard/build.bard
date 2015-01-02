@@ -1,0 +1,244 @@
+class BuildBC : GoGo
+  PROPERTIES
+  METHODS
+    method build( String cmd )
+      execute( "make $" (cmd) )
+
+      #{
+      if (not File("Programs/Mac/Bard").exists)
+        mkdir( "Programs/Mac" )
+        compile_vm
+        copy( File("Projects/BardVM/Mac/build/bard"), File("Programs/Mac/Bard") )
+      endIf
+
+      which (cmd)
+        case "clean"
+          delete( "Build" )
+          delete( "Programs/Mac/B4" )
+
+        case "build"
+          compile_vm
+          compile_bcc
+          compile_vm
+
+        case "check"
+          compile_vm
+          compile_bcc
+          compile_vm
+
+          pushd( "Libraries/Bard/BCC" )
+          execute( "../../../Programs/Mac/bard ../../../Build/Products/BCC/BCC.bc BCC.bard --output=../../../Build/Products/BCC/BCC2.bc --source-folders=../../../Libraries/Bard" )
+          execute( "../../../Projects/BardVM/Mac/build/bard ../../../Projects/BCC/BCC2.bc BCC.bard --output=../../../Build/Products/BCC/BCC3.bc --source-folders=../../../Libraries/Bard" )
+          popd
+          execute( "ls -l Programs/BCC.bc Build/Products/BCC/*.bc" )
+
+        case "check1"
+          compile_vm
+          compile_bcc
+          compile_vm
+
+          pushd( "Libraries/Bard/BCC" )
+          execute( "../../../Programs/B4 ../../../Build/Products/BCC/BCC.bc BCC.bard --output=../../../Build/Products/BCC/BCC2.bc --source-folders=../../../Libraries/Bard" )
+          popd
+
+        case "accept"
+          if (File("Build/Products/BCC/BCC.bc").newer_than("Build/Products/BCC/BCC2.bc"))
+            throw Error( "You must 'gogo check' before you can accept a new compiler and VM." )
+          else
+            copy( File("Build/Products/BardVM/C/B4"), File("Programs/B4"), Copy.always )
+            copy( File("Build/Products/BCC/BCC2.bc"), File("Programs/BCC.bc"), Copy.always )
+          endIf
+
+        case "checktest"
+          compile_vm
+          compile_bcc
+          compile_vm
+          pushd( "Test" )
+          execute( "../Build/Products/BardVM/C/B4 ../Build/Products/BCC/BCC.bc Test.bard --platform=mac --source-folders=../Libraries/Bard" )
+          execute( "../Build/Products/BardVM/C/B4 Test.bc" )
+          popd
+
+        case "vmtest"
+          compile_vm
+          pushd( "Test" )
+          execute( "../Programs/B4 ../Programs/BCC.bc Test.bard --source-folders=../Libraries/Bard" )
+          execute( "../Build/Products/BardVM/C/B4 Test.bc" )
+          popd
+
+        case "test"
+          pushd( "Test" )
+          execute( "../Programs/B4 ../Programs/BCC.bc Test.bard --define=PLATFORM:mac --source-folders=../Libraries/Bard" )
+          execute( "../Programs/B4 Test.bc" )
+          popd
+
+        case "testjs"
+          pushd( "Test" )
+          execute( "../Programs/B4 ../Programs/BCC.bc Test.bard --target=js --source-folders=../Libraries/Bard" )
+          popd
+
+        case "checktestjs"
+          compile_vm
+          compile_bcc
+          compile_vm
+          pushd( "Test" )
+          execute( "../Build/Products/BardVM/C/B4 ../Build/Products/BCC/BCC.bc Test.bard --target=js --source-folders=../Libraries/Bard" )
+          popd
+
+        case "checktestcpp"
+          compile_vm
+          compile_bcc
+          compile_vm
+          pushd( "Test" )
+          execute( "../Build/Products/BardVM/C/B4 ../Build/Products/BCC/BCC.bc Test.bard --target=cpp --source-folders=../Libraries/Bard" )
+          popd
+
+        case "ide"
+          mkdir( "Build/Intermediate/IDE" )
+          execute( "Programs/B4 Programs/BCC.bc Main.bard --output=Platforms/Mac/Source/IDE.bc --source-folders=\"Source/IDE;Libraries/Bard\"" )
+
+        others
+          println( "USAGE" )
+          println( "  gogo build" )
+          println( "  gogo check" )
+          println( "  gogo accept" )
+          println( "  gogo test" )
+          println( "  gogo vmtest" )
+          println( "  gogo checktest" )
+          println( "  gogo testjs" )
+          println( "  gogo checktestjs" )
+          println( "  gogo ide" )
+          println( "  gogo clean" )
+
+          #generate_js_opcode_definitions
+      endWhich
+
+    method compile_bcc
+      mkdir( "Build/Products/BCC" )
+      local FileSet bcc_source( "Libraries/Bard/BCC", "*.bard" )
+      local FileSet libraries( "Libraries/Bard" )
+      local var target = "Build/Products/BCC/BCC.bc"
+      if (not (bcc_source.newer_than(target) or libraries.newer_than(target)))
+        return
+      endIf
+      target = "../../../" + target
+
+      execute( "chmod a+x Programs/B4" )
+      pushd( "Libraries/Bard/BCC" )
+      execute( "../../../Programs/B4 ../../../Programs/BCC.bc BCC.bard --output=$ --source-folders=../../../Libraries/Bard" (target) )
+      generate_c_opcode_definitions
+
+      #copy( FileSet("../Libraries"), Directory("../../Build/Products/BCC/Libraries") )
+
+      popd
+
+    method compile_vm
+      pushd( "Platforms/Console" )
+      execute( "make" )  # creates Build/Products/Bard/VM/C/B4
+      popd
+
+    method newest_file( FileSet files ).String
+      local String newest = null
+      forEach (filepath in files)
+        if (newest is null or File(filepath).newer_than(newest)) newest = filepath
+      endForEach
+      return newest
+
+    method generate_c_opcode_definitions
+      local var h_filepath = "../../../Libraries/Bard/VM/C/BardVMOpcodes.h"
+      local var c_filepath = "../../../Libraries/Bard/VM/C/BardVMOpcodes.c"
+      if (not (File("Op.bard").newer_than(h_filepath) or File("../../../build.bard").newer_than(h_filepath))) return
+
+      println( "> Converting Op.bard to ../../../Libraries/Bard/VM/C/BardVMOpcodes.h" )
+      local var writer = File(h_filepath).create_writer
+
+      writer.println( "#ifndef BARD_OPCODES_H" )
+      writer.println( "#define BARD_OPCODES_H" )
+      writer.println( "//=============================================================================" )
+      writer.println( "// BardVMOpcodes.h" )
+      writer.println( "//" )
+      writer.println( "// This file is automatically generated - do not hand-modify as your changes" )
+      writer.println( "// may be overwritten." )
+      writer.println( "//=============================================================================" )
+      writer.println
+
+      local String[] opcode_names()
+      local var next_opcode = 0
+      forEach (line in LineReader(File("Op.bard")))
+        line .= trim.to_uppercase
+        if (line.count == 0) nextIteration
+        if (line.begins_with("#")) nextIteration
+        if (line.begins_with("CLASS") or line.begins_with("ENUMERATE") or line.begins_with("ENDCLASS")) nextIteration
+
+        local var name = "BARD_VM_OP_" + line
+        opcode_names.add( name )
+        writer.println( "#define $ $(3)" (name.left_justified(60),next_opcode) )
+        ++next_opcode
+
+      endForEach
+      writer.println
+      writer.println( "extern const char* bard_op_names[];" )
+
+      writer.println
+      writer.println( "#endif // BARD_OPCODES_H" )
+      writer.close
+
+      # BardVMOpcodes.c
+      writer = File(c_filepath).create_writer
+
+      writer.println( "//=============================================================================" )
+      writer.println( "// BardVMOpcodes.c" )
+      writer.println( "//" )
+      writer.println( "// This file is automatically generated - do not hand-modify as your changes" )
+      writer.println( "// may be overwritten." )
+      writer.println( "//=============================================================================" )
+      writer.println
+
+      writer.println( "const char* bard_op_names[] = {" )
+      local var first = true
+      forEach (name in opcode_names)
+        if (first) first = false
+        else       writer.println( "," )
+        writer.print( //  "$"// (name) )
+      endForEach
+      writer.println
+      writer.println( "};" )
+
+      writer.close
+
+    method generate_js_opcode_definitions
+      local var js_filepath = "JSVM/BardOp.js"
+      if (not (File("Op.bard").newer_than(js_filepath) or File("build.bard").newer_than(js_filepath))) return
+
+      println( "> Converting Op.bard to " + js_filepath )
+      local var writer = File(js_filepath).create_writer
+
+      writer.println( "//=============================================================================" )
+      writer.println( "// BardOp.js" )
+      writer.println( "//" )
+      writer.println( "// This file is automatically generated - do not hand-modify as your changes" )
+      writer.println( "// may be overwritten." )
+      writer.println( "//=============================================================================" )
+      writer.println
+      writer.println( "var BardOp = BardOp ||" );
+      writer.println( "{" );
+
+      local var next_opcode = 0
+      local var first = true
+      forEach (line in LineReader(File("Op.bard")))
+        line .= trim
+        if (line.count == 0) nextIteration
+        if (line.begins_with("#")) nextIteration
+        if (line.begins_with("singleton") or line.begins_with("ENUMERATE") or line.begins_with("endClass")) nextIteration
+
+        if (first) first = false
+        else       writer.println(",")
+        writer.print( "  $ : $(3)" (line.left_justified(60),next_opcode) )
+        ++next_opcode
+
+      endForEach
+      writer.println
+      writer.println( "};" );
+      writer.close
+      }#
+
+endClass

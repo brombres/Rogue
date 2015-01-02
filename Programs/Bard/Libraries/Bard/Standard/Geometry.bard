@@ -1,0 +1,117 @@
+#==============================================================================
+# Triangle
+#==============================================================================
+compound Triangle( a:XY, b:XY, c:XY )
+  SETTINGS
+    render_mode = RenderMode( 0 )
+
+  METHODS
+    method fill( color:Integer )
+      Graphics.set_render_mode( render_mode.value )
+      Graphics.fill_triangle( a.x,a.y,color, b.x,b.y,color, c.x,c.y,color )
+endCompound
+
+#==============================================================================
+# XYZ
+#==============================================================================
+compound XYZ( x:Real, y:Real, z:Real )
+  METHODS
+    method create
+      return XYZ(0,0,0)
+
+    method create( x:Real, y:Real )
+      return XYZ( x, y, 0 )
+
+    method floor->XYZ
+      return XYZ( Math.floor(x), Math.floor(y), Math.floor(z) )
+
+    method magnitude->Real
+      return Math.sqrt( (x*x) + (y*y) + (z*z) )
+
+    method max->Real
+      if (x >= y)
+        if (x >= z) return x
+        else        return z
+      else
+        if (y >= z) return y
+        else        return z
+      endIf
+
+    method min->Real
+      if (x <= y)
+        if (x <= z) return x
+        else        return z
+      else
+        if (y <= z) return y
+        else        return z
+      endIf
+
+    method operator+( v1:XYZ, v2:XYZ )->XYZ
+      return XYZ( v1.x+v2.x, v1.y+v2.y, v1.z+v2.z )
+
+    method operator-( v1:XYZ, v2:XYZ )->XYZ
+      return XYZ( v1.x-v2.x, v1.y-v2.y, v1.z-v2.z )
+
+    method operator*( v:XYZ, k:Real )->XYZ
+      return XYZ( v.x*k, v.y*k, v.z*k )
+
+    method operator*( v1:XYZ, v2:XYZ )->XYZ
+      return XYZ( v1.x*v2.x, v1.y*v2.y, v1.z*v2.z )
+
+    method operator/( v:XYZ, k:Real )->XYZ
+      return XYZ( v.x/k, v.y/k, v.z/k )
+
+    method operator/( v1:XYZ, v2:XYZ )->XYZ
+      return XYZ( v1.x/v2.x, v1.y/v2.y, v1.z/v2.z )
+
+    method operator%( v1:XYZ, v2:XYZ )->XYZ
+      return XYZ( v1.x%v2.x, v1.y%v2.y, v1.z%v2.z )
+
+    method to->String
+      return "($,$,$)" (x,y,z)
+
+endCompound
+
+
+#==============================================================================
+# Line
+#==============================================================================
+compound Line( a:XY, b:XY )
+  SETTINGS
+    #render_mode = RenderMode( RenderMode.option_blend, RenderMode.blend_src_alpha, RenderMode.blend_inverse_src_alpha )
+    render_mode = RenderMode( 0 )
+
+  METHODS
+    method create( x1:Real, y1:Real, x2:Real, y2:Real )->Line
+      return Line( XY(x1,y1), XY(x2,y2) )
+
+    method at( t:Real )->XY
+      return a + (b - a) * t
+
+    method draw( color:Integer )
+      Graphics.set_render_mode( render_mode.value )
+      Graphics.draw_line( a.x, a.y, b.x, b.y, color )
+
+    method intersection( other:Line )->XY
+      # Returns the point of intersection between line1 and line 2
+      # or XY.invalid ("XY(infinity,infinity)") if there is no intersection.
+      #
+      # Example:
+      #   local var intersection = line1.intersection(other) 
+      #   if (intersection != XY.invalid ) ...
+      local P1 = this.a
+      local P2 = this.b
+      local P3 = other.a
+      local P4 = other.b
+      local A = P2 - P1
+      local B = P4 - P3
+      local C = P3 - P1
+      local denom = B.cross(A)
+      local t0 = B.cross(C) / denom
+      local t1 = A.cross(C) / denom
+      if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0)
+        return XY(XY.infinity,XY.infinity)
+      endIf
+      return P1 + t0 * A
+endCompound
+

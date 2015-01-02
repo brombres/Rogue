@@ -1,0 +1,150 @@
+class Table<<$KeyType:Object,$ValueType:Object>>
+  PROPERTIES
+    bin_mask : Integer
+    bins     : TableEntry<<$KeyType,$ValueType>>[]
+    keys     : $KeyType[]
+
+  METHODS
+    method init
+      init( 16 )
+
+    method init( bin_count:Integer )
+      local bins_power_of_2 = 1
+      while (bins_power_of_2 < bin_count) bins_power_of_2 = bins_power_of_2 :<<: 1
+      bin_count = bins_power_of_2
+      bin_mask = bin_count - 1
+
+      bins = TableEntry<<$KeyType,$ValueType>>[]( bin_count, null )
+      keys = $KeyType[]
+
+    method init( other:Table<<$KeyType,$ValueType>> )
+      bin_mask = other.bin_mask
+      bins = other.bins.clone
+      keys = other.keys.clone
+
+    method add( other:Table<<$KeyType,$ValueType>> )->Table<<$KeyType,$ValueType>>
+      forEach (key in other.keys) this[key] = other[key]
+      return this
+
+    method at( index:Integer )->$ValueType
+      return get( keys[index] )
+
+    method clear
+      forEach (i of bins) bins[i] = null
+      keys.clear
+
+    method clone->Table<<$KeyType,$ValueType>>
+      return Table<<$KeyType,$ValueType>>( this )
+
+    method contains( key:$KeyType )->Logical
+      return find(key)?
+
+    method count->Integer
+      return keys.count
+
+    method find( key:$KeyType )->TableEntry<<$KeyType,$ValueType>>
+      local hash = key.hash_code
+      local entry = bins[ hash & bin_mask ]
+
+      while (entry?)
+        if (entry.hash == hash and entry.key == key) return entry
+        entry = entry.next_entry
+      endWhile
+
+      return null
+
+    method get( key:$KeyType )->$ValueType
+      local entry = find( key )
+      if (entry?)
+        return entry.value
+      else
+        local default_value : $ValueType
+        return default_value
+      endIf
+
+    method remove( key:$KeyType )->$ValueType
+      local hash = key.hash_code
+      local index = hash & bin_mask
+      local entry = bins[ index ]
+
+      keys.remove( key )
+
+      if (entry.hash == hash and entry.key == key)
+        # First item in hash bin
+        local result = entry.value
+        bins[index] = entry.next_entry
+        return entry.value
+      endIf
+
+      local next_entry = entry.next_entry
+      while (next_entry?)
+        # Later item in hash bin
+        if (next_entry.hash == hash and next_entry.key == key)
+          local result = entry.value
+          entry.next_entry = next_entry.next_entry
+          return result
+        endIf
+        entry = next_entry
+        next_entry = entry.next_entry
+      endWhile
+
+      local default_zero_value : $ValueType
+      return default_zero_value
+
+    method set( key:$KeyType, value:$ValueType )
+      local hash = key.hash_code
+      local index = hash & bin_mask
+      local entry = bins[ index ]
+
+      while (entry?)
+        if (entry.hash == hash and entry.key == key)
+          entry.value = value
+          return
+        endIf
+        entry = entry.next_entry
+      endWhile
+
+      entry = TableEntry<<$KeyType,$ValueType>>( key, value, hash )
+      entry.next_entry = bins[ index ]
+      bins[index] = entry
+
+      keys.add( key )
+
+
+    alias set_keys( key_list, value_fn ) => TableOps<<$KeyType,$ValueType>>.set_keys( this, key_list, value_fn )
+
+    alias set_values( value_list, key_fn ) => TableOps<<$KeyType,$ValueType>>.set_values( this, value_list, key_fn )
+
+    method to->String
+      return print_to( StringBuilder() )->String
+
+    method print_to( buffer:StringBuilder )->StringBuilder
+      buffer.print( '{' )
+      local i = 0
+      while (i < keys.count)
+        if (i > 0) buffer.print( ',' )
+        local key = keys[i]
+        buffer.print( key )
+        buffer.print( ':' )
+        buffer.print( this[key] )
+        ++i
+      endWhile
+      buffer.print( '}' )
+      return buffer
+
+endClass
+
+class TableEntry<<$KeyType:Object,$ValueType:Object>>
+  PROPERTIES
+    key        : $KeyType
+    value      : $ValueType
+    next_entry : TableEntry<<$KeyType,$ValueType>>
+    hash       : Integer
+
+  METHODS
+    method init( _key:$KeyType, _value:$ValueType, _hash:Integer )
+      key = _key
+      value = _value
+      hash = _hash
+endClass
+

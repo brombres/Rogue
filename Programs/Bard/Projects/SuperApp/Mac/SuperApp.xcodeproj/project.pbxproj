@@ -1,0 +1,775 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		30415B5019201D0700755DC0 /* SuperBitmap.c in Sources */ = {isa = PBXBuildFile; fileRef = 30415B4E19201D0700755DC0 /* SuperBitmap.c */; };
+		30460B631915767800012E80 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30460B621915767800012E80 /* Cocoa.framework */; };
+		30460B6D1915767800012E80 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 30460B6B1915767800012E80 /* InfoPlist.strings */; };
+		30460B6F1915767800012E80 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 30460B6E1915767800012E80 /* main.m */; };
+		30460B731915767800012E80 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 30460B711915767800012E80 /* Credits.rtf */; };
+		30460B761915767800012E80 /* SuperAppAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 30460B751915767800012E80 /* SuperAppAppDelegate.m */; };
+		30460B791915767800012E80 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30460B771915767800012E80 /* MainMenu.xib */; };
+		30460B7B1915767800012E80 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30460B7A1915767800012E80 /* Images.xcassets */; };
+		30460B821915767800012E80 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30460B811915767800012E80 /* XCTest.framework */; };
+		30460B831915767800012E80 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30460B621915767800012E80 /* Cocoa.framework */; };
+		30460B8B1915767800012E80 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 30460B891915767800012E80 /* InfoPlist.strings */; };
+		30460B8D1915767800012E80 /* SuperAppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 30460B8C1915767800012E80 /* SuperAppTests.m */; };
+		30460B9C191578A100012E80 /* SuperNSView.m in Sources */ = {isa = PBXBuildFile; fileRef = 30460B9B191578A100012E80 /* SuperNSView.m */; };
+		30460B9E1915C75000012E80 /* SuperGraphics-GL.c in Sources */ = {isa = PBXBuildFile; fileRef = 30460B9D1915C75000012E80 /* SuperGraphics-GL.c */; };
+		30460BA71915C76B00012E80 /* Super.c in Sources */ = {isa = PBXBuildFile; fileRef = 30460B9F1915C76B00012E80 /* Super.c */; };
+		30460BA81915C76B00012E80 /* SuperEventSystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 30460BA11915C76B00012E80 /* SuperEventSystem.c */; };
+		30460BA91915C76B00012E80 /* SuperFileSystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 30460BA31915C76B00012E80 /* SuperFileSystem.c */; };
+		30460BAA1915C76B00012E80 /* SuperGraphics.c in Sources */ = {isa = PBXBuildFile; fileRef = 30460BA51915C76B00012E80 /* SuperGraphics.c */; };
+		30610289194A22AA00F13988 /* arial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 30610288194A22AA00F13988 /* arial.ttf */; };
+		30E3D9E4191EFEC2002861C8 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E3D9E3191EFEC2002861C8 /* libpng.a */; };
+		30E3D9FA191EFF50002861C8 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E3D9F9191EFF50002861C8 /* libz.dylib */; };
+		30E3D9FC191EFFBB002861C8 /* SuperGraphics-LibPNG.c in Sources */ = {isa = PBXBuildFile; fileRef = 30E3D9FB191EFFBB002861C8 /* SuperGraphics-LibPNG.c */; };
+		30E3D9FE191F01FD002861C8 /* HatersGonnaHate.png in Resources */ = {isa = PBXBuildFile; fileRef = 30E3D9FD191F01FD002861C8 /* HatersGonnaHate.png */; };
+		30E3DA36191FE325002861C8 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E3DA35191FE325002861C8 /* libfreetype.a */; };
+		30E3DA39191FF32E002861C8 /* Super-Mac.m in Sources */ = {isa = PBXBuildFile; fileRef = 30E3DA38191FF32E002861C8 /* Super-Mac.m */; };
+		30E3DA3C19200450002861C8 /* SuperFontSystem-FreeType.c in Sources */ = {isa = PBXBuildFile; fileRef = 30E3DA3B19200450002861C8 /* SuperFontSystem-FreeType.c */; };
+		30E3DA3E19200646002861C8 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 30E3DA3D19200646002861C8 /* libbz2.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		30460B841915767800012E80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 30460B571915767800012E80 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 30460B5E1915767800012E80;
+			remoteInfo = SuperApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		30415B4E19201D0700755DC0 /* SuperBitmap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SuperBitmap.c; path = ../../../../Libraries/Super/SuperBitmap.c; sourceTree = "<group>"; };
+		30415B4F19201D0700755DC0 /* SuperBitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperBitmap.h; path = ../../../../Libraries/Super/SuperBitmap.h; sourceTree = "<group>"; };
+		30460B5F1915767800012E80 /* SuperApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		30460B621915767800012E80 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		30460B651915767800012E80 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		30460B661915767800012E80 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		30460B671915767800012E80 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		30460B6A1915767800012E80 /* SuperApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SuperApp-Info.plist"; sourceTree = "<group>"; };
+		30460B6C1915767800012E80 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		30460B6E1915767800012E80 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		30460B701915767800012E80 /* SuperApp-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SuperApp-Prefix.pch"; sourceTree = "<group>"; };
+		30460B721915767800012E80 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		30460B741915767800012E80 /* SuperAppAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SuperAppAppDelegate.h; sourceTree = "<group>"; };
+		30460B751915767800012E80 /* SuperAppAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SuperAppAppDelegate.m; sourceTree = "<group>"; };
+		30460B781915767800012E80 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		30460B7A1915767800012E80 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		30460B801915767800012E80 /* SuperAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		30460B811915767800012E80 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		30460B881915767800012E80 /* SuperAppTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SuperAppTests-Info.plist"; sourceTree = "<group>"; };
+		30460B8A1915767800012E80 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		30460B8C1915767800012E80 /* SuperAppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SuperAppTests.m; sourceTree = "<group>"; };
+		30460B9A191578A100012E80 /* SuperNSView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperNSView.h; path = ../../../../Libraries/Super/Mac/SuperNSView.h; sourceTree = "<group>"; };
+		30460B9B191578A100012E80 /* SuperNSView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SuperNSView.m; path = ../../../../Libraries/Super/Mac/SuperNSView.m; sourceTree = "<group>"; };
+		30460B9D1915C75000012E80 /* SuperGraphics-GL.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "SuperGraphics-GL.c"; path = "../../../../Libraries/Super/GL/SuperGraphics-GL.c"; sourceTree = "<group>"; };
+		30460B9F1915C76B00012E80 /* Super.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Super.c; path = ../../../../Libraries/Super/Super.c; sourceTree = "<group>"; };
+		30460BA01915C76B00012E80 /* Super.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Super.h; path = ../../../../Libraries/Super/Super.h; sourceTree = "<group>"; };
+		30460BA11915C76B00012E80 /* SuperEventSystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SuperEventSystem.c; path = ../../../../Libraries/Super/SuperEventSystem.c; sourceTree = "<group>"; };
+		30460BA21915C76B00012E80 /* SuperEventSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperEventSystem.h; path = ../../../../Libraries/Super/SuperEventSystem.h; sourceTree = "<group>"; };
+		30460BA31915C76B00012E80 /* SuperFileSystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SuperFileSystem.c; path = ../../../../Libraries/Super/SuperFileSystem.c; sourceTree = "<group>"; };
+		30460BA41915C76B00012E80 /* SuperFileSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperFileSystem.h; path = ../../../../Libraries/Super/SuperFileSystem.h; sourceTree = "<group>"; };
+		30460BA51915C76B00012E80 /* SuperGraphics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SuperGraphics.c; path = ../../../../Libraries/Super/SuperGraphics.c; sourceTree = "<group>"; };
+		30460BA61915C76B00012E80 /* SuperGraphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperGraphics.h; path = ../../../../Libraries/Super/SuperGraphics.h; sourceTree = "<group>"; };
+		30610288194A22AA00F13988 /* arial.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = arial.ttf; sourceTree = "<group>"; };
+		30E3D9E3191EFEC2002861C8 /* libpng.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng.a; path = ../Mac/libpng.a; sourceTree = "<group>"; };
+		30E3D9E6191EFEE2002861C8 /* png.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = png.h; sourceTree = "<group>"; };
+		30E3D9E7191EFEE2002861C8 /* pngconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngconf.h; sourceTree = "<group>"; };
+		30E3D9E8191EFEE2002861C8 /* pngdebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngdebug.h; sourceTree = "<group>"; };
+		30E3D9E9191EFEE2002861C8 /* pnginfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pnginfo.h; sourceTree = "<group>"; };
+		30E3D9EA191EFEE2002861C8 /* pnglibconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pnglibconf.h; sourceTree = "<group>"; };
+		30E3D9EB191EFEE2002861C8 /* pngpriv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngpriv.h; sourceTree = "<group>"; };
+		30E3D9EC191EFEE2002861C8 /* pngstruct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngstruct.h; sourceTree = "<group>"; };
+		30E3D9EE191EFEFF002861C8 /* crc32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crc32.h; sourceTree = "<group>"; };
+		30E3D9EF191EFEFF002861C8 /* deflate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deflate.h; sourceTree = "<group>"; };
+		30E3D9F0191EFEFF002861C8 /* gzguts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gzguts.h; sourceTree = "<group>"; };
+		30E3D9F1191EFEFF002861C8 /* inffast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = inffast.h; sourceTree = "<group>"; };
+		30E3D9F2191EFEFF002861C8 /* inffixed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = inffixed.h; sourceTree = "<group>"; };
+		30E3D9F3191EFEFF002861C8 /* inflate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = inflate.h; sourceTree = "<group>"; };
+		30E3D9F4191EFEFF002861C8 /* inftrees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = inftrees.h; sourceTree = "<group>"; };
+		30E3D9F5191EFEFF002861C8 /* trees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = trees.h; sourceTree = "<group>"; };
+		30E3D9F6191EFEFF002861C8 /* zconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zconf.h; sourceTree = "<group>"; };
+		30E3D9F7191EFEFF002861C8 /* zlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zlib.h; sourceTree = "<group>"; };
+		30E3D9F8191EFEFF002861C8 /* zutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zutil.h; sourceTree = "<group>"; };
+		30E3D9F9191EFF50002861C8 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		30E3D9FB191EFFBB002861C8 /* SuperGraphics-LibPNG.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "SuperGraphics-LibPNG.c"; path = "../../../../Libraries/Super/LibPNG/SuperGraphics-LibPNG.c"; sourceTree = "<group>"; };
+		30E3D9FD191F01FD002861C8 /* HatersGonnaHate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = HatersGonnaHate.png; path = ../../../../Test/HatersGonnaHate.png; sourceTree = "<group>"; };
+		30E3DA01191FDF20002861C8 /* ftconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ftconfig.h; sourceTree = "<group>"; };
+		30E3DA02191FDF20002861C8 /* ftheader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ftheader.h; sourceTree = "<group>"; };
+		30E3DA03191FDF20002861C8 /* ftmodule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ftmodule.h; sourceTree = "<group>"; };
+		30E3DA04191FDF20002861C8 /* ftoption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ftoption.h; sourceTree = "<group>"; };
+		30E3DA05191FDF20002861C8 /* ftstdlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ftstdlib.h; sourceTree = "<group>"; };
+		30E3DA06191FDF20002861C8 /* freetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = freetype.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/freetype.h; sourceTree = "<group>"; };
+		30E3DA07191FDF20002861C8 /* ft2build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ft2build.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ft2build.h; sourceTree = "<group>"; };
+		30E3DA08191FDF20002861C8 /* ftadvanc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftadvanc.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftadvanc.h; sourceTree = "<group>"; };
+		30E3DA09191FDF20002861C8 /* ftautoh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftautoh.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftautoh.h; sourceTree = "<group>"; };
+		30E3DA0A191FDF20002861C8 /* ftbbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftbbox.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftbbox.h; sourceTree = "<group>"; };
+		30E3DA0B191FDF20002861C8 /* ftbdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftbdf.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftbdf.h; sourceTree = "<group>"; };
+		30E3DA0C191FDF20002861C8 /* ftbitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftbitmap.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftbitmap.h; sourceTree = "<group>"; };
+		30E3DA0D191FDF20002861C8 /* ftbzip2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftbzip2.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftbzip2.h; sourceTree = "<group>"; };
+		30E3DA0E191FDF20002861C8 /* ftcache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftcache.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftcache.h; sourceTree = "<group>"; };
+		30E3DA0F191FDF20002861C8 /* ftcffdrv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftcffdrv.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftcffdrv.h; sourceTree = "<group>"; };
+		30E3DA10191FDF20002861C8 /* ftchapters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftchapters.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftchapters.h; sourceTree = "<group>"; };
+		30E3DA11191FDF20002861C8 /* ftcid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftcid.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftcid.h; sourceTree = "<group>"; };
+		30E3DA12191FDF20002861C8 /* fterrdef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fterrdef.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/fterrdef.h; sourceTree = "<group>"; };
+		30E3DA13191FDF20002861C8 /* fterrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fterrors.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/fterrors.h; sourceTree = "<group>"; };
+		30E3DA14191FDF20002861C8 /* ftgasp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftgasp.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftgasp.h; sourceTree = "<group>"; };
+		30E3DA15191FDF20002861C8 /* ftglyph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftglyph.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftglyph.h; sourceTree = "<group>"; };
+		30E3DA16191FDF20002861C8 /* ftgxval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftgxval.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftgxval.h; sourceTree = "<group>"; };
+		30E3DA17191FDF20002861C8 /* ftgzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftgzip.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftgzip.h; sourceTree = "<group>"; };
+		30E3DA18191FDF20002861C8 /* ftimage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftimage.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftimage.h; sourceTree = "<group>"; };
+		30E3DA19191FDF20002861C8 /* ftincrem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftincrem.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftincrem.h; sourceTree = "<group>"; };
+		30E3DA1A191FDF20002861C8 /* ftlcdfil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftlcdfil.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftlcdfil.h; sourceTree = "<group>"; };
+		30E3DA1B191FDF20002861C8 /* ftlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftlist.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftlist.h; sourceTree = "<group>"; };
+		30E3DA1C191FDF20002861C8 /* ftlzw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftlzw.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftlzw.h; sourceTree = "<group>"; };
+		30E3DA1D191FDF20002861C8 /* ftmac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftmac.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftmac.h; sourceTree = "<group>"; };
+		30E3DA1E191FDF20002861C8 /* ftmm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftmm.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftmm.h; sourceTree = "<group>"; };
+		30E3DA1F191FDF20002861C8 /* ftmodapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftmodapi.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftmodapi.h; sourceTree = "<group>"; };
+		30E3DA20191FDF20002861C8 /* ftmoderr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftmoderr.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftmoderr.h; sourceTree = "<group>"; };
+		30E3DA21191FDF20002861C8 /* ftotval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftotval.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftotval.h; sourceTree = "<group>"; };
+		30E3DA22191FDF20002861C8 /* ftoutln.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftoutln.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftoutln.h; sourceTree = "<group>"; };
+		30E3DA23191FDF20002861C8 /* ftpfr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftpfr.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftpfr.h; sourceTree = "<group>"; };
+		30E3DA24191FDF20002861C8 /* ftrender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftrender.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftrender.h; sourceTree = "<group>"; };
+		30E3DA25191FDF20002861C8 /* ftsizes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftsizes.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftsizes.h; sourceTree = "<group>"; };
+		30E3DA26191FDF20002861C8 /* ftsnames.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftsnames.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftsnames.h; sourceTree = "<group>"; };
+		30E3DA27191FDF20002861C8 /* ftstroke.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftstroke.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftstroke.h; sourceTree = "<group>"; };
+		30E3DA28191FDF20002861C8 /* ftsynth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftsynth.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftsynth.h; sourceTree = "<group>"; };
+		30E3DA29191FDF20002861C8 /* ftsystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftsystem.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftsystem.h; sourceTree = "<group>"; };
+		30E3DA2A191FDF20002861C8 /* fttrigon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fttrigon.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/fttrigon.h; sourceTree = "<group>"; };
+		30E3DA2B191FDF20002861C8 /* ftttdrv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftttdrv.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftttdrv.h; sourceTree = "<group>"; };
+		30E3DA2C191FDF20002861C8 /* fttypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fttypes.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/fttypes.h; sourceTree = "<group>"; };
+		30E3DA2D191FDF20002861C8 /* ftwinfnt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftwinfnt.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftwinfnt.h; sourceTree = "<group>"; };
+		30E3DA2E191FDF20002861C8 /* ftxf86.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ftxf86.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ftxf86.h; sourceTree = "<group>"; };
+		30E3DA2F191FDF20002861C8 /* t1tables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = t1tables.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/t1tables.h; sourceTree = "<group>"; };
+		30E3DA30191FDF20002861C8 /* ttnameid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ttnameid.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ttnameid.h; sourceTree = "<group>"; };
+		30E3DA31191FDF20002861C8 /* tttables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tttables.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/tttables.h; sourceTree = "<group>"; };
+		30E3DA32191FDF20002861C8 /* tttags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tttags.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/tttags.h; sourceTree = "<group>"; };
+		30E3DA33191FDF20002861C8 /* ttunpat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ttunpat.h; path = ../../../../Libraries/FreeType/Mac/include/freetype2/ttunpat.h; sourceTree = "<group>"; };
+		30E3DA35191FE325002861C8 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../../../Libraries/FreeType/Mac/libfreetype.a; sourceTree = "<group>"; };
+		30E3DA37191FF32E002861C8 /* Super-Mac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Super-Mac.h"; path = "../../../../Libraries/Super/Mac/Super-Mac.h"; sourceTree = "<group>"; };
+		30E3DA38191FF32E002861C8 /* Super-Mac.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Super-Mac.m"; path = "../../../../Libraries/Super/Mac/Super-Mac.m"; sourceTree = "<group>"; };
+		30E3DA3A1920043E002861C8 /* SuperFontSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SuperFontSystem.h; path = ../../../../Libraries/Super/SuperFontSystem.h; sourceTree = "<group>"; };
+		30E3DA3B19200450002861C8 /* SuperFontSystem-FreeType.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "SuperFontSystem-FreeType.c"; path = "../../../../Libraries/Super/FreeType/SuperFontSystem-FreeType.c"; sourceTree = "<group>"; };
+		30E3DA3D19200646002861C8 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		30460B5C1915767800012E80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30E3DA3E19200646002861C8 /* libbz2.dylib in Frameworks */,
+				30E3D9FA191EFF50002861C8 /* libz.dylib in Frameworks */,
+				30460B631915767800012E80 /* Cocoa.framework in Frameworks */,
+				30E3D9E4191EFEC2002861C8 /* libpng.a in Frameworks */,
+				30E3DA36191FE325002861C8 /* libfreetype.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		30460B7D1915767800012E80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30460B831915767800012E80 /* Cocoa.framework in Frameworks */,
+				30460B821915767800012E80 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		30460B561915767800012E80 = {
+			isa = PBXGroup;
+			children = (
+				30460B681915767800012E80 /* SuperApp */,
+				30460B861915767800012E80 /* SuperAppTests */,
+				30460B611915767800012E80 /* Frameworks */,
+				30460B601915767800012E80 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		30460B601915767800012E80 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				30460B5F1915767800012E80 /* SuperApp.app */,
+				30460B801915767800012E80 /* SuperAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		30460B611915767800012E80 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				30E3DA3D19200646002861C8 /* libbz2.dylib */,
+				30E3D9F9191EFF50002861C8 /* libz.dylib */,
+				30460B621915767800012E80 /* Cocoa.framework */,
+				30460B811915767800012E80 /* XCTest.framework */,
+				30460B641915767800012E80 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		30460B641915767800012E80 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				30460B651915767800012E80 /* AppKit.framework */,
+				30460B661915767800012E80 /* CoreData.framework */,
+				30460B671915767800012E80 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		30460B681915767800012E80 /* SuperApp */ = {
+			isa = PBXGroup;
+			children = (
+				30E3DA3F192007FE002861C8 /* Images */,
+				30E3DA34191FE2F6002861C8 /* FreeType */,
+				30E3D9ED191EFEFF002861C8 /* ZLib */,
+				30E3D9E5191EFEE2002861C8 /* LibPNG */,
+				30460B961915772900012E80 /* Super */,
+				30460B741915767800012E80 /* SuperAppAppDelegate.h */,
+				30460B751915767800012E80 /* SuperAppAppDelegate.m */,
+				30460B771915767800012E80 /* MainMenu.xib */,
+				30460B7A1915767800012E80 /* Images.xcassets */,
+				30460B691915767800012E80 /* Supporting Files */,
+			);
+			path = SuperApp;
+			sourceTree = "<group>";
+		};
+		30460B691915767800012E80 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				30460B6A1915767800012E80 /* SuperApp-Info.plist */,
+				30460B6B1915767800012E80 /* InfoPlist.strings */,
+				30460B6E1915767800012E80 /* main.m */,
+				30460B701915767800012E80 /* SuperApp-Prefix.pch */,
+				30460B711915767800012E80 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		30460B861915767800012E80 /* SuperAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				30460B8C1915767800012E80 /* SuperAppTests.m */,
+				30460B871915767800012E80 /* Supporting Files */,
+			);
+			path = SuperAppTests;
+			sourceTree = "<group>";
+		};
+		30460B871915767800012E80 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				30460B881915767800012E80 /* SuperAppTests-Info.plist */,
+				30460B891915767800012E80 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		30460B961915772900012E80 /* Super */ = {
+			isa = PBXGroup;
+			children = (
+				30415B4E19201D0700755DC0 /* SuperBitmap.c */,
+				30415B4F19201D0700755DC0 /* SuperBitmap.h */,
+				30E3DA3B19200450002861C8 /* SuperFontSystem-FreeType.c */,
+				30E3DA3A1920043E002861C8 /* SuperFontSystem.h */,
+				30E3DA37191FF32E002861C8 /* Super-Mac.h */,
+				30E3DA38191FF32E002861C8 /* Super-Mac.m */,
+				30E3D9FB191EFFBB002861C8 /* SuperGraphics-LibPNG.c */,
+				30460B9F1915C76B00012E80 /* Super.c */,
+				30460BA01915C76B00012E80 /* Super.h */,
+				30460BA11915C76B00012E80 /* SuperEventSystem.c */,
+				30460BA21915C76B00012E80 /* SuperEventSystem.h */,
+				30460BA31915C76B00012E80 /* SuperFileSystem.c */,
+				30460BA41915C76B00012E80 /* SuperFileSystem.h */,
+				30460BA51915C76B00012E80 /* SuperGraphics.c */,
+				30460BA61915C76B00012E80 /* SuperGraphics.h */,
+				30460B9D1915C75000012E80 /* SuperGraphics-GL.c */,
+				30460B9A191578A100012E80 /* SuperNSView.h */,
+				30460B9B191578A100012E80 /* SuperNSView.m */,
+			);
+			name = Super;
+			sourceTree = "<group>";
+		};
+		30E3D9E5191EFEE2002861C8 /* LibPNG */ = {
+			isa = PBXGroup;
+			children = (
+				30E3D9E3191EFEC2002861C8 /* libpng.a */,
+				30E3D9E6191EFEE2002861C8 /* png.h */,
+				30E3D9E7191EFEE2002861C8 /* pngconf.h */,
+				30E3D9E8191EFEE2002861C8 /* pngdebug.h */,
+				30E3D9E9191EFEE2002861C8 /* pnginfo.h */,
+				30E3D9EA191EFEE2002861C8 /* pnglibconf.h */,
+				30E3D9EB191EFEE2002861C8 /* pngpriv.h */,
+				30E3D9EC191EFEE2002861C8 /* pngstruct.h */,
+			);
+			name = LibPNG;
+			path = ../../../../Libraries/LibPNG/Include;
+			sourceTree = "<group>";
+		};
+		30E3D9ED191EFEFF002861C8 /* ZLib */ = {
+			isa = PBXGroup;
+			children = (
+				30E3D9EE191EFEFF002861C8 /* crc32.h */,
+				30E3D9EF191EFEFF002861C8 /* deflate.h */,
+				30E3D9F0191EFEFF002861C8 /* gzguts.h */,
+				30E3D9F1191EFEFF002861C8 /* inffast.h */,
+				30E3D9F2191EFEFF002861C8 /* inffixed.h */,
+				30E3D9F3191EFEFF002861C8 /* inflate.h */,
+				30E3D9F4191EFEFF002861C8 /* inftrees.h */,
+				30E3D9F5191EFEFF002861C8 /* trees.h */,
+				30E3D9F6191EFEFF002861C8 /* zconf.h */,
+				30E3D9F7191EFEFF002861C8 /* zlib.h */,
+				30E3D9F8191EFEFF002861C8 /* zutil.h */,
+			);
+			name = ZLib;
+			path = ../../../../Libraries/ZLib/Include;
+			sourceTree = "<group>";
+		};
+		30E3D9FF191FDEA0002861C8 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				30E3DA00191FDF20002861C8 /* config */,
+				30E3DA06191FDF20002861C8 /* freetype.h */,
+				30E3DA07191FDF20002861C8 /* ft2build.h */,
+				30E3DA08191FDF20002861C8 /* ftadvanc.h */,
+				30E3DA09191FDF20002861C8 /* ftautoh.h */,
+				30E3DA0A191FDF20002861C8 /* ftbbox.h */,
+				30E3DA0B191FDF20002861C8 /* ftbdf.h */,
+				30E3DA0C191FDF20002861C8 /* ftbitmap.h */,
+				30E3DA0D191FDF20002861C8 /* ftbzip2.h */,
+				30E3DA0E191FDF20002861C8 /* ftcache.h */,
+				30E3DA0F191FDF20002861C8 /* ftcffdrv.h */,
+				30E3DA10191FDF20002861C8 /* ftchapters.h */,
+				30E3DA11191FDF20002861C8 /* ftcid.h */,
+				30E3DA12191FDF20002861C8 /* fterrdef.h */,
+				30E3DA13191FDF20002861C8 /* fterrors.h */,
+				30E3DA14191FDF20002861C8 /* ftgasp.h */,
+				30E3DA15191FDF20002861C8 /* ftglyph.h */,
+				30E3DA16191FDF20002861C8 /* ftgxval.h */,
+				30E3DA17191FDF20002861C8 /* ftgzip.h */,
+				30E3DA18191FDF20002861C8 /* ftimage.h */,
+				30E3DA19191FDF20002861C8 /* ftincrem.h */,
+				30E3DA1A191FDF20002861C8 /* ftlcdfil.h */,
+				30E3DA1B191FDF20002861C8 /* ftlist.h */,
+				30E3DA1C191FDF20002861C8 /* ftlzw.h */,
+				30E3DA1D191FDF20002861C8 /* ftmac.h */,
+				30E3DA1E191FDF20002861C8 /* ftmm.h */,
+				30E3DA1F191FDF20002861C8 /* ftmodapi.h */,
+				30E3DA20191FDF20002861C8 /* ftmoderr.h */,
+				30E3DA21191FDF20002861C8 /* ftotval.h */,
+				30E3DA22191FDF20002861C8 /* ftoutln.h */,
+				30E3DA23191FDF20002861C8 /* ftpfr.h */,
+				30E3DA24191FDF20002861C8 /* ftrender.h */,
+				30E3DA25191FDF20002861C8 /* ftsizes.h */,
+				30E3DA26191FDF20002861C8 /* ftsnames.h */,
+				30E3DA27191FDF20002861C8 /* ftstroke.h */,
+				30E3DA28191FDF20002861C8 /* ftsynth.h */,
+				30E3DA29191FDF20002861C8 /* ftsystem.h */,
+				30E3DA2A191FDF20002861C8 /* fttrigon.h */,
+				30E3DA2B191FDF20002861C8 /* ftttdrv.h */,
+				30E3DA2C191FDF20002861C8 /* fttypes.h */,
+				30E3DA2D191FDF20002861C8 /* ftwinfnt.h */,
+				30E3DA2E191FDF20002861C8 /* ftxf86.h */,
+				30E3DA2F191FDF20002861C8 /* t1tables.h */,
+				30E3DA30191FDF20002861C8 /* ttnameid.h */,
+				30E3DA31191FDF20002861C8 /* tttables.h */,
+				30E3DA32191FDF20002861C8 /* tttags.h */,
+				30E3DA33191FDF20002861C8 /* ttunpat.h */,
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+		30E3DA00191FDF20002861C8 /* config */ = {
+			isa = PBXGroup;
+			children = (
+				30E3DA01191FDF20002861C8 /* ftconfig.h */,
+				30E3DA02191FDF20002861C8 /* ftheader.h */,
+				30E3DA03191FDF20002861C8 /* ftmodule.h */,
+				30E3DA04191FDF20002861C8 /* ftoption.h */,
+				30E3DA05191FDF20002861C8 /* ftstdlib.h */,
+			);
+			name = config;
+			path = ../../../../Libraries/FreeType/Mac/include/freetype2/config;
+			sourceTree = "<group>";
+		};
+		30E3DA34191FE2F6002861C8 /* FreeType */ = {
+			isa = PBXGroup;
+			children = (
+				30E3DA35191FE325002861C8 /* libfreetype.a */,
+				30E3D9FF191FDEA0002861C8 /* include */,
+			);
+			name = FreeType;
+			sourceTree = "<group>";
+		};
+		30E3DA3F192007FE002861C8 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				30610288194A22AA00F13988 /* arial.ttf */,
+				30E3D9FD191F01FD002861C8 /* HatersGonnaHate.png */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		30460B5E1915767800012E80 /* SuperApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 30460B901915767800012E80 /* Build configuration list for PBXNativeTarget "SuperApp" */;
+			buildPhases = (
+				30460B5B1915767800012E80 /* Sources */,
+				30460B5C1915767800012E80 /* Frameworks */,
+				30460B5D1915767800012E80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SuperApp;
+			productName = SuperApp;
+			productReference = 30460B5F1915767800012E80 /* SuperApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		30460B7F1915767800012E80 /* SuperAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 30460B931915767800012E80 /* Build configuration list for PBXNativeTarget "SuperAppTests" */;
+			buildPhases = (
+				30460B7C1915767800012E80 /* Sources */,
+				30460B7D1915767800012E80 /* Frameworks */,
+				30460B7E1915767800012E80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				30460B851915767800012E80 /* PBXTargetDependency */,
+			);
+			name = SuperAppTests;
+			productName = SuperAppTests;
+			productReference = 30460B801915767800012E80 /* SuperAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		30460B571915767800012E80 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = SuperApp;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = Plasmaworks;
+				TargetAttributes = {
+					30460B7F1915767800012E80 = {
+						TestTargetID = 30460B5E1915767800012E80;
+					};
+				};
+			};
+			buildConfigurationList = 30460B5A1915767800012E80 /* Build configuration list for PBXProject "SuperApp" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 30460B561915767800012E80;
+			productRefGroup = 30460B601915767800012E80 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				30460B5E1915767800012E80 /* SuperApp */,
+				30460B7F1915767800012E80 /* SuperAppTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		30460B5D1915767800012E80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30460B6D1915767800012E80 /* InfoPlist.strings in Resources */,
+				30460B7B1915767800012E80 /* Images.xcassets in Resources */,
+				30460B731915767800012E80 /* Credits.rtf in Resources */,
+				30E3D9FE191F01FD002861C8 /* HatersGonnaHate.png in Resources */,
+				30610289194A22AA00F13988 /* arial.ttf in Resources */,
+				30460B791915767800012E80 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		30460B7E1915767800012E80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30460B8B1915767800012E80 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		30460B5B1915767800012E80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30460BAA1915C76B00012E80 /* SuperGraphics.c in Sources */,
+				30460B761915767800012E80 /* SuperAppAppDelegate.m in Sources */,
+				30E3D9FC191EFFBB002861C8 /* SuperGraphics-LibPNG.c in Sources */,
+				30460B6F1915767800012E80 /* main.m in Sources */,
+				30460BA91915C76B00012E80 /* SuperFileSystem.c in Sources */,
+				30E3DA3C19200450002861C8 /* SuperFontSystem-FreeType.c in Sources */,
+				30E3DA39191FF32E002861C8 /* Super-Mac.m in Sources */,
+				30460BA71915C76B00012E80 /* Super.c in Sources */,
+				30460BA81915C76B00012E80 /* SuperEventSystem.c in Sources */,
+				30460B9C191578A100012E80 /* SuperNSView.m in Sources */,
+				30415B5019201D0700755DC0 /* SuperBitmap.c in Sources */,
+				30460B9E1915C75000012E80 /* SuperGraphics-GL.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		30460B7C1915767800012E80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				30460B8D1915767800012E80 /* SuperAppTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		30460B851915767800012E80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 30460B5E1915767800012E80 /* SuperApp */;
+			targetProxy = 30460B841915767800012E80 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		30460B6B1915767800012E80 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				30460B6C1915767800012E80 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		30460B711915767800012E80 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				30460B721915767800012E80 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		30460B771915767800012E80 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				30460B781915767800012E80 /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		30460B891915767800012E80 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				30460B8A1915767800012E80 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		30460B8E1915767800012E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		30460B8F1915767800012E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		30460B911915767800012E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "SuperApp/SuperApp-Prefix.pch";
+				INFOPLIST_FILE = "SuperApp/SuperApp-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					../../../Libraries/LibPNG/Mac,
+					../../../Libraries/FreeType/Mac,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../../Libraries/FreeType/Mac/include/**";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		30460B921915767800012E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "SuperApp/SuperApp-Prefix.pch";
+				INFOPLIST_FILE = "SuperApp/SuperApp-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					../../../Libraries/LibPNG/Mac,
+					../../../Bard/Libraries/FreeType/Mac,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../../Libraries/FreeType/Mac/include/**";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		30460B941915767800012E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/SuperApp.app/Contents/MacOS/SuperApp";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "SuperApp/SuperApp-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "SuperAppTests/SuperAppTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		30460B951915767800012E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/SuperApp.app/Contents/MacOS/SuperApp";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "SuperApp/SuperApp-Prefix.pch";
+				INFOPLIST_FILE = "SuperAppTests/SuperAppTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		30460B5A1915767800012E80 /* Build configuration list for PBXProject "SuperApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				30460B8E1915767800012E80 /* Debug */,
+				30460B8F1915767800012E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		30460B901915767800012E80 /* Build configuration list for PBXNativeTarget "SuperApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				30460B911915767800012E80 /* Debug */,
+				30460B921915767800012E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		30460B931915767800012E80 /* Build configuration list for PBXNativeTarget "SuperAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				30460B941915767800012E80 /* Debug */,
+				30460B951915767800012E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 30460B571915767800012E80 /* Project object */;
+}

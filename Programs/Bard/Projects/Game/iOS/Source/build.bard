@@ -1,0 +1,5 @@
+class BuildTest : GoGo
+  METHODS
+    method build( String cmd )
+      execute( //../../../../Programs/B4 ../../../../Programs/BCC.bc Test.bard --source-folders=../../../../Libraries/Bard --include="Standard.bard;Game.bard" --output=Game.bc// )
+endClass

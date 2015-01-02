@@ -1,0 +1,189 @@
+class Bitmap
+  PROPERTIES
+    width  : Integer
+    height : Integer
+    pixels : Integer[]
+
+  METHODS
+    method create( width, height, data:Array<<Integer>> )->Bitmap  [requisite]
+      return Bitmap( width, height, Integer[](data).ensure_count(width*height) )
+
+    method create( filepath:String )->Bitmap
+      local bmp = Graphics.native_load_bitmap_from_png( filepath )
+      if (bmp?) return bmp
+      return Bitmap(1,1)
+
+    method create( source:Bitmap, subset:Box )->Bitmap
+      local result = Bitmap( subset.width, subset.height )
+      source.blit( subset, result, 0, 0 )
+      return result
+
+    method init( width, height, fill_color=0:Integer )
+      if (fill_color?) pixels = Integer[]( width*height, fill_color )
+      else             pixels = Integer[]( width*height ); pixels.count = width*height
+
+    method init( width, height, pixels )
+
+    method init( source:IndexedBitmap )
+      init( source.width, source.height, source )
+
+    method init( width, height, source:IndexedBitmap )
+      pixels = Integer[]( width*height )
+      local palette = source.palette
+
+      if (palette?)
+        forEach (color in source.pixels) pixels.add( palette[color] )
+      else
+        forEach (color in source.pixels) pixels.add( 0xff000000 | (color:<<:16) | (color:<<:8) | color )
+      endIf
+
+    method init( source:AlphaBitmap, color=Color.white:Integer )
+      init( source.width, source.height, source, color )
+
+    method init( width, height, source:AlphaBitmap, color=Color.white:Integer )
+      pixels = Integer[]( width*height )
+      color &= 0x00ffffff
+      forEach (a in source.pixels) pixels.add( (a:<<:24) | color )
+
+    method add_rows( count:Integer, color=0:Integer )
+      loop count * width
+        pixels.add( color )
+      endLoop
+      height += count
+
+    method blit( target:Bitmap, dest_x:Integer, dest_y:Integer )
+      blit( bounds, target, dest_x, dest_y )
+
+    method blit( subset:Box, target:Bitmap, dest_x:Integer, dest_y:Integer )
+      local w = subset.size.x
+      local h = subset.size.y
+      local src_x1 = subset.position.x            : Integer
+      local src_y1 = subset.position.y            : Integer
+      local src_x2 = src_x1 + (w - 1) : Integer
+      local src_y2 = src_y1 + (h - 1) : Integer
+      local dest_x1 = dest_x
+      local dest_y1 = dest_y
+      local dest_x2 = dest_x1 + (w - 1)
+      local dest_y2 = dest_y1 + (h - 1)
+
+      local delta : Integer
+
+      # Clip source rectangle to this image
+      if (src_x1 < 0)
+        delta = -src_x1
+        src_x1 = 0
+        dest_x1 += delta
+      endIf
+      if (src_y1 < 0)
+        delta = -src_y1
+        src_y1 = 0
+        dest_y1 += delta
+      endIf
+      if (src_x2 >= width)
+        delta = (src_x2 - width) + 1
+        src_x2 -= delta
+        dest_x2 -= delta
+      endIf
+      if (src_y2 >= height)
+        delta = (src_y2 - height) + 1
+        src_y2 -= delta
+        dest_y2 -= delta
+      endIf
+
+      # Clip dest rectangle to target image
+      if (dest_x1 < 0)
+        delta = -dest_x1
+        dest_x1 = 0
+        src_x1 += delta
+      endIf
+      if (dest_y1 < 0)
+        delta = -dest_y1
+        dest_y1 = 0
+        src_y1 += delta
+      endIf
+      if (dest_x2 >= target.width)
+        delta = (dest_x2 - target.width) + 1
+        dest_x2 -= delta
+        src_x2 -= delta
+      endIf
+      if (dest_y2 >= target.height)
+        delta = (dest_y2 - target.height) + 1
+        dest_y2 -= delta
+        src_y2 -= delta
+      endIf
+
+      w = (src_x2 - src_x1) + 1
+      h = (src_y2 - src_y1) + 1
+      if (w <= 0 or h <= 0) return
+
+      local src_i = src_y1*width + src_x1
+      local dest_i = dest_y1*target.width + dest_x1
+      local src_pitch = width
+      local dest_pitch = target.width
+      local src_pixels = pixels
+      local dest_pixels = target.pixels
+      while (h > 0)
+        --h
+        forEach (i in 0..<w)
+          dest_pixels[dest_i+i] = src_pixels[src_i+i]
+        endForEach
+        src_i  += src_pitch
+        dest_i += dest_pitch
+      endWhile
+
+    method bounds->Box
+      return Box( 0, 0, width, height )
+
+    method get( x:Integer, y:Integer )->Integer
+      return pixels[ y*width + x ]
+
+    method set( x:Integer, y:Integer, color:Integer )
+      pixels[ y*width + x ] = color
+
+    method size->XY
+      return XY(width,height)
+
+endClass
+
+
+class IndexedBitmap
+  PROPERTIES
+    width   : Integer
+    height  : Integer
+    pixels  : Byte[]
+    palette : Integer[]
+
+
+  METHODS
+    method init( width, height, fill_index=0:Integer, palette=null )
+      if (fill_index?) pixels = Byte[]( width*height, fill_index )
+      else             pixels = Byte[]( width*height ); pixels.count = width*height
+
+    method init( width, height, pixels, palette=null )
+
+    method init( width, height, pixel_data:Array<<Byte>>, color_data=null:Array<<Integer>> )->IndexedBitmap  [requisite]
+      if (color_data?) palette = Integer[]( color_data )
+
+      init( width, height, Byte[](pixel_data).ensure_count(width*height), palette )
+
+    method invert->this
+      # Inverts this bitmap in-place - C' = 255 - C
+      forEach (i of this) pixels[i] = 255 - pixels[i]
+
+    method size->XY
+      return XY(width,height)
+
+    method to->Bitmap
+      return Bitmap( this )
+
+endClass
+
+
+class AlphaBitmap : IndexedBitmap
+  # An 8-bit grayscale bitmap intended for use as an alpha channel.  It behaves
+  # differently than an IndexedBitmap when converted or copied into a Bitmap.
+  METHODS
+    method to->Bitmap
+      return Bitmap( this )
+endClass
+

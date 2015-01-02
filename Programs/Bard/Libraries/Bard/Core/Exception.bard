@@ -1,0 +1,123 @@
+class Error : Exception
+  METHODS
+    method init_defaults
+      #stack_trace.pop_frames(1)
+
+endClass
+
+class Exception
+  PROPERTIES
+    message     : String
+    stack_trace : StackTrace
+
+  METHODS
+    method init
+
+    method init( message )
+
+    method init_defaults
+      stack_trace = StackTrace().pop_frames(1)
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.println( "EXCEPTION" ).println( message ).println
+      buffer.println( "STACK TRACE" ).print( stack_trace )
+      return buffer->String
+endClass
+
+class StackTrace
+  PROPERTIES
+    ips = Integer[]
+
+  METHODS
+    method init
+      init( 3 )
+
+    method init( offset:Integer )
+      local ip = Runtime.ip( offset )
+      while (ip != -1)
+        if (ip?) ips.add( ip )
+        ++offset
+        ip = Runtime.ip( offset )
+      endWhile
+
+    method count->Integer
+      return ips.count
+
+    method get( index:Integer )->SourcePositionInfo
+      return Runtime.describe( ips[index] )
+
+    method pop_frames( frame_count:Integer )->StackTrace
+      while (frame_count > 0 and ips.count?)
+        ips.remove_first
+        --frame_count
+      endWhile
+      return this
+
+    method to->String
+      local buffer = StringBuilder()
+      local previous_line : String
+      local line_count = 1
+      forEach (frame_info in this)
+        local cur_line = frame_info->String
+        if (previous_line?)
+          if (previous_line == cur_line)
+          ++line_count
+          else
+            if (line_count > 1) buffer.println( previous_line + " [recursively called $ times]" (line_count) )
+            else buffer.println( previous_line )
+            previous_line = cur_line
+            line_count = 1
+          endIf
+        else
+          previous_line = cur_line
+        endIf
+
+      endForEach
+
+      if (previous_line?)
+        if (line_count > 1) buffer.println( previous_line + " [recursively called $ times]" (line_count) )
+        else buffer.println( previous_line )
+      endIf
+
+      return buffer->String
+      #return "Exception::TODO"
+
+endClass
+
+compound SourcePositionInfo( _type_name:String, method_signature:String, filename:String, line:Integer )
+  METHODS
+    method to->String
+      return _type_name + "::" + method_signature + " at " + filename + " line " + line
+
+endCompound
+
+class UnsupportedMethodError : Error
+  METHODS
+    method init( message )
+      message = "Unsupported method " + message + "."
+endClass
+
+class FileNotFoundError : Error
+  METHODS
+    method init( message )
+      message = "File not found: " + message + "."
+endClass
+
+class IOError : Error
+  METHODS
+    method init( message )
+      message = "Error accessing " + message + "."
+endClass
+
+class NullReferenceError : Error [requisite]
+  METHODS
+    method init_defaults
+      message = "Null Reference Error - a property is being accessed or a method is being called using a null reference."
+endClass
+
+class StackLimitError : Error [requisite]
+  METHODS
+    method init_defaults
+      message = "Stack Limit Error - too many nested calls have been made."
+endClass

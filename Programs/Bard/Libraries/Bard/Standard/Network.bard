@@ -1,0 +1,74 @@
+class Network
+  SETTINGS
+    url_encoding_map = 
+      "xxxxxxxxxxxxxxxx" +  # %0x
+      "xxxxxxxxxxxxxxxx" +  # %1x
+      "xxxxxxxxxxxxx  x" +  # %2x
+      "          xxxxxx" +  # %3x
+      "x               " +  # %4x
+      "           xxxx " +  # %5x
+      "x               " +  # %6x
+      "           xxxxx"    # %7x
+
+    METHODS
+    method url_encode( url:String )->String
+      return url_encode( url, StringBuilder() )->String
+
+    method url_encode( url:String, buffer:StringBuilder )->StringBuilder
+      forEach (ch in url)
+        if (ch < 128 and url_encoding_map[ch] == ' ')
+          buffer.print( ch )
+        else
+          buffer.print( '%' )
+          buffer.print( ((ch:>>:4)&15).to_hex_character )
+          buffer.print( (ch&15).to_hex_character )
+        endIf
+      endForEach
+      return buffer
+endClass
+
+class URL
+  PROPERTIES
+    buffer          = StringBuilder()
+    text            : String
+    parameter_count : Integer
+
+  METHODS
+    method init( initial_content:String )
+      buffer.print( initial_content )
+      text = null
+      parameter_count = 0
+
+    method add( key:String, value:Integer )->URL
+      return add( key, value->String )
+
+    method add( key:String, value:Logical )->URL
+      return add( key, value->String )
+
+    method add( key:String, value:String )->URL
+      text = null
+      ++parameter_count
+      if (parameter_count == 1) buffer.print( '?' )
+      else                      buffer.print( '&' )
+      Network.url_encode( key, buffer ).print('=')
+      Network.url_encode( value, buffer )
+      return this
+
+    method add( key:String, values:String[] )->URL
+      # URL-encodes each value but does not URL-encode the commas between values.
+      if (values is null or values.count == 0) return this
+      add( key, values.first )
+
+      forEach (value in values.from(1))
+        buffer.print(',')
+        Network.url_encode( value, buffer )
+      endForEach
+
+      return this
+
+    method to->String
+      if (text is null) text = buffer->String
+      return text
+
+endClass
+

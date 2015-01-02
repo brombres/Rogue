@@ -1,0 +1,5 @@
+class ZorCompiler
+  METHODS
+    method init
+      println "Hello World!"
+endClass

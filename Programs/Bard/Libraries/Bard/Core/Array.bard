@@ -1,0 +1,46 @@
+class GenericArray [functional]
+  METHODS
+    method clear_references( i1:Integer, i2:Integer ) [native]
+
+    method shift( i1:Integer, i2:Integer, delta:Integer ) [native]
+
+endClass
+
+class Array<<$DataType:Object>> : GenericArray
+  # Array is the type assigned to array list native data objects.
+  METHODS
+    method create( count:Integer )               [special]
+
+    method count->Integer                        [special]
+      return this.count  # intercepted by compiler
+
+    method get( index:Integer )->$DataType       [special]
+      return this.get(index)  # intercepted by compiler
+
+    method resized( new_count:Integer )->Array<<$DataType>>
+      local result = Array<<$DataType>>( new_count )
+      forEach (index of this)
+        result[index] = this[index]
+      endForEach
+      return result
+
+    method set( index:Integer, value:$DataType )->Array<<$DataType>> [special]
+      this.set( index, value )  # intercepted by compiler
+
+    method swap( i1:Integer, i2:Integer )
+      local temp = this[i1]
+      this[i1] = this[i2]
+      this[i2] = temp
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.print('[')
+      local first = true
+      forEach (element in this) 
+        if (first) first = false
+        else       buffer.print(',')
+        buffer.print( element )
+      endForEach
+      buffer.print(']')
+      return buffer->String
+endClass

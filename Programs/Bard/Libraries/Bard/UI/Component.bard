@@ -1,0 +1,55 @@
+#{
+class Component
+  PROPERTIES
+    parent    : Component
+    child     : Component
+    next      : Component
+
+    position  : XY
+    size      = XY(1,1)
+    scale     = XY(1,1)
+    handle    = XY(0.5,0.5)
+
+  METHODS
+    method add( new_child:Component )->Component
+      new_child.detach.parent = this
+
+      if (child?)
+        local cur = child
+        while (cur.next?) cur = cur.next
+        cur.next = new_child
+      else
+        child = new_child
+      endIf
+      return this
+
+    method detach->Component
+      if (parent?)
+        if (parent.child is this)
+          parent.child = this.next
+        else
+          local cur = parent.child
+          while (cur.next isNot this) cur = cur.next
+          cur.next = this.next
+        endIf
+        parent = null
+      endIf
+      next = null
+      return this
+
+    method detach_children
+      while (child?) child.detach
+
+    method insert( new_child:Component )->Component
+      new_child.detach.parent = this
+      new_child.next = this.child
+      this.child = new_child
+      return this
+
+    method last_child->Component
+      local cur = child
+      while (cur.next?) cur .= next
+      return cur
+endClass
+
+}#

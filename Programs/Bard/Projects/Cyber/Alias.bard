@@ -1,0 +1,24 @@
+class Alias
+  PROPERTIES
+    t         : Token
+    name      : String
+    arg_names : String[]
+    tokens    = Token[]
+
+  METHODS
+    method init( t, name, arg_names=String[] )
+
+    method clone_for_specializations( specializations:Table<<String,String>> )->Alias
+      local result = Alias( t, name, arg_names )
+      forEach (t2 in tokens)
+        if (t2.type == Token.identifier and t2->String[0] == '$')
+          local mapping = specializations[ t2->String ]
+          if (mapping?)
+            t2 = IdentifierToken( t2, mapping )
+          endIf
+        endIf
+        result.tokens.add( t2 )
+      endForEach
+      return result
+endClass
+

@@ -1,0 +1,154 @@
+#==============================================================================
+# Primitives.bard
+#
+# New primitives cannot be defined but built-in primitives can have methods
+# added to them.
+#==============================================================================
+primitive Byte
+  METHODS
+    method hash_code->Integer
+      return this
+    #{
+    method sign->Integer
+      if (this > 0) return  1
+      if (this < 0) return -1
+      return 0
+      }#
+
+    method to->String
+      return StringBuilder(3).print(this)->String
+endPrimitive
+
+primitive Integer
+  METHODS
+    method hash_code->Integer
+      return this
+
+    #{
+    method sign->Integer
+      if (this > 0) return  1
+      if (this < 0) return -1
+      return 0
+      }#
+
+    method left_rotated( count:Integer )->Integer
+      return (this:<<:count) | (this:>>:(32-count))
+
+    method list( first:Integer, last:Integer, step=1:Integer )->Integer[]
+      return Range<<Integer>>(first,last,step)->Integer[]
+
+    method print_hex( buffer:StringBuilder, digits=-1:Integer )->StringBuilder
+      local i1 = buffer.count
+
+      local value = this
+      while (digits != 0)
+        local next_digit = value & 15
+        value = value :>>: 4
+        if (next_digit < 10) buffer.print( next_digit )
+        else                 buffer.print( ((next_digit-10) + 'a')->Character )
+        --digits
+
+        if (digits < 0 and value == 0) escapeWhile
+      endWhile
+
+      buffer.reverse( i1, buffer.count-1 )
+      return buffer
+
+    method to->String
+      return StringBuilder(10).print(this)->String
+
+    method to_hex_character->Character
+      if (this >= 0 and this <= 9) return ('0' + this)->Character
+      else return ('A' + (this-10))->Character
+
+    method to_hex_string( digits=-1:Integer )->String
+      return this.print_hex( StringBuilder.clear, digits )->String
+
+    method right_rotated( count:Integer )->Integer
+      return (this:>>:count) | (this:<<:(32-count))
+
+endPrimitive
+
+primitive Character
+  METHODS
+    method hash_code->Integer
+      return this
+
+    method is_alphanumeric->Logical
+      return (this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this >= '0' and this <= '9')
+
+    method is_letter->Logical
+      return (this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z')
+
+    method is_lowercase->Logical
+      return (this >= 'a' and this <= 'z')
+
+    method is_number->Logical
+      return (this >= '0' and this <= '9')
+
+    #{
+    method sign->Integer
+      if (this > 0) return  1
+      if (this < 0) return -1
+      return 0
+    }#
+
+    method is_uppercase->Logical
+      return (this >= 'A' and this <= 'Z')
+
+    method to->String
+      return StringBuilder(1).print(this)->String
+
+    method to_lowercase->Character
+      if (this >= 'A' and this <= 'Z') return this + ('a' - 'A')
+      return this
+
+    method to_uppercase->Character
+      if (this >= 'a' and this <= 'z') return this + ('A' - 'a')
+      return this
+
+    method to_number->Integer
+      if (this >= '0' and this <= '9') return (this - '0')
+      if (this >= 'a' and this <= 'z') return (this - 'a') + 10
+      if (this >= 'A' and this <= 'Z') return (this - 'A') + 10
+      return -1
+
+endPrimitive
+
+primitive Logical
+  METHODS
+    method hash_code->Integer
+      if (this) return 1
+      else      return 0
+
+    method to->String
+      if (this) return "true"
+      else      return "false"
+endPrimitive
+
+primitive Real
+  METHODS
+    method floor->Real
+      return Math.floor( this )
+
+    method hash_code->Integer
+      local data = Integer64( this )
+      return (data.high ~ data.low)
+
+    #{
+    method sign->Real
+      if (this > 0.0) return  1.0
+      if (this < 0.0) return -1.0
+      return 0.0
+
+    #method to->Integer64
+      #return Integer64(this)
+      }#
+
+    method list( first:Real, last:Real, step=1:Real )->Real[]
+      return Range<<Real>>(first,last,step)->Real[]
+
+    method to->String
+      return StringBuilder(10).print(this)->String
+endPrimitive
+

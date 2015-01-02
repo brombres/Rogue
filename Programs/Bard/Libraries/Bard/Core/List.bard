@@ -1,0 +1,336 @@
+class ListType
+endClass
+
+class $DataType[] : ListType
+  PROPERTIES
+    data  : Array<<$DataType>>
+    count : Integer
+
+  METHODS
+    method init
+      data = Array<<$DataType>>(10)
+
+    method init( initial_capacity:Integer )
+      data = Array<<$DataType>>( initial_capacity )
+
+    method init( size:Integer, initial_value:$DataType )
+      init( size )
+      while (size > 0)
+        add( initial_value )
+        --size
+      endWhile
+
+    method init( _data:Array<<$DataType>> )
+      data = _data
+      count = data.count
+
+    method add( value:$DataType )->$DataType[]
+      return insert( value, count )
+
+    method add( list:$DataType[] )->$DataType[]
+      return insert( list, count )
+
+    alias apply( fn ) => ListOps<<$DataType>>.apply( this, fn )
+
+    method capacity->Integer
+      return data.count
+
+    method clear->$DataType[]
+      discard( 0, count-1 )
+      return this
+
+    method clone->$DataType[]
+      local result = $DataType[](count)
+      forEach (value in this)
+        result.add( value )
+      endForEach
+      return result
+
+    method contains( value:$DataType )->Logical
+      return locate( value ) != -1
+
+    alias  discard( fn ) => ListOps<<$DataType>>.discard( this, fn )
+
+    method discard( i1:Integer, i2:Integer )
+      if (i1 > i2) return
+
+      local original_count = count
+      local discard_count = (i2 - i1) + 1
+
+      data.shift( i2+1, count, -discard_count )
+      count -= discard_count
+      data.clear_references( count, original_count-1 )
+
+    method discard_from( i1:Integer )
+      discard( i1, count-1 )
+
+    method ensure_capacity( desired_capacity:Integer )->$DataType[]
+      local cur_capacity = data.count
+      if (desired_capacity > cur_capacity)
+        local new_capacity = cur_capacity + cur_capacity
+        if (desired_capacity > new_capacity) new_capacity = desired_capacity
+
+        data = data.resized( new_capacity )
+      endIf
+
+      return this
+
+    method ensure_count( desired_count:Integer )->$DataType[]
+      local empty : $DataType
+      ensure_capacity( desired_count )
+      while (count < desired_count) add( empty )
+      return this
+
+    alias find(fn) => ListOps<<$DataType>>.find( this, fn )
+
+    alias first => this[0]
+
+    method from( starting_index:Integer )->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, starting_index )
+
+    method formatted( separator:String )->String
+      return formatted( "", separator, "" )
+
+    method formatted( open_symbol:String, separator:String, close_symbol:String )->String
+      local buffer = StringBuilder()
+      buffer.print( open_symbol )
+
+      local first = true
+      forEach (item in this)
+        if (first) first = false
+        else       buffer.print( separator )
+        buffer.print( item )
+      endForEach
+
+      buffer.print( close_symbol )
+
+      return buffer->String
+
+    method get( index:Integer )->$DataType
+      return data[ index ]
+
+    method indices->ListIndexReader
+      return ListIndexReader( count )
+
+    method insert( value:$DataType )->$DataType[]
+      return insert( value, 0 )
+
+    method insert( list:$DataType[] )->$DataType[]
+      return insert( list, 0 )
+
+    method insert( value:$DataType, before_index:Integer )->$DataType[]
+      if (before_index == count)
+        if (data is null)
+          data = Array<<$DataType>>( 10 )
+        elseIf (count == data.count)
+          if (count <= 5) ensure_capacity( 10 )
+          else            ensure_capacity( count + (count:>>:1) )
+        endIf
+
+        data[ count ] = value
+        ++count
+        return this
+
+      else
+        add( value )  # use value as a dummy at first make the array the correct size
+        data.shift( before_index, count-2, 1 )
+        data[before_index] = value
+        return this
+      endIf
+
+    method insert( list:$DataType[], before_index:Integer )->$DataType[]
+      local required_capacity = count + list.count
+      if (data is null)
+        data = Array<<$DataType>>( required_capacity )
+      else
+        if (required_capacity < 10) required_capacity = 10
+      endIf
+
+      ensure_capacity( required_capacity )
+
+      local src_i = 0
+      local dest_i = before_index
+      local other_count = list.count
+      local other_data = list.data
+
+      if (before_index < count) data.shift( before_index, count-1, other_count )
+
+      while (src_i < other_count)
+        data[dest_i] = other_data[src_i]
+        ++src_i
+        ++dest_i
+      endWhile
+
+      count += other_count
+      return this
+
+    method last->$DataType
+      return this[count-1]
+
+    method locate( value:$DataType )->Integer
+      return locate( value, 0 )
+
+    method locate( value:$DataType, i1:Integer )->Integer
+      local c = count
+      while (i1 < count)
+        if (this[i1] == value) return i1
+        ++i1
+      endWhile
+      return -1
+
+    alias map(fn) => ListOps<<$DataType>>.map( this, fn )
+
+    method random->$DataType
+      return this[ Random->Integer(count) ]
+
+    alias reduce(fn,initial_value) => ListOps<<$DataType>>.reduce( this, fn, initial_value )
+
+    method remove( value:$DataType )->Logical
+      # Removes the first occurrence of the given value from the list.
+      # Returns "true" on success or "false" if the value was not found.
+      # Uses an 'is' comparison for objects.
+      local i = 0
+      local c = count
+      while (i < c)
+        if (this[i] is value)
+          remove_at( i )
+          return true
+        endIf
+        ++i
+      endWhile
+      return false
+
+    method remove_at( index:Integer )->$DataType
+      local result = this[ index ]
+      discard( index, index )
+      return result
+
+    method remove_first->$DataType
+      return remove_at(0)
+
+    method remove_last->$DataType
+      return remove_at( count-1 )
+
+    method remove_random->$DataType
+      return remove_at( Random->Integer(count) )
+
+    method reverse
+      reverse( 0, count-1 )
+
+    method reverse( i1:Integer, i2:Integer )
+      local i2 = count - 1
+      while (i1 < i2)
+        local temp = this[i1]
+        this[i1] = this[i2]
+        this[i2] = temp
+        ++i1
+        --i2
+      endWhile
+
+    method reverse_order->ReverseOrderListReader<<$DataType>>
+      return ReverseOrderListReader<<$DataType>>( this )
+
+    alias select(fn) => ListOps<<$DataType>>.select( this, fn )
+
+    method set( index:Integer, value:$DataType )
+      data[ index ] = value
+
+    method shuffle
+      local limit = count
+      local i = limit - 1
+      while (i >= 0)
+        local r = Random->Integer( limit )
+        local temp = this[i]
+        this[i] = this[r]
+        this[r] = temp
+        --i
+      endWhile
+
+    alias sort => Sort<<$DataType>>.quicksort( this, function(a,b) => a <= b )
+
+    alias sort(fn) => Sort<<$DataType>>.quicksort( this, fn )
+
+    method subset( i1:Integer, i2:Integer )->$DataType[]
+      local result = $DataType[]( (i2-i1)+1 )
+      forEach (i in i1..i2) result.add( data[i] )
+      return result
+
+    method swap( i1:Integer, i2:Integer )
+      local temp = this[i1]
+      this[i1] = this[i2]
+      this[i2] = temp
+
+      #method to->PropertyList
+
+    method to->String
+      if (count == 0) return "[]"
+
+      local buffer = StringBuilder()
+      buffer.print( '[' )
+
+      local i = 0
+      local limit = count
+      while (i < limit)
+        if (i > 0) buffer.print(',')
+        buffer.print( this[i] )
+        ++i
+      endWhile
+
+      buffer.print( ']' )
+      return buffer->String
+
+endClass
+
+augment String[]
+  METHODS
+    method join( separator="\n":String )->String
+      return join( separator, StringBuilder() )->String
+
+    method join( separator:String, buffer:StringBuilder )->StringBuilder
+      local first = true
+      forEach (st in this)
+        if (first) first = false
+        else       buffer.print( separator )
+        buffer.print( st )
+      endForEach
+      return buffer
+endAugment
+
+class ReverseOrderListReader<<$DataType:Object>>
+  PROPERTIES
+    list          : $DataType[]
+    count         : Integer
+    highest_index : Integer
+
+  METHODS
+    method init( list )
+      count = list.count
+      highest_index = count - 1
+
+    method get( index:Integer )->$DataType
+      return list[ highest_index - index ]
+endClass
+
+class ListReader<<$DataType:Object>>
+  PROPERTIES
+    list  : $DataType[]
+    index : Integer
+
+  METHODS
+    method init( list, index=0 )
+
+    method has_another->Logical
+      return (index < list.count)
+
+    method read->$DataType
+      ++index
+      return list[ index - 1 ]
+endClass
+
+class ListIndexReader( count:Integer )
+  METHODS
+    method get( index:Integer )->Integer
+      return index
+endClass
+
+

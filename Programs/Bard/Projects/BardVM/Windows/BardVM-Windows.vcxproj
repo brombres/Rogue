@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{40DDB1C7-DC3D-4F0B-927B-588C14860FF7}</ProjectGuid>
+    <RootNamespace>BardVMWindows</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\Bard\VM\C</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\Bard\VM\C</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\Programs\Windows
+copy /y Release\BardVM-Windows.exe ..\..\..\Programs\Windows\bard.exe
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardAllocator.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardArray.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardBCLoader.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardEventQueue.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardFileReader.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardList.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardMessageManager.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardMethod.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardMM.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardObject.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardOpcodes.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardProgram.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardProperty.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardStandardLibrary.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardString.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardType.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardUtil.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardVM.c" />
+    <ClCompile Include="..\Bard.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\Bard.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardAllocator.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardArray.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardBCLoader.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardDefines.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardFileReader.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardList.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardMessageManager.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardMethod.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardMM.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardObject.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardProperty.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardStandardLibrary.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardString.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardType.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardUtil.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardVM.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

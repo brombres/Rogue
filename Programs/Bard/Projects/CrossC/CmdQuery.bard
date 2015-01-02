@@ -1,0 +1,318 @@
+augment Cmd
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      # Override to call fn() on this node and query(fn) on all child nodes.  
+      # Return 'true' if any child nodes return true.  Return false otherwise.
+      return fn.call(this)
+endAugment
+
+augment CmdStatementList
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      forEach (statement in this)
+        if (statement.query(fn)) return true
+      endForEach
+      return false
+endAugment
+
+augment CmdReturnValue
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdYieldValue
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdYieldAndWait
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdUnary
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdBinary
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (lhs.query(fn)) return true
+      return rhs.query( fn )
+endAugment
+
+augment CmdLiteralArray
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      forEach (element in elements)
+        if (element.query(fn)) return true
+      endForEach
+      return false
+endAugment
+
+
+augment CmdWriteLocal
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return (new_value.query(fn))
+endAugment
+
+
+augment CmdReadSetting
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return false
+endAugment
+
+augment CmdReadProperty
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return false
+endAugment
+
+augment CmdWriteSetting
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return (new_value.query(fn))
+endAugment
+
+augment CmdWriteProperty
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return (new_value.query(fn))
+endAugment
+
+augment CmdWriteSingleton
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return (new_value.query(fn))
+endAugment
+
+augment CmdIncrementSetting
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return false
+endAugment
+
+augment CmdDecrementSetting
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return false
+endAugment
+
+augment CmdIncrementProperty
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return false
+endAugment
+
+augment CmdDecrementProperty
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      return false
+endAugment
+
+augment CmdAssign
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (operand.query(fn)) return true
+      return (new_value.query(fn))
+endAugment
+
+augment CmdNewObject
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (args? and args.query(fn)) return true
+      return false
+endAugment
+
+augment CmdStaticCall
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      if (args? and args.query(fn)) return true
+      return false
+endAugment
+
+augment CmdSingletonCall
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (args? and args.query(fn)) return true
+      return false
+endAugment
+
+augment CmdDynamicCall
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (context? and context.query(fn)) return true
+      if (args? and args.query(fn)) return true
+      return false
+endAugment
+
+augment CmdIf
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (condition.query(fn)) return true
+      if (body.query(fn)) return true
+
+      forEach (index of elseIf_conditions)
+        if (elseIf_conditions[index].query(fn)) return true
+        if (elseIf_bodies[index].query(fn)) return true
+      endForEach
+
+      if (else_body? and else_body.query(fn)) return true
+      return false
+endAugment
+
+augment CmdWhich
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this))        return true
+      if (expression.query(fn)) return true
+      forEach (c in cases)
+        forEach (value in c.values)
+          if (value.query(fn)) return true
+        endForEach
+        if (c.body.query(fn)) return true
+      endForEach
+      if (others_case? and others_case.query(fn)) return true
+      return false
+endAugment
+
+augment CmdContingent
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this))  return true
+      if (body.query(fn)) return true
+      if (satisfied_body? and satisfied_body.query(fn))     return true
+      if (unsatisfied_body? and unsatisfied_body.query(fn)) return true
+      return false
+endAugment
+
+augment CmdSufficient
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdNecessary
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdAnonymousBlock
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return body.query( fn )
+endAugment
+
+augment CmdWhile
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (condition.query(fn)) return true
+      return body.query( fn )
+endAugment
+
+augment CmdLoop
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return body.query( fn )
+endAugment
+
+augment CmdTry
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this))  return true
+      if (body.query(fn)) return true
+      forEach (cur_catch in catches)
+        if (cur_catch.body.query(fn)) return true
+      endForEach
+      return false
+endAugment
+
+augment CmdThrow
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdInstanceOf
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdCreateArray
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return size_expression.query( fn )
+endAugment
+
+augment CmdArrayCount
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      return operand.query( fn )
+endAugment
+
+augment CmdReadArrayElement
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (operand.query(fn)) return true
+      return index_expression.query( fn )
+endAugment
+
+augment CmdWriteArrayElement
+  METHODS
+    method query( fn:Delegate(Cmd)->Logical )->Logical
+      if (fn.call(this)) return true
+      if (operand.query(fn)) return true
+      if (index_expression.query(fn)) return true
+      return new_value.query( fn )
+endAugment
+

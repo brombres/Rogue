@@ -1,0 +1,196 @@
+$[include "Bitmap.bard"]
+$[include "Color.bard"]
+$[include "Font.bard"]
+$[include "Image.bard"]
+$[include "RenderMode.bard"]
+$[include "Texture.bard"]
+
+# Base class for a graphics context
+class Graphics [singleton]
+  PROPERTIES
+    width  : Integer
+    height : Integer
+
+    bounds : Box
+    font   : Font
+
+    bounds_stack = Box[]
+    font_stack   = Font[]
+
+    text_buffer = StringBuilder()
+
+  METHODS
+    method clear( color=0xff000000:Integer )->this
+      return native_clear( color )
+
+    method clear_clip
+      clip( Box(0,0,width,height) )
+
+    method clip( box:Box )->this
+      # See also: Graphics::intersect_clip(Box).
+      bounds = box
+      native_set_clip( box.position.x, box.position.y, box.size.x, box.size.y )
+
+    method create_font( name:String, height:Real, style=FontStyle.normal:Integer )->Integer
+      return 0
+
+    method create_texture( width:Integer, height:Integer, pixels:Integer[], flags:Integer )->Integer
+      return native_create_texture( width, height, pixels.data, flags )
+
+    method draw_box( x:Real, y:Real, width:Real, height:Real, color:Integer )
+      if (width <= 2 or height <= 2)
+        fill_box( x, y, width, height, color )
+      else
+        local x2 = x + width
+        local y2 = y + height
+
+        # Top and bottomm
+        draw_line( x, y,   x2, y,   color )
+        draw_line( x,y2-1, x2,y2-1, color )
+
+        # Left and right
+        ++y
+        --y2
+        draw_line(  x, y, x, y2, color )
+        draw_line( x2-1, y,x2-1, y2, color )
+      endIf
+
+    method draw_line( x1:Real, y1:Real, x2:Real, y2:Real, color:Integer )
+      native_draw_line( x1, y1, x2, y2, color )
+
+    method draw_text( text:String, i1:Integer, i2:Integer, x:Real, y:Real, color=0xffffffff:Integer )
+      if (text is null) text = "null"
+      text_buffer.clear.print( text )
+      draw_text( text_buffer, i1, i2, x, y, color )
+
+    method draw_text( buffer:StringBuilder, i1:Integer, i2:Integer, x:Real, y:Real, color=0xffffffff:Integer )
+
+    method fill( box:Box, color:Integer )
+      fill_box( box.position.x, box.position.y, box.size.x, box.size.y, color )
+
+    method fill_box( x:Real, y:Real, width:Real, height:Real, color:Integer )
+      fill_triangle( x, y, color, x+width, y, color, x+width, y+height, color )
+      fill_triangle( x, y, color, x+width, y+height, color, x, y+height, color )
+
+    method fill_triangle( x1:Real, y1:Real, c1:Integer, x2:Real, y2:Real, c2:Integer, x3:Real, y3:Real, c3:Integer )
+      native_fill_triangle( x1, y1, c1, x2, y2, c2, x3, y3, c3 )
+
+    method fill_triangle( x1:Real, y1:Real, u1:Real, v1:Real, c1:Integer, x2:Real, y2:Real, u2:Real, v2:Real, c2:Integer, x3:Real, y3:Real, u3:Real, v3:Real, c3:Integer, texture_id:Integer )
+      native_fill_triangle( x1, y1, u1, v1, c1, x2, y2, u2, v2, c2, x3, y3, u3, v3, c3, texture_id )
+
+    method intersect_clip( box:Box )->this
+      # See also: Graphics::clip(Box).
+      bounds = bounds & box
+      native_set_clip( bounds.position.x, bounds.position.y, bounds.size.x, bounds.size.y )
+
+    method load_bitmap_from_png( filepath:String )->Bitmap
+      return native_load_bitmap_from_png( filepath )
+
+    method load_font( name:String )->Integer
+      return native_load_font( name )
+
+    method load_texture_from_png( filepath:String, flags:Integer )->Integer
+      return native_load_texture_from_png( filepath, flags )
+
+    method measure_text( text:String, i1=0:Integer, i2=-1:Integer )->XY
+      if (text is null) return measure_text( "", i1, i2 )
+      else              return measure_text( text_buffer.clear.write(text,i1,i2) )
+
+    method measure_text( text:StringBuilder, i1=0:Integer, i2=-1:Integer )->XY
+      if (i2 == -1) i2 = text.count - 1
+      if (i2 < i1) return measure_text(" ").yv  # For empty string return (0,height)
+      return measure_text( text.characters, i1, i2 )
+
+    method measure_text( text:Character[], i1=0:Integer, i2=-1:Integer )->XY
+      # Measures multiple lines if 'text' contains \n characters.
+      if (i2 == -1) i2 = text.count - 1
+      local line_height = measure_text_line(null,0,0).y
+      local max_w = 0
+      local max_h = line_height
+      local line_start = i1
+      forEach (i in i1..i2)
+        if (text[i] == '\n')
+          if (i > line_start)
+            local cur_w = measure_text_line(text,line_start,i-1).x
+            max_w = Math.max( max_w->Real, cur_w )
+          endIf
+          line_start = i + 1
+          max_h += line_height
+        endIf
+      endForEach
+
+      if (line_start <= i2)
+        max_w = Math.max( max_w->Real, measure_text_line(text,line_start,i2).x )
+      endIf
+
+      return XY(max_w,max_h)
+
+    method measure_text_line( text:Character[], i1:Integer, i2:Integer )->XY
+      return XY(0,0)
+
+    method native_clear( color:Integer )->this [native]
+
+    method native_create_texture( width:Integer, height:Integer, pixels:Array<<Integer>>, flags:Integer )->Integer [native]
+
+    method native_destroy_texture( texture_id:Integer )
+
+    method native_draw_line( x1:Real, y1:Real, x2:Real, y2:Real, color:Integer ) [native]
+
+    method native_fill_triangle( x1:Real, y1:Real, c1:Integer, x2:Real, y2:Real, c2:Integer, x3:Real, y3:Real, c3:Integer ) [native]
+
+    method native_fill_triangle( x1:Real, y1:Real, u1:Real, v1:Real, c1:Integer, x2:Real, y2:Real, u2:Real, v2:Real, c2:Integer, x3:Real, y3:Real, u3:Real, v3:Real, c3:Integer, texture_id:Integer ) [native]
+
+    method native_get_texture_info( texture_id:Integer )->TextureInfo [native]
+
+    method native_load_bitmap_from_png( filepath:String )->Bitmap [native]
+
+    method native_load_font( filepath:String )->Integer [native]
+
+    method native_load_texture_from_png( filepath:String, flags:Integer )->Integer [native]
+
+    method native_render_font_character( font_id:Integer, ch:Character, pixel_width:Integer, pixel_height:Integer )->FontCharacterData [native]
+
+    method native_set_clip( x:Real, y:Real, w:Real, h:Real ) [native]
+
+    method native_set_render_mode( render_mode:Integer ) [native]
+
+    method native_set_texture( texture_id:Integer, width:Integer, height:Integer, pixels:Array<<Integer>>, flags:Integer )  [native]
+
+    method render_font_character( font_id:Integer, ch:Character, pixel_height:Integer )->FontCharacterData
+      return native_render_font_character( font_id, ch, 0, pixel_height )
+
+    method reset( @width, @height )->this
+      bounds_stack.clear
+      font_stack.clear
+      bounds = Box( width, height )
+
+    method restore_state->this
+      if (bounds_stack.count == 0) return
+
+      bounds = bounds_stack.remove_last
+      font = font_stack.remove_last
+      native_set_clip( bounds.position.x, bounds.position.y, bounds.size.x, bounds.size.y )
+
+    method save_state->this
+      bounds_stack.add( bounds )
+      font_stack.add( font )
+
+    method save_state( new_bounds:Box )->this
+      save_state
+      clip( new_bounds )
+
+    method set_render_mode( render_mode:RenderMode )
+      native_set_render_mode( render_mode.value )
+
+    method set_render_mode( render_mode:Integer )
+      native_set_render_mode( render_mode )
+
+    method set_texture( texture_id:Integer, width:Integer, height:Integer, pixels:Integer[], flags:Integer )
+      native_set_texture( texture_id, width, height, pixels.data, flags )
+
+    method size->XY
+      return XY( width, height )
+
+      #method use_font( id:Integer )
+endClass
+

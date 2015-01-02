@@ -1,0 +1,6 @@
+class Canvas
+  METHODS
+    method clear( argb:Integer )
+      noAction
+endClass
+

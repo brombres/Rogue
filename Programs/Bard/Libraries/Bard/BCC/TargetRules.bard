@@ -1,0 +1,82 @@
+class TargetRules
+  PROPERTIES
+    filepath    : String
+
+    prefix      = "Bard"
+    code        = StringBuilder()
+    header_code = StringBuilder()
+    new_defs    = Table<<String,String>>()
+    alias_defs  = Table<<String,String>>()
+
+  METHODS
+    method load( filepath )
+      if (filepath is null) return
+
+      local file = File( filepath )
+      if (not file.exists) return
+
+      local mode = ""
+      forEach (line in LineReader(file))
+        local i = line.locate( '$' )
+        if (i >= 0)
+          if (line.substring_equals(i,"$[header]"))
+            mode = "header"
+            nextIteration
+          elseIf (line.substring_equals(i,"$[alias]"))
+            mode = "alias"
+            nextIteration
+          elseIf (line.substring_equals(i,"$[code]"))
+            mode = "code"
+            nextIteration
+          elseIf (line.substring_equals(i,"$[prefix"))
+            local i1 = i + 8
+            local i2 = i1
+            while (i2 < line.count and line[i2] == ' ') ++i2
+            while (i2 < line.count and line[i2] != ']') ++i2
+            prefix = line.substring(i1,i2-1).trim
+            nextIteration
+          endIf
+        endIf
+
+        which (mode)
+          case "code"
+            code.println( line )
+
+          case "header"
+            header_code.println( line )
+
+          case "alias"
+            local new_object = false
+            local i2 = line.locate("=>")
+            if (i2 == -1) nextIteration
+
+            local i1 = i2 - 1
+
+            # Back up past white space between end of signature and '=>'
+            while (i1 > 0 and line[i1] == ' ') --i1
+
+            # Back up until we hit whitespace again
+            while (i1 > 0 and line[i1-1] > ' ') --i1
+
+            local full_key = line.substring( i1, i2-1 ).trim
+            if (full_key.contains("::"))
+              # Regular method
+              alias_defs[ full_key ] = line.substring(i2+2).trim
+            else
+              # Constructor
+              local mapping   = line.substring(i2+2).trim
+              local type_name = full_key.before_first('(')
+              local type = Types.find( type_name )
+              if (type?)
+                if (type.new_object_inline_mappings is null) type.new_object_inline_mappings = Table<<String,String>>(4)
+                type.new_object_inline_mappings[ "init" + full_key.from_first('(') ] = mapping
+              endIf
+            endIf
+        endWhich
+      endForEach
+
+      #trace header_code
+      #trace alias_defs
+      #trace code
+
+endClass

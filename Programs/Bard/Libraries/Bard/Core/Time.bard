@@ -1,0 +1,60 @@
+class Time [singleton]
+  SETTINGS
+    elapsed : Real
+      # Elapsed time since the last update() in seconds.
+      #
+      # Arbitrarily adjusted to be relevant to individual tasks and states 
+      # before their update() is called.
+
+  METHODS
+    method current->Real   [native]
+endClass
+
+class Stopwatch
+  PROPERTIES
+    start_time = Time.current : Real
+
+  METHODS
+    method elapsed->Real
+      return Time.current - start_time
+
+    method to->String
+      return "" + elapsed
+
+    method restart->Stopwatch
+      start_time = Time.current
+      return this
+endClass
+
+class Timer
+  PROPERTIES
+    stopwatch        : Stopwatch
+    duration : Real
+
+  METHODS
+    method init( duration )
+      stopwatch = Stopwatch()
+
+    method restart->this
+      stopwatch.restart
+      return this
+
+    method restart( duration )->this
+      stopwatch.restart
+      return this
+
+    method elapsed->Real
+      return stopwatch.elapsed
+
+    method expired->Logical
+      return remaining == 0
+
+    method remaining->Real
+      local result = duration - elapsed
+      if (result >= 0.0) return result
+      return 0.0
+
+    method to->String
+      return "" + remaining
+endClass
+

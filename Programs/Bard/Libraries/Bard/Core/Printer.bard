@@ -1,0 +1,22 @@
+aspect Printer
+  METHODS
+    method close
+    method print( value:String )->Printer
+    method print( value:Real )->Printer
+    method print( value:Real, decimal_places:Integer )->Printer
+    method print( value:Integer )->Printer
+    method print( value:Character )->Printer
+    method print( value:Object )->Printer
+    method print( value:Byte )->Printer
+    method print( value:Logical )->Printer
+    method println( value:Object )->Printer
+    method println( value:String )->Printer
+    method println( value:Real )->Printer
+    method println( value:Real, decimal_places:Integer )->Printer
+    method println( value:Integer )->Printer
+    method println( value:Character )->Printer
+    method println( value:Byte )->Printer
+    method println( value:Logical )->Printer
+    method println->Printer
+    method write( value:Character )->Printer
+endAspect

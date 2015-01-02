@@ -1,0 +1,43 @@
+class Object
+  METHODS
+    method create_instance->Object [native]
+      # Creates a duplicate instance of this object with the same type and
+      # calls init_defaults() on it.
+
+    method init
+      noAction
+
+    method hash_code->Integer
+      println( "ERROR - hash_code not defined for type." )
+      return 0
+
+    method equals( other:Object )->Logical
+      return (this is other)
+
+    method to->Real
+      return 0.0
+
+    method to->Integer
+      return this->Real->Integer
+
+    method to->Character
+      return this->Integer->Character
+
+    method to->Byte
+      return this->Integer->Byte
+
+    method to->Logical
+      return this->Integer?
+
+    method to->String
+      return "($)" (type_name)
+
+    method type_name->String [native]
+
+endClass
+
+class GenericDelegate
+endClass
+
+class Function
+endClass

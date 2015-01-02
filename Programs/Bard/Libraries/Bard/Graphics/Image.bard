@@ -1,0 +1,116 @@
+class Image
+  PROPERTIES
+    #position : XY
+    size     : XY
+    scale    = XY(1,1)
+    #scale    = XY(1,1)
+    #anchor   = XY(0.5,0.5)
+
+    render_mode = RenderMode()
+
+  METHODS
+    method create( bitmap:Bitmap, flags=ImageFlags.premultiply_alpha:Integer )
+      return TexturedImage( bitmap, flags )
+
+    method create( bitmap:IndexedBitmap, flags=ImageFlags.premultiply_alpha:Integer )
+      return TexturedImage( bitmap, flags )
+
+    method create( filepath:String, flags=ImageFlags.premultiply_alpha:Integer )
+      return TexturedImage( filepath, flags )
+
+    method create( existing:Image, subset:Box )
+      return TexturedImage( existing as TexturedImage, subset )
+
+    method bounds->Box
+      return Box(0,0,size*scale)
+
+    method draw( x:Real, y:Real, handle=XY(0.5,0.5):XY, color=-1:Integer )
+      draw( XY(x,y), handle, color )
+
+    method draw( position:XY, handle=XY(0.5,0.5):XY, color=-1:Integer )
+      local s = size * scale
+      draw( Box(position - ((s*handle).floor), s), color )
+
+    method draw( _bounds:Box, color=-1:Integer )
+      noAction
+
+    method height->Real
+      return size.y
+
+    method set( bitmap:IndexedBitmap, flags=ImageFlags.premultiply_alpha:Integer )
+      set( bitmap->Bitmap, flags )
+
+    method set( bitmap:Bitmap, flags=ImageFlags.premultiply_alpha:Integer )
+      noAction
+
+    method set( existing:Image, subset:Box )
+      noAction
+
+    method unload
+      noAction
+
+    method width->Real
+      return size.x
+
+endClass
+
+class TexturedImage : Image
+  PROPERTIES
+    texture  : Texture
+    uv1, uv2 : XY
+
+  METHODS
+    method init( bitmap:Bitmap, flags:Integer )
+      size = bitmap.size
+
+      texture = Texture( bitmap, flags )
+
+      uv2 = bitmap.size / texture.texture_size
+
+    method init( image:IndexedBitmap, flags:Integer )
+      init( image->Bitmap, flags )
+
+    method init( filepath:String, flags:Integer )
+      texture = Texture( filepath, flags )
+      size = texture.image_size
+      uv2 = texture.image_size / texture.texture_size
+
+      #method draw( a:XY, a_color:Integer, b:XY, b_color:Integer, c:XY, color3:Integer, d:XY, color4:Integer )
+
+    method init( existing:TexturedImage, subset:Box )
+      set( existing, subset )
+
+    method draw( _bounds:Box, color:Integer )
+      local x1 = _bounds.position.x
+      local y1 = _bounds.position.y
+      local x2 = x1 + _bounds.size.x
+      local y2 = y1 + _bounds.size.y
+      Graphics.set_render_mode( render_mode )
+      Graphics.fill_triangle( x1, y1, uv1.x, uv1.y, color, x2, y1, uv2.x, uv1.y, color, x1, y2, uv1.x, uv2.y, color, texture.id )
+      Graphics.fill_triangle( x2, y1, uv2.x, uv1.y, color, x2, y2, uv2.x, uv2.y, color, x1, y2, uv1.x, uv2.y, color, texture.id )
+
+    method set( bitmap:Bitmap, flags:Integer )
+      texture.set( bitmap, flags )
+
+    method set( existing:Image, subset:Box )
+      set( existing as TexturedImage, subset )
+
+    method set( existing:TexturedImage, subset:Box )
+      if (existing is null) return
+      size = subset.size
+      texture = existing.texture
+      uv1 = existing.uv1 + subset.position / texture.texture_size
+      uv2 = uv1 + subset.size / texture.texture_size
+
+    method unload
+      texture.destroy
+
+endClass
+
+class ImageFlags
+  ENUMERATE
+    premultiply_alpha = 256
+endClass
+
+class RenderFlags
+endClass

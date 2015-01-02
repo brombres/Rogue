@@ -1,0 +1,144 @@
+#==============================================================================
+# XY
+#==============================================================================
+compound XY( x:Real, y:Real )
+  SETTINGS
+    infinity = -10000  # FIXME
+
+  METHODS
+    method create
+      return XY(0,0)
+
+    method create( r:Real, angle:Degrees )
+      return XY( r*angle.cos, r*angle.sin )
+
+    method create( r:Real, angle:Radians )
+      return XY( r*angle.cos, r*angle.sin )
+
+    method abs->XY
+      local _x = x
+      local _y = y
+      if (_x < 0) _x = -_x
+      if (_y < 0) _y = -_y
+      return XY(_x,_y)
+
+    method degrees->Degrees
+      return Degrees( this.radians )
+
+    method dot( other:XY )->Real
+      # Returns the dot product of 'this' and 'other'.  Returns
+      #   this.x*other.x + this.y*other.y
+      #
+      # Example:
+      #   dot_product = a.dot(b)
+      return x * other.x + y * other.y
+
+    method cross( other:XY )->Real
+      # Returns the cross product of 'this' and 'other':
+      #   this.x*other.y - this.y*other.x
+      #
+      # Example:
+      #   cross_product = a.cross(b)
+      return x * other.y - y * other.x
+
+    method equals( other:XY )->Logical
+      return (x == other.x) and (y == other.y)
+
+    method exists->Logical
+      return (x != infinity) and (x != infinity)
+
+    method floor->XY
+      return XY( Math.floor(x), Math.floor(y) )
+
+    method invalid->Logical
+      return (x == infinity) or (y == infinity)
+
+    method magnitude->Real
+      return Math.sqrt( (x*x) + (y*y) )
+
+    method max->Real
+      if (x >= y) return x
+      else        return y
+
+    method max( other:XY )->XY
+      return max( other.x, other.y )
+
+    method max( x2:Real, y2:Real )->XY
+      if (x >= x2)
+        if (y >= y2) return this
+        else         return XY( x, y2 )
+      else
+        if (y >= y2) return XY( x2, y )
+        else         return XY( x2, y2 )
+      endIf
+
+    method min->Real
+      if (x <= y) return x
+      else        return y
+
+    method min( other:XY )->XY
+      return min( other.x, other.y )
+
+    method min( x2:Real, y2:Real )->XY
+      if (x <= x2)
+        if (y <= y2) return this
+        else         return XY( x, y2 )
+      else
+        if (y <= y2) return XY( x2, y )
+        else         return XY( x2, y2 )
+      endIf
+
+    method non_zero->Logical
+      return x? or y?
+
+    method operator+( v1:XY, v2:XY )->XY
+      return XY( v1.x+v2.x, v1.y+v2.y )
+
+    method operator-( v1:XY, v2:XY )->XY
+      return XY( v1.x-v2.x, v1.y-v2.y )
+
+    method operator*( v:XY, k:Real )->XY
+      return XY( v.x*k, v.y*k )
+
+    method operator*( k:Real, v:XY )->XY
+      return XY( v.x*k, v.y*k )
+
+    method operator*( v1:XY, v2:XY )->XY
+      return XY( v1.x*v2.x, v1.y*v2.y )
+
+    method operator/( k:Real, v:XY )->XY
+      return XY( v.x/k, v.y/k )
+
+    method operator/( v:XY, k:Real )->XY
+      return XY( v.x/k, v.y/k )
+
+    method operator/( v1:XY, v2:XY )->XY
+      return XY( v1.x/v2.x, v1.y/v2.y )
+
+    method operator%( v1:XY, v2:XY )->XY
+      return XY( v1.x%v2.x, v1.y%v2.y )
+
+    method operator%( k:Real )->XY
+      return XY( v1.x%k, v1.y%k )
+
+    method radians->Radians
+      return Radians( Math.atan2(y,x) )
+
+    method rotated( angle:Degrees )->XY
+      return rotated( angle->Radians )
+
+    method rotated( angle:Radians )->XY
+      local c = angle.cos
+      local s = angle.sin
+      return XY( x*c-y*s, x*s+y*c )
+
+    method to->String
+      return "($,$)" (x,y)
+
+    method xv->XY
+      return XY( x, 0 )
+
+    method yv->XY
+      return XY( 0, y )
+endCompound
+
