@@ -1,11 +1,8 @@
 class Test
   METHODS
     method init
-      # This is a comment
-      println "Hello Zor!"
-      println @|Power
-               |to
-               |the
-               |people
-      a++ + ++b
+      println "Hello "
+      "Zor!"
+      $if 1 A $else B
+      $DataType
 endClass

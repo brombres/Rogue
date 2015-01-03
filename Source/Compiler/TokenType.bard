@@ -1,11 +1,20 @@
 class TokenType
   SETTINGS
-    lookup            : Table<<String,TokenType>>
+    lookup                       : Table<<String,TokenType>>
+
+    # Directives
+    directive_include            : TokenType
+    directive_if                 : TokenType
+    directive_elseIf             : TokenType
+    directive_else               : TokenType
+    directive_endIf              : TokenType
+
+    placeholder_id               : TokenType
 
     # Structural
-    eol               : TokenType
-    keyword_class     : TokenType
-    keyword_endClass  : TokenType
+    eol                          : TokenType
+    keyword_class                : TokenType
+    keyword_endClass             : TokenType
 
     # Commmand
     identifier                   : TokenType

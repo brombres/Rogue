@@ -53,6 +53,15 @@ class Tokenizer
 
       TokenType.lookup        = Table<<String,TokenType>>()
 
+      # Directives
+      TokenType.directive_include = define( TokenType("$include") )
+      TokenType.directive_if      = define( TokenType("$if") )
+      TokenType.directive_elseIf  = define( TokenType("$elseIf") )
+      TokenType.directive_else    = define( TokenType("$else") )
+      TokenType.directive_endIf   = define( TokenType("$endIf") )
+
+      TokenType.placeholder_id    = define( TokenType("$id") )
+
       # Structural Tokens
       TokenType.eol              = define( EOLTokenType("end of line") )
       TokenType.keyword_class    = define( StructuralTokenType("class") )
@@ -153,9 +162,24 @@ class Tokenizer
         if (consume('=')) return TokenType.symbol_ne
         else              return TokenType.symbol_exclamation_point
 
+      elseIf (ch == '$' )
+        local token_type : TokenType
+        local id = read_identifier
+        which (id)
+          case "include":  add_new_token( TokenType.directive_include )
+          case "if":       add_new_token( TokenType.directive_if )
+          case "elseIf":   add_new_token( TokenType.directive_elseIf )
+          case "else":     add_new_token( TokenType.directive_else )
+          case "endIf":    add_new_token( TokenType.directive_endIf )
+          others
+            add_new_token( TokenType.placeholder_id, "$" + id )
+        endWhich
+        return null
+
       elseIf (ch == '%')
         if     (consume('=')) return TokenType.symbol_percent_equals
         else                  return TokenType.symbol_percent
+
 
       elseIf (ch == '&' )
         if     (consume('&')) throw error( "Use 'and' instead of '&&'." )
@@ -368,6 +392,8 @@ class Tokenizer
         ch = reader.peek
       endWhile
 
+      if (buffer.count == 0) throw error( "Identifier expected." )
+
       return buffer->String
 
     method tokenize_alternate_string->Logical
@@ -440,7 +466,7 @@ class Tokenizer
 
         # Symbol
         local token_type = get_symbol_token_type
-        if (token_type == null) return true
+        if (token_type is null) return true
         return add_new_token( token_type )
       endIf
 
