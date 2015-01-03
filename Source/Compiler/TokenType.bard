@@ -8,11 +8,69 @@ class TokenType
     keyword_endClass  : TokenType
 
     # Commmand
-    identifier        : TokenType
-    literal_character : TokenType
-    literal_integer   : TokenType
-    literal_real      : TokenType
-    literal_string    : TokenType
+    identifier                   : TokenType
+    literal_character            : TokenType
+    literal_integer              : TokenType
+    literal_real                 : TokenType
+    literal_string               : TokenType
+
+    symbol_ampersand             : TokenType
+    symbol_ampersand_equals      : TokenType
+    symbol_arrow                 : TokenType
+    symbol_at                    : TokenType
+    symbol_backslash             : TokenType
+    symbol_caret                 : TokenType
+    symbol_caret_equals          : TokenType
+    symbol_close_brace           : TokenType
+    symbol_close_bracket         : TokenType
+    symbol_close_comment         : TokenType
+    symbol_close_paren           : TokenType
+    symbol_close_specialize      : TokenType
+    symbol_colon                 : TokenType
+    symbol_colon_colon           : TokenType
+    symbol_comma                 : TokenType
+    symbol_compare               : TokenType
+    symbol_dot                   : TokenType
+    symbol_dot_equals            : TokenType
+    symbol_downToGreaterThan     : TokenType
+    symbol_empty_braces          : TokenType
+    symbol_empty_brackets        : TokenType
+    symbol_eq                    : TokenType
+    symbol_equals                : TokenType
+    symbol_exclamation_point     : TokenType
+    symbol_fat_arrow             : TokenType
+    symbol_ge                    : TokenType
+    symbol_gt                    : TokenType
+    symbol_le                    : TokenType
+    symbol_lt                    : TokenType
+    symbol_minus                 : TokenType
+    symbol_minus_equals          : TokenType
+    symbol_minus_minus           : TokenType
+    symbol_ne                    : TokenType
+    symbol_open_brace            : TokenType
+    symbol_open_bracket          : TokenType
+    symbol_open_paren            : TokenType
+    symbol_open_specialize       : TokenType
+    symbol_percent               : TokenType
+    symbol_percent_equals        : TokenType
+    symbol_plus                  : TokenType
+    symbol_plus_equals           : TokenType
+    symbol_plus_plus             : TokenType
+    symbol_question_mark         : TokenType
+    symbol_semicolon             : TokenType
+    symbol_shift_left            : TokenType
+    symbol_shift_right           : TokenType
+    symbol_shift_right_x         : TokenType
+    symbol_slash                 : TokenType
+    symbol_slash_equals          : TokenType
+    symbol_tilde                 : TokenType
+    symbol_tilde_equals          : TokenType
+    symbol_times                 : TokenType
+    symbol_times_equals          : TokenType
+    symbol_upTo                  : TokenType
+    symbol_upToLessThan          : TokenType
+    symbol_vertical_bar          : TokenType
+    symbol_vertical_bar_equals   : TokenType
 
   PROPERTIES
     name : String
@@ -24,16 +82,16 @@ class TokenType
       return Token( this ).set_location( filepath, line, column )
 
     method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
-      throw ZorcError( "$::create_token(String,Integer,Integer,Character) is undefined." (type_name) )
+      return LiteralCharacterToken( this, value ).set_location( filepath, line, column )
 
     method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
-      throw ZorcError( "$::create_token(String,Integer,Integer,Integer) is undefined." (type_name) )
+      return LiteralIntegerToken( this, value ).set_location( filepath, line, column )
 
     method create_token( filepath:String, line:Integer, column:Integer, value:Real )->Token
-      throw ZorcError( "$::create_token(String,Integer,Integer,Real) is undefined." (type_name) )
+      return LiteralRealToken( this, value ).set_location( filepath, line, column )
 
     method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
-      throw ZorcError( "$::create_token(String,Integer,Integer,String) is undefined." (type_name) )
+      return LiteralStringToken( this, value ).set_location( filepath, line, column )
 
     method is_structural->Logical
       return false
@@ -42,34 +100,22 @@ class TokenType
       return name
 endClass
 
+class EOLTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return EOLToken( this, "" ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      return EOLToken( this, value ).set_location( filepath, line, column )
+
+    method is_structural->Logical
+      return true
+endClass
+
 class IdentifierTokenType : TokenType
   METHODS
     method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
       return IdentifierToken( this, value ).set_location( filepath, line, column )
-endClass
-
-class LiteralCharacterTokenType : TokenType
-  METHODS
-    method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
-      return LiteralCharacterToken( this, value ).set_location( filepath, line, column )
-endClass
-
-class LiteralIntegerTokenType : TokenType
-  METHODS
-    method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
-      return LiteralIntegerToken( this, value ).set_location( filepath, line, column )
-endClass
-
-class LiteralRealTokenType : TokenType
-  METHODS
-    method create_token( filepath:String, line:Integer, column:Integer, value:Real )->Token
-      return LiteralRealToken( this, value ).set_location( filepath, line, column )
-endClass
-
-class LiteralStringTokenType : TokenType
-  METHODS
-    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
-      return LiteralStringToken( this, value ).set_location( filepath, line, column )
 endClass
 
 class StructuralTokenType : TokenType

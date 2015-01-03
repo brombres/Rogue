@@ -11,11 +11,26 @@ class Token
     method clone->Token
       throw ZorcError( "clone() not implemented for type $." (type_name) )
 
+    method is_structural->Logical
+      return type.is_structural
+
     method set_location( filepath, line, column )->Token
       return this
 
     method to->String
       return type.to_String(this)
+endClass
+
+class EOLToken : Token
+  PROPERTIES
+    comment : String
+
+  METHODS
+    method init( type, comment )
+
+    method to->String
+      if (comment.count?) return //EOL  # $// (comment)
+      return "EOL"
 endClass
 
 class IdentifierToken : Token

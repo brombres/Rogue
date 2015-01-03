@@ -20,22 +20,108 @@ class Tokenizer
       return tokens
 
   INTERNAL METHODS
+    method add_new_string_or_character_token_from_buffer( terminator:Character )->Logical
+      # We have a string in 'buffer' already; convert it to a character if it has count 1.
+      if (buffer.count == 1 and terminator == '\'')
+        return add_new_token( TokenType.literal_character, buffer[0] )
+      else
+        return add_new_token( TokenType.literal_string, buffer->String )
+      endIf
+
+    method add_new_token( type:TokenType )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column) )
+      return true
+
+    method add_new_token( type:TokenType, value:Character )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
+    method add_new_token( type:TokenType, value:Integer )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
+    method add_new_token( type:TokenType, value:Real )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
+    method add_new_token( type:TokenType, value:String )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
     method configure_token_types
       if (TokenType.lookup?) return
 
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Structural Tokens
-      TokenType.eol              = define( StructuralTokenType("end of line") )
+      TokenType.eol              = define( EOLTokenType("end of line") )
       TokenType.keyword_class    = define( StructuralTokenType("class") )
       TokenType.keyword_endClass = define( StructuralTokenType("endClass") )
 
       # Command Tokens
-      TokenType.identifier        = define( IdentifierTokenType("identifier") )
-      TokenType.literal_character = define( LiteralCharacterTokenType("Character") )
-      TokenType.literal_integer   = define( LiteralIntegerTokenType("Integer") )
-      TokenType.literal_real      = define( LiteralRealTokenType("Real") )
-      TokenType.literal_string    = define( LiteralStringTokenType("String") )
+      TokenType.identifier                   = define( TokenType("identifier") )
+      TokenType.literal_character            = define( TokenType("Character") )
+      TokenType.literal_integer              = define( TokenType("Integer") )
+      TokenType.literal_real                 = define( TokenType("Real") )
+      TokenType.literal_string               = define( TokenType("String") )
+
+      TokenType.symbol_ampersand             = define( TokenType("&") )
+      TokenType.symbol_ampersand_equals      = define( TokenType("&=") )
+      TokenType.symbol_arrow                 = define( TokenType("->") )
+      TokenType.symbol_at                    = define( TokenType("@") )
+      TokenType.symbol_backslash             = define( TokenType("\\") )
+      TokenType.symbol_caret                 = define( TokenType("^") )
+      TokenType.symbol_caret_equals          = define( TokenType("^=") )
+      TokenType.symbol_close_brace           = define( TokenType("}") )
+      TokenType.symbol_close_bracket         = define( TokenType("]") )
+      TokenType.symbol_close_comment         = define( TokenType("}#") )
+      TokenType.symbol_close_paren           = define( TokenType(")") )
+      TokenType.symbol_close_specialize      = define( TokenType(">>") )
+      TokenType.symbol_colon                 = define( TokenType(":") )
+      TokenType.symbol_colon_colon           = define( TokenType("::") )
+      TokenType.symbol_comma                 = define( TokenType(",") )
+      TokenType.symbol_compare               = define( TokenType("<>") )
+      TokenType.symbol_dot                   = define( TokenType(".") )
+      TokenType.symbol_dot_equals            = define( TokenType(".=") )
+      TokenType.symbol_downToGreaterThan     = define( TokenType("..>") )
+      TokenType.symbol_empty_braces          = define( TokenType("{}") )
+      TokenType.symbol_empty_brackets        = define( TokenType("[]") )
+      TokenType.symbol_eq                    = define( TokenType("==") )
+      TokenType.symbol_equals                = define( TokenType("=") )
+      TokenType.symbol_exclamation_point     = define( TokenType("!") )
+      TokenType.symbol_fat_arrow             = define( TokenType("=>") )
+      TokenType.symbol_ge                    = define( TokenType(">=") )
+      TokenType.symbol_gt                    = define( TokenType(">") )
+      TokenType.symbol_le                    = define( TokenType("<=") )
+      TokenType.symbol_lt                    = define( TokenType("<") )
+      TokenType.symbol_minus                 = define( TokenType("-") )
+      TokenType.symbol_minus_equals          = define( TokenType("-=") )
+      TokenType.symbol_minus_minus           = define( TokenType("--") )
+      TokenType.symbol_ne                    = define( TokenType("!=") )
+      TokenType.symbol_open_brace            = define( TokenType("{") )
+      TokenType.symbol_open_bracket          = define( TokenType("[") )
+      TokenType.symbol_open_paren            = define( TokenType("(") )
+      TokenType.symbol_open_specialize       = define( TokenType("<<") )
+      TokenType.symbol_percent               = define( TokenType("%") )
+      TokenType.symbol_percent_equals        = define( TokenType("%=") )
+      TokenType.symbol_plus                  = define( TokenType("+") )
+      TokenType.symbol_plus_equals           = define( TokenType("+=") )
+      TokenType.symbol_plus_plus             = define( TokenType("++") )
+      TokenType.symbol_question_mark         = define( TokenType("?") )
+      TokenType.symbol_semicolon             = define( TokenType(";") )
+      TokenType.symbol_shift_left            = define( TokenType(":<<:") )
+      TokenType.symbol_shift_right           = define( TokenType(":>>:") )
+      TokenType.symbol_shift_right_x         = define( TokenType(":>>>:") )
+      TokenType.symbol_slash                 = define( TokenType("/") )
+      TokenType.symbol_slash_equals          = define( TokenType("/=") )
+      TokenType.symbol_tilde                 = define( TokenType("~") )
+      TokenType.symbol_tilde_equals          = define( TokenType("~=") )
+      TokenType.symbol_times                 = define( TokenType("*") )
+      TokenType.symbol_times_equals          = define( TokenType("*=") )
+      TokenType.symbol_upTo                  = define( TokenType("..") )
+      TokenType.symbol_upToLessThan          = define( TokenType("..<") )
+      TokenType.symbol_vertical_bar          = define( TokenType("|") )
+      TokenType.symbol_vertical_bar_equals   = define( TokenType("|=") )
 
     method consume( ch:Character )->Logical
       if (reader.peek != ch) return false
@@ -53,37 +139,155 @@ class Tokenizer
       while (reader.consume(' '))  noAction
       return true
 
-    method create_string_or_character_token_from_buffer( terminator:Character )->Logical
-      # We have a string in 'buffer' already; convert it to a character if it has count 1.
-      if (buffer.count == 1 and terminator == '\'')
-        tokens.add( TokenType.literal_character.create_token(next_filepath,next_line,next_column) )
-      else
-        tokens.add( TokenType.literal_string.create_token(next_filepath,next_line,next_column) )
-      endIf
-      return true
-
-    method create_token( type:TokenType )->Logical
-      tokens.add( type.create_token(next_filepath,next_line,next_column) )
-      return true
-
-    method create_token( type:TokenType, value:Integer )->Logical
-      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
-      return true
-
-    method create_token( type:TokenType, value:Real )->Logical
-      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
-      return true
-
-    method create_token( type:TokenType, value:String )->Logical
-      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
-      return true
-
     method define( type:TokenType )->TokenType
       TokenType.lookup[type.name] = type
       return type
 
     method error( message:String )->ZorcError
       return ZorcError( message, filepath, reader.line, reader.column )
+
+    method get_symbol_token_type->TokenType
+      local ch = reader.read
+
+      if (ch == '!')
+        if (consume('=')) return TokenType.symbol_ne
+        else              return TokenType.symbol_exclamation_point
+
+      elseIf (ch == '%')
+        if     (consume('=')) return TokenType.symbol_percent_equals
+        else                  return TokenType.symbol_percent
+
+      elseIf (ch == '&' )
+        if     (consume('&')) throw error( "Use 'and' instead of '&&'." )
+        elseIf (consume('=')) return TokenType.symbol_ampersand_equals
+        else                  return TokenType.symbol_ampersand
+
+      elseIf (ch == '(')
+        return TokenType.symbol_open_paren
+
+      elseIf (ch == ')')
+      return TokenType.symbol_close_paren
+
+      elseIf (ch == '*')
+        if     (consume('=')) return TokenType.symbol_times_equals
+        else                  return TokenType.symbol_times
+
+      elseIf (ch == '+')
+        if     (consume('=')) return TokenType.symbol_plus_equals
+        elseIf (consume('+')) return TokenType.symbol_plus_plus
+        else                  return TokenType.symbol_plus
+
+      elseIf (ch == ',')
+        return TokenType.symbol_comma
+
+      elseIf (ch == '-')
+        if     (consume('='))  return TokenType.symbol_minus_equals
+        elseIf (consume('-'))  return TokenType.symbol_minus_minus
+        elseIf (reader.peek(0) == '>' and reader.peek(1) == '>') return TokenType.symbol_minus
+        elseIf (consume('>'))  return TokenType.symbol_arrow
+        else                   return TokenType.symbol_minus
+
+      elseIf (ch == '.' )
+        if (consume('.'))
+          if (consume('.'))
+            # ellipsis
+            while (consume(' ')) noAction
+            if (not consume('\n')) throw error( "End of line expected after '...'." )
+            return null 
+          elseIf (consume('<'))
+            return TokenType.symbol_upToLessThan
+          elseIf (consume('>'))
+            return TokenType.symbol_downToGreaterThan
+          else
+            return TokenType.symbol_upTo
+          endIf
+        elseIf (consume('='))
+          return TokenType.symbol_dot_equals
+        else
+          return TokenType.symbol_dot
+        endIf
+
+      elseIf (ch == '/')
+        if (consume('/'))
+          tokenize_alternate_string
+          return null
+        elseIf (consume('='))
+          return TokenType.symbol_slash_equals
+        else
+          return TokenType.symbol_slash
+        endIf
+
+      elseIf (ch == ':')
+        if (consume(':'))
+          return TokenType.symbol_colon_colon
+        endIf
+
+        if (consume("<<:"))  return TokenType.symbol_shift_left
+        elseIf (consume(">>:"))  return TokenType.symbol_shift_right
+        elseIf (consume(">>>:")) return TokenType.symbol_shift_right_x
+        return TokenType.symbol_colon
+
+      elseIf (ch == ';')
+        return TokenType.symbol_semicolon
+
+      elseIf (ch == '<' )
+        if     (consume('<')) return TokenType.symbol_open_specialize
+        elseIf (consume('=')) return TokenType.symbol_le
+        elseIf (consume('>')) return TokenType.symbol_compare
+        else                  return TokenType.symbol_lt
+
+      elseIf (ch == '=' )
+        if (consume('='))     return TokenType.symbol_eq
+        elseIf (consume('>')) return TokenType.symbol_fat_arrow
+        else                  return TokenType.symbol_equals
+
+      elseIf (ch == '>' )
+        if      (consume('=')) return TokenType.symbol_ge
+        elseIf  (consume('>')) return TokenType.symbol_close_specialize
+        else                   return TokenType.symbol_gt
+
+      elseIf (ch == '?')
+        return TokenType.symbol_question_mark
+
+      elseIf (ch == '@' )
+        return TokenType.symbol_at
+
+      elseIf (ch == '[')
+        if (consume(']')) return TokenType.symbol_empty_brackets
+        return TokenType.symbol_open_bracket
+        #return check_for_directives( TokenType.symbol_open_bracket )
+
+      elseIf (ch == '\\')
+        return TokenType.symbol_backslash
+
+      elseIf (ch == ']')
+        return TokenType.symbol_close_bracket
+
+      elseIf (ch == '^')
+        if     (consume('=')) return TokenType.symbol_caret_equals
+        else                  return TokenType.symbol_caret
+
+      elseIf (ch == '{')
+        if (consume('}')) return TokenType.symbol_empty_braces
+        return TokenType.symbol_open_brace
+
+      elseIf (ch == '|' )
+        if     (consume('|')) throw error( "Use 'or' instead of '||'." )
+        elseIf (consume('=')) return TokenType.symbol_vertical_bar_equals
+        else                  return TokenType.symbol_vertical_bar
+
+      elseIf (ch == '}' )
+        if     (consume('#')) return TokenType.symbol_close_comment # used for error reporting
+        else                  return TokenType.symbol_close_brace
+
+      elseIf (ch == '~')
+        if     (consume('=')) return TokenType.symbol_tilde_equals
+        else                  return TokenType.symbol_tilde
+
+      else
+        throw error( "Unexpected input '"+ch+"'." )
+      endIf
+
 
     method next_is_hex_digit->Logical
       local ch = reader.peek
@@ -166,6 +370,29 @@ class Tokenizer
 
       return buffer->String
 
+    method tokenize_alternate_string->Logical
+      buffer.clear
+
+      while (reader.has_another)
+        if (reader.has_another)
+          local ch = reader.peek
+          if (ch == '/')
+            reader.read
+            ch = reader.peek
+            if (ch == '/')
+              reader.read
+              return add_new_string_or_character_token_from_buffer('/')
+            else
+              buffer.print( '/' )
+            endIf
+          else
+            buffer.print( read_character )
+          endIf
+        endIf
+      endWhile
+
+      throw error( "End of file reached while looking for end of string." )
+
     method tokenize_another->Logical
       reader.consume_spaces
       if (not reader.has_another) return false
@@ -175,13 +402,13 @@ class Tokenizer
       next_column = reader.column
 
       local ch = reader.peek
-      if (ch == '\n') reader.read; return create_token( TokenType.eol )
+      if (ch == '\n') reader.read; return add_new_token( TokenType.eol )
 
       if (ch.is_letter or ch == '_')
         local id = read_identifier
         local keyword_type = TokenType.lookup[id]
-        if (keyword_type?) return create_token( keyword_type )
-        else               return create_token( TokenType.identifier, id )
+        if (keyword_type?) return add_new_token( keyword_type )
+        else               return add_new_token( TokenType.identifier, id )
         return true
 
       elseIf (ch == '\'')
@@ -189,6 +416,9 @@ class Tokenizer
 
       elseIf (ch == '"')
         return tokenize_string( '"' )
+
+      elseIf (ch == '#')
+        return tokenize_comment
 
       elseIf (ch >= '0' and ch <= '9')
         which (reader.peek(1))
@@ -198,6 +428,20 @@ class Tokenizer
           others:   return tokenize_number
         endWhich
 
+      elseIf (ch == '@' and reader.peek(1) == '|')
+        return tokenize_verbatim_string
+
+      else
+        # Either a symbol or a decimal like ".1".
+        if (ch == '.')
+          local next = reader.peek(1)
+          if (next >= '0' and next <= '9') return tokenize_number
+        endIf
+
+        # Symbol
+        local token_type = get_symbol_token_type
+        if (token_type == null) return true
+        return add_new_token( token_type )
       endIf
 
       local name = "'$'" (ch)
@@ -205,6 +449,46 @@ class Tokenizer
       elseIf (ch < 32 or ch > 126) name = "(Unicode $)" (ch->Integer)
 
       throw error( "Syntax error - unexpected input $." (name) )
+
+    method tokenize_comment->Logical
+      buffer.clear
+      reader.read  # '#'
+      if (consume('{'))
+        local nesting_count = 1
+        local keep_reading = true
+        while (reader.has_another)
+          local ch = reader.read
+          which (ch)
+            case '#'
+              buffer.print('#')
+              if (consume('{'))
+                buffer.print('{')
+                ++nesting_count
+              endIf
+
+            case '}'
+              if (consume('#'))
+                --nesting_count
+                if (nesting_count == 0) escapeWhile
+                else buffer.print('}'); buffer.print('#')
+              else
+                buffer.print('}')
+              endIf
+
+            others
+              buffer.print( ch )
+          endWhich
+        endWhile
+      else
+        while (reader.has_another and reader.peek != '\n') buffer.print( reader.read )
+      endIf
+
+      if (tokens.count? and tokens.last.type is TokenType.eol)
+        # Store comments in preceding EOL, if any.
+        (tokens.last as EOLToken).comment += buffer->String
+      endIf
+
+      return true
 
     method tokenize_integer_in_base( base:Integer )->Logical
       reader.read  # '0'
@@ -228,7 +512,7 @@ class Tokenizer
 
       if (bits_per_value * count > 32) throw error( "Number too large for base " + base + "." )
 
-      return create_token( TokenType.literal_integer, n )
+      return add_new_token( TokenType.literal_integer, n )
 
     method tokenize_number->Logical
       local is_negative = consume('-')
@@ -247,10 +531,10 @@ class Tokenizer
         elseIf (ch == '.')
           # Start of range
           if (is_negative) n = -n
-          return create_token( TokenType.literal_integer, n )
+          return add_new_token( TokenType.literal_integer, n )
         else
           if (is_negative) n = -n
-          return create_token( TokenType.literal_real, n )
+          return add_new_token( TokenType.literal_real, n )
         endIf
       endIf
 
@@ -266,9 +550,9 @@ class Tokenizer
       if (is_negative) n = -n;
 
       if (is_Real)
-        return create_token( TokenType.literal_real, n )
+        return add_new_token( TokenType.literal_real, n )
       else
-        return create_token( TokenType.literal_integer, n->Integer )
+        return add_new_token( TokenType.literal_integer, n->Integer )
       endIf
 
     method tokenize_Integer->Real
@@ -288,12 +572,36 @@ class Tokenizer
         local ch = reader.peek
         if (ch == terminator)
           reader.read
-          return create_string_or_character_token_from_buffer(terminator)
+          return add_new_string_or_character_token_from_buffer(terminator)
         else
           buffer.print( read_character )
         endIf
       endWhile
 
       throw error( "End of input reached while looking for end of string." )
+
+    method tokenize_verbatim_string->Logical
+      buffer.clear
+      reader.read
+      reader.read
+      while (reader.has_another)
+        local ch = reader.peek
+        if (ch == 10)
+          local eol_line = reader.line
+          local eol_column = reader.column
+          reader.read
+          consume_spaces
+          if (consume('|'))
+            buffer.print( ch )
+          else
+            add_new_token( TokenType.literal_string, buffer->String )
+            return add_new_token( TokenType.eol )
+          endIf
+        else
+          buffer.print( reader.read )
+        endIf
+      endWhile
+
+      throw error( "End of File reached while looking for end of verbatim string." )
 endClass
 

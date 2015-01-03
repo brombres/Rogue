@@ -1,5 +1,11 @@
 class Test
   METHODS
     method init
+      # This is a comment
       println "Hello Zor!"
+      println @|Power
+               |to
+               |the
+               |people
+      a++ + ++b
 endClass
