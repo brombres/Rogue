@@ -2,7 +2,7 @@ $[include "ParseReader.bard"]
 $[include "Token.bard"]
 $[include "Preprocessor.bard"]
 
-class BardScanner
+class Tokenizer
   PROPERTIES
     tokens      : Token[]
     token_queue = Token[]

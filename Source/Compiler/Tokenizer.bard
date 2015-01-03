@@ -1,0 +1,299 @@
+$[include "ZorcError.bard"]
+
+class Tokenizer
+  PROPERTIES
+    filepath    : String
+    reader      : ParseReader
+    tokens      = Token[]
+    buffer      = StringBuilder()
+
+    next_filepath : String
+    next_line     : Integer
+    next_column   : Integer
+
+  METHODS
+    method tokenize( filepath )->Token[]
+      reader = ParseReader( filepath )
+      configure_token_types
+      while (tokenize_another)
+      endWhile
+      return tokens
+
+  INTERNAL METHODS
+    method configure_token_types
+      if (TokenType.lookup?) return
+
+      TokenType.lookup        = Table<<String,TokenType>>()
+
+      # Structural Tokens
+      TokenType.eol              = define( StructuralTokenType("end of line") )
+      TokenType.keyword_class    = define( StructuralTokenType("class") )
+      TokenType.keyword_endClass = define( StructuralTokenType("endClass") )
+
+      # Command Tokens
+      TokenType.identifier        = define( IdentifierTokenType("identifier") )
+      TokenType.literal_character = define( LiteralCharacterTokenType("Character") )
+      TokenType.literal_integer   = define( LiteralIntegerTokenType("Integer") )
+      TokenType.literal_real      = define( LiteralRealTokenType("Real") )
+      TokenType.literal_string    = define( LiteralStringTokenType("String") )
+
+    method consume( ch:Character )->Logical
+      if (reader.peek != ch) return false
+      reader.read
+      return true
+
+    method consume( st:String )->Logical
+      return reader.consume(st)
+
+    method consume_id( st:String )->Logical
+      return reader.consume_id(st)
+
+    method consume_spaces->Logical
+      if (not reader.consume(' ')) return false
+      while (reader.consume(' '))  noAction
+      return true
+
+    method create_string_or_character_token_from_buffer( terminator:Character )->Logical
+      # We have a string in 'buffer' already; convert it to a character if it has count 1.
+      if (buffer.count == 1 and terminator == '\'')
+        tokens.add( TokenType.literal_character.create_token(next_filepath,next_line,next_column) )
+      else
+        tokens.add( TokenType.literal_string.create_token(next_filepath,next_line,next_column) )
+      endIf
+      return true
+
+    method create_token( type:TokenType )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column) )
+      return true
+
+    method create_token( type:TokenType, value:Integer )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
+    method create_token( type:TokenType, value:Real )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
+    method create_token( type:TokenType, value:String )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
+    method define( type:TokenType )->TokenType
+      TokenType.lookup[type.name] = type
+      return type
+
+    method error( message:String )->ZorcError
+      return ZorcError( message, filepath, reader.line, reader.column )
+
+    method next_is_hex_digit->Logical
+      local ch = reader.peek
+      return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
+
+    method read_character->Character
+      if (not reader.has_another) throw error( "Character expected." )
+
+      local ch = reader.peek
+      if (ch == '\n') throw error( "Character expected; found end of line." )
+
+      if (ch == '\\')
+        reader.read
+        if (not reader.has_another) throw error( "Escaped character expected; found end of input." )
+
+        if (consume('b')) return 8->Character
+        if (consume('f')) return 12->Character
+        if (consume('n')) return '\n'
+        if (consume('r')) return '\r'
+        if (consume('t')) return '\t'
+        if (consume('v')) return 11->Character
+        if (consume('0')) return '\0'
+        if (consume('/')) return '/'
+        if (consume('\''))return '\''
+        if (consume('\\'))return '\\'
+        if (consume('"')) return '"'
+        if (consume('x')) return read_hex_value(2)
+        if (consume('u')) return read_hex_value(4)
+        throw error( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
+      endIf
+
+      local value = reader.read->Integer
+      if ((value & 0x80) != 0)
+        # Handle UTF8 encoding
+        local ch2 = reader.read->Integer
+
+        if ((value & 0x20) == 0)
+          # %110xxxxx 10xxxxxx
+          value = value & 0x1f
+          ch2 = value & 0x3f
+          return ((value:<<:6) | ch2)->Character
+        else
+          # %1110xxxx 10xxxxxx 10xxxxxx
+          local ch3 = reader.read->Integer
+          value = value & 15
+          ch2 = ch2 & 0x3f
+          ch3 = ch3 & 0x3f
+          return ((value:<<:2) | (ch2:<<:6) | ch3)->Character
+        endIf
+      endIf
+      return value->Character
+
+    method read_hex_value( digits:Integer )->Character
+      local value = 0
+      local i = 1
+      while (i <= digits)
+        if (not reader.has_another) throw error( digits + "-digit hex value expected; found end of file." )
+        if (not next_is_hex_digit)
+          local ch = reader.peek
+          local error_buffer = StringBuilder()
+          error_buffer.print( "Invalid hex digit " )
+          if (ch < ' ' or ch->Integer == 127) error_buffer.print( ch->Integer )
+          else error_buffer.print( "'" + ch + "'" )
+          error_buffer.print('.')
+          throw error( error_buffer->String )
+        endIf
+        local intval = reader.read->Integer
+        value = (value:<<:4) + intval
+        ++i
+      endWhile
+      return value->Character
+
+    method read_identifier->String
+      buffer.clear
+      local ch = reader.peek
+      while ((ch>='a' and ch<='z') or (ch>='A' and ch<='Z') or (ch>='0' and ch<='9') or ch=='_')
+        buffer.print( reader.read )
+        ch = reader.peek
+      endWhile
+
+      return buffer->String
+
+    method tokenize_another->Logical
+      reader.consume_spaces
+      if (not reader.has_another) return false
+
+      next_filepath = filepath
+      next_line = reader.line
+      next_column = reader.column
+
+      local ch = reader.peek
+      if (ch == '\n') reader.read; return create_token( TokenType.eol )
+
+      if (ch.is_letter or ch == '_')
+        local id = read_identifier
+        local keyword_type = TokenType.lookup[id]
+        if (keyword_type?) return create_token( keyword_type )
+        else               return create_token( TokenType.identifier, id )
+        return true
+
+      elseIf (ch == '\'')
+        return tokenize_string( '\'' )
+
+      elseIf (ch == '"')
+        return tokenize_string( '"' )
+
+      elseIf (ch >= '0' and ch <= '9')
+        which (reader.peek(1))
+          case 'b': return tokenize_integer_in_base(2)
+          case 'c': return tokenize_integer_in_base(8)
+          case 'x': return tokenize_integer_in_base(16)
+          others:   return tokenize_number
+        endWhich
+
+      endIf
+
+      local name = "'$'" (ch)
+      if (ch == 10) name = "EOL"
+      elseIf (ch < 32 or ch > 126) name = "(Unicode $)" (ch->Integer)
+
+      throw error( "Syntax error - unexpected input $." (name) )
+
+    method tokenize_integer_in_base( base:Integer )->Logical
+      reader.read  # '0'
+      reader.read  # [b,c,x] = [2,8,16]
+
+      local bits_per_value = 1
+      while (2^bits_per_value < base) ++bits_per_value
+
+      local count = 0
+      local n = 0
+      local digit = reader.peek.to_number
+      while (reader.has_another and digit != -1)
+        if (digit >= base) throw error( "Digit out of range for base " + base + "." )
+        ++count
+        n = n * base + digit
+        reader.read
+        digit = reader.peek.to_number
+      endWhile
+
+      if (count == 0) throw error( "One or more digits expected." )
+
+      if (bits_per_value * count > 32) throw error( "Number too large for base " + base + "." )
+
+      return create_token( TokenType.literal_integer, n )
+
+    method tokenize_number->Logical
+      local is_negative = consume('-')
+      local is_Real = false
+
+      local n  = tokenize_Integer
+
+      if (reader.peek == '.')
+        local ch = reader.peek(1)
+        if (ch >= '0' and ch <= '9')
+          reader.read
+          is_Real = true
+          local start_pos = reader.position
+          local fraction = tokenize_Integer
+          n += fraction / 10^(reader.position - start_pos)
+        elseIf (ch == '.')
+          # Start of range
+          if (is_negative) n = -n
+          return create_token( TokenType.literal_integer, n )
+        else
+          if (is_negative) n = -n
+          return create_token( TokenType.literal_real, n )
+        endIf
+      endIf
+
+      if (consume('E') or consume('e'))
+        is_Real = true
+        local negative_exponent = consume('-')
+        if (not negative_exponent) consume('+')
+        local power = tokenize_Integer
+        if (negative_exponent) n /= power
+        else                   n *= power
+      endIf
+
+      if (is_negative) n = -n;
+
+      if (is_Real)
+        return create_token( TokenType.literal_real, n )
+      else
+        return create_token( TokenType.literal_integer, n->Integer )
+      endIf
+
+    method tokenize_Integer->Real
+      local n = 0.0
+      local ch = reader.peek
+      while (ch >= '0' and ch <= '9')
+        local intval = reader.read->Integer - '0'
+        n = n * 10.0 + intval
+        ch = reader.peek
+      endWhile
+      return n
+
+    method tokenize_string( terminator:Character )->Logical
+      buffer.clear
+      reader.read
+      while (reader.has_another)
+        local ch = reader.peek
+        if (ch == terminator)
+          reader.read
+          return create_string_or_character_token_from_buffer(terminator)
+        else
+          buffer.print( read_character )
+        endIf
+      endWhile
+
+      throw error( "End of input reached while looking for end of string." )
+endClass
+

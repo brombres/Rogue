@@ -1,0 +1,82 @@
+class TokenType
+  SETTINGS
+    lookup            : Table<<String,TokenType>>
+
+    # Structural
+    eol               : TokenType
+    keyword_class     : TokenType
+    keyword_endClass  : TokenType
+
+    # Commmand
+    identifier        : TokenType
+    literal_character : TokenType
+    literal_integer   : TokenType
+    literal_real      : TokenType
+    literal_string    : TokenType
+
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( name )
+
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return Token( this ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
+      throw ZorcError( "$::create_token(String,Integer,Integer,Character) is undefined." (type_name) )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
+      throw ZorcError( "$::create_token(String,Integer,Integer,Integer) is undefined." (type_name) )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:Real )->Token
+      throw ZorcError( "$::create_token(String,Integer,Integer,Real) is undefined." (type_name) )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      throw ZorcError( "$::create_token(String,Integer,Integer,String) is undefined." (type_name) )
+
+    method is_structural->Logical
+      return false
+
+    method to_String( t:Token )->String
+      return name
+endClass
+
+class IdentifierTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      return IdentifierToken( this, value ).set_location( filepath, line, column )
+endClass
+
+class LiteralCharacterTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
+      return LiteralCharacterToken( this, value ).set_location( filepath, line, column )
+endClass
+
+class LiteralIntegerTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
+      return LiteralIntegerToken( this, value ).set_location( filepath, line, column )
+endClass
+
+class LiteralRealTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer, value:Real )->Token
+      return LiteralRealToken( this, value ).set_location( filepath, line, column )
+endClass
+
+class LiteralStringTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      return LiteralStringToken( this, value ).set_location( filepath, line, column )
+endClass
+
+class StructuralTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return Token( this ).set_location( filepath, line, column )
+
+    method is_structural->Logical
+      return true
+endClass

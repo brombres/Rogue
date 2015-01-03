@@ -1,5 +1,11 @@
 $[include "Token.bard"]
 
+class TokenType
+endClass
+
+class Keyword : TokenType
+endClass
+
 class Keywords
   SETTINGS
     lookup            = Table<<String,Integer>>(128)
@@ -11,7 +17,6 @@ class Keywords
   METHODS
     method configure
       if (lookup.count?) return
-      add( "alias",            Token.keyword_alias )
       add( "and",              Token.keyword_and )
       add( "as",               Token.keyword_as )
       add( "aspect",           Token.keyword_aspect )
@@ -58,6 +63,7 @@ class Keywords
       add( "function",         Token.keyword_function )
       add( "if",               Token.keyword_if )
       add( "in",               Token.keyword_in )
+      add( "inline",           Token.keyword_inline )
       add( "instanceOf",       Token.keyword_instanceOf )
       add( "INTERNAL",         Token.keyword_INTERNAL )
       add( "is",               Token.keyword_is )

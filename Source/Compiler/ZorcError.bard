@@ -1,0 +1,23 @@
+class ZorcError : Error
+  PROPERTIES
+    filepath : String
+    line     : Integer
+    column   : Integer
+
+  METHODS
+    method init( message, filepath=null, line=0, column=0 )
+
+    method to->String
+      if (filepath?)
+        return //===============================================================================\n// +
+               //ERROR in "// + File.filename(filepath) + //" line // + line + //, column // + column +
+               //:\n// + message + //\n// +
+               //===============================================================================//
+      else
+        return //===============================================================================\n// +
+               //INTERNAL ERROR\n  // + message + //\n// +
+               //===============================================================================//
+      endIf
+
+endClass
+
