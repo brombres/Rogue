@@ -1,18 +1,42 @@
+$[include "Preprocessor.bard"]
 $[include "Token.bard"]
 $[include "Tokenizer.bard"]
 $[include "TokenType.bard"]
 
-class Zorc
+class Zorc [singleton]
+  PROPERTIES
+    included_files = String[]
+
   METHODS
     method init
       try
         println "ZORC"
-        forEach (t in Tokenizer().tokenize("Test.zor"))
-          println t
-        endForEach
+        include( "Test.zor" )
         println "DONE"
       catch (err:Error)
         println err
       endTry
 
+    method include( filepath:String )
+      include( null, filepath )
+
+    method include( t:Token, filepath:String )
+      # Preemptively (immediately) parses the given file.
+      local file = File(filepath)
+      if (not file.exists)
+        local mesg = //No such file "$".// (filepath)
+        if (t?) throw t.error( mesg )
+        else    throw ZorcError( mesg )
+      endIf
+
+      filepath = file.absolute_filepath
+      if (included_files.contains(filepath)) return
+
+      included_files.add( filepath )
+
+      println "Including " + filepath
+      forEach (t in Preprocessor().process(Tokenizer().tokenize(filepath)))
+        println t
+      endForEach
 endClass
+

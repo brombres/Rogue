@@ -19,7 +19,8 @@ class Tokenizer
       endWhile
       return tokens
 
-  INTERNAL METHODS
+    # -------------------------------------------------------------------------
+
     method add_new_string_or_character_token_from_buffer( terminator:Character )->Logical
       # We have a string in 'buffer' already; convert it to a character if it has count 1.
       if (buffer.count == 1 and terminator == '\'')
@@ -54,11 +55,12 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
-      TokenType.directive_include = define( TokenType("$include") )
-      TokenType.directive_if      = define( TokenType("$if") )
-      TokenType.directive_elseIf  = define( TokenType("$elseIf") )
-      TokenType.directive_else    = define( TokenType("$else") )
-      TokenType.directive_endIf   = define( TokenType("$endIf") )
+      TokenType.directive_define  = define( DirectiveTokenType("$define") )
+      TokenType.directive_include = define( DirectiveTokenType("$include") )
+      TokenType.directive_if      = define( DirectiveTokenType("$if") )
+      TokenType.directive_elseIf  = define( DirectiveTokenType("$elseIf") )
+      TokenType.directive_else    = define( DirectiveTokenType("$else") )
+      TokenType.directive_endIf   = define( DirectiveTokenType("$endIf") )
 
       TokenType.placeholder_id    = define( TokenType("$id") )
 
@@ -166,6 +168,7 @@ class Tokenizer
         local token_type : TokenType
         local id = read_identifier
         which (id)
+          case "define":   add_new_token( TokenType.directive_define )
           case "include":  add_new_token( TokenType.directive_include )
           case "if":       add_new_token( TokenType.directive_if )
           case "elseIf":   add_new_token( TokenType.directive_elseIf )

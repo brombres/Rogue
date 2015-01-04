@@ -11,6 +11,12 @@ class Token
     method clone->Token
       throw ZorcError( "clone() not implemented for type $." (type_name) )
 
+    method error( message:String )->ZorcError
+      return ZorcError( message, filepath, line, column )
+
+    method is_directive->Logical
+      return type.is_directive
+
     method is_structural->Logical
       return type.is_structural
 
@@ -85,6 +91,6 @@ class LiteralStringToken : Token
     method init( type, value )
 
     method to->String
-      return //"$"// (value)
+      return value
 endClass
 
