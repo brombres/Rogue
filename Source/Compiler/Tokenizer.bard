@@ -76,6 +76,13 @@ class Tokenizer
       TokenType.literal_real                 = define( TokenType("Real") )
       TokenType.literal_string               = define( TokenType("String") )
 
+      TokenType.keyword_and                  = define( TokenType("and") )
+      TokenType.keyword_false                = define( TokenType("false") )
+      TokenType.keyword_not                  = define( TokenType("not") )
+      TokenType.keyword_or                   = define( TokenType("or") )
+      TokenType.keyword_true                 = define( TokenType("true") )
+      TokenType.keyword_xor                  = define( TokenType("xor") )
+
       TokenType.symbol_ampersand             = define( TokenType("&") )
       TokenType.symbol_ampersand_equals      = define( TokenType("&=") )
       TokenType.symbol_arrow                 = define( TokenType("->") )

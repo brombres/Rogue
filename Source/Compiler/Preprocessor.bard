@@ -34,6 +34,9 @@ class Preprocessor
             endIf
             Zorc.include( t, filepath_t->String )
 
+          elseIf (t.type is TokenType.directive_if)
+            println "CONDITION:" + parse_expression
+
           endIf
 
         else
@@ -45,6 +48,11 @@ class Preprocessor
       return tokens
 
     # -------------------------------------------------------------------------
+
+    method must_consume_expanded( type:TokenType )
+      local t = read_expanded
+      if (t.type is type) return
+      throw t.error( "$ expected, found $." (type.name,t.type.name) )
 
     method expand_definitions( t:Token )
       if (t.type is TokenType.identifier)
@@ -65,6 +73,70 @@ class Preprocessor
       endIf
 
       tokens.add( t )
+
+    method parse_expression->Logical
+      return parse_or
+
+    method parse_or->Logical
+      return parse_or( parse_xor )
+
+    method parse_or( lhs:Logical )->Logical
+      local t = peek_expanded
+      if (t.type is TokenType.keyword_or)
+        reader.read
+        local rhs = parse_xor
+        return parse_or( lhs or rhs )
+      else
+        return lhs
+      endIf
+
+    method parse_xor->Logical
+      return parse_xor( parse_and )
+
+    method parse_xor( lhs:Logical )->Logical
+      local t = peek_expanded
+      if (t.type is TokenType.keyword_xor)
+        reader.read
+        local rhs = parse_and
+        return parse_xor( lhs xor rhs )
+      else
+        return lhs
+      endIf
+
+    method parse_and->Logical
+      return parse_and( parse_not )
+
+    method parse_and( lhs:Logical )->Logical
+      local t = peek_expanded
+      if (t.type is TokenType.keyword_and)
+        reader.read
+        local rhs = parse_not
+        return parse_and( lhs and rhs )
+      else
+        return lhs
+      endIf
+
+    method parse_not->Logical
+      local t = peek_expanded
+      if (t.type is TokenType.keyword_not)
+        reader.read
+        return not parse_not
+      else
+        return parse_term
+      endIf
+
+    method parse_term->Logical
+      local t = read_expanded
+      if (t.type is TokenType.keyword_true)  return true
+      if (t.type is TokenType.keyword_false) return false
+
+      if (t.type is TokenType.symbol_open_paren)
+        local result = parse_expression
+        must_consume_expanded( TokenType.symbol_close_paren )
+        return result
+      endIf
+
+      throw t.error( "Syntax error parsing compiler conditional - unexpected $." (t.type.name) )
 
     method peek_expanded->Token
       if (reader.queue.count == 0)

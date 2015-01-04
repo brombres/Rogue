@@ -24,6 +24,13 @@ class TokenType
     literal_real                 : TokenType
     literal_string               : TokenType
 
+    keyword_and                  : TokenType
+    keyword_false                : TokenType
+    keyword_not                  : TokenType
+    keyword_or                   : TokenType
+    keyword_true                 : TokenType
+    keyword_xor                  : TokenType
+
     symbol_ampersand             : TokenType
     symbol_ampersand_equals      : TokenType
     symbol_arrow                 : TokenType
