@@ -8,11 +8,22 @@ class Preprocessor
     reader : TokenReader
     tokens : Token[]
 
+    match_found_stack = Logical[]
+    found_else_stack  = Logical[]
+    keep_tokens_stack = Logical[]
+    single_line_stack = Logical[]
+
+    single_line = false
+    found_else  = false
+    match_found = false
+    keep_tokens = true
+
   METHODS
     method process( tokens )->Token[]
       reader = TokenReader( tokens )
       tokens = Token[]( (tokens.count * 1.1)->Integer )
 
+      peek_expanded
       while (reader.has_another)
         local t = reader.read
         if (t.is_directive)
@@ -35,19 +46,127 @@ class Preprocessor
             Roguec.include( t, filepath_t->String )
 
           elseIf (t.type is TokenType.directive_if)
-            println "CONDITION:" + parse_expression
+            match_found_stack.add( match_found )
+            keep_tokens_stack.add( keep_tokens )
+            single_line_stack.add( single_line )
+            found_else_stack.add( single_line )
+
+            found_else = false
+
+            if (keep_tokens)
+              match_found = parse_expression
+              keep_tokens = match_found
+            else
+              # Don't keep anything in this nested conditional that we're skipping entirely
+              parse_expression
+              match_found = true
+              keep_tokens = false
+            endIf
+
+            if (not consume_expanded(TokenType.eol)) single_line = true
+
+          elseIf (t.type is TokenType.directive_elseIf)
+            if (match_found_stack.count == 0) throw t.error( "$elseIf without initial $if." )
+            if (found_else)
+              if (match_found_stack.count > 1)
+                throw t.error( "Missing inner scope $endIf before outer scope $elseIf." )
+              else
+                throw t.error( "Illegal $elseIf after $else." )
+              endIf
+            endIf
+
+            if (match_found)
+              # Ignore this
+              parse_expression
+              keep_tokens = false
+            else
+              match_found = parse_expression
+              keep_tokens = match_found
+            endIf
+
+          elseIf (t.type is TokenType.directive_else)
+            if (match_found_stack.count == 0) throw t.error( "$else without initial $if." )
+            if (found_else)
+              if (match_found_stack.count > 1)
+                throw t.error( "Missing inner scope $endIf before outer scope $else." )
+              else
+                throw t.error( "Illegal second $else." )
+              endIf
+            endIf
+
+            found_else = true
+
+            if (match_found)
+              # Ignore this
+              keep_tokens = false
+            else
+              match_found = true
+              keep_tokens = true
+            endIf
+
+          elseIf (t.type is TokenType.directive_endIf)
+            if (match_found_stack.count == 0) throw t.error( "$endIf without initial $if." )
+
+            match_found = match_found_stack.remove_last
+            keep_tokens = keep_tokens_stack.remove_last
+            single_line = single_line_stack.remove_last
+            found_else  = found_else_stack.remove_last
+
+          endIf
+
+        elseIf (t.type is TokenType.eol)
+          if (keep_tokens) tokens.add( t )
+
+          if (single_line and match_found_stack.count?)
+            # This EOL marks the end of the current conditional block
+            keep_tokens = false
+
+
+            contingent
+              necessary (not found_else)
+
+              while (peek_expanded.type is TokenType.eol)
+                if (keep_tokens) tokens.add( reader.read )
+                else             reader.read
+              endWhile
+
+              local t2 = reader.peek
+              necessary (t2.type is TokenType.directive_elseIf or t2.type is TokenType.directive_else)
+
+            unsatisfied
+              # Pop of the current conditional frame
+              match_found = match_found_stack.remove_last
+              keep_tokens = keep_tokens_stack.remove_last
+              single_line = single_line_stack.remove_last
+              found_else  = found_else_stack.remove_last
+            endContingent
 
           endIf
 
         else
+          local i = tokens.count
           expand_definitions( t )
+          if (not keep_tokens)
+            # Remove all the tokens we just wrote/expanded
+            while (tokens.count > i) tokens.remove_last
+          endIf
         endIf
 
       endWhile
 
+      if (match_found_stack.count?)
+        throw reader.error( "$endIf expected, found end of file." )
+      endIf
+
       return tokens
 
     # -------------------------------------------------------------------------
+
+    method consume_expanded( type:TokenType )->Logical
+      local t = peek_expanded
+      if (t.type isNot type) return false
+      reader.read
+      return true
 
     method must_consume_expanded( type:TokenType )
       local t = read_expanded

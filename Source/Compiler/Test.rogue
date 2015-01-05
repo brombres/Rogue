@@ -1,22 +1,7 @@
-$if (false or false)
-$if (false or true)
-$if (true or false)
-$if (true or true)
+$if true
+  $if (false) A
+  $else       B
+$else
+  C
+$endIf
 
-$if (false xor false)
-$if (false xor true)
-$if (true xor false)
-$if (true xor true)
-
-$if (false and false)
-$if (false and true)
-$if (true and false)
-$if (true and true)
-
-$if not true
-$if not false
-$if not not true
-$if not not false
-A
-B
-A
