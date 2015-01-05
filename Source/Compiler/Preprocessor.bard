@@ -32,7 +32,7 @@ class Preprocessor
             if (filepath_t.type isNot TokenType.literal_string)
               throw reader.error( "Filepath expected." )
             endIf
-            Zorc.include( t, filepath_t->String )
+            Roguec.include( t, filepath_t->String )
 
           elseIf (t.type is TokenType.directive_if)
             println "CONDITION:" + parse_expression

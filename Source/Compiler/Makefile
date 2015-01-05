@@ -1,4 +1,4 @@
-ZOR_SOURCE = $(shell ls *.zor)
+ROGUE_SOURCE = $(shell ls *.rogue)
 BARDVM = ../../Programs/Bard/Programs/Mac/bard
 BCC    = ../../Programs/Bard/Programs/BCC.bc
 BCC_ARGS = --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
@@ -7,16 +7,16 @@ all: go
 
 go: compile run
 
-compile: ../../Programs/Zorc.bc
+compile: ../../Programs/Roguec.bc
 
-../../Programs/Zorc.bc: $(ZOR_SOURCE) $(BARDVM)
-	$(BARDVM) $(BCC) $(BCC_ARGS) Zorc.bard
+../../Programs/Roguec.bc: $(ROGUE_SOURCE) $(BARDVM)
+	$(BARDVM) $(BCC) $(BCC_ARGS) Roguec.bard
 
 $(BARDVM): $(BCC)
 	cd ../../Programs/Bard && make
 
 run:
-	$(BARDVM) Zorc.bc
+	$(BARDVM) Roguec.bc
 
 clean:
 	rm -f *.bc

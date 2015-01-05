@@ -1,4 +1,4 @@
-class ZorcError : Error
+class RogueError : Error
   PROPERTIES
     filepath : String
     line     : Integer

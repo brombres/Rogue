@@ -12,7 +12,7 @@ class TokenReader
     method error( message:String )->Error
       if (has_another) return peek.error( message )
       if (count?) return tokens.last.error( message )
-      return ZorcError( message )
+      return RogueError( message )
 
     method has_another->Logical
       return (position < count) or queue.count?

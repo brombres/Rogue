@@ -9,10 +9,10 @@ class Token
     method init( type )
 
     method clone->Token
-      throw ZorcError( "clone() not implemented for type $." (type_name) )
+      throw RogueError( "clone() not implemented for type $." (type_name) )
 
-    method error( message:String )->ZorcError
-      return ZorcError( message, filepath, line, column )
+    method error( message:String )->RogueError
+      return RogueError( message, filepath, line, column )
 
     method is_directive->Logical
       return type.is_directive

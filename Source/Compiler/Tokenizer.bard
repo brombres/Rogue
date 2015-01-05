@@ -1,4 +1,4 @@
-$[include "ZorcError.bard"]
+$[include "RogueError.bard"]
 
 class Tokenizer
   PROPERTIES
@@ -161,8 +161,8 @@ class Tokenizer
       TokenType.lookup[type.name] = type
       return type
 
-    method error( message:String )->ZorcError
-      return ZorcError( message, filepath, reader.line, reader.column )
+    method error( message:String )->RogueError
+      return RogueError( message, filepath, reader.line, reader.column )
 
     method get_symbol_token_type->TokenType
       local ch = reader.read

@@ -3,15 +3,15 @@ $[include "Token.bard"]
 $[include "Tokenizer.bard"]
 $[include "TokenType.bard"]
 
-class Zorc [singleton]
+class Roguec [singleton]
   PROPERTIES
     included_files = String[]
 
   METHODS
     method init
       try
-        println "ZORC"
-        include( "Test.zor" )
+        println "ROGUEC"
+        include( "Test.rogue" )
         println "DONE"
       catch (err:Error)
         println err
@@ -26,7 +26,7 @@ class Zorc [singleton]
       if (not file.exists)
         local mesg = //No such file "$".// (filepath)
         if (t?) throw t.error( mesg )
-        else    throw ZorcError( mesg )
+        else    throw RogueError( mesg )
       endIf
 
       filepath = file.absolute_filepath
