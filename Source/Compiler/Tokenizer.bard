@@ -15,8 +15,15 @@ class Tokenizer
     method tokenize( filepath )->Token[]
       reader = ParseReader( filepath )
       configure_token_types
-      while (tokenize_another)
-      endWhile
+      while (tokenize_another) noAction
+
+      if (tokens.count == 0)
+        # Ensure there's an EOL token at the end.
+        if (tokens.count == 0 or tokens.last.type isNot TokenType.eol)
+          add_new_token( TokenType.eol )
+        endIf
+      endIf
+
       return tokens
 
     # -------------------------------------------------------------------------
@@ -431,11 +438,13 @@ class Tokenizer
 
     method tokenize_another->Logical
       reader.consume_spaces
-      if (not reader.has_another) return false
 
+      # Must be the has_another test for the terminating EOL
       next_filepath = filepath
       next_line = reader.line
       next_column = reader.column
+
+      if (not reader.has_another) return false
 
       local ch = reader.peek
       if (ch == '\n') reader.read; return add_new_token( TokenType.eol )

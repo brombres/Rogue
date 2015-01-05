@@ -14,8 +14,28 @@ class TokenReader
       if (count?) return tokens.last.error( message )
       return RogueError( message )
 
+    method expand_definition( t:Token )
+      local entry = Preprocessor.definitions.find( t->String )
+      if (entry?)
+        if (entry.value?)
+          local def_tokens = entry.value
+          entry.value = null   # temporarily null to prevent infinite recursion
+          forEach (def_t in def_tokens)
+            if (t.type is TokenType.identifier) expand_definition( def_t )
+            else                                queue.add( t )
+          endForEach
+          entry.value = def_tokens
+          return
+        else
+          throw t.error( //Recursive definition for "$".// (t->String) )
+        endIf
+      else
+        queue.add( t )
+      endIf
+
     method has_another->Logical
-      return (position < count) or queue.count?
+      peek
+      return queue.count?
 
     method next_is( type:TokenType )->Logical
       if (position == count and queue.count == 0) return false
@@ -23,17 +43,24 @@ class TokenReader
 
     method peek->Token
       if (queue.count?) return queue.last
-      if (position == count) return tokens.last
-      return tokens[ position ]
+      return peek(0)
 
     method peek( num_ahead:Integer )->Token
-      local queue_count = queue.count
-      if (queue_count?)
-        if (num_ahead < queue_count) return queue[ (queue_count - num_ahead) - 1 ]
-        else                         num_ahead -= queue_count
-      endIf
-      if (position+num_ahead >= count) return tokens.last
-      return tokens[ position + num_ahead ]
+      if (position + queue.count + num_ahead >= count) return tokens.last
+
+      while (queue.count <= num_ahead)
+        local t = tokens[position]
+        ++position
+
+        # Possible definition expansion
+        if (t.type is TokenType.identifier)
+          expand_definition( t )
+        else
+          queue.add( t )
+        endIf
+      endWhile
+
+      return queue[ (queue.count - num_ahead) - 1 ]
 
     method push( t:Token )
       queue.add( t )
@@ -46,10 +73,9 @@ class TokenReader
       endWhile
 
     method read->Token
-      if (queue.count?) return queue.remove_last
-      if (position == count) throw error( "Unexpected end of input." )
-      ++position
-      return tokens[ position - 1 ]
+      peek
+      if (queue.count == 0) throw error( "Unexpected end of input." )
+      return queue.remove_last
 
     method read_identifier->String
       if (not next_is(TokenType.identifier))
