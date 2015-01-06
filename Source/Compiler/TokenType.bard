@@ -116,6 +116,9 @@ class TokenType
     method is_structural->Logical
       return false
 
+    method quoted_name->String
+      return "'$'" (name)
+
     method to_String( t:Token )->String
       return name
 endClass

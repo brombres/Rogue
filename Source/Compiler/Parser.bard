@@ -11,9 +11,60 @@ class Parser
 
     method init( tokens:Token[] )
       reader = TokenReader( tokens )
-      println "PARSER"
+
+    method consume( type:TokenType )->Logical
+      if (reader.peek.type isNot type) return false
+      reader.read
+      return true
+
+    method consume_eols->Logical
+      local found_any = false
+      while (consume(TokenType.eol)) found_any = true
+      return found_any
+
+    method must_consume( type:TokenType )
+      if (consume(type)) return
+      local t = peek
+      throw t.error( "$ expected, found $." (type.quoted_name,t.quoted_name) )
+
+    method error( message:String )->RogueError
+      throw reader.peek.error( message )
+
+    method next_is( type:TokenType )->Logical
+      return reader.next_is( type )
+
+    method parse_class_template
+      local t = read
+      println "TODO: parse_class_template"
 
     method parse_elements
-      println "TODO: PARSE ELEMENTS"
+      while (parse_element) noAction
+
+      if (reader.has_another)
+        local t = peek
+        throw t.error( "Syntax error - unexpected $." (t.quoted_name) )
+      endIf
+
+    method parse_element->Logical
+      consume_eols
+      local t = peek
+      if (t.type is TokenType.keyword_class)
+        parse_class_template
+        return true
+      endIf
+      return false
+
+    method peek->Token
+      return reader.peek
+
+    method read->Token
+      return reader.read
+
+    method read_identifier->String
+      if (not next_is(TokenType.identifier))
+        throw error( "Identifier expected." )
+      endIf
+      return read->String
+
 endClass
 

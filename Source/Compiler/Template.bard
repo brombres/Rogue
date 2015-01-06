@@ -1,0 +1,9 @@
+class Template
+  PROPERTIES
+    t              : Token
+    name           : String
+    tokens=Token[] : Token[]
+
+  METHODS
+    method init( t, name )
+endClass

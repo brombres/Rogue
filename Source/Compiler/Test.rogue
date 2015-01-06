@@ -1,14 +1,2 @@
-$if true
-  $if (false) A
-  $else       B
-$elseIf false
-  $if (true)  C
-  $else       D
-$elseIf false
-  $if (true)  E
-  $else       F
-$else
-  $if (true)  G
-  $else       H
-$endIf
-
+class Alpha
+endClass

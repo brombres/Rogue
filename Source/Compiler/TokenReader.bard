@@ -1,6 +1,58 @@
 class TokenReader
   PROPERTIES
     tokens   : Token[]
+    position : Integer
+    count    : Integer
+
+  METHODS
+    method init( tokens )
+      count = tokens.count
+
+    method error( message:String )->Error
+      if (has_another) return peek.error( message )
+      if (count?) return tokens.last.error( message )
+      return RogueError( message )
+
+    method has_another->Logical
+      return (position < count)
+
+    method next_is( type:TokenType )->Logical
+      if (position == count) return false
+      return tokens[position] is type
+
+    method peek->Token
+      if (position == count) return tokens.last
+      return tokens[position]
+
+    method peek( num_ahead:Integer )->Token
+      if (position + num_ahead >= count) return tokens.last
+      return tokens[ position + num_ahead ]
+
+    method read->Token
+      ++position
+      return tokens[ position - 1 ]
+
+      #{
+    method source_string( i1:Integer, i2:Integer )->String
+      local buffer = StringBuilder()
+      local i = i1
+      while (i <= i2)
+        local lhs_is_letter = (buffer.count? and buffer.last.is_letter)
+        local token_as_string = tokens[i].to_source_string
+        local rhs_is_letter = token_as_string.count? and token_as_string[0].is_letter
+        if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
+        buffer.print( tokens[i].to_source_string )
+        ++i
+      endWhile
+      return buffer.to_String
+      }#
+endClass
+
+
+class PreprocessorTokenReader
+  # Expands tokens based on Preprocessor.definitions
+  PROPERTIES
+    tokens   : Token[]
     queue    = Token[]  # stored in reverse order
     position : Integer
     count    : Integer
@@ -46,7 +98,7 @@ class TokenReader
       return peek(0)
 
     method peek( num_ahead:Integer )->Token
-      if (position + queue.count + num_ahead >= count) return tokens.last
+      if (position + num_ahead >= count + queue.count) return tokens.last
 
       while (queue.count <= num_ahead)
         local t = tokens[position]

@@ -20,6 +20,9 @@ class Token
     method is_structural->Logical
       return type.is_structural
 
+    method quoted_name->String
+      return "'$'" (this->String)
+
     method set_location( filepath, line, column )->Token
       return this
 

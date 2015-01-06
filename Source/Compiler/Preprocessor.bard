@@ -5,12 +5,12 @@ class Preprocessor
     definitions = Table<<String,Token[]>>()
 
   PROPERTIES
-    reader : TokenReader
+    reader : PreprocessorTokenReader
     tokens : Token[]
 
   METHODS
     method process( tokens )->Token[]
-      reader = TokenReader( tokens )
+      reader = PreprocessorTokenReader( tokens )
       tokens = Token[]( (tokens.count * 1.1)->Integer )
       process( true, 0, false )
 
