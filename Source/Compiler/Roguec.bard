@@ -1,7 +1,10 @@
+$[include "Parser.bard"]
 $[include "Preprocessor.bard"]
+$[include "Program.bard"]
 $[include "Token.bard"]
 $[include "Tokenizer.bard"]
 $[include "TokenType.bard"]
+$[include "Type.bard"]
 
 class Roguec [singleton]
   PROPERTIES
@@ -11,6 +14,7 @@ class Roguec [singleton]
     method init
       try
         println "ROGUEC"
+        Program.configure
         include( "Test.rogue" )
         println "DONE"
       catch (err:Error)
@@ -34,9 +38,7 @@ class Roguec [singleton]
 
       included_files.add( filepath )
 
-      println "Including " + filepath
-      forEach (t in Preprocessor().process(Tokenizer().tokenize(filepath)))
-        println t
-      endForEach
+      println "Parsing " + filepath
+      Parser( filepath ).parse_elements
 endClass
 

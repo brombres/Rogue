@@ -1,0 +1,19 @@
+class Parser
+  PROPERTIES
+    reader : TokenReader
+
+  METHODS
+    method init( filepath:String )
+      init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
+
+    method init( filepath:String, data:String )
+      init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
+
+    method init( tokens:Token[] )
+      reader = TokenReader( tokens )
+      println "PARSER"
+
+    method parse_elements
+      println "TODO: PARSE ELEMENTS"
+endClass
+

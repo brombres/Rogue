@@ -13,7 +13,12 @@ class Tokenizer
 
   METHODS
     method tokenize( filepath )->Token[]
-      reader = ParseReader( filepath )
+      return tokenize( ParseReader(filepath) )
+
+    method tokenize( filepath, data:String )->Token[]
+      return tokenize( ParseReader(filepath, data) )
+
+    method tokenize( reader )->Token[]
       configure_token_types
       while (tokenize_another) noAction
 

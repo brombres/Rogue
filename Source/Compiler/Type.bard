@@ -1,0 +1,8 @@
+class Type
+  PROPERTIES
+    t    : Token
+    name : String
+
+  METHODS
+    method init( t, name )
+endClass

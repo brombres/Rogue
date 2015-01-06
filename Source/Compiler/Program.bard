@@ -1,0 +1,45 @@
+class Program [requisite singleton]
+  PROPERTIES
+    type_list      = Type[]                 : Type[]
+    type_lookup    = Table<<String,Type>>() : Table<<String,Type>>
+
+    type_Real      : Type
+    type_Float     : Type
+    type_Long      : Type
+    type_Integer   : Type
+    type_Character : Type
+    type_Byte      : Type
+    type_Logical   : Type
+
+    type_Object    : Type
+    type_String    : Type
+
+  METHODS
+    method configure
+      type_Real      = create_built_in_type( "Real" )
+      type_Float     = create_built_in_type( "Float" )
+      type_Long      = create_built_in_type( "Long" )
+      type_Integer   = create_built_in_type( "Integer" )
+      type_Character = create_built_in_type( "Character" )
+      type_Byte      = create_built_in_type( "Byte" )
+      type_Logical   = create_built_in_type( "Logical" )
+
+      type_Object    = create_built_in_type( "Logical" )
+      type_String    = create_built_in_type( "String" )
+
+    method get_type_reference( t:Token, name:String )->Type
+      local type = type_lookup[ name ]
+      if (type?) return type
+
+      type = Type( t, name )
+      type_list.add( type )
+      type_lookup[name] = type
+
+      return type
+
+    method create_built_in_type( name:String )->Type
+      local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
+      return get_type_reference( t, name )
+
+endClass
+
