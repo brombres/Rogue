@@ -14,8 +14,11 @@ class Roguec [singleton]
     method init
       try
         println "ROGUEC"
+
         Program.configure
         include( "Test.rogue" )
+        Program.resolve
+
         println "DONE"
       catch (err:Error)
         println err

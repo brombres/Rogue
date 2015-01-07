@@ -1,3 +1,5 @@
+$[include "Template.bard"]
+
 class Parser
   PROPERTIES
     reader : TokenReader
@@ -13,7 +15,7 @@ class Parser
       reader = TokenReader( tokens )
 
     method consume( type:TokenType )->Logical
-      if (reader.peek.type isNot type) return false
+      if (not reader.next_is(type)) return false
       reader.read
       return true
 
@@ -22,20 +24,16 @@ class Parser
       while (consume(TokenType.eol)) found_any = true
       return found_any
 
+    method error( message:String )->RogueError
+      throw reader.peek.error( message )
+
     method must_consume( type:TokenType )
       if (consume(type)) return
       local t = peek
       throw t.error( "$ expected, found $." (type.quoted_name,t.quoted_name) )
 
-    method error( message:String )->RogueError
-      throw reader.peek.error( message )
-
     method next_is( type:TokenType )->Logical
       return reader.next_is( type )
-
-    method parse_class_template
-      local t = read
-      println "TODO: parse_class_template"
 
     method parse_elements
       while (parse_element) noAction
@@ -54,6 +52,30 @@ class Parser
       endIf
       return false
 
+    method parse_class_template
+      local t = read  # 'class'
+      local name = read_identifier
+      local template = Template( t, name )
+      parse_template_tokens( template, TokenType.keyword_endClass )
+
+      if (not Program.implicit_main_class_t)
+        Program.implicit_main_class_t    = t
+        Program.implicit_main_class_name = name
+      endIf
+
+    method parse_template_tokens( template:Template, end_type:TokenType )
+      while (reader.has_another)
+        local t = reader.read
+        template.tokens.add( t )
+        if (t.type is end_type)
+          Program.template_list.add( template )
+          Program.template_lookup[template.name] = template
+          return
+        endIf
+      endWhile
+
+      throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
+
     method peek->Token
       return reader.peek
 
@@ -62,7 +84,7 @@ class Parser
 
     method read_identifier->String
       if (not next_is(TokenType.identifier))
-        throw error( "Identifier expected." )
+        throw error( "Identifier expected, found $." (peek.quoted_name) )
       endIf
       return read->String
 

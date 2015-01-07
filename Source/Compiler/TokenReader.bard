@@ -18,7 +18,7 @@ class TokenReader
 
     method next_is( type:TokenType )->Logical
       if (position == count) return false
-      return tokens[position] is type
+      return tokens[position].type is type
 
     method peek->Token
       if (position == count) return tokens.last

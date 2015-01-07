@@ -1,8 +1,36 @@
 class Type
   PROPERTIES
-    t    : Token
-    name : String
+    t         : Token
+    name      : String
+
+    defined   : Logical
+    organized : Logical
+    resolved  : Logical
 
   METHODS
     method init( t, name )
+
+    method organize->Type
+      if (organized) return this
+      organized = true
+
+      if (not defined)
+        defined = true
+        local base_name = name.before_first( "<<" )
+        local template = Program.template_lookup[ base_name ]
+        if (template?)
+          println "TODO: instantiate template"
+        else
+          throw t.error( "Reference to undefined type '$'." (name) )
+        endIf
+      endIf
+
+      return this
+
+    method resolve->Type
+      if (resolved) return this
+      resolved = true
+      organize
+      return this
+
 endClass

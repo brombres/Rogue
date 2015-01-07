@@ -1,18 +1,29 @@
+$[include "Template.bard"]
+
 class Program [requisite singleton]
   PROPERTIES
-    type_list      = Type[]                 : Type[]
-    type_lookup    = Table<<String,Type>>() : Table<<String,Type>>
+    template_list   = Template[]                 : Template[]
+    template_lookup = Table<<String,Template>>() : Table<<String,Template>>
 
-    type_Real      : Type
-    type_Float     : Type
-    type_Long      : Type
-    type_Integer   : Type
-    type_Character : Type
-    type_Byte      : Type
-    type_Logical   : Type
+    explicit_main_class_t    : Token
+    explicit_main_class_name : String
+    implicit_main_class_t    : Token
+    implicit_main_class_name : String
+    main_class               : Type
 
-    type_Object    : Type
-    type_String    : Type
+    type_list       = Type[]                 : Type[]
+    type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
+
+    type_Real       : Type
+    type_Float      : Type
+    type_Long       : Type
+    type_Integer    : Type
+    type_Character  : Type
+    type_Byte       : Type
+    type_Logical    : Type
+
+    type_Object     : Type
+    type_String     : Type
 
   METHODS
     method configure
@@ -41,5 +52,13 @@ class Program [requisite singleton]
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       return get_type_reference( t, name )
 
+    method resolve
+      if (explicit_main_class_t?)
+        main_class = get_type_reference( explicit_main_class_t, explicit_main_class_name )
+      else
+        main_class = get_type_reference( implicit_main_class_t, implicit_main_class_name )
+      endIf
+
+      main_class.resolve
 endClass
 
