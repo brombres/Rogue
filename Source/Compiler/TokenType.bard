@@ -16,6 +16,9 @@ class TokenType
     eol                          : TokenType
     keyword_class                : TokenType
     keyword_endClass             : TokenType
+    keyword_method               : TokenType
+    keyword_METHODS              : TokenType
+    keyword_PROPERTIES           : TokenType
 
     # Commmand
     identifier                   : TokenType

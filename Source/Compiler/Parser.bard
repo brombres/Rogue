@@ -2,7 +2,8 @@ $[include "Template.bard"]
 
 class Parser
   PROPERTIES
-    reader : TokenReader
+    reader    : TokenReader
+    this_type : Type
 
   METHODS
     method init( filepath:String )
@@ -47,6 +48,7 @@ class Parser
       consume_eols
       local t = peek
       if (t.type is TokenType.keyword_class)
+        return false
         parse_class_template
         return true
       endIf
@@ -66,15 +68,37 @@ class Parser
     method parse_template_tokens( template:Template, end_type:TokenType )
       while (reader.has_another)
         local t = reader.read
-        template.tokens.add( t )
         if (t.type is end_type)
           Program.template_list.add( template )
           Program.template_lookup[template.name] = template
           return
         endIf
+        template.tokens.add( t )
       endWhile
 
       throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
+
+    method parse_type_def( this_type )
+      while (parse_section) noAction
+      if (reader.has_another)
+        throw peek.error( "Syntax error - unexpected $." (peek.quoted_name) )
+      endIf
+
+    method parse_section->Logical
+      consume_eols
+      if (consume(TokenType.keyword_METHODS))
+        while (parse_method) noAction
+        return true
+      endIf
+      return false
+
+    method parse_method->Logical
+      consume_eols
+      if (not next_is(TokenType.keyword_method)) return false
+
+      local t = read
+      local name = read_identifier
+      return true
 
     method peek->Token
       return reader.peek

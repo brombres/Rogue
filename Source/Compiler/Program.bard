@@ -55,8 +55,10 @@ class Program [requisite singleton]
     method resolve
       if (explicit_main_class_t?)
         main_class = get_type_reference( explicit_main_class_t, explicit_main_class_name )
-      else
+      elseIf (implicit_main_class_t?)
         main_class = get_type_reference( implicit_main_class_t, implicit_main_class_name )
+      else
+        throw RogueError( "No candidates for main class." )
       endIf
 
       main_class.resolve

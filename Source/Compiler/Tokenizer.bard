@@ -77,9 +77,12 @@ class Tokenizer
       TokenType.placeholder_id    = define( TokenType("$id") )
 
       # Structural Tokens
-      TokenType.eol              = define( EOLTokenType("end of line") )
-      TokenType.keyword_class    = define( StructuralTokenType("class") )
-      TokenType.keyword_endClass = define( StructuralTokenType("endClass") )
+      TokenType.eol                = define( EOLTokenType("end of line") )
+      TokenType.keyword_class      = define( StructuralTokenType("class") )
+      TokenType.keyword_endClass   = define( StructuralTokenType("endClass") )
+      TokenType.keyword_method     = define( StructuralTokenType("method") )
+      TokenType.keyword_METHODS    = define( StructuralTokenType("METHODS") )
+      TokenType.keyword_PROPERTIES = define( StructuralTokenType("PROPERTIES") )
 
       # Command Tokens
       TokenType.identifier                   = define( TokenType("identifier") )

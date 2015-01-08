@@ -19,7 +19,7 @@ class Type
         local base_name = name.before_first( "<<" )
         local template = Program.template_lookup[ base_name ]
         if (template?)
-          println "TODO: instantiate template"
+          template.instantiate( this )
         else
           throw t.error( "Reference to undefined type '$'." (name) )
         endIf

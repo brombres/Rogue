@@ -6,4 +6,12 @@ class Template
 
   METHODS
     method init( t, name )
+
+    method instantiate( type:Type )
+      type.t = t
+      # replace location of first reference to type with location of type definition
+
+      Parser(tokens).parse_type_def( type )
+
+
 endClass
