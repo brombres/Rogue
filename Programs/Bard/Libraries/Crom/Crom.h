@@ -9,7 +9,9 @@
 #  define CROM_SYSTEM_FREE(ptr) free(ptr)
 #endif
 
-#define Crom_allocate(crom,size) CROM_SYSTEM_MALLOC(size)
+void* Crom_malloc( int size );
+
+#define Crom_allocate(crom,size) Crom_malloc(size)
 #define Crom_free(crom,ptr,size) CROM_SYSTEM_FREE(ptr)
 
 #ifdef NOCOMPILE
@@ -474,6 +476,7 @@ void* Crom_allocate( Crom* crom, int size )
   // - The returned memory is initialized to zero.
   CromInfo* result;
   if (size <= 0) size = CROM_GRANULARITY_SIZE;
+  printf("crom alloc\n");
   if (size <= CROM_SMALL_OBJECT_SIZE_LIMIT)
   {
     int pool_index = (size >> CROM_GRANULARITY_BITS) + ((size & (CROM_GRANULARITY_SIZE-1)) != 0);

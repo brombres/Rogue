@@ -1,2 +1,4 @@
 class Alpha
+  METHODS
+    method init
 endClass

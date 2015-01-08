@@ -48,7 +48,6 @@ class Parser
       consume_eols
       local t = peek
       if (t.type is TokenType.keyword_class)
-        return false
         parse_class_template
         return true
       endIf
