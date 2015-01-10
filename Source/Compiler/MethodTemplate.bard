@@ -1,0 +1,25 @@
+class MethodTemplate
+  PROPERTIES
+    t               : Token
+    this_type       : Type
+    name            : String
+    tokens=Token[]  : Token[]
+    placeholder_ids = String[] : String[]
+
+  METHODS
+    method init( t, this_type, name )
+
+    method instantiate->Method
+      local m = Method( t, this_type, name )
+      this_type.method_list.add( m )
+
+      local m_list = this_type.method_lookup_by_name[name]
+      if (not m_list)
+        m_list = Method[]
+        this_type.method_lookup_by_name[name] = m_list
+      endIf
+      m_list.add( m )
+
+      Parser(tokens).parse_method( m )
+      return m
+endClass

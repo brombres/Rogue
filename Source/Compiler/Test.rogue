@@ -1,4 +1,5 @@
 class Alpha
   METHODS
     method init
+      println "Hello World!"
 endClass

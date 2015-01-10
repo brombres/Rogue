@@ -1,9 +1,9 @@
-$[include "Template.bard"]
+$[include "TypeTemplate.bard"]
 
 class Program [requisite singleton]
   PROPERTIES
-    template_list   = Template[]                 : Template[]
-    template_lookup = Table<<String,Template>>() : Table<<String,Template>>
+    template_list   = TypeTemplate[]                 : TypeTemplate[]
+    template_lookup = Table<<String,TypeTemplate>>() : Table<<String,TypeTemplate>>
 
     explicit_main_class_t    : Token
     explicit_main_class_name : String
@@ -62,5 +62,6 @@ class Program [requisite singleton]
       endIf
 
       main_class.resolve
+      main_class.find_method( "init()" )
 endClass
 

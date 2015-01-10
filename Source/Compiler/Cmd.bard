@@ -1,0 +1,89 @@
+class Cmd
+  PROPERTIES
+    t : Token
+
+  METHODS
+endClass
+
+class CmdLiteral : Cmd
+endClass
+
+class CmdLiteralInteger : CmdLiteral
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( t, value )
+endClass
+
+class CmdLiteralString : CmdLiteral
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( t, value )
+endClass
+
+class CmdStatementList : Cmd[]
+  METHODS
+    method init
+      prior.init
+
+    method init( initial_capacity:Integer)
+      prior.init( initial_capacity )
+
+    method init( statement:Cmd )
+      init
+      add( statement )
+
+    method init( statement1:Cmd, statement2:Cmd )
+      init
+      add( statement1 ).add( statement2 )
+
+      #{
+    method has_side_effects->Logical
+      forEach (cmd in this)
+        if (cmd.has_side_effects) return true
+      endForEach
+      return false
+
+    method clone->CmdStatementList
+      local result = CmdStatementList( count )
+      forEach (cmd in this) result.add( cmd.clone )
+      return result
+
+    method dispatch( v:Visitor ) [propagated]
+      v.visit( this )
+
+    method print( buffer:StringBuilder )
+      Analyzer.context.push_local_scope
+      forEach (statement in this)
+        buffer.print( "      " )
+        buffer.print( statement.type_name )
+        buffer.print( " " )
+        statement.print( buffer )
+        buffer.println
+      endForEach
+      Analyzer.context.pop_local_scope
+
+
+    method resolve
+      Analyzer.context.push_local_scope
+      forEach (i in this.indices)
+        this[i] = this[i].resolve
+      endForEach
+      Analyzer.context.pop_local_scope
+      }#
+endClass
+
+class CmdStatement : Cmd
+endClass
+
+class CmdPrintln : CmdStatement
+  PROPERTIES
+    expression : Cmd
+
+  METHODS
+    method init( t, expression=null )
+endClass
+

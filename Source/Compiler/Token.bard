@@ -17,14 +17,17 @@ class Token
     method is_directive->Logical
       return type.is_directive
 
-    method is_structural->Logical
-      return type.is_structural
+    method is_class_structure->Logical
+      return type.is_class_structure
 
     method quoted_name->String
       return "'$'" (this->String)
 
     method set_location( filepath, line, column )->Token
       return this
+
+    method to->Integer
+      return 0
 
     method to->String
       return type.to_String(this)
@@ -70,6 +73,9 @@ class LiteralIntegerToken : Token
 
   METHODS
     method init( type, value )
+
+    method to->Integer
+      return value
 
     method to->String
       return ""+value

@@ -1,0 +1,11 @@
+class Method
+  PROPERTIES
+    t         : Token
+    this_type : Type
+    name      : String
+
+    statements = CmdStatementList()
+
+  METHODS
+    method init( t, this_type, name )
+endClass

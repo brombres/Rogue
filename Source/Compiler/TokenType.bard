@@ -12,13 +12,18 @@ class TokenType
 
     placeholder_id               : TokenType
 
-    # Structural
-    eol                          : TokenType
+    # Class Structure
     keyword_class                : TokenType
     keyword_endClass             : TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
     keyword_PROPERTIES           : TokenType
+
+    # General
+    eol                          : TokenType
+
+    # Statements
+    keyword_println              : TokenType
 
     # Commmand
     identifier                   : TokenType
@@ -116,11 +121,14 @@ class TokenType
     method is_directive->Logical
       return false
 
-    method is_structural->Logical
+    method is_class_structure->Logical
       return false
 
     method quoted_name->String
       return "'$'" (name)
+
+    method to->String
+      return name
 
     method to_String( t:Token )->String
       return name
@@ -134,8 +142,8 @@ class EOLTokenType : TokenType
     method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
       return EOLToken( this, value ).set_location( filepath, line, column )
 
-    method is_structural->Logical
-      return true
+    method is_class_structure->Logical
+      return false
 endClass
 
 class IdentifierTokenType : TokenType
@@ -144,12 +152,12 @@ class IdentifierTokenType : TokenType
       return IdentifierToken( this, value ).set_location( filepath, line, column )
 endClass
 
-class StructuralTokenType : TokenType
+class ClassStructureTokenType : TokenType
   METHODS
     method create_token( filepath:String, line:Integer, column:Integer )->Token
       return Token( this ).set_location( filepath, line, column )
 
-    method is_structural->Logical
+    method is_class_structure->Logical
       return true
 endClass
 
