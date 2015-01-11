@@ -895,22 +895,26 @@ class Parser
         #{
       elseIf (consume(Token.keyword_null))
         return CmdLiteralNull(t)
-      elseIf (consume(Token.literal_Real))
+        }#
+
+      elseIf (consume(TokenType.literal_real))
         return CmdLiteralReal( t, t->Real )
-      }#
 
       elseIf (consume(TokenType.literal_integer))
         local value = t->Integer
         return CmdLiteralInteger( t, value )
 
-      #{
-      elseIf (consume(Token.literal_Character))
+      elseIf (consume(TokenType.literal_character))
         local value = t->Character
         return CmdLiteralCharacter( t, value->Character )
-      elseIf (consume(Token.literal_Logical_true))
+
+      elseIf (consume(TokenType.keyword_true))
         return CmdLiteralLogical( t, true )
-      elseIf (consume(Token.literal_Logical_false))
+
+      elseIf (consume(TokenType.keyword_false))
         return CmdLiteralLogical( t, false )
+
+      #{
       elseIf (consume(Token.keyword_this))
         return CmdThis( t, this_type )
       elseIf (consume(Token.keyword_function))

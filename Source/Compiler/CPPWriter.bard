@@ -1,0 +1,25 @@
+class CPPWriter
+  PROPERTIES
+    filepath : String
+    buffer   = StringBuilder()
+
+  METHODS
+    method init( filepath )
+
+    method close
+      File(filepath).save( buffer->String )
+
+    method print( st:String )->CPPWriter
+      buffer.print( st )
+      return this
+
+    method println->CPPWriter
+      buffer.print( '\n' )
+      return this
+
+    method println( st:String )->CPPWriter
+      buffer.print( st )
+      buffer.print( '\n' )
+      return this
+endClass
+

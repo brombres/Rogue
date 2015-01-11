@@ -6,6 +6,15 @@ class Method
 
     statements = CmdStatementList()
 
+    resolved  : Logical
+
   METHODS
     method init( t, this_type, name )
+
+    method resolve
+      if (resolved) return
+      resolved = true
+
+      statements.resolve
 endClass
+

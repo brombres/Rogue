@@ -19,6 +19,8 @@ class Roguec [singleton]
         include( "Test.rogue" )
         Program.resolve
 
+        Program.write_cpp( "Test.cpp" )
+
         println "DONE"
       catch (err:Error)
         println err

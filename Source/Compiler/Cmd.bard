@@ -3,10 +3,27 @@ class Cmd
     t : Token
 
   METHODS
+    method resolve->Cmd
+      throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
+      return this
 endClass
+
 
 class CmdLiteral : Cmd
 endClass
+
+
+class CmdLiteralReal : CmdLiteral
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+endClass
+
 
 class CmdLiteralInteger : CmdLiteral
   PROPERTIES
@@ -14,7 +31,35 @@ class CmdLiteralInteger : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method resolve->Cmd
+      return this
 endClass
+
+
+class CmdLiteralCharacter : CmdLiteral
+  PROPERTIES
+    value : Character
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+endClass
+
+
+class CmdLiteralLogical : CmdLiteral
+  PROPERTIES
+    value : Logical
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+endClass
+
 
 class CmdLiteralString : CmdLiteral
   PROPERTIES
@@ -22,7 +67,11 @@ class CmdLiteralString : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method resolve->Cmd
+      return this
 endClass
+
 
 class CmdStatementList : Cmd[]
   METHODS
@@ -65,15 +114,15 @@ class CmdStatementList : Cmd[]
         buffer.println
       endForEach
       Analyzer.context.pop_local_scope
+      }#
 
 
     method resolve
-      Analyzer.context.push_local_scope
-      forEach (i in this.indices)
+      #Analyzer.context.push_local_scope
+      forEach (i of this)
         this[i] = this[i].resolve
       endForEach
-      Analyzer.context.pop_local_scope
-      }#
+      #Analyzer.context.pop_local_scope
 endClass
 
 class CmdStatement : Cmd
@@ -85,5 +134,9 @@ class CmdPrintln : CmdStatement
 
   METHODS
     method init( t, expression=null )
+
+    method resolve->Cmd
+      if (expression?) expression = expression.resolve
+      return this
 endClass
 

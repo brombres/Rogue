@@ -1,3 +1,5 @@
+$[include "Attributes.bard"]
+$[include "CPPWriter.bard"]
 $[include "TypeTemplate.bard"]
 
 class Program [requisite singleton]
@@ -50,7 +52,9 @@ class Program [requisite singleton]
 
     method create_built_in_type( name:String )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
-      return get_type_reference( t, name )
+      local type = get_type_reference( t, name )
+      type.attributes |= Attributes.flag_native
+      return type
 
     method resolve
       if (explicit_main_class_t?)
@@ -62,6 +66,39 @@ class Program [requisite singleton]
       endIf
 
       main_class.resolve
-      main_class.find_method( "init()" )
+      local m = main_class.find_method( "init()" )
+      if (m?) m.resolve
+
+    method write_cpp( filepath:String )
+      forEach (type in type_list) type.assign_cpp_name
+
+      local writer = CPPWriter( filepath )
+
+      # CPP header
+      writer.println //#include <stdio.h>//
+      writer.println
+
+      writer.println //typedef double        RogueReal;//
+      writer.println //typedef float         RogueFloat;//
+      writer.println //typedef long long     RogueLong;//
+      writer.println //typedef int           RogueInteger;//
+      writer.println //typedef short         RogueCharacter;//
+      writer.println //typedef unsigned char RogueByte;//
+      writer.println
+
+      forEach (type in type_list) type.write_declaration( writer )
+      writer.println
+
+      forEach (type in type_list) type.write( writer )
+      writer.println
+
+      writer.println //int main()//
+      writer.println //{//
+      writer.println //  printf("Oy!\\n");//
+      writer.println //  return 0;//
+      writer.println //}//
+      writer.println
+
+      writer.close
 endClass
 

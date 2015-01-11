@@ -17,6 +17,11 @@ $(BARDVM): $(BCC)
 
 run:
 	$(BARDVM) Roguec.bc
+	cat Test.cpp
+
+cpp: compile run
+	g++ Test.cpp
+	./a.out
 
 clean:
 	rm -f *.bc

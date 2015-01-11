@@ -2,4 +2,10 @@ class Alpha
   METHODS
     method init
       println "Hello World!"
+      println 3
+      println 3.1
+      'a'
+      'abc'
+      true
+      false
 endClass

@@ -26,7 +26,13 @@ class Token
     method set_location( filepath, line, column )->Token
       return this
 
+    method to->Character
+      return 0
+
     method to->Integer
+      return 0
+
+    method to->Real
       return 0
 
     method to->String
@@ -63,6 +69,9 @@ class LiteralCharacterToken : Token
   METHODS
     method init( type, value )
 
+    method to->Character
+      return value
+
     method to->String
       return ""+value
 endClass
@@ -87,6 +96,9 @@ class LiteralRealToken : Token
 
   METHODS
     method init( type, value )
+
+    method to->Real
+      return value
 
     method to->String
       return ""+value

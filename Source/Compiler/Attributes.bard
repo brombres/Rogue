@@ -1,3 +1,4 @@
 class Attributes
   ENUMERATE
+    flag_native = 1
 endClass

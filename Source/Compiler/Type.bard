@@ -2,12 +2,13 @@ $[include "MethodTemplate.bard"]
 
 class Type
   PROPERTIES
-    t         : Token
-    name      : String
+    t          : Token
+    name       : String
+    attributes : Integer
 
-    defined   : Logical
-    organized : Logical
-    resolved  : Logical
+    defined    : Logical
+    organized  : Logical
+    resolved   : Logical
 
     method_template_list   = MethodTemplate[]                 : MethodTemplate[]
     method_template_lookup = Table<<String,MethodTemplate>>() : Table<<String,MethodTemplate>>
@@ -16,8 +17,13 @@ class Type
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
+    cpp_name : String
+
   METHODS
     method init( t, name )
+
+    method assign_cpp_name
+      cpp_name = "Rogue" + name
 
     method find_method( signature:String )->Method
       local m = method_lookup_by_signature[signature]
@@ -31,6 +37,9 @@ class Type
       m = m_template.instantiate()
 
       return m
+
+    method is_native->Logical
+      return (attributes & Attributes.flag_native)?
 
     method organize->Type
       if (organized) return this
@@ -54,5 +63,15 @@ class Type
       resolved = true
       organize
       return this
+
+    method write_declaration( writer:CPPWriter )
+      if (is_native) return
+      writer.print( "struct " ).print( cpp_name ).println( ";" )
+
+    method write( writer:CPPWriter )
+      if (is_native) return
+      writer.print( "struct " ).print( cpp_name ).println
+      writer.println( "{" )
+      writer.println( "};" )
 
 endClass
