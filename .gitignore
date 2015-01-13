@@ -2,3 +2,4 @@
 Source/Compiler/*.bc
 Programs/Bard/Programs/Mac
 Programs/Bard/Programs/Windows
+Test.cpp

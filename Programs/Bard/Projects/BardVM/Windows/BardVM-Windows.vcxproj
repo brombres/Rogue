@@ -44,7 +44,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\Libraries\Bard\VM\C</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\Bard\VM\C;..\..\..\Libraries\Crom</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -57,7 +57,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\..\Libraries\Bard\VM\C</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Libraries\Bard\VM\C;..\..\..\Libraries\Crom</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -72,7 +72,6 @@ copy /y Release\BardVM-Windows.exe ..\..\..\Programs\Windows\bard.exe
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardAllocator.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardArray.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardBCLoader.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardEventQueue.c" />
@@ -83,7 +82,7 @@ copy /y Release\BardVM-Windows.exe ..\..\..\Programs\Windows\bard.exe
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardMM.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardObject.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardOpcodes.c" />
-    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardProgram.c" />
+    <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardProcessor.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardProperty.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardStandardLibrary.c" />
     <ClCompile Include="..\..\..\Libraries\Bard\VM\C\BardString.c" />
@@ -94,7 +93,6 @@ copy /y Release\BardVM-Windows.exe ..\..\..\Programs\Windows\bard.exe
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\Bard.h" />
-    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardAllocator.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardArray.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardBCLoader.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardDefines.h" />
@@ -104,6 +102,7 @@ copy /y Release\BardVM-Windows.exe ..\..\..\Programs\Windows\bard.exe
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardMethod.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardMM.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardObject.h" />
+    <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardProcessor.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardProperty.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardStandardLibrary.h" />
     <ClInclude Include="..\..\..\Libraries\Bard\VM\C\BardString.h" />
