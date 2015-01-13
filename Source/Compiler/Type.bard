@@ -23,7 +23,7 @@ class Type
     method init( t, name )
 
     method assign_cpp_name
-      cpp_name = "Rogue" + name
+      cpp_name = Program.validate_cpp_name( Program.code_prefix + name )
 
     method find_method( signature:String )->Method
       local m = method_lookup_by_signature[signature]

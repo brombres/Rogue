@@ -1,4 +1,5 @@
 class Attributes
   ENUMERATE
-    flag_native = 1
+    flag_native      = 1
+    flag_initializer = 2
 endClass

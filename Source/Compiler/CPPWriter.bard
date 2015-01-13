@@ -21,5 +21,14 @@ class CPPWriter
       buffer.print( st )
       buffer.print( '\n' )
       return this
+
+    method print( type:Type )->CPPWriter
+      if (type?)
+        buffer.print( type.cpp_name )
+        if (not type.is_native) buffer.print("*")
+      else
+        buffer.print( "void" )
+      endIf
+      return this
 endClass
 

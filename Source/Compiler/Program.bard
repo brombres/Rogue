@@ -4,6 +4,8 @@ $[include "TypeTemplate.bard"]
 
 class Program [requisite singleton]
   PROPERTIES
+    code_prefix = "Orbit"
+
     template_list   = TypeTemplate[]                 : TypeTemplate[]
     template_lookup = Table<<String,TypeTemplate>>() : Table<<String,TypeTemplate>>
 
@@ -69,10 +71,20 @@ class Program [requisite singleton]
       local m = main_class.find_method( "init()" )
       if (m?) m.resolve
 
+    method validate_cpp_name( name:String )->String
+      return name
+
     method write_cpp( filepath:String )
       forEach (type in type_list) type.assign_cpp_name
 
+      forEach (type in type_list)
+        forEach (m in type.method_list)
+          m.assign_cpp_name
+        endForEach
+      endForEach
+
       local writer = CPPWriter( filepath )
+      writer.println
 
       # CPP header
       writer.println //#include <stdio.h>//
