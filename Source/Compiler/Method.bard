@@ -11,6 +11,9 @@ class Method
   METHODS
     method init( t, this_type, name )
 
+    method print_prototype( writer:CPPWriter )
+      writer.println( "TODO" )
+
     method resolve
       if (resolved) return
       resolved = true

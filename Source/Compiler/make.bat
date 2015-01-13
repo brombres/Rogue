@@ -3,8 +3,10 @@
 @SET ROGUEC=..\..\Programs\Roguec.bc
 @SET BCC_ARGS=--source-folders=..\..\Programs\Bard\Libraries\Bard --include=Standard.bard
 %BARDVM% %BCC% %BCC_ARGS% Roguec.bard
+@if errorlevel 1 goto done
 %BARDVM% Roguec.bc
 type Test.cpp
+:done
 
 @REM ROGUE_SOURCE = $(shell ls *.rogue)
 @REM BARDVM = ../../Programs/Bard/Programs/Mac/bard

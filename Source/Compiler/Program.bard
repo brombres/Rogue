@@ -86,10 +86,13 @@ class Program [requisite singleton]
       writer.println //typedef unsigned char RogueByte;//
       writer.println
 
-      forEach (type in type_list) type.write_declaration( writer )
+      forEach (type in type_list) type.print_type_declaration( writer )
       writer.println
 
-      forEach (type in type_list) type.write( writer )
+      forEach (type in type_list) type.print_method_prototypes( writer )
+      writer.println
+
+      forEach (type in type_list) type.print( writer )
       writer.println
 
       writer.println //int main()//

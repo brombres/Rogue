@@ -64,11 +64,16 @@ class Type
       organize
       return this
 
-    method write_declaration( writer:CPPWriter )
+    method print_type_declaration( writer:CPPWriter )
       if (is_native) return
       writer.print( "struct " ).print( cpp_name ).println( ";" )
 
-    method write( writer:CPPWriter )
+    method print_method_prototypes( writer:CPPWriter )
+      if (is_native) return
+
+      forEach (m in method_list) m.print_prototype( writer )
+
+    method print( writer:CPPWriter )
       if (is_native) return
       writer.print( "struct " ).print( cpp_name ).println
       writer.println( "{" )
