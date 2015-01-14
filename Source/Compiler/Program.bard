@@ -104,7 +104,10 @@ class Program [requisite singleton]
       forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
-      forEach (type in type_list) type.print( writer )
+      forEach (type in type_list) type.print_type_definition( writer )
+      writer.println
+
+      forEach (type in type_list) type.print_method_definitions( writer )
       writer.println
 
       writer.println //int main()//

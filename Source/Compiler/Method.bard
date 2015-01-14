@@ -34,6 +34,17 @@ class Method
       writer.print( "(" )
       writer.print( ")" )
 
+    method print_definition( writer:CPPWriter )
+      print_signature( writer )
+      writer.println
+      writer.println "{"
+      writer.indent += 2
+      writer.println "  // TODO: object create()"
+      writer.indent -= 2
+      writer.println "}"
+      writer.println
+
+
     method resolve
       if (resolved) return
       resolved = true

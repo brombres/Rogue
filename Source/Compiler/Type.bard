@@ -73,7 +73,12 @@ class Type
 
       forEach (m in method_list) m.print_prototype( writer )
 
-    method print( writer:CPPWriter )
+    method print_method_definitions( writer:CPPWriter )
+      if (is_native) return
+
+      forEach (m in method_list) m.print_definition( writer )
+
+    method print_type_definition( writer:CPPWriter )
       if (is_native) return
       writer.print( "struct " ).print( cpp_name ).println
       writer.println( "{" )

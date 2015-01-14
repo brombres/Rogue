@@ -2,6 +2,8 @@ class CPPWriter
   PROPERTIES
     filepath : String
     buffer   = StringBuilder()
+    indent   = 0
+    needs_indent = true
 
   METHODS
     method init( filepath )
@@ -9,20 +11,30 @@ class CPPWriter
     method close
       File(filepath).save( buffer->String )
 
+    method print_indent
+      if (needs_indent)
+        needs_indent = false
+        forEach (1..indent) buffer.print(' ')
+      endIf
+
     method print( st:String )->CPPWriter
+      print_indent
       buffer.print( st )
       return this
 
     method println->CPPWriter
       buffer.print( '\n' )
+      needs_indent = true
       return this
 
     method println( st:String )->CPPWriter
       buffer.print( st )
       buffer.print( '\n' )
+      needs_indent = true
       return this
 
     method print( type:Type )->CPPWriter
+      print_indent
       if (type?)
         buffer.print( type.cpp_name )
         if (not type.is_native) buffer.print("*")
