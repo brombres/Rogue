@@ -19,8 +19,12 @@ run:
 	$(BARDVM) Roguec.bc
 	cat Test.cpp
 
-cpp: compile run
-	g++ Test.cpp
+#cpp: compile run
+#g++ Test.cpp
+#./a.out
+
+cpp:
+	g++ main.cpp RogueTypes.cpp RogueMM.cpp
 	./a.out
 
 clean:
