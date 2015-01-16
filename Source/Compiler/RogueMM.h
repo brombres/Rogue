@@ -15,7 +15,6 @@
 
 #include "RogueTypes.h"
 
-/*
 #ifndef ROGUEMM_PAGE_SIZE
 // 4k
 #  define ROGUEMM_PAGE_SIZE (4*1024)
@@ -42,20 +41,13 @@ enum
   // from the system.
 };
 
-//-----------------------------------------------------------------------------
-//  RogueObject
-//-----------------------------------------------------------------------------
-struct RogueObject
-{
-};
-
 struct RogueMMAllocationPage
 {
   // Backs small 0..256-byte allocations.
   RogueMMAllocationPage* next_page;
 
-  RogueMMByte* data;
-  RogueMMByte* cursor;
+  RogueByte* data;
+  RogueByte* cursor;
   int bytes_remaining;
 
   RogueMMAllocationPage( RogueMMAllocationPage* next_page );
@@ -65,36 +57,23 @@ struct RogueMMAllocationPage
 };
 
 
-struct RogueMMAllocation
-{
-  RogueMMAllocation* next_allocation;  // For permanent tracking
-  RogueMMAllocation* next_gc_item;     // Used to build linked list for GC
-  void*              type;             // Runtime type information
-  int                size;             // Negated during GC to mark as traced
-};
-
-struct RogueMMAllocationAlignedPlus8
-{
-  RogueMMAllocation allocation;
-  double force_8_byte_alignment;
-};
-
-
+//-----------------------------------------------------------------------------
+//  RogueMMAllocator
+//-----------------------------------------------------------------------------
 struct RogueMMAllocator
 {
   RogueMMAllocationPage* pages;
 
-  RogueMMAllocation*     free_allocations[ ROGUEMM_SLOT_COUNT ];  // 0 is never used
+  RogueObject*           free_allocations[ ROGUEMM_SLOT_COUNT ];  // 0 is unused
 
   RogueMMAllocator();
   ~RogueMMAllocator();
 
-  RogueMMAllocation* allocate( int size );
-  RogueMMAllocation* free( RogueMMAllocation* allocation );
+  RogueObject* allocate( int size );
+  RogueObject* free( RogueObject* obj );
 };
 
 extern RogueMMAllocator RogueMM_allocator;
-*/
 
 /*
 

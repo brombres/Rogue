@@ -47,3 +47,4 @@ struct RogueObject
   RogueType*   type;
   int          size;
 };
+

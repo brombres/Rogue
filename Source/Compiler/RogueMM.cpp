@@ -15,14 +15,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
+TODO: have separate allocator for each block size.  Keeps things much simpler.
+
+
 //-----------------------------------------------------------------------------
 //  RogueMMAllocationPage
 //-----------------------------------------------------------------------------
 RogueMMAllocationPage::RogueMMAllocationPage( RogueMMAllocationPage* next_page )
   : next_page(next_page)
 {
-  cursor = data = new RogueMMByte[ ROGUEMM_PAGE_SIZE ];
+  cursor = data = new RogueByte[ ROGUEMM_PAGE_SIZE ];
   bytes_remaining = ROGUEMM_PAGE_SIZE;
 }
 
@@ -39,11 +41,11 @@ void* RogueMMAllocationPage::allocate( int size )
   //   purposes.
   //
   // result
-  //   Returns an allocation of the requested size or NULL if there isn'tm
+  //   Returns an allocation of the requested size or NULL if there isn't
   //   enough space left on this page.
   if (size > bytes_remaining) return NULL;
 
-  RogueMMByte* result = cursor;
+  RogueByte* result = cursor;
   cursor += size;
   bytes_remaining -= size;
   return result;
@@ -73,33 +75,54 @@ RogueMMAllocator::~RogueMMAllocator()
   }
 }
 
-RogueMMAllocation* RogueMMAllocator::allocate( int size )
+RogueObject* RogueMMAllocator::allocate( int size )
 {
-  // Add on the requisite header size.
-  size += (sizeof(RogueMMAllocationAlignedPlus8) - 8);
-
-  // Round up to a multiple of 8 bytes
-  size = (size + (ROGUEMM_ALLOCATION_ALIGNMENT-1)) & ~(ROGUEMM_ALLOCATION_ALIGNMENT-1);
-
   if (size <= ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
-    // Use recyclable small object allocation.  Round up to a multiple of the granularity
+    // Use recyclable small object allocation.  Round up to a multiple of the granularity.
     size = (size + (ROGUEMM_GRANULARITY_SIZE-1)) & ~(ROGUEMM_GRANULARITY_SIZE-1);
-
     int slot = (size >> ROGUEMM_GRANULARITY_BITS);
 
-    if (free_allocations
+    RogueObject* result;
+    if (free_allocations[slot])
+    {
+      result = free_allocations[slot];
+      free_allocations[slot] = result->next_object;
+    }
+    else
+    {
+      result = (RogueObject*) pages->allocate( size );
+      if ( !result )
+      {
+        int free_block_slot = slot - 1;
+        while (free_block_slot > 0)
+        {
+          result = (RogueObject*) pages->allocate( free_block_slot << ROGUEMM_GRANULARITY_BITS );
+          if (result)
+          {
+            result->next_object = free_allocations[ free_block_slot ];
+            free_allocations[ free_block_slot ] = result;
+            continue;
+          }
+          else
+          {
+            --free_block_slot;
+          }
+        }
+      }
+    }
   }
 
   // See which slot 
+  return NULL;
 }
 
-RogueMMAllocation* RogueMMAllocation::free( RogueMMAllocation* allocation )
+RogueObject* RogueMMAllocator::free( RogueObject* allocation )
 {
+  return NULL;
 }
 
 RogueMMAllocator RogueMM_allocator;
-*/
 
 
 /*

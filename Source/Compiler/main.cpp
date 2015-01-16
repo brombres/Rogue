@@ -1,3 +1,4 @@
+#include "RogueTypes.h"
 #include "RogueMM.h"
 #include <stdio.h>
 

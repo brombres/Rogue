@@ -88,14 +88,8 @@ class Program [requisite singleton]
 
       # CPP header
       writer.println //#include <stdio.h>//
-      writer.println
-
-      writer.println //typedef double        RogueReal;//
-      writer.println //typedef float         RogueFloat;//
-      writer.println //typedef long long     RogueLong;//
-      writer.println //typedef int           RogueInteger;//
-      writer.println //typedef short         RogueCharacter;//
-      writer.println //typedef unsigned char RogueByte;//
+      writer.println //#include "RogueTypes.h"//
+      writer.println //#include "RogueMM.h"//
       writer.println
 
       forEach (type in type_list) type.print_type_declaration( writer )
