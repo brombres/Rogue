@@ -94,6 +94,8 @@ struct RogueMM
 
   RogueMM();
   ~RogueMM();
+
+  RogueMMAllocator* get_allocator( int size );
 };
 
 /*

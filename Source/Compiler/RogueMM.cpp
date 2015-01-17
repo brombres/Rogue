@@ -43,6 +43,7 @@ RogueMMBlockAllocator::~RogueMMBlockAllocator()
 
 RogueObject* RogueMMBlockAllocator::allocate( int size )
 {
+  printf( "Allocating %d bytes with block size %d\n", size, block_size );
   if ( !free_objects )
   {
     pages = new RogueMMAllocationPage( pages );
@@ -76,6 +77,7 @@ RogueObject* RogueMMBlockAllocator::free( RogueObject* obj )
 //-----------------------------------------------------------------------------
 RogueObject* RogueMMSystemAllocator::allocate( int size )
 {
+  printf( "Allocating %d bytes from system\n", size );
   return (RogueObject*) malloc( size );
 }
 
@@ -105,6 +107,15 @@ RogueMM::~RogueMM()
     delete allocators[i];
     allocators[i] = NULL;
   }
+}
+
+RogueMMAllocator* RogueMM::get_allocator( int size )
+{
+  if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return allocators[0];
+
+  int slot = (size + (ROGUEMM_GRANULARITY_SIZE-1)) >> ROGUEMM_GRANULARITY_BITS;
+  if (slot) return allocators[ slot ];
+  return allocators[ 1 ]; // size 0 -> slot 1
 }
 
 
