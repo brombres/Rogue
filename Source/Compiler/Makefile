@@ -24,7 +24,7 @@ run:
 #./a.out
 
 cpp:
-	g++ main.cpp RogueTypes.cpp RogueMM.cpp
+	g++ -Wall main.cpp RogueTypes.cpp RogueMM.cpp
 	./a.out
 
 clean:

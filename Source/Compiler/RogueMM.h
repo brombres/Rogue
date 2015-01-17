@@ -16,21 +16,16 @@
 #include "RogueTypes.h"
 
 #ifndef ROGUEMM_PAGE_SIZE
-// 4k
+// 4k; should be a multiple of 256 if redefined
 #  define ROGUEMM_PAGE_SIZE (4*1024)
-#endif
-
-#ifndef ROGUEMM_ALLOCATION_ALIGNMENT
-// Must be a power of 2 and 8+
-#  define ROGUEMM_ALLOCATION_ALIGNMENT 8
 #endif
 
 enum
 {
   ROGUEMM_SLOT_COUNT               =  5,
   // - The slot index times 64 is the allocation size of that slot; slot
-  //   0 is used for native allocations and slots 1..4 are block sizes 64,
-  //   128, 192, and 256.
+  //   0 is used for native allocations of all sizes and slots 1..4 are block 
+  //   sizes 64, //   128, 192, and 256.
 
   ROGUEMM_GRANULARITY_BITS         =  6,
   ROGUEMM_GRANULARITY_SIZE         =  (1 << ROGUEMM_GRANULARITY_BITS),
@@ -46,14 +41,9 @@ struct RogueMMAllocationPage
   // Backs small 0..256-byte allocations.
   RogueMMAllocationPage* next_page;
 
-  RogueByte* data;
-  RogueByte* cursor;
-  int bytes_remaining;
+  RogueByte data[ ROGUEMM_PAGE_SIZE ];
 
   RogueMMAllocationPage( RogueMMAllocationPage* next_page );
-  ~RogueMMAllocationPage();
-
-  void* allocate( int size );
 };
 
 
@@ -62,18 +52,49 @@ struct RogueMMAllocationPage
 //-----------------------------------------------------------------------------
 struct RogueMMAllocator
 {
+  virtual ~RogueMMAllocator() {}
+
+  virtual RogueObject* allocate( int size ) = 0;
+  virtual RogueObject* free( RogueObject* obj ) = 0;
+};
+
+//-----------------------------------------------------------------------------
+//  RogueMMBlockAllocator
+//-----------------------------------------------------------------------------
+struct RogueMMBlockAllocator : RogueMMAllocator
+{
   RogueMMAllocationPage* pages;
+  RogueObject* free_objects;
+  int block_size;   // 64, 128, 192, 256
 
-  RogueObject*           free_allocations[ ROGUEMM_SLOT_COUNT ];  // 0 is unused
-
-  RogueMMAllocator();
-  ~RogueMMAllocator();
+  RogueMMBlockAllocator( int block_size );
+  ~RogueMMBlockAllocator();
 
   RogueObject* allocate( int size );
   RogueObject* free( RogueObject* obj );
 };
 
-extern RogueMMAllocator RogueMM_allocator;
+//-----------------------------------------------------------------------------
+//  RogueMMSystemAllocator
+//-----------------------------------------------------------------------------
+struct RogueMMSystemAllocator : RogueMMAllocator
+{
+  RogueObject* allocate( int size );
+  RogueObject* free( RogueObject* obj );
+};
+
+
+//-----------------------------------------------------------------------------
+//  RogueMM
+//-----------------------------------------------------------------------------
+struct RogueMM
+{
+  RogueMMAllocator* allocators[ROGUEMM_SLOT_COUNT];
+  // [1] = allocator for block size 64, [4] = block size 256
+
+  RogueMM();
+  ~RogueMM();
+};
 
 /*
 

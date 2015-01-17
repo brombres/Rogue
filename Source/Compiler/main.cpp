@@ -5,6 +5,7 @@
 int main()
 {
   printf( "In main.cpp\n" );
+  RogueMM mm;
 
   return 0;
 }
