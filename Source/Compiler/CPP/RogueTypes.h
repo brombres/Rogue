@@ -36,8 +36,13 @@
   typedef RogueInteger     RogueLogical;
 #endif
 
+struct RogueMMAllocator;
+
 struct RogueType
 {
+  RogueMMAllocator* allocator;
+
+  //RogueType
 };
 
 struct RogueObject

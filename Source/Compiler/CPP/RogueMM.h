@@ -1,7 +1,9 @@
+#pragma once
+
 //=============================================================================
-//  RogueMM.cpp
+//  RogueMM.h
 //
-//  Rogue Memory Manager for cross-compiled C++ code.
+//  Rogue Memory Manager header file for cross-compiled C++ code.
 //
 //  ---------------------------------------------------------------------------
 //
@@ -11,115 +13,127 @@
 //  under the terms of the UNLICENSE ( http://unlicense.org ).
 //=============================================================================
 
-#include "RogueMM.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "RogueTypes.h"
+
+#ifndef ROGUEMM_PAGE_SIZE
+// 4k; should be a multiple of 256 if redefined
+#  define ROGUEMM_PAGE_SIZE (4*1024)
+#endif
+
+// 0 = large allocations, 1..4 = block sizes 64, 128, 192, 256
+#ifndef ROGUEMM_SLOT_COUNT
+#  define ROGUEMM_SLOT_COUNT 5
+#endif
+
+// 2^6 = 64
+#ifndef ROGUEMM_GRANULARITY_BITS
+#  define ROGUEMM_GRANULARITY_BITS 6
+#endif
+
+// Block sizes increase by 64 bytes per slot
+#ifndef ROGUEMM_GRANULARITY_SIZE
+#  define ROGUEMM_GRANULARITY_SIZE (1 << ROGUEMM_GRANULARITY_BITS)
+#endif
+
+// 63
+#ifndef ROGUEMM_GRANULARITY_MASK
+#  define ROGUEMM_GRANULARITY_MASK (ROGUEMM_GRANULARITY_SIZE - 1)
+#endif
+
+// Small allocation limit is 256 bytes - afterwards objects are allocated
+// from the system.
+#ifndef ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT
+#  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
+#endif
+
+
+struct RogueMMAllocationPage
+{
+  // Backs small 0..256-byte allocations.
+  RogueMMAllocationPage* next_page;
+
+  RogueByte* cursor;
+  int        remaining;
+
+  RogueByte  data[ ROGUEMM_PAGE_SIZE ];
+
+  RogueMMAllocationPage( RogueMMAllocationPage* next_page );
+
+  void* allocate( int size );
+};
 
 //-----------------------------------------------------------------------------
-//  RogueMMAllocationPage
+//  RogueMMAllocator
 //-----------------------------------------------------------------------------
-RogueMMAllocationPage::RogueMMAllocationPage( RogueMMAllocationPage* next_page )
-  : next_page(next_page)
+struct RogueMMAllocator
 {
-}
+  RogueMMAllocationPage* pages;
+  RogueObject*           free_objects[ROGUEMM_SLOT_COUNT];
 
-//-----------------------------------------------------------------------------
-//  RogueMMBlockAllocator
-//-----------------------------------------------------------------------------
-RogueMMBlockAllocator::RogueMMBlockAllocator( int block_size ) 
-  : pages(NULL), free_objects(NULL), block_size(block_size)
-{
-}
+  RogueMMAllocator();
+  ~RogueMMAllocator();
+  void* allocate( int size );
+  void* free( void* data, int size );
+};
 
-RogueMMBlockAllocator::~RogueMMBlockAllocator()
-{
-  while (pages)
-  {
-    RogueMMAllocationPage* next_page = pages->next_page;
-    delete pages;
-    pages = next_page;
-  }
-}
+extern RogueMMAllocator RogueMM_allocator;
 
-RogueObject* RogueMMBlockAllocator::allocate( int size )
-{
-  printf( "Allocating %d bytes with block size %d\n", size, block_size );
-  if ( !free_objects )
-  {
-    pages = new RogueMMAllocationPage( pages );
-
-    RogueByte* cur = pages->data;
-    int remaining = ROGUEMM_PAGE_SIZE;
-    while (remaining >= block_size)
-    {
-      RogueObject* obj = (RogueObject*) cur;
-      obj->next_object = free_objects;
-      free_objects = obj;
-      remaining -= block_size;
-      cur += block_size;
-    }
-  }
-
-  RogueObject* obj = free_objects;
-  free_objects = obj->next_object;
-  return obj;
-}
-
-RogueObject* RogueMMBlockAllocator::free( RogueObject* obj )
-{
-  obj->next_object = free_objects;
-  free_objects = obj;
-  return NULL;
-}
 
 //-----------------------------------------------------------------------------
-//  RogueMMSystemAllocator
+//  RogueMMObjectAllocator
 //-----------------------------------------------------------------------------
-RogueObject* RogueMMSystemAllocator::allocate( int size )
+struct RogueMMObjectAllocator
 {
-  printf( "Allocating %d bytes from system\n", size );
-  return (RogueObject*) malloc( size );
-}
+  virtual ~RogueMMObjectAllocator() {}
 
-RogueObject* RogueMMSystemAllocator::free( RogueObject* obj )
+  virtual RogueObject* allocate( int size ) = 0;
+  virtual RogueObject* free( RogueObject* obj ) = 0;
+};
+
+//-----------------------------------------------------------------------------
+//  RogueMMSmallObjectAllocator
+//-----------------------------------------------------------------------------
+struct RogueMMSmallObjectAllocator : RogueMMObjectAllocator
 {
-  free( obj );
-  return NULL;
-}
+  RogueMMAllocationPage* pages;
+  RogueObject* free_objects;
+  int block_size;   // 64, 128, 192, 256
+
+  RogueMMSmallObjectAllocator( int block_size );
+  ~RogueMMSmallObjectAllocator();
+
+  RogueObject* allocate( int size );
+  RogueObject* free( RogueObject* obj );
+};
+
+//-----------------------------------------------------------------------------
+//  RogueMMLargeObjectAllocator
+//-----------------------------------------------------------------------------
+struct RogueMMLargeObjectAllocator : RogueMMObjectAllocator
+{
+  RogueObject* allocate( int size );
+  RogueObject* free( RogueObject* obj );
+};
 
 
 //-----------------------------------------------------------------------------
 //  RogueMM
 //-----------------------------------------------------------------------------
-RogueMM::RogueMM()
+struct RogueMM
 {
-  allocators[0] = new RogueMMSystemAllocator();
-  for (int i=1; i<ROGUEMM_SLOT_COUNT; ++i)
-  {
-    allocators[i] = new RogueMMBlockAllocator( i << ROGUEMM_GRANULARITY_BITS );
-  }
-}
+  RogueMMObjectAllocator* allocators[ROGUEMM_SLOT_COUNT];
+  // [1] = allocator for block size 64, [4] = block size 256
 
-RogueMM::~RogueMM()
-{
-  for (int i=0; i<ROGUEMM_SLOT_COUNT; ++i)
-  {
-    delete allocators[i];
-    allocators[i] = NULL;
-  }
-}
+  RogueMM();
+  ~RogueMM();
 
-RogueMMAllocator* RogueMM::get_allocator( int size )
-{
-  if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return allocators[0];
-
-  int slot = (size + (ROGUEMM_GRANULARITY_SIZE-1)) >> ROGUEMM_GRANULARITY_BITS;
-  if (slot) return allocators[ slot ];
-  return allocators[ 1 ]; // size 0 -> slot 1
-}
-
+  RogueMMObjectAllocator* get_allocator( int size );
+};
 
 /*
+
+
+
 struct RogueMM;
 struct RogueMMType;
 struct RogueMMInfo;
