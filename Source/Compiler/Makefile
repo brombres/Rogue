@@ -1,3 +1,5 @@
+.PHONY: cpp
+
 ROGUE_SOURCE = $(shell ls *.rogue)
 BARDVM = ../../Programs/Bard/Programs/Mac/bard
 BCC    = ../../Programs/Bard/Programs/BCC.bc
@@ -17,15 +19,16 @@ $(BARDVM): $(BCC)
 
 run:
 	$(BARDVM) Roguec.bc
-	cat Test.cpp
+	cat CPP/Test.h
+	@echo "-----------------------------------------------------"
+	cat CPP/Test.cpp
 
 #cpp: compile run
 #g++ Test.cpp
 #./a.out
 
 cpp:
-	g++ -Wall main.cpp RogueTypes.cpp RogueMM.cpp
-	./a.out
+	cd CPP && make
 
 clean:
 	rm -f *.bc

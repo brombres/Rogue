@@ -4,7 +4,7 @@ $[include "TypeTemplate.bard"]
 
 class Program [requisite singleton]
   PROPERTIES
-    code_prefix = "Orbit"
+    code_prefix = "Rogue"
 
     template_list   = TypeTemplate[]                 : TypeTemplate[]
     template_lookup = Table<<String,TypeTemplate>>() : Table<<String,TypeTemplate>>
@@ -83,13 +83,12 @@ class Program [requisite singleton]
         endForEach
       endForEach
 
-      local writer = CPPWriter( filepath )
+
+      # .H header
+      local writer = CPPWriter( filepath + ".h" )
       writer.println
 
-      # CPP header
-      writer.println //#include <stdio.h>//
       writer.println //#include "RogueTypes.h"//
-      writer.println //#include "RogueMM.h"//
       writer.println
 
       forEach (type in type_list) type.print_type_declaration( writer )
@@ -98,17 +97,24 @@ class Program [requisite singleton]
       forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
+      writer.close
+
+
+      # .CPP implementation
+      writer = CPPWriter( filepath + ".cpp" )
+      writer.println
+
+      local base_filename = filepath
+      if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
+      writer.println //#include <stdio.h>//
+      writer.println //#include "$.h"// (base_filename)
+      writer.println //#include "RogueMM.h"//
+      writer.println
+
       forEach (type in type_list) type.print_type_definition( writer )
       writer.println
 
       forEach (type in type_list) type.print_method_definitions( writer )
-      writer.println
-
-      writer.println //int main()//
-      writer.println //{//
-      writer.println //  printf("Oy!\\n");//
-      writer.println //  return 0;//
-      writer.println //}//
       writer.println
 
       writer.close

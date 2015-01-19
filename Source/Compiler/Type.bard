@@ -80,7 +80,9 @@ class Type
 
     method print_type_definition( writer:CPPWriter )
       if (is_native) return
-      writer.print( "struct " ).print( cpp_name ).println
+      writer.print( "struct " ).print( cpp_name )
+      writer.print " : RogueObject"
+      writer.println
       writer.println( "{" )
       writer.println( "};" )
 

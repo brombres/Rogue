@@ -31,8 +31,10 @@ class Method
 
     method print_signature( writer:CPPWriter )
       writer.print( return_type ).print(" ").print( cpp_name )
-      writer.print( "(" )
-      writer.print( ")" )
+      writer.print( "( " )
+      writer.print( this_type )
+      writer.print( " THIS" )
+      writer.print( " )" )
 
     method print_definition( writer:CPPWriter )
       print_signature( writer )
@@ -40,6 +42,7 @@ class Method
       writer.println "{"
       writer.indent += 2
       writer.println "  // TODO: object create()"
+      writer.println "  return THIS;"
       writer.indent -= 2
       writer.println "}"
       writer.println

@@ -40,16 +40,28 @@ struct RogueMMAllocator;
 
 struct RogueType
 {
-  RogueMMAllocator* allocator;
-
-  //RogueType
+  int object_size;
 };
 
 struct RogueObject
 {
   RogueObject* next_object;
+  // Used to keep track of this allocation so that it can be freed when no
+  // longer referenced.
+
   RogueObject* next_traced_object;
+  // Used during GC to build a list of objects to trace.
+
   RogueType*   type;
-  int          size;
+  // Type info for this object.
+
+  RogueInteger size;
+  // Set to be ~size when traced through during a garbage collection,
+  // then flipped back again at the end of GC.
+
+  RogueInteger reference_count;
+  // A positive reference_count ensures that this object will never be
+  // collected.  A zero reference_count means this object is kept as long as
+  // it is visible to the memory manager.
 };
 
