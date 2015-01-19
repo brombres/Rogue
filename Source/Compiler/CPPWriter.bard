@@ -17,9 +17,14 @@ class CPPWriter
         forEach (1..indent) buffer.print(' ')
       endIf
 
-    method print( st:String )->CPPWriter
+    method print( value:Integer )->CPPWriter
       print_indent
-      buffer.print( st )
+      buffer.print( value )
+      return this
+
+    method print( value:String )->CPPWriter
+      print_indent
+      buffer.print( value )
       return this
 
     method println->CPPWriter
@@ -27,8 +32,14 @@ class CPPWriter
       needs_indent = true
       return this
 
-    method println( st:String )->CPPWriter
-      buffer.print( st )
+    method println( value:Integer )->CPPWriter
+      buffer.print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:String )->CPPWriter
+      buffer.print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
@@ -36,6 +47,7 @@ class CPPWriter
     method print( type:Type )->CPPWriter
       print_indent
       if (type?)
+        buffer.print( "Class" )
         buffer.print( type.cpp_name )
         if (not type.is_native) buffer.print("*")
       else

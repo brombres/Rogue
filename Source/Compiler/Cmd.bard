@@ -69,6 +69,7 @@ class CmdLiteralString : CmdLiteral
     method init( t, value )
 
     method resolve->Cmd
+      Program.type_String.resolve
       return this
 endClass
 

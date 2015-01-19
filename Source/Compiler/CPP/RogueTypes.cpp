@@ -11,4 +11,24 @@
 //  under the terms of the UNLICENSE ( http://unlicense.org ).
 //=============================================================================
 
+#include <stdio.h>
 #include "RogueTypes.h"
+#include "RogueIDTable.h"
+
+//-----------------------------------------------------------------------------
+//  RogueType
+//-----------------------------------------------------------------------------
+RogueType::~RogueType()
+{
+}
+
+RogueType* RogueType::init( int index, const char* name, int object_size )
+{
+  this->index = index;
+  this->object_size = object_size;
+  RogueIDTableEntry* entry = Rogue_id_table.get_entry( name );
+  this->name_id = entry->id;
+  this->name = entry->name;
+  return this;
+}
+

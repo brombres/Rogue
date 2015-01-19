@@ -1,7 +1,7 @@
 #pragma once
 
 //=============================================================================
-//  RogueMM.h
+//  RogueAllocator.h
 //
 //  Rogue Memory Manager header file for cross-compiled C++ code.
 //
@@ -47,47 +47,49 @@
 #endif
 
 
-struct RogueMMAllocationPage
+struct RogueAllocationPage
 {
   // Backs small 0..256-byte allocations.
-  RogueMMAllocationPage* next_page;
+  RogueAllocationPage* next_page;
 
   RogueByte* cursor;
   int        remaining;
 
   RogueByte  data[ ROGUEMM_PAGE_SIZE ];
 
-  RogueMMAllocationPage( RogueMMAllocationPage* next_page );
+  RogueAllocationPage( RogueAllocationPage* next_page );
 
   void* allocate( int size );
 };
 
 //-----------------------------------------------------------------------------
-//  RogueMMAllocator
+//  RogueAllocator
 //-----------------------------------------------------------------------------
-struct RogueMMAllocator
+struct RogueAllocator
 {
-  RogueMMAllocationPage* pages;
+  RogueAllocationPage* pages;
   RogueObject*           free_objects[ROGUEMM_SLOT_COUNT];
 
-  RogueMMAllocator();
-  ~RogueMMAllocator();
+  RogueAllocator();
+  ~RogueAllocator();
   void* allocate( int size );
+  void* allocate_permanent( int size );
   void* free( void* data, int size );
+  void* free_permanent( void* data, int size );
 };
 
-extern RogueMMAllocator RogueMM_allocator;
+extern RogueAllocator Rogue_allocator;
 
 
 //-----------------------------------------------------------------------------
-//  RogueMM
+//  Rogue
 //-----------------------------------------------------------------------------
-struct RogueMM
+struct Rogue
 {
   RogueObject* objects;
 
-  RogueMM();
-  ~RogueMM();
+  Rogue();
+  ~Rogue();
 
   RogueObject* allocate( RogueType* type );
 };

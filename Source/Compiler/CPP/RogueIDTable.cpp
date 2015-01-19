@@ -10,7 +10,7 @@
 //=============================================================================
 //=============================================================================
 #include <string.h>
-#include "RogueMM.h"
+#include "RogueAllocator.h"
 #include "RogueIDTable.h"
 
 //=============================================================================
@@ -20,13 +20,13 @@ RogueIDTableEntry::RogueIDTableEntry( const char* name, int hash_code, int id )
     : hash_code(hash_code), id(id), next_entry(NULL)
 {
   int len = strlen( name );
-  this->name = (char*) RogueMM_allocator.allocate( len+1 );
+  this->name = (char*) Rogue_allocator.allocate_permanent( len+1 );
   strcpy( this->name, name );
 }
 
 RogueIDTableEntry::~RogueIDTableEntry()
 {
-  RogueMM_allocator.free( name, strlen(name)+1 );
+  Rogue_allocator.free_permanent( name, strlen(name)+1 );
 }
 
 
@@ -84,7 +84,7 @@ void RogueIDTable::clear()
   }
 }
 
-int RogueIDTable::get_id( const char* name )
+RogueIDTableEntry* RogueIDTable::get_entry( const char* name )
 {
   int hash_code = calculate_hash_code( name );
   RogueIDTableEntry* entry = bins[ hash_code & bin_mask ];
@@ -93,7 +93,7 @@ int RogueIDTable::get_id( const char* name )
   {
     if (entry->hash_code == hash_code && 0 == strcmp(entry->name,name))
     {
-      return entry->id;
+      return entry;
     }
     entry = entry->next_entry;
   }
@@ -105,7 +105,7 @@ int RogueIDTable::get_id( const char* name )
 
   entry_list.add( entry );
 
-  return entry->id;
+  return entry;
 }
 
 const char* RogueIDTable::operator[]( int id )
@@ -118,7 +118,7 @@ const char* RogueIDTable::operator[]( int id )
 
 int RogueIDTable::operator[]( const char* name )
 {
-  return get_id( name );
+  return get_entry( name )->id;
 }
 
 RogueIDTable Rogue_id_table;

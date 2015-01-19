@@ -11,7 +11,7 @@
 //  under the terms of the UNLICENSE ( http://unlicense.org ).
 //=============================================================================
 #include <string.h>
-#include "RogueMM.h"
+#include "RogueAllocator.h"
 #include "RogueSystemList.h"
 
 //=============================================================================
@@ -45,7 +45,7 @@ struct RogueIDTable
 
   int   calculate_hash_code( const char* st );
   void  clear();
-  int   get_id( const char* name );
+  RogueIDTableEntry* get_entry( const char* name );
   const char* operator[]( int id );
   int         operator[]( const char* name );
 };

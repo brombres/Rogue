@@ -5,6 +5,7 @@ class Type
     t          : Token
     name       : String
     attributes : Integer
+    index      = -1
 
     defined    : Logical
     organized  : Logical
@@ -23,7 +24,7 @@ class Type
     method init( t, name )
 
     method assign_cpp_name
-      cpp_name = Program.validate_cpp_name( Program.code_prefix + name )
+      cpp_name = Program.validate_cpp_name( name )
 
     method find_method( signature:String )->Method
       local m = method_lookup_by_signature[signature]
@@ -61,12 +62,25 @@ class Type
     method resolve->Type
       if (resolved) return this
       resolved = true
+
+      index = Program.type_list.count
+      Program.type_list.add( this )
+
       organize
+
       return this
 
     method print_type_declaration( writer:CPPWriter )
       if (is_native) return
-      writer.print( "struct " ).print( cpp_name ).println( ";" )
+      writer.print( "struct Class" ).print( cpp_name ).println( ";" )
+
+    method print_type_info_declaration( writer:CPPWriter )
+      if (is_native) return
+      writer.print( "extern RogueType* RogueType_" ).print( cpp_name ).println( ";" )
+
+    method print_type_info_definition( writer:CPPWriter )
+      if (is_native) return
+      writer.print( "RogueType* RogueType_" ).print( cpp_name ).println( ";" )
 
     method print_method_prototypes( writer:CPPWriter )
       if (is_native) return
@@ -78,9 +92,15 @@ class Type
 
       forEach (m in method_list) m.print_definition( writer )
 
-    method print_type_definition( writer:CPPWriter )
+    method print_type_configuration( writer:CPPWriter )
       if (is_native) return
-      writer.print( "struct " ).print( cpp_name )
+      writer.print( "  RogueType_" ).print( cpp_name ).print( " = Rogue_types[" ).print( index )
+      writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_name ).print( "\", sizeof(Class" )
+      writer.print( cpp_name ).println( ") );" )
+
+    method print_type_definition( writer:CPPWriter )
+      if (is_native or index == -1) return
+      writer.print( "struct Class" ).print( cpp_name )
       writer.print " : RogueObject"
       writer.println
       writer.println( "{" )

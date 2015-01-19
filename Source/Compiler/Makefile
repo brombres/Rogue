@@ -17,6 +17,9 @@ compile: ../../Programs/Roguec.bc
 $(BARDVM): $(BCC)
 	cd ../../Programs/Bard && make
 
+vm:
+	cd ../../Programs/Bard && make
+
 run:
 	$(BARDVM) Roguec.bc
 	cat CPP/Test.h

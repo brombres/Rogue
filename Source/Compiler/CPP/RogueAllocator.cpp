@@ -1,5 +1,5 @@
 //=============================================================================
-//  RogueMM.cpp
+//  RogueAllocator.cpp
 //
 //  Rogue Memory Manager for cross-compiled C++ code.
 //
@@ -11,15 +11,15 @@
 //  under the terms of the UNLICENSE ( http://unlicense.org ).
 //=============================================================================
 
-#include "RogueMM.h"
+#include "RogueAllocator.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 //-----------------------------------------------------------------------------
-//  RogueMMAllocationPage
+//  RogueAllocationPage
 //-----------------------------------------------------------------------------
-RogueMMAllocationPage::RogueMMAllocationPage( RogueMMAllocationPage* next_page )
+RogueAllocationPage::RogueAllocationPage( RogueAllocationPage* next_page )
   : next_page(next_page)
 {
   cursor = data;
@@ -27,7 +27,7 @@ RogueMMAllocationPage::RogueMMAllocationPage( RogueMMAllocationPage* next_page )
   //printf( "New page\n");
 }
 
-void* RogueMMAllocationPage::allocate( int size )
+void* RogueAllocationPage::allocate( int size )
 {
   // Round size up to multiple of 8.
   if (size > 0) size = (size + 7) & ~7;
@@ -39,14 +39,16 @@ void* RogueMMAllocationPage::allocate( int size )
   void* result = cursor;
   cursor += size;
   remaining -= size;
+
+  //printf( "%d / %d\n", ROGUEMM_PAGE_SIZE - remaining, ROGUEMM_PAGE_SIZE );
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-//  RogueMMAllocator
+//  RogueAllocator
 //-----------------------------------------------------------------------------
-RogueMMAllocator::RogueMMAllocator() : pages(NULL)
+RogueAllocator::RogueAllocator() : pages(NULL)
 {
   for (int i=0; i<ROGUEMM_SLOT_COUNT; ++i)
   {
@@ -54,22 +56,22 @@ RogueMMAllocator::RogueMMAllocator() : pages(NULL)
   }
 }
 
-RogueMMAllocator::~RogueMMAllocator()
+RogueAllocator::~RogueAllocator()
 {
   while (pages)
   {
-    RogueMMAllocationPage* next_page = pages->next_page;
+    RogueAllocationPage* next_page = pages->next_page;
     delete pages;
     pages = next_page;
   }
 }
 
-void* RogueMMAllocator::allocate( int size )
+void* RogueAllocator::allocate( int size )
 {
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return malloc( size );
 
-  size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
   if (size <= 0) size = ROGUEMM_GRANULARITY_SIZE;
+  else           size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
   RogueObject* obj = free_objects[slot];
@@ -86,7 +88,7 @@ void* RogueMMAllocator::allocate( int size )
   // Try allocating a new object from the current page.
   if ( !pages )
   {
-    pages = new RogueMMAllocationPage(NULL);
+    pages = new RogueAllocationPage(NULL);
   }
 
   obj = (RogueObject*) pages->allocate( size );
@@ -112,11 +114,56 @@ void* RogueMMAllocator::allocate( int size )
   }
 
   // New page; this will work for sure.
-  pages = new RogueMMAllocationPage( pages );
+  pages = new RogueAllocationPage( pages );
   return pages->allocate( size );
 }
 
-void* RogueMMAllocator::free( void* data, int size )
+void* RogueAllocator::allocate_permanent( int size )
+{
+  // Allocates arbitrary number of bytes (rounded up to a multiple of 8).
+  // Intended for permanent use throughout the lifetime of the program.  
+  // While such memory can and should be freed with free_permanent() to ensure
+  // that large system allocations are indeed freed, small allocations 
+  // will be recycled as blocks, losing 0..63 bytes in the process and
+  // fragmentation in the long run.
+
+  if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return malloc( size );
+
+  // Round size up to multiple of 8.
+  if (size <= 0) size = 8;
+  else           size = (size + 7) & ~7;
+
+  if ( !pages )
+  {
+    pages = new RogueAllocationPage(NULL);
+  }
+
+  void* result = pages->allocate( size );
+  if (result) return result;
+
+  // Not enough room on allocation page.  Allocate any smaller blocks
+  // we're able to and then move on to a new page.
+  int s = ROGUEMM_SLOT_COUNT - 2;
+  while (s >= 1)
+  {
+    RogueObject* obj = (RogueObject*) pages->allocate( s << ROGUEMM_GRANULARITY_BITS );
+    if (obj)
+    {
+      obj->next_object = free_objects[s];
+      free_objects[s] = obj;
+    }
+    else
+    {
+      --s;
+    }
+  }
+
+  // New page; this will work for sure.
+  pages = new RogueAllocationPage( pages );
+  return pages->allocate( size );
+}
+
+void* RogueAllocator::free( void* data, int size )
 {
   if (data)
   {
@@ -140,30 +187,59 @@ void* RogueMMAllocator::free( void* data, int size )
   return NULL;
 }
 
-RogueMMAllocator RogueMM_allocator;
+void* RogueAllocator::free_permanent( void* data, int size )
+{
+  if (data)
+  {
+    if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
+    {
+      ::free( data );
+    }
+    else
+    {
+      // Return object to small allocation pool if it's big enough.  Some
+      // or all bytes may be lost until the end of the program when the
+      // RogueAllocator frees its memory.
+      RogueObject* obj = (RogueObject*) data;
+      int slot = size >> ROGUEMM_GRANULARITY_BITS;
+      if (slot)
+      {
+        obj->next_object = free_objects[slot];
+        free_objects[slot] = obj;
+      }
+      // else memory is < 64 bytes and is unavailable.
+    }
+  }
+
+  // Always returns null, allowing a pointer to be freed and assigned null in
+  // a single step.
+  return NULL;
+}
+
+RogueAllocator Rogue_allocator;
 
 
 //-----------------------------------------------------------------------------
-//  RogueMM
+//  Rogue
 //-----------------------------------------------------------------------------
-RogueMM::RogueMM() : objects(NULL)
+Rogue::Rogue() : objects(NULL)
 {
 }
 
-RogueMM::~RogueMM()
+Rogue::~Rogue()
 {
   while (objects)
   {
     RogueObject* next_object = objects->next_object;
-    RogueMM_allocator.free( objects, objects->size );
+    Rogue_allocator.free( objects, objects->size );
     objects = next_object;
   }
 }
 
-RogueObject* RogueMM::allocate( RogueType* type )
+RogueObject* Rogue::allocate( RogueType* type )
 {
   int size = type->object_size;
-  RogueObject* obj = (RogueObject*) RogueMM_allocator.allocate( size );
+  RogueObject* obj = (RogueObject*) Rogue_allocator.allocate( size );
   memset( obj, 0, size );
 
   obj->next_object = objects;

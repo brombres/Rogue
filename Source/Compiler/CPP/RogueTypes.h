@@ -36,13 +36,28 @@
   typedef RogueInteger     RogueLogical;
 #endif
 
-struct RogueMMAllocator;
+struct RogueAllocator;
 
+
+//-----------------------------------------------------------------------------
+//  RogueType
+//-----------------------------------------------------------------------------
 struct RogueType
 {
+  int index;
   int object_size;
+  int name_id;
+  const char* name;
+
+  ~RogueType();
+
+  RogueType* init( int index, const char* name, int object_size );
 };
 
+
+//-----------------------------------------------------------------------------
+//  RogueObject
+//-----------------------------------------------------------------------------
 struct RogueObject
 {
   RogueObject* next_object;

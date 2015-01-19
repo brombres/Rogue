@@ -88,11 +88,11 @@ class Tokenizer
       TokenType.keyword_println    = define( TokenType("println") )
 
       # Expression Tokens
-      TokenType.identifier                   = define( TokenType("identifier") )
-      TokenType.literal_character            = define( TokenType("Character") )
-      TokenType.literal_integer              = define( TokenType("Integer") )
-      TokenType.literal_real                 = define( TokenType("Real") )
-      TokenType.literal_string               = define( TokenType("String") )
+      TokenType.identifier                   = TokenType("identifier")
+      TokenType.literal_character            = TokenType("Character")
+      TokenType.literal_integer              = TokenType("Integer")
+      TokenType.literal_real                 = TokenType("Real")
+      TokenType.literal_string               = TokenType("String")
 
       TokenType.keyword_and                  = define( TokenType("and") )
       TokenType.keyword_false                = define( TokenType("false") )

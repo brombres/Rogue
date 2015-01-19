@@ -47,7 +47,6 @@ class Program [requisite singleton]
       if (type?) return type
 
       type = Type( t, name )
-      type_list.add( type )
       type_lookup[name] = type
 
       return type
@@ -88,17 +87,24 @@ class Program [requisite singleton]
       local writer = CPPWriter( filepath + ".h" )
       writer.println
 
+      writer.println //#pragma  once//
       writer.println //#include "RogueTypes.h"//
       writer.println
 
+      writer.println( "void Rogue_configure();" )
+      writer.println
+
       forEach (type in type_list) type.print_type_declaration( writer )
+      writer.println
+
+      forEach (type in type_list) type.print_type_info_declaration( writer )
+      writer.print( "extern RogueType  Rogue_types[" ).print( type_list.count ).println( "];" )
       writer.println
 
       forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
       writer.close
-
 
       # .CPP implementation
       writer = CPPWriter( filepath + ".cpp" )
@@ -108,13 +114,25 @@ class Program [requisite singleton]
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
       writer.println //#include <stdio.h>//
       writer.println //#include "$.h"// (base_filename)
-      writer.println //#include "RogueMM.h"//
+      writer.println //#include "RogueAllocator.h"//
       writer.println
+
+      forEach (type in type_list) type.print_type_info_definition( writer )
+      writer.print( "RogueType  Rogue_types[" ).print( type_list.count ).println( "];" )
+      writer.println
+
 
       forEach (type in type_list) type.print_type_definition( writer )
       writer.println
 
       forEach (type in type_list) type.print_method_definitions( writer )
+      writer.println
+
+      # configure() method
+      writer.println( "void Rogue_configure()" )
+      writer.println( "{" )
+      forEach (type in type_list) type.print_type_configuration( writer )
+      writer.println( "}" )
       writer.println
 
       writer.close
