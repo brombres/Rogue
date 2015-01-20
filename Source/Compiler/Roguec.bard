@@ -19,11 +19,12 @@ class Roguec [singleton]
         include( "Test.rogue" )
         Program.resolve
 
-        Program.write_cpp( "CPP/Test" )
+        Program.write_cpp( "CPP/RogueProgram" )
 
         println "DONE"
       catch (err:Error)
         println err
+        Runtime.exit(1)
       endTry
 
     method include( filepath:String )

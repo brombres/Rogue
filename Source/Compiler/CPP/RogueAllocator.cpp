@@ -219,34 +219,3 @@ void* RogueAllocator::free_permanent( void* data, int size )
 RogueAllocator Rogue_allocator;
 
 
-//-----------------------------------------------------------------------------
-//  Rogue
-//-----------------------------------------------------------------------------
-Rogue::Rogue() : objects(NULL)
-{
-}
-
-Rogue::~Rogue()
-{
-  while (objects)
-  {
-    RogueObject* next_object = objects->next_object;
-    Rogue_allocator.free( objects, objects->size );
-    objects = next_object;
-  }
-}
-
-RogueObject* Rogue::allocate( RogueType* type )
-{
-  int size = type->object_size;
-  RogueObject* obj = (RogueObject*) Rogue_allocator.allocate( size );
-  memset( obj, 0, size );
-
-  obj->next_object = objects;
-  objects = obj;
-  obj->type = type;
-  obj->size = size;
-
-  return obj;
-}
-

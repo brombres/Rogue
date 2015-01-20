@@ -22,15 +22,11 @@ vm:
 
 run:
 	$(BARDVM) Roguec.bc
-	cat CPP/Test.h
+	cat CPP/RogueProgram.h
 	@echo "-----------------------------------------------------"
-	cat CPP/Test.cpp
+	cat CPP/RogueProgram.cpp
 
-#cpp: compile run
-#g++ Test.cpp
-#./a.out
-
-cpp:
+cpp: compile run
 	cd CPP && make
 
 clean:

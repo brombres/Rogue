@@ -2,16 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "Test.h"
+#include "RogueProgram.h"
+#include "Rogue.h"
 #include "RogueSystemList.h"
 #include "RogueIDTable.h"
 
 int main()
 {
   printf( "Configuring Rogue\n" );
-  Rogue_configure();
-  printf( "bytes: %d\n", RogueType_Alpha->object_size );
+
+  rogue.init();
+  RogueString* abe = RogueString::create( "Abe" );
+  RogueString* abf = RogueString::create( "Abf" );
+  RogueString* pralle = RogueString::create( "Pralle" );
+  rogue.collect_garbage();
+
   printf( "Done\n" );
 
   return 0;
 }
+

@@ -12,23 +12,54 @@
 //=============================================================================
 
 #include <stdio.h>
+#include <string.h>
+#include "Rogue.h"
 #include "RogueTypes.h"
 #include "RogueIDTable.h"
 
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-RogueType::~RogueType()
-{
-}
+//RogueType::~RogueType()
+//{
+//}
 
-RogueType* RogueType::init( int index, const char* name, int object_size )
+//-----------------------------------------------------------------------------
+//  RogueObject
+//-----------------------------------------------------------------------------
+//RogueObject* RogueObject::trace( RogueObject* obj, RogueObject* list )
+//{
+//
+//}
+
+//-----------------------------------------------------------------------------
+//  RogueString
+//-----------------------------------------------------------------------------
+RogueStringType type_String;
+
+RogueString* RogueString::create( const char* c_string, int count )
 {
-  this->index = index;
-  this->object_size = object_size;
-  RogueIDTableEntry* entry = Rogue_id_table.get_entry( name );
-  this->name_id = entry->id;
-  this->name = entry->name;
-  return this;
+  if (count == -1) count = strlen( c_string );
+
+  int total_size = sizeof(RogueString) + ((count - 1) * sizeof(RogueCharacter));
+  // RogueString already includes one character in its size.
+
+  RogueString* st = (RogueString*) rogue.allocate_object( &type_String, total_size );
+  st->count = count;
+
+  // Copy 8-bit chars to 16-bit data while computing hash code.
+  RogueCharacter* dest = st->characters - 1;
+  const unsigned char* src = (const unsigned char*) (c_string - 1);
+  int hash_code = 0;
+  while (--count >= 0)
+  {
+    int ch = *(++src);
+    *(++dest) = (RogueCharacter) ch;
+    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
+  }
+
+  st->hash_code = hash_code;
+
+  return st;
 }
 

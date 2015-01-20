@@ -38,20 +38,25 @@
 
 struct RogueAllocator;
 
+#define ROGUE_TRACE( obj ) \
+{ \
+  if (obj && obj->size >= 0) \
+  { \
+    obj->size = ~obj->size; \
+    obj->type->trace( obj ); \
+  } \
+}
 
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
+struct RogueObject;
+
 struct RogueType
 {
-  int index;
-  int object_size;
-  int name_id;
-  const char* name;
-
-  ~RogueType();
-
-  RogueType* init( int index, const char* name, int object_size );
+  virtual RogueObject* create_object() = 0;
+  virtual const char*  name() = 0;
+  virtual void         trace( RogueObject* obj ) {}
 };
 
 
@@ -64,9 +69,6 @@ struct RogueObject
   // Used to keep track of this allocation so that it can be freed when no
   // longer referenced.
 
-  RogueObject* next_traced_object;
-  // Used during GC to build a list of objects to trace.
-
   RogueType*   type;
   // Type info for this object.
 
@@ -78,5 +80,31 @@ struct RogueObject
   // A positive reference_count ensures that this object will never be
   // collected.  A zero reference_count means this object is kept as long as
   // it is visible to the memory manager.
+};
+
+
+//-----------------------------------------------------------------------------
+//  RogueString
+//-----------------------------------------------------------------------------
+struct RogueStringType : RogueType
+{
+  RogueObject* create_object()
+  {
+    return 0;  // not used
+  }
+
+  const char* name() { return "String"; }
+};
+
+extern RogueStringType type_String;
+
+
+struct RogueString : RogueObject
+{
+  RogueInteger   count;
+  RogueInteger   hash_code;
+  RogueCharacter characters[1];
+
+  static RogueString* create( const char* c_string, int count=-1 );
 };
 

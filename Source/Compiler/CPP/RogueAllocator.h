@@ -81,16 +81,3 @@ struct RogueAllocator
 extern RogueAllocator Rogue_allocator;
 
 
-//-----------------------------------------------------------------------------
-//  Rogue
-//-----------------------------------------------------------------------------
-struct Rogue
-{
-  RogueObject* objects;
-
-  Rogue();
-  ~Rogue();
-
-  RogueObject* allocate( RogueType* type );
-};
-
