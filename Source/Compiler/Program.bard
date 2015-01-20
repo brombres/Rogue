@@ -117,12 +117,8 @@ class Program [requisite singleton]
       writer.println( "};" )
       writer.println
 
-      #writer.print( "#define ROGUE_TYPE_COUNT " ).println( type_list.count )
-      #writer.println( "extern RogueType  Rogue_types[ROGUE_TYPE_COUNT];" )
-      #writer.println
-
-      #forEach (type in type_list) type.print_method_prototypes( writer )
-      #writer.println
+      forEach (type in type_list) type.print_method_prototypes( writer )
+      writer.println
       writer.println( "extern Rogue rogue;" );
 
       writer.close
@@ -209,6 +205,11 @@ class Program [requisite singleton]
       endForEach
       writer.println
       }#
+
+      forEach (type in type_list) type.print_method_definitions( writer )
+      writer.println
+
+      writer.println( "extern Rogue rogue;" );
 
       # configure() method
       writer.println( "void Rogue::init()" )
