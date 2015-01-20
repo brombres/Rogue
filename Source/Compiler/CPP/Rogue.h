@@ -18,8 +18,12 @@
 //-----------------------------------------------------------------------------
 struct RogueCore
 {
-  RogueObject* objects;
-  RogueObject* main_object;
+  RogueObject*  objects;
+  RogueObject*  main_object;
+  RogueString** literal_strings;
+  int           literal_string_count;
+
+  RogueStringType* type_String;
 
   RogueCore();
   ~RogueCore();

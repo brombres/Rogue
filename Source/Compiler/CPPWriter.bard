@@ -54,5 +54,33 @@ class CPPWriter
         buffer.print( "void" )
       endIf
       return this
+
+    method print_string_utf8( st:String )->CPPWriter
+      if (st is null)
+        print( "0" )
+        return this
+      endIf
+
+      print( "\"" )
+      forEach (ch in st)
+        if (ch < 0x80)
+          if (ch >= 32 and ch <= 126)
+            print( ""+ch )
+          else
+            which (ch)
+              case 10
+                print "\\n"
+              others
+                print "\\"
+                print( "" + (ch->Integer / 64)->Integer )
+                print( "" + ((ch->Integer & 63) / 8)->Integer )
+                print( "" + (ch & 7) )
+            endWhich
+          endIf
+        endIf
+      endForEach
+      print( "\"" )
+
+      return this
 endClass
 

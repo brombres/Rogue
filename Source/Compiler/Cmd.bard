@@ -70,6 +70,12 @@ class CmdLiteralString : CmdLiteral
 
     method resolve->Cmd
       Program.type_String.resolve
+      if (value?)
+        if (not Program.literal_string_lookup.contains(value))
+          Program.literal_string_lookup[value] = Program.literal_string_list.count
+          Program.literal_string_list.add( value )
+        endIf
+      endIf
       return this
 endClass
 

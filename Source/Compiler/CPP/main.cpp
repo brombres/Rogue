@@ -3,18 +3,15 @@
 #include <string.h>
 #include <math.h>
 #include "Rogue.h"
-#include "RogueProgram.h"
-#include "RogueSystemList.h"
-#include "RogueIDTable.h"
 
 int main()
 {
   printf( "Configuring Rogue\n" );
 
   rogue.init();
-  RogueString* abe = RogueString::create( "Abe" );
-  RogueString* abf = RogueString::create( "Abf" );
-  RogueString* pralle = RogueString::create( "Pralle" );
+  RogueString::create( "Abe" );
+  RogueString::create( "Abf" );
+  RogueString::create( "Pralle" );
   rogue.collect_garbage();
 
   printf( "Done\n" );

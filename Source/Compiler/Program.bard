@@ -29,6 +29,9 @@ class Program [requisite singleton]
     type_Object     : Type
     type_String     : Type
 
+    literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
+    literal_string_list   = String[]
+
   METHODS
     method configure
       type_Real      = create_built_in_type( "Real" )
@@ -110,6 +113,7 @@ class Program [requisite singleton]
       endForEach
       writer.println
       writer.println( "  void init();" )
+      writer.println( "  ~Rogue();" )
       writer.println( "};" )
       writer.println
 
@@ -123,7 +127,7 @@ class Program [requisite singleton]
 
       writer.close
 
-      # .CPP implementation
+      # .CPP implementation ---------------------------------------------------
       writer = CPPWriter( filepath + ".cpp" )
       writer.println
 
@@ -152,7 +156,6 @@ class Program [requisite singleton]
         endIf
       endForEach
       writer.println
-      writer.println "extern Rogue rogue;"
 
       # XType definitions
       forEach (type in type_list)
@@ -212,12 +215,29 @@ class Program [requisite singleton]
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print("  type_").print(type.cpp_name).print(" = new Rogue").print(type.cpp_name).print("Type();")
+          writer.print("  type_").print(type.cpp_name).print(" = new Rogue").print(type.cpp_name).println("Type();")
         endIf
+      endForEach
+      writer.println
+      writer.print(   "  literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
+      writer.println( "  literal_strings = new RogueString*[literal_string_count];" )
+      forEach (i of Program.literal_string_list)
+        writer.print(   "  literal_strings[" ).print(i).print("] = RogueString::create( ")
+        writer.print_string_utf8( Program.literal_string_list[i] )
+        writer.println( " ); " )
       endForEach
       writer.println
       writer.print(   "  rogue.main_object = rogue.type_").print(main_class.cpp_name).println( "->create_object();" )
       writer.println( "}" )
+      writer.println
+      writer.println( "Rogue::~Rogue()" )
+      writer.println  "{"
+      forEach (type in type_list)
+        if (not type.is_native)
+          writer.print("  delete type_").print(type.cpp_name).println(";")
+        endIf
+      endForEach
+      writer.println  "}"
       writer.println
       writer.println "Rogue rogue;"
 

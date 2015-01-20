@@ -22,17 +22,21 @@
 //-----------------------------------------------------------------------------
 RogueCore::RogueCore() : objects(NULL)
 {
+  type_String = new RogueStringType();
 }
 
 RogueCore::~RogueCore()
 {
   printf( "~RogueCore()\n" );
+
   while (objects)
   {
     RogueObject* next_object = objects->next_object;
     Rogue_allocator.free( objects, objects->size );
     objects = next_object;
   }
+
+  delete type_String;
 }
 
 RogueObject* RogueCore::allocate_object( RogueType* type, int size )
@@ -51,6 +55,13 @@ RogueObject* RogueCore::allocate_object( RogueType* type, int size )
 void RogueCore::collect_garbage()
 {
   ROGUE_TRACE( main_object );
+  int count = literal_string_count + 1;
+  RogueString** cur_string_ptr = literal_strings - 1;
+  while (--count)
+  {
+    RogueString* cur_string = *(++cur_string_ptr);
+    ROGUE_TRACE( cur_string );
+  }
 
   RogueObject* cur = objects;
   objects = NULL;

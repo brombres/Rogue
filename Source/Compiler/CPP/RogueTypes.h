@@ -54,6 +54,7 @@ struct RogueObject;
 
 struct RogueType
 {
+  virtual ~RogueType() {}
   virtual RogueObject* create_object() = 0;
   virtual const char*  name() = 0;
   virtual void         trace( RogueObject* obj ) {}
@@ -95,9 +96,6 @@ struct RogueStringType : RogueType
 
   const char* name() { return "String"; }
 };
-
-extern RogueStringType type_String;
-
 
 struct RogueString : RogueObject
 {
