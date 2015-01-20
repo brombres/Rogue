@@ -29,3 +29,4 @@ struct RogueCore
   void         collect_garbage();
 };
 
+#include "RogueProgram.h"

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "RogueProgram.h"
 #include "Rogue.h"
+#include "RogueProgram.h"
 #include "RogueSystemList.h"
 #include "RogueIDTable.h"
 

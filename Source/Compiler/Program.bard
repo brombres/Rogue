@@ -104,7 +104,7 @@ class Program [requisite singleton]
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "  Rogue" ).print( type.cpp_name ).print( "Type type_" );
+          writer.print( "  Rogue" ).print( type.cpp_name ).print( "Type* type_" );
           writer.print( type.cpp_name ).println( ";" );
         endIf
       endForEach
@@ -119,6 +119,7 @@ class Program [requisite singleton]
 
       #forEach (type in type_list) type.print_method_prototypes( writer )
       #writer.println
+      writer.println( "extern Rogue rogue;" );
 
       writer.close
 
@@ -209,11 +210,13 @@ class Program [requisite singleton]
       # configure() method
       writer.println( "void Rogue::init()" )
       writer.println( "{" )
-      #{
-      forEach (type in type_list) type.print_type_configuration( writer )
+      forEach (type in type_list)
+        if (not type.is_native)
+          writer.print("  type_").print(type.cpp_name).print(" = new Rogue").print(type.cpp_name).print("Type();")
+        endIf
+      endForEach
       writer.println
-      }#
-      writer.print(   "  rogue.main_object = type_").print(main_class.cpp_name).println( ".create_object();" )
+      writer.print(   "  rogue.main_object = rogue.type_").print(main_class.cpp_name).println( "->create_object();" )
       writer.println( "}" )
       writer.println
       writer.println "Rogue rogue;"
