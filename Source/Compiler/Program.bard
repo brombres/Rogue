@@ -228,8 +228,17 @@ class Program [requisite singleton]
       endForEach
       writer.println
       writer.print(   "  rogue.main_object = rogue.type_").print(main_class.cpp_name).println( "->create_object();" )
+
+      # call init() on main object
+      local m = main_class.find_method( "init()" )
+      if (m?)
+        writer.print("  //").print(m.cpp_name).print("( (Rogue").print(main_class.cpp_name).println("*)rogue.main_object );")
+      endIf
+
       writer.println( "}" )
       writer.println
+
+      # Rogue destructor
       writer.println( "Rogue::~Rogue()" )
       writer.println  "{"
       forEach (type in type_list)

@@ -3,6 +3,7 @@ class Method
     t           : Token
     this_type   : Type
     name        : String
+    signature   : String
     cpp_name    : String
     attributes  : Integer
 
@@ -20,6 +21,15 @@ class Method
       buffer.print( this_type.name ).print( "__" )
       buffer.print( name )
       cpp_name = Program.validate_cpp_name( buffer->String )
+
+    method assign_signature
+      local buffer = StringBuilder()
+      buffer.print name
+      buffer.print "("
+      buffer.print ")"
+      signature = buffer->String
+
+      this_type.method_lookup_by_signature[signature] = this
 
     method is_initializer->Logical
       return (attributes & flag_initializer)?

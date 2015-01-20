@@ -21,5 +21,8 @@ class MethodTemplate
       m_list.add( m )
 
       Parser(tokens).parse_method( m )
+
+      m.assign_signature
+
       return m
 endClass

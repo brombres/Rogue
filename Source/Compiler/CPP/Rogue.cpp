@@ -65,7 +65,7 @@ void RogueCore::collect_garbage()
 
   RogueObject* cur = objects;
   objects = NULL;
-  RogueObject* survivors = NULL;
+  RogueObject* survivors = NULL;  // local var for speed
 
   while (cur)
   {
@@ -84,5 +84,7 @@ void RogueCore::collect_garbage()
     }
     cur = next_object;
   }
+
+  objects = survivors;
 }
 
