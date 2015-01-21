@@ -5,7 +5,7 @@ BARDVM = ../../Programs/Bard/Programs/Mac/bard
 BCC    = ../../Programs/Bard/Programs/BCC.bc
 BCC_ARGS = --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
 
-all: go
+all: go list
 
 go: compile run
 
@@ -22,6 +22,8 @@ vm:
 
 run:
 	$(BARDVM) Roguec.bc
+
+list:
 	cat CPP/RogueProgram.h
 	@echo "-----------------------------------------------------"
 	cat CPP/RogueProgram.cpp

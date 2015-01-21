@@ -115,42 +115,22 @@ class Parser
     method parse_section->Logical
       consume_eols
       if (consume(TokenType.keyword_METHODS))
-        while (parse_method_template) noAction
+        while (parse_method) noAction
         return true
       endIf
       return false
 
-    method parse_method_template->Logical
+    method parse_method->Logical
       consume_eols
       if (not next_is(TokenType.keyword_method)) return false
 
       local t = read
       local name = read_identifier
-      local m = MethodTemplate( t, this_type, name )
-      this_type.method_template_list.add( m )
-      this_type.method_template_lookup[name] = m
+      this_method = Method( t, this_type, name )
+      this_type.method_list.add( this_method )
 
-      if (consume(TokenType.symbol_open_specialize))
-        if (name == "init") throw t.error( "init() cannot be a template method." )
-
-        if (not consume(TokenType.symbol_close_specialize))
-          local first = true
-          while (first or consume(TokenType.symbol_comma))
-            first = false
-            m.placeholder_ids.add( must_read(TokenType.placeholder_id)->String )
-          endWhile
-          must_consume( TokenType.symbol_close_specialize )
-        endIf
-      endIf
-
-      while (reader.next_is_statement_token)
-        m.tokens.add( reader.read )
-      endWhile
-
-      return true
-
-    method parse_method( this_method )
       parse_multi_line_statements( this_method.statements )
+      return true
 
     method parse_multi_line_statements( statements:CmdStatementList )
       consume_end_commands

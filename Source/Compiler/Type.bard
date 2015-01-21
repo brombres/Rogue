@@ -1,5 +1,3 @@
-$[include "MethodTemplate.bard"]
-
 class Type
   PROPERTIES
     t          : Token
@@ -10,9 +8,6 @@ class Type
     defined    : Logical
     organized  : Logical
     resolved   : Logical
-
-    method_template_list   = MethodTemplate[]                 : MethodTemplate[]
-    method_template_lookup = Table<<String,MethodTemplate>>() : Table<<String,MethodTemplate>>
 
     method_list                = Method[]                   : Method[]
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
@@ -30,14 +25,7 @@ class Type
       local m = method_lookup_by_signature[signature]
       if (m?) return m
 
-      local templated_name = signature.before_first('(')
-      local base_name = templated_name.before_first('<')
-      local m_template = method_template_lookup[ base_name ]
-      if (not m_template) return null
-
-      m = m_template.instantiate()
-
-      return m
+      return null
 
     method is_native->Logical
       return (attributes & Attributes.flag_native)?
@@ -56,6 +44,8 @@ class Type
           throw t.error( "Reference to undefined type '$'." (name) )
         endIf
       endIf
+
+      forEach (m in method_list) m.organize
 
       return this
 

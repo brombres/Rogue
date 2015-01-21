@@ -34,6 +34,9 @@ class Method
     method is_initializer->Logical
       return (attributes & flag_initializer)?
 
+    method organize
+      assign_signature
+
     method print_prototype( writer:CPPWriter )
       print_signature( writer )
       writer.println( ";" )
