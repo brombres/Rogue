@@ -9,9 +9,6 @@ int main()
   printf( "Configuring Rogue\n" );
 
   rogue.init();
-  RogueString::create( "Abe" );
-  RogueString::create( "Abf" );
-  RogueString::create( "Pralle" );
   rogue.collect_garbage();
 
   printf( "Done\n" );

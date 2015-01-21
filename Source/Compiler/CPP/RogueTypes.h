@@ -81,6 +81,9 @@ struct RogueObject
   // A positive reference_count ensures that this object will never be
   // collected.  A zero reference_count means this object is kept as long as
   // it is visible to the memory manager.
+
+  RogueObject* retain()  { ++reference_count; return this; }
+  void         release() { --reference_count; }
 };
 
 
@@ -104,5 +107,7 @@ struct RogueString : RogueObject
   RogueCharacter characters[1];
 
   static RogueString* create( const char* c_string, int count=-1 );
+  static void         println( RogueString* st );
+  RogueString*        retain()  { ++reference_count; return this; }
 };
 

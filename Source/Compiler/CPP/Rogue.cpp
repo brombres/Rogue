@@ -55,13 +55,6 @@ RogueObject* RogueCore::allocate_object( RogueType* type, int size )
 void RogueCore::collect_garbage()
 {
   ROGUE_TRACE( main_object );
-  int count = literal_string_count + 1;
-  RogueString** cur_string_ptr = literal_strings - 1;
-  while (--count)
-  {
-    RogueString* cur_string = *(++cur_string_ptr);
-    ROGUE_TRACE( cur_string );
-  }
 
   RogueObject* cur = objects;
   objects = NULL;
@@ -70,17 +63,23 @@ void RogueCore::collect_garbage()
   while (cur)
   {
     RogueObject* next_object = cur->next_object;
-    if (cur->size >= 0)
+    if (cur->reference_count > 0)
     {
-      printf( "Unreferenced %s\n", cur->type->name() );
-      Rogue_allocator.free( cur, cur->size );
+      //printf( "Referenced %s\n", cur->type->name() );
+      cur->next_object = survivors;
+      survivors = cur;
     }
-    else
+    else if (cur->size < 0)
     {
-      printf( "Referenced %s\n", cur->type->name() );
+      //printf( "Referenced %s\n", cur->type->name() );
       cur->size = ~cur->size;
       cur->next_object = survivors;
       survivors = cur;
+    }
+    else
+    {
+      //printf( "Unreferenced %s\n", cur->type->name() );
+      Rogue_allocator.free( cur, cur->size );
     }
     cur = next_object;
   }

@@ -32,9 +32,14 @@ class Method
       this_type.method_lookup_by_signature[signature] = this
 
     method is_initializer->Logical
-      return (attributes & flag_initializer)?
+      return (attributes & Attributes.flag_initializer)?
 
     method organize
+      if (name == "init")
+        attributes |= Attributes.flag_initializer
+        return_type = this_type
+      endIf
+
       assign_signature
 
     method print_prototype( writer:CPPWriter )
@@ -53,8 +58,7 @@ class Method
       writer.println
       writer.println "{"
       writer.indent += 2
-      writer.println "  // TODO: object create()"
-      writer.println "  return THIS;"
+      statements.print_cpp( writer )
       writer.indent -= 2
       writer.println "}"
       writer.println
@@ -64,11 +68,12 @@ class Method
       if (resolved) return
       resolved = true
 
-      if (name == "init")
-        attributes |= Attributes.flag_initializer
-        return_type = this_type
-      endIf
-
       statements.resolve
+
+      if (is_initializer)
+        local return_t = t
+        if (statements.count?) return_t = statements.last.t
+        statements.add( CmdReturnValue(return_t,CmdReadThis(return_t,this_type)).resolve )
+      endIf
 endClass
 

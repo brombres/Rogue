@@ -61,3 +61,22 @@ RogueString* RogueString::create( const char* c_string, int count )
   return st;
 }
 
+void RogueString::println( RogueString* st )
+{
+  if (st)
+  {
+    int count = st->count;
+    RogueCharacter* src = st->characters - 1;
+    while (--count >= 0)
+    {
+      int ch = *(++src);
+      putchar( ch );
+    }
+  }
+  else
+  {
+    printf( "null" );
+  }
+  printf( "\n" );
+}
+

@@ -3,83 +3,21 @@ class Cmd
     t : Token
 
   METHODS
+    method print_cpp( writer:CPPWriter )
+      throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
+
     method resolve->Cmd
       throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
       return this
+
+    method type->Type
+      throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
+
 endClass
 
-
-class CmdLiteral : Cmd
-endClass
-
-
-class CmdLiteralReal : CmdLiteral
-  PROPERTIES
-    value : Real
-
-  METHODS
-    method init( t, value )
-
-    method resolve->Cmd
-      return this
-endClass
-
-
-class CmdLiteralInteger : CmdLiteral
-  PROPERTIES
-    value : Integer
-
-  METHODS
-    method init( t, value )
-
-    method resolve->Cmd
-      return this
-endClass
-
-
-class CmdLiteralCharacter : CmdLiteral
-  PROPERTIES
-    value : Character
-
-  METHODS
-    method init( t, value )
-
-    method resolve->Cmd
-      return this
-endClass
-
-
-class CmdLiteralLogical : CmdLiteral
-  PROPERTIES
-    value : Logical
-
-  METHODS
-    method init( t, value )
-
-    method resolve->Cmd
-      return this
-endClass
-
-
-class CmdLiteralString : CmdLiteral
-  PROPERTIES
-    value : String
-
-  METHODS
-    method init( t, value )
-
-    method resolve->Cmd
-      Program.type_String.resolve
-      if (value?)
-        if (not Program.literal_string_lookup.contains(value))
-          Program.literal_string_lookup[value] = Program.literal_string_list.count
-          Program.literal_string_list.add( value )
-        endIf
-      endIf
-      return this
-endClass
-
-
+#------------------------------------------------------------------------------
+# StatementList
+#------------------------------------------------------------------------------
 class CmdStatementList : Cmd[]
   METHODS
     method init
@@ -123,6 +61,11 @@ class CmdStatementList : Cmd[]
       Analyzer.context.pop_local_scope
       }#
 
+    method print_cpp( writer:CPPWriter )
+      forEach (statement in this)
+        statement.print_cpp( writer )
+        writer.println ";"
+      endForEach
 
     method resolve
       #Analyzer.context.push_local_scope
@@ -132,6 +75,9 @@ class CmdStatementList : Cmd[]
       #Analyzer.context.pop_local_scope
 endClass
 
+#------------------------------------------------------------------------------
+# Statements
+#------------------------------------------------------------------------------
 class CmdStatement : Cmd
 endClass
 
@@ -142,8 +88,158 @@ class CmdPrintln : CmdStatement
   METHODS
     method init( t, expression=null )
 
+    method print_cpp( writer:CPPWriter )
+      if (expression?)
+        local print_type = expression.type
+        if (print_type is Program.type_String)
+          writer.print "RogueString::println( "
+          expression.print_cpp( writer )
+          writer.print " )"
+        else
+          throw t.error( "Unhandled type in println: " + print_type.name )
+        endIf
+      else
+        writer.print //printf( "\\n" )//
+      endIf
+
     method resolve->Cmd
-      if (expression?) expression = expression.resolve
+      if (expression is null) return this
+
+      expression = expression.resolve
       return this
 endClass
+
+class CmdReturnValue : CmdStatement
+  PROPERTIES
+    expression : Cmd
+
+  METHODS
+    method init( t, expression )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print "return "
+      expression.print_cpp( writer )
+
+    method resolve->Cmd
+      expression = expression.resolve
+      return this
+endClass
+
+
+#------------------------------------------------------------------------------
+# Literals
+#------------------------------------------------------------------------------
+class CmdLiteral : Cmd
+endClass
+
+
+class CmdLiteralReal : CmdLiteral
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Real
+endClass
+
+
+class CmdLiteralInteger : CmdLiteral
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Integer
+endClass
+
+
+class CmdLiteralCharacter : CmdLiteral
+  PROPERTIES
+    value : Character
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Character
+endClass
+
+
+class CmdLiteralLogical : CmdLiteral
+  PROPERTIES
+    value : Logical
+
+  METHODS
+    method init( t, value )
+
+    method resolve->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+
+class CmdLiteralString : CmdLiteral
+  PROPERTIES
+    value : String
+    index : Integer
+
+  METHODS
+    method init( t, value )
+
+    method print_cpp( writer:CPPWriter )
+      if (value?)
+        writer.print( "rogue.literal_strings[" ).print( index ).print( "]" )
+      else
+        writer.print( "0" );
+      endIf
+
+    method resolve->Cmd
+      Program.type_String.resolve
+      if (value?)
+        if (not Program.literal_string_lookup.contains(value))
+          index = Program.literal_string_list.count
+          Program.literal_string_lookup[value] = index
+          Program.literal_string_list.add( value )
+        endIf
+      endIf
+      return this
+
+    method type->Type
+      return Program.type_String
+endClass
+
+
+#------------------------------------------------------------------------------
+# Read/Write
+#------------------------------------------------------------------------------
+class CmdReadThis : Cmd
+  PROPERTIES
+    this_type : Type
+
+  METHODS
+    method init( t, this_type )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print "THIS"
+
+    method resolve->Cmd
+      this_type.resolve
+      return this
+endClass
+
 
