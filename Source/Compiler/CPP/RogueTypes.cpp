@@ -42,7 +42,7 @@ RogueString* RogueString::create( const char* c_string, int count )
   int total_size = sizeof(RogueString) + ((count - 1) * sizeof(RogueCharacter));
   // RogueString already includes one character in its size.
 
-  RogueString* st = (RogueString*) rogue.allocate_object( rogue.type_String, total_size );
+  RogueString* st = (RogueString*) rogue_program.allocate_object( rogue_program.type_String, total_size );
   st->count = count;
 
   // Copy 8-bit chars to 16-bit data while computing hash code.

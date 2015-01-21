@@ -6,12 +6,9 @@
 
 int main()
 {
-  printf( "Configuring Rogue\n" );
-
-  rogue.init();
-  rogue.collect_garbage();
-
-  printf( "Done\n" );
+  rogue_program.init();
+  rogue_program.collect_garbage();
+  //printf( "Done\n" );
 
   return 0;
 }

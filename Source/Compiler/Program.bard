@@ -102,8 +102,8 @@ class Program [requisite singleton]
       endForEach
       writer.println
 
-      # Rogue object
-      writer.println( "struct Rogue : RogueCore" )
+      # RogueProgram object
+      writer.println( "struct RogueProgram : RogueProgramCore" )
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.is_native)
@@ -113,11 +113,11 @@ class Program [requisite singleton]
       endForEach
       writer.println
       writer.println( "  void init();" )
-      writer.println( "  ~Rogue();" )
+      writer.println( "  ~RogueProgram();" )
       writer.println( "};" )
       writer.println
 
-      writer.println( "extern Rogue rogue;" );
+      writer.println( "extern RogueProgram rogue_program;" );
 
       writer.close
 
@@ -160,7 +160,7 @@ class Program [requisite singleton]
           # create_object()
           writer.print(   "  Rogue" ).print( type.cpp_name ).println( "* create_object()" )
           writer.println( "  {" )
-          writer.print(   "    return (Rogue" ).print( type.cpp_name ).print( "*) rogue.allocate_object( this, sizeof(Rogue" )
+          writer.print(   "    return (Rogue" ).print( type.cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(Rogue" )
           writer.print( type.cpp_name ).println( ") );" )
           writer.println( "  }" )
           writer.println
@@ -210,10 +210,8 @@ class Program [requisite singleton]
       forEach (type in type_list) type.print_method_definitions( writer )
       writer.println
 
-      writer.println( "extern Rogue rogue;" );
-
       # configure() method
-      writer.println( "void Rogue::init()" )
+      writer.println( "void RogueProgram::init()" )
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.is_native)
@@ -229,19 +227,19 @@ class Program [requisite singleton]
         writer.println( " )->retain(); " )
       endForEach
       writer.println
-      writer.print(   "  rogue.main_object = rogue.type_").print(main_class.cpp_name).println( "->create_object();" )
+      writer.print(   "  rogue_program.main_object = rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )
 
       # call init() on main object
       local m = main_class.find_method( "init()" )
       if (m?)
-        writer.print("  ").print(m.cpp_name).print("( (Rogue").print(main_class.cpp_name).println("*)rogue.main_object );")
+        writer.print("  ").print(m.cpp_name).print("( (Rogue").print(main_class.cpp_name).println("*)rogue_program.main_object );")
       endIf
 
       writer.println( "}" )
       writer.println
 
       # Rogue destructor
-      writer.println( "Rogue::~Rogue()" )
+      writer.println( "RogueProgram::~RogueProgram()" )
       writer.println  "{"
       forEach (type in type_list)
         if (not type.is_native)
@@ -250,7 +248,7 @@ class Program [requisite singleton]
       endForEach
       writer.println  "}"
       writer.println
-      writer.println "Rogue rogue;"
+      writer.println "RogueProgram rogue_program;"
 
 
       writer.close

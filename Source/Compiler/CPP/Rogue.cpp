@@ -18,16 +18,16 @@
 #include "RogueProgram.h"
 
 //-----------------------------------------------------------------------------
-//  RogueCore
+//  RogueProgramCore
 //-----------------------------------------------------------------------------
-RogueCore::RogueCore() : objects(NULL)
+RogueProgramCore::RogueProgramCore() : objects(NULL)
 {
   type_String = new RogueStringType();
 }
 
-RogueCore::~RogueCore()
+RogueProgramCore::~RogueProgramCore()
 {
-  printf( "~RogueCore()\n" );
+  //printf( "~RogueProgramCore()\n" );
 
   while (objects)
   {
@@ -39,7 +39,7 @@ RogueCore::~RogueCore()
   delete type_String;
 }
 
-RogueObject* RogueCore::allocate_object( RogueType* type, int size )
+RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
 {
   RogueObject* obj = (RogueObject*) Rogue_allocator.allocate( size );
   memset( obj, 0, size );
@@ -52,7 +52,7 @@ RogueObject* RogueCore::allocate_object( RogueType* type, int size )
   return obj;
 }
 
-void RogueCore::collect_garbage()
+void RogueProgramCore::collect_garbage()
 {
   ROGUE_TRACE( main_object );
 

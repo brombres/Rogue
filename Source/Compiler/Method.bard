@@ -18,6 +18,7 @@ class Method
 
     method assign_cpp_name
       local buffer = StringBuilder()
+      buffer.print( Program.code_prefix )
       buffer.print( this_type.name ).print( "__" )
       buffer.print( name )
       cpp_name = Program.validate_cpp_name( buffer->String )

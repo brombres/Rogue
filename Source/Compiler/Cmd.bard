@@ -203,7 +203,7 @@ class CmdLiteralString : CmdLiteral
 
     method print_cpp( writer:CPPWriter )
       if (value?)
-        writer.print( "rogue.literal_strings[" ).print( index ).print( "]" )
+        writer.print( "rogue_program.literal_strings[" ).print( index ).print( "]" )
       else
         writer.print( "0" );
       endIf

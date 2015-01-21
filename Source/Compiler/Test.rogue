@@ -2,6 +2,7 @@ class Alpha
   METHODS
     method init
       println "Hello World!"
+      println "Awesome Sauce!"
 endClass
 
 class String

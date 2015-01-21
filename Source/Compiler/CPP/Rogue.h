@@ -14,9 +14,9 @@
 #include "RogueTypes.h"
 
 //-----------------------------------------------------------------------------
-//  RogueCore
+//  RogueProgramCore
 //-----------------------------------------------------------------------------
-struct RogueCore
+struct RogueProgramCore
 {
   RogueObject*  objects;
   RogueObject*  main_object;
@@ -25,8 +25,8 @@ struct RogueCore
 
   RogueStringType* type_String;
 
-  RogueCore();
-  ~RogueCore();
+  RogueProgramCore();
+  ~RogueProgramCore();
 
   RogueObject* allocate_object( RogueType* type, int size );
 
