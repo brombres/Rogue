@@ -222,7 +222,7 @@ class Program [requisite singleton]
       writer.print(   "  literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
       writer.println( "  literal_strings = new RogueString*[literal_string_count];" )
       forEach (i of Program.literal_string_list)
-        writer.print(   "  literal_strings[" ).print(i).print("] = RogueString::create( ")
+        writer.print(   "  literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
         writer.print_string_utf8( Program.literal_string_list[i] )
         writer.println( " )->retain(); " )
       endForEach

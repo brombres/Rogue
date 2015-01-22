@@ -1,5 +1,5 @@
 cpp:
-	g++ -Wall main.cpp RogueTypes.cpp RogueAllocator.cpp RogueProgram.cpp RogueIDTable.cpp Rogue.cpp
+	g++ -Wall main.cpp RogueProgram.cpp Rogue.cpp
 	./a.out
 
 clean:
