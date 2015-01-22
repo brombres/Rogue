@@ -4,9 +4,9 @@ class Alpha
       local z = 1
       println "Hello World!"
       println "Awesome Sauce!"
+      println ++z
+      println z++
       println z
-      println ++z
-      println ++z
 endClass
 
 class Integer

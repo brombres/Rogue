@@ -291,10 +291,14 @@ endClass
 #------------------------------------------------------------------------------
 class CmdAccess : Cmd
   PROPERTIES
-    name : String
+    context : Cmd
+    name    : String
+    args    : CmdArgs
 
   METHODS
     method init( t, name )
+
+    method init( t, context, name )
 
     method resolve( scope:Scope )->Cmd
       local v = scope.find_local( name )
@@ -350,23 +354,72 @@ endClass
 #------------------------------------------------------------------------------
 # Modify
 #------------------------------------------------------------------------------
-class CmdPreIncrement : Cmd
+class CmdStepModify : Cmd
+endClass
+
+class CmdPostIncrement : CmdStepModify
   PROPERTIES
-    name : String
+    context : Cmd
+    name    : String
 
   METHODS
-    method init( t, name )
+    method init( t, context, name )
 
     method resolve( scope:Scope )->Cmd
-      local v = scope.find_local( name )
-      if (v?)
-        return CmdPreIncrementLocal(t,v).resolve(scope)
+      if (context is null)
+        local v = scope.find_local( name )
+        if (v?)
+          return CmdPostIncrementLocal(t,v).resolve(scope)
+        endIf
+      endIf
+
+      if (context?)
+        context = context.resolve( scope )
       endIf
 
       throw t.error( //No such variable "$" exists in the current scope.// (name) )
 endClass
 
-class CmdPreIncrementLocal : Cmd
+class CmdPostIncrementLocal : CmdStepModify
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( local_info.name ).print("++")
+
+    method resolve( scope:Scope )->Cmd
+      local_info.type.resolve
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+class CmdPreIncrement : CmdStepModify
+  PROPERTIES
+    context : Cmd
+    name    : String
+
+  METHODS
+    method init( t, context, name )
+
+    method resolve( scope:Scope )->Cmd
+      if (not context)
+        local v = scope.find_local( name )
+        if (v?)
+          return CmdPreIncrementLocal(t,v).resolve(scope)
+        endIf
+      endIf
+
+      if (context?) context = context.resolve( scope )
+
+      throw t.error( //No such variable "$" exists in the current scope.// (name) )
+endClass
+
+class CmdPreIncrementLocal : CmdStepModify
   PROPERTIES
     local_info : Local
 
