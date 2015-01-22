@@ -129,7 +129,6 @@ class Program [requisite singleton]
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
       writer.println //#include <stdio.h>//
       writer.println //#include "$.h"// (base_filename)
-      writer.println //#include "RogueAllocator.h"//
       writer.println
 
       # XObject forward declarations
