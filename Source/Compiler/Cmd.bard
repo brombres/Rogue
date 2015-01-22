@@ -3,10 +3,20 @@ class Cmd
     t : Token
 
   METHODS
+    method exit_scope( scope:Scope )
+
     method print_cpp( writer:CPPWriter )
       throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
 
-    method resolve->Cmd
+    method implicit_type->Type
+      return null
+
+    method require_type->Type
+      local result = type
+      if (result is null) throw t.error( "Value expected; this statement or expression does not result in a value." )
+      return result
+
+    method resolve( scope:Scope )->Cmd
       throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
       return this
 
@@ -67,18 +77,60 @@ class CmdStatementList : Cmd[]
         writer.println ";"
       endForEach
 
-    method resolve
-      #Analyzer.context.push_local_scope
+    method resolve( scope:Scope )
       forEach (i of this)
-        this[i] = this[i].resolve
+        this[i] = this[i].resolve( scope )
       endForEach
-      #Analyzer.context.pop_local_scope
+
+      forEach (statement in this) statement.exit_scope( scope )
+endClass
+
+#------------------------------------------------------------------------------
+# CmdArgs
+#------------------------------------------------------------------------------
+class CmdArgs : Cmd
 endClass
 
 #------------------------------------------------------------------------------
 # Statements
 #------------------------------------------------------------------------------
 class CmdStatement : Cmd
+endClass
+
+class CmdLocalDeclaration : CmdStatement
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method exit_scope( scope:Scope )
+      scope.pop_local
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( local_info.type ).print(" ").print( local_info.name ).print(" = ")
+      if (local_info.initial_value?)
+        local_info.initial_value.print_cpp( writer )
+      else
+        writer.print_default_value( local_info.type )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      scope.push_local( local_info )
+
+      if (local_info.initial_value?)
+        local_info.initial_value = local_info.initial_value.resolve( scope )
+        local initial_value_type = local_info.initial_value.require_type
+        if (local_info.type is null) local_info.type = initial_value_type
+      endIf
+
+      if (local_info.type is null)
+        throw t.error( "Cannot determine type of local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Integer)." (local_info.name,local_info.name) )
+      endIf
+
+      local_info.type.resolve
+
+      return this
 endClass
 
 class CmdPrintln : CmdStatement
@@ -95,17 +147,21 @@ class CmdPrintln : CmdStatement
           writer.print "RogueString::println( "
           expression.print_cpp( writer )
           writer.print " )"
+        elseIf (print_type is Program.type_Integer)
+          writer.print( //printf( "%d\\n", // )
+          expression.print_cpp( writer )
+          writer.print " )"
         else
-          throw t.error( "Unhandled type in println: " + print_type.name )
+          throw t.error( "[INTERNAL/CmdPrintln] Unhandled type in println: " + print_type.name )
         endIf
       else
         writer.print //printf( "\\n" )//
       endIf
 
-    method resolve->Cmd
+    method resolve( scope:Scope )->Cmd
       if (expression is null) return this
 
-      expression = expression.resolve
+      expression = expression.resolve( scope )
       return this
 endClass
 
@@ -120,8 +176,8 @@ class CmdReturnValue : CmdStatement
       writer.print "return "
       expression.print_cpp( writer )
 
-    method resolve->Cmd
-      expression = expression.resolve
+    method resolve( scope:Scope )->Cmd
+      expression = expression.resolve( scope )
       return this
 endClass
 
@@ -130,6 +186,9 @@ endClass
 # Literals
 #------------------------------------------------------------------------------
 class CmdLiteral : Cmd
+  METHODS
+    method implicit_type->Type
+      return type
 endClass
 
 
@@ -140,7 +199,7 @@ class CmdLiteralReal : CmdLiteral
   METHODS
     method init( t, value )
 
-    method resolve->Cmd
+    method resolve( scope:Scope )->Cmd
       return this
 
     method type->Type
@@ -155,7 +214,10 @@ class CmdLiteralInteger : CmdLiteral
   METHODS
     method init( t, value )
 
-    method resolve->Cmd
+    method print_cpp( writer:CPPWriter )
+      writer.print( value )
+
+    method resolve( scope:Scope )->Cmd
       return this
 
     method type->Type
@@ -170,7 +232,7 @@ class CmdLiteralCharacter : CmdLiteral
   METHODS
     method init( t, value )
 
-    method resolve->Cmd
+    method resolve( scope:Scope )->Cmd
       return this
 
     method type->Type
@@ -185,7 +247,7 @@ class CmdLiteralLogical : CmdLiteral
   METHODS
     method init( t, value )
 
-    method resolve->Cmd
+    method resolve( scope:Scope )->Cmd
       return this
 
     method type->Type
@@ -208,7 +270,7 @@ class CmdLiteralString : CmdLiteral
         writer.print( "0" );
       endIf
 
-    method resolve->Cmd
+    method resolve( scope:Scope )->Cmd
       Program.type_String.resolve
       if (value?)
         if (not Program.literal_string_lookup.contains(value))
@@ -225,6 +287,28 @@ endClass
 
 
 #------------------------------------------------------------------------------
+# Access
+#------------------------------------------------------------------------------
+class CmdAccess : Cmd
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( t, name )
+
+    method resolve( scope:Scope )->Cmd
+      local v = scope.find_local( name )
+      if (v?)
+        return CmdReadLocal(t,v).resolve(scope)
+      endIf
+
+      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+endClass
+
+
+
+
+#------------------------------------------------------------------------------
 # Read/Write
 #------------------------------------------------------------------------------
 class CmdReadThis : Cmd
@@ -237,9 +321,66 @@ class CmdReadThis : Cmd
     method print_cpp( writer:CPPWriter )
       writer.print "THIS"
 
-    method resolve->Cmd
+    method resolve( scope:Scope )->Cmd
       this_type.resolve
       return this
 endClass
 
+
+class CmdReadLocal : Cmd
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( local_info.name )
+
+    method resolve( scope:Scope )->Cmd
+      local_info.type.resolve
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+
+
+#------------------------------------------------------------------------------
+# Modify
+#------------------------------------------------------------------------------
+class CmdPreIncrement : Cmd
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( t, name )
+
+    method resolve( scope:Scope )->Cmd
+      local v = scope.find_local( name )
+      if (v?)
+        return CmdPreIncrementLocal(t,v).resolve(scope)
+      endIf
+
+      throw t.error( //No such variable "$" exists in the current scope.// (name) )
+endClass
+
+class CmdPreIncrementLocal : Cmd
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print("++").print( local_info.name )
+
+    method resolve( scope:Scope )->Cmd
+      local_info.type.resolve
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
 

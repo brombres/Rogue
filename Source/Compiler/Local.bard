@@ -1,0 +1,11 @@
+class Local
+  PROPERTIES
+    t             : Token
+    name          : String
+    type          : Type
+    index         : Integer
+    initial_value : Cmd
+
+  METHODS
+    method init( t, name )
+endClass

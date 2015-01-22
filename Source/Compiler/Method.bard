@@ -1,3 +1,5 @@
+$[include "Local.bard"]
+
 class Method
   PROPERTIES
     t           : Token
@@ -9,12 +11,19 @@ class Method
 
     return_type : Type
 
+    locals = Local[] : Local[]
     statements = CmdStatementList()
 
     resolved  : Logical
 
   METHODS
     method init( t, this_type, name )
+
+    method add_local( v_t:Token, v_name:String )->Local
+      local v = Local( v_t, v_name )
+      v.index = locals.count
+      locals.add( v )
+      return v
 
     method assign_cpp_name
       local buffer = StringBuilder()
@@ -69,12 +78,13 @@ class Method
       if (resolved) return
       resolved = true
 
-      statements.resolve
+      local scope = Scope( this_type, this )
+      statements.resolve( scope )
 
       if (is_initializer)
         local return_t = t
         if (statements.count?) return_t = statements.last.t
-        statements.add( CmdReturnValue(return_t,CmdReadThis(return_t,this_type)).resolve )
+        statements.add( CmdReturnValue(return_t,CmdReadThis(return_t,this_type)).resolve(scope) )
       endIf
 endClass
 

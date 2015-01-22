@@ -8,6 +8,8 @@ class Parser
     this_type   : Type
     this_method : Method
 
+    local_declarations = Local[]  # repeated temporary use
+
   METHODS
     method init( filepath:String )
       init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
@@ -187,11 +189,13 @@ class Parser
         if (next_is(Token.keyword_if)) err = true
         if (err) throw t.error( "Control structures must begin on a separate line." )
       endIf
+      }#
 
-      if (next_is(Token.keyword_local))
+      if (next_is(TokenType.keyword_local))
         parse_local_declaration( statements )
         return
 
+        #{
       elseIf (consume(Token.keyword_return))
 
         if (next_is_end_command)
@@ -281,8 +285,9 @@ class Parser
       elseIf (consume(Token.keyword_troff))
         statements.add( CmdTroff(t) )
         return
-      endIf
       }#
+
+      endIf
 
       if (consume(TokenType.keyword_println))
         if (next_is_end_command) statements.add( CmdPrintln(t) )
@@ -429,6 +434,54 @@ class Parser
       }#
 
       statements.add( expression )
+
+    method parse_local_declaration( statements:CmdStatementList )
+      local_declarations.clear
+      local t = read   # "local"
+
+      # local[=initial_value] [, ...]
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        t = peek
+        local name = read_identifier
+        local v = this_method.add_local( t, name )
+        local_declarations.add( v )
+        if (consume(TokenType.symbol_equals)) v.initial_value = parse_expression
+      endWhile
+
+      # [: Type]
+      if (consume(TokenType.symbol_colon))
+        local type = parse_type
+        forEach (v in local_declarations) v.type = type
+      else
+        forEach (v in local_declarations)
+          if (v.type is null and v.initial_value?)
+            v.type = v.initial_value.implicit_type
+          endIf
+        endForEach
+      endIf
+
+      # Turn each declaration into a separate CmdLocalDeclaration
+      forEach (v in local_declarations)
+        statements.add( CmdLocalDeclaration(v.t,v) )
+      endForEach
+
+    method parse_type->Type
+      local t = peek
+      local name = parse_possible_type
+      return Program.get_type_reference( t, name )
+
+    method parse_possible_type->String
+      local t = peek
+      local name = read_identifier
+
+      #name = parse_delegate_or_task_type_name( t, name )
+
+      #if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
+
+      while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+      return name
 
     method peek->Token
       return reader.peek
@@ -776,26 +829,29 @@ class Parser
       endIf
 
       return operand
+      }#
 
     method parse_access_command( t:Token )->CmdAccess
       consume_eols
 
-      local direct_access = consume( Token.symbol_at )
+      local direct_access = consume( TokenType.symbol_at )
 
       local name = read_identifier
-      name = parse_delegate_or_task_type_name( t, name )
-      if (next_is(Token.symbol_open_specialize)) name += parse_specialization_string
+      #name = parse_delegate_or_task_type_name( t, name )
+      #if (next_is(Token.symbol_open_specialize)) name += parse_specialization_string
 
-      while (consume(Token.symbol_empty_brackets)) name += "[]"
+      while (consume(TokenType.symbol_empty_brackets)) name += "[]"
 
       if (direct_access) name = "@" + name
 
       local access = CmdAccess( t, name )
-      access.args = parse_args
+      #access.args = parse_args
       return access
 
     # TODO: Add multi-line handling
     method parse_args->CmdArgs
+      return null
+      #{
       if (not consume(Token.symbol_open_paren)) return null
       consume_eols
 
@@ -812,7 +868,9 @@ class Parser
       endIf
 
       return args
+      }#
 
+      #{
     method parse_specialization_string->String
       if (not next_is(Token.symbol_open_specialize)) return ""
 
@@ -851,10 +909,12 @@ class Parser
         must_consume( TokenType.symbol_close_paren )
         return result
 
-        #{
-      elseIf (next_is(Token.identifier) or next_is(Token.symbol_at))
+      elseIf (consume(TokenType.symbol_plus_plus))
+        return CmdPreIncrement( t, read_identifier )
+
+      elseIf (next_is(TokenType.identifier) or next_is(TokenType.symbol_at))
         return parse_access_command( t )
-        }#
+
       elseIf (consume(TokenType.literal_string))
 
         #{
@@ -905,7 +965,7 @@ class Parser
       elseIf (consume(Token.symbol_open_bracket))
         # [ literal, list ]
         if (parsing_properties?)
-          local cmd = CmdNewObject( t, Types.reference(t,"PropertyList") ) : Cmd
+          local cmd = CmdNewObject( t, Program.get_type_reference(t,"PropertyList") ) : Cmd
 
           local first = true
           while (first or consume(Token.symbol_comma))
@@ -963,10 +1023,10 @@ class Parser
         return table
 
       elseIf (consume(Token.symbol_empty_braces))
-        return CmdNewObject( t, Types.reference( t, "PropertyTable" ) )
+        return CmdNewObject( t, Program.get_type_reference( t, "PropertyTable" ) )
 
       elseIf (consume(Token.symbol_empty_brackets))
-        return CmdNewObject( t, Types.reference( t, "PropertyList" ) )
+        return CmdNewObject( t, Program.get_type_reference( t, "PropertyList" ) )
 
       elseIf (consume(Token.keyword_prior))
         consume_eols

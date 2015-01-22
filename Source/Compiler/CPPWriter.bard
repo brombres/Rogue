@@ -47,12 +47,15 @@ class CPPWriter
     method print( type:Type )->CPPWriter
       print_indent
       if (type?)
-        buffer.print( "Rogue" )
         buffer.print( type.cpp_name )
         if (not type.is_native) buffer.print("*")
       else
         buffer.print( "void" )
       endIf
+      return this
+
+    method print_default_value( type:Type )->CPPWriter
+      buffer.print( "0" )
       return this
 
     method print_string_utf8( st:String )->CPPWriter

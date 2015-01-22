@@ -85,6 +85,7 @@ class Tokenizer
       TokenType.keyword_PROPERTIES = define( ClassStructureTokenType("PROPERTIES") )
 
       # Statement Tokens
+      TokenType.keyword_local      = define( TokenType("local") )
       TokenType.keyword_println    = define( TokenType("println") )
 
       # Expression Tokens

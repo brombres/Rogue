@@ -23,6 +23,7 @@ class TokenType
     eol                          : TokenType
 
     # Statements
+    keyword_local                : TokenType
     keyword_println              : TokenType
 
     # Commmand

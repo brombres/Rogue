@@ -1,5 +1,6 @@
 $[include "Attributes.bard"]
 $[include "CPPWriter.bard"]
+$[include "Scope.bard"]
 $[include "TypeTemplate.bard"]
 
 class Program [requisite singleton]
@@ -86,7 +87,7 @@ class Program [requisite singleton]
       endForEach
 
 
-      # .H header
+      # .H header -------------------------------------------------------------
       local writer = CPPWriter( filepath + ".h" )
       writer.println
 
@@ -97,7 +98,7 @@ class Program [requisite singleton]
       # XType forward declarations
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "struct Rogue" ).print( type.cpp_name ).println( "Type;" );
+          writer.print( "struct " ).print( type.cpp_name ).println( "Type;" );
         endIf
       endForEach
       writer.println
@@ -107,7 +108,7 @@ class Program [requisite singleton]
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "  Rogue" ).print( type.cpp_name ).print( "Type* type_" );
+          writer.print( "  " ).print( type.cpp_name ).print( "Type* type_" );
           writer.print( type.cpp_name ).println( ";" );
         endIf
       endForEach
@@ -134,7 +135,7 @@ class Program [requisite singleton]
       # XObject forward declarations
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "struct Rogue" ).print( type.cpp_name ).println( ";" );
+          writer.print( "struct " ).print( type.cpp_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -142,7 +143,7 @@ class Program [requisite singleton]
       # XObject definitions
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "struct Rogue" ).print( type.cpp_name ).println( " : RogueObject" );
+          writer.print( "struct " ).print( type.cpp_name ).println( " : RogueObject" );
           writer.println( "{" )
           writer.println( "};" )
           writer.println
@@ -153,13 +154,13 @@ class Program [requisite singleton]
       # XType definitions
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "struct Rogue" ).print( type.cpp_name ).println( "Type : RogueType" )
+          writer.print( "struct " ).print( type.cpp_name ).println( "Type : RogueType" )
           writer.println( "{" )
 
           # create_object()
-          writer.print(   "  Rogue" ).print( type.cpp_name ).println( "* create_object()" )
+          writer.print(   "  " ).print( type.cpp_name ).println( "* create_object()" )
           writer.println( "  {" )
-          writer.print(   "    return (Rogue" ).print( type.cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(Rogue" )
+          writer.print(   "    return (" ).print( type.cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
           writer.print( type.cpp_name ).println( ") );" )
           writer.println( "  }" )
           writer.println
@@ -196,7 +197,7 @@ class Program [requisite singleton]
       #{
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print("Rogue").print( type.cpp_name ).print( "Type type_" ).print( type.cpp_name ).println(";")
+          writer.print( type.cpp_name ).print( "Type type_" ).print( type.cpp_name ).println(";")
           writer.println
         endIf
       endForEach
@@ -214,7 +215,7 @@ class Program [requisite singleton]
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print("  type_").print(type.cpp_name).print(" = new Rogue").print(type.cpp_name).println("Type();")
+          writer.print("  type_").print(type.cpp_name).print(" = new ").print(type.cpp_name).println("Type();")
         endIf
       endForEach
       writer.println
@@ -231,7 +232,7 @@ class Program [requisite singleton]
       # call init() on main object
       local m = main_class.find_method( "init()" )
       if (m?)
-        writer.print("  ").print(m.cpp_name).print("( (Rogue").print(main_class.cpp_name).println("*)rogue_program.main_object );")
+        writer.print("  ").print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
       endIf
 
       writer.println( "}" )

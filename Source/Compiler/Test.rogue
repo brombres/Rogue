@@ -1,8 +1,15 @@
 class Alpha
   METHODS
     method init
+      local z = 1
       println "Hello World!"
       println "Awesome Sauce!"
+      println z
+      println ++z
+      println ++z
+endClass
+
+class Integer
 endClass
 
 class String
