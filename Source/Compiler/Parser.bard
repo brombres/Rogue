@@ -497,7 +497,7 @@ class Parser
 
     method parse_expression->Cmd
       consume_eols
-      return parse_post_unary
+      return parse_pre_unary
       #{
       return parse_range
 
@@ -680,9 +680,23 @@ class Parser
         return parse_power( CmdPower(t,lhs,parse_pre_unary) )
       endIf
       return lhs
+      }#
 
     method parse_pre_unary->Cmd
       local t = peek
+      if (consume(TokenType.symbol_plus_plus))
+        consume_eols
+        local operand = parse_pre_unary
+        operand.premodify(1)
+        return operand
+
+      elseIf (consume(TokenType.symbol_minus_minus))
+        consume_eols
+        local operand = parse_pre_unary
+        operand.premodify(-1)
+        return operand
+
+      #{
       if (consume(Token.keyword_not))
         consume_eols
         return CmdLogicalNot( t, parse_pre_unary )
@@ -692,9 +706,9 @@ class Parser
       elseIf (consume(Token.symbol_bitwise_not))
         consume_eols
         return CmdBitwiseNot( t, parse_pre_unary )
+      }#
       endIf
       return parse_post_unary
-      }#
 
     method parse_post_unary->Cmd
       return parse_post_unary( parse_delegate_access )
@@ -706,14 +720,9 @@ class Parser
         return parse_post_unary( CmdLogicalize(t,operand) )
         }#
       if (consume(TokenType.symbol_plus_plus))
-        local access = operand as CmdAccess
-        if (access? and not access.args)
-          return parse_post_unary( CmdPostIncrement(t,access.context,access.name) )
-        elseIf (operand instanceOf CmdStepModify)
-          throw operand.t.error( "Cannot apply multiple increments and decrements to variables at once." )
-        else
-          throw operand.t.error( "Variable name expected before post-increment." )
-        endIf
+        parse_post_unary( operand.postmodify(1) )
+      elseIf (consume(TokenType.symbol_minus_minus))
+        parse_post_unary( operand.postmodify(-1) )
       endIf
       return operand
 
@@ -923,16 +932,6 @@ class Parser
         consume_eols
         must_consume( TokenType.symbol_close_paren )
         return result
-
-      elseIf (consume(TokenType.symbol_plus_plus))
-        local access = parse_access_command( t )
-        if (not access.args)
-          return CmdPreIncrement(t,access.context,access.name)
-        else
-          throw access.t.error( "A method call cannot be incremented." )
-        endIf
-
-        return CmdPreIncrement( t, null, read_identifier )
 
       elseIf (next_is(TokenType.identifier) or next_is(TokenType.symbol_at))
         return parse_access_command( t )

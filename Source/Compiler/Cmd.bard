@@ -11,6 +11,12 @@ class Cmd
     method implicit_type->Type
       return null
 
+    method postmodify( count:Integer )->Cmd
+      throw t.error( "Illegal target; ++ and -- can only be applied to specific variables." )
+
+    method premodify( count:Integer )->Cmd
+      throw t.error( "Illegal target; ++ and -- can only be applied to specific variables." )
+
     method require_type->Type
       local result = type
       if (result is null) throw t.error( "Value expected; this statement or expression does not result in a value." )
@@ -289,11 +295,36 @@ endClass
 #------------------------------------------------------------------------------
 # Access
 #------------------------------------------------------------------------------
-class CmdAccess : Cmd
+class CmdAccessWithModify : Cmd
   PROPERTIES
-    context : Cmd
-    name    : String
-    args    : CmdArgs
+    premodify_count : Integer
+    # Sum of pre-increment and pre-decrement
+
+    postmodify_count : Integer
+    # Sum of post-increment and post-decrement
+
+  METHODS
+    method postmodify( count:Integer )->Cmd
+      if (count? and (premodify_count? or postmodify_count?))
+        throw t.error( "Only one ++ or -- may be used at a time." )
+      endIf
+      postmodify_count += count
+      return this
+
+    method premodify( count:Integer )->Cmd
+      if (count? and (premodify_count? or postmodify_count?))
+        throw t.error( "Only one ++ or -- may be used at a time." )
+      endIf
+      premodify_count += count
+      return this
+endClass
+
+
+class CmdAccess : CmdAccessWithModify
+  PROPERTIES
+    context   : Cmd
+    name      : String
+    args      : CmdArgs
 
   METHODS
     method init( t, name )
@@ -303,18 +334,17 @@ class CmdAccess : Cmd
     method resolve( scope:Scope )->Cmd
       local v = scope.find_local( name )
       if (v?)
-        return CmdReadLocal(t,v).resolve(scope)
+        return CmdReadLocal(t,v).premodify(premodify_count).postmodify(postmodify_count).resolve(scope)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
 endClass
 
 
-
-
 #------------------------------------------------------------------------------
 # Read/Write
 #------------------------------------------------------------------------------
+
 class CmdReadThis : Cmd
   PROPERTIES
     this_type : Type
@@ -330,8 +360,7 @@ class CmdReadThis : Cmd
       return this
 endClass
 
-
-class CmdReadLocal : Cmd
+class CmdReadLocal : CmdAccessWithModify
   PROPERTIES
     local_info : Local
 
@@ -339,8 +368,14 @@ class CmdReadLocal : Cmd
     method init( t, local_info )
 
     method print_cpp( writer:CPPWriter )
+      if (premodify_count > 0) writer.print("++")
+      elseIf (premodify_count < 0) writer.print("--")
+
       writer.print( local_info.name )
 
+      if (postmodify_count > 0) writer.print("++")
+      elseIf (postmodify_count < 0) writer.print("--")
+
     method resolve( scope:Scope )->Cmd
       local_info.type.resolve
       return this
@@ -352,88 +387,5 @@ endClass
 
 
 #------------------------------------------------------------------------------
-# Modify
+# 
 #------------------------------------------------------------------------------
-class CmdStepModify : Cmd
-endClass
-
-class CmdPostIncrement : CmdStepModify
-  PROPERTIES
-    context : Cmd
-    name    : String
-
-  METHODS
-    method init( t, context, name )
-
-    method resolve( scope:Scope )->Cmd
-      if (context is null)
-        local v = scope.find_local( name )
-        if (v?)
-          return CmdPostIncrementLocal(t,v).resolve(scope)
-        endIf
-      endIf
-
-      if (context?)
-        context = context.resolve( scope )
-      endIf
-
-      throw t.error( //No such variable "$" exists in the current scope.// (name) )
-endClass
-
-class CmdPostIncrementLocal : CmdStepModify
-  PROPERTIES
-    local_info : Local
-
-  METHODS
-    method init( t, local_info )
-
-    method print_cpp( writer:CPPWriter )
-      writer.print( local_info.name ).print("++")
-
-    method resolve( scope:Scope )->Cmd
-      local_info.type.resolve
-      return this
-
-    method type->Type
-      return local_info.type
-endClass
-
-class CmdPreIncrement : CmdStepModify
-  PROPERTIES
-    context : Cmd
-    name    : String
-
-  METHODS
-    method init( t, context, name )
-
-    method resolve( scope:Scope )->Cmd
-      if (not context)
-        local v = scope.find_local( name )
-        if (v?)
-          return CmdPreIncrementLocal(t,v).resolve(scope)
-        endIf
-      endIf
-
-      if (context?) context = context.resolve( scope )
-
-      throw t.error( //No such variable "$" exists in the current scope.// (name) )
-endClass
-
-class CmdPreIncrementLocal : CmdStepModify
-  PROPERTIES
-    local_info : Local
-
-  METHODS
-    method init( t, local_info )
-
-    method print_cpp( writer:CPPWriter )
-      writer.print("++").print( local_info.name )
-
-    method resolve( scope:Scope )->Cmd
-      local_info.type.resolve
-      return this
-
-    method type->Type
-      return local_info.type
-endClass
-
