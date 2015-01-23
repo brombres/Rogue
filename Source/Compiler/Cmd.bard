@@ -22,8 +22,16 @@ class Cmd
       if (result is null) throw t.error( "Value expected; this statement or expression does not result in a value." )
       return result
 
+    method require_value->Cmd
+      require_type
+      return this
+
     method resolve( scope:Scope )->Cmd
       throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
+      return this
+
+    method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
+      throw t.error( "[INTERNAL] $::resolve_assignment() is not defined." (type_name) )
       return this
 
     method type->Type
@@ -334,12 +342,37 @@ class CmdAccess : CmdAccessWithModify
     method resolve( scope:Scope )->Cmd
       local v = scope.find_local( name )
       if (v?)
+        if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
         return CmdReadLocal(t,v).premodify(premodify_count).postmodify(postmodify_count).resolve(scope)
+      endIf
+
+      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+
+    method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
+      local v = scope.find_local( name )
+      if (v?)
+        if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+        return CmdWriteLocal(t,v,new_value).resolve(scope)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
 endClass
 
+
+#------------------------------------------------------------------------------
+# Assign
+#------------------------------------------------------------------------------
+class CmdAssign : Cmd
+  PROPERTIES
+    target    : Cmd
+    new_value : Cmd
+
+  METHODS
+    method init( t, target, new_value )
+
+    method resolve( scope:Scope )->Cmd
+      return target.resolve_assignment( scope, new_value )
+endClass
 
 #------------------------------------------------------------------------------
 # Read/Write
@@ -384,6 +417,27 @@ class CmdReadLocal : CmdAccessWithModify
       return local_info.type
 endClass
 
+
+class CmdWriteLocal : Cmd
+  PROPERTIES
+    local_info : Local
+    new_value  : Cmd
+
+  METHODS
+    method init( t, local_info, new_value )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( local_info.name ).print(" = ")
+      new_value.print_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      local_info.type.resolve
+      new_value = new_value.resolve(scope).require_value
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
 
 
 #------------------------------------------------------------------------------

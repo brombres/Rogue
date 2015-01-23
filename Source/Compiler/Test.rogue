@@ -7,6 +7,8 @@ class Alpha
       println --z
       println z++
       println z
+      z = 15
+      println z
 endClass
 
 class Integer

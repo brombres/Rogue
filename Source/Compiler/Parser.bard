@@ -359,13 +359,11 @@ class Parser
 
       local expression = parse_expression
 
-      #{
       t = peek
-      if (consume(Token.symbol_equals))
+      if (consume(TokenType.symbol_equals))
         statements.add( CmdAssign(t,expression,parse_expression) )
         return
       endIf
-      }#
 
       #{
       if (consume(Token.symbol_access_assign))
