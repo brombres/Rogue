@@ -3,10 +3,15 @@ class Cmd
     t : Token
 
   METHODS
+    method cast_to( target_type:Type )->Cmd
+      if (type is target_type) return this
+      throw t.error( "TODO: Cmd::cast_to()." )
+
     method exit_scope( scope:Scope )
 
-    method print_cpp( writer:CPPWriter )
-      throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
+    method find_common_type( left_type:Type, right_type:Type )->Type
+      if (left_type is right_type) return left_type
+      throw t.error( "Types $ and $ are incompatible." (left_type,right_type) )
 
     method implicit_type->Type
       return null
@@ -16,6 +21,9 @@ class Cmd
 
     method premodify( count:Integer )->Cmd
       throw t.error( "Illegal target; ++ and -- can only be applied to specific variables." )
+
+    method print_cpp( writer:CPPWriter )
+      throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
 
     method require_type->Type
       local result = type
@@ -441,5 +449,53 @@ endClass
 
 
 #------------------------------------------------------------------------------
-# 
+# Binary Operators
 #------------------------------------------------------------------------------
+class CmdBinary : Cmd
+  PROPERTIES
+    left   : Cmd
+    right  : Cmd
+
+  METHODS
+    method init( t, left, right )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "(" )
+      left.print_cpp( writer )
+      writer.print( " " ).print( symbol ).print( " " )
+      right.print_cpp( writer )
+      writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      left = left.resolve( scope )
+      right = right.resolve( scope )
+      local left_type = left.require_type
+      local right_type = right.require_type
+      return resolve_for_types( scope, left.require_type, right.require_type )
+
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local common_type = find_common_type( left_type, right_type )
+      left = left.cast_to( common_type )
+      right = right.cast_to( common_type )
+      return this
+
+    method symbol->String
+      throw t.error( "[INTERNAL] $::symbol() is not defined." (type_name) )
+
+    method type->Type
+      return left.type
+endClass
+
+class CmdAdd : CmdBinary
+  METHODS
+    method symbol->String
+      return "+"
+endClass
+
+
+class CmdSubtract : CmdBinary
+  METHODS
+    method symbol->String
+      return "-"
+endClass
+

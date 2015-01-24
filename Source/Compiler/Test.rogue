@@ -1,13 +1,13 @@
 class Alpha
   METHODS
     method init
-      local z = 1
-      println "Hello World!"
-      println "Awesome Sauce!"
-      println --z
-      println z++
+      local x = 3
+      local y = 4
+      local z = x + y
+      println x
+      println y
       println z
-      z = 15
+      z = z - 2
       println z
 endClass
 

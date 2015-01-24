@@ -495,7 +495,7 @@ class Parser
 
     method parse_expression->Cmd
       consume_eols
-      return parse_pre_unary
+      return parse_add_subtract
       #{
       return parse_range
 
@@ -636,22 +636,25 @@ class Parser
         return parse_add_subtract( CmdBitwiseSHRX(t,lhs,parse_add_subtract) )
       endIf
       return lhs
+      }#
 
     method parse_add_subtract->Cmd
       return parse_add_subtract( parse_multiply_divide_mod )
 
     method parse_add_subtract( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(Token.symbol_plus))
+      if (consume(TokenType.symbol_plus))
         consume_eols
         return parse_add_subtract( CmdAdd(t,lhs,parse_multiply_divide_mod) )
-      elseIf (consume(Token.symbol_minus))
+      elseIf (consume(TokenType.symbol_minus))
         consume_eols
         return parse_add_subtract( CmdSubtract(t,lhs,parse_multiply_divide_mod) )
       endIf
       return lhs
 
     method parse_multiply_divide_mod->Cmd
+      return parse_pre_unary
+      #{
       return parse_multiply_divide_mod( parse_power )
 
     method parse_multiply_divide_mod( lhs:Cmd )->Cmd
