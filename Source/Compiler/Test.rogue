@@ -1,14 +1,10 @@
 class Alpha
   METHODS
     method init
-      local x = 3
-      local y = 4
-      local z = x + y
-      println x
-      println y
-      println z
-      z = z - 2
-      println z
+      local n = Number()
+endClass
+
+class Number
 endClass
 
 class Integer

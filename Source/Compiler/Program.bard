@@ -5,7 +5,8 @@ $[include "TypeTemplate.bard"]
 
 class Program [requisite singleton]
   PROPERTIES
-    code_prefix = "Rogue"
+    code_prefix  = "Rogue"
+    program_name = "rogue_program"
 
     template_list   = TypeTemplate[]                 : TypeTemplate[]
     template_lookup = Table<<String,TypeTemplate>>() : Table<<String,TypeTemplate>>
@@ -45,6 +46,19 @@ class Program [requisite singleton]
 
       type_Object    = create_built_in_type( "Logical" )
       type_String    = create_built_in_type( "String" )
+
+    method find_type( name:String )->Type
+      local type = type_lookup[ name ]
+      if (type?) return type
+
+      local template = template_lookup[ name ]
+      if (template?)
+        type = Type( template.t, name )
+        type_lookup[name] = type
+        return type
+      endIf
+
+      return null
 
     method get_type_reference( t:Token, name:String )->Type
       local type = type_lookup[ name ]

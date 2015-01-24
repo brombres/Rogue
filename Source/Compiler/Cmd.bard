@@ -107,11 +107,40 @@ class CmdStatementList : Cmd[]
       forEach (statement in this) statement.exit_scope( scope )
 endClass
 
+
 #------------------------------------------------------------------------------
-# CmdArgs
+# Args
 #------------------------------------------------------------------------------
-class CmdArgs : Cmd
+class CmdArgs : Cmd[]
+  METHODS
+    method init
+      prior.init
+
+    method init( initial_capacity:Integer)
+      prior.init( initial_capacity )
+
+    method init( arg:Cmd )
+      init
+      add( arg )
+
+    method init( statement1:Cmd, statement2:Cmd )
+      init
+      add( statement1 ).add( statement2 )
+
+    method print_cpp( writer:CPPWriter )
+      local first = true
+      forEach (arg in this)
+        if (first) first = false
+        else       writer.print(",")
+        arg.print_cpp( writer )
+      endForEach
+
+    method resolve( scope:Scope )
+      forEach (i of this)
+        this[i] = this[i].resolve( scope )
+      endForEach
 endClass
+
 
 #------------------------------------------------------------------------------
 # Statements
@@ -348,10 +377,20 @@ class CmdAccess : CmdAccessWithModify
     method init( t, context, name )
 
     method resolve( scope:Scope )->Cmd
-      local v = scope.find_local( name )
-      if (v?)
-        if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-        return CmdReadLocal(t,v).premodify(premodify_count).postmodify(postmodify_count).resolve(scope)
+      if (args is null)
+        local v = scope.find_local( name )
+        if (v?)
+          if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+          return CmdReadLocal(t,v).premodify(premodify_count).postmodify(postmodify_count).resolve(scope)
+        endIf
+      endIf
+
+      if (context is null)
+        local new_type = Program.find_type( name )
+        if (new_type?)
+          # new TypeName(...)
+          return CmdCreateObject( t, new_type, args).resolve(scope)
+        endIf
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
@@ -364,6 +403,31 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+endClass
+
+
+#------------------------------------------------------------------------------
+# Object Creation
+#------------------------------------------------------------------------------
+class CmdCreateObject : Cmd
+  PROPERTIES
+    of_type : Type
+    args    : CmdArgs
+
+  METHODS
+    method init( t, of_type, args )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( Program.program_name ).print(".type_")  # rogue_program.
+      writer.print(of_type.cpp_name).print("->create_object()")
+
+    method resolve( scope:Scope )->Cmd
+      of_type.resolve
+      args.resolve( scope )
+      return this
+
+    method type->Type
+      return of_type
 endClass
 
 
