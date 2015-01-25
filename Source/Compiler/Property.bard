@@ -1,0 +1,19 @@
+class Property
+  PROPERTIES
+    t             : Token
+    type_context  : Type
+    name          : String
+    type          : Type
+    attributes    : Integer
+    initial_value : Cmd
+
+    cpp_name      : String
+
+  METHODS
+    method init( t, type_context, name )
+      name = t->String
+
+    method to->String
+      return name
+endClass
+

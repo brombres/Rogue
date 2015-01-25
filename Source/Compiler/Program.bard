@@ -157,9 +157,7 @@ class Program [requisite singleton]
       # XObject definitions
       forEach (type in type_list)
         if (not type.is_native)
-          writer.print( "struct " ).print( type.cpp_name ).println( " : RogueObject" );
-          writer.println( "{" )
-          writer.println( "};" )
+          type.print_definition( writer )
           writer.println
         endIf
       endForEach

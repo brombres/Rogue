@@ -1,10 +1,25 @@
 class Alpha
+  PROPERTIES
+    x : Integer
+
   METHODS
     method init
       local n = Number()
+      println n.value
+
+      println x
+      ++x
+      println x++
+      println x
+
+      n.value = 5
+      ++n.value
+      println n.value
 endClass
 
 class Number
+  PROPERTIES
+    value : Integer
 endClass
 
 class Integer

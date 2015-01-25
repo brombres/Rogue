@@ -1,5 +1,6 @@
 $[include "Cmd.bard"]
 $[include "Method.bard"]
+$[include "Property.bard"]
 $[include "TypeTemplate.bard"]
 
 class Parser
@@ -9,6 +10,7 @@ class Parser
     this_method : Method
 
     local_declarations = Local[]  # repeated temporary use
+    property_list = Property[]    # temp use
 
   METHODS
     method init( filepath:String )
@@ -116,11 +118,59 @@ class Parser
 
     method parse_section->Logical
       consume_eols
+
+      if (consume(TokenType.keyword_PROPERTIES))
+        while (parse_properties) noAction
+        return true
+      endIf
+
       if (consume(TokenType.keyword_METHODS))
         while (parse_method) noAction
         return true
       endIf
+
       return false
+
+    method parse_properties->Logical
+      consume_eols
+      if (not next_is(TokenType.identifier)) return false
+
+      property_list.clear
+      # Stores current property declarations so that we can come back and
+      # and assign a type to them.
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+        local t = must_read(TokenType.identifier)
+        local p = this_type.add_property( t, t->String )
+        property_list.add( p )
+        if (consume(TokenType.symbol_equals))
+          p.initial_value = parse_expression
+        endIf
+      endWhile
+
+      consume_eols
+      if (consume(TokenType.symbol_colon))
+        local p_type = parse_type
+        forEach (p in property_list) p.type = p_type
+      else
+        forEach (p in property_list)
+          if (p.initial_value?)
+            p.type = p.initial_value.implicit_type
+            if (p.type is null) 
+              throw p.initial_value.t.error( 
+                //Cannot determine property type from initial value; // +
+                //append an explicit type declaration such as ": Object" // )
+            endIf
+          else
+            throw p.t.error( //An initial value or property type (for example, ": Object") must be specified.// )
+          endIf
+        endForEach
+      endIf
+
+      return true
 
     method parse_method->Logical
       consume_eols
@@ -729,7 +779,7 @@ class Parser
 
 
     method parse_delegate_access->Cmd
-      return parse_delegate_access( parse_element_access )
+      return parse_delegate_access( parse_member_access )
 
     method parse_delegate_access( lhs:Cmd )->Cmd
       #{
@@ -797,64 +847,56 @@ class Parser
       return lhs
 
 
-    method parse_element_access->Cmd
-      return parse_element_access( parse_term )
+    method parse_member_access->Cmd
+      return parse_member_access( parse_term )
 
-    method parse_element_access( operand:Cmd )->Cmd
-      #{
+    method parse_member_access( context:Cmd )->Cmd
       local t = peek
 
-      if (consume(Token.symbol_period))
-        # Part access e.g. obj.value or an inline keyword operator, e.g. obj.as.Type
-        local t2 = peek
-        if (consume_token_and_period(Token.keyword_as))            consume_eols; return parse_element_access( CmdRecastAsType(t2,operand,parse_type) );
-        if (consume_token_and_period(Token.keyword_instanceOf))    consume_eols; return parse_element_access( CmdInstanceOf(t2,operand,parse_type) );
-        if (consume_token_and_period(Token.keyword_is))            consume_eols; return parse_element_access( CmdCompareIs(t2,operand,parse_term) );
-        if (consume_token_and_period(Token.keyword_isNot))         consume_eols; return parse_element_access( CmdCompareIsNot(t2,operand,parse_term) );
-        if (consume_token_and_period(Token.keyword_not))           consume_eols; return parse_element_access( CmdLogicalNot(t2,operand) );
-        if (consume_token_and_period(Token.keyword_notInstanceOf)) consume_eols; return parse_element_access( CmdLogicalNot(t2,CmdInstanceOf(t2,operand,parse_type)) );
-
+      if (consume(TokenType.symbol_dot))
+        # Part access e.g. obj.value
         local access = parse_access( t )
-        access.operand = operand
-        return parse_element_access( access )
+        access.context = context
+        return parse_member_access( access )
 
-      elseIf (consume(Token.symbol_open_bracket))
+      #{
+      elseIf (consume(TokenType.symbol_open_bracket))
         # Parse obj[index]
         consume_eols
-        local access = CmdElementAccess( t, operand )
+        local access = CmdElementAccess( t, context )
         local first = true
-        while (first or consume(Token.symbol_comma))
+        while (first or consume(TokenType.symbol_comma))
           first = false
           access.args.add( parse_expression )
           consume_eols
         endWhile
         consume_eols
-        must_consume( Token.symbol_close_bracket )
-        return parse_element_access( access )
+        must_consume( TokenType.symbol_close_bracket )
+        return parse_member_access( access )
 
-      elseIf (consume(Token.symbol_arrow))
+      elseIf (consume(TokenType.symbol_arrow))
         # Conversion operation e.g. value->Integer
         consume_eols
         local to_type = parse_type
         local args = parse_args
 
         if (args?)
-          # operand->Type(args) -> operand.to(args)->Type
-          return parse_element_access( CmdConvertToType( t, CmdAccess(t,operand,"to_"+to_type,args), to_type ) )
+          # context->Type(args) -> context.to(args)->Type
+          return parse_member_access( CmdConvertToType( t, CmdAccess(t,context,"to_"+to_type,args), to_type ) )
         endIf
 
-        return parse_element_access( CmdConvertToType(t,operand,to_type) )
+        return parse_member_access( CmdConvertToType(t,context,to_type) )
 
-      elseIf (consume(Token.keyword_as))
+      elseIf (consume(TokenType.keyword_as))
         # Recast operation e.g. 65 as Character
         consume_eols
         local as_type = parse_type
-        return parse_element_access( CmdRecastAsType(t,operand,as_type) )
-
-      endIf
+        return parse_member_access( CmdRecastAsType(t,context,as_type) )
       }#
 
-      return operand
+      endIf
+
+      return context
 
     method parse_access( t:Token )->CmdAccess
       consume_eols
@@ -1053,7 +1095,7 @@ class Parser
 
       elseIf (consume(Token.keyword_prior))
         consume_eols
-        must_consume( Token.symbol_period )
+        must_consume( Token.symbol_dot )
         consume_eols
         local name = read_identifier
         local args = parse_args

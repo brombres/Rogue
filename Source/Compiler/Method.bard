@@ -2,14 +2,14 @@ $[include "Local.bard"]
 
 class Method
   PROPERTIES
-    t           : Token
-    this_type   : Type
-    name        : String
-    signature   : String
-    cpp_name    : String
-    attributes  : Integer
+    t            : Token
+    type_context : Type
+    name         : String
+    signature    : String
+    cpp_name     : String
+    attributes   : Integer
 
-    return_type : Type
+    return_type  : Type
 
     locals = Local[] : Local[]
     statements = CmdStatementList()
@@ -17,7 +17,7 @@ class Method
     resolved  : Logical
 
   METHODS
-    method init( t, this_type, name )
+    method init( t, type_context, name )
 
     method add_local( v_t:Token, v_name:String )->Local
       local v = Local( v_t, v_name )
@@ -28,7 +28,7 @@ class Method
     method assign_cpp_name
       local buffer = StringBuilder()
       buffer.print( Program.code_prefix )
-      buffer.print( this_type.name ).print( "__" )
+      buffer.print( type_context.name ).print( "__" )
       buffer.print( name )
       cpp_name = Program.validate_cpp_name( buffer->String )
 
@@ -39,7 +39,7 @@ class Method
       buffer.print ")"
       signature = buffer->String
 
-      this_type.method_lookup_by_signature[signature] = this
+      type_context.method_lookup_by_signature[signature] = this
 
     method is_initializer->Logical
       return (attributes & Attributes.flag_initializer)?
@@ -47,7 +47,7 @@ class Method
     method organize
       if (name == "init")
         attributes |= Attributes.flag_initializer
-        return_type = this_type
+        return_type = type_context
       endIf
 
       assign_signature
@@ -59,7 +59,7 @@ class Method
     method print_signature( writer:CPPWriter )
       writer.print( return_type ).print(" ").print( cpp_name )
       writer.print( "( " )
-      writer.print( this_type )
+      writer.print( type_context )
       writer.print( " THIS" )
       writer.print( " )" )
 
@@ -78,13 +78,13 @@ class Method
       if (resolved) return
       resolved = true
 
-      local scope = Scope( this_type, this )
+      local scope = Scope( type_context, this )
       statements.resolve( scope )
 
       if (is_initializer)
         local return_t = t
         if (statements.count?) return_t = statements.last.t
-        statements.add( CmdReturnValue(return_t,CmdReadThis(return_t,this_type)).resolve(scope) )
+        statements.add( CmdReturnValue(return_t,CmdReadThis(return_t,type_context)).resolve(scope) )
       endIf
 endClass
 

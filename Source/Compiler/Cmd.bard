@@ -391,15 +391,41 @@ class CmdAccess : CmdAccessWithModify
           # new TypeName(...)
           return CmdCreateObject( t, new_type, args).resolve(scope)
         endIf
+
+        context = CmdReadThis( t, scope.this_type )
+
+      else
+        context = context.resolve( scope )
+      endIf
+
+      local context_type = context.require_type
+      local p = context_type.find_property( name )
+      if (p?)
+        return CmdReadProperty( t, context, p ).premodify(premodify_count).postmodify(postmodify_count)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      local v = scope.find_local( name )
-      if (v?)
-        if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-        return CmdWriteLocal(t,v,new_value).resolve(scope)
+      if (args is null)
+        local v = scope.find_local( name )
+        if (v?)
+          if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+          return CmdWriteLocal(t,v,new_value).resolve(scope)
+        endIf
+      endIf
+
+
+      if (context is null)
+        context = CmdReadThis( t, scope.this_type )
+      else
+        context = context.resolve( scope )
+      endIf
+
+      local context_type = context.require_type
+      local p = context_type.find_property( name )
+      if (p?)
+        return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
@@ -463,6 +489,9 @@ class CmdReadThis : Cmd
     method resolve( scope:Scope )->Cmd
       this_type.resolve
       return this
+
+    method type->Type
+      return this_type
 endClass
 
 class CmdReadLocal : CmdAccessWithModify
@@ -509,6 +538,57 @@ class CmdWriteLocal : Cmd
 
     method type->Type
       return local_info.type
+endClass
+
+
+class CmdReadProperty : CmdAccessWithModify
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+
+  METHODS
+    method init( t, context, property_info )
+
+    method print_cpp( writer:CPPWriter )
+      if (premodify_count > 0) writer.print("++")
+      elseIf (premodify_count < 0) writer.print("--")
+
+      context.print_cpp( writer )
+      writer.print("->").print( property_info.cpp_name )
+
+      if (postmodify_count > 0) writer.print("++")
+      elseIf (postmodify_count < 0) writer.print("--")
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve( scope ).require_value
+      return this
+
+    method type->Type
+      return property_info.type
+endClass
+
+
+class CmdWriteProperty : Cmd
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+    new_value     : Cmd
+
+  METHODS
+    method init( t, context, property_info, new_value )
+
+    method print_cpp( writer:CPPWriter )
+      context.print_cpp( writer )
+      writer.print("->").print( property_info.cpp_name ).print(" = ")
+      new_value.print_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve(scope).require_value
+      new_value = new_value.resolve(scope).require_value
+      return this
+
+    method type->Type
+      return property_info.type
 endClass
 
 
