@@ -45,6 +45,12 @@ class Type
     method is_native->Logical
       return (attributes & Attributes.flag_native)?
 
+    method is_primitive->Logical
+      return (attributes & Attributes.flag_type_mask) == Attributes.flag_primitive_type
+
+    method is_reference->Logical
+      return (attributes & Attributes.flag_type_mask) == Attributes.flag_reference_type
+
     method organize->Type
       if (organized) return this
       organized = true
@@ -91,7 +97,9 @@ class Type
 
       return this
 
-    method print_definition( writer:CPPWriter )
+    method print_data_definition( writer:CPPWriter )
+      if (is_native) return
+
       writer.print( "struct " ).print( cpp_name ).println( " : RogueObject" );
       writer.println( "{" )
       writer.indent += 2
@@ -100,6 +108,46 @@ class Type
       endForEach
       writer.indent -= 2
       writer.println( "};" )
+
+    method print_type_definition( writer:CPPWriter )
+      if (is_native) return
+
+      writer.print( "struct " ).print( cpp_name ).println( "Type : RogueType" )
+      writer.println( "{" )
+
+      # create_object()
+      writer.print(   "  " ).print( cpp_name ).println( "* create_object()" )
+      writer.println( "  {" )
+      writer.print(   "    return (" ).print( cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
+      writer.print( cpp_name ).println( ") );" )
+      writer.println( "  }" )
+      writer.println
+
+      # name()
+      writer.print( "  const char* name() { return \"" ).print( name ).println( "\"; }" )
+      writer.println
+
+      # trace()
+      local has_references = false
+      forEach (p in property_list)
+        if (p.type.is_reference) has_references = true; escapeForEach
+      endForEach
+
+      if (has_references)
+        writer.println(   "  void trace( RogueObject* THIS )" )
+        writer.println( "  {" )
+        forEach (p in property_list)
+          if (p.type.is_reference)
+            writer.print( "    ROGUE_TRACE( ((")
+            writer.print(this)  # cast RogueObject* ref to actual type
+            writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
+          endIf
+        endForEach
+        writer.println( "  }" )
+      endIf
+
+      writer.println( "};" )
+      writer.println
 
     method print_method_prototypes( writer:CPPWriter )
       if (is_native) return

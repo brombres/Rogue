@@ -77,12 +77,14 @@ class Tokenizer
       TokenType.placeholder_id    = define( TokenType("$id") )
 
       # Class Structure Tokens
-      TokenType.eol                = define( EOLTokenType("end of line") )
-      TokenType.keyword_class      = define( ClassStructureTokenType("class") )
-      TokenType.keyword_endClass   = define( ClassStructureTokenType("endClass") )
-      TokenType.keyword_method     = define( ClassStructureTokenType("method") )
-      TokenType.keyword_METHODS    = define( ClassStructureTokenType("METHODS") )
-      TokenType.keyword_PROPERTIES = define( ClassStructureTokenType("PROPERTIES") )
+      TokenType.eol                  = define( EOLTokenType("end of line") )
+      TokenType.keyword_class        = define( ClassStructureTokenType("class") )
+      TokenType.keyword_endClass     = define( ClassStructureTokenType("endClass") )
+      TokenType.keyword_endPrimitive = define( ClassStructureTokenType("endPrimitive") )
+      TokenType.keyword_method       = define( ClassStructureTokenType("method") )
+      TokenType.keyword_METHODS      = define( ClassStructureTokenType("METHODS") )
+      TokenType.keyword_primitive    = define( ClassStructureTokenType("primitive") )
+      TokenType.keyword_PROPERTIES   = define( ClassStructureTokenType("PROPERTIES") )
 
       # Statement Tokens
       TokenType.keyword_local      = define( TokenType("local") )

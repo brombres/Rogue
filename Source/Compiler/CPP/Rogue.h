@@ -39,10 +39,11 @@ struct RogueAllocator;
 
 #define ROGUE_TRACE( obj ) \
 { \
-  if (obj && obj->size >= 0) \
+  RogueObject* _trace_obj = obj; \
+  if (_trace_obj && _trace_obj->size >= 0) \
   { \
-    obj->size = ~obj->size; \
-    obj->type->trace( obj ); \
+    _trace_obj->size = ~_trace_obj->size; \
+    _trace_obj->type->trace( _trace_obj ); \
   } \
 }
 

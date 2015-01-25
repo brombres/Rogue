@@ -36,16 +36,16 @@ class Program [requisite singleton]
 
   METHODS
     method configure
-      type_Real      = create_built_in_type( "Real" )
-      type_Float     = create_built_in_type( "Float" )
-      type_Long      = create_built_in_type( "Long" )
-      type_Integer   = create_built_in_type( "Integer" )
-      type_Character = create_built_in_type( "Character" )
-      type_Byte      = create_built_in_type( "Byte" )
-      type_Logical   = create_built_in_type( "Logical" )
+      type_Real      = create_native_type( "Real" )
+      type_Float     = create_native_type( "Float" )
+      type_Long      = create_native_type( "Long" )
+      type_Integer   = create_native_type( "Integer" )
+      type_Character = create_native_type( "Character" )
+      type_Byte      = create_native_type( "Byte" )
+      type_Logical   = create_native_type( "Logical" )
 
-      type_Object    = create_built_in_type( "Logical" )
-      type_String    = create_built_in_type( "String" )
+      type_Object    = create_native_type( "Logical" )
+      type_String    = create_native_type( "String", Attributes.flag_reference_type )
 
     method find_type( name:String )->Type
       local type = type_lookup[ name ]
@@ -69,10 +69,10 @@ class Program [requisite singleton]
 
       return type
 
-    method create_built_in_type( name:String )->Type
+    method create_native_type( name:String, attributes=0:Integer )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       local type = get_type_reference( t, name )
-      type.attributes |= Attributes.flag_native
+      type.attributes |= attributes | Attributes.flag_native
       return type
 
     method resolve
@@ -157,7 +157,7 @@ class Program [requisite singleton]
       # XObject definitions
       forEach (type in type_list)
         if (not type.is_native)
-          type.print_definition( writer )
+          type.print_data_definition( writer )
           writer.println
         endIf
       endForEach
@@ -165,32 +165,7 @@ class Program [requisite singleton]
 
       # XType definitions
       forEach (type in type_list)
-        if (not type.is_native)
-          writer.print( "struct " ).print( type.cpp_name ).println( "Type : RogueType" )
-          writer.println( "{" )
-
-          # create_object()
-          writer.print(   "  " ).print( type.cpp_name ).println( "* create_object()" )
-          writer.println( "  {" )
-          writer.print(   "    return (" ).print( type.cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
-          writer.print( type.cpp_name ).println( ") );" )
-          writer.println( "  }" )
-          writer.println
-
-          # name()
-          writer.print( "  const char* name() { return \"" ).print( type.name ).println( "\"; }" )
-          writer.println
-
-          # trace()
-          #writer.print(   "  " ).print( type.cpp_name ).println( "Object* create_object()" )
-          #writer.println( "  {" )
-          #writer.print(   "    return (" ).print( type.cpp_name ).print( "Object*) rogue.allocate_object( this, sizeof(" )
-          #writer.print( type.cpp_name ).println( "Object) );" )
-          #writer.println( "  }" )
-
-          writer.println( "};" )
-          writer.println
-        endIf
+        type.print_type_definition( writer )
       endForEach
       writer.println
 

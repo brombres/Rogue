@@ -1,17 +1,10 @@
 class Alpha
   PROPERTIES
-    x : Integer
+    n : Number
 
   METHODS
     method init
-      local n = Number()
-      println n.value
-
-      println x
-      ++x
-      println x++
-      println x
-
+      n = Number()
       n.value = 5
       ++n.value
       println n.value
@@ -22,8 +15,8 @@ class Number
     value : Integer
 endClass
 
-class Integer
-endClass
+primitive Integer
+endPrimitive
 
 class String
 endClass

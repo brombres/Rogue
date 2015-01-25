@@ -80,22 +80,34 @@ class Parser
     method parse_element->Logical
       consume_eols
       local t = peek
+
       if (t.type is TokenType.keyword_class)
         parse_class_template
         return true
+
+      elseIf (t.type is TokenType.keyword_primitive)
+        parse_primitive_template
+        return true
       endIf
+
       return false
 
     method parse_class_template
       local t = read  # 'class'
       local name = read_identifier
-      local template = TypeTemplate( t, name )
+      local template = TypeTemplate( t, name, Attributes.flag_reference_type )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       if (not Program.implicit_main_class_t)
         Program.implicit_main_class_t    = t
         Program.implicit_main_class_name = name
       endIf
+
+    method parse_primitive_template
+      local t = read  # 'primitive'
+      local name = read_identifier
+      local template = TypeTemplate( t, name, Attributes.flag_primitive_type )
+      parse_template_tokens( template, TokenType.keyword_endPrimitive )
 
     method parse_template_tokens( template:TypeTemplate, end_type:TokenType )
       while (reader.has_another)

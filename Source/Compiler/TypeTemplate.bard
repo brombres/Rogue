@@ -3,13 +3,16 @@ class TypeTemplate
     t              : Token
     name           : String
     tokens=Token[] : Token[]
+    attributes     : Integer
 
   METHODS
-    method init( t, name )
+    method init( t, name, attributes=0 )
 
     method instantiate( type:Type )
       type.t = t
       # replace location of first reference to type with location of type definition
+
+      type.attributes |= attributes
 
       Parser(tokens).parse_type_def( type )
 
