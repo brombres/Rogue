@@ -16,7 +16,9 @@ class Tokenizer
       return tokenize( ParseReader(filepath) )
 
     method tokenize( filepath, data:String )->Token[]
-      return tokenize( ParseReader(filepath, data) )
+      local characters = Character[]( data.count )
+      forEach (ch in data) characters.add( ch )
+      return tokenize( ParseReader(characters) )
 
     method tokenize( reader )->Token[]
       configure_token_types

@@ -12,12 +12,14 @@ class Parser
     local_declarations = Local[]  # repeated temporary use
     property_list = Property[]    # temp use
 
+    string_buffer = StringBuilder()
+
   METHODS
     method init( filepath:String )
       init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
 
     method init( filepath:String, data:String )
-      init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
+      init( Preprocessor().process(Tokenizer().tokenize(filepath,data)) )
 
     method init( tokens:Token[] )
       reader = TokenReader( tokens )
@@ -110,6 +112,16 @@ class Parser
       parse_template_tokens( template, TokenType.keyword_endPrimitive )
 
     method parse_template_tokens( template:TypeTemplate, end_type:TokenType )
+      if (consume(TokenType.symbol_open_specialize))
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          local t = must_read( TokenType.placeholder_id )
+          local param = template.add_type_parameter( t, t->String )
+        endWhile
+        must_consume( TokenType.symbol_close_specialize )
+      endIf
+
       while (reader.has_another)
         local t = reader.read
         if (t.type is end_type)
@@ -537,8 +549,9 @@ class Parser
       local name = read_identifier
 
       #name = parse_delegate_or_task_type_name( t, name )
-
-      #if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
+      if (next_is(TokenType.symbol_open_specialize))
+        name += parse_specialization_string
+      endIf
 
       while (consume(TokenType.symbol_empty_brackets)) name += "[]"
       return name
@@ -917,7 +930,7 @@ class Parser
 
       local name = read_identifier
       #name = parse_delegate_or_task_type_name( t, name )
-      #if (next_is(Token.symbol_open_specialize)) name += parse_specialization_string
+      if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
 
       while (consume(TokenType.symbol_empty_brackets)) name += "[]"
 
@@ -946,35 +959,61 @@ class Parser
 
       return args
 
-      #{
-    method parse_specialization_string->String
-      if (not next_is(Token.symbol_open_specialize)) return ""
 
+    method parse_specialization_string->String
       string_buffer.clear
-      consume( Token.symbol_open_specialize )
+      local t = read   # '<<'
       string_buffer.print( "<<" )
       local nesting_level = 1
       while (reader.has_another)
-        if (next_is(Token.eol))
-          throw peek.error( "Closing '>>' expected before end of line." )
-        elseIf (consume(Token.symbol_open_specialize))
-          string_buffer.print("<<")
-          ++nesting_level
-        elseIf (consume(Token.symbol_close_specialize))
-          --nesting_level
-          if (nesting_level == 0)
-            escapeWhile
-          else
-            string_buffer.print( ">>" )
-          endIf
+        if (consume(TokenType.symbol_close_specialize))
+          escapeWhile
         else
-          string_buffer.print( read->String )
+          parse_specializer( string_buffer )
         endIf
       endWhile
       string_buffer.print( ">>" )
 
       return string_buffer->String
-      }#
+
+    method parse_specializer( buffer=string_buffer:StringBuilder, tokens=null:Token[] )
+      local nesting_level = 1
+      while (reader.has_another)
+        if (next_is(TokenType.eol))
+          throw peek.error( "Closing '>>' expected before end of line." )
+        endIf
+
+        local t = peek
+        if (consume(TokenType.symbol_backslash))
+          if (tokens?) tokens.add( t )
+          buffer.print("\\")
+
+          if (not reader.has_another) throw t.error( "Unexpected end of input." )
+
+          t = read
+          buffer.print( t )
+          if (tokens?) tokens.add( t )
+
+        elseIf (consume(TokenType.symbol_open_specialize))
+          if (tokens?) tokens.add( t )
+          buffer.print("<<")
+          ++nesting_level
+
+        elseIf (next_is(TokenType.symbol_close_specialize))
+          --nesting_level
+          if (nesting_level == 0)
+            return
+          else
+            read
+            if (tokens?) tokens.add( t )
+            buffer.print( ">>" )
+          endIf
+
+        else
+          if (tokens?) tokens.add( t )
+          buffer.print( read->String )
+        endIf
+      endWhile
 
     method parse_term->Cmd
       local t = peek

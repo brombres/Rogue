@@ -1,18 +1,18 @@
 class Alpha
   PROPERTIES
-    n : Number
+    n : Number<<Integer>>
 
   METHODS
     method init
-      n = Number()
+      n = Number<<Integer>>()
       n.value = 5
       ++n.value
       println n.value
 endClass
 
-class Number
+class Number<<$DataType>>
   PROPERTIES
-    value : Integer
+    value : $DataType
 endClass
 
 primitive Integer

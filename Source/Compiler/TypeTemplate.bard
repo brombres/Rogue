@@ -1,12 +1,19 @@
 class TypeTemplate
   PROPERTIES
-    t              : Token
-    name           : String
-    tokens=Token[] : Token[]
-    attributes     : Integer
+    t               : Token
+    name            : String
+    tokens=Token[]  : Token[]
+    attributes      : Integer
+    type_parameters : TypeParameter[]
 
   METHODS
     method init( t, name, attributes=0 )
+
+    method add_type_parameter( p_t:Token, p_name:String )->TypeParameter
+      if (type_parameters is null) type_parameters = TypeParameter[]
+      local param = TypeParameter( p_t, p_name )
+      type_parameters.add( param )
+      return param
 
     method instantiate( type:Type )
       type.t = t
@@ -14,7 +21,37 @@ class TypeTemplate
 
       type.attributes |= attributes
 
+      if (type_parameters?)
+        local parser = Parser( type.name, type.name.from_first('<') )
+        parser.read  # '<<'
+
+        local buffer = StringBuilder()
+        local first = true
+        while (first or parser.consume(TokenType.symbol_comma))
+          first = false
+          local param_tokens = Token[]
+          buffer.clear
+          parser.parse_specializer( buffer.clear, param_tokens )
+          throw t.error( "TODO1:"+buffer->String )
+        endWhile
+
+      elseIf (type.name.contains('<'))
+        throw t.error( "Type parameters given for non-template type." )
+      endIf
+
       Parser(tokens).parse_type_def( type )
 
+endClass
 
+class TypeParameter
+  PROPERTIES
+    t    : Token
+    name : String
+
+  METHODS
+    method init( t, name )
+endClass
+
+class TypeSpecializer
+  PROPERTIES
 endClass
