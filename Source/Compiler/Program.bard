@@ -34,6 +34,8 @@ class Program [requisite singleton]
     literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
     literal_string_list   = String[]
 
+    string_buffer = StringBuilder()
+
   METHODS
     method configure
       type_Real      = create_native_type( "Real" )
@@ -89,7 +91,26 @@ class Program [requisite singleton]
       if (m?) m.resolve
 
     method validate_cpp_name( name:String )->String
-      return name
+      local i1 = name.locate("<<")
+      while (i1 != -1)
+        local i2 = name.locate_last(">>")
+        if (i2 == -1) escapeWhile
+
+        local before = name.substring(0,i1-1)
+        local after  = name.substring(i2+2)
+        local middle = name.substring(i1+2,i2-1)
+
+        name = "$_of_$$" (before,middle,after)
+        i1 = name.locate("<<")
+      endWhile
+
+      string_buffer.clear
+      forEach (ch in name)
+        if (ch.is_alphanumeric) string_buffer.print( ch )
+        else                    string_buffer.print( '_' )
+      endForEach
+
+      return string_buffer->String
 
     method write_cpp( filepath:String )
       forEach (type in type_list) type.assign_cpp_name
