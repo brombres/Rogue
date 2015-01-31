@@ -39,6 +39,7 @@ class TokenType
     keyword_false                : TokenType
     keyword_not                  : TokenType
     keyword_or                   : TokenType
+    keyword_pi                   : TokenType
     keyword_true                 : TokenType
     keyword_xor                  : TokenType
 

@@ -1,12 +1,12 @@
 class Alpha
   PROPERTIES
-    n : Pair<<Integer,Integer>>
+    n : Pair<<Integer,Real>>
 
   METHODS
     method init
-      n = Pair<<Integer,Integer>>()
+      n = Pair<<Integer,Real>>()
       n.first = 5
-      n.second = 5
+      n.second = 2*pi
       ++n.first
       println n.first
       println n.second
@@ -19,6 +19,9 @@ class Pair<<$FirstType,$SecondType>>
 endClass
 
 primitive Integer
+endPrimitive
+
+primitive Real
 endPrimitive
 
 class String

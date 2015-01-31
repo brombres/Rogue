@@ -5,6 +5,8 @@ class CPPWriter
     indent   = 0
     needs_indent = true
 
+    temp_buffer = StringBuilder()
+
   METHODS
     method init( filepath )
 
@@ -22,6 +24,26 @@ class CPPWriter
       buffer.print( value )
       return this
 
+    method print( value:Real )->CPPWriter
+      print_indent
+
+      which (value)
+        case pi
+          buffer.print( "rogue_program.pi" )
+
+        case 2*pi
+          buffer.print( "(2*rogue_program.pi)" )
+
+        others
+          local decimal_digits = 16
+          temp_buffer.clear.print( value, decimal_digits )
+          while (temp_buffer.characters.last == '0') temp_buffer.characters.remove_last; --decimal_digits
+          if (decimal_digits == 0) decimal_digits = 1
+
+          buffer.print( value, decimal_digits )
+      endWhich
+      return this
+
     method print( value:String )->CPPWriter
       print_indent
       buffer.print( value )
@@ -33,6 +55,12 @@ class CPPWriter
       return this
 
     method println( value:Integer )->CPPWriter
+      buffer.print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Real )->CPPWriter
       buffer.print( value )
       buffer.print( '\n' )
       needs_indent = true

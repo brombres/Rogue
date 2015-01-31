@@ -165,4 +165,7 @@ class Type
       writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_name ).print( "\", sizeof(Class" )
       writer.print( cpp_name ).println( ") );" )
 
+    method to->String
+      return name
+
 endClass

@@ -728,35 +728,35 @@ class Parser
       return lhs
 
     method parse_multiply_divide_mod->Cmd
-      return parse_pre_unary
-      #{
       return parse_multiply_divide_mod( parse_power )
 
     method parse_multiply_divide_mod( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(Token.symbol_times))
+      if (consume(TokenType.symbol_times))
         consume_eols
         return parse_multiply_divide_mod( CmdMultiply(t,lhs,parse_power) )
-      elseIf (consume(Token.symbol_divide))
+      elseIf (consume(TokenType.symbol_slash))
         consume_eols
         return parse_multiply_divide_mod( CmdDivide(t,lhs,parse_power) )
-      elseIf (consume(Token.symbol_percent))
+        #{
+      elseIf (consume(TokenType.symbol_percent))
         consume_eols
         return parse_multiply_divide_mod( CmdMod(t,lhs,parse_power) )
+        }#
       endIf
       return lhs
 
     method parse_power->Cmd
-      return parse_power( parse_pre_unary )
+      return parse_pre_unary
+      #return parse_power( parse_pre_unary )
 
     method parse_power( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(Token.symbol_power))
+      if (consume(TokenType.symbol_power))
         consume_eols
         return parse_power( CmdPower(t,lhs,parse_pre_unary) )
       endIf
       return lhs
-      }#
 
     method parse_pre_unary->Cmd
       local t = peek
@@ -1074,14 +1074,15 @@ class Parser
       elseIf (consume(TokenType.keyword_false))
         return CmdLiteralLogical( t, false )
 
+      elseIf (consume(TokenType.keyword_pi))
+        return CmdLiteralReal( t, pi )
+
       #{
       elseIf (consume(Token.keyword_this))
         return CmdThis( t, this_type )
+
       elseIf (consume(Token.keyword_function))
         return parse_function( t )
-      elseIf (consume(Token.keyword_pi))
-        return CmdLiteralReal( t, pi )
-
       elseIf (consume(Token.symbol_open_bracket))
         # [ literal, list ]
         if (parsing_properties?)

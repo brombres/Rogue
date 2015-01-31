@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "Rogue.h"
 #include "RogueProgram.h"
 
@@ -86,6 +87,7 @@ void RogueString::println( RogueString* st )
 RogueProgramCore::RogueProgramCore() : objects(NULL)
 {
   type_String = new RogueStringType();
+  pi = acos(-1);
 }
 
 RogueProgramCore::~RogueProgramCore()

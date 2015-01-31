@@ -7,14 +7,28 @@ class Cmd
       if (type is target_type) return this
       throw t.error( "TODO: Cmd::cast_to()." )
 
+    method combine_literal_operands( common_type:Type )->Cmd
+      return this
+
     method exit_scope( scope:Scope )
 
     method find_common_type( left_type:Type, right_type:Type )->Type
       if (left_type is right_type) return left_type
+
+      if (left_type.is_primitive)
+        if (right_type.is_primitive)
+          if (left_type is Program.type_Real or right_type is Program.type_Real) return Program.type_Real
+          if (left_type is Program.type_Integer or right_type is Program.type_Integer) return Program.type_Integer
+        endIf
+      endIf
+
       throw t.error( "Types $ and $ are incompatible." (left_type,right_type) )
 
     method implicit_type->Type
       return null
+
+    method is_literal->Logical
+      return false
 
     method postmodify( count:Integer )->Cmd
       throw t.error( "Illegal target; ++ and -- can only be applied to specific variables." )
@@ -194,17 +208,27 @@ class CmdPrintln : CmdStatement
     method print_cpp( writer:CPPWriter )
       if (expression?)
         local print_type = expression.type
+
         if (print_type is Program.type_String)
           writer.print "RogueString::println( "
           expression.print_cpp( writer )
           writer.print " )"
+
         elseIf (print_type is Program.type_Integer)
           writer.print( //printf( "%d\\n", // )
           expression.print_cpp( writer )
           writer.print " )"
+
+        elseIf (print_type is Program.type_Real)
+          writer.print( //printf( "%.4lf\\n", // )
+          expression.print_cpp( writer )
+          writer.print " )"
+
         else
+
           throw t.error( "[INTERNAL/CmdPrintln] Unhandled type in println: " + print_type.name )
         endIf
+
       else
         writer.print //printf( "\\n" )//
       endIf
@@ -240,6 +264,9 @@ class CmdLiteral : Cmd
   METHODS
     method implicit_type->Type
       return type
+
+    method is_literal->Logical
+      return true
 endClass
 
 
@@ -249,6 +276,9 @@ class CmdLiteralReal : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( value )
 
     method resolve( scope:Scope )->Cmd
       return this
@@ -264,6 +294,13 @@ class CmdLiteralInteger : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method cast_to( target_type:Type )->Cmd
+      if (target_type is Program.type_Real)
+        return CmdLiteralReal( t, value )
+      else
+        return prior.cast_to( target_type )
+      endIf
 
     method print_cpp( writer:CPPWriter )
       writer.print( value )
@@ -621,6 +658,7 @@ class CmdBinary : Cmd
       local common_type = find_common_type( left_type, right_type )
       left = left.cast_to( common_type )
       right = right.cast_to( common_type )
+      if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
       return this
 
     method symbol->String
@@ -632,6 +670,15 @@ endClass
 
 class CmdAdd : CmdBinary
   METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value + (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value + (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
     method symbol->String
       return "+"
 endClass
@@ -639,7 +686,47 @@ endClass
 
 class CmdSubtract : CmdBinary
   METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value - (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value - (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
     method symbol->String
       return "-"
+endClass
+
+class CmdMultiply : CmdBinary
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value * (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value * (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "*"
+endClass
+
+
+class CmdDivide : CmdBinary
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value / (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value / (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "/"
 endClass
 

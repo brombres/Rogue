@@ -122,6 +122,8 @@ struct RogueProgramCore
 
   RogueStringType* type_String;
 
+  RogueReal pi;
+
   RogueProgramCore();
   ~RogueProgramCore();
 

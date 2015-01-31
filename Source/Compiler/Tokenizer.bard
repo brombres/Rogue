@@ -103,6 +103,7 @@ class Tokenizer
       TokenType.keyword_false                = define( TokenType("false") )
       TokenType.keyword_not                  = define( TokenType("not") )
       TokenType.keyword_or                   = define( TokenType("or") )
+      TokenType.keyword_pi                   = define( TokenType("pi") )
       TokenType.keyword_true                 = define( TokenType("true") )
       TokenType.keyword_xor                  = define( TokenType("xor") )
 
