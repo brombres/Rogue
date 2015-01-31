@@ -18,8 +18,8 @@ class Parser
     method init( filepath:String )
       init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
 
-    method init( filepath:String, data:String )
-      init( Preprocessor().process(Tokenizer().tokenize(filepath,data)) )
+    method init( t:Token, filepath:String, data:String )
+      init( Preprocessor().process(Tokenizer().tokenize(t,filepath,data)) )
 
     method init( tokens:Token[] )
       reader = TokenReader( tokens )
@@ -964,14 +964,15 @@ class Parser
       string_buffer.clear
       local t = read   # '<<'
       string_buffer.print( "<<" )
-      local nesting_level = 1
-      while (reader.has_another)
-        if (consume(TokenType.symbol_close_specialize))
-          escapeWhile
-        else
-          parse_specializer( string_buffer )
-        endIf
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        if (first) first = false
+        else       string_buffer.print(',')
+        parse_specializer( string_buffer )
       endWhile
+
+      must_consume( TokenType.symbol_close_specialize )
       string_buffer.print( ">>" )
 
       return string_buffer->String
@@ -993,6 +994,9 @@ class Parser
           t = read
           buffer.print( t )
           if (tokens?) tokens.add( t )
+
+        elseIf (next_is(TokenType.symbol_comma))
+          return
 
         elseIf (consume(TokenType.symbol_open_specialize))
           if (tokens?) tokens.add( t )

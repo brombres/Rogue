@@ -115,5 +115,8 @@ class ParseReader
       if (ch >= 'a' and ch <= 'f') return 10 + (ch - 'a')
       if (ch >= 'A' and ch <= 'F') return 10 + (ch - 'A')
       return 0
+
+    method set_position( line, column )->ParseReader
+      return this
 endClass
 

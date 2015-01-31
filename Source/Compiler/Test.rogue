@@ -1,18 +1,21 @@
 class Alpha
   PROPERTIES
-    n : Number<<Integer>>
+    n : Pair<<Integer,Integer>>
 
   METHODS
     method init
-      n = Number<<Integer>>()
-      n.value = 5
-      ++n.value
-      println n.value
+      n = Pair<<Integer,Integer>>()
+      n.first = 5
+      n.second = 5
+      ++n.first
+      println n.first
+      println n.second
 endClass
 
-class Number<<$DataType>>
+class Pair<<$FirstType,$SecondType>>
   PROPERTIES
-    value : $DataType
+    first  : $FirstType
+    second : $SecondType
 endClass
 
 primitive Integer

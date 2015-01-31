@@ -27,7 +27,7 @@ class TypeTemplate
       if (type_parameters?)
         type_specializers = Table<<String,TypeSpecializer>>()
 
-        local parser = Parser( type.name, type.name.from_first('<') )
+        local parser = Parser( t, type.name, type.name.from_first('<') )
         parser.read  # '<<'
 
         local buffer = StringBuilder()
