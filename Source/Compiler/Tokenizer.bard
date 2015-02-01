@@ -78,15 +78,16 @@ class Tokenizer
 
       TokenType.placeholder_id    = define( TokenType("$id") )
 
-      # Class Structure Tokens
+      # Structure Tokens
       TokenType.eol                  = define( EOLTokenType("end of line") )
-      TokenType.keyword_class        = define( ClassStructureTokenType("class") )
-      TokenType.keyword_endClass     = define( ClassStructureTokenType("endClass") )
-      TokenType.keyword_endPrimitive = define( ClassStructureTokenType("endPrimitive") )
-      TokenType.keyword_method       = define( ClassStructureTokenType("method") )
-      TokenType.keyword_METHODS      = define( ClassStructureTokenType("METHODS") )
-      TokenType.keyword_primitive    = define( ClassStructureTokenType("primitive") )
-      TokenType.keyword_PROPERTIES   = define( ClassStructureTokenType("PROPERTIES") )
+      TokenType.keyword_class        = define( StructureTokenType("class") )
+      TokenType.keyword_endClass     = define( StructureTokenType("endClass") )
+      TokenType.keyword_endPrimitive = define( StructureTokenType("endPrimitive") )
+      TokenType.keyword_endWhile     = define( StructureTokenType("endWhile") )
+      TokenType.keyword_method       = define( StructureTokenType("method") )
+      TokenType.keyword_METHODS      = define( StructureTokenType("METHODS") )
+      TokenType.keyword_primitive    = define( StructureTokenType("primitive") )
+      TokenType.keyword_PROPERTIES   = define( StructureTokenType("PROPERTIES") )
 
       # Statement Tokens
       TokenType.keyword_local      = define( TokenType("local") )
@@ -105,6 +106,7 @@ class Tokenizer
       TokenType.keyword_or                   = define( TokenType("or") )
       TokenType.keyword_pi                   = define( TokenType("pi") )
       TokenType.keyword_true                 = define( TokenType("true") )
+      TokenType.keyword_while                = define( TokenType("while") )
       TokenType.keyword_xor                  = define( TokenType("xor") )
 
       TokenType.symbol_ampersand             = define( TokenType("&") )

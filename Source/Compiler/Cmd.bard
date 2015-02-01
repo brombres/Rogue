@@ -224,6 +224,11 @@ class CmdPrintln : CmdStatement
           expression.print_cpp( writer )
           writer.print " )"
 
+        elseIf (print_type is Program.type_Logical)
+          writer.print( //printf( "%s\\n", // )
+          expression.print_cpp( writer )
+          writer.print //?"true":"false" );//
+
         else
 
           throw t.error( "[INTERNAL/CmdPrintln] Unhandled type in println: " + print_type.name )
@@ -253,6 +258,41 @@ class CmdReturnValue : CmdStatement
 
     method resolve( scope:Scope )->Cmd
       expression = expression.resolve( scope )
+      return this
+endClass
+
+
+#------------------------------------------------------------------------------
+# Control Structures
+#------------------------------------------------------------------------------
+class CmdControlStructure : CmdStatement
+  PROPERTIES
+    statements : CmdStatementList
+
+  METHODS
+    method init( t )
+      statements = CmdStatementList()
+endClass
+
+
+class CmdWhile : CmdControlStructure
+  PROPERTIES
+    expression : Cmd
+
+  METHODS
+    method print_cpp( writer:CPPWriter )
+      writer.print( "while (" )
+      expression.print_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method resolve( scope:Scope )->Cmd
+      expression = expression.resolve( scope )
+      statements.resolve( scope )
       return this
 endClass
 
@@ -334,6 +374,10 @@ class CmdLiteralLogical : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method print_cpp( writer:CPPWriter )
+      if (value) writer.print "true"
+      else       writer.print "false"
 
     method resolve( scope:Scope )->Cmd
       return this
@@ -728,5 +772,112 @@ class CmdDivide : CmdBinary
 
     method symbol->String
       return "/"
+endClass
+
+
+#------------------------------------------------------------------------------
+# Comparison Operators
+#------------------------------------------------------------------------------
+class CmdComparison : CmdBinary
+  METHODS
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local common_type = find_common_type( left_type, right_type )
+      left = left.cast_to( common_type )
+      right = right.cast_to( common_type )
+      if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
+      return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdCompareEQ : CmdComparison
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value == (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value == (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "=="
+endClass
+
+class CmdCompareNE : CmdComparison
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value != (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value != (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "!="
+endClass
+
+class CmdCompareLT : CmdComparison
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value < (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value < (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "<"
+endClass
+
+class CmdCompareLE : CmdComparison
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value <= (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value <= (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "<="
+endClass
+
+class CmdCompareGT : CmdComparison
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value > (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value > (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return ">"
+endClass
+
+class CmdCompareGE : CmdComparison
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value >= (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value >= (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return ">="
 endClass
 

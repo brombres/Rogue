@@ -22,7 +22,7 @@ class TokenReader
 
     method next_is_statement_token->Logical
       if (position == count) return false
-      if (tokens[position].type.is_class_structure) return false
+      if (tokens[position].type.is_structure) return false
       return true
 
     method peek->Token

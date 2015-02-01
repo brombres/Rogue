@@ -216,6 +216,18 @@ class Parser
         consume_end_commands
       endWhile
 
+    method parse_single_line_statements( statements:CmdStatementList )
+      while (next_is_statement)
+        parse_statement( statements, false )
+        if (not consume(TokenType.symbol_semicolon)) return
+        while (consume(TokenType.symbol_semicolon)) noAction
+      endWhile
+
+      if (not consume(TokenType.eol))
+        if (not peek.is_structure) must_consume( TokenType.eol )  # force an error
+      endIf
+
+
     method parse_statement( statements:CmdStatementList, allow_control_structures:Logical )
       local t = peek
 
@@ -223,8 +235,10 @@ class Parser
       if (next_is(Token.keyword_delegate))
         throw t.error( "Unused delegate definition." )
       endIf
+      }#
 
       if (allow_control_structures)
+        #{
         if (next_is(Token.keyword_if))
           statements.add( parse_if )
           return
@@ -244,11 +258,13 @@ class Parser
         elseIf (next_is(Token.keyword_contingent))
           statements.add( parse_contingent )
           return
+          }#
 
-        elseIf (next_is(Token.keyword_while))
+        if (next_is(TokenType.keyword_while))
           statements.add( parse_while )
           return
 
+          #{
         elseIf (next_is(Token.keyword_loop))
           statements.add( parse_loop )
           return
@@ -256,14 +272,16 @@ class Parser
         elseIf (next_is(Token.keyword_try))
           statements.add( parse_try )
           return
+          }#
 
         endIf
+        #{
       else
         local err = false
         if (next_is(Token.keyword_if)) err = true
         if (err) throw t.error( "Control structures must begin on a separate line." )
-      endIf
       }#
+      endIf
 
       if (next_is(TokenType.keyword_local))
         parse_local_declaration( statements )
@@ -556,6 +574,23 @@ class Parser
       while (consume(TokenType.symbol_empty_brackets)) name += "[]"
       return name
 
+    method parse_while->CmdWhile
+      local t = read
+      local cmd_while = CmdWhile( t )
+      cmd_while.expression = parse_expression
+
+      if (consume_eols)
+        # multi-line while
+        parse_multi_line_statements( cmd_while.statements )
+        must_consume( TokenType.keyword_endWhile )
+      else
+        # single-line while
+        parse_single_line_statements( cmd_while.statements )
+        consume_eols
+      endIf
+
+      return cmd_while
+
     method peek->Token
       return reader.peek
 
@@ -570,13 +605,13 @@ class Parser
 
     method parse_expression->Cmd
       consume_eols
-      return parse_add_subtract
-      #{
       return parse_range
 
     method parse_range->Cmd
-      return parse_range( parse_logical_xor )
+      return parse_logical_xor
+      #return parse_range( parse_logical_xor )
 
+      #{
     method parse_range( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.symbol_upTo))
@@ -590,10 +625,13 @@ class Parser
       else
         return lhs
       endIf
+      }#
 
     method parse_logical_xor->Cmd
-      return parse_logical_xor( parse_logical_or )
+      return parse_logical_or
+      #return parse_logical_xor( parse_logical_or )
 
+      #{
     method parse_logical_xor( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.keyword_xor))
@@ -601,10 +639,13 @@ class Parser
         return parse_logical_xor( CmdLogicalXor(t, lhs, parse_logical_or) )
       endIf
       return lhs
+      }#
 
     method parse_logical_or->Cmd
-      return parse_logical_or( parse_logical_and )
+      return parse_logical_and
+      #return parse_logical_or( parse_logical_and )
 
+      #{
     method parse_logical_or( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.keyword_or))
@@ -612,10 +653,13 @@ class Parser
         return parse_logical_or( CmdLogicalOr(t, lhs, parse_logical_and) )
       endIf
       return lhs
+      }#
 
     method parse_logical_and->Cmd
-      return parse_logical_and( parse_comparison )
+      return parse_comparison
+      #return parse_logical_and( parse_comparison )
 
+      #{
     method parse_logical_and( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.keyword_and))
@@ -623,48 +667,57 @@ class Parser
         return parse_logical_and( CmdLogicalAnd(t, lhs, parse_comparison) )
       endIf
       return lhs
+      }#
 
     method parse_comparison->Cmd
       return parse_comparison( parse_bitwise_xor )
 
     method parse_comparison( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(Token.symbol_eq))
+      if (consume(TokenType.symbol_eq))
         consume_eols
         return parse_comparison( CmdCompareEQ(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.keyword_is))
+        #{
+      elseIf (consume(TokenType.keyword_is))
         consume_eols
         return parse_comparison( CmdCompareIs(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.symbol_ne))
+        }#
+      elseIf (consume(TokenType.symbol_ne))
         consume_eols
         return parse_comparison( CmdCompareNE(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.keyword_isNot))
+        #{
+      elseIf (consume(TokenType.keyword_isNot))
         consume_eols
         return parse_comparison( CmdCompareIsNot(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.symbol_lt))
+        }#
+      elseIf (consume(TokenType.symbol_lt))
         consume_eols
         return parse_comparison( CmdCompareLT(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.symbol_gt))
+      elseIf (consume(TokenType.symbol_gt))
         consume_eols
         return parse_comparison( CmdCompareGT(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.symbol_le))
+      elseIf (consume(TokenType.symbol_le))
         consume_eols
         return parse_comparison( CmdCompareLE(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.symbol_ge))
+      elseIf (consume(TokenType.symbol_ge))
         consume_eols
         return parse_comparison( CmdCompareGE(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(Token.keyword_instanceOf))
+        #{
+      elseIf (consume(TokenType.keyword_instanceOf))
         consume_eols
         return CmdInstanceOf( t, lhs, parse_type )
-      elseIf (consume(Token.keyword_notInstanceOf))
+      elseIf (consume(TokenType.keyword_notInstanceOf))
         consume_eols
         return CmdLogicalNot( t, CmdInstanceOf( t, lhs, parse_type ) )
+      }#
       endIf
       return lhs
 
     method parse_bitwise_xor->Cmd
-      return parse_bitwise_xor( parse_bitwise_or )
+      return parse_bitwise_or
+      #return parse_bitwise_xor( parse_bitwise_or )
 
+      #{
     method parse_bitwise_xor( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.symbol_bitwise_xor))
@@ -672,10 +725,13 @@ class Parser
         return parse_bitwise_xor( CmdBitwiseXor(t,lhs,parse_bitwise_or) )
       endIf
       return lhs
+      }#
 
     method parse_bitwise_or->Cmd
-      return parse_bitwise_or( parse_bitwise_and )
+      return parse_bitwise_and
+      #return parse_bitwise_or( parse_bitwise_and )
 
+      #{
     method parse_bitwise_or( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.symbol_bitwise_or))
@@ -683,10 +739,13 @@ class Parser
         return parse_bitwise_or( CmdBitwiseOr(t,lhs,parse_bitwise_and) )
       endIf
       return lhs
+      }#
 
     method parse_bitwise_and->Cmd
-      return parse_bitwise_and( parse_bitwise_shift )
+      return parse_bitwise_shift
+      #return parse_bitwise_and( parse_bitwise_shift )
 
+      #{
     method parse_bitwise_and( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.symbol_ampersand))
@@ -694,10 +753,13 @@ class Parser
         return parse_bitwise_and( CmdBitwiseAnd(t,lhs,parse_bitwise_shift) )
       endIf
       return lhs
+      }#
 
     method parse_bitwise_shift->Cmd
-      return parse_bitwise_shift( parse_add_subtract )
+      return parse_add_subtract
+      #return parse_bitwise_shift( parse_add_subtract )
 
+      #{
     method parse_bitwise_shift( lhs:Cmd )->Cmd
       local t = peek
       if (consume(Token.symbol_shl))

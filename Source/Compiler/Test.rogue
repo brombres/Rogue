@@ -4,12 +4,11 @@ class Alpha
 
   METHODS
     method init
-      n = Pair<<Integer,Real>>()
-      n.first = 5
-      n.second = 2*pi
-      ++n.first
-      println n.first
-      println n.second
+      local x = 1
+      while (x <= 10)
+        println x
+        ++x
+      endWhile
 endClass
 
 class Pair<<$FirstType,$SecondType>>

@@ -17,8 +17,8 @@ class Token
     method is_directive->Logical
       return type.is_directive
 
-    method is_class_structure->Logical
-      return type.is_class_structure
+    method is_structure->Logical
+      return type.is_structure
 
     method quoted_name->String
       return "'$'" (this->String)

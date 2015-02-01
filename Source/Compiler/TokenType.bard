@@ -12,7 +12,7 @@ class TokenType
 
     placeholder_id               : TokenType
 
-    # Class Structure
+    # Structure
     keyword_class                : TokenType
     keyword_endClass             : TokenType
     keyword_endPrimitive         : TokenType
@@ -36,11 +36,13 @@ class TokenType
     literal_string               : TokenType
 
     keyword_and                  : TokenType
+    keyword_endWhile             : TokenType
     keyword_false                : TokenType
     keyword_not                  : TokenType
     keyword_or                   : TokenType
     keyword_pi                   : TokenType
     keyword_true                 : TokenType
+    keyword_while                : TokenType
     keyword_xor                  : TokenType
 
     symbol_ampersand             : TokenType
@@ -125,7 +127,7 @@ class TokenType
     method is_directive->Logical
       return false
 
-    method is_class_structure->Logical
+    method is_structure->Logical
       return false
 
     method quoted_name->String
@@ -146,7 +148,7 @@ class EOLTokenType : TokenType
     method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
       return EOLToken( this, value ).set_location( filepath, line, column )
 
-    method is_class_structure->Logical
+    method is_structure->Logical
       return false
 endClass
 
@@ -156,12 +158,12 @@ class IdentifierTokenType : TokenType
       return IdentifierToken( this, value ).set_location( filepath, line, column )
 endClass
 
-class ClassStructureTokenType : TokenType
+class StructureTokenType : TokenType
   METHODS
     method create_token( filepath:String, line:Integer, column:Integer )->Token
       return Token( this ).set_location( filepath, line, column )
 
-    method is_class_structure->Logical
+    method is_structure->Logical
       return true
 endClass
 
