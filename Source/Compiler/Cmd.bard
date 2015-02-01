@@ -39,6 +39,13 @@ class Cmd
     method print_cpp( writer:CPPWriter )
       throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
 
+    method require_logical->Cmd
+      local _type = type
+      if (_type is null or _type isNot Program.type_Logical)
+        throw t.error( "Logical value expected." )
+      endIf
+      return this
+
     method require_type->Type
       local result = type
       if (result is null) throw t.error( "Value expected; this statement or expression does not result in a value." )
@@ -47,6 +54,9 @@ class Cmd
     method require_value->Cmd
       require_type
       return this
+
+    method requires_semicolon->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
@@ -110,7 +120,7 @@ class CmdStatementList : Cmd[]
     method print_cpp( writer:CPPWriter )
       forEach (statement in this)
         statement.print_cpp( writer )
-        writer.println ";"
+        if (statement.requires_semicolon) writer.println ";"
       endForEach
 
     method resolve( scope:Scope )
@@ -272,6 +282,82 @@ class CmdControlStructure : CmdStatement
   METHODS
     method init( t )
       statements = CmdStatementList()
+
+    method requires_semicolon->Logical
+      return false
+endClass
+
+class CmdIf : CmdControlStructure
+  PROPERTIES
+    condition           : Cmd
+    else_ifs            : CmdElseIf[]
+    else_statements     : CmdStatementList
+
+  METHODS
+    method init( t )
+      statements = CmdStatementList()
+
+    method add( cmd_else_if:CmdElseIf )
+      if (else_ifs is null) else_ifs = CmdElseIf[]
+      else_ifs.add( cmd_else_if )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "if (" )
+      condition.print_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      forEach (else_if in else_ifs)
+        else_if.print_cpp( writer )
+      endForEach
+
+      if (else_statements?)
+        writer.println( "else" )
+        writer.println( "{" )
+        writer.indent += 2
+        else_statements.print_cpp( writer )
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
+
+    method resolve( scope:Scope )->CmdIf
+      condition = condition.resolve( scope ).require_logical
+      statements.resolve( scope )
+      if (else_ifs?)
+        forEach (else_if in else_ifs) else_if.resolve( scope )
+      endIf
+      if (else_statements?) else_statements.resolve( scope )
+      return this
+endClass
+
+
+class CmdElseIf
+  PROPERTIES
+    cmd_if     : CmdIf
+    condition  : Cmd
+    statements : CmdStatementList
+
+  METHODS
+    method init( cmd_if )
+      statements = CmdStatementList()
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "else if (" )
+      condition.print_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method resolve( scope:Scope )
+      condition = condition.resolve( scope ).require_logical
+      statements.resolve( scope )
 endClass
 
 
@@ -670,6 +756,64 @@ class CmdWriteProperty : Cmd
 
     method type->Type
       return property_info.type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Unary Operators
+#------------------------------------------------------------------------------
+class CmdUnary : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method cpp_prefix_symbol->String
+      return prefix_symbol
+
+    method cpp_suffix_symbol->String
+      return suffix_symbol
+
+    method prefix_symbol->String
+      return "("
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( cpp_prefix_symbol )
+      operand.print_cpp( writer )
+      writer.print( cpp_suffix_symbol )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      if (operand.is_literal) return resolve_for_literal_operand( scope )
+      else                    return resolve_for_operand_type( scope, operand.require_type )
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      return this
+
+    method resolve_for_operand_type( scope:Scope, operand_type:Type )->Cmd
+      return this
+
+    method suffix_symbol->String
+      return ")"
+
+    method type->Type
+      return operand.type
+endClass
+
+
+class CmdNegate : CmdUnary
+  METHODS
+    method prefix_symbol->String
+      return "(-"
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralReal)
+        return CmdLiteralReal( t, -(operand as CmdLiteralReal).value )
+      elseIf (operand instanceOf CmdLiteralInteger)
+        return CmdLiteralInteger( t, -(operand as CmdLiteralInteger).value )
+      endIf
+      return this
 endClass
 
 

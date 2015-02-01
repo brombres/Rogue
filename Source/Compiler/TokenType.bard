@@ -14,8 +14,12 @@ class TokenType
 
     # Structure
     keyword_class                : TokenType
+    keyword_else                 : TokenType
+    keyword_elseIf               : TokenType
     keyword_endClass             : TokenType
+    keyword_endIf                : TokenType
     keyword_endPrimitive         : TokenType
+    keyword_endWhile             : TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
     keyword_primitive            : TokenType
@@ -25,8 +29,10 @@ class TokenType
     eol                          : TokenType
 
     # Statements
+    keyword_if                   : TokenType
     keyword_local                : TokenType
     keyword_println              : TokenType
+    keyword_while                : TokenType
 
     # Commmand
     identifier                   : TokenType
@@ -36,13 +42,11 @@ class TokenType
     literal_string               : TokenType
 
     keyword_and                  : TokenType
-    keyword_endWhile             : TokenType
     keyword_false                : TokenType
     keyword_not                  : TokenType
     keyword_or                   : TokenType
     keyword_pi                   : TokenType
     keyword_true                 : TokenType
-    keyword_while                : TokenType
     keyword_xor                  : TokenType
 
     symbol_ampersand             : TokenType

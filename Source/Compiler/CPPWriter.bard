@@ -55,19 +55,19 @@ class CPPWriter
       return this
 
     method println( value:Integer )->CPPWriter
-      buffer.print( value )
+      print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
 
     method println( value:Real )->CPPWriter
-      buffer.print( value )
+      print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
 
     method println( value:String )->CPPWriter
-      buffer.print( value )
+      print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this

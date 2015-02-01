@@ -4,9 +4,10 @@ class Alpha
 
   METHODS
     method init
-      local x = 1
-      while (x <= 10)
-        println x
+      local x = -2
+      while (x <= 2)
+        local y = x*2
+        println y
         ++x
       endWhile
 endClass

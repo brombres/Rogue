@@ -81,7 +81,10 @@ class Tokenizer
       # Structure Tokens
       TokenType.eol                  = define( EOLTokenType("end of line") )
       TokenType.keyword_class        = define( StructureTokenType("class") )
+      TokenType.keyword_else         = define( StructureTokenType("else") )
+      TokenType.keyword_elseIf       = define( StructureTokenType("elseIf") )
       TokenType.keyword_endClass     = define( StructureTokenType("endClass") )
+      TokenType.keyword_endIf        = define( StructureTokenType("endIf") )
       TokenType.keyword_endPrimitive = define( StructureTokenType("endPrimitive") )
       TokenType.keyword_endWhile     = define( StructureTokenType("endWhile") )
       TokenType.keyword_method       = define( StructureTokenType("method") )
@@ -90,8 +93,10 @@ class Tokenizer
       TokenType.keyword_PROPERTIES   = define( StructureTokenType("PROPERTIES") )
 
       # Statement Tokens
-      TokenType.keyword_local      = define( TokenType("local") )
-      TokenType.keyword_println    = define( TokenType("println") )
+      TokenType.keyword_if           = define( TokenType("if") )
+      TokenType.keyword_local        = define( TokenType("local") )
+      TokenType.keyword_println      = define( TokenType("println") )
+      TokenType.keyword_while        = define( TokenType("while") )
 
       # Expression Tokens
       TokenType.identifier                   = TokenType("identifier")
@@ -106,7 +111,6 @@ class Tokenizer
       TokenType.keyword_or                   = define( TokenType("or") )
       TokenType.keyword_pi                   = define( TokenType("pi") )
       TokenType.keyword_true                 = define( TokenType("true") )
-      TokenType.keyword_while                = define( TokenType("while") )
       TokenType.keyword_xor                  = define( TokenType("xor") )
 
       TokenType.symbol_ampersand             = define( TokenType("&") )
