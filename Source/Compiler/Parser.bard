@@ -867,11 +867,9 @@ class Parser
       elseIf (consume(TokenType.symbol_slash))
         consume_eols
         return parse_multiply_divide_mod( CmdDivide(t,lhs,parse_power) )
-        #{
       elseIf (consume(TokenType.symbol_percent))
         consume_eols
         return parse_multiply_divide_mod( CmdMod(t,lhs,parse_power) )
-        }#
       endIf
       return lhs
 

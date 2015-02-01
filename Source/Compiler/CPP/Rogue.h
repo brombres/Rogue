@@ -110,6 +110,7 @@ struct RogueString : RogueObject
   static void         println( RogueString* st );
 };
 
+
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
@@ -130,7 +131,11 @@ struct RogueProgramCore
   RogueObject* allocate_object( RogueType* type, int size );
 
   void         collect_garbage();
+
+  static RogueReal    mod( RogueReal a, RogueReal b );
+  static RogueInteger mod( RogueInteger a, RogueInteger b );
 };
+
 
 //-----------------------------------------------------------------------------
 //  RogueAllocator

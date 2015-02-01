@@ -919,6 +919,29 @@ class CmdDivide : CmdBinary
 endClass
 
 
+class CmdMod : CmdBinary
+  METHODS
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value % (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value % (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( Program.program_name ).print( ".mod( " )
+      left.print_cpp( writer )
+      writer.print( ", " )
+      right.print_cpp( writer )
+      writer.print( " )" )
+
+    method symbol->String
+      return "%"
+endClass
+
+
 #------------------------------------------------------------------------------
 # Comparison Operators
 #------------------------------------------------------------------------------
