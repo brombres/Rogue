@@ -4,11 +4,10 @@ class Alpha
 
   METHODS
     method init
-      local x = -5
-      while (x <= 5)
-        println x % 3
-        ++x
-      endWhile
+      println false or false
+      println false or true
+      println true  or false
+      println true  or true
 endClass
 
 class Pair<<$FirstType,$SecondType>>
@@ -18,6 +17,9 @@ class Pair<<$FirstType,$SecondType>>
 endClass
 
 primitive Integer
+endPrimitive
+
+primitive Logical
 endPrimitive
 
 primitive Real

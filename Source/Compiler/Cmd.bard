@@ -802,6 +802,28 @@ class CmdUnary : Cmd
 endClass
 
 
+class CmdLogicalNot : CmdUnary
+  METHODS
+    method cpp_prefix_symbol->String
+      return "!"
+
+    method cpp_suffix_symbol->String
+      return ""
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralReal)
+        return CmdLiteralLogical( t, not (operand as CmdLiteralReal).value )
+      elseIf (operand instanceOf CmdLiteralInteger)
+        return CmdLiteralLogical( t, not (operand as CmdLiteralInteger).value )
+      endIf
+      return this
+
+    method type->Type
+      return Program.type_Logical
+
+endClass
+
+
 class CmdNegate : CmdUnary
   METHODS
     method prefix_symbol->String
@@ -828,10 +850,13 @@ class CmdBinary : Cmd
   METHODS
     method init( t, left, right )
 
+    method cpp_symbol->String
+      return symbol
+
     method print_cpp( writer:CPPWriter )
       writer.print( "(" )
       left.print_cpp( writer )
-      writer.print( " " ).print( symbol ).print( " " )
+      writer.print( " " ).print( cpp_symbol ).print( " " )
       right.print_cpp( writer )
       writer.print( ")" )
 
@@ -939,6 +964,69 @@ class CmdMod : CmdBinary
 
     method symbol->String
       return "%"
+endClass
+
+
+class CmdBinaryLogical : CmdBinary
+  METHODS
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      throw t.error( "[INTERNAL] $::combine_literal_operands(Logical,Logical) is not defined." (type_name) )
+
+    method resolve( scope:Scope )->Cmd
+      left = left.resolve( scope ).require_logical
+      right = right.resolve( scope ).require_logical
+      if (left.is_literal and right.is_literal)
+        return CmdLiteralLogical(
+            t,
+            combine_literal_operands(
+                (left as CmdLiteralLogical).value,
+                (right as CmdLiteralLogical).value
+              )
+          )
+      endIf
+      return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdLogicalAnd : CmdBinaryLogical
+  METHODS
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      return (a and b)
+
+    method cpp_symbol->String
+      return "&&"
+
+    method symbol->String
+      return "and"
+endClass
+
+
+class CmdLogicalOr : CmdBinaryLogical
+  METHODS
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      return (a or b)
+
+    method cpp_symbol->String
+      return "||"
+
+    method symbol->String
+      return "or"
+endClass
+
+
+
+class CmdLogicalXor : CmdBinaryLogical
+  METHODS
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      return (a xor b)
+
+    method cpp_symbol->String
+      return "^"
+
+    method symbol->String
+      return "xor"
 endClass
 
 

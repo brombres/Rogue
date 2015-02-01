@@ -695,10 +695,8 @@ class Parser
       }#
 
     method parse_logical_xor->Cmd
-      return parse_logical_or
-      #return parse_logical_xor( parse_logical_or )
+      return parse_logical_xor( parse_logical_or )
 
-      #{
     method parse_logical_xor( lhs:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.keyword_xor))
@@ -706,13 +704,10 @@ class Parser
         return parse_logical_xor( CmdLogicalXor(t, lhs, parse_logical_or) )
       endIf
       return lhs
-      }#
 
     method parse_logical_or->Cmd
-      return parse_logical_and
-      #return parse_logical_or( parse_logical_and )
+      return parse_logical_or( parse_logical_and )
 
-      #{
     method parse_logical_or( lhs:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.keyword_or))
@@ -720,13 +715,10 @@ class Parser
         return parse_logical_or( CmdLogicalOr(t, lhs, parse_logical_and) )
       endIf
       return lhs
-      }#
 
     method parse_logical_and->Cmd
-      return parse_comparison
-      #return parse_logical_and( parse_comparison )
+      return parse_logical_and( parse_comparison )
 
-      #{
     method parse_logical_and( lhs:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.keyword_and))
@@ -734,7 +726,6 @@ class Parser
         return parse_logical_and( CmdLogicalAnd(t, lhs, parse_comparison) )
       endIf
       return lhs
-      }#
 
     method parse_comparison->Cmd
       return parse_comparison( parse_bitwise_xor )
@@ -903,11 +894,9 @@ class Parser
         consume_eols
         return CmdNegate( t, parse_pre_unary )
 
-      #{
-      if (consume(TokenType.keyword_not))
+      elseIf (consume(TokenType.keyword_not))
         consume_eols
         return CmdLogicalNot( t, parse_pre_unary )
-        }#
 
         #{
       elseIf (consume(TokenType.symbol_bitwise_not))
