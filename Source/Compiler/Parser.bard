@@ -676,8 +676,15 @@ class Parser
 
       local expr = parse_expression
       if (consume("in"))
+        local range = parse_expression
+        if (range instanceOf CmdRange)
+          #TODO
+          #local cmd_for_each = CmdForEachInRange(t)
+        else
+          throw t.error( "Literal range expected." )
+        endIf
       else
-        throw t.error( "Syntax error in forEach." )
+        throw t.error( "Syntax error in forEach - keyword 'in' expected." )
       endIf
 
       if (has_parens) must_consume( TokenType.symbol_close_paren )
@@ -700,24 +707,23 @@ class Parser
       return parse_range
 
     method parse_range->Cmd
-      return parse_logical_xor
-      #return parse_range( parse_logical_xor )
+      return parse_range( parse_logical_xor )
 
-      #{
     method parse_range( lhs:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.symbol_upTo))
         return CmdRangeUpTo( t, lhs, parse_logical_xor )
+        #{
       elseIf (consume(TokenType.symbol_upToLessThan))
         return CmdRangeUpToLessThan( t, lhs, parse_logical_xor )
       elseIf (consume(TokenType.symbol_downToGreaterThan))
         return CmdRangeDownToGreaterThan( t, lhs, parse_logical_xor )
       elseIf (consume(TokenType.keyword_downTo))
         return CmdRangeDownTo( t, lhs, parse_logical_xor )
+        }#
       else
         return lhs
       endIf
-      }#
 
     method parse_logical_xor->Cmd
       return parse_logical_xor( parse_logical_or )

@@ -412,6 +412,7 @@ class CmdForEachInRange : CmdControlStructure
   PROPERTIES
     control_var : Local
     last_var    : Local
+    step_var    : Local
     first       : Cmd
     last        : Cmd
 
@@ -810,6 +811,23 @@ class CmdWriteProperty : Cmd
 
     method type->Type
       return property_info.type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Miscellaneous Expressions
+#------------------------------------------------------------------------------
+class CmdRange : Cmd
+  PROPERTIES
+    first : Cmd
+    last  : Cmd
+    step  : Cmd
+
+  METHODS
+    method init( t, first, last, step=null )
+endClass
+
+class CmdRangeUpTo : CmdRange
 endClass
 
 
