@@ -84,6 +84,7 @@ class Tokenizer
       TokenType.keyword_else         = define( StructureTokenType("else") )
       TokenType.keyword_elseIf       = define( StructureTokenType("elseIf") )
       TokenType.keyword_endClass     = define( StructureTokenType("endClass") )
+      TokenType.keyword_endForEach   = define( StructureTokenType("endForEach") )
       TokenType.keyword_endIf        = define( StructureTokenType("endIf") )
       TokenType.keyword_endPrimitive = define( StructureTokenType("endPrimitive") )
       TokenType.keyword_endWhile     = define( StructureTokenType("endWhile") )
@@ -93,6 +94,7 @@ class Tokenizer
       TokenType.keyword_PROPERTIES   = define( StructureTokenType("PROPERTIES") )
 
       # Statement Tokens
+      TokenType.keyword_forEach      = define( TokenType("forEach") )
       TokenType.keyword_if           = define( TokenType("if") )
       TokenType.keyword_local        = define( TokenType("local") )
       TokenType.keyword_println      = define( TokenType("println") )

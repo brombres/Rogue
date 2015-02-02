@@ -17,6 +17,7 @@ class TokenType
     keyword_else                 : TokenType
     keyword_elseIf               : TokenType
     keyword_endClass             : TokenType
+    keyword_endForEach           : TokenType
     keyword_endIf                : TokenType
     keyword_endPrimitive         : TokenType
     keyword_endWhile             : TokenType
@@ -29,6 +30,7 @@ class TokenType
     eol                          : TokenType
 
     # Statements
+    keyword_forEach              : TokenType
     keyword_if                   : TokenType
     keyword_local                : TokenType
     keyword_println              : TokenType

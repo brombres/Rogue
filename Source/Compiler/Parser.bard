@@ -29,6 +29,13 @@ class Parser
       reader.read
       return true
 
+    method consume( identifier:String )->Logical
+      local t = reader.peek
+      if (t isNot TokenType.identifier) return false
+      if (t->String != identifier) return false
+      read
+      return true
+
     method consume_end_commands->Logical
       local found = false
       while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) found = true
@@ -250,11 +257,13 @@ class Parser
         elseIf (next_is(TokenType.keyword_whichIs))
           statements.add( parse_which( true ) )
           return
+          }#
 
         elseIf (next_is(TokenType.keyword_forEach))
           statements.add( parse_forEach )
           return
 
+          #{
         elseIf (next_is(TokenType.keyword_contingent))
           statements.add( parse_contingent )
           return
@@ -657,6 +666,22 @@ class Parser
       endIf
 
       return cmd_while
+
+    method parse_forEach->Cmd
+      local t = read  # 'forEach'
+      local cmd_block = CmdBlock(t)
+      throw t.error( "TODO: parse_forEach" )
+
+      local has_parens = consume( TokenType.symbol_open_paren )
+
+      local expr = parse_expression
+      if (consume("in"))
+      else
+        throw t.error( "Syntax error in forEach." )
+      endIf
+
+      if (has_parens) must_consume( TokenType.symbol_close_paren )
+      return cmd_block
 
     method peek->Token
       return reader.peek

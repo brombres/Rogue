@@ -287,6 +287,31 @@ class CmdControlStructure : CmdStatement
       return false
 endClass
 
+
+class CmdBlock : CmdControlStructure
+  PROPERTIES
+    statements : CmdStatementList
+
+  METHODS
+    method init( t )
+      statements = CmdStatementList()
+
+    method print_cpp( writer:CPPWriter )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->CmdBlock
+      statements.resolve( scope )
+      return this
+endClass
+
+
 class CmdIf : CmdControlStructure
   PROPERTIES
     condition           : Cmd
@@ -380,6 +405,35 @@ class CmdWhile : CmdControlStructure
       expression = expression.resolve( scope )
       statements.resolve( scope )
       return this
+endClass
+
+
+class CmdForEachInRange : CmdControlStructure
+  PROPERTIES
+    control_var : Local
+    last_var    : Local
+    first       : Cmd
+    last        : Cmd
+
+  METHODS
+    method init( t, control_var, last_var )
+
+      #{
+    method print_cpp( writer:CPPWriter )
+      writer.print( "for (" ).print( contr
+      expression.print_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method resolve( scope:Scope )->Cmd
+      expression = expression.resolve( scope )
+      statements.resolve( scope )
+      return this
+      }#
 endClass
 
 
