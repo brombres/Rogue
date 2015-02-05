@@ -8,6 +8,8 @@ class Program [requisite singleton]
     code_prefix  = "Rogue"
     program_name = "rogue_program"
 
+    next_unique_id : Integer
+
     template_list   = TypeTemplate[]                 : TypeTemplate[]
     template_lookup = Table<<String,TypeTemplate>>() : Table<<String,TypeTemplate>>
 
@@ -48,6 +50,10 @@ class Program [requisite singleton]
 
       type_Object    = create_native_type( "Logical" )
       type_String    = create_native_type( "String", Attributes.flag_reference_type )
+
+    method create_unique_id->String
+      ++next_unique_id
+      return "_auto_" + (next_unique_id-1)
 
     method find_type( name:String )->Type
       local type = type_lookup[ name ]

@@ -86,6 +86,9 @@ class LiteralIntegerToken : Token
     method to->Integer
       return value
 
+    method to->Real
+      return value->Real
+
     method to->String
       return ""+value
 endClass
@@ -96,6 +99,9 @@ class LiteralRealToken : Token
 
   METHODS
     method init( type, value )
+
+    method to->Integer
+      return value->Integer
 
     method to->Real
       return value

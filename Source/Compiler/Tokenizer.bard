@@ -601,7 +601,7 @@ class Tokenizer
         elseIf (ch == '.')
           # Start of range
           if (is_negative) n = -n
-          return add_new_token( TokenType.literal_integer, n )
+          return add_new_token( TokenType.literal_integer, n->Integer )
         else
           if (is_negative) n = -n
           return add_new_token( TokenType.literal_real, n )

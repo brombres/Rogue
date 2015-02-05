@@ -31,7 +31,7 @@ class Parser
 
     method consume( identifier:String )->Logical
       local t = reader.peek
-      if (t isNot TokenType.identifier) return false
+      if (t.type isNot TokenType.identifier) return false
       if (t->String != identifier) return false
       read
       return true
@@ -214,6 +214,17 @@ class Parser
 
       parse_multi_line_statements( this_method.statements )
       return true
+
+    method parse_single_or_multi_line_statements( statements:CmdStatementList, end_type:TokenType )
+      if (consume_eols)
+        # multi-line while
+        parse_multi_line_statements( statements )
+        must_consume( end_type )
+      else
+        # single-line while
+        parse_single_line_statements( statements )
+        consume_eols
+      endIf
 
     method parse_multi_line_statements( statements:CmdStatementList )
       consume_end_commands
@@ -670,24 +681,46 @@ class Parser
     method parse_forEach->Cmd
       local t = read  # 'forEach'
       local cmd_block = CmdBlock(t)
-      throw t.error( "TODO: parse_forEach" )
 
       local has_parens = consume( TokenType.symbol_open_paren )
 
       local expr = parse_expression
-      if (consume("in"))
-        local range = parse_expression
-        if (range instanceOf CmdRange)
-          #TODO
-          #local cmd_for_each = CmdForEachInRange(t)
+      local access = expr as CmdAccess
+      if (access?)
+        if (access.context? or access.args?)
+          throw access.t.error( "Single identifier expected for control variable name." )
         else
-          throw t.error( "Literal range expected." )
+          if (consume("in"))
+            local collection = parse_expression
+            local range = collection as CmdRange
+            if (range?)
+              local control_var = this_method.add_local( t, access.name )
+              control_var.initial_value = range.first
+              cmd_block.statements.add( CmdLocalDeclaration(range.first.t,control_var) )
+
+              local last_var = this_method.add_local( t, Program.create_unique_id )
+              last_var.initial_value = range.last
+              cmd_block.statements.add( CmdLocalDeclaration(range.last.t,last_var) )
+
+              local step_cmd : Cmd
+              step_cmd = CmdLiteralInteger( range.t, 1 )
+
+              local cmd_for_each = CmdForEachInRange( t, control_var, last_var, step_cmd )
+              if (has_parens) must_consume( TokenType.symbol_close_paren )
+              parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
+
+              cmd_block.statements.add( cmd_for_each )
+            else
+              throw t.error( "Literal range expected." )
+            endIf
+          else
+            throw t.error( "Syntax error in forEach - keyword 'in' expected." )
+          endIf
         endIf
       else
-        throw t.error( "Syntax error in forEach - keyword 'in' expected." )
+        throw expr.t.error( "Syntax error in forEach - control variable expected." )
       endIf
 
-      if (has_parens) must_consume( TokenType.symbol_close_paren )
       return cmd_block
 
     method peek->Token

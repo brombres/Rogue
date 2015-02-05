@@ -183,7 +183,7 @@ class CmdLocalDeclaration : CmdStatement
       scope.pop_local
 
     method print_cpp( writer:CPPWriter )
-      writer.print( local_info.type ).print(" ").print( local_info.name ).print(" = ")
+      writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
       if (local_info.initial_value?)
         local_info.initial_value.print_cpp( writer )
       else
@@ -336,9 +336,11 @@ class CmdIf : CmdControlStructure
       writer.indent -= 2
       writer.println( "}" )
 
-      forEach (else_if in else_ifs)
-        else_if.print_cpp( writer )
-      endForEach
+      if (else_ifs?)
+        forEach (else_if in else_ifs)
+          else_if.print_cpp( writer )
+        endForEach
+      endIf
 
       if (else_statements?)
         writer.println( "else" )
@@ -412,17 +414,16 @@ class CmdForEachInRange : CmdControlStructure
   PROPERTIES
     control_var : Local
     last_var    : Local
-    step_var    : Local
-    first       : Cmd
-    last        : Cmd
+    step_cmd    : Cmd
 
   METHODS
-    method init( t, control_var, last_var )
+    method init( t, control_var, last_var, step_cmd )
+      statements = CmdStatementList()
 
-      #{
     method print_cpp( writer:CPPWriter )
-      writer.print( "for (" ).print( contr
-      expression.print_cpp( writer )
+      writer.print( "for (; " ).print( control_var.cpp_name ).print( "<=" ).print( last_var.cpp_name ).print( "; " )
+      writer.print( control_var.cpp_name ).print( "+=" )
+      step_cmd.print_cpp( writer )
       writer.println( ")" )
       writer.println( "{" )
       writer.indent += 2
@@ -431,10 +432,9 @@ class CmdForEachInRange : CmdControlStructure
       writer.println( "}" )
 
     method resolve( scope:Scope )->Cmd
-      expression = expression.resolve( scope )
+      step_cmd = step_cmd.resolve( scope )
       statements.resolve( scope )
       return this
-      }#
 endClass
 
 
@@ -727,7 +727,7 @@ class CmdReadLocal : CmdAccessWithModify
       if (premodify_count > 0) writer.print("++")
       elseIf (premodify_count < 0) writer.print("--")
 
-      writer.print( local_info.name )
+      writer.print( local_info.cpp_name )
 
       if (postmodify_count > 0) writer.print("++")
       elseIf (postmodify_count < 0) writer.print("--")
@@ -750,7 +750,7 @@ class CmdWriteLocal : Cmd
     method init( t, local_info, new_value )
 
     method print_cpp( writer:CPPWriter )
-      writer.print( local_info.name ).print(" = ")
+      writer.print( local_info.cpp_name ).print(" = ")
       new_value.print_cpp( writer )
 
     method resolve( scope:Scope )->Cmd

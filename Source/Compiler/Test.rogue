@@ -4,10 +4,10 @@ class Alpha
 
   METHODS
     method init
-      println false or false
-      println false or true
-      println true  or false
-      println true  or true
+      println "Multiples of 3 between 1 and 10"
+      forEach (i in 1..10)
+        if (i % 3 == 0) println i
+      endForEach
 endClass
 
 class Pair<<$FirstType,$SecondType>>
