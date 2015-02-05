@@ -255,20 +255,27 @@ class CmdPrintln : CmdStatement
       return this
 endClass
 
-class CmdReturnValue : CmdStatement
+class CmdReturn : CmdStatement
   PROPERTIES
-    expression : Cmd
+    value : Cmd
 
   METHODS
-    method init( t, expression )
+    method init( t, value=null )
 
     method print_cpp( writer:CPPWriter )
-      writer.print "return "
-      expression.print_cpp( writer )
+      if (value?)
+        writer.print "return "
+        value.print_cpp( writer )
+      else
+        writer.print "return"
+      endIf
 
     method resolve( scope:Scope )->Cmd
-      expression = expression.resolve( scope )
+      if (value?) value = value.resolve( scope )
       return this
+
+    method type->Type
+      return value.type
 endClass
 
 
@@ -599,7 +606,9 @@ class CmdAccess : CmdAccessWithModify
     method init( t, context, name )
 
     method resolve( scope:Scope )->Cmd
-      if (args is null)
+      if (args?)
+        args.resolve( scope )
+      else
         local v = scope.find_local( name )
         if (v?)
           if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
@@ -614,7 +623,13 @@ class CmdAccess : CmdAccessWithModify
           return CmdCreateObject( t, new_type, args).resolve(scope)
         endIf
 
-        context = CmdReadThis( t, scope.this_type )
+        local p = scope.this_type.find_property( name )
+        if (p?)
+          context = CmdReadThis( t, scope.this_type )
+          return CmdReadProperty( t, context, p ).premodify(premodify_count).postmodify(postmodify_count)
+        endIf
+
+        return scope.resolve_call( scope.this_type, this, true )
 
       else
         context = context.resolve( scope )
@@ -626,7 +641,7 @@ class CmdAccess : CmdAccessWithModify
         return CmdReadProperty( t, context, p ).premodify(premodify_count).postmodify(postmodify_count)
       endIf
 
-      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+      return scope.resolve_call( context_type, this, true )
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
       if (args is null)
@@ -813,6 +828,38 @@ class CmdWriteProperty : Cmd
       return property_info.type
 endClass
 
+#------------------------------------------------------------------------------
+# Method Calls
+#------------------------------------------------------------------------------
+class CmdCall : Cmd
+  PROPERTIES
+    context     : Cmd
+    method_info : Method
+    args        : CmdArgs
+
+  METHODS
+    method init( t, context, method_info, args )
+endClass
+
+class CmdStaticCall : CmdCall
+  METHODS
+    method print_cpp( writer:CPPWriter )
+      writer.print( method_info.cpp_name )
+      writer.print( "( THIS" )
+      forEach (arg in args)
+        writer.print( ", " )
+        arg.print_cpp( writer )
+      endForEach
+      writer.print( " )" )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve(scope).require_value
+      args.resolve( scope )
+      return this
+
+    method type->Type
+      return method_info.return_type
+endClass
 
 #------------------------------------------------------------------------------
 # Miscellaneous Expressions

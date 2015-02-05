@@ -21,6 +21,17 @@ class Type
   METHODS
     method init( t, name )
 
+    method add_method( m_t:Token, m_name:String )->Method
+      local m = Method( m_t, this, m_name )
+      method_list.add( m )
+      local list = method_lookup_by_name[ m_name ]
+      if (not list)
+        list = Method[]
+        method_lookup_by_name[ m_name ] = list
+      endIf
+      list.add( m )
+      return m
+
     method add_property( p_t:Token, p_name:String )->Property
       local p = Property( p_t, this, p_name )
       property_list.add( p )
@@ -157,7 +168,9 @@ class Type
     method print_method_definitions( writer:CPPWriter )
       if (is_native) return
 
-      forEach (m in method_list) m.print_definition( writer )
+      forEach (m in method_list)
+        m.print_definition( writer )
+      endForEach
 
     method print_type_configuration( writer:CPPWriter )
       if (is_native) return

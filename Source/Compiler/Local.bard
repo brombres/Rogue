@@ -5,6 +5,7 @@ class Local
     type          : Type
     index         : Integer
     initial_value : Cmd
+      # Also serves as default_value for parameters
     _cpp_name     : String
 
   METHODS

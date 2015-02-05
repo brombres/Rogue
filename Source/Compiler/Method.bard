@@ -11,7 +11,9 @@ class Method
 
     return_type  : Type
 
-    locals = Local[] : Local[]
+    parameters = Local[] : Local[]
+    locals     = Local[] : Local[]
+
     statements = CmdStatementList()
 
     resolved  : Logical
@@ -19,11 +21,19 @@ class Method
   METHODS
     method init( t, type_context, name )
 
+    method accepts_arg_count( n:Integer )->Logical
+      return n == parameters.count
+
     method add_local( v_t:Token, v_name:String )->Local
       local v = Local( v_t, v_name )
       v.index = locals.count
       locals.add( v )
       return v
+
+    method add_parameter( p_t:Token, p_name:String )->Local
+      local p = add_local( p_t, p_name )
+      parameters.add( p )
+      return p
 
     method assign_cpp_name
       local buffer = StringBuilder()
@@ -61,6 +71,9 @@ class Method
       writer.print( "( " )
       writer.print( type_context )
       writer.print( " THIS" )
+      forEach (param in parameters)
+        writer.print( ", " ).print( param.type ).print( " " ).print( param.cpp_name )
+      endForEach
       writer.print( " )" )
 
     method print_definition( writer:CPPWriter )
@@ -78,13 +91,29 @@ class Method
       if (resolved) return
       resolved = true
 
+      forEach (p in parameters)
+        local property = type_context.find_property( p.name )
+
+        if (property?)
+          throw p.t.error( //A property named "$" already exists.// (p.name) )
+        endIf
+
+        if (not p.type) throw p.t.error( //No type declared for parameter "$".// (p.name) )
+        p.type.resolve
+
+      endForEach
+
+      if (return_type?) return_type.resolve
+
       local scope = Scope( type_context, this )
+      forEach (p in parameters) scope.push_local( p )
+
       statements.resolve( scope )
 
       if (is_initializer)
         local return_t = t
         if (statements.count?) return_t = statements.last.t
-        statements.add( CmdReturnValue(return_t,CmdReadThis(return_t,type_context)).resolve(scope) )
+        statements.add( CmdReturn(return_t,CmdReadThis(return_t,type_context)).resolve(scope) )
       endIf
 endClass
 

@@ -209,8 +209,41 @@ class Parser
 
       local t = read
       local name = read_identifier
-      this_method = Method( t, this_type, name )
-      this_type.method_list.add( this_method )
+      this_method = this_type.add_method( t, name )
+
+      # Parse parameters
+      if (consume(TokenType.symbol_open_paren))
+        if (not consume(TokenType.symbol_close_paren))
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+
+            # identifier
+            local t = peek
+            local param = this_method.add_parameter( t, read_identifier )
+
+            if (consume(TokenType.symbol_equals))
+              # = default_value
+              param.initial_value = parse_expression
+            endIf
+
+            if (consume(TokenType.symbol_colon))
+              # : Type
+              param.type = parse_type
+            endIf
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+        endIf
+      endIf
+
+      # Optional ->ReturnType
+      if (consume(TokenType.symbol_arrow))
+        if (consume("this"))
+          this_method.return_type = this_type
+        else
+          this_method.return_type = parse_type
+        endIf
+      endIf
 
       parse_multi_line_statements( this_method.statements )
       return true
@@ -307,16 +340,15 @@ class Parser
         parse_local_declaration( statements )
         return
 
-        #{
       elseIf (consume(TokenType.keyword_return))
-
         if (next_is_end_command)
-          statements.add( CmdReturnNil(t) )
+          statements.add( CmdReturn(t) )
         else
-          statements.add( CmdReturnValue(t,parse_expression) )
+          statements.add( CmdReturn(t,parse_expression) )
         endIf
         return
 
+        #{
       elseIf (consume(TokenType.keyword_yield))
 
         if (next_is_end_command)
@@ -1382,7 +1414,7 @@ class Parser
 
         consume( TokenType.keyword_return )
         local expr = parse_expression
-        fn_cmd.body.add( CmdReturnValue(expr.t,expr) )
+        fn_cmd.body.add( CmdReturn(expr.t,expr) )
       endIf
 
       return fn_cmd

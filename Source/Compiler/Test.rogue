@@ -1,13 +1,15 @@
 class Alpha
   PROPERTIES
-    n : Pair<<Integer,Real>>
 
   METHODS
     method init
       println "Multiples of 3 between 1 and 10"
       forEach (i in 1..10)
-        if (i % 3 == 0) println i
+        if (divisible_by_3(i)) println i
       endForEach
+
+    method divisible_by_3( n:Integer )->Logical
+      return (n % 3 == 0)
 endClass
 
 class Pair<<$FirstType,$SecondType>>

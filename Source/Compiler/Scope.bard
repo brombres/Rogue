@@ -22,4 +22,97 @@ class Scope
       if (locals_by_name.count == 0) throw RogueError( "[INTERNAL] Scope::pop_local() called when local list is empty." )
       locals_by_name.remove( local_list.remove_last.name )
 
+    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Cmd
+      local m = find_method( type_context, access, error_on_fail )
+      if (not m) return null
+
+      local context = access.context
+      if (not context) context = CmdReadThis( access.t, type_context )
+
+      local args = access.args
+      if (not args) args = CmdArgs()
+
+      local cmd = CmdStaticCall( access.t, context, m, args ).resolve( this )
+      return cmd
+
+    method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method
+      local candidates = CandidateMethods( access, error_on_fail )
+
+      local list = type_context.method_lookup_by_name( access.name )
+      if (list?)
+        forEach (m in list)
+          candidates.available.add( m )
+        endForEach
+      endIf
+      if (not candidates.update_available) return null
+
+      local arg_count = 0
+      if (access.args?) arg_count = access.args.count
+      forEach (m in candidates.available)
+        if (m.accepts_arg_count(arg_count)) candidates.compatible.add( m )
+      endForEach
+      if (not candidates.update_matches) return null
+
+      if (candidates.has_match) return candidates.match
+
+      candidates.update_matches
+      return null
+endClass
+
+class CandidateMethods
+  PROPERTIES
+    access              : CmdAccess
+    available=Method[]  : Method[]
+    compatible=Method[] : Method[]
+    error_on_fail       : Logical
+
+  METHODS
+    method init( access, error_on_fail )
+
+    method has_match->Logical
+      return (available.count == 1)
+
+    method match->Method
+      if (available.count != 1) return null
+      return available[0]
+
+    method update_available->Logical
+      return update( false )
+
+    method update_matches->Logical
+      return update( true )
+
+    method update( require_compatible:Logical )->Logical
+      if (compatible.count == 0)
+
+        if (available.count == 0)
+          if (not error_on_fail) return false
+          throw access.t.error( //No such method or variable "$" exists in the current scope.// (access.name) )
+
+        elseIf (require_compatible)
+          if (not error_on_fail) return false
+
+          local buffer = StringBuilder()
+          if (available.count > 1)
+            buffer.print( //Multiple available for ambiguous call to "$":\n// (access.name) )
+          else
+            buffer.print( //Call to "$" uses arguments that are incompatible with the existing definition:\n// (access.name) )
+          endIf
+          forEach (m in available)
+            buffer.print("  ").println(m.signature)
+          endForEach
+          throw access.t.error( buffer->String )
+
+        endIf
+
+        # We didn't find any compatible methods; just keep our available methods
+        # for the next refinement.
+        return true
+      endIf
+
+      available.clear
+      available.add( compatible )
+      compatible.clear
+
+      return true
 endClass
