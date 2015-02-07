@@ -31,10 +31,16 @@ class Cmd
       return false
 
     method postmodify( count:Integer )->Cmd
-      throw t.error( "Illegal target; ++ and -- can only be applied to specific variables." )
+      throw t.error( "Illegal target; ++ and -- can only be applied to variables." )
 
     method premodify( count:Integer )->Cmd
-      throw t.error( "Illegal target; ++ and -- can only be applied to specific variables." )
+      throw t.error( "Illegal target; ++ and -- can only be applied to variables." )
+
+    method set_modifiers( access:CmdAccessWithModify )->Cmd
+      if (access.modified)
+        throw t.error( "Illegal target; ++ and -- can only be applied to variables." )
+      endIf
+      return this
 
     method print_cpp( writer:CPPWriter )
       throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
@@ -429,7 +435,6 @@ class CmdForEachInRange : CmdControlStructure
 
     method print_cpp( writer:CPPWriter )
       writer.print( "for (; " ).print( control_var.cpp_name ).print( "<=" ).print( last_var.cpp_name ).print( "; " )
-      writer.print( control_var.cpp_name ).print( "+=" )
       step_cmd.print_cpp( writer )
       writer.println( ")" )
       writer.println( "{" )
@@ -577,19 +582,29 @@ class CmdAccessWithModify : Cmd
     postmodify_count : Integer
     # Sum of post-increment and post-decrement
 
+    modified : Logical
+
   METHODS
     method postmodify( count:Integer )->Cmd
-      if (count? and (premodify_count? or postmodify_count?))
-        throw t.error( "Only one ++ or -- may be used at a time." )
-      endIf
+      if (modified) throw t.error( "Only one ++ or -- may be used at a time." )
       postmodify_count += count
+      modified = true
       return this
 
     method premodify( count:Integer )->Cmd
-      if (count? and (premodify_count? or postmodify_count?))
+      if (modified)
         throw t.error( "Only one ++ or -- may be used at a time." )
       endIf
       premodify_count += count
+      modified = true
+      return this
+
+    method set_modifiers( access:CmdAccessWithModify )->Cmd
+      if (access.modified)
+        modified = true
+        premodify_count = access.premodify_count
+        postmodify_count = access.postmodify_count
+      endIf
       return this
 endClass
 
@@ -612,7 +627,7 @@ class CmdAccess : CmdAccessWithModify
         local v = scope.find_local( name )
         if (v?)
           if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-          return CmdReadLocal(t,v).premodify(premodify_count).postmodify(postmodify_count).resolve(scope)
+          return CmdReadLocal(t,v).set_modifiers(this).resolve(scope)
         endIf
       endIf
 
@@ -626,7 +641,7 @@ class CmdAccess : CmdAccessWithModify
         local p = scope.this_type.find_property( name )
         if (p?)
           context = CmdReadThis( t, scope.this_type )
-          return CmdReadProperty( t, context, p ).premodify(premodify_count).postmodify(postmodify_count)
+          return CmdReadProperty( t, context, p ).set_modifiers(this)
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -638,7 +653,7 @@ class CmdAccess : CmdAccessWithModify
       local context_type = context.require_type
       local p = context_type.find_property( name )
       if (p?)
-        return CmdReadProperty( t, context, p ).premodify(premodify_count).postmodify(postmodify_count)
+        return CmdReadProperty( t, context, p ).set_modifiers(this)
       endIf
 
       return scope.resolve_call( context_type, this, true )

@@ -735,7 +735,7 @@ class Parser
               cmd_block.statements.add( CmdLocalDeclaration(range.last.t,last_var) )
 
               local step_cmd : Cmd
-              step_cmd = CmdLiteralInteger( range.t, 1 )
+              step_cmd = CmdReadLocal( range.t, control_var ).premodify( 1 )
 
               local cmd_for_each = CmdForEachInRange( t, control_var, last_var, step_cmd )
               if (has_parens) must_consume( TokenType.symbol_close_paren )

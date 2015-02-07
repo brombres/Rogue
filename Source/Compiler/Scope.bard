@@ -32,7 +32,7 @@ class Scope
       local args = access.args
       if (not args) args = CmdArgs()
 
-      local cmd = CmdStaticCall( access.t, context, m, args ).resolve( this )
+      local cmd = CmdStaticCall( access.t, context, m, args ).set_modifiers(access).resolve( this )
       return cmd
 
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method

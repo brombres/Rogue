@@ -1,15 +1,20 @@
-class Alpha
+class Test
   PROPERTIES
 
   METHODS
     method init
-      println "Multiples of 3 between 1 and 10"
-      forEach (i in 1..10)
-        if (divisible_by_3(i)) println i
+      println "Prime numbers between 1 and 100:"
+      forEach (n in 1..100)
+        if (is_prime(n)) println n
       endForEach
 
-    method divisible_by_3( n:Integer )->Logical
-      return (n % 3 == 0)
+    method is_prime( n:Integer )->Logical
+      if (n <= 1) return false
+      if (n <= 3) return true
+      forEach (denom in 2..n-1)
+        if (n % denom == 0) return false
+      endForEach
+      return true
 endClass
 
 class Pair<<$FirstType,$SecondType>>
