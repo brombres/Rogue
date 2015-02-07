@@ -32,13 +32,22 @@ class Scope
       local args = access.args
       if (not args) args = CmdArgs()
 
-      local cmd = CmdStaticCall( access.t, context, m, args ).set_modifiers(access).resolve( this )
-      return cmd
+      local cmd : Cmd
+      if (m.is_native)
+        if (m.native_code?)
+          cmd = CmdNativeCode( access.t, context, m, args )
+        else
+          throw access.t.error( "[INTERNAL] TODO: support native methods." )
+        endIf
+      else
+        cmd = CmdStaticCall( access.t, context, m, args )
+      endIf
+      return cmd.set_modifiers(access).resolve( this )
 
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method
       local candidates = CandidateMethods( access, error_on_fail )
 
-      local list = type_context.method_lookup_by_name( access.name )
+      local list = type_context.method_lookup_by_name[ access.name ]
       if (list?)
         forEach (m in list)
           candidates.available.add( m )
@@ -94,7 +103,7 @@ class CandidateMethods
 
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( //Multiple available for ambiguous call to "$":\n// (access.name) )
+            buffer.print( //Multiple methods match ambiguous call to "$":\n// (access.name) )
           else
             buffer.print( //Call to "$" uses arguments that are incompatible with the existing definition:\n// (access.name) )
           endIf

@@ -134,6 +134,7 @@ class Program [requisite singleton]
 
       writer.println //#pragma  once//
       writer.println //#include "Rogue.h"//
+      writer.println //#include <cmath>//
       writer.println
 
       # XType forward declarations

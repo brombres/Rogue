@@ -97,6 +97,7 @@ class Tokenizer
       TokenType.keyword_forEach      = define( TokenType("forEach") )
       TokenType.keyword_if           = define( TokenType("if") )
       TokenType.keyword_local        = define( TokenType("local") )
+      TokenType.keyword_native       = define( TokenType("native") )
       TokenType.keyword_println      = define( TokenType("println") )
       TokenType.keyword_return       = define( TokenType("return") )
       TokenType.keyword_while        = define( TokenType("while") )

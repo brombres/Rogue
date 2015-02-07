@@ -9,10 +9,10 @@ all: go list
 
 go: compile run
 
-compile: ../../Programs/Roguec.bc
+compile: ../../Programs/RogueC.bc
 
-../../Programs/Roguec.bc: $(ROGUE_SOURCE) $(BARDVM)
-	$(BARDVM) $(BCC) $(BCC_ARGS) Roguec.bard
+../../Programs/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
+	$(BARDVM) $(BCC) $(BCC_ARGS) RogueC.bard
 
 $(BARDVM): $(BCC)
 	cd ../../Programs/Bard && make
@@ -21,7 +21,7 @@ vm:
 	cd ../../Programs/Bard && make
 
 run:
-	$(BARDVM) Roguec.bc
+	$(BARDVM) RogueC.bc
 
 list:
 	cat CPP/RogueProgram.h

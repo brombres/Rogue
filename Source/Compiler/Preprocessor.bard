@@ -51,7 +51,7 @@ class Preprocessor
             if (filepath_t.type isNot TokenType.literal_string)
               throw reader.error( "Filepath expected." )
             endIf
-            Roguec.include( t, filepath_t->String )
+            RogueC.include( t, filepath_t->String )
             nextIteration
 
           elseIf (t.type is TokenType.directive_elseIf)
@@ -143,6 +143,10 @@ class Preprocessor
           local result = parse_logical_expression
           must_consume(TokenType.symbol_close_paren)
           return result
+        endIf
+
+        if (t.type is TokenType.literal_string)
+          return RogueC.compile_targets[reader.read->String]?
         endIf
 
         #{

@@ -854,7 +854,16 @@ class CmdCall : Cmd
 
   METHODS
     method init( t, context, method_info, args )
+
+    method resolve( scope:Scope )->Cmd
+      if (context?) context = context.resolve(scope).require_value
+      args.resolve( scope )
+      return this
+
+    method type->Type
+      return method_info.return_type
 endClass
+
 
 class CmdStaticCall : CmdCall
   METHODS
@@ -866,11 +875,40 @@ class CmdStaticCall : CmdCall
         arg.print_cpp( writer )
       endForEach
       writer.print( " )" )
+endClass
 
-    method resolve( scope:Scope )->Cmd
-      context = context.resolve(scope).require_value
-      args.resolve( scope )
-      return this
+
+class CmdNativeCode : CmdCall
+  METHODS
+    method print_cpp( writer:CPPWriter )
+      local st = method_info.native_code
+
+      local dollar = st.locate('$')
+      while (dollar != -1)
+        writer.print( st.substring(0,dollar-1) )
+        st = st.substring( dollar+1 )
+        
+        local best_match : Local
+        forEach (p in method_info.parameters)
+          if (st.begins_with(p.name))
+            if (best_match is null or p.name.count > best_match.name.count) best_match = p
+          endIf
+        endForEach
+
+        if (best_match?)
+          args[ best_match.index ].print_cpp( writer )
+          st = st.substring( best_match.name.count )
+        else
+          if (st.begins_with("this"))
+            context.print_cpp( writer )
+            st = st.substring( 4 )
+          endIf
+        endIf
+
+        dollar = st.locate('$')
+      endWhile
+
+      writer.print( st )
 
     method type->Type
       return method_info.return_type

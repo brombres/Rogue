@@ -1,10 +1,10 @@
 @SET BARDVM=..\..\Programs\Bard\Programs\Windows\bard.exe
 @SET BCC=..\..\Programs\Bard\Programs\BCC.bc
-@SET ROGUEC=..\..\Programs\Roguec.bc
+@SET ROGUEC=..\..\Programs\RogueC.bc
 @SET BCC_ARGS=--source-folders=..\..\Programs\Bard\Libraries\Bard --include=Standard.bard
-%BARDVM% %BCC% %BCC_ARGS% Roguec.bard
+%BARDVM% %BCC% %BCC_ARGS% RogueC.bard
 @if errorlevel 1 goto done
-%BARDVM% Roguec.bc
+%BARDVM% RogueC.bc
 type Test.cpp
 :done
 
@@ -17,16 +17,16 @@ type Test.cpp
 @REM 
 @REM go: compile run
 @REM 
-@REM compile: ../../Programs/Roguec.bc
+@REM compile: ../../Programs/RogueC.bc
 @REM 
-@REM ../../Programs/Roguec.bc: $(ROGUE_SOURCE) $(BARDVM)
-@REM 	$(BARDVM) $(BCC) $(BCC_ARGS) Roguec.bard
+@REM ../../Programs/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
+@REM 	$(BARDVM) $(BCC) $(BCC_ARGS) RogueC.bard
 @REM 
 @REM $(BARDVM): $(BCC)
 @REM 	cd ../../Programs/Bard && make
 @REM 
 @REM run:
-@REM 	$(BARDVM) Roguec.bc
+@REM 	$(BARDVM) RogueC.bc
 @REM 	cat Test.cpp
 @REM 
 @REM cpp: compile run

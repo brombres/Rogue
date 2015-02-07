@@ -245,7 +245,25 @@ class Parser
         endIf
       endIf
 
-      parse_multi_line_statements( this_method.statements )
+      consume_eols
+      if (consume(TokenType.keyword_native))
+        this_method.attributes |= Attributes.flag_native
+        local buffer = StringBuilder()
+        local found_native_code = false
+        while (reader.has_another)
+          if (consume(TokenType.keyword_native) or consume_eols)
+          elseIf (next_is(TokenType.literal_string))
+            found_native_code = true
+            if (buffer.count?) buffer.println
+            buffer.print( read->String )
+          else
+            escapeWhile
+          endIf
+        endWhile
+        if (found_native_code) this_method.native_code = buffer->String
+      else
+        parse_multi_line_statements( this_method.statements )
+      endIf
       return true
 
     method parse_single_or_multi_line_statements( statements:CmdStatementList, end_type:TokenType )

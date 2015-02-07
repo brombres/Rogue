@@ -6,15 +6,17 @@ $[include "Tokenizer.bard"]
 $[include "TokenType.bard"]
 $[include "Type.bard"]
 
-class Roguec [singleton]
+class RogueC [singleton]
   PROPERTIES
     included_files = String[]
+    compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
 
   METHODS
     method init
       try
         println "ROGUEC"
 
+        compile_targets["C++"] = true
         Program.configure
         include( "Test.rogue" )
         Program.resolve

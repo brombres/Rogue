@@ -11,10 +11,13 @@ class Test
     method is_prime( n:Integer )->Logical
       if (n <= 1) return false
       if (n <= 3) return true
-      forEach (denom in 2..n-1)
+      forEach (denom in 2..sqrt(n))
         if (n % denom == 0) return false
       endForEach
       return true
+
+    method sqrt( n:Integer )->Integer
+      $if ("C++") native '((int)sqrt((double)$n))'
 endClass
 
 class Pair<<$FirstType,$SecondType>>
