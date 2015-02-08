@@ -738,7 +738,8 @@ class Parser
 
               local step_cmd : Cmd
               if (consume(TokenType.keyword_step))
-                throw range.t.error( "TODO: step" )
+                local step_value = parse_expression
+                step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
               else
                 step_cmd = CmdReadLocal( range.t, control_var ).premodify( 1 )
               endIf

@@ -3,26 +3,16 @@ class Test
 
   METHODS
     method init
-      #{
       println "Prime numbers between 1 and 100:"
       forEach (n in 1..100)
         if (is_prime(n)) println n
       endForEach
-      }#
-
-      local x = 45
-      x ~= 10
-      println x
-      x |= 8
-      println x
-      x &= 15
-      println x
 
     method is_prime( n:Integer )->Logical
       if (n <= 1) return false
       if (n <= 3) return true
       if (n % 2 == 0) return false
-      forEach (denom in 3..sqrt(n))
+      forEach (denom in 3..sqrt(n) step 2)
         if (n % denom == 0) return false
       endForEach
       return true
