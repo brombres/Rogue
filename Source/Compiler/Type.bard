@@ -127,11 +127,31 @@ class Type
             endIf
           endIf
         endForEach
+        
+        if (not base_class and not is_functional and this isNot Program.type_Object)
+          Program.type_Object.resolve
+          base_class = Program.type_Object; base_types.insert( base_class )
+        endIf
       endIf
+
+      # Flatten list of base types, removing duplicates.
+      local flat_list = Type[]
+      if (base_class?) base_class.collect_base_types( flat_list )
+      forEach (base_type in base_types)
+        base_type.collect_base_types( flat_list )
+      endForEach
+      base_types = flat_list
 
       forEach (m in method_list) m.organize
 
       return this
+
+    method collect_base_types( list:Type[] )
+      if (list.contains(this)) return
+      list.add( this )
+      forEach (base_type in base_types)
+        base_type.collect_base_types( list )
+      endForEach
 
     method resolve->Type
       if (resolved) return this
@@ -177,17 +197,36 @@ class Type
 
       writer.print( "struct " ).print( cpp_name ).println( "Type : RogueType" )
       writer.println( "{" )
+      writer.indent += 2
+
+      # configure()
+      writer.println( "void configure()" )
+      writer.println( "{" )
+      writer.indent += 2;
+
+      if (base_types.count?)
+        writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
+        writer.println( "base_types = new RogueType*[ base_type_count ];" )
+        forEach (i of base_types)
+          writer.print( "base_types[" ).print( i ).print( "] = rogue_program.type_" )
+          writer.print( base_types[i].cpp_name ).println( ";" )
+        endForEach
+      endIf
+
+      writer.indent -= 2;
+      writer.println( "}" )
+      writer.println()
 
       # create_object()
-      writer.print(   "  " ).print( cpp_name ).println( "* create_object()" )
-      writer.println( "  {" )
-      writer.print(   "    return (" ).print( cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
+      writer.print( cpp_name ).println( "* create_object()" )
+      writer.println( "{" )
+      writer.print(   "  return (" ).print( cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
       writer.print( cpp_name ).println( ") );" )
-      writer.println( "  }" )
+      writer.println( "}" )
       writer.println
 
       # name()
-      writer.print( "  const char* name() { return \"" ).print( name ).println( "\"; }" )
+      writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )
       writer.println
 
       # trace()
@@ -197,18 +236,19 @@ class Type
       endForEach
 
       if (has_references)
-        writer.println(   "  void trace( RogueObject* THIS )" )
-        writer.println( "  {" )
+        writer.println(   "void trace( RogueObject* THIS )" )
+        writer.println( "{" )
         forEach (p in property_list)
           if (p.type.is_reference)
-            writer.print( "    ROGUE_TRACE( ((")
+            writer.print( "  ROGUE_TRACE( ((")
             writer.print(this)  # cast RogueObject* ref to actual type
             writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
           endIf
         endForEach
-        writer.println( "  }" )
+        writer.println( "}" )
       endIf
 
+      writer.indent -= 2
       writer.println( "};" )
       writer.println
 

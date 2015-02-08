@@ -5,6 +5,7 @@ class Test
     method init
       local a = Alpha()
       local b = Beta()
+      println "Working on inheritance!"
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'
@@ -30,6 +31,9 @@ endPrimitive
 
 primitive Real
 endPrimitive
+
+class Object
+endClass
 
 class String
 endClass

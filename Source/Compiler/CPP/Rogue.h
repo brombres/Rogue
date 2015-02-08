@@ -54,8 +54,17 @@ struct RogueObject;
 
 struct RogueType
 {
-  virtual ~RogueType() {}
+  int         base_type_count;
+  RogueType** base_types;
+
+  RogueType();
+  virtual ~RogueType();
+
+  virtual void         configure() = 0;
   virtual RogueObject* create_object() = 0;
+
+  RogueLogical instance_of( RogueType* ancestor_type );
+
   virtual const char*  name() = 0;
   virtual void         trace( RogueObject* obj ) {}
 };
@@ -64,6 +73,13 @@ struct RogueType
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
+struct RogueObjectType : RogueType
+{
+  void configure();
+  RogueObject* create_object();
+  const char* name();
+};
+
 struct RogueObject
 {
   RogueObject* next_object;
@@ -92,6 +108,8 @@ struct RogueObject
 //-----------------------------------------------------------------------------
 struct RogueStringType : RogueType
 {
+  void configure() {}
+
   RogueObject* create_object()
   {
     return 0;  // not used
@@ -121,7 +139,8 @@ struct RogueProgramCore
   RogueString** literal_strings;
   int           literal_string_count;
 
-  RogueStringType* type_String;
+  RogueObjectType* type_RogueObject;
+  RogueStringType* type_RogueString;
 
   RogueReal pi;
 

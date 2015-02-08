@@ -21,17 +21,46 @@
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-//RogueType::~RogueType()
-//{
-//}
+RogueType::RogueType() : base_type_count(0), base_types(0)
+{
+}
+
+RogueType::~RogueType()
+{
+  if (base_types)
+  {
+    delete base_types;
+    base_types = 0;
+    base_type_count = 0;
+  }
+}
+
+RogueLogical RogueType::instance_of( RogueType* ancestor_type )
+{
+  if (this == ancestor_type) return true;
+
+  int count = base_type_count;
+  RogueType** base_type_ptr = base_types - 1;
+  while (--count >= 0)
+  {
+    if (this == *(++base_type_ptr)) return true;
+  }
+
+  return false;
+}
+
 
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
-//RogueObject* RogueObject::trace( RogueObject* obj, RogueObject* list )
-//{
-//
-//}
+void RogueObjectType::configure() {}
+
+RogueObject* RogueObjectType::create_object()
+{
+  return (RogueObject*) rogue_program.allocate_object( this, sizeof(RogueObject) );
+}
+
+const char* RogueObjectType::name() { return "Object"; }
 
 //-----------------------------------------------------------------------------
 //  RogueString
@@ -43,7 +72,7 @@ RogueString* RogueString::create( const char* c_string, int count )
   int total_size = sizeof(RogueString) + ((count - 1) * sizeof(RogueCharacter));
   // RogueString already includes one character in its size.
 
-  RogueString* st = (RogueString*) rogue_program.allocate_object( rogue_program.type_String, total_size );
+  RogueString* st = (RogueString*) rogue_program.allocate_object( rogue_program.type_RogueString, total_size );
   st->count = count;
 
   // Copy 8-bit chars to 16-bit data while computing hash code.
@@ -86,7 +115,8 @@ void RogueString::println( RogueString* st )
 //-----------------------------------------------------------------------------
 RogueProgramCore::RogueProgramCore() : objects(NULL)
 {
-  type_String = new RogueStringType();
+  type_RogueObject = new RogueObjectType();
+  type_RogueString = new RogueStringType();
   pi = acos(-1);
 }
 
@@ -101,7 +131,8 @@ RogueProgramCore::~RogueProgramCore()
     objects = next_object;
   }
 
-  delete type_String;
+  delete type_RogueObject;
+  delete type_RogueString;
 }
 
 RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
