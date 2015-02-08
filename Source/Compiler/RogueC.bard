@@ -11,6 +11,8 @@ class RogueC [singleton]
     included_files = String[]
     compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
 
+    target = "C++"
+
   METHODS
     method init
       try

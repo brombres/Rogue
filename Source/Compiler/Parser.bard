@@ -322,7 +322,7 @@ class Parser
           }#
 
         elseIf (next_is(TokenType.keyword_forEach))
-          statements.add( parse_forEach )
+          statements.add( parse_for_each )
           return
 
           #{
@@ -552,34 +552,18 @@ class Parser
         statements.add( CmdDecrement(t, expression) )
         return
       endIf
+      }#
 
       local t_type = t.type
-      if (t_type >= TokenType.first_shorthand_operator and t_type <= TokenType.last_shorthand_operator)
+      if (t_type.is_op_with_assign)
         read
-        local lhs = expression.clone
-        local rhs = parse_expression
-        local new_value : Cmd
-
-        which (t_type)
-          case TokenType.symbol_add_assign:          new_value = CmdAdd( t, lhs, rhs )
-          case TokenType.symbol_subtract_assign:     new_value = CmdSubtract( t, lhs, rhs )
-          case TokenType.symbol_multiply_assign:     new_value = CmdMultiply( t, lhs, rhs )
-          case TokenType.symbol_divide_assign:       new_value = CmdDivide( t, lhs, rhs )
-          case TokenType.symbol_mod_assign:          new_value = CmdMod( t, lhs, rhs )
-          case TokenType.symbol_power_assign:        new_value = CmdPower( t, lhs, rhs )
-          case TokenType.symbol_bitwise_and_assign:  new_value = CmdBitwiseAnd( t, lhs, rhs )
-          case TokenType.symbol_bitwise_or_assign:   new_value = CmdBitwiseOr( t, lhs, rhs )
-          case TokenType.symbol_bitwise_xor_assign:  new_value = CmdBitwiseXor( t, lhs, rhs )
-          case TokenType.symbol_access_assign
-            local access = rhs as CmdAccess
-            if (access is null or access.operand?) throw t.error( "Syntax error." )
-            access.operand = lhs
-            new_value = access
-        endWhich
-        statements.add( CmdAssign(t, expression, new_value) )
+        local target = expression
+        local new_value = parse_expression
+        statements.add( CmdOpWithAssign( t, target, t_type, new_value) )
         return
       endIf
 
+      #{
       # No-parens args can follow an initial expression
       if (not next_is_end_command)
         local access = expression as CmdAccess
@@ -728,7 +712,7 @@ class Parser
 
       return cmd_while
 
-    method parse_forEach->Cmd
+    method parse_for_each->Cmd
       local t = read  # 'forEach'
       local cmd_block = CmdBlock(t)
 
@@ -740,7 +724,7 @@ class Parser
         if (access.context? or access.args?)
           throw access.t.error( "Single identifier expected for control variable name." )
         else
-          if (consume("in"))
+          if (consume(TokenType.keyword_in))
             local collection = parse_expression
             local range = collection as CmdRange
             if (range?)
@@ -753,7 +737,11 @@ class Parser
               cmd_block.statements.add( CmdLocalDeclaration(range.last.t,last_var) )
 
               local step_cmd : Cmd
-              step_cmd = CmdReadLocal( range.t, control_var ).premodify( 1 )
+              if (consume(TokenType.keyword_step))
+                throw range.t.error( "TODO: step" )
+              else
+                step_cmd = CmdReadLocal( range.t, control_var ).premodify( 1 )
+              endIf
 
               local cmd_for_each = CmdForEachInRange( t, control_var, last_var, step_cmd )
               if (has_parens) must_consume( TokenType.symbol_close_paren )

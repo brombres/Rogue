@@ -7,6 +7,21 @@ class Cmd
       if (type is target_type) return this
       throw t.error( "TODO: Cmd::cast_to()." )
 
+    method clone->Cmd
+      throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
+
+    method clone( other:Cmd )->Cmd
+      if (other?) return other.clone
+      return null
+
+    method clone( args:CmdArgs )->CmdArgs
+      if (args?) return args.clone
+      return null
+
+    method clone( statements:CmdStatementList )->CmdStatementList
+      if (statements?) return statements.clone
+      return null
+
     method combine_literal_operands( common_type:Type )->Cmd
       return this
 
@@ -69,8 +84,10 @@ class Cmd
       return this
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      throw t.error( "[INTERNAL] $::resolve_assignment() is not defined." (type_name) )
-      return this
+      throw t.error( "Invalid assignment." )
+
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+      throw t.error( "Invalid assignment." )
 
     method type->Type
       throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
@@ -102,12 +119,14 @@ class CmdStatementList : Cmd[]
         if (cmd.has_side_effects) return true
       endForEach
       return false
+      }#
 
     method clone->CmdStatementList
       local result = CmdStatementList( count )
       forEach (cmd in this) result.add( cmd.clone )
       return result
 
+      #{
     method dispatch( v:Visitor ) [propagated]
       v.visit( this )
 
@@ -157,6 +176,11 @@ class CmdArgs : Cmd[]
       init
       add( statement1 ).add( statement2 )
 
+    method clone->CmdArgs
+      local result = CmdArgs( count )
+      forEach (cmd in this) result.add( cmd.clone )
+      return result
+
     method print_cpp( writer:CPPWriter )
       local first = true
       forEach (arg in this)
@@ -184,6 +208,9 @@ class CmdLocalDeclaration : CmdStatement
 
   METHODS
     method init( t, local_info )
+
+    method clone->Cmd
+      return CmdLocalDeclaration( t, local_info )
 
     method exit_scope( scope:Scope )
       scope.pop_local
@@ -220,6 +247,9 @@ class CmdPrintln : CmdStatement
 
   METHODS
     method init( t, expression=null )
+
+    method clone->Cmd
+      return CmdPrintln( t, clone(expression) )
 
     method print_cpp( writer:CPPWriter )
       if (expression?)
@@ -268,6 +298,9 @@ class CmdReturn : CmdStatement
   METHODS
     method init( t, value=null )
 
+    method clone->Cmd
+      return CmdReturn( t, clone(value) )
+
     method print_cpp( writer:CPPWriter )
       if (value?)
         writer.print "return "
@@ -309,6 +342,11 @@ class CmdBlock : CmdControlStructure
     method init( t )
       statements = CmdStatementList()
 
+    method init( t, statements )
+
+    method clone->Cmd
+      return CmdBlock( t, statements.clone )
+
     method print_cpp( writer:CPPWriter )
       writer.println( "{" )
       writer.indent += 2
@@ -334,6 +372,19 @@ class CmdIf : CmdControlStructure
   METHODS
     method init( t )
       statements = CmdStatementList()
+
+    method init( t, condition, statements, else_ifs, else_statements )
+
+    method clone->Cmd
+      local cloned_else_ifs : CmdElseIf[]
+      if (else_ifs?)
+        cloned_else_ifs = CmdElseIf[]( else_ifs.count )
+        forEach (e in else_ifs)
+          cloned_else_ifs.add( e.clone )
+        endForEach
+      endIf
+
+      return CmdIf( t, condition.clone, statements.clone, cloned_else_ifs, clone(else_statements) )
 
     method add( cmd_else_if:CmdElseIf )
       if (else_ifs is null) else_ifs = CmdElseIf[]
@@ -385,6 +436,11 @@ class CmdElseIf
     method init( cmd_if )
       statements = CmdStatementList()
 
+    method init( cmd_if, condition, statements )
+
+    method clone->CmdElseIf
+      return CmdElseIf( cmd_if, condition.clone, statements.clone )
+
     method print_cpp( writer:CPPWriter )
       writer.print( "else if (" )
       condition.print_cpp( writer )
@@ -406,6 +462,14 @@ class CmdWhile : CmdControlStructure
     expression : Cmd
 
   METHODS
+    method init( t )
+      statements = CmdStatementList()
+
+    method init( t, expression, statements )
+
+    method clone->Cmd
+      return CmdWhile( t, expression.clone, statements.clone )
+
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" )
       expression.print_cpp( writer )
@@ -432,6 +496,9 @@ class CmdForEachInRange : CmdControlStructure
   METHODS
     method init( t, control_var, last_var, step_cmd )
       statements = CmdStatementList()
+
+    method clone->Cmd
+      return CmdForEachInRange( t, control_var, last_var, clone(step_cmd) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "for (; " ).print( control_var.cpp_name ).print( "<=" ).print( last_var.cpp_name ).print( "; " )
@@ -470,6 +537,9 @@ class CmdLiteralReal : CmdLiteral
   METHODS
     method init( t, value )
 
+    method clone->Cmd
+      return CmdLiteralReal( t, value )
+
     method print_cpp( writer:CPPWriter )
       writer.print( value )
 
@@ -487,6 +557,9 @@ class CmdLiteralInteger : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method clone->Cmd
+      return CmdLiteralInteger( t, value )
 
     method cast_to( target_type:Type )->Cmd
       if (target_type is Program.type_Real)
@@ -513,6 +586,9 @@ class CmdLiteralCharacter : CmdLiteral
   METHODS
     method init( t, value )
 
+    method clone->Cmd
+      return CmdLiteralCharacter( t, value )
+
     method resolve( scope:Scope )->Cmd
       return this
 
@@ -527,6 +603,9 @@ class CmdLiteralLogical : CmdLiteral
 
   METHODS
     method init( t, value )
+
+    method clone->Cmd
+      return CmdLiteralLogical( t, value )
 
     method print_cpp( writer:CPPWriter )
       if (value) writer.print "true"
@@ -546,7 +625,10 @@ class CmdLiteralString : CmdLiteral
     index : Integer
 
   METHODS
-    method init( t, value )
+    method init( t, value, index=0 )
+
+    method clone->Cmd
+      return CmdLiteralString( t, value, index )
 
     method print_cpp( writer:CPPWriter )
       if (value?)
@@ -618,7 +700,10 @@ class CmdAccess : CmdAccessWithModify
   METHODS
     method init( t, name )
 
-    method init( t, context, name )
+    method init( t, context, name, args=null )
+
+    method clone->Cmd
+      return CmdAccess( t, clone(context), name, clone(args) ).set_modifiers( this )
 
     method resolve( scope:Scope )->Cmd
       if (args?)
@@ -681,6 +766,29 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+      if (args is null)
+        local v = scope.find_local( name )
+        if (v?)
+          if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+          return CmdLocalOpWithAssign(t,v,op,new_value).resolve(scope)
+        endIf
+      endIf
+
+      if (context is null)
+        context = CmdReadThis( t, scope.this_type )
+      else
+        context = context.resolve( scope )
+      endIf
+
+      local context_type = context.require_type
+      local p = context_type.find_property( name )
+      if (p?)
+        return CmdPropertyOpWithAssign( t, context, p, op, new_value ).resolve(scope)
+      endIf
+
+      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
 endClass
 
 
@@ -694,6 +802,9 @@ class CmdCreateObject : Cmd
 
   METHODS
     method init( t, of_type, args )
+
+    method clone->Cmd
+      return CmdCreateObject( t, of_type, clone(args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( Program.program_name ).print(".type_")  # rogue_program.
@@ -720,6 +831,9 @@ class CmdAssign : Cmd
   METHODS
     method init( t, target, new_value )
 
+    method clone->Cmd
+      return CmdAssign( t, target.clone, new_value.clone )
+
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
 endClass
@@ -734,6 +848,9 @@ class CmdReadThis : Cmd
 
   METHODS
     method init( t, this_type )
+
+    method clone->Cmd
+      return CmdReadThis( t, this_type )
 
     method print_cpp( writer:CPPWriter )
       writer.print "THIS"
@@ -752,6 +869,9 @@ class CmdReadLocal : CmdAccessWithModify
 
   METHODS
     method init( t, local_info )
+
+    method clone->Cmd
+      return CmdReadLocal( t, local_info ).set_modifiers( this )
 
     method print_cpp( writer:CPPWriter )
       if (premodify_count > 0) writer.print("++")
@@ -779,6 +899,9 @@ class CmdWriteLocal : Cmd
   METHODS
     method init( t, local_info, new_value )
 
+    method clone->Cmd
+      return CmdWriteLocal( t, local_info, clone(new_value) )
+
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.cpp_name ).print(" = ")
       new_value.print_cpp( writer )
@@ -800,6 +923,9 @@ class CmdReadProperty : CmdAccessWithModify
 
   METHODS
     method init( t, context, property_info )
+
+    method clone->Cmd
+      return CmdReadProperty( t, context.clone, property_info ).set_modifiers(this)
 
     method print_cpp( writer:CPPWriter )
       if (premodify_count > 0) writer.print("++")
@@ -828,6 +954,9 @@ class CmdWriteProperty : Cmd
 
   METHODS
     method init( t, context, property_info, new_value )
+
+    method clone->Cmd
+      return CmdWriteProperty( t, context.clone, property_info, new_value.clone )
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
@@ -867,6 +996,9 @@ endClass
 
 class CmdStaticCall : CmdCall
   METHODS
+    method clone->Cmd
+      return CmdStaticCall( t, clone(context), method_info, args.clone )
+
     method print_cpp( writer:CPPWriter )
       writer.print( method_info.cpp_name )
       writer.print( "( THIS" )
@@ -878,8 +1010,11 @@ class CmdStaticCall : CmdCall
 endClass
 
 
-class CmdNativeCode : CmdCall
+class CmdInlineNativeCall : CmdCall
   METHODS
+    method clone->Cmd
+      return CmdInlineNativeCall( t, clone(context), method_info, args.clone )
+
     method print_cpp( writer:CPPWriter )
       local st = method_info.native_code
 
@@ -921,13 +1056,16 @@ class CmdRange : Cmd
   PROPERTIES
     first : Cmd
     last  : Cmd
-    step  : Cmd
+    step_size  : Cmd
 
   METHODS
-    method init( t, first, last, step=null )
+    method init( t, first, last, step_size=null )
 endClass
 
 class CmdRangeUpTo : CmdRange
+  METHODS
+    method clone->Cmd
+      return CmdRangeUpTo( t, first.clone, last.clone, clone(step_size) )
 endClass
 
 
@@ -976,6 +1114,9 @@ endClass
 
 class CmdLogicalNot : CmdUnary
   METHODS
+    method clone->Cmd
+      return CmdLogicalNot( t, operand.clone )
+
     method cpp_prefix_symbol->String
       return "!"
 
@@ -998,6 +1139,9 @@ endClass
 
 class CmdNegate : CmdUnary
   METHODS
+    method clone->Cmd
+      return CmdNegate( t, operand.clone )
+
     method prefix_symbol->String
       return "(-"
 
@@ -1055,6 +1199,9 @@ endClass
 
 class CmdAdd : CmdBinary
   METHODS
+    method clone->Cmd
+      return CmdAdd( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralReal( t, (left as CmdLiteralReal).value + (right as CmdLiteralReal).value )
@@ -1071,6 +1218,9 @@ endClass
 
 class CmdSubtract : CmdBinary
   METHODS
+    method clone->Cmd
+      return CmdSubtract( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralReal( t, (left as CmdLiteralReal).value - (right as CmdLiteralReal).value )
@@ -1086,6 +1236,9 @@ endClass
 
 class CmdMultiply : CmdBinary
   METHODS
+    method clone->Cmd
+      return CmdMultiply( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralReal( t, (left as CmdLiteralReal).value * (right as CmdLiteralReal).value )
@@ -1102,6 +1255,9 @@ endClass
 
 class CmdDivide : CmdBinary
   METHODS
+    method clone->Cmd
+      return CmdDivide( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralReal( t, (left as CmdLiteralReal).value / (right as CmdLiteralReal).value )
@@ -1118,6 +1274,9 @@ endClass
 
 class CmdMod : CmdBinary
   METHODS
+    method clone->Cmd
+      return CmdMod( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralReal( t, (left as CmdLiteralReal).value % (right as CmdLiteralReal).value )
@@ -1136,6 +1295,32 @@ class CmdMod : CmdBinary
 
     method symbol->String
       return "%"
+endClass
+
+
+class CmdPower : CmdBinary
+  METHODS
+    method clone->Cmd
+      return CmdPower( t, left.clone, right.clone )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value ^ (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value ^ (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "((" ).print( left.type ).print( ") pow((double)")
+      left.print_cpp( writer )
+      writer.print( ", (double)" )
+      right.print_cpp( writer )
+      writer.print( "))" )
+
+    method symbol->String
+      return "^"
 endClass
 
 
@@ -1164,6 +1349,9 @@ endClass
 
 class CmdLogicalAnd : CmdBinaryLogical
   METHODS
+    method clone->Cmd
+      return CmdLogicalAnd( t, left.clone, right.clone )
+
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a and b)
 
@@ -1177,6 +1365,9 @@ endClass
 
 class CmdLogicalOr : CmdBinaryLogical
   METHODS
+    method clone->Cmd
+      return CmdLogicalOr( t, left.clone, right.clone )
+
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a or b)
 
@@ -1191,6 +1382,9 @@ endClass
 
 class CmdLogicalXor : CmdBinaryLogical
   METHODS
+    method clone->Cmd
+      return CmdLogicalXor( t, left.clone, right.clone )
+
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a xor b)
 
@@ -1220,6 +1414,9 @@ endClass
 
 class CmdCompareEQ : CmdComparison
   METHODS
+    method clone->Cmd
+      return CmdCompareEQ( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralLogical( t, (left as CmdLiteralReal).value == (right as CmdLiteralReal).value )
@@ -1235,6 +1432,9 @@ endClass
 
 class CmdCompareNE : CmdComparison
   METHODS
+    method clone->Cmd
+      return CmdCompareNE( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralLogical( t, (left as CmdLiteralReal).value != (right as CmdLiteralReal).value )
@@ -1250,6 +1450,9 @@ endClass
 
 class CmdCompareLT : CmdComparison
   METHODS
+    method clone->Cmd
+      return CmdCompareLT( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralLogical( t, (left as CmdLiteralReal).value < (right as CmdLiteralReal).value )
@@ -1265,6 +1468,9 @@ endClass
 
 class CmdCompareLE : CmdComparison
   METHODS
+    method clone->Cmd
+      return CmdCompareLE( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralLogical( t, (left as CmdLiteralReal).value <= (right as CmdLiteralReal).value )
@@ -1295,6 +1501,9 @@ endClass
 
 class CmdCompareGE : CmdComparison
   METHODS
+    method clone->Cmd
+      return CmdCompareGE( t, left.clone, right.clone )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralLogical( t, (left as CmdLiteralReal).value >= (right as CmdLiteralReal).value )
@@ -1306,5 +1515,107 @@ class CmdCompareGE : CmdComparison
 
     method symbol->String
       return ">="
+endClass
+
+
+#------------------------------------------------------------------------------
+# OpWithAssign
+#------------------------------------------------------------------------------
+class CmdOpWithAssign : Cmd
+  PROPERTIES
+    target    : Cmd
+    op        : TokenType
+    new_value : Cmd
+
+  METHODS
+    method init( t, target, op, new_value )
+
+    method clone->Cmd
+      return CmdOpWithAssign( t, target.clone, op, new_value.clone )
+      
+    method resolve( scope:Scope )->Cmd
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdAssign( t, target.clone(), CmdPower(t,target,new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          if (RogueC.target == "C++")
+            return CmdAssign( t, target.clone(), CmdMod(t,target,new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access?) throw new_value.t.error( "Property or method name expected." )
+          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = target.clone
+
+          return CmdAssign( t, target, access )
+      endWhich
+
+      return target.resolve_modify_and_assign( scope, op, new_value )
+endClass
+
+class CmdResolvedOpWithAssign : Cmd
+  PROPERTIES
+    op         : TokenType
+    new_value  : Cmd
+
+  METHODS
+    method cpp_symbol->String
+      return symbol
+
+    method symbol->String
+      if (op is TokenType.symbol_tilde_equals) return "^="
+      return op->String
+endClass
+
+class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info, op, new_value )
+
+    method clone->Cmd
+      return CmdLocalOpWithAssign( t, local_info, op, new_value.clone )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
+      new_value.print_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      new_value = new_value.resolve( scope ).cast_to( local_info.type )
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+
+class CmdPropertyOpWithAssign : CmdResolvedOpWithAssign
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+
+  METHODS
+    method init( t, context, property_info, op, new_value )
+
+    method clone->Cmd
+      return CmdPropertyOpWithAssign( t, context.clone, property_info, op, new_value.clone )
+
+    method print_cpp( writer:CPPWriter )
+      context.print_cpp( writer )
+      writer.print("->").print( property_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      new_value.print_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve(scope).require_value
+      new_value = new_value.resolve(scope).require_value
+      return this
+
+    method type->Type
+      return property_info.type
 endClass
 

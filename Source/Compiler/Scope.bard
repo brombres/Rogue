@@ -35,7 +35,7 @@ class Scope
       local cmd : Cmd
       if (m.is_native)
         if (m.native_code?)
-          cmd = CmdNativeCode( access.t, context, m, args )
+          cmd = CmdInlineNativeCall( access.t, context, m, args )
         else
           throw access.t.error( "[INTERNAL] TODO: support native methods." )
         endIf
