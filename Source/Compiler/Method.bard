@@ -54,14 +54,14 @@ class Method
       type_context.method_lookup_by_signature[signature] = this
 
     method is_initializer->Logical
-      return (attributes & Attributes.flag_initializer)?
+      return (attributes & Attribute.is_initializer)?
 
     method is_native->Logical
-      return (attributes & Attributes.flag_native)?
+      return (attributes & Attribute.is_native)?
 
     method organize
       if (name == "init")
-        attributes |= Attributes.flag_initializer
+        attributes |= Attribute.is_initializer
         return_type = type_context
       endIf
 

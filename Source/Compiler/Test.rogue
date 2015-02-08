@@ -3,22 +3,17 @@ class Test
 
   METHODS
     method init
-      println "Prime numbers between 1 and 100:"
-      forEach (n in 1..100)
-        if (is_prime(n)) println n
-      endForEach
-
-    method is_prime( n:Integer )->Logical
-      if (n <= 1) return false
-      if (n <= 3) return true
-      if (n % 2 == 0) return false
-      forEach (denom in 3..sqrt(n) step 2)
-        if (n % denom == 0) return false
-      endForEach
-      return true
+      local a = Alpha()
+      local b = Beta()
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'
+endClass
+
+class Alpha
+endClass
+
+class Beta : Alpha
 endClass
 
 class Pair<<$FirstType,$SecondType>>

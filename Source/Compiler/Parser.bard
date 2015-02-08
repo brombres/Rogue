@@ -104,7 +104,7 @@ class Parser
     method parse_class_template
       local t = read  # 'class'
       local name = read_identifier
-      local template = TypeTemplate( t, name, Attributes.flag_reference_type )
+      local template = TypeTemplate( t, name, Attribute.is_reference )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       if (not Program.implicit_main_class_t)
@@ -115,7 +115,7 @@ class Parser
     method parse_primitive_template
       local t = read  # 'primitive'
       local name = read_identifier
-      local template = TypeTemplate( t, name, Attributes.flag_primitive_type )
+      local template = TypeTemplate( t, name, Attribute.is_direct )
       parse_template_tokens( template, TokenType.keyword_endPrimitive )
 
     method parse_template_tokens( template:TypeTemplate, end_type:TokenType )
@@ -142,6 +142,17 @@ class Parser
       throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
 
     method parse_type_def( this_type )
+      if (consume(TokenType.symbol_colon))
+        # : BaseType1, BaseType2, ...
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          consume_eols
+          this_type.base_types.add( parse_type )
+          consume_eols
+        endWhile
+      endIf
+
       while (parse_section) noAction
       if (reader.has_another)
         throw peek.error( "Syntax error - unexpected $." (peek.quoted_name) )
@@ -247,7 +258,7 @@ class Parser
 
       consume_eols
       if (consume(TokenType.keyword_native))
-        this_method.attributes |= Attributes.flag_native
+        this_method.attributes |= Attribute.is_native
         local buffer = StringBuilder()
         local found_native_code = false
         while (reader.has_another)

@@ -1,0 +1,12 @@
+class Attribute
+  ENUMERATE
+    is_primitive        = 0
+    is_class            = 1
+    type_mask           = 7
+
+    is_direct           = 0  # !is_reference
+    is_reference        = 8
+
+    is_native           = 16
+    is_initializer      = 32
+endClass

@@ -8,6 +8,9 @@ class Type
     defined    : Logical
     organized  : Logical
     resolved   : Logical
+    visiting   : Logical
+
+    base_types = Type[]
 
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
@@ -53,14 +56,29 @@ class Type
     method find_property( name:String )->Property
       return property_lookup[name]
 
+    method instance_of( ancestor_type:Type )->Logical
+      if (this is ancestor_type) return true
+
+      forEach (base_type in base_types)
+        if (base_type.instance_of(ancestor_type)) return true
+      endForEach
+
+      return false
+
+    method is_direct->Logical
+      return not (attributes & Attribute.is_reference)
+
+    method is_class->Logical
+      return (attributes & Attribute.type_mask) == Attribute.is_native
+
     method is_native->Logical
-      return (attributes & Attributes.flag_native)?
+      return (attributes & Attribute.is_native)?
 
     method is_primitive->Logical
-      return (attributes & Attributes.flag_type_mask) == Attributes.flag_primitive_type
+      return (attributes & Attribute.type_mask) == Attribute.is_primitive
 
     method is_reference->Logical
-      return (attributes & Attributes.flag_type_mask) == Attributes.flag_reference_type
+      return (attributes & Attribute.is_reference)?
 
     method organize->Type
       if (organized) return this
@@ -76,6 +94,14 @@ class Type
           throw t.error( "Reference to undefined type '$'." (name) )
         endIf
       endIf
+
+      forEach (base_type in base_types)
+        base_type.organize
+        if (base_type.instance_of(this))
+          throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
+              (this,base_type,base_type,this) )
+        endIf
+      endForEach
 
       forEach (m in method_list) m.organize
 

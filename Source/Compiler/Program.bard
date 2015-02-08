@@ -1,4 +1,4 @@
-$[include "Attributes.bard"]
+$[include "Attribute.bard"]
 $[include "CPPWriter.bard"]
 $[include "Scope.bard"]
 $[include "TypeTemplate.bard"]
@@ -49,7 +49,7 @@ class Program [requisite singleton]
       type_Logical   = create_native_type( "Logical" )
 
       type_Object    = create_native_type( "Logical" )
-      type_String    = create_native_type( "String", Attributes.flag_reference_type )
+      type_String    = create_native_type( "String", Attribute.is_reference )
 
     method create_unique_id->String
       ++next_unique_id
@@ -80,7 +80,7 @@ class Program [requisite singleton]
     method create_native_type( name:String, attributes=0:Integer )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       local type = get_type_reference( t, name )
-      type.attributes |= attributes | Attributes.flag_native
+      type.attributes |= attributes | Attribute.is_native
       return type
 
     method resolve
