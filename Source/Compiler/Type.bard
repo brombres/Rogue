@@ -10,6 +10,7 @@ class Type
     resolved   : Logical
     visiting   : Logical
 
+    base_class : Type
     base_types = Type[]
 
     property_list   = Property[]
@@ -47,6 +48,9 @@ class Type
         p.cpp_name = Program.validate_cpp_name( "p_" + p.name )
       endForEach
 
+    method extends_object->Logical
+      return instance_of( Program.type_Object )
+
     method find_method( signature:String )->Method
       local m = method_lookup_by_signature[signature]
       if (m?) return m
@@ -66,10 +70,13 @@ class Type
       return false
 
     method is_direct->Logical
-      return not (attributes & Attribute.is_reference)
+      return not is_reference
 
     method is_class->Logical
-      return (attributes & Attribute.type_mask) == Attribute.is_native
+      return (attributes & Attribute.type_mask) == Attribute.is_class
+
+    method is_functional->Logical
+      return (attributes & Attribute.is_functional)?
 
     method is_native->Logical
       return (attributes & Attribute.is_native)?
@@ -78,7 +85,12 @@ class Type
       return (attributes & Attribute.type_mask) == Attribute.is_primitive
 
     method is_reference->Logical
-      return (attributes & Attribute.is_reference)?
+      which (attributes & Attribute.type_mask)
+        case Attribute.is_class
+          return true
+        others
+          return false
+      endWhich
 
     method organize->Type
       if (organized) return this
@@ -97,11 +109,25 @@ class Type
 
       forEach (base_type in base_types)
         base_type.organize
+
         if (base_type.instance_of(this))
           throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
               (this,base_type,base_type,this) )
         endIf
       endForEach
+
+      if (is_class)
+        forEach (base_type in base_types)
+          if (base_type.is_class)
+            if (base_class? and base_class isNot base_type)
+              throw t.error( "Class $ can only have one base class ($ and $ are both specified as base classes)." (name,base_class,base_type) )
+            else
+              println "base class of $ is $" (name,base_type)
+              base_class = base_type
+            endIf
+          endIf
+        endForEach
+      endIf
 
       forEach (m in method_list) m.organize
 

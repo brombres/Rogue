@@ -104,7 +104,7 @@ class Parser
     method parse_class_template
       local t = read  # 'class'
       local name = read_identifier
-      local template = TypeTemplate( t, name, Attribute.is_reference )
+      local template = TypeTemplate( t, name, Attribute.is_class )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       if (not Program.implicit_main_class_t)

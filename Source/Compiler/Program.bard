@@ -49,7 +49,7 @@ class Program [requisite singleton]
       type_Logical   = create_native_type( "Logical" )
 
       type_Object    = create_native_type( "Logical" )
-      type_String    = create_native_type( "String", Attribute.is_reference )
+      type_String    = create_native_type( "String", Attribute.is_class | Attribute.is_functional )
 
     method create_unique_id->String
       ++next_unique_id
