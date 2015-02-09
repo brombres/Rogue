@@ -12,9 +12,13 @@ class Test
 endClass
 
 class Alpha
+  PROPERTIES
+    n : Integer
 endClass
 
 class Beta : Alpha
+  PROPERTIES
+    n : Integer
 endClass
 
 class Pair<<$FirstType,$SecondType>>

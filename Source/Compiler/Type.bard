@@ -12,6 +12,7 @@ class Type
 
     base_class : Type
     base_types = Type[]
+    flat_base_types = Type[]
 
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
@@ -134,14 +135,19 @@ class Type
         endIf
       endIf
 
-      # Flatten list of base types, removing duplicates.
-      local flat_list = Type[]
-      if (base_class?) base_class.collect_base_types( flat_list )
+      # Collect flat list base types while removing duplicates
+      if (base_class?) base_class.collect_base_types( flat_base_types )
       forEach (base_type in base_types)
-        base_type.collect_base_types( flat_list )
+        base_type.collect_base_types( flat_base_types )
       endForEach
-      base_types = flat_list
 
+      # Inherit properties
+      local full_property_list = Property[]
+      property_lookup.clear
+      inherit_properties( full_property_list, property_lookup )
+      property_list = full_property_list
+
+      # Create method signatures
       forEach (m in method_list) m.organize
 
       return this
@@ -151,6 +157,50 @@ class Type
       list.add( this )
       forEach (base_type in base_types)
         base_type.collect_base_types( list )
+      endForEach
+
+    method inherit_properties( list:Property[], lookup:Table<<String,Property>> )
+      forEach (base_type in base_types) base_type.inherit_properties( list, lookup )
+
+      forEach (p in property_list)
+        local existing_p = lookup[ p.name ]
+        if (existing_p?)
+          local i = list.locate( existing_p )
+
+          if (p.type_context is existing_p.type_context)
+            throw p.t.error( //A property named "$" already exists.// (p.name) )
+          else
+            if (p.type is existing_p.type)
+              if (p.initial_value?)
+                if (existing_p.initial_value?)
+                  if (p.type.instance_of(existing_p.type))
+                    # Use the new declaration with its updated initial value
+                    list[i] = p
+                    lookup[p.name] = p
+                  else
+                    throw p.t.error( //Conflicting initial values are given for property "$" in unrelated types $ and $.// ...
+                        (p.name,p.type_context,existing_p.type_context) )
+                  endIf
+                else
+                  # Use newer property with its existing value instead of old property without a value
+                  list[i] = p
+                  lookup[p.name] = p
+                endIf
+
+                # Else either the original property is the one with the initial value or neither of them
+                # has an initial value.  In either case leave the original property definition as the one
+                # in the list.
+              endIf
+            else
+              throw p.t.error( //Conflicting types given for property "$" - $ in $ and $ in $.// ...
+                  (p.name,p.type,p.type_context,existing_p.type,existing_p.type_context) )
+            endIf
+          endIf
+
+        else
+          list.add( p )
+          lookup[p.name] = p
+        endIf
       endForEach
 
     method resolve->Type
