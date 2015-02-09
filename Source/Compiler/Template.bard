@@ -1,4 +1,4 @@
-class TypeTemplate
+class Template
   PROPERTIES
     t                  : Token
     name               : String

@@ -1,7 +1,7 @@
 $[include "Cmd.bard"]
 $[include "Method.bard"]
 $[include "Property.bard"]
-$[include "TypeTemplate.bard"]
+$[include "Template.bard"]
 
 class Parser
   PROPERTIES
@@ -104,7 +104,7 @@ class Parser
     method parse_class_template
       local t = read  # 'class'
       local name = read_identifier
-      local template = TypeTemplate( t, name, Attribute.is_class )
+      local template = Template( t, name, Attribute.is_class )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       if (not Program.implicit_main_class_t)
@@ -115,10 +115,10 @@ class Parser
     method parse_primitive_template
       local t = read  # 'primitive'
       local name = read_identifier
-      local template = TypeTemplate( t, name, Attribute.is_direct )
+      local template = Template( t, name, Attribute.is_direct )
       parse_template_tokens( template, TokenType.keyword_endPrimitive )
 
-    method parse_template_tokens( template:TypeTemplate, end_type:TokenType )
+    method parse_template_tokens( template:Template, end_type:TokenType )
       if (consume(TokenType.symbol_open_specialize))
         local first = true
         while (first or consume(TokenType.symbol_comma))

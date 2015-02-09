@@ -1,7 +1,7 @@
 $[include "Attribute.bard"]
 $[include "CPPWriter.bard"]
 $[include "Scope.bard"]
-$[include "TypeTemplate.bard"]
+$[include "Template.bard"]
 
 class Program [requisite singleton]
   PROPERTIES
@@ -10,8 +10,8 @@ class Program [requisite singleton]
 
     next_unique_id : Integer
 
-    template_list   = TypeTemplate[]                 : TypeTemplate[]
-    template_lookup = Table<<String,TypeTemplate>>() : Table<<String,TypeTemplate>>
+    template_list   = Template[]                 : Template[]
+    template_lookup = Table<<String,Template>>() : Table<<String,Template>>
 
     explicit_main_class_t    : Token
     explicit_main_class_name : String
