@@ -191,6 +191,27 @@ class Program [requisite singleton]
       endForEach
       writer.println
 
+      # RogueType forward declarations
+      forEach (type in type_list)
+        if (type.is_class)
+          writer.print( "struct " ).print( type.cpp_name ).println(";")
+        endIf
+      endForEach
+      writer.println
+
+      # create_object() forward declarations
+      forEach (type in type_list)
+        if (type.is_class)
+          local m = type.find_method( "init_object()" )
+          if (m?)
+            writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " );
+            writer.print( type )
+            writer.println( " THIS );" )
+          endIf
+        endIf
+      endForEach
+      writer.println
+
       # XType definitions
       forEach (type in type_list)
         type.print_type_definition( writer )

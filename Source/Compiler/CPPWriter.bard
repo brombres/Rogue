@@ -76,7 +76,7 @@ class CPPWriter
       print_indent
       if (type?)
         buffer.print( type.cpp_name )
-        if (not type.is_native) buffer.print("*")
+        if (type.is_reference) buffer.print("*")
       else
         buffer.print( "void" )
       endIf

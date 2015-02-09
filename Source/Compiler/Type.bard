@@ -123,7 +123,6 @@ class Type
             if (base_class? and base_class isNot base_type)
               throw t.error( "Class $ can only have one base class ($ and $ are both specified as base classes)." (name,base_class,base_type) )
             else
-              println "base class of $ is $" (name,base_type)
               base_class = base_type
             endIf
           endIf
@@ -147,8 +146,24 @@ class Type
       inherit_properties( full_property_list, property_lookup )
       property_list = full_property_list
 
-      # Create method signatures
+      # Organize methods and create signatures
       forEach (m in method_list) m.organize
+
+      # Create init_object() method to initialize properties
+      local m = find_method( "init_object()" )
+      if (not m) m = add_method( t, "init_object" ).organize
+      m.return_type = this
+      m.statements.add( CmdReturn(t,CmdReadThis(t,this)) )
+
+      # Insert property initializations
+      local i = property_list.count - 1
+      while (i >= 0)
+        local p = property_list[i]
+        if (p.initial_value?)
+          m.statements.insert( CmdWriteProperty(p.t, CmdReadThis(p.t,p.type_context), p, p.initial_value.clone) )
+        endIf
+        --i
+      endWhile
 
       return this
 
@@ -192,8 +207,8 @@ class Type
                 # in the list.
               endIf
             else
-              throw p.t.error( //Conflicting types given for property "$" - $ in $ and $ in $.// ...
-                  (p.name,p.type,p.type_context,existing_p.type,existing_p.type_context) )
+              throw p.t.error( //Conflicting types given for property "$" - $:$ in $ and $:$ in $.// ...
+                (p.name,p.name,p.type,p.type_context,p.name,existing_p.type,existing_p.type_context) )
             endIf
           endIf
 
@@ -270,8 +285,16 @@ class Type
       # create_object()
       writer.print( cpp_name ).println( "* create_object()" )
       writer.println( "{" )
-      writer.print(   "  return (" ).print( cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
-      writer.print( cpp_name ).println( ") );" )
+      writer.print(   "  return " )
+      local m_init_object = find_method( "init_object()" )
+      if (m_init_object?)
+        writer.print( m_init_object.cpp_name )
+        writer.print( "( " )
+      endIf
+      writer.print(   "(" ).print( cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
+      writer.print( cpp_name ).print( ") )" )
+      if (m_init_object?) writer.print( " )" )
+      writer.println( ";" )
       writer.println( "}" )
       writer.println
 

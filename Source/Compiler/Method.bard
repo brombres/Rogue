@@ -51,21 +51,29 @@ class Method
       buffer.print ")"
       signature = buffer->String
 
-      type_context.method_lookup_by_signature[signature] = this
-
     method is_initializer->Logical
       return (attributes & Attribute.is_initializer)?
 
     method is_native->Logical
       return (attributes & Attribute.is_native)?
 
-    method organize
+    method organize->Method
       if (name == "init")
         attributes |= Attribute.is_initializer
         return_type = type_context
       endIf
 
       assign_signature
+
+      # Add method to type's lookup table.
+      local existing_m = type_context.method_lookup_by_signature[signature]
+      if (existing_m?)
+        # We haven't inherited methods yet so this is a plain old duplicate
+        throw t.error( "A method with the signature $ is already defined." (signature) )
+      endIf
+      type_context.method_lookup_by_signature[signature] = this
+
+      return this
 
     method print_prototype( writer:CPPWriter )
       if (is_native) return

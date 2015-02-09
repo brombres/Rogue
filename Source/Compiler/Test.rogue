@@ -6,6 +6,8 @@ class Test
       local a = Alpha()
       local b = Beta()
       println "Working on inheritance!"
+      println a.n
+      println b.n
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'
@@ -13,12 +15,12 @@ endClass
 
 class Alpha
   PROPERTIES
-    n : Integer
+    n = 3
 endClass
 
 class Beta : Alpha
   PROPERTIES
-    n : Integer
+    n = 4
 endClass
 
 class Pair<<$FirstType,$SecondType>>
