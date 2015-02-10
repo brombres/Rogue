@@ -175,48 +175,55 @@ class Type
       endForEach
 
     method inherit_properties( list:Property[], lookup:Table<<String,Property>> )
-      forEach (base_type in base_types) base_type.inherit_properties( list, lookup )
+      forEach (base_type in base_types)
+        forEach (base_p in base_type.property_list)
+          inherit_property( base_p, list, lookup )
+        endForEach
+      endForEach
 
       forEach (p in property_list)
-        local existing_p = lookup[ p.name ]
-        if (existing_p?)
-          local i = list.locate( existing_p )
+        inherit_property( p, list, lookup )
+      endForEach
 
-          if (p.type_context is existing_p.type_context)
-            throw p.t.error( //A property named "$" already exists.// (p.name) )
-          else
-            if (p.type is existing_p.type)
-              if (p.initial_value?)
-                if (existing_p.initial_value?)
-                  if (p.type.instance_of(existing_p.type))
-                    # Use the new declaration with its updated initial value
-                    list[i] = p
-                    lookup[p.name] = p
-                  else
-                    throw p.t.error( //Conflicting initial values are given for property "$" in unrelated types $ and $.// ...
-                        (p.name,p.type_context,existing_p.type_context) )
-                  endIf
-                else
-                  # Use newer property with its existing value instead of old property without a value
+    method inherit_property( p:Property, list:Property[], lookup:Table<<String,Property>> )
+      local existing_p = lookup[ p.name ]
+      if (existing_p?)
+        local i = list.locate( existing_p )
+
+        if (p.type_context is existing_p.type_context)
+          throw p.t.error( //A property named "$" already exists.// (p.name) )
+        else
+          if (p.type is existing_p.type)
+            if (p.initial_value?)
+              if (existing_p.initial_value?)
+                if (p.type.instance_of(existing_p.type))
+                  # Use the new declaration with its updated initial value
                   list[i] = p
                   lookup[p.name] = p
+                else
+                  throw p.t.error( //Conflicting initial values are given for property "$" in unrelated types $ and $.// ...
+                      (p.name,p.type_context,existing_p.type_context) )
                 endIf
-
-                # Else either the original property is the one with the initial value or neither of them
-                # has an initial value.  In either case leave the original property definition as the one
-                # in the list.
+              else
+                # Use newer property with its existing value instead of old property without a value
+                list[i] = p
+                lookup[p.name] = p
               endIf
-            else
-              throw p.t.error( //Conflicting types given for property "$" - $:$ in $ and $:$ in $.// ...
-                (p.name,p.name,p.type,p.type_context,p.name,existing_p.type,existing_p.type_context) )
-            endIf
-          endIf
 
-        else
-          list.add( p )
-          lookup[p.name] = p
+              # Else either the original property is the one with the initial value or neither of them
+              # has an initial value.  In either case leave the original property definition as the one
+              # in the list.
+            endIf
+          else
+            throw p.t.error( //Conflicting types given for property "$" - $:$ in $ and $:$ in $.// ...
+              (p.name,p.name,p.type,p.type_context,p.name,existing_p.type,existing_p.type_context) )
+          endIf
         endIf
-      endForEach
+
+      else
+        list.add( p )
+        lookup[p.name] = p
+      endIf
 
     method resolve->Type
       if (resolved) return this
