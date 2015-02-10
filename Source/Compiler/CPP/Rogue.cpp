@@ -35,6 +35,11 @@ RogueType::~RogueType()
   }
 }
 
+RogueObject* RogueType::create_object()
+{
+  return rogue_program.allocate_object( this, object_size );
+}
+
 RogueLogical RogueType::instance_of( RogueType* ancestor_type )
 {
   if (this == ancestor_type) return true;
@@ -49,11 +54,13 @@ RogueLogical RogueType::instance_of( RogueType* ancestor_type )
   return false;
 }
 
-
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
-void RogueObjectType::configure() {}
+void RogueObjectType::configure()
+{
+  object_size = (int) sizeof( RogueObject );
+}
 
 RogueObject* RogueObjectType::create_object()
 {
@@ -65,6 +72,11 @@ const char* RogueObjectType::name() { return "Object"; }
 //-----------------------------------------------------------------------------
 //  RogueString
 //-----------------------------------------------------------------------------
+void RogueStringType::configure()
+{
+  object_size = (int) sizeof( RogueString );
+}
+
 RogueString* RogueString::create( const char* c_string, int count )
 {
   if (count == -1) count = strlen( c_string );
@@ -109,6 +121,15 @@ void RogueString::println( RogueString* st )
   }
   printf( "\n" );
 }
+
+//-----------------------------------------------------------------------------
+//  RogueArray
+//-----------------------------------------------------------------------------
+void RogueArrayType::configure()
+{
+  object_size = (int) sizeof( RogueArray );
+}
+
 
 //-----------------------------------------------------------------------------
 //  RogueProgramCore

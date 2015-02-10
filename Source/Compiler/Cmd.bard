@@ -60,6 +60,9 @@ class Cmd
     method print_cpp( writer:CPPWriter )
       throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
 
+    method print_cpp_statement( writer:CPPWriter )
+      print_cpp( writer )
+
     method require_logical->Cmd
       local _type = type
       if (_type is null or _type isNot Program.type_Logical)
@@ -144,7 +147,7 @@ class CmdStatementList : Cmd[]
 
     method print_cpp( writer:CPPWriter )
       forEach (statement in this)
-        statement.print_cpp( writer )
+        statement.print_cpp_statement( writer )
         if (statement.requires_semicolon) writer.println ";"
       endForEach
 
@@ -807,6 +810,11 @@ class CmdCreateObject : Cmd
       return CmdCreateObject( t, of_type, clone(args) )
 
     method print_cpp( writer:CPPWriter )
+      writer.print( "((" ).print(of_type).print(")") 
+      writer.print( Program.program_name ).print(".type_")  # rogue_program.
+      writer.print(of_type.cpp_name).print("->create_object())")
+
+    method print_cpp_statement( writer:CPPWriter )
       writer.print( Program.program_name ).print(".type_")  # rogue_program.
       writer.print(of_type.cpp_name).print("->create_object()")
 

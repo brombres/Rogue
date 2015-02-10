@@ -4,8 +4,8 @@ class Test
   METHODS
     method init
       local a = Alpha()
-      local b = Beta()
-      local c = Gamma()
+      Beta()
+      Gamma()
       println "Working on inheritance!"
 
     method sqrt( n:Integer )->Integer
@@ -46,5 +46,8 @@ class Object
 endClass
 
 class String
+endClass
+
+class Array<<$DataType>> [native]
 endClass
 

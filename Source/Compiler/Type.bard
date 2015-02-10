@@ -276,6 +276,8 @@ class Type
       writer.println( "{" )
       writer.indent += 2;
 
+      writer.print( "object_size = (int) sizeof( " ).print(cpp_name).println(" );")
+
       if (base_types.count?)
         writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
@@ -290,6 +292,7 @@ class Type
       writer.println()
 
       # create_object()
+      #{
       writer.print( cpp_name ).println( "* create_object()" )
       writer.println( "{" )
       writer.print(   "  return " )
@@ -304,6 +307,7 @@ class Type
       writer.println( ";" )
       writer.println( "}" )
       writer.println
+      }#
 
       # name()
       writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )

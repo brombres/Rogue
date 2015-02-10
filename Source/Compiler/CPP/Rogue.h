@@ -57,11 +57,13 @@ struct RogueType
   int         base_type_count;
   RogueType** base_types;
 
+  int         object_size;
+
   RogueType();
   virtual ~RogueType();
 
   virtual void         configure() = 0;
-  virtual RogueObject* create_object() = 0;
+  virtual RogueObject* create_object();
 
   RogueLogical instance_of( RogueType* ancestor_type );
 
@@ -108,7 +110,7 @@ struct RogueObject
 //-----------------------------------------------------------------------------
 struct RogueStringType : RogueType
 {
-  void configure() {}
+  void configure();
 
   RogueObject* create_object()
   {
@@ -126,6 +128,44 @@ struct RogueString : RogueObject
 
   static RogueString* create( const char* c_string, int count=-1 );
   static void         println( RogueString* st );
+};
+
+
+//-----------------------------------------------------------------------------
+//  RogueArray
+//-----------------------------------------------------------------------------
+struct RogueArrayType : RogueType
+{
+  void configure();
+
+  RogueObject* create_object()
+  {
+    return 0;  // not used
+  }
+
+  const char* name() { return "Array"; }
+};
+
+struct RogueArray : RogueObject
+{
+  RogueInteger   count;
+  RogueInteger   element_size;
+  RogueType*     element_type;
+
+  union
+  {
+    RogueObject    objects[1];
+    RogueByte      logicals[1];
+    RogueByte      bytes[1];
+    RogueCharacter characters[1];
+    RogueInteger   integers[1];
+    RogueLong      longs[1];
+    RogueFloat     floats[1];
+    RogueReal      reals[1];
+  };
+
+  //static RogueArray* create( const char* c_string, int count=-1 );
+  //static void         println( RogueString* st );
 };
 
 
