@@ -11,6 +11,7 @@ class Parser
 
     local_declarations = Local[]  # repeated temporary use
     property_list = Property[]    # temp use
+    generic_types = Type[]
 
     string_buffer = StringBuilder()
 
@@ -226,6 +227,7 @@ class Parser
       this_method = this_type.add_method( t, name )
 
       # Parse parameters
+      generic_types.clear
       if (consume(TokenType.symbol_open_paren))
         if (not consume(TokenType.symbol_close_paren))
           local first = true
@@ -243,7 +245,12 @@ class Parser
 
             if (consume(TokenType.symbol_colon))
               # : Type
+              generic_types.add( peek_generic_type )
               param.type = parse_type
+              #if (generic_types.last?) trace param.name "->" generic_types.last
+              # TODO
+            else
+              generic_types.add( null as Type )
             endIf
           endWhile
           must_consume( TokenType.symbol_close_paren )
@@ -625,9 +632,41 @@ class Parser
         statements.add( CmdLocalDeclaration(v.t,v) )
       endForEach
 
-    method parse_type->Type
+    method peek_generic_type->Type
+      if (not next_is(TokenType.type_identifier)) return null
+
+      local starting_position = reader.position
+
       local t = peek
-      local name = parse_possible_type
+      local generic_type = read.generic_type
+      local name : String
+      if (next_is(TokenType.symbol_empty_brackets))
+        name = generic_type.name
+        while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+      endIf
+
+      reader.position = starting_position
+      if (name?) return Program.get_type_reference( t, name )
+      else       return generic_type
+
+    method parse_type->Type
+      local name : String
+
+      local t = peek
+      if (t->Type?)
+        local type = read->Type
+        if (next_is(TokenType.symbol_empty_brackets))
+          name = type.name
+          while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+        else
+          return type
+        endIf
+
+      else
+        name = parse_possible_type
+
+      endIf
+
       return Program.get_type_reference( t, name )
 
     method parse_possible_type->String

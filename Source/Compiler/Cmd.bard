@@ -720,9 +720,7 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       if (context is null)
-        trace name
         local new_type = Program.find_type( name )
-        trace new_type?
         if (new_type?)
           # new TypeName(...)
           return CmdCreateObject( t, new_type, args).resolve(scope)

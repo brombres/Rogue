@@ -136,7 +136,7 @@ class PreprocessorTokenReader
 
     method read_identifier->String
       if (not next_is(TokenType.identifier))
-        throw error( "Identifier expected." )
+        throw error( "Identifier expected, found $." (peek.quoted_name) )
       endIf
       return read->String
 

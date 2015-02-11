@@ -43,6 +43,7 @@ class TokenType
 
     # Expressions
     identifier                   : TokenType
+    type_identifier              : TokenType   # Contains complete type e.g. "Table<<String,Integer>>[]"
     literal_character            : TokenType
     literal_integer              : TokenType
     literal_real                 : TokenType
@@ -134,6 +135,12 @@ class TokenType
 
     method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
       return LiteralStringToken( this, value ).set_location( filepath, line, column )
+
+    method create_token( existing:Token, value:String )->Token
+      return create_token( t.filepath, t.line, t.column, value )
+
+    method create_token( existing:Token, original_type:Type, target_type:Type )->Token
+      return TypeIdentifierToken( this, original_type, target_type ).set_location( existing )
 
     method is_directive->Logical
       return false

@@ -107,6 +107,7 @@ class Tokenizer
 
       # Expression Tokens
       TokenType.identifier                   = TokenType("identifier")
+      TokenType.type_identifier              = TokenType("type identifier")
       TokenType.literal_character            = TokenType("Character")
       TokenType.literal_integer              = TokenType("Integer")
       TokenType.literal_real                 = TokenType("Real")

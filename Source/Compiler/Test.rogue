@@ -29,6 +29,9 @@ class Pair<<$FirstType:Object,$SecondType>>
   PROPERTIES
     first  : $FirstType
     second : $SecondType
+
+  METHODS
+    method init( one:$FirstType, two:$SecondType  )
 endClass
 
 primitive Integer
