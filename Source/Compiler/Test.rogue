@@ -3,10 +3,8 @@ class Test
 
   METHODS
     method init
-      local a = Alpha()
-      Beta()
-      Gamma()
-      println "Working on inheritance!"
+      local name = Pair<<Alpha,Beta>>()
+      #println name.first.a
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'
@@ -27,7 +25,7 @@ class Gamma : Beta
     c = 5
 endClass
 
-class Pair<<$FirstType,$SecondType>>
+class Pair<<$FirstType:Object,$SecondType>>
   PROPERTIES
     first  : $FirstType
     second : $SecondType

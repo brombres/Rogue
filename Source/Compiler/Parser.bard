@@ -125,6 +125,9 @@ class Parser
           first = false
           local t = must_read( TokenType.placeholder_id )
           local param = template.add_type_parameter( t, t->String )
+          if (consume(TokenType.symbol_colon))
+            param.generic_mapping = parse_type
+          endIf
         endWhile
         must_consume( TokenType.symbol_close_specialize )
       endIf

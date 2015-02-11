@@ -59,7 +59,7 @@ class Program [requisite singleton]
       local type = type_lookup[ name ]
       if (type?) return type
 
-      local template = template_lookup[ name ]
+      local template = template_lookup[ name.before_first('<') ]
       if (template?)
         type = Type( template.t, name )
         type_lookup[name] = type

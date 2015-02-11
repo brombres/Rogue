@@ -45,7 +45,23 @@ class Template
           local specializer = TypeSpecializer( param.name, index )
           type_specializers[specializer.name] = specializer
 
-          specializer.tokens = specializer_tokens
+          local is_generic = false
+          #{
+          if (param.generic_mapping?)
+            local specializer_type = Program.find_type( buffer->String )
+            if (specializer_type? and (specializer_type instanceOf param.generic_mapping))
+              is_generic = true
+            endIf
+          endIf
+          }#
+
+          if (is_generic)
+            specializer.generic_mapping = param.generic_mapping
+            throw t.error( "$ -> $" (buffer->String,param.generic_mapping) )
+          else
+            specializer.tokens = specializer_tokens
+          endIf
+
         endWhile
 
         # Create specialized instance tokens
@@ -76,9 +92,10 @@ endClass
 
 class TypeParameter
   PROPERTIES
-    t    : Token
-    name : String
-
+    t               : Token
+    name            : String
+    generic_mapping : Type    # optional
+ 
   METHODS
     method init( t, name )
 endClass
