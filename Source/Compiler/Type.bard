@@ -14,6 +14,8 @@ class Type
     base_types = Type[]
     flat_base_types = Type[]
 
+    generic_type : Type
+
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
@@ -234,6 +236,8 @@ class Type
 
       organize
 
+      if (generic_type?) generic_type.resolve
+
       forEach (p in property_list) p.type.resolve
 
       #{
@@ -282,7 +286,7 @@ class Type
         writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
         forEach (i of base_types)
-          writer.print( "base_types[" ).print( i ).print( "] = rogue_program.type_" )
+          writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) rogue_program.type_" )
           writer.print( base_types[i].cpp_name ).println( ";" )
         endForEach
       endIf
