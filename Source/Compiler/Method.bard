@@ -16,6 +16,8 @@ class Method
 
     statements = CmdStatementList()
 
+    generic_types  : Type[]
+    generic_method : Method
     native_code : String
 
     resolved  : Logical

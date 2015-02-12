@@ -257,6 +257,13 @@ class Parser
         endIf
       endIf
 
+      if (this_method.type_context.generic_type?)
+        trace
+        this_method.generic_types = generic_types
+        generic_types = Type[]
+      endIf
+
+
       # Optional ->ReturnType
       if (consume(TokenType.symbol_arrow))
         if (consume("this"))
