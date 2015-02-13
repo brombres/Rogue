@@ -2,7 +2,7 @@ class Type
   PROPERTIES
     t          : Token
     name       : String
-    attributes : Integer
+    attributes = Attributes()
     index      = -1
 
     defined    : Logical
@@ -80,19 +80,19 @@ class Type
       return not is_reference
 
     method is_class->Logical
-      return (attributes & Attribute.type_mask) == Attribute.is_class
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_class
 
     method is_functional->Logical
-      return (attributes & Attribute.is_functional)?
+      return (attributes.flags & Attribute.is_functional)?
 
     method is_native->Logical
-      return (attributes & Attribute.is_native)?
+      return (attributes.flags & Attribute.is_native)?
 
     method is_primitive->Logical
-      return (attributes & Attribute.type_mask) == Attribute.is_primitive
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_primitive
 
     method is_reference->Logical
-      which (attributes & Attribute.type_mask)
+      which (attributes.flags & Attribute.type_mask)
         case Attribute.is_class
           return true
         others

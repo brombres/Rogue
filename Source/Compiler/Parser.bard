@@ -132,6 +132,23 @@ class Parser
         must_consume( TokenType.symbol_close_specialize )
       endIf
 
+      # Need a little finageling to parse out the attributes while
+      # leaving the base types for later.
+      #   : BaseType, ... [attributes] \n
+      #   ^^^ leave       ^parse       ^leave
+      local starting_pos = reader.position
+      if (consume(TokenType.symbol_colon))
+        parse_possible_type
+        while (consume(TokenType.symbol_comma)) parse_possible_type
+
+        # Now go back and copy all the tokens up to this point into the template.
+        local final_pos = reader.position
+        reader.position = starting_pos
+        while (reader.position < final_pos) template.tokens.add( read )
+      endIf
+
+      parse_attributes( template.attributes )
+
       while (reader.has_another)
         local t = reader.read
         if (t.type is end_type)
@@ -143,6 +160,21 @@ class Parser
       endWhile
 
       throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
+
+    method parse_attributes( attributes:Attributes )
+      if (not consume(TokenType.symbol_open_bracket)) return
+
+      while (reader.has_another and not next_is(TokenType.symbol_close_bracket))
+        if (consume(TokenType.keyword_native))
+          attributes.add( Attribute.is_native )
+        elseIf (next_is(TokenType.identifier))
+          attributes.add( read->String )
+        else
+          throw peek.error( "Invalid attribute: " + peek )
+        endIf
+      endWhile
+
+      must_consume( TokenType.symbol_close_bracket )
 
     method parse_type_def( this_type )
       if (consume(TokenType.symbol_colon))

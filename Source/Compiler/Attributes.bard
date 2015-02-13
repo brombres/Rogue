@@ -12,3 +12,28 @@ class Attribute
     is_native           = 32
     is_initializer      = 64
 endClass
+
+
+class Attributes
+  PROPERTIES
+    flags : Integer
+    tags  : String[]
+
+  METHODS
+    method add( flag:Integer )->Attributes
+      flags |= flag
+      return this
+
+    method add( tag:String )->Attributes
+      if (tags is null) tags = String[]
+      tags.add( tag )
+      return this
+
+    method add( other:Attributes )->Attributes
+      flags |= other.flags
+      if (other.tags?)
+        forEach (tag in other.tags) add( tag )
+      endIf
+      return this
+
+endClass

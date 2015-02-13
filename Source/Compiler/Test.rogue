@@ -3,10 +3,7 @@ class Test
 
   METHODS
     method init
-      local name = Pair<<Alpha,Beta>>( Alpha(), Beta() )
-      name.first = Alpha()
-      local a : Alpha
-      a = name.first
+      #local a = Array<<Integer>>()
       println "Woot!"
 
     method sqrt( n:Integer )->Integer

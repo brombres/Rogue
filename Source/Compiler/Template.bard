@@ -3,11 +3,12 @@ class Template
     t                  : Token
     name               : String
     tokens=Token[]     : Token[]
-    attributes         : Integer
+    attributes         = Attributes()
     type_parameters    : TypeParameter[]
 
   METHODS
-    method init( t, name, attributes=0 )
+    method init( t, name, attribute_flags=0:Integer )
+      attributes.add( attribute_flags )
 
     method add_type_parameter( p_t:Token, p_name:String )->TypeParameter
       if (type_parameters is null) type_parameters = TypeParameter[]
@@ -19,7 +20,7 @@ class Template
       type.t = t
       # replace location of first reference to type with location of type definition
 
-      type.attributes |= attributes
+      type.attributes.add( attributes )
 
       local instance_tokens = tokens
       local found_generic_type_parameters = false

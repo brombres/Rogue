@@ -1,4 +1,4 @@
-$[include "Attribute.bard"]
+$[include "Attributes.bard"]
 $[include "CPPWriter.bard"]
 $[include "Scope.bard"]
 $[include "Template.bard"]
@@ -80,7 +80,7 @@ class Program [requisite singleton]
     method create_built_in_type( name:String, attributes=0:Integer )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       local type = get_type_reference( t, name )
-      type.attributes |= attributes
+      type.attributes.add( attributes )
       return type
 
     method resolve
