@@ -723,7 +723,11 @@ class CmdAccess : CmdAccessWithModify
         local new_type = Program.find_type( name )
         if (new_type?)
           # new TypeName(...)
-          return CmdCreateObject( t, new_type, args).resolve(scope)
+          new_type.resolve
+          local cmd_new = CmdCreateObject( t, new_type ) : Cmd
+          local cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), args? and args.count? )
+          if (cmd_call?) cmd_new = cmd_call
+          return cmd_new.resolve(scope)
         endIf
 
         local p = scope.this_type.find_property( name )
@@ -801,26 +805,22 @@ endClass
 class CmdCreateObject : Cmd
   PROPERTIES
     of_type : Type
-    args    : CmdArgs
 
   METHODS
-    method init( t, of_type, args )
+    method init( t, of_type )
 
     method clone->Cmd
-      return CmdCreateObject( t, of_type, clone(args) )
+      return CmdCreateObject( t, of_type )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print(of_type).print(")") 
-      writer.print( Program.program_name ).print(".type_")  # rogue_program.
-      writer.print(of_type.cpp_name).print("->create_object())")
+      writer.print_type_info(of_type).print( "->create_object())")
 
     method print_cpp_statement( writer:CPPWriter )
-      writer.print( Program.program_name ).print(".type_")  # rogue_program.
-      writer.print(of_type.cpp_name).print("->create_object()")
+      writer.print_type_info(of_type).print( "->create_object()")
 
     method resolve( scope:Scope )->Cmd
       of_type.resolve
-      args.resolve( scope )
       return this
 
     method type->Type
@@ -912,7 +912,9 @@ class CmdWriteLocal : Cmd
 
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.cpp_name ).print(" = ")
+      writer.print( "((" ).print( local_info.type ).print( ")" )
       new_value.print_cpp( writer )
+      writer.print( ")" )
 
     method resolve( scope:Scope )->Cmd
       local_info.type.resolve
@@ -969,7 +971,10 @@ class CmdWriteProperty : Cmd
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
       writer.print("->").print( property_info.cpp_name ).print(" = ")
+
+      writer.print( "((" ).print( property_info.type ).print( ")" )
       new_value.print_cpp( writer )
+      writer.print( ")" )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value
@@ -1008,11 +1013,21 @@ class CmdStaticCall : CmdCall
       return CmdStaticCall( t, clone(context), method_info, args.clone )
 
     method print_cpp( writer:CPPWriter )
-      writer.print( method_info.cpp_name )
-      writer.print( "( THIS" )
+      local compile_target = method_info.compile_target
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      context.print_cpp( writer )
+      local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        arg.print_cpp( writer )
+        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
+          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+          arg.print_cpp( writer )
+          writer.print( ")" )
+        else
+          arg.print_cpp( writer )
+        endIf
+        ++i
       endForEach
       writer.print( " )" )
 endClass

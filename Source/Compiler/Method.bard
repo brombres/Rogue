@@ -16,9 +16,8 @@ class Method
 
     statements = CmdStatementList()
 
-    generic_types  : Type[]
     generic_method : Method
-    native_code : String
+    native_code    : String
 
     resolved  : Logical
 
@@ -50,8 +49,18 @@ class Method
       local buffer = StringBuilder()
       buffer.print name
       buffer.print "("
+      local first = true
+      forEach (param in parameters)
+        if (first) first = false
+        else       buffer.print( "," )
+        buffer.print( param.type.name )
+      endForEach
       buffer.print ")"
       signature = buffer->String
+
+    method compile_target->Method
+      if (generic_method?) return generic_method
+      return this
 
     method is_initializer->Logical
       return (attributes & Attribute.is_initializer)?
@@ -64,6 +73,27 @@ class Method
         attributes |= Attribute.is_initializer
         return_type = type_context
       endIf
+
+      forEach (param in parameters)
+        local property = type_context.find_property( param.name )
+
+        if (property?)
+          if (param.type is null)
+            # Autostore parameter
+            local new_name = Program.create_unique_id
+            local pt = property.t
+            statements.insert( CmdAssign(pt,CmdAccess(pt,property.name),CmdAccess(pt,new_name)) )
+            param.name = new_name
+          else
+            throw param.t.error( //A property named "$" already exists.// (param.name) )
+          endIf
+        endIf
+
+        if (not param.type) throw param.t.error( //No type declared for parameter "$".// (param.name) )
+        param.type.resolve
+      endForEach
+
+      if (return_type?) return_type.resolve
 
       assign_signature
 
@@ -108,19 +138,30 @@ class Method
       if (resolved) return
       resolved = true
 
-      forEach (p in parameters)
-        local property = type_context.find_property( p.name )
+      if (type_context.generic_type?)
+        # Find the generic version of this method
+        type_context.generic_type.resolve
+        local buffer = StringBuilder()
+        buffer.print( name ).print( "(" )
 
-        if (property?)
-          throw p.t.error( //A property named "$" already exists.// (p.name) )
+        local first = true
+        forEach (p in parameters)
+          if (first) first = false
+          else       buffer.print( "," )
+          if (p.generic_type?) buffer.print( p.generic_type.name )
+          else                 buffer.print( p.type.name )
+        endForEach
+
+        buffer.print( ")" )
+
+        local generic_sig = buffer->String
+        if (generic_sig != signature)
+          generic_method = type_context.generic_type.find_method( generic_sig )
+          if (not generic_method)
+            throw t.error( "[INTERNAL] Could not find generic mapping of $::$ -> $::$" (type_context,signature,type_context.generic_type,generic_sig) )
+          endIf
         endIf
-
-        if (not p.type) throw p.t.error( //No type declared for parameter "$".// (p.name) )
-        p.type.resolve
-
-      endForEach
-
-      if (return_type?) return_type.resolve
+      endIf
 
       local scope = Scope( type_context, this )
       forEach (p in parameters) scope.push_local( p )
@@ -132,5 +173,8 @@ class Method
         if (statements.count?) return_t = statements.last.t
         statements.add( CmdReturn(return_t,CmdReadThis(return_t,type_context)).resolve(scope) )
       endIf
+
+    method to->String
+      return signature
 endClass
 

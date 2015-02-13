@@ -73,6 +73,7 @@ class CPPWriter
       return this
 
     method print( type:Type )->CPPWriter
+      type = type.compile_type
       print_indent
       if (type?)
         buffer.print( type.cpp_name )
@@ -82,7 +83,15 @@ class CPPWriter
       endIf
       return this
 
+    method print_type_info( type:Type )->CPPWriter
+      type = type.compile_type
+      print_indent
+      buffer.print( Program.program_name )
+      buffer.print( ".type_" ).print( type.cpp_name )
+      return this
+
     method print_default_value( type:Type )->CPPWriter
+      type = type.compile_type
       buffer.print( "0" )
       return this
 

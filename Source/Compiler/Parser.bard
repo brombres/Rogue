@@ -11,7 +11,6 @@ class Parser
 
     local_declarations = Local[]  # repeated temporary use
     property_list = Property[]    # temp use
-    generic_types = Type[]
 
     string_buffer = StringBuilder()
 
@@ -199,8 +198,12 @@ class Parser
 
       consume_eols
       if (consume(TokenType.symbol_colon))
+        local generic_type = peek_generic_type
         local p_type = parse_type
-        forEach (p in property_list) p.type = p_type
+        forEach (p in property_list)
+          p.type = p_type
+          p.generic_type = generic_type
+        endForEach
       else
         forEach (p in property_list)
           if (p.initial_value?)
@@ -227,7 +230,6 @@ class Parser
       this_method = this_type.add_method( t, name )
 
       # Parse parameters
-      generic_types.clear
       if (consume(TokenType.symbol_open_paren))
         if (not consume(TokenType.symbol_close_paren))
           local first = true
@@ -245,24 +247,13 @@ class Parser
 
             if (consume(TokenType.symbol_colon))
               # : Type
-              generic_types.add( peek_generic_type )
+              param.generic_type = peek_generic_type
               param.type = parse_type
-              #if (generic_types.last?) trace param.name "->" generic_types.last
-              # TODO
-            else
-              generic_types.add( null as Type )
             endIf
           endWhile
           must_consume( TokenType.symbol_close_paren )
         endIf
       endIf
-
-      if (this_method.type_context.generic_type?)
-        trace
-        this_method.generic_types = generic_types
-        generic_types = Type[]
-      endIf
-
 
       # Optional ->ReturnType
       if (consume(TokenType.symbol_arrow))

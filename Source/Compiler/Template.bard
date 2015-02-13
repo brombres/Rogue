@@ -5,7 +5,6 @@ class Template
     tokens=Token[]     : Token[]
     attributes         : Integer
     type_parameters    : TypeParameter[]
-    type_specializers  : Table<<String,TypeSpecializer>>
 
   METHODS
     method init( t, name, attributes=0 )
@@ -26,7 +25,7 @@ class Template
       local found_generic_type_parameters = false
 
       if (type_parameters?)
-        type_specializers = Table<<String,TypeSpecializer>>()
+        local type_specializers = Table<<String,TypeSpecializer>>()
 
         local parser = Parser( t, type.name, type.name.from_first('<') )
         parser.read  # '<<'
@@ -80,7 +79,6 @@ class Template
           if (generic_type isNot type)
             type.generic_type = generic_type
             type.generic_type.organize
-            println "$ -> $" (type.name,type.generic_type.name)
           endIf
         endIf
 

@@ -3,8 +3,11 @@ class Test
 
   METHODS
     method init
-      local name = Pair<<Alpha,Beta>>()
-      #println name.first.a
+      local name = Pair<<Alpha,Beta>>( Alpha(), Beta() )
+      name.first = Alpha()
+      local a : Alpha
+      a = name.first
+      println "Woot!"
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'

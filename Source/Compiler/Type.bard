@@ -51,6 +51,10 @@ class Type
         p.cpp_name = Program.validate_cpp_name( "p_" + p.name )
       endForEach
 
+    method compile_type->Type
+      if (generic_type?) return generic_type
+      return this
+
     method extends_object->Logical
       return instance_of( Program.type_Object )
 
@@ -149,7 +153,9 @@ class Type
       property_list = full_property_list
 
       # Organize methods and create signatures
-      forEach (m in method_list) m.organize
+      forEach (m in method_list)
+        m.organize
+      endForEach
 
       # Create init_object() method to initialize properties
       local m = find_method( "init_object()" )
@@ -227,6 +233,9 @@ class Type
         lookup[p.name] = p
       endIf
 
+    method omit_output->Logical
+      return is_native or generic_type?
+
     method resolve->Type
       if (resolved) return this
       resolved = true
@@ -257,7 +266,7 @@ class Type
       return this
 
     method print_data_definition( writer:CPPWriter )
-      if (is_native) return
+      if (omit_output) return
 
       writer.print( "struct " ).print( cpp_name ).println( " : RogueObject" );
       writer.println( "{" )
@@ -269,7 +278,7 @@ class Type
       writer.println( "};" )
 
     method print_type_definition( writer:CPPWriter )
-      if (is_native) return
+      if (omit_output) return
 
       writer.print( "struct " ).print( cpp_name ).println( "Type : RogueType" )
       writer.println( "{" )
@@ -341,19 +350,19 @@ class Type
       writer.println
 
     method print_method_prototypes( writer:CPPWriter )
-      if (is_native) return
+      if (omit_output) return
 
       forEach (m in method_list) m.print_prototype( writer )
 
     method print_method_definitions( writer:CPPWriter )
-      if (is_native) return
+      if (omit_output) return
 
       forEach (m in method_list)
         m.print_definition( writer )
       endForEach
 
     method print_type_configuration( writer:CPPWriter )
-      if (is_native) return
+      if (omit_output) return
       writer.print( "  type_" ).print( cpp_name ).print( " = Rogue_types[" ).print( index )
       writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_name ).print( "\", sizeof(Class" )
       writer.print( cpp_name ).println( ") );" )

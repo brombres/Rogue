@@ -139,7 +139,7 @@ class Program [requisite singleton]
 
       # XType forward declarations
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print( "struct " ).print( type.cpp_name ).println( "Type;" );
         endIf
       endForEach
@@ -149,7 +149,7 @@ class Program [requisite singleton]
       writer.println( "struct RogueProgram : RogueProgramCore" )
       writer.println( "{" )
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print( "  " ).print( type.cpp_name ).print( "Type* type_" );
           writer.print( type.cpp_name ).println( ";" );
         endIf
@@ -176,7 +176,7 @@ class Program [requisite singleton]
 
       # XObject forward declarations
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print( "struct " ).print( type.cpp_name ).println( ";" );
         endIf
       endForEach
@@ -184,24 +184,16 @@ class Program [requisite singleton]
 
       # XObject definitions
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           type.print_data_definition( writer )
           writer.println
         endIf
       endForEach
       writer.println
 
-      # RogueType forward declarations
-      forEach (type in type_list)
-        if (type.is_class)
-          writer.print( "struct " ).print( type.cpp_name ).println(";")
-        endIf
-      endForEach
-      writer.println
-
       # create_object() forward declarations
       forEach (type in type_list)
-        if (type.is_class)
+        if (not type.omit_output)
           local m = type.find_method( "init_object()" )
           if (m?)
             writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " );
@@ -221,7 +213,7 @@ class Program [requisite singleton]
       # "extern XType type_X;" declarations
       #{
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print( "extern Rogue" ).print( type.cpp_name ).print( "Type type_" ).print( type.cpp_name ).println(";")
           writer.println
         endIf
@@ -232,7 +224,7 @@ class Program [requisite singleton]
       # "XType type_X;" declarations
       #{
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print( type.cpp_name ).print( "Type type_" ).print( type.cpp_name ).println(";")
           writer.println
         endIf
@@ -252,7 +244,7 @@ class Program [requisite singleton]
 
       # Create types
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print("  type_").print(type.cpp_name).print(" = new ").print(type.cpp_name).println("Type();")
         endIf
       endForEach
@@ -260,7 +252,7 @@ class Program [requisite singleton]
 
       # Configure types
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print("  type_").print(type.cpp_name).println("->configure();" )
         endIf
       endForEach
@@ -289,7 +281,7 @@ class Program [requisite singleton]
       writer.println( "RogueProgram::~RogueProgram()" )
       writer.println  "{"
       forEach (type in type_list)
-        if (not type.is_native)
+        if (not type.omit_output)
           writer.print("  delete type_").print(type.cpp_name).println(";")
         endIf
       endForEach
