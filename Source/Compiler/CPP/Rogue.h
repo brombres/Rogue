@@ -144,6 +144,8 @@ struct RogueArrayType : RogueType
   }
 
   const char* name() { return "Array"; }
+
+  void trace( RogueObject* obj );
 };
 
 struct RogueArray : RogueObject
@@ -154,7 +156,7 @@ struct RogueArray : RogueObject
 
   union
   {
-    RogueObject    objects[];
+    RogueObject*   objects[];
     RogueByte      logicals[];
     RogueByte      bytes[];
     RogueCharacter characters[];

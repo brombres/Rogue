@@ -149,11 +149,14 @@ class Parser
 
       parse_attributes( template.attributes )
 
+      Program.template_list.add( template )
+      Program.template_lookup[template.name] = template
+
+      if (consume(TokenType.symbol_semicolon)) return
+
       while (reader.has_another)
         local t = reader.read
         if (t.type is end_type)
-          Program.template_list.add( template )
-          Program.template_lookup[template.name] = template
           return
         endIf
         template.tokens.add( t )

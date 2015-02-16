@@ -1,45 +1,17 @@
 class Test
   PROPERTIES
+    alpha : Alpha[][]
 
   METHODS
     method init
-      local a = Array<<Integer>>(5)
-      a[0] = 2
-      a[1] = a[0]++
-      a[2] = ++a[0]
-      println a[0]
-      println a[1]
-      println a[2]
-      println a.count
-      println "Woot!"
+      alpha = Alpha[][]
+      alpha.data[0] = Alpha[]
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'
 endClass
 
-class Alpha
-  PROPERTIES
-    a = 3
-endClass
-
-class Beta : Alpha
-  PROPERTIES
-    b = 4
-endClass
-
-class Gamma : Beta
-  PROPERTIES
-    c = 5
-endClass
-
-class Pair<<$FirstType:Object,$SecondType>>
-  PROPERTIES
-    first  : $FirstType
-    second : $SecondType
-
-  METHODS
-    method init( one:$FirstType, two:$SecondType  )
-endClass
+class Alpha;
 
 primitive Integer
 endPrimitive
@@ -62,5 +34,18 @@ endClass
 class Array<<$DataType>> : NativeArray [native]
   METHODS
     method count->Integer [native]
+endClass
+
+class GenericList
+endClass
+
+class List<<$DataType:Object>> : GenericList
+  PROPERTIES
+    data  : Array<<$DataType>>
+    count : Integer
+
+  METHODS
+    method init
+      data = Array<<$DataType>>( 2 )
 endClass
 

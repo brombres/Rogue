@@ -137,7 +137,7 @@ class TokenType
       return LiteralStringToken( this, value ).set_location( filepath, line, column )
 
     method create_token( existing:Token, value:String )->Token
-      return create_token( t.filepath, t.line, t.column, value )
+      return create_token( existing.filepath, existing.line, existing.column, value )
 
     method create_token( existing:Token, original_type:Type, target_type:Type )->Token
       return TypeIdentifierToken( this, original_type, target_type ).set_location( existing )

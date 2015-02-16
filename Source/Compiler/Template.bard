@@ -22,97 +22,141 @@ class Template
 
       type.attributes.add( attributes )
 
-      local instance_tokens = tokens
-      local found_generic_type_parameters = false
+      if (type.name.ends_with(']'))
+        instantiate_list( type )
+      elseIf (type_parameters?)
+        instantiate_parameterized_type( type )
+      else
+        instantiate_standard_type( type )
+      endIf
 
-      if (type_parameters?)
-        local type_specializers = Table<<String,TypeSpecializer>>()
+    method instantiate_list( type:Type )
+      type.is_list = true
+      type.element_type = Program.get_type_reference( t, type.name.leftmost(-2) ).organize
 
-        local parser = Parser( t, type.name, type.name.from_first('<') )
-        parser.read  # '<<'
+      local is_generic = false
+      if (type.element_type.instance_of(Program.type_Object) and type.element_type isNot Program.type_Object)
+        is_generic = true
+        type.generic_type = Program.get_type_reference( t, "Object[]" )
+        type.generic_type.resolve
+      endIf
 
-        local generic_type_name_buffer = StringBuilder()
-        generic_type_name_buffer.print( name ).print( "<<" )
-
-        local buffer = StringBuilder()
-        local first = true
-        while (first or parser.consume(TokenType.symbol_comma))
-          first = false
-          local specializer_tokens = Token[]
-          parser.parse_specializer( buffer.clear, specializer_tokens )
-
-          local index = type_specializers.count
-          if (index >= type_parameters.count) throw t.error( "Too many type specializers given." )
-          if (index > 0) generic_type_name_buffer.print(',')
-
-          local param = type_parameters[index]
-          local specializer = TypeSpecializer( param.name, index )
-          type_specializers[specializer.name] = specializer
-
-          local is_generic = false
-          if (param.generic_mapping?)
-            param.generic_mapping.organize
-            local specializer_type = Program.find_type( buffer->String )
-            if (specializer_type?)
-              specializer.type = specializer_type
-              specializer_type.organize
-              if (specializer_type.instance_of(param.generic_mapping))
-                is_generic = true
-              endIf
-            endIf
-            generic_type_name_buffer.print( param.generic_mapping.name )
-            found_generic_type_parameters = true
-          else
-            generic_type_name_buffer.print( buffer )
-          endIf
-
-          if (is_generic)
-            specializer.generic_mapping = param.generic_mapping
-          else
-            specializer.tokens = specializer_tokens
-          endIf
-
-        endWhile
-
-        if (found_generic_type_parameters)
-          generic_type_name_buffer.print( ">>" )
-          local generic_type = Program.get_type_reference( t, generic_type_name_buffer->String )
-          if (generic_type isNot type)
-            type.generic_type = generic_type
-            type.generic_type.organize
-          endIf
-        endIf
-
-        # Create specialized instance tokens
-        instance_tokens = Token[]( tokens.count * 2 )
-        forEach (template_t in tokens)
-          if (template_t.type is TokenType.placeholder_id)
-            local specializer = type_specializers[ template_t->String ]
-            if (specializer?)
-              if (specializer.tokens?)
-                # Insert template copy of tokens
-                forEach (specializer_t in specializer.tokens)
-                  instance_tokens.add( specializer_t )
-                endForEach
-              else
-                # Insert type identifier for generic mapping
-                local from_type = specializer.type
-                local to_type = specializer.generic_mapping
-                instance_tokens.add( TokenType.type_identifier.create_token(template_t,from_type,to_type) )
-              endIf
+      local instance_tokens = Token[]( tokens.count )
+      forEach (template_t in tokens)
+        if (template_t.type is TokenType.placeholder_id)
+          if (template_t->String == "$DataType")
+            if (is_generic)
+              instance_tokens.add( TokenType.identifier.create_token(template_t,type.element_type.name) )
             else
-              instance_tokens.add( template_t )
+              # Insert type identifier for generic mapping
+              local from_type = type.element_type
+              local to_type = Program.type_Object
+              instance_tokens.add( TokenType.type_identifier.create_token(template_t,from_type,to_type) )
             endIf
           else
             instance_tokens.add( template_t )
           endIf
-        endForEach
+        else
+          instance_tokens.add( template_t )
+        endIf
+      endForEach
 
-      elseIf (type.name.contains('<'))
+      Parser(instance_tokens).parse_type_def( type )
+
+    method instantiate_parameterized_type( type:Type )
+      local instance_tokens = tokens
+      local found_generic_type_parameters = false
+
+      local type_specializers = Table<<String,TypeSpecializer>>()
+
+      local parser = Parser( t, type.name, type.name.from_first('<') )
+      parser.read  # '<<'
+
+      local generic_type_name_buffer = StringBuilder()
+      generic_type_name_buffer.print( name ).print( "<<" )
+
+      local buffer = StringBuilder()
+      local first = true
+      while (first or parser.consume(TokenType.symbol_comma))
+        first = false
+        local specializer_tokens = Token[]
+        parser.parse_specializer( buffer.clear, specializer_tokens )
+
+        local index = type_specializers.count
+        if (index >= type_parameters.count) throw t.error( "Too many type specializers given." )
+        if (index > 0) generic_type_name_buffer.print(',')
+
+        local param = type_parameters[index]
+        local specializer = TypeSpecializer( param.name, index )
+        type_specializers[specializer.name] = specializer
+
+        local is_generic = false
+        if (param.generic_mapping?)
+          param.generic_mapping.organize
+          local specializer_type = Program.find_type( buffer->String )
+          if (specializer_type?)
+            specializer.type = specializer_type
+            specializer_type.organize
+            if (specializer_type.instance_of(param.generic_mapping))
+              is_generic = true
+            endIf
+          endIf
+          generic_type_name_buffer.print( param.generic_mapping.name )
+          found_generic_type_parameters = true
+        else
+          generic_type_name_buffer.print( buffer )
+        endIf
+
+        if (is_generic)
+          specializer.generic_mapping = param.generic_mapping
+        else
+          specializer.tokens = specializer_tokens
+        endIf
+
+      endWhile
+
+      if (found_generic_type_parameters)
+        generic_type_name_buffer.print( ">>" )
+        local generic_type = Program.get_type_reference( t, generic_type_name_buffer->String )
+        if (generic_type isNot type)
+          type.generic_type = generic_type
+          type.generic_type.organize
+        endIf
+      endIf
+
+      # Create specialized instance tokens
+      instance_tokens = Token[]( tokens.count * 2 )
+      forEach (template_t in tokens)
+        if (template_t.type is TokenType.placeholder_id)
+          local specializer = type_specializers[ template_t->String ]
+          if (specializer?)
+            if (specializer.tokens?)
+              # Insert template copy of tokens
+              forEach (specializer_t in specializer.tokens)
+                instance_tokens.add( specializer_t )
+              endForEach
+            else
+              # Insert type identifier for generic mapping
+              local from_type = specializer.type
+              local to_type = specializer.generic_mapping
+              instance_tokens.add( TokenType.type_identifier.create_token(template_t,from_type,to_type) )
+            endIf
+          else
+            instance_tokens.add( template_t )
+          endIf
+        else
+          instance_tokens.add( template_t )
+        endIf
+      endForEach
+
+      Parser(instance_tokens).parse_type_def( type )
+
+    method instantiate_standard_type( type:Type )
+      if (type.name.contains('<'))
         throw t.error( "Type parameters given for non-template type." )
       endIf
 
-      Parser(instance_tokens).parse_type_def( type )
+      Parser(tokens).parse_type_def( type )
 
 endClass
 

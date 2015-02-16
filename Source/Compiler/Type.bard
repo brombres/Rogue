@@ -17,6 +17,7 @@ class Type
     generic_type : Type
 
     is_array     : Logical
+    is_list      : Logical
     element_type : Type
 
     property_list   = Property[]
@@ -112,8 +113,7 @@ class Type
 
       if (not defined)
         defined = true
-        local base_name = name.before_first( "<<" )
-        local template = Program.template_lookup[ base_name ]
+        local template = Program.find_template( name )
         if (template?)
           template.instantiate( this )
         else

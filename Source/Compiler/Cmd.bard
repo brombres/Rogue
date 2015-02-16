@@ -732,7 +732,14 @@ class CmdAccess : CmdAccessWithModify
           # new TypeName(...)
           new_type.resolve
 
-          if (args is null) trace; throw t.error( "[INTERNAL] TODO: add Singleton support." )
+          if (args is null)
+            if (name.ends_with(']'))
+              # Turn DataType[] -> DataType[]()
+              args = CmdArgs()
+            else
+              trace; throw t.error( "[INTERNAL] TODO: add Singleton support." )
+            endIf
+          endIf
 
           if (new_type.is_array)
             return CmdCreateArray( t, new_type, args ).resolve( scope )
@@ -1834,6 +1841,9 @@ class CmdWriteArrayElement : Cmd
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )
         endWhichIs
+
+      elseIf (array_type.element_type.is_reference)
+        writer.print( "objects[" )
 
       else
         throw t.error( "[INTERNAL] TODO: CmdWriteArrayElement non-primitive" )

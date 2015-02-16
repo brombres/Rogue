@@ -130,6 +130,19 @@ void RogueArrayType::configure()
   object_size = (int) sizeof( RogueArray );
 }
 
+void RogueArrayType::trace( RogueObject* obj )
+{
+  RogueArray* array = (RogueArray*) obj;
+  if ( !array->is_reference_array ) return;
+
+  int count = array->count;
+  RogueObject** cur = array->objects + count;
+  while (--count >= 0)
+  {
+    ROGUE_TRACE( *(--cur) );
+  }
+}
+
 RogueArray* RogueArray::create( int count, int element_size, bool is_reference_array )
 {
   if (count < 0) count = 0;
@@ -146,7 +159,6 @@ RogueArray* RogueArray::create( int count, int element_size, bool is_reference_a
   return array;
 }
 
-
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
@@ -154,6 +166,7 @@ RogueProgramCore::RogueProgramCore() : objects(NULL)
 {
   type_RogueObject = new RogueObjectType();
   type_RogueString = new RogueStringType();
+  type_RogueArray  = new RogueArrayType();
   pi = acos(-1);
 }
 

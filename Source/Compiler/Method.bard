@@ -155,11 +155,9 @@ class Method
         buffer.print( ")" )
 
         local generic_sig = buffer->String
-        if (generic_sig != signature)
-          generic_method = type_context.generic_type.find_method( generic_sig )
-          if (not generic_method)
-            throw t.error( "[INTERNAL] Could not find generic mapping of $::$ -> $::$" (type_context,signature,type_context.generic_type,generic_sig) )
-          endIf
+        generic_method = type_context.generic_type.find_method( generic_sig )
+        if (not generic_method)
+          throw t.error( "[INTERNAL] Could not find generic mapping of $::$ -> $::$" (type_context,signature,type_context.generic_type,generic_sig) )
         endIf
       endIf
 
