@@ -3,7 +3,8 @@ class Test
 
   METHODS
     method init
-      #local a = Array<<Integer>>()
+      local a = Array<<Integer>>(5)
+      println a[0]
       println "Woot!"
 
     method sqrt( n:Integer )->Integer
@@ -49,6 +50,11 @@ endClass
 class String
 endClass
 
-class Array<<$DataType>> [native]
+class NativeArray [native]
+endClass
+
+class Array<<$DataType>> : NativeArray [native]
+  METHODS
+    method count->Integer [native]
 endClass
 

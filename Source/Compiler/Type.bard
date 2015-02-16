@@ -1,20 +1,23 @@
 class Type
   PROPERTIES
-    t          : Token
-    name       : String
-    attributes = Attributes()
-    index      = -1
+    t            : Token
+    name         : String
+    attributes   = Attributes()
+    index        = -1
 
-    defined    : Logical
-    organized  : Logical
-    resolved   : Logical
-    visiting   : Logical
+    defined      : Logical
+    organized    : Logical
+    resolved     : Logical
+    visiting     : Logical
 
     base_class : Type
     base_types = Type[]
     flat_base_types = Type[]
 
     generic_type : Type
+
+    is_array     : Logical
+    element_type : Type
 
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
@@ -46,10 +49,14 @@ class Type
       return p
 
     method assign_cpp_name
-      cpp_name = Program.validate_cpp_name( Program.code_prefix + name )
-      forEach (p in property_list)
-        p.cpp_name = Program.validate_cpp_name( "p_" + p.name )
-      endForEach
+      if (is_array)
+        cpp_name = Program.code_prefix + "Array"
+      else
+        cpp_name = Program.code_prefix + Program.validate_cpp_name( name )
+        forEach (p in property_list)
+          p.cpp_name = Program.validate_cpp_name( "p_" + p.name )
+        endForEach
+      endIf
 
     method compile_type->Type
       if (generic_type?) return generic_type
@@ -173,6 +180,20 @@ class Type
         --i
       endWhile
 
+      if (this isNot Program.type_NativeArray)
+        is_array = this.instance_of( Program.type_NativeArray )
+        if (is_array)
+          local cur_type = this
+          while (not cur_type.name.begins_with("Array<<"))
+            cur_type = cur_type.base_class
+            if (cur_type is null) throw t.error( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>." )
+          endWhile
+
+          local element_type_name = cur_type.name.after_first("<<").before_last(">>")
+          element_type = Program.get_type_reference( t, element_type_name ).organize
+        endIf
+      endIf
+
       return this
 
     method collect_base_types( list:Type[] )
@@ -244,6 +265,8 @@ class Type
       Program.type_list.add( this )
 
       organize
+
+      if (element_type?) element_type.resolve
 
       if (generic_type?) generic_type.resolve
 

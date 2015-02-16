@@ -7,7 +7,7 @@ class Method
     name         : String
     signature    : String
     cpp_name     : String
-    attributes   : Integer
+    attributes   = Attributes()
 
     return_type  : Type
 
@@ -63,14 +63,14 @@ class Method
       return this
 
     method is_initializer->Logical
-      return (attributes & Attribute.is_initializer)?
+      return (attributes.flags & Attribute.is_initializer)?
 
     method is_native->Logical
-      return (attributes & Attribute.is_native)?
+      return (attributes.flags & Attribute.is_native)?
 
     method organize->Method
       if (name == "init")
-        attributes |= Attribute.is_initializer
+        attributes.flags |= Attribute.is_initializer
         return_type = type_context
       endIf
 

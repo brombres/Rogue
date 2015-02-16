@@ -130,6 +130,22 @@ void RogueArrayType::configure()
   object_size = (int) sizeof( RogueArray );
 }
 
+RogueArray* RogueArray::create( int count, int element_size, bool is_reference_array )
+{
+  if (count < 0) count = 0;
+  int data_size  = count * element_size;
+  int total_size = sizeof(RogueArray) + data_size;
+
+  RogueArray* array = (RogueArray*) rogue_program.allocate_object( rogue_program.type_RogueArray, total_size );
+
+  memset( array->bytes, 0, data_size );
+  array->count = count;
+  array->element_size = element_size;
+  array->is_reference_array = is_reference_array;
+
+  return array;
+}
+
 
 //-----------------------------------------------------------------------------
 //  RogueProgramCore

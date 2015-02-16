@@ -296,9 +296,11 @@ class Parser
         endIf
       endIf
 
+      parse_attributes( this_method.attributes )
+
       consume_eols
       if (consume(TokenType.keyword_native))
-        this_method.attributes |= Attribute.is_native
+        this_method.attributes.add( Attribute.is_native )
         local buffer = StringBuilder()
         local found_native_code = false
         while (reader.has_another)
@@ -1190,21 +1192,15 @@ class Parser
         access.context = context
         return parse_member_access( access )
 
-      #{
       elseIf (consume(TokenType.symbol_open_bracket))
         # Parse obj[index]
         consume_eols
-        local access = CmdElementAccess( t, context )
-        local first = true
-        while (first or consume(TokenType.symbol_comma))
-          first = false
-          access.args.add( parse_expression )
-          consume_eols
-        endWhile
+        local access = CmdElementAccess( t, context, parse_expression )
         consume_eols
         must_consume( TokenType.symbol_close_bracket )
         return parse_member_access( access )
 
+      #{
       elseIf (consume(TokenType.symbol_arrow))
         # Conversion operation e.g. value->Integer
         consume_eols

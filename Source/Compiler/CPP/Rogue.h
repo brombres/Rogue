@@ -148,9 +148,9 @@ struct RogueArrayType : RogueType
 
 struct RogueArray : RogueObject
 {
-  RogueInteger   count;
-  RogueInteger   element_size;
-  RogueType*     element_type;
+  int  count;
+  int  element_size;
+  bool is_reference_array;
 
   union
   {
@@ -164,7 +164,7 @@ struct RogueArray : RogueObject
     RogueReal      reals[1];
   };
 
-  //static RogueArray* create( const char* c_string, int count=-1 );
+  static RogueArray* create( int count, int element_size, bool is_reference_array=false );
   //static void         println( RogueString* st );
 };
 
@@ -181,6 +181,7 @@ struct RogueProgramCore
 
   RogueObjectType* type_RogueObject;
   RogueStringType* type_RogueString;
+  RogueArrayType*  type_RogueArray;
 
   RogueReal pi;
 

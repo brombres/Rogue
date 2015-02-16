@@ -23,15 +23,16 @@ class Program [requisite singleton]
     type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
 
     type_Real       : Type
-    type_Float      : Type
-    type_Long       : Type
-    type_Integer    : Type
-    type_Character  : Type
-    type_Byte       : Type
-    type_Logical    : Type
+    type_Float       : Type
+    type_Long        : Type
+    type_Integer     : Type
+    type_Character   : Type
+    type_Byte        : Type
+    type_Logical     : Type
 
-    type_Object     : Type
-    type_String     : Type
+    type_Object      : Type
+    type_String      : Type
+    type_NativeArray : Type
 
     literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
     literal_string_list   = String[]
@@ -40,16 +41,17 @@ class Program [requisite singleton]
 
   METHODS
     method configure
-      type_Real      = create_built_in_type( "Real",      Attribute.is_native )
-      type_Float     = create_built_in_type( "Float",     Attribute.is_native )
-      type_Long      = create_built_in_type( "Long",      Attribute.is_native )
-      type_Integer   = create_built_in_type( "Integer",   Attribute.is_native )
-      type_Character = create_built_in_type( "Character", Attribute.is_native )
-      type_Byte      = create_built_in_type( "Byte",      Attribute.is_native )
-      type_Logical   = create_built_in_type( "Logical",   Attribute.is_native )
+      type_Real        = create_built_in_type( "Real",      Attribute.is_native | Attribute.is_primitive )
+      type_Float       = create_built_in_type( "Float",     Attribute.is_native | Attribute.is_primitive )
+      type_Long        = create_built_in_type( "Long",      Attribute.is_native | Attribute.is_primitive )
+      type_Integer     = create_built_in_type( "Integer",   Attribute.is_native | Attribute.is_primitive )
+      type_Character   = create_built_in_type( "Character", Attribute.is_native | Attribute.is_primitive )
+      type_Byte        = create_built_in_type( "Byte",      Attribute.is_native | Attribute.is_primitive )
+      type_Logical     = create_built_in_type( "Logical",   Attribute.is_native | Attribute.is_primitive )
 
-      type_Object    = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
-      type_String    = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_functional )
+      type_Object      = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
+      type_String      = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_functional )
+      type_NativeArray = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
 
     method create_unique_id->String
       ++next_unique_id
@@ -96,6 +98,8 @@ class Program [requisite singleton]
       local m = main_class.find_method( "init()" )
       if (m?) m.resolve
 
+      type_NativeArray.resolve
+
     method validate_cpp_name( name:String )->String
       local i1 = name.locate("<<")
       while (i1 != -1)
@@ -106,8 +110,20 @@ class Program [requisite singleton]
         local after  = name.substring(i2+2)
         local middle = name.substring(i1+2,i2-1)
 
-        name = "$_of_$$" (before,middle,after)
+        #name = "$_of_$$" (before,middle,after)
+
+        name = "$$$" (validate_cpp_name(middle),before,after)
+        # Example:
+        #   Table<<String,Integer>>[] -> StringIntegerTable[]
+
         i1 = name.locate("<<")
+      endWhile
+
+      #   StringIntegerTable[] -> StringIntegerTableList
+      i1 = name.locate("[]")
+      while (i1 != -1)
+        name = name.substring(0,i1-1) + "List" + name.substring(0,i1+2)
+        i1 = name.locate("[]")
       endWhile
 
       string_buffer.clear
