@@ -4,7 +4,13 @@ class Test
   METHODS
     method init
       local a = Array<<Integer>>(5)
+      a[0] = 2
+      a[1] = a[0]++
+      a[2] = ++a[0]
       println a[0]
+      println a[1]
+      println a[2]
+      println a.count
       println "Woot!"
 
     method sqrt( n:Integer )->Integer

@@ -820,26 +820,33 @@ endClass
 class CmdElementAccess : CmdAccessWithModify
   PROPERTIES
     context   : Cmd
-    index_cmd : Cmd
+    index : Cmd
 
   METHODS
-    method init( t, context, index_cmd )
+    method init( t, context, index )
 
     method clone->Cmd
-      return CmdElementAccess( t, context.clone, index_cmd.clone ).set_modifiers( this )
+      return CmdElementAccess( t, context.clone, index.clone ).set_modifiers( this )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope )
 
       local context_type = context.require_type
       if (context_type.is_array)
-        return CmdReadArrayElement( t, context, index_cmd ).set_modifiers( this ).resolve( scope )
+        return CmdReadArrayElement( t, context, index ).set_modifiers( this ).resolve( scope )
       else
-        throw t.error( "[INTERNAL] TODO: CmdElementAccess with non-array object." )
+        throw t.error( "[INTERNAL] TODO: CmdElementAccess::resolve() with non-array object." )
       endIf
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      throw t.error( "[INTERNAL] TODO: CmdElementAccess resolve_assignment." )
+      context = context.resolve( scope )
+
+      local context_type = context.require_type
+      if (context_type.is_array)
+        return CmdWriteArrayElement( t, context, index, new_value ).set_modifiers( this ).resolve( scope )
+      else
+        throw t.error( "[INTERNAL] TODO: CmdElementAccess::resolve_assignment() with non-array object." )
+      endIf
 
     #method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
 endClass
@@ -1726,15 +1733,15 @@ endClass
 
 class CmdReadArrayElement : CmdAccessWithModify
   PROPERTIES
-    context      : Cmd
-    array_type   : Type
-    index_cmd    : Cmd
+    context    : Cmd
+    array_type : Type
+    index      : Cmd
 
   METHODS
-    method init( t, context, index_cmd )
+    method init( t, context, index )
 
     method clone->Cmd
-      return CmdReadArrayElement( t, context.clone, index_cmd.clone )
+      return CmdReadArrayElement( t, context.clone, index.clone )
 
     method print_cpp( writer:CPPWriter )
       if (premodify_count > 0) writer.print("++")
@@ -1757,16 +1764,92 @@ class CmdReadArrayElement : CmdAccessWithModify
         throw t.error( "[INTERNAL] TODO: CmdReadArrayElement non-primitive" )
       endIf
         
-      index_cmd.print_cpp( writer )
+      index.print_cpp( writer )
       writer.print( "]" )
 
       if (postmodify_count > 0) writer.print("++")
       elseIf (postmodify_count < 0) writer.print("--")
 
     method resolve( scope:Scope )->Cmd
+      if (array_type?) return this
+
       context = context.resolve(scope)
       array_type = context.require_type
-      index_cmd = index_cmd.resolve(scope).require_integer
+      index = index.resolve(scope).require_integer
+      return this
+
+    method type->Type
+      return array_type.element_type
+endClass
+
+class CmdReadArrayCount : Cmd
+  PROPERTIES
+    context      : Cmd
+    array_type   : Type
+
+  METHODS
+    method init( t, context )
+
+    method clone->Cmd
+      return CmdReadArrayCount( t, context.clone )
+
+    method print_cpp( writer:CPPWriter )
+      context.print_cpp( writer )
+      writer.print( "->count" )
+        
+    method resolve( scope:Scope )->Cmd
+      if (array_type?) return this
+
+      context = context.resolve(scope)
+      array_type = context.require_type
+      return this
+
+    method type->Type
+      return Program.type_Integer
+endClass
+
+class CmdWriteArrayElement : Cmd
+  PROPERTIES
+    context    : Cmd
+    array_type : Type
+    index      : Cmd
+    new_value  : Cmd
+
+  METHODS
+    method init( t, context, index, new_value )
+
+    method clone->Cmd
+      return CmdWriteArrayElement( t, context.clone, index.clone, new_value.clone )
+
+    method print_cpp( writer:CPPWriter )
+      context.print_cpp( writer )
+      writer.print( "->" )
+      if (array_type.element_type.is_primitive)
+        whichIs (array_type.element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+        endWhichIs
+
+      else
+        throw t.error( "[INTERNAL] TODO: CmdWriteArrayElement non-primitive" )
+      endIf
+        
+      index.print_cpp( writer )
+      writer.print( "] = " )
+      new_value.print_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      if (array_type?) return this
+
+      context = context.resolve(scope)
+      array_type = context.require_type
+      index = index.resolve(scope).require_integer
+      new_value = new_value.resolve( scope ).require_value
       return this
 
     method type->Type

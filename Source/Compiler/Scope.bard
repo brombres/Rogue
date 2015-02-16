@@ -26,21 +26,33 @@ class Scope
       local m = find_method( type_context, access, error_on_fail )
       if (not m) return null
 
+      local t = access.t
+
       local context = access.context
-      if (not context) context = CmdReadThis( access.t, type_context )
+      if (not context) context = CmdReadThis( t, type_context )
 
       local args = access.args
       if (not args) args = CmdArgs()
 
       local cmd : Cmd
       if (m.is_native)
+        if (type_context.is_array)
+          which (m.name)
+            case "count"
+              if (args? and args.count?) throw t.error( "Invalid arguments to array count." )
+              return CmdReadArrayCount( t, context ).resolve( this )
+            others
+              throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
+          endWhich
+        endIf
+
         if (m.native_code?)
-          cmd = CmdInlineNativeCall( access.t, context, m, args )
+          cmd = CmdInlineNativeCall( t, context, m, args )
         else
-          throw access.t.error( "[INTERNAL] TODO: support native methods." )
+          throw t.error( "[INTERNAL] TODO: support native methods." )
         endIf
       else
-        cmd = CmdStaticCall( access.t, context, m, args )
+        cmd = CmdStaticCall( t, context, m, args )
       endIf
       return cmd.set_modifiers(access).resolve( this )
 

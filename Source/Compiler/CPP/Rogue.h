@@ -154,14 +154,14 @@ struct RogueArray : RogueObject
 
   union
   {
-    RogueObject    objects[1];
-    RogueByte      logicals[1];
-    RogueByte      bytes[1];
-    RogueCharacter characters[1];
-    RogueInteger   integers[1];
-    RogueLong      longs[1];
-    RogueFloat     floats[1];
-    RogueReal      reals[1];
+    RogueObject    objects[];
+    RogueByte      logicals[];
+    RogueByte      bytes[];
+    RogueCharacter characters[];
+    RogueInteger   integers[];
+    RogueLong      longs[];
+    RogueFloat     floats[];
+    RogueReal      reals[];
   };
 
   static RogueArray* create( int count, int element_size, bool is_reference_array=false );
