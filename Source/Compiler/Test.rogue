@@ -4,7 +4,7 @@ class Test
 
   METHODS
     method init
-      nums.data[0] = 3
+      nums[0] = 3
       println nums[0]
 
     method sqrt( n:Integer )->Integer
@@ -50,5 +50,8 @@ class List<<$DataType:Object>> : GenericList
 
     method get( index:Integer )->$DataType
       inline this.data[index]
+
+    method set( index:Integer, new_value:$DataType )
+      inline this.data[ index ] = new_value
 endClass
 

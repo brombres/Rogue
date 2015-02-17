@@ -863,7 +863,9 @@ class CmdElementAccess : CmdAccessWithModify
       if (context_type.is_array)
         return CmdWriteArrayElement( t, context, index, new_value ).set_modifiers( this ).resolve( scope )
       else
-        throw t.error( "[INTERNAL] TODO: CmdElementAccess::resolve_assignment() with non-array object." )
+        local args = CmdArgs()
+        args.add( index ).add( new_value )
+        return scope.resolve_call( context_type, CmdAccess(t,context,"set",args), true )
       endIf
 
     #method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd

@@ -73,15 +73,13 @@ class CPPWriter
       return this
 
     method print( type:Type )->CPPWriter
-      type = type.compile_type
       print_type_name( type )
-      if (type? and type.is_reference) buffer.print("*")
+      if (type? and type.compile_type.is_reference) buffer.print("*")
       return this
 
     method print_type_name( type:Type )->CPPWriter
-      type = type.compile_type
       print_indent
-      if (type?) buffer.print( type.cpp_name )
+      if (type?) buffer.print( type.compile_type.cpp_name )
       else       buffer.print( "void" )
       return this
 
