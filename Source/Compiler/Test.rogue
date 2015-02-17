@@ -5,9 +5,13 @@ class Test
   METHODS
     method init
       local st = "Test"
-      println st.count
-      println st[0]
-      println st[st.count-1]
+      println st
+      forEach (ch in st)
+        println ch
+      endForEach
+      forEach (ch in st step -1)
+        println ch
+      endForEach
 
     method sqrt( n:Integer )->Integer
       $if ("C++") nativeInline '((int)sqrt((double)$n))'

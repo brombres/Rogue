@@ -79,7 +79,7 @@ class Scope
       return cmd.set_modifiers(access).resolve( this )
 
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method
-      local candidates = CandidateMethods( access, error_on_fail )
+      local candidates = CandidateMethods( type_context, access, error_on_fail )
 
       local list = type_context.method_lookup_by_name[ access.name ]
       if (list?)
@@ -104,13 +104,14 @@ endClass
 
 class CandidateMethods
   PROPERTIES
+    type_context        : Type
     access              : CmdAccess
     available=Method[]  : Method[]
     compatible=Method[] : Method[]
     error_on_fail       : Logical
 
   METHODS
-    method init( access, error_on_fail )
+    method init( type_context, access, error_on_fail )
 
     method has_match->Logical
       return (available.count == 1)
@@ -130,7 +131,7 @@ class CandidateMethods
 
         if (available.count == 0)
           if (not error_on_fail) return false
-          throw access.t.error( //No such method or variable "$" exists in the current scope.// (access.name) )
+          throw access.t.error( //No such method or variable "$" exists in current scope of type $.// (access.name,type_context) )
 
         elseIf (require_compatible)
           if (not error_on_fail) return false

@@ -815,7 +815,6 @@ class Parser
 
     method parse_for_each->Cmd
       local t = read  # 'forEach'
-      local cmd_block = CmdBlock(t)
 
       local has_parens = consume( TokenType.symbol_open_paren )
 
@@ -829,6 +828,8 @@ class Parser
             local collection = parse_expression
             local range = collection as CmdRange
             if (range?)
+              local cmd_block = CmdBlock(t)
+
               local control_var = this_method.add_local( t, access.name )
               control_var.initial_value = range.first
               cmd_block.statements.add( CmdLocalDeclaration(range.first.t,control_var) )
@@ -850,8 +851,19 @@ class Parser
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
               cmd_block.statements.add( cmd_for_each )
+              return cmd_block
+
             else
-              throw t.error( "Literal range expected." )
+              local step_cmd : Cmd
+              if (consume(TokenType.keyword_step))
+                step_cmd = parse_expression
+              endIf
+
+              if (has_parens) must_consume( TokenType.symbol_close_paren )
+
+              local cmd_for_each = CmdForEachInCollection( t, access.name, collection, step_cmd )
+              parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
+              return cmd_for_each
             endIf
           else
             throw t.error( "Syntax error in forEach - keyword 'in' expected." )
@@ -861,7 +873,8 @@ class Parser
         throw expr.t.error( "Syntax error in forEach - control variable expected." )
       endIf
 
-      return cmd_block
+      trace
+      throw expr.t.error( "[INTERNAL ERROR]" )
 
     method peek->Token
       return reader.peek
