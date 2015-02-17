@@ -1,0 +1,52 @@
+class InlineArgs
+  PROPERTIES
+    method_info      : Method
+    this_context     : Cmd
+    arg_lookup : Table<<String,Cmd>>
+
+  METHODS
+    method init( method_info, this_context, args:CmdArgs )
+      if (args?)
+        arg_lookup = Table<<String,Cmd>>()
+        forEach (index of args)
+          arg_lookup[ method_info.parameters[index].name ] = args[index]
+        endForEach
+      endIf
+
+    method inline_this->Cmd
+      return this_context.clone()
+
+      #{
+    method inline_access( access:CmdAccess )->Cmd
+      if (access.context?) return access
+
+      local arg = arg_lookup[ access.name ]
+      if (not arg) return access
+
+      local dup = arg.clone
+      if (access.args?)
+        local new_access = dup as CmdAccess
+        if (new_access?)
+          if (new_access.args?)
+            throw access.t.error( "Illegal arguments on inline code." )
+          else
+            new_access.args = access.args
+          endIf
+        else
+          throw access.t.error( "Illegal arguments on inline code." )
+        endIf
+      endIf
+
+      return dup
+      }#
+
+    method inline_read_local( read_cmd:CmdReadLocal )->Cmd
+      local arg = arg_lookup[ read_cmd.local_info.name ]
+      if (not arg) return read_cmd
+      return arg.clone.set_modifiers( read_cmd )
+
+    method inline_write_local( write_cmd:CmdWriteLocal )->Cmd
+      local arg = arg_lookup[ write_cmd.local_info.name ]
+      if (not arg) return write_cmd
+      return CmdAssign( write_cmd.t, arg.clone(), write_cmd.new_value )
+endClass

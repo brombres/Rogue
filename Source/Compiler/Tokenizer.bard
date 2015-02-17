@@ -97,6 +97,7 @@ class Tokenizer
       TokenType.keyword_forEach      = define( TokenType("forEach") )
       TokenType.keyword_if           = define( TokenType("if") )
       TokenType.keyword_in           = define( TokenType("in") )
+      TokenType.keyword_inline       = define( TokenType("inline") )
       TokenType.keyword_local        = define( TokenType("local") )
       TokenType.keyword_native       = define( TokenType("native") )
       TokenType.keyword_of           = define( TokenType("of") )
@@ -118,6 +119,7 @@ class Tokenizer
       TokenType.keyword_not                  = define( TokenType("not") )
       TokenType.keyword_or                   = define( TokenType("or") )
       TokenType.keyword_pi                   = define( TokenType("pi") )
+      TokenType.keyword_this                 = define( TokenType("this") )
       TokenType.keyword_true                 = define( TokenType("true") )
       TokenType.keyword_xor                  = define( TokenType("xor") )
 

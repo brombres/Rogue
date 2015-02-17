@@ -44,7 +44,7 @@ syn keyword bardType         Integer Byte Character Real Logical null String
 syn keyword bardStorageClass overlaying underlying
 syn keyword bardScopeDecl    readOnly writeOnly public private limited const local 
 syn keyword bardScopeDecl    deferred singleton managed
-syn keyword bardStorageClass native requisite abstract final propagated functional dynamicAccess
+syn keyword bardStorageClass native inline requisite abstract final propagated functional dynamicAccess
 syn keyword bardStorageClass marshalling omit
 syn keyword bardExceptions   throw try catch finally
 syn keyword bardPreProc      useFramework

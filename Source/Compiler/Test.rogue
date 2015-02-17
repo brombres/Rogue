@@ -1,11 +1,11 @@
 class Test
   PROPERTIES
-    alpha : Alpha[][]
+    nums = Integer[]
 
   METHODS
     method init
-      alpha = Alpha[][]
-      alpha.data[0] = Alpha[]
+      nums.data[0] = 3
+      println nums[0]
 
     method sqrt( n:Integer )->Integer
       $if ("C++") native '((int)sqrt((double)$n))'
@@ -47,5 +47,8 @@ class List<<$DataType:Object>> : GenericList
   METHODS
     method init
       data = Array<<$DataType>>( 2 )
+
+    method get( index:Integer )->$DataType
+      inline this.data[index]
 endClass
 

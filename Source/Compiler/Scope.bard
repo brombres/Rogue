@@ -1,3 +1,5 @@
+$[include "InlineArgs.bard"]
+
 class Scope
   PROPERTIES
     this_type   : Type
@@ -51,6 +53,21 @@ class Scope
         else
           throw t.error( "[INTERNAL] TODO: support native methods." )
         endIf
+
+      elseIf (m.is_inline)
+        local inline_args = InlineArgs( m, context, args )
+        local inline_statements = CmdStatementList()
+        forEach (statement in m.statements)
+          local inline_statement = statement.clone( inline_args )
+          if (inline_statement?) inline_statements.add( inline_statement )
+        endForEach
+
+        inline_statements.resolve( this )
+        if (inline_statements.count == 1) return inline_statements.first
+
+        trace
+        throw t.error( "TODO: multi-line inline statements" )
+        
       else
         cmd = CmdStaticCall( t, context, m, args )
       endIf

@@ -65,6 +65,9 @@ class Method
     method is_initializer->Logical
       return (attributes.flags & Attribute.is_initializer)?
 
+    method is_inline->Logical
+      return (attributes.flags & Attribute.is_inline)?
+
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)?
 
@@ -108,7 +111,7 @@ class Method
       return this
 
     method print_prototype( writer:CPPWriter )
-      if (is_native) return
+      if (is_native or is_inline) return
       print_signature( writer )
       writer.println( ";" )
 
@@ -123,7 +126,7 @@ class Method
       writer.print( " )" )
 
     method print_definition( writer:CPPWriter )
-      if (is_native) return
+      if (is_native or is_inline) return
       print_signature( writer )
       writer.println
       writer.println "{"

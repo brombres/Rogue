@@ -303,6 +303,7 @@ class Parser
 
       consume_eols
       if (consume(TokenType.keyword_native))
+        # native "$this.fn($arg)"
         this_method.attributes.add( Attribute.is_native )
         local buffer = StringBuilder()
         local found_native_code = false
@@ -317,6 +318,16 @@ class Parser
           endIf
         endWhile
         if (found_native_code) this_method.native_code = buffer->String
+
+      elseIf (next_is(TokenType.keyword_inline))
+        # inline this.fn(arg)
+        # inline ...
+        this_method.attributes.add( Attribute.is_inline )
+        while (consume(TokenType.keyword_inline))
+          parse_single_line_statements( this_method.statements )
+          consume_eols
+        endWhile
+
       else
         parse_multi_line_statements( this_method.statements )
       endIf
@@ -1373,6 +1384,9 @@ class Parser
         local value = t->Character
         return CmdLiteralCharacter( t, value->Character )
 
+      elseIf (consume(TokenType.keyword_this))
+        return CmdReadThis( t, this_type )
+
       elseIf (consume(TokenType.keyword_true))
         return CmdLiteralLogical( t, true )
 
@@ -1383,9 +1397,6 @@ class Parser
         return CmdLiteralReal( t, pi )
 
       #{
-      elseIf (consume(TokenType.keyword_this))
-        return CmdThis( t, this_type )
-
       elseIf (consume(TokenType.keyword_function))
         return parse_function( t )
       elseIf (consume(TokenType.symbol_open_bracket))

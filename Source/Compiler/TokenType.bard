@@ -33,6 +33,7 @@ class TokenType
     keyword_forEach              : TokenType
     keyword_if                   : TokenType
     keyword_in                   : TokenType
+    keyword_inline               : TokenType
     keyword_local                : TokenType
     keyword_native               : TokenType
     keyword_of                   : TokenType
@@ -54,6 +55,7 @@ class TokenType
     keyword_not                  : TokenType
     keyword_or                   : TokenType
     keyword_pi                   : TokenType
+    keyword_this                 : TokenType
     keyword_true                 : TokenType
     keyword_xor                  : TokenType
 
