@@ -124,10 +124,13 @@ struct RogueString : RogueObject
 {
   RogueInteger   count;
   RogueInteger   hash_code;
-  RogueCharacter characters[1];
+  RogueCharacter characters[];
 
+  static RogueString* create( int count );
   static RogueString* create( const char* c_string, int count=-1 );
   static void         println( RogueString* st );
+
+  RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
 };
 
 

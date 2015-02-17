@@ -55,6 +55,10 @@ class Program [requisite singleton]
       type_NativeArray = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
       type_GenericList = create_built_in_type( "GenericList", Attribute.is_class )
 
+      # Ensure that "" is the first literal string
+      literal_string_list.add( "" )
+      literal_string_lookup[ "" ] = 0
+
     method create_unique_id->String
       ++next_unique_id
       return "_auto_" + (next_unique_id-1)

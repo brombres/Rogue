@@ -77,15 +77,24 @@ void RogueStringType::configure()
   object_size = (int) sizeof( RogueString );
 }
 
+RogueString* RogueString::create( int count )
+{
+  if (count < 0) count = 0;
+
+  int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
+
+  RogueString* st = (RogueString*) rogue_program.allocate_object( rogue_program.type_RogueString, total_size );
+  st->count = count;
+  st->hash_code = 0;
+
+  return st;
+}
+
 RogueString* RogueString::create( const char* c_string, int count )
 {
   if (count == -1) count = strlen( c_string );
 
-  int total_size = sizeof(RogueString) + ((count - 1) * sizeof(RogueCharacter));
-  // RogueString already includes one character in its size.
-
-  RogueString* st = (RogueString*) rogue_program.allocate_object( rogue_program.type_RogueString, total_size );
-  st->count = count;
+  RogueString* st = RogueString::create( count );
 
   // Copy 8-bit chars to 16-bit data while computing hash code.
   RogueCharacter* dest = st->characters - 1;
@@ -101,6 +110,34 @@ RogueString* RogueString::create( const char* c_string, int count )
   st->hash_code = hash_code;
 
   return st;
+}
+
+RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
+{
+  // Clamp i1 and i2
+  if (i1 < 0) i1 = 0;
+  if (i2 == -1 || i2 >= count) i2 = count - 1;
+
+  // Return empty quotes if zero-length
+  if (i1 > i2) return rogue_program.literal_strings[0]; // empty string
+
+  int new_count = (i2 - i1) + 1;
+
+  RogueString* result = RogueString::create( new_count );
+
+  // Copy character substring while computing hash code.
+  RogueCharacter* dest = result->characters - 1;
+  RogueCharacter* src  = (characters + i1) - 1;
+  int hash_code = 0;
+  while (--new_count >= 0)
+  {
+    RogueCharacter ch = *(++src);
+    *(++dest) = ch;
+    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
+  }
+
+  result->hash_code = hash_code;
+  return result;
 }
 
 void RogueString::println( RogueString* st )

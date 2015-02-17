@@ -36,6 +36,11 @@ class Scope
       local args = access.args
       if (not args) args = CmdArgs()
 
+      # Validate args
+      while (args.count < m.parameters.count)
+        args.add( m.parameters[args.count].initial_value.clone )
+      endWhile
+
       local cmd : Cmd
       if (m.is_native)
         if (type_context.is_array)
@@ -51,7 +56,7 @@ class Scope
         if (m.native_code?)
           cmd = CmdInlineNativeCall( t, context, m, args )
         else
-          throw t.error( "[INTERNAL] TODO: support native methods." )
+          cmd = CmdNativeCall( t, context, m, args )
         endIf
 
       elseIf (m.is_inline)

@@ -283,6 +283,11 @@ class CmdPrintln : CmdStatement
           expression.print_cpp( writer )
           writer.print " )"
 
+        elseIf (print_type is Program.type_Character)
+          writer.print( //printf( "%c\\n", // )
+          expression.print_cpp( writer )
+          writer.print " )"
+
         elseIf (print_type is Program.type_Logical)
           writer.print( //printf( "%s\\n", // )
           expression.print_cpp( writer )
@@ -853,7 +858,7 @@ class CmdElementAccess : CmdAccessWithModify
       else
         local args = CmdArgs()
         args.add( index )
-        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true )
+        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true ).set_modifiers(this)
       endIf
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
@@ -1087,6 +1092,32 @@ class CmdStaticCall : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
       return CmdStaticCall( t, clone(inline_args,context), method_info, args.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      local compile_target = method_info.compile_target
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      context.print_cpp( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
+          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+          arg.print_cpp( writer )
+          writer.print( ")" )
+        else
+          arg.print_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+endClass
+
+
+class CmdNativeCall : CmdCall
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdNativeCall( t, clone(inline_args,context), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target

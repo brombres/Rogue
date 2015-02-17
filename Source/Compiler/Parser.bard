@@ -170,6 +170,8 @@ class Parser
       while (reader.has_another and not next_is(TokenType.symbol_close_bracket))
         if (consume(TokenType.keyword_native))
           attributes.add( Attribute.is_native )
+        elseIf (consume("functional"))
+          attributes.add( Attribute.is_functional )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else
@@ -302,13 +304,13 @@ class Parser
       parse_attributes( this_method.attributes )
 
       consume_eols
-      if (consume(TokenType.keyword_native))
+      if (consume(TokenType.keyword_nativeInline))
         # native "$this.fn($arg)"
         this_method.attributes.add( Attribute.is_native )
         local buffer = StringBuilder()
         local found_native_code = false
         while (reader.has_another)
-          if (consume(TokenType.keyword_native) or consume_eols)
+          if (consume(TokenType.keyword_nativeInline) or consume_eols)
           elseIf (next_is(TokenType.literal_string))
             found_native_code = true
             if (buffer.count?) buffer.println

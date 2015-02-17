@@ -4,16 +4,21 @@ class Test
 
   METHODS
     method init
-      nums[0] = 3
-      println nums[0]
+      local st = "Test"
+      println st.count
+      println st[0]
+      println st[st.count-1]
 
     method sqrt( n:Integer )->Integer
-      $if ("C++") native '((int)sqrt((double)$n))'
+      $if ("C++") nativeInline '((int)sqrt((double)$n))'
 endClass
 
 class Alpha;
 
 primitive Integer
+endPrimitive
+
+primitive Character
 endPrimitive
 
 primitive Logical
@@ -25,7 +30,20 @@ endPrimitive
 class Object
 endClass
 
-class String
+class String [functional]
+  METHODS
+    method count->Integer
+      $if ("C++") nativeInline '$this->count'
+
+    method get( index:Integer )->Character
+      $if ("C++") nativeInline '$this->characters[$index]'
+
+    method hash_code->Integer
+      $if ("C++") nativeInline '$this->hash_code'
+
+    method substring( i1:Integer, i2=-1:Integer )->String
+      $if ("C++") nativeInline '$this->substring($i1,$i2)'
+
 endClass
 
 class NativeArray [native]

@@ -14,6 +14,8 @@ class Method
     parameters = Local[] : Local[]
     locals     = Local[] : Local[]
 
+    min_args     : Integer
+
     statements = CmdStatementList()
 
     generic_method : Method
@@ -25,7 +27,7 @@ class Method
     method init( t, type_context, name )
 
     method accepts_arg_count( n:Integer )->Logical
-      return n == parameters.count
+      return n >= min_args and n <= parameters.count
 
     method add_local( v_t:Token, v_name:String )->Local
       local v = Local( v_t, v_name )
@@ -107,6 +109,11 @@ class Method
         throw t.error( "A method with the signature $ is already defined." (signature) )
       endIf
       type_context.method_lookup_by_signature[signature] = this
+
+      min_args = parameters.count
+      while (min_args >= 1 and parameters[min_args-1].initial_value?)
+        --min_args
+      endWhile
 
       return this
 
