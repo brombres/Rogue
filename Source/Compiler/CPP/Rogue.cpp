@@ -112,6 +112,40 @@ RogueString* RogueString::create( const char* c_string, int count )
   return st;
 }
 
+RogueString* RogueString::plus( RogueCharacter ch )
+{
+  RogueString* result = RogueString::create( count + 1 );
+  memcpy( result->characters, characters, count * sizeof(RogueCharacter) );
+  result->characters[count] = ch;
+  result->hash_code = ((hash_code << 3) - hash_code) + ch;
+  return result;
+}
+
+RogueString* RogueString::plus( RogueString* other )
+{
+  if ( !other ) other = RogueString::create( "null" );
+  if (count == 0)        return other;
+  if (other->count == 0) return this;
+
+  RogueString* result = RogueString::create( count + other->count );
+  memcpy( result->characters, characters, count * sizeof(RogueCharacter) );
+  memcpy( result->characters+count, other->characters, count * sizeof(RogueCharacter) );
+
+  int hash_count = other->count;
+
+  int code = hash_code;
+  while (hash_count >= 10)
+  {
+    code = code * 282475249;  // 7^10
+    hash_count -= 10;
+  }
+
+  while (--hash_count >= 0) code = (code << 3) - code;
+
+  result->hash_code = code + other->hash_code;
+  return result;
+}
+
 RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
 {
   // Clamp i1 and i2

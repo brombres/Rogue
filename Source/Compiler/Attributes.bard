@@ -12,6 +12,7 @@ class Attribute
     is_native           = 32
     is_inline           = 64
     is_initializer      = 128
+    is_immutable        = 256
 endClass
 
 

@@ -89,14 +89,37 @@ class Scope
       endIf
       if (not candidates.update_available) return null
 
+      local args = access.args
+
       local arg_count = 0
-      if (access.args?) arg_count = access.args.count
+      if (args?)
+        args.resolve( this )
+        arg_count = args.count
+      endIf
+
       forEach (m in candidates.available)
         if (m.accepts_arg_count(arg_count)) candidates.compatible.add( m )
       endForEach
       if (not candidates.update_matches) return null
 
       if (candidates.has_match) return candidates.match
+
+      if (arg_count?)
+        # Exact arg type check
+        forEach (m in candidates.available)
+          contingent
+            forEach (index of args)
+              local arg_type = args[index].type
+              local param_type = m.parameters[index].type
+              necessary (arg_type is param_type)
+            endForEach
+          satisfied
+            candidates.compatible.add( m )
+          endContingent
+        endForEach
+        if (not candidates.refine_matches) return null
+        if (candidates.has_match) return candidates.match
+      endIf
 
       candidates.update_matches
       return null
@@ -120,6 +143,9 @@ class CandidateMethods
       if (available.count != 1) return null
       return available[0]
 
+    method refine_matches->Logical
+      return update( false )
+
     method update_available->Logical
       return update( false )
 
@@ -138,7 +164,14 @@ class CandidateMethods
 
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( //Multiple methods match ambiguous call to "$":\n// (access.name) )
+            buffer.print( //Multiple methods match ambiguous call to $()(// (access.name) )
+            if (access.args?)
+              forEach (index of access.args)
+                if (index > 0) buffer.print(',')
+                buffer.print( access.args[index].require_type.name )
+              endForEach
+            endIf
+            buffer.print( //):\n// )
           else
             buffer.print( //Call to "$" uses arguments that are incompatible with the existing definition:\n// (access.name) )
           endIf

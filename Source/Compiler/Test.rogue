@@ -4,14 +4,12 @@ class Test
 
   METHODS
     method init
-      local st = "Test"
+      local st = "A"
+      st += 'B'
+      st += "CD"
       println st
-      forEach (ch in st)
-        println ch
-      endForEach
-      forEach (ch in st step -1)
-        println ch
-      endForEach
+      println st.hash_code
+      println "ABCD".hash_code
 
     method sqrt( n:Integer )->Integer
       $if ("C++") nativeInline '((int)sqrt((double)$n))'
@@ -44,6 +42,12 @@ class String [functional]
 
     method hash_code->Integer
       $if ("C++") nativeInline '$this->hash_code'
+
+    method operator+( value:Character )->String
+      $if ("C++") nativeInline '$this->plus($value)'
+
+    method operator+( value:String )->String
+      $if ("C++") nativeInline '$this->plus($value)'
 
     method substring( i1:Integer, i2=-1:Integer )->String
       $if ("C++") nativeInline '$this->substring($i1,$i2)'

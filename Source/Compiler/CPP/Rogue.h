@@ -130,6 +130,8 @@ struct RogueString : RogueObject
   static RogueString* create( const char* c_string, int count=-1 );
   static void         println( RogueString* st );
 
+  RogueString* plus( RogueCharacter ch );
+  RogueString* plus( RogueString* other );
   RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
 };
 

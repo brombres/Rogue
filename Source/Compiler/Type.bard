@@ -93,6 +93,9 @@ class Type
     method is_functional->Logical
       return (attributes.flags & Attribute.is_functional)?
 
+    method is_immutable->Logical
+      return (attributes.flags & Attribute.is_immutable)?
+
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)?
 

@@ -141,8 +141,27 @@ class Program [requisite singleton]
 
       string_buffer.clear
       forEach (ch in name)
-        if (ch.is_alphanumeric) string_buffer.print( ch )
-        else                    string_buffer.print( '_' )
+        if (ch.is_alphanumeric)
+          string_buffer.print( ch )
+        else
+          which (ch)
+            case '!': string_buffer.print( "NOT" )
+            case '%': string_buffer.print( "MOD" )
+            case '&': string_buffer.print( "AND" )
+            case '*': string_buffer.print( "TIMES" )
+            case '+': string_buffer.print( "PLUS" )
+            case '-': string_buffer.print( "MINUS" )
+            case '.': string_buffer.print( "DOT" )
+            case '/': string_buffer.print( "SLASH" )
+            case '<': string_buffer.print( "LESSTHAN" )
+            case '=': string_buffer.print( "EQUALS" )
+            case '>': string_buffer.print( "GREATERTHAN" )
+            case '^': string_buffer.print( "POWER" )
+            case '|': string_buffer.print( "OR" )
+            case '~': string_buffer.print( "XOR" )
+            others:   string_buffer.print( '_' )
+          endWhich
+        endIf
       endForEach
 
       return string_buffer->String

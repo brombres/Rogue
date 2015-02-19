@@ -172,6 +172,8 @@ class Parser
           attributes.add( Attribute.is_native )
         elseIf (consume("functional"))
           attributes.add( Attribute.is_functional )
+        elseIf (consume("immutable"))
+          attributes.add( Attribute.is_immutable )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else
@@ -264,6 +266,9 @@ class Parser
 
       local t = read
       local name = read_identifier
+      if (name == "operator")
+        name += reader.read->String
+      endIf
       this_method = this_type.add_method( t, name )
 
       # Parse parameters

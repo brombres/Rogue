@@ -5,20 +5,25 @@ class Cmd
   METHODS
     method cast_to( target_type:Type )->Cmd
       if (type is target_type) return this
-      throw t.error( "TODO: Cmd::cast_to()." )
+
+      if (type.is_primitive)
+        throw t.error( "TODO: Cmd::cast_to() primitive->...." )
+      else
+        throw t.error( "TODO: Cmd::cast_to() object->...." )
+      endIf
 
     method clone( inline_args=null:InlineArgs )->Cmd
       throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
 
-    method clone( inline_args=null:InlineArgs, other:Cmd )->Cmd
+    method clone( other:Cmd, inline_args=null:InlineArgs )->Cmd
       if (other?) return other.clone( inline_args )
       return null
 
-    method clone( inline_args=null:InlineArgs, args:CmdArgs )->CmdArgs
+    method clone( args:CmdArgs, inline_args=null:InlineArgs )->CmdArgs
       if (args?) return args.clone( inline_args )
       return null
 
-    method clone( inline_args=null:InlineArgs, statements:CmdStatementList )->CmdStatementList
+    method clone( statements:CmdStatementList, inline_args=null:InlineArgs )->CmdStatementList
       if (statements?) return statements.clone( inline_args )
       return null
 
@@ -201,7 +206,7 @@ class CmdArgs : Cmd[]
 
     method resolve( scope:Scope )
       forEach (i of this)
-        this[i] = this[i].resolve( scope )
+        this[i] = this[i].resolve( scope ).require_value
       endForEach
 endClass
 
@@ -262,7 +267,7 @@ class CmdPrintln : CmdStatement
     method init( t, expression=null )
 
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdPrintln( t, clone(inline_args,expression) )
+      return CmdPrintln( t, clone(expression,inline_args) )
 
     method print_cpp( writer:CPPWriter )
       if (expression?)
@@ -317,7 +322,7 @@ class CmdReturn : CmdStatement
     method init( t, value=null )
 
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdReturn( t, clone(inline_args,value) )
+      return CmdReturn( t, clone(value,inline_args) )
 
     method print_cpp( writer:CPPWriter )
       if (value?)
@@ -402,7 +407,7 @@ class CmdIf : CmdControlStructure
         endForEach
       endIf
 
-      return CmdIf( t, condition.clone(inline_args), statements.clone(inline_args), cloned_else_ifs, clone(inline_args,else_statements) )
+      return CmdIf( t, condition.clone(inline_args), statements.clone(inline_args), cloned_else_ifs, clone(else_statements,inline_args) )
 
     method add( cmd_else_if:CmdElseIf )
       if (else_ifs is null) else_ifs = CmdElseIf[]
@@ -515,7 +520,7 @@ class CmdForEachInRange : CmdControlStructure
     method init( t, control_var, last_var, step_cmd, statements=CmdStatementList() )
 
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachInRange( t, control_var, last_var, clone(inline_args,step_cmd), statements.clone(inline_args) )
+      return CmdForEachInRange( t, control_var, last_var, clone(step_cmd,inline_args), statements.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "for (; " ).print( control_var.cpp_name ).print( "<=" ).print( last_var.cpp_name ).print( "; " )
@@ -543,7 +548,7 @@ class CmdForEachInCollection : CmdControlStructure
     method init( t, control_var_name, collection, step_cmd, statements=CmdStatementList() )
 
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachInCollection( t, control_var_name, collection.clone(inline_args), clone(inline_args,step_cmd), statements.clone(inline_args) )
+      return CmdForEachInCollection( t, control_var_name, collection.clone(inline_args), clone(step_cmd,inline_args), statements.clone(inline_args) )
 
     method resolve( scope:Scope )->Cmd
       collection = collection.resolve( scope )
@@ -582,7 +587,7 @@ class CmdForEachInCollection : CmdControlStructure
           last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
         else
           local args = CmdArgs()
-          index_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
+          index_var.initial_value = CmdSubtract( t, CmdAccess(t,CmdReadLocal(t,collection_var), "count"), CmdLiteralInteger(t,1) )
           last_cmd = CmdLiteralInteger( t, 0 )
         endIf
 
@@ -592,13 +597,13 @@ class CmdForEachInCollection : CmdControlStructure
         if (step_size == 1)
           index_read_cmd = CmdReadLocal( t, index_var ).postmodify(1)
         elseIf (step_size == -1)
-          index_read_cmd = CmdReadLocal( t, index_var ).premodify(-1)
+          index_read_cmd = CmdReadLocal( t, index_var ).postmodify(-1)
         elseIf (step_size >= 0)
           index_read_cmd = CmdReadLocal( t, index_var )
           statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
         else
           index_read_cmd = CmdReadLocal( t, index_var )
-          statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,step_size)))
+          statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,-step_size)))
         endIf
 
         statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
@@ -634,7 +639,7 @@ class CmdForEachInIndexedCollection : CmdControlStructure
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" ).print( index_var.cpp_name )
       if (step_size >= 0) writer.print( " < " )
-      else                writer.print( " > " )
+      else                writer.print( " >= " )
       last_cmd.print_cpp( writer )
       writer.println( ")" )
       writer.println( "{" )
@@ -721,6 +726,11 @@ class CmdLiteralCharacter : CmdLiteral
 
     method clone( inline_args=null:InlineArgs )->Cmd
       return CmdLiteralCharacter( t, value )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "'" )
+      writer.print( value )
+      writer.print( "'" )
 
     method resolve( scope:Scope )->Cmd
       return this
@@ -833,10 +843,16 @@ class CmdAccess : CmdAccessWithModify
   METHODS
     method init( t, name )
 
-    method init( t, context, name, args=null )
+    method init( t, context, name )
+
+    method init( t, context, name, args )
+
+    method init( t, context, name, arg:Cmd )
+      args = CmdArgs()
+      args.add( arg )
 
     method clone( inline_args=null:InlineArgs )->Cmd
-      local result = CmdAccess( t, clone(inline_args,context), name, clone(inline_args,args) )
+      local result = CmdAccess( t, clone(context,inline_args), name, clone(args,inline_args) )
       result.set_modifiers( this )
       #if (inline_args?) return inline_args.inline_access( result )
       return result
@@ -913,7 +929,6 @@ class CmdAccess : CmdAccessWithModify
         endIf
       endIf
 
-
       if (context is null)
         context = CmdReadThis( t, scope.this_type )
       else
@@ -937,11 +952,7 @@ class CmdAccess : CmdAccessWithModify
         endIf
       endIf
 
-      if (context is null)
-        context = CmdReadThis( t, scope.this_type )
-      else
-        context = context.resolve( scope )
-      endIf
+      context = context.resolve( scope )
 
       local context_type = context.require_type
       local p = context_type.find_property( name )
@@ -988,7 +999,6 @@ class CmdElementAccess : CmdAccessWithModify
         return scope.resolve_call( context_type, CmdAccess(t,context,"set",args), true )
       endIf
 
-    #method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
 endClass
 
 
@@ -1104,7 +1114,7 @@ class CmdWriteLocal : Cmd
 
     method clone( inline_args=null:InlineArgs )->Cmd
       if (inline_args?) return inline_args.inline_write_local( this )
-      return CmdWriteLocal( t, local_info, clone(inline_args,new_value) )
+      return CmdWriteLocal( t, local_info, clone(new_value,inline_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.cpp_name ).print(" = ")
@@ -1206,7 +1216,7 @@ endClass
 class CmdStaticCall : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdStaticCall( t, clone(inline_args,context), method_info, args.clone(inline_args) )
+      return CmdStaticCall( t, clone(context,inline_args), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1232,7 +1242,7 @@ endClass
 class CmdNativeCall : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdNativeCall( t, clone(inline_args,context), method_info, args.clone(inline_args) )
+      return CmdNativeCall( t, clone(context,inline_args), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1258,7 +1268,7 @@ endClass
 class CmdInlineNativeCall : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdInlineNativeCall( t, clone(inline_args,context), method_info, args.clone(inline_args) )
+      return CmdInlineNativeCall( t, clone(context,inline_args), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local st = method_info.native_code
@@ -1310,7 +1320,7 @@ endClass
 class CmdRangeUpTo : CmdRange
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdRangeUpTo( t, first.clone(inline_args), last.clone(inline_args), clone(inline_args,step_size) )
+      return CmdRangeUpTo( t, first.clone(inline_args), last.clone(inline_args), clone(step_size,inline_args) )
 endClass
 
 
@@ -1779,26 +1789,6 @@ class CmdOpWithAssign : Cmd
       return CmdOpWithAssign( t, target.clone(inline_args), op, new_value.clone(inline_args) )
       
     method resolve( scope:Scope )->Cmd
-      which (op)
-        case TokenType.symbol_caret_equals
-          if (RogueC.target == "C++")
-            return CmdAssign( t, target.clone(), CmdPower(t,target,new_value) ).resolve( scope )
-          endIf
-
-        case TokenType.symbol_percent_equals
-          if (RogueC.target == "C++")
-            return CmdAssign( t, target.clone(), CmdMod(t,target,new_value) ).resolve( scope )
-          endIf
-
-        case TokenType.symbol_dot_equals
-          local access = new_value as CmdAccess
-          if (not access?) throw new_value.t.error( "Property or method name expected." )
-          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
-          access.context = target.clone
-
-          return CmdAssign( t, target, access )
-      endWhich
-
       return target.resolve_modify_and_assign( scope, op, new_value )
 endClass
 
@@ -1814,6 +1804,7 @@ class CmdResolvedOpWithAssign : Cmd
     method symbol->String
       if (op is TokenType.symbol_tilde_equals) return "^="
       return op->String
+
 endClass
 
 class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
@@ -1831,6 +1822,42 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
       new_value.print_cpp( writer )
 
     method resolve( scope:Scope )->Cmd
+      if (local_info.type.is_reference)
+        local m_name = "operator" + op->String
+        if (local_info.type.method_lookup_by_name[m_name]?)
+          return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
+        else
+          m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          if (local_info.type.method_lookup_by_name[m_name]?)
+            return CmdWriteLocal( t, local_info,
+            CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ) ).resolve( scope )
+          else
+            local arg_type = new_value.type.name
+            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (local_info.type,m_name,arg_type,m_name,arg_type) )
+          endIf
+        endIf
+      endIf
+
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdWriteLocal( t, local_info, CmdPower(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          # Mod has be be expanded because Rogue uses a special mod function
+          if (RogueC.target == "C++")
+            return CmdWriteLocal( t, local_info, CmdMod(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access?) throw new_value.t.error( "Property or method name expected." )
+          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = CmdReadLocal( t, local_info )
+          return CmdWriteLocal( t, local_info, access ).resolve( scope )
+      endWhich
+
       new_value = new_value.resolve( scope ).cast_to( local_info.type )
       return this
 
@@ -1856,6 +1883,42 @@ class CmdPropertyOpWithAssign : CmdResolvedOpWithAssign
       new_value.print_cpp( writer )
 
     method resolve( scope:Scope )->Cmd
+      if (property_info.type.is_reference)
+        local m_name = "operator" + op->String
+        if (property_info.type.method_lookup_by_name[m_name]?)
+          return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )
+        else
+          m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          if (property_info.type.method_lookup_by_name[m_name]?)
+            return CmdWriteProperty( t, context, property_info,
+              CmdAccess(t, CmdReadProperty(t,clone(context),property_info), m_name, new_value) ).resolve( scope )
+          else
+            local arg_type = new_value.type.name
+            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (property_info.type,m_name,arg_type,m_name,arg_type) )
+          endIf
+        endIf
+      endIf
+
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdWriteProperty( t, context, property_info, CmdPower(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          # Mod has be be expanded because Rogue uses a special mod function
+          if (RogueC.target == "C++")
+            return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access?) throw new_value.t.error( "Property or method name expected." )
+          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = CmdReadProperty( t, clone(context), property_info )
+          return CmdWriteProperty( t, context, property_info, access ).resolve( scope )
+      endWhich
+
       context = context.resolve(scope).require_value
       new_value = new_value.resolve(scope).require_value
       return this
