@@ -4,18 +4,17 @@ class Test
 
   METHODS
     method init
-      local st = "A"
-      st += 'B'
-      st += "CD"
-      println st
-      println st.hash_code
-      println "ABCD".hash_code
+      Alpha()
+      #Alpha.default_a = 5
 
     method sqrt( n:Integer )->Integer
       $if ("C++") nativeInline '((int)sqrt((double)$n))'
 endClass
 
-class Alpha;
+class Alpha
+  SETTINGS
+    default_a = 3 : Integer
+endClass
 
 primitive Integer
 endPrimitive

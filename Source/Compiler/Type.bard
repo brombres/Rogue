@@ -20,6 +20,9 @@ class Type
     is_list      : Logical
     element_type : Type
 
+    settings_list   = Property[]
+    settings_lookup = Table<<String,Property>>() : Table<<String,Property>>
+
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
@@ -43,6 +46,12 @@ class Type
       list.add( m )
       return m
 
+    method add_setting( s_t:Token, s_name:String )->Property
+      local s = Property( s_t, this, s_name )
+      settings_list.add( s )
+      settings_lookup[s_name] = s
+      return s
+
     method add_property( p_t:Token, p_name:String )->Property
       local p = Property( p_t, this, p_name )
       property_list.add( p )
@@ -52,11 +61,18 @@ class Type
     method assign_cpp_name
       if (is_array)
         cpp_name = Program.code_prefix + "Array"
+
       else
         cpp_name = Program.code_prefix + Program.validate_cpp_name( name )
+
+        forEach (s in settings_list)
+          s.cpp_name = Program.validate_cpp_name( "s_" + s.name )
+        endForEach
+
         forEach (p in property_list)
           p.cpp_name = Program.validate_cpp_name( "p_" + p.name )
         endForEach
+
       endIf
 
     method compile_type->Type
@@ -273,6 +289,7 @@ class Type
 
       if (generic_type?) generic_type.resolve
 
+      forEach (s in settings_list) s.type.resolve
       forEach (p in property_list) p.type.resolve
 
       #{
@@ -310,6 +327,14 @@ class Type
       writer.println( "{" )
       writer.indent += 2
 
+      # Settings
+      if (settings_list.count?)
+        forEach (s in settings_list)
+          writer.print( s.type ).print(" ").print( s.cpp_name ).println(";")
+        endForEach
+        writer.println
+      endIf
+
       # configure()
       writer.println( "void configure()" )
       writer.println( "{" )
@@ -325,6 +350,17 @@ class Type
           writer.print( base_types[i].cpp_name ).println( ";" )
         endForEach
       endIf
+
+      #{
+      if (settings_list.count?)
+        local initialized_settings = false
+        forEach (s in settings_list)
+          if (s.initial_value?)
+          endIf
+        endForEach
+        if (initialized_settings) writer.println
+      endIf
+      }#
 
       writer.indent -= 2;
       writer.println( "}" )

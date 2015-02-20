@@ -213,9 +213,15 @@ class Parser
         return true
       endIf
 
+      if (consume(TokenType.keyword_SETTINGS))
+        while (parse_properties(true)) noAction
+        return true
+      endIf
+
+
       return false
 
-    method parse_properties->Logical
+    method parse_properties( as_settings=false:Logical )->Logical
       consume_eols
       if (not next_is(TokenType.identifier)) return false
 
@@ -228,7 +234,9 @@ class Parser
         first = false
         consume_eols
         local t = must_read(TokenType.identifier)
-        local p = this_type.add_property( t, t->String )
+        local p : Property
+        if (as_settings) p = this_type.add_setting( t, t->String )
+        else             p = this_type.add_property( t, t->String )
         property_list.add( p )
         if (consume(TokenType.symbol_equals))
           p.initial_value = parse_expression
@@ -245,15 +253,16 @@ class Parser
         endForEach
       else
         forEach (p in property_list)
+          local name = "property"
+          if (as_settings) name = "setting"
           if (p.initial_value?)
             p.type = p.initial_value.implicit_type
             if (p.type is null) 
               throw p.initial_value.t.error( 
-                //Cannot determine property type from initial value; // +
-                //append an explicit type declaration such as ": Object" // )
+                //Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" // (name) )
             endIf
           else
-            throw p.t.error( //An initial value or property type (for example, ": Object") must be specified.// )
+            throw p.t.error( //An initial value or $ type (for example, ": Object") must be specified.// (name) )
           endIf
         endForEach
       endIf

@@ -92,6 +92,7 @@ class Tokenizer
       TokenType.keyword_METHODS      = define( StructureTokenType("METHODS") )
       TokenType.keyword_primitive    = define( StructureTokenType("primitive") )
       TokenType.keyword_PROPERTIES   = define( StructureTokenType("PROPERTIES") )
+      TokenType.keyword_SETTINGS     = define( StructureTokenType("SETTINGS") )
 
       # Statement Tokens
       TokenType.keyword_forEach      = define( TokenType("forEach") )
