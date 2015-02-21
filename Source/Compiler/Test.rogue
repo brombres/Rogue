@@ -1,11 +1,15 @@
 class Test
   SETTINGS
-    #woot : Integer
+    woot = 3 : Integer
 
   PROPERTIES
     nums = Integer[]
 
   ROUTINES
+    routine init_class
+      woot = 5
+      # TODO: declare static members in .cpp
+
     routine test
       println "routine print"
       #println woot++

@@ -323,7 +323,10 @@ class Program [requisite singleton]
       writer.println  "}"
       writer.println
       writer.println "RogueProgram rogue_program;"
+      writer.println
 
+      # Setting (static) declarations 
+      forEach (type in type_list) type.declare_settings( writer )
 
       writer.close
 endClass

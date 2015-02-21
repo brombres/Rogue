@@ -30,6 +30,9 @@ class Cmd
     method combine_literal_operands( common_type:Type )->Cmd
       return this
 
+    method compile_type->Type
+      return type.compile_type
+
     method exit_scope( scope:Scope )
 
     method find_common_type( left_type:Type, right_type:Type )->Type
@@ -901,14 +904,12 @@ class CmdAccess : CmdAccessWithModify
         endIf
 
         if (scope.this_method.is_routine)
-          #{
           local p = scope.this_type.find_setting( name )
           if (p?)
             return CmdReadSetting( t, p ).set_modifiers(this)
           endIf
-          }#
 
-          local p = scope.this_type.find_property( name )
+          p = scope.this_type.find_property( name )
           if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         else
           local p = scope.this_type.find_property( name )
@@ -926,7 +927,15 @@ class CmdAccess : CmdAccessWithModify
 
       local context_type = context.require_type
 
-      local p = context_type.find_property( name )
+      local p = context_type.find_setting( name )
+      if (p?)
+        if (context notInstanceOf CmdThisContext or context instanceOf CmdLiteralThis)
+          throw t.error( "Settings must be accessed using their type name ($.$) rather than through an object context." (p.type_context.name,p.name) )
+        endIf
+        return CmdReadSetting( t, p).resolve(scope)
+      endIf
+
+      p = context_type.find_property( name )
       if (p?)
         return CmdReadProperty( t, context, p ).set_modifiers(this)
       endIf
@@ -944,7 +953,10 @@ class CmdAccess : CmdAccessWithModify
 
       if (context is null)
         if (scope.this_method.is_routine)
-          local p = scope.this_method.type_context.find_property( name )
+          local p = scope.this_method.type_context.find_setting( name )
+          if (p?) return CmdWriteSetting( t, p, new_value )
+
+          p = scope.this_method.type_context.find_property( name )
           if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
 
@@ -955,9 +967,21 @@ class CmdAccess : CmdAccessWithModify
 
       local context_type = context.require_type
 
-      if (not scope.this_method.is_routine)
-        local p = context_type.find_property( name )
-        if (p?) return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
+      local p = context_type.find_setting( name )
+      if (p?)
+        if (context notInstanceOf CmdThisContext or context instanceOf CmdLiteralThis)
+          throw t.error( "Settings must be accessed using their type name ($.$) rather than through an object context." (p.type_context.name,p.name) )
+        endIf
+        return CmdWriteSetting( t, p, new_value ).resolve(scope)
+      endIf
+
+      p = context_type.find_property( name )
+      if (p?) 
+        if (scope.this_method.is_routine)
+          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        else
+          return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
+        endIf
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
@@ -1170,6 +1194,66 @@ class CmdWriteLocal : Cmd
 endClass
 
 
+class CmdReadSetting : CmdAccessWithModify
+  PROPERTIES
+    setting_info : Property
+
+  METHODS
+    method init( t, setting_info )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdReadSetting( t, setting_info ).set_modifiers(this)
+
+    method print_cpp( writer:CPPWriter )
+      if (premodify_count > 0) writer.print("++")
+      elseIf (premodify_count < 0) writer.print("--")
+
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print("->").print( setting_info.cpp_name )
+
+      if (postmodify_count > 0) writer.print("++")
+      elseIf (postmodify_count < 0) writer.print("--")
+
+    method resolve( scope:Scope )->Cmd
+      setting_info.type_context.resolve
+      return this
+
+    method type->Type
+      return setting_info.type
+endClass
+
+
+class CmdWriteSetting : Cmd
+  PROPERTIES
+    setting_info  : Property
+    new_value     : Cmd
+
+  METHODS
+    method init( t, setting_info, new_value )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdWriteSetting( t, setting_info, new_value.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name ).print(" = ")
+
+      if (setting_info.type.compile_type is new_value.compile_type)
+        new_value.print_cpp( writer )
+      else
+        writer.print( "((" ).print( setting_info.type ).print( ")" )
+        new_value.print_cpp( writer )
+        writer.print( ")" )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      new_value = new_value.resolve(scope).require_value
+      return this
+
+    method type->Type
+      return setting_info.type
+endClass
+
 class CmdReadProperty : CmdAccessWithModify
   PROPERTIES
     context       : Cmd
@@ -1216,9 +1300,13 @@ class CmdWriteProperty : Cmd
       context.print_cpp( writer )
       writer.print("->").print( property_info.cpp_name ).print(" = ")
 
-      writer.print( "((" ).print( property_info.type ).print( ")" )
-      new_value.print_cpp( writer )
-      writer.print( ")" )
+      if (property_info.type.compile_type is new_value.compile_type)
+        new_value.print_cpp( writer )
+      else
+        writer.print( "((" ).print( property_info.type ).print( ")" )
+        new_value.print_cpp( writer )
+        writer.print( ")" )
+      endIf
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value

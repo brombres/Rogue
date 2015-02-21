@@ -95,6 +95,17 @@ class Type
       if (generic_type?) return generic_type
       return this
 
+    method declare_settings( writer:CPPWriter )
+      if (omit_output) return
+      forEach (s in settings_list)
+        if (s.type_context is this)
+          writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
+          if (s.type.is_reference)                writer.println( " = nullptr;" )
+          elseIf (s.type is Program.type_Logical) writer.println( " = false;" )
+          else                                    writer.println( " = 0;" )
+        endIf
+      endForEach
+
     method extends_object->Logical
       return instance_of( Program.type_Object )
 
@@ -386,6 +397,17 @@ class Type
       writer.print( "struct " ).print( cpp_name ).println( " : RogueObject" );
       writer.println( "{" )
       writer.indent += 2
+
+      # Settings
+      if (settings_list.count?)
+        writer.println "// SETTINGS"
+        forEach (s in settings_list)
+          writer.print( "static " ).print( s.type ).print(" ").print( s.cpp_name ).println(";")
+        endForEach
+        writer.println
+      endIf
+
+      writer.println "// PROPERTIES"
       forEach (p in property_list)
         writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
       endForEach
@@ -398,14 +420,6 @@ class Type
       writer.print( "struct " ).print( cpp_name ).println( "Type : RogueType" )
       writer.println( "{" )
       writer.indent += 2
-
-      # Settings
-      if (settings_list.count?)
-        forEach (s in settings_list)
-          writer.print( s.type ).print(" ").print( s.cpp_name ).println(";")
-        endForEach
-        writer.println
-      endIf
 
       # configure()
       writer.println( "void configure()" )
