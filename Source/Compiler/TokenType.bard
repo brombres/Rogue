@@ -25,6 +25,8 @@ class TokenType
     keyword_METHODS              : TokenType
     keyword_primitive            : TokenType
     keyword_PROPERTIES           : TokenType
+    keyword_routine              : TokenType
+    keyword_ROUTINES             : TokenType
     keyword_SETTINGS             : TokenType
 
     # General

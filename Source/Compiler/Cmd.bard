@@ -900,10 +900,22 @@ class CmdAccess : CmdAccessWithModify
           return cmd_new.resolve(scope)
         endIf
 
-        local p = scope.this_type.find_property( name )
-        if (p?)
-          context = CmdReadThis( t, scope.this_type )
-          return CmdReadProperty( t, context, p ).set_modifiers(this)
+        if (scope.this_method.is_routine)
+          #{
+          local p = scope.this_type.find_setting( name )
+          if (p?)
+            return CmdReadSetting( t, p ).set_modifiers(this)
+          endIf
+          }#
+
+          local p = scope.this_type.find_property( name )
+          if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        else
+          local p = scope.this_type.find_property( name )
+          if (p?)
+            context = CmdThisContext( t, scope.this_type )
+            return CmdReadProperty( t, context, p ).set_modifiers(this)
+          endIf
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -913,6 +925,7 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       local context_type = context.require_type
+
       local p = context_type.find_property( name )
       if (p?)
         return CmdReadProperty( t, context, p ).set_modifiers(this)
@@ -930,15 +943,21 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       if (context is null)
-        context = CmdReadThis( t, scope.this_type )
+        if (scope.this_method.is_routine)
+          local p = scope.this_method.type_context.find_property( name )
+          if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        endIf
+
+        context = CmdThisContext( t, scope.this_type )
       else
         context = context.resolve( scope )
       endIf
 
       local context_type = context.require_type
-      local p = context_type.find_property( name )
-      if (p?)
-        return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
+
+      if (not scope.this_method.is_routine)
+        local p = context_type.find_property( name )
+        if (p?) return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
@@ -955,9 +974,10 @@ class CmdAccess : CmdAccessWithModify
       context = context.resolve( scope )
 
       local context_type = context.require_type
-      local p = context_type.find_property( name )
-      if (p?)
-        return CmdPropertyOpWithAssign( t, context, p, op, new_value ).resolve(scope)
+
+      if (not scope.this_method.is_routine)
+        local p = context_type.find_property( name )
+        if (p?) return CmdPropertyOpWithAssign( t, context, p, op, new_value ).resolve(scope)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
@@ -1053,7 +1073,7 @@ endClass
 # Read/Write
 #------------------------------------------------------------------------------
 
-class CmdReadThis : Cmd
+class CmdThisContext : Cmd
   PROPERTIES
     this_type : Type
 
@@ -1062,7 +1082,7 @@ class CmdReadThis : Cmd
 
     method clone( inline_args=null:InlineArgs )->Cmd
       if (inline_args?) return inline_args.inline_this
-      return CmdReadThis( t, this_type )
+      return CmdThisContext( t, this_type )
 
     method print_cpp( writer:CPPWriter )
       writer.print "THIS"
@@ -1074,6 +1094,24 @@ class CmdReadThis : Cmd
     method type->Type
       return this_type
 endClass
+
+class CmdLiteralThis : CmdThisContext
+  PROPERTIES
+    this_type : Type
+
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      if (inline_args?) return inline_args.inline_this
+      return CmdLiteralThis( t, this_type )
+
+    method resolve( scope:Scope )->Cmd
+      this_type.resolve
+      if (scope.this_method.is_routine)
+        throw t.error( "Invalid reference to 'this' object - routines have no object context." )
+      endIf
+      return this
+endClass
+
 
 class CmdReadLocal : CmdAccessWithModify
   PROPERTIES
@@ -1213,10 +1251,41 @@ class CmdCall : Cmd
 endClass
 
 
-class CmdStaticCall : CmdCall
+class CmdCallRoutine : CmdCall
+  METHODS
+    method init( t, method_info, args )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCallRoutine( t, method_info, args.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      local compile_target = method_info.compile_target
+      writer.print( compile_target.cpp_name )
+      writer.print( "(" )
+      if (args.count?)
+        writer.print( " " )
+        local i = 0
+        forEach (arg in args)
+          if (i > 0) writer.print( ", " )
+          if (method_info.generic_method? and method_info.parameters[i].generic_type?)
+            writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+            arg.print_cpp( writer )
+            writer.print( ")" )
+          else
+            arg.print_cpp( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+endClass
+
+
+class CmdCallStaticMethod : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdStaticCall( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+      return CmdCallStaticMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1239,10 +1308,10 @@ class CmdStaticCall : CmdCall
 endClass
 
 
-class CmdNativeCall : CmdCall
+class CmdCallNativeMethod : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdNativeCall( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+      return CmdCallNativeMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1265,10 +1334,10 @@ class CmdNativeCall : CmdCall
 endClass
 
 
-class CmdInlineNativeCall : CmdCall
+class CmdCallInlineNativeMethod : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdInlineNativeCall( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+      return CmdCallInlineNativeMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       local st = method_info.native_code

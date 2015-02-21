@@ -21,8 +21,8 @@ syn keyword bardClassDecl   class endClass aspect endAspect compound endCompound
 syn keyword bardClassDecl   delegate endDelegate function endFunction primitive endPrimitive
 syn keyword bardClassDecl   with endWith
 syn keyword bardClassDecl   augment endAugment framework endFramework
-syn keyword bardMember      ENUMERATE SETTINGS CATEGORIES
-syn keyword bardMember      PROPERTIES METHODS INTERNAL EXTERNAL
+syn keyword bardMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
+syn keyword bardMember      PROPERTIES METHODS ROUTINES
 syn match   bardError       "\<for\(\s\|(\)"
 syn keyword bardConditional  if elseIf else endIf
 syn keyword bardConditional  which whichIs case caseNext others endWhich endWhichIs
@@ -77,7 +77,7 @@ syn keyword bardOperator     instanceOf is isNot notInstanceOf duplicate
 "syn match   bardOperator     "<[^<]"me=e-1
 "syn match   bardOperator     ">[^>]"me=e-1
 
-syn keyword bardFuncDef  method task alias
+syn keyword bardFuncDef  method routine task
 
 syn match   bardLineComment  "#.*" 
 syn region  bardLineComment  start="#{" end="}#"

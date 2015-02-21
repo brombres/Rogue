@@ -31,7 +31,13 @@ class Scope
       local t = access.t
 
       local context = access.context
-      if (not context) context = CmdReadThis( t, type_context )
+      if (context?)
+        if (m.is_routine and context instanceOf CmdLiteralThis)
+          throw t.error( "Cannot call a method from a routine without an object context (obj.$()(...))." (m.name) )
+        endIf
+      else
+        if (not m.is_routine) context = CmdThisContext( t, type_context )
+      endIf
 
       local args = access.args
       if (not args) args = CmdArgs()
@@ -42,51 +48,67 @@ class Scope
       endWhile
 
       local cmd : Cmd
-      if (m.is_native)
-        if (type_context.is_array)
-          which (m.name)
-            case "count"
-              if (args? and args.count?) throw t.error( "Invalid arguments to array count." )
-              return CmdReadArrayCount( t, context ).resolve( this )
-            others
-              throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
-          endWhich
-        endIf
+      if (m.is_routine)
+        # routine
+        cmd = CmdCallRoutine( t, m, args )
 
-        if (m.native_code?)
-          cmd = CmdInlineNativeCall( t, context, m, args )
-        else
-          cmd = CmdNativeCall( t, context, m, args )
-        endIf
-
-      elseIf (m.is_inline)
-        local inline_args = InlineArgs( m, context, args )
-        local inline_statements = CmdStatementList()
-        forEach (statement in m.statements)
-          local inline_statement = statement.clone( inline_args )
-          if (inline_statement?) inline_statements.add( inline_statement )
-        endForEach
-
-        inline_statements.resolve( this )
-        if (inline_statements.count == 1) return inline_statements.first
-
-        trace
-        throw t.error( "TODO: multi-line inline statements" )
-        
       else
-        cmd = CmdStaticCall( t, context, m, args )
+        # method
+        if (m.is_native)
+          if (type_context.is_array)
+            which (m.name)
+              case "count"
+                if (args? and args.count?) throw t.error( "Invalid arguments to array count." )
+                return CmdReadArrayCount( t, context ).resolve( this )
+              others
+                throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
+            endWhich
+          endIf
+
+          if (m.native_code?)
+            cmd = CmdCallInlineNativeMethod( t, context, m, args )
+          else
+            cmd = CmdCallNativeMethod( t, context, m, args )
+          endIf
+
+        elseIf (m.is_inline)
+          local inline_args = InlineArgs( m, context, args )
+          local inline_statements = CmdStatementList()
+          forEach (statement in m.statements)
+            local inline_statement = statement.clone( inline_args )
+            if (inline_statement?) inline_statements.add( inline_statement )
+          endForEach
+
+          inline_statements.resolve( this )
+          if (inline_statements.count == 1) return inline_statements.first
+
+          trace
+          throw t.error( "TODO: multi-line inline statements" )
+          
+        else
+          cmd = CmdCallStaticMethod( t, context, m, args )
+        endIf
       endIf
+
       return cmd.set_modifiers(access).resolve( this )
 
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method
       local candidates = CandidateMethods( type_context, access, error_on_fail )
 
-      local list = type_context.method_lookup_by_name[ access.name ]
+      local list = type_context.routine_lookup_by_name[ access.name ]
       if (list?)
         forEach (m in list)
           candidates.available.add( m )
         endForEach
       endIf
+
+      list = type_context.method_lookup_by_name[ access.name ]
+      if (list?)
+        forEach (m in list)
+          candidates.available.add( m )
+        endForEach
+      endIf
+
       if (not candidates.update_available) return null
 
       local args = access.args

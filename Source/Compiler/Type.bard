@@ -26,6 +26,10 @@ class Type
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
+    routine_list                = Method[]                   : Method[]
+    routine_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
+    routine_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
+
     method_list                = Method[]                   : Method[]
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
@@ -42,6 +46,18 @@ class Type
       if (not list)
         list = Method[]
         method_lookup_by_name[ m_name ] = list
+      endIf
+      list.add( m )
+      return m
+
+    method add_routine( m_t:Token, m_name:String )->Method
+      local m = Method( m_t, this, m_name )
+      m.attributes.add( Attribute.is_routine )
+      routine_list.add( m )
+      local list = routine_lookup_by_name[ m_name ]
+      if (not list)
+        list = Method[]
+        routine_lookup_by_name[ m_name ] = list
       endIf
       list.add( m )
       return m
@@ -86,10 +102,16 @@ class Type
       local m = method_lookup_by_signature[signature]
       if (m?) return m
 
+      m = routine_lookup_by_signature[signature]
+      if (m?) return m
+
       return null
 
     method find_property( name:String )->Property
       return property_lookup[name]
+
+    method find_setting( name:String )->Property
+      return settings_lookup[name]
 
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
@@ -183,18 +205,33 @@ class Type
         m.organize
       endForEach
 
+      # Inherit methods
+      local full_method_list = Method[]
+      method_lookup_by_signature.clear
+      inherit_methods( full_method_list, method_lookup_by_signature )
+      method_list = full_method_list
+      method_lookup_by_name.clear
+      forEach (m in method_list)
+        local list = method_lookup_by_name[m.name]
+        if (not list)
+          list = Method[]
+          method_lookup_by_name[m.name] = list
+        endIf
+        list.add( m )
+      endForEach
+
       # Create init_object() method to initialize properties
       local m = find_method( "init_object()" )
-      if (not m) m = add_method( t, "init_object" ).organize
+      if (not m or m.type_context isNot this) m = add_method( t, "init_object" ).organize
       m.return_type = this
-      m.statements.add( CmdReturn(t,CmdReadThis(t,this)) )
+      m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
       # Insert property initializations
       local i = property_list.count - 1
       while (i >= 0)
         local p = property_list[i]
         if (p.initial_value?)
-          m.statements.insert( CmdWriteProperty(p.t, CmdReadThis(p.t,p.type_context), p, p.initial_value.clone) )
+          m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.clone) )
         endIf
         --i
       endWhile
@@ -273,6 +310,37 @@ class Type
         lookup[p.name] = p
       endIf
 
+    method inherit_methods( list:Method[], lookup:Table<<String,Method>> )
+      forEach (base_type in base_types)
+        forEach (base_m in base_type.method_list)
+          inherit_method( base_m, list, lookup )
+        endForEach
+      endForEach
+
+      forEach (m in method_list)
+        inherit_method( m, list, lookup )
+      endForEach
+
+    method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
+      local existing_m = lookup[ m.signature ]
+      if (existing_m?)
+        local i = list.locate( existing_m )
+
+        if (m.type_context is existing_m.type_context)
+          throw m.t.error( //Type $ already defines method $.// (m.type_context,m.signature) )
+        else
+          if (m.return_type isNot existing_m.return_type)
+            if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
+              throw m.t.error( "In $::$ the overridden return type is not compatible with the return type of the prior definition." (m.type_context.name, m.signature) )
+            endIf
+          endIf
+        endIf
+
+      else
+        list.add( m )
+        lookup[m.signature] = m
+      endIf
+
     method omit_output->Logical
       return is_native or generic_type?
 
@@ -301,6 +369,10 @@ class Type
         endIf
       endForEach
       }#
+
+      forEach (r in routine_list)
+        r.resolve
+      endForEach
 
       forEach (m in method_list)
         m.resolve
@@ -411,16 +483,32 @@ class Type
       writer.println( "};" )
       writer.println
 
+    method print_routine_prototypes( writer:CPPWriter )
+      if (omit_output) return
+
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method print_routine_definitions( writer:CPPWriter )
+      if (omit_output) return
+
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
     method print_method_prototypes( writer:CPPWriter )
       if (omit_output) return
 
-      forEach (m in method_list) m.print_prototype( writer )
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
 
     method print_method_definitions( writer:CPPWriter )
       if (omit_output) return
 
       forEach (m in method_list)
-        m.print_definition( writer )
+        if (m.type_context is this) m.print_definition( writer )
       endForEach
 
     method print_type_configuration( writer:CPPWriter )

@@ -42,6 +42,7 @@ class Method
       return p
 
     method assign_cpp_name
+      if (cpp_name?) return
       local buffer = StringBuilder()
       buffer.print( Program.code_prefix )
       buffer.print( type_context.name ).print( "__" )
@@ -49,6 +50,7 @@ class Method
       cpp_name = Program.validate_cpp_name( buffer->String )
 
     method assign_signature
+      if (signature?) return
       local buffer = StringBuilder()
       buffer.print name
       buffer.print "("
@@ -74,6 +76,9 @@ class Method
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)?
 
+    method is_routine->Logical
+      return (attributes.flags & Attribute.is_routine)?
+
     method organize->Method
       if (name == "init")
         attributes.flags |= Attribute.is_initializer
@@ -81,17 +86,19 @@ class Method
       endIf
 
       forEach (param in parameters)
-        local property = type_context.find_property( param.name )
+        if (not is_routine) 
+          local property = type_context.find_property( param.name )
 
-        if (property?)
-          if (param.type is null)
-            # Autostore parameter
-            local new_name = Program.create_unique_id
-            local pt = property.t
-            statements.insert( CmdAssign(pt,CmdAccess(pt,property.name),CmdAccess(pt,new_name)) )
-            param.name = new_name
-          else
-            throw param.t.error( //A property named "$" already exists.// (param.name) )
+          if (property?)
+            if (param.type is null)
+              # Autostore parameter
+              local new_name = Program.create_unique_id
+              local pt = property.t
+              statements.insert( CmdAssign(pt,CmdAccess(pt,property.name),CmdAccess(pt,new_name)) )
+              param.name = new_name
+            else
+              throw param.t.error( //A property named "$" already exists.// (param.name) )
+            endIf
           endIf
         endIf
 
@@ -105,8 +112,7 @@ class Method
 
       # Add method to type's lookup table.
       local existing_m = type_context.method_lookup_by_signature[signature]
-      if (existing_m?)
-        # We haven't inherited methods yet so this is a plain old duplicate
+      if (existing_m? and existing_m.type_context is type_context)
         throw t.error( "A method with the signature $ is already defined." (signature) )
       endIf
       type_context.method_lookup_by_signature[signature] = this
@@ -125,13 +131,22 @@ class Method
 
     method print_signature( writer:CPPWriter )
       writer.print( return_type ).print(" ").print( cpp_name )
-      writer.print( "( " )
-      writer.print( type_context )
-      writer.print( " THIS" )
-      forEach (param in parameters)
-        writer.print( ", " ).print( param.type ).print( " " ).print( param.cpp_name )
-      endForEach
-      writer.print( " )" )
+      writer.print( "(" )
+      local first = true
+      if (not is_routine)
+        first = false
+        writer.print( type_context )
+        writer.print( " THIS" )
+      endIf
+      if (parameters.count?)
+        forEach (param in parameters)
+          if (first) writer.print( " " ); first = false
+          else       writer.print( ", " )
+          writer.print( param.type ).print( " " ).print( param.cpp_name )
+        endForEach
+      endIf
+      if (not first) writer.print( " " )
+      writer.print( ")" )
 
     method print_definition( writer:CPPWriter )
       if (is_native or is_inline) return
@@ -180,7 +195,7 @@ class Method
       if (is_initializer)
         local return_t = t
         if (statements.count?) return_t = statements.last.t
-        statements.add( CmdReturn(return_t,CmdReadThis(return_t,type_context)).resolve(scope) )
+        statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
       endIf
 
     method to->String

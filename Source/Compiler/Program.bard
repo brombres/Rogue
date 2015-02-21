@@ -170,9 +170,8 @@ class Program [requisite singleton]
       forEach (type in type_list) type.assign_cpp_name
 
       forEach (type in type_list)
-        forEach (m in type.method_list)
-          m.assign_cpp_name
-        endForEach
+        forEach (r in type.routine_list) r.assign_cpp_name
+        forEach (m in type.method_list)  m.assign_cpp_name
       endForEach
 
       # .H header -------------------------------------------------------------
@@ -257,29 +256,13 @@ class Program [requisite singleton]
       endForEach
       writer.println
 
-      # "extern XType type_X;" declarations
-      #{
-      forEach (type in type_list)
-        if (not type.omit_output)
-          writer.print( "extern Rogue" ).print( type.cpp_name ).print( "Type type_" ).print( type.cpp_name ).println(";")
-          writer.println
-        endIf
-      endForEach
+      forEach (type in type_list) type.print_routine_prototypes( writer )
       writer.println
-      }#
-
-      # "XType type_X;" declarations
-      #{
-      forEach (type in type_list)
-        if (not type.omit_output)
-          writer.print( type.cpp_name ).print( "Type type_" ).print( type.cpp_name ).println(";")
-          writer.println
-        endIf
-      endForEach
-      writer.println
-      }#
 
       forEach (type in type_list) type.print_method_prototypes( writer )
+      writer.println
+
+      forEach (type in type_list) type.print_routine_definitions( writer )
       writer.println
 
       forEach (type in type_list) type.print_method_definitions( writer )

@@ -13,6 +13,7 @@ class Attribute
     is_inline           = 64
     is_initializer      = 128
     is_immutable        = 256
+    is_routine          = 512
 endClass
 
 

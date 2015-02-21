@@ -203,6 +203,16 @@ class Parser
     method parse_section->Logical
       consume_eols
 
+      if (consume(TokenType.keyword_SETTINGS))
+        while (parse_properties(true)) noAction
+        return true
+      endIf
+
+      if (consume(TokenType.keyword_ROUTINES))
+        while (parse_method(true)) noAction
+        return true
+      endIf
+
       if (consume(TokenType.keyword_PROPERTIES))
         while (parse_properties) noAction
         return true
@@ -210,11 +220,6 @@ class Parser
 
       if (consume(TokenType.keyword_METHODS))
         while (parse_method) noAction
-        return true
-      endIf
-
-      if (consume(TokenType.keyword_SETTINGS))
-        while (parse_properties(true)) noAction
         return true
       endIf
 
@@ -269,16 +274,22 @@ class Parser
 
       return true
 
-    method parse_method->Logical
+    method parse_method( as_routine=false:Logical )->Logical
       consume_eols
-      if (not next_is(TokenType.keyword_method)) return false
+      if (as_routine)
+        if (not next_is(TokenType.keyword_routine)) return false
+      else
+        if (not next_is(TokenType.keyword_method)) return false
+      endIf
 
-      local t = read
+      local t = read  # 'routine' or 'method'
       local name = read_identifier
       if (name == "operator")
         name += reader.read->String
       endIf
-      this_method = this_type.add_method( t, name )
+
+      if (as_routine) this_method = this_type.add_routine( t, name )
+      else            this_method = this_type.add_method( t, name )
 
       # Parse parameters
       if (consume(TokenType.symbol_open_paren))
@@ -1414,7 +1425,7 @@ class Parser
         return CmdLiteralCharacter( t, value->Character )
 
       elseIf (consume(TokenType.keyword_this))
-        return CmdReadThis( t, this_type )
+        return CmdLiteralThis( t, this_type )
 
       elseIf (consume(TokenType.keyword_true))
         return CmdLiteralLogical( t, true )
