@@ -30,16 +30,25 @@ class Alpha
     default_a = 3 : Integer
 endClass
 
+primitive Real
+endPrimitive
+
+primitive Float
+endPrimitive
+
+primitive Long
+endPrimitive
+
 primitive Integer
 endPrimitive
 
 primitive Character
 endPrimitive
 
-primitive Logical
+primitive Byte
 endPrimitive
 
-primitive Real
+primitive Logical
 endPrimitive
 
 class Object

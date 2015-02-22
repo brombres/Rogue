@@ -71,6 +71,58 @@ struct RogueType
   virtual void         trace( RogueObject* obj ) {}
 };
 
+//-----------------------------------------------------------------------------
+//  Primitive Types
+//-----------------------------------------------------------------------------
+struct RogueRealType : RogueType
+{
+  void configure() { object_size = sizeof(RogueReal); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Real"; }
+};
+
+struct RogueFloatType : RogueType
+{
+  void configure() { object_size = sizeof(RogueFloat); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Float"; }
+};
+
+struct RogueLongType : RogueType
+{
+  void configure() { object_size = sizeof(RogueLong); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Long"; }
+};
+
+struct RogueIntegerType : RogueType
+{
+  void configure() { object_size = sizeof(RogueInteger); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Integer"; }
+};
+
+struct RogueCharacterType : RogueType
+{
+  void configure() { object_size = sizeof(RogueCharacter); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Character"; }
+};
+
+struct RogueByteType : RogueType
+{
+  void configure() { object_size = sizeof(RogueByte); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Byte"; }
+};
+
+struct RogueLogicalType : RogueType
+{
+  void configure() { object_size = sizeof(RogueLogical); }
+  RogueObject* create_object() { return 0; }
+  const char* name() { return "Logical"; }
+};
+
 
 //-----------------------------------------------------------------------------
 //  RogueObject
@@ -186,13 +238,25 @@ struct RogueProgramCore
   RogueString** literal_strings;
   int           literal_string_count;
 
+  RogueType**   types;
+  int           type_count;
+  int           next_type_index;
+
+  RogueRealType*      type_RogueReal;
+  RogueFloatType*     type_RogueFloat;
+  RogueLongType*      type_RogueLong;
+  RogueIntegerType*   type_RogueInteger;
+  RogueCharacterType* type_RogueCharacter;
+  RogueByteType*      type_RogueByte;
+  RogueLogicalType*   type_RogueLogical;
+
   RogueObjectType* type_RogueObject;
   RogueStringType* type_RogueString;
   RogueArrayType*  type_RogueArray;
 
   RogueReal pi;
 
-  RogueProgramCore();
+  RogueProgramCore( int type_count );
   ~RogueProgramCore();
 
   RogueObject* allocate_object( RogueType* type, int size );

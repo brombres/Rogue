@@ -6,7 +6,8 @@
 
 int main()
 {
-  rogue_program.init();
+  rogue_program.configure();
+  rogue_program.launch();
   rogue_program.collect_garbage();
   //printf( "Done\n" );
 

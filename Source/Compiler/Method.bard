@@ -135,6 +135,7 @@ class Method
       local first = true
       if (not is_routine)
         first = false
+        writer.print( " " )
         writer.print( type_context )
         writer.print( " THIS" )
       endIf

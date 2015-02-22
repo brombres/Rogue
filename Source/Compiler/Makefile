@@ -23,7 +23,7 @@ vm:
 run:
 	$(BARDVM) RogueC.bc
 
-list:
+list: go
 	cat CPP/RogueProgram.h
 	@echo "-----------------------------------------------------"
 	cat CPP/RogueProgram.cpp

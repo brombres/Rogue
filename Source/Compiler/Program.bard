@@ -104,6 +104,14 @@ class Program [requisite singleton]
         throw RogueError( "No candidates for main class." )
       endIf
 
+      type_Real.resolve()
+      type_Float.resolve()
+      type_Long.resolve()
+      type_Integer.resolve()
+      type_Character.resolve()
+      type_Byte.resolve()
+      type_Logical.resolve()
+
       type_Object.resolve
       type_NativeArray.resolve
       type_GenericList.resolve
@@ -201,8 +209,10 @@ class Program [requisite singleton]
         endIf
       endForEach
       writer.println
-      writer.println( "  void init();" )
+      writer.println( "  RogueProgram();" )
       writer.println( "  ~RogueProgram();" )
+      writer.println( "  void configure();" )
+      writer.println( "  void launch();" )
       writer.println( "};" )
       writer.println
 
@@ -268,8 +278,24 @@ class Program [requisite singleton]
       forEach (type in type_list) type.print_method_definitions( writer )
       writer.println
 
+      # RogueProgram constructor
+      local type_count = 0
+      forEach (type in type_list)
+        if (not (type.generic_type? or type.is_array)) ++type_count
+      endForEach
+      writer.print( "RogueProgram::RogueProgram() : RogueProgramCore(" ).print( type_count ).println( ")" )
+      writer.println  "{"
+      writer.println  "}"
+      writer.println
+
+      # RogueProgram destructor
+      writer.println( "RogueProgram::~RogueProgram()" )
+      writer.println  "{"
+      writer.println  "}"
+      writer.println
+
       # configure() method
-      writer.println( "void RogueProgram::init()" )
+      writer.println( "void RogueProgram::configure()" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -316,7 +342,18 @@ class Program [requisite singleton]
         writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
       endIf
 
-      # call init() on main object
+      # End of configure()
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+
+      # launch()
+      writer.println( "void RogueProgram::launch()" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      # Call init() on main object
       m = main_class.find_method( "init()" )
       if (m?)
         writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
@@ -326,16 +363,6 @@ class Program [requisite singleton]
       writer.println( "}" )
       writer.println
 
-      # Rogue destructor
-      writer.println( "RogueProgram::~RogueProgram()" )
-      writer.println  "{"
-      forEach (type in type_list)
-        if (not type.omit_output)
-          writer.print("  delete type_").print(type.cpp_name).println(";")
-        endIf
-      endForEach
-      writer.println  "}"
-      writer.println
       writer.println "RogueProgram rogue_program;"
       writer.println
 
