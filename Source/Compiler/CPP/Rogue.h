@@ -59,15 +59,20 @@ struct RogueType
 
   int         object_size;
 
+  RogueObject* _singleton;
+
   RogueType();
   virtual ~RogueType();
 
   virtual void         configure() = 0;
+  RogueObject*         create_and_init_object() { return init_object( create_object() ); }
   virtual RogueObject* create_object();
 
+  virtual RogueObject* init_object( RogueObject* obj ) { return obj; }
   RogueLogical instance_of( RogueType* ancestor_type );
 
   virtual const char*  name() = 0;
+  virtual RogueObject* singleton();
   virtual void         trace( RogueObject* obj ) {}
 };
 
@@ -77,49 +82,42 @@ struct RogueType
 struct RogueRealType : RogueType
 {
   void configure() { object_size = sizeof(RogueReal); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Real"; }
 };
 
 struct RogueFloatType : RogueType
 {
   void configure() { object_size = sizeof(RogueFloat); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Float"; }
 };
 
 struct RogueLongType : RogueType
 {
   void configure() { object_size = sizeof(RogueLong); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Long"; }
 };
 
 struct RogueIntegerType : RogueType
 {
   void configure() { object_size = sizeof(RogueInteger); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Integer"; }
 };
 
 struct RogueCharacterType : RogueType
 {
   void configure() { object_size = sizeof(RogueCharacter); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Character"; }
 };
 
 struct RogueByteType : RogueType
 {
   void configure() { object_size = sizeof(RogueByte); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Byte"; }
 };
 
 struct RogueLogicalType : RogueType
 {
   void configure() { object_size = sizeof(RogueLogical); }
-  RogueObject* create_object() { return 0; }
   const char* name() { return "Logical"; }
 };
 
@@ -164,11 +162,6 @@ struct RogueStringType : RogueType
 {
   void configure();
 
-  RogueObject* create_object()
-  {
-    return 0;  // not used
-  }
-
   const char* name() { return "String"; }
 };
 
@@ -194,11 +187,6 @@ struct RogueString : RogueObject
 struct RogueArrayType : RogueType
 {
   void configure();
-
-  RogueObject* create_object()
-  {
-    return 0;  // not used
-  }
 
   const char* name() { return "Array"; }
 

@@ -238,6 +238,15 @@ class Program [requisite singleton]
       endForEach
       writer.println
 
+      # init() forward declarations
+      forEach (type in type_list)
+        if (not type.omit_output)
+          local m = type.find_method( "init()" )
+          if (m?) writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " ).print( type ).print( " );" )
+        endIf
+      endForEach
+      writer.println
+
       # XObject definitions
       forEach (type in type_list)
         if (not type.omit_output)

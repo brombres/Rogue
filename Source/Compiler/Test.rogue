@@ -6,12 +6,13 @@ class Test
       local a2 = Alpha()
       println a1.value
       println a2.value
+      println Alpha.value
 
     method sqrt( n:Integer )->Integer
       $if ("C++") nativeInline '((int)sqrt((double)$n))'
 endClass
 
-class Alpha
+class Alpha [singleton]
   SETTINGS
     default_value = 3 : Integer
 

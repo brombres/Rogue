@@ -162,6 +162,9 @@ class Type
           return false
       endWhich
 
+    method is_singleton->Logical
+      return (attributes.flags & Attribute.is_singleton)?
+
     method organize->Type
       if (organized) return this
       organized = true
@@ -255,7 +258,7 @@ class Type
       # Create or locate init_class() to initialize settings
       if (settings_list.count?)
         local m = find_routine( "init_class()" )
-        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize; trace name
+        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
 
         # Insert setting initializations
         local i = settings_list.count - 1
@@ -521,6 +524,25 @@ class Type
       # name()
       writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )
       writer.println
+
+      # singleton()
+      if (is_singleton)
+        writer.print( this ).println( " singleton()" )
+        writer.println( "{" )
+        writer.indent += 2
+        writer.print( "if ( !_singleton ) _singleton = " )
+        local m_init = find_method( "init()" )
+        if (m_init?)
+          writer.print( m_init.cpp_name )
+          writer.print( "( (" ).print( this ).println( ")create_and_init_object() );" )
+        else
+          writer.println( "create_and_init_object()" )
+        endIf
+        writer.print( "return (" ).print( this ).println( ") _singleton;" )
+        writer.indent -= 2
+        writer.println( "}" )
+        writer.println
+      endIf
 
       # trace()
       local has_references = false

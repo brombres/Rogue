@@ -1066,10 +1066,10 @@ class CmdCreateObject : Cmd
 
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print(of_type).print(")") 
-      writer.print_type_info(of_type).print( "->create_object())")
+      writer.print_type_info(of_type).print( "->create_and_init_object())")
 
     method print_cpp_statement( writer:CPPWriter )
-      writer.print_type_info(of_type).print( "->create_object()")
+      writer.print_type_info(of_type).print( "->create_and_init_object()")
 
     method resolve( scope:Scope )->Cmd
       of_type.resolve
@@ -1155,10 +1155,16 @@ class CmdReadSingleton : Cmd
   METHODS
     method init( t, of_type )
 
-      #method resolve( scope:Scope )->Cmd
+    method print_cpp( writer:CPPWriter )
+      writer.print( "((" ).print( of_type ).print( ")" )
+      writer.print_type_info( of_type ).print( "->singleton())" )
 
     method require_type_context
       noAction
+
+    method resolve( scope:Scope )->Cmd
+      of_type.resolve
+      return this
 
     method type->Type
       return of_type
