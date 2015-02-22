@@ -1,24 +1,11 @@
 class Test
-  SETTINGS
-    woot = 3 : Integer
-
-  PROPERTIES
-    nums = Integer[]
-
-  ROUTINES
-    routine init_class
-      woot = 5
-
-    routine test
-      println "routine print"
-      println woot++
-      println ++woot
-
   METHODS
     method init
-      test
-      #Alpha()
-      #Alpha.default_a = 5
+      local a1 = Alpha()
+      Alpha.default_value *= 2
+      local a2 = Alpha()
+      println a1.value
+      println a2.value
 
     method sqrt( n:Integer )->Integer
       $if ("C++") nativeInline '((int)sqrt((double)$n))'
@@ -26,7 +13,15 @@ endClass
 
 class Alpha
   SETTINGS
-    default_a = 3 : Integer
+    default_value = 3 : Integer
+
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init
+      value = default_value
+
 endClass
 
 primitive Real

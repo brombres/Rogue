@@ -254,8 +254,8 @@ class Type
 
       # Create or locate init_class() to initialize settings
       if (settings_list.count?)
-        local m = find_method( "init_class()" )
-        if (not m or m.type_context isNot this) m = add_method( t, "init_class" ).organize; trace
+        local m = find_routine( "init_class()" )
+        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize; trace name
 
         # Insert setting initializations
         local i = settings_list.count - 1

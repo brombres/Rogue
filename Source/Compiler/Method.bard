@@ -111,11 +111,19 @@ class Method
       assign_signature
 
       # Add method to type's lookup table.
-      local existing_m = type_context.method_lookup_by_signature[signature]
-      if (existing_m? and existing_m.type_context is type_context)
-        throw t.error( "A method with the signature $ is already defined." (signature) )
+      if (is_routine)
+        local existing_m = type_context.routine_lookup_by_signature[signature]
+        if (existing_m? and existing_m.type_context is type_context)
+          throw t.error( "A routine with the signature $ is already defined." (signature) )
+        endIf
+        type_context.routine_lookup_by_signature[signature] = this
+      else
+        local existing_m = type_context.method_lookup_by_signature[signature]
+        if (existing_m? and existing_m.type_context is type_context)
+          throw t.error( "A method with the signature $ is already defined." (signature) )
+        endIf
+        type_context.method_lookup_by_signature[signature] = this
       endIf
-      type_context.method_lookup_by_signature[signature] = this
 
       min_args = parameters.count
       while (min_args >= 1 and parameters[min_args-1].initial_value?)

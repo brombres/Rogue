@@ -71,6 +71,10 @@ class Cmd
     method print_cpp_statement( writer:CPPWriter )
       print_cpp( writer )
 
+    method require_type_context
+      if (type?) throw t.error( //Type name expected, e.g. "$.".// (type) )
+      else       throw t.error( //Type name expected.// )
+
     method require_integer->Cmd
       local _type = type
       if (_type is null or _type isNot Program.type_Integer)
@@ -885,7 +889,7 @@ class CmdAccess : CmdAccessWithModify
               # Turn DataType[] -> DataType[]()
               args = CmdArgs()
             else
-              trace; throw t.error( "[INTERNAL] TODO: add Singleton support." )
+              return CmdReadSingleton( t, new_type )
             endIf
           endIf
 
@@ -903,20 +907,16 @@ class CmdAccess : CmdAccessWithModify
           return cmd_new.resolve(scope)
         endIf
 
-        if (scope.this_method.is_routine)
-          local p = scope.this_type.find_setting( name )
-          if (p?)
-            return CmdReadSetting( t, p ).set_modifiers(this)
-          endIf
+        local p = scope.this_type.find_setting( name )
+        if (p?) return CmdReadSetting( t, p ).set_modifiers(this)
 
-          p = scope.this_type.find_property( name )
-          if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
-        else
-          local p = scope.this_type.find_property( name )
-          if (p?)
-            context = CmdThisContext( t, scope.this_type )
-            return CmdReadProperty( t, context, p ).set_modifiers(this)
+        p = scope.this_type.find_property( name )
+        if (p?)
+          if (scope.this_method.is_routine)
+            throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
           endIf
+          context = CmdThisContext( t, scope.this_type )
+          return CmdReadProperty( t, context, p ).set_modifiers(this)
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -929,9 +929,7 @@ class CmdAccess : CmdAccessWithModify
 
       local p = context_type.find_setting( name )
       if (p?)
-        if (context notInstanceOf CmdThisContext or context instanceOf CmdLiteralThis)
-          throw t.error( "Settings must be accessed using their type name ($.$) rather than through an object context." (p.type_context.name,p.name) )
-        endIf
+        context.require_type_context
         return CmdReadSetting( t, p).resolve(scope)
       endIf
 
@@ -952,10 +950,10 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       if (context is null)
-        if (scope.this_method.is_routine)
-          local p = scope.this_method.type_context.find_setting( name )
-          if (p?) return CmdWriteSetting( t, p, new_value )
+        local p = scope.this_method.type_context.find_setting( name )
+        if (p?) return CmdWriteSetting( t, p, new_value )
 
+        if (scope.this_method.is_routine)
           p = scope.this_method.type_context.find_property( name )
           if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
@@ -969,9 +967,7 @@ class CmdAccess : CmdAccessWithModify
 
       local p = context_type.find_setting( name )
       if (p?)
-        if (context notInstanceOf CmdThisContext or context instanceOf CmdLiteralThis)
-          throw t.error( "Settings must be accessed using their type name ($.$) rather than through an object context." (p.type_context.name,p.name) )
-        endIf
+        context.require_type_context
         return CmdWriteSetting( t, p, new_value ).resolve(scope)
       endIf
 
@@ -999,9 +995,18 @@ class CmdAccess : CmdAccessWithModify
 
       local context_type = context.require_type
 
-      if (not scope.this_method.is_routine)
-        local p = context_type.find_property( name )
-        if (p?) return CmdPropertyOpWithAssign( t, context, p, op, new_value ).resolve(scope)
+      local p = context_type.find_setting( name )
+      if (p?)
+        context.require_type_context
+        return CmdOpAssignSetting( t, p, op, new_value ).resolve(scope)
+      endIf
+
+      p = context_type.find_property( name )
+      if (p?)
+        if (scope.this_method.is_routine)
+          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        endIf
+        return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
@@ -1111,6 +1116,9 @@ class CmdThisContext : Cmd
     method print_cpp( writer:CPPWriter )
       writer.print "THIS"
 
+    method require_type_context
+      noAction
+
     method resolve( scope:Scope )->Cmd
       this_type.resolve
       return this
@@ -1128,12 +1136,32 @@ class CmdLiteralThis : CmdThisContext
       if (inline_args?) return inline_args.inline_this
       return CmdLiteralThis( t, this_type )
 
+    method require_type_context
+      throw t.error( //Type name expected.// )
+
     method resolve( scope:Scope )->Cmd
       this_type.resolve
       if (scope.this_method.is_routine)
         throw t.error( "Invalid reference to 'this' object - routines have no object context." )
       endIf
       return this
+endClass
+
+
+class CmdReadSingleton : Cmd
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method init( t, of_type )
+
+      #method resolve( scope:Scope )->Cmd
+
+    method require_type_context
+      noAction
+
+    method type->Type
+      return of_type
 endClass
 
 
@@ -2023,7 +2051,66 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
 endClass
 
 
-class CmdPropertyOpWithAssign : CmdResolvedOpWithAssign
+class CmdOpAssignSetting : CmdResolvedOpWithAssign
+  PROPERTIES
+    setting_info : Property
+
+  METHODS
+    method init( t, setting_info, op, new_value )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdOpAssignSetting( t, setting_info, op, new_value.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      new_value.print_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      if (setting_info.type.is_reference)
+        local m_name = "operator" + op->String
+        if (setting_info.type.method_lookup_by_name[m_name]?)
+          return CmdAccess( t, CmdReadSetting(t,setting_info), m_name, new_value ).resolve( scope )
+        else
+          m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          if (setting_info.type.method_lookup_by_name[m_name]?)
+            return CmdWriteSetting( t, setting_info,
+              CmdAccess(t, CmdReadSetting(t,setting_info), m_name, new_value) ).resolve( scope )
+          else
+            local arg_type = new_value.type.name
+            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (setting_info.type,m_name,arg_type,m_name,arg_type) )
+          endIf
+        endIf
+      endIf
+
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdWriteSetting( t, setting_info, CmdPower(t,CmdReadSetting(t,setting_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          # Mod has be be expanded because Rogue uses a special mod function
+          if (RogueC.target == "C++")
+            return CmdWriteSetting( t, setting_info, CmdMod(t,CmdReadSetting(t,setting_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access?) throw new_value.t.error( "Property or method name expected." )
+          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = CmdReadSetting( t, setting_info )
+          return CmdWriteSetting( t, setting_info, access ).resolve( scope )
+      endWhich
+
+      new_value = new_value.resolve(scope).require_value
+      return this
+
+    method type->Type
+      return setting_info.type
+endClass
+
+class CmdOpAssignProperty : CmdResolvedOpWithAssign
   PROPERTIES
     context       : Cmd
     property_info : Property
@@ -2032,7 +2119,7 @@ class CmdPropertyOpWithAssign : CmdResolvedOpWithAssign
     method init( t, context, property_info, op, new_value )
 
     method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdPropertyOpWithAssign( t, context.clone(inline_args), property_info, op, new_value.clone(inline_args) )
+      return CmdOpAssignProperty( t, context.clone(inline_args), property_info, op, new_value.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
