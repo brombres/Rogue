@@ -113,7 +113,10 @@ class Type
       local m = method_lookup_by_signature[signature]
       if (m?) return m
 
-      m = routine_lookup_by_signature[signature]
+      return find_routine( signature )
+
+    method find_routine( signature:String )->Method
+      local m = routine_lookup_by_signature[signature]
       if (m?) return m
 
       return null
@@ -211,12 +214,30 @@ class Type
       inherit_properties( full_property_list, property_lookup )
       property_list = full_property_list
 
-      # Organize methods and create signatures
+      # Organize routines and methods and create signatures
+      forEach (r in routine_list)
+        r.organize
+      endForEach
+
       forEach (m in method_list)
         m.organize
       endForEach
 
-      # Inherit methods
+      # Inherit routines and methods
+      local full_routine_list = Method[]
+      routine_lookup_by_signature.clear
+      inherit_routines( full_routine_list, routine_lookup_by_signature )
+      routine_list = full_routine_list
+      routine_lookup_by_name.clear
+      forEach (r in routine_list)
+        local list = routine_lookup_by_name[r.name]
+        if (not list)
+          list = Method[]
+          routine_lookup_by_name[r.name] = list
+        endIf
+        list.add( r )
+      endForEach
+
       local full_method_list = Method[]
       method_lookup_by_signature.clear
       inherit_methods( full_method_list, method_lookup_by_signature )
@@ -231,7 +252,23 @@ class Type
         list.add( m )
       endForEach
 
-      # Create init_object() method to initialize properties
+      # Create or locate init_class() to initialize settings
+      if (settings_list.count?)
+        local m = find_method( "init_class()" )
+        if (not m or m.type_context isNot this) m = add_method( t, "init_class" ).organize; trace
+
+        # Insert setting initializations
+        local i = settings_list.count - 1
+        while (i >= 0)
+          local s = settings_list[i]
+          if (s.initial_value?)
+            m.statements.insert( CmdWriteSetting(s.t, s, s.initial_value.clone) )
+          endIf
+          --i
+        endWhile
+      endIf
+
+      # Create or find init_object() method to initialize properties
       local m = find_method( "init_object()" )
       if (not m or m.type_context isNot this) m = add_method( t, "init_object" ).organize
       m.return_type = this
@@ -329,6 +366,17 @@ class Type
       endForEach
 
       forEach (m in method_list)
+        inherit_method( m, list, lookup )
+      endForEach
+
+    method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
+      forEach (base_type in base_types)
+        forEach (base_m in base_type.routine_list)
+          inherit_method( base_m, list, lookup )
+        endForEach
+      endForEach
+
+      forEach (m in routine_list)
         inherit_method( m, list, lookup )
       endForEach
 

@@ -271,11 +271,12 @@ class Program [requisite singleton]
       # configure() method
       writer.println( "void RogueProgram::init()" )
       writer.println( "{" )
+      writer.indent += 2
 
       # Create types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("  type_").print(type.cpp_name).print(" = new ").print(type.cpp_name).println("Type();")
+          writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_name).println("Type();")
         endIf
       endForEach
       writer.println
@@ -283,32 +284,45 @@ class Program [requisite singleton]
       # Configure types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("  type_").print(type.cpp_name).println("->configure();" )
+          writer.print("type_").print(type.cpp_name).println("->configure();" )
         endIf
       endForEach
       writer.println
 
-      writer.print(   "  literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
-      writer.println( "  literal_strings = new RogueString*[literal_string_count];" )
+      writer.print(   "literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
+      writer.println( "literal_strings = new RogueString*[literal_string_count];" )
       forEach (i of Program.literal_string_list)
-        writer.print(   "  literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
+        writer.print(   "literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
         writer.print_string_utf8( Program.literal_string_list[i] )
         writer.println( " )->retain(); " )
       endForEach
       writer.println
-      writer.print(   "  rogue_program.main_object = rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )
+
+      # Call all init_class() methods
+      forEach (type in type_list)
+        if (not type.omit_output)
+          local m = type.find_routine( "init_class()" )
+          if (m?)
+            writer.print( m.cpp_name ).println( "();" )
+          endIf
+        endIf
+      endForEach
+      writer.println
+
+      writer.print(   "rogue_program.main_object = rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )
       # Call init_object() on main object
       local m = main_class.find_method( "init_object()" )
       if (m?)
-        writer.print("  ").print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
+        writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
       endIf
 
       # call init() on main object
       m = main_class.find_method( "init()" )
       if (m?)
-        writer.print("  ").print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
+        writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)rogue_program.main_object );")
       endIf
 
+      writer.indent -= 2
       writer.println( "}" )
       writer.println
 
