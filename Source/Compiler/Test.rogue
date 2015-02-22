@@ -8,12 +8,11 @@ class Test
   ROUTINES
     routine init_class
       woot = 5
-      # TODO: declare static members in .cpp
 
     routine test
       println "routine print"
-      #println woot++
-      #println ++woot
+      println woot++
+      println ++woot
 
   METHODS
     method init

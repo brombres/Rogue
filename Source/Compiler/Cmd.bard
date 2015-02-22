@@ -1209,7 +1209,7 @@ class CmdReadSetting : CmdAccessWithModify
       elseIf (premodify_count < 0) writer.print("--")
 
       writer.print_type_name( setting_info.type_context ).print( "::" )
-      writer.print("->").print( setting_info.cpp_name )
+      writer.print( setting_info.cpp_name )
 
       if (postmodify_count > 0) writer.print("++")
       elseIf (postmodify_count < 0) writer.print("--")
