@@ -1430,6 +1430,32 @@ class CmdCallStaticMethod : CmdCall
 endClass
 
 
+class CmdCallNativeRoutine : CmdCall
+  METHODS
+    method init( t, method_info, args )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCallNativeRoutine( t, method_info, args.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      local compile_target = method_info.compile_target
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      local i = 0
+      forEach (arg in args)
+        if (i > 0) writer.print( ", " )
+        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
+          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+          arg.print_cpp( writer )
+          writer.print( ")" )
+        else
+          arg.print_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+endClass
+
 class CmdCallNativeMethod : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
@@ -1455,12 +1481,8 @@ class CmdCallNativeMethod : CmdCall
       writer.print( " )" )
 endClass
 
-
-class CmdCallInlineNativeMethod : CmdCall
+class CmdCallInlineNative : CmdCall
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallInlineNativeMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
-
     method print_cpp( writer:CPPWriter )
       local st = method_info.native_code
 
@@ -1481,7 +1503,7 @@ class CmdCallInlineNativeMethod : CmdCall
           st = st.substring( best_match.name.count )
         else
           if (st.begins_with("this"))
-            context.print_cpp( writer )
+            print_this( writer )
             st = st.substring( 4 )
           endIf
         endIf
@@ -1490,6 +1512,29 @@ class CmdCallInlineNativeMethod : CmdCall
       endWhile
 
       writer.print( st )
+
+    method print_this( writer:CPPWriter )
+      throw t.error( "Illegal use of '$this' in routine." )
+endClass
+
+class CmdCallInlineNativeRoutine : CmdCallInlineNative
+  METHODS
+    method init( t, method_info, args )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCallInlineNativeRoutine( t, method_info, args.clone(inline_args) )
+
+    method type->Type
+      return method_info.return_type
+endClass
+
+class CmdCallInlineNativeMethod : CmdCallInlineNative
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCallInlineNativeMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+
+    method print_this( writer:CPPWriter )
+      context.print_cpp( writer )
 
     method type->Type
       return method_info.return_type

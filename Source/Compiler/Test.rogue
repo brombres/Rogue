@@ -1,15 +1,19 @@
 class Test
   METHODS
     method init
-      local a1 = Alpha()
-      Alpha.default_value *= 2
-      local a2 = Alpha()
-      println a1.value
-      println a2.value
-      println Alpha.value
+      println Math.cube_root( 49 )
 
     method sqrt( n:Integer )->Integer
       $if ("C++") nativeInline '((int)sqrt((double)$n))'
+endClass
+
+class Math
+  ROUTINES
+    routine sqrt( n:Real )->Real
+      $if ("C++") nativeInline 'sqrt((double)$n)'
+
+    routine cube_root( n:Real )->Real
+      inline sqrt( sqrt(n) )
 endClass
 
 class Alpha [singleton]

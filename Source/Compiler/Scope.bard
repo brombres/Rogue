@@ -36,7 +36,7 @@ class Scope
           throw t.error( "Cannot call a method from a routine without an object context (obj.$()(...))." (m.name) )
         endIf
       else
-        if (not m.is_routine) context = CmdThisContext( t, type_context )
+        context = CmdThisContext( t, type_context )
       endIf
 
       local args = access.args
@@ -50,10 +50,36 @@ class Scope
       local cmd : Cmd
       if (m.is_routine)
         # routine
-        cmd = CmdCallRoutine( t, m, args )
+        if (m.is_native)
+          if (m.native_code?)
+            context.require_type_context
+            cmd = CmdCallInlineNativeRoutine( t, m, args )
+          else
+            cmd = CmdCallNativeRoutine( t, m, args )
+          endIf
+
+        elseIf (m.is_inline)
+          local inline_args = InlineArgs( m, context, args )
+          local inline_statements = CmdStatementList()
+          forEach (statement in m.statements)
+            local inline_statement = statement.clone( inline_args )
+            if (inline_statement?) inline_statements.add( inline_statement )
+          endForEach
+
+          inline_statements.resolve( this )
+          if (inline_statements.count == 1) return inline_statements.first
+
+          trace
+          throw t.error( "TODO: multi-line inline statements" )
+
+        else
+          cmd = CmdCallRoutine( t, m, args )
+
+        endIf
 
       else
         # method
+        trace
         if (m.is_native)
           if (type_context.is_array)
             which (m.name)
