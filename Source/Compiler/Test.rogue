@@ -1,19 +1,46 @@
 class Test
   METHODS
     method init
-      println Math.cube_root( 49 )
-
-    method sqrt( n:Integer )->Integer
-      $if ("C++") nativeInline '((int)sqrt((double)$n))'
+      println Math.log(Math.exp(8))
 endClass
 
 class Math
   ROUTINES
+    routine atan( slope:Real )->Real
+      $if ("C++") nativeInline 'atan((double)$n)'
+
+    routine atan2( y:Real, x:Real )->Real
+      $if ("C++") nativeInline 'atan2((double)$y,(double)$x)'
+
+    routine ceil( n:Real )->Real
+      $if ("C++") nativeInline 'ceil((double)$n)'
+
+    routine cos( n:Real )->Real
+      $if ("C++") nativeInline 'cos((double)$n)'
+
+    routine exp( n:Real )->Real
+      $if ("C++") nativeInline 'exp((double)$n)'
+
+    routine floor( n:Real )->Real
+      $if ("C++") nativeInline 'floor((double)$n)'
+
+    routine log( n:Real )->Real
+      $if ("C++") nativeInline 'log((double)$n)'
+
+    routine log2( n:Real )->Real
+      $if ("C++") nativeInline 'log2((double)$n)'
+
+    routine log10( n:Real )->Real
+      $if ("C++") nativeInline 'log10((double)$n)'
+
+    routine sin( n:Real )->Real
+      $if ("C++") nativeInline 'sin((double)$n)'
+
     routine sqrt( n:Real )->Real
       $if ("C++") nativeInline 'sqrt((double)$n)'
 
-    routine cube_root( n:Real )->Real
-      inline sqrt( sqrt(n) )
+    routine tan( n:Real )->Real
+      $if ("C++") nativeInline 'tan((double)$n)'
 endClass
 
 class Alpha [singleton]
