@@ -79,7 +79,6 @@ class Scope
 
       else
         # method
-        trace
         if (m.is_native)
           if (type_context.is_array)
             which (m.name)

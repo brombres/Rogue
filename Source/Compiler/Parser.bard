@@ -94,6 +94,10 @@ class Parser
         parse_class_template
         return true
 
+      elseIf (t.type is TokenType.keyword_compound)
+        parse_compound_template
+        return true
+
       elseIf (t.type is TokenType.keyword_primitive)
         parse_primitive_template
         return true
@@ -111,6 +115,12 @@ class Parser
         Program.implicit_main_class_t    = t
         Program.implicit_main_class_name = name
       endIf
+
+    method parse_compound_template
+      local t = read  # 'compound'
+      local name = read_identifier
+      local template = Template( t, name, Attribute.is_compound | Attribute.is_functional )
+      parse_template_tokens( template, TokenType.keyword_endCompound )
 
     method parse_primitive_template
       local t = read  # 'primitive'
@@ -162,6 +172,7 @@ class Parser
         template.tokens.add( t )
       endWhile
 
+      trace end_type
       throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
 
     method parse_attributes( attributes:Attributes )
@@ -186,6 +197,36 @@ class Parser
       must_consume( TokenType.symbol_close_bracket )
 
     method parse_type_def( this_type )
+      local t = peek
+
+      if (consume(TokenType.symbol_open_paren))
+        # ( auto_property:Type, ... )
+        consume_eols
+        if (not consume(TokenType.symbol_close_paren))
+          local m = this_type.add_method( t, "init" )
+          m.return_type = this_type
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+
+            # name[=default_value]:Type
+            t = peek
+            local p_name = read_identifier
+            m.add_parameter( t, p_name )
+            consume_eols
+            local initial_value : Cmd
+            if (consume(TokenType.symbol_equals)) initial_value = parse_expression
+            consume_eols
+            must_consume( TokenType.symbol_colon )
+            consume_eols
+            local p_type = parse_type
+            this_type.add_property( t, p_name, p_type, initial_value )
+            consume_eols
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+        endIf
+      endIf
+
       if (consume(TokenType.symbol_colon))
         # : BaseType1, BaseType2, ...
         local first = true
@@ -286,12 +327,20 @@ class Parser
 
       local t = read  # 'routine' or 'method'
       local name = read_identifier
-      if (name == "operator")
-        name += reader.read->String
-      endIf
+      local return_type : Type
+      which (name)
+        case "operator"
+          name += reader.read->String
+        case "to"
+          must_consume( TokenType.symbol_arrow )
+          return_type = parse_type
+          name = "to_" + return_type.name
+      endWhich
 
       if (as_routine) this_method = this_type.add_routine( t, name )
       else            this_method = this_type.add_method( t, name )
+
+      this_method.return_type = return_type
 
       # Parse parameters
       if (consume(TokenType.symbol_open_paren))
@@ -320,11 +369,13 @@ class Parser
       endIf
 
       # Optional ->ReturnType
-      if (consume(TokenType.symbol_arrow))
-        if (consume("this"))
-          this_method.return_type = this_type
-        else
-          this_method.return_type = parse_type
+      if (not return_type)
+        if (consume(TokenType.symbol_arrow))
+          if (consume("this"))
+            this_method.return_type = this_type
+          else
+            this_method.return_type = parse_type
+          endIf
         endIf
       endIf
 

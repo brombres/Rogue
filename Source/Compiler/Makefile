@@ -33,3 +33,6 @@ cpp: compile run
 
 clean:
 	rm -f *.bc
+
+vim:
+	cd ../../Syntax/Vim && make

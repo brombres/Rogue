@@ -96,6 +96,7 @@ class Method
               local pt = property.t
               statements.insert( CmdAssign(pt,CmdAccess(pt,property.name),CmdAccess(pt,new_name)) )
               param.name = new_name
+              param.type = property.type
             else
               throw param.t.error( //A property named "$" already exists.// (param.name) )
             endIf

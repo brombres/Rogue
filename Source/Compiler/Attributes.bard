@@ -2,6 +2,7 @@ class Attribute
   ENUMERATE
     is_primitive        = 0
     is_class            = 1
+    is_compound         = 2
     type_mask           = 7
 
     is_direct           = 0  # !is_reference

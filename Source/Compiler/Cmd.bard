@@ -318,6 +318,13 @@ class CmdPrintln : CmdStatement
       if (expression is null) return this
 
       expression = expression.resolve( scope )
+
+      local expression_type = expression.require_type
+
+      if (expression_type.is_reference or expression_type.is_compound)
+        expression = CmdAccess( t, expression, "to_String" ).resolve( scope )
+      endIf
+
       return this
 endClass
 

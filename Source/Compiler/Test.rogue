@@ -1,7 +1,17 @@
 class Test
   METHODS
     method init
-      println Math.log(Math.exp(8))
+      #println XY(3,4)
+      println Number(3)
+endClass
+
+compound XY( x:Real, y:Real )
+endCompound
+
+class Number( value:Real )
+  METHODS
+    method to->String
+      return "test"
 endClass
 
 class Math
@@ -41,19 +51,6 @@ class Math
 
     routine tan( n:Real )->Real
       $if ("C++") nativeInline 'tan((double)$n)'
-endClass
-
-class Alpha [singleton]
-  SETTINGS
-    default_value = 3 : Integer
-
-  PROPERTIES
-    value : Integer
-
-  METHODS
-    method init
-      value = default_value
-
 endClass
 
 primitive Real

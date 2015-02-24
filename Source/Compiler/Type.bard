@@ -68,8 +68,10 @@ class Type
       settings_lookup[s_name] = s
       return s
 
-    method add_property( p_t:Token, p_name:String )->Property
+    method add_property( p_t:Token, p_name:String, p_type=null:Type, initial_value=null:Cmd )->Property
       local p = Property( p_t, this, p_name )
+      p.type = p_type
+      p.initial_value = initial_value
       property_list.add( p )
       property_lookup[p_name] = p
       return p
@@ -141,6 +143,9 @@ class Type
 
     method is_class->Logical
       return (attributes.flags & Attribute.type_mask) == Attribute.is_class
+
+    method is_compound->Logical
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_compound
 
     method is_functional->Logical
       return (attributes.flags & Attribute.is_functional)?
