@@ -129,6 +129,14 @@ class Type
     method find_setting( name:String )->Property
       return settings_lookup[name]
 
+    method has_method_named( m_name:String )->Logical
+      local list = method_lookup_by_name[m_name]
+      return (list? and list.count?)
+
+    method has_routine_named( r_name:String )->Logical
+      local list = routine_lookup_by_name[r_name]
+      return (list? and list.count?)
+
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
 

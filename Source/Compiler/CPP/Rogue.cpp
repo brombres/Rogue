@@ -125,6 +125,26 @@ RogueString* RogueString::create( const char* c_string, int count )
   return st;
 }
 
+RogueString* RogueString::plus( const char* c_str )
+{
+  int len = strlen( c_str );
+
+  RogueString* result = RogueString::create( count + len );
+  memcpy( result->characters, characters, count * sizeof(RogueCharacter) );
+
+  RogueCharacter* dest = result->characters + count;
+  int code = hash_code;
+  for (int i=0; i<len; ++i)
+  {
+    int ch = c_str[i];
+    dest[i] = (RogueCharacter) ch;
+    code = ((code << 3) - code) + ch;
+  }
+
+  result->hash_code = code;
+  return result;
+}
+
 RogueString* RogueString::plus( RogueCharacter ch )
 {
   RogueString* result = RogueString::create( count + 1 );
@@ -132,6 +152,20 @@ RogueString* RogueString::plus( RogueCharacter ch )
   result->characters[count] = ch;
   result->hash_code = ((hash_code << 3) - hash_code) + ch;
   return result;
+}
+
+RogueString* RogueString::plus( RogueInteger value )
+{
+  char st[80];
+  sprintf( st, "%d", value );
+  return plus( st );
+}
+
+RogueString* RogueString::plus( RogueReal value )
+{
+  char st[80];
+  sprintf( st, "%.4lf", value );
+  return plus( st );
 }
 
 RogueString* RogueString::plus( RogueString* other )

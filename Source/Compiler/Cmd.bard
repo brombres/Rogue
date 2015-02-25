@@ -194,9 +194,9 @@ class CmdArgs : Cmd[]
       init
       add( arg )
 
-    method init( statement1:Cmd, statement2:Cmd )
+    method init( arg1:Cmd, arg2:Cmd )
       init
-      add( statement1 ).add( statement2 )
+      add( arg1 ).add( arg2 )
 
     method clone( inline_args=null:InlineArgs )->CmdArgs
       local result = CmdArgs( count )
@@ -321,7 +321,7 @@ class CmdPrintln : CmdStatement
 
       local expression_type = expression.require_type
 
-      if (expression_type.is_reference or expression_type.is_compound)
+      if ((expression_type.is_reference and expression_type isNot Program.type_String) or expression_type.is_compound)
         expression = CmdAccess( t, expression, "to_String" ).resolve( scope )
       endIf
 
@@ -1667,6 +1667,9 @@ class CmdBinary : Cmd
     method cpp_symbol->String
       return symbol
 
+    method fn_name->String
+      throw t.error( "[INTERNAL] $::fn_name() is not defined." (type_name) )
+
     method print_cpp( writer:CPPWriter )
       writer.print( "(" )
       left.print_cpp( writer )
@@ -1682,11 +1685,23 @@ class CmdBinary : Cmd
       return resolve_for_types( scope, left.require_type, right.require_type )
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local operator_method_call = resolve_operator_method( scope, left_type, right_type )
+      if (operator_method_call?) return operator_method_call
+
       local common_type = find_common_type( left_type, right_type )
       left = left.cast_to( common_type )
       right = right.cast_to( common_type )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
       return this
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.has_method_named(fn_name))
+        return CmdAccess( t, left, fn_name, CmdArgs(right) ).resolve( scope )
+      elseIf (left_type.has_routine_named(fn_name))
+        return CmdAccess( t, CmdAccess(t,left_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
+      else
+        return null
+      endIf
 
     method symbol->String
       throw t.error( "[INTERNAL] $::symbol() is not defined." (type_name) )
@@ -1709,6 +1724,9 @@ class CmdAdd : CmdBinary
         return this
       endIf
 
+    method fn_name->String
+      return "operator+"
+
     method symbol->String
       return "+"
 endClass
@@ -1728,6 +1746,9 @@ class CmdSubtract : CmdBinary
         return this
       endIf
 
+    method fn_name->String
+      return "operator-"
+
     method symbol->String
       return "-"
 endClass
@@ -1745,6 +1766,9 @@ class CmdMultiply : CmdBinary
       else
         return this
       endIf
+
+    method fn_name->String
+      return "operator*"
 
     method symbol->String
       return "*"
@@ -1764,6 +1788,9 @@ class CmdDivide : CmdBinary
       else
         return this
       endIf
+
+    method fn_name->String
+      return "operator/"
 
     method symbol->String
       return "/"
@@ -1791,6 +1818,9 @@ class CmdMod : CmdBinary
       right.print_cpp( writer )
       writer.print( " )" )
 
+    method fn_name->String
+      return "operator%"
+
     method symbol->String
       return "%"
 endClass
@@ -1817,6 +1847,9 @@ class CmdPower : CmdBinary
       right.print_cpp( writer )
       writer.print( "))" )
 
+    method fn_name->String
+      return "operator^"
+
     method symbol->String
       return "^"
 endClass
@@ -1840,6 +1873,9 @@ class CmdBinaryLogical : CmdBinary
           )
       endIf
       return this
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      return null
 
     method type->Type
       return Program.type_Logical

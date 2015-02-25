@@ -2,7 +2,7 @@ class Test
   METHODS
     method init
       #println XY(3,4)
-      println Number(3)
+      println "Here's a number: " + Number(3).value + "!"
 endClass
 
 compound XY( x:Real, y:Real )
@@ -11,7 +11,7 @@ endCompound
 class Number( value:Real )
   METHODS
     method to->String
-      return "test"
+      return "" + value
 endClass
 
 class Math
@@ -89,6 +89,18 @@ class String [functional]
       $if ("C++") nativeInline '$this->hash_code'
 
     method operator+( value:Character )->String
+      $if ("C++") nativeInline '$this->plus($value)'
+
+    method operator+( value:Integer )->String
+      $if ("C++") nativeInline '$this->plus($value)'
+
+      #{
+    method operator+( value:Object )->String
+      if (value?) return this + value->String
+      else        return this + "null"
+      }#
+
+    method operator+( value:Real )->String
       $if ("C++") nativeInline '$this->plus($value)'
 
     method operator+( value:String )->String

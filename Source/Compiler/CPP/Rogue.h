@@ -175,7 +175,10 @@ struct RogueString : RogueObject
   static RogueString* create( const char* c_string, int count=-1 );
   static void         println( RogueString* st );
 
+  RogueString* plus( const char* c_str );
   RogueString* plus( RogueCharacter ch );
+  RogueString* plus( RogueInteger value );
+  RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
   RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
 };
