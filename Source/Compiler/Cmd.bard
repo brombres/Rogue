@@ -801,6 +801,8 @@ class CmdLiteralString : CmdLiteral
           index = Program.literal_string_list.count
           Program.literal_string_lookup[value] = index
           Program.literal_string_list.add( value )
+        else
+          index = Program.literal_string_lookup[value]
         endIf
       endIf
       return this
@@ -2427,5 +2429,55 @@ class CmdWriteArrayElement : Cmd
 
     method type->Type
       return array_type.element_type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Type Checks and Conversions
+#------------------------------------------------------------------------------
+class CmdTypeOperator : Cmd
+  PROPERTIES
+    operand     : Cmd
+    target_type : Type
+
+  METHODS
+    method init( t, operand, target_type )
+endClass
+
+
+class CmdConvertToType : CmdTypeOperator
+  METHODS
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      local operand_type = operand.require_type
+      target_type.resolve
+      if (operand_type is target_type) return operand
+
+      if (operand_type.is_primitive)
+        return CmdConvertToPrimitiveType( t, operand, target_type ).resolve( scope )
+      else
+        trace
+        throw t.error( "TODO: CmdConvertToType->non-primitive" )
+      endIf
+
+    method type->Type
+      return target_type
+endClass
+
+
+class CmdConvertToPrimitiveType : CmdConvertToType
+  METHODS
+    method print_cpp( writer:CPPWriter )
+      writer.print( "((" ).print( target_type.cpp_name ).print( ")(" )
+      operand.print_cpp( writer )
+      writer.print( "))" )
+
+    method resolve( scope:Scope )->Cmd
+      local operand_type = operand.require_type
+      if (not operand_type.is_primitive)
+        trace
+        throw t.error( "TODO: CmdConvertToPrimitiveType with non-primitive operand." )
+      endIf
+      return this
 endClass
 

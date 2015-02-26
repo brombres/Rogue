@@ -1307,20 +1307,13 @@ class Parser
         must_consume( TokenType.symbol_close_bracket )
         return parse_member_access( access )
 
-      #{
       elseIf (consume(TokenType.symbol_arrow))
         # Conversion operation e.g. value->Integer
         consume_eols
         local to_type = parse_type
-        local args = parse_args
-
-        if (args?)
-          # context->Type(args) -> context.to(args)->Type
-          return parse_member_access( CmdConvertToType( t, CmdAccess(t,context,"to_"+to_type,args), to_type ) )
-        endIf
-
         return parse_member_access( CmdConvertToType(t,context,to_type) )
 
+      #{
       elseIf (consume(TokenType.keyword_as))
         # Recast operation e.g. 65 as Character
         consume_eols

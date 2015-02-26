@@ -2,7 +2,10 @@ class Test
   METHODS
     method init
       #println XY(3,4)
-      println "Here's a number: " + Number(3).value + "!"
+      println "Here's a number: " + Number(3).value->Integer + "!"
+      println "2Real4U:" + 2->Real
+      #println "Logical true:" + true
+      #println "Logical false:" + false
 endClass
 
 compound XY( x:Real, y:Real )
@@ -99,6 +102,11 @@ class String [functional]
       if (value?) return this + value->String
       else        return this + "null"
       }#
+
+      #method operator+( value:Logical )->String
+      #return this + "true"
+      #if (value) return this + "true"
+      #else       return this + "false"
 
     method operator+( value:Real )->String
       $if ("C++") nativeInline '$this->plus($value)'
