@@ -125,6 +125,49 @@ RogueString* RogueString::create( const char* c_string, int count )
   return st;
 }
 
+RogueInteger RogueString::locate( RogueCharacter ch, RogueInteger i1 )
+{
+  RogueInteger    limit = count;
+  RogueCharacter* data  = characters;
+  if (--i1 < -1) return -1;
+
+  while (++i1 < limit)
+  {
+    if (data[i1] == ch) return i1;
+  }
+  return -1;
+}
+
+RogueInteger RogueString::locate( RogueString* other, RogueInteger i1 )
+{
+  RogueInteger    other_count = other->count;
+  if (other_count == 1) return locate( other->characters[0], i1 );
+
+  RogueInteger    this_limit = (count - other_count) + 1;
+  if (!other_count || this_limit <= 0) return -1;
+
+  RogueCharacter* this_data  = characters;
+  RogueCharacter* other_data = other->characters;
+
+  --i1;
+  while (++i1 < this_limit)
+  {
+    bool substring_matches = true;
+    int j1 = -1;
+    int j2 = other_count - 1;
+    while (++j1 <= j2)
+    {
+      if (this_data[i1+j1] != other_data[j1])
+      {
+        substring_matches = false;
+        break;
+      }
+    }
+    if (substring_matches) return i1;
+  }
+  return -1;
+}
+
 RogueString* RogueString::plus( const char* c_str )
 {
   int len = strlen( c_str );

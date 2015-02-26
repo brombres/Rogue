@@ -2,10 +2,19 @@ class Test
   METHODS
     method init
       #println XY(3,4)
-      println "Here's a number: " + Number(3).value->Integer + "!"
-      println "2Real4U:" + 2->Real
-      #println "Logical true:" + true
-      #println "Logical false:" + false
+      println "Logical true:" + true
+      println "Logical false:" + false
+      println "ABC".locate('a')
+      println "ABC".locate('A')
+      println "ABC".locate('B',0)
+      println "ABC".locate('B',1)
+      println "ABC".locate('B',2)
+      println
+      println "AABCCABCAB".locate("AB")
+      println "AABCCABCAB".locate("AB",1)
+      println "AABCCABCAB".locate("AB",2)
+      println "AABCCABCAB".locate("AB",6)
+      println "AABCCABCAB".locate("BCAB")
 endClass
 
 compound XY( x:Real, y:Real )
@@ -91,6 +100,12 @@ class String [functional]
     method hash_code->Integer
       $if ("C++") nativeInline '$this->hash_code'
 
+    method locate( ch:Character, i1=0:Integer )->Integer
+      $if ("C++") nativeInline '$this->locate($ch,$i1)'
+
+    method locate( other:String, i1=0:Integer )->Integer
+      $if ("C++") nativeInline '$this->locate($other,$i1)'
+
     method operator+( value:Character )->String
       $if ("C++") nativeInline '$this->plus($value)'
 
@@ -103,10 +118,9 @@ class String [functional]
       else        return this + "null"
       }#
 
-      #method operator+( value:Logical )->String
-      #return this + "true"
-      #if (value) return this + "true"
-      #else       return this + "false"
+    method operator+( value:Logical )->String
+      if (value) return this + "true"
+      else       return this + "false"
 
     method operator+( value:Real )->String
       $if ("C++") nativeInline '$this->plus($value)'

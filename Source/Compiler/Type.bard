@@ -98,7 +98,7 @@ class Type
       return this
 
     method declare_settings( writer:CPPWriter )
-      if (omit_output) return
+      if (is_generic) return
       forEach (s in settings_list)
         if (s.type_context is this)
           writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
@@ -157,6 +157,9 @@ class Type
 
     method is_functional->Logical
       return (attributes.flags & Attribute.is_functional)?
+
+    method is_generic->Logical
+      return generic_type?
 
     method is_immutable->Logical
       return (attributes.flags & Attribute.is_immutable)?
@@ -269,7 +272,7 @@ class Type
       endForEach
 
       # Create or locate init_class() to initialize settings
-      if (settings_list.count?)
+      if (settings_list.count? and not is_native)
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
 
@@ -285,20 +288,22 @@ class Type
       endIf
 
       # Create or find init_object() method to initialize properties
-      local m = find_method( "init_object()" )
-      if (not m or m.type_context isNot this) m = add_method( t, "init_object" ).organize
-      m.return_type = this
-      m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
+      if (not is_native)
+        local m = find_method( "init_object()" )
+        if (not m or m.type_context isNot this) m = add_method( t, "init_object" ).organize
+        m.return_type = this
+        m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
-      # Insert property initializations
-      local i = property_list.count - 1
-      while (i >= 0)
-        local p = property_list[i]
-        if (p.initial_value?)
-          m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.clone) )
-        endIf
-        --i
-      endWhile
+        # Insert property initializations
+        local i = property_list.count - 1
+        while (i >= 0)
+          local p = property_list[i]
+          if (p.initial_value?)
+            m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.clone) )
+          endIf
+          --i
+        endWhile
+      endIf
 
       if (this isNot Program.type_NativeArray)
         is_array = this.instance_of( Program.type_NativeArray )
@@ -581,28 +586,28 @@ class Type
       writer.println
 
     method print_routine_prototypes( writer:CPPWriter )
-      if (omit_output) return
+      if (is_generic) return
 
       forEach (m in routine_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
 
     method print_routine_definitions( writer:CPPWriter )
-      if (omit_output) return
+      if (is_generic) return
 
       forEach (m in routine_list)
         if (m.type_context is this) m.print_definition( writer )
       endForEach
 
     method print_method_prototypes( writer:CPPWriter )
-      if (omit_output) return
+      if (is_generic) return
 
       forEach (m in method_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
 
     method print_method_definitions( writer:CPPWriter )
-      if (omit_output) return
+      if (is_generic) return
 
       forEach (m in method_list)
         if (m.type_context is this) m.print_definition( writer )
