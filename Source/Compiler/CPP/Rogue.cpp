@@ -125,11 +125,29 @@ RogueString* RogueString::create( const char* c_string, int count )
   return st;
 }
 
+RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_index )
+{
+  RogueInteger other_count = substring->count;
+  if (at_index < 0 || at_index + other_count > this->count) return false;
+
+  RogueCharacter* this_data  = characters;
+  RogueCharacter* other_data = substring->characters;
+
+  int i = -1;
+  int i2 = other_count - 1;
+  while (++i <= i2)
+  {
+    if (this_data[at_index+i] != other_data[i]) return false;
+  }
+
+  return true;
+}
+
 RogueInteger RogueString::locate( RogueCharacter ch, RogueInteger i1 )
 {
   RogueInteger    limit = count;
   RogueCharacter* data  = characters;
-  if (--i1 < -1) return -1;
+  if (--i1 < -1) i1 = -1;
 
   while (++i1 < limit)
   {
@@ -146,24 +164,43 @@ RogueInteger RogueString::locate( RogueString* other, RogueInteger i1 )
   RogueInteger    this_limit = (count - other_count) + 1;
   if (!other_count || this_limit <= 0) return -1;
 
-  RogueCharacter* this_data  = characters;
-  RogueCharacter* other_data = other->characters;
-
-  --i1;
+  if (--i1 < -1) i1 = -1;
   while (++i1 < this_limit)
   {
-    bool substring_matches = true;
-    int j1 = -1;
-    int j2 = other_count - 1;
-    while (++j1 <= j2)
-    {
-      if (this_data[i1+j1] != other_data[j1])
-      {
-        substring_matches = false;
-        break;
-      }
-    }
-    if (substring_matches) return i1;
+    if (contains(other,i1)) return i1;
+  }
+  return -1;
+}
+
+RogueInteger RogueString::locate_last( RogueCharacter ch, RogueInteger i1 )
+{
+  RogueInteger    limit = count;
+  RogueCharacter* data  = characters;
+
+  int i = i1 + 1;
+  if (i > limit) i = limit;
+
+  while (--i >= 0)
+  {
+    if (data[i] == ch) return i;
+  }
+  return -1;
+}
+
+RogueInteger RogueString::locate_last( RogueString* other, RogueInteger i1 )
+{
+  RogueInteger    other_count = other->count;
+  if (other_count == 1) return locate_last( other->characters[0], i1 );
+
+  RogueInteger    this_limit = (count - other_count) + 1;
+  if (!other_count || this_limit <= 0) return -1;
+
+  int i = i1 + 1;
+  if (i > this_limit) i = this_limit;
+
+  while (--i >= 0)
+  {
+    if (contains(other,i)) return i;
   }
   return -1;
 }

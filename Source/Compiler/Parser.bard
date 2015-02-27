@@ -1206,11 +1206,9 @@ class Parser
 
     method parse_post_unary( operand:Cmd )->Cmd
       local t = peek
-      #{
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
-        }#
-      if (consume(TokenType.symbol_plus_plus))
+      elseIf (consume(TokenType.symbol_plus_plus))
         parse_post_unary( operand.postmodify(1) )
       elseIf (consume(TokenType.symbol_minus_minus))
         parse_post_unary( operand.postmodify(-1) )

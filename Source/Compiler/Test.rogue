@@ -4,17 +4,15 @@ class Test
       #println XY(3,4)
       println "Logical true:" + true
       println "Logical false:" + false
-      println "ABC".locate('a')
-      println "ABC".locate('A')
-      println "ABC".locate('B',0)
-      println "ABC".locate('B',1)
-      println "ABC".locate('B',2)
-      println
-      println "AABCCABCAB".locate("AB")
-      println "AABCCABCAB".locate("AB",1)
-      println "AABCCABCAB".locate("AB",2)
-      println "AABCCABCAB".locate("AB",6)
-      println "AABCCABCAB".locate("BCAB")
+
+      println "c:/stuff/whatever.txt"
+      println "c:/stuff/whatever.txt".before_first('/')
+      println "c:/stuff/whatever.txt".from_first('/')
+      println "c:/stuff/whatever.txt".after_first('/')
+      println "c:/stuff/whatever.txt".after_last('/')
+      println "c:/stuff/whatever.txt".after_any('/').after_any('/')
+      println "c:/stuff/whatever.txt".after_any("whae")
+      println "c:/stuff/whatever.txt".after_any("wha")
 endClass
 
 compound XY( x:Real, y:Real )
@@ -91,8 +89,91 @@ endClass
 
 class String [functional]
   METHODS
+    method after_any( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return this
+      return substring( i+1 )
+
+    method after_any( st:String )->String
+      local i = locate( st )
+      if (i == -1) return this
+      return substring( i+st.count )
+
+    method after_first( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return ""
+      return substring( i+1 )
+
+    method after_first( st:String )->String
+      local i = locate( st )
+      if (i == -1) return ""
+      return substring( i+st.count )
+
+    method after_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i == -1) return ""
+      return substring( i+1 )
+
+    method after_last( st:String )->String
+      local i = locate_last( st )
+      if (i == -1) return ""
+      return substring( i+st.count )
+
+    method before_first( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method before_first( st:String )->String
+      local i = locate( st )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method before_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method before_last( st:String )->String
+      local i = locate_last( st )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method begins_with( ch:Character )->Logical
+      return (count? and this[0] == ch)
+
+    method begins_with( other:String )->Logical
+      local other_count = other.count
+      return (count >= other_count and contains(other,0))
+
+    method contains( substring:String )->Logical
+      return locate(substring) >= 0
+
+    method contains( substring:String, at_index:Integer )->Logical
+      $if ("C++") nativeInline '$this->contains($substring,$at_index)'
+
     method count->Integer
       $if ("C++") nativeInline '$this->count'
+
+    method from_first( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return ""
+      return substring( i )
+
+    method from_first( st:String )->String
+      local i = locate( st )
+      if (i == -1) return ""
+      return substring( i )
+
+    method from_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i == -1) return ""
+      return substring( i )
+
+    method from_last( st:String )->String
+      local i = locate_last( st )
+      if (i == -1) return ""
+      return substring( i )
 
     method get( index:Integer )->Character
       $if ("C++") nativeInline '$this->characters[$index]'
@@ -105,6 +186,18 @@ class String [functional]
 
     method locate( other:String, i1=0:Integer )->Integer
       $if ("C++") nativeInline '$this->locate($other,$i1)'
+
+    method locate_last( ch:Character )->Integer
+      return locate_last( ch, count-1 )
+
+    method locate_last( ch:Character, starting_index:Integer )->Integer
+      $if ("C++") nativeInline '$this->locate_last($ch,$starting_index)'
+
+    method locate_last( other:String )->Integer
+      return locate_last( other, count-other.count )
+
+    method locate_last( other:String, starting_index:Integer )->Integer
+      $if ("C++") nativeInline '$this->locate_last($other,$starting_index)'
 
     method operator+( value:Character )->String
       $if ("C++") nativeInline '$this->plus($value)'

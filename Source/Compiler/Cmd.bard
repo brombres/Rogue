@@ -1586,7 +1586,7 @@ class CmdUnary : Cmd
       return suffix_symbol
 
     method prefix_symbol->String
-      return "("
+      return ""
 
     method print_cpp( writer:CPPWriter )
       writer.print( cpp_prefix_symbol )
@@ -1605,12 +1605,37 @@ class CmdUnary : Cmd
       return this
 
     method suffix_symbol->String
-      return ")"
+      return ""
 
     method type->Type
       return operand.type
 endClass
 
+class CmdLogicalize : CmdUnary
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdLogicalize( t, operand.clone(inline_args) )
+
+    method cpp_prefix_symbol->String
+      return "!!"
+
+    method cpp_suffix_symbol->String
+      return ""
+
+    method prefix_symbol->String
+      return ""
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_value
+      return this
+
+    method suffix_symbol->String
+      return "?"
+
+    method type->Type
+      return Program.type_Logical
+
+endClass
 
 class CmdLogicalNot : CmdUnary
   METHODS
@@ -1620,8 +1645,8 @@ class CmdLogicalNot : CmdUnary
     method cpp_prefix_symbol->String
       return "!"
 
-    method cpp_suffix_symbol->String
-      return ""
+    method prefix_symbol->String
+      return "not "
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal)
@@ -1652,6 +1677,9 @@ class CmdNegate : CmdUnary
         return CmdLiteralInteger( t, -(operand as CmdLiteralInteger).value )
       endIf
       return this
+
+    method suffix_symbol->String
+      return ")"
 endClass
 
 
@@ -1673,11 +1701,14 @@ class CmdBinary : Cmd
       throw t.error( "[INTERNAL] $::fn_name() is not defined." (type_name) )
 
     method print_cpp( writer:CPPWriter )
-      writer.print( "(" )
+      if (requires_parens) writer.print( "(" )
       left.print_cpp( writer )
       writer.print( " " ).print( cpp_symbol ).print( " " )
       right.print_cpp( writer )
-      writer.print( ")" )
+      if (requires_parens) writer.print( ")" )
+
+    method requires_parens->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       left = left.resolve( scope )
@@ -1961,6 +1992,9 @@ class CmdCompareEQ : CmdComparison
       else
         return this
       endIf
+
+    method requires_parens->Logical
+      return false
 
     method symbol->String
       return "=="
