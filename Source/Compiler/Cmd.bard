@@ -669,6 +669,116 @@ class CmdForEachInIndexedCollection : CmdControlStructure
 endClass
 
 
+class CmdForEachOfCollection : CmdControlStructure
+  PROPERTIES
+    control_var_name : String
+    collection       : Cmd
+    step_cmd         : Cmd
+
+  METHODS
+    method init( t, control_var_name, collection, step_cmd, statements=CmdStatementList() )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdForEachOfCollection( t, control_var_name, collection.clone(inline_args), clone(step_cmd,inline_args), statements.clone(inline_args) )
+
+    method resolve( scope:Scope )->Cmd
+      collection = collection.resolve( scope )
+      local collection_type = collection.require_type.organize
+
+      local has_count = (collection_type.find_property("count")? or collection_type.find_method("count()")?)
+
+      local step_size = 1
+      if (step_cmd?)
+        step_cmd = step_cmd.resolve( scope )
+        local literal_integer_cmd = step_cmd as CmdLiteralInteger
+        if (literal_integer_cmd?)
+          step_size = literal_integer_cmd.value
+        else
+          throw step_cmd.t.error( "Literal integer value expected." )
+        endIf
+      endIf
+
+      if (has_count)
+        local cmd_block = CmdBlock(t)
+
+        local collection_var = scope.this_method.add_local( t, Program.create_unique_id )
+        cmd_block.statements.add( CmdLocalDeclaration(collection.t,collection_var) )
+        collection_var.initial_value = collection
+
+        local index_var = scope.this_method.add_local( t, Program.create_unique_id, Program.type_Integer )
+        local last_cmd : Cmd
+        cmd_block.statements.add( CmdLocalDeclaration(collection.t,index_var) )
+        if (step_size >= 0)
+          index_var.initial_value = CmdLiteralInteger( t, 0 )
+          last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
+        else
+          local args = CmdArgs()
+          index_var.initial_value = CmdSubtract( t, CmdAccess(t,CmdReadLocal(t,collection_var), "count"), CmdLiteralInteger(t,1) )
+          last_cmd = CmdLiteralInteger( t, 0 )
+        endIf
+
+        local control_var = scope.this_method.add_local( t, control_var_name )
+
+        local index_read_cmd : Cmd
+        if (step_size == 1)
+          index_read_cmd = CmdReadLocal( t, index_var ).postmodify(1)
+        elseIf (step_size == -1)
+          index_read_cmd = CmdReadLocal( t, index_var ).postmodify(-1)
+        elseIf (step_size >= 0)
+          index_read_cmd = CmdReadLocal( t, index_var )
+          statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
+        else
+          index_read_cmd = CmdReadLocal( t, index_var )
+          statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,-step_size)))
+        endIf
+
+        statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
+        control_var.initial_value = index_read_cmd
+
+        cmd_block.statements.add( CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd, step_size, statements ) )
+        return cmd_block.resolve( scope )
+
+      else
+        trace
+        throw t.error( "TODO" )
+
+      endIf
+      return this
+endClass
+
+class CmdForEachOfIndexedCollection : CmdControlStructure
+  PROPERTIES
+    index_var        : Local
+    control_var      : Local
+    collection_var   : Local
+    last_cmd         : Cmd
+    step_size        : Integer
+
+  METHODS
+    method init( t, index_var, control_var, collection_var, last_cmd, step_size, statements=CmdStatementList() )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(inline_args), step_size, statements.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "while (" ).print( index_var.cpp_name )
+      if (step_size >= 0) writer.print( " < " )
+      else                writer.print( " >= " )
+      last_cmd.print_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method resolve( scope:Scope )->Cmd
+      statements.resolve( scope )
+      last_cmd = last_cmd.resolve( scope )
+      return this
+endClass
+
+
 #------------------------------------------------------------------------------
 # Literals
 #------------------------------------------------------------------------------

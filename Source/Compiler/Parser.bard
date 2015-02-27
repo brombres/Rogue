@@ -943,8 +943,27 @@ class Parser
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
               return cmd_for_each
             endIf
+
+          elseIf (consume(TokenType.keyword_of))
+            local collection = parse_expression
+            local range = collection as CmdRange
+            if (range?)
+              throw t.error( "Use forEach-in with a literal range instead of forEach-of." )
+            else
+              local step_cmd : Cmd
+              if (consume(TokenType.keyword_step))
+                step_cmd = parse_expression
+              endIf
+
+              if (has_parens) must_consume( TokenType.symbol_close_paren )
+
+              local cmd_for_each = CmdForEachOfCollection( t, access.name, collection, step_cmd )
+              parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
+              return cmd_for_each
+            endIf
+
           else
-            throw t.error( "Syntax error in forEach - keyword 'in' expected." )
+            throw t.error( "Syntax error in forEach - keyword 'in' or 'of' expected." )
           endIf
         endIf
       else

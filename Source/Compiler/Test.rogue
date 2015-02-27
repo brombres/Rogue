@@ -2,17 +2,11 @@ class Test
   METHODS
     method init
       #println XY(3,4)
-      println "Logical true:" + true
-      println "Logical false:" + false
-
-      println "c:/stuff/whatever.txt"
-      println "c:/stuff/whatever.txt".before_first('/')
-      println "c:/stuff/whatever.txt".from_first('/')
-      println "c:/stuff/whatever.txt".after_first('/')
-      println "c:/stuff/whatever.txt".after_last('/')
-      println "c:/stuff/whatever.txt".after_any('/').after_any('/')
-      println "c:/stuff/whatever.txt".after_any("whae")
-      println "c:/stuff/whatever.txt".after_any("wha")
+      forEach (i of "Friday") println i
+      println
+      forEach (i of "Friday" step 2) println i
+      println
+      forEach (i of "Friday" step -1) println i
 endClass
 
 compound XY( x:Real, y:Real )
