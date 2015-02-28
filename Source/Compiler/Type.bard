@@ -146,6 +146,14 @@ class Type
 
       return false
 
+    method is_compatible_with( other:Type )->Logical
+      if (this is other) return true
+      if (this.is_primitive and other.is_primitive)
+        if (this is Program.type_Logical xor other is Program.type_Logical) return false 
+        return true
+      endIf
+      return (this.instance_of(other))
+
     method is_direct->Logical
       return not is_reference
 

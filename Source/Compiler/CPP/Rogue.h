@@ -175,12 +175,14 @@ struct RogueString : RogueObject
   static RogueString* create( const char* c_string, int count=-1 );
   static void         println( RogueString* st );
 
+  RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
   RogueInteger locate( RogueCharacter ch, RogueInteger i1 );
   RogueInteger locate( RogueString* other, RogueInteger i1 );
   RogueInteger locate_last( RogueCharacter ch, RogueInteger i1 );
   RogueInteger locate_last( RogueString* other, RogueInteger i1 );
   RogueString* plus( const char* c_str );
+  RogueString* plus( char ch );
   RogueString* plus( RogueCharacter ch );
   RogueString* plus( RogueInteger value );
   RogueString* plus( RogueReal value );

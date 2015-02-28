@@ -2,11 +2,23 @@ class Test
   METHODS
     method init
       #println XY(3,4)
-      forEach (i of "Friday") println i
-      println
-      forEach (i of "Friday" step 2) println i
-      println
-      forEach (i of "Friday" step -1) println i
+      local abc = "def";
+      #println abc.compare_to( "ABCD" )
+      #println abc.compare_to( "ABC" )
+      #println abc.compare_to( "AB" )
+      #println abc.compare_to( abc )
+      #println abc == "AB" + 'C'
+      println abc == "abc"
+      println abc != "abc"
+      println abc != "abd"
+      println abc < "abc"
+      println abc < "abcd"
+      println abc <= "abc"
+      println abc <= "abcd"
+      println abc >= "abc"
+      println abc >= "abcd"
+      println abc > "abc"
+      println abc > "abcd"
 endClass
 
 compound XY( x:Real, y:Real )
@@ -204,6 +216,9 @@ class String [functional]
       if (value?) return this + value->String
       else        return this + "null"
       }#
+
+    method operator<>( other:String )->Integer
+      $if ("C++") nativeInline '$this->compare_to($other)'
 
     method operator+( value:Logical )->String
       if (value) return this + "true"

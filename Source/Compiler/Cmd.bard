@@ -1634,6 +1634,9 @@ class CmdCallInlineNative : CmdCall
 
     method print_this( writer:CPPWriter )
       throw t.error( "Illegal use of '$this' in routine." )
+
+    method to->String
+      return method_info.signature
 endClass
 
 class CmdCallInlineNativeRoutine : CmdCallInlineNative
@@ -2079,11 +2082,19 @@ endClass
 class CmdComparison : CmdBinary
   METHODS
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.is_reference or right_type.is_reference)
+        return resolve_for_reference( scope, left_type, right_type )
+      endIf
+
       local common_type = find_common_type( left_type, right_type )
       left = left.cast_to( common_type )
       right = right.cast_to( common_type )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
+
       return this
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      throw t.error( "[INTERNAL] $::resolve_for_reference() is undefined." )
 
     method type->Type
       return Program.type_Logical
@@ -2106,6 +2117,25 @@ class CmdCompareEQ : CmdComparison
     method requires_parens->Logical
       return false
 
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd?) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator==",CmdArgs(left)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator!=",CmdArgs(left)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), true )
+
     method symbol->String
       return "=="
 endClass
@@ -2123,6 +2153,25 @@ class CmdCompareNE : CmdComparison
       else
         return this
       endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd?) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator!=",CmdArgs(left)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator==",CmdArgs(left)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), true )
 
     method symbol->String
       return "!="
@@ -2142,6 +2191,25 @@ class CmdCompareLT : CmdComparison
         return this
       endIf
 
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd?) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>",CmdArgs(left)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<=",CmdArgs(left)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), true )
+
     method symbol->String
       return "<"
 endClass
@@ -2160,6 +2228,25 @@ class CmdCompareLE : CmdComparison
         return this
       endIf
 
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd?) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>=",CmdArgs(left)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<",CmdArgs(left)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), true )
+
     method symbol->String
       return "<="
 endClass
@@ -2174,6 +2261,25 @@ class CmdCompareGT : CmdComparison
       else
         return this
       endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd?) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<",CmdArgs(left)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>=",CmdArgs(left)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), true )
 
     method symbol->String
       return ">"
@@ -2192,6 +2298,25 @@ class CmdCompareGE : CmdComparison
       else
         return this
       endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd?) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<=",CmdArgs(left)), false )
+      if (cmd?) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>",CmdArgs(left)), false )
+      if (cmd?) return CmdLogicalNot( t, cmd )
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), true )
 
     method symbol->String
       return ">="
