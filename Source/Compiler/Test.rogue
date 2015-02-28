@@ -331,3 +331,11 @@ class List<<$DataType:Object>> : GenericList
       return buffer
 endClass
 
+
+class StringBuilder
+  PROPERTIES
+    data = Character[]
+
+  METHODS
+endClass
+
