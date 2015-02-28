@@ -1,24 +1,9 @@
 class Test
   METHODS
     method init
-      #println XY(3,4)
-      local abc = "def";
-      #println abc.compare_to( "ABCD" )
-      #println abc.compare_to( "ABC" )
-      #println abc.compare_to( "AB" )
-      #println abc.compare_to( abc )
-      #println abc == "AB" + 'C'
-      println abc == "abc"
-      println abc != "abc"
-      println abc != "abd"
-      println abc < "abc"
-      println abc < "abcd"
-      println abc <= "abc"
-      println abc <= "abcd"
-      println abc >= "abc"
-      println abc >= "abcd"
-      println abc > "abc"
-      println abc > "abcd"
+      local nums = Integer[]
+      nums.add( 5 ).add( 6 ).add( 7 )
+      forEach (num in nums) println num
 endClass
 
 compound XY( x:Real, y:Real )
@@ -255,10 +240,34 @@ class List<<$DataType:Object>> : GenericList
     method init
       data = Array<<$DataType>>( 2 )
 
+    method add( value:$DataType )->$DataType[]
+      reserve(1)[count] = value
+      ++count
+      return this
+
+    method capacity->Integer
+      if (not data) return 0
+      return data.count
+
     method get( index:Integer )->$DataType
       inline this.data[index]
 
-    method set( index:Integer, new_value:$DataType )
-      inline this.data[ index ] = new_value
+    method reserve( additional_count:Integer )->$DataType[]
+      local required_capacity = count + additional_count
+
+      if (not data)
+        data = Array<<$DataType>>( 10 )
+      elseIf (required_capacity > data.count)
+        local x2 = capacity + capacity
+        if (required_capacity < x2) required_capacity = x2 
+        local new_data = Array<<$DataType>>( required_capacity )
+        forEach (i of this) new_data[i] = data[i]
+        data = new_data
+      endIf
+
+      return this
+
+    method set( xyz:Integer, new_value:$DataType )->$DataType[]
+      inline this.data[ xyz ] = new_value
 endClass
 

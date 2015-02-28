@@ -987,7 +987,25 @@ class Parser
 
     method parse_expression->Cmd
       consume_eols
-      return parse_range
+      return parse_assignment
+
+    method parse_assignment->Cmd
+      return parse_assignment( parse_range )
+
+    method parse_assignment( lhs:Cmd )->Cmd
+      local t = peek
+
+      if (consume(TokenType.symbol_equals))
+        return CmdAssign( t, lhs, parse_expression )
+
+      elseIf (t.type.is_op_with_assign)
+        read
+        return CmdOpWithAssign( t, lhs, t.type, parse_expression )
+
+      else
+        return lhs
+
+      endIf
 
     method parse_range->Cmd
       return parse_range( parse_logical_xor )

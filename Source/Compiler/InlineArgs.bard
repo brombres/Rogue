@@ -16,7 +16,6 @@ class InlineArgs
     method inline_this->Cmd
       return this_context.clone()
 
-      #{
     method inline_access( access:CmdAccess )->Cmd
       if (access.context?) return access
 
@@ -38,7 +37,6 @@ class InlineArgs
       endIf
 
       return dup
-      }#
 
     method inline_read_local( read_cmd:CmdReadLocal )->Cmd
       local arg = arg_lookup[ read_cmd.local_info.name ]

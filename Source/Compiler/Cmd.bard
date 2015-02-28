@@ -980,7 +980,7 @@ class CmdAccess : CmdAccessWithModify
     method clone( inline_args=null:InlineArgs )->Cmd
       local result = CmdAccess( t, clone(context,inline_args), name, clone(args,inline_args) )
       result.set_modifiers( this )
-      #if (inline_args?) return inline_args.inline_access( result )
+      if (inline_args?) return inline_args.inline_access( result )
       return result
 
     method implicit_type->Type
