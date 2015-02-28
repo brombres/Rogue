@@ -85,8 +85,8 @@ class Scope
               case "count"
                 if (args? and args.count?) throw t.error( "Invalid arguments to array count." )
                 return CmdReadArrayCount( t, context ).resolve( this )
-              others
-                throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
+              #others
+                #throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
             endWhich
           endIf
 

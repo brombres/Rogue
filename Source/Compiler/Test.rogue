@@ -2,8 +2,9 @@ class Test
   METHODS
     method init
       local nums = Integer[]
-      nums.add( 5 ).add( 6 ).add( 7 )
-      forEach (num in nums) println num
+      nums.add(3).add(4).add(5)
+      forEach (n in nums) println n
+      println nums.data.element_size
 endClass
 
 compound XY( x:Real, y:Real )
@@ -221,11 +222,20 @@ class String [functional]
 endClass
 
 class NativeArray [native]
+  METHODS
+    method count->Integer [native]
+
+    method element_size->Integer
+      $if ("C++") nativeInline '$this->element_size'
+
+    method set( i1:Integer, other:NativeArray, other_i1=0:Integer, other_i2=-1:Integer )->NativeArray
+      $if ("C++") nativeInline '$this->set($i1,$other,$other_i1,$other_i2)'
 endClass
 
 class Array<<$DataType>> : NativeArray [native]
   METHODS
-    method count->Integer [native]
+    method get( index:Integer )->$DataType
+      inline this[ index ]
 endClass
 
 class GenericList
@@ -261,7 +271,7 @@ class List<<$DataType:Object>> : GenericList
         local x2 = capacity + capacity
         if (required_capacity < x2) required_capacity = x2 
         local new_data = Array<<$DataType>>( required_capacity )
-        forEach (i of this) new_data[i] = data[i]
+        new_data.set( 0, data )
         data = new_data
       endIf
 

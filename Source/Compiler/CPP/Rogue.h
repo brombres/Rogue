@@ -222,7 +222,8 @@ struct RogueArray : RogueObject
   };
 
   static RogueArray* create( int count, int element_size, bool is_reference_array=false );
-  //static void         println( RogueString* st );
+
+  RogueArray* set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 );
 };
 
 

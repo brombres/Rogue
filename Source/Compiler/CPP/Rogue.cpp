@@ -393,6 +393,45 @@ RogueArray* RogueArray::create( int count, int element_size, bool is_reference_a
   return array;
 }
 
+RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 )
+{
+  if ( !other || i1 >= count ) return this;
+  if (this->is_reference_array ^ other->is_reference_array) return this;
+
+  if (other_i2 == -1) other_i2 = other->count - 1;
+
+  if (i1 < 0)
+  {
+    other_i1 -= i1;
+    i1 = 0;
+  }
+
+  if (other_i1 < 0) other_i1 = 0;
+  if (other_i2 >= other->count) other_i2 = other->count - 1;
+  if (other_i1 > other_i2) return this;
+
+  RogueByte* src = other->bytes + other_i1 * element_size;
+  int other_bytes = ((other_i2 - other_i1) + 1) * element_size;
+
+  RogueByte* dest = bytes + (i1 * element_size);
+  int allowable_bytes = (count - i1) * element_size;
+
+  if (other_bytes > allowable_bytes) other_bytes = allowable_bytes;
+
+  if (src >= dest + other_bytes || (src + other_bytes) < dest)
+  {
+    // Copy region does not overlap
+    memcpy( dest, src, other_bytes );
+  }
+  else
+  {
+    // Copy region overlaps
+    memmove( dest, src, other_bytes );
+  }
+
+  return this;
+}
+
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
