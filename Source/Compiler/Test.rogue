@@ -2,8 +2,11 @@ class Test
   METHODS
     method init
       local nums = Integer[]
+      println nums
       nums.add(3).add(4).add(5)
+      println nums
       println nums.remove(4)
+      println nums
 endClass
 
 compound XY( x:Real, y:Real )
@@ -315,5 +318,16 @@ class List<<$DataType:Object>> : GenericList
 
     method set( xyz:Integer, new_value:$DataType )->$DataType[]
       inline this.data[ xyz ] = new_value
+
+    method to->String
+      local buffer = "["
+      local first = true
+      forEach (value in this)
+        if (first) first = false
+        else       buffer += ","
+        buffer += value
+      endForEach
+      buffer += "]"
+      return buffer
 endClass
 
