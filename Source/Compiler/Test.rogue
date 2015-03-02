@@ -1,12 +1,11 @@
 class Test
   METHODS
     method init
-      local nums = Integer[]
-      println nums
-      nums.add(3).add(4).add(5)
-      println nums
-      println nums.remove(4)
-      println nums
+      local buffer = StringBuilder()
+      println buffer.capacity
+      #buffer.print( 5 )
+      buffer.print( 5.0 ).print('!')
+      println buffer->String
 endClass
 
 compound XY( x:Real, y:Real )
@@ -81,7 +80,14 @@ endPrimitive
 class Object
 endClass
 
-class String [functional]
+class String [native functional]
+  ROUTINES
+    routine create( characters:Character[] )->String
+      $if ("C++") nativeInline 'RogueString::create( $characters )'
+
+    routine create( characters:StringBuilder )->String
+      return create( characters.characters )
+
   METHODS
     method after_any( ch:Character )->String
       local i = locate( ch )
@@ -250,7 +256,10 @@ class List<<$DataType:Object>> : GenericList
 
   METHODS
     method init
-      data = Array<<$DataType>>( 2 )
+      init( 10 )
+
+    method init( initial_capacity:Integer )
+      data = Array<<$DataType>>( initial_capacity )
 
     method add( value:$DataType )->$DataType[]
       reserve(1)[count] = value
@@ -334,8 +343,39 @@ endClass
 
 class StringBuilder
   PROPERTIES
-    data = Character[]
+    characters : Character[]
 
   METHODS
+    method init
+      init( 40 )
+
+    method init( initial_capacity:Integer )
+      characters = Character[]( initial_capacity )
+
+    method capacity->Integer
+      inline characters.capacity
+
+    method print( value:Character )->StringBuilder
+      characters.add( value )
+      return this
+
+    method print( value:Integer )->StringBuilder [native]
+
+      #{
+    method print( value:Logical )->StringBuilder
+      if (value) return print( "true" )
+      else       return print( "false" )
+      }#
+
+    method print( value:Real, decimal_places=4:Integer )->StringBuilder [native]
+
+    #method print( value:String )->StringBuilder
+
+    method reserve( additional_count:Integer )->StringBuilder
+      characters.reserve( additional_count )
+      return this
+
+    method to->String
+      return String( characters )
 endClass
 

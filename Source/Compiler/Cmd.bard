@@ -1018,9 +1018,12 @@ class CmdAccess : CmdAccessWithModify
 
           local cmd_new = CmdCreateObject( t, new_type ) : Cmd
 
-          local must_find = args.count?
-          local cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), must_find )
-          if (not cmd_call) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"create",args), must_find )
+          local must_find = args.count? or new_type.is_native
+          local cmd_call : Cmd
+          if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false )
+          if (not cmd_call)
+            cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), must_find )
+          endIf
 
           if (cmd_call?) cmd_new = cmd_call
           return cmd_new.resolve(scope)
@@ -1129,6 +1132,11 @@ class CmdAccess : CmdAccessWithModify
       endIf
 
       throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+
+    method type->Type
+      local err = t.error( "[INTERNAL] '$' $::type() is not defined." (name,type_name) )
+      println err.stack_trace
+      throw err
 endClass
 
 
@@ -2725,8 +2733,7 @@ class CmdConvertToType : CmdTypeOperator
       if (operand_type.is_primitive)
         return CmdConvertToPrimitiveType( t, operand, target_type ).resolve( scope )
       else
-        trace
-        throw t.error( "TODO: CmdConvertToType->non-primitive" )
+        return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
       endIf
 
     method type->Type

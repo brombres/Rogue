@@ -191,10 +191,27 @@ class Program [requisite singleton]
       writer.println //#include <cmath>//
       writer.println
 
-      # XType forward declarations
+      # RogueType forward declarations
       forEach (type in type_list)
         if (not type.omit_output)
           writer.print( "struct " ).print( type.cpp_name ).println( "Type;" );
+        endIf
+      endForEach
+      writer.println
+
+      # RogueObject forward declarations
+      forEach (type in type_list)
+        if (not type.omit_output)
+          writer.print( "struct " ).print( type.cpp_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
+      # RogueObject definitions
+      forEach (type in type_list)
+        if (not type.omit_output)
+          type.print_data_definition( writer )
+          writer.println
         endIf
       endForEach
       writer.println
@@ -230,28 +247,11 @@ class Program [requisite singleton]
       writer.println //#include "$.h"// (base_filename)
       writer.println
 
-      # XObject forward declarations
-      forEach (type in type_list)
-        if (not type.omit_output)
-          writer.print( "struct " ).print( type.cpp_name ).println( ";" );
-        endIf
-      endForEach
-      writer.println
-
       # init() forward declarations
       forEach (type in type_list)
         if (not type.omit_output)
           local m = type.find_method( "init()" )
-          if (m?) writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " ).print( type ).print( " );" )
-        endIf
-      endForEach
-      writer.println
-
-      # XObject definitions
-      forEach (type in type_list)
-        if (not type.omit_output)
-          type.print_data_definition( writer )
-          writer.println
+          if (m?) writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " ).print( type ).println( " );" )
         endIf
       endForEach
       writer.println

@@ -36,6 +36,7 @@
 #endif
 
 struct RogueAllocator;
+struct RogueCharacterList;
 
 #define ROGUE_TRACE( obj ) \
 { \
@@ -46,6 +47,8 @@ struct RogueAllocator;
     _trace_obj->type->trace( _trace_obj ); \
   } \
 }
+
+#define ROGUE_PROPERTY(name) p_##name
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -173,6 +176,7 @@ struct RogueString : RogueObject
 
   static RogueString* create( int count );
   static RogueString* create( const char* c_string, int count=-1 );
+  static RogueString* create( RogueCharacterList* characters );
   static void         println( RogueString* st );
 
   RogueInteger compare_to( RogueString* other );
@@ -188,6 +192,7 @@ struct RogueString : RogueObject
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
   RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
+  RogueString* update_hash_code();
 };
 
 
@@ -225,7 +230,6 @@ struct RogueArray : RogueObject
 
   RogueArray* set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 );
 };
-
 
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
@@ -335,6 +339,18 @@ struct RogueAllocator
 
 extern RogueAllocator Rogue_allocator;
 
-
-
 #include "RogueProgram.h"
+//=============================================================================
+//  Various Native Methods
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+//  StringBuilder
+//-----------------------------------------------------------------------------
+struct RogueStringBuilder;
+
+RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
+

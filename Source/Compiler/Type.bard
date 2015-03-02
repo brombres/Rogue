@@ -84,11 +84,11 @@ class Type
         cpp_name = Program.code_prefix + Program.validate_cpp_name( name )
 
         forEach (s in settings_list)
-          s.cpp_name = Program.validate_cpp_name( "s_" + s.name )
+          s.cpp_name = Program.validate_cpp_name( s.name )
         endForEach
 
         forEach (p in property_list)
-          p.cpp_name = Program.validate_cpp_name( "p_" + p.name )
+          p.cpp_name = Program.validate_cpp_name( p.name )
         endForEach
 
       endIf

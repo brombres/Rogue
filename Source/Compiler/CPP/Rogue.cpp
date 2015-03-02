@@ -125,6 +125,19 @@ RogueString* RogueString::create( const char* c_string, int count )
   return st;
 }
 
+RogueString* RogueString::create( RogueCharacterList* characters )
+{
+  if ( !characters ) return RogueString::create(0);
+
+  int count = characters->count;
+  RogueString* result = RogueString::create( characters->count );
+  memcpy( result->characters, characters->data->characters, count*sizeof(RogueCharacter) );
+  result->update_hash_code();
+  return result;
+}
+
+
+
 RogueLogical RogueString::compare_to( RogueString* other )
 {
   if (this == other) return 0;
@@ -335,6 +348,19 @@ RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
 
   result->hash_code = hash_code;
   return result;
+}
+
+RogueString* RogueString::update_hash_code()
+{
+  int code = hash_code;
+  int len = count;
+  RogueCharacter* src = characters - 1;
+  while (--len >= 0)
+  {
+    code = ((code<<3) - code) + *(++src);
+  }
+  hash_code = code;
+  return this;
 }
 
 void RogueString::println( RogueString* st )
@@ -748,4 +774,41 @@ void* RogueAllocator::free_permanent( void* data, int size )
 
 RogueAllocator Rogue_allocator;
 
+
+//-----------------------------------------------------------------------------
+//  StringBuilder
+//-----------------------------------------------------------------------------
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st )
+{
+  int len = strlen( st );
+  RogueStringBuilder__reserve( buffer, len );
+
+  RogueCharacter* dest = (buffer->characters->data->characters - 1) + buffer->characters->count;
+  buffer->characters->count += len;
+
+  const char* src = st - 1;
+  while (--len >= 0)
+  {
+    *(++dest) = (RogueCharacter) *(++src);
+  }
+
+  return buffer;
+}
+
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value )
+{
+  char st[80];
+  sprintf( st, "%d", value );
+  return RogueStringBuilder__print( buffer, st );
+}
+
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places )
+{
+  char format[80];
+  char st[80];
+  if (decimal_places > 40) decimal_places = 40;
+  sprintf( format, "%%.%dlf", decimal_places );
+  sprintf( st, format, value );
+  return RogueStringBuilder__print( buffer, st );
+}
 

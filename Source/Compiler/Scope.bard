@@ -47,11 +47,14 @@ class Scope
         args.add( m.parameters[args.count].initial_value.clone )
       endWhile
 
+      args.resolve( this )
+
       local cmd : Cmd
       if (m.is_routine)
         # routine
         if (m.is_native)
           if (m.native_code?)
+            context = context.resolve( this )
             context.require_type_context
             cmd = CmdCallInlineNativeRoutine( t, m, args )
           else
@@ -69,7 +72,6 @@ class Scope
           inline_statements.resolve( this )
           if (inline_statements.count == 1) return inline_statements.first
 
-          trace
           throw t.error( "TODO: multi-line inline statements" )
 
         else
@@ -224,21 +226,26 @@ class CandidateMethods
         elseIf (require_compatible)
           if (not error_on_fail) return false
 
+          local call_sig_buffer = StringBuilder()
+          call_sig_buffer.print( type_context.name ).print( "::" )
+          call_sig_buffer.print( access.name ).print( "(" )
+          if (access.args?)
+            forEach (index of access.args)
+              if (index > 0) call_sig_buffer.print(',')
+              call_sig_buffer.print( access.args[index].require_type.name )
+            endForEach
+          endIf
+          call_sig_buffer.print( ")" )
+          local call_sig = call_sig_buffer->String
+
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( //Multiple methods match ambiguous call to $()(// (access.name) )
-            if (access.args?)
-              forEach (index of access.args)
-                if (index > 0) buffer.print(',')
-                buffer.print( access.args[index].require_type.name )
-              endForEach
-            endIf
-            buffer.print( //):\n// )
+            buffer.print( //Multiple methods match ambiguous call to $:\n\n// (call_sig) )
           else
-            buffer.print( //Call to "$" uses arguments that are incompatible with the existing definition:\n// (access.name) )
+            buffer.print( //Call to $ has arguments that are incompatible with the best candidate:\n\n// (call_sig) )
           endIf
           forEach (m in available)
-            buffer.print("  ").println(m.signature)
+            buffer.print("  ").print(m.type_context.name).print("::").println(m.signature)
           endForEach
           throw access.t.error( buffer->String )
 
