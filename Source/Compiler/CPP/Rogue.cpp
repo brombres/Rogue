@@ -781,15 +781,55 @@ RogueAllocator Rogue_allocator;
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st )
 {
   int len = strlen( st );
-  RogueStringBuilder__reserve( buffer, len );
-
   RogueCharacter* dest = (buffer->characters->data->characters - 1) + buffer->characters->count;
-  buffer->characters->count += len;
 
-  const char* src = st - 1;
-  while (--len >= 0)
+  if (buffer->indent > 0)
   {
-    *(++dest) = (RogueCharacter) *(++src);
+    int possible_indents = 1;
+    int count = len;
+    const char* src = st - 1;
+    while (--count >= 0)
+    {
+      if (*(++src) == '\n') ++possible_indents;
+    }
+
+    int copy_count = 0;
+    RogueStringBuilder__reserve( buffer, len + possible_indents*buffer->indent );
+    src = st - 1;
+    count = len;
+    while (--count >= 0)
+    {
+      RogueCharacter ch = *(++src);
+      if (ch == '\n')
+      {
+        buffer->at_newline = true;
+      }
+      else if (buffer->at_newline)
+      {
+        for (int i=buffer->indent; i>0; --i)
+        {
+          *(++dest) = ' ';
+          ++copy_count;
+        }
+        buffer->at_newline = false;
+      }
+      *(++dest) = ch;
+      ++copy_count;
+    }
+    buffer->characters->count += copy_count;
+  }
+  else
+  {
+    buffer->characters->count += len;
+
+    const char* src = st - 1;
+
+    while (--len >= 0)
+    {
+      *(++dest) = (RogueCharacter) *(++src);
+    }
+
+    if (len && *dest == '\n') buffer->at_newline = true;
   }
 
   return buffer;

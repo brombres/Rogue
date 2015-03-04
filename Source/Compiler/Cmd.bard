@@ -852,7 +852,7 @@ class CmdLiteralCharacter : CmdLiteral
       return CmdLiteralCharacter( t, value )
 
     method print_cpp( writer:CPPWriter )
-      writer.print( "'" )
+      writer.print( "(RogueCharacter)'" )
       writer.print( value )
       writer.print( "'" )
 
@@ -2261,6 +2261,9 @@ endClass
 
 class CmdCompareGT : CmdComparison
   METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCompareGT( t, left.clone(inline_args), right.clone(inline_args) )
+
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
         return CmdLiteralLogical( t, (left as CmdLiteralReal).value > (right as CmdLiteralReal).value )

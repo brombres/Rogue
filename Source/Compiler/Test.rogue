@@ -4,7 +4,17 @@ class Test
       local buffer = StringBuilder()
       println buffer.capacity
       #buffer.print( 5 )
-      buffer.print( 5.0 ).print('!')
+      buffer.print( 5.0 ).print('\n')
+      #{
+      buffer.print( "test" ).print('\n')
+      buffer.print( 3 ).print('\n')
+      buffer.print( true ).print('\n')
+      buffer.indent += 2
+      buffer.print( 5.0 ).print('\n')
+      buffer.print( "test" ).print('\n')
+      buffer.print( 3 ).print('\n')
+      buffer.print( true ).print('\n')
+      }#
       println buffer->String
 endClass
 
@@ -181,6 +191,9 @@ class String [native functional]
     method hash_code->Integer
       $if ("C++") nativeInline '$this->hash_code'
 
+    method last->Character
+      return this[ count-1 ]
+
     method locate( ch:Character, i1=0:Integer )->Integer
       $if ("C++") nativeInline '$this->locate($ch,$i1)'
 
@@ -343,7 +356,9 @@ endClass
 
 class StringBuilder
   PROPERTIES
-    characters : Character[]
+    characters   : Character[]
+    indent       : Integer
+    at_newline   = true
 
   METHODS
     method init
@@ -355,7 +370,12 @@ class StringBuilder
     method capacity->Integer
       inline characters.capacity
 
+    method needs_indent->Logical
+      inline (at_newline and indent > 0)
+
     method print( value:Character )->StringBuilder
+      if (value == '\n')    at_newline = true
+      elseIf (needs_indent) print_indent
       characters.add( value )
       return this
 
@@ -369,7 +389,24 @@ class StringBuilder
 
     method print( value:Real, decimal_places=4:Integer )->StringBuilder [native]
 
-    #method print( value:String )->StringBuilder
+      #{
+    method print( value:String )->StringBuilder
+      if (value?)
+        if (indent?)
+          forEach (ch in value) print( ch )
+        else
+          forEach (ch in value) characters.add( ch )
+          if (value? and value.last == '\n') at_newline = true
+        endIf
+      else
+        return print( "null" )
+      endIf
+      }#
+
+    method print_indent
+      if (not needs_indent or indent == 0) return
+      forEach (i in 1..indent) characters.add( ' ' )
+      at_newline = false
 
     method reserve( additional_count:Integer )->StringBuilder
       characters.reserve( additional_count )
