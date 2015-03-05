@@ -16,6 +16,10 @@ class Test
       buffer.print( true ).print('\n')
       }#
       println buffer->String
+
+      forEach (ch at i in "Rogue")
+        println " " + i + " " + ch
+      endForEach
 endClass
 
 compound XY( x:Real, y:Real )

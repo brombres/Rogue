@@ -902,10 +902,19 @@ class Parser
         if (access.context? or access.args?)
           throw access.t.error( "Single identifier expected for control variable name." )
         else
+          local index_var_name : String
+          if (access.name == "at")
+            # forEach (at index in list) - variant of forEach (value at index in list)
+            throw access.t.error( "Missing element name before 'at'." )
+          elseIf (consume("at"))
+            index_var_name = read_identifier
+          endIf
+
           if (consume(TokenType.keyword_in))
             local collection = parse_expression
             local range = collection as CmdRange
             if (range?)
+              if (index_var_name? ) throw range.t.error( "Cannot use 'at' with a range." )
               local cmd_block = CmdBlock(t)
 
               local control_var = this_method.add_local( t, access.name )
@@ -939,12 +948,14 @@ class Parser
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
-              local cmd_for_each = CmdForEachInCollection( t, access.name, collection, step_cmd )
+              if (not index_var_name) index_var_name = Program.create_unique_id
+              local cmd_for_each = CmdForEachInCollection( t, access.name, index_var_name, collection, step_cmd )
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
               return cmd_for_each
             endIf
 
           elseIf (consume(TokenType.keyword_of))
+            if (index_var_name? ) throw t.error( "Cannot use 'at' with forEach-of." )
             local collection = parse_expression
             local range = collection as CmdRange
             if (range?)
