@@ -1,18 +1,21 @@
 class Test
   METHODS
     method init
-      local buffer = StringBuilder()
-      buffer.println( 5 )
-      buffer.println( "test" )
-      buffer.println( 3 )
-      buffer.println( true )
-      buffer.indent += 2
-      buffer.println( 5.0 )
-      buffer.println( "test" )
-      buffer.indent -= 2
-      buffer.println( 3 )
-      buffer.println( true )
-      testprintln buffer->String
+      local a = Alpha()
+      a = Beta()
+      a.print
+endClass
+
+class Alpha
+  METHODS
+    method print
+      testprintln "Alpha"
+endClass
+
+class Beta : Alpha
+  METHODS
+    method print
+      testprintln "Beta"
 endClass
 
 compound XY( x:Real, y:Real )

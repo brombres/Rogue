@@ -4,12 +4,18 @@ class Cmd
 
   METHODS
     method cast_to( target_type:Type )->Cmd
-      if (type is target_type) return this
+      local this_type = type
+      if (this_type is target_type) return this
 
-      if (type.is_primitive)
+      if (this_type.is_primitive)
         throw t.error( "TODO: Cmd::cast_to() primitive->...." )
       else
-        throw t.error( "TODO: Cmd::cast_to() object->...." )
+        # this is a reference type
+        if (this_type.instance_of(target_type))
+          return CmdCastToType( t, this, target_type )
+        else
+          throw t.error( "Type $ is not instance of required type $." (this_type,target_type) )
+        endIf
       endIf
 
     method clone( inline_args=null:InlineArgs )->Cmd
@@ -347,7 +353,7 @@ class CmdReturn : CmdStatement
       endIf
 
     method resolve( scope:Scope )->Cmd
-      if (value?) value = value.resolve( scope )
+      if (value?) value = value.resolve( scope ).cast_to( scope.this_method.return_type ).resolve( scope )
       return this
 
     method type->Type
@@ -1343,7 +1349,7 @@ class CmdWriteLocal : Cmd
 
     method resolve( scope:Scope )->Cmd
       local_info.type.organize
-      new_value = new_value.resolve(scope).require_value
+      new_value = new_value.resolve(scope).cast_to( local_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -1404,7 +1410,7 @@ class CmdWriteSetting : Cmd
       endIf
 
     method resolve( scope:Scope )->Cmd
-      new_value = new_value.resolve(scope).require_value
+      new_value = new_value.resolve(scope).cast_to( setting_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -1467,7 +1473,7 @@ class CmdWriteProperty : Cmd
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value
-      new_value = new_value.resolve(scope).require_value
+      new_value = new_value.resolve(scope).cast_to( property_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -2415,7 +2421,7 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
           return CmdWriteLocal( t, local_info, access ).resolve( scope )
       endWhich
 
-      new_value = new_value.resolve( scope ).cast_to( local_info.type )
+      new_value = new_value.resolve( scope ).cast_to( local_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -2475,7 +2481,7 @@ class CmdOpAssignSetting : CmdResolvedOpWithAssign
           return CmdWriteSetting( t, setting_info, access ).resolve( scope )
       endWhich
 
-      new_value = new_value.resolve(scope).require_value
+      new_value = new_value.resolve(scope).cast_to( setting_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -2536,7 +2542,7 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
       endWhich
 
       context = context.resolve(scope).require_value
-      new_value = new_value.resolve(scope).require_value
+      new_value = new_value.resolve(scope).cast_to( property_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -2700,7 +2706,7 @@ class CmdWriteArrayElement : Cmd
       context = context.resolve(scope)
       array_type = context.require_type
       index = index.resolve(scope).require_integer
-      new_value = new_value.resolve( scope ).require_value
+      new_value = new_value.resolve( scope ).require_value.cast_to( array_type.element_type ).resolve( scope )
       return this
 
     method type->Type
@@ -2718,8 +2724,24 @@ class CmdTypeOperator : Cmd
 
   METHODS
     method init( t, operand, target_type )
+
+    method type->Type
+      return target_type
 endClass
 
+
+class CmdCastToType : CmdTypeOperator
+    method print_cpp( writer:CPPWriter )
+      writer.print( "((" ).print( target_type ).print( ")(" )
+      operand.print_cpp( writer )
+      writer.print( "))" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      target_type.organize
+      if (operand.require_type is target_type) return operand
+      return this
+endClass
 
 class CmdConvertToType : CmdTypeOperator
   METHODS
@@ -2734,9 +2756,6 @@ class CmdConvertToType : CmdTypeOperator
       else
         return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
       endIf
-
-    method type->Type
-      return target_type
 endClass
 
 
