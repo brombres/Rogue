@@ -261,7 +261,7 @@ class CmdLocalDeclaration : CmdStatement
         throw t.error( "Cannot determine type of local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Integer)." (local_info.name,local_info.name) )
       endIf
 
-      local_info.type.resolve
+      local_info.type.organize
 
       return this
 endClass
@@ -625,7 +625,7 @@ class CmdForEachInCollection : CmdControlStructure
         return cmd_block.resolve( scope )
 
       else
-        trace
+        trace collection_type.method_list.first
         throw t.error( "TODO" )
 
       endIf
@@ -997,7 +997,7 @@ class CmdAccess : CmdAccessWithModify
         local new_type = Program.find_type( name )
         if (new_type?)
           # new TypeName(...)
-          new_type.resolve
+          new_type.organize
 
           if (args is null)
             if (name.ends_with(']'))
@@ -1195,7 +1195,7 @@ class CmdCreateObject : Cmd
       writer.print_type_info(of_type).print( "->create_and_init_object()")
 
     method resolve( scope:Scope )->Cmd
-      of_type.resolve
+      of_type.organize
       return this
 
     method type->Type
@@ -1243,7 +1243,7 @@ class CmdThisContext : Cmd
       noAction
 
     method resolve( scope:Scope )->Cmd
-      this_type.resolve
+      this_type.organize
       return this
 
     method type->Type
@@ -1263,7 +1263,7 @@ class CmdLiteralThis : CmdThisContext
       throw t.error( //Type name expected.// )
 
     method resolve( scope:Scope )->Cmd
-      this_type.resolve
+      this_type.organize
       if (scope.this_method.is_routine)
         throw t.error( "Invalid reference to 'this' object - routines have no object context." )
       endIf
@@ -1286,7 +1286,7 @@ class CmdReadSingleton : Cmd
       noAction
 
     method resolve( scope:Scope )->Cmd
-      of_type.resolve
+      of_type.organize
       return this
 
     method type->Type
@@ -1315,7 +1315,7 @@ class CmdReadLocal : CmdAccessWithModify
       elseIf (postmodify_count < 0) writer.print("--")
 
     method resolve( scope:Scope )->Cmd
-      local_info.type.resolve
+      local_info.type.organize
       return this
 
     method type->Type
@@ -1342,7 +1342,7 @@ class CmdWriteLocal : Cmd
       writer.print( ")" )
 
     method resolve( scope:Scope )->Cmd
-      local_info.type.resolve
+      local_info.type.organize
       new_value = new_value.resolve(scope).require_value
       return this
 
@@ -2571,7 +2571,7 @@ class CmdCreateArray : Cmd
       writer.print( " )" )
 
     method resolve( scope:Scope )->Cmd
-      array_type.resolve
+      array_type.organize
       count_cmd = count_cmd.resolve(scope).require_integer
       return this
 
@@ -2726,7 +2726,7 @@ class CmdConvertToType : CmdTypeOperator
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       local operand_type = operand.require_type
-      target_type.resolve
+      target_type.organize
       if (operand_type is target_type) return operand
 
       if (operand_type.is_primitive)

@@ -24,7 +24,7 @@
   typedef __int32          RogueInteger;
   typedef unsigned __int16 RogueCharacter;
   typedef unsigned char    RogueByte;
-  typedef RogueInteger     RogueLogical;
+  typedef bool             RogueLogical;
 #else
   typedef double           RogueReal;
   typedef float            RogueFloat;
@@ -32,7 +32,7 @@
   typedef int32_t          RogueInteger;
   typedef uint16_t         RogueCharacter;
   typedef uint8_t          RogueByte;
-  typedef RogueInteger     RogueLogical;
+  typedef bool             RogueLogical;
 #endif
 
 struct RogueAllocator;

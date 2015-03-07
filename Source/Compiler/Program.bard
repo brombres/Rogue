@@ -121,6 +121,12 @@ class Program [requisite singleton]
       local m = main_class.find_method( "init()" )
       if (m?) m.resolve
 
+      local i = 0
+      while (i < type_list.count)
+        type_list[i].resolve
+        ++i
+      endWhile
+
     method validate_cpp_name( name:String )->String
       local i1 = name.locate("<<")
       while (i1 != -1)

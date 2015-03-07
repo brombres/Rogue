@@ -2,24 +2,17 @@ class Test
   METHODS
     method init
       local buffer = StringBuilder()
-      println buffer.capacity
-      #buffer.print( 5 )
-      buffer.print( 5.0 ).print('\n')
-      #{
-      buffer.print( "test" ).print('\n')
-      buffer.print( 3 ).print('\n')
-      buffer.print( true ).print('\n')
+      buffer.println( 5 )
+      buffer.println( "test" )
+      buffer.println( 3 )
+      buffer.println( true )
       buffer.indent += 2
-      buffer.print( 5.0 ).print('\n')
-      buffer.print( "test" ).print('\n')
-      buffer.print( 3 ).print('\n')
-      buffer.print( true ).print('\n')
-      }#
-      println buffer->String
-
-      forEach (ch at i in "Rogue")
-        println " " + i + " " + ch
-      endForEach
+      buffer.println( 5.0 )
+      buffer.println( "test" )
+      buffer.indent -= 2
+      buffer.println( 3 )
+      buffer.println( true )
+      testprintln buffer->String
 endClass
 
 compound XY( x:Real, y:Real )
@@ -385,32 +378,49 @@ class StringBuilder
 
     method print( value:Integer )->StringBuilder [native]
 
-      #{
     method print( value:Logical )->StringBuilder
       if (value) return print( "true" )
       else       return print( "false" )
-      }#
 
     method print( value:Real, decimal_places=4:Integer )->StringBuilder [native]
 
-      #{
     method print( value:String )->StringBuilder
       if (value?)
         if (indent?)
           forEach (ch in value) print( ch )
         else
           forEach (ch in value) characters.add( ch )
-          if (value? and value.last == '\n') at_newline = true
+          if (value.count? and value.last == '\n') at_newline = true
         endIf
+        return this
       else
         return print( "null" )
       endIf
-      }#
 
     method print_indent
       if (not needs_indent or indent == 0) return
       forEach (i in 1..indent) characters.add( ' ' )
       at_newline = false
+
+    method println( value:Character )->StringBuilder
+      print( value )
+      return print( '\n' )
+
+    method println( value:Integer )->StringBuilder
+      print( value )
+      return print( '\n' )
+
+    method println( value:Logical )->StringBuilder
+      print( value )
+      return print( '\n' )
+
+    method println( value:Real, decimal_places=4:Integer )->StringBuilder
+      print( value, decimal_places )
+      return print( '\n' )
+
+    method println( value:String )->StringBuilder
+      print( value )
+      return print( '\n' )
 
     method reserve( additional_count:Integer )->StringBuilder
       characters.reserve( additional_count )

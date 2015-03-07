@@ -193,6 +193,9 @@ class Type
       if (organized) return this
       organized = true
 
+      index = Program.type_list.count
+      Program.type_list.add( this )
+
       if (not defined)
         defined = true
         local template = Program.find_template( name )
@@ -435,9 +438,6 @@ class Type
     method resolve->Type
       if (resolved) return this
       resolved = true
-
-      index = Program.type_list.count
-      Program.type_list.add( this )
 
       organize
 

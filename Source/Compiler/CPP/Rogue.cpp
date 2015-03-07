@@ -138,7 +138,7 @@ RogueString* RogueString::create( RogueCharacterList* characters )
 
 
 
-RogueLogical RogueString::compare_to( RogueString* other )
+RogueInteger RogueString::compare_to( RogueString* other )
 {
   if (this == other) return 0;
 
