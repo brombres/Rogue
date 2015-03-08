@@ -1533,6 +1533,41 @@ class CmdCallRoutine : CmdCall
 endClass
 
 
+class CmdCallDynamicMethod : CmdCall
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCallDynamicMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      local compile_target = method_info.compile_target
+      if (compile_target.is_overridden)
+        writer.print( "call_" ).print( compile_target.cpp_typedef )
+        writer.print( "( " )
+        writer.print( compile_target.index ).print( ", " )
+        writer.print( "(" )
+        writer.print( compile_target.type_context )
+        writer.print( ")" )
+        context.print_cpp( writer )
+        local i = 0
+        forEach (arg in args)
+          writer.print( ", " )
+          if (method_info.generic_method? and method_info.parameters[i].generic_type?)
+            writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+            arg.print_cpp( writer )
+            writer.print( ")" )
+          else
+            arg.print_cpp( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " )" )
+
+      else
+        CmdCallStaticMethod( t, context, method_info, args ).print_cpp( writer )
+      endIf
+endClass
+
+
 class CmdCallStaticMethod : CmdCall
   METHODS
     method clone( inline_args=null:InlineArgs )->Cmd
@@ -1542,6 +1577,9 @@ class CmdCallStaticMethod : CmdCall
       local compile_target = method_info.compile_target
       writer.print( compile_target.cpp_name )
       writer.print( "( " )
+      writer.print( "(" )
+      writer.print( compile_target.type_context )
+      writer.print( ")" )
       context.print_cpp( writer )
       local i = 0
       forEach (arg in args)

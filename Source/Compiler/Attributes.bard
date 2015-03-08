@@ -16,6 +16,8 @@ class Attribute
     is_immutable        = 256
     is_routine          = 512
     is_singleton        = 1024
+    is_dynamic          = 2048
+    is_overridden       = 4096
 endClass
 
 

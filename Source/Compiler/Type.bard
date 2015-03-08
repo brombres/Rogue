@@ -35,6 +35,7 @@ class Type
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
     cpp_name : String
+    dynamic_method_table_index : Integer
 
   METHODS
     method init( t, name )
@@ -301,7 +302,17 @@ class Type
       # Create or find init_object() method to initialize properties
       if (not is_native)
         local m = find_method( "init_object()" )
-        if (not m or m.type_context isNot this) m = add_method( t, "init_object" ).organize
+        local prior_m = m
+        if (not m or m.type_context isNot this)
+          m = add_method( t, "init_object" ).organize
+          if (prior_m?)
+            prior_m.attributes.add( Attribute.is_dynamic )
+            prior_m.attributes.add( Attribute.is_overridden )
+            m.attributes.add( Attribute.is_dynamic )
+            method_list.remove( m )
+            method_list[ method_list.locate( prior_m ) ] = m
+          endIf
+        endIf
         m.return_type = this
         m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
@@ -401,6 +412,8 @@ class Type
         inherit_method( m, list, lookup )
       endForEach
 
+      index_and_move_inline_to_end( list )
+
     method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
         forEach (base_m in base_type.routine_list)
@@ -411,6 +424,8 @@ class Type
       forEach (m in routine_list)
         inherit_method( m, list, lookup )
       endForEach
+
+      index_and_move_inline_to_end( list )
 
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
@@ -427,10 +442,33 @@ class Type
           endIf
         endIf
 
+        existing_m.attributes.add( Attribute.is_dynamic )
+        existing_m.attributes.add( Attribute.is_overridden )
+        m.attributes.add( Attribute.is_dynamic )
+        list[i] = m
+        lookup[m.signature] = m
+
       else
         list.add( m )
         lookup[m.signature] = m
       endIf
+
+    method index_and_move_inline_to_end( list:Method[] )
+      local i = list.count - 1
+      while (i >= 0)
+        local m = list[i]
+        if (m.is_inline)
+          list.remove( m )
+          list.add( m )
+        endIf
+        --i
+      endWhile
+
+      i = 0
+      forEach (m in list)
+        m.index = i
+        ++i
+      endForEach
 
     method omit_output->Logical
       return is_native or generic_type?
@@ -513,6 +551,9 @@ class Type
           writer.print( base_types[i].cpp_name ).println( ";" )
         endForEach
       endIf
+
+      writer.print( "methods = " ).print( Program.code_prefix ).print( "_dynamic_method_table + " )
+      writer.print( dynamic_method_table_index ).println( ";" )
 
       #{
       if (settings_list.count?)
@@ -613,6 +654,56 @@ class Type
       forEach (m in method_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
+
+    method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
+      local buffer = StringBuilder()
+      forEach (m in method_list)
+        if (not m.is_inline and m.is_dynamic)
+          buffer.clear
+          if (m.return_type?)
+            buffer.print( m.return_type.compile_type.cpp_name )
+            if (m.return_type.is_reference) buffer.print('*')
+          else
+            buffer.print( "void" )
+          endIf
+          buffer.print( "(*)(" )
+          buffer.print( m.type_context.compile_type.cpp_name ).print("*")
+          forEach (i of m.parameters)
+            buffer.print(',')
+            local param_type = m.parameters[i].type.compile_type
+            buffer.print( param_type.cpp_name )
+            if (param_type.is_reference) buffer.print('*')
+          endForEach
+          buffer.print( ")" )
+          local sig = buffer->String
+          local mapping = lookup[sig]
+          if (mapping?)
+            m.cpp_typedef = mapping.cpp_typedef
+          else
+            m.cpp_typedef = "ROGUEM" + list.count
+            lookup[sig] = m
+            list.add( sig )
+          endIf
+        endIf
+      endForEach
+
+    method print_dynamic_method_table_entries( index:Integer, writer:CPPWriter )->Integer
+      if (is_generic) return index
+
+      dynamic_method_table_index = index
+
+      forEach (m in method_list)
+        if (not m.is_inline)
+          if (m.is_dynamic)
+            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).println( "," )
+          else
+            writer.println( "NULL," )
+          endIf
+          ++index
+        endIf
+      endForEach
+
+      return index
 
     method print_method_definitions( writer:CPPWriter )
       if (is_generic) return

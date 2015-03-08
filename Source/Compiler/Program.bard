@@ -182,6 +182,7 @@ class Program [requisite singleton]
 
     method write_cpp( filepath:String )
       forEach (type in type_list) type.assign_cpp_name
+      type_NativeArray.cpp_name = code_prefix + "Array"
 
       forEach (type in type_list)
         forEach (r in type.routine_list) r.assign_cpp_name
@@ -262,17 +263,62 @@ class Program [requisite singleton]
       endForEach
       writer.println
 
-      # create_object() forward declarations
+      # method prototypes
+      forEach (type in type_list) type.print_method_prototypes( writer )
+      writer.println
+
+      # typedef each unique method signature
+      local native_method_signature_list   = String[]
+      local native_method_signature_lookup = Table<<String,Method>>()
       forEach (type in type_list)
+        type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
+      endForEach
+
+      forEach (sig in native_method_signature_list)
+        writer.print( "typedef " ).print( sig.before_first("(*)") ).print( "(*" )
+        writer.print( native_method_signature_lookup[sig].cpp_typedef ).print(")")
+        writer.print( sig.after_first("(*)") ).println( ";" )
+      endForEach
+      writer.println
+
+      # write dynamic dipatch methods
+      forEach (sig in native_method_signature_list)
+        local m = native_method_signature_lookup[sig]  # one of the methods using this signature
+        writer.print( m.return_type ).print( " call_" ).print( m.cpp_typedef )
+        writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+        forEach (i of m.parameters)
+          local p = m.parameters[i]
+          writer.print( ", " ).print(p.type.compile_type).print( " p" ).print( i )
+        endForEach
+        writer.println( " )" )
+        writer.println( "{" )
+        writer.print( "  " )
+        if (m.return_type?) writer.print( "return " )
+        writer.print( "((" ).print( m.cpp_typedef )
+        writer.print( ")(THIS->type->methods[i]))( THIS" )
+        forEach (i of m.parameters)
+          writer.print( ", p" ).print( i )
+        endForEach
+        writer.println( " );" )
+        writer.println( "}" )
+        writer.println
+      endForEach
+      writer.println
+
+      # dynamic method table
+      writer.println( "void* Rogue_dynamic_method_table[] =" )
+      writer.println( "{" )
+      writer.indent += 2
+      local table_index = 0
+      forEach (type in type_list)
+writer.println( "// " + type )
         if (not type.omit_output)
-          local m = type.find_method( "init_object()" )
-          if (m?)
-            writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " );
-            writer.print( type )
-            writer.println( " THIS );" )
-          endIf
+          table_index = type.print_dynamic_method_table_entries( table_index, writer )
         endIf
       endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
       writer.println
 
       # XType definitions
@@ -282,9 +328,6 @@ class Program [requisite singleton]
       writer.println
 
       forEach (type in type_list) type.print_routine_prototypes( writer )
-      writer.println
-
-      forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
       forEach (type in type_list) type.print_routine_definitions( writer )

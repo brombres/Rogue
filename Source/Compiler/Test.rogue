@@ -2,14 +2,22 @@ class Test
   METHODS
     method init
       local a = Alpha()
-      a = Beta()
+      local b = Beta()
       a.print
+      b.print
+      a = b
+      a.print
+      a.whateva
+      b.whateva
 endClass
 
 class Alpha
   METHODS
     method print
       testprintln "Alpha"
+
+    method whateva
+      testprintln "I do what I want!"
 endClass
 
 class Beta : Alpha

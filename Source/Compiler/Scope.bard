@@ -113,7 +113,7 @@ class Scope
           throw t.error( "TODO: multi-line inline statements" )
           
         else
-          cmd = CmdCallStaticMethod( t, context, m, args )
+          cmd = CmdCallDynamicMethod( t, context, m, args )
         endIf
       endIf
 

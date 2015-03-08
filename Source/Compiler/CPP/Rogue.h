@@ -57,12 +57,13 @@ struct RogueObject;
 
 struct RogueType
 {
-  int         base_type_count;
-  RogueType** base_types;
+  int          base_type_count;
+  RogueType**  base_types;
 
-  int         object_size;
+  int          object_size;
 
   RogueObject* _singleton;
+  void**       methods;
 
   RogueType();
   virtual ~RogueType();
