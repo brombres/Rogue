@@ -178,7 +178,8 @@ struct RogueString : RogueObject
   static RogueString* create( int count );
   static RogueString* create( const char* c_string, int count=-1 );
   static RogueString* create( RogueCharacterList* characters );
-  static void         println( RogueString* st );
+  static void         print( RogueString* st );
+  static void         print( RogueCharacter* characters, int count );
 
   RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );

@@ -107,7 +107,6 @@ class Tokenizer
       TokenType.keyword_native       = define( TokenType("native") )
       TokenType.keyword_nativeInline = define( TokenType("nativeInline") )
       TokenType.keyword_of           = define( TokenType("of") )
-      TokenType.keyword_println      = define( TokenType("testprintln") )
       TokenType.keyword_return       = define( TokenType("return") )
       TokenType.keyword_step         = define( TokenType("step") )
       TokenType.keyword_while        = define( TokenType("while") )

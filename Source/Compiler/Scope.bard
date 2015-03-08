@@ -25,7 +25,16 @@ class Scope
       locals_by_name.remove( local_list.remove_last.name )
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Cmd
-      local m = find_method( type_context, access, error_on_fail )
+      local m = find_method( type_context, access, error_on_fail and access.context? )
+      if (not m and not access.context)
+        # No context specified; try Global context
+        m = find_method( Program.type_Global, access, error_on_fail )
+        if (m?)
+          type_context = Program.type_Global
+          access.context = CmdReadSingleton( access.t, Program.type_Global )
+        endIf
+      endIf
+
       if (not m) return null
 
       local t = access.t

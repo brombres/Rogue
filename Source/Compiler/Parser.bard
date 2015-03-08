@@ -371,7 +371,7 @@ class Parser
       # Optional ->ReturnType
       if (not return_type)
         if (consume(TokenType.symbol_arrow))
-          if (consume("this"))
+          if (consume(TokenType.keyword_this))
             this_method.return_type = this_type
           else
             this_method.return_type = parse_type
@@ -596,12 +596,6 @@ class Parser
         return
       }#
 
-      endIf
-
-      if (consume(TokenType.keyword_println))
-        if (next_is_end_command) statements.add( CmdPrintln(t) )
-        else                     statements.add( CmdPrintln(t, parse_expression) )
-        return
       endIf
 
       #{

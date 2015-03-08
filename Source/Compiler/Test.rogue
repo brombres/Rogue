@@ -1,36 +1,66 @@
 class Test
   METHODS
     method init
-      local a = Alpha()
-      local b = Beta()
-      a.print
-      b.print
-      a = b
-      a.print
-      a.whateva
-      b.whateva
-endClass
-
-class Alpha
-  METHODS
-    method print
-      testprintln "Alpha"
-
-    method whateva
-      testprintln "I do what I want!"
-endClass
-
-class Beta : Alpha
-  METHODS
-    method print
-      testprintln "Beta"
+      println( "Global Printing!" )
+      println( "This" ).add_indent(2).println("That").add_indent(2).println("The Other")
 endClass
 
 compound XY( x:Real, y:Real )
 endCompound
 
-class Number( value:Real )
+class Console [singleton]
   METHODS
+    method print( value:String )
+      native_print( value )
+
+    method print( value:StringBuilder )
+      native_print( value )
+
+    method native_print( value:String )
+      $if ("C++") nativeInline 'RogueString::print( $value )'
+
+    method native_print( value:StringBuilder )
+      $if ("C++") nativeInline 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
+endClass
+
+class Global [singleton]
+  PROPERTIES
+    global_output_buffer = StringBuilder()
+    standard_output      = Console
+
+  METHODS
+    method add_indent( spaces:Integer )->this
+      global_output_buffer.add_indent( spaces )
+      return this
+
+    method flush->this
+      if (global_output_buffer.count?)
+        standard_output.print( global_output_buffer )
+        global_output_buffer.clear
+      endIf
+      return this
+
+    method print( value:String )->this
+      global_output_buffer.print( value )
+      return this
+
+    method println->this
+      global_output_buffer.print( '\n' )
+      return flush
+
+    method println( value:String )->this
+      return print( value ).println
+endClass
+
+class Number
+  PROPERTIES
+    value = 6
+
+  METHODS
+    method init
+
+    method init( value )
+
     method to->String
       return "" + value
 endClass
@@ -375,27 +405,39 @@ class StringBuilder
     method init( initial_capacity:Integer )
       characters = Character[]( initial_capacity )
 
+    method add_indent( spaces:Integer )->this
+      indent += spaces
+      return this
+
     method capacity->Integer
       inline characters.capacity
+
+    method clear->this
+      characters.clear
+      at_newline = true
+      return this
+
+    method count->Integer
+      inline characters.count
 
     method needs_indent->Logical
       inline (at_newline and indent > 0)
 
-    method print( value:Character )->StringBuilder
+    method print( value:Character )->this
       if (value == '\n')    at_newline = true
       elseIf (needs_indent) print_indent
       characters.add( value )
       return this
 
-    method print( value:Integer )->StringBuilder [native]
+    method print( value:Integer )->this [native]
 
-    method print( value:Logical )->StringBuilder
+    method print( value:Logical )->this
       if (value) return print( "true" )
       else       return print( "false" )
 
-    method print( value:Real, decimal_places=4:Integer )->StringBuilder [native]
+    method print( value:Real, decimal_places=4:Integer )->this [native]
 
-    method print( value:String )->StringBuilder
+    method print( value:String )->this
       if (value?)
         if (indent?)
           forEach (ch in value) print( ch )
@@ -413,27 +455,27 @@ class StringBuilder
       forEach (i in 1..indent) characters.add( ' ' )
       at_newline = false
 
-    method println( value:Character )->StringBuilder
+    method println( value:Character )->this
       print( value )
       return print( '\n' )
 
-    method println( value:Integer )->StringBuilder
+    method println( value:Integer )->this
       print( value )
       return print( '\n' )
 
-    method println( value:Logical )->StringBuilder
+    method println( value:Logical )->this
       print( value )
       return print( '\n' )
 
-    method println( value:Real, decimal_places=4:Integer )->StringBuilder
+    method println( value:Real, decimal_places=4:Integer )->this
       print( value, decimal_places )
       return print( '\n' )
 
-    method println( value:String )->StringBuilder
+    method println( value:String )->this
       print( value )
       return print( '\n' )
 
-    method reserve( additional_count:Integer )->StringBuilder
+    method reserve( additional_count:Integer )->this
       characters.reserve( additional_count )
       return this
 

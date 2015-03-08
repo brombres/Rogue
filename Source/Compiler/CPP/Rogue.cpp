@@ -363,12 +363,23 @@ RogueString* RogueString::update_hash_code()
   return this;
 }
 
-void RogueString::println( RogueString* st )
+void RogueString::print( RogueString* st )
 {
   if (st)
   {
-    int count = st->count;
-    RogueCharacter* src = st->characters - 1;
+    RogueString::print( st->characters, st->count );
+  }
+  else
+  {
+    printf( "null" );
+  }
+}
+
+void RogueString::print( RogueCharacter* characters, int count )
+{
+  if (characters)
+  {
+    RogueCharacter* src = characters - 1;
     while (--count >= 0)
     {
       int ch = *(++src);
@@ -379,7 +390,6 @@ void RogueString::println( RogueString* st )
   {
     printf( "null" );
   }
-  printf( "\n" );
 }
 
 //-----------------------------------------------------------------------------

@@ -272,67 +272,6 @@ class CmdLocalDeclaration : CmdStatement
       return this
 endClass
 
-class CmdPrintln : CmdStatement
-  PROPERTIES
-    expression : Cmd
-
-  METHODS
-    method init( t, expression=null )
-
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdPrintln( t, clone(expression,inline_args) )
-
-    method print_cpp( writer:CPPWriter )
-      if (expression?)
-        local print_type = expression.type
-
-        if (print_type is Program.type_String)
-          writer.print "RogueString::println( "
-          expression.print_cpp( writer )
-          writer.print " )"
-
-        elseIf (print_type is Program.type_Integer)
-          writer.print( //printf( "%d\\n", // )
-          expression.print_cpp( writer )
-          writer.print " )"
-
-        elseIf (print_type is Program.type_Real)
-          writer.print( //printf( "%.4lf\\n", // )
-          expression.print_cpp( writer )
-          writer.print " )"
-
-        elseIf (print_type is Program.type_Character)
-          writer.print( //printf( "%c\\n", // )
-          expression.print_cpp( writer )
-          writer.print " )"
-
-        elseIf (print_type is Program.type_Logical)
-          writer.print( //printf( "%s\\n", // )
-          expression.print_cpp( writer )
-          writer.print //?"true":"false" );//
-
-        else
-
-          throw t.error( "[INTERNAL/CmdPrintln] Unhandled type in println: " + print_type.name )
-        endIf
-
-      else
-        writer.print //printf( "\\n" )//
-      endIf
-
-    method resolve( scope:Scope )->Cmd
-      if (expression is null) return this
-
-      expression = expression.resolve( scope )
-
-      local expression_type = expression.require_type
-
-      if ((expression_type.is_reference and expression_type isNot Program.type_String) or expression_type.is_compound)
-        expression = CmdAccess( t, expression, "to_String" ).resolve( scope )
-      endIf
-
-      return this
-endClass
 
 class CmdReturn : CmdStatement
   PROPERTIES
@@ -1115,18 +1054,24 @@ class CmdAccess : CmdAccessWithModify
         endIf
       endIf
 
-      context = context.resolve( scope )
+      local context_type : Type
 
-      local context_type = context.require_type
+      if (context?)
+        context = context.resolve( scope )
+        context_type = context.require_type
+      else
+        context_type = scope.this_type
+      endIf
 
       local p = context_type.find_setting( name )
       if (p?)
-        context.require_type_context
+        if (context?) context.require_type_context
         return CmdOpAssignSetting( t, p, op, new_value ).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
       if (p?)
+        if (not context?) context = CmdThisContext( t, context_type )
         if (scope.this_method.is_routine)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf

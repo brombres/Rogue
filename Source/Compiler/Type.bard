@@ -571,11 +571,20 @@ class Type
       writer.println()
 
       # create_object()
+      local m_init_object = find_method( "init_object()" )
+      if (m_init_object? and m_init_object.statements.count > 1)
+        local type_Object = Program.type_Object
+        writer.print( type_Object ).print( " init_object( " ).print( type_Object ).println( " THIS )" )
+        writer.println( "{" )
+        writer.print( "  return (" ).print(type_Object).print(") ").print( m_init_object.cpp_name )
+        writer.print( "( (" ).print(this).println( ") THIS );" );
+        writer.println( "}" )
+        writer.println
+      endIf
       #{
       writer.print( cpp_name ).println( "* create_object()" )
       writer.println( "{" )
       writer.print(   "  return " )
-      local m_init_object = find_method( "init_object()" )
       if (m_init_object?)
         writer.print( m_init_object.cpp_name )
         writer.print( "( " )
@@ -603,7 +612,7 @@ class Type
           writer.print( m_init.cpp_name )
           writer.print( "( (" ).print( this ).println( ")create_and_init_object() );" )
         else
-          writer.println( "create_and_init_object()" )
+          writer.println( "create_and_init_object();" )
         endIf
         writer.print( "return (" ).print( this ).println( ") _singleton;" )
         writer.indent -= 2
