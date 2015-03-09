@@ -2,6 +2,18 @@ class Test
   METHODS
     method init
       local reader = FileReader( "Makefile" )
+      while (reader.has_another and reader.peek != '+')
+        print( reader.read )
+      endWhile
+      println
+
+      reader.set_position( 0 )
+      while (reader.has_another)
+        print( reader.read )
+      endWhile
+      println
+
+      reader.close
 endClass
 
 compound XY( x:Real, y:Real )
@@ -27,7 +39,17 @@ class FileReader [native]
     routine create( filepath:String )->this [native]
     
   METHODS
+    method close [native]
+
+    method has_another->Logical [native]
+
+    method peek->Character [native]
+
+    method position->Integer [native]
+
     method read->Character [native]
+
+    method set_position( new_position:Integer )->this [native]
 endClass
 
 class Global [singleton]
@@ -53,6 +75,7 @@ class Global [singleton]
 
     method print( value:Character )->this
       global_output_buffer.print( value )
+      if (value == '\n') return flush
       return this
 
     method print( value:Integer )->this

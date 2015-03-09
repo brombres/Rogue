@@ -509,6 +509,11 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), type_count
 
   type_RogueFileReader = new RogueFileReaderType();
 
+  for (int i=0; i<next_type_index; ++i)
+  {
+    types[i]->configure();
+  }
+
   pi = acos(-1);
 }
 
@@ -815,43 +820,106 @@ void RogueFileReaderType::configure()
   object_size = (int) sizeof( RogueFileReader );
 }
 
+void RogueFileReaderType::trace( RogueObject* obj )
+{
+  ROGUE_TRACE( ((RogueFileReader*)obj)->filepath );
+}
+
 RogueFileReader* RogueFileReader__create( RogueString* filepath )
 {
   RogueFileReader* reader = (RogueFileReader*) rogue_program.type_RogueFileReader->create_object();
+  RogueFileReader__open( reader, filepath );
+  return reader;
+}
 
-  if (filepath)
+void RogueFileReader__close( RogueFileReader* reader )
+{
+  if (reader && reader->fp)
   {
-    char path[ 4096 ];
-    filepath->to_c_string( path, 4096 );
+    fclose( reader->fp );
+    reader->fp = NULL;
+  }
+  reader->position = reader->count = 0;
+}
 
-    reader->fp = fopen( path, "rb" );
-    if (reader->fp)
-    {
-      fseek( reader->fp, 0, SEEK_END );
-      reader->count = (int) ftell( reader->fp );
-      fseek( reader->fp, 0, SEEK_SET );
-      reader->remaining = reader->count;
-    }
+RogueLogical RogueFileReader__has_another( RogueFileReader* reader )
+{
+  return reader && (reader->position < reader->count);
+}
+
+RogueLogical RogueFileReader__open( RogueFileReader* reader, RogueString* filepath )
+{
+  RogueFileReader__close( reader );
+  reader->filepath = filepath;
+
+  if ( !filepath ) return false;
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, 4096 );
+
+  reader->fp = fopen( path, "rb" );
+  if (reader->fp)
+  {
+    fseek( reader->fp, 0, SEEK_END );
+    reader->count = (int) ftell( reader->fp );
+    fseek( reader->fp, 0, SEEK_SET );
+
+    if (reader->count == 0) RogueFileReader__close( reader );
   }
 
   return reader;
 }
 
-RogueCharacter* RogueFileReader__read( RogueFileReader* reader )
+RogueCharacter RogueFileReader__peek( RogueFileReader* reader )
 {
-  if ( !reader || !reader->fp ) return 0;
+  if ( !reader || reader->position == reader->count ) return 0;
 
-  /*
-  if ( !reader->buffer_count )
+  if (reader->buffer_position == reader->buffer_count)
   {
-    int n = 1024;
-    if (remaining < n) n = remaining;
-    fread( reader->buffer, 1, n, reader->fp );
-    buffer_position = 0;
+    reader->buffer_count = (int) fread( reader->buffer, 1, sizeof(reader->buffer), reader->fp );
+    reader->buffer_position = 0;
   }
-  */
-  return 0;
+
+  return reader->buffer[ reader->buffer_position ];
 }
+
+RogueInteger RogueFileReader__position( RogueFileReader* reader )
+{
+  if ( !reader ) return 0;
+  return reader->position;
+}
+
+RogueCharacter RogueFileReader__read( RogueFileReader* reader )
+{
+  // Ugly duplication of peek() code for speed - otherwise there are a few too many checks
+  if ( !reader || reader->position == reader->count ) return 0;
+
+  if (reader->buffer_position == reader->buffer_count)
+  {
+    reader->buffer_count = (int) fread( reader->buffer, 1, sizeof(reader->buffer), reader->fp );
+    reader->buffer_position = 0;
+  }
+
+  unsigned char result = reader->buffer[ reader->buffer_position++ ];
+  if (++reader->position == reader->count) RogueFileReader__close( reader );
+  return result;
+}
+
+RogueFileReader* RogueFileReader__set_position( RogueFileReader* reader, RogueInteger new_position )
+{
+  if ( !reader ) return NULL;
+
+  if ( !reader->fp ) RogueFileReader__open( reader, reader->filepath );
+
+  fseek( reader->fp, new_position, SEEK_SET );
+  reader->position = new_position;
+
+  reader->buffer_position = 0;
+  reader->buffer_count = 0;
+
+  return reader;
+}
+
 
 //-----------------------------------------------------------------------------
 //  StringBuilder

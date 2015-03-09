@@ -358,21 +358,28 @@ struct RogueFileReaderType : RogueType
   void configure();
 
   const char* name() { return "FileReader"; }
+  void        trace( RogueObject* obj );
 };
 
 struct RogueFileReader : RogueObject
 {
   FILE* fp;
-  char  buffer[1024];
-  int   buffer_count;
-  int   buffer_position;
-  int   count;
-  int   position;
-  int   remaining;
+  RogueString*   filepath;
+  unsigned char  buffer[1024];
+  int            buffer_count;
+  int            buffer_position;
+  int            count;
+  int            position;
 };
 
 RogueFileReader* RogueFileReader__create( RogueString* filepath );
-RogueCharacter*  RogueFileReader__read( RogueFileReader* reader );
+void             RogueFileReader__close( RogueFileReader* reader );
+RogueLogical     RogueFileReader__has_another( RogueFileReader* reader );
+RogueLogical     RogueFileReader__open( RogueFileReader* reader, RogueString* filepath );
+RogueCharacter   RogueFileReader__peek( RogueFileReader* reader );
+RogueInteger     RogueFileReader__position( RogueFileReader* reader );
+RogueCharacter   RogueFileReader__read( RogueFileReader* reader );
+RogueFileReader* RogueFileReader__set_position( RogueFileReader* reader, RogueInteger new_position );
 
 
 //-----------------------------------------------------------------------------
