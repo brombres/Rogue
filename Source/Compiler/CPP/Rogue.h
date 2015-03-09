@@ -37,6 +37,7 @@
 
 struct RogueAllocator;
 struct RogueCharacterList;
+struct RogueFileReaderType;
 
 #define ROGUE_TRACE( obj ) \
 { \
@@ -194,6 +195,7 @@ struct RogueString : RogueObject
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
   RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
+  bool         to_c_string( char* buffer, int buffer_size );
   RogueString* update_hash_code();
 };
 
@@ -258,6 +260,8 @@ struct RogueProgramCore
   RogueObjectType* type_RogueObject;
   RogueStringType* type_RogueString;
   RogueArrayType*  type_RogueArray;
+
+  RogueFileReaderType*  type_RogueFileReader;
 
   RogueReal pi;
 
@@ -345,6 +349,31 @@ extern RogueAllocator Rogue_allocator;
 //=============================================================================
 //  Various Native Methods
 //=============================================================================
+
+//-----------------------------------------------------------------------------
+//  FileReader
+//-----------------------------------------------------------------------------
+struct RogueFileReaderType : RogueType
+{
+  void configure();
+
+  const char* name() { return "FileReader"; }
+};
+
+struct RogueFileReader : RogueObject
+{
+  FILE* fp;
+  char  buffer[1024];
+  int   buffer_count;
+  int   buffer_position;
+  int   count;
+  int   position;
+  int   remaining;
+};
+
+RogueFileReader* RogueFileReader__create( RogueString* filepath );
+RogueCharacter*  RogueFileReader__read( RogueFileReader* reader );
+
 
 //-----------------------------------------------------------------------------
 //  StringBuilder

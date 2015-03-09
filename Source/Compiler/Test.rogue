@@ -1,7 +1,7 @@
 class Test
   METHODS
     method init
-      print( "Global" ).print(' ').println(true).print( "Number: " ).println( Number(9) )
+      local reader = FileReader( "Makefile" )
 endClass
 
 compound XY( x:Real, y:Real )
@@ -20,6 +20,14 @@ class Console [singleton]
 
     method native_print( value:StringBuilder )
       $if ("C++") nativeInline 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
+endClass
+
+class FileReader [native]
+  ROUTINES
+    routine create( filepath:String )->this [native]
+    
+  METHODS
+    method read->Character [native]
 endClass
 
 class Global [singleton]

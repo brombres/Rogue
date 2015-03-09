@@ -322,6 +322,25 @@ RogueString* RogueString::plus( RogueString* other )
   return result;
 }
 
+
+bool RogueString::to_c_string( char* buffer, int buffer_size )
+{
+  if (count + 1 > buffer_size) return false;
+
+  RogueCharacter* src = characters - 1;
+  char* dest = buffer - 1;
+  int n = count;
+
+  while (--n >= 0)
+  {
+    *(++dest) = (char) (*(++src));
+  }
+  *(++dest) = 0;
+
+  return true;
+}
+
+
 RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
 {
   // Clamp i1 and i2
@@ -487,6 +506,9 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), type_count
   type_RogueObject = new RogueObjectType();
   type_RogueString = new RogueStringType();
   type_RogueArray  = new RogueArrayType();
+
+  type_RogueFileReader = new RogueFileReaderType();
+
   pi = acos(-1);
 }
 
@@ -784,6 +806,52 @@ void* RogueAllocator::free_permanent( void* data, int size )
 
 RogueAllocator Rogue_allocator;
 
+
+//-----------------------------------------------------------------------------
+//  FileReader
+//-----------------------------------------------------------------------------
+void RogueFileReaderType::configure()
+{
+  object_size = (int) sizeof( RogueFileReader );
+}
+
+RogueFileReader* RogueFileReader__create( RogueString* filepath )
+{
+  RogueFileReader* reader = (RogueFileReader*) rogue_program.type_RogueFileReader->create_object();
+
+  if (filepath)
+  {
+    char path[ 4096 ];
+    filepath->to_c_string( path, 4096 );
+
+    reader->fp = fopen( path, "rb" );
+    if (reader->fp)
+    {
+      fseek( reader->fp, 0, SEEK_END );
+      reader->count = (int) ftell( reader->fp );
+      fseek( reader->fp, 0, SEEK_SET );
+      reader->remaining = reader->count;
+    }
+  }
+
+  return reader;
+}
+
+RogueCharacter* RogueFileReader__read( RogueFileReader* reader )
+{
+  if ( !reader || !reader->fp ) return 0;
+
+  /*
+  if ( !reader->buffer_count )
+  {
+    int n = 1024;
+    if (remaining < n) n = remaining;
+    fread( reader->buffer, 1, n, reader->fp );
+    buffer_position = 0;
+  }
+  */
+  return 0;
+}
 
 //-----------------------------------------------------------------------------
 //  StringBuilder
