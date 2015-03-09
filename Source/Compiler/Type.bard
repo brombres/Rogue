@@ -228,7 +228,7 @@ class Type
         endForEach
         
         if (not base_class and not is_functional and this isNot Program.type_Object)
-          Program.type_Object.resolve
+          Program.type_Object.organize
           base_class = Program.type_Object; base_types.insert( base_class )
         endIf
       endIf
@@ -479,12 +479,12 @@ class Type
 
       organize
 
-      if (element_type?) element_type.resolve
+      if (element_type?) element_type.organize
 
-      if (generic_type?) generic_type.resolve
+      if (generic_type?) generic_type.organize
 
-      forEach (s in settings_list) s.type.resolve
-      forEach (p in property_list) p.type.resolve
+      forEach (s in settings_list) s.type.organize
+      forEach (p in property_list) p.type.organize
 
       #{
       local need_init_object = false

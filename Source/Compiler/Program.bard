@@ -106,13 +106,13 @@ class Program [requisite singleton]
         throw RogueError( "No candidates for main class." )
       endIf
 
-      type_Real.resolve()
-      type_Float.resolve()
-      type_Long.resolve()
-      type_Integer.resolve()
-      type_Character.resolve()
-      type_Byte.resolve()
-      type_Logical.resolve()
+      type_Real.resolve
+      type_Float.resolve
+      type_Long.resolve
+      type_Integer.resolve
+      type_Character.resolve
+      type_Byte.resolve
+      type_Logical.resolve
       type_Global.resolve
 
       type_Object.resolve

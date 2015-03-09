@@ -114,10 +114,7 @@ class Method
         endIf
 
         if (not param.type) throw param.t.error( //No type declared for parameter "$".// (param.name) )
-        param.type.organize
       endForEach
-
-      if (return_type?) return_type.organize
 
       assign_signature
 
@@ -183,6 +180,9 @@ class Method
     method resolve
       if (resolved) return
       resolved = true
+
+      forEach (param in parameters) param.type.organize
+      if (return_type?) return_type.organize
 
       if (type_context.generic_type?)
         # Find the generic version of this method

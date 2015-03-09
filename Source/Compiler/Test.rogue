@@ -1,8 +1,7 @@
 class Test
   METHODS
     method init
-      println( "Global Printing!" )
-      println( "This" ).add_indent(2).println("That").add_indent(2).println("The Other")
+      print( "Global" ).print(' ').println(true).print( "Number: " ).println( Number(9) )
 endClass
 
 compound XY( x:Real, y:Real )
@@ -40,6 +39,30 @@ class Global [singleton]
       endIf
       return this
 
+    method print( value:Byte )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Character )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Integer )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Logical )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Object )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Real )->this
+      global_output_buffer.print( value )
+      return this
+
     method print( value:String )->this
       global_output_buffer.print( value )
       return this
@@ -47,6 +70,24 @@ class Global [singleton]
     method println->this
       global_output_buffer.print( '\n' )
       return flush
+
+    method println( value:Byte )->this
+      return print( value ).println
+
+    method println( value:Character )->this
+      return print( value ).println
+
+    method println( value:Integer )->this
+      return print( value ).println
+
+    method println( value:Logical )->this
+      return print( value ).println
+
+    method println( value:Real )->this
+      return print( value ).println
+
+    method println( value:Object )->this
+      return print( value ).println
 
     method println( value:String )->this
       return print( value ).println
@@ -126,6 +167,9 @@ primitive Logical
 endPrimitive
 
 class Object
+  METHODS
+    method to->String
+      return "(Object)"
 endClass
 
 class String [native functional]
@@ -410,7 +454,7 @@ class StringBuilder
       return this
 
     method capacity->Integer
-      inline characters.capacity
+      inline this.characters.capacity
 
     method clear->this
       characters.clear
@@ -418,10 +462,13 @@ class StringBuilder
       return this
 
     method count->Integer
-      inline characters.count
+      inline this.characters.count
 
     method needs_indent->Logical
-      inline (at_newline and indent > 0)
+      return (at_newline and indent > 0)
+
+    method print( value:Byte )->this
+      return print( value->Integer )
 
     method print( value:Character )->this
       if (value == '\n')    at_newline = true
@@ -434,6 +481,10 @@ class StringBuilder
     method print( value:Logical )->this
       if (value) return print( "true" )
       else       return print( "false" )
+
+    method print( value:Object )->this
+      if (value?) return print( value->String )
+      return print( "null" )
 
     method print( value:Real, decimal_places=4:Integer )->this [native]
 
@@ -455,6 +506,10 @@ class StringBuilder
       forEach (i in 1..indent) characters.add( ' ' )
       at_newline = false
 
+    method println( value:Byte )->this
+      print( value->Integer )
+      return print( '\n' )
+
     method println( value:Character )->this
       print( value )
       return print( '\n' )
@@ -469,6 +524,10 @@ class StringBuilder
 
     method println( value:Real, decimal_places=4:Integer )->this
       print( value, decimal_places )
+      return print( '\n' )
+
+    method println( value:Object )->this
+      print( value )
       return print( '\n' )
 
     method println( value:String )->this
