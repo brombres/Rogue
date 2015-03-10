@@ -570,8 +570,27 @@ class CmdForEachInCollection : CmdControlStructure
         return cmd_block.resolve( scope )
 
       else
-        trace collection_type.method_list.first
-        throw t.error( "TODO" )
+        # commandBlock
+        #   local reader = expression
+        #   while (reader.has_another)
+        #     local control_var = reader.read
+        #     statements
+        #   endWhile
+        local has_another = (collection_type.find_property("has_another")? or collection_type.find_method("has_another()")?)
+        local m_read  = collection_type.find_method("read()")
+
+        local cmd_block = CmdBlock(t)
+
+        local reader_var = scope.this_method.add_local( t, Program.create_unique_id )
+        cmd_block.statements.add( CmdLocalDeclaration(collection.t,reader_var) )
+        reader_var.initial_value = collection
+
+        local control_var = scope.this_method.add_local( t, control_var_name )
+        statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
+        control_var.initial_value = CmdAccess( t, CmdReadLocal(t,reader_var), "read", CmdArgs() )
+
+        cmd_block.statements.add( CmdForEachInReader( t, reader_var, control_var, statements ) )
+        return cmd_block.resolve( scope )
 
       endIf
       return this
@@ -606,6 +625,35 @@ class CmdForEachInIndexedCollection : CmdControlStructure
     method resolve( scope:Scope )->Cmd
       statements.resolve( scope )
       last_cmd = last_cmd.resolve( scope )
+      return this
+endClass
+
+
+class CmdForEachInReader : CmdControlStructure
+  PROPERTIES
+    reader_var  : Local
+    control_var : Local
+    condition   : Cmd
+
+  METHODS
+    method init( t, reader_var, control_var, statements=CmdStatementList() )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdForEachInReader( t, reader_var, control_var, statements.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "while (" )
+      condition.print_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.print_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method resolve( scope:Scope )->Cmd
+      statements.resolve( scope )
+      condition = CmdAccess( reader_var.t, CmdReadLocal(reader_var.t,reader_var), "has_another" ).resolve( scope )
       return this
 endClass
 

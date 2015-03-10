@@ -351,6 +351,13 @@ extern RogueAllocator Rogue_allocator;
 //=============================================================================
 
 //-----------------------------------------------------------------------------
+//  File
+//-----------------------------------------------------------------------------
+RogueLogical RogueFile__exists( RogueString* filepath );
+RogueString* RogueFile__load( RogueString* filepath );
+RogueLogical RogueFile__save( RogueString* filepath, RogueString* data );
+
+//-----------------------------------------------------------------------------
 //  FileReader
 //-----------------------------------------------------------------------------
 struct RogueFileReaderType : RogueType
@@ -374,6 +381,7 @@ struct RogueFileReader : RogueObject
 
 RogueFileReader* RogueFileReader__create( RogueString* filepath );
 void             RogueFileReader__close( RogueFileReader* reader );
+RogueInteger     RogueFileReader__count( RogueFileReader* reader );
 RogueLogical     RogueFileReader__has_another( RogueFileReader* reader );
 RogueLogical     RogueFileReader__open( RogueFileReader* reader, RogueString* filepath );
 RogueCharacter   RogueFileReader__peek( RogueFileReader* reader );

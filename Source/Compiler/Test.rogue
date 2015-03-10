@@ -1,19 +1,15 @@
 class Test
   METHODS
     method init
-      local reader = FileReader( "Makefile" )
-      while (reader.has_another and reader.peek != '+')
-        print( reader.read )
-      endWhile
+      println( File.exists("Makefile") )
+      forEach (ch in File.read("Makefile"))
+        print( ch )
+      endForEach
       println
 
-      reader.set_position( 0 )
-      while (reader.has_another)
-        print( reader.read )
-      endWhile
-      println
+      println( File.load("../Property.bard") )
 
-      reader.close
+      File.save( "savetest.txt", "Saving works!" )
 endClass
 
 compound XY( x:Real, y:Real )
@@ -34,12 +30,26 @@ class Console [singleton]
       $if ("C++") nativeInline 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
 endClass
 
+class File
+  ROUTINES
+    routine exists( filepath:String )->String [native]
+
+    routine load( filepath:String )->String [native]
+
+    routine read( filepath:String )->FileReader
+      return FileReader( filepath )
+
+    routine save( filepath:String, data:String )->Logical [native]
+endClass
+
 class FileReader [native]
   ROUTINES
     routine create( filepath:String )->this [native]
     
   METHODS
     method close [native]
+
+    method count->Integer [native]
 
     method has_another->Logical [native]
 
@@ -48,6 +58,9 @@ class FileReader [native]
     method position->Integer [native]
 
     method read->Character [native]
+
+    method remaining->Integer
+      return count - position
 
     method set_position( new_position:Integer )->this [native]
 endClass

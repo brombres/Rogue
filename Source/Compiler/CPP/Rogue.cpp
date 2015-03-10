@@ -813,6 +813,71 @@ RogueAllocator Rogue_allocator;
 
 
 //-----------------------------------------------------------------------------
+//  File
+//-----------------------------------------------------------------------------
+RogueLogical RogueFile__exists( RogueString* filepath )
+{
+  if ( !filepath ) return false;
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, 4096 );
+
+  FILE* fp = fopen( path, "rb" );
+  if ( !fp ) return false;
+
+  fclose( fp );
+  return true;
+}
+
+RogueString* RogueFile__load( RogueString* filepath )
+{
+  if ( !filepath ) return rogue_program.literal_strings[0];
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, 4096 );
+
+  FILE* fp = fopen( path, "rb" );
+  if ( !fp ) return rogue_program.literal_strings[0];  // ""
+
+  fseek( fp, 0, SEEK_END );
+  int count = (int) ftell( fp );
+  fseek( fp, 0, SEEK_SET );
+
+  RogueString* result = RogueString::create( count );
+  fread( result->characters, 1, count, fp );
+  fclose( fp );
+
+  unsigned char* src = ((unsigned char*)(result->characters)) + count;
+  RogueCharacter* dest = result->characters + count;
+
+  while (--count >= 0)
+  {
+    *(--dest) = *(--src);
+  }
+
+  result->update_hash_code();
+  return result;
+}
+
+RogueLogical RogueFile__save( RogueString* filepath, RogueString* data )
+{
+  if ( !filepath || !data ) return false;
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, 4096 );
+
+  FILE* fp = fopen( path, "wb" );
+  if ( !fp ) return false;
+
+  // TODO: need to copy characters into 8-bit buffer
+  fwrite( data->characters, 1, data->count, fp );
+  fclose( fp );
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 //  FileReader
 //-----------------------------------------------------------------------------
 void RogueFileReaderType::configure()
@@ -840,6 +905,12 @@ void RogueFileReader__close( RogueFileReader* reader )
     reader->fp = NULL;
   }
   reader->position = reader->count = 0;
+}
+
+RogueInteger RogueFileReader__count( RogueFileReader* reader )
+{
+  if ( !reader ) return 0;
+  return reader->count;
 }
 
 RogueLogical RogueFileReader__has_another( RogueFileReader* reader )
