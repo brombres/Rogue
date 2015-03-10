@@ -490,8 +490,10 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), type_count(type_count), next_type_index(0)
+RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_index(0)
 {
+  type_count += ROGUE_BUILT_IN_TYPE_COUNT;
+  this->type_count = type_count;
   types = new RogueType*[ type_count ];
   memset( types, 0, sizeof(RogueType*) );
 
@@ -508,6 +510,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), type_count
   type_RogueArray  = new RogueArrayType();
 
   type_RogueFileReader = new RogueFileReaderType();
+  type_RogueFileWriter = new RogueFileWriterType();
 
   for (int i=0; i<next_type_index; ++i)
   {
@@ -864,13 +867,30 @@ RogueLogical RogueFile__save( RogueString* filepath, RogueString* data )
   if ( !filepath || !data ) return false;
 
   char path[ 4096 ];
-  filepath->to_c_string( path, 4096 );
+  filepath->to_c_string( path, sizeof(path) );
 
   FILE* fp = fopen( path, "wb" );
   if ( !fp ) return false;
 
-  // TODO: need to copy characters into 8-bit buffer
-  fwrite( data->characters, 1, data->count, fp );
+  // Reuse 'path' as a write buffer
+  int remaining = data->count;
+  RogueCharacter* src = data->characters - 1;
+  unsigned char* dest = ((unsigned char*) path) - 1;
+
+  while (remaining > 0)
+  {
+    int block_size = remaining;
+    if (block_size > sizeof(path)) block_size = sizeof(path);
+    int copy_count = block_size;
+    while (--copy_count >= 0)
+    {
+      *(++dest) = (unsigned char) *(++src);
+    }
+
+    fwrite( path, 1, block_size, fp );
+    remaining -= block_size;
+  }
+
   fclose( fp );
 
   return true;
@@ -897,7 +917,7 @@ RogueFileReader* RogueFileReader__create( RogueString* filepath )
   return reader;
 }
 
-void RogueFileReader__close( RogueFileReader* reader )
+RogueFileReader* RogueFileReader__close( RogueFileReader* reader )
 {
   if (reader && reader->fp)
   {
@@ -905,6 +925,7 @@ void RogueFileReader__close( RogueFileReader* reader )
     reader->fp = NULL;
   }
   reader->position = reader->count = 0;
+  return reader;
 }
 
 RogueInteger RogueFileReader__count( RogueFileReader* reader )
@@ -989,6 +1010,78 @@ RogueFileReader* RogueFileReader__set_position( RogueFileReader* reader, RogueIn
   reader->buffer_count = 0;
 
   return reader;
+}
+
+
+//-----------------------------------------------------------------------------
+//  FileWriter
+//-----------------------------------------------------------------------------
+void RogueFileWriterType::configure()
+{
+  object_size = (int) sizeof( RogueFileWriter );
+}
+
+void RogueFileWriterType::trace( RogueObject* obj )
+{
+  ROGUE_TRACE( ((RogueFileWriter*)obj)->filepath );
+}
+
+RogueFileWriter* RogueFileWriter__create( RogueString* filepath )
+{
+  RogueFileWriter* writer = (RogueFileWriter*) rogue_program.type_RogueFileWriter->create_object();
+  RogueFileWriter__open( writer, filepath );
+  return writer;
+}
+
+RogueFileWriter* RogueFileWriter__close( RogueFileWriter* writer )
+{
+  if (writer && writer->fp)
+  {
+    RogueFileWriter__flush( writer );
+    fclose( writer->fp );
+    writer->fp = NULL;
+  }
+  writer->buffer_position = writer->count = 0;
+  return writer;
+}
+
+RogueInteger RogueFileWriter__count( RogueFileWriter* writer )
+{
+  if ( !writer ) return 0;
+  return writer->count;
+}
+
+RogueFileWriter* RogueFileWriter__flush( RogueFileWriter* writer )
+{
+  if ( !writer || !writer->buffer_position || !writer->fp ) return writer;
+
+  fwrite( writer->buffer, 1, writer->buffer_position, writer->fp );
+  writer->buffer_position = 0;
+  return writer;
+}
+
+RogueLogical RogueFileWriter__open( RogueFileWriter* writer, RogueString* filepath )
+{
+  RogueFileWriter__close( writer );
+  writer->filepath = filepath;
+
+  if ( !filepath ) return false;
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, 4096 );
+
+  writer->fp = fopen( path, "wb" );
+  return writer;
+}
+
+RogueFileWriter* RogueFileWriter__write( RogueFileWriter* writer, RogueCharacter ch )
+{
+  if ( !writer || !writer->fp ) return NULL;
+
+  writer->buffer[ writer->buffer_position ] = (unsigned char) ch;
+  if (++writer->buffer_position == sizeof(writer->buffer)) return RogueFileWriter__flush( writer );
+
+  return writer;
 }
 
 
