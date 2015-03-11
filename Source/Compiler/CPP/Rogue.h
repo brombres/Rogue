@@ -280,6 +280,7 @@ struct RogueProgramCore
 
   static RogueReal    mod( RogueReal a, RogueReal b );
   static RogueInteger mod( RogueInteger a, RogueInteger b );
+  static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 
 

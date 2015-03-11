@@ -305,7 +305,7 @@ RogueString* RogueString::plus( RogueString* other )
 
   RogueString* result = RogueString::create( count + other->count );
   memcpy( result->characters, characters, count * sizeof(RogueCharacter) );
-  memcpy( result->characters+count, other->characters, count * sizeof(RogueCharacter) );
+  memcpy( result->characters+count, other->characters, other->count * sizeof(RogueCharacter) );
 
   int hash_count = other->count;
 
@@ -610,6 +610,14 @@ RogueInteger RogueProgramCore::mod( RogueInteger a, RogueInteger b )
   {
     return (a % b);
   }
+}
+
+RogueInteger RogueProgramCore::shift_right( RogueInteger value, RogueInteger bits )
+{
+  if (bits <= 0) return value;
+  value >>= 1;
+  if (--bits) return (value & 0x7fffFFFF) >> bits;
+  else        return value;
 }
 
 //-----------------------------------------------------------------------------

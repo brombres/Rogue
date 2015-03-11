@@ -1150,6 +1150,7 @@ class CmdElementAccess : CmdAccessWithModify
       context = context.resolve( scope )
 
       local context_type = context.require_type
+      context_type.organize
       if (context_type.is_array)
         return CmdReadArrayElement( t, context, index ).set_modifiers( this ).resolve( scope )
       else
@@ -2366,6 +2367,78 @@ class CmdCompareGE : CmdComparison
       return ">="
 endClass
 
+#------------------------------------------------------------------------------
+# Bitwise
+#------------------------------------------------------------------------------
+class CmdBitwiseOp : CmdBinary
+  METHODS
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      return null
+endClass
+
+class CmdBitwiseShiftLeft : CmdBitwiseOp
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdBitwiseShiftLeft( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value :<<: (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return "<<"
+
+    method symbol->String
+      return ":<<:"
+endClass
+
+class CmdBitwiseShiftRight : CmdBitwiseOp
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdBitwiseShiftRight( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value :<<: (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return ">>>"
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( "rogue_program.shift_right( " )
+      left.print_cpp( writer )
+      writer.print( ", " )
+      right.print_cpp( writer )
+      writer.print( " )" )
+
+    method symbol->String
+      return ":>>:"
+endClass
+
+class CmdBitwiseShiftRightX : CmdBitwiseOp
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdBitwiseShiftRightX( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value :<<: (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return ">>"
+
+    method symbol->String
+      return ":>>>:"
+endClass
 
 #------------------------------------------------------------------------------
 # OpWithAssign
@@ -2629,31 +2702,47 @@ class CmdReadArrayElement : CmdAccessWithModify
       return CmdReadArrayElement( t, context.clone(inline_args), index.clone(inline_args) )
 
     method print_cpp( writer:CPPWriter )
-      if (premodify_count > 0) writer.print("++")
-      elseIf (premodify_count < 0) writer.print("--")
+      if (array_type.element_type.is_reference)
+        if (premodify_count != 0 or postmodify_count != 0)
+          throw t.error( "++ and -- currently cannot be applied to object list elements." )
+        endIf
 
-      context.print_cpp( writer )
-      writer.print( "->" )
-      if (array_type.element_type.is_primitive)
-        whichIs (array_type.element_type)
-          case Program.type_Real:      writer.print( "reals[" )
-          case Program.type_Float:     writer.print( "floats[" )
-          case Program.type_Long:      writer.print( "longs[" )
-          case Program.type_Integer:   writer.print( "integers[" )
-          case Program.type_Character: writer.print( "characters[" )
-          case Program.type_Byte:      writer.print( "bytes[" )
-          case Program.type_Logical:   writer.print( "logical[" )
-        endWhichIs
+        writer.print( "((" )
+        writer.print( array_type.element_type )
+        writer.print( ")(" )
+        context.print_cpp( writer )
+        writer.print( "->objects[" )
+        index.print_cpp( writer )
+        writer.print( "]))" )
 
       else
-        throw t.error( "[INTERNAL] TODO: CmdReadArrayElement non-primitive" )
-      endIf
-        
-      index.print_cpp( writer )
-      writer.print( "]" )
+        if (premodify_count > 0) writer.print("++")
+        elseIf (premodify_count < 0) writer.print("--")
 
-      if (postmodify_count > 0) writer.print("++")
-      elseIf (postmodify_count < 0) writer.print("--")
+        context.print_cpp( writer )
+        writer.print( "->" )
+        if (array_type.element_type.is_primitive)
+          whichIs (array_type.element_type)
+            case Program.type_Real:      writer.print( "reals[" )
+            case Program.type_Float:     writer.print( "floats[" )
+            case Program.type_Long:      writer.print( "longs[" )
+            case Program.type_Integer:   writer.print( "integers[" )
+            case Program.type_Character: writer.print( "characters[" )
+            case Program.type_Byte:      writer.print( "bytes[" )
+            case Program.type_Logical:   writer.print( "logical[" )
+          endWhichIs
+
+        else
+          throw t.error( "[INTERNAL] TODO: CmdReadArrayElement non-primitive" )
+        endIf
+        
+        index.print_cpp( writer )
+        writer.print( "]" )
+
+        if (postmodify_count > 0) writer.print("++")
+        elseIf (postmodify_count < 0) writer.print("--")
+      endIf
+
 
     method resolve( scope:Scope )->Cmd
       if (array_type?) return this
