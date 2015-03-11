@@ -1880,6 +1880,9 @@ class CmdBinary : Cmd
       left = left.cast_to( common_type )
       right = right.cast_to( common_type )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
+      return resolve_for_common_type( scope, common_type )
+
+    method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
       return this
 
     method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
@@ -2367,13 +2370,136 @@ class CmdCompareGE : CmdComparison
       return ">="
 endClass
 
+class CmdCompareIs : CmdComparison
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCompareIs( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method cpp_symbol->String
+      return "=="
+
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.is_reference and right_type.is_reference)
+        return this
+
+      elseIf (left_type.is_primitive and right_type.is_primitive)
+        return CmdCompareEQ( t, left, right ).resolve( scope )
+
+      elseIf (left_type.is_compound and right_type.is_compound)
+        throw t.error( "[INTERNAL] TODO: 'is' for compounds." )
+
+      else
+        throw t.error( "Cannot use 'is' between mixed type categories $ and $." (left_type,right_type) )
+
+      endIf
+
+    method symbol->String
+      return "is"
+endClass
+
+class CmdCompareIsNot : CmdComparison
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCompareIsNot( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method cpp_symbol->String
+      return "!="
+
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.is_reference and right_type.is_reference)
+        return this
+
+      elseIf (left_type.is_primitive and right_type.is_primitive)
+        return CmdCompareEQ( t, left, right ).resolve( scope )
+
+      elseIf (left_type.is_compound and right_type.is_compound)
+        throw t.error( "[INTERNAL] TODO: 'is' for compounds." )
+
+      else
+        throw t.error( "Cannot use 'isNot' between mixed type categories $ and $." (left_type,right_type) )
+
+      endIf
+
+    method symbol->String
+      return "isNot"
+endClass
+
 #------------------------------------------------------------------------------
 # Bitwise
 #------------------------------------------------------------------------------
 class CmdBitwiseOp : CmdBinary
   METHODS
+    method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
+      if (common_type is Program.type_Byte or common_type is Program.type_Character)
+        left  = left.cast_to( Program.type_Integer ).resolve( scope )
+        right = right.cast_to( Program.type_Integer ).resolve( scope )
+
+        # TODO: allow Integer & Logical
+        #elseIf (common_type isNot Program.type_Integer)
+        #throw t.error( "'$' requires integer operands." (symbol) )
+      endIf
+
+      return this
+
     method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
       return null
+endClass
+
+class CmdBitwiseAnd : CmdBitwiseOp
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdBitwiseAnd( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value & (right as CmdLiteralInteger).value )
+      elseIf (common_type is Program.type_Logical)
+        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value and (right as CmdLiteralLogical).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "&"
+endClass
+
+class CmdBitwiseOr : CmdBitwiseOp
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdBitwiseOr( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value | (right as CmdLiteralInteger).value )
+      elseIf (common_type is Program.type_Logical)
+        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value or (right as CmdLiteralLogical).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "|"
+endClass
+
+class CmdBitwiseXor : CmdBitwiseOp
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdBitwiseXor( t, left.clone(inline_args), right.clone(inline_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value ~ (right as CmdLiteralInteger).value )
+      elseIf (common_type is Program.type_Logical)
+        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value xor (right as CmdLiteralLogical).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return "^"
+
+    method symbol->String
+      return "~"
 endClass
 
 class CmdBitwiseShiftLeft : CmdBitwiseOp

@@ -99,10 +99,12 @@ class Template
             specializer_type.organize
             if (specializer_type.instance_of(param.generic_mapping))
               is_generic = true
+              found_generic_type_parameters = true
+              generic_type_name_buffer.print( param.generic_mapping.name )
+            else
+              generic_type_name_buffer.print( buffer )
             endIf
           endIf
-          generic_type_name_buffer.print( param.generic_mapping.name )
-          found_generic_type_parameters = true
         else
           generic_type_name_buffer.print( buffer )
         endIf

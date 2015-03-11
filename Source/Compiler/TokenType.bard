@@ -39,6 +39,8 @@ class TokenType
     keyword_if                   : TokenType
     keyword_in                   : TokenType
     keyword_inline               : TokenType
+    keyword_is                   : TokenType
+    keyword_isNot                : TokenType
     keyword_local                : TokenType
     keyword_native               : TokenType
     keyword_nativeInline         : TokenType

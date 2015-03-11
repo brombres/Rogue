@@ -107,6 +107,7 @@ class Method
               statements.insert( CmdAssign(pt,CmdAccess(pt,property.name),CmdAccess(pt,new_name)) )
               param.name = new_name
               param.type = property.type
+              param.generic_type = property.generic_type
             else
               throw param.t.error( //A property named "$" already exists.// (param.name) )
             endIf
@@ -203,6 +204,7 @@ class Method
         local generic_sig = buffer->String
         generic_method = type_context.generic_type.find_method( generic_sig )
         if (not generic_method)
+          trace
           throw t.error( "[INTERNAL] Could not find generic mapping of $::$ -> $::$" (type_context,signature,type_context.generic_type,generic_sig) )
         endIf
       endIf

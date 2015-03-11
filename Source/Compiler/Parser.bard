@@ -1070,19 +1070,15 @@ class Parser
       if (consume(TokenType.symbol_eq))
         consume_eols
         return parse_comparison( CmdCompareEQ(t, lhs, parse_bitwise_xor) )
-        #{
       elseIf (consume(TokenType.keyword_is))
         consume_eols
         return parse_comparison( CmdCompareIs(t, lhs, parse_bitwise_xor) )
-        }#
       elseIf (consume(TokenType.symbol_ne))
         consume_eols
         return parse_comparison( CmdCompareNE(t, lhs, parse_bitwise_xor) )
-        #{
       elseIf (consume(TokenType.keyword_isNot))
         consume_eols
         return parse_comparison( CmdCompareIsNot(t, lhs, parse_bitwise_xor) )
-        }#
       elseIf (consume(TokenType.symbol_lt))
         consume_eols
         return parse_comparison( CmdCompareLT(t, lhs, parse_bitwise_xor) )
@@ -1107,38 +1103,30 @@ class Parser
       return lhs
 
     method parse_bitwise_xor->Cmd
-      return parse_bitwise_or
-      #return parse_bitwise_xor( parse_bitwise_or )
+      return parse_bitwise_xor( parse_bitwise_or )
 
-      #{
     method parse_bitwise_xor( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(TokenType.symbol_bitwise_xor))
+      if (consume(TokenType.symbol_tilde))
         consume_eols
         return parse_bitwise_xor( CmdBitwiseXor(t,lhs,parse_bitwise_or) )
       endIf
       return lhs
-      }#
 
     method parse_bitwise_or->Cmd
-      return parse_bitwise_and
-      #return parse_bitwise_or( parse_bitwise_and )
+      return parse_bitwise_or( parse_bitwise_and )
 
-      #{
     method parse_bitwise_or( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(TokenType.symbol_bitwise_or))
+      if (consume(TokenType.symbol_vertical_bar))
         consume_eols
         return parse_bitwise_or( CmdBitwiseOr(t,lhs,parse_bitwise_and) )
       endIf
       return lhs
-      }#
 
     method parse_bitwise_and->Cmd
-      return parse_bitwise_shift
-      #return parse_bitwise_and( parse_bitwise_shift )
+      return parse_bitwise_and( parse_bitwise_shift )
 
-      #{
     method parse_bitwise_and( lhs:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.symbol_ampersand))
@@ -1146,7 +1134,6 @@ class Parser
         return parse_bitwise_and( CmdBitwiseAnd(t,lhs,parse_bitwise_shift) )
       endIf
       return lhs
-      }#
 
     method parse_bitwise_shift->Cmd
       return parse_bitwise_shift( parse_add_subtract )
@@ -1601,11 +1588,13 @@ class Parser
         return alias_args[ t->Integer ].clone
         }#
 
+        #{
       elseIf (peek.type is TokenType.type_identifier and reader.peek(1).type is TokenType.symbol_empty_brackets)
         # List declaration
         local access = CmdAccess( t, parse_type.name )
         access.args = parse_args
         return access
+        }#
 
       else
         #throw peek.error( "Syntax error: unexpected '$'." (peek) )

@@ -103,6 +103,8 @@ class Tokenizer
       TokenType.keyword_if           = define( TokenType("if") )
       TokenType.keyword_in           = define( TokenType("in") )
       TokenType.keyword_inline       = define( TokenType("inline") )
+      TokenType.keyword_is           = define( TokenType("is") )
+      TokenType.keyword_isNot        = define( TokenType("isNot") )
       TokenType.keyword_local        = define( TokenType("local") )
       TokenType.keyword_native       = define( TokenType("native") )
       TokenType.keyword_nativeInline = define( TokenType("nativeInline") )

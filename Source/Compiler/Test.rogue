@@ -1,13 +1,24 @@
 class Test
   METHODS
     method init
-      local n = Number<<Integer>>()
+      #println Pair<<Integer,Integer[]>>(3,Integer[])
+      local a = 14
+      local b = 7
+      println a & b
+      println a | b
+      println a ~ b
 
-      local x = 7
-      x = x :>>: 1
-      println x
-      x = x :<<: 1
-      println x
+endClass
+
+class Pair<<$FirstType:Object,$SecondType:Object>> #( first:$FirstType, second:$SecondType )
+  PROPERTIES
+    first:$FirstType
+    second:$SecondType
+
+  METHODS
+    method init( first, second )
+    method to->String
+      return "(" + first + "," + second + ")"
 endClass
 
 class Number<<$DataType:Object>>
