@@ -426,6 +426,14 @@ RogueFileWriter* RogueFileWriter__write( RogueFileWriter* writer, RogueCharacter
 
 
 //-----------------------------------------------------------------------------
+//  Real
+//-----------------------------------------------------------------------------
+RogueReal    RogueReal__create( RogueInteger high_bits, RogueInteger low_bits );
+RogueInteger RogueReal__high_bits( RogueReal THIS );
+RogueInteger RogueReal__low_bits( RogueReal THIS );
+
+
+//-----------------------------------------------------------------------------
 //  StringBuilder
 //-----------------------------------------------------------------------------
 struct RogueStringBuilder;

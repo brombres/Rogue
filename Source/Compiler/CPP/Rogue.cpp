@@ -1092,6 +1092,26 @@ RogueFileWriter* RogueFileWriter__write( RogueFileWriter* writer, RogueCharacter
   return writer;
 }
 
+//-----------------------------------------------------------------------------
+//  Real
+//-----------------------------------------------------------------------------
+RogueReal RogueReal__create( RogueInteger high_bits, RogueInteger low_bits )
+{
+  RogueLong bits = high_bits;
+  bits  = (bits << 32LL) | low_bits;
+  return *((RogueReal*)&bits);
+}
+
+RogueInteger RogueReal__high_bits( RogueReal THIS )
+{
+  return (RogueInteger) (*((RogueLong*)&THIS) >> 32LL);
+}
+
+RogueInteger RogueReal__low_bits( RogueReal THIS )
+{
+  return (RogueInteger) *((RogueLong*)&THIS);
+}
+
 
 //-----------------------------------------------------------------------------
 //  StringBuilder

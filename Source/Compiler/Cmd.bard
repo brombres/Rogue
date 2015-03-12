@@ -787,6 +787,9 @@ class CmdLiteralNull : CmdLiteral
     method clone( inline_args=null:InlineArgs )->Cmd
       return CmdLiteralNull( t )
 
+    method print_cpp( writer:CPPWriter )
+      writer.print( "NULL" )
+
     method resolve( scope:Scope )->this
       return this
 
@@ -989,17 +992,17 @@ class CmdAccess : CmdAccessWithModify
       return Program.find_type( name )
 
     method resolve( scope:Scope )->Cmd
-      if (args?)
-        args.resolve( scope )
-      else
-        local v = scope.find_local( name )
-        if (v?)
-          if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-          return CmdReadLocal(t,v).set_modifiers(this).resolve(scope)
-        endIf
-      endIf
+      if (args?) args.resolve( scope )
 
       if (context is null)
+        if (args is null)
+          local v = scope.find_local( name )
+          if (v?)
+            if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+            return CmdReadLocal(t,v).set_modifiers(this).resolve(scope)
+          endIf
+        endIf
+
         local new_type = Program.find_type( name )
         if (new_type?)
           # new TypeName(...)

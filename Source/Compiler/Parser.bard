@@ -1420,9 +1420,10 @@ class Parser
           buffer.print( t )
           if (tokens?) tokens.add( t )
 
-        elseIf (next_is(TokenType.symbol_comma))
+        elseIf (t.type is TokenType.symbol_comma)
           if (nesting_level == 1) return
           read
+          if (tokens?) tokens.add( t )
           buffer.print(',')
 
         elseIf (consume(TokenType.symbol_open_specialize))

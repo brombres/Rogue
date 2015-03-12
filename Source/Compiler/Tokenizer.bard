@@ -618,6 +618,9 @@ class Tokenizer
           # Start of range
           if (is_negative) n = -n
           return add_new_token( TokenType.literal_integer, n->Integer )
+        elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_')
+          # E.g. 5.hash_code is (5).hash_code, not 5.0hashcode
+          return add_new_token( TokenType.literal_integer, n->Integer )
         else
           if (is_negative) n = -n
           return add_new_token( TokenType.literal_real, n )
