@@ -140,6 +140,7 @@ class Type
 
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
+      if (this is Program.type_null) return true
 
       forEach (base_type in base_types)
         if (base_type.instance_of(ancestor_type)) return true

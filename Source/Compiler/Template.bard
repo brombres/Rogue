@@ -46,12 +46,12 @@ class Template
         if (template_t.type is TokenType.placeholder_id)
           if (template_t->String == "$DataType")
             if (is_generic)
-              instance_tokens.add( TokenType.identifier.create_token(template_t,type.element_type.name) )
-            else
               # Insert type identifier for generic mapping
               local from_type = type.element_type
               local to_type = Program.type_Object
               instance_tokens.add( TokenType.type_identifier.create_token(template_t,from_type,to_type) )
+            else
+              instance_tokens.add( TokenType.identifier.create_token(template_t,type.element_type.name) )
             endIf
           else
             instance_tokens.add( template_t )
@@ -68,6 +68,11 @@ class Template
       local found_generic_type_parameters = false
 
       local type_specializers = Table<<String,TypeSpecializer>>()
+
+      local specialization_string = type.name.from_first('<')
+      if (specialization_string.count == 0)
+        throw type.t.error( "Reference to $ is missing required type parameters ($<<...>>)." (type.name,type.name) )
+      endIf
 
       local parser = Parser( t, type.name, type.name.from_first('<') )
       parser.read  # '<<'
@@ -116,6 +121,10 @@ class Template
         endIf
 
       endWhile
+
+      if (type_specializers.count < type_parameters.count)
+        throw type.t.error( "Insufficient number of type parameters (<<...>>) given." ) 
+      endIf
 
       if (found_generic_type_parameters)
         generic_type_name_buffer.print( ">>" )

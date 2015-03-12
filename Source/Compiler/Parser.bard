@@ -984,6 +984,7 @@ class Parser
 
     method read_identifier->String
       if (not next_is(TokenType.identifier))
+        if (next_is(TokenType.type_identifier)) return read->Type.name
         throw error( "Identifier expected, found $." (peek.quoted_name) )
       endIf
       return read->String
@@ -1420,7 +1421,9 @@ class Parser
           if (tokens?) tokens.add( t )
 
         elseIf (next_is(TokenType.symbol_comma))
-          return
+          if (nesting_level == 1) return
+          read
+          buffer.print(',')
 
         elseIf (consume(TokenType.symbol_open_specialize))
           if (tokens?) tokens.add( t )
@@ -1459,6 +1462,10 @@ class Parser
         local result = parse_access( t )
         return result
 
+      elseIf (next_is(TokenType.type_identifier))
+        local result = parse_access( t )
+        return result
+
       elseIf (consume(TokenType.literal_string))
 
         #{
@@ -1476,10 +1483,8 @@ class Parser
 
         return CmdLiteralString( t, t->String )
 
-        #{
       elseIf (consume(TokenType.keyword_null))
         return CmdLiteralNull(t)
-        }#
 
       elseIf (consume(TokenType.literal_real))
         return CmdLiteralReal( t, t->Real )
@@ -1598,8 +1603,7 @@ class Parser
 
       else
         #throw peek.error( "Syntax error: unexpected '$'." (peek) )
-        trace peek.type
-        trace reader.peek(1).type
+trace peek.type
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
 

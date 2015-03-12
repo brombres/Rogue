@@ -22,7 +22,8 @@ class Program [requisite singleton]
     type_list       = Type[]                 : Type[]
     type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
 
-    type_Real       : Type
+    type_null        : Type
+    type_Real        : Type
     type_Float       : Type
     type_Long        : Type
     type_Integer     : Type
@@ -43,6 +44,7 @@ class Program [requisite singleton]
 
   METHODS
     method configure
+      type_null        = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
       type_Real        = create_built_in_type( "Real",      Attribute.is_native | Attribute.is_primitive )
       type_Float       = create_built_in_type( "Float",     Attribute.is_native | Attribute.is_primitive )
       type_Long        = create_built_in_type( "Long",      Attribute.is_native | Attribute.is_primitive )
@@ -56,6 +58,9 @@ class Program [requisite singleton]
       type_NativeArray = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
       type_GenericList = create_built_in_type( "GenericList", Attribute.is_class )
       type_Global      = create_built_in_type( "Global", Attribute.is_class )
+
+      type_null.organized = true
+      type_null.defined   = true
 
       # Ensure that "" is the first literal string
       literal_string_list.add( "" )
@@ -106,6 +111,7 @@ class Program [requisite singleton]
         throw RogueError( "No candidates for main class." )
       endIf
 
+      type_null.resolve
       type_Real.resolve
       type_Float.resolve
       type_Long.resolve

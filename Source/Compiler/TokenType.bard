@@ -44,6 +44,7 @@ class TokenType
     keyword_local                : TokenType
     keyword_native               : TokenType
     keyword_nativeInline         : TokenType
+    keyword_null                 : TokenType
     keyword_of                   : TokenType
     keyword_return               : TokenType
     keyword_step                 : TokenType

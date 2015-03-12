@@ -780,6 +780,19 @@ class CmdLiteral : Cmd
       return true
 endClass
 
+class CmdLiteralNull : CmdLiteral
+  METHODS
+    method init( t )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdLiteralNull( t )
+
+    method resolve( scope:Scope )->this
+      return this
+
+    method type->Type
+      return Program.type_null
+endClass
 
 class CmdLiteralReal : CmdLiteral
   PROPERTIES
@@ -1011,7 +1024,11 @@ class CmdAccess : CmdAccessWithModify
           local cmd_call : Cmd
           if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false )
           if (not cmd_call)
-            cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), must_find )
+            cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), false )
+            if (must_find)
+              if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), true )
+              cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), true )
+            endIf
           endIf
 
           if (cmd_call?) cmd_new = cmd_call
@@ -1163,6 +1180,7 @@ class CmdElementAccess : CmdAccessWithModify
       context = context.resolve( scope )
 
       local context_type = context.require_type
+      context_type.organize
       if (context_type.is_array)
         return CmdWriteArrayElement( t, context, index, new_value ).set_modifiers( this ).resolve( scope )
       else

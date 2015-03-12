@@ -1,15 +1,11 @@
 class Test
   METHODS
     method init
-      #println Pair<<Integer,Integer[]>>(3,Integer[])
-      local a = 14
-      local b = 7
-      println a & b
-      println a | b
-      println a ~ b
+      #local table = Table<<Integer,Integer>>()
 
 endClass
 
+#{
 class Pair<<$FirstType:Object,$SecondType:Object>> #( first:$FirstType, second:$SecondType )
   PROPERTIES
     first:$FirstType
@@ -20,6 +16,7 @@ class Pair<<$FirstType:Object,$SecondType:Object>> #( first:$FirstType, second:$
     method to->String
       return "(" + first + "," + second + ")"
 endClass
+}#
 
 class Number<<$DataType:Object>>
   PROPERTIES
@@ -30,9 +27,11 @@ class Number<<$DataType:Object>>
       local list = $DataType[]
 endClass
 
+#{
 
 compound XY( x:Real, y:Real )
 endCompound
+}#
 
 class Console [singleton]
   METHODS
@@ -441,6 +440,17 @@ class List<<$DataType:Object>> : GenericList
     method init( initial_capacity:Integer )
       data = Array<<$DataType>>( initial_capacity )
 
+    method init( initial_capacity:Integer, initial_value:$DataType )
+      data = Array<<$DataType>>( initial_capacity )
+      forEach (i in 1..initial_capacity) add( initial_value )
+
+    method clone->$DataType[]
+      local result = $DataType[]( count )
+      forEach (value in this)
+        result.add( value )
+      endForEach
+      return result
+
     method add( value:$DataType )->$DataType[]
       reserve(1)[count] = value
       ++count
@@ -627,7 +637,6 @@ class StringBuilder
       return String( characters )
 endClass
 
-#{
 class Table<<$KeyType:Object,$ValueType:Object>>
   PROPERTIES
     bin_mask : Integer
@@ -741,9 +750,8 @@ class Table<<$KeyType:Object,$ValueType:Object>>
       keys.add( key )
 
 
-    alias set_keys( key_list, value_fn ) => TableOps<<$KeyType,$ValueType>>.set_keys( this, key_list, value_fn )
-
-    alias set_values( value_list, key_fn ) => TableOps<<$KeyType,$ValueType>>.set_values( this, value_list, key_fn )
+    #alias set_keys( key_list, value_fn ) => TableOps<<$KeyType,$ValueType>>.set_keys( this, key_list, value_fn )
+    #alias set_values( value_list, key_fn ) => TableOps<<$KeyType,$ValueType>>.set_values( this, value_list, key_fn )
 
     method to->String
       return print_to( StringBuilder() )->String
@@ -778,4 +786,3 @@ class TableEntry<<$KeyType:Object,$ValueType:Object>>
       hash = _hash
 endClass
 
-}#
