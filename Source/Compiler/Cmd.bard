@@ -249,7 +249,7 @@ class CmdLocalDeclaration : CmdStatement
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
       if (local_info.initial_value?)
-        writer.print( "((" ).print( local_info.type ).print( ")" )
+        writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
         local_info.initial_value.print_cpp( writer )
         writer.print( ")" )
       else
@@ -1535,8 +1535,9 @@ class CmdCallRoutine : CmdCall
         local i = 0
         forEach (arg in args)
           if (i > 0) writer.print( ", " )
-          if (method_info.generic_method? and method_info.parameters[i].generic_type?)
-            writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+          local param_type = compile_target.parameters[i].type
+          if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
             arg.print_cpp( writer )
             writer.print( ")" )
           else
@@ -1565,8 +1566,9 @@ class CmdCallAspectMethod : CmdCall
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
-          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
           arg.print_cpp( writer )
           writer.print( ")" )
         else
@@ -1597,8 +1599,9 @@ class CmdCallDynamicMethod : CmdCall
         local i = 0
         forEach (arg in args)
           writer.print( ", " )
-          if (method_info.generic_method? and method_info.parameters[i].generic_type?)
-            writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+          local param_type = compile_target.parameters[i].type
+          if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
             arg.print_cpp( writer )
             writer.print( ")" )
           else
@@ -1630,8 +1633,9 @@ class CmdCallStaticMethod : CmdCall
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
-          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
           arg.print_cpp( writer )
           writer.print( ")" )
         else
@@ -1657,8 +1661,9 @@ class CmdCallNativeRoutine : CmdCall
       local i = 0
       forEach (arg in args)
         if (i > 0) writer.print( ", " )
-        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
-          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
           arg.print_cpp( writer )
           writer.print( ")" )
         else
@@ -1682,8 +1687,9 @@ class CmdCallNativeMethod : CmdCall
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
-          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
           arg.print_cpp( writer )
           writer.print( ")" )
         else

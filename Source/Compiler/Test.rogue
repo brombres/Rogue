@@ -1,12 +1,12 @@
 class Test
   METHODS
     method init
-      local reader = File.read("dictionary.txt") : Reader<<Character>>
-      println reader.has_another
-      println reader.peek
-      println reader.read
-      println reader.read
-      println reader.marco
+      local words = String[]
+      local reader = LineReader( File.read("dictionary.txt") )
+      forEach (word in reader)
+        if (word.count > 1) words.add( word )
+      endForEach
+      println "Word count: " + words.count
 endClass
 
 
@@ -80,6 +80,42 @@ aspect Reader<<$DataType>>
     method marco->String
       return "polo"
 endAspect
+
+
+class LineReader : Reader<<String>>
+  PROPERTIES
+    source : Reader<<Character>>
+    next   : String
+    buffer = StringBuilder()
+
+  METHODS
+    method init( source )
+      next = prepare_next
+
+    method has_another->Logical
+      return next?
+
+    method peek->String
+      return next
+
+    method prepare_next->String
+      if (not source.has_another) return null
+
+      buffer.clear
+      while (source.has_another)
+        local ch = source.read
+        if (ch == '\n') return buffer->String
+        buffer.print( ch )
+      endWhile
+
+      return buffer->String
+
+    method read->String
+      local result = next
+      next = prepare_next
+      return result
+endClass
+
 
 class FileReader : Reader<<Character>> [native]
   ROUTINES

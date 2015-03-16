@@ -77,6 +77,14 @@ class CPPWriter
       if (type? and type.compile_type.is_reference) buffer.print("*")
       return this
 
+    method print_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      return print( "(" ).print( to_type ).print( ")" )
+      if (to_type.is_aspect or from_type.is_aspect)
+        return print( "(" ).print( Program.type_Object ).print( ")" )
+      endIf
+      return this
+
     method print_type_name( type:Type )->CPPWriter
       print_indent
       if (type?) buffer.print( type.compile_type.cpp_name )
