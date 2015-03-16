@@ -62,6 +62,7 @@ struct RogueType
   int          base_type_count;
   RogueType**  base_types;
 
+  int          index;  // used for aspect call dispatch
   int          object_size;
 
   RogueObject* _singleton;

@@ -19,7 +19,9 @@ class Method
 
     min_args     : Integer
 
-    statements = CmdStatementList()
+    statements            = CmdStatementList()
+    aspect_statements     : CmdStatementList
+    incorporating_classes : Type[]
 
     generic_method : Method
     native_code    : String
@@ -29,6 +31,45 @@ class Method
 
   METHODS
     method init( t, type_context, name )
+
+    method clone->Method
+      local result = Method( t, type_context, name )
+
+      result.signature = signature
+      result.cpp_name = cpp_name
+      result.cpp_typedef = cpp_typedef
+      result.attributes = attributes.clone
+      result.return_type = return_type
+
+      result.locals = Local[]
+      forEach (v in locals) result.locals.add( v.clone )
+      result.parameters = Local[]
+      forEach (i of parameters) result.parameters.add( locals[i] )
+
+      result.min_args = min_args
+      result.statements = statements.clone( null as InlineArgs )
+      result.generic_method = generic_method
+      result.native_code = native_code
+      result.index = index
+
+      return result
+
+    method incorporate( new_type_context:Type )->Method
+      local m = clone.set_type_context( new_type_context ).set_incorporated
+      if (aspect_statements?)
+        # If aspect_statements is non-null then the aspect method has already been resolved.
+        # If it's null then we've already cloned the statement list
+        m.statements = aspect_statements.clone( null as InlineArgs )
+      endIf
+
+      if (incorporating_classes is null) incorporating_classes = Type[]
+      incorporating_classes.add( new_type_context )
+
+      m.signature = null
+      m.cpp_name = null
+      m.assign_signature
+
+      return m
 
     method accepts_arg_count( n:Integer )->Logical
       return n >= min_args and n <= parameters.count
@@ -74,6 +115,9 @@ class Method
     method is_dynamic->Logical
       return (attributes.flags & Attribute.is_dynamic)?
 
+    method is_incorporated->Logical
+      return (attributes.flags & Attribute.is_incorporated)?
+
     method is_initializer->Logical
       return (attributes.flags & Attribute.is_initializer)?
 
@@ -88,6 +132,9 @@ class Method
 
     method is_routine->Logical
       return (attributes.flags & Attribute.is_routine)?
+
+    method omit_output->Logical
+      return is_native or is_inline
 
     method organize->Method
       if (name == "init")
@@ -142,7 +189,7 @@ class Method
       return this
 
     method print_prototype( writer:CPPWriter )
-      if (is_native or is_inline) return
+      if (omit_output) return
       print_signature( writer )
       writer.println( ";" )
 
@@ -153,7 +200,11 @@ class Method
       if (not is_routine)
         first = false
         writer.print( " " )
-        writer.print( type_context )
+        if (type_context.is_aspect)
+          writer.print( Program.type_Object )
+        else
+          writer.print( type_context )
+        endIf
         writer.print( " THIS" )
       endIf
       if (parameters.count?)
@@ -167,12 +218,37 @@ class Method
       writer.print( ")" )
 
     method print_definition( writer:CPPWriter )
-      if (is_native or is_inline) return
+      if (omit_output) return
       print_signature( writer )
       writer.println
       writer.println "{"
       writer.indent += 2
-      statements.print_cpp( writer )
+      if (type_context.is_aspect)
+        writer.println( "switch (THIS->type->index)" );
+        writer.println "{"
+        writer.indent += 2
+        if (incorporating_classes?)
+          forEach (ic in incorporating_classes)
+            writer.print("case ").print(ic.index).println(":")
+            if (return_type?) writer.print( "  return " )
+            else              writer.print( "  " )
+            local m = ic.find_method(signature).compile_target
+            writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
+            forEach (param in parameters)
+              writer.print( ", " ).print( param.cpp_name )
+            endForEach
+            writer.println( " );" )
+          endForEach
+        endIf
+        if (return_type?)
+          writer.println( "default:" )
+          writer.print( "  return " ).print_default_value( return_type ).println( ";" )
+        endIf
+        writer.indent -= 2
+        writer.println "}"
+      else
+        statements.print_cpp( writer )
+      endIf
       writer.indent -= 2
       writer.println "}"
       writer.println
@@ -209,6 +285,11 @@ class Method
         endIf
       endIf
 
+      if (type_context.is_aspect)
+        aspect_statements = statements
+        statements = CmdStatementList()
+      endIf
+
       local scope = Scope( type_context, this )
       forEach (p in parameters) scope.push_local( p )
 
@@ -219,6 +300,13 @@ class Method
         if (statements.count?) return_t = statements.last.t
         statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
       endIf
+
+    method set_incorporated->Method
+      attributes.add( Attribute.is_incorporated )
+      return this
+
+    method set_type_context( @type_context )->Method
+      return this
 
     method to->String
       return signature

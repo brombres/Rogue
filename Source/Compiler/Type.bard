@@ -159,6 +159,9 @@ class Type
     method is_direct->Logical
       return not is_reference
 
+    method is_aspect->Logical
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_aspect
+
     method is_class->Logical
       return (attributes.flags & Attribute.type_mask) == Attribute.is_class
 
@@ -182,7 +185,7 @@ class Type
 
     method is_reference->Logical
       which (attributes.flags & Attribute.type_mask)
-        case Attribute.is_class
+        case Attribute.is_class, Attribute.is_aspect
           return true
         others
           return false
@@ -210,6 +213,12 @@ class Type
 
       forEach (base_type in base_types)
         base_type.organize
+
+        if (is_aspect)
+          if (not base_type.is_aspect)
+            throw t.error( "Aspects can only extend other aspects." )
+          endIf
+        endIf
 
         if (base_type.instance_of(this))
           throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
@@ -301,7 +310,7 @@ class Type
       endIf
 
       # Create or find init_object() method to initialize properties
-      if (not is_native)
+      if (not is_native and not is_aspect)
         local m = find_method( "init_object()" )
         local prior_m = m
         if (not m or m.type_context isNot this)
@@ -375,6 +384,7 @@ class Type
               if (existing_p.initial_value?)
                 if (p.type.instance_of(existing_p.type))
                   # Use the new declaration with its updated initial value
+                  if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
                   list[i] = p
                   lookup[p.name] = p
                 else
@@ -383,6 +393,7 @@ class Type
                 endIf
               else
                 # Use newer property with its existing value instead of old property without a value
+                if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
                 list[i] = p
                 lookup[p.name] = p
               endIf
@@ -398,6 +409,7 @@ class Type
         endIf
 
       else
+        if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
         list.add( p )
         lookup[p.name] = p
       endIf
@@ -433,23 +445,32 @@ class Type
       if (existing_m?)
         local i = list.locate( existing_m )
 
-        if (m.type_context is existing_m.type_context)
-          throw m.t.error( //Type $ already defines method $.// (m.type_context,m.signature) )
-        else
-          if (m.return_type isNot existing_m.return_type)
-            if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
-              throw m.t.error( "In $::$ the overridden return type is not compatible with the return type of the prior definition." (m.type_context.name, m.signature) )
+        if (not existing_m.is_incorporated)
+          if (m.type_context is existing_m.type_context)
+            throw m.t.error( //Type $ already defines method $.// (m.type_context,m.signature) )
+          else
+            if (m.return_type isNot existing_m.return_type)
+              if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
+                throw m.t.error( "In $::$ the overridden return type is not compatible with the return type of the prior definition." (m.type_context.name, m.signature) )
+              endIf
             endIf
           endIf
         endIf
 
-        existing_m.attributes.add( Attribute.is_dynamic )
-        existing_m.attributes.add( Attribute.is_overridden )
-        m.attributes.add( Attribute.is_dynamic )
+        if (m.type_context.is_aspect) m = m.incorporate( this )
+
+        if (not existing_m.type_context.is_aspect)
+          existing_m.attributes.add( Attribute.is_dynamic )
+          existing_m.attributes.add( Attribute.is_overridden )
+          m.attributes.add( Attribute.is_dynamic )
+        endIf
+
         list[i] = m
         lookup[m.signature] = m
 
       else
+        if (m.type_context.is_aspect) m = m.incorporate( this )
+
         list.add( m )
         lookup[m.signature] = m
       endIf

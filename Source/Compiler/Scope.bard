@@ -120,6 +120,9 @@ class Scope
 
           trace
           throw t.error( "TODO: multi-line inline statements" )
+
+        elseIf (type_context.is_aspect)
+          cmd = CmdCallAspectMethod( t, context, m, args )
           
         else
           cmd = CmdCallDynamicMethod( t, context, m, args )

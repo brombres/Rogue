@@ -94,6 +94,10 @@ class Parser
         parse_class_template
         return true
 
+      elseIf (t.type is TokenType.keyword_aspect)
+        parse_aspect_template
+        return true
+
       elseIf (t.type is TokenType.keyword_compound)
         parse_compound_template
         return true
@@ -115,6 +119,12 @@ class Parser
         Program.implicit_main_class_t    = t
         Program.implicit_main_class_name = name
       endIf
+
+    method parse_aspect_template
+      local t = read  # 'aspect'
+      local name = read_identifier
+      local template = Template( t, name, Attribute.is_aspect )
+      parse_template_tokens( template, TokenType.keyword_endAspect )
 
     method parse_compound_template
       local t = read  # 'compound'

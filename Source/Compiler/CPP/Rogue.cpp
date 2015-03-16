@@ -21,7 +21,7 @@
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-RogueType::RogueType() : base_type_count(0), base_types(0), object_size(0), _singleton(0)
+RogueType::RogueType() : base_type_count(0), base_types(0), index(-1), object_size(0), _singleton(0)
 {
   if (rogue_program.next_type_index == rogue_program.type_count)
   {

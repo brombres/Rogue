@@ -149,7 +149,7 @@ class CmdStatementList : Cmd[]
       return false
       }#
 
-    method clone( inline_args=null:InlineArgs )->CmdStatementList
+    method clone( inline_args:InlineArgs )->CmdStatementList
       local result = CmdStatementList( count )
       forEach (cmd in this) result.add( cmd.clone(inline_args) )
       return result
@@ -249,7 +249,9 @@ class CmdLocalDeclaration : CmdStatement
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
       if (local_info.initial_value?)
+        writer.print( "((" ).print( local_info.type ).print( ")" )
         local_info.initial_value.print_cpp( writer )
+        writer.print( ")" )
       else
         writer.print_default_value( local_info.type )
       endIf
@@ -1546,6 +1548,35 @@ class CmdCallRoutine : CmdCall
       endIf
       writer.print( ")" )
 endClass
+
+class CmdCallAspectMethod : CmdCall
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCallAspectMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      local compile_target = method_info.compile_target
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      writer.print( "(" )
+      writer.print( Program.type_Object )
+      writer.print( ")" )
+      context.print_cpp( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        if (method_info.generic_method? and method_info.parameters[i].generic_type?)
+          writer.print( "((" ).print(compile_target.parameters[i].type).print(")") 
+          arg.print_cpp( writer )
+          writer.print( ")" )
+        else
+          arg.print_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+endClass
+
 
 
 class CmdCallDynamicMethod : CmdCall

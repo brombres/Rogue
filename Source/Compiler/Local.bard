@@ -13,6 +13,15 @@ class Local
   METHODS
     method init( t, name )
 
+    method clone->Local
+      local result = Local( t, name )
+      result.type = type
+      result.index = index
+      if (initial_value?) result.initial_value = initial_value.clone
+      result.generic_type = generic_type
+      result._cpp_name = _cpp_name
+      return result
+
     method cpp_name->String
       if (not _cpp_name) _cpp_name = Program.validate_cpp_name( name + "_" + index );
       return _cpp_name

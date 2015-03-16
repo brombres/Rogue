@@ -15,6 +15,18 @@ class Property
     method init( t, type_context, name )
       name = t->String
 
+    method clone->Property
+      local result = Property( t, type_context, name )
+      result.type = type
+      result.attributes = attributes
+      if (initial_value?) result.initial_value = initial_value.clone
+      result.generic_type = generic_type
+      result.cpp_name = cpp_name
+      return result
+
+    method set_type_context( @type_context )->Property
+      return this
+
     method to->String
       return name
 endClass

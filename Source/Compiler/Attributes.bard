@@ -2,7 +2,8 @@ class Attribute
   ENUMERATE
     is_primitive        = 0
     is_class            = 1
-    is_compound         = 2
+    is_aspect           = 2
+    is_compound         = 3
     type_mask           = 7
 
     is_direct           = 0  # !is_reference
@@ -18,6 +19,7 @@ class Attribute
     is_singleton        = 1024
     is_dynamic          = 2048
     is_overridden       = 4096
+    is_incorporated     = 8192
 endClass
 
 
@@ -27,6 +29,17 @@ class Attributes
     tags  : String[]
 
   METHODS
+    method init( flags )
+
+    method clone->Attributes
+      local result = Attributes( flags )
+      if (tags?)
+        forEach (tag in tags)
+          result.add( tag )
+        endForEach
+      endIf
+      return result
+
     method add( flag:Integer )->Attributes
       flags |= flag
       return this

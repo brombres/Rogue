@@ -137,6 +137,12 @@ class Program [requisite singleton]
       endWhile
 
     method validate_cpp_name( name:String )->String
+      local begins_with_code_prefix = false
+      if (name.begins_with(code_prefix))
+        begins_with_code_prefix = true
+        name = name.substring( code_prefix.count )
+      endIf
+
       local i1 = name.locate("<<")
       while (i1 != -1)
         local i2 = name.locate_last(">>")
@@ -163,6 +169,7 @@ class Program [requisite singleton]
       endWhile
 
       string_buffer.clear
+      if (begins_with_code_prefix) string_buffer.print( Program.code_prefix )
       forEach (ch in name)
         if (ch.is_alphanumeric)
           string_buffer.print( ch )
@@ -370,6 +377,14 @@ writer.println( "// " + type )
       forEach (type in type_list)
         if (not type.omit_output)
           writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_name).println("Type();")
+        endIf
+      endForEach
+      writer.println
+
+      # Assign native type indices
+      forEach (type in type_list)
+        if (type.is_native or not type.omit_output)
+          writer.print("type_").print(type.cpp_name).print("->index = ").print( type.index ).println( ";" )
         endIf
       endForEach
       writer.println

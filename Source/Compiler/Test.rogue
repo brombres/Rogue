@@ -1,18 +1,15 @@
 class Test
   METHODS
     method init
-      println 5.hash_code
-      println pi.high_bits
-      println pi.low_bits
-      println Real.create( pi.high_bits, pi.low_bits )
-      println Real.create( pi.high_bits, pi.low_bits ) == pi
-      println
-
-      local table = Table<<Integer,Integer>>()
-      table.set( 456, 3 )
-      println table.get(456)
-
+      local reader = File.read("dictionary.txt") : Reader<<Character>>
+      println reader.has_another
+      println reader.peek
+      println reader.read
+      println reader.read
+      println reader.marco
 endClass
+
+
 
 #{
 class Pair<<$FirstType:Object,$SecondType:Object>> #( first:$FirstType, second:$SecondType )
@@ -72,7 +69,19 @@ class File
       return FileWriter( filepath )
 endClass
 
-class FileReader [native]
+aspect Reader<<$DataType>>
+  METHODS
+    method has_another->Logical
+
+    method peek->$DataType
+
+    method read->$DataType
+
+    method marco->String
+      return "polo"
+endAspect
+
+class FileReader : Reader<<Character>> [native]
   ROUTINES
     routine create( filepath:String )->this [native]
     

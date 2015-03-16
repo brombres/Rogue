@@ -13,10 +13,12 @@ class TokenType
     placeholder_id               : TokenType
 
     # Structure
+    keyword_aspect               : TokenType
     keyword_class                : TokenType
     keyword_compound             : TokenType
     keyword_else                 : TokenType
     keyword_elseIf               : TokenType
+    keyword_endAspect            : TokenType
     keyword_endClass             : TokenType
     keyword_endCompound          : TokenType
     keyword_endForEach           : TokenType
