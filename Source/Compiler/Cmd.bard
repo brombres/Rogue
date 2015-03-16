@@ -1302,6 +1302,9 @@ class CmdReadSingleton : Cmd
     method init( t, of_type )
 
     method print_cpp( writer:CPPWriter )
+      if (not of_type.is_singleton)
+        throw t.error( "$ is not a singleton." (of_type.name) )
+      endIf
       writer.print( "((" ).print( of_type ).print( ")" )
       writer.print_type_info( of_type ).print( "->singleton())" )
 
@@ -1948,6 +1951,8 @@ class CmdBinary : Cmd
         return CmdAccess( t, left, fn_name, CmdArgs(right) ).resolve( scope )
       elseIf (left_type.has_routine_named(fn_name))
         return CmdAccess( t, CmdAccess(t,left_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
+      elseIf (right_type.has_routine_named(fn_name))
+        return CmdAccess( t, CmdAccess(t,right_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
       else
         return null
       endIf
