@@ -20,6 +20,7 @@ class Attribute
     is_dynamic          = 2048
     is_overridden       = 4096
     is_incorporated     = 8192
+    is_generated        = 16384
 endClass
 
 

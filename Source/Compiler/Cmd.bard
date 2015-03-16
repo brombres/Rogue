@@ -976,6 +976,8 @@ class CmdAccess : CmdAccessWithModify
   METHODS
     method init( t, name )
 
+    method init( t, name, args )
+
     method init( t, context, name )
 
     method init( t, context, name, args )
@@ -1023,7 +1025,20 @@ class CmdAccess : CmdAccessWithModify
             return CmdCreateArray( t, new_type, args ).resolve( scope )
           endIf
 
-          local cmd_new = CmdCreateObject( t, new_type ) : Cmd
+          if (new_type.is_compound)
+            local cmd_call = scope.resolve_call( new_type, CmdAccess(t,"create",args), true )
+            if (cmd_call notInstanceOf CmdCallRoutine) trace; throw t.error( "[INTERNAL]" )
+            local r = (cmd_call as CmdCallRoutine)
+            if (r.method_info.is_generated)
+              # Calling the core compound creation routine
+              return CmdCreateCompound( t, new_type, r.args ).resolve( scope )
+            else
+              return cmd_call
+            endIf
+          endIf
+
+          local cmd_create = CmdCreateObject( t, new_type )
+          local cmd_new = cmd_create : Cmd
 
           local must_find = args.count? or new_type.is_native
           local cmd_call : Cmd
@@ -1037,6 +1052,7 @@ class CmdAccess : CmdAccessWithModify
           endIf
 
           if (cmd_call?) cmd_new = cmd_call
+
           return cmd_new.resolve(scope)
         endIf
 
@@ -1202,7 +1218,7 @@ endClass
 #------------------------------------------------------------------------------
 class CmdCreateObject : Cmd
   PROPERTIES
-    of_type : Type
+    of_type       : Type
 
   METHODS
     method init( t, of_type )
@@ -1212,13 +1228,53 @@ class CmdCreateObject : Cmd
 
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print(of_type).print(")") 
-      writer.print_type_info(of_type).print( "->create_and_init_object())")
+      print_cpp_statement( writer )
+      writer.print( ")" )
 
     method print_cpp_statement( writer:CPPWriter )
-      writer.print_type_info(of_type).print( "->create_and_init_object()")
+      if (of_type.is_compound)
+        writer.print_type_name( of_type )
+      else
+        writer.print_type_info(of_type).print( "->create_and_init_object()")
+      endIf
 
     method resolve( scope:Scope )->Cmd
       of_type.organize
+      return this
+
+    method type->Type
+      return of_type
+endClass
+
+
+class CmdCreateCompound : Cmd
+  PROPERTIES
+    of_type : Type
+    args    : CmdArgs
+
+  METHODS
+    method init( t, of_type, args )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCreateCompound( t, of_type, args.clone(inline_args) )
+
+    method print_cpp( writer:CPPWriter )
+      writer.print( of_type ).print( "(" )
+      if (args.count?)
+        writer.print( " " )
+        local first = true
+        forEach (arg in args)
+          if (first) first = false
+          else       writer.print( ", " )
+          arg.print_cpp( writer )
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      args.resolve( scope )
       return this
 
     method type->Type

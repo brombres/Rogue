@@ -213,7 +213,13 @@ class Parser
         # ( auto_property:Type, ... )
         consume_eols
         if (not consume(TokenType.symbol_close_paren))
-          local m = this_type.add_method( t, "init" )
+          local m : Method
+          if (this_type.is_compound)
+            m = this_type.add_routine( t, "create" )
+            m.attributes.add( Attribute.is_generated )
+          else
+            m = this_type.add_method( t, "init" )
+          endIf
           m.return_type = this_type
           local first = true
           while (first or consume(TokenType.symbol_comma))
@@ -222,7 +228,7 @@ class Parser
             # name[=default_value]:Type
             t = peek
             local p_name = read_identifier
-            m.add_parameter( t, p_name )
+            local param = m.add_parameter( t, p_name )
             consume_eols
             local initial_value : Cmd
             if (consume(TokenType.symbol_equals)) initial_value = parse_expression
@@ -230,6 +236,7 @@ class Parser
             must_consume( TokenType.symbol_colon )
             consume_eols
             local p_type = parse_type
+            if (m.is_routine) param.type = p_type
             this_type.add_property( t, p_name, p_type, initial_value )
             consume_eols
           endWhile

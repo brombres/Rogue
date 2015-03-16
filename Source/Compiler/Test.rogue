@@ -1,6 +1,8 @@
 class Test
   METHODS
     method init
+      #local pt = XY(3,4)
+
       local words = String[]
       local palindromes = String[]
       local reversible_words = String[]
@@ -38,6 +40,11 @@ class Test
 endClass
 
 
+#{
+compound XY( x:Real, y:Real )
+endCompound
+}#
+
 
 #{
 class Pair<<$FirstType:Object,$SecondType:Object>> #( first:$FirstType, second:$SecondType )
@@ -60,12 +67,6 @@ class Number<<$DataType:Object>>
     method init
       local list = $DataType[]
 endClass
-
-#{
-
-compound XY( x:Real, y:Real )
-endCompound
-}#
 
 class Console [singleton]
   METHODS

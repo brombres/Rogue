@@ -115,6 +115,9 @@ class Method
     method is_dynamic->Logical
       return (attributes.flags & Attribute.is_dynamic)?
 
+    method is_generated->Logical
+      return (attributes.flags & Attribute.is_generated)?
+
     method is_incorporated->Logical
       return (attributes.flags & Attribute.is_incorporated)?
 
@@ -138,6 +141,9 @@ class Method
 
     method organize->Method
       if (name == "init")
+        if (type_context.is_compound)
+          throw t.error( "Compounds cannot have initializers.  Use create(...) routines instead." )
+        endIf
         attributes.flags |= Attribute.is_initializer
         return_type = type_context
       endIf
