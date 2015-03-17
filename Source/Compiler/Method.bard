@@ -137,7 +137,7 @@ class Method
       return (attributes.flags & Attribute.is_routine)?
 
     method omit_output->Logical
-      return is_native or is_inline
+      return is_native or is_inline or (is_generated and name=="create" and type_context.is_compound)
 
     method organize->Method
       if (name == "init")
@@ -225,6 +225,7 @@ class Method
 
     method print_definition( writer:CPPWriter )
       if (omit_output) return
+
       print_signature( writer )
       writer.println
       writer.println "{"
@@ -255,6 +256,7 @@ class Method
       else
         statements.print_cpp( writer )
       endIf
+
       writer.indent -= 2
       writer.println "}"
       writer.println

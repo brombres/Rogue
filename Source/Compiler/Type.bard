@@ -310,7 +310,7 @@ class Type
       endIf
 
       # Create or find init_object() method to initialize properties
-      if (not is_native and not is_aspect)
+      if (is_class and not is_native)
         local m = find_method( "init_object()" )
         local prior_m = m
         if (not m or m.type_context isNot this)
@@ -531,8 +531,9 @@ class Type
     method print_data_definition( writer:CPPWriter )
       if (omit_output) return
 
-      writer.print( "struct " ).print( cpp_name ).println( " : RogueObject" );
-      writer.println( "{" )
+      writer.print( "struct " ).print( cpp_name )
+      if (is_class) writer.print( " : RogueObject" )
+      writer.println.println( "{" )
       writer.indent += 2
 
       # Settings
@@ -548,6 +549,26 @@ class Type
       forEach (p in property_list)
         writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
       endForEach
+      writer.println
+
+      if (is_compound and property_list.count?)
+        writer.print( this ).print( "( " )
+        local first = true
+        forEach (p in property_list)
+          if (first) first = false
+          else       writer.print( ", " )
+          writer.print( p.type ).print(" ").print( p.cpp_name )
+        endForEach
+        writer.print( " ) : " )
+        first = true
+        forEach (p in property_list)
+          if (first) first = false
+          else       writer.print( ", " )
+          writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
+        endForEach
+        writer.println( " {}" )
+      endIf
+
       writer.indent -= 2
       writer.println( "};" )
 

@@ -1,8 +1,9 @@
 class Test
   METHODS
     method init
-      #local pt = XY(3,4)
+      local pt = XY(3,4)
 
+      #{
       local words = String[]
       local palindromes = String[]
       local reversible_words = String[]
@@ -37,13 +38,12 @@ class Test
       forEach (word in reversible_words)
         println word + " -> " + word.reversed
       endForEach
+      }#
 endClass
 
 
-#{
 compound XY( x:Real, y:Real )
 endCompound
-}#
 
 
 #{
