@@ -28,10 +28,17 @@ class Scope
       local m = find_method( type_context, access, error_on_fail and access.context? )
       if (not m and not access.context)
         # No context specified; try Global context
-        m = find_method( Program.type_Global, access, error_on_fail )
+        m = find_method( Program.type_Global, access, false )
         if (m?)
           type_context = Program.type_Global
           access.context = CmdReadSingleton( access.t, Program.type_Global )
+        elseIf (error_on_fail)
+          # Create an error message with the most appropriate context
+          if (Program.type_Global.has_method_named(access.name))
+            find_method( Program.type_Global, access, true )
+          else
+            find_method( type_context, access, true )
+          endIf
         endIf
       endIf
 
@@ -192,10 +199,37 @@ class Scope
             candidates.compatible.add( m )
           endContingent
         endForEach
-        if (not candidates.update_matches) return null
+        if (not candidates.refine_matches) return null
       endIf
 
       if (candidates.has_match) return candidates.match
+
+      if (arg_count == 1)
+        # 1. Try candidate(arg) -> candidate(arg->toObject)
+        # 2. Try candidate(arg) -> candidate(arg->toString)
+        # 3. Try candidate(arg) -> candidate(arg->toParameterType)
+        forEach (m in candidates.available)
+          if (m.parameters.count == 1)
+            local arg_type = args.first.type
+            local param_type = m.parameters.first.type
+            param_type.organize
+            if (param_type is Program.type_Object and arg_type.has_method_named("to_Object"))
+              args[0] = args[0].cast_to( Program.type_Object )
+              return m
+
+            elseIf (param_type is Program.type_String and arg_type.has_method_named("to_String"))
+              args[0] = args[0].cast_to( Program.type_String )
+              return m
+
+            elseIf (arg_type.has_method_named("to_"+param_type.name))
+              args[0] = args[0].cast_to( param_type )
+              return m
+
+            endIf
+
+          endIf
+        endForEach
+      endIf
 
       candidates.update_matches  # Force error if required
       return null

@@ -740,7 +740,7 @@ class Type
       endForEach
 
     method print_dynamic_method_table_entries( index:Integer, writer:CPPWriter )->Integer
-      if (is_generic) return index
+      if (is_generic or not is_reference) return index
 
       dynamic_method_table_index = index
 

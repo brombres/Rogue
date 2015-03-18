@@ -1,7 +1,8 @@
 class Test
   METHODS
     method init
-      local pt = XY(3,4)
+      local pt = XY( 5, Degrees(53.1301) )
+      println pt
 
       #{
       local words = String[]
@@ -41,8 +42,58 @@ class Test
       }#
 endClass
 
+compound Degrees( value:Real )
+  ROUTINES
+    routine create( degrees:Radians )->Degrees
+      return Degrees( (degrees.value / pi) * 180.0 )
+
+  METHODS
+    method cos->Real
+      inline Math.cos( (this.value / 180.0) * pi )
+
+    method sin->Real
+      inline Math.sin( (this.value / 180.0) * pi )
+
+    method to->String
+      return "" + value
+endCompound
+
+compound Radians( value:Real )
+  ROUTINES
+    routine create( degrees:Degrees )->Radians
+      return Radians( (degrees.value / 180.0) * pi )
+
+  METHODS
+    method cos->Real
+      inline Math.cos( this.value )
+
+    method sin->Real
+      inline Math.sin( this.value )
+
+    method to->String
+      return "" + value
+endCompound
 
 compound XY( x:Real, y:Real )
+  ROUTINES
+    routine create( m:Real, angle:Radians )->XY
+      return XY( m * angle.cos, m * angle.sin )
+
+    routine create( m:Real, angle:Degrees )->XY
+      return XY( m * angle.cos, m * angle.sin )
+
+  METHODS
+    method degrees->Degrees
+      inline Degrees( this.radians )
+
+    method magnitude->Real
+      return Math.sqrt( x*x + y*y )
+
+    method radians->Radians
+      return Radians( Math.atan2( y, x ) )
+
+    method to->String
+      return "(" + x + "," + y + ")"
 endCompound
 
 

@@ -14,6 +14,11 @@ class Cmd
         if (this_type.instance_of(target_type))
           return CmdCastToType( t, this, target_type )
         else
+          this_type.organize
+          local m_name = "to_" + target_type.name
+          if (this_type.has_method_named(m_name))
+            return CmdAccess( t, this, m_name )
+          endIf
           throw t.error( "Type $ is not instance of required type $." (this_type,target_type) )
         endIf
       endIf
@@ -219,7 +224,9 @@ class CmdArgs : Cmd[]
 
     method resolve( scope:Scope )
       forEach (i of this)
-        this[i] = this[i].resolve( scope ).require_value
+        local arg = this[i].resolve( scope )
+        this[i] = arg
+        arg.require_type.organize
       endForEach
 endClass
 
@@ -1509,7 +1516,8 @@ class CmdReadProperty : CmdAccessWithModify
       elseIf (premodify_count < 0) writer.print("--")
 
       context.print_cpp( writer )
-      writer.print("->").print( property_info.cpp_name )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name )
 
       if (postmodify_count > 0) writer.print("++")
       elseIf (postmodify_count < 0) writer.print("--")
@@ -1537,7 +1545,8 @@ class CmdWriteProperty : Cmd
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
-      writer.print("->").print( property_info.cpp_name ).print(" = ")
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name ).print(" = ")
 
       if (property_info.type.compile_type is new_value.compile_type)
         new_value.print_cpp( writer )
@@ -2850,7 +2859,8 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
-      writer.print("->").print( property_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
       new_value.print_cpp( writer )
 
     method resolve( scope:Scope )->Cmd
