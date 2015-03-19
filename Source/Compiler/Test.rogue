@@ -3,6 +3,11 @@ class Test
     method init
       #println Time.current
       println Random.next_real
+      println Random.next_real
+      println Random.next_real
+      println Random.next_real
+      println Random.next_real
+      println Random.next_real
 
       #{
       local words = String[]
@@ -143,10 +148,10 @@ class Console [singleton]
       native_print( value )
 
     method native_print( value:String )
-      $if ("C++") nativeInline 'RogueString::print( $value )'
+      $if ("C++") inlineNative 'RogueString::print( $value )'
 
     method native_print( value:StringBuilder )
-      $if ("C++") nativeInline 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
+      $if ("C++") inlineNative 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
 endClass
 
 class File
@@ -335,46 +340,46 @@ endClass
 class Math
   ROUTINES
     routine acon( slope:Real )->Real
-      $if ("C++") nativeInline 'acos((double)$n)'
+      $if ("C++") inlineNative 'acos((double)$n)'
 
     routine asin( slope:Real )->Real
-      $if ("C++") nativeInline 'asin((double)$n)'
+      $if ("C++") inlineNative 'asin((double)$n)'
 
     routine atan( slope:Real )->Real
-      $if ("C++") nativeInline 'atan((double)$n)'
+      $if ("C++") inlineNative 'atan((double)$n)'
 
     routine atan2( y:Real, x:Real )->Real
-      $if ("C++") nativeInline 'atan2((double)$y,(double)$x)'
+      $if ("C++") inlineNative 'atan2((double)$y,(double)$x)'
 
     routine ceil( n:Real )->Real
-      $if ("C++") nativeInline 'ceil((double)$n)'
+      $if ("C++") inlineNative 'ceil((double)$n)'
 
     routine cos( n:Real )->Real
-      $if ("C++") nativeInline 'cos((double)$n)'
+      $if ("C++") inlineNative 'cos((double)$n)'
 
     routine exp( n:Real )->Real
-      $if ("C++") nativeInline 'exp((double)$n)'
+      $if ("C++") inlineNative 'exp((double)$n)'
 
     routine floor( n:Real )->Real
-      $if ("C++") nativeInline 'floor((double)$n)'
+      $if ("C++") inlineNative 'floor((double)$n)'
 
     routine log( n:Real )->Real
-      $if ("C++") nativeInline 'log((double)$n)'
+      $if ("C++") inlineNative 'log((double)$n)'
 
     routine log2( n:Real )->Real
-      $if ("C++") nativeInline 'log2((double)$n)'
+      $if ("C++") inlineNative 'log2((double)$n)'
 
     routine log10( n:Real )->Real
-      $if ("C++") nativeInline 'log10((double)$n)'
+      $if ("C++") inlineNative 'log10((double)$n)'
 
     routine sin( n:Real )->Real
-      $if ("C++") nativeInline 'sin((double)$n)'
+      $if ("C++") inlineNative 'sin((double)$n)'
 
     routine sqrt( n:Real )->Real
-      $if ("C++") nativeInline 'sqrt((double)$n)'
+      $if ("C++") inlineNative 'sqrt((double)$n)'
 
     routine tan( n:Real )->Real
-      $if ("C++") nativeInline 'tan((double)$n)'
+      $if ("C++") inlineNative 'tan((double)$n)'
 endClass
 
 primitive Real
@@ -413,6 +418,9 @@ primitive Integer
   METHODS
     method hash_code->Integer
       return this
+
+    method to->Long
+      $if ("C++") inlineNative "((RogueLong)$this)"
 
     method to->String
       return "" + this
@@ -463,14 +471,14 @@ class Random [singleton]
   ROUTINES
     routine next_state( state:Long )->Long
       # Kludge until Long literals work in compiler
-      $if ("C++") nativeInline "((THIS->state * 0xDEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
+      $if ("C++") inlineNative "((THIS->state * 0x5DEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
 
   PROPERTIES
     state : Long
 
   METHODS
     method init
-      reset( Time.current->Long )
+      reset( (Time.current * 1000)->Long )
 
     method init( seed:Long )
       reset( seed )
@@ -480,6 +488,7 @@ class Random [singleton]
       return state
 
     method reset( state )
+      advance_state
 
     method next_real->Real
       return (advance_state->Real + 1.0) / 281474976710657.0 
@@ -505,7 +514,7 @@ endClass
 class String [native functional]
   ROUTINES
     routine create( characters:Character[] )->String
-      $if ("C++") nativeInline 'RogueString::create( $characters )'
+      $if ("C++") inlineNative 'RogueString::create( $characters )'
 
     routine create( characters:StringBuilder )->String
       return create( characters.characters )
@@ -575,10 +584,10 @@ class String [native functional]
       return locate(substring) >= 0
 
     method contains( substring:String, at_index:Integer )->Logical
-      $if ("C++") nativeInline '$this->contains($substring,$at_index)'
+      $if ("C++") inlineNative '$this->contains($substring,$at_index)'
 
     method count->Integer
-      $if ("C++") nativeInline '$this->count'
+      $if ("C++") inlineNative '$this->count'
 
     method from_first( ch:Character )->String
       local i = locate( ch )
@@ -601,40 +610,40 @@ class String [native functional]
       return substring( i )
 
     method get( index:Integer )->Character
-      $if ("C++") nativeInline '$this->characters[$index]'
+      $if ("C++") inlineNative '$this->characters[$index]'
 
     method hash_code->Integer
-      $if ("C++") nativeInline '$this->hash_code'
+      $if ("C++") inlineNative '$this->hash_code'
 
     method last->Character
       return this[ count-1 ]
 
     method locate( ch:Character, i1=0:Integer )->Integer
-      $if ("C++") nativeInline '$this->locate($ch,$i1)'
+      $if ("C++") inlineNative '$this->locate($ch,$i1)'
 
     method locate( other:String, i1=0:Integer )->Integer
-      $if ("C++") nativeInline '$this->locate($other,$i1)'
+      $if ("C++") inlineNative '$this->locate($other,$i1)'
 
     method locate_last( ch:Character )->Integer
       return locate_last( ch, count-1 )
 
     method locate_last( ch:Character, starting_index:Integer )->Integer
-      $if ("C++") nativeInline '$this->locate_last($ch,$starting_index)'
+      $if ("C++") inlineNative '$this->locate_last($ch,$starting_index)'
 
     method locate_last( other:String )->Integer
       return locate_last( other, count-other.count )
 
     method locate_last( other:String, starting_index:Integer )->Integer
-      $if ("C++") nativeInline '$this->locate_last($other,$starting_index)'
+      $if ("C++") inlineNative '$this->locate_last($other,$starting_index)'
 
     method operator+( value:Byte )->String
       inline this + value->Integer
 
     method operator+( value:Character )->String
-      $if ("C++") nativeInline '$this->plus($value)'
+      $if ("C++") inlineNative '$this->plus($value)'
 
     method operator+( value:Integer )->String
-      $if ("C++") nativeInline '$this->plus($value)'
+      $if ("C++") inlineNative '$this->plus($value)'
 
       #{
     method operator+( value:Object )->String
@@ -643,21 +652,24 @@ class String [native functional]
       }#
 
     method operator<>( other:String )->Integer
-      $if ("C++") nativeInline '$this->compare_to($other)'
+      $if ("C++") inlineNative '$this->compare_to($other)'
 
     method operator+( value:Logical )->String
       if (value) return this + "true"
       else       return this + "false"
+
+    method operator+( value:Long )->String
+      $if ("C++") inlineNative '$this->plus($value)'
 
     method operator+( value:Object )->String
       if (value?) return this + value->String
       else        return this + "null"
 
     method operator+( value:Real )->String
-      $if ("C++") nativeInline '$this->plus($value)'
+      $if ("C++") inlineNative '$this->plus($value)'
 
     method operator+( value:String )->String
-      $if ("C++") nativeInline '$this->plus($value)'
+      $if ("C++") inlineNative '$this->plus($value)'
 
     method reversed->String
       local buffer = StringBuilder(count)
@@ -667,7 +679,7 @@ class String [native functional]
       return buffer->String
 
     method substring( i1:Integer, i2=-1:Integer )->String
-      $if ("C++") nativeInline '$this->substring($i1,$i2)'
+      $if ("C++") inlineNative '$this->substring($i1,$i2)'
 
 endClass
 
@@ -676,10 +688,10 @@ class NativeArray [native]
     method count->Integer [native]
 
     method element_size->Integer
-      $if ("C++") nativeInline '$this->element_size'
+      $if ("C++") inlineNative '$this->element_size'
 
     method set( i1:Integer, other:NativeArray, other_i1=0:Integer, other_i2=-1:Integer )->NativeArray
-      $if ("C++") nativeInline '$this->set($i1,$other,$other_i1,$other_i2)'
+      $if ("C++") inlineNative '$this->set($i1,$other,$other_i1,$other_i2)'
 endClass
 
 class Array<<$DataType>> : NativeArray [native]

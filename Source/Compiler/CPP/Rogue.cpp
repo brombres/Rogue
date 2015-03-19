@@ -327,6 +327,13 @@ RogueString* RogueString::plus( RogueInteger value )
   return plus( st );
 }
 
+RogueString* RogueString::plus( RogueLong value )
+{
+  char st[80];
+  sprintf( st, "%lld", value );
+  return plus( st );
+}
+
 RogueString* RogueString::plus( RogueReal value )
 {
   char st[80];

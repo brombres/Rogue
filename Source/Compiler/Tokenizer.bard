@@ -109,7 +109,7 @@ class Tokenizer
       TokenType.keyword_isNot        = define( TokenType("isNot") )
       TokenType.keyword_local        = define( TokenType("local") )
       TokenType.keyword_native       = define( TokenType("native") )
-      TokenType.keyword_nativeInline = define( TokenType("nativeInline") )
+      TokenType.keyword_inlineNative = define( TokenType("inlineNative") )
       TokenType.keyword_null         = define( TokenType("null") )
       TokenType.keyword_of           = define( TokenType("of") )
       TokenType.keyword_return       = define( TokenType("return") )

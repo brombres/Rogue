@@ -17,6 +17,8 @@
 #  include <cstdint>
 #endif
 
+#include <stdlib.h>
+
 #if defined(_WIN32)
   typedef double           RogueReal;
   typedef float            RogueFloat;
@@ -194,6 +196,7 @@ struct RogueString : RogueObject
   RogueString* plus( char ch );
   RogueString* plus( RogueCharacter ch );
   RogueString* plus( RogueInteger value );
+  RogueString* plus( RogueLong value );
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
   RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );

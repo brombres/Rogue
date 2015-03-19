@@ -52,7 +52,10 @@ class Cmd
       if (left_type.is_primitive)
         if (right_type.is_primitive)
           if (left_type is Program.type_Real or right_type is Program.type_Real) return Program.type_Real
+          if (left_type is Program.type_Float or right_type is Program.type_Float) return Program.type_Float
+          if (left_type is Program.type_Long or right_type is Program.type_Long) return Program.type_Long
           if (left_type is Program.type_Integer or right_type is Program.type_Integer) return Program.type_Integer
+          if (left_type is Program.type_Character or right_type is Program.type_Character) return Program.type_Character
         endIf
       endIf
 
@@ -1646,9 +1649,9 @@ class CmdCallRoutine : CmdCall
           if (i > 0) writer.print( ", " )
           local param_type = compile_target.parameters[i].type
           if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
-            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
             arg.print_cpp( writer )
-            writer.print( ")" )
+            writer.print( "))" )
           else
             arg.print_cpp( writer )
           endIf
@@ -1677,9 +1680,9 @@ class CmdCallAspectMethod : CmdCall
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
         if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.print_cpp( writer )
-          writer.print( ")" )
+          writer.print( "))" )
         else
           arg.print_cpp( writer )
         endIf
@@ -1703,8 +1706,9 @@ class CmdCallDynamicMethod : CmdCall
         writer.print( compile_target.index ).print( ", " )
         writer.print( "(" )
         writer.print( compile_target.type_context )
-        writer.print( ")" )
+        writer.print( ")(" )
         context.print_cpp( writer )
+        writer.print( ")" )
         local i = 0
         forEach (arg in args)
           writer.print( ", " )
@@ -1734,11 +1738,11 @@ class CmdCallStaticMethod : CmdCall
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
       writer.print( compile_target.cpp_name )
-      writer.print( "( " )
-      writer.print( "(" )
+      writer.print( "( (" )
       writer.print( compile_target.type_context )
-      writer.print( ")" )
+      writer.print( ")(" )
       context.print_cpp( writer )
+      writer.print( ")" )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
@@ -1772,9 +1776,9 @@ class CmdCallNativeRoutine : CmdCall
         if (i > 0) writer.print( ", " )
         local param_type = compile_target.parameters[i].type
         if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.print_cpp( writer )
-          writer.print( ")" )
+          writer.print( "))" )
         else
           arg.print_cpp( writer )
         endIf
@@ -1798,9 +1802,9 @@ class CmdCallNativeMethod : CmdCall
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
         if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.print_cpp( writer )
-          writer.print( ")" )
+          writer.print( "))" )
         else
           arg.print_cpp( writer )
         endIf
