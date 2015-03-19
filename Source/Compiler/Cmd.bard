@@ -7,21 +7,21 @@ class Cmd
       local this_type = type
       if (this_type is target_type) return this
 
-      if (this_type.is_primitive)
-        throw t.error( "TODO: Cmd::cast_to() primitive->...." )
+      #if (this_type.is_primitive)
+      #throw t.error( "TODO: Cmd::cast_to() primitive->...." )
+      #else
+      # this is a reference type
+      if (this_type.instance_of(target_type))
+        return CmdCastToType( t, this, target_type )
       else
-        # this is a reference type
-        if (this_type.instance_of(target_type))
-          return CmdCastToType( t, this, target_type )
-        else
-          this_type.organize
-          local m_name = "to_" + target_type.name
-          if (this_type.has_method_named(m_name))
-            return CmdAccess( t, this, m_name )
-          endIf
-          throw t.error( "Type $ is not instance of required type $." (this_type,target_type) )
+        this_type.organize
+        local m_name = "to_" + target_type.name
+        if (this_type.has_method_named(m_name))
+          return CmdAccess( t, this, m_name )
         endIf
+        throw t.error( "Type $ is not instance of required type $." (this_type,target_type) )
       endIf
+      #endIf
 
     method clone( inline_args=null:InlineArgs )->Cmd
       throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
@@ -930,6 +930,47 @@ class CmdLiteralString : CmdLiteral
         endIf
       endIf
       return this
+
+    method type->Type
+      return Program.type_String
+endClass
+
+class CmdFormattedString : Cmd
+  PROPERTIES
+    format : String
+    args   : CmdArgs
+
+  METHODS
+    method init( t, format, args )
+
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdFormattedString( t, format, args.clone(inline_args) )
+
+    method implicit_type->Type
+      return Program.type_String
+
+    method resolve( scope:Scope )->Cmd
+      local cmd = CmdAccess( t, "StringBuilder", CmdArgs() )
+      local fmt = format
+      forEach (arg in args)
+        arg = arg.resolve(scope).require_value
+        local i = fmt.locate( '$' )
+        if (i == -1) throw t.error( "More arguments than format markers ('$') in formatted string." )
+        if (i > 0)
+          cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i))) )
+          fmt = fmt.substring(i+1)
+        else
+          fmt = fmt.substring(1)
+        endIf
+        cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
+      endForEach
+      if (fmt.count?)
+        if (fmt.locate('$') != -1)
+          throw t.error( "More format markers ('$') than arguments in formatted string." )
+        endIf
+        cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
+      endIf
+      return cmd.resolve( scope )
 
     method type->Type
       return Program.type_String
@@ -3106,6 +3147,10 @@ endClass
 
 
 class CmdCastToType : CmdTypeOperator
+  METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdCastToType( t, operand.clone(inline_args), target_type )
+
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print( target_type ).print( ")(" )
       operand.print_cpp( writer )
@@ -3120,6 +3165,9 @@ endClass
 
 class CmdConvertToType : CmdTypeOperator
   METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdConvertToType( t, operand.clone(inline_args), target_type )
+
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       local operand_type = operand.require_type
@@ -3136,6 +3184,9 @@ endClass
 
 class CmdConvertToPrimitiveType : CmdConvertToType
   METHODS
+    method clone( inline_args=null:InlineArgs )->Cmd
+      return CmdConvertToPrimitiveType( t, operand.clone(inline_args), target_type )
+
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print( target_type.cpp_name ).print( ")(" )
       operand.print_cpp( writer )

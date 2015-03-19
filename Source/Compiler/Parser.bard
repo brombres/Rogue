@@ -1486,7 +1486,6 @@ class Parser
 
       elseIf (consume(TokenType.literal_string))
 
-        #{
         if (consume(TokenType.symbol_open_paren))
           local first = true
           local args = CmdArgs()
@@ -1497,7 +1496,6 @@ class Parser
           must_consume( TokenType.symbol_close_paren )
           return CmdFormattedString( t, t->String, args )
         endIf
-        }#
 
         return CmdLiteralString( t, t->String )
 

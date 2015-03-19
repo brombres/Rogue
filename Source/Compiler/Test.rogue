@@ -3,6 +3,9 @@ class Test
     method init
       local pt = XY( 5, Degrees(53.1301) )
       println pt
+      println "($,$)" (3,5)
+      local b = -1 : Byte
+      println ""+b
 
       #{
       local words = String[]
@@ -360,6 +363,9 @@ primitive Real
     method hash_code->Integer
       return this
       }#
+
+    method to->String
+      return "" + this
 endPrimitive
 
 primitive Float
@@ -382,18 +388,27 @@ primitive Integer
   METHODS
     method hash_code->Integer
       return this
+
+    method to->String
+      return "" + this
 endPrimitive
 
 primitive Character
   METHODS
     method hash_code->Integer
       return this->Integer
+
+    method to->String
+      return "" + this
 endPrimitive
 
 primitive Byte
   METHODS
     method hash_code->Integer
       return this->Integer
+
+    method to->String
+      return "" + this
 endPrimitive
 
 primitive Logical
@@ -401,6 +416,9 @@ primitive Logical
     method hash_code->Integer
       if (this) return 1
       else      return 0
+
+    method to->String
+      return "" + this
 endPrimitive
 
 class Object
@@ -536,6 +554,9 @@ class String [native functional]
 
     method locate_last( other:String, starting_index:Integer )->Integer
       $if ("C++") nativeInline '$this->locate_last($other,$starting_index)'
+
+    method operator+( value:Byte )->String
+      inline this + value->Integer
 
     method operator+( value:Character )->String
       $if ("C++") nativeInline '$this->plus($value)'
