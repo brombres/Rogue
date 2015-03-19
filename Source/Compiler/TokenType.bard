@@ -57,6 +57,7 @@ class TokenType
     type_identifier              : TokenType   # Contains complete type e.g. "Table<<String,Integer>>[]"
     literal_character            : TokenType
     literal_integer              : TokenType
+    literal_long                 : TokenType
     literal_real                 : TokenType
     literal_string               : TokenType
 

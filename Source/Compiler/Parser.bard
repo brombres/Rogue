@@ -1202,12 +1202,11 @@ class Parser
       return lhs
 
     method parse_power->Cmd
-      return parse_pre_unary
-      #return parse_power( parse_pre_unary )
+      return parse_power( parse_pre_unary )
 
     method parse_power( lhs:Cmd )->Cmd
       local t = peek
-      if (consume(TokenType.symbol_power))
+      if (consume(TokenType.symbol_caret))
         consume_eols
         return parse_power( CmdPower(t,lhs,parse_pre_unary) )
       endIf

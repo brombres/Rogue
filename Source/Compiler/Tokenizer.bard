@@ -121,6 +121,7 @@ class Tokenizer
       TokenType.type_identifier              = TokenType("type identifier")
       TokenType.literal_character            = TokenType("Character")
       TokenType.literal_integer              = TokenType("Integer")
+      TokenType.literal_long                 = TokenType("Long")
       TokenType.literal_real                 = TokenType("Real")
       TokenType.literal_string               = TokenType("String")
 

@@ -11,6 +11,43 @@
 //  under the terms of the UNLICENSE ( http://unlicense.org ).
 //=============================================================================
 
+#include <fcntl.h>
+#include <math.h>
+#include <string.h>
+#include <sys/timeb.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <inttypes.h>
+
+#if !defined(_WIN32)
+#  include <sys/time.h>
+#  include <unistd.h>
+#  include <signal.h>
+#  include <dirent.h>
+#  include <sys/socket.h>
+#  include <sys/uio.h>
+#  include <sys/stat.h>
+#  include <netdb.h>
+#  include <errno.h>
+#  include <pthread.h>
+#endif
+
+#if defined(ANDROID)
+#  include <netinet/in.h>
+#endif
+
+#if defined(_WIN32)
+#  include <direct.h>
+#  define chdir _chdir
+#endif
+
+#if TARGET_OS_IPHONE 
+#  include <sys/types.h>
+#  include <sys/sysctl.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1180,6 +1217,13 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, Rogue
   return RogueStringBuilder__print( buffer, st );
 }
 
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value )
+{
+  char st[80];
+  sprintf( st, "%lld", value );
+  return RogueStringBuilder__print( buffer, st );
+}
+
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places )
 {
   char format[80];
@@ -1188,5 +1232,29 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, Rogue
   sprintf( format, "%%.%dlf", decimal_places );
   sprintf( st, format, value );
   return RogueStringBuilder__print( buffer, st );
+}
+
+
+//-----------------------------------------------------------------------------
+//  Time
+//-----------------------------------------------------------------------------
+RogueReal RogueTime__current()
+{
+#if defined(_WIN32)
+  struct __timeb64 time_struct;
+  RogueReal time_seconds;
+  _ftime64_s( &time_struct );
+  time_seconds = (RogueReal) time_struct.time;
+  time_seconds += time_struct.millitm / 1000.0;
+  return time_seconds;
+
+#else
+  struct timeval time_struct;
+  RogueReal time_seconds;
+  gettimeofday( &time_struct, 0 );
+  time_seconds = (RogueReal) time_struct.tv_sec;
+  time_seconds += (time_struct.tv_usec / 1000000.0);
+  return time_seconds;
+#endif
 }
 

@@ -1,11 +1,8 @@
 class Test
   METHODS
     method init
-      local pt = XY( 5, Degrees(53.1301) )
-      println pt
-      println "($,$)" (3,5)
-      local b = -1 : Byte
-      println ""+b
+      #println Time.current
+      println Random.next_real
 
       #{
       local words = String[]
@@ -57,6 +54,9 @@ compound Degrees( value:Real )
     method sin->Real
       inline Math.sin( (this.value / 180.0) * pi )
 
+    method tan->Real
+      inline Math.sin( (this.value / 180.0) * pi )
+
     method to->String
       return "" + value
 endCompound
@@ -72,6 +72,9 @@ compound Radians( value:Real )
 
     method sin->Real
       inline Math.sin( this.value )
+
+    method tan->Real
+      inline Math.tan( this.value )
 
     method to->String
       return "" + value
@@ -92,11 +95,20 @@ compound XY( x:Real, y:Real )
     method magnitude->Real
       return Math.sqrt( x*x + y*y )
 
+    method magnitude_squared->Real
+      return x*x + y*y
+
     method radians->Radians
       return Radians( Math.atan2( y, x ) )
 
     method to->String
       return "(" + x + "," + y + ")"
+
+    method xv->XY
+      return XY(x,0)
+
+    method yv->XY
+      return XY(0,y)
 endCompound
 
 
@@ -275,6 +287,10 @@ class Global [singleton]
       global_output_buffer.print( value )
       return this
 
+    method print( value:Long )->this
+      global_output_buffer.print( value )
+      return this
+
     method print( value:Object )->this
       global_output_buffer.print( value )
       return this
@@ -303,6 +319,9 @@ class Global [singleton]
     method println( value:Logical )->this
       return print( value ).println
 
+    method println( value:Long )->this
+      return print( value ).println
+
     method println( value:Real )->this
       return print( value ).println
 
@@ -315,6 +334,12 @@ endClass
 
 class Math
   ROUTINES
+    routine acon( slope:Real )->Real
+      $if ("C++") nativeInline 'acos((double)$n)'
+
+    routine asin( slope:Real )->Real
+      $if ("C++") nativeInline 'asin((double)$n)'
+
     routine atan( slope:Real )->Real
       $if ("C++") nativeInline 'atan((double)$n)'
 
@@ -428,6 +453,53 @@ class Object
 
     method to->String
       return "(Object)"
+endClass
+
+
+#------------------------------------------------------------------------------
+#  Random
+#------------------------------------------------------------------------------
+class Random [singleton]
+  ROUTINES
+    routine next_state( state:Long )->Long
+      # Kludge until Long literals work in compiler
+      $if ("C++") nativeInline "((THIS->state * 0xDEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
+
+  PROPERTIES
+    state : Long
+
+  METHODS
+    method init
+      reset( Time.current->Long )
+
+    method init( seed:Long )
+      reset( seed )
+
+    method advance_state()->Long
+      state = next_state( state )
+      return state
+
+    method reset( state )
+
+    method next_real->Real
+      return (advance_state->Real + 1.0) / 281474976710657.0 
+
+    method next_real( low:Real, high:Real )->Real
+      return (next_real * (high-low)) + low
+
+    method next_integer->Integer
+      return (next_real * (2.0^31))->Integer
+
+    method next_integer( limit:Integer )->Integer
+      if (limit == 0) return 0
+      return next_integer % limit
+
+    method next_integer( low:Integer, high:Integer )->Integer
+      return next_integer( (high-low)+1 ) + low
+
+    method next_logical->Logical
+      return (next_real > 0.5)
+
 endClass
 
 class String [native functional]
@@ -762,11 +834,16 @@ class StringBuilder
       characters.add( value )
       return this
 
+    method print( value:Float )->this
+      inline this.print( value->Real )
+
     method print( value:Integer )->this [native]
 
     method print( value:Logical )->this
       if (value) return print( "true" )
       else       return print( "false" )
+
+    method print( value:Long )->this [native]
 
     method print( value:Object )->this
       if (value?) return print( value->String )
@@ -793,32 +870,31 @@ class StringBuilder
       at_newline = false
 
     method println( value:Byte )->this
-      print( value->Integer )
-      return print( '\n' )
+      return print( value->Integer ).print( '\n' )
 
     method println( value:Character )->this
-      print( value )
-      return print( '\n' )
+      return print( value ).print( '\n' )
+
+    method println( value:Float )->this
+      inline this.println( value->Real )
 
     method println( value:Integer )->this
-      print( value )
-      return print( '\n' )
+      return print( value ).print( '\n' )
 
     method println( value:Logical )->this
-      print( value )
-      return print( '\n' )
+      return print( value ).print( '\n' )
+
+    method println( value:Long )->this
+      return print( value ).print( '\n' )
 
     method println( value:Real, decimal_places=4:Integer )->this
-      print( value, decimal_places )
-      return print( '\n' )
+      return print( value, decimal_places ).print( '\n' )
 
     method println( value:Object )->this
-      print( value )
-      return print( '\n' )
+      return print( value ).print( '\n' )
 
     method println( value:String )->this
-      print( value )
-      return print( '\n' )
+      return print( value ).print( '\n' )
 
     method reserve( additional_count:Integer )->this
       characters.reserve( additional_count )
@@ -974,5 +1050,10 @@ class TableEntry<<$KeyType:Object,$ValueType:Object>>
       key = _key
       value = _value
       hash = _hash
+endClass
+
+class Time
+  ROUTINES
+    routine current->Real [native]
 endClass
 

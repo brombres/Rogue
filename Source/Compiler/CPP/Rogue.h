@@ -442,5 +442,10 @@ struct RogueStringBuilder;
 RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
 
+//-----------------------------------------------------------------------------
+//  Time
+//-----------------------------------------------------------------------------
+RogueReal RogueTime__current();
