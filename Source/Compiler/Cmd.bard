@@ -1130,7 +1130,7 @@ class CmdAccess : CmdAccessWithModify
       local p = context_type.find_setting( name )
       if (p?)
         context.require_type_context
-        return CmdReadSetting( t, p).resolve(scope)
+        return CmdReadSetting( t, p).set_modifiers(this).resolve(scope)
       endIf
 
       p = context_type.find_property( name )

@@ -136,6 +136,9 @@ class Method
     method is_routine->Logical
       return (attributes.flags & Attribute.is_routine)?
 
+    method is_task->Logical
+      return (attributes.flags & Attribute.is_task)?
+
     method omit_output->Logical
       return is_native or is_inline or (is_generated and name=="create" and type_context.is_compound)
 
@@ -147,6 +150,8 @@ class Method
         attributes.flags |= Attribute.is_initializer
         return_type = type_context
       endIf
+
+      if (is_task) convert_to_task
 
       forEach (param in parameters)
         if (not is_routine) 
@@ -193,6 +198,28 @@ class Method
       endWhile
 
       return this
+
+    method convert_to_task
+      ++Program.next_unique_id
+      local task_type = Program.get_type_reference( t, "$__$_task__$" (type_context.name,name,Program.next_unique_id) )
+      local result_type : Type
+      if (return_type?)
+        result_type = return_type
+        task_type.base_types.add( Program.get_type_reference(t,"TaskWithResult<<$>>"(return_type.name) ) )
+      else
+        task_type.base_types.add( Program.get_type_reference(t,"Task") )
+      endIf
+      return_type = task_type
+
+    task_type.attributes.add( Attribute.is_class )
+      task_type.defined = true
+      task_type.organize
+
+      local m_update = task_type.add_method( t, "update" )
+      m_update.return_type = Program.type_Logical
+      m_update.statements = statements
+      this.statements = CmdStatementList()
+      this.statements.add( CmdReturn(t,CmdAccess(t,task_type.name,CmdArgs())) )
 
     method print_prototype( writer:CPPWriter )
       if (omit_output) return

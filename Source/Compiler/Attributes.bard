@@ -21,6 +21,8 @@ class Attribute
     is_overridden       = 4096
     is_incorporated     = 8192
     is_generated        = 16384
+    is_requisite        = 32768
+    is_task             = 65536
 endClass
 
 

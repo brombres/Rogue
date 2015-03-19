@@ -195,8 +195,12 @@ class Parser
           attributes.add( Attribute.is_functional )
         elseIf (consume("immutable"))
           attributes.add( Attribute.is_immutable )
+        elseIf (consume("requisite"))
+          attributes.add( Attribute.is_requisite )
         elseIf (consume("singleton"))
           attributes.add( Attribute.is_singleton )
+        elseIf (consume("task"))
+          attributes.add( Attribute.is_task )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else
@@ -578,11 +582,13 @@ class Parser
       elseIf (consume(TokenType.keyword_throw))
         statements.add( CmdThrow(t,parse_expression) )
         return
+        }#
 
       elseIf (consume(TokenType.keyword_noAction))
         noAction
         return
 
+        #{
       elseIf (consume(TokenType.keyword_trace))
         local cmd_trace = CmdTrace(t,this_method)
         while (reader.has_another)

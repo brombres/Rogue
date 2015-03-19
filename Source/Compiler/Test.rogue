@@ -1,50 +1,31 @@
 class Test
+  SETTINGS
+    v1 = 1
+    v2 = 10
+
   METHODS
     method init
-      #println Time.current
-      println Random.next_real
-      println Random.next_real
-      println Random.next_real
-      println Random.next_real
-      println Random.next_real
-      println Random.next_real
+      print1.start
+      print2.start
+      while (TaskManager.update) noAction
 
-      #{
-      local words = String[]
-      local palindromes = String[]
-      local reversible_words = String[]
-      local lookup = Table<<String,Logical>>(256)
+    method print1 [task]
+      println Test.v1
+      ++Test.v1
+      return Test.v1 <= 5
 
-      local reader = LineReader( File.read("dictionary.txt") )
-      forEach (word in reader)
-        if (word.count > 1)
-          words.add( word )
-          lookup.set( word, true )
-        endIf
-      endForEach
+    method print2 [task]
+      println Test.v2
+      ++Test.v2
+      return Test.v2 <= 15
+endClass
 
-      forEach (word in words)
-        local reversed = word.reversed
-
-        if (word == reversed)
-          palindromes.add( word )
-        elseIf (lookup.contains(reversed))
-          reversible_words.add( word )
-        endIf
-
-      endForEach
-
-      println palindromes.count + " PALINDROMES"
-      forEach (word in palindromes)
-        println word + " <> " + word.reversed
-      endForEach
-      println
-
-      println reversible_words.count + " REVERSIBLE WORDS"
-      forEach (word in reversible_words)
-        println word + " -> " + word.reversed
-      endForEach
-      }#
+class PrintTask(low:Integer,high:Integer) : Task
+  METHODS
+    method update->Logical
+      println low
+      ++low
+      return (low <= high)
 endClass
 
 compound Degrees( value:Real )
@@ -731,6 +712,11 @@ class List<<$DataType:Object>> : GenericList
       ++count
       return this
 
+    method add( other:$DataType[] )->$DataType[]
+      reserve(other.count)
+      forEach (value in other) add( value )
+      return this
+
     method capacity->Integer
       if (not data) return 0
       return data.count
@@ -1063,6 +1049,81 @@ class TableEntry<<$KeyType:Object,$ValueType:Object>>
       value = _value
       hash = _hash
 endClass
+
+
+#------------------------------------------------------------------------------
+# Task
+#------------------------------------------------------------------------------
+class Task
+  METHODS
+    method start->Task
+      if (update()) TaskManager.add( this )
+      return this
+
+    method update->Logical
+      return false  # return "true" to continue the task next time
+endClass
+
+
+class TaskWithResult<<$ResultType>> : Task
+  PROPERTIES
+    result : $ResultType
+
+  METHODS
+    method finish->$ResultType
+      # Synchronously runs task until completion.  You can call
+      # "await task" instead of "task.finish" to allow it to finish
+      # concurrently.
+      while (update()) noAction
+      return result
+endClass
+
+
+#------------------------------------------------------------------------------
+# TaskManager
+#------------------------------------------------------------------------------
+class TaskManager [requisite singleton]
+  PROPERTIES
+    active_list = Task[]
+    update_list = Task[]
+
+  METHODS
+    method add( task:Task )->TaskManager
+      active_list.add( task )
+      return this
+
+      #{
+    method await_all( tasks:Task[] ) [async]
+      local still_waiting = true
+      while (still_waiting)
+        still_waiting = false
+        local i = tasks.count() - 1
+        while (i >= 0)
+          local task = tasks[i]
+          if (task.update()) still_waiting = true
+          else               tasks.remove_at(i)
+          --i
+        endWhile
+        if (still_waiting) yield
+      endWhile
+      }#
+
+    method update->Logical
+      local any_active = false
+
+      update_list.clear().add( active_list )
+      active_list.clear()
+      forEach (task in update_list)
+        if (task.update())
+          # Active tasks stay in the list
+          any_active = true
+          active_list.add( task )
+        endIf
+      endForEach
+
+      return any_active
+endClass
+
 
 class Time
   ROUTINES
