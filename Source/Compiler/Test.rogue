@@ -5,6 +5,8 @@ class Test
 
   METHODS
     method init
+      println "Working on tasks"
+      #{
       print1.start
       print2.start
       while (TaskManager.update) noAction
@@ -18,6 +20,7 @@ class Test
       println Test.v2
       ++Test.v2
       return Test.v2 <= 15
+      }#
 endClass
 
 class PrintTask(low:Integer,high:Integer) : Task

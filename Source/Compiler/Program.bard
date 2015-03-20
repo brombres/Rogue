@@ -8,7 +8,7 @@ class Program [requisite singleton]
     code_prefix  = "Rogue"
     program_name = "rogue_program"
 
-    next_unique_id : Integer
+    unique_integer : Integer
 
     template_list   = Template[]                 : Template[]
     template_lookup = Table<<String,Template>>() : Table<<String,Template>>
@@ -67,8 +67,11 @@ class Program [requisite singleton]
       literal_string_lookup[ "" ] = 0
 
     method create_unique_id->String
-      ++next_unique_id
-      return "_auto_" + (next_unique_id-1)
+      return "_auto_" + next_unique_integer
+
+    method next_unique_integer->Integer
+      ++unique_integer
+      return unique_integer - 1
 
     method find_template( name:String )->Template
       if (name.ends_with(']')) return template_lookup[ "List" ]
