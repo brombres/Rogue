@@ -13,7 +13,6 @@ class Property
 
   METHODS
     method init( t, type_context, name )
-      name = t->String
 
     method clone->Property
       local result = Property( t, type_context, name )

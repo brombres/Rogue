@@ -304,7 +304,12 @@ class CmdReturn : CmdStatement
       endIf
 
     method resolve( scope:Scope )->Cmd
-      if (value?) value = value.resolve( scope ).cast_to( scope.this_method.return_type ).resolve( scope )
+      if (value?)
+        if (not scope.this_method.return_type)
+          throw t.error( "$ is not declared as returning a value." (scope.this_method.signature) )
+        endIf
+        value = value.resolve( scope ).cast_to( scope.this_method.return_type ).resolve( scope )
+      endIf
       return this
 
     method type->Type

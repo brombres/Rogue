@@ -530,6 +530,9 @@ class Parser
         if (next_is_end_command)
           statements.add( CmdReturn(t) )
         else
+          if (not this_method.return_type)
+            throw peek.error( "$()() is not declared as returning a value." (this_method.name) )
+          endIf
           statements.add( CmdReturn(t,parse_expression) )
         endIf
         return

@@ -14,8 +14,8 @@ class Method
 
     return_type      : Type
 
-    task_return_type : Type
-      # When a [task] is organized, task_return_type gets set to the original return_type
+    task_result_type : Type
+      # When a [task] is organized, task_result_type gets set to the original return_type
       # and return_type gets set to Task or TaskWithResult<<ResultType>>
 
     parameters = Local[] : Local[]
@@ -30,6 +30,7 @@ class Method
     generic_method : Method
     native_code    : String
 
+    organized : Logical
     resolved  : Logical
     index     : Integer
 
@@ -44,7 +45,7 @@ class Method
       result.cpp_typedef = cpp_typedef
       result.attributes = attributes.clone
       result.return_type = return_type
-      result.task_return_type = task_return_type
+      result.task_result_type = task_result_type
 
       result.locals = Local[]
       forEach (v in locals) result.locals.add( v.clone )
@@ -88,7 +89,7 @@ class Method
       locals.add( v )
       return v
 
-    method add_parameter( p_t:Token, p_name:String )->Local
+    method add_parameter( p_t:Token, p_name:String, p_type=null:Type )->Local
       local p = add_local( p_t, p_name )
       parameters.add( p )
       return p
@@ -149,8 +150,11 @@ class Method
     method omit_output->Logical
       return is_native or is_inline or (is_generated and name=="create" and type_context.is_compound)
 
-    method organize->Method
-     if (name == "init")
+    method organize( add_to_lookup=true:Logical )->Method
+      if (organized) return this
+      organized = true
+
+      if (name == "init")
         if (type_context.is_compound)
           throw t.error( "Compounds cannot have initializers.  Use create(...) routines instead." )
         endIf
@@ -159,7 +163,7 @@ class Method
       endIf
 
       if (is_task)
-        task_return_type = return_type
+        task_result_type = return_type
         if (return_type?)
           return_type.organize
           return_type = Program.get_type_reference( t, "TaskWithResult<<$>>"(return_type.name) )
@@ -193,19 +197,21 @@ class Method
 
       assign_signature
 
-      # Add method to type's lookup table.
-      if (is_routine)
-        local existing_m = type_context.routine_lookup_by_signature[signature]
-        if (existing_m? and existing_m.type_context is type_context)
-          throw t.error( "A routine with the signature $ is already defined." (signature) )
+      if (add_to_lookup)
+        # Add method to type's lookup table.
+        if (is_routine)
+          local existing_m = type_context.routine_lookup_by_signature[signature]
+          if (existing_m? and existing_m.type_context is type_context)
+            throw t.error( "A routine with the signature $ is already defined." (signature) )
+          endIf
+          type_context.routine_lookup_by_signature[signature] = this
+        else
+          local existing_m = type_context.method_lookup_by_signature[signature]
+          if (existing_m? and existing_m.type_context is type_context)
+            throw t.error( "A method with the signature $ is already defined." (signature) )
+          endIf
+          type_context.method_lookup_by_signature[signature] = this
         endIf
-        type_context.routine_lookup_by_signature[signature] = this
-      else
-        local existing_m = type_context.method_lookup_by_signature[signature]
-        if (existing_m? and existing_m.type_context is type_context)
-          throw t.error( "A method with the signature $ is already defined." (signature) )
-        endIf
-        type_context.method_lookup_by_signature[signature] = this
       endIf
 
       min_args = parameters.count
@@ -214,29 +220,6 @@ class Method
       endWhile
 
       return this
-
-      #{
-    method convert_to_task
-      local task_type = Program.get_type_reference( t, "$__$_task__$" (type_context.name,name,Program.next_unique_integer) )
-      local result_type : Type
-      if (return_type?)
-        result_type = return_type
-        task_type.base_types.add( Program.get_type_reference(t,"TaskWithResult<<$>>"(return_type.name) ) )
-      else
-        task_type.base_types.add( Program.get_type_reference(t,"Task") )
-      endIf
-      return_type = task_type
-
-    task_type.attributes.add( Attribute.is_class )
-      task_type.defined = true
-      task_type.organize
-
-      local m_update = task_type.add_method( t, "update" )
-      m_update.return_type = Program.type_Logical
-      m_update.statements = statements
-      this.statements = CmdStatementList()
-      this.statements.add( CmdReturn(t,CmdAccess(t,task_type.name,CmdArgs())) )
-      }#
 
     method print_prototype( writer:CPPWriter )
       if (omit_output) return
@@ -342,7 +325,7 @@ class Method
         statements = CmdStatementList()
       endIf
 
-      if (is_task) statements.clear  # TEMP KLUDGE
+      if (is_task) convert_to_task
 
       local scope = Scope( type_context, this )
       forEach (p in parameters) scope.push_local( p )
@@ -354,6 +337,50 @@ class Method
         if (statements.count?) return_t = statements.last.t
         statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
       endIf
+
+    method convert_to_task
+      # Create the class that will store the converted method
+      local task_type = Program.get_type_reference( t, "$__$_task$" (type_context.name,name,Program.next_unique_integer) )
+      task_type.attributes.add( Attribute.is_class )
+      task_type.base_types.add( return_type )  # Task or TaskWithResult<<ResultType>>
+      local m_update = task_type.add_method( t, "update" )
+      m_update.return_type = Program.type_Logical
+      task_type.defined = true
+
+      # Create a temporary method to store the task body and resolve all statements and variable
+      # binding.  Then convert the resolved method to a task - locals to properties, this.properties
+      # to context.properties, etc.
+      local m_name = "__task_resolver" + Program.create_unique_id
+      local m_temp = Method( t, type_context, m_name )
+      m_temp.return_type = task_result_type
+
+      forEach (v in locals)
+        if (v.index < parameters.count)
+          m_temp.add_parameter( v.t, v.name, v.type )
+        else
+          local v2 = m_temp.add_local( v.t, v.name, v.type )
+          if (v.initial_value?) v2.initial_value = v.initial_value.clone
+        endIf
+      endForEach
+
+      # Temp method gets original statements while original method gets a "return TaskObjectName()"
+      m_temp.statements = statements
+      statements = CmdStatementList()
+      local args = CmdArgs()
+      forEach (p in parameters) args.add( CmdAccess(t,p.name) )
+      statements.add( CmdReturn( t, CmdAccess(t,task_type.name,args) ) )
+      
+      m_temp.organize( false )  # organize but don't add to type's method tables
+      m_temp.resolve
+
+      # Convert resolved method into task "functor"
+      forEach (v in m_temp.locals)
+        local p_name = v.name + "_" + v.index
+        local p = task_type.add_property( v.t, p_name, v.type )
+      endForEach
+      m_update.statements = m_temp.statements
+
+      task_type.organize
 
     method set_incorporated->Method
       attributes.add( Attribute.is_incorporated )
