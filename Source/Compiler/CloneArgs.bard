@@ -71,12 +71,25 @@ class TaskArgs : CloneArgs
       cmd_task_control = CmdTaskControl( task_method.t )
 
     method add( cmd:Cmd )->TaskArgs
-      cmd_task_control.current_section.statements.add( cmd ) 
+      if (cmd?) cmd_task_control.current_section.statements.add( cmd ) 
       return this
 
     method add_jump( t:Token, to_section:CmdTaskControlSection )->TaskArgs
-      set_next_ip( t, to_section.ip )
+      set_next_ip( t, to_section )
       add( CmdReturn(t,CmdLiteralLogical(t,true)) )
+      return this
+
+    method add_conditional_jump( condition:Cmd, to_section:CmdTaskControlSection )->TaskArgs
+      local t = condition.t
+      local cmd_if = CmdIf( t, condition )
+
+      local ip = to_section.ip
+      if (cmd_task_control.current_section.ip + 1 != ip)
+        cmd_if.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) ) )
+      endIf
+      cmd_if.statements.add( CmdReturn(t,CmdLiteralLogical(t,true)) )
+
+      add( cmd_if )
       return this
 
     method add_return( t:Token, value=null:Cmd )->TaskArgs
@@ -91,6 +104,12 @@ class TaskArgs : CloneArgs
       add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       begin_section( next_section )
       return this
+
+    method jump_to_new_section( t:Token )->CmdTaskControlSection
+      local new_section = create_section
+      add_jump( t, new_section )
+      begin_section( new_section )
+      return new_section
 
     method begin_section( section:CmdTaskControlSection )->TaskArgs
       cmd_task_control.current_section = section
@@ -107,7 +126,7 @@ class TaskArgs : CloneArgs
     method set_next_ip( t:Token, to_section:CmdTaskControlSection )->TaskArgs
       local ip = to_section.ip
       if (cmd_task_control.current_section.ip + 1 != ip)
-        cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip) ) )
+        cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) ) )
       endIf
       return this
 

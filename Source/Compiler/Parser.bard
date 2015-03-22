@@ -888,7 +888,7 @@ class Parser
     method parse_while->CmdWhile
       local t = read
       local cmd_while = CmdWhile( t )
-      cmd_while.expression = parse_expression
+      cmd_while.condition = parse_expression
 
       if (consume_eols)
         # multi-line while

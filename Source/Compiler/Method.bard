@@ -396,7 +396,9 @@ class Method
         statement = statement.clone( task_args )
         if (statement?) task_args.add( statement )
       endForEach
-      task_args.add_return( t )
+      if (task_args.cmd_task_control.current_section.statements.count == 0)
+        task_args.add_return( t )
+      endIf
 
       m_execute.statements.add( task_args.cmd_task_control )
 

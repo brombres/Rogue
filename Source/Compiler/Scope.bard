@@ -8,6 +8,8 @@ class Scope
     local_list = Local[]
     locals_by_name = Table<<String,Local>>() : Table<<String,Local>>
 
+    control_stack = CmdControlStructure[]
+
   METHODS
     method init( this_type, this_method )
 

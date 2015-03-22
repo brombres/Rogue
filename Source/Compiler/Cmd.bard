@@ -296,7 +296,13 @@ class CmdReturn : CmdStatement
     method init( t, value=null )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdReturn( t, clone(value,clone_args) )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        task_args.add_return( t, value )
+        return null
+      else
+        return CmdReturn( t, clone(value,clone_args) )
+      endIf
 
     method print_cpp( writer:CPPWriter )
       if (value?)
@@ -325,7 +331,8 @@ endClass
 #------------------------------------------------------------------------------
 class CmdControlStructure : CmdStatement
   PROPERTIES
-    statements : CmdStatementList
+    statements     : CmdStatementList
+    contains_yield : Logical
 
   METHODS
     method init( t )
@@ -360,7 +367,11 @@ class CmdBlock : CmdControlStructure
       return false
 
     method resolve( scope:Scope )->CmdBlock
+      scope.control_stack.add( this )
+
       statements.resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -372,7 +383,7 @@ class CmdIf : CmdControlStructure
     else_statements     : CmdStatementList
 
   METHODS
-    method init( t )
+    method init( t, condition=null )
       statements = CmdStatementList()
 
     method init( t, condition, statements, else_ifs, else_statements )
@@ -418,12 +429,16 @@ class CmdIf : CmdControlStructure
       endIf
 
     method resolve( scope:Scope )->CmdIf
+      scope.control_stack.add( this )
+
       condition = condition.resolve( scope ).require_logical
       statements.resolve( scope )
       if (else_ifs?)
         forEach (else_if in else_ifs) else_if.resolve( scope )
       endIf
       if (else_statements?) else_statements.resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -461,20 +476,33 @@ endClass
 
 class CmdWhile : CmdControlStructure
   PROPERTIES
-    expression : Cmd
+    condition : Cmd
 
   METHODS
     method init( t )
       statements = CmdStatementList()
 
-    method init( t, expression, statements=CmdStatementList() )
+    method init( t, condition, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdWhile( t, expression.clone(clone_args), statements.clone(clone_args) )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args? and this.contains_yield)
+        local condition_section = task_args.jump_to_new_section(t)
+        local after_section = task_args.create_section
+        task_args.add_conditional_jump( CmdLogicalNot(t,condition.clone(clone_args)), after_section )
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        task_args.add_jump( t, condition_section )
+        task_args.begin_section( after_section )
+        return null
+      else
+        return CmdWhile( t, condition.clone(clone_args), statements.clone(clone_args) )
+      endIf
 
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" )
-      expression.print_cpp( writer )
+      condition.print_cpp( writer )
       writer.println( ")" )
       writer.println( "{" )
       writer.indent += 2
@@ -483,8 +511,12 @@ class CmdWhile : CmdControlStructure
       writer.println( "}" )
 
     method resolve( scope:Scope )->Cmd
-      expression = expression.resolve( scope )
+      scope.control_stack.add( this )
+
+      condition = condition.resolve( scope )
       statements.resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -512,8 +544,12 @@ class CmdForEachInRange : CmdControlStructure
       writer.println( "}" )
 
     method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
       step_cmd = step_cmd.resolve( scope )
       statements.resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -531,6 +567,8 @@ class CmdForEachInCollection : CmdControlStructure
       return CmdForEachInCollection( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
       collection = collection.resolve( scope )
       local collection_type = collection.require_type.organize
 
@@ -587,6 +625,8 @@ class CmdForEachInCollection : CmdControlStructure
         control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, args )
 
         cmd_block.statements.add( CmdForEachInIndexedCollection( t, index_var, control_var, collection_var, last_cmd, step_size, statements ) )
+
+        scope.control_stack.remove_last
         return cmd_block.resolve( scope )
 
       else
@@ -610,9 +650,13 @@ class CmdForEachInCollection : CmdControlStructure
         control_var.initial_value = CmdAccess( t, CmdReadLocal(t,reader_var), "read", CmdArgs() )
 
         cmd_block.statements.add( CmdForEachInReader( t, reader_var, control_var, statements ) )
+
+        scope.control_stack.remove_last
         return cmd_block.resolve( scope )
 
       endIf
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -643,8 +687,12 @@ class CmdForEachInIndexedCollection : CmdControlStructure
       writer.println( "}" )
 
     method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
       statements.resolve( scope )
       last_cmd = last_cmd.resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -672,8 +720,12 @@ class CmdForEachInReader : CmdControlStructure
       writer.println( "}" )
 
     method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
       statements.resolve( scope )
       condition = CmdAccess( reader_var.t, CmdReadLocal(reader_var.t,reader_var), "has_another" ).resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -691,6 +743,8 @@ class CmdForEachOfCollection : CmdControlStructure
       return CmdForEachOfCollection( t, control_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
       collection = collection.resolve( scope )
       local collection_type = collection.require_type.organize
 
@@ -745,6 +799,8 @@ class CmdForEachOfCollection : CmdControlStructure
         control_var.initial_value = index_read_cmd
 
         cmd_block.statements.add( CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd, step_size, statements ) )
+
+        scope.control_stack.remove_last
         return cmd_block.resolve( scope )
 
       else
@@ -752,6 +808,8 @@ class CmdForEachOfCollection : CmdControlStructure
         throw t.error( "TODO" )
 
       endIf
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -782,8 +840,12 @@ class CmdForEachOfIndexedCollection : CmdControlStructure
       writer.println( "}" )
 
     method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
       statements.resolve( scope )
       last_cmd = last_cmd.resolve( scope )
+
+      scope.control_stack.remove_last
       return this
 endClass
 
@@ -1356,6 +1418,10 @@ class CmdAssign : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdAssign( t, target.clone(clone_args), new_value.clone(clone_args) )
+
+    method print_cpp( writer:CPPWriter )
+      println StackTrace()
+      prior.print_cpp( writer )
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
@@ -3242,6 +3308,11 @@ class CmdYield : Cmd
       if (not scope.this_method.is_task_conversion)
         throw t.error( "The 'yield' statement can only be used in [task] methods." )
       endIf
+
+      forEach (control_structure in scope.control_stack)
+        control_structure.contains_yield = true
+      endForEach
+
       return this
 endClass
 
@@ -3288,6 +3359,9 @@ class CmdTaskControl : Cmd
       return false
 
     method resolve( scope:Scope )->Cmd
+      forEach (section in sections)
+        section.statements.resolve( scope )
+      endForEach
       return this
 endClass
 
