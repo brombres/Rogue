@@ -383,7 +383,7 @@ class Method
       task_args.ip_property = task_type.add_property( t, "ip", Program.type_Integer )
 
       m_temp.statements.clone( task_args )
-      task_args.write_return( t )
+      task_args.add_return( t )
 
       m_update.statements = CmdStatementList()
       m_update.statements.add( task_args.cmd_task_control )

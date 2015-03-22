@@ -13,16 +13,22 @@ class CloneArgs
       return false
 
     method inline_this->Cmd
-      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_this()." )
+      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_this()." )
 
     method inline_access( access:CmdAccess )->Cmd
-      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_access()." )
+      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_access()." )
 
     method inline_read_local( read_cmd:CmdReadLocal )->Cmd
-      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_read_local()." )
+      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_read_local()." )
 
     method inline_write_local( write_cmd:CmdWriteLocal )->Cmd
-      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_write_local()." )
+      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_write_local()." )
+
+    method add( cmd:Cmd )->TaskArgs
+      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::add()." )
+
+    method add_return( t:Token, value=null:Cmd )->TaskArgs
+      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::add_return()." )
 endClass
 
 
@@ -87,7 +93,12 @@ class TaskArgs : CloneArgs
     method init( task_type, method_info, original_context, original_method )
       cmd_task_control = CmdTaskControl( method_info.t )
 
-    method write_return( t:Token, value=null:Cmd )->TaskArgs
+    method add( cmd:Cmd )->TaskArgs
+      cmd_task_control.current_section.statements.add( cmd ) 
+      return this
+
+    method add_return( t:Token, value=null:Cmd )->TaskArgs
+      if (value?) cmd_task_control.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
       cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
       cmd_task_control.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return this

@@ -159,7 +159,10 @@ class CmdStatementList : Cmd[]
 
     method clone( clone_args:CloneArgs )->CmdStatementList
       local result = CmdStatementList( count )
-      forEach (cmd in this) result.add( cmd.clone(clone_args) )
+      forEach (cmd in this)
+        cmd = cmd.clone( clone_args )
+        if (cmd? ) result.add( cmd )
+      endForEach
       return result
 
       #{
