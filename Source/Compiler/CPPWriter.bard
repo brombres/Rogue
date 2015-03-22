@@ -29,10 +29,10 @@ class CPPWriter
 
       which (value)
         case pi
-          buffer.print( "rogue_program.pi" )
+          buffer.print( "Rogue_program.pi" )
 
         case 2*pi
-          buffer.print( "(2*rogue_program.pi)" )
+          buffer.print( "(2*Rogue_program.pi)" )
 
         others
           local decimal_digits = 16

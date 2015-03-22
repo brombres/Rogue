@@ -60,13 +60,13 @@
 //-----------------------------------------------------------------------------
 RogueType::RogueType() : base_type_count(0), base_types(0), index(-1), object_size(0), _singleton(0)
 {
-  if (rogue_program.next_type_index == rogue_program.type_count)
+  if (Rogue_program.next_type_index == Rogue_program.type_count)
   {
     printf( "INTERNAL ERROR: Not enough type slots.\n" );
     exit( 1 );
   }
 
-  rogue_program.types[ rogue_program.next_type_index++ ] = this;
+  Rogue_program.types[ Rogue_program.next_type_index++ ] = this;
 }
 
 RogueType::~RogueType()
@@ -81,7 +81,7 @@ RogueType::~RogueType()
 
 RogueObject* RogueType::create_object()
 {
-  return rogue_program.allocate_object( this, object_size );
+  return Rogue_program.allocate_object( this, object_size );
 }
 
 RogueLogical RogueType::instance_of( RogueType* ancestor_type )
@@ -114,7 +114,7 @@ void RogueObjectType::configure()
 
 RogueObject* RogueObjectType::create_object()
 {
-  return (RogueObject*) rogue_program.allocate_object( this, sizeof(RogueObject) );
+  return (RogueObject*) Rogue_program.allocate_object( this, sizeof(RogueObject) );
 }
 
 const char* RogueObjectType::name() { return "Object"; }
@@ -133,7 +133,7 @@ RogueString* RogueString::create( int count )
 
   int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
 
-  RogueString* st = (RogueString*) rogue_program.allocate_object( rogue_program.type_RogueString, total_size );
+  RogueString* st = (RogueString*) Rogue_program.allocate_object( Rogue_program.type_RogueString, total_size );
   st->count = count;
   st->hash_code = 0;
 
@@ -392,7 +392,7 @@ RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
   if (i2 == -1 || i2 >= count) i2 = count - 1;
 
   // Return empty quotes if zero-length
-  if (i1 > i2) return rogue_program.literal_strings[0]; // empty string
+  if (i1 > i2) return Rogue_program.literal_strings[0]; // empty string
 
   int new_count = (i2 - i1) + 1;
 
@@ -482,7 +482,7 @@ RogueArray* RogueArray::create( int count, int element_size, bool is_reference_a
   int data_size  = count * element_size;
   int total_size = sizeof(RogueArray) + data_size;
 
-  RogueArray* array = (RogueArray*) rogue_program.allocate_object( rogue_program.type_RogueArray, total_size );
+  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( Rogue_program.type_RogueArray, total_size );
 
   memset( array->bytes, 0, data_size );
   array->count = count;
@@ -886,13 +886,13 @@ RogueLogical RogueFile__exists( RogueString* filepath )
 
 RogueString* RogueFile__load( RogueString* filepath )
 {
-  if ( !filepath ) return rogue_program.literal_strings[0];
+  if ( !filepath ) return Rogue_program.literal_strings[0];
 
   char path[ 4096 ];
   filepath->to_c_string( path, 4096 );
 
   FILE* fp = fopen( path, "rb" );
-  if ( !fp ) return rogue_program.literal_strings[0];  // ""
+  if ( !fp ) return Rogue_program.literal_strings[0];  // ""
 
   fseek( fp, 0, SEEK_END );
   int count = (int) ftell( fp );
@@ -964,7 +964,7 @@ void RogueFileReaderType::trace( RogueObject* obj )
 
 RogueFileReader* RogueFileReader__create( RogueString* filepath )
 {
-  RogueFileReader* reader = (RogueFileReader*) rogue_program.type_RogueFileReader->create_object();
+  RogueFileReader* reader = (RogueFileReader*) Rogue_program.type_RogueFileReader->create_object();
   RogueFileReader__open( reader, filepath );
   return reader;
 }
@@ -1080,7 +1080,7 @@ void RogueFileWriterType::trace( RogueObject* obj )
 
 RogueFileWriter* RogueFileWriter__create( RogueString* filepath )
 {
-  RogueFileWriter* writer = (RogueFileWriter*) rogue_program.type_RogueFileWriter->create_object();
+  RogueFileWriter* writer = (RogueFileWriter*) Rogue_program.type_RogueFileWriter->create_object();
   RogueFileWriter__open( writer, filepath );
   return writer;
 }

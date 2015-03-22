@@ -921,7 +921,7 @@ class CmdLiteralString : CmdLiteral
 
     method print_cpp( writer:CPPWriter )
       if (value?)
-        writer.print( "rogue_program.literal_strings[" ).print( index ).print( "]" )
+        writer.print( "Rogue_program.literal_strings[" ).print( index ).print( "]" )
       else
         writer.print( "0" );
       endIf
@@ -2715,7 +2715,7 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
       return ">>>"
 
     method print_cpp( writer:CPPWriter )
-      writer.print( "rogue_program.shift_right( " )
+      writer.print( "Rogue_program.shift_right( " )
       left.print_cpp( writer )
       writer.print( ", " )
       right.print_cpp( writer )

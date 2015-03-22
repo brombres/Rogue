@@ -590,7 +590,7 @@ class Type
         writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
         forEach (i of base_types)
-          writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) rogue_program.type_" )
+          writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
           writer.print( base_types[i].cpp_name ).println( ";" )
         endForEach
       endIf
@@ -632,7 +632,7 @@ class Type
         writer.print( m_init_object.cpp_name )
         writer.print( "( " )
       endIf
-      writer.print(   "(" ).print( cpp_name ).print( "*) rogue_program.allocate_object( this, sizeof(" )
+      writer.print(   "(" ).print( cpp_name ).print( "*) Rogue_program.allocate_object( this, sizeof(" )
       writer.print( cpp_name ).print( ") )" )
       if (m_init_object?) writer.print( " )" )
       writer.println( ";" )
