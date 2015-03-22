@@ -467,7 +467,7 @@ class CmdWhile : CmdControlStructure
     method init( t )
       statements = CmdStatementList()
 
-    method init( t, expression, statements )
+    method init( t, expression, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdWhile( t, expression.clone(clone_args), statements.clone(clone_args) )
@@ -1048,7 +1048,9 @@ class CmdAccess : CmdAccessWithModify
     method clone( clone_args=null:CloneArgs )->Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
       result.set_modifiers( this )
-      if (clone_args? and clone_args.inlining) return clone_args.inline_access( result )
+
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args?) return inline_args.inline_access( result )
       return result
 
     method implicit_type->Type
@@ -1371,7 +1373,8 @@ class CmdThisContext : Cmd
     method init( t, this_type )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      if (clone_args? and clone_args.inlining) return clone_args.inline_this
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args?) return inline_args.inline_this
       return CmdThisContext( t, this_type )
 
     method print_cpp( writer:CPPWriter )
@@ -1394,7 +1397,8 @@ class CmdLiteralThis : CmdThisContext
 
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
-      if (clone_args? and clone_args.inlining) return clone_args.inline_this
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args?) return inline_args.inline_this
       return CmdLiteralThis( t, this_type )
 
     method require_type_context
@@ -1446,7 +1450,8 @@ class CmdReadLocal : CmdAccessWithModify
     method init( t, local_info )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      if (clone_args? and clone_args.inlining) return clone_args.inline_read_local( this )
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args?) return inline_args.inline_read_local( this )
       return CmdReadLocal( t, local_info ).set_modifiers( this )
 
     method print_cpp( writer:CPPWriter )
@@ -1476,7 +1481,8 @@ class CmdWriteLocal : Cmd
     method init( t, local_info, new_value )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      if (clone_args? and clone_args.inlining) return clone_args.inline_write_local( this )
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args?) return inline_args.inline_write_local( this )
       return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
 
     method print_cpp( writer:CPPWriter )
@@ -3217,8 +3223,28 @@ class CmdConvertToPrimitiveType : CmdConvertToType
 endClass
 
 #------------------------------------------------------------------------------
-# CmdTaskControl
+# Task-Related
 #------------------------------------------------------------------------------
+class CmdYield : Cmd
+  METHODS
+    method init( t )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        task_args.add_yield( t )
+        return null
+      else
+        return CmdYield( t )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      if (not scope.this_method.is_task_conversion)
+        throw t.error( "The 'yield' statement can only be used in [task] methods." )
+      endIf
+      return this
+endClass
+
 class CmdTaskControlSection
   PROPERTIES
     ip : Integer
@@ -3235,7 +3261,7 @@ class CmdTaskControl : Cmd
 
   METHODS
     method init( t )
-      current_section = CmdTaskControlSection(0)
+      current_section = CmdTaskControlSection(1)
       sections.add( current_section )
 
     method add( cmd:Cmd )->CmdTaskControl
@@ -3243,7 +3269,7 @@ class CmdTaskControl : Cmd
       return this
 
     method print_cpp( writer:CPPWriter )
-      writer.println( "switch (THIS->ip)" )
+      writer.println( "switch (++THIS->ip)" )
       writer.println( "{" )
       writer.indent += 2
       forEach (section in sections)

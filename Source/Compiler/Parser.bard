@@ -537,18 +537,11 @@ class Parser
         endIf
         return
 
-        #{
       elseIf (consume(TokenType.keyword_yield))
-
-        if (next_is_end_command)
-          statements.add( CmdYieldNil(t) )
-        elseIf (this_method.is_task and this_method.return_type is null)
-          throw t.error( "This task does not declare a return type." )
-        else
-          statements.add( CmdYieldValue(t,parse_expression) )
-        endIf
+        statements.add( CmdYield(t) )
         return
 
+        #{
       elseIf (consume(TokenType.keyword_yieldAndWait))
         statements.add( CmdYieldAndWait(t,parse_expression) )
         return

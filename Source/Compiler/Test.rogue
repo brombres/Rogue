@@ -15,7 +15,10 @@ class Test
       #local b = 4
       println Test.v1
       ++Test.v1
-      return Test.v1 <= 5
+      yield
+      println Test.v1
+      ++Test.v1
+      return false
 
     method print2->Logical [task]
       println Test.v2

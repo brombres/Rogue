@@ -147,6 +147,9 @@ class Method
     method is_task->Logical
       return (attributes.flags & Attribute.is_task)?
 
+    method is_task_conversion->Logical
+      return (attributes.flags & Attribute.is_task_conversion)?
+
     method omit_output->Logical
       return is_native or is_inline or (is_generated and name=="create" and type_context.is_compound)
 
@@ -340,11 +343,17 @@ class Method
 
     method convert_to_task
       # Create the class that will store the converted method
-      local task_type = Program.get_type_reference( t, "$__$_task$" (type_context.name,name,Program.next_unique_integer) )
+      local task_type = Program.get_type_reference( t, "$__$__task$" (type_context.name,name,Program.next_unique_integer) )
       task_type.attributes.add( Attribute.is_class )
       task_type.base_types.add( return_type )  # Task or TaskWithResult<<ResultType>>
+
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
+      m_update.statements.add( CmdWhile( t, CmdAccess(t,"execute",CmdArgs()) ) )
+      m_update.statements.add( CmdReturn( t, CmdCompareNE(t,CmdAccess(t,"ip"),CmdLiteralInteger(t,-1)) ) )
+
+      local m_execute = task_type.add_method( t, "execute" )
+      m_execute.return_type = Program.type_Logical
       task_type.defined = true
 
       # Create a temporary method to store the task body and resolve all statements and variable
@@ -353,6 +362,7 @@ class Method
       local m_name = "__task_resolver" + Program.create_unique_id
       local m_temp = Method( t, type_context, m_name )
       m_temp.return_type = task_result_type
+      m_temp.attributes.add( Attribute.is_task_conversion )
 
       forEach (v in locals)
         if (v.index < parameters.count)
@@ -379,14 +389,16 @@ class Method
         local p = task_type.add_property( v.t, p_name, v.type )
       endForEach
 
-      local task_args = TaskArgs( task_type, m_update, this.type_context, this )
+      local task_args = TaskArgs( task_type, m_execute, this.type_context, this )
       task_args.ip_property = task_type.add_property( t, "ip", Program.type_Integer )
 
-      m_temp.statements.clone( task_args )
+      forEach (statement in m_temp.statements)
+        statement = statement.clone( task_args )
+        if (statement?) task_args.add( statement )
+      endForEach
       task_args.add_return( t )
 
-      m_update.statements = CmdStatementList()
-      m_update.statements.add( task_args.cmd_task_control )
+      m_execute.statements.add( task_args.cmd_task_control )
 
       task_type.organize
 

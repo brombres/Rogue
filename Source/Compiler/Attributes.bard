@@ -23,6 +23,7 @@ class Attribute
     is_generated        = 16384
     is_requisite        = 32768
     is_task             = 65536
+    is_task_conversion  = 131072
 endClass
 
 

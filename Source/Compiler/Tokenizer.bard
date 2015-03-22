@@ -116,6 +116,7 @@ class Tokenizer
       TokenType.keyword_return       = define( TokenType("return") )
       TokenType.keyword_step         = define( TokenType("step") )
       TokenType.keyword_while        = define( TokenType("while") )
+      TokenType.keyword_yield        = define( TokenType("yield") )
 
       # Expression Tokens
       TokenType.identifier                   = TokenType("identifier")

@@ -1,38 +1,13 @@
 class CloneArgs
-  PROPERTIES
-    task_type    : Type
-    method_info  : Method
-    this_context : Cmd
-    arg_lookup : Table<<String,Cmd>>
-
-  METHODS
-    method inlining->Logical
-      return false
-
-    method converting_task->Logical
-      return false
-
-    method inline_this->Cmd
-      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_this()." )
-
-    method inline_access( access:CmdAccess )->Cmd
-      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_access()." )
-
-    method inline_read_local( read_cmd:CmdReadLocal )->Cmd
-      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_read_local()." )
-
-    method inline_write_local( write_cmd:CmdWriteLocal )->Cmd
-      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::inline_write_local()." )
-
-    method add( cmd:Cmd )->TaskArgs
-      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::add()." )
-
-    method add_return( t:Token, value=null:Cmd )->TaskArgs
-      throw method_info.t.error( "[INTERNAL] Unsupported call to CloneArgs::add_return()." )
 endClass
 
 
 class InlineArgs : CloneArgs
+  PROPERTIES
+    this_context : Cmd
+    method_info  : Method
+    arg_lookup : Table<<String,Cmd>>
+
   METHODS
     method init( this_context, method_info, args:CmdArgs )
       if (args?)
@@ -84,27 +59,58 @@ endClass
 
 class TaskArgs : CloneArgs
   PROPERTIES
-    original_context : Type
+    task_type        : Type
+    task_method      : Method
+    original_type    : Type
     original_method  : Method
     cmd_task_control : CmdTaskControl
     ip_property      : Property
 
   METHODS
-    method init( task_type, method_info, original_context, original_method )
-      cmd_task_control = CmdTaskControl( method_info.t )
+    method init( task_type, task_method, original_type, original_method )
+      cmd_task_control = CmdTaskControl( task_method.t )
 
     method add( cmd:Cmd )->TaskArgs
       cmd_task_control.current_section.statements.add( cmd ) 
       return this
 
+    method add_jump( t:Token, to_section:CmdTaskControlSection )->TaskArgs
+      set_next_ip( t, to_section.ip )
+      add( CmdReturn(t,CmdLiteralLogical(t,true)) )
+      return this
+
     method add_return( t:Token, value=null:Cmd )->TaskArgs
       if (value?) cmd_task_control.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
-      cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
-      cmd_task_control.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+      add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
+      add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+      return this
+
+    method add_yield( t:Token )->TaskArgs
+      local next_section = create_section
+      set_next_ip( t, next_section )
+      add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+      begin_section( next_section )
+      return this
+
+    method begin_section( section:CmdTaskControlSection )->TaskArgs
+      cmd_task_control.current_section = section
       return this
 
     method converting_task->Logical
       return true
+
+    method create_section->CmdTaskControlSection
+      local section = CmdTaskControlSection( cmd_task_control.sections.count+1 )
+      cmd_task_control.sections.add( section )
+      return section
+
+    method set_next_ip( t:Token, to_section:CmdTaskControlSection )->TaskArgs
+      local ip = to_section.ip
+      if (cmd_task_control.current_section.ip + 1 != ip)
+        cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip) ) )
+      endIf
+      return this
+
 
 endClass
 
