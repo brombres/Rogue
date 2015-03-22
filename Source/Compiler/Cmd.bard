@@ -1413,6 +1413,9 @@ class CmdReadSingleton : Cmd
   METHODS
     method init( t, of_type )
 
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadSingleton( t, of_type )
+
     method print_cpp( writer:CPPWriter )
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
@@ -3207,6 +3210,55 @@ class CmdConvertToPrimitiveType : CmdConvertToType
         trace
         throw t.error( "TODO: CmdConvertToPrimitiveType with non-primitive operand." )
       endIf
+      return this
+endClass
+
+#------------------------------------------------------------------------------
+# CmdTaskControl
+#------------------------------------------------------------------------------
+class CmdTaskControlSection
+  PROPERTIES
+    ip : Integer
+    statements = CmdStatementList()
+
+  METHODS
+    method init( ip )
+endClass
+
+class CmdTaskControl : Cmd
+  PROPERTIES
+    sections = CmdTaskControlSection[]
+    current_section : CmdTaskControlSection
+
+  METHODS
+    method init( t )
+      current_section = CmdTaskControlSection(0)
+      sections.add( current_section )
+
+    method add( cmd:Cmd )->CmdTaskControl
+      current_section.statements.add( cmd )
+      return this
+
+    method print_cpp( writer:CPPWriter )
+      writer.println( "switch (THIS->ip)" )
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (section in sections)
+        writer.print( "case " ).print( section.ip ).println( ":" )
+        writer.indent += 2
+        section.statements.print_cpp( writer )
+        writer.indent -= 2
+      endForEach
+      writer.println( "default:" )
+      writer.println( "  THIS->ip = -1;" )
+      writer.println( "  return false;" )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
       return this
 endClass
 

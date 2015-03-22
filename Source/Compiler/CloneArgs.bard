@@ -1,11 +1,15 @@
 class CloneArgs
   PROPERTIES
-    method_info      : Method
-    this_context     : Cmd
+    task_type    : Type
+    method_info  : Method
+    this_context : Cmd
     arg_lookup : Table<<String,Cmd>>
 
   METHODS
     method inlining->Logical
+      return false
+
+    method converting_task->Logical
       return false
 
     method inline_this->Cmd
@@ -23,13 +27,8 @@ endClass
 
 
 class InlineArgs : CloneArgs
-  PROPERTIES
-    method_info      : Method
-    this_context     : Cmd
-    arg_lookup : Table<<String,Cmd>>
-
   METHODS
-    method init( method_info, this_context, args:CmdArgs )
+    method init( this_context, method_info, args:CmdArgs )
       if (args?)
         arg_lookup = Table<<String,Cmd>>()
         forEach (index of args)
@@ -75,3 +74,26 @@ class InlineArgs : CloneArgs
       if (not arg) return write_cmd
       return CmdAssign( write_cmd.t, arg.clone(), write_cmd.new_value )
 endClass
+
+
+class TaskArgs : CloneArgs
+  PROPERTIES
+    original_context : Type
+    original_method  : Method
+    cmd_task_control : CmdTaskControl
+    ip_property      : Property
+
+  METHODS
+    method init( task_type, method_info, original_context, original_method )
+      cmd_task_control = CmdTaskControl( method_info.t )
+
+    method write_return( t:Token, value=null:Cmd )->TaskArgs
+      cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
+      cmd_task_control.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+      return this
+
+    method converting_task->Logical
+      return true
+
+endClass
+

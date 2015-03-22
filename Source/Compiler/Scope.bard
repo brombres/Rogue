@@ -78,7 +78,7 @@ class Scope
           endIf
 
         elseIf (m.is_inline)
-          local inline_args = InlineArgs( m, context, args )
+          local inline_args = InlineArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
             local inline_statement = statement.clone( inline_args )
@@ -115,7 +115,7 @@ class Scope
           endIf
 
         elseIf (m.is_inline)
-          local inline_args = InlineArgs( m, context, args )
+          local inline_args = InlineArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
             local inline_statement = statement.clone( inline_args )

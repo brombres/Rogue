@@ -378,7 +378,15 @@ class Method
         local p_name = v.name + "_" + v.index
         local p = task_type.add_property( v.t, p_name, v.type )
       endForEach
-      m_update.statements = m_temp.statements
+
+      local task_args = TaskArgs( task_type, m_update, this.type_context, this )
+      task_args.ip_property = task_type.add_property( t, "ip", Program.type_Integer )
+
+      m_temp.statements.clone( task_args )
+      task_args.write_return( t )
+
+      m_update.statements = CmdStatementList()
+      m_update.statements.add( task_args.cmd_task_control )
 
       task_type.organize
 
