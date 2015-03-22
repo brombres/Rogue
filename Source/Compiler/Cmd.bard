@@ -23,19 +23,19 @@ class Cmd
       endIf
       #endIf
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
 
-    method clone( other:Cmd, inline_args=null:InlineArgs )->Cmd
-      if (other?) return other.clone( inline_args )
+    method clone( other:Cmd, clone_args=null:CloneArgs )->Cmd
+      if (other?) return other.clone( clone_args )
       return null
 
-    method clone( args:CmdArgs, inline_args=null:InlineArgs )->CmdArgs
-      if (args?) return args.clone( inline_args )
+    method clone( args:CmdArgs, clone_args=null:CloneArgs )->CmdArgs
+      if (args?) return args.clone( clone_args )
       return null
 
-    method clone( statements:CmdStatementList, inline_args=null:InlineArgs )->CmdStatementList
-      if (statements?) return statements.clone( inline_args )
+    method clone( statements:CmdStatementList, clone_args=null:CloneArgs )->CmdStatementList
+      if (statements?) return statements.clone( clone_args )
       return null
 
     method combine_literal_operands( common_type:Type )->Cmd
@@ -157,9 +157,9 @@ class CmdStatementList : Cmd[]
       return false
       }#
 
-    method clone( inline_args:InlineArgs )->CmdStatementList
+    method clone( clone_args:CloneArgs )->CmdStatementList
       local result = CmdStatementList( count )
-      forEach (cmd in this) result.add( cmd.clone(inline_args) )
+      forEach (cmd in this) result.add( cmd.clone(clone_args) )
       return result
 
       #{
@@ -212,9 +212,9 @@ class CmdArgs : Cmd[]
       init
       add( arg1 ).add( arg2 )
 
-    method clone( inline_args=null:InlineArgs )->CmdArgs
+    method clone( clone_args=null:CloneArgs )->CmdArgs
       local result = CmdArgs( count )
-      forEach (cmd in this) result.add( cmd.clone(inline_args) )
+      forEach (cmd in this) result.add( cmd.clone(clone_args) )
       return result
 
     method print_cpp( writer:CPPWriter )
@@ -250,7 +250,7 @@ class CmdLocalDeclaration : CmdStatement
   METHODS
     method init( t, local_info )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLocalDeclaration( t, local_info )
 
     method exit_scope( scope:Scope )
@@ -292,8 +292,8 @@ class CmdReturn : CmdStatement
   METHODS
     method init( t, value=null )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdReturn( t, clone(value,inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReturn( t, clone(value,clone_args) )
 
     method print_cpp( writer:CPPWriter )
       if (value?)
@@ -343,8 +343,8 @@ class CmdBlock : CmdControlStructure
 
     method init( t, statements )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBlock( t, statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBlock( t, statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.println( "{" )
@@ -374,16 +374,16 @@ class CmdIf : CmdControlStructure
 
     method init( t, condition, statements, else_ifs, else_statements )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       local cloned_else_ifs : CmdElseIf[]
       if (else_ifs?)
         cloned_else_ifs = CmdElseIf[]( else_ifs.count )
         forEach (e in else_ifs)
-          cloned_else_ifs.add( e.clone(inline_args) )
+          cloned_else_ifs.add( e.clone(clone_args) )
         endForEach
       endIf
 
-      return CmdIf( t, condition.clone(inline_args), statements.clone(inline_args), cloned_else_ifs, clone(else_statements,inline_args) )
+      return CmdIf( t, condition.clone(clone_args), statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args) )
 
     method add( cmd_else_if:CmdElseIf )
       if (else_ifs is null) else_ifs = CmdElseIf[]
@@ -437,8 +437,8 @@ class CmdElseIf
 
     method init( cmd_if, condition, statements )
 
-    method clone( inline_args=null:InlineArgs )->CmdElseIf
-      return CmdElseIf( cmd_if, condition.clone(inline_args), statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->CmdElseIf
+      return CmdElseIf( cmd_if, condition.clone(clone_args), statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "else if (" )
@@ -466,8 +466,8 @@ class CmdWhile : CmdControlStructure
 
     method init( t, expression, statements )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdWhile( t, expression.clone(inline_args), statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWhile( t, expression.clone(clone_args), statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" )
@@ -495,8 +495,8 @@ class CmdForEachInRange : CmdControlStructure
   METHODS
     method init( t, control_var, last_var, step_cmd, statements=CmdStatementList() )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachInRange( t, control_var, last_var, clone(step_cmd,inline_args), statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdForEachInRange( t, control_var, last_var, clone(step_cmd,clone_args), statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "for (; " ).print( control_var.cpp_name ).print( "<=" ).print( last_var.cpp_name ).print( "; " )
@@ -524,8 +524,8 @@ class CmdForEachInCollection : CmdControlStructure
   METHODS
     method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachInCollection( t, control_var_name, index_var_name, collection.clone(inline_args), clone(step_cmd,inline_args), statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdForEachInCollection( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       collection = collection.resolve( scope )
@@ -624,8 +624,8 @@ class CmdForEachInIndexedCollection : CmdControlStructure
   METHODS
     method init( t, index_var, control_var, collection_var, last_cmd, step_size, statements=CmdStatementList() )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachInIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(inline_args), step_size, statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdForEachInIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" ).print( index_var.cpp_name )
@@ -655,8 +655,8 @@ class CmdForEachInReader : CmdControlStructure
   METHODS
     method init( t, reader_var, control_var, statements=CmdStatementList() )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachInReader( t, reader_var, control_var, statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdForEachInReader( t, reader_var, control_var, statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" )
@@ -684,8 +684,8 @@ class CmdForEachOfCollection : CmdControlStructure
   METHODS
     method init( t, control_var_name, collection, step_cmd, statements=CmdStatementList() )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachOfCollection( t, control_var_name, collection.clone(inline_args), clone(step_cmd,inline_args), statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdForEachOfCollection( t, control_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       collection = collection.resolve( scope )
@@ -763,8 +763,8 @@ class CmdForEachOfIndexedCollection : CmdControlStructure
   METHODS
     method init( t, index_var, control_var, collection_var, last_cmd, step_size, statements=CmdStatementList() )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(inline_args), step_size, statements.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "while (" ).print( index_var.cpp_name )
@@ -801,7 +801,7 @@ class CmdLiteralNull : CmdLiteral
   METHODS
     method init( t )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralNull( t )
 
     method print_cpp( writer:CPPWriter )
@@ -821,7 +821,7 @@ class CmdLiteralReal : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralReal( t, value )
 
     method print_cpp( writer:CPPWriter )
@@ -842,7 +842,7 @@ class CmdLiteralInteger : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInteger( t, value )
 
     method cast_to( target_type:Type )->Cmd
@@ -870,7 +870,7 @@ class CmdLiteralCharacter : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralCharacter( t, value )
 
     method print_cpp( writer:CPPWriter )
@@ -893,7 +893,7 @@ class CmdLiteralLogical : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralLogical( t, value )
 
     method print_cpp( writer:CPPWriter )
@@ -916,7 +916,7 @@ class CmdLiteralString : CmdLiteral
   METHODS
     method init( t, value, index=0 )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralString( t, value, index )
 
     method print_cpp( writer:CPPWriter )
@@ -951,8 +951,8 @@ class CmdFormattedString : Cmd
   METHODS
     method init( t, format, args )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdFormattedString( t, format, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdFormattedString( t, format, args.clone(clone_args) )
 
     method implicit_type->Type
       return Program.type_String
@@ -1042,10 +1042,10 @@ class CmdAccess : CmdAccessWithModify
       args = CmdArgs()
       args.add( arg )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      local result = CmdAccess( t, clone(context,inline_args), name, clone(args,inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
       result.set_modifiers( this )
-      if (inline_args?) return inline_args.inline_access( result )
+      if (clone_args? and clone_args.inlining) return clone_args.inline_access( result )
       return result
 
     method implicit_type->Type
@@ -1237,8 +1237,8 @@ class CmdElementAccess : CmdAccessWithModify
   METHODS
     method init( t, context, index )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdElementAccess( t, context.clone(inline_args), index.clone(inline_args) ).set_modifiers( this )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdElementAccess( t, context.clone(clone_args), index.clone(clone_args) ).set_modifiers( this )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope )
@@ -1279,7 +1279,7 @@ class CmdCreateObject : Cmd
   METHODS
     method init( t, of_type )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCreateObject( t, of_type )
 
     method print_cpp( writer:CPPWriter )
@@ -1311,8 +1311,8 @@ class CmdCreateCompound : Cmd
   METHODS
     method init( t, of_type, args )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCreateCompound( t, of_type, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateCompound( t, of_type, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( of_type ).print( "(" )
@@ -1349,8 +1349,8 @@ class CmdAssign : Cmd
   METHODS
     method init( t, target, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdAssign( t, target.clone(inline_args), new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdAssign( t, target.clone(clone_args), new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
@@ -1367,8 +1367,8 @@ class CmdThisContext : Cmd
   METHODS
     method init( t, this_type )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      if (inline_args?) return inline_args.inline_this
+    method clone( clone_args=null:CloneArgs )->Cmd
+      if (clone_args? and clone_args.inlining) return clone_args.inline_this
       return CmdThisContext( t, this_type )
 
     method print_cpp( writer:CPPWriter )
@@ -1390,8 +1390,8 @@ class CmdLiteralThis : CmdThisContext
     this_type : Type
 
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      if (inline_args?) return inline_args.inline_this
+    method clone( clone_args=null:CloneArgs )->Cmd
+      if (clone_args? and clone_args.inlining) return clone_args.inline_this
       return CmdLiteralThis( t, this_type )
 
     method require_type_context
@@ -1439,8 +1439,8 @@ class CmdReadLocal : CmdAccessWithModify
   METHODS
     method init( t, local_info )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      if (inline_args?) return inline_args.inline_read_local( this )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      if (clone_args? and clone_args.inlining) return clone_args.inline_read_local( this )
       return CmdReadLocal( t, local_info ).set_modifiers( this )
 
     method print_cpp( writer:CPPWriter )
@@ -1469,9 +1469,9 @@ class CmdWriteLocal : Cmd
   METHODS
     method init( t, local_info, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      if (inline_args?) return inline_args.inline_write_local( this )
-      return CmdWriteLocal( t, local_info, clone(new_value,inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      if (clone_args? and clone_args.inlining) return clone_args.inline_write_local( this )
+      return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.cpp_name ).print(" = ")
@@ -1496,7 +1496,7 @@ class CmdReadSetting : CmdAccessWithModify
   METHODS
     method init( t, setting_info )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
+    method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadSetting( t, setting_info ).set_modifiers(this)
 
     method print_cpp( writer:CPPWriter )
@@ -1526,8 +1526,8 @@ class CmdWriteSetting : Cmd
   METHODS
     method init( t, setting_info, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdWriteSetting( t, setting_info, new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteSetting( t, setting_info, new_value.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print_type_name( setting_info.type_context ).print( "::" )
@@ -1557,8 +1557,8 @@ class CmdReadProperty : CmdAccessWithModify
   METHODS
     method init( t, context, property_info )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdReadProperty( t, context.clone(inline_args), property_info ).set_modifiers(this)
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadProperty( t, context.clone(clone_args), property_info ).set_modifiers(this)
 
     method print_cpp( writer:CPPWriter )
       if (premodify_count > 0) writer.print("++")
@@ -1589,8 +1589,8 @@ class CmdWriteProperty : Cmd
   METHODS
     method init( t, context, property_info, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdWriteProperty( t, context.clone(inline_args), property_info, new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteProperty( t, context.clone(clone_args), property_info, new_value.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
@@ -1640,8 +1640,8 @@ class CmdCallRoutine : CmdCall
   METHODS
     method init( t, method_info, args )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallRoutine( t, method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallRoutine( t, method_info, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1669,8 +1669,8 @@ endClass
 
 class CmdCallAspectMethod : CmdCall
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallAspectMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallAspectMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1700,8 +1700,8 @@ endClass
 
 class CmdCallDynamicMethod : CmdCall
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallDynamicMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1737,8 +1737,8 @@ endClass
 
 class CmdCallStaticMethod : CmdCall
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallStaticMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallStaticMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1769,8 +1769,8 @@ class CmdCallNativeRoutine : CmdCall
   METHODS
     method init( t, method_info, args )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallNativeRoutine( t, method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallNativeRoutine( t, method_info, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1794,8 +1794,8 @@ endClass
 
 class CmdCallNativeMethod : CmdCall
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallNativeMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1861,8 +1861,8 @@ class CmdCallInlineNativeRoutine : CmdCallInlineNative
   METHODS
     method init( t, method_info, args )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallInlineNativeRoutine( t, method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallInlineNativeRoutine( t, method_info, args.clone(clone_args) )
 
     method type->Type
       return method_info.return_type
@@ -1870,8 +1870,8 @@ endClass
 
 class CmdCallInlineNativeMethod : CmdCallInlineNative
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCallInlineNativeMethod( t, clone(context,inline_args), method_info, args.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallInlineNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
     method print_this( writer:CPPWriter )
       context.print_cpp( writer )
@@ -1895,8 +1895,8 @@ endClass
 
 class CmdRangeUpTo : CmdRange
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdRangeUpTo( t, first.clone(inline_args), last.clone(inline_args), clone(step_size,inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeUpTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
 endClass
 
 
@@ -1944,8 +1944,8 @@ endClass
 
 class CmdLogicalize : CmdUnary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdLogicalize( t, operand.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalize( t, operand.clone(clone_args) )
 
     method cpp_prefix_symbol->String
       return "!!"
@@ -1970,8 +1970,8 @@ endClass
 
 class CmdLogicalNot : CmdUnary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdLogicalNot( t, operand.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalNot( t, operand.clone(clone_args) )
 
     method cpp_prefix_symbol->String
       return "!"
@@ -1995,8 +1995,8 @@ endClass
 
 class CmdNegate : CmdUnary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdNegate( t, operand.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdNegate( t, operand.clone(clone_args) )
 
     method prefix_symbol->String
       return "(-"
@@ -2081,8 +2081,8 @@ endClass
 
 class CmdAdd : CmdBinary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdAdd( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdAdd( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2103,8 +2103,8 @@ endClass
 
 class CmdSubtract : CmdBinary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdSubtract( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdSubtract( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2124,8 +2124,8 @@ endClass
 
 class CmdMultiply : CmdBinary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdMultiply( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdMultiply( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2146,8 +2146,8 @@ endClass
 
 class CmdDivide : CmdBinary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdDivide( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdDivide( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2168,8 +2168,8 @@ endClass
 
 class CmdMod : CmdBinary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdMod( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdMod( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2197,8 +2197,8 @@ endClass
 
 class CmdPower : CmdBinary
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdPower( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdPower( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2252,8 +2252,8 @@ endClass
 
 class CmdLogicalAnd : CmdBinaryLogical
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdLogicalAnd( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalAnd( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a and b)
@@ -2268,8 +2268,8 @@ endClass
 
 class CmdLogicalOr : CmdBinaryLogical
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdLogicalOr( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalOr( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a or b)
@@ -2285,8 +2285,8 @@ endClass
 
 class CmdLogicalXor : CmdBinaryLogical
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdLogicalXor( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalXor( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a xor b)
@@ -2325,8 +2325,8 @@ endClass
 
 class CmdCompareEQ : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareEQ( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareEQ( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2365,8 +2365,8 @@ endClass
 
 class CmdCompareNE : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareNE( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareNE( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2402,8 +2402,8 @@ endClass
 
 class CmdCompareLT : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareLT( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareLT( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2439,8 +2439,8 @@ endClass
 
 class CmdCompareLE : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareLE( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareLE( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2476,8 +2476,8 @@ endClass
 
 class CmdCompareGT : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareGT( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareGT( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2513,8 +2513,8 @@ endClass
 
 class CmdCompareGE : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareGE( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareGE( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real)
@@ -2550,8 +2550,8 @@ endClass
 
 class CmdCompareIs : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareIs( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareIs( t, left.clone(clone_args), right.clone(clone_args) )
 
     method cpp_symbol->String
       return "=="
@@ -2577,8 +2577,8 @@ endClass
 
 class CmdCompareIsNot : CmdComparison
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCompareIsNot( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareIsNot( t, left.clone(clone_args), right.clone(clone_args) )
 
     method cpp_symbol->String
       return "!="
@@ -2625,8 +2625,8 @@ endClass
 
 class CmdBitwiseAnd : CmdBitwiseOp
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBitwiseAnd( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseAnd( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Integer)
@@ -2643,8 +2643,8 @@ endClass
 
 class CmdBitwiseOr : CmdBitwiseOp
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBitwiseOr( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseOr( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Integer)
@@ -2661,8 +2661,8 @@ endClass
 
 class CmdBitwiseXor : CmdBitwiseOp
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBitwiseXor( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseXor( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Integer)
@@ -2682,8 +2682,8 @@ endClass
 
 class CmdBitwiseShiftLeft : CmdBitwiseOp
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBitwiseShiftLeft( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftLeft( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Integer)
@@ -2701,8 +2701,8 @@ endClass
 
 class CmdBitwiseShiftRight : CmdBitwiseOp
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBitwiseShiftRight( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftRight( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Integer)
@@ -2727,8 +2727,8 @@ endClass
 
 class CmdBitwiseShiftRightX : CmdBitwiseOp
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdBitwiseShiftRightX( t, left.clone(inline_args), right.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftRightX( t, left.clone(clone_args), right.clone(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Integer)
@@ -2756,8 +2756,8 @@ class CmdOpWithAssign : Cmd
   METHODS
     method init( t, target, op, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdOpWithAssign( t, target.clone(inline_args), op, new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdOpWithAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
       
     method resolve( scope:Scope )->Cmd
       return target.resolve_modify_and_assign( scope, op, new_value )
@@ -2785,8 +2785,8 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
   METHODS
     method init( t, local_info, op, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
@@ -2844,8 +2844,8 @@ class CmdOpAssignSetting : CmdResolvedOpWithAssign
   METHODS
     method init( t, setting_info, op, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdOpAssignSetting( t, setting_info, op, new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdOpAssignSetting( t, setting_info, op, new_value.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print_type_name( setting_info.type_context ).print( "::" )
@@ -2904,8 +2904,8 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
   METHODS
     method init( t, context, property_info, op, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdOpAssignProperty( t, context.clone(inline_args), property_info, op, new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdOpAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
@@ -2975,8 +2975,8 @@ class CmdCreateArray : Cmd
 
     method init( t, array_type, count_cmd )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCreateArray( t, array_type, count_cmd.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateArray( t, array_type, count_cmd.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "RogueArray::create( " )
@@ -3003,8 +3003,8 @@ class CmdReadArrayElement : CmdAccessWithModify
   METHODS
     method init( t, context, index )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdReadArrayElement( t, context.clone(inline_args), index.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadArrayElement( t, context.clone(clone_args), index.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       if (array_type.element_type.is_reference)
@@ -3069,8 +3069,8 @@ class CmdReadArrayCount : Cmd
   METHODS
     method init( t, context )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdReadArrayCount( t, context.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadArrayCount( t, context.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
@@ -3097,8 +3097,8 @@ class CmdWriteArrayElement : Cmd
   METHODS
     method init( t, context, index, new_value )
 
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdWriteArrayElement( t, context.clone(inline_args), index.clone(inline_args), new_value.clone(inline_args) )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteArrayElement( t, context.clone(clone_args), index.clone(clone_args), new_value.clone(clone_args) )
 
     method print_cpp( writer:CPPWriter )
       context.print_cpp( writer )
@@ -3157,8 +3157,8 @@ endClass
 
 class CmdCastToType : CmdTypeOperator
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdCastToType( t, operand.clone(inline_args), target_type )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCastToType( t, operand.clone(clone_args), target_type )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print( target_type ).print( ")(" )
@@ -3174,8 +3174,8 @@ endClass
 
 class CmdConvertToType : CmdTypeOperator
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdConvertToType( t, operand.clone(inline_args), target_type )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdConvertToType( t, operand.clone(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
@@ -3193,8 +3193,8 @@ endClass
 
 class CmdConvertToPrimitiveType : CmdConvertToType
   METHODS
-    method clone( inline_args=null:InlineArgs )->Cmd
-      return CmdConvertToPrimitiveType( t, operand.clone(inline_args), target_type )
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdConvertToPrimitiveType( t, operand.clone(clone_args), target_type )
 
     method print_cpp( writer:CPPWriter )
       writer.print( "((" ).print( target_type.cpp_name ).print( ")(" )

@@ -1,4 +1,4 @@
-$[include "InlineArgs.bard"]
+$[include "CloneArgs.bard"]
 
 class Scope
   PROPERTIES

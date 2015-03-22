@@ -53,7 +53,7 @@ class Method
       forEach (i of parameters) result.parameters.add( locals[i] )
 
       result.min_args = min_args
-      result.statements = statements.clone( null as InlineArgs )
+      result.statements = statements.clone( null as CloneArgs )
       result.generic_method = generic_method
       result.native_code = native_code
       result.index = index
@@ -67,7 +67,7 @@ class Method
         # prior to the clone() above and we need to copy the statements.
         # If it's null then we've already cloned the statement list when we clone()d
         # the method above.
-        m.statements = aspect_statements.clone( null as InlineArgs )
+        m.statements = aspect_statements.clone( null as CloneArgs )
       endIf
 
       if (incorporating_classes is null) incorporating_classes = Type[]

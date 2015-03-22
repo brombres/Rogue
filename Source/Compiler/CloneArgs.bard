@@ -1,4 +1,28 @@
-class InlineArgs
+class CloneArgs
+  PROPERTIES
+    method_info      : Method
+    this_context     : Cmd
+    arg_lookup : Table<<String,Cmd>>
+
+  METHODS
+    method inlining->Logical
+      return false
+
+    method inline_this->Cmd
+      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_this()." )
+
+    method inline_access( access:CmdAccess )->Cmd
+      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_access()." )
+
+    method inline_read_local( read_cmd:CmdReadLocal )->Cmd
+      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_read_local()." )
+
+    method inline_write_local( write_cmd:CmdWriteLocal )->Cmd
+      throw method_info.t.error( "[INTERNAL] Illegal call to CloneArgs::inline_write_local()." )
+endClass
+
+
+class InlineArgs : CloneArgs
   PROPERTIES
     method_info      : Method
     this_context     : Cmd
@@ -12,6 +36,9 @@ class InlineArgs
           arg_lookup[ method_info.parameters[index].name ] = args[index]
         endForEach
       endIf
+
+    method inlining->Logical
+      return true
 
     method inline_this->Cmd
       return this_context.clone()
