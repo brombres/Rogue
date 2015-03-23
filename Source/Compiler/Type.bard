@@ -506,7 +506,9 @@ class Type
       if (generic_type?) generic_type.organize
 
       forEach (s in settings_list) s.type.organize
-      forEach (p in property_list) p.type.organize
+      forEach (p in property_list)
+        p.type.organize
+      endForEach
 
       #{
       local need_init_object = false

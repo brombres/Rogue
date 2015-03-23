@@ -364,11 +364,15 @@ class Method
       m_temp.return_type = task_result_type
       m_temp.attributes.add( Attribute.is_task_conversion )
 
-      forEach (v in locals)
+      # Move the Local var objects to the temp method (since Cmd code might reference them directly)
+      # and create copies at the original location (this method).
+      m_temp.locals = locals
+      locals = Local[]
+      forEach (v in m_temp.locals)
         if (v.index < parameters.count)
-          m_temp.add_parameter( v.t, v.name, v.type )
+          add_parameter( v.t, v.name, v.type )
         else
-          local v2 = m_temp.add_local( v.t, v.name, v.type )
+          local v2 = add_local( v.t, v.name, v.type )
           if (v.initial_value?) v2.initial_value = v.initial_value.clone
         endIf
       endForEach
@@ -386,6 +390,7 @@ class Method
       # Convert resolved method into task "functor"
       forEach (v in m_temp.locals)
         local p_name = v.name + "_" + v.index
+        println "creating property $ : $" (p_name,v.type )
         local p = task_type.add_property( v.t, p_name, v.type )
       endForEach
 

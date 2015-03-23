@@ -389,15 +389,50 @@ class CmdIf : CmdControlStructure
     method init( t, condition, statements, else_ifs, else_statements )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local cloned_else_ifs : CmdElseIf[]
-      if (else_ifs?)
-        cloned_else_ifs = CmdElseIf[]( else_ifs.count )
-        forEach (e in else_ifs)
-          cloned_else_ifs.add( e.clone(clone_args) )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args? and this.contains_yield)
+        local next_section = task_args.create_section
+        local end_section = task_args.create_section
+        task_args.add_conditional_jump( CmdLogicalNot(t,condition.clone(clone_args)), next_section )
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
         endForEach
-      endIf
+        task_args.add_jump( t, end_section )
+        task_args.begin_section( next_section )
 
-      return CmdIf( t, condition.clone(clone_args), statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args) )
+        if (else_ifs?)
+          forEach (e in else_ifs)
+            next_section = task_args.create_section
+            task_args.add_conditional_jump( CmdLogicalNot(t,e.condition.clone(clone_args)), next_section )
+            forEach (statement in e.statements)
+              task_args.add( statement.clone(task_args) )
+            endForEach
+            task_args.add_jump( t, end_section )
+            task_args.begin_section( next_section )
+          endForEach
+        endIf
+
+        if (else_statements?)
+          forEach (statement in else_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+
+        task_args.add_jump( t, end_section )
+        task_args.begin_section( end_section )
+        return null
+
+      else
+        local cloned_else_ifs : CmdElseIf[]
+        if (else_ifs?)
+          cloned_else_ifs = CmdElseIf[]( else_ifs.count )
+          forEach (e in else_ifs)
+            cloned_else_ifs.add( e.clone(clone_args) )
+          endForEach
+        endIf
+
+        return CmdIf( t, condition.clone(clone_args), statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args) )
+      endIf
 
     method add( cmd_else_if:CmdElseIf )
       if (else_ifs is null) else_ifs = CmdElseIf[]
@@ -1998,9 +2033,9 @@ class CmdUnary : Cmd
       return ""
 
     method print_cpp( writer:CPPWriter )
-      writer.print( cpp_prefix_symbol )
+      writer.print( cpp_prefix_symbol ).print( "(" )
       operand.print_cpp( writer )
-      writer.print( cpp_suffix_symbol )
+      writer.print( ")" ).print( cpp_suffix_symbol )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )

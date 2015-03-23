@@ -11,21 +11,21 @@ class Test
       while (TaskManager.update) noAction
 
     method print1->Integer [task]
-      Test.v1 = 1
-      while (Test.v1 <= 5)
-        println Test.v1
-        ++Test.v1
+      if (v1 == 1)
+        println 1
+        println 2
         yield
-      endWhile
-      return 42
+        println 3
+        println 4
+      else
+        println 5
+        println 6
+        yield
+        println 7
+        println 8
+      endIf
 
     method print2 [task]
-      Test.v2 = 10
-      while (Test.v2 <= 15)
-        println Test.v2
-        ++Test.v2
-        yield
-      endWhile
 endClass
 
 class PrintTask(low:Integer,high:Integer) : Task
