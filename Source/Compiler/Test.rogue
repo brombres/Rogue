@@ -11,19 +11,10 @@ class Test
       while (TaskManager.update) noAction
 
     method print1->Integer [task]
-      if (v1 == 1)
-        println 1
-        println 2
-        yield
-        println 3
-        println 4
-      else
-        println 5
-        println 6
-        yield
-        println 7
-        println 8
-      endIf
+      forEach (n in 3..5)
+        println n
+        #yield
+      endForEach
 
     method print2 [task]
 endClass
@@ -781,7 +772,8 @@ class List<<$DataType:Object>> : GenericList
       local result = this[ index ]
       data.set( index, data, index+1 )
       local zero_value : $DataType
-      data[count--] = zero_value
+      data[count] = zero_value
+      --count
       return result
 
     method set( xyz:Integer, new_value:$DataType )->$DataType[]

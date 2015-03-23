@@ -138,7 +138,7 @@ class Scope
         endIf
       endIf
 
-      return cmd.set_modifiers(access).resolve( this )
+      return cmd.resolve( this )
 
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method
       local candidates = CandidateMethods( type_context, access, error_on_fail )

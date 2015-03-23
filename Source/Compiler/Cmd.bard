@@ -67,18 +67,6 @@ class Cmd
     method is_literal->Logical
       return false
 
-    method postmodify( count:Integer )->Cmd
-      throw t.error( "Illegal target; ++ and -- can only be applied to variables." )
-
-    method premodify( count:Integer )->Cmd
-      throw t.error( "Illegal target; ++ and -- can only be applied to variables." )
-
-    method set_modifiers( access:CmdAccessWithModify )->Cmd
-      if (access.modified)
-        throw t.error( "Illegal target; ++ and -- can only be applied to variables." )
-      endIf
-      return this
-
     method print_cpp( writer:CPPWriter )
       throw t.error( "[INTERNAL] $::print_cpp() is not defined." (type_name) )
 
@@ -121,6 +109,9 @@ class Cmd
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      throw t.error( "Invalid target for increment/decrement." )
 
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
@@ -254,7 +245,12 @@ class CmdLocalDeclaration : CmdStatement
     method init( t, local_info )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLocalDeclaration( t, local_info )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        return task_args.replace_write_local( t, local_info, local_info.initial_value )
+      else
+        return CmdLocalDeclaration( t, local_info )
+      endIf
 
     method exit_scope( scope:Scope )
       scope.pop_local
@@ -558,19 +554,38 @@ endClass
 
 class CmdForEachInRange : CmdControlStructure
   PROPERTIES
-    control_var : Local
-    last_var    : Local
-    step_cmd    : Cmd
+    cmd_read_control : Cmd
+    cmd_read_last    : Cmd
+    cmd_step         : Cmd
 
   METHODS
-    method init( t, control_var, last_var, step_cmd, statements=CmdStatementList() )
+    method init( t, cmd_read_control, cmd_read_last, cmd_step, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachInRange( t, control_var, last_var, clone(step_cmd,clone_args), statements.clone(clone_args) )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args? and this.contains_yield)
+        local condition_section = task_args.jump_to_new_section(t)
+        local end_section = task_args.create_section
+        task_args.add_conditional_jump( CmdCompareGT(t, cmd_read_control.clone(task_args), cmd_read_last.clone(task_args)), end_section )
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        task_args.add( cmd_step.clone(task_args) )
+        task_args.add_jump( t, condition_section )
+        task_args.begin_section( end_section )
+        return null
+      else
+        return CmdForEachInRange( t, cmd_read_control.clone(clone_args), cmd_read_last.clone(clone_args), clone(cmd_step,clone_args), statements.clone(clone_args) )
+
+      endIf
 
     method print_cpp( writer:CPPWriter )
-      writer.print( "for (; " ).print( control_var.cpp_name ).print( "<=" ).print( last_var.cpp_name ).print( "; " )
-      step_cmd.print_cpp( writer )
+      writer.print( "for (; " )
+      cmd_read_control.print_cpp( writer )
+      writer.print( "<=" )
+      cmd_read_last.print_cpp( writer )
+      writer.print( "; " )
+      cmd_step.print_cpp( writer )
       writer.println( ")" )
       writer.println( "{" )
       writer.indent += 2
@@ -580,8 +595,9 @@ class CmdForEachInRange : CmdControlStructure
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
-
-      step_cmd = step_cmd.resolve( scope )
+      cmd_read_control = cmd_read_control.resolve( scope )
+      cmd_read_last = cmd_read_last.resolve( scope )
+      cmd_step = cmd_step.resolve( scope )
       statements.resolve( scope )
 
       scope.control_stack.remove_last
@@ -647,7 +663,7 @@ class CmdForEachInCollection : CmdControlStructure
         local control_var = scope.this_method.add_local( t, control_var_name )
 
         if (step_size >= -1 and step_size <= 1)
-          statements.add( CmdReadLocal(t,index_var).premodify(step_size) )
+          statements.add( CmdModifyLocal(t,index_var,step_size) )
         elseIf (step_size >= 0)
           statements.add(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
         else
@@ -819,9 +835,9 @@ class CmdForEachOfCollection : CmdControlStructure
 
         local index_read_cmd : Cmd
         if (step_size == 1)
-          index_read_cmd = CmdReadLocal( t, index_var ).postmodify(1)
+          index_read_cmd = CmdModifyLocal( t, index_var, 1 )
         elseIf (step_size == -1)
-          index_read_cmd = CmdReadLocal( t, index_var ).postmodify(-1)
+          index_read_cmd = CmdModifyLocal( t, index_var, -1 )
         elseIf (step_size >= 0)
           index_read_cmd = CmdReadLocal( t, index_var )
           statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
@@ -1088,42 +1104,7 @@ endClass
 #------------------------------------------------------------------------------
 # Access
 #------------------------------------------------------------------------------
-class CmdAccessWithModify : Cmd
-  PROPERTIES
-    premodify_count : Integer
-    # Sum of pre-increment and pre-decrement
-
-    postmodify_count : Integer
-    # Sum of post-increment and post-decrement
-
-    modified : Logical
-
-  METHODS
-    method postmodify( count:Integer )->Cmd
-      if (modified) throw t.error( "Only one ++ or -- may be used at a time." )
-      postmodify_count += count
-      modified = true
-      return this
-
-    method premodify( count:Integer )->Cmd
-      if (modified)
-        throw t.error( "Only one ++ or -- may be used at a time." )
-      endIf
-      premodify_count += count
-      modified = true
-      return this
-
-    method set_modifiers( access:CmdAccessWithModify )->Cmd
-      if (access.modified)
-        modified = true
-        premodify_count = access.premodify_count
-        postmodify_count = access.postmodify_count
-      endIf
-      return this
-endClass
-
-
-class CmdAccess : CmdAccessWithModify
+class CmdAccess : Cmd
   PROPERTIES
     context   : Cmd
     name      : String
@@ -1144,7 +1125,6 @@ class CmdAccess : CmdAccessWithModify
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
-      result.set_modifiers( this )
 
       local inline_args = (clone_args as InlineArgs)
       if (inline_args?) return inline_args.inline_access( result )
@@ -1161,7 +1141,7 @@ class CmdAccess : CmdAccessWithModify
           local v = scope.find_local( name )
           if (v?)
             if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-            return CmdReadLocal(t,v).set_modifiers(this).resolve(scope)
+            return CmdReadLocal(t,v).resolve(scope)
           endIf
         endIf
 
@@ -1215,7 +1195,7 @@ class CmdAccess : CmdAccessWithModify
         endIf
 
         local p = scope.this_type.find_setting( name )
-        if (p?) return CmdReadSetting( t, p ).set_modifiers(this)
+        if (p?) return CmdReadSetting( t, p )
 
         p = scope.this_type.find_property( name )
         if (p?)
@@ -1223,7 +1203,7 @@ class CmdAccess : CmdAccessWithModify
             throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
           endIf
           context = CmdThisContext( t, scope.this_type )
-          return CmdReadProperty( t, context, p ).set_modifiers(this)
+          return CmdReadProperty( t, context, p )
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -1237,12 +1217,12 @@ class CmdAccess : CmdAccessWithModify
       local p = context_type.find_setting( name )
       if (p?)
         context.require_type_context
-        return CmdReadSetting( t, p).set_modifiers(this).resolve(scope)
+        return CmdReadSetting( t, p).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
       if (p?)
-        return CmdReadProperty( t, context, p ).set_modifiers(this)
+        return CmdReadProperty( t, context, p )
       endIf
 
       return scope.resolve_call( context_type, this, true )
@@ -1331,7 +1311,7 @@ class CmdAccess : CmdAccessWithModify
 endClass
 
 
-class CmdElementAccess : CmdAccessWithModify
+class CmdElementAccess : Cmd
   PROPERTIES
     context   : Cmd
     index : Cmd
@@ -1340,7 +1320,7 @@ class CmdElementAccess : CmdAccessWithModify
     method init( t, context, index )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdElementAccess( t, context.clone(clone_args), index.clone(clone_args) ).set_modifiers( this )
+      return CmdElementAccess( t, context.clone(clone_args), index.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope )
@@ -1348,11 +1328,11 @@ class CmdElementAccess : CmdAccessWithModify
       local context_type = context.require_type
       context_type.organize
       if (context_type.is_array)
-        return CmdReadArrayElement( t, context, index ).set_modifiers( this ).resolve( scope )
+        return CmdReadArrayElement( t, context, index ).resolve( scope )
       else
         local args = CmdArgs()
         args.add( index )
-        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true ).set_modifiers(this)
+        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true )
       endIf
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
@@ -1361,7 +1341,7 @@ class CmdElementAccess : CmdAccessWithModify
       local context_type = context.require_type
       context_type.organize
       if (context_type.is_array)
-        return CmdWriteArrayElement( t, context, index, new_value ).set_modifiers( this ).resolve( scope )
+        return CmdWriteArrayElement( t, context, index, new_value ).resolve( scope )
       else
         local args = CmdArgs()
         args.add( index ).add( new_value )
@@ -1432,6 +1412,10 @@ class CmdCreateCompound : Cmd
 
     method resolve( scope:Scope )->Cmd
       of_type.organize
+      if (args is null) args = CmdArgs()
+      while (args.count < of_type.property_list.count)
+        args.add( of_type.property_list[args.count].type.create_default_value(t) )
+      endWhile
       args.resolve( scope )
       return this
 
@@ -1543,7 +1527,7 @@ class CmdReadSingleton : Cmd
 endClass
 
 
-class CmdReadLocal : CmdAccessWithModify
+class CmdReadLocal : Cmd
   PROPERTIES
     local_info : Local
 
@@ -1552,21 +1536,24 @@ class CmdReadLocal : CmdAccessWithModify
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?) return inline_args.inline_read_local( this )
-      return CmdReadLocal( t, local_info ).set_modifiers( this )
+      if (inline_args?)
+        return inline_args.inline_read_local( this )
+      else
+        local task_args = (clone_args as TaskArgs)
+        if (task_args?) return task_args.cmd_read(t,local_info)
+      endIf
+
+      return CmdReadLocal( t, local_info )
 
     method print_cpp( writer:CPPWriter )
-      if (premodify_count > 0) writer.print("++")
-      elseIf (premodify_count < 0) writer.print("--")
-
       writer.print( local_info.cpp_name )
-
-      if (postmodify_count > 0) writer.print("++")
-      elseIf (postmodify_count < 0) writer.print("--")
 
     method resolve( scope:Scope )->Cmd
       local_info.type.organize
       return this
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return CmdModifyLocal( t, local_info, delta ).resolve( scope )
 
     method type->Type
       return local_info.type
@@ -1602,7 +1589,7 @@ class CmdWriteLocal : Cmd
 endClass
 
 
-class CmdReadSetting : CmdAccessWithModify
+class CmdReadSetting : Cmd
   PROPERTIES
     setting_info : Property
 
@@ -1610,17 +1597,11 @@ class CmdReadSetting : CmdAccessWithModify
     method init( t, setting_info )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdReadSetting( t, setting_info ).set_modifiers(this)
+      return CmdReadSetting( t, setting_info )
 
     method print_cpp( writer:CPPWriter )
-      if (premodify_count > 0) writer.print("++")
-      elseIf (premodify_count < 0) writer.print("--")
-
       writer.print_type_name( setting_info.type_context ).print( "::" )
       writer.print( setting_info.cpp_name )
-
-      if (postmodify_count > 0) writer.print("++")
-      elseIf (postmodify_count < 0) writer.print("--")
 
     method resolve( scope:Scope )->Cmd
       setting_info.type_context.resolve
@@ -1662,7 +1643,7 @@ class CmdWriteSetting : Cmd
       return setting_info.type
 endClass
 
-class CmdReadProperty : CmdAccessWithModify
+class CmdReadProperty : Cmd
   PROPERTIES
     context       : Cmd
     property_info : Property
@@ -1671,22 +1652,19 @@ class CmdReadProperty : CmdAccessWithModify
     method init( t, context, property_info )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdReadProperty( t, context.clone(clone_args), property_info ).set_modifiers(this)
+      return CmdReadProperty( t, context.clone(clone_args), property_info )
 
     method print_cpp( writer:CPPWriter )
-      if (premodify_count > 0) writer.print("++")
-      elseIf (premodify_count < 0) writer.print("--")
-
       context.print_cpp( writer )
       writer.print_access_operator( context.type )  # -> or .
       writer.print( property_info.cpp_name )
 
-      if (postmodify_count > 0) writer.print("++")
-      elseIf (postmodify_count < 0) writer.print("--")
-
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
       return this
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return CmdModifyProperty( t, context, property_info, delta ).resolve( scope )
 
     method type->Type
       return property_info.type
@@ -2857,6 +2835,84 @@ class CmdBitwiseShiftRightX : CmdBitwiseOp
       return ":>>>:"
 endClass
 
+
+#------------------------------------------------------------------------------
+# Modify
+#------------------------------------------------------------------------------
+class CmdModify : Cmd
+  PROPERTIES
+    operand : Cmd
+    delta   : Integer
+
+  METHODS
+    method init( t, operand, delta )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      return operand.resolve_modify( scope, delta )
+endClass
+
+class CmdModifyLocal : Cmd
+  PROPERTIES
+    local_info : Local
+    delta      : Integer
+
+  METHODS
+    method init( t, local_info, delta )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        return CmdModify( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
+      else
+        return CmdModifyLocal( t, local_info, delta )
+      endIf
+
+    method print_cpp( writer:CPPWriter )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      writer.print( local_info.cpp_name )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+
+class CmdModifyProperty : Cmd
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+    delta         : Integer
+
+  METHODS
+    method init( t, context, property_info, delta )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      #{
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        return CmdModify( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.cmd_read(t,local_info)), delta )
+      else
+      endIf
+      }#
+      return CmdModifyProperty( t, context.clone(clone_args), property_info, delta )
+
+    method print_cpp( writer:CPPWriter )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      context.print_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve( scope )
+      return this
+endClass
+
+
 #------------------------------------------------------------------------------
 # OpWithAssign
 #------------------------------------------------------------------------------
@@ -2899,7 +2955,12 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
     method init( t, local_info, op, new_value )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        return CmdOpWithAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.clone(task_args) )
+      else
+        return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
+      endIf
 
     method print_cpp( writer:CPPWriter )
       writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
@@ -3107,7 +3168,7 @@ class CmdCreateArray : Cmd
       return array_type
 endClass
 
-class CmdReadArrayElement : CmdAccessWithModify
+class CmdReadArrayElement : Cmd
   PROPERTIES
     context    : Cmd
     array_type : Type
@@ -3121,10 +3182,6 @@ class CmdReadArrayElement : CmdAccessWithModify
 
     method print_cpp( writer:CPPWriter )
       if (array_type.element_type.is_reference)
-        if (premodify_count != 0 or postmodify_count != 0)
-          throw t.error( "++ and -- currently cannot be applied to object list elements." )
-        endIf
-
         writer.print( "((" )
         writer.print( array_type.element_type )
         writer.print( ")(" )
@@ -3134,9 +3191,6 @@ class CmdReadArrayElement : CmdAccessWithModify
         writer.print( "]))" )
 
       else
-        if (premodify_count > 0) writer.print("++")
-        elseIf (premodify_count < 0) writer.print("--")
-
         context.print_cpp( writer )
         writer.print( "->" )
         if (array_type.element_type.is_primitive)
@@ -3157,8 +3211,6 @@ class CmdReadArrayElement : CmdAccessWithModify
         index.print_cpp( writer )
         writer.print( "]" )
 
-        if (postmodify_count > 0) writer.print("++")
-        elseIf (postmodify_count < 0) writer.print("--")
       endIf
 
 

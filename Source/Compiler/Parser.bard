@@ -667,17 +667,17 @@ class Parser
         statements.add( CmdSufficient(t, parse_expression))
         return
       endIf
-
-      if (consume(TokenType.symbol_increment))
-        statements.add( CmdIncrement(t, parse_expression) )
-        return
-      endIf
-
-      if (consume(TokenType.symbol_decrement))
-        statements.add( CmdDecrement(t, parse_expression) )
-        return
-      endIf
       }#
+
+      if (consume(TokenType.symbol_plus_plus))
+        statements.add( CmdModify(t, parse_expression,1) )
+        return
+      endIf
+
+      if (consume(TokenType.symbol_minus_minus))
+        statements.add( CmdModify(t, parse_expression,-1) )
+        return
+      endIf
 
       local expression = parse_expression
 
@@ -702,17 +702,15 @@ class Parser
       endIf
       }#
 
-      #{
-      if (consume(TokenType.symbol_increment))
-        statements.add( CmdIncrement(t, expression) )
+      if (consume(TokenType.symbol_plus_plus))
+        statements.add( CmdModify(t, expression,1) )
         return
       endIf
 
-      if (consume(TokenType.symbol_decrement))
-        statements.add( CmdDecrement(t, expression) )
+      if (consume(TokenType.symbol_minus_minus))
+        statements.add( CmdModify(t, expression,-1) )
         return
       endIf
-      }#
 
       local t_type = t.type
       if (t_type.is_op_with_assign)
@@ -941,10 +939,10 @@ class Parser
                 local step_value = parse_expression
                 step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
               else
-                step_cmd = CmdReadLocal( range.t, control_var ).premodify( 1 )
+                step_cmd = CmdModifyLocal( range.t, control_var, 1 )
               endIf
 
-              local cmd_for_each = CmdForEachInRange( t, control_var, last_var, step_cmd )
+              local cmd_for_each = CmdForEachInRange( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var), step_cmd )
               if (has_parens) must_consume( TokenType.symbol_close_paren )
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
@@ -1216,19 +1214,8 @@ class Parser
 
     method parse_pre_unary->Cmd
       local t = peek
-      if (consume(TokenType.symbol_plus_plus))
-        consume_eols
-        local operand = parse_pre_unary
-        operand.premodify(1)
-        return operand
 
-      elseIf (consume(TokenType.symbol_minus_minus))
-        consume_eols
-        local operand = parse_pre_unary
-        operand.premodify(-1)
-        return operand
-
-      elseIf (consume(TokenType.symbol_minus))
+      if (consume(TokenType.symbol_minus))
         consume_eols
         return CmdNegate( t, parse_pre_unary )
 
@@ -1251,10 +1238,6 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
-      elseIf (consume(TokenType.symbol_plus_plus))
-        parse_post_unary( operand.postmodify(1) )
-      elseIf (consume(TokenType.symbol_minus_minus))
-        parse_post_unary( operand.postmodify(-1) )
       endIf
       return operand
 

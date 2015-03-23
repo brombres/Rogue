@@ -48,7 +48,7 @@ class InlineArgs : CloneArgs
     method inline_read_local( read_cmd:CmdReadLocal )->Cmd
       local arg = arg_lookup[ read_cmd.local_info.name ]
       if (not arg) return read_cmd
-      return arg.clone.set_modifiers( read_cmd )
+      return arg.clone
 
     method inline_write_local( write_cmd:CmdWriteLocal )->Cmd
       local arg = arg_lookup[ write_cmd.local_info.name ]
@@ -122,6 +122,19 @@ class TaskArgs : CloneArgs
       local section = CmdTaskControlSection( cmd_task_control.sections.count+1 )
       cmd_task_control.sections.add( section )
       return section
+
+    method cmd_read_this( t:Token )->Cmd
+      return CmdThisContext( t, task_type )
+
+    method convert_local_name( local_info:Local )->String
+      return "$_$" (local_info.name,local_info.index)
+
+    method cmd_read( t:Token, local_info:Local )->Cmd
+      return CmdAccess( t, CmdThisContext(t,task_type), "$_$" (local_info.name,local_info.index) )
+
+    method replace_write_local( t:Token, local_info:Local, new_value:Cmd )->Cmd
+      if (new_value is null) new_value = local_info.type.create_default_value(t)
+      return CmdAssign( t, CmdAccess(t, CmdThisContext(t,task_type), "$_$" (local_info.name,local_info.index)), new_value )
 
     method set_next_ip( t:Token, to_section:CmdTaskControlSection )->TaskArgs
       local ip = to_section.ip

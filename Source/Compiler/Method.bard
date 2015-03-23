@@ -390,7 +390,6 @@ class Method
       # Convert resolved method into task "functor"
       forEach (v in m_temp.locals)
         local p_name = v.name + "_" + v.index
-        println "creating property $ : $" (p_name,v.type )
         local p = task_type.add_property( v.t, p_name, v.type )
       endForEach
 
