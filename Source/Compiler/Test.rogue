@@ -13,7 +13,7 @@ class Test
     method print1->Integer [task]
       forEach (n in 3..5)
         println n
-        #yield
+        yield
       endForEach
 
     method print2 [task]

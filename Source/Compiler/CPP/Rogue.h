@@ -52,7 +52,11 @@ struct RogueFileWriterType;
   } \
 }
 
+#define ROGUE_SINGLETON(name,star) ((name star)Rogue_program.type_##name->singleton())
+  //THIS->standard_output = ((RogueConsole*)Rogue_program.type_RogueConsole->singleton());
+
 #define ROGUE_PROPERTY(name) p_##name
+
 
 //-----------------------------------------------------------------------------
 //  RogueType

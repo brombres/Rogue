@@ -350,7 +350,15 @@ class CmdBlock : CmdControlStructure
     method init( t, statements )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBlock( t, statements.clone(clone_args) )
+      local task_args = (clone_args as TaskArgs)
+      if (task_args? and this.contains_yield)
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        return null
+      else
+        return CmdBlock( t, statements.clone(clone_args) )
+      endIf
 
     method print_cpp( writer:CPPWriter )
       writer.println( "{" )
@@ -1512,8 +1520,11 @@ class CmdReadSingleton : Cmd
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
-      writer.print( "((" ).print( of_type ).print( ")" )
-      writer.print_type_info( of_type ).print( "->singleton())" )
+      writer.print( "ROGUE_SINGLETON(" ).print_type_name( of_type ).print( "," )
+      if (of_type.is_reference) writer.print( "*" )
+      writer.print( ")" )
+      #writer.print( "((" ).print( of_type ).print( ")" )
+      #writer.print_type_info( of_type ).print( "->singleton())" )
 
     method require_type_context
       noAction
@@ -1834,11 +1845,8 @@ class CmdCallStaticMethod : CmdCall
     method print_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
       writer.print( compile_target.cpp_name )
-      writer.print( "( (" )
-      writer.print( compile_target.type_context )
-      writer.print( ")(" )
-      context.print_cpp( writer )
-      writer.print( ")" )
+      writer.print( "( " )
+      writer.print_cast( context.type, compile_target.type_context, context )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )

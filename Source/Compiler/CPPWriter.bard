@@ -87,6 +87,17 @@ class CPPWriter
       }#
       return this
 
+    method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
+      if (from_type is to_type)
+        cmd.print_cpp( this )
+      else
+        print( "(" )
+        print_cast( from_type, to_type )
+        cmd.print_cpp( this )
+        print( ")" )
+      endIf
+      return this
+
     method print_access_operator( type:Type )->CPPWriter
       if (type.is_reference) return print( "->" )
       else                   return print( "." )
