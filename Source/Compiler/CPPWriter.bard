@@ -89,11 +89,11 @@ class CPPWriter
 
     method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
       if (from_type is to_type)
-        cmd.print_cpp( this )
+        cmd.write_cpp( this )
       else
         print( "(" )
         print_cast( from_type, to_type )
-        cmd.print_cpp( this )
+        cmd.write_cpp( this )
         print( ")" )
       endIf
       return this
