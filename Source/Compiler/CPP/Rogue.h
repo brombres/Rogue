@@ -360,7 +360,6 @@ struct RogueAllocator
 
 extern RogueAllocator Rogue_allocator;
 
-#include "RogueProgram.h"
 //=============================================================================
 //  Various Native Methods
 //=============================================================================
@@ -456,3 +455,5 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, Rogue
 //  Time
 //-----------------------------------------------------------------------------
 RogueReal RogueTime__current();
+
+#include "RogueProgram.h"

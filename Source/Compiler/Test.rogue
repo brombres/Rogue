@@ -12,11 +12,12 @@ class Test
 
     method print1->Integer [task]
       local list = [3,4,5]
-      println list
-      forEach (i of list)
-        println i
+      forEach (n in list)
+        println n
         yield
       endForEach
+      return 0
+
 
     method print2 [task]
 endClass

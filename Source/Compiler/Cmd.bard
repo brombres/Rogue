@@ -529,12 +529,13 @@ endClass
 class CmdWhile : CmdControlStructure
   PROPERTIES
     condition : Cmd
+    step_cmd  : Cmd
 
   METHODS
     method init( t )
       statements = CmdStatementList()
 
-    method init( t, condition, statements=CmdStatementList() )
+    method init( t, condition, statements=CmdStatementList(), step_cmd=null )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -545,11 +546,12 @@ class CmdWhile : CmdControlStructure
         forEach (statement in statements)
           task_args.add( statement.clone(task_args) )
         endForEach
+        if (step_cmd?) task_args.add( step_cmd.clone(task_args) )
         task_args.add_jump( t, condition_section )
         task_args.begin_section( after_section )
         return null
       else
-        return CmdWhile( t, condition.clone(clone_args), statements.clone(clone_args) )
+        return CmdWhile( t, condition.clone(clone_args), statements.clone(clone_args), clone(step_cmd,clone_args) )
       endIf
 
     method write_cpp( writer:CPPWriter )
@@ -559,6 +561,7 @@ class CmdWhile : CmdControlStructure
       writer.println( "{" )
       writer.indent += 2
       statements.write_cpp( writer )
+      if (step_cmd?) step_cmd.write_cpp( writer ); writer.println(";")
       writer.indent -= 2
       writer.println( "}" )
 
@@ -567,6 +570,8 @@ class CmdWhile : CmdControlStructure
 
       condition = condition.resolve( scope )
       statements.resolve( scope )
+
+      if (step_cmd?) step_cmd = step_cmd.resolve( scope )
 
       scope.control_stack.remove_last
       return this
@@ -583,36 +588,7 @@ class CmdForEachInRange : CmdControlStructure
     method init( t, cmd_read_control, cmd_read_last, cmd_step, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local task_args = (clone_args as TaskArgs)
-      if (task_args? and this.contains_yield)
-        local condition_section = task_args.jump_to_new_section(t)
-        local end_section = task_args.create_section
-        task_args.add_conditional_jump( CmdCompareGT(t, cmd_read_control.clone(task_args), cmd_read_last.clone(task_args)), end_section )
-        forEach (statement in statements)
-          task_args.add( statement.clone(task_args) )
-        endForEach
-        task_args.add( cmd_step.clone(task_args) )
-        task_args.add_jump( t, condition_section )
-        task_args.begin_section( end_section )
-        return null
-      else
-        return CmdForEachInRange( t, cmd_read_control.clone(clone_args), cmd_read_last.clone(clone_args), clone(cmd_step,clone_args), statements.clone(clone_args) )
-
-      endIf
-
-    method write_cpp( writer:CPPWriter )
-      writer.print( "for (; " )
-      cmd_read_control.write_cpp( writer )
-      writer.print( "<=" )
-      cmd_read_last.write_cpp( writer )
-      writer.print( "; " )
-      cmd_step.write_cpp( writer )
-      writer.println( ")" )
-      writer.println( "{" )
-      writer.indent += 2
-      statements.write_cpp( writer )
-      writer.indent -= 2
-      writer.println( "}" )
+      return CmdForEachInRange( t, cmd_read_control.clone(clone_args), cmd_read_last.clone(clone_args), clone(cmd_step,clone_args), statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
@@ -620,9 +596,9 @@ class CmdForEachInRange : CmdControlStructure
       cmd_read_last = cmd_read_last.resolve( scope )
       cmd_step = cmd_step.resolve( scope )
       statements.resolve( scope )
-
       scope.control_stack.remove_last
-      return this
+
+      return CmdWhile( t, CmdCompareLE(t,cmd_read_control,cmd_read_last), statements, cmd_step ).resolve( scope )
 endClass
 
 class CmdForEachInCollection : CmdControlStructure
@@ -746,26 +722,11 @@ class CmdForEachInIndexedCollection : CmdControlStructure
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdForEachInIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
-      writer.print( "while (" ).print( index_var.cpp_name )
-      if (step_size >= 0) writer.print( " < " )
-      else                writer.print( " >= " )
-      last_cmd.write_cpp( writer )
-      writer.println( ")" )
-      writer.println( "{" )
-      writer.indent += 2
-      statements.write_cpp( writer )
-      writer.indent -= 2
-      writer.println( "}" )
-
     method resolve( scope:Scope )->Cmd
-      scope.control_stack.add( this )
-
-      statements.resolve( scope )
-      last_cmd = last_cmd.resolve( scope )
-
-      scope.control_stack.remove_last
-      return this
+      local condition : Cmd
+      if (step_size >= 0) condition = CmdCompareLT( t, CmdReadLocal(t,index_var), last_cmd )
+      else                condition = CmdCompareGE( t, CmdReadLocal(t,index_var), last_cmd )
+      return CmdWhile( t, condition, statements ).resolve( scope )
 endClass
 
 
@@ -773,7 +734,6 @@ class CmdForEachInReader : CmdControlStructure
   PROPERTIES
     reader_var  : Local
     control_var : Local
-    condition   : Cmd
 
   METHODS
     method init( t, reader_var, control_var, statements=CmdStatementList() )
@@ -781,24 +741,9 @@ class CmdForEachInReader : CmdControlStructure
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdForEachInReader( t, reader_var, control_var, statements.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
-      writer.print( "while (" )
-      condition.write_cpp( writer )
-      writer.println( ")" )
-      writer.println( "{" )
-      writer.indent += 2
-      statements.write_cpp( writer )
-      writer.indent -= 2
-      writer.println( "}" )
-
     method resolve( scope:Scope )->Cmd
-      scope.control_stack.add( this )
-
-      statements.resolve( scope )
-      condition = CmdAccess( reader_var.t, CmdReadLocal(reader_var.t,reader_var), "has_another" ).resolve( scope )
-
-      scope.control_stack.remove_last
-      return this
+      local condition = CmdAccess( reader_var.t, CmdReadLocal(reader_var.t,reader_var), "has_another" )
+      return CmdWhile( t, condition, statements ).resolve( scope )
 endClass
 
 
@@ -892,7 +837,6 @@ class CmdForEachOfIndexedCollection : CmdControlStructure
     index_var        : Local
     control_var      : Local
     collection_var   : Local
-    index_read_cmd   : Cmd
     last_cmd         : Cmd
     step_size        : Integer
 
@@ -900,57 +844,16 @@ class CmdForEachOfIndexedCollection : CmdControlStructure
     method init( t, index_var, control_var, collection_var, last_cmd, step_size, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local task_args = (clone_args as TaskArgs)
-
-      if (task_args? and this.contains_yield)
-        local condition_section = task_args.jump_to_new_section(t)
-        local end_section = task_args.create_section
-        local comparison : Cmd
-        if (step_size >= 0) comparison = CmdCompareGE( t, index_read_cmd.clone(task_args), last_cmd.clone(task_args) )
-        else                comparison = CmdCompareLT( t, index_read_cmd.clone(task_args), last_cmd.clone(task_args) )
-        task_args.add_conditional_jump( comparison, end_section )
-        forEach (statement in statements)
-          task_args.add( statement.clone(task_args) )
-        endForEach
-        task_args.add_jump( t, condition_section )
-        task_args.begin_section( end_section )
-        return null
-
-      else
-        local result = CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
-        result.index_read_cmd = clone( index_read_cmd, clone_args )
-        return result
-
-      endIf
-
-    method write_cpp( writer:CPPWriter )
-      writer.print( "while (" )
-      index_read_cmd.write_cpp( writer )
-      if (step_size >= 0) writer.print( " < " )
-      else                writer.print( " >= " )
-      last_cmd.write_cpp( writer )
-      writer.println( ")" )
-      writer.println( "{" )
-      writer.indent += 2
-      statements.write_cpp( writer )
-      writer.indent -= 2
-      writer.println( "}" )
+      return CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      if (index_read_cmd?)
-        # Resolved after being adapted to task
-        index_read_cmd = index_read_cmd.resolve( scope )
-      else
-        # Standard resolve()
-        index_read_cmd = CmdReadLocal( t, index_var ).resolve( scope )
-      endIf
-      scope.control_stack.add( this )
+      local index_read_cmd = CmdReadLocal( t, index_var )
 
-      statements.resolve( scope )
-      last_cmd = last_cmd.resolve( scope )
+      local condition : Cmd
+      if (step_size >= 0) condition = CmdCompareLT( t, index_read_cmd, last_cmd )
+      else                condition = CmdCompareGE( t, index_read_cmd, last_cmd )
 
-      scope.control_stack.remove_last
-      return this
+      return CmdWhile( t, condition, statements ).resolve( scope )
 endClass
 
 
