@@ -1,25 +1,17 @@
 class Test
-  SETTINGS
-    v1 = 1
-    v2 = 10
+  PROPERTIES
+    x : Integer
 
   METHODS
     method init
-      println "Working on tasks"
-      print1.start
-      print2.start
+      test_task(3).start
       while (TaskManager.update) noAction
 
-    method print1->Integer [task]
-      local list = [3,4,5]
-      forEach (n in list)
-        println n
-        yield
-      endForEach
-      return 0
-
-
-    method print2 [task]
+    method test_task(x) [task]
+      println x
+      x += 2
+      yield
+      println x
 endClass
 
 class PrintTask(low:Integer,high:Integer) : Task

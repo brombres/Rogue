@@ -90,7 +90,7 @@ class Method
       return v
 
     method add_parameter( p_t:Token, p_name:String, p_type=null:Type )->Local
-      local p = add_local( p_t, p_name )
+      local p = add_local( p_t, p_name, p_type )
       parameters.add( p )
       return p
 
@@ -347,6 +347,13 @@ class Method
       task_type.attributes.add( Attribute.is_class )
       task_type.base_types.add( return_type )  # Task or TaskWithResult<<ResultType>>
 
+      # Add an init method that accepts the original class context as well as all method parameters
+      local m_init = task_type.add_method( t, "init" )
+      m_init.add_parameter( t, "context" )
+      forEach (p in parameters)
+        m_init.add_parameter( t, "$_$" (p.name,p.index) )
+      endForEach
+
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
       m_update.statements.add( CmdWhile( t, CmdAccess(t,"execute",CmdArgs()) ) )
@@ -365,27 +372,28 @@ class Method
       m_temp.attributes.add( Attribute.is_task_conversion )
 
       # Move the Local var objects to the temp method (since Cmd code might reference them directly)
-      # and create copies at the original location (this method).
+      # along with the statements and resolve the temp method
+      m_temp.parameters = parameters
       m_temp.locals = locals
+      m_temp.statements = statements
+      m_temp.organize( false )  # organize but don't add to type's method tables
+      m_temp.resolve
+
+      # Now come back and fix up this method's parameters and statements
       locals = Local[]
+      parameters = Local[]
       forEach (v in m_temp.locals)
-        if (v.index < parameters.count)
+        if (v.index < m_temp.parameters.count)
           add_parameter( v.t, v.name, v.type )
-        else
-          local v2 = add_local( v.t, v.name, v.type )
-          if (v.initial_value?) v2.initial_value = v.initial_value.clone
         endIf
       endForEach
 
-      # Temp method gets original statements while original method gets a "return TaskObjectName()"
-      m_temp.statements = statements
+      # Original method gets a "return TaskObjectName()"
       statements = CmdStatementList()
       local args = CmdArgs()
-      forEach (p in parameters) args.add( CmdAccess(t,p.name) )
+      args.add( CmdLiteralThis(t,this.type_context) )
+      forEach (p in m_temp.parameters) args.add( CmdAccess(t,p.name) )
       statements.add( CmdReturn( t, CmdAccess(t,task_type.name,args) ) )
-      
-      m_temp.organize( false )  # organize but don't add to type's method tables
-      m_temp.resolve
 
       # Convert resolved method into task "functor"
       forEach (v in m_temp.locals)
@@ -394,6 +402,7 @@ class Method
       endForEach
 
       local task_args = TaskArgs( task_type, m_execute, this.type_context, this )
+      task_args.context_property = task_type.add_property( t, "context", this.type_context )
       task_args.ip_property = task_type.add_property( t, "ip", Program.type_Integer )
 
       forEach (statement in m_temp.statements)

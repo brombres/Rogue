@@ -1416,7 +1416,13 @@ class CmdThisContext : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
       if (inline_args?) return inline_args.inline_this
-      return CmdThisContext( t, this_type )
+
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        return task_args.cmd_read_context(t)
+      else
+        return CmdThisContext( t, this_type )
+      endIf
 
     method write_cpp( writer:CPPWriter )
       writer.print "THIS"
@@ -1440,7 +1446,13 @@ class CmdLiteralThis : CmdThisContext
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
       if (inline_args?) return inline_args.inline_this
-      return CmdLiteralThis( t, this_type )
+
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        return task_args.cmd_read_context(t)
+      else
+        return CmdLiteralThis( t, this_type )
+      endIf
 
     method require_type_context
       throw t.error( //Type name expected.// )
@@ -1510,6 +1522,7 @@ class CmdReadLocal : Cmd
       writer.print( local_info.cpp_name )
 
     method resolve( scope:Scope )->Cmd
+      #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
       local_info.type.organize
       return this
 

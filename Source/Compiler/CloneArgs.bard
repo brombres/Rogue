@@ -64,6 +64,7 @@ class TaskArgs : CloneArgs
     original_type    : Type
     original_method  : Method
     cmd_task_control : CmdTaskControl
+    context_property : Property
     ip_property      : Property
 
   METHODS
@@ -125,6 +126,9 @@ class TaskArgs : CloneArgs
 
     method cmd_read_this( t:Token )->Cmd
       return CmdThisContext( t, task_type )
+
+    method cmd_read_context( t:Token )->Cmd
+      return CmdReadProperty( t, CmdThisContext(t,task_type), context_property )
 
     method convert_local_name( local_info:Local )->String
       return "$_$" (local_info.name,local_info.index)
