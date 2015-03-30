@@ -1,25 +1,8 @@
 class Test
-  PROPERTIES
-    x : Integer
-
   METHODS
     method init
-      test_task(3).start
-      while (TaskManager.update) noAction
-
-    method test_task(x) [task]
-      println x
-      x += 2
-      yield
-      println x
-endClass
-
-class PrintTask(low:Integer,high:Integer) : Task
-  METHODS
-    method update->Logical
-      println low
-      ++low
-      return (low <= high)
+      #local points = XY[]
+      println "Working on supporting Compound lists and arrays."
 endClass
 
 compound Degrees( value:Real )

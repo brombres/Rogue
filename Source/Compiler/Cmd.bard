@@ -3155,33 +3155,38 @@ class CmdReadArrayElement : Cmd
       return CmdReadArrayElement( t, context.clone(clone_args), index.clone(clone_args) )
 
     method write_cpp( writer:CPPWriter )
-      if (array_type.element_type.is_reference)
+      local element_type = array_type.element_type
+      if (element_type.is_reference)
         writer.print( "((" )
-        writer.print( array_type.element_type )
+        writer.print( element_type )
         writer.print( ")(" )
         context.write_cpp( writer )
         writer.print( "->objects[" )
         index.write_cpp( writer )
         writer.print( "]))" )
 
-      else
+      elseIf (element_type.is_primitive)
         context.write_cpp( writer )
         writer.print( "->" )
-        if (array_type.element_type.is_primitive)
-          whichIs (array_type.element_type)
-            case Program.type_Real:      writer.print( "reals[" )
-            case Program.type_Float:     writer.print( "floats[" )
-            case Program.type_Long:      writer.print( "longs[" )
-            case Program.type_Integer:   writer.print( "integers[" )
-            case Program.type_Character: writer.print( "characters[" )
-            case Program.type_Byte:      writer.print( "bytes[" )
-            case Program.type_Logical:   writer.print( "logical[" )
-          endWhichIs
+        whichIs (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+          others
+            throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
+        endWhichIs
+        index.write_cpp( writer )
+        writer.print( "]" )
 
-        else
-          throw t.error( "[INTERNAL] TODO: CmdReadArrayElement non-primitive" )
-        endIf
-        
+      else
+        # Compound
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_cpp( writer )
+        writer.print( "->bytes))[" )
         index.write_cpp( writer )
         writer.print( "]" )
 
@@ -3240,10 +3245,11 @@ class CmdWriteArrayElement : Cmd
       return CmdWriteArrayElement( t, context.clone(clone_args), index.clone(clone_args), new_value.clone(clone_args) )
 
     method write_cpp( writer:CPPWriter )
-      context.write_cpp( writer )
-      writer.print( "->" )
-      if (array_type.element_type.is_primitive)
-        whichIs (array_type.element_type)
+      local element_type = array_type.element_type
+      if (element_type.is_primitive)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        whichIs (element_type)
           case Program.type_Real:      writer.print( "reals[" )
           case Program.type_Float:     writer.print( "floats[" )
           case Program.type_Long:      writer.print( "longs[" )
@@ -3252,17 +3258,27 @@ class CmdWriteArrayElement : Cmd
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )
         endWhichIs
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
 
-      elseIf (array_type.element_type.is_reference)
+      elseIf (element_type.is_reference)
+        context.write_cpp( writer )
+        writer.print( "->" )
         writer.print( "objects[" )
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
 
       else
-        throw t.error( "[INTERNAL] TODO: CmdWriteArrayElement non-primitive" )
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_cpp( writer )
+        writer.print( "->bytes))[" )
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
       endIf
-        
-      index.write_cpp( writer )
-      writer.print( "] = " )
-      new_value.write_cpp( writer )
 
     method resolve( scope:Scope )->Cmd
       if (array_type?) return this
