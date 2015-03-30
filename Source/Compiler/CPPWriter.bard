@@ -117,7 +117,11 @@ class CPPWriter
 
     method print_default_value( type:Type )->CPPWriter
       type = type.compile_type
-      buffer.print( "0" )
+      if (type.is_compound)
+        print( type ).print( "()" )
+      else
+        buffer.print( "0" )
+      endIf
       return this
 
     method print( ch:Character, in_string=false:Logical )->CPPWriter

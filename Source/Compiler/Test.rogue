@@ -1,8 +1,13 @@
 class Test
   METHODS
     method init
-      #local points = XY[]
-      println "Working on supporting Compound lists and arrays."
+      local points = XY[]
+      points.add( XY(3,4) )
+      points.add( XY(5,6) )
+      points.add( XY(7,8) )
+      println points
+      println points.remove_first
+      println points
 endClass
 
 compound Degrees( value:Real )
@@ -753,6 +758,12 @@ class List<<$DataType:Object>> : GenericList
       data[count] = zero_value
       --count
       return result
+
+    method remove_first->$DataType
+      inline this.remove_at(0)
+
+    method remove_last->$DataType
+      return remove_at( count - 1 )
 
     method set( xyz:Integer, new_value:$DataType )->$DataType[]
       inline this.data[ xyz ] = new_value

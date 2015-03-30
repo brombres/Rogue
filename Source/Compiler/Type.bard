@@ -559,22 +559,52 @@ class Type
       endForEach
       writer.println
 
-      if (is_compound and property_list.count?)
-        writer.print( this ).print( "( " )
-        local first = true
+      if (is_compound)
+        if (property_list.count?)
+          # Default Constructor
+          writer.print( this ).print( "() : " )
+          local first = true
+          forEach (p in property_list)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( p.cpp_name ).print("(").print_default_value(p.type).print(")")
+          endForEach
+          writer.println( " {}" )
+          writer.println
+
+          # Standard Constructor
+          writer.print( this ).print( "( " )
+          local first = true
+          forEach (p in property_list)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( p.type ).print(" ").print( p.cpp_name )
+          endForEach
+          writer.print( " ) : " )
+          first = true
+          forEach (p in property_list)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
+          endForEach
+          writer.println( " {}" )
+          writer.println
+        endIf
+
+        # Default operator== and operator!= 
+        writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
         forEach (p in property_list)
-          if (first) first = false
-          else       writer.print( ", " )
-          writer.print( p.type ).print(" ").print( p.cpp_name )
+          writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
         endForEach
-        writer.print( " ) : " )
-        first = true
-        forEach (p in property_list)
-          if (first) first = false
-          else       writer.print( ", " )
-          writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
-        endForEach
-        writer.println( " {}" )
+        writer.println( "  return true;" )
+        writer.println( "}" )
+        writer.println
+        writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
+        writer.println( "  return !(*this == other);" )
+        writer.println( "}" )
+        writer.println
       endIf
 
       writer.indent -= 2
