@@ -58,7 +58,7 @@ class RogueC [singleton]
       endIf
 
       if (file.is_folder)
-        local path2 = "$/$.orbit" (filepath,file.filename)
+        local path2 = "$/$.rogue" (filepath,file.filename)
         local file2 = File( path2 )
         if (not file2.exists or file2.is_folder)
           local mesg = //Can not find "$" to include.// (path2)
@@ -83,7 +83,7 @@ class RogueC [singleton]
         prefix_path_list.add( prefix )
       endIf
 
-      println "Parsing " + filepath
+      #println "Parsing " + filepath
       Parser( filepath ).parse_elements
 endClass
 

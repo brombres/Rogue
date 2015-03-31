@@ -1,0 +1,62 @@
+class Variant
+  ROUTINES
+    routine create( value:Integer )->Variant
+      return IntegerVariant( value )
+
+    routine create( value:Logical )->Variant
+      return LogicalVariant( value )
+
+    routine create( value:Real )->Variant
+      return RealVariant( value )
+
+    routine create( value:String )->Variant
+      return StringVariant( value )
+endClass
+
+class IntegerVariant( value:Integer ) : Variant
+  METHODS
+    method to->String
+      return value->String
+endClass
+
+class LogicalVariant( value:Logical ) : Variant
+  METHODS
+    method to->String
+      return value->String
+endClass
+
+class RealVariant( value:Real ) : Variant
+  METHODS
+    method to->String
+      return value->String
+endClass
+
+class StringVariant( value:String ) : Variant
+  METHODS
+    method to->String
+      return value
+endClass
+
+class VariantList( value:Variant[] ) : Variant
+  METHODS
+    method init
+      value = Variant[]
+
+    method to->String
+      return value->String
+endClass
+
+class VariantTable : Variant
+  PROPERTIES
+    value : Table<<String,Variant>>
+
+  METHODS
+    method init
+      value = Table<<String,Variant>>()
+
+    method init( value )
+
+    method to->String
+      return value->String
+endClass
+

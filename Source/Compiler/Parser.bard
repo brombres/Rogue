@@ -239,9 +239,10 @@ class Parser
             consume_eols
             must_consume( TokenType.symbol_colon )
             consume_eols
+            local generic_type = peek_generic_type
             local p_type = parse_type
-            if (m.is_routine) param.type = p_type
-            this_type.add_property( t, p_name, p_type, initial_value )
+            if (m.is_routine) param.type = p_type; param.generic_type = generic_type
+            this_type.add_property( t, p_name, p_type, initial_value ).generic_type = generic_type
             consume_eols
           endWhile
           must_consume( TokenType.symbol_close_paren )
@@ -768,21 +769,79 @@ class Parser
       endForEach
 
     method peek_generic_type->Type
-      if (not next_is(TokenType.type_identifier)) return null
+      if (next_is(TokenType.type_identifier))
+        # Next token is a prepackaged $Placeholder -> Some<<Actual,Type>> mapping.
+        # Additional empty brackets are allowed as part of the type name.
+        local starting_position = reader.position
 
-      local starting_position = reader.position
+        local t = peek
+        local generic_type = read.generic_type
+        local name : String
+        if (next_is(TokenType.symbol_empty_brackets))
+          name = generic_type.name
+          while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+        endIf
 
-      local t = peek
-      local generic_type = read.generic_type
-      local name : String
-      if (next_is(TokenType.symbol_empty_brackets))
-        name = generic_type.name
-        while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+        reader.position = starting_position
+        if (name?) return Program.get_type_reference( t, name )
+        else       return generic_type
+
+      elseIf (next_is(TokenType.identifier))
+        # A little trickier if regular tokens start a Type<<...>>> and then one of
+        # the type parameters is a generic type.  We don't know if we've got a generic
+        # type until we try.
+        local starting_position = reader.position
+
+        local t = peek
+        local name = read->String
+
+        if (not consume(TokenType.symbol_open_specialize))
+          # Not a generic mapping; it would have been caught in the first 'elseIf' above.
+          reader.position = starting_position
+          return null
+        endIf
+
+        if (consume(TokenType.symbol_close_specialize))
+          # Not a generic mapping.
+          reader.position = starting_position
+          return null
+        endIf
+
+        name += "<<"
+        local found_generic = false
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          if (first) first = false
+          else       name += ','
+          local g_type = peek_generic_type
+          local r_type = parse_type
+          if (g_type?)
+            found_generic = true
+            name += g_type.name
+          else
+            name += r_type.name
+          endIf
+        endWhile
+
+        if (not found_generic or not consume(TokenType.symbol_close_specialize))
+          reader.position = starting_position
+          return null  # struck out
+        endIf
+
+        name += ">>"
+
+        if (next_is(TokenType.symbol_empty_brackets))
+          while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+        endIf
+
+        reader.position = starting_position
+        return Program.get_type_reference( t, name )
+
+      else
+        # Definitely not a generic type.
+        return null
+
       endIf
-
-      reader.position = starting_position
-      if (name?) return Program.get_type_reference( t, name )
-      else       return generic_type
 
     method parse_type->Type
       local name : String

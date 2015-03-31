@@ -114,7 +114,6 @@ class Program [requisite singleton]
       else
         throw RogueError( "No candidates for main class." )
       endIf
-      trace main_class.name
 
       type_null.resolve
       type_Real.resolve

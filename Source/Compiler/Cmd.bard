@@ -1139,7 +1139,7 @@ class CmdAccess : Cmd
           if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false )
           if (not cmd_call)
             cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), false )
-            if (must_find)
+            if (not cmd_call and must_find)
               if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), true )
               cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), true )
             endIf
@@ -3363,7 +3363,7 @@ class CmdConvertToType : CmdTypeOperator
       target_type.organize
       if (operand_type is target_type) return operand
 
-      if (operand_type.is_primitive)
+      if (target_type.is_primitive)
         return CmdConvertToPrimitiveType( t, operand, target_type ).resolve( scope )
       else
         return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
