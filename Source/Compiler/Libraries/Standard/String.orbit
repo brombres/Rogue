@@ -1,0 +1,283 @@
+class String [native functional]
+  ROUTINES
+    routine create( characters:Character[] )->String
+      $if ("C++") inlineNative 'RogueString::create( $characters )'
+
+    routine create( characters:StringBuilder )->String
+      return create( characters.characters )
+
+    routine operator+( left:Integer, right:String )->String
+      return StringBuilder().print( left ).print( right )->String
+
+  METHODS
+    method after_any( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return this
+      return substring( i+1 )
+
+    method after_any( st:String )->String
+      local i = locate( st )
+      if (i == -1) return this
+      return substring( i+st.count )
+
+    method after_first( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return ""
+      return substring( i+1 )
+
+    method after_first( st:String )->String
+      local i = locate( st )
+      if (i == -1) return ""
+      return substring( i+st.count )
+
+    method after_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i == -1) return ""
+      return substring( i+1 )
+
+    method after_last( st:String )->String
+      local i = locate_last( st )
+      if (i == -1) return ""
+      return substring( i+st.count )
+
+    method before_first( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method before_first( st:String )->String
+      local i = locate( st )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method before_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method before_last( st:String )->String
+      local i = locate_last( st )
+      if (i == -1) return this
+      return substring( 0, i-1 )
+
+    method begins_with( ch:Character )->Logical
+      return (count? and this[0] == ch)
+
+    method begins_with( other:String )->Logical
+      local other_count = other.count
+      return (count >= other_count and contains(other,0))
+
+    method contains( substring:String )->Logical
+      return locate(substring) >= 0
+
+    method contains( substring:String, at_index:Integer )->Logical
+      $if ("C++") inlineNative '$this->contains($substring,$at_index)'
+
+    method count->Integer
+      $if ("C++") inlineNative '$this->count'
+
+    method from_first( ch:Character )->String
+      local i = locate( ch )
+      if (i == -1) return ""
+      return substring( i )
+
+    method from_first( st:String )->String
+      local i = locate( st )
+      if (i == -1) return ""
+      return substring( i )
+
+    method from_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i == -1) return ""
+      return substring( i )
+
+    method from_last( st:String )->String
+      local i = locate_last( st )
+      if (i == -1) return ""
+      return substring( i )
+
+    method get( index:Integer )->Character
+      $if ("C++") inlineNative '$this->characters[$index]'
+
+    method hash_code->Integer
+      $if ("C++") inlineNative '$this->hash_code'
+
+    method last->Character
+      return this[ count-1 ]
+
+    method locate( ch:Character, i1=0:Integer )->Integer
+      $if ("C++") inlineNative '$this->locate($ch,$i1)'
+
+    method locate( other:String, i1=0:Integer )->Integer
+      $if ("C++") inlineNative '$this->locate($other,$i1)'
+
+    method locate_last( ch:Character )->Integer
+      return locate_last( ch, count-1 )
+
+    method locate_last( ch:Character, starting_index:Integer )->Integer
+      $if ("C++") inlineNative '$this->locate_last($ch,$starting_index)'
+
+    method locate_last( other:String )->Integer
+      return locate_last( other, count-other.count )
+
+    method locate_last( other:String, starting_index:Integer )->Integer
+      $if ("C++") inlineNative '$this->locate_last($other,$starting_index)'
+
+    method operator+( value:Byte )->String
+      inline this + value->Integer
+
+    method operator+( value:Character )->String
+      $if ("C++") inlineNative '$this->plus($value)'
+
+    method operator+( value:Integer )->String
+      $if ("C++") inlineNative '$this->plus($value)'
+
+      #{
+    method operator+( value:Object )->String
+      if (value?) return this + value->String
+      else        return this + "null"
+      }#
+
+    method operator<>( other:String )->Integer
+      $if ("C++") inlineNative '$this->compare_to($other)'
+
+    method operator+( value:Logical )->String
+      if (value) return this + "true"
+      else       return this + "false"
+
+    method operator+( value:Long )->String
+      $if ("C++") inlineNative '$this->plus($value)'
+
+    method operator+( value:Object )->String
+      if (value?) return this + value->String
+      else        return this + "null"
+
+    method operator+( value:Real )->String
+      $if ("C++") inlineNative '$this->plus($value)'
+
+    method operator+( value:String )->String
+      $if ("C++") inlineNative '$this->plus($value)'
+
+    method reversed->String
+      local buffer = StringBuilder(count)
+      forEach (ch in this step -1)
+        buffer.print( ch )
+      endForEach
+      return buffer->String
+
+    method substring( i1:Integer, i2=-1:Integer )->String
+      $if ("C++") inlineNative '$this->substring($i1,$i2)'
+
+endClass
+
+
+class StringBuilder
+  PROPERTIES
+    characters   : Character[]
+    indent       : Integer
+    at_newline   = true
+
+  METHODS
+    method init
+      init( 40 )
+
+    method init( initial_capacity:Integer )
+      characters = Character[]( initial_capacity )
+
+    method add_indent( spaces:Integer )->this
+      indent += spaces
+      return this
+
+    method capacity->Integer
+      inline this.characters.capacity
+
+    method clear->this
+      characters.clear
+      at_newline = true
+      return this
+
+    method count->Integer
+      inline this.characters.count
+
+    method needs_indent->Logical
+      return (at_newline and indent > 0)
+
+    method print( value:Byte )->this
+      return print( value->Integer )
+
+    method print( value:Character )->this
+      if (value == '\n')    at_newline = true
+      elseIf (needs_indent) print_indent
+      characters.add( value )
+      return this
+
+    method print( value:Float )->this
+      inline this.print( value->Real )
+
+    method print( value:Integer )->this [native]
+
+    method print( value:Logical )->this
+      if (value) return print( "true" )
+      else       return print( "false" )
+
+    method print( value:Long )->this [native]
+
+    method print( value:Object )->this
+      if (value?) return print( value->String )
+      return print( "null" )
+
+    method print( value:Real, decimal_places=4:Integer )->this [native]
+
+    method print( value:String )->this
+      if (value?)
+        if (indent?)
+          forEach (ch in value) print( ch )
+        else
+          forEach (ch in value) characters.add( ch )
+          if (value.count? and value.last == '\n') at_newline = true
+        endIf
+        return this
+      else
+        return print( "null" )
+      endIf
+
+    method print_indent
+      if (not needs_indent or indent == 0) return
+      forEach (i in 1..indent) characters.add( ' ' )
+      at_newline = false
+
+    method println( value:Byte )->this
+      return print( value->Integer ).print( '\n' )
+
+    method println( value:Character )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Float )->this
+      inline this.println( value->Real )
+
+    method println( value:Integer )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Logical )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Long )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Real, decimal_places=4:Integer )->this
+      return print( value, decimal_places ).print( '\n' )
+
+    method println( value:Object )->this
+      return print( value ).print( '\n' )
+
+    method println( value:String )->this
+      return print( value ).print( '\n' )
+
+    method reserve( additional_count:Integer )->this
+      characters.reserve( additional_count )
+      return this
+
+    method to->String
+      return String( characters )
+endClass
+

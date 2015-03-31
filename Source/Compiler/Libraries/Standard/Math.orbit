@@ -1,0 +1,85 @@
+class Math
+  ROUTINES
+    routine acon( slope:Real )->Real
+      $if ("C++") inlineNative 'acos((double)$n)'
+
+    routine asin( slope:Real )->Real
+      $if ("C++") inlineNative 'asin((double)$n)'
+
+    routine atan( slope:Real )->Real
+      $if ("C++") inlineNative 'atan((double)$n)'
+
+    routine atan2( y:Real, x:Real )->Real
+      $if ("C++") inlineNative 'atan2((double)$y,(double)$x)'
+
+    routine ceil( n:Real )->Real
+      $if ("C++") inlineNative 'ceil((double)$n)'
+
+    routine cos( n:Real )->Real
+      $if ("C++") inlineNative 'cos((double)$n)'
+
+    routine exp( n:Real )->Real
+      $if ("C++") inlineNative 'exp((double)$n)'
+
+    routine floor( n:Real )->Real
+      $if ("C++") inlineNative 'floor((double)$n)'
+
+    routine log( n:Real )->Real
+      $if ("C++") inlineNative 'log((double)$n)'
+
+    routine log2( n:Real )->Real
+      $if ("C++") inlineNative 'log2((double)$n)'
+
+    routine log10( n:Real )->Real
+      $if ("C++") inlineNative 'log10((double)$n)'
+
+    routine sin( n:Real )->Real
+      $if ("C++") inlineNative 'sin((double)$n)'
+
+    routine sqrt( n:Real )->Real
+      $if ("C++") inlineNative 'sqrt((double)$n)'
+
+    routine tan( n:Real )->Real
+      $if ("C++") inlineNative 'tan((double)$n)'
+endClass
+
+
+compound Degrees( value:Real )
+  ROUTINES
+    routine create( degrees:Radians )->Degrees
+      return Degrees( (degrees.value / pi) * 180.0 )
+
+  METHODS
+    method cos->Real
+      inline Math.cos( (this.value / 180.0) * pi )
+
+    method sin->Real
+      inline Math.sin( (this.value / 180.0) * pi )
+
+    method tan->Real
+      inline Math.sin( (this.value / 180.0) * pi )
+
+    method to->String
+      return "" + value
+endCompound
+
+compound Radians( value:Real )
+  ROUTINES
+    routine create( degrees:Degrees )->Radians
+      return Radians( (degrees.value / 180.0) * pi )
+
+  METHODS
+    method cos->Real
+      inline Math.cos( this.value )
+
+    method sin->Real
+      inline Math.sin( this.value )
+
+    method tan->Real
+      inline Math.tan( this.value )
+
+    method to->String
+      return "" + value
+endCompound
+
+

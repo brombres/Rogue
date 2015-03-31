@@ -1,0 +1,5 @@
+class Time
+  ROUTINES
+    routine current->Real [native]
+endClass
+

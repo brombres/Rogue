@@ -1,0 +1,79 @@
+class Global [singleton]
+  PROPERTIES
+    global_output_buffer = StringBuilder()
+    standard_output      = Console
+
+  METHODS
+    method add_indent( spaces:Integer )->this
+      global_output_buffer.add_indent( spaces )
+      return this
+
+    method flush->this
+      if (global_output_buffer.count?)
+        standard_output.print( global_output_buffer )
+        global_output_buffer.clear
+      endIf
+      return this
+
+    method print( value:Byte )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Character )->this
+      global_output_buffer.print( value )
+      if (value == '\n') return flush
+      return this
+
+    method print( value:Integer )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Logical )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Long )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Object )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:Real )->this
+      global_output_buffer.print( value )
+      return this
+
+    method print( value:String )->this
+      global_output_buffer.print( value )
+      return this
+
+    method println->this
+      global_output_buffer.print( '\n' )
+      return flush
+
+    method println( value:Byte )->this
+      return print( value ).println
+
+    method println( value:Character )->this
+      return print( value ).println
+
+    method println( value:Integer )->this
+      return print( value ).println
+
+    method println( value:Logical )->this
+      return print( value ).println
+
+    method println( value:Long )->this
+      return print( value ).println
+
+    method println( value:Real )->this
+      return print( value ).println
+
+    method println( value:Object )->this
+      return print( value ).println
+
+    method println( value:String )->this
+      return print( value ).println
+endClass
+

@@ -1,0 +1,15 @@
+class Console [singleton]
+  METHODS
+    method print( value:String )
+      native_print( value )
+
+    method print( value:StringBuilder )
+      native_print( value )
+
+    method native_print( value:String )
+      $if ("C++") inlineNative 'RogueString::print( $value )'
+
+    method native_print( value:StringBuilder )
+      $if ("C++") inlineNative 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
+endClass
+

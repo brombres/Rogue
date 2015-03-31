@@ -1,0 +1,72 @@
+primitive Real
+  ROUTINES
+    routine create( high:Integer, low:Integer )->Real [native]
+
+  METHODS
+    method high_bits->Integer [native]
+    method low_bits->Integer  [native]
+    #{
+    method hash_code->Integer
+      return this
+      }#
+
+    method to->String
+      return "" + this
+endPrimitive
+
+primitive Float
+#{
+  METHODS
+    method hash_code->Integer
+      return (this->Real).as_high_bits
+}#
+endPrimitive
+
+primitive Long
+#{
+  METHODS
+    method hash_code->Integer
+      return this
+}#
+endPrimitive
+
+primitive Integer
+  METHODS
+    method hash_code->Integer
+      return this
+
+    method to->Long
+      $if ("C++") inlineNative "((RogueLong)$this)"
+
+    method to->String
+      return "" + this
+endPrimitive
+
+primitive Character
+  METHODS
+    method hash_code->Integer
+      return this->Integer
+
+    method to->String
+      return "" + this
+endPrimitive
+
+primitive Byte
+  METHODS
+    method hash_code->Integer
+      return this->Integer
+
+    method to->String
+      return "" + this
+endPrimitive
+
+primitive Logical
+  METHODS
+    method hash_code->Integer
+      if (this) return 1
+      else      return 0
+
+    method to->String
+      return "" + this
+endPrimitive
+

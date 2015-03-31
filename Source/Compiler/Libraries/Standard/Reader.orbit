@@ -1,0 +1,48 @@
+aspect Reader<<$DataType>>
+  METHODS
+    method has_another->Logical
+
+    method peek->$DataType
+
+    method read->$DataType
+
+    method marco->String
+      return "polo"
+endAspect
+
+
+class LineReader : Reader<<String>>
+  PROPERTIES
+    source : Reader<<Character>>
+    next   : String
+    buffer = StringBuilder()
+
+  METHODS
+    method init( source )
+      next = prepare_next
+
+    method has_another->Logical
+      return next?
+
+    method peek->String
+      return next
+
+    method prepare_next->String
+      if (not source.has_another) return null
+
+      buffer.clear
+      while (source.has_another)
+        local ch = source.read
+        if (ch == '\n') return buffer->String
+        buffer.print( ch )
+      endWhile
+
+      return buffer->String
+
+    method read->String
+      local result = next
+      next = prepare_next
+      return result
+endClass
+
+

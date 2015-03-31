@@ -1,0 +1,10 @@
+class Object
+  METHODS
+    method operator==( other:Object )->Logical
+      return false  # FIXME: this is other
+
+    method to->String
+      return "(Object)"
+endClass
+
+

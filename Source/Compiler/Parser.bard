@@ -115,7 +115,7 @@ class Parser
       local template = Template( t, name, Attribute.is_class )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
-      if (not Program.implicit_main_class_t)
+      if (not Program.implicit_main_class_t or (Program.implicit_main_class_t.filepath != Program.first_filepath and t.filepath == Program.first_filepath))
         Program.implicit_main_class_t    = t
         Program.implicit_main_class_name = name
       endIf

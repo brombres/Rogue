@@ -1,0 +1,73 @@
+#------------------------------------------------------------------------------
+# Task
+#------------------------------------------------------------------------------
+class Task
+  METHODS
+    method start->Task
+      if (update()) TaskManager.add( this )
+      return this
+
+    method update->Logical
+      return false  # return "true" to continue the task next time
+endClass
+
+
+class TaskWithResult<<$ResultType>> : Task
+  PROPERTIES
+    result : $ResultType
+
+  METHODS
+    method finish->$ResultType
+      # Synchronously runs task until completion.  You can call
+      # "await task" instead of "task.finish" to allow it to finish
+      # concurrently.
+      while (update()) noAction
+      return result
+endClass
+
+
+#------------------------------------------------------------------------------
+# TaskManager
+#------------------------------------------------------------------------------
+class TaskManager [requisite singleton]
+  PROPERTIES
+    active_list = Task[]
+    update_list = Task[]
+
+  METHODS
+    method add( task:Task )->TaskManager
+      active_list.add( task )
+      return this
+
+      #{
+    method await_all( tasks:Task[] ) [async]
+      local still_waiting = true
+      while (still_waiting)
+        still_waiting = false
+        local i = tasks.count() - 1
+        while (i >= 0)
+          local task = tasks[i]
+          if (task.update()) still_waiting = true
+          else               tasks.remove_at(i)
+          --i
+        endWhile
+        if (still_waiting) yield
+      endWhile
+      }#
+
+    method update->Logical
+      local any_active = false
+
+      update_list.clear().add( active_list )
+      active_list.clear()
+      forEach (task in update_list)
+        if (task.update())
+          # Active tasks stay in the list
+          any_active = true
+          active_list.add( task )
+        endIf
+      endForEach
+
+      return any_active
+endClass
+

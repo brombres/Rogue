@@ -1,0 +1,17 @@
+class NativeArray [native]
+  METHODS
+    method count->Integer [native]
+
+    method element_size->Integer
+      $if ("C++") inlineNative '$this->element_size'
+
+    method set( i1:Integer, other:NativeArray, other_i1=0:Integer, other_i2=-1:Integer )->NativeArray
+      $if ("C++") inlineNative '$this->set($i1,$other,$other_i1,$other_i2)'
+endClass
+
+class Array<<$DataType>> : NativeArray [native]
+  METHODS
+    method get( index:Integer )->$DataType
+      inline this[ index ]
+endClass
+

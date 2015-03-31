@@ -1,0 +1,118 @@
+class GenericList
+endClass
+
+class List<<$DataType:Object>> : GenericList
+  PROPERTIES
+    data  : Array<<$DataType>>
+    count : Integer
+
+  METHODS
+    method init
+      init( 10 )
+
+    method init( initial_capacity:Integer )
+      data = Array<<$DataType>>( initial_capacity )
+
+    method init( initial_capacity:Integer, initial_value:$DataType )
+      data = Array<<$DataType>>( initial_capacity )
+      forEach (i in 1..initial_capacity) add( initial_value )
+
+    method clone->$DataType[]
+      local result = $DataType[]( count )
+      forEach (value in this)
+        result.add( value )
+      endForEach
+      return result
+
+    method add( value:$DataType )->$DataType[]
+      reserve(1)[count] = value
+      ++count
+      return this
+
+    method add( other:$DataType[] )->$DataType[]
+      reserve(other.count)
+      forEach (value in other) add( value )
+      return this
+
+    method capacity->Integer
+      if (not data) return 0
+      return data.count
+
+    method clear->$DataType[]
+      count = 0
+      return this
+
+    method first->$DataType
+      inline this.data[0]
+
+    method get( index:Integer )->$DataType
+      inline this.data[index]
+
+    method last->$DataType
+      return this.data[ count - 1 ]
+
+    method locate( value:$DataType )->Integer
+      forEach (i of this)
+        if (data[i] == value) return i
+      endForEach
+      return -1
+
+    method locate_last( value:$DataType )->Integer
+      forEach (i of this step -1)
+        if (data[i] == value) return i
+      endForEach
+      return -1
+
+    method reserve( additional_count:Integer )->$DataType[]
+      local required_capacity = count + additional_count
+
+      if (not data)
+        data = Array<<$DataType>>( 10 )
+      elseIf (required_capacity > data.count)
+        local x2 = capacity + capacity
+        if (required_capacity < x2) required_capacity = x2 
+        local new_data = Array<<$DataType>>( required_capacity )
+        new_data.set( 0, data )
+        data = new_data
+      endIf
+
+      return this
+
+    method remove( value:$DataType )->$DataType
+      local index = locate( value )
+      if (index == -1)
+        local zero_value : $DataType
+        return zero_value
+      endIf
+      return remove_at( index )
+
+    method remove_at( index:Integer )->$DataType
+      local result = this[ index ]
+      data.set( index, data, index+1 )
+      local zero_value : $DataType
+      data[count] = zero_value
+      --count
+      return result
+
+    method remove_first->$DataType
+      inline this.remove_at(0)
+
+    method remove_last->$DataType
+      return remove_at( count - 1 )
+
+    method set( xyz:Integer, new_value:$DataType )->$DataType[]
+      inline this.data[ xyz ] = new_value
+
+    method to->String
+      local buffer = "["
+      local first = true
+      forEach (value in this)
+        if (first) first = false
+        else       buffer += ","
+        buffer += value
+      endForEach
+      buffer += "]"
+      return buffer
+endClass
+
+

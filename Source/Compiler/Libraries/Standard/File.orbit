@@ -1,0 +1,56 @@
+class File
+  ROUTINES
+    routine exists( filepath:String )->String [native]
+
+    routine load( filepath:String )->String [native]
+
+    routine read( filepath:String )->FileReader
+      return FileReader( filepath )
+
+    routine save( filepath:String, data:String )->Logical [native]
+
+    routine write( filepath:String )->FileWriter
+      return FileWriter( filepath )
+endClass
+
+class FileReader : Reader<<Character>> [native]
+  ROUTINES
+    routine create( filepath:String )->this [native]
+    
+  METHODS
+    method close->FileReader [native]
+
+    method count->Integer [native]
+
+    method has_another->Logical [native]
+
+    method open( filepath:String )->Logical [native]
+
+    method peek->Character [native]
+
+    method position->Integer [native]
+
+    method read->Character [native]
+
+    method remaining->Integer
+      return count - position
+
+    method set_position( new_position:Integer )->this [native]
+endClass
+
+class FileWriter [native]
+  ROUTINES
+    routine create( filepath:String )->this [native]
+    
+  METHODS
+    method close->FileWriter [native]
+
+    method count->Integer [native]
+
+    method flush->FileWriter [native]
+
+    method open( filepath:String )->Logical [native]
+
+    method write( ch:Character )->this [native]
+endClass
+

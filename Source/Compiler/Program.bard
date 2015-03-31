@@ -13,6 +13,7 @@ class Program [requisite singleton]
     template_list   = Template[]                 : Template[]
     template_lookup = Table<<String,Template>>() : Table<<String,Template>>
 
+    first_filepath           = ""
     explicit_main_class_t    : Token
     explicit_main_class_name : String
     implicit_main_class_t    : Token
@@ -113,6 +114,7 @@ class Program [requisite singleton]
       else
         throw RogueError( "No candidates for main class." )
       endIf
+      trace main_class.name
 
       type_null.resolve
       type_Real.resolve

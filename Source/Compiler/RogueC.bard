@@ -9,6 +9,8 @@ $[include "Type.bard"]
 class RogueC [singleton]
   PROPERTIES
     included_files = String[]
+    prefix_path_list   = String[]
+    prefix_path_lookup = Table<<String,Logical>>()
     compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
 
     target = "C++"
@@ -38,15 +40,48 @@ class RogueC [singleton]
       # Preemptively (immediately) parses the given file.
       local file = File(filepath)
       if (not file.exists)
+        forEach (prefix in prefix_path_list)
+          local prefixed_filepath = prefix + filepath
+          local prefixed_file = File( prefixed_filepath )
+          if (prefixed_file.exists)
+            filepath = prefixed_filepath
+            file = prefixed_file
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (not file.exists)
         local mesg = //No such file "$".// (filepath)
         if (t?) throw t.error( mesg )
         else    throw RogueError( mesg )
       endIf
 
+      if (file.is_folder)
+        local path2 = "$/$.orbit" (filepath,file.filename)
+        local file2 = File( path2 )
+        if (not file2.exists or file2.is_folder)
+          local mesg = //Can not find "$" to include.// (path2)
+          if (t?) throw t.error( mesg )
+          else    throw RogueError( mesg )
+        else
+          filepath = path2
+          file = file2
+        endIf
+      endIf
+
       filepath = file.absolute_filepath
       if (included_files.contains(filepath)) return
 
+      if (included_files.count == 0) Program.first_filepath = filepath
+
       included_files.add( filepath )
+
+      local prefix = filepath.before_last('/') + "/"
+      if (not prefix_path_lookup.contains(prefix))
+        prefix_path_lookup[prefix] = true
+        prefix_path_list.add( prefix )
+      endIf
 
       println "Parsing " + filepath
       Parser( filepath ).parse_elements
