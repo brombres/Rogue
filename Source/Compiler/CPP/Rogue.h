@@ -370,6 +370,7 @@ extern RogueAllocator Rogue_allocator;
 RogueLogical RogueFile__exists( RogueString* filepath );
 RogueString* RogueFile__load( RogueString* filepath );
 RogueLogical RogueFile__save( RogueString* filepath, RogueString* data );
+RogueInteger RogueFile__size( RogueString* filepath );
 
 //-----------------------------------------------------------------------------
 //  FileReader

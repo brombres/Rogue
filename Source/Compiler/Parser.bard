@@ -1045,8 +1045,40 @@ class Parser
             throw t.error( "Syntax error in forEach - keyword 'in' or 'of' expected." )
           endIf
         endIf
+
       else
-        throw expr.t.error( "Syntax error in forEach - control variable expected." )
+        # forEach (expr) e.g. forEach (1..n)
+        local range = expr as CmdRange
+        if (range?)
+          local cmd_block = CmdBlock(t)
+
+          local control_var = this_method.add_local( t, Program.create_unique_id )
+          control_var.initial_value = range.first
+          cmd_block.statements.add( CmdLocalDeclaration(range.first.t,control_var) )
+
+          local last_var = this_method.add_local( t, Program.create_unique_id )
+          last_var.initial_value = range.last
+          cmd_block.statements.add( CmdLocalDeclaration(range.last.t,last_var) )
+
+          local step_cmd : Cmd
+          if (consume(TokenType.keyword_step))
+            local step_value = parse_expression
+            step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
+          else
+            step_cmd = CmdModifyLocal( range.t, control_var, 1 )
+          endIf
+
+          local cmd_for_each = CmdForEachInRange( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var), step_cmd )
+          if (has_parens) must_consume( TokenType.symbol_close_paren )
+          parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
+
+          cmd_block.statements.add( cmd_for_each )
+          return cmd_block
+
+        else
+          throw t.error( "Invalid syntax in forEach." )
+        endIf
+
       endIf
 
       trace

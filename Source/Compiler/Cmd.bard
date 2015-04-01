@@ -19,7 +19,14 @@ class Cmd
         if (this_type.has_method_named(m_name))
           return CmdAccess( t, this, m_name )
         endIf
-        throw t.error( "Type $ is not instance of required type $." (this_type,target_type) )
+
+        if (this_type.is_primitive and target_type.is_primitive)
+          if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
+            return CmdCastToType( t, this, target_type )
+          endIf
+        endIf
+
+        throw t.error( "Type $ is cannot be cast to required type $." (this_type,target_type) )
       endIf
       #endIf
 

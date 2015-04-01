@@ -948,6 +948,23 @@ RogueLogical RogueFile__save( RogueString* filepath, RogueString* data )
   return true;
 }
 
+RogueInteger RogueFile__size( RogueString* filepath )
+{
+  if ( !filepath ) return 0;
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, sizeof(path) );
+
+  FILE* fp = fopen( path, "rb" );
+  if ( !fp ) return 0;
+
+  fseek( fp, 0, SEEK_END );
+  int size = (int) ftell( fp );
+  fclose( fp );
+
+  return size;
+}
+
 
 //-----------------------------------------------------------------------------
 //  FileReader

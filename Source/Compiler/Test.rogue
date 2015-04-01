@@ -3,17 +3,6 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      local v = Variant(5)
-      println v
-      v = Variant( "Test" )
-      println v
-      v = Variant( pi )
-      println v
-      v = Variant( true )
-      println v
-      v = VariantList()
-      println v
-      v = VariantTable()
-      println v
+      println File.load_as_bytes( "../Test.rogue" )
 endClass
 

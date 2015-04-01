@@ -67,6 +67,10 @@ class Scope
 
       args.resolve( this )
 
+      forEach (i of args)
+        args[i] = args[i].cast_to( m.parameters[i].type ).resolve( this )
+      endForEach
+
       local cmd : Cmd
       if (m.is_routine)
         # routine
