@@ -602,21 +602,34 @@ void RogueProgramCore::collect_garbage()
 {
   ROGUE_TRACE( main_object );
 
+  // Trace singletons
+  for (int i=type_count-1; i>=0; --i)
+  {
+    RogueType* type = types[i];
+    if (type) ROGUE_TRACE( type->_singleton );
+  }
+
+  // Trace through all as-yet unreferenced objects that are manually retained.
   RogueObject* cur = objects;
+  while (cur)
+  {
+    if (cur->size >= 0 && cur->reference_count > 0)
+    {
+      ROGUE_TRACE( cur );
+    }
+    cur = cur->next_object;
+  }
+
+  cur = objects;
   objects = NULL;
   RogueObject* survivors = NULL;  // local var for speed
 
   while (cur)
   {
     RogueObject* next_object = cur->next_object;
-    if (cur->reference_count > 0)
+    if (cur->size < 0)
     {
-      //printf( "Referenced %s\n", cur->type->name() );
-      cur->next_object = survivors;
-      survivors = cur;
-    }
-    else if (cur->size < 0)
-    {
+      // Discovered automatically during tracing.
       //printf( "Referenced %s\n", cur->type->name() );
       cur->size = ~cur->size;
       cur->next_object = survivors;
