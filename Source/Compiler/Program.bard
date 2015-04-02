@@ -255,9 +255,13 @@ class Program [requisite singleton]
       writer.println
       writer.println( "  RogueProgram();" )
       writer.println( "  ~RogueProgram();" )
-      writer.println( "  void configure();" )
+      writer.println( "  void configure( int argc, char* argv[] );" )
       writer.println( "  void launch();" )
       writer.println( "};" )
+      writer.println
+
+      # method prototypes
+      forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
       writer.println( "extern RogueProgram Rogue_program;" );
@@ -275,17 +279,13 @@ class Program [requisite singleton]
       writer.println
 
       # init() forward declarations
-      forEach (type in type_list)
-        if (not type.omit_output)
-          local m = type.find_method( "init()" )
-          if (m?) writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " ).print( type ).println( " );" )
-        endIf
-      endForEach
-      writer.println
-
-      # method prototypes
-      forEach (type in type_list) type.print_method_prototypes( writer )
-      writer.println
+      #forEach (type in type_list)
+      #  if (not type.omit_output)
+      #    local m = type.find_method( "init()" )
+      #    if (m?) writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " ).print( type ).println( " );" )
+      #  endIf
+      #endForEach
+      #writer.println
 
       # typedef each unique method signature
       local native_method_signature_list   = String[]
@@ -373,7 +373,7 @@ writer.println( "// " + type )
       writer.println
 
       # configure() method
-      writer.println( "void RogueProgram::configure()" )
+      writer.println( "void RogueProgram::configure( int argc, char* argv[] )" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -419,6 +419,14 @@ writer.println( "// " + type )
           endIf
         endIf
       endForEach
+      writer.println
+
+      # Copy command line args to System class
+      writer.println( "RogueSystem::executable_filepath = RogueString::create( argv[0] );" );
+      writer.println( "for (int i=1; i<argc; ++i)" )
+      writer.println( "{" )
+      writer.println( "  RogueStringList__add( RogueSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "}" )
       writer.println
 
       writer.print(   "Rogue_program.main_object = Rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )

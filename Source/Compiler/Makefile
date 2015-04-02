@@ -7,9 +7,9 @@ BCC_ARGS = --source-folders=../../Programs/Bard/Libraries/Bard --include=Standar
 
 all: go
 
-go: compile run
+go: bcc cpp
 
-compile: ../../Programs/RogueC.bc
+bcc: ../../Programs/RogueC.bc
 
 ../../Programs/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
 	$(BARDVM) $(BCC) $(BCC_ARGS) RogueC.bard
@@ -20,7 +20,7 @@ $(BARDVM): $(BCC)
 vm:
 	cd ../../Programs/Bard && make
 
-run:
+compile:
 	$(BARDVM) RogueC.bc
 
 list: go
@@ -28,7 +28,7 @@ list: go
 	@echo "-----------------------------------------------------"
 	cat CPP/RogueProgram.cpp
 
-cpp: compile run
+cpp: compile
 	cd CPP && make
 
 clean:

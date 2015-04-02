@@ -4,9 +4,9 @@
 #include <math.h>
 #include "Rogue.h"
 
-int main()
+int main( int argc, char* argv[] )
 {
-  Rogue_program.configure();
+  Rogue_program.configure( argc, argv );
   Rogue_program.launch();
   Rogue_program.collect_garbage();
   //printf( "Done\n" );

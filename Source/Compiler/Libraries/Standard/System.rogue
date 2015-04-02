@@ -1,0 +1,6 @@
+class System
+  SETTINGS
+    command_line_arguments = String[]
+    executable_filepath    : String
+
+endClass

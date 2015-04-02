@@ -3,6 +3,11 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      println File.load_as_bytes( "../Test.rogue" )
+      println "EXECUTABLE"
+      println System.executable_filepath
+      println
+
+      println "COMMAND LINE ARGUMENTS"
+      println System.command_line_arguments
 endClass
 
