@@ -1,6 +1,6 @@
 .PHONY: cpp
 
-ROGUE_SOURCE = $(shell ls *.rogue)
+ROGUE_SOURCE = $(shell ls Bard/*.bard)
 BARDVM = ../../Programs/Bard/Programs/Mac/bard
 BCC    = ../../Programs/Bard/Programs/BCC.bc
 BCC_ARGS = --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
@@ -21,7 +21,7 @@ vm:
 	cd ../../Programs/Bard && make
 
 compile:
-	$(BARDVM) Bard/RogueC.bc
+	$(BARDVM) Bard/RogueC.bc Test.rogue --output=CPP/RogueProgram.cpp --main
 
 list: go
 	cat CPP/RogueProgram.h

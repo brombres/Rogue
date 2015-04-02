@@ -13,27 +13,47 @@ class RogueC [singleton]
     prefix_path_lookup = Table<<String,Logical>>()
     compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
 
+    source_files    = String[]
+    generate_main   : Logical
+    first_filepath  : String
+    output_filepath : String
     target = "C++"
 
   METHODS
     method init
       try
-        println "ROGUEC"
+        process_command_line_arguments
+
+        if (source_files.count == 0)
+          println "USAGE"
+          println "  roguec [options] file1.rogue [file2.rogue ...] [--output=destpath/file.cpp]"
+          Runtime.exit( 1 )
+        endIf
 
         compile_targets["C++"] = true
         Program.configure
-        include( "Test.rogue" )
+
+        forEach (filepath in source_files)
+          include( filepath )
+        endForEach
+
         Program.resolve
 
-        Program.write_cpp( "CPP/RogueProgram" )
+        if (output_filepath is null)
+          output_filepath = File(first_filepath).filename
+          if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
+        else
+          if (output_filepath.to_lowercase.ends_with(".cpp")) output_filepath = output_filepath.leftmost(-4)
+        endIf
 
-        println "DONE"
+        Program.write_cpp( output_filepath )
       catch (err:Error)
         println err
         Runtime.exit(1)
       endTry
 
     method include( filepath:String )
+      if (not first_filepath) first_filepath = filepath
       include( null, filepath )
 
     method include( t:Token, filepath:String )
@@ -85,5 +105,33 @@ class RogueC [singleton]
 
       #println "Parsing " + filepath
       Parser( filepath ).parse_elements
+
+    method process_command_line_arguments
+      forEach (arg in Runtime.command_line_arguments)
+        local value = arg.after_first('=')
+        arg = arg.before_first('=')
+        if (arg.begins_with("--"))
+          # Option
+          if (arg == "--output")
+            if (value.count == 0) throw RogueError( //Output filepath expected after "--output="// )
+            output_filepath = value
+
+          elseIf (arg == "--main")
+            if (value.count?) throw RogueError( "Unexpected value for '--main' option." )
+            generate_main = true
+
+          else
+            throw RogueError( "Unknown option '$'." (arg) )
+          endIf
+        else
+          # Input Filename
+          source_files.add( arg )
+        endIf
+      endForEach
+
+    method require_valueless( arg:String, expecting:String )
+      if (arg == expecting) return
+      if (arg.contains('=')) throw RogueError( "Unexpected value for command line argument '$'." (expecting) )
+
 endClass
 

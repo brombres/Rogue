@@ -463,6 +463,22 @@ writer.println( "// " + type )
       # Setting (static) declarations 
       forEach (type in type_list) type.declare_settings( writer )
 
+      # Optional main()
+      if (RogueC.generate_main)
+        writer.println
+        writer.println( @|int main( int argc, char* argv[] )
+                         |{
+                         |  Rogue_program.configure( argc, argv );
+                         |  Rogue_program.launch();
+                         |  Rogue_program.collect_garbage();
+                         |
+                         |  // TODO: update TaskManager until all tasks finished. //
+                         |
+                         |  return 0;
+                         |}
+        )
+      endIf
+
       writer.close
 endClass
 

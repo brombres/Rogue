@@ -1,5 +1,5 @@
 cpp:
-	g++ -Wall main.cpp RogueProgram.cpp Rogue.cpp
+	g++ -Wall RogueProgram.cpp Rogue.cpp
 	./a.out
 
 clean:
