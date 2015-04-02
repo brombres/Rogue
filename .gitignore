@@ -1,6 +1,6 @@
 *.swp
 .DS_Store
-Source/Compiler/*.bc
+Source/Compiler/Bard/RogueC.bc
 Programs/Bard/Programs/Mac
 Programs/Bard/Programs/Windows
 Test.cpp

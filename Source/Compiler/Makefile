@@ -9,10 +9,10 @@ all: go
 
 go: bcc cpp
 
-bcc: ../../Programs/RogueC.bc
+bcc: Bard/RogueC.bc
 
-../../Programs/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
-	$(BARDVM) $(BCC) $(BCC_ARGS) RogueC.bard
+Bard/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
+	$(BARDVM) $(BCC) $(BCC_ARGS) Bard/RogueC.bard
 
 $(BARDVM): $(BCC)
 	cd ../../Programs/Bard && make
@@ -21,7 +21,7 @@ vm:
 	cd ../../Programs/Bard && make
 
 compile:
-	$(BARDVM) RogueC.bc
+	$(BARDVM) Bard/RogueC.bc
 
 list: go
 	cat CPP/RogueProgram.h
@@ -32,7 +32,7 @@ cpp: compile
 	cd CPP && make
 
 clean:
-	rm -f *.bc
+	rm -f Bard/*.bc
 
 vim:
 	cd ../../Syntax/Vim && make
