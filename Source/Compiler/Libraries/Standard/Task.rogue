@@ -39,8 +39,7 @@ class TaskManager [requisite singleton]
       active_list.add( task )
       return this
 
-      #{
-    method await_all( tasks:Task[] ) [async]
+    method await_all( tasks:Task[] ) [task]
       local still_waiting = true
       while (still_waiting)
         still_waiting = false
@@ -53,7 +52,6 @@ class TaskManager [requisite singleton]
         endWhile
         if (still_waiting) yield
       endWhile
-      }#
 
     method update->Logical
       local any_active = false

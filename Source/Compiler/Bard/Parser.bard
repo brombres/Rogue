@@ -14,6 +14,8 @@ class Parser
 
     string_buffer = StringBuilder()
 
+    cur_statement_list : CmdStatementList
+
   METHODS
     method init( filepath:String )
       init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
@@ -447,23 +449,37 @@ class Parser
       endIf
 
     method parse_multi_line_statements( statements:CmdStatementList )
+      local prev_statement_list = cur_statement_list
+      cur_statement_list = statements
+
       consume_end_commands
       while (next_is_statement)
         parse_statement( statements, true )
+
         while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) noAction
         consume_end_commands
       endWhile
 
+      cur_statement_list = prev_statement_list
+
     method parse_single_line_statements( statements:CmdStatementList )
+      local prev_statement_list = cur_statement_list
+      cur_statement_list = statements
+
       while (next_is_statement)
         parse_statement( statements, false )
-        if (not consume(TokenType.symbol_semicolon)) return
+        if (not consume(TokenType.symbol_semicolon))
+          cur_statement_list = prev_statement_list
+          return
+        endIf
         while (consume(TokenType.symbol_semicolon)) noAction
       endWhile
 
       if (not consume(TokenType.eol))
         if (not peek.is_structure) must_consume( TokenType.eol )  # force an error
       endIf
+
+      cur_statement_list = prev_statement_list
 
 
     method parse_statement( statements:CmdStatementList, allow_control_structures:Logical )
@@ -536,6 +552,24 @@ class Parser
           endIf
           statements.add( CmdReturn(t,parse_expression) )
         endIf
+        return
+
+      elseIf (consume(TokenType.keyword_await))
+        # Insert a local result declaration and a statement list to hold the
+        # await cmd and subsequent conversion.  Substitute the result var in
+        # place of this statement.
+        #
+        #   await some_task(a,b)
+        #
+        # ->
+        #
+        #   {
+        #     task = some_task(a,b)
+        #     while (task.update) yield
+        #   }
+        #   
+        local statement_list = CmdStatementList()
+        statements.add( CmdAwait(t,parse_expression,statement_list) )
         return
 
       elseIf (consume(TokenType.keyword_yield))
@@ -1684,6 +1718,30 @@ class Parser
         access.args = parse_args
         return access
         }#
+
+      elseIf (consume(TokenType.keyword_await))
+        # Insert a local result declaration and a statement list to hold the
+        # await cmd and subsequent conversion.  Substitute the result var in
+        # place of this term.
+        #
+        #   x = await some_task(a,b)
+        #
+        # ->
+        #
+        #   local result : TBD
+        #   {
+        #     task = some_task(a,b)   # result.type = task result type
+        #     while (task.update) yield
+        #     result = task.result
+        #   }
+        #   x = result
+        #   
+        local result_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
+        local statement_list = CmdStatementList()
+        cur_statement_list.add( CmdLocalDeclaration(t,result_var) )
+        cur_statement_list.add( CmdAwait(t,parse_expression,statement_list,result_var) )
+        return CmdAccess( t, result_var.name )
+
 
       else
         #throw peek.error( "Syntax error: unexpected '$'." (peek) )

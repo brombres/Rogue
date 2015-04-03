@@ -26,7 +26,7 @@ class Cmd
           endIf
         endIf
 
-        throw t.error( "Type $ is cannot be cast to required type $." (this_type,target_type) )
+        throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
       endIf
       #endIf
 
@@ -314,7 +314,7 @@ class CmdReturn : CmdStatement
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args?)
-        task_args.add_return( t, value )
+        task_args.add_return( t, clone(value,clone_args) )
         return null
       else
         return CmdReturn( t, clone(value,clone_args) )
@@ -1551,7 +1551,14 @@ class CmdWriteLocal : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?) return inline_args.inline_write_local( this )
+      if (inline_args?)
+        return inline_args.inline_write_local( this )
+      else
+        local task_args = (clone_args as TaskArgs)
+        if (task_args?)
+          return task_args.cmd_write( t,local_info, new_value.clone(clone_args) )
+        endIf
+      endIf
       return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
 
     method write_cpp( writer:CPPWriter )
@@ -3448,6 +3455,55 @@ endClass
 #------------------------------------------------------------------------------
 # Task-Related
 #------------------------------------------------------------------------------
+class CmdAwait : Cmd
+  PROPERTIES
+    expression     : Cmd
+    statement_list : CmdStatementList
+    result_var     : Local
+
+  METHODS
+    method init( t, expression, statement_list, result_var=null )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args?)
+        throw t.error( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." )
+      else
+        return CmdAwait( t, expression.clone(task_args), statement_list.clone(task_args), result_var )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      if (not scope.this_method.is_task_conversion)
+        throw t.error( "The 'await' command can only be used in [task] methods." )
+      endIf
+
+      expression = expression.resolve( scope )
+      local task_type = expression.require_type
+      local p_result = task_type.find_property( "result" )
+      if (result_var?)
+        if (p_result?)
+          # Fix up local 'result' type to match task result type
+          result_var.type = p_result.type
+println "result var type is " + p_result.type
+        else
+          throw expression.t.error( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - remove the call to start()." )
+        endIf
+      endIf
+
+      local task_var = scope.this_method.add_local( t, Program.create_unique_id )
+      task_var.initial_value = expression
+      statement_list.add( CmdLocalDeclaration(t, task_var) )
+        
+      statement_list.add( CmdWhile(t, CmdAccess(t,CmdReadLocal(t,task_var),"update")) )
+
+      if (result_var?)
+        statement_list.add( CmdWriteLocal(t, result_var, CmdReadProperty(t,CmdReadLocal(t,task_var),p_result)) )
+      endIf
+
+      statement_list.resolve( scope )
+      return CmdBlock( t, statement_list ).resolve( scope )
+endClass
+
 class CmdYield : Cmd
   METHODS
     method init( t )

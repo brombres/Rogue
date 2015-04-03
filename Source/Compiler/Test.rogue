@@ -3,11 +3,19 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      println "EXECUTABLE"
-      println System.executable_filepath
-      println
+      task_test.start
+      println "tasks started"
 
-      println "COMMAND LINE ARGUMENTS"
-      println System.command_line_arguments
+    method task_test [task]
+      local x = await print( 1, 5 )
+      local y = await print( -5, -1 )
+      println "x:$ y:$" (x,y)
+
+    method print( i1:Integer, i2:Integer )->Integer [task]
+      forEach (n in i1..i2)
+        println n
+        yield
+      endForEach
+      return i2
 endClass
 

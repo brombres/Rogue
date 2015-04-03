@@ -136,6 +136,9 @@ class TaskArgs : CloneArgs
     method cmd_read( t:Token, local_info:Local )->Cmd
       return CmdAccess( t, CmdThisContext(t,task_type), "$_$" (local_info.name,local_info.index) )
 
+    method cmd_write( t:Token, local_info:Local, new_value:Cmd )->Cmd
+      return CmdAssign( t, CmdAccess(t, CmdThisContext(t,task_type), "$_$" (local_info.name,local_info.index)), new_value )
+
     method replace_write_local( t:Token, local_info:Local, new_value:Cmd )->Cmd
       if (new_value is null) new_value = local_info.type.create_default_value(t)
       return CmdAssign( t, CmdAccess(t, CmdThisContext(t,task_type), "$_$" (local_info.name,local_info.index)), new_value )

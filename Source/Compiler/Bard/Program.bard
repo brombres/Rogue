@@ -134,6 +134,13 @@ class Program [requisite singleton]
       local m = main_class.find_method( "init()" )
       if (m?) m.resolve
 
+      # Reference and resolve all requisite type templates
+      forEach (templ in template_list)
+        if ((templ.attributes.flags & Attribute.is_requisite)? and not templ.type_parameters)
+          get_type_reference( templ.t, templ.name ).resolve
+        endIf
+      endForEach
+
       local i = 0
       while (i < type_list.count)
         type_list[i].resolve

@@ -1,4 +1,4 @@
-class System
+class System [requisite]
   SETTINGS
     command_line_arguments = String[]
     executable_filepath    : String

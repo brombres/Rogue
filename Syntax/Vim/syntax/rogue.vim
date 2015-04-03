@@ -29,6 +29,7 @@ syn keyword bardConditional  which whichIs case caseNext others endWhich endWhic
 syn keyword bardConditional  contingent endContingent satisfied unsatisfied
 syn keyword bardConditional  try catch endTry
 syn keyword bardConditional  block endBlock
+syn keyword bardLoop         await
 syn keyword bardLoop         while endWhile forEach endForEach in of step
 syn keyword bardLoop         loop endLoop
 syn keyword bardBranch       escapeForEach escapeWhile escapeLoop

@@ -101,6 +101,7 @@ class Tokenizer
       TokenType.keyword_SETTINGS     = define( StructureTokenType("SETTINGS") )
 
       # Statement Tokens
+      TokenType.keyword_await        = define( TokenType("await") )
       TokenType.keyword_forEach      = define( TokenType("forEach") )
       TokenType.keyword_if           = define( TokenType("if") )
       TokenType.keyword_in           = define( TokenType("in") )
