@@ -264,6 +264,7 @@ class Program [requisite singleton]
       writer.println( "  ~RogueProgram();" )
       writer.println( "  void configure( int argc, char* argv[] );" )
       writer.println( "  void launch();" )
+      writer.println( "  void finish_tasks();" )
       writer.println( "};" )
       writer.println
 
@@ -448,7 +449,6 @@ writer.println( "// " + type )
       writer.println( "}" )
       writer.println
 
-
       # launch()
       writer.println( "void RogueProgram::launch()" )
       writer.println( "{" )
@@ -459,10 +459,22 @@ writer.println( "// " + type )
       if (m?)
         writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)Rogue_program.main_object );")
       endIf
+      writer.println( "Rogue_program.collect_garbage();" )
 
       writer.indent -= 2
       writer.println( "}" )
       writer.println
+
+      # finish_tasks() method
+      writer.println( @|void RogueProgram::finish_tasks()
+                       |{
+                       |  while (RogueTaskManager__update(Rogue_program.type_RogueTaskManager->singleton()))
+                       |  {
+                       |    Rogue_program.collect_garbage();
+                       |  }
+                       |}
+                     )
+
 
       writer.println "RogueProgram Rogue_program;"
       writer.println
@@ -477,10 +489,7 @@ writer.println( "// " + type )
                          |{
                          |  Rogue_program.configure( argc, argv );
                          |  Rogue_program.launch();
-                         |  Rogue_program.collect_garbage();
-                         |
-                         |  // TODO: update TaskManager until all tasks finished. //
-                         |
+                         |  Rogue_program.finish_tasks();
                          |  return 0;
                          |}
         )
