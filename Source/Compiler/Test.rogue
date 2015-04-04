@@ -2,17 +2,12 @@ $include "Libraries/Standard"
 
 class Test
   PROPERTIES
-    callback : Callback
 
   METHODS
     method init
-      callback = Callback()
-      callback()
-endClass
+      local callback : Callback()
 
-class Callback
-  METHODS
-    method call
-      println "a-ha!"
+    method target
+      println "Success!"
 endClass
 
