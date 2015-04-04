@@ -1,18 +1,18 @@
 $include "Libraries/Standard"
 
 class Test
+  PROPERTIES
+    callback : Callback
+
   METHODS
     method init
-      task_test.start
+      callback = Callback()
+      callback()
+endClass
 
-    method task_test [task]
-      print(  1,  5 ).start
-      print( -5, -1 ).start
-
-    method print( i1:Integer, i2:Integer ) [task]
-      forEach (n in i1..i2)
-        println n
-        yield
-      endForEach
+class Callback
+  METHODS
+    method call
+      println "a-ha!"
 endClass
 

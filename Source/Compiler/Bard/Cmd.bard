@@ -1100,12 +1100,10 @@ class CmdAccess : Cmd
       if (args?) args.resolve( scope )
 
       if (context is null)
-        if (args is null)
-          local v = scope.find_local( name )
-          if (v?)
-            if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-            return CmdReadLocal(t,v).resolve(scope)
-          endIf
+        local v = scope.find_local( name )
+        if (v?)
+          if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+          return CmdReadLocal(t,v).resolve(scope)
         endIf
 
         local new_type = Program.find_type( name )
@@ -1158,10 +1156,15 @@ class CmdAccess : Cmd
         endIf
 
         local p = scope.this_type.find_setting( name )
-        if (p?) return CmdReadSetting( t, p )
+        if (p?)
+          if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+          else       return CmdReadSetting( t, p )
+        endIf
 
         p = scope.this_type.find_property( name )
         if (p?)
+          if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+
           if (scope.this_method.is_routine)
             throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
           endIf
@@ -1179,12 +1182,14 @@ class CmdAccess : Cmd
 
       local p = context_type.find_setting( name )
       if (p?)
+        if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
         context.require_type_context
         return CmdReadSetting( t, p).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
       if (p?)
+        if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
         return CmdReadProperty( t, context, p )
       endIf
 
