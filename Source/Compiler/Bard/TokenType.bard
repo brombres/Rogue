@@ -14,7 +14,6 @@ class TokenType
 
     # Structure
     keyword_aspect               : TokenType
-    keyword_await                : TokenType
     keyword_class                : TokenType
     keyword_compound             : TokenType
     keyword_else                 : TokenType
@@ -26,6 +25,7 @@ class TokenType
     keyword_endFunction          : TokenType
     keyword_endIf                : TokenType
     keyword_endPrimitive         : TokenType
+    keyword_endTry               : TokenType
     keyword_endWhile             : TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
@@ -46,6 +46,8 @@ class TokenType
     eol                          : TokenType
 
     # Statements
+    keyword_await                : TokenType
+    keyword_catch                : TokenType
     keyword_forEach              : TokenType
     keyword_function             : TokenType
     keyword_if                   : TokenType
@@ -61,6 +63,7 @@ class TokenType
     keyword_of                   : TokenType
     keyword_return               : TokenType
     keyword_step                 : TokenType
+    keyword_try                  : TokenType
     keyword_while                : TokenType
     keyword_yield                : TokenType
 

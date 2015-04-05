@@ -863,6 +863,50 @@ class CmdForEachOfIndexedCollection : CmdControlStructure
       return CmdWhile( t, condition, statements ).resolve( scope )
 endClass
 
+class CmdTry : CmdControlStructure
+  PROPERTIES
+    catches : CmdCatch[]
+
+  METHODS
+    method init( t, statements=CmdStatementList(), catches=CmdCatch[] )
+
+    method clone( clone_args:CloneArgs )->CmdTry
+      local new_catches = CmdCatch[]
+      forEach (c in catches) new_catches.add( c.clone(clone_args) )
+      return CmdTry( t, statements.clone(clone_args), new_catches )
+
+    method resolve( scope:Scope )->Cmd
+      statements.resolve( scope )
+      forEach (c in catches) c.resolve( scope )
+
+      if (contains_yield)
+        throw t.error( "try/catch blocks cannot contain 'yield' statements." )
+      endIf
+
+      return this
+endClass
+
+class CmdCatch : Cmd
+  PROPERTIES
+    error_var  : Local
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, error_var, statements=CmdStatementList() )
+
+    method clone( clone_args:CloneArgs )->CmdCatch
+      return CmdCatch( t, error_var, statements.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      error_var.type.organize
+
+      scope.push_local( error_var )
+      statements.resolve( scope )
+      scope.pop_local
+
+      return this
+endClass
+
 
 #------------------------------------------------------------------------------
 # Literals
@@ -3721,4 +3765,5 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
 
 
 endClass
+
 

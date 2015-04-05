@@ -524,11 +524,11 @@ class Parser
         elseIf (next_is(TokenType.keyword_loop))
           statements.add( parse_loop )
           return
+          }#
 
         elseIf (next_is(TokenType.keyword_try))
           statements.add( parse_try )
           return
-          }#
 
         endIf
         #{
@@ -775,6 +775,11 @@ class Parser
       endIf
 
       statements.add( expression )
+
+    method parse_try->CmdTry
+      local t = read  # 'try'
+      trace
+      throw t.error( "TODO" )
 
     method parse_local_declaration( statements:CmdStatementList )
       local_declarations.clear
