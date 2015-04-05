@@ -5,27 +5,29 @@ class Test
 
   METHODS
     method init
-      local callback = this::target
+      test( function println "Hello World!!" )
+
+      local lt =
+        function(a:Integer,b:Integer)->Logical
+          return (a < b)
+        endFunction
+      compare( 3, lt, 4 )
+      compare( 4, lt, 4 )
+      compare( 5, lt, 4 )
+
+      local z = 6
+      local functor = function with (z,sign=1:Integer) println z * sign; sign = -sign; ++z
+      functor()
+      functor()
+      functor()
+      functor()
+      println z
+          
+
+    method test( callback:Callback )
       callback()
-      local op = this::add(Integer,Integer)
-      println op(3,4)
-      local indirect = this::add(Integer,Integer)
-      local call_cb = this::call_callback
-      println call_cb( indirect )
 
-      local fn = Math::acos
-      println fn(-1)
-
-    method target
-      println "Success!"
-
-    method add( a:Integer, b:Integer )->Integer
-      return a + b
-
-    method add( a:Real, b:Real )->Real
-      return a + b
-
-    method call_callback( callback:Callback(Integer,Integer)->Integer )->Integer
-      return callback(5,6)
+    method compare( x:Integer, fn:Callback(Integer,Integer)->Logical, y:Integer )
+      println "$ ? $: $" (x,y,fn(x,y))
 endClass
 

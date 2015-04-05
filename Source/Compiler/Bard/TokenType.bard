@@ -23,6 +23,7 @@ class TokenType
     keyword_endClass             : TokenType
     keyword_endCompound          : TokenType
     keyword_endForEach           : TokenType
+    keyword_endFunction          : TokenType
     keyword_endIf                : TokenType
     keyword_endPrimitive         : TokenType
     keyword_endWhile             : TokenType
@@ -33,12 +34,20 @@ class TokenType
     keyword_routine              : TokenType
     keyword_ROUTINES             : TokenType
     keyword_SETTINGS             : TokenType
+    keyword_with                 : TokenType
+
+    symbol_close_brace           : TokenType
+    symbol_close_bracket         : TokenType
+    symbol_close_comment         : TokenType
+    symbol_close_paren           : TokenType
+    symbol_close_specialize      : TokenType
 
     # General
     eol                          : TokenType
 
     # Statements
     keyword_forEach              : TokenType
+    keyword_function             : TokenType
     keyword_if                   : TokenType
     keyword_in                   : TokenType
     keyword_inline               : TokenType
@@ -80,11 +89,6 @@ class TokenType
     symbol_backslash             : TokenType
     symbol_caret                 : TokenType
     symbol_caret_equals          : TokenType
-    symbol_close_brace           : TokenType
-    symbol_close_bracket         : TokenType
-    symbol_close_comment         : TokenType
-    symbol_close_paren           : TokenType
-    symbol_close_specialize      : TokenType
     symbol_colon                 : TokenType
     symbol_colon_colon           : TokenType
     symbol_comma                 : TokenType
