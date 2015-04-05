@@ -37,6 +37,7 @@ class Program [requisite singleton]
     type_NativeArray : Type
     type_GenericList : Type
     type_Global      : Type
+    type_Error       : Type
 
     literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
     literal_string_list   = String[]
@@ -59,6 +60,7 @@ class Program [requisite singleton]
       type_NativeArray = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
       type_GenericList = create_built_in_type( "GenericList", Attribute.is_class )
       type_Global      = create_built_in_type( "Global", Attribute.is_class )
+      type_Error       = create_built_in_type( "Error", Attribute.is_class )
 
       type_null.organized = true
       type_null.defined   = true
@@ -157,6 +159,7 @@ class Program [requisite singleton]
       type_Byte.resolve
       type_Logical.resolve
       type_Global.resolve
+      type_Error.resolve
 
       type_Object.resolve
       type_NativeArray.resolve

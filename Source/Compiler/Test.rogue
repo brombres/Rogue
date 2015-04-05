@@ -5,29 +5,15 @@ class Test
 
   METHODS
     method init
-      test( function println "Hello World!!" )
+      try
+        test
+      catch (error:Error)
+        println "Error detected: " + error
+      endTry
 
-      local lt =
-        function(a:Integer,b:Integer)->Logical
-          return (a < b)
-        endFunction
-      compare( 3, lt, 4 )
-      compare( 4, lt, 4 )
-      compare( 5, lt, 4 )
-
-      local z = 6
-      local functor = function with (z,sign=1:Integer) println z * sign; sign = -sign; ++z
-      functor()
-      functor()
-      functor()
-      functor()
-      println z
-          
-
-    method test( callback:Callback )
-      callback()
-
-    method compare( x:Integer, fn:Callback(Integer,Integer)->Logical, y:Integer )
-      println "$ ? $: $" (x,y,fn(x,y))
+    method test
+      println "test 1"
+      throw Error( "testing" )
+      println "test 2"
 endClass
 

@@ -81,6 +81,7 @@ class Tokenizer
       # Structure Tokens
       TokenType.eol                  = define( EOLTokenType("end of line") )
       TokenType.keyword_aspect       = define( StructureTokenType("aspect") )
+      TokenType.keyword_catch        = define( StructureTokenType("catch") )
       TokenType.keyword_class        = define( StructureTokenType("class") )
       TokenType.keyword_compound     = define( StructureTokenType("compound") )
       TokenType.keyword_else         = define( StructureTokenType("else") )
@@ -111,7 +112,6 @@ class Tokenizer
 
       # Statement Tokens
       TokenType.keyword_await        = define( TokenType("await") )
-      TokenType.keyword_catch        = define( TokenType("catch") )
       TokenType.keyword_forEach      = define( TokenType("forEach") )
       TokenType.keyword_function     = define( TokenType("function") )
       TokenType.keyword_if           = define( TokenType("if") )
@@ -127,6 +127,7 @@ class Tokenizer
       TokenType.keyword_of           = define( TokenType("of") )
       TokenType.keyword_return       = define( TokenType("return") )
       TokenType.keyword_step         = define( TokenType("step") )
+      TokenType.keyword_throw        = define( TokenType("throw") )
       TokenType.keyword_try          = define( TokenType("try") )
       TokenType.keyword_while        = define( TokenType("while") )
       TokenType.keyword_yield        = define( TokenType("yield") )

@@ -609,11 +609,11 @@ class Parser
         statements.add( cmd_while )
 
         return
+        }#
 
       elseIf (consume(TokenType.keyword_throw))
         statements.add( CmdThrow(t,parse_expression) )
         return
-        }#
 
       elseIf (consume(TokenType.keyword_noAction))
         noAction
@@ -778,8 +778,25 @@ class Parser
 
     method parse_try->CmdTry
       local t = read  # 'try'
-      trace
-      throw t.error( "TODO" )
+      local cmd_try = CmdTry( t )
+      parse_multi_line_statements( cmd_try.statements )
+      while (next_is(TokenType.keyword_catch))
+        local cmd_catch = cmd_try.add_catch( read )
+        consume_eols
+        must_consume( TokenType.symbol_open_paren )
+        local error_t = peek
+        local error_name = read_identifier
+        consume_eols
+        must_consume( TokenType.symbol_colon )
+        consume_eols
+        cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
+        consume_eols
+        must_consume( TokenType.symbol_close_paren )
+        parse_multi_line_statements( cmd_catch.statements )
+      endWhile
+      must_consume( TokenType.keyword_endTry )
+
+      return cmd_try
 
     method parse_local_declaration( statements:CmdStatementList )
       local_declarations.clear

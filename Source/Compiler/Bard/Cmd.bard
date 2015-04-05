@@ -875,6 +875,11 @@ class CmdTry : CmdControlStructure
       forEach (c in catches) new_catches.add( c.clone(clone_args) )
       return CmdTry( t, statements.clone(clone_args), new_catches )
 
+    method add_catch( catch_t:Token )->CmdCatch
+      local c = CmdCatch( catch_t )
+      catches.add( c )
+      return c
+
     method resolve( scope:Scope )->Cmd
       statements.resolve( scope )
       forEach (c in catches) c.resolve( scope )
@@ -884,6 +889,17 @@ class CmdTry : CmdControlStructure
       endIf
 
       return this
+
+    method write_cpp( writer:CPPWriter )
+      writer.println "try"
+      writer.println "{"
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println "}"
+      forEach (c in catches)
+        c.write_cpp( writer )
+      endForEach
 endClass
 
 class CmdCatch : Cmd
@@ -892,19 +908,52 @@ class CmdCatch : Cmd
     statements : CmdStatementList
 
   METHODS
-    method init( t, error_var, statements=CmdStatementList() )
+    method init( t, error_var=null, statements=CmdStatementList() )
 
     method clone( clone_args:CloneArgs )->CmdCatch
       return CmdCatch( t, error_var, statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       error_var.type.organize
+      if (not error_var.type.instance_of(Program.type_Error))
+        throw t.error( "Caught value must be instanceOf class Error." )
+      endIf
 
       scope.push_local( error_var )
       statements.resolve( scope )
       scope.pop_local
 
       return this
+
+    method write_cpp( writer:CPPWriter )
+      writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.cpp_name ).println( " )" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+endClass
+
+class CmdThrow : Cmd
+  PROPERTIES
+    expression : Cmd
+
+  METHODS
+    method init( t, expression )
+
+    method clone( clone_args:CloneArgs )->CmdThrow
+      return CmdThrow( t, expression.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      expression = expression.resolve( scope )
+      if (not expression.require_type.instance_of(Program.type_Error))
+        throw expression.t.error( "Thrown value must be instanceOf class Error." )
+      endIf
+      return this
+
+    method write_cpp( writer:CPPWriter )
+      writer.print( "throw " )
+      expression.write_cpp( writer )
 endClass
 
 

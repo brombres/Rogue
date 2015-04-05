@@ -1,0 +1,10 @@
+class Error
+  PROPERTIES
+    message : String
+
+  METHODS
+    method init( message )
+
+    method to->String
+      return message
+endClass
