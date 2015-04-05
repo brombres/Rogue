@@ -1072,6 +1072,7 @@ class CmdAccess : Cmd
     context   : Cmd
     name      : String
     args      : CmdArgs
+    #debug : Logical
 
   METHODS
     method init( t, name )
@@ -3580,5 +3581,83 @@ class CmdTaskControl : Cmd
         section.statements.resolve( scope )
       endForEach
       return this
+endClass
+
+
+#------------------------------------------------------------------------------
+# Callbacks
+#------------------------------------------------------------------------------
+class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_type:Type ) : Cmd
+  METHODS
+    method clone( clone_args:CloneArgs )->CmdCreateCallback
+      return CmdCreateCallback( t, context.clone(clone_args), name, signature, return_type )
+
+    method resolve( scope:Scope )->Cmd
+      if (name == "to" and return_type?) name = "to_" + return_type.name
+
+      context = context.resolve( scope )
+      local context_type = context.require_type
+      context_type.organize
+
+      local m = context_type.find_method( name + signature )
+      if (not m)
+        local methods = context_type.method_lookup_by_name[ name ]
+        if (not methods) methods = context_type.routine_lookup_by_name[ name ]
+        if (not methods)        throw t.error( "No such method or routine '$' exists in type $." (name,context_type.name) )
+        if (methods.count != 1) throw t.error( "Multiple candidates match ambiguous reference to '$'; add qualifiying parameter types." (name) )
+        m = methods.first
+      endIf
+
+      local param_types : Type[]
+      if (m.parameters.count?)
+        param_types = Type[]
+        forEach (p in m.parameters) param_types.add( p.type )
+      endIf
+
+      local callback_type_name = context_type.name + "::" + name + Program.get_callback_type_signature(param_types)
+      local callback_type = Program.get_type_reference( t, callback_type_name )
+
+      if (not callback_type.defined)
+        callback_type.defined = true
+        callback_type.attributes.add( Attribute.is_class )
+
+        local base_type = Program.get_callback_type_reference( t, param_types, m.return_type )
+        callback_type.base_types.add( base_type )
+
+        local m_call = callback_type.add_method( t, "call" )
+        local args = CmdArgs()
+        if (param_types?)
+          forEach (i of param_types)
+            local param_name = "param" + (i+1)
+            m_call.add_parameter( t, param_name, param_types[i] )
+            args.add( CmdAccess(t,param_name) )
+          endForEach
+        endIf
+
+        local cmd : Cmd
+        if (m.is_routine)
+          callback_type.attributes.add( Attribute.is_singleton )
+          cmd = CmdAccess( t, CmdAccess(t,context_type.name), name, args )
+        else
+          callback_type.add_property( t, "context", context_type )
+          local m_init = callback_type.add_method( t, "init" )
+          m_init.add_parameter( t, "context" )
+          cmd = CmdAccess( t, CmdAccess(t,"context"), name, args )
+        endIf
+
+        if (m.return_type?)
+          m_call.return_type = m.return_type
+          cmd = CmdReturn( t, cmd )
+        endIf
+
+        m_call.statements.add( cmd )
+      endIf
+
+      if (m.is_routine)
+        return CmdReadSingleton( t, callback_type ).resolve( scope )
+      else
+        return CmdAccess( t, callback_type_name, CmdArgs(context) ).resolve( scope )
+      endIf
+
 endClass
 

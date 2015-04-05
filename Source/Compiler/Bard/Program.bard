@@ -100,6 +100,41 @@ class Program [requisite singleton]
 
       return type
 
+    method get_callback_type_signature( parameter_types:Type[] )->String
+      string_buffer.clear.print( "(" )
+      if (parameter_types?)
+        local first = true
+        forEach (type in parameter_types)
+          if (first) first = false
+          else       string_buffer.print( ',' )
+          string_buffer.print( type.name )
+        endForEach
+      endIf
+      string_buffer.print( ')' )
+      return string_buffer->String
+
+    method get_callback_type_reference( t:Token, parameter_types:Type[], return_type:Type )->Type
+      local name = "Callback" + get_callback_type_signature( parameter_types )
+      if (return_type?)
+        string_buffer.print( "->" ).print( return_type.name )
+      endIf
+
+      local type = get_type_reference( t, name )
+      if (type.defined) return type
+
+      type.defined = true
+      type.attributes.add( Attribute.is_class )
+      local m_call = type.add_method( t, "call" )
+      if (parameter_types?)
+        forEach (i of parameter_types) m_call.add_parameter( t, "param"+(i+1), parameter_types[i] )
+      endIf
+      if (return_type?)
+        m_call.return_type = return_type
+        m_call.statements.add( CmdReturn(t,return_type.create_default_value(t)) )
+      endIf
+
+      return type
+
     method create_built_in_type( name:String, attributes=0:Integer )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       local type = get_type_reference( t, name )

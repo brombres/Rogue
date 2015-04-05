@@ -919,12 +919,14 @@ class Parser
             first = false
             parameter_types.add( parse_type )
           endWhile
+          must_consume( TokenType.symbol_close_paren )
+
         endIf
         if (consume(TokenType.symbol_arrow))
           return_type = parse_type
         endIf
 
-        throw t.error( "TODO: resolve type Callback($)->$" (parameter_types,return_type) )
+        name = Program.get_callback_type_reference( t, parameter_types, return_type ).name
       endIf
 
       while (consume(TokenType.symbol_empty_brackets)) name += "[]"
@@ -1360,7 +1362,7 @@ class Parser
       return parse_post_unary
 
     method parse_post_unary->Cmd
-      return parse_post_unary( parse_delegate_access )
+      return parse_post_unary( parse_member_access )
 
     method parse_post_unary( operand:Cmd )->Cmd
       local t = peek
@@ -1368,76 +1370,6 @@ class Parser
         return parse_post_unary( CmdLogicalize(t,operand) )
       endIf
       return operand
-
-
-    method parse_delegate_access->Cmd
-      return parse_delegate_access( parse_member_access )
-
-    method parse_delegate_access( lhs:Cmd )->Cmd
-      #{
-      local t = peek
-      if(consume(TokenType.symbol_scope))
-        local cmd_delegate : CmdDelegate
-
-        local delegate_method_name = peek->String
-        must_consume( TokenType.identifier )
-
-        if (not next_is(TokenType.symbol_open_paren)) return CmdUnqualifiedDelegateSelector( t, lhs, delegate_method_name )
-
-        local buffer        = StringBuilder()
-        local sig_buffer    = StringBuilder()
-        local param_types = Type[]
-        local ret_type : Type
-
-        sig_buffer.print( delegate_method_name )
-        if (consume( TokenType.symbol_open_paren ))
-          sig_buffer.print( "(" )
-          if (consume( TokenType.symbol_close_paren ))
-            sig_buffer.print( ")" )
-          else
-            param_types.add( parse_type )
-            buffer.print( param_types.last->String )
-            sig_buffer.print( param_types.last->String )
-
-            while (consume( TokenType.symbol_comma ))
-              buffer.print( "_" )
-              sig_buffer.print(",")
-              param_types.add( parse_type )
-              buffer.print( param_types.last->String )
-              sig_buffer.print( param_types.last->String )
-            endWhile
-            must_consume( TokenType.symbol_close_paren )
-            sig_buffer.print( ")" )
-
-          endIf
-        else
-          sig_buffer.print("()")
-        endIf
-
-        if (consume( TokenType.symbol_arrow ))
-          ret_type = parse_type
-          buffer.print( "__" + ret_type.name )
-          sig_buffer.print( "->" + ret_type.name )
-        endIf
-
-        local base_class_name = "Delegate__"
-        if (buffer.count?) base_class_name += buffer->String
-
-        # if (not ret_type?) base_class_name += "NORETURN"
-        local extended_class_name = "Delegate__" + lhs.type + "__" + ...
-                                           delegate_method_name + ...
-                                           "__" + buffer->String
-
-        cmd_delegate = CmdDelegate( t, lhs, delegate_method_name, ...
-                                    sig_buffer->String, base_class_name, ...
-                                    extended_class_name, param_types, ret_type )
-        return cmd_delegate
-
-      endIf
-      }#
-
-      return lhs
-
 
     method parse_member_access->Cmd
       return parse_member_access( parse_term )
@@ -1464,6 +1396,28 @@ class Parser
         consume_eols
         local to_type = parse_type
         return parse_member_access( CmdConvertToType(t,context,to_type) )
+
+      elseIf (consume(TokenType.symbol_colon_colon))
+        # Callback creator e.g. obj::method_name or Type::routine_name
+        consume_eols
+        local name = read_identifier
+        local arg_types : Type[]
+        consume_eols
+        if (consume(TokenType.symbol_open_paren))
+          arg_types = Type[]
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+            consume_eols
+            arg_types.add( parse_type )
+            consume_eols
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+          consume_eols
+        endIf
+        local return_type : Type
+        if (consume(TokenType.symbol_arrow)) return_type = parse_type
+        return CmdCreateCallback( t, context, name, Program.get_callback_type_signature(arg_types), return_type )
 
       #{
       elseIf (consume(TokenType.keyword_as))

@@ -1,12 +1,12 @@
 class Math
   ROUTINES
-    routine acon( slope:Real )->Real
+    routine acos( n:Real )->Real
       $if ("C++") inlineNative 'acos((double)$n)'
 
-    routine asin( slope:Real )->Real
+    routine asin( n:Real )->Real
       $if ("C++") inlineNative 'asin((double)$n)'
 
-    routine atan( slope:Real )->Real
+    routine atan( n:Real )->Real
       $if ("C++") inlineNative 'atan((double)$n)'
 
     routine atan2( y:Real, x:Real )->Real

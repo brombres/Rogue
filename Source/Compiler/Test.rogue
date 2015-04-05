@@ -5,9 +5,27 @@ class Test
 
   METHODS
     method init
-      local callback : Callback()
+      local callback = this::target
+      callback()
+      local op = this::add(Integer,Integer)
+      println op(3,4)
+      local indirect = this::add(Integer,Integer)
+      local call_cb = this::call_callback
+      println call_cb( indirect )
+
+      local fn = Math::acos
+      println fn(-1)
 
     method target
       println "Success!"
+
+    method add( a:Integer, b:Integer )->Integer
+      return a + b
+
+    method add( a:Real, b:Real )->Real
+      return a + b
+
+    method call_callback( callback:Callback(Integer,Integer)->Integer )->Integer
+      return callback(5,6)
 endClass
 
