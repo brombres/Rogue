@@ -533,6 +533,123 @@ class CmdElseIf
 endClass
 
 
+class CmdGenericLoop : CmdControlStructure
+  PROPERTIES
+    control_vars : Local[]
+    condition    : Cmd
+    upkeep       : CmdStatementList
+
+  METHODS
+    method init( t, condition, statements=CmdStatementList(), upkeep=null, control_vars=null:Local[] )
+
+    method init( t, condition, statements=CmdStatementList(), upkeep_cmd:Cmd, control_vars=null:Local[] )
+      if (upkeep_cmd?)
+        upkeep = CmdStatementList(1)
+        upkeep.add( upkeep_cmd )
+      endIf
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args? and this.contains_yield)
+        # Control variable initialization
+        if (control_vars?)
+          forEach (v in control_vars)
+            if (v.initial_value?)
+              local initial_value = v.initial_value.clone( clone_args )
+              if (initial_value?)
+                task_args.add( task_args.replace_write_local(t,v,initial_value) )
+              endIf
+            endIf
+          endForEach
+        endIf
+
+        # Termination Test
+        local condition_section = task_args.jump_to_new_section(t)
+        local after_section = task_args.create_section
+        task_args.add_conditional_jump( CmdLogicalNot(t,condition.clone(clone_args)), after_section )
+
+        # Main Body
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+
+        # Upkeep
+        if (upkeep?)
+          forEach (statement in upkeep)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+
+        # Jump back to Termination Test
+        task_args.add_jump( t, condition_section )
+
+        # Begin new block for whatever comes next
+        task_args.begin_section( after_section )
+        return null
+      else
+        local cloned_control_vars : Local[]
+        if (control_vars?)
+          cloned_control_vars = Local[]( control_vars.count )
+          forEach (v in control_vars) cloned_control_vars.add( v.clone(clone_args) )
+        endIf
+        return CmdGenericLoop( t, condition.clone(clone_args), statements.clone(clone_args), clone(upkeep,clone_args), cloned_control_vars )
+      endIf
+
+    method write_cpp( writer:CPPWriter )
+      if (control_vars?)
+        writer.println( "{" )
+        writer.indent += 2
+
+        forEach (v in control_vars)
+          CmdLocalDeclaration( v.t, v ).write_cpp( writer )
+        endForEach
+      endIf
+
+      writer.print( "for (;" )
+      condition.write_cpp( writer )
+      writer.print( ";" )
+      if (upkeep?)
+        local first = true
+        forEach (statement in upkeep)
+          if (first) first = false
+          else       writer.print( "," )
+          statement.write_cpp( writer )
+        endForEach
+      endIf
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (control_vars?)
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+      if (control_vars?)
+        forEach (v in control_vars)
+          if (v.initial_value?) v.initial_value = v.initial_value.resolve( scope )
+          scope.push_local( v )
+        endForEach
+      endIf
+
+      condition = condition.resolve( scope )
+      statements.resolve( scope )
+
+      if (upkeep?) upkeep.resolve( scope )
+
+      if (control_vars?)
+        forEach (v in control_vars) scope.pop_local
+      endIf
+
+      scope.control_stack.remove_last
+      return this
+endClass
+
 class CmdWhile : CmdControlStructure
   PROPERTIES
     condition : Cmd
@@ -545,6 +662,10 @@ class CmdWhile : CmdControlStructure
     method init( t, condition, statements=CmdStatementList(), step_cmd=null )
 
     method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWhile( t, condition.clone(clone_args), statements.clone(clone_args), clone(step_cmd,clone_args) )
+      #method init( t, condition, statements=CmdStatementList(), upkeep_cmd:Cmd, control_vars=null:Local[] )
+      #return CmdGenericLoop( t, condition, statements, step_cmd ).clone( clone_args )
+      #{
       local task_args = (clone_args as TaskArgs)
       if (task_args? and this.contains_yield)
         local condition_section = task_args.jump_to_new_section(t)
@@ -560,8 +681,10 @@ class CmdWhile : CmdControlStructure
       else
         return CmdWhile( t, condition.clone(clone_args), statements.clone(clone_args), clone(step_cmd,clone_args) )
       endIf
+      }#
 
     method write_cpp( writer:CPPWriter )
+      #{
       writer.print( "while (" )
       condition.write_cpp( writer )
       writer.println( ")" )
@@ -571,8 +694,11 @@ class CmdWhile : CmdControlStructure
       if (step_cmd?) step_cmd.write_cpp( writer ); writer.println(";")
       writer.indent -= 2
       writer.println( "}" )
+      }#
 
     method resolve( scope:Scope )->Cmd
+      return CmdGenericLoop( t, condition, statements, step_cmd ).resolve( scope )
+      #{
       scope.control_stack.add( this )
 
       condition = condition.resolve( scope )
@@ -582,6 +708,7 @@ class CmdWhile : CmdControlStructure
 
       scope.control_stack.remove_last
       return this
+      }#
 endClass
 
 

@@ -5,32 +5,14 @@ class Test
 
   METHODS
     method init
-      run_print_test.start
-      try
-        test
-      catch (error:Error)
-        println "Error detected: " + error
-      endTry
-
-    method test
-      println "test 1"
-      throw Error( "testing" )
-      println "test 2"
-
-    method run_print_test [task]
-      try
-        await print_task(1,5)
-      catch (error:Error)
-        println "Error in print_task"
-      endTry
-      print_task(-5,-1).start
-
-    method print_task( n1:Integer, n2:Integer ) [task]
-      while (n1 <= n2)
-        println n1
-        if (n1 == 2) throw Error( "no 2's" )
-        ++n1
-        yield
+      local a = 1
+      while (a <= 5)
+        println a
+        ++a
       endWhile
+
+      forEach (n in 1..5)
+        println n
+      endForEach
 endClass
 

@@ -13,11 +13,11 @@ class Local
   METHODS
     method init( t, name )
 
-    method clone->Local
+    method clone( clone_args=null:CloneArgs )->Local
       local result = Local( t, name )
       result.type = type
       result.index = index
-      if (initial_value?) result.initial_value = initial_value.clone
+      if (initial_value?) result.initial_value = initial_value.clone( clone_args )
       result.generic_type = generic_type
       result._cpp_name = _cpp_name
       return result
