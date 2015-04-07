@@ -11,7 +11,7 @@ class Test
         ++a
       endWhile
 
-      forEach (n in 1..5)
+      forEach (n in 43..47)
         println n
       endForEach
 endClass

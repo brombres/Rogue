@@ -1063,17 +1063,14 @@ class Parser
             local range = collection as CmdRange
             if (range?)
               if (index_var_name? ) throw range.t.error( "Cannot use 'at' with a range." )
-              local cmd_block = CmdBlock(t)
 
               local control_var = this_method.add_local( t, access.name )
               control_var.initial_value = range.first
-              cmd_block.statements.add( CmdLocalDeclaration(range.first.t,control_var) )
 
               local last_var = this_method.add_local( t, Program.create_unique_id )
               last_var.initial_value = range.last
-              cmd_block.statements.add( CmdLocalDeclaration(range.last.t,last_var) )
 
-              local step_cmd : Cmd
+              local step_cmd = null : Cmd
               if (consume(TokenType.keyword_step))
                 local step_value = parse_expression
                 step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
@@ -1081,12 +1078,17 @@ class Parser
                 step_cmd = CmdModifyLocal( range.t, control_var, 1 )
               endIf
 
-              local cmd_for_each = CmdForEachInRange( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var), step_cmd )
+              local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEachInRange,
+                CmdCompareLE(t,CmdReadLocal(t,control_var),CmdReadLocal(t,last_var)) )
+
+              cmd_for_each.add_control_var( control_var )
+              cmd_for_each.add_control_var( last_var )
+              cmd_for_each.add_upkeep( step_cmd )
+
               if (has_parens) must_consume( TokenType.symbol_close_paren )
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
-              cmd_block.statements.add( cmd_for_each )
-              return cmd_block
+              return cmd_for_each
 
             else
               local step_cmd : Cmd
