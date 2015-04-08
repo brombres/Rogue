@@ -5,13 +5,8 @@ class Test
 
   METHODS
     method init
-      local a = 1
-      while (a <= 5)
-        println a
-        ++a
-      endWhile
-
-      forEach (n in 43..47)
+      local nums = [42,43,44]
+      forEach (n in nums)
         println n
       endForEach
 endClass

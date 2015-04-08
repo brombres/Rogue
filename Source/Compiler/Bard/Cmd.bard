@@ -348,7 +348,7 @@ endClass
 class CmdControlStructure : CmdStatement
   ENUMERATE
     type_while
-    type_forEachInRange
+    type_forEach
 
   PROPERTIES
     statements     : CmdStatementList
@@ -701,30 +701,6 @@ class CmdWhile : CmdControlStructure
       }#
 endClass
 
-
-class CmdForEachInRange : CmdControlStructure
-  PROPERTIES
-    cmd_read_control : Cmd
-    cmd_read_last    : Cmd
-    cmd_step         : Cmd
-
-  METHODS
-    method init( t, cmd_read_control, cmd_read_last, cmd_step, statements=CmdStatementList() )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachInRange( t, cmd_read_control.clone(clone_args), cmd_read_last.clone(clone_args), clone(cmd_step,clone_args), statements.clone(clone_args) )
-
-    method resolve( scope:Scope )->Cmd
-      scope.control_stack.add( this )
-      cmd_read_control = cmd_read_control.resolve( scope )
-      cmd_read_last = cmd_read_last.resolve( scope )
-      cmd_step = cmd_step.resolve( scope )
-      statements.resolve( scope )
-      scope.control_stack.remove_last
-
-      return CmdWhile( t, CmdCompareLE(t,cmd_read_control,cmd_read_last), statements, cmd_step ).resolve( scope )
-endClass
-
 class CmdForEachInCollection : CmdControlStructure
   PROPERTIES
     control_var_name : String
@@ -763,15 +739,11 @@ class CmdForEachInCollection : CmdControlStructure
       if (has_count and has_get)
         if (m_at?) m_get = m_at  # prefer at(Integer) over get(Integer)
 
-        local cmd_block = CmdBlock(t)
-
-        local collection_var = scope.this_method.add_local( t, Program.create_unique_id )
-        cmd_block.statements.add( CmdLocalDeclaration(collection.t,collection_var) )
-        collection_var.initial_value = collection
+        collection = collection.resolve( scope )
+        local collection_var = scope.this_method.add_local( t, Program.create_unique_id, collection.require_type, collection )
 
         local index_var = scope.this_method.add_local( t, index_var_name, Program.type_Integer )
         local last_cmd : Cmd
-        cmd_block.statements.add( CmdLocalDeclaration(collection.t,index_var) )
         if (step_size >= 0)
           index_var.initial_value = CmdLiteralInteger( t, 0 )
           last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
@@ -781,33 +753,45 @@ class CmdForEachInCollection : CmdControlStructure
           last_cmd = CmdLiteralInteger( t, 0 )
         endIf
 
-        local control_var = scope.this_method.add_local( t, control_var_name )
-
-        if (step_size >= -1 and step_size <= 1)
-          statements.add( CmdModifyLocal(t,index_var,step_size) )
-        elseIf (step_size >= 0)
-          statements.add(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
-        else
-          statements.add(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,-step_size)))
+        local control_var : Local
+        if (control_var_name?)
+          control_var = scope.this_method.add_local( t, control_var_name )
+          control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, CmdArgs(CmdReadLocal(t,index_var)) )
+          statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
         endIf
 
-        statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
-        local args = CmdArgs()
-        args.add( CmdReadLocal(t, index_var) )
-        control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, args )
+        local modifier : Cmd
+        if (step_size >= -1 and step_size <= 1)
+          modifier = CmdAdjustLocal(t,index_var,step_size)
+        elseIf (step_size >= 0)
+          modifier = CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size))
+        else
+          modifier = CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,-step_size))
+        endIf
 
-        cmd_block.statements.add( CmdForEachInIndexedCollection( t, index_var, control_var, collection_var, last_cmd, step_size, statements ) )
+        local condition : Cmd
+        if (step_size >= 0) condition = CmdCompareLT( t, CmdReadLocal(t,index_var), last_cmd )
+        else                condition = CmdCompareGE( t, CmdReadLocal(t,index_var), last_cmd )
+
+        local result = CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements )
+        result.add_control_var( collection_var )
+        result.add_control_var( index_var )
+        result.add_upkeep( modifier )
 
         scope.control_stack.remove_last
-        return cmd_block.resolve( scope )
+        return result.resolve( scope )
 
       else
         # commandBlock
         #   local reader = expression
+        #   local index  = 0
         #   while (reader.has_another)
         #     local control_var = reader.read
         #     statements
+        #     ++index
         #   endWhile
+
+        # TODO: add index as described above, convert forEach-of into a forEach-in with index and null control name
         local has_another = (collection_type.find_property("has_another")? or collection_type.find_method("has_another()")?)
         local m_read  = collection_type.find_method("read()")
 
@@ -832,27 +816,6 @@ class CmdForEachInCollection : CmdControlStructure
       return this
 endClass
 
-class CmdForEachInIndexedCollection : CmdControlStructure
-  PROPERTIES
-    index_var        : Local
-    control_var      : Local
-    collection_var   : Local
-    last_cmd         : Cmd
-    step_size        : Integer
-
-  METHODS
-    method init( t, index_var, control_var, collection_var, last_cmd, step_size, statements=CmdStatementList() )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachInIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
-
-    method resolve( scope:Scope )->Cmd
-      local condition : Cmd
-      if (step_size >= 0) condition = CmdCompareLT( t, CmdReadLocal(t,index_var), last_cmd )
-      else                condition = CmdCompareGE( t, CmdReadLocal(t,index_var), last_cmd )
-      return CmdWhile( t, condition, statements ).resolve( scope )
-endClass
-
 
 class CmdForEachInReader : CmdControlStructure
   PROPERTIES
@@ -867,7 +830,7 @@ class CmdForEachInReader : CmdControlStructure
 
     method resolve( scope:Scope )->Cmd
       local condition = CmdAccess( reader_var.t, CmdReadLocal(reader_var.t,reader_var), "has_another" )
-      return CmdWhile( t, condition, statements ).resolve( scope )
+      return CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements ).resolve( scope )
 endClass
 
 
@@ -929,9 +892,9 @@ class CmdForEachOfCollection : CmdControlStructure
 
         local index_read_cmd = CmdReadLocal( t, index_var )
         if (step_size == 1)
-          statements.insert( CmdModifyLocal( t, index_var, 1 ) )
+          statements.insert( CmdAdjustLocal( t, index_var, 1 ) )
         elseIf (step_size == -1)
-          statements.insert( CmdModifyLocal( t, index_var, -1 ) )
+          statements.insert( CmdAdjustLocal( t, index_var, -1 ) )
         elseIf (step_size >= 0)
           statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
         else
@@ -1750,7 +1713,7 @@ class CmdReadLocal : Cmd
       return this
 
     method resolve_modify( scope:Scope, delta:Integer )->Cmd
-      return CmdModifyLocal( t, local_info, delta ).resolve( scope )
+      return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
 
     method type->Type
       return local_info.type
@@ -1868,7 +1831,7 @@ class CmdReadProperty : Cmd
       return this
 
     method resolve_modify( scope:Scope, delta:Integer )->Cmd
-      return CmdModifyProperty( t, context, property_info, delta ).resolve( scope )
+      return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
     method type->Type
       return property_info.type
@@ -3065,7 +3028,7 @@ endClass
 #------------------------------------------------------------------------------
 # Modify
 #------------------------------------------------------------------------------
-class CmdModify : Cmd
+class CmdAdjust : Cmd
   PROPERTIES
     operand : Cmd
     delta   : Integer
@@ -3078,7 +3041,7 @@ class CmdModify : Cmd
       return operand.resolve_modify( scope, delta )
 endClass
 
-class CmdModifyLocal : Cmd
+class CmdAdjustLocal : Cmd
   PROPERTIES
     local_info : Local
     delta      : Integer
@@ -3089,9 +3052,9 @@ class CmdModifyLocal : Cmd
     method clone( clone_args:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args?)
-        return CmdModify( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
+        return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
       else
-        return CmdModifyLocal( t, local_info, delta )
+        return CmdAdjustLocal( t, local_info, delta )
       endIf
 
     method write_cpp( writer:CPPWriter )
@@ -3107,7 +3070,7 @@ class CmdModifyLocal : Cmd
 endClass
 
 
-class CmdModifyProperty : Cmd
+class CmdAdjustProperty : Cmd
   PROPERTIES
     context       : Cmd
     property_info : Property
@@ -3120,11 +3083,11 @@ class CmdModifyProperty : Cmd
       #{
       local task_args = (clone_args as TaskArgs)
       if (task_args?)
-        return CmdModify( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.cmd_read(t,local_info)), delta )
+        return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.cmd_read(t,local_info)), delta )
       else
       endIf
       }#
-      return CmdModifyProperty( t, context.clone(clone_args), property_info, delta )
+      return CmdAdjustProperty( t, context.clone(clone_args), property_info, delta )
 
     method write_cpp( writer:CPPWriter )
       if (delta > 0) writer.print( "++" )

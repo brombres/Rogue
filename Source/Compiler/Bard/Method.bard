@@ -82,10 +82,11 @@ class Method
     method accepts_arg_count( n:Integer )->Logical
       return n >= min_args and n <= parameters.count
 
-    method add_local( v_t:Token, v_name:String, v_type=null:Type )->Local
+    method add_local( v_t:Token, v_name:String, v_type=null:Type, v_initial_value=null:Cmd )->Local
       local v = Local( v_t, v_name )
       v.index = locals.count
       v.type = v_type
+      v.initial_value = v_initial_value
       locals.add( v )
       return v
 

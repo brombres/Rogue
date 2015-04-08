@@ -576,41 +576,6 @@ class Parser
         statements.add( CmdYield(t) )
         return
 
-        #{
-      elseIf (consume(TokenType.keyword_yieldAndWait))
-        statements.add( CmdYieldAndWait(t,parse_expression) )
-        return
-
-      elseIf (consume(TokenType.keyword_yieldWhile))
-        local cmd_while = CmdWhile( t, parse_expression )
-
-        if (consume(TokenType.keyword_withTimeout))
-          local t2 = peek
-          local timeout_expr = parse_expression
-          local timeout_name = "_timeout_" + Analyzer.unique_id
-          cmd_while.condition = CmdLogicalAnd( t2,
-            CmdCompareLT( t2, CmdAccess(t2, "Time", "current"), CmdAccess(t2,timeout_name) ),
-            cmd_while.condition )
-
-          local v = Local( t2, timeout_name )
-          this_method.add_local( v )
-          statements.add( CmdLocalDeclaration( t2, v ) )
-          statements.add( 
-            CmdWriteLocal( t2, v, 
-              CmdAdd( t2,
-                CmdAccess(t2,"Time","current"),
-                timeout_expr
-              )
-            )
-          )
-        endIf
-
-        cmd_while.body.add( CmdYieldNil(t) )
-        statements.add( cmd_while )
-
-        return
-        }#
-
       elseIf (consume(TokenType.keyword_throw))
         statements.add( CmdThrow(t,parse_expression) )
         return
@@ -705,12 +670,12 @@ class Parser
       }#
 
       if (consume(TokenType.symbol_plus_plus))
-        statements.add( CmdModify(t, parse_expression,1) )
+        statements.add( CmdAdjust(t, parse_expression,1) )
         return
       endIf
 
       if (consume(TokenType.symbol_minus_minus))
-        statements.add( CmdModify(t, parse_expression,-1) )
+        statements.add( CmdAdjust(t, parse_expression,-1) )
         return
       endIf
 
@@ -744,12 +709,12 @@ class Parser
       }#
 
       if (consume(TokenType.symbol_plus_plus))
-        statements.add( CmdModify(t, expression,1) )
+        statements.add( CmdAdjust(t, expression,1) )
         return
       endIf
 
       if (consume(TokenType.symbol_minus_minus))
-        statements.add( CmdModify(t, expression,-1) )
+        statements.add( CmdAdjust(t, expression,-1) )
         return
       endIf
 
@@ -1022,10 +987,9 @@ class Parser
 
       return cmd_if
 
-    method parse_while->CmdWhile
+    method parse_while->CmdGenericLoop
       local t = read
-      local cmd_while = CmdWhile( t )
-      cmd_while.condition = parse_expression
+      local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, parse_expression )
 
       if (consume_eols)
         # multi-line while
@@ -1075,10 +1039,10 @@ class Parser
                 local step_value = parse_expression
                 step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
               else
-                step_cmd = CmdModifyLocal( range.t, control_var, 1 )
+                step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
               endIf
 
-              local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEachInRange,
+              local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach,
                 CmdCompareLE(t,CmdReadLocal(t,control_var),CmdReadLocal(t,last_var)) )
 
               cmd_for_each.add_control_var( control_var )
@@ -1132,30 +1096,30 @@ class Parser
         # forEach (expr) e.g. forEach (1..n)
         local range = expr as CmdRange
         if (range?)
-          local cmd_block = CmdBlock(t)
-
           local control_var = this_method.add_local( t, Program.create_unique_id )
           control_var.initial_value = range.first
-          cmd_block.statements.add( CmdLocalDeclaration(range.first.t,control_var) )
 
           local last_var = this_method.add_local( t, Program.create_unique_id )
           last_var.initial_value = range.last
-          cmd_block.statements.add( CmdLocalDeclaration(range.last.t,last_var) )
 
           local step_cmd : Cmd
           if (consume(TokenType.keyword_step))
             local step_value = parse_expression
             step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
           else
-            step_cmd = CmdModifyLocal( range.t, control_var, 1 )
+            step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
           endIf
 
-          local cmd_for_each = CmdForEachInRange( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var), step_cmd )
+          local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach,
+            CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) ) )
+          cmd_for_each.add_control_var( control_var )
+          cmd_for_each.add_control_var( last_var )
+          cmd_for_each.add_upkeep( step_cmd )
+
           if (has_parens) must_consume( TokenType.symbol_close_paren )
           parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
-          cmd_block.statements.add( cmd_for_each )
-          return cmd_block
+          return cmd_for_each
 
         else
           throw t.error( "Invalid syntax in forEach." )
