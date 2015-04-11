@@ -619,18 +619,22 @@ class CmdGenericLoop : CmdControlStructure
         endForEach
       endIf
 
-      writer.print( "for (;" )
-      condition.write_cpp( writer )
-      writer.print( ";" )
       if (upkeep?)
+        writer.print( "for (;" )
+        condition.write_cpp( writer )
+        writer.print( ";" )
         local first = true
         forEach (statement in upkeep)
           if (first) first = false
           else       writer.print( "," )
           statement.write_cpp( writer )
         endForEach
+        writer.println( ")" )
+      else
+        writer.print( "while (" )
+        condition.write_cpp( writer )
+        writer.println( ")" )
       endIf
-      writer.println( ")" )
       writer.println( "{" )
       writer.indent += 2
       statements.write_cpp( writer )
@@ -672,36 +676,7 @@ class CmdGenericLoop : CmdControlStructure
       return this
 endClass
 
-class CmdWhile : CmdControlStructure
-  PROPERTIES
-    condition : Cmd
-    step_cmd  : Cmd
-
-  METHODS
-    method init( t )
-      statements = CmdStatementList()
-
-    method init( t, condition, statements=CmdStatementList(), step_cmd=null )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdWhile( t, condition.clone(clone_args), statements.clone(clone_args), clone(step_cmd,clone_args) )
-
-    method resolve( scope:Scope )->Cmd
-      return CmdGenericLoop( t, type_while, condition, statements, step_cmd ).resolve( scope )
-      #{
-      scope.control_stack.add( this )
-
-      condition = condition.resolve( scope )
-      statements.resolve( scope )
-
-      if (step_cmd?) step_cmd = step_cmd.resolve( scope )
-
-      scope.control_stack.remove_last
-      return this
-      }#
-endClass
-
-class CmdForEachInCollection : CmdControlStructure
+class CmdForEach : CmdControlStructure
   PROPERTIES
     control_var_name : String
     index_var_name   : String
@@ -712,7 +687,7 @@ class CmdForEachInCollection : CmdControlStructure
     method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachInCollection( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
+      return CmdForEach( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
@@ -742,6 +717,7 @@ class CmdForEachInCollection : CmdControlStructure
         collection = collection.resolve( scope )
         local collection_var = scope.this_method.add_local( t, Program.create_unique_id, collection.require_type, collection )
 
+        if (not index_var_name) index_var_name = Program.create_unique_id
         local index_var = scope.this_method.add_local( t, index_var_name, Program.type_Integer )
         local last_cmd : Cmd
         if (step_size >= 0)
@@ -790,158 +766,44 @@ class CmdForEachInCollection : CmdControlStructure
         #     statements
         #     ++index
         #   endWhile
-
-        # TODO: add index as described above, convert forEach-of into a forEach-in with index and null control name
         local has_another = (collection_type.find_property("has_another")? or collection_type.find_method("has_another()")?)
         local m_read  = collection_type.find_method("read()")
+        if (not has_another or not m_read)
+          throw collection.t.error( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at) or a reader (.has_another, .read)." )
+        endIf
+        if (not m_read.return_type) throw collection.t.error( "Object's read() method does not return a value." )
+        if (step_cmd?)
+          throw step_cmd.t.error( "Cannot specify a step size for a reader - only for an indexed collection." )
+        endIf
 
-        local cmd_block = CmdBlock(t)
+        local reader_var = scope.this_method.add_local( t, Program.create_unique_id, collection_type, collection  )
+        local index_var : Local
+        if (index_var_name?)
+          index_var = scope.this_method.add_local( t, index_var_name, Program.type_Integer, CmdLiteralInteger(t,0) )
+        endIf
 
-        local reader_var = scope.this_method.add_local( t, Program.create_unique_id )
-        cmd_block.statements.add( CmdLocalDeclaration(collection.t,reader_var) )
-        reader_var.initial_value = collection
+        if (control_var_name?)
+          local control_var = scope.this_method.add_local( t, control_var_name, m_read.return_type,
+            CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+          statements.insert( CmdLocalDeclaration(collection.t,control_var) )
+        else
+          statements.insert( CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+        endIf
 
-        local control_var = scope.this_method.add_local( t, control_var_name )
-        statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
-        control_var.initial_value = CmdAccess( t, CmdReadLocal(t,reader_var), "read", CmdArgs() )
-
-        cmd_block.statements.add( CmdForEachInReader( t, reader_var, control_var, statements ) )
+        local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(collection.t,collection,"has_another"), statements )
+        cmd_loop.add_control_var( reader_var )
+        if (index_var?)
+          cmd_loop.add_control_var( index_var )
+          cmd_loop.add_upkeep( CmdAdjustLocal(t,index_var,1) )
+        endIf
 
         scope.control_stack.remove_last
-        return cmd_block.resolve( scope )
+        return cmd_loop.resolve( scope )
 
       endIf
-
-      scope.control_stack.remove_last
       return this
 endClass
 
-
-class CmdForEachInReader : CmdControlStructure
-  PROPERTIES
-    reader_var  : Local
-    control_var : Local
-
-  METHODS
-    method init( t, reader_var, control_var, statements=CmdStatementList() )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachInReader( t, reader_var, control_var, statements.clone(clone_args) )
-
-    method resolve( scope:Scope )->Cmd
-      local condition = CmdAccess( reader_var.t, CmdReadLocal(reader_var.t,reader_var), "has_another" )
-      return CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements ).resolve( scope )
-endClass
-
-
-class CmdForEachOfCollection : CmdControlStructure
-  PROPERTIES
-    control_var_name : String
-    collection       : Cmd
-    step_cmd         : Cmd
-    resolved         : Logical
-
-  METHODS
-    method init( t, control_var_name, collection, step_cmd, statements=CmdStatementList() )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachOfCollection( t, control_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
-
-    method resolve( scope:Scope )->Cmd
-      if (resolved) return this
-      resolved = true
-
-      scope.control_stack.add( this )
-
-      collection = collection.resolve( scope )
-      local collection_type = collection.require_type.organize
-
-      local has_count = (collection_type.find_property("count")? or collection_type.find_method("count()")?)
-
-      local step_size = 1
-      if (step_cmd?)
-        step_cmd = step_cmd.resolve( scope )
-        local literal_integer_cmd = step_cmd as CmdLiteralInteger
-        if (literal_integer_cmd?)
-          step_size = literal_integer_cmd.value
-        else
-          throw step_cmd.t.error( "Literal integer value expected." )
-        endIf
-      endIf
-
-      if (has_count)
-        local cmd_block = CmdBlock(t)
-
-        local collection_var = scope.this_method.add_local( t, Program.create_unique_id )
-        cmd_block.statements.add( CmdLocalDeclaration(collection.t,collection_var) )
-        collection_var.initial_value = collection
-
-        local index_var = scope.this_method.add_local( t, Program.create_unique_id, Program.type_Integer )
-        local last_cmd : Cmd
-        cmd_block.statements.add( CmdLocalDeclaration(collection.t,index_var) )
-        if (step_size >= 0)
-          index_var.initial_value = CmdLiteralInteger( t, 0 )
-          last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
-        else
-          local args = CmdArgs()
-          index_var.initial_value = CmdSubtract( t, CmdAccess(t,CmdReadLocal(t,collection_var), "count"), CmdLiteralInteger(t,1) )
-          last_cmd = CmdLiteralInteger( t, 0 )
-        endIf
-
-        local control_var = scope.this_method.add_local( t, control_var_name )
-
-        local index_read_cmd = CmdReadLocal( t, index_var )
-        if (step_size == 1)
-          statements.insert( CmdAdjustLocal( t, index_var, 1 ) )
-        elseIf (step_size == -1)
-          statements.insert( CmdAdjustLocal( t, index_var, -1 ) )
-        elseIf (step_size >= 0)
-          statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size)))
-        else
-          statements.insert(CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,-step_size)))
-        endIf
-
-        statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
-        control_var.initial_value = index_read_cmd
-
-        cmd_block.statements.add( CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd, step_size, statements ) )
-
-        scope.control_stack.remove_last
-        return cmd_block.resolve( scope )
-
-      else
-        trace
-        throw t.error( "TODO" )
-
-      endIf
-
-      scope.control_stack.remove_last
-      return this
-endClass
-
-class CmdForEachOfIndexedCollection : CmdControlStructure
-  PROPERTIES
-    index_var        : Local
-    control_var      : Local
-    collection_var   : Local
-    last_cmd         : Cmd
-    step_size        : Integer
-
-  METHODS
-    method init( t, index_var, control_var, collection_var, last_cmd, step_size, statements=CmdStatementList() )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEachOfIndexedCollection( t, index_var, control_var, collection_var, last_cmd.clone(clone_args), step_size, statements.clone(clone_args) )
-
-    method resolve( scope:Scope )->Cmd
-      local index_read_cmd = CmdReadLocal( t, index_var )
-
-      local condition : Cmd
-      if (step_size >= 0) condition = CmdCompareLT( t, index_read_cmd, last_cmd )
-      else                condition = CmdCompareGE( t, index_read_cmd, last_cmd )
-
-      return CmdWhile( t, condition, statements ).resolve( scope )
-endClass
 
 class CmdTry : CmdControlStructure
   PROPERTIES
@@ -3672,7 +3534,7 @@ class CmdAwait : Cmd
       task_var.initial_value = expression
       statement_list.add( CmdLocalDeclaration(t, task_var) )
         
-      statement_list.add( CmdWhile(t, CmdAccess(t,CmdReadLocal(t,task_var),"update")) )
+      statement_list.add( CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update")) )
 
       if (result_var?)
         statement_list.add( CmdWriteLocal(t, result_var, CmdReadProperty(t,CmdReadLocal(t,task_var),p_result)) )

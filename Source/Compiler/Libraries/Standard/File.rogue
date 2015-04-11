@@ -5,21 +5,21 @@ class File
     routine load_as_bytes( filepath:String )->Byte[]
       local count = size( filepath )
       local bytes = Byte[]( count )
-      local infile = reader( filepath )
+      local infile = read( filepath )
       forEach (1..count) bytes.add( infile.read )
       infile.close
       return bytes
 
     routine load_as_string( filepath:String )->String [native]
 
-    routine reader( filepath:String )->FileReader
+    routine read( filepath:String )->FileReader
       return FileReader( filepath )
 
     routine save( filepath:String, data:String )->Logical [native]
 
     routine size( filepath:String )->Integer [native]
 
-    routine writer( filepath:String )->FileWriter
+    routine write( filepath:String )->FileWriter
       return FileWriter( filepath )
 
   PROPERTIES
@@ -38,7 +38,7 @@ class File
       inline File.load_as_string( this.filepath )
 
     method reader->FileReader
-      inline File.reader( this.filepath )
+      inline File.read( this.filepath )
 
     method save( data:String )->Logical
       inline File.save( this.filepath, data )
@@ -47,7 +47,7 @@ class File
       inline File.size( this.filepath )
 
     method writer->FileWriter
-      inline File.writer( this.filepath )
+      inline File.write( this.filepath )
 
     method to->String
       return filepath

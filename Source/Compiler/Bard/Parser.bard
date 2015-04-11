@@ -1062,8 +1062,7 @@ class Parser
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
-              if (not index_var_name) index_var_name = Program.create_unique_id
-              local cmd_for_each = CmdForEachInCollection( t, access.name, index_var_name, collection, step_cmd )
+              local cmd_for_each = CmdForEach( t, access.name, index_var_name, collection, step_cmd )
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
               return cmd_for_each
             endIf
@@ -1082,7 +1081,7 @@ class Parser
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
-              local cmd_for_each = CmdForEachOfCollection( t, access.name, collection, step_cmd )
+              local cmd_for_each = CmdForEach( t, null, access.name, collection, step_cmd )
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
               return cmd_for_each
             endIf

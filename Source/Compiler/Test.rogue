@@ -5,9 +5,8 @@ class Test
 
   METHODS
     method init
-      local nums = [42,43,44]
-      forEach (n in nums)
-        println n
+      forEach (ch in File.read("../Test.rogue"))
+        print ch
       endForEach
 endClass
 

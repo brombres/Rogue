@@ -336,6 +336,9 @@ class Method
 
       statements.resolve( scope )
 
+      if (scope.local_list.count > parameters.count) throw t.error( "locals left on scope stack" )
+      if (scope.control_stack.count?) throw t.error( "control stucture left on scope stack" )
+
       if (is_initializer)
         local return_t = t
         if (statements.count?) return_t = statements.last.t
@@ -357,7 +360,7 @@ class Method
 
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
-      m_update.statements.add( CmdWhile( t, CmdAccess(t,"execute",CmdArgs()) ) )
+      m_update.statements.add( CmdGenericLoop( t, CmdControlStructure.type_while, CmdAccess(t,"execute",CmdArgs()) ) )
       m_update.statements.add( CmdReturn( t, CmdCompareNE(t,CmdAccess(t,"ip"),CmdLiteralInteger(t,-1)) ) )
 
       local m_execute = task_type.add_method( t, "execute" )
