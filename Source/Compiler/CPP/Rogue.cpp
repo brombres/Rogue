@@ -56,6 +56,23 @@
 #include "RogueProgram.h"
 
 //-----------------------------------------------------------------------------
+//  RogueMessageQueue
+//-----------------------------------------------------------------------------
+RogueMessageQueue::RogueMessageQueue()
+{
+  write_list    = new RogueRuntimeList<RogueByte>( 1024 );
+  read_list     = new RogueRuntimeList<RogueByte>( 1024 );
+  read_position = 0;
+}
+
+RogueMessageQueue::~RogueMessageQueue()
+{
+  delete write_list;
+  delete read_list;
+}
+
+
+//-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 RogueType::RogueType() : base_type_count(0), base_types(0), index(-1), object_size(0), _singleton(0)
