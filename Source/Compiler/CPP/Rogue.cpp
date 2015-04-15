@@ -63,6 +63,7 @@ RogueMessageQueue::RogueMessageQueue()
   write_list    = new RogueRuntimeList<RogueByte>( 1024 );
   read_list     = new RogueRuntimeList<RogueByte>( 1024 );
   read_position = 0;
+  message_size_location = -1;
 }
 
 RogueMessageQueue::~RogueMessageQueue()
@@ -71,6 +72,109 @@ RogueMessageQueue::~RogueMessageQueue()
   delete read_list;
 }
 
+RogueMessageQueue* RogueMessageQueue::begin_message( const char* message_name )
+{
+  update_message_size();
+  write_string( message_name );
+
+  message_size_location = write_list->count;
+  write_integer( 0 );  // placeholder for message size
+  return this;
+}
+
+RogueMessageQueue* RogueMessageQueue::write_byte( int value )
+{
+  write_list->add( (RogueByte) value );
+  return this;
+}
+
+RogueMessageQueue* RogueMessageQueue::write_character( int value )
+{
+  write_list->add( (RogueByte) (value >> 8) );
+  write_list->add( (RogueByte) value );
+  return this;
+}
+
+RogueMessageQueue* RogueMessageQueue::write_float( float value)
+{
+  return write_integer( *((float*)(&value)) );
+}
+
+RogueMessageQueue* RogueMessageQueue::write_int_x( int value )
+{
+  if (value >= -64 && value <= 127)
+  {
+    // 0xxx xxxx (0..127) OR
+    // 11xx xxxx (-64..-1)
+    write_list->add( (RogueByte) value );
+    return this;
+  }
+  else if (value >= -4096 && value <= 4095)
+  {
+    // 100x xxxx  xxxx xxxx - 13-bit signed value in 2 bytes
+    value &= 0x1Fff;
+    write_list->add( (RogueByte) (0x80 | (value >> 8)) );
+    write_list->add( (RogueByte) value );
+    return this;
+  }
+  else
+  {
+    // 101x xxxx  aaaaaaaa bbbbbbbb cccccccc dddddddd - 32-bit value in 5 bytes
+    write_list->add( (RogueByte) 0xA0 );
+    return write_integer( value );
+  }
+}
+
+RogueMessageQueue* RogueMessageQueue::write_integer( int value )
+{
+  write_list->add( (RogueByte) (value >> 24) );
+  write_list->add( (RogueByte) (value >> 16) );
+  write_list->add( (RogueByte) (value >> 8) );
+  write_list->add( (RogueByte) value );
+  return this;
+}
+
+RogueMessageQueue* RogueMessageQueue::write_logical( bool value )
+{
+  if (value) write_list->add( 1 );
+  else       write_list->add( 0 );
+  return this;
+}
+
+RogueMessageQueue* RogueMessageQueue::write_long( RogueLong value )
+{
+  write_integer( (int)(value >> 32LL) );
+  return write_integer( (int)(value) );
+}
+
+RogueMessageQueue* RogueMessageQueue::write_real( double value )
+{
+  return write_long( *((RogueLong*)(&value)) );
+}
+
+RogueMessageQueue* RogueMessageQueue::write_string( const char* value )
+{
+  int len = strlen( value );
+  write_int_x( len );
+  for (int i=0; i<len; ++i)
+  {
+    write_list->add( (RogueByte) value[i] );
+  }
+  return this;
+}
+
+// INTERNAL USE
+void RogueMessageQueue::update_message_size()
+{
+  if (message_size_location >= 0)
+  {
+    int size = write_list->count - (message_size_location + 4);
+    write_list->data[ message_size_location+0 ] = (RogueByte) (size >> 24);
+    write_list->data[ message_size_location+1 ] = (RogueByte) (size >> 16);
+    write_list->data[ message_size_location+2 ] = (RogueByte) (size >> 8);
+    write_list->data[ message_size_location+3 ] = (RogueByte) size;
+  }
+}
 
 //-----------------------------------------------------------------------------
 //  RogueType

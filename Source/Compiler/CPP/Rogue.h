@@ -84,13 +84,40 @@ struct RogueRuntimeList
     capacity = 0;
   }
 
-  void add( DataType value )
+  RogueRuntimeList* add( DataType value )
   {
     if (count == capacity) ensure_capacity( capacity ? capacity*2 : 10 );
     data[count++] = value;
+    return this;
   }
 
-  void clear() { count = 0; }
+  RogueRuntimeList* clear() { count = 0; return this; }
+
+  RogueRuntimeList* discard( int i1, int i2 )
+  {
+    if (i1 < 0)      i1 = 0;
+    if (i2 >= count) i2 = count - 1;
+
+    if (i1 > i2) return this;
+
+    if (i2 == count-1)
+    {
+      if (i1 == 0) clear();
+      else         count = i1;
+      return this;
+    }
+
+    memmove( data+i1, data+i2+1, (count-(i2+1)) * sizeof(DataType) );
+    count -= (i2-i1) + 1;
+    return this;
+  }
+
+  RogueRuntimeList* discard_from( int i1 )
+  {
+    return discard( i1, count-1 );
+  }
+
+  inline DataType& operator[]( int index ) { return data[index]; }
 
   void remove( DataType value )
   {
@@ -128,11 +155,14 @@ struct RogueRuntimeList
     return data[ --count ];
   }
 
-  inline DataType& operator[]( int index ) { return data[index]; }
-
-  void ensure_capacity( int c )
+  RogueRuntimeList* reserve( int additional_count )
   {
-    if (capacity >= c) return;
+    return ensure_capacity( count + additional_count );
+  }
+
+  RogueRuntimeList* ensure_capacity( int c )
+  {
+    if (capacity >= c) return this;
 
     if (capacity > 0)
     {
@@ -160,12 +190,10 @@ struct RogueRuntimeList
       delete data;
       data = new_data;
     }
+
+    return this;
   }
 
-  void reserve( int additional_count )
-  {
-    ensure_capacity( count + additional_count );
-  }
 };
 
 
@@ -177,15 +205,25 @@ struct RogueMessageQueue
   RogueRuntimeList<RogueByte>* write_list;
   RogueRuntimeList<RogueByte>* read_list;
   int read_position;
+  int message_size_location;
 
   RogueMessageQueue();
   ~RogueMessageQueue();
 
-  // TODO
-  //RogueMessageQueue* write( RogueByte      value );
-  //RogueMessageQueue* write( char           value );
-  //RogueMessageQueue* write( RogueCharacter value );
-  //RogueMessageQueue* write( RogueInteger   value );
+  RogueMessageQueue* begin_message( const char* message_name );
+
+  RogueMessageQueue* write_byte( int value );
+  RogueMessageQueue* write_character( int value );
+  RogueMessageQueue* write_float( float value);
+  RogueMessageQueue* write_int_x( int value );
+  RogueMessageQueue* write_integer( int value );
+  RogueMessageQueue* write_logical( bool value );
+  RogueMessageQueue* write_long( RogueLong value );
+  RogueMessageQueue* write_real( double value );
+  RogueMessageQueue* write_string( const char* value );
+
+  // INTERNAL USE
+  void update_message_size();
 };
 
 
