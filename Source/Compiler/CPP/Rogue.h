@@ -59,16 +59,16 @@ struct RogueFileWriterType;
 #define ROGUE_PROPERTY(name) p_##name
 
 //-----------------------------------------------------------------------------
-//  RogueRuntimeList
+//  RogueSystemList
 //-----------------------------------------------------------------------------
 template <class DataType>
-struct RogueRuntimeList
+struct RogueSystemList
 {
   DataType* data;
   int count;
   int capacity;
 
-  RogueRuntimeList( int capacity=10 ) : count(0)
+  RogueSystemList( int capacity=10 ) : count(0)
   {
     this->capacity = capacity;
     data = new DataType[capacity];
@@ -76,7 +76,7 @@ struct RogueRuntimeList
     count = 0;
   }
 
-  ~RogueRuntimeList()
+  ~RogueSystemList()
   {
     delete data;
     data = 0;
@@ -84,16 +84,16 @@ struct RogueRuntimeList
     capacity = 0;
   }
 
-  RogueRuntimeList* add( DataType value )
+  RogueSystemList* add( DataType value )
   {
     if (count == capacity) ensure_capacity( capacity ? capacity*2 : 10 );
     data[count++] = value;
     return this;
   }
 
-  RogueRuntimeList* clear() { count = 0; return this; }
+  RogueSystemList* clear() { count = 0; return this; }
 
-  RogueRuntimeList* discard( int i1, int i2 )
+  RogueSystemList* discard( int i1, int i2 )
   {
     if (i1 < 0)      i1 = 0;
     if (i2 >= count) i2 = count - 1;
@@ -112,7 +112,7 @@ struct RogueRuntimeList
     return this;
   }
 
-  RogueRuntimeList* discard_from( int i1 )
+  RogueSystemList* discard_from( int i1 )
   {
     return discard( i1, count-1 );
   }
@@ -155,12 +155,12 @@ struct RogueRuntimeList
     return data[ --count ];
   }
 
-  RogueRuntimeList* reserve( int additional_count )
+  RogueSystemList* reserve( int additional_count )
   {
     return ensure_capacity( count + additional_count );
   }
 
-  RogueRuntimeList* ensure_capacity( int c )
+  RogueSystemList* ensure_capacity( int c )
   {
     if (capacity >= c) return this;
 
@@ -198,29 +198,34 @@ struct RogueRuntimeList
 
 
 //-----------------------------------------------------------------------------
-//  RogueMessageQueue
+//  RogueSystemMessageQueue
 //-----------------------------------------------------------------------------
-struct RogueMessageQueue
+struct RogueSystemMessageQueue
 {
-  RogueRuntimeList<RogueByte>* write_list;
-  RogueRuntimeList<RogueByte>* read_list;
+  RogueSystemList<RogueByte>* write_list;
+  RogueSystemList<RogueByte>* read_list;
   int read_position;
+  int remaining_bytes_in_current;
   int message_size_location;
 
-  RogueMessageQueue();
-  ~RogueMessageQueue();
+  RogueSystemMessageQueue();
+  ~RogueSystemMessageQueue();
 
-  RogueMessageQueue* begin_message( const char* message_name );
+  RogueSystemMessageQueue* begin_message( const char* message_type );
+  bool               has_another();
 
-  RogueMessageQueue* write_byte( int value );
-  RogueMessageQueue* write_character( int value );
-  RogueMessageQueue* write_float( float value);
-  RogueMessageQueue* write_int_x( int value );
-  RogueMessageQueue* write_integer( int value );
-  RogueMessageQueue* write_logical( bool value );
-  RogueMessageQueue* write_long( RogueLong value );
-  RogueMessageQueue* write_real( double value );
-  RogueMessageQueue* write_string( const char* value );
+  //void               read_message_type( const
+
+  RogueSystemMessageQueue* write_byte( int value );
+  RogueSystemMessageQueue* write_character( int value );
+  RogueSystemMessageQueue* write_float( float value);
+  RogueSystemMessageQueue* write_int_x( int value );
+  RogueSystemMessageQueue* write_integer( int value );
+  RogueSystemMessageQueue* write_logical( bool value );
+  RogueSystemMessageQueue* write_long( RogueLong value );
+  RogueSystemMessageQueue* write_real( double value );
+  RogueSystemMessageQueue* write_string( const char* value );
+  RogueSystemMessageQueue* write_string( RogueCharacter* value, int count );
 
   // INTERNAL USE
   void update_message_size();

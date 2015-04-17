@@ -56,51 +56,71 @@
 #include "RogueProgram.h"
 
 //-----------------------------------------------------------------------------
-//  RogueMessageQueue
+//  RogueSystemMessageQueue
 //-----------------------------------------------------------------------------
-RogueMessageQueue::RogueMessageQueue()
+RogueSystemMessageQueue::RogueSystemMessageQueue()
 {
-  write_list    = new RogueRuntimeList<RogueByte>( 1024 );
-  read_list     = new RogueRuntimeList<RogueByte>( 1024 );
+  write_list    = new RogueSystemList<RogueByte>( 1024 );
+  read_list     = new RogueSystemList<RogueByte>( 1024 );
   read_position = 0;
+  remaining_bytes_in_current = 0;
   message_size_location = -1;
 }
 
-RogueMessageQueue::~RogueMessageQueue()
+RogueSystemMessageQueue::~RogueSystemMessageQueue()
 {
   delete write_list;
   delete read_list;
 }
 
-RogueMessageQueue* RogueMessageQueue::begin_message( const char* message_name )
+RogueSystemMessageQueue* RogueSystemMessageQueue::begin_message( const char* message_type )
 {
   update_message_size();
-  write_string( message_name );
+  write_string( message_type );
 
   message_size_location = write_list->count;
   write_integer( 0 );  // placeholder for message size
   return this;
 }
 
-RogueMessageQueue* RogueMessageQueue::write_byte( int value )
+bool RogueSystemMessageQueue::has_another()
+{
+  if (remaining_bytes_in_current > 0)
+  {
+    read_position += remaining_bytes_in_current;
+    remaining_bytes_in_current = 0;
+  }
+
+  if (read_position >= read_list->count)
+  {
+    RogueSystemList<RogueByte>* temp = read_list->clear();
+    read_list = write_list;
+    write_list = temp;
+    read_position = 0;
+  }
+
+  return (read_position < read_list->count);
+}
+
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_byte( int value )
 {
   write_list->add( (RogueByte) value );
   return this;
 }
 
-RogueMessageQueue* RogueMessageQueue::write_character( int value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_character( int value )
 {
   write_list->add( (RogueByte) (value >> 8) );
   write_list->add( (RogueByte) value );
   return this;
 }
 
-RogueMessageQueue* RogueMessageQueue::write_float( float value)
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_float( float value)
 {
   return write_integer( *((float*)(&value)) );
 }
 
-RogueMessageQueue* RogueMessageQueue::write_int_x( int value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_int_x( int value )
 {
   if (value >= -64 && value <= 127)
   {
@@ -125,7 +145,7 @@ RogueMessageQueue* RogueMessageQueue::write_int_x( int value )
   }
 }
 
-RogueMessageQueue* RogueMessageQueue::write_integer( int value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_integer( int value )
 {
   write_list->add( (RogueByte) (value >> 24) );
   write_list->add( (RogueByte) (value >> 16) );
@@ -134,37 +154,41 @@ RogueMessageQueue* RogueMessageQueue::write_integer( int value )
   return this;
 }
 
-RogueMessageQueue* RogueMessageQueue::write_logical( bool value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_logical( bool value )
 {
   if (value) write_list->add( 1 );
   else       write_list->add( 0 );
   return this;
 }
 
-RogueMessageQueue* RogueMessageQueue::write_long( RogueLong value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_long( RogueLong value )
 {
   write_integer( (int)(value >> 32LL) );
   return write_integer( (int)(value) );
 }
 
-RogueMessageQueue* RogueMessageQueue::write_real( double value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_real( double value )
 {
   return write_long( *((RogueLong*)(&value)) );
 }
 
-RogueMessageQueue* RogueMessageQueue::write_string( const char* value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_string( const char* value )
 {
   int len = strlen( value );
   write_int_x( len );
-  for (int i=0; i<len; ++i)
-  {
-    write_list->add( (RogueByte) value[i] );
-  }
+  for (int i=0; i<len; ++i) write_int_x( value[i] );
+  return this;
+}
+
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_string( RogueCharacter* value, int count )
+{
+  write_int_x( count );
+  for (int i=0; i<count; ++i) write_int_x( value[i] );
   return this;
 }
 
 // INTERNAL USE
-void RogueMessageQueue::update_message_size()
+void RogueSystemMessageQueue::update_message_size()
 {
   if (message_size_location >= 0)
   {
