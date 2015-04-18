@@ -39,6 +39,7 @@
 #endif
 
 struct RogueAllocator;
+struct RogueString;
 struct RogueCharacterList;
 struct RogueFileReaderType;
 struct RogueFileWriterType;
@@ -212,9 +213,20 @@ struct RogueSystemMessageQueue
   ~RogueSystemMessageQueue();
 
   RogueSystemMessageQueue* begin_message( const char* message_type );
-  bool               has_another();
+  void                     begin_reading();
+  bool                     has_another();
 
-  //void               read_message_type( const
+  RogueByte                read_byte();
+  RogueCharacter           read_character();
+  RogueFloat               read_float();
+  RogueInteger             read_int_x();
+  RogueInteger             read_integer();
+  RogueLogical             read_logical();
+  RogueLong                read_long();
+  RogueReal                read_real();
+  int                      read_c_string( char* buffer, int buffer_size );
+  char*                    read_new_c_string();
+  RogueString*             read_string();
 
   RogueSystemMessageQueue* write_byte( int value );
   RogueSystemMessageQueue* write_character( int value );
@@ -224,7 +236,7 @@ struct RogueSystemMessageQueue
   RogueSystemMessageQueue* write_logical( bool value );
   RogueSystemMessageQueue* write_long( RogueLong value );
   RogueSystemMessageQueue* write_real( double value );
-  RogueSystemMessageQueue* write_string( const char* value );
+  RogueSystemMessageQueue* write_c_string( const char* value );
   RogueSystemMessageQueue* write_string( RogueCharacter* value, int count );
 
   // INTERNAL USE
