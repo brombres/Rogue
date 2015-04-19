@@ -80,7 +80,7 @@ RogueSystemMessageQueue* RogueSystemMessageQueue::begin_message( const char* mes
   message_size_location = write_list->count;
   write_integer( 0 );  // placeholder for message size
 
-  write_c_string( message_type );
+  write_string( message_type );
   return this;
 }
 
@@ -105,6 +105,7 @@ bool RogueSystemMessageQueue::has_another()
 
   if (read_position+4 >= read_list->count) return false;
 
+  remaining_bytes_in_current = 4;  // enough for read_integer() to work so we can get the real value
   remaining_bytes_in_current = read_integer();
   if (remaining_bytes_in_current > (read_list->count - read_position))
   {
@@ -120,21 +121,48 @@ RogueByte RogueSystemMessageQueue::read_byte()
   return (*read_list)[ read_position++ ];
 }
 
-/*
 RogueCharacter RogueSystemMessageQueue::read_character()
 {
+  RogueInteger result = read_byte();
+  return   (result << 8) | read_byte();
 }
 
-RogueFloat     RogueSystemMessageQueue::read_float()
+RogueFloat RogueSystemMessageQueue::read_float()
 {
+  RogueInteger n = read_integer();
+  return *((RogueFloat*)&n);
 }
 
-RogueInteger   RogueSystemMessageQueue::read_int_x()
+RogueInteger RogueSystemMessageQueue::read_int_x()
 {
+  RogueInteger b1 = read_byte();
+  if (b1 <= 127)
+  {
+    // Use directly as 8-bit signed number (positive)
+    // 0xxxxxxx
+    return b1;
+  }
+  else if ((b1 & 0xc0) == 0xc0)
+  {
+    // Use directly as 8-bit signed number (negative)
+    // 11xxxxxx
+    return (char) b1;
+  }
+  else if ((b1 & 0xe0) == 0x80)
+  {
+    // 100x xxxx  xxxx xxxx - 13-bit signed value in 2 bytes
+    RogueInteger result = ((b1 & 0x1F) << 8) | read_byte();
+    if (result <= 4095) return result;  // 0 or positive
+    return result - 8192;
+  }
+  else
+  {
+    // 101x xxxx  aaaaaaaa bbbbbbbb cccccccc dddddddd - 32-bit value in 5 bytes
+    return read_integer();
+  }
 }
-*/
 
-RogueInteger   RogueSystemMessageQueue::read_integer()
+RogueInteger RogueSystemMessageQueue::read_integer()
 {
   RogueInteger result = read_byte();
   result = (result << 8) | read_byte();
@@ -142,31 +170,71 @@ RogueInteger   RogueSystemMessageQueue::read_integer()
   return   (result << 8) | read_byte();
 }
 
-/*
-RogueLogical   RogueSystemMessageQueue::read_logical()
+RogueLogical RogueSystemMessageQueue::read_logical()
 {
+  return (read_byte() != 0);
 }
 
-RogueLong      RogueSystemMessageQueue::read_long()
+RogueLong RogueSystemMessageQueue::read_long()
 {
+  RogueLong result = read_integer();
+  return (result << 32LL) | (((RogueLong)read_integer()) & 0xFFFFffffLL);
 }
 
-RogueReal      RogueSystemMessageQueue::read_real()
+RogueReal RogueSystemMessageQueue::read_real()
 {
+  RogueLong n = read_long();
+  return *((RogueReal*)&n);
 }
 
-int            RogueSystemMessageQueue::read_c_string( char* buffer, int buffer_size )
+int RogueSystemMessageQueue::read_string( char* buffer, int buffer_size )
 {
+  int count = read_int_x();
+  if (count >= buffer_size)
+  {
+    for (int i=0; i<count; ++i) read_int_x();  // discard characters
+    return -1;
+  }
+  else
+  {
+    char* dest = buffer-1;
+    for (int i=0; i<count; ++i)
+    {
+      *(++dest) = (char) read_int_x();
+    }
+    buffer[count] = 0;
+    return count;
+  }
 }
 
-char*          RogueSystemMessageQueue::read_new_c_string()
+char* RogueSystemMessageQueue::read_new_c_string()
 {
+  int count = read_int_x();
+  char* buffer = new char[ count + 1 ];
+
+  char* dest = buffer-1;
+  for (int i=0; i<count; ++i)
+  {
+    *(++dest) = (char) read_int_x();
+  }
+  buffer[count] = 0;
+
+  return buffer;
 }
 
-RogueString*   RogueSystemMessageQueue::read_string()
+RogueString* RogueSystemMessageQueue::read_string()
 {
+  int count = read_int_x();
+  RogueString* st = RogueString::create( count );
+
+  RogueCharacter* dest = st->characters - 1;
+  for (int i=0; i<count; ++i)
+  {
+    *(++dest) = (RogueCharacter) read_int_x();
+  }
+
+  return st;
 }
-*/
 
 RogueSystemMessageQueue* RogueSystemMessageQueue::write_byte( int value )
 {
@@ -176,13 +244,14 @@ RogueSystemMessageQueue* RogueSystemMessageQueue::write_byte( int value )
 
 RogueSystemMessageQueue* RogueSystemMessageQueue::write_character( int value )
 {
-  write_int_x( value );
+  write_byte( value >> 8 );
+  write_byte( value );
   return this;
 }
 
 RogueSystemMessageQueue* RogueSystemMessageQueue::write_float( float value)
 {
-  return write_integer( *((float*)(&value)) );
+  return write_integer( *((RogueInteger*)(&value)) );
 }
 
 RogueSystemMessageQueue* RogueSystemMessageQueue::write_int_x( int value )
@@ -237,7 +306,7 @@ RogueSystemMessageQueue* RogueSystemMessageQueue::write_real( double value )
   return write_long( *((RogueLong*)(&value)) );
 }
 
-RogueSystemMessageQueue* RogueSystemMessageQueue::write_c_string( const char* value )
+RogueSystemMessageQueue* RogueSystemMessageQueue::write_string( const char* value )
 {
   int len = strlen( value );
   write_int_x( len );

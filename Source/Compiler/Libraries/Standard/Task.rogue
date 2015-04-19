@@ -59,7 +59,15 @@ class TaskManager [requisite singleton]
         if (still_waiting) yield
       endWhile
 
+    method dispatch_events
+      SystemEventQueue.begin_reading
+      while (SystemEventQueue.has_another)
+        println SystemEventQueue.read_string
+      endWhile
+
     method update->Logical
+      dispatch_events
+
       local any_active = false
 
       update_list.clear().add( active_list )
@@ -80,3 +88,29 @@ class TaskManager [requisite singleton]
       return any_active
 endClass
 
+class SystemEventQueue
+  ROUTINES
+    routine begin_reading
+      inlineNative "Rogue_program.event_queue.begin_reading()"
+
+    routine has_another->Logical
+      inlineNative "Rogue_program.event_queue.has_another()"
+
+    routine read_byte->Byte
+      inlineNative "Rogue_program.event_queue.read_byte()"
+
+    routine read_character->Character
+      inlineNative "Rogue_program.event_queue.read_character()"
+
+    routine read_integer->Integer
+      inlineNative "Rogue_program.event_queue.read_integer()"
+
+    routine read_logical->Logical
+      inlineNative "Rogue_program.event_queue.read_logical()"
+
+    routine read_real->Real
+      inlineNative "Rogue_program.event_queue.read_real()"
+
+    routine read_string->String
+      inlineNative "Rogue_program.event_queue.read_string()"
+endClass
