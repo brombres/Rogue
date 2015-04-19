@@ -3445,6 +3445,25 @@ class CmdConvertToPrimitiveType : CmdConvertToType
       return this
 endClass
 
+class CmdAs : CmdTypeOperator
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdAs( t, operand.clone(clone_args), target_type )
+
+    method write_cpp( writer:CPPWriter )
+      writer.print( "((" ).print( target_type ).print( ")(RogueObject::as(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")))" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      target_type.organize
+      if (operand.require_type is target_type) return operand
+      return this
+endClass
+
 
 #------------------------------------------------------------------------------
 # Collections

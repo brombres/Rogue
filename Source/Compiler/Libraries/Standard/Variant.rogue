@@ -37,13 +37,20 @@ class StringVariant( value:String ) : Variant
       return value
 endClass
 
-class VariantList( value:Variant[] ) : Variant
+class VariantList : Variant
+  PROPERTIES
+    values : Variant[]
+
   METHODS
     method init
-      value = Variant[]
+      values = Variant[]
+
+    method get( index:Integer )->Variant
+      if (index < 0 or index >= values.count) return null
+      return values[ index ]
 
     method to->String
-      return value->String
+      return values->String
 endClass
 
 class VariantTable : Variant

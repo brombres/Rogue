@@ -351,6 +351,8 @@ struct RogueObject
 
   RogueObject* retain()  { ++reference_count; return this; }
   void         release() { --reference_count; }
+
+  static RogueObject* as( RogueObject* object, RogueType* specialized_type );
 };
 
 

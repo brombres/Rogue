@@ -8,5 +8,8 @@ class Test
       forEach (ch in File.read("../Test.rogue"))
         print ch
       endForEach
+
+      local table = []
+      println table[0]
 endClass
 

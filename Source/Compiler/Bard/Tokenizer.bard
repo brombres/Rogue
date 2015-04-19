@@ -142,6 +142,7 @@ class Tokenizer
       TokenType.literal_string               = TokenType("String")
 
       TokenType.keyword_and                  = define( TokenType("and") )
+      TokenType.keyword_as                   = define( TokenType("as") )
       TokenType.keyword_false                = define( TokenType("false") )
       TokenType.keyword_not                  = define( TokenType("not") )
       TokenType.keyword_or                   = define( TokenType("or") )

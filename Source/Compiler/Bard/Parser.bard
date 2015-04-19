@@ -1407,13 +1407,11 @@ class Parser
         if (consume(TokenType.symbol_arrow)) return_type = parse_type
         return CmdCreateCallback( t, context, name, Program.get_callback_type_signature(arg_types), return_type )
 
-      #{
       elseIf (consume(TokenType.keyword_as))
-        # Recast operation e.g. 65 as Character
+        # Recast operation e.g. actor as Hero
         consume_eols
         local as_type = parse_type
-        return parse_member_access( CmdRecastAsType(t,context,as_type) )
-      }#
+        return parse_member_access( CmdAs(t,context,as_type) )
 
       endIf
 
@@ -1643,11 +1641,13 @@ class Parser
         return table
 
       elseIf (consume(TokenType.symbol_empty_braces))
-        return CmdNewObject( t, Program.get_type_reference( t, "PropertyTable" ) )
+        return CmdCreateObject( t, Program.get_type_reference( t, "PropertyTable" ) )
+        }#
 
       elseIf (consume(TokenType.symbol_empty_brackets))
-        return CmdNewObject( t, Program.get_type_reference( t, "PropertyList" ) )
+        return CmdAccess( t, "VariantList",  CmdArgs() )
 
+        #{
       elseIf (consume(TokenType.keyword_prior))
         consume_eols
         must_consume( TokenType.symbol_dot )

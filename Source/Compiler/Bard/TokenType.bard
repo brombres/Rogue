@@ -78,6 +78,7 @@ class TokenType
     literal_string               : TokenType
 
     keyword_and                  : TokenType
+    keyword_as                   : TokenType
     keyword_false                : TokenType
     keyword_not                  : TokenType
     keyword_or                   : TokenType

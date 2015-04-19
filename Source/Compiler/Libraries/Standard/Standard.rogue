@@ -1,6 +1,7 @@
 $include "Array.rogue"
 $include "Console.rogue"
 $include "Error.rogue"
+$include "Event.rogue"
 $include "File.rogue"
 $include "Global.rogue"
 $include "List.rogue"
