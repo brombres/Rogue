@@ -10,6 +10,13 @@ class Test
       endForEach
 
       local table = []
-      println table[0]
+      table.add( 3 )
+      table.add( 4.2 )
+      println table
+
+      println table[5]
+      table[5] = 99
+      println table[5]
+      println table
 endClass
 

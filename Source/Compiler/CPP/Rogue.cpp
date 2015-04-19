@@ -371,7 +371,7 @@ RogueLogical RogueType::instance_of( RogueType* ancestor_type )
   RogueType** base_type_ptr = base_types - 1;
   while (--count >= 0)
   {
-    if (this == *(++base_type_ptr)) return true;
+    if (ancestor_type == *(++base_type_ptr)) return true;
   }
 
   return false;

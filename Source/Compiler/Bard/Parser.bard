@@ -1647,15 +1647,15 @@ class Parser
       elseIf (consume(TokenType.symbol_empty_brackets))
         return CmdAccess( t, "VariantList",  CmdArgs() )
 
-        #{
       elseIf (consume(TokenType.keyword_prior))
         consume_eols
         must_consume( TokenType.symbol_dot )
         consume_eols
         local name = read_identifier
         local args = parse_args
-        return CmdPriorCall( t, name, args )
+        return CmdCallPriorMethod( t, name, args )
 
+        #{
       elseIf (next_is(TokenType.keyword_delegate))
         return parse_delegate
 

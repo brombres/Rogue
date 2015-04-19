@@ -100,8 +100,8 @@ class List<<$DataType:Object>> : GenericList
     method remove_last->$DataType
       return remove_at( count - 1 )
 
-    method set( xyz:Integer, new_value:$DataType )->$DataType[]
-      inline this.data[ xyz ] = new_value
+    method set( index:Integer, new_value:$DataType )->$DataType[]
+      inline this.data[ index ] = new_value
 
     method to->String
       local buffer = "["

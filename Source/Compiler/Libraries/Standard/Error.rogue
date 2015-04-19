@@ -8,3 +8,9 @@ class Error
     method to->String
       return message
 endClass
+
+class OutOfBoundsError : Error
+  METHODS
+    method init( index:Integer, limit:Integer )
+      init( "Index $ is out of bounds ($..$)." (index,0,limit-1) )
+endClass

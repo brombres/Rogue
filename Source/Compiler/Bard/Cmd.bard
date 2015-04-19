@@ -3,6 +3,9 @@ class Cmd
     t : Token
 
   METHODS
+    method call_prior->Cmd
+      throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
+
     method cast_to( target_type:Type )->Cmd
       local this_type = type
       if (this_type is target_type) return this
@@ -1817,8 +1820,17 @@ class CmdCallAspectMethod : CmdCall
 endClass
 
 
+class CmdCallMethod : CmdCall
+  METHODS
+    method call_prior->Cmd
+      if (not method_info.overridden_method)
+        throw t.error( "$ is not an override - no prior version of it exists." (method_info.signature) )
+      endIf
 
-class CmdCallDynamicMethod : CmdCall
+      return CmdCallStaticMethod( t, context, method_info.overridden_method, args )
+endClass
+
+class CmdCallDynamicMethod : CmdCallMethod
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
@@ -1855,10 +1867,14 @@ class CmdCallDynamicMethod : CmdCall
 endClass
 
 
-class CmdCallStaticMethod : CmdCall
+class CmdCallStaticMethod : CmdCallMethod
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallStaticMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      if (not context) context = CmdThisContext(t,method_info.type_context)
+      return prior.resolve( scope )
 
     method write_cpp( writer:CPPWriter )
       local compile_target = method_info.compile_target
@@ -1879,6 +1895,22 @@ class CmdCallStaticMethod : CmdCall
         ++i
       endForEach
       writer.print( " )" )
+endClass
+
+
+class CmdCallPriorMethod : Cmd
+  PROPERTIES
+    name : String
+    args : CmdArgs
+
+  METHODS
+    method init( t, name, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallPriorMethod( t, name, args.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      return CmdAccess( t, name, args ).resolve( scope ).call_prior
 endClass
 
 
@@ -3460,7 +3492,13 @@ class CmdAs : CmdTypeOperator
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       target_type.organize
-      if (operand.require_type is target_type) return operand
+
+      # Generic methods returning non-generic values prevent this optimization
+      #local operand_type = operand.require_type
+      #if (operand_type is target_type and not operand_type.is_generic)
+        #return operand
+      #endIf
+
       return this
 endClass
 

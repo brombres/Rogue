@@ -11,6 +11,24 @@ class Variant
 
     routine create( value:String )->Variant
       return StringVariant( value )
+
+  METHODS
+    method add( value:Integer )->Variant
+      inline this.add( Variant(value) )
+
+    method add( value:Real )->Variant
+      inline this.add( Variant(value) )
+
+    method add( value:Variant )->Variant
+      return this
+
+    method set( index:Integer, value:Integer )
+      inline this.set( index, Variant(value) )
+
+    method set( index:Integer, value:Real )
+      inline this.set( index, Variant(value) )
+
+    method set( index:Integer, value:Variant )
 endClass
 
 class IntegerVariant( value:Integer ) : Variant
@@ -23,6 +41,12 @@ class LogicalVariant( value:Logical ) : Variant
   METHODS
     method to->String
       return value->String
+endClass
+
+class NullVariant : Variant
+  METHODS
+    method to->String
+      return "null"
 endClass
 
 class RealVariant( value:Real ) : Variant
@@ -43,11 +67,73 @@ class VariantList : Variant
 
   METHODS
     method init
-      values = Variant[]
+      init( 10 )
+
+    method init( initial_capacity:Integer )
+      values = Variant[]( initial_capacity )
+      
+    method init( values )
+
+    method clone->VariantList
+      return VariantList( values.clone )
+
+    method add( value:Variant )->VariantList
+      values.add( value )
+      return this
+
+    method add( other:Variant[] )->VariantList
+      values.reserve(other.count)
+      forEach (value in other) values.add( value )
+      return this
+
+    method capacity->Integer
+      return values.capacity
+
+    method clear->VariantList
+      values.clear
+      return this
+
+    method count->Integer
+      return values.count
+
+    method first->Variant
+      inline this.get(0) as Variant
 
     method get( index:Integer )->Variant
-      if (index < 0 or index >= values.count) return null
-      return values[ index ]
+      if (index < 0 or index >= values.count) return NullVariant()
+      return values[ index ] as Variant
+
+    method last->Variant
+      return this.get( values.count - 1 ) as Variant
+
+    method locate( value:Variant )->Integer
+      return values.locate( value )
+
+    method locate_last( value:Variant )->Integer
+      return values.locate_last( value )
+
+    method reserve( additional_count:Integer )->VariantList
+      values.reserve( additional_count )
+      return this
+
+    method remove( value:Variant )->Variant
+      return values.remove( value ) as Variant
+
+    method remove_at( index:Integer )->Variant
+      return values.remove_at( index ) as Variant
+
+    method remove_first->Variant
+      return values.remove_first as Variant
+
+    method remove_last->Variant
+      return values.remove_last as Variant
+
+    method set( index:Integer, new_value:Variant )
+      if (index < 0) return
+
+      while (index >= values.count) add( NullVariant() )
+
+      values.set( index, new_value )
 
     method to->String
       return values->String

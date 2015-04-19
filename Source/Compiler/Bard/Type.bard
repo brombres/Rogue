@@ -448,6 +448,7 @@ class Type
 
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
+
       if (existing_m?)
         local i = list.locate( existing_m )
 
@@ -471,6 +472,7 @@ class Type
           m.attributes.add( Attribute.is_dynamic )
         endIf
 
+        m.overridden_method = existing_m
         list[i] = m
         lookup[m.signature] = m
 

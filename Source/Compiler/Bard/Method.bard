@@ -27,8 +27,9 @@ class Method
     aspect_statements     : CmdStatementList
     incorporating_classes : Type[]
 
-    generic_method : Method
-    native_code    : String
+    overridden_method : Method
+    generic_method    : Method
+    native_code       : String
 
     organized : Logical
     resolved  : Logical
