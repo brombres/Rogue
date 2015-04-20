@@ -22,6 +22,33 @@ class Variant
     method add( value:Variant )->Variant
       return this
 
+    method add( other:Variant[] )->Variant
+      return this
+
+    method clear->Variant
+      return this
+
+    method first->Variant
+      return NullVariant()
+
+    method get( index:Integer )->Variant
+      return NullVariant()
+
+    method last->Variant
+      return NullVariant()
+
+    method remove( value:Variant )->Variant
+      return NullVariant()
+
+    method remove_at( index:Integer )->Variant
+      return NullVariant()
+
+    method remove_first->Variant
+      return NullVariant()
+
+    method remove_last->Variant
+      return NullVariant()
+
     method set( index:Integer, value:Integer )
       inline this.set( index, Variant(value) )
 
@@ -86,9 +113,6 @@ class VariantList : Variant
       forEach (value in other) values.add( value )
       return this
 
-    method capacity->Integer
-      return values.capacity
-
     method clear->VariantList
       values.clear
       return this
@@ -97,7 +121,7 @@ class VariantList : Variant
       return values.count
 
     method first->Variant
-      inline this.get(0) as Variant
+      return this.get(0) as Variant
 
     method get( index:Integer )->Variant
       if (index < 0 or index >= values.count) return NullVariant()
@@ -105,16 +129,6 @@ class VariantList : Variant
 
     method last->Variant
       return this.get( values.count - 1 ) as Variant
-
-    method locate( value:Variant )->Integer
-      return values.locate( value )
-
-    method locate_last( value:Variant )->Integer
-      return values.locate_last( value )
-
-    method reserve( additional_count:Integer )->VariantList
-      values.reserve( additional_count )
-      return this
 
     method remove( value:Variant )->Variant
       return values.remove( value ) as Variant
