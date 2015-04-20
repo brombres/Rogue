@@ -393,6 +393,8 @@ struct RogueString : RogueObject
   RogueString* plus( RogueString* other );
   RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
   bool         to_c_string( char* buffer, int buffer_size );
+  RogueInteger to_integer();
+  RogueReal    to_real();
   RogueString* update_hash_code();
 };
 

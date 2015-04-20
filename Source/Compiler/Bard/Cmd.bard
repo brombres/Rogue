@@ -350,6 +350,10 @@ endClass
 #------------------------------------------------------------------------------
 class CmdControlStructure : CmdStatement
   ENUMERATE
+    type_block
+    type_if
+    type_which
+
     type_while
     type_forEach
 
@@ -372,7 +376,7 @@ class CmdBlock : CmdControlStructure
     statements : CmdStatementList
 
   METHODS
-    method init( t )
+    method init( t, control_type=CmdControlStructure.type_block )
       statements = CmdStatementList()
 
     method init( t, statements )
@@ -415,10 +419,10 @@ class CmdIf : CmdControlStructure
     else_statements     : CmdStatementList
 
   METHODS
-    method init( t, condition=null )
+    method init( t, condition=null, control_type=CmdControlStructure.type_if )
       statements = CmdStatementList()
 
-    method init( t, condition, statements, else_ifs, else_statements )
+    method init( t, condition, statements, else_ifs, else_statements, control_type=CmdControlStructure.type_if )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -463,7 +467,8 @@ class CmdIf : CmdControlStructure
           endForEach
         endIf
 
-        return CmdIf( t, condition.clone(clone_args), statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args) )
+        return CmdIf( t, condition.clone(clone_args),
+          statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args), control_type )
       endIf
 
     method add( cmd_else_if:CmdElseIf )
@@ -540,7 +545,38 @@ class CmdElseIf
       statements.resolve( scope )
 endClass
 
+class CmdWhich : CmdControlStructure
+  PROPERTIES
+    expression   : Cmd
+    cases        = CmdWhichCase[]
+    case_others  : CmdWhichCase
 
+  METHODS
+    method init( t, control_type=CmdControlStructure.type_which, expression )
+
+    method add_case( case_t:Token )->CmdWhichCase
+      local result = CmdWhichCase( case_t )
+      cases.add( result )
+      return result
+
+    method add_case_others( case_t:Token )->CmdWhichCase
+      local result = CmdWhichCase( case_t )
+      case_others = result
+      return result
+endClass
+
+class CmdWhichCase : Cmd
+  PROPERTIES
+    conditions = Cmd[]
+
+  METHODS
+    method init( t )
+endClass
+
+
+#------------------------------------------------------------------------------
+# Loops
+#------------------------------------------------------------------------------
 class CmdGenericLoop : CmdControlStructure
   PROPERTIES
     control_vars : Local[]
@@ -3450,7 +3486,7 @@ class CmdConvertToType : CmdTypeOperator
       target_type.organize
       if (operand_type is target_type) return operand
 
-      if (target_type.is_primitive)
+      if (operand_type.is_primitive and target_type.is_primitive)
         return CmdConvertToPrimitiveType( t, operand, target_type ).resolve( scope )
       else
         return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
@@ -3470,10 +3506,6 @@ class CmdConvertToPrimitiveType : CmdConvertToType
 
     method resolve( scope:Scope )->Cmd
       local operand_type = operand.require_type
-      if (not operand_type.is_primitive)
-        trace
-        throw t.error( "TODO: CmdConvertToPrimitiveType with non-primitive operand." )
-      endIf
       return this
 endClass
 

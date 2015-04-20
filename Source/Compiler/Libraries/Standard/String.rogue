@@ -168,6 +168,14 @@ class String [native functional]
     method substring( i1:Integer, i2=-1:Integer )->String
       $if ("C++") inlineNative '$this->substring($i1,$i2)'
 
+    method to->Integer
+      inlineNative "($this->to_integer())"
+
+    method to->Real
+      inlineNative "($this->to_real())"
+
+    method to->String
+      return this
 endClass
 
 

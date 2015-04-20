@@ -5,18 +5,13 @@ class Test
 
   METHODS
     method init
-      forEach (ch in File.read("../Test.rogue"))
-        print ch
-      endForEach
+      local list = []
+      list.add( 3 )
+      list.add( 4.2 )
+      println list
 
-      local table = []
-      table.add( 3 )
-      table.add( 4.2 )
-      println table
-
-      println table[5]
-      table[5] = 99
-      println table[5]
-      println table
+      println list[0]->Integer
+      println list[1]->Integer
+      println list[2]->Integer
 endClass
 

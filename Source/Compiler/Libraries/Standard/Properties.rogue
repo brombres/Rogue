@@ -1,0 +1,253 @@
+class PropertyValue
+  ROUTINES
+    routine create( value:Character )->PropertyValue
+      return CharacterProperty( value )
+
+    routine create( value:Integer )->PropertyValue
+      return IntegerProperty( value )
+
+    routine create( value:Logical )->PropertyValue
+      return LogicalProperty( value )
+
+    routine create( value:Real )->PropertyValue
+      return RealProperty( value )
+
+    routine create( value:String )->PropertyValue
+      return StringProperty( value )
+
+  METHODS
+    method add( value:Character )->PropertyValue
+      inline this.add( PropertyValue(value) )
+
+    method add( value:Integer )->PropertyValue
+      inline this.add( PropertyValue(value) )
+
+    method add( value:Logical )->PropertyValue
+      inline this.add( PropertyValue(value) )
+
+    method add( value:Real )->PropertyValue
+      inline this.add( PropertyValue(value) )
+
+    method add( value:String )->PropertyValue
+      inline this.add( PropertyValue(value) )
+
+    method add( value:PropertyValue )->PropertyValue
+      return this
+
+    method add( other:PropertyValue[] )->PropertyValue
+      return this
+
+    method clear->PropertyValue
+      return this
+
+    method first->PropertyValue
+      return NullProperty()
+
+    method get( index:Integer )->PropertyValue
+      return NullProperty()
+
+    method last->PropertyValue
+      return NullProperty()
+
+    method remove( value:PropertyValue )->PropertyValue
+      return NullProperty()
+
+    method remove_at( index:Integer )->PropertyValue
+      return NullProperty()
+
+    method remove_first->PropertyValue
+      return NullProperty()
+
+    method remove_last->PropertyValue
+      return NullProperty()
+
+    method set( index:Integer, value:Character )
+      inline this.set( index, PropertyValue(value) )
+
+    method set( index:Integer, value:Integer )
+      inline this.set( index, PropertyValue(value) )
+
+    method set( index:Integer, value:Logical )
+      inline this.set( index, PropertyValue(value) )
+
+    method set( index:Integer, value:Real )
+      inline this.set( index, PropertyValue(value) )
+
+    method set( index:Integer, value:String )
+      inline this.set( index, PropertyValue(value) )
+
+
+    method set( index:Integer, value:PropertyValue )
+
+    method to->Character
+      return this->Integer->Character
+
+    method to->Integer
+      return 0
+
+    method to->Logical
+      return (this->Integer?)
+
+    method to->Real
+      return this->Integer->Real
+endClass
+
+class CharacterProperty( value:Character ) : PropertyValue
+  METHODS
+    method to->Character
+      return value
+
+    method to->Integer
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class IntegerProperty( value:Integer ) : PropertyValue
+  METHODS
+    method to->Integer
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class LogicalProperty( value:Logical ) : PropertyValue
+  METHODS
+    method to->Integer
+      if (value) return 1
+      else       return 0
+
+    method to->Logical
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class NullProperty : PropertyValue
+  METHODS
+    method to->String
+      return "null"
+endClass
+
+class RealProperty( value:Real ) : PropertyValue
+  METHODS
+    method to->Integer
+      return value
+
+    method to->Real
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class StringProperty( value:String ) : PropertyValue
+  METHODS
+    method to->Character
+      if (value.count > 0) return value[0]
+      else                 return 0->Character
+
+    method to->Integer
+      return value->Integer
+
+    method to->Logical
+      return (value == "true" or value == "TRUE" or value == "yes" or value == "YES" or value == "1")
+      #{
+      which (value)
+        case "true", "TRUE", "yes", "YES", "1"
+          return true
+
+        others
+          return false
+      endWhich
+      }#
+
+    method to->Real
+      return value->Real
+
+    method to->String
+      return value
+endClass
+
+class PropertyList : PropertyValue
+  PROPERTIES
+    values : PropertyValue[]
+
+  METHODS
+    method init
+      init( 10 )
+
+    method init( initial_capacity:Integer )
+      values = PropertyValue[]( initial_capacity )
+      
+    method init( values )
+
+    method clone->PropertyList
+      return PropertyList( values.clone )
+
+    method add( value:PropertyValue )->PropertyList
+      values.add( value )
+      return this
+
+    method add( other:PropertyValue[] )->PropertyList
+      values.reserve(other.count)
+      forEach (value in other) values.add( value )
+      return this
+
+    method clear->PropertyList
+      values.clear
+      return this
+
+    method count->Integer
+      return values.count
+
+    method first->PropertyValue
+      return this.get(0) as PropertyValue
+
+    method get( index:Integer )->PropertyValue
+      if (index < 0 or index >= values.count) return NullProperty()
+      return values[ index ] as PropertyValue
+
+    method last->PropertyValue
+      return this.get( values.count - 1 ) as PropertyValue
+
+    method remove( value:PropertyValue )->PropertyValue
+      return values.remove( value ) as PropertyValue
+
+    method remove_at( index:Integer )->PropertyValue
+      return values.remove_at( index ) as PropertyValue
+
+    method remove_first->PropertyValue
+      return values.remove_first as PropertyValue
+
+    method remove_last->PropertyValue
+      return values.remove_last as PropertyValue
+
+    method set( index:Integer, new_value:PropertyValue )
+      if (index < 0) return
+
+      while (index >= values.count) add( NullProperty() )
+
+      values.set( index, new_value )
+
+    method to->String
+      return values->String
+endClass
+
+class PropertyTable : PropertyValue
+  PROPERTIES
+    value : Table<<String,PropertyValue>>
+
+  METHODS
+    method init
+      value = Table<<String,PropertyValue>>()
+
+    method init( value )
+
+    method to->String
+      return value->String
+endClass
+

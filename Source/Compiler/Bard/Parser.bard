@@ -496,11 +496,13 @@ class Parser
           statements.add( parse_if )
           return
 
-        #{
+          #{
         elseIf (next_is(TokenType.keyword_which))
           statements.add( parse_which )
           return
+          }#
 
+        #{
         elseIf (next_is(TokenType.keyword_whichIs))
           statements.add( parse_which( true ) )
           return
@@ -1645,7 +1647,7 @@ class Parser
         }#
 
       elseIf (consume(TokenType.symbol_empty_brackets))
-        return CmdAccess( t, "VariantList",  CmdArgs() )
+        return CmdAccess( t, "PropertyList",  CmdArgs() )
 
       elseIf (consume(TokenType.keyword_prior))
         consume_eols

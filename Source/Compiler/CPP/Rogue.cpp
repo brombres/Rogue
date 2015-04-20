@@ -671,6 +671,31 @@ bool RogueString::to_c_string( char* buffer, int buffer_size )
   return true;
 }
 
+RogueInteger RogueString::to_integer()
+{
+  char buffer[80];
+  if (to_c_string(buffer,80))
+  {
+    return strtol( buffer, NULL, 10 );
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+RogueReal    RogueString::to_real()
+{
+  char buffer[80];
+  if (to_c_string(buffer,80))
+  {
+    return strtod( buffer, NULL );
+  }
+  else
+  {
+    return 0;
+  }
+}
 
 RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
 {
