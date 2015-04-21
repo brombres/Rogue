@@ -496,11 +496,9 @@ class Parser
           statements.add( parse_if )
           return
 
-          #{
         elseIf (next_is(TokenType.keyword_which))
           statements.add( parse_which )
           return
-          }#
 
         #{
         elseIf (next_is(TokenType.keyword_whichIs))
@@ -742,6 +740,35 @@ class Parser
       endIf
 
       statements.add( expression )
+
+    method parse_which->CmdWhich
+      local t = read  # 'which'
+      local cmd_which = CmdWhich( t, parse_expression )
+      must_consume_eols
+      while (next_is(TokenType.keyword_case))
+        t = read  # 'case'
+        consume_eols
+        local cmd_case = cmd_which.add_case( t )
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          cmd_case.conditions.add( parse_expression )
+          consume_eols
+        endWhile
+        if (consume(TokenType.symbol_colon)) consume_eols
+        parse_multi_line_statements( cmd_case.statements )
+      endWhile
+
+      if (next_is(TokenType.keyword_others))
+        t = read  # 'others'
+        consume_eols
+        local cmd_case = cmd_which.add_case_others( t )
+        if (consume(TokenType.symbol_colon)) consume_eols
+        parse_multi_line_statements( cmd_case.statements )
+      endIf
+
+      must_consume( TokenType.keyword_endWhich )
+      return cmd_which
 
     method parse_try->CmdTry
       local t = read  # 'try'

@@ -422,7 +422,7 @@ class CmdIf : CmdControlStructure
     method init( t, condition=null, control_type=CmdControlStructure.type_if )
       statements = CmdStatementList()
 
-    method init( t, condition, statements, else_ifs, else_statements, control_type=CmdControlStructure.type_if )
+    method init( t, condition, statements, else_ifs=null, else_statements=null, control_type=CmdControlStructure.type_if )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -548,11 +548,19 @@ endClass
 class CmdWhich : CmdControlStructure
   PROPERTIES
     expression   : Cmd
-    cases        = CmdWhichCase[]
+    cases        : CmdWhichCase[]
     case_others  : CmdWhichCase
 
   METHODS
-    method init( t, control_type=CmdControlStructure.type_which, expression )
+    method init( t, expression, cases=CmdWhichCase[], case_others=null, control_type=CmdControlStructure.type_which )
+
+    method clone( clone_args:CloneArgs )->CmdWhich
+      local cloned_cases = CmdWhichCase[]( cases.count )
+      forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
+
+      local result = CmdWhich( t, expression.clone(clone_args), cloned_cases )
+      if (case_others?) result.case_others = case_others.clone( clone_args )
+      return result
 
     method add_case( case_t:Token )->CmdWhichCase
       local result = CmdWhichCase( case_t )
@@ -563,14 +571,67 @@ class CmdWhich : CmdControlStructure
       local result = CmdWhichCase( case_t )
       case_others = result
       return result
+
+    method resolve( scope:Scope )->Cmd
+      local result = CmdBlock( t, CmdControlStructure.type_which )
+      expression = expression.resolve( scope )
+
+      local var_name       : String
+      local expression_var : Local
+      if (expression instanceOf CmdReadLocal)
+        expression_var = (expression as CmdReadLocal).local_info
+        var_name = expression_var.name
+      else
+        var_name = Program.create_unique_id
+        expression_var = scope.this_method.add_local( t, var_name, expression.require_type, expression )
+        result.statements.add( CmdLocalDeclaration(t,expression_var) )
+      endIf
+
+      if (cases.count?)
+        local cmd_if = CmdIf( expression.t, cases.first.as_conditional(var_name), cases.first.statements )
+        forEach (i of cases)
+          if (i > 0)
+            local c = cases[i]
+            cmd_if.add( CmdElseIf(cmd_if,c.as_conditional(var_name),c.statements) )
+          endIf
+        endForEach
+        if (case_others?)
+          cmd_if.else_statements = case_others.statements
+        endIf
+        result.statements.add( cmd_if )
+
+      elseIf (case_others?)
+        # 'others' statements always happen
+        forEach (cmd in case_others.statements) result.statements.add(cmd)
+        #result.add( CmdIf(case_others.t, case_
+        #method init( t, condition, statements, else_ifs, else_statements, control_type=CmdControlStructure.type_if )
+      endIf
+
+      return result.resolve( scope )
 endClass
 
 class CmdWhichCase : Cmd
   PROPERTIES
-    conditions = Cmd[]
+    conditions : CmdArgs
+    statements : CmdStatementList
 
   METHODS
-    method init( t )
+    method init( t, conditions=CmdArgs(), statements=CmdStatementList() )
+
+    method clone( clone_args:CloneArgs )->CmdWhichCase
+      return CmdWhichCase( t, conditions.clone(clone_args), statements.clone(clone_args) )
+
+    method as_conditional( expression_var_name:String )->Cmd
+      local cmd : Cmd
+      forEach (condition in conditions)
+        if (cmd?)
+          cmd = CmdLogicalOr( t, cmd, CmdCompareEQ(t,CmdAccess(t,expression_var_name),condition) )
+        else
+          cmd = CmdCompareEQ( t, CmdAccess(t,expression_var_name), condition )
+        endIf
+      endForEach
+      return cmd
+
 endClass
 
 

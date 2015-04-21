@@ -81,6 +81,7 @@ class Tokenizer
       # Structure Tokens
       TokenType.eol                  = define( EOLTokenType("end of line") )
       TokenType.keyword_aspect       = define( StructureTokenType("aspect") )
+      TokenType.keyword_case         = define( StructureTokenType("case") )
       TokenType.keyword_catch        = define( StructureTokenType("catch") )
       TokenType.keyword_class        = define( StructureTokenType("class") )
       TokenType.keyword_compound     = define( StructureTokenType("compound") )
@@ -94,9 +95,11 @@ class Tokenizer
       TokenType.keyword_endIf        = define( StructureTokenType("endIf") )
       TokenType.keyword_endPrimitive = define( StructureTokenType("endPrimitive") )
       TokenType.keyword_endTry       = define( StructureTokenType("endTry") )
+      TokenType.keyword_endWhich     = define( StructureTokenType("endWhich") )
       TokenType.keyword_endWhile     = define( StructureTokenType("endWhile") )
       TokenType.keyword_method       = define( StructureTokenType("method") )
       TokenType.keyword_METHODS      = define( StructureTokenType("METHODS") )
+      TokenType.keyword_others       = define( StructureTokenType("others") )
       TokenType.keyword_primitive    = define( StructureTokenType("primitive") )
       TokenType.keyword_PROPERTIES   = define( StructureTokenType("PROPERTIES") )
       TokenType.keyword_routine      = define( StructureTokenType("routine") )
@@ -129,6 +132,7 @@ class Tokenizer
       TokenType.keyword_step         = define( TokenType("step") )
       TokenType.keyword_throw        = define( TokenType("throw") )
       TokenType.keyword_try          = define( TokenType("try") )
+      TokenType.keyword_which        = define( TokenType("which") )
       TokenType.keyword_while        = define( TokenType("while") )
       TokenType.keyword_yield        = define( TokenType("yield") )
 
