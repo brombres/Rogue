@@ -5,7 +5,8 @@ class Test
 
   METHODS
     method init
-      forEach (i in 1..10)
+      local i = 0
+      while (i <= 10)
         which (i)
           case 1
             println "1st"
@@ -13,9 +14,12 @@ class Test
             println "2nd"
           case 3
             println "3rd"
+            escapeWhile
           others
             println( i + "th" )
         endWhich
-      endForEach
+        ++i
+      endWhile
+      println "Done"
 endClass
 

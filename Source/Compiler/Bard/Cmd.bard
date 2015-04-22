@@ -354,13 +354,16 @@ class CmdControlStructure : CmdStatement
     type_if
     type_which
 
+    type_first_loop
     type_while
     type_forEach
 
   PROPERTIES
-    statements     : CmdStatementList
-    control_type   : Integer
-    contains_yield : Logical
+    statements       : CmdStatementList
+    control_type     : Integer
+    contains_yield   : Logical
+    escape_label     : String
+    task_escape_info : CmdTaskControlSection
 
   METHODS
     method init( t )
@@ -368,6 +371,13 @@ class CmdControlStructure : CmdStatement
 
     method requires_semicolon->Logical
       return false
+
+    method set_control_logic( control_structure:CmdControlStructure )->Cmd
+      control_type   = control_structure.control_type
+      contains_yield = control_structure.contains_yield
+      escape_label   = control_structure.escape_label
+      return this
+
 endClass
 
 
@@ -389,7 +399,7 @@ class CmdBlock : CmdControlStructure
         endForEach
         return null
       else
-        return CmdBlock( t, statements.clone(clone_args) )
+        return CmdBlock( t, statements.clone(clone_args) ).set_control_logic( this )
       endIf
 
     method write_cpp( writer:CPPWriter )
@@ -468,7 +478,7 @@ class CmdIf : CmdControlStructure
         endIf
 
         return CmdIf( t, condition.clone(clone_args),
-          statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args), control_type )
+        statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args), control_type ).set_control_logic( this )
       endIf
 
     method add( cmd_else_if:CmdElseIf )
@@ -559,6 +569,7 @@ class CmdWhich : CmdControlStructure
       forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
 
       local result = CmdWhich( t, expression.clone(clone_args), cloned_cases )
+      result.set_control_logic( this )
       if (case_others?) result.case_others = case_others.clone( clone_args )
       return result
 
@@ -671,6 +682,7 @@ class CmdGenericLoop : CmdControlStructure
         # Termination Test
         local condition_section = task_args.jump_to_new_section(t)
         local after_section = task_args.create_section
+        task_escape_info = after_section
         task_args.add_conditional_jump( CmdLogicalNot(t,condition.clone(clone_args)), after_section )
 
         # Main Body
@@ -697,7 +709,7 @@ class CmdGenericLoop : CmdControlStructure
           cloned_control_vars = Local[]( control_vars.count )
           forEach (v in control_vars) cloned_control_vars.add( v.clone(clone_args) )
         endIf
-        return CmdGenericLoop( t, control_type, condition.clone(clone_args), statements.clone(clone_args), clone(upkeep,clone_args), cloned_control_vars )
+        return CmdGenericLoop( t, control_type, condition.clone(clone_args), statements.clone(clone_args), clone(upkeep,clone_args), cloned_control_vars ).set_control_logic( this )
       endIf
 
     method add_control_var( v:Local )
@@ -746,6 +758,10 @@ class CmdGenericLoop : CmdControlStructure
         writer.println( "}" )
       endIf
 
+      if (escape_label?)
+        writer.print( escape_label ).println( ":" )
+      endIf
+
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
       if (control_vars?)
@@ -787,7 +803,7 @@ class CmdForEach : CmdControlStructure
     method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdForEach( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) )
+      return CmdForEach( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), statements.clone(clone_args) ).set_control_logic( this )
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
@@ -850,6 +866,7 @@ class CmdForEach : CmdControlStructure
         else                condition = CmdCompareGE( t, CmdReadLocal(t,index_var), last_cmd )
 
         local result = CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements )
+        result.set_control_logic( this )
         result.add_control_var( collection_var )
         result.add_control_var( index_var )
         result.add_upkeep( modifier )
@@ -891,6 +908,7 @@ class CmdForEach : CmdControlStructure
         endIf
 
         local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(collection.t,collection,"has_another"), statements )
+        cmd_loop.set_control_logic( this )
         cmd_loop.add_control_var( reader_var )
         if (index_var?)
           cmd_loop.add_control_var( index_var )
@@ -915,7 +933,7 @@ class CmdTry : CmdControlStructure
     method clone( clone_args:CloneArgs )->CmdTry
       local new_catches = CmdCatch[]
       forEach (c in catches) new_catches.add( c.clone(clone_args) )
-      return CmdTry( t, statements.clone(clone_args), new_catches )
+      return CmdTry( t, statements.clone(clone_args), new_catches ).set_control_logic( this ) as CmdTry
 
     method add_catch( catch_t:Token )->CmdCatch
       local c = CmdCatch( catch_t )
@@ -998,6 +1016,48 @@ class CmdThrow : Cmd
       expression.write_cpp( writer )
 endClass
 
+
+#------------------------------------------------------------------------------
+# escape and nextIteration
+#------------------------------------------------------------------------------
+class CmdEscape : Cmd
+  PROPERTIES
+    control_type : Integer
+    target_cmd   : CmdControlStructure
+
+  METHODS
+    method init( t, control_type, target_cmd=null )
+
+      #{
+    method clone( clone_args:CloneArgs )->CmdEscape
+      if (target_cmd.task_escape_info?)
+        task_args.add_jump( t, condition_section )
+      else
+        return CmdEscape( t, control_type, clone(target_cmd
+      endIf
+      }#
+
+    method resolve( scope:Scope )->Cmd
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type == control_type)
+          target_cmd = cmd
+          cmd.escape_label = Program.create_unique_id
+          return this
+        endIf
+      endWhile
+
+      throw t.error( "No enclosing structure to escape." )
+
+    method write_cpp( writer:CPPWriter )
+      #if (target_cmd.task_escape_info?)
+      #else
+        writer.print "goto " + target_cmd.escape_label
+        #endIf
+
+endClass
 
 #------------------------------------------------------------------------------
 # Literals

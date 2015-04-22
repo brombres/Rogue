@@ -113,6 +113,7 @@ class Tokenizer
 
       # Statement Tokens
       TokenType.keyword_await        = define( TokenType("await") )
+      TokenType.keyword_escapeWhile  = define( TokenType("escapeWhile") )
       TokenType.keyword_forEach      = define( TokenType("forEach") )
       TokenType.keyword_function     = define( TokenType("function") )
       TokenType.keyword_if           = define( TokenType("if") )

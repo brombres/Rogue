@@ -51,6 +51,7 @@ class TokenType
 
     # Statements
     keyword_await                : TokenType
+    keyword_escapeWhile          : TokenType
     keyword_forEach              : TokenType
     keyword_function             : TokenType
     keyword_if                   : TokenType

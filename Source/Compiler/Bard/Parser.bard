@@ -642,12 +642,14 @@ class Parser
         statements.add( CmdEscapeWhich(t) )
         return
       endIf
+      }#
 
       if (consume(TokenType.keyword_escapeWhile))
-        statements.add( CmdEscapeWhile(t) )
+        statements.add( CmdEscape(t,CmdControlStructure.type_while) )
         return
       endIf
 
+      #{
       if (consume(TokenType.keyword_nextIteration))
         statements.add( CmdNextIteration(t) )
         return
