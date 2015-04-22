@@ -3,4 +3,14 @@ class System [requisite]
     command_line_arguments = String[]
     executable_filepath    : String
 
+
+  ROUTINES
+    routine exit( result_code:Integer ) [native]
+endClass
+
+# TEMP BRIDGE
+class Runtime
+  ROUTINES
+    routine exit( result_code:Integer ) System.exit( result_code )
+  
 endClass

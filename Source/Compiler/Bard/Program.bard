@@ -1,8 +1,3 @@
-$[include "Attributes.bard"]
-$[include "CPPWriter.bard"]
-$[include "Scope.bard"]
-$[include "Template.bard"]
-
 class Program [requisite singleton]
   PROPERTIES
     code_prefix  = "Rogue"

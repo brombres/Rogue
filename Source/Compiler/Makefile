@@ -12,7 +12,7 @@ go: bcc cpp
 bcc: Bard/RogueC.bc
 
 Bard/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
-	$(BARDVM) $(BCC) $(BCC_ARGS) Bard/RogueC.bard
+	$(BARDVM) $(BCC) $(BCC_ARGS) Bard/BardEntry.bard --output=Bard/RogueC.bc
 
 $(BARDVM): $(BCC)
 	cd ../../Programs/Bard && make
@@ -36,3 +36,6 @@ clean:
 
 vim:
 	cd ../../Syntax/Vim && make
+
+roguec:
+	$(BARDVM) Bard/RogueC.bc Bard/RogueEntry.rogue

@@ -65,16 +65,20 @@ class String [native functional]
 
     method begins_with( other:String )->Logical
       local other_count = other.count
-      return (count >= other_count and contains(other,0))
+      return (count >= other_count and contains_at(other,0))
 
     method contains( substring:String )->Logical
       return locate(substring) >= 0
 
-    method contains( substring:String, at_index:Integer )->Logical
+    method contains_at( substring:String, at_index:Integer )->Logical
       $if ("C++") inlineNative '$this->contains($substring,$at_index)'
 
     method count->Integer
       $if ("C++") inlineNative '$this->count'
+
+    method ends_with( other:String )->Logical
+      local other_count = other.count
+      return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
     method from_first( ch:Character )->String
       local i = locate( ch )
@@ -104,6 +108,10 @@ class String [native functional]
 
     method last->Character
       return this[ count-1 ]
+
+    method leftmost( n:Integer )->String
+      if (n >= 0) return substring( 0, n-1 )
+      else        return substring( 0, (count + n) - 1 )
 
     method locate( ch:Character, i1=0:Integer )->Integer
       $if ("C++") inlineNative '$this->locate($ch,$i1)'
@@ -165,6 +173,11 @@ class String [native functional]
       endForEach
       return buffer->String
 
+    method rightmost( n:Integer )->String
+      local this_count = count
+      if (n < 0) return substring( -n, this_count-1 )
+      else       return substring( this_count-n, this_count-1 )
+
     method substring( i1:Integer, i2=-1:Integer )->String
       $if ("C++") inlineNative '$this->substring($i1,$i2)'
 
@@ -176,6 +189,34 @@ class String [native functional]
 
     method to->String
       return this
+
+    method to_lowercase->String
+      local has_uc = false
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z') has_uc = true #; escapeForEach TODO(abe)
+      endForEach
+
+      if (not has_uc) return this
+
+      local result = StringBuilder( count )
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z') result.print( ((ch-'A')+'a') )
+      endForEach
+      return result->String
+
+    method to_uppercase->String
+      local has_lc = false
+      forEach (ch in this)
+        if (ch >= 'a' and ch <= 'a') has_lc = true #; escapeForEach TODO(abe)
+      endForEach
+
+      if (not has_lc) return this
+
+      local result = StringBuilder( count )
+      forEach (ch in this)
+        if (ch >= 'a' and ch <= 'z') result.print( ((ch-'a')+'A') )
+      endForEach
+      return result->String
 endClass
 
 

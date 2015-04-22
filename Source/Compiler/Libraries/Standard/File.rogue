@@ -2,24 +2,30 @@ class File
   ROUTINES
     routine exists( filepath:String )->Logical [native]
 
+    routine filename( filepath:String )->String
+      local i = filepath.locate_last( '/' )
+      if (i == -1) i = filepath.locate_last( '\\' )
+      if (i == -1) return filepath
+      return filepath.substring( i+1 )
+
     routine load_as_bytes( filepath:String )->Byte[]
       local count = size( filepath )
       local bytes = Byte[]( count )
-      local infile = read( filepath )
+      local infile = reader( filepath )
       forEach (1..count) bytes.add( infile.read )
       infile.close
       return bytes
 
     routine load_as_string( filepath:String )->String [native]
 
-    routine read( filepath:String )->FileReader
+    routine reader( filepath:String )->FileReader
       return FileReader( filepath )
 
     routine save( filepath:String, data:String )->Logical [native]
 
     routine size( filepath:String )->Integer [native]
 
-    routine write( filepath:String )->FileWriter
+    routine writer( filepath:String )->FileWriter
       return FileWriter( filepath )
 
   PROPERTIES
@@ -31,6 +37,9 @@ class File
     method exists->Logical
       inline File.exists( this.filepath )
 
+    method filename->String
+      return filename( filepath )
+
     method load_as_bytes->Byte[]
       inline File.load_as_bytes( this.filepath )
 
@@ -38,7 +47,7 @@ class File
       inline File.load_as_string( this.filepath )
 
     method reader->FileReader
-      inline File.read( this.filepath )
+      inline File.reader( this.filepath )
 
     method save( data:String )->Logical
       inline File.save( this.filepath, data )
@@ -47,7 +56,7 @@ class File
       inline File.size( this.filepath )
 
     method writer->FileWriter
-      inline File.write( this.filepath )
+      inline File.writer( this.filepath )
 
     method to->String
       return filepath

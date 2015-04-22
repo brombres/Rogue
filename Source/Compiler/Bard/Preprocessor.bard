@@ -1,5 +1,3 @@
-$[include "TokenReader.bard"]
-
 class Preprocessor
   SETTINGS
     definitions = Table<<String,Token[]>>()

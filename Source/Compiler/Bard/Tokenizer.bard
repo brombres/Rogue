@@ -1,5 +1,3 @@
-$[include "RogueError.bard"]
-
 class Tokenizer
   PROPERTIES
     filepath    : String

@@ -1,5 +1,3 @@
-$[include "CloneArgs.bard"]
-
 class Scope
   PROPERTIES
     this_type   : Type

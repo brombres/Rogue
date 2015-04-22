@@ -1,5 +1,3 @@
-$[include "Local.bard"]
-
 class Method
   PROPERTIES
     t            : Token

@@ -1,11 +1,3 @@
-$[include "Parser.bard"]
-$[include "Preprocessor.bard"]
-$[include "Program.bard"]
-$[include "Token.bard"]
-$[include "Tokenizer.bard"]
-$[include "TokenType.bard"]
-$[include "Type.bard"]
-
 class RogueC [singleton]
   PROPERTIES
     included_files = String[]
