@@ -364,6 +364,8 @@ class CmdControlStructure : CmdStatement
     contains_yield   : Logical
     escape_label     : String
     task_escape_info : CmdTaskControlSection
+    cloned_command   : CmdControlStructure
+      # Allows escape and nextIteration commands to update their target
 
   METHODS
     method init( t )
@@ -399,7 +401,11 @@ class CmdBlock : CmdControlStructure
         endForEach
         return null
       else
-        return CmdBlock( t, statements.clone(clone_args) ).set_control_logic( this )
+        local result = CmdBlock( t, null )
+        result.set_control_logic( this )
+        cloned_command = result
+        result.statements = statements.clone( clone_args )
+        return result
       endIf
 
     method write_cpp( writer:CPPWriter )
@@ -469,6 +475,11 @@ class CmdIf : CmdControlStructure
         return null
 
       else
+        local result = CmdIf( t, condition.clone(clone_args), control_type )
+        result.set_control_logic( this )
+        cloned_command = result
+        result.statements = statements.clone( clone_args )
+
         local cloned_else_ifs : CmdElseIf[]
         if (else_ifs?)
           cloned_else_ifs = CmdElseIf[]( else_ifs.count )
@@ -476,9 +487,12 @@ class CmdIf : CmdControlStructure
             cloned_else_ifs.add( e.clone(clone_args) )
           endForEach
         endIf
+        result.else_ifs = cloned_else_ifs
 
-        return CmdIf( t, condition.clone(clone_args),
-        statements.clone(clone_args), cloned_else_ifs, clone(else_statements,clone_args), control_type ).set_control_logic( this )
+        result.else_statements = clone( else_statements, clone_args )
+
+        return result
+
       endIf
 
     method add( cmd_else_if:CmdElseIf )
@@ -565,6 +579,13 @@ class CmdWhich : CmdControlStructure
     method init( t, expression, cases=CmdWhichCase[], case_others=null, control_type=CmdControlStructure.type_which )
 
     method clone( clone_args:CloneArgs )->CmdWhich
+      #{ TODO
+      local result = CmdWhich(
+        result.set_control_logic( this )
+        cloned_command = result
+        result.statements = statements.clone( clone_args )
+      }#
+
       local cloned_cases = CmdWhichCase[]( cases.count )
       forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
 
