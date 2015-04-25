@@ -515,11 +515,9 @@ class Parser
           statements.add( parse_while )
           return
 
-          #{
         elseIf (next_is(TokenType.keyword_loop))
           statements.add( parse_loop )
           return
-          }#
 
         elseIf (next_is(TokenType.keyword_try))
           statements.add( parse_try )
@@ -612,40 +610,41 @@ class Parser
 
       endIf
 
+      if (consume(TokenType.keyword_escapeWhile))
+        statements.add( CmdEscape(t,CmdControlStructure.type_while) )
+        return
+      endIf
+
+      if (consume(TokenType.keyword_escapeForEach))
+        statements.add( CmdEscape(t,CmdControlStructure.type_forEach) )
+        return
+      endIf
+
       #{
       if (consume(TokenType.keyword_escapeContingent))
         statements.add( CmdEscapeContingent(t) )
         return
       endIf
 
-      if (consume(TokenType.keyword_escapeForEach))
-        statements.add( CmdEscapeForEach(t) )
+      }#
+
+      if (consume(TokenType.keyword_escapeLoop))
+        statements.add( CmdEscape(t,CmdControlStructure.type_loop) )
         return
       endIf
 
       if (consume(TokenType.keyword_escapeIf))
-        statements.add( CmdEscapeIf(t) )
-        return
-      endIf
-
-      if (consume(TokenType.keyword_escapeLoop))
-        statements.add( CmdEscapeLoop(t) )
+        statements.add( CmdEscape(t,CmdControlStructure.type_if) )
         return
       endIf
 
       if (consume(TokenType.keyword_escapeTry))
-        statements.add( CmdEscapeTry(t) )
+        statements.add( CmdEscape(t,CmdControlStructure.type_try) )
         return
       endIf
 
       if (consume(TokenType.keyword_escapeWhich))
-        statements.add( CmdEscapeWhich(t) )
-        return
-      endIf
-      }#
-
-      if (consume(TokenType.keyword_escapeWhile))
-        statements.add( CmdEscape(t,CmdControlStructure.type_while) )
+        statements.add( CmdEscape(t,CmdControlStructure.type_which) )
         return
       endIf
 
@@ -1012,6 +1011,35 @@ class Parser
       endIf
 
       return cmd_if
+
+    method parse_loop->CmdGenericLoop
+      local t = read  # 'loop'
+      local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_loop, null )
+
+      if (not consume_eols)
+        # loop N
+        #   ...
+        # endLoop
+        local control_var = this_method.add_local( t, Program.create_unique_id )
+        control_var.initial_value = CmdLiteralInteger( t, 1 )
+
+        local last_var = this_method.add_local( t, Program.create_unique_id )
+        last_var.initial_value = parse_expression
+        must_consume_eols
+
+        local step_cmd = CmdAdjustLocal( t, control_var, 1 )
+
+        cmd_loop.condition = CmdCompareLE(t,CmdReadLocal(t,control_var),CmdReadLocal(t,last_var))
+
+        cmd_loop.add_control_var( control_var )
+        cmd_loop.add_control_var( last_var )
+        cmd_loop.add_upkeep( step_cmd )
+      endIf
+
+      parse_multi_line_statements( cmd_loop.statements )
+      must_consume( TokenType.keyword_endLoop )
+
+      return cmd_loop
 
     method parse_while->CmdGenericLoop
       local t = read

@@ -5,21 +5,21 @@ class Test
 
   METHODS
     method init
-      local i = 0
-      while (i <= 10)
-        which (i)
-          case 1
-            println "1st"
+      task_test.start
+
+      method task_test [task]
+      forEach (n in 1..10)
+        which (n)
+          case 1: println "1st"
           case 2
             println "2nd"
-          case 3
-            println "3rd"
-            escapeWhile
-          others
-            println( i + "th" )
+            println "2nd"
+            escapeWhich
+            println "2nd"
+          case 3: println "3rd"
+          others: println n + "th"
         endWhich
-        ++i
-      endWhile
-      println "Done"
+
+      endForEach
 endClass
 

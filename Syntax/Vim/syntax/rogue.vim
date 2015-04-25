@@ -33,6 +33,7 @@ syn keyword bardLoop         await
 syn keyword bardLoop         while endWhile forEach endForEach in of step
 syn keyword bardLoop         loop endLoop
 syn keyword bardBranch       escapeForEach escapeWhile escapeLoop
+syn keyword bardBranch       escapeTry
 syn keyword bardBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
 syn keyword bardBranch       nextIteration
 syn keyword bardBoolean      true false

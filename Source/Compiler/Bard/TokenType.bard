@@ -26,6 +26,7 @@ class TokenType
     keyword_endForEach           : TokenType
     keyword_endFunction          : TokenType
     keyword_endIf                : TokenType
+    keyword_endLoop              : TokenType
     keyword_endPrimitive         : TokenType
     keyword_endTry               : TokenType
     keyword_endWhich             : TokenType
@@ -51,6 +52,11 @@ class TokenType
 
     # Statements
     keyword_await                : TokenType
+    keyword_escapeForEach        : TokenType
+    keyword_escapeIf             : TokenType
+    keyword_escapeLoop           : TokenType
+    keyword_escapeTry            : TokenType
+    keyword_escapeWhich          : TokenType
     keyword_escapeWhile          : TokenType
     keyword_forEach              : TokenType
     keyword_function             : TokenType
@@ -60,6 +66,7 @@ class TokenType
     keyword_is                   : TokenType
     keyword_isNot                : TokenType
     keyword_local                : TokenType
+    keyword_loop                 : TokenType
     keyword_native               : TokenType
     keyword_noAction             : TokenType
     keyword_inlineNative         : TokenType
