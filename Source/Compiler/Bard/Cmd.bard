@@ -351,6 +351,7 @@ endClass
 class CmdControlStructure : CmdStatement
   ENUMERATE
     type_block
+    type_contingent
     type_if
     type_try
     type_which
@@ -668,6 +669,113 @@ class CmdWhichCase : Cmd
         endIf
       endForEach
       return cmd
+
+endClass
+
+
+class CmdContingent : CmdControlStructure
+  PROPERTIES
+    satisfied_statements   : CmdStatementList
+    unsatisfied_statements : CmdStatementList
+
+    satisfied_label        : String
+    unsatisfied_label      : String
+
+    satisfied_section   : CmdTaskControlSection
+    unsatisfied_section : CmdTaskControlSection
+
+  METHODS
+    method init( t, statements=CmdStatementList() )
+      control_type = CmdControlStructure.type_contingent
+
+    method clone( clone_args:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args? and this.contains_yield)
+        satisfied_section = task_args.create_section
+        unsatisfied_section = task_args.create_section
+        local end_section = task_args.create_section
+        task_escape_info = end_section
+
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        task_args.add_jump( t, satisfied_section )
+
+        task_args.begin_section( satisfied_section )
+        if (satisfied_statements?)
+          forEach (statement in satisfied_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+        task_args.add_jump( t, end_section )
+
+        task_args.begin_section( unsatisfied_section )
+        if (unsatisfied_statements?)
+          forEach (statement in unsatisfied_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+        task_args.add_jump( t, end_section )
+
+        task_args.begin_section( end_section )
+        if (end_section.ip < task_args.cmd_task_control.sections.count)
+          # We're somewhere in the middle; jump to the end
+          task_args.jump_to_new_section( t )
+        endIf
+        return null
+
+      else
+        local result = CmdContingent( t, null )
+        result.set_control_logic( this )
+        cloned_command = result
+
+        result.statements = statements.clone( clone_args )
+        result.satisfied_statements = clone( satisfied_statements, clone_args )
+        result.unsatisfied_statements = clone( unsatisfied_statements, clone_args )
+
+        return result
+      endIf
+
+    method resolve( scope:Scope )->CmdContingent
+      scope.control_stack.add( this )
+
+      if (not escape_label?) escape_label = Program.create_unique_id
+
+      statements.resolve( scope )
+      if (satisfied_statements?)   satisfied_statements.resolve( scope )
+      if (unsatisfied_statements?) unsatisfied_statements.resolve( scope )
+
+      scope.control_stack.remove_last
+      return this
+
+    method set_control_logic( original:CmdContingent )->Cmd
+      prior.set_control_logic( original )
+      satisfied_label   = original.satisfied_label
+      unsatisfied_label = original.unsatisfied_label
+      return this
+
+    method write_cpp( writer:CPPWriter )
+      writer.println( "{" )
+      writer.indent += 2
+      writer.println( "{" )
+      writer.indent += 2
+
+      statements.write_cpp( writer )
+
+      if (satisfied_label?)   writer.print( satisfied_label ).println( ":;" )
+      if (satisfied_statements?) satisfied_statements.write_cpp( writer )
+      writer.print( "goto " ).print( escape_label ).println( ";" )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (unsatisfied_label?)      writer.print( unsatisfied_label ).println( ":;" )
+      if (unsatisfied_statements?) unsatisfied_statements.write_cpp( writer )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      writer.print( escape_label ).println( ":;" )
 
 endClass
 

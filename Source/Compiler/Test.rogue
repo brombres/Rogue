@@ -5,21 +5,18 @@ class Test
 
   METHODS
     method init
-      task_test.start
+      #task_test.start
 
-      method task_test [task]
-      forEach (n in 1..10)
-        which (n)
-          case 1: println "1st"
-          case 2
-            println "2nd"
-            println "2nd"
-            escapeWhich
-            println "2nd"
-          case 3: println "3rd"
-          others: println n + "th"
-        endWhich
-
+      #method task_test [task]
+      forEach (i in 1..10)
+        contingent
+          println i
+        satisfied
+          ++i
+        unsatisfied
+          --i
+        endContingent
       endForEach
+
 endClass
 

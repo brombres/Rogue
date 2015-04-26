@@ -23,6 +23,7 @@ class TokenType
     keyword_endAspect            : TokenType
     keyword_endClass             : TokenType
     keyword_endCompound          : TokenType
+    keyword_endContingent        : TokenType
     keyword_endForEach           : TokenType
     keyword_endFunction          : TokenType
     keyword_endIf                : TokenType
@@ -38,7 +39,9 @@ class TokenType
     keyword_PROPERTIES           : TokenType
     keyword_routine              : TokenType
     keyword_ROUTINES             : TokenType
+    keyword_satisfied            : TokenType
     keyword_SETTINGS             : TokenType
+    keyword_unsatisfied          : TokenType
     keyword_with                 : TokenType
 
     symbol_close_brace           : TokenType
@@ -52,6 +55,8 @@ class TokenType
 
     # Statements
     keyword_await                : TokenType
+    keyword_contingent           : TokenType
+    keyword_escapeContingent     : TokenType
     keyword_escapeForEach        : TokenType
     keyword_escapeIf             : TokenType
     keyword_escapeLoop           : TokenType
@@ -68,12 +73,14 @@ class TokenType
     keyword_local                : TokenType
     keyword_loop                 : TokenType
     keyword_native               : TokenType
+    keyword_necessary            : TokenType
     keyword_noAction             : TokenType
     keyword_inlineNative         : TokenType
     keyword_null                 : TokenType
     keyword_of                   : TokenType
     keyword_return               : TokenType
     keyword_step                 : TokenType
+    keyword_sufficient           : TokenType
     keyword_throw                : TokenType
     keyword_try                  : TokenType
     keyword_which                : TokenType

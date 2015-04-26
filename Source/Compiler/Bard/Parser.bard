@@ -505,11 +505,9 @@ class Parser
           statements.add( parse_for_each )
           return
 
-          #{
         elseIf (next_is(TokenType.keyword_contingent))
           statements.add( parse_contingent )
           return
-          }#
 
         elseIf (next_is(TokenType.keyword_while))
           statements.add( parse_while )
@@ -765,6 +763,24 @@ class Parser
 
       must_consume( TokenType.keyword_endWhich )
       return cmd_which
+
+    method parse_contingent->CmdContingent
+      local t = read  # 'contingent'
+      local cmd_contingent = CmdContingent( t )
+      parse_multi_line_statements( cmd_contingent.statements )
+
+      if (consume(TokenType.keyword_satisfied))
+        cmd_contingent.satisfied_statements = CmdStatementList()
+        parse_multi_line_statements( cmd_contingent.satisfied_statements )
+      endIf
+
+      if (consume(TokenType.keyword_unsatisfied))
+        cmd_contingent.unsatisfied_statements = CmdStatementList()
+        parse_multi_line_statements( cmd_contingent.unsatisfied_statements )
+      endIf
+
+      must_consume( TokenType.keyword_endContingent )
+      return cmd_contingent
 
     method parse_try->CmdTry
       local t = read  # 'try'
