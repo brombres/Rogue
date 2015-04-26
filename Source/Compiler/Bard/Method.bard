@@ -413,7 +413,7 @@ class Method
         if (statement?) task_args.add( statement )
       endForEach
       if (task_args.cmd_task_control.current_section.statements.count == 0)
-        task_args.add_return( t )
+        task_args.cmd_task_control.current_section.statements.add( task_args.create_return(t) )
       endIf
 
       m_execute.statements.add( task_args.cmd_task_control )

@@ -5,9 +5,24 @@ class Test
 
   METHODS
     method init
-      #task_test.start
+      print_result.start
 
-      #method task_test [task]
+    method print_result [task]
+      println await task_test
+
+    method task_test->Integer [task]
+      forEach (n in 1..10)
+        which (n)
+          case 1: println "1st"
+          case 2: println "2nd"
+          case 3: yield; println "3rd"; return 5
+          others: println n + "th"
+        endWhich
+      endForEach
+      return 6
+
+
+      #{
       forEach (i in 1..10)
         contingent
           println i
@@ -17,6 +32,7 @@ class Test
           --i
         endContingent
       endForEach
+      }#
 
 endClass
 

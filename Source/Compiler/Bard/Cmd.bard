@@ -155,11 +155,12 @@ class CmdStatementList : Cmd[]
 
     method init( statement:Cmd )
       init
-      add( statement )
+      if (statement?) add( statement )
 
     method init( statement1:Cmd, statement2:Cmd )
       init
-      add( statement1 ).add( statement2 )
+      if (statement1?) add( statement1 )
+      if (statement2?) add( statement2 )
 
       #{
     method has_side_effects->Logical
@@ -317,8 +318,7 @@ class CmdReturn : CmdStatement
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args?)
-        task_args.add_return( t, clone(value,clone_args) )
-        return null
+        return task_args.create_return( t, clone(value,clone_args) )
       else
         return CmdReturn( t, clone(value,clone_args) )
       endIf
@@ -395,6 +395,7 @@ class CmdBlock : CmdControlStructure
       statements = CmdStatementList()
 
     method init( t, statements )
+      control_type = CmdControlStructure.type_block
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -1231,7 +1232,9 @@ class CmdEscape : Cmd
     method clone( clone_args:CloneArgs )->CmdEscape
       if (target_cmd.task_escape_info?)
         task_args = (clone_args as TaskArgs)
-        return this
+        #return this
+        task_args.add_jump( t, target_cmd.task_escape_info )
+        return null
       else
         local new_target = target_cmd
         while (new_target.cloned_command?) new_target = new_target.cloned_command

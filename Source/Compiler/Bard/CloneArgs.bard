@@ -93,11 +93,12 @@ class TaskArgs : CloneArgs
       add( cmd_if )
       return this
 
-    method add_return( t:Token, value=null:Cmd )->TaskArgs
-      if (value?) cmd_task_control.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
-      add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
-      add( CmdReturn(t,CmdLiteralLogical(t,false)) )
-      return this
+    method create_return( t:Token, value=null:Cmd )->Cmd
+      local result = CmdBlock( t )
+      if (value?) result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
+      result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
+      result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+      return result
 
     method add_yield( t:Token )->TaskArgs
       local next_section = create_section
@@ -149,6 +150,13 @@ class TaskArgs : CloneArgs
         cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) ) )
       endIf
       return this
+
+    method create_set_next_ip( t:Token, to_section:CmdTaskControlSection )->Cmd
+      local ip = to_section.ip
+      if (cmd_task_control.current_section.ip + 1 != ip)
+        return CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) )
+      endIf
+      return null
 
 
 endClass
