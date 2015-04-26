@@ -1224,17 +1224,14 @@ class CmdEscape : Cmd
   PROPERTIES
     control_type : Integer
     target_cmd   : CmdControlStructure
-    task_args    : TaskArgs
 
   METHODS
     method init( t, control_type, target_cmd=null )
 
-    method clone( clone_args:CloneArgs )->CmdEscape
+    method clone( clone_args:CloneArgs )->Cmd
       if (target_cmd.task_escape_info?)
-        task_args = (clone_args as TaskArgs)
-        #return this
-        task_args.add_jump( t, target_cmd.task_escape_info )
-        return null
+        local task_args = (clone_args as TaskArgs)
+        return task_args.create_escape( t, target_cmd.task_escape_info ) 
       else
         local new_target = target_cmd
         while (new_target.cloned_command?) new_target = new_target.cloned_command
@@ -1242,32 +1239,22 @@ class CmdEscape : Cmd
       endIf
 
     method resolve( scope:Scope )->Cmd
-      if (task_args?)
-        return this
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type == control_type)
+          while (cmd.cloned_command?) cmd = cmd.cloned_command
+          if (not cmd.escape_label?) cmd.escape_label = Program.create_unique_id
+          target_cmd = cmd
+          return this
+        endIf
+      endWhile
 
-      else
-        local i = scope.control_stack.count
-        while (i > 0)
-          --i
-          local cmd = scope.control_stack[i]
-          if (cmd.control_type == control_type)
-            while (cmd.cloned_command?) cmd = cmd.cloned_command
-            if (not cmd.escape_label?) cmd.escape_label = Program.create_unique_id
-            target_cmd = cmd
-            return this
-          endIf
-        endWhile
-
-        throw t.error( "No enclosing structure to escape." )
-      endIf
+      throw t.error( "No enclosing structure to escape." )
 
     method write_cpp( writer:CPPWriter )
-      if (task_args?)
-        writer.print( "THIS->ip = " ).print( target_cmd.task_escape_info.ip-1 ).println( ";" )
-        writer.print( "return true" )
-      else
-        writer.print "goto " + target_cmd.escape_label
-      endIf
+      writer.print "goto " + target_cmd.escape_label
 
 endClass
 

@@ -100,6 +100,12 @@ class TaskArgs : CloneArgs
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return result
 
+    method create_escape( t:Token, escape_section:CmdTaskControlSection )->Cmd
+      local result = CmdBlock( t )
+      result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,escape_section.ip-1) ) )
+      result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+      return result
+
     method add_yield( t:Token )->TaskArgs
       local next_section = create_section
       set_next_ip( t, next_section )
