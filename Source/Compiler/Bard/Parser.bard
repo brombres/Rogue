@@ -618,13 +618,10 @@ class Parser
         return
       endIf
 
-      #{
       if (consume(TokenType.keyword_escapeContingent))
-        statements.add( CmdEscapeContingent(t) )
+        statements.add( CmdEscape(t,CmdControlStructure.type_contingent) )
         return
       endIf
-
-      }#
 
       if (consume(TokenType.keyword_escapeLoop))
         statements.add( CmdEscape(t,CmdControlStructure.type_loop) )
@@ -651,6 +648,7 @@ class Parser
         statements.add( CmdNextIteration(t) )
         return
       endIf
+      }#
 
       if (consume(TokenType.keyword_necessary))
         statements.add( CmdNecessary(t, parse_expression))
@@ -661,7 +659,6 @@ class Parser
         statements.add( CmdSufficient(t, parse_expression))
         return
       endIf
-      }#
 
       if (consume(TokenType.symbol_plus_plus))
         statements.add( CmdAdjust(t, parse_expression,1) )
