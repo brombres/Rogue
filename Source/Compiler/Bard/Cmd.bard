@@ -366,8 +366,10 @@ class CmdControlStructure : CmdStatement
     control_type     : Integer
     contains_yield   : Logical
     escape_label     : String
+    upkeep_label     : String
     task_escape_section : CmdTaskControlSection
-    cloned_command   : CmdControlStructure
+    task_upkeep_section : CmdTaskControlSection
+    cloned_command      : CmdControlStructure
       # Allows escape and nextIteration commands to update their target
 
   METHODS
@@ -381,6 +383,7 @@ class CmdControlStructure : CmdStatement
       control_type   = control_structure.control_type
       contains_yield = control_structure.contains_yield
       escape_label   = control_structure.escape_label
+      upkeep_label   = control_structure.upkeep_label
       return this
 
 endClass
@@ -813,6 +816,7 @@ class CmdGenericLoop : CmdControlStructure
         local condition_section = task_args.jump_to_new_section(t)
         local after_section = task_args.create_section
         task_escape_section = after_section
+        task_upkeep_section = task_args.create_section
         if (condition?)
           task_args.add_conditional_jump( CmdLogicalNot(t,clone(condition,clone_args)), after_section )
         endIf
@@ -821,6 +825,9 @@ class CmdGenericLoop : CmdControlStructure
         forEach (statement in statements)
           task_args.add( statement.clone(task_args) )
         endForEach
+
+        task_args.add_jump( t, task_upkeep_section )
+        task_args.begin_section( task_upkeep_section )
 
         # Upkeep
         if (upkeep?)
@@ -1215,6 +1222,44 @@ class CmdEscape : Cmd
 
     method write_cpp( writer:CPPWriter )
       writer.print "goto " + target_cmd.escape_label
+
+endClass
+
+
+class CmdNextIteration : Cmd
+  PROPERTIES
+    target_cmd   : CmdControlStructure
+
+  METHODS
+    method init( t, target_cmd=null )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      if (target_cmd.task_upkeep_section?)
+        local task_args = (clone_args as TaskArgs)
+        return task_args.create_escape( t, target_cmd.task_upkeep_section ) 
+      else
+        local new_target = target_cmd
+        while (new_target.cloned_command?) new_target = new_target.cloned_command
+        return CmdNextIteration( t, new_target )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type >= CmdControlStructure.type_first_loop)
+          while (cmd.cloned_command?) cmd = cmd.cloned_command
+          if (not cmd.upkeep_label?) cmd.upkeep_label = Program.create_unique_id
+          target_cmd = cmd
+          return this
+        endIf
+      endWhile
+
+      throw t.error( "No enclosing loop for 'nextIteration' to affect." )
+
+    method write_cpp( writer:CPPWriter )
+      writer.print "continue"
 
 endClass
 

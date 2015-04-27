@@ -136,6 +136,7 @@ class Tokenizer
       TokenType.keyword_loop             = define( TokenType("loop") )
       TokenType.keyword_native           = define( TokenType("native") )
       TokenType.keyword_necessary        = define( TokenType("necessary") )
+      TokenType.keyword_nextIteration    = define( TokenType("nextIteration") )
       TokenType.keyword_noAction         = define( TokenType("noAction") )
       TokenType.keyword_inlineNative     = define( TokenType("inlineNative") )
       TokenType.keyword_null             = define( TokenType("null") )

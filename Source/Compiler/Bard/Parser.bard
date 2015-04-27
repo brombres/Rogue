@@ -643,12 +643,10 @@ class Parser
         return
       endIf
 
-      #{
       if (consume(TokenType.keyword_nextIteration))
         statements.add( CmdNextIteration(t) )
         return
       endIf
-      }#
 
       if (consume(TokenType.keyword_necessary))
         statements.add( CmdNecessary(t, parse_expression))

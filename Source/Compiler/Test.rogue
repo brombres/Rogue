@@ -5,9 +5,17 @@ class Test
 
   METHODS
     method init
-      #run_test.start
+      run_test.start
 
-      #method run_test [task]
+    method run_test [task]
+
+      forEach (n in 1..10)
+        if (n == 5) nextIteration
+        println n
+        yield
+      endForEach
+
+      #{
       forEach (n in 1..100)
         contingent
           necessary  (n > 1)       # Only numbers 2+ can be prime
@@ -29,6 +37,7 @@ class Test
         endContingent
       endForEach
       println "Done"
+      }#
 
 
 endClass
