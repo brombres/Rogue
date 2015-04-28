@@ -575,8 +575,17 @@ class Parser
         noAction
         return
 
-        #{
       elseIf (consume(TokenType.keyword_trace))
+        local buffer = StringBuilder()
+        buffer.print( this_type.name ).print( "::" ).print( this_method.name ).print( "()" )
+        buffer.print( ":" ).print( t.line ).print( " " )
+        while (reader.has_another and not consume_eols)
+          buffer.print( read->String )
+        endWhile
+        statements.add( CmdTrace( t, buffer->String ) )
+        return
+
+        #{
         local cmd_trace = CmdTrace(t,this_method)
         while (reader.has_another)
           if (next_is(TokenType.symbol_semicolon) or next_is(TokenType.eol) or next_is(TokenType.symbol_close_brace))
@@ -596,7 +605,9 @@ class Parser
         endWhile
         statements.add( cmd_trace )
         return
+        }#
 
+        #{
       elseIf (consume(TokenType.keyword_tron))
         statements.add( CmdTron(t) )
         return

@@ -4270,3 +4270,20 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
 endClass
 
 
+#------------------------------------------------------------------------------
+# Miscellaneous
+#------------------------------------------------------------------------------
+class CmdTrace : Cmd
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args:CloneArgs )->CmdTrace
+      return CmdTrace( t, value )
+
+    method resolve( scope:Scope )->Cmd
+      return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(CmdLiteralString(t,value)) ).resolve( scope )
+endClass
+

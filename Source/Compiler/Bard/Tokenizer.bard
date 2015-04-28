@@ -145,6 +145,7 @@ class Tokenizer
       TokenType.keyword_step             = define( TokenType("step") )
       TokenType.keyword_sufficient       = define( TokenType("sufficient") )
       TokenType.keyword_throw            = define( TokenType("throw") )
+      TokenType.keyword_trace            = define( TokenType("trace") )
       TokenType.keyword_try              = define( TokenType("try") )
       TokenType.keyword_which            = define( TokenType("which") )
       TokenType.keyword_while            = define( TokenType("while") )
