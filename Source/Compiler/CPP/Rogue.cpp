@@ -55,6 +55,10 @@
 #include "Rogue.h"
 #include "RogueProgram.h"
 
+#ifndef PATH_MAX
+#  define PATH_MAX 4096
+#endif
+
 //-----------------------------------------------------------------------------
 //  RogueSystemMessageQueue
 //-----------------------------------------------------------------------------
@@ -1195,12 +1199,83 @@ RogueAllocator Rogue_allocator;
 //-----------------------------------------------------------------------------
 //  File
 //-----------------------------------------------------------------------------
+RogueString* RogueFile__absolute_filepath( RogueString* filepath_object )
+{
+  if ( !filepath_object ) return NULL;
+
+  char filepath[ PATH_MAX ];
+  filepath_object->to_c_string( filepath, PATH_MAX );
+
+#if defined(_WIN32)
+  {
+    char long_name[PATH_MAX+4];
+    char full_name[PATH_MAX+4];
+
+    if (GetLongPathName(filepath, long_name, PATH_MAX+4) == 0)
+    {
+      strcpy_s( long_name, PATH_MAX+4, filepath );
+    }
+
+    if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) == 0)
+    {
+      // bail with name unchanged 
+      return filepath_object;
+    }
+
+    return RogueString::create( full_name );
+  }
+#else
+
+  bool is_folder = RogueFile__is_folder( filepath_object );
+
+  {
+    int original_dir_fd;
+    int new_dir_fd;
+    char filename[PATH_MAX];
+
+    // A way to get back to the starting folder when finished.
+    original_dir_fd = open( ".", O_RDONLY );  
+
+    if (is_folder)
+    {
+      filename[0] = 0;
+    }
+    else
+    {
+      // fchdir only works with a path, not a path+filename (filepath).
+      // Copy out the filename and null terminate the filepath to be just a path.
+      int i = (int) strlen( filepath ) - 1;
+      while (i >= 0 && filepath[i] != '/') --i;
+      strcpy( filename, filepath+i+1 );
+      filepath[i] = 0;
+    }
+    new_dir_fd = open( filepath, O_RDONLY );
+
+    if (original_dir_fd >= 0 && new_dir_fd >= 0)
+    {
+      fchdir( new_dir_fd );
+      getcwd( filepath, PATH_MAX );
+      if ( !is_folder ) 
+      {
+        strcat( filepath, "/" );
+        strcat( filepath, filename );
+      }
+      fchdir( original_dir_fd );
+    }
+    if (original_dir_fd >= 0) close( original_dir_fd );
+    if (new_dir_fd >= 0) close( new_dir_fd );
+
+    return RogueString::create( filepath );
+  }
+#endif
+}
+
 RogueLogical RogueFile__exists( RogueString* filepath )
 {
   if ( !filepath ) return false;
 
-  char path[ 4096 ];
-  filepath->to_c_string( path, 4096 );
+  char path[ PATH_MAX ];
+  filepath->to_c_string( path, PATH_MAX );
 
   FILE* fp = fopen( path, "rb" );
   if ( !fp ) return false;
@@ -1213,11 +1288,11 @@ RogueLogical RogueFile__is_folder( RogueString* filepath )
 {
   if ( !filepath ) return false;
 
-  char path[ 4096 ];
-  filepath->to_c_string( path, 4096 );
+  char path[ PATH_MAX ];
+  filepath->to_c_string( path, PATH_MAX );
 
 #if defined(_WIN32)
-  char filepath_copy[4096];
+  char filepath_copy[PATH_MAX];
   strcpy( filepath_copy, path );
 
   int path_len = strlen( path );
@@ -1257,8 +1332,8 @@ RogueString* RogueFile__load( RogueString* filepath )
 {
   if ( !filepath ) return Rogue_program.literal_strings[0];
 
-  char path[ 4096 ];
-  filepath->to_c_string( path, 4096 );
+  char path[ PATH_MAX ];
+  filepath->to_c_string( path, PATH_MAX );
 
   FILE* fp = fopen( path, "rb" );
   if ( !fp ) return Rogue_program.literal_strings[0];  // ""
@@ -1287,7 +1362,7 @@ RogueLogical RogueFile__save( RogueString* filepath, RogueString* data )
 {
   if ( !filepath || !data ) return false;
 
-  char path[ 4096 ];
+  char path[ PATH_MAX ];
   filepath->to_c_string( path, sizeof(path) );
 
   FILE* fp = fopen( path, "wb" );
@@ -1321,7 +1396,7 @@ RogueInteger RogueFile__size( RogueString* filepath )
 {
   if ( !filepath ) return 0;
 
-  char path[ 4096 ];
+  char path[ PATH_MAX ];
   filepath->to_c_string( path, sizeof(path) );
 
   FILE* fp = fopen( path, "rb" );
@@ -1384,8 +1459,8 @@ RogueLogical RogueFileReader__open( RogueFileReader* reader, RogueString* filepa
 
   if ( !filepath ) return false;
 
-  char path[ 4096 ];
-  filepath->to_c_string( path, 4096 );
+  char path[ PATH_MAX ];
+  filepath->to_c_string( path, PATH_MAX );
 
   reader->fp = fopen( path, "rb" );
   if (reader->fp)
@@ -1505,8 +1580,8 @@ RogueLogical RogueFileWriter__open( RogueFileWriter* writer, RogueString* filepa
 
   if ( !filepath ) return false;
 
-  char path[ 4096 ];
-  filepath->to_c_string( path, 4096 );
+  char path[ PATH_MAX ];
+  filepath->to_c_string( path, PATH_MAX );
 
   writer->fp = fopen( path, "wb" );
   return writer;

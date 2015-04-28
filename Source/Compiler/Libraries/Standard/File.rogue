@@ -1,5 +1,7 @@
 class File
   ROUTINES
+    routine absolute_filepath( filepath:String )->String [native]
+
     routine exists( filepath:String )->Logical [native]
 
     routine filename( filepath:String )->String
@@ -35,6 +37,9 @@ class File
 
   METHODS
     method init( filepath )
+
+    method absolute_filepath->String
+      inline File.absolute_filepath( this.filepath )
 
     method exists->Logical
       inline File.exists( this.filepath )

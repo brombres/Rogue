@@ -32,6 +32,7 @@ class TokenType
     keyword_endTry               : TokenType
     keyword_endWhich             : TokenType
     keyword_endWhile             : TokenType
+    keyword_ENUMERATE            : TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
     keyword_others               : TokenType

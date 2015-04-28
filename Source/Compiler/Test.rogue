@@ -1,13 +1,19 @@
 $include "Libraries/Standard"
 
 class Test
+  ENUMERATE
+    ALPHA   0
+    BETA
+    GAMMA = 7
+    DELTA
+
   PROPERTIES
 
   METHODS
     method init
-      println File.is_folder("Makefile")
-      println File.is_folder("..")
-      println File.is_folder("../CPP")
-
+      println ALPHA
+      println BETA
+      println GAMMA
+      println DELTA
 endClass
 

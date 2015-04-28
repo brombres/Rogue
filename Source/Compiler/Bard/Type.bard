@@ -20,6 +20,9 @@ class Type
     is_list      : Logical
     element_type : Type
 
+    definitions = Table<<String,Cmd>>()
+    next_enum_value = 0
+
     settings_list   = Property[]
     settings_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
@@ -130,11 +133,11 @@ class Type
 
       return null
 
-    method find_property( name:String )->Property
-      return property_lookup[name]
+    method find_property( p_name:String )->Property
+      return property_lookup[p_name]
 
-    method find_setting( name:String )->Property
-      return settings_lookup[name]
+    method find_setting( s_name:String )->Property
+      return settings_lookup[s_name]
 
     method has_method_named( m_name:String )->Logical
       local list = method_lookup_by_name[m_name]
@@ -779,10 +782,10 @@ class Type
         endIf
       endForEach
 
-    method print_dynamic_method_table_entries( index:Integer, writer:CPPWriter )->Integer
-      if (is_generic or not is_reference) return index
+    method print_dynamic_method_table_entries( at_index:Integer, writer:CPPWriter )->Integer
+      if (is_generic or not is_reference) return at_index
 
-      dynamic_method_table_index = index
+      dynamic_method_table_index = at_index
 
       forEach (m in method_list)
         if (not m.is_inline)
@@ -791,11 +794,11 @@ class Type
           else
             writer.println( "NULL," )
           endIf
-          ++index
+          ++at_index
         endIf
       endForEach
 
-      return index
+      return at_index
 
     method print_method_definitions( writer:CPPWriter )
       if (is_generic) return

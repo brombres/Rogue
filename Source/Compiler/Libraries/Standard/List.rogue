@@ -24,6 +24,9 @@ class List<<$DataType:Object>> : GenericList
       endForEach
       return result
 
+    method contains( value:$DataType )->Logical
+      inline ListOps<<$DataType>>.contains( this, value )
+
     method add( value:$DataType )->$DataType[]
       reserve(1)[count] = value
       ++count
@@ -52,16 +55,10 @@ class List<<$DataType:Object>> : GenericList
       return this.data[ count - 1 ]
 
     method locate( value:$DataType )->Integer
-      forEach (i of this)
-        if (data[i] == value) return i
-      endForEach
-      return -1
+      inline ListOps<<$DataType>>.locate( this, value )
 
     method locate_last( value:$DataType )->Integer
-      forEach (i of this step -1)
-        if (data[i] == value) return i
-      endForEach
-      return -1
+      inline ListOps<<$DataType>>.locate_last( this, value )
 
     method reserve( additional_count:Integer )->$DataType[]
       local required_capacity = count + additional_count
@@ -115,4 +112,22 @@ class List<<$DataType:Object>> : GenericList
       return buffer
 endClass
 
+
+class ListOps<<$DataType>>
+  ROUTINES
+    routine contains( list:$DataType[], value:$DataType )->Logical
+      return locate( list, value ) != -1
+
+    routine locate( list:$DataType[], value:$DataType )->Integer
+      forEach (i of list)
+        if (list[i] == value) return i
+      endForEach
+      return -1
+
+    routine locate_last( list:$DataType[], value:$DataType )->Integer
+      forEach (i of list step -1)
+        if (list[i] == value) return i
+      endForEach
+      return -1
+endClass
 

@@ -1683,6 +1683,11 @@ class CmdAccess : Cmd
           return CmdReadProperty( t, context, p )
         endIf
 
+        if (not args)
+          local def = scope.this_type.definitions[ name ]
+          if (def?) return def
+        endIf
+
         return scope.resolve_call( scope.this_type, this, true )
 
       else
@@ -1702,6 +1707,11 @@ class CmdAccess : Cmd
       if (p?)
         if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
         return CmdReadProperty( t, context, p )
+      endIf
+
+      if (not args)
+        local def = context_type.definitions[ name ]
+        if (def?) return def
       endIf
 
       return scope.resolve_call( context_type, this, true )
@@ -2618,6 +2628,9 @@ class CmdNegate : CmdUnary
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdNegate( t, operand.clone(clone_args) )
+
+    method implicit_type->Type
+      return operand.implicit_type
 
     method prefix_symbol->String
       return "(-"

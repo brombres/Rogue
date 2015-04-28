@@ -97,6 +97,7 @@ class Tokenizer
       TokenType.keyword_endTry        = define( StructureTokenType("endTry") )
       TokenType.keyword_endWhich      = define( StructureTokenType("endWhich") )
       TokenType.keyword_endWhile      = define( StructureTokenType("endWhile") )
+      TokenType.keyword_ENUMERATE     = define( StructureTokenType("ENUMERATE") )
       TokenType.keyword_method        = define( StructureTokenType("method") )
       TokenType.keyword_METHODS       = define( StructureTokenType("METHODS") )
       TokenType.keyword_others        = define( StructureTokenType("others") )

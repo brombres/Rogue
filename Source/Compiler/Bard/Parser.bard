@@ -265,6 +265,11 @@ class Parser
     method parse_section->Logical
       consume_eols
 
+      if (consume(TokenType.keyword_ENUMERATE))
+        while (parse_enumerations) noAction
+        return true
+      endIf
+
       if (consume(TokenType.keyword_SETTINGS))
         while (parse_properties(true)) noAction
         return true
@@ -287,6 +292,29 @@ class Parser
 
 
       return false
+
+    method parse_enumerations->Logical
+      consume_eols
+      if (not next_is(TokenType.identifier)) return false
+
+      local t = peek
+      local name  = read_identifier
+      local value : Cmd
+
+      if (consume(TokenType.symbol_equals) or not consume_eols) value = parse_expression
+
+      if (value?)
+        if (value instanceOf CmdLiteralInteger)
+          this_type.next_enum_value = (value as CmdLiteralInteger).value + 1
+        endIf
+      else
+        value = CmdLiteralInteger( t, this_type.next_enum_value )
+        ++this_type.next_enum_value
+      endIf
+
+      this_type.definitions[ name ] = value
+
+      return true
 
     method parse_properties( as_settings=false:Logical )->Logical
       consume_eols
@@ -325,6 +353,7 @@ class Parser
           if (p.initial_value?)
             p.type = p.initial_value.implicit_type
             if (p.type is null) 
+              println p.initial_value.type_name
               throw p.initial_value.t.error( 
                 //Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" // (name) )
             endIf
