@@ -266,7 +266,12 @@ class Parser
       consume_eols
 
       if (consume(TokenType.keyword_ENUMERATE))
-        while (parse_enumerations) noAction
+        while (parse_definitions(true)) noAction
+        return true
+      endIf
+
+      if (consume(TokenType.keyword_DEFINITIONS))
+        while (parse_definitions(false)) noAction
         return true
       endIf
 
@@ -293,7 +298,7 @@ class Parser
 
       return false
 
-    method parse_enumerations->Logical
+    method parse_definitions( enumerate:Logical )->Logical
       consume_eols
       if (not next_is(TokenType.identifier)) return false
 
@@ -301,7 +306,16 @@ class Parser
       local name  = read_identifier
       local value : Cmd
 
-      if (consume(TokenType.symbol_equals) or not consume_eols) value = parse_expression
+      if (consume(TokenType.symbol_equals))
+        consume_eols
+        value = parse_expression
+      elseIf (not consume_eols)
+        value = parse_expression
+      endIf
+
+      if (not enumerate and not value)
+        throw peek.error( "Definition expected." )
+      endIf
 
       if (value?)
         if (value instanceOf CmdLiteralInteger)

@@ -18,6 +18,7 @@ class TokenType
     keyword_catch                : TokenType
     keyword_class                : TokenType
     keyword_compound             : TokenType
+    keyword_DEFINITIONS          : TokenType
     keyword_else                 : TokenType
     keyword_elseIf               : TokenType
     keyword_endAspect            : TokenType

@@ -83,6 +83,7 @@ class Tokenizer
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
       TokenType.keyword_class         = define( StructureTokenType("class") )
       TokenType.keyword_compound      = define( StructureTokenType("compound") )
+      TokenType.keyword_DEFINITIONS   = define( StructureTokenType("DEFINITIONS") )
       TokenType.keyword_else          = define( StructureTokenType("else") )
       TokenType.keyword_elseIf        = define( StructureTokenType("elseIf") )
       TokenType.keyword_endAspect     = define( StructureTokenType("endAspect") )

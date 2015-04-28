@@ -7,6 +7,9 @@ class Test
     GAMMA = 7
     DELTA
 
+  DEFINITIONS
+    GRAVITY = 9.8
+
   PROPERTIES
 
   METHODS
@@ -15,5 +18,6 @@ class Test
       println BETA
       println GAMMA
       println DELTA
+      println GRAVITY
 endClass
 

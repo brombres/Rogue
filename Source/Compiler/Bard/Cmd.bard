@@ -1685,7 +1685,7 @@ class CmdAccess : Cmd
 
         if (not args)
           local def = scope.this_type.definitions[ name ]
-          if (def?) return def
+          if (def?) return def.clone
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -1711,7 +1711,7 @@ class CmdAccess : Cmd
 
       if (not args)
         local def = context_type.definitions[ name ]
-        if (def?) return def
+        if (def?) return def.clone
       endIf
 
       return scope.resolve_call( context_type, this, true )
