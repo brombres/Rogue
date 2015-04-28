@@ -5,40 +5,9 @@ class Test
 
   METHODS
     method init
-      run_test.start
-
-    method run_test [task]
-
-      forEach (n in 1..10)
-        if (n == 5) trace
-        println n
-        yield
-      endForEach
-
-      #{
-      forEach (n in 1..100)
-        contingent
-          necessary  (n > 1)       # Only numbers 2+ can be prime
-          sufficient (n == 2)      # 2 is a prime number
-          necessary  (n & 1 == 1)  # Any other even number is not prime
-
-          # Try dividing by odd numbers 3 up to the square root of the number.
-          # Square root because if one factor is larger than the sqrt then
-          # the other factor will be smaller than it and we'll have already
-          # tried it.
-
-          forEach (divisor in 3..Math.sqrt(n) step 2)
-            necessary (n % divisor)?
-          endForEach
-
-        satisfied
-          println n + " is prime"
-
-        endContingent
-      endForEach
-      println "Done"
-      }#
-
+      println File.is_folder("Makefile")
+      println File.is_folder("..")
+      println File.is_folder("../CPP")
 
 endClass
 

@@ -1173,7 +1173,9 @@ class CmdThrow : Cmd
 
     method resolve( scope:Scope )->Cmd
       expression = expression.resolve( scope )
-      if (not expression.require_type.instance_of(Program.type_Error))
+      local expression_type = expression.require_type
+      expression_type.organize
+      if (not expression_type.instance_of(Program.type_Error))
         throw expression.t.error( "Thrown value must be instanceOf class Error." )
       endIf
       return this
@@ -1450,9 +1452,20 @@ class CmdLiteralCharacter : CmdLiteral
       return CmdLiteralCharacter( t, value )
 
     method write_cpp( writer:CPPWriter )
-      writer.print( "(RogueCharacter)'" )
-      writer.print( value )
-      writer.print( "'" )
+      writer.print( "(RogueCharacter)" )
+      if (value >= 32 and value <= 126)
+        which (value)
+          case 10:   writer.print( "'\\n'" )
+          case '\\': writer.print( "'\\\\'" )
+          case '\'': writer.print( "'\\''" )
+          others
+            writer.print( "'" )
+            writer.print( value )
+            writer.print( "'" )
+        endWhich
+      else
+        writer.print( value->Integer )
+      endIf
 
     method resolve( scope:Scope )->Cmd
       return this

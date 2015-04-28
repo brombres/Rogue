@@ -8,6 +8,8 @@ class File
       if (i == -1) return filepath
       return filepath.substring( i+1 )
 
+    routine is_folder( filepath:String )->Logical  [native]
+
     routine load_as_bytes( filepath:String )->Byte[]
       local count = size( filepath )
       local bytes = Byte[]( count )
@@ -39,6 +41,9 @@ class File
 
     method filename->String
       return filename( filepath )
+
+    method is_folder->Logical
+      inline File.is_folder( this.filepath )
 
     method load_as_bytes->Byte[]
       inline File.load_as_bytes( this.filepath )

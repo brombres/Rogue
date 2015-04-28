@@ -1209,6 +1209,50 @@ RogueLogical RogueFile__exists( RogueString* filepath )
   return true;
 }
 
+RogueLogical RogueFile__is_folder( RogueString* filepath )
+{
+  if ( !filepath ) return false;
+
+  char path[ 4096 ];
+  filepath->to_c_string( path, 4096 );
+
+#if defined(_WIN32)
+  char filepath_copy[4096];
+  strcpy( filepath_copy, path );
+
+  int path_len = strlen( path );
+  int i = strlen(filepath_copy)-1;
+  while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
+
+  // Windows allows dir\* to count as a directory; guard against.
+  for (i=0; filepath_copy[i]; ++i)
+  {
+    if (filepath_copy[i] == '*' || filepath_copy[i] == '?') return 0;
+  }
+
+  WIN32_FIND_DATA entry;
+  HANDLE dir = FindFirstFile( filepath_copy, &entry );
+  if (dir != INVALID_HANDLE_VALUE)
+  {
+    if (entry.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+    {
+      FindClose( dir );
+      return 1;
+    }
+  }
+  FindClose( dir );
+  return 0;
+
+#else
+  DIR* dir = opendir( path );
+  if ( !dir ) return 0;
+
+  closedir( dir );
+  return 1;
+#endif
+}
+
+
 RogueString* RogueFile__load( RogueString* filepath )
 {
   if ( !filepath ) return Rogue_program.literal_strings[0];
