@@ -3404,6 +3404,27 @@ class CmdBitwiseShiftRightX : CmdBitwiseOp
 endClass
 
 
+class CmdBitwiseNot : CmdUnary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseNot( t, operand.clone(clone_args) )
+
+    method cpp_prefix_symbol->String
+      return "~"
+
+    method prefix_symbol->String
+      return "!"
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralInteger)
+        return CmdLiteralInteger( t, !(operand as CmdLiteralInteger).value )
+      endIf
+      return this
+
+    method type->Type
+      return operand.type
+endClass
+
 #------------------------------------------------------------------------------
 # Modify
 #------------------------------------------------------------------------------
@@ -3981,6 +4002,28 @@ class CmdAs : CmdTypeOperator
       #endIf
 
       return this
+endClass
+
+class CmdInstanceOf : CmdTypeOperator
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdInstanceOf( t, operand.clone(clone_args), target_type )
+
+    method write_cpp( writer:CPPWriter )
+      writer.print( "RogueObject::instance_of(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      target_type.organize
+
+      return this
+
+    method type->Type
+      return Program.type_Logical
 endClass
 
 

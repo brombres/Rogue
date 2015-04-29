@@ -353,6 +353,7 @@ struct RogueObject
   void         release() { --reference_count; }
 
   static RogueObject* as( RogueObject* object, RogueType* specialized_type );
+  static RogueLogical instance_of( RogueObject* object, RogueType* ancestor_type );
 };
 
 

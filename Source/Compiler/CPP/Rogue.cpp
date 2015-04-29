@@ -409,6 +409,11 @@ RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
   return NULL;
 }
 
+RogueLogical RogueObject::instance_of( RogueObject* object, RogueType* ancestor_type )
+{
+  return (!object || object->type->instance_of(ancestor_type));
+}
+
 
 //-----------------------------------------------------------------------------
 //  RogueString

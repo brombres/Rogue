@@ -1354,14 +1354,12 @@ class Parser
       elseIf (consume(TokenType.symbol_ge))
         consume_eols
         return parse_comparison( CmdCompareGE(t, lhs, parse_bitwise_xor) )
-        #{
       elseIf (consume(TokenType.keyword_instanceOf))
         consume_eols
         return CmdInstanceOf( t, lhs, parse_type )
       elseIf (consume(TokenType.keyword_notInstanceOf))
         consume_eols
         return CmdLogicalNot( t, CmdInstanceOf( t, lhs, parse_type ) )
-      }#
       endIf
       return lhs
 
@@ -1468,11 +1466,9 @@ class Parser
         consume_eols
         return CmdLogicalNot( t, parse_pre_unary )
 
-        #{
-      elseIf (consume(TokenType.symbol_bitwise_not))
+      elseIf (consume(TokenType.symbol_exclamation_point))
         consume_eols
         return CmdBitwiseNot( t, parse_pre_unary )
-      }#
       endIf
       return parse_post_unary
 
@@ -1781,14 +1777,6 @@ class Parser
         local name = read_identifier
         local args = parse_args
         return CmdCallPriorMethod( t, name, args )
-
-        #{
-      elseIf (next_is(TokenType.keyword_delegate))
-        return parse_delegate
-
-      elseIf (consume(TokenType.alias_arg_index))
-        return alias_args[ t->Integer ].clone
-        }#
 
         #{
       elseIf (peek.type is TokenType.type_identifier and reader.peek(1).type is TokenType.symbol_empty_brackets)

@@ -103,7 +103,9 @@ class TokenType
     keyword_and                  : TokenType
     keyword_as                   : TokenType
     keyword_false                : TokenType
+    keyword_instanceOf           : TokenType
     keyword_not                  : TokenType
+    keyword_notInstanceOf        : TokenType
     keyword_or                   : TokenType
     keyword_pi                   : TokenType
     keyword_prior                : TokenType

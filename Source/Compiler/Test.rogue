@@ -1,26 +1,21 @@
 $include "Libraries/Standard"
 
 class Test
-  ENUMERATE
-    ALPHA
-    BETA
-    BETA2
-    GAMMA
-    DELTA
-    EPSILON
-
-  DEFINITIONS
-    GRAVITY = 9.8
-
   PROPERTIES
 
   METHODS
     method init
-      println ALPHA
-      println BETA
-      println BETA2
-      println GAMMA
-      println DELTA
-      println EPSILON
+      local obj : Object
+      obj = Alpha()
+      println obj instanceOf Object
+      println obj instanceOf Alpha
+      println obj instanceOf Beta
+      println obj notInstanceOf Object
+      println obj notInstanceOf Alpha
+      println obj notInstanceOf Beta
+      println !1
 endClass
 
+class Alpha;
+
+class Beta : Alpha;
