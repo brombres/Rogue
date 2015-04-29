@@ -21,7 +21,8 @@ class Type
     element_type : Type
 
     definitions = Table<<String,Cmd>>()
-    next_enum_value = 0
+    prev_enum_cmd    : Cmd
+    next_enum_offset = 0
 
     settings_list   = Property[]
     settings_lookup = Table<<String,Property>>() : Table<<String,Property>>

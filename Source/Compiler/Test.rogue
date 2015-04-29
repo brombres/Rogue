@@ -2,10 +2,12 @@ $include "Libraries/Standard"
 
 class Test
   ENUMERATE
-    ALPHA   0
+    ALPHA
     BETA
-    GAMMA = 7
+    BETA2
+    GAMMA
     DELTA
+    EPSILON
 
   DEFINITIONS
     GRAVITY = 9.8
@@ -16,8 +18,9 @@ class Test
     method init
       println ALPHA
       println BETA
+      println BETA2
       println GAMMA
       println DELTA
-      println GRAVITY
+      println EPSILON
 endClass
 
