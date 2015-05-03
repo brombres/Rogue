@@ -1,4 +1,4 @@
-compound XY( x:Real, y:Real )
+class XY( x:Real, y:Real ) [compound]
   ROUTINES
     routine create( m:Real, angle:Radians )->XY
       return XY( m * angle.cos, m * angle.sin )
@@ -27,5 +27,5 @@ compound XY( x:Real, y:Real )
 
     method yv->XY
       return XY(0,y)
-endCompound
+endClass
 

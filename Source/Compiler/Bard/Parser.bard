@@ -94,11 +94,11 @@ class Parser
       elseIf (t.type is TokenType.keyword_aspect)
         parse_aspect_template
         return true
-
+ 
       elseIf (t.type is TokenType.keyword_compound)
         parse_compound_template
         return true
-
+ 
       elseIf (t.type is TokenType.keyword_primitive)
         parse_primitive_template
         return true
@@ -112,10 +112,17 @@ class Parser
       local template = Template( t, name, Attribute.is_class )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
-      if (not Program.implicit_main_class_t or (Program.implicit_main_class_t.filepath != Program.first_filepath and t.filepath == Program.first_filepath))
-        Program.implicit_main_class_t    = t
-        Program.implicit_main_class_name = name
-      endIf
+      which (template.element_type)
+        case Attribute.is_class
+          if (not Program.implicit_main_class_t or 
+              (Program.implicit_main_class_t.filepath != Program.first_filepath and t.filepath == Program.first_filepath))
+            Program.implicit_main_class_t    = t
+            Program.implicit_main_class_name = name
+          endIf
+
+        case Attribute.is_compound
+          template.attributes.add( Attribute.is_functional )
+      endWhich
 
     method parse_aspect_template
       local t = read  # 'aspect'
@@ -186,12 +193,34 @@ class Parser
       if (not consume(TokenType.symbol_open_bracket)) return
 
       while (reader.has_another and not next_is(TokenType.symbol_close_bracket))
+        local t = peek
         if (consume(TokenType.keyword_native))
           attributes.add( Attribute.is_native )
+
+        # TODO: remove this compiler source code bridge code eventually
+        elseIf (consume(TokenType.keyword_aspect))
+          ensure_unspecialized_element_type( t, attributes )
+          attributes.add( Attribute.is_aspect )
+        elseIf (consume(TokenType.keyword_compound))
+          ensure_unspecialized_element_type( t, attributes )
+          attributes.add( Attribute.is_compound )
+        elseIf (consume(TokenType.keyword_primitive))
+          ensure_unspecialized_element_type( t, attributes )
+          attributes.add( Attribute.is_primitive )
+
+        elseIf (consume("aspect"))
+          ensure_unspecialized_element_type( t, attributes )
+          attributes.add( Attribute.is_aspect )
+        elseIf (consume("compound"))
+          ensure_unspecialized_element_type( t, attributes )
+          attributes.add( Attribute.is_compound )
         elseIf (consume("functional"))
           attributes.add( Attribute.is_functional )
         elseIf (consume("immutable"))
           attributes.add( Attribute.is_immutable )
+        elseIf (consume("primitive"))
+          ensure_unspecialized_element_type( t, attributes )
+          attributes.add( Attribute.is_primitive )
         elseIf (consume("requisite"))
           attributes.add( Attribute.is_requisite )
         elseIf (consume("singleton"))
@@ -206,6 +235,11 @@ class Parser
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
+
+    method ensure_unspecialized_element_type( t:Token, attributes:Attributes )
+      if ((attributes.flags & Attribute.type_mask)?)
+        throw t.error( "A class cannot be both '$' and '$'." (t->String,attributes.element_type_name) )
+      endIf
 
     method parse_type_def( this_type )
       local t = peek
@@ -519,6 +553,9 @@ class Parser
           return
         endIf
         while (consume(TokenType.symbol_semicolon)) noAction
+
+        # Don't let a trailing ';' act as a next-line continuation.
+        if (next_is_end_command) escapeWhile
       endWhile
 
       if (not consume(TokenType.eol))

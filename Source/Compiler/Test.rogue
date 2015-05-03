@@ -1,20 +1,7 @@
 $include "Libraries/Standard"
 
 class Test
-  PROPERTIES
-    x = 5
-
   METHODS
     method init
-      x = 6
-      println x
-
-    method set_x( @x )->this
-      @x += 1
-      return this
-
+      println type_name
 endClass
-
-class Alpha;
-
-class Beta : Alpha;

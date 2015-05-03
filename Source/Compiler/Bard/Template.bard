@@ -16,6 +16,9 @@ class Template
       type_parameters.add( param )
       return param
 
+    method element_type->Integer
+      return (attributes.flags & Attribute.type_mask)
+
     method instantiate( type:Type )
       type.t = t
       # replace location of first reference to type with location of type definition

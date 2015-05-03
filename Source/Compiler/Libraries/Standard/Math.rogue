@@ -44,7 +44,7 @@ class Math
 endClass
 
 
-compound Degrees( value:Real )
+class Degrees( value:Real ) [compound]
   ROUTINES
     routine create( degrees:Radians )->Degrees
       return Degrees( (degrees.value / pi) * 180.0 )
@@ -61,9 +61,9 @@ compound Degrees( value:Real )
 
     method to->String
       return "" + value
-endCompound
+endClass
 
-compound Radians( value:Real )
+class Radians( value:Real ) [compound]
   ROUTINES
     routine create( degrees:Degrees )->Radians
       return Radians( (degrees.value / 180.0) * pi )
@@ -80,6 +80,6 @@ compound Radians( value:Real )
 
     method to->String
       return "" + value
-endCompound
+endClass
 
 

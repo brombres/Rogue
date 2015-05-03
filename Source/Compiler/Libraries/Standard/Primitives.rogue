@@ -1,4 +1,4 @@
-primitive Real
+class Real [primitive]
   ROUTINES
     routine create( high:Integer, low:Integer )->Real [native]
 
@@ -12,25 +12,25 @@ primitive Real
 
     method to->String
       return "" + this
-endPrimitive
+endClass
 
-primitive Float
+class Float [primitive]
 #{
   METHODS
     method hash_code->Integer
       return (this->Real).as_high_bits
 }#
-endPrimitive
+endClass
 
-primitive Long
+class Long [primitive]
 #{
   METHODS
     method hash_code->Integer
       return this
 }#
-endPrimitive
+endClass
 
-primitive Integer
+class Integer [primitive]
   METHODS
     method hash_code->Integer
       return this
@@ -40,27 +40,32 @@ primitive Integer
 
     method to->String
       return "" + this
-endPrimitive
+endClass
 
-primitive Character
+class Character [primitive]
+  METHODS
+    method hash_code->Integer
+      return this->Integer
+
+    method is_alphanumeric->Logical
+      return (this >= '0' and this <= '9') or
+             (this >= 'a' and this <= 'z') or
+             (this >= 'A' and this <= 'Z')
+
+    method to->String
+      return "" + this
+endClass
+
+class Byte [primitive]
   METHODS
     method hash_code->Integer
       return this->Integer
 
     method to->String
       return "" + this
-endPrimitive
+endClass
 
-primitive Byte
-  METHODS
-    method hash_code->Integer
-      return this->Integer
-
-    method to->String
-      return "" + this
-endPrimitive
-
-primitive Logical
+class Logical [primitive]
   METHODS
     method hash_code->Integer
       if (this) return 1
@@ -68,5 +73,5 @@ primitive Logical
 
     method to->String
       return "" + this
-endPrimitive
+endClass
 

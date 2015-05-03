@@ -1,14 +1,11 @@
-aspect Reader<<$DataType>>
+class Reader<<$DataType>> [aspect]
   METHODS
     method has_another->Logical
 
     method peek->$DataType
 
     method read->$DataType
-
-    method marco->String
-      return "polo"
-endAspect
+endClass
 
 
 class LineReader : Reader<<String>>

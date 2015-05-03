@@ -267,6 +267,11 @@ class Type
       inherit_properties( full_property_list, property_lookup )
       property_list = full_property_list
 
+      # Create type_name() routine
+      local r_type_name = add_routine( t, "type_name" )
+      r_type_name.return_type = Program.type_String
+      r_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
+
       # Organize routines and methods and create signatures
       forEach (r in routine_list)
         r.organize
