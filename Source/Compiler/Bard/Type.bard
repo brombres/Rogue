@@ -587,7 +587,7 @@ class Type
 
           # Standard Constructor
           writer.print( this ).print( "( " )
-          local first = true
+          first = true
           forEach (p in property_list)
             if (first) first = false
             else       writer.print( ", " )
