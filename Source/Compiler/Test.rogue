@@ -3,7 +3,12 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      println Beta(5).m
+      local nums = [3,4,5]
+      nums.insert( 2 )
+      nums.insert( 7, nums.count )
+      nums.insert( 6, nums.count-1 )
+      println nums
+
 endClass
 
 class Alpha

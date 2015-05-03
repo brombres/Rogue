@@ -51,6 +51,23 @@ class List<<$DataType:Object>> : GenericList
     method get( index:Integer )->$DataType
       inline this.data[index]
 
+    method insert( value:$DataType, before_index=0:Integer )->this
+      if (before_index < 0) before_index = 0
+
+      if (before_index >= count)
+        return add( value )
+      else
+        # Create a dummy spot at the end to size the array and update the count
+        add( first )
+
+        # Shift everything over
+        data.set( before_index+1, data, before_index, count-2 )
+
+        # Copy in the new value
+        data[ before_index ] = value
+      endIf
+      return this
+
     method last->$DataType
       return this.data[ count - 1 ]
 
