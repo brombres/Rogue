@@ -421,7 +421,7 @@ class Parser
 
             # identifier
             local t = peek
-            local param = this_method.add_parameter( t, read_identifier )
+            local param = this_method.add_parameter( t, read_identifier(true) )
 
             if (consume(TokenType.symbol_equals))
               # = default_value
@@ -1262,12 +1262,22 @@ class Parser
     method read->Token
       return reader.read
 
-    method read_identifier->String
+    method read_identifier( allow_at_sign=false:Logical )->String
+      local direct_access = false
+      if (allow_at_sign) direct_access = consume( TokenType.symbol_at )
+
       if (not next_is(TokenType.identifier))
-        if (next_is(TokenType.type_identifier)) return read->Type.name
+        if (next_is(TokenType.type_identifier))
+          local result = read->Type.name
+          if (direct_access) result = "@" + result
+          return result
+        endIf
         throw error( "Identifier expected, found $." (peek.quoted_name) )
       endIf
-      return read->String
+
+      local result = read->String
+      if (direct_access) result = "@" + result
+      return result
 
     method parse_expression->Cmd
       consume_eols
@@ -1543,15 +1553,10 @@ class Parser
     method parse_access( t:Token )->CmdAccess
       consume_eols
 
-      local direct_access = consume( TokenType.symbol_at )
-
-      local name = read_identifier
-      #name = parse_delegate_or_task_type_name( t, name )
+      local name = read_identifier( true )
       if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
 
       while (consume(TokenType.symbol_empty_brackets)) name += "[]"
-
-      if (direct_access) name = "@" + name
 
       local access = CmdAccess( t, name )
       access.args = parse_args

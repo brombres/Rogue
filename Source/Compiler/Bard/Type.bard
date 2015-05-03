@@ -135,9 +135,11 @@ class Type
       return null
 
     method find_property( p_name:String )->Property
+      if (p_name[0] == '@') p_name = p_name.rightmost(-1)
       return property_lookup[p_name]
 
     method find_setting( s_name:String )->Property
+      if (s_name[0] == '@') s_name = s_name.rightmost(-1)
       return settings_lookup[s_name]
 
     method has_method_named( m_name:String )->Logical

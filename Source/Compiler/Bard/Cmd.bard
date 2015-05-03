@@ -1666,6 +1666,13 @@ class CmdAccess : Cmd
           return cmd_new.resolve(scope)
         endIf
 
+        # ---- No call context ----
+        local result = scope.resolve_call( scope.this_type, this, false )
+        if (result?)
+          check_for_recursive_getter( scope )
+          return result
+        endIf
+
         local p = scope.this_type.find_setting( name )
         if (p?)
           if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
@@ -1695,6 +1702,10 @@ class CmdAccess : Cmd
       endIf
 
       local context_type = context.require_type
+      context_type.organize
+
+      local result = scope.resolve_call( context_type, this, false )
+      if (result?) return result
 
       local p = context_type.find_setting( name )
       if (p?)
@@ -1716,16 +1727,33 @@ class CmdAccess : Cmd
 
       return scope.resolve_call( context_type, this, true )
 
+
+    method check_for_recursive_getter( scope:Scope )
+      local this_type = scope.this_type
+      if (name != scope.this_method.name) return
+      if (args? and args.count > 0)  return
+      if (not (this_type.find_property(name)? or this_type.find_setting(name)?)) return
+
+      throw t.error( "Recursive call to getter " + name + "() - write @" + name + " instead." )
+
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      if (args is null)
-        local v = scope.find_local( name )
-        if (v?)
-          if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-          return CmdWriteLocal(t,v,new_value).resolve(scope)
-        endIf
-      endIf
+      if (args?) throw t.error( "The result of a call cannot assigned to." )
 
       if (context is null)
+        if (name[0] != '@')
+          local setter_name = "set_" + name
+          local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
+          if (setter?)
+            if (scope.this_method.name == setter_name)
+              throw t.error( "Recursive call to setter set_" + name + "() - write \"@" + name + " = ...\" instead." )
+            endIf
+            return setter
+          endIf
+        endIf
+
+        local v = scope.find_local( name )
+        if (v?) return CmdWriteLocal(t,v,new_value).resolve(scope)
+
         local p = scope.this_method.type_context.find_setting( name )
         if (p?) return CmdWriteSetting( t, p, new_value )
 
@@ -1740,6 +1768,7 @@ class CmdAccess : Cmd
       endIf
 
       local context_type = context.require_type
+      context_type.organize
 
       local p = context_type.find_setting( name )
       if (p?)

@@ -37,5 +37,5 @@ clean:
 vim:
 	cd ../../Syntax/Vim && make
 
-roguec:
+roguec: bcc
 	$(BARDVM) Bard/RogueC.bc Bard/RogueEntry.rogue

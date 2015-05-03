@@ -184,8 +184,8 @@ class Method
             if (param.type is null)
               # Autostore parameter
               local new_name = Program.create_unique_id
-              local pt = property.t
-              statements.insert( CmdAssign(pt,CmdAccess(pt,property.name),CmdAccess(pt,new_name)) )
+              local pt = param.t
+              statements.insert( CmdAssign(pt,CmdAccess(pt,param.name),CmdAccess(pt,new_name)) )
               param.name = new_name
               param.type = property.type
               param.generic_type = property.generic_type

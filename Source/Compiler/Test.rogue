@@ -2,18 +2,17 @@ $include "Libraries/Standard"
 
 class Test
   PROPERTIES
+    x = 5
 
   METHODS
     method init
-      local obj : Object
-      obj = Alpha()
-      println obj instanceOf Object
-      println obj instanceOf Alpha
-      println obj instanceOf Beta
-      println obj notInstanceOf Object
-      println obj notInstanceOf Alpha
-      println obj notInstanceOf Beta
-      println !1
+      x = 6
+      println x
+
+    method set_x( @x )->this
+      @x += 1
+      return this
+
 endClass
 
 class Alpha;
