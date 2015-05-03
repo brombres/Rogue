@@ -3,7 +3,7 @@ class Cmd
     t : Token
 
   METHODS
-    method call_prior->Cmd
+    method call_prior( scope:Scope )->Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
     method cast_to( target_type:Type )->Cmd
@@ -794,9 +794,9 @@ class CmdGenericLoop : CmdControlStructure
     upkeep             : CmdStatementList
 
   METHODS
-    method init( t, control_type, condition, statements=CmdStatementList(), upkeep=null, control_statements=null:CmdStatementList )
+    method init( t, control_type, condition, statements=CmdStatementList(), upkeep=null, control_statements=null )
 
-    method init( t, control_type, condition, statements=CmdStatementList(), upkeep_cmd:Cmd, control_statements=null:CmdStatementList )
+    method init( t, control_type, condition, statements=CmdStatementList(), upkeep_cmd:Cmd, control_statements=null )
       if (upkeep_cmd?)
         upkeep = CmdStatementList(1)
         upkeep.add( upkeep_cmd )
@@ -1652,11 +1652,12 @@ class CmdAccess : Cmd
 
           local must_find = args.count? or new_type.is_native
           local cmd_call : Cmd
-          if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false )
+          if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false, true )
           if (not cmd_call)
             cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), false )
             if (not cmd_call and must_find)
-              if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), true )
+              # Not found, trigger errors
+              if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), true, true )
               cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), true )
             endIf
           endIf
@@ -2333,7 +2334,13 @@ endClass
 
 class CmdCallMethod : CmdCall
   METHODS
-    method call_prior->Cmd
+    method call_prior( scope:Scope )->Cmd
+      if (method_info.is_initializer and method_info.type_context isNot scope.this_type)
+        # Calling a prior initializer with a different signature that was hidden by
+        # an extended class initializer.
+        return CmdCallStaticMethod( t, context, method_info, args )
+      endIf
+
       if (not method_info.overridden_method)
         throw t.error( "$ is not an override - no prior version of it exists." (method_info.signature) )
       endIf
@@ -2421,7 +2428,7 @@ class CmdCallPriorMethod : Cmd
       return CmdCallPriorMethod( t, name, args.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      return CmdAccess( t, name, args ).resolve( scope ).call_prior
+      return CmdAccess( t, name, args ).resolve( scope ).call_prior( scope )
 endClass
 
 

@@ -1,0 +1,113 @@
+class StringBuilder
+  PROPERTIES
+    characters   : Character[]
+    indent       : Integer
+    at_newline   = true
+
+  METHODS
+    method init
+      init( 40 )
+
+    method init( initial_capacity:Integer )
+      characters = Character[]( initial_capacity )
+
+    method add_indent( spaces:Integer )->this
+      indent += spaces
+      return this
+
+    method capacity->Integer
+      inline this.characters.capacity
+
+    method clear->this
+      characters.clear
+      at_newline = true
+      return this
+
+    method count->Integer
+      inline this.characters.count
+
+    method needs_indent->Logical
+      return (at_newline and indent > 0)
+
+    method print( value:Byte )->this
+      return print( value->Integer )
+
+    method print( value:Character )->this
+      if (value == '\n')    at_newline = true
+      elseIf (needs_indent) print_indent
+      characters.add( value )
+      return this
+
+    method print( value:Float )->this
+      inline this.print( value->Real )
+
+    method print( value:Integer )->this [native]
+
+    method print( value:Logical )->this
+      if (value) return print( "true" )
+      else       return print( "false" )
+
+    method print( value:Long )->this [native]
+
+    method print( value:Object )->this
+      if (value?) return print( value->String )
+      return print( "null" )
+
+    method print( value:Real, decimal_places=4:Integer )->this [native]
+
+    method print( value:String )->this
+      if (value?)
+        if (indent?)
+          forEach (ch in value) print( ch )
+        else
+          forEach (ch in value) characters.add( ch )
+          if (value.count? and value.last == '\n') at_newline = true
+        endIf
+        return this
+      else
+        return print( "null" )
+      endIf
+
+    method print_indent
+      if (not needs_indent or indent == 0) return
+      forEach (i in 1..indent) characters.add( ' ' )
+      at_newline = false
+
+    method println()->this
+      return print( '\n' )
+
+    method println( value:Byte )->this
+      return print( value->Integer ).print( '\n' )
+
+    method println( value:Character )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Float )->this
+      inline this.println( value->Real )
+
+    method println( value:Integer )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Logical )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Long )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Real, decimal_places=4:Integer )->this
+      return print( value, decimal_places ).print( '\n' )
+
+    method println( value:Object )->this
+      return print( value ).print( '\n' )
+
+    method println( value:String )->this
+      return print( value ).print( '\n' )
+
+    method reserve( additional_count:Integer )->this
+      characters.reserve( additional_count )
+      return this
+
+    method to->String
+      return String( characters )
+endClass
+

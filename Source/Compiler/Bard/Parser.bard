@@ -454,7 +454,7 @@ class Parser
             first = false
 
             # identifier
-            local t = peek
+            t = peek
             local param = this_method.add_parameter( t, read_identifier(true) )
 
             if (consume(TokenType.symbol_equals))

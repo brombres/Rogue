@@ -3,5 +3,21 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      println type_name
+      Beta(5)
+endClass
+
+class Alpha
+  METHODS
+    method init( n:Integer, m:Integer )
+      println "Alpha"
+
+    method init( n:Integer )
+      println "Alpha 1"
+endClass
+
+class Beta : Alpha
+  METHODS
+    method init( n:Integer )
+      println "Beta"
+      prior.init( n )
 endClass

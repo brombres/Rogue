@@ -24,20 +24,20 @@ class Scope
       if (locals_by_name.count == 0) throw RogueError( "[INTERNAL] Scope::pop_local() called when local list is empty." )
       locals_by_name.remove( local_list.remove_last.name )
 
-    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Cmd
-      local m = find_method( type_context, access, error_on_fail and access.context? )
+    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Cmd
+      local m = find_method( type_context, access, error_on_fail and access.context?, suppress_inherited )
       if (not m and not access.context)
         # No context specified; try Global context
-        m = find_method( Program.type_Global, access, false )
+        m = find_method( Program.type_Global, access, false, suppress_inherited )
         if (m?)
           type_context = Program.type_Global
           access.context = CmdReadSingleton( access.t, Program.type_Global )
         elseIf (error_on_fail)
           # Create an error message with the most appropriate context
           if (Program.type_Global.has_method_named(access.name))
-            find_method( Program.type_Global, access, true )
+            find_method( Program.type_Global, access, true, suppress_inherited )
           else
-            find_method( type_context, access, true )
+            find_method( type_context, access, true, suppress_inherited )
           endIf
         endIf
       endIf
@@ -142,7 +142,7 @@ class Scope
 
       return cmd.resolve( this )
 
-    method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical )->Method
+    method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Method
       local candidates = CandidateMethods( type_context, access, error_on_fail )
 
       local list = type_context.routine_lookup_by_name[ access.name ]
@@ -160,6 +160,27 @@ class Scope
       endIf
 
       if (not candidates.update_available) return null
+
+      if (suppress_inherited)
+        # Find method with most specific type context
+        local most_specific_type : Type
+        forEach (m in candidates.available)
+          if (m.is_initializer)
+            local m_type_context = m.type_context
+            if (most_specific_type is null or m_type_context.instance_of(most_specific_type))
+              most_specific_type = m_type_context
+            endIf
+          endIf
+        endForEach
+
+        if (most_specific_type?)
+          # Keep only the initializer methods defined in the most specific type
+          forEach (m in candidates.available)
+            if (m.type_context is most_specific_type) candidates.compatible.add( m )
+          endForEach
+          if (not candidates.update_matches) return null
+        endIf
+      endIf
 
       local args = access.args
 
