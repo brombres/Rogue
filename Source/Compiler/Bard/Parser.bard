@@ -158,18 +158,38 @@ class Parser
 
       # Need a little finageling to parse out the attributes while
       # leaving the base types for later.
-      #   : BaseType, ... [attributes] \n
-      #   ^^^ leave       ^parse       ^leave
+      #   (autoinit) : BaseType, ... [attributes] \n
+      #   ^^^^^^^^^^^^^^ leave       ^parse       ^leave
       local starting_pos = reader.position
+
+      if (consume(TokenType.symbol_open_paren))
+        # ( name1[=value1][:Type1] [, ...] )
+        consume_eols
+        if (not consume(TokenType.symbol_close_paren))
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+            consume_eols
+            read_identifier
+            consume_eols
+            if (consume(TokenType.symbol_equals)) parse_expression
+            consume_eols
+            if (consume(TokenType.symbol_colon)) parse_possible_type
+            consume_eols
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+        endIf
+      endIf
+
       if (consume(TokenType.symbol_colon))
         parse_possible_type
         while (consume(TokenType.symbol_comma)) parse_possible_type
-
-        # Now go back and copy all the tokens up to this point into the template.
-        local final_pos = reader.position
-        reader.position = starting_pos
-        while (reader.position < final_pos) template.tokens.add( read )
       endIf
+
+      # Now go back and copy all the tokens up to this point into the template.
+      local final_pos = reader.position
+      reader.position = starting_pos
+      while (reader.position < final_pos) template.tokens.add( read )
 
       parse_attributes( template.attributes )
 
@@ -245,7 +265,7 @@ class Parser
       local t = peek
 
       if (consume(TokenType.symbol_open_paren))
-        # ( auto_property:Type, ... )
+        # ( auto_property[=value][:Type, ... )
         consume_eols
         if (not consume(TokenType.symbol_close_paren))
           local m : Method
@@ -260,20 +280,24 @@ class Parser
           while (first or consume(TokenType.symbol_comma))
             first = false
 
-            # name[=default_value]:Type
+            # name[=default_value][:Type]
             t = peek
             local p_name = read_identifier
             local param = m.add_parameter( t, p_name )
             consume_eols
-            local initial_value : Cmd
-            if (consume(TokenType.symbol_equals)) initial_value = parse_expression
+            if (consume(TokenType.symbol_equals)) param.initial_value = parse_expression
             consume_eols
-            must_consume( TokenType.symbol_colon )
-            consume_eols
-            local generic_type = peek_generic_type
-            local p_type = parse_type
-            if (m.is_routine) param.type = p_type; param.generic_type = generic_type
-            this_type.add_property( t, p_name, p_type, initial_value ).generic_type = generic_type
+            if (consume(TokenType.symbol_colon))
+              consume_eols
+              local generic_type = peek_generic_type
+              local p_type = parse_type
+
+              if (this_type.is_compound)
+                param.type = p_type; param.generic_type = generic_type
+              endIf
+
+              this_type.add_property( t, p_name, p_type ).generic_type = generic_type
+            endIf
             consume_eols
           endWhile
           must_consume( TokenType.symbol_close_paren )

@@ -3,21 +3,16 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      Beta(5)
+      println Beta(5).m
 endClass
 
 class Alpha
-  METHODS
-    method init( n:Integer, m:Integer )
-      println "Alpha"
+  PROPERTIES
+    n : Integer
 
-    method init( n:Integer )
-      println "Alpha 1"
+  METHODS
 endClass
 
-class Beta : Alpha
+class Beta( m:Integer )
   METHODS
-    method init( n:Integer )
-      println "Beta"
-      prior.init( n )
 endClass
