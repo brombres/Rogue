@@ -1771,6 +1771,12 @@ class CmdAccess : Cmd
       local context_type = context.require_type
       context_type.organize
 
+      if (name[0] != '@')
+        local setter_name = "set_" + name
+        local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), false )
+        if (setter?) return setter
+      endIf
+
       local p = context_type.find_setting( name )
       if (p?)
         context.require_type_context
