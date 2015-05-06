@@ -109,6 +109,15 @@ class String [native functional]
     method last->Character
       return this[ count-1 ]
 
+    method left_justified( spaces:Integer )->String
+      if (count >= spaces) return this
+
+      local buffer = StringBuilder( spaces )
+      buffer.print( this )
+      forEach (count..spaces) buffer.print( ' ' )
+
+      return buffer->String
+
     method leftmost( n:Integer )->String
       if (n >= 0) return substring( 0, n-1 )
       else        return substring( 0, (count + n) - 1 )
@@ -171,6 +180,15 @@ class String [native functional]
       forEach (ch in this step -1)
         buffer.print( ch )
       endForEach
+      return buffer->String
+
+    method right_justified( spaces:Integer )->String
+      if (count >= spaces) return this
+
+      local buffer = StringBuilder( spaces )
+      forEach (count..spaces) buffer.print( ' ' )
+      buffer.print( this )
+
       return buffer->String
 
     method rightmost( n:Integer )->String

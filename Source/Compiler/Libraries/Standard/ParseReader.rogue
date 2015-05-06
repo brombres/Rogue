@@ -1,4 +1,4 @@
-class ParseReader
+class ParseReader : Reader<<Character>>
   PROPERTIES
     data     : Character[]
     position : Integer
@@ -7,12 +7,11 @@ class ParseReader
     column   : Integer
 
   METHODS
-    #{
     method init( filepath:String )
       init( File(filepath) )
 
     method init( file:File )
-      init( file->Byte[] )
+      init( file.load_as_bytes )
 
     method init( original_data:Byte[] )
       local tab_count = 0
@@ -117,8 +116,20 @@ class ParseReader
       if (ch >= 'A' and ch <= 'F') return 10 + (ch - 'A')
       return 0
 
+    method seek_to( new_line:Integer, new_column:Integer )->ParseReader
+      if (new_line < line or (new_line == line and new_column < column))
+        # start over at (1,1)
+        position = 0
+        line     = 1
+        column   = 1
+      endIf
+
+      while (has_another and line < new_line)     read
+      while (has_another and column < new_column) read
+
+      return this
+
     method set_position( line, column )->ParseReader
       return this
-      }#
 endClass
 

@@ -1,22 +1,15 @@
 $include "Libraries/Standard"
 
-class PointTest
+class Test
   METHODS
     method init
-      local pt1 = Point2D(3,4)
-      local pt2 = Point3D(5,6,7)
-      println pt1  # prints (3,4)
-      println pt2  # prints (5,6,7)
-endClass
+      local reader = ParseReader(File("../Test.rogue"))
+      reader.seek_to(7,14)
+      print( (reader.line + "").left_justified(6) )
+      forEach (ch in reader)
+        print ch
+        if (ch == '\n') print( (reader.line + "").left_justified(6) )
+      endForEach
+      println
 
-class Point2D( x:Integer, y:Integer )
-  METHODS
-    method to->String
-      return "($,$)" (x,y)
-endClass
-
-class Point3D( x, y, z:Integer ) : Point2D
-  METHODS
-    method to->String
-      return "($,$,$)" (x,y,z)
 endClass

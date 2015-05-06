@@ -267,10 +267,10 @@ class Type
       inherit_properties( full_property_list, property_lookup )
       property_list = full_property_list
 
-      # Create type_name() routine
-      local r_type_name = add_routine( t, "type_name" )
-      r_type_name.return_type = Program.type_String
-      r_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
+      # Create type_name() method
+      local m_type_name = add_method( t, "type_name" )
+      m_type_name.return_type = Program.type_String
+      m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
       # Organize routines and methods and create signatures
       forEach (r in routine_list)
@@ -444,19 +444,6 @@ class Type
 
       index_and_move_inline_to_end( list )
 
-    method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
-      forEach (base_type in base_types)
-        forEach (base_m in base_type.routine_list)
-          inherit_method( base_m, list, lookup )
-        endForEach
-      endForEach
-
-      forEach (m in routine_list)
-        inherit_method( m, list, lookup )
-      endForEach
-
-      index_and_move_inline_to_end( list )
-
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
@@ -489,6 +476,40 @@ class Type
 
       else
         if (m.type_context.is_aspect) m = m.incorporate( this )
+
+        list.add( m )
+        lookup[m.signature] = m
+      endIf
+
+    method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
+      forEach (base_type in base_types)
+        forEach (base_m in base_type.routine_list)
+          inherit_routine( base_m, list, lookup )
+        endForEach
+      endForEach
+
+      forEach (m in routine_list)
+        inherit_routine( m, list, lookup )
+      endForEach
+
+      index_and_move_inline_to_end( list )
+
+    method inherit_routine( m:Method, list:Method[], lookup:Table<<String,Method>> )
+      local existing_m = lookup[ m.signature ]
+
+      if (existing_m?)
+        local i = list.locate( existing_m )
+
+        # Aspect routines are not incorporated
+        if (m.type_context.is_aspect) return
+
+        # New method replaces old method in lookup
+        list[i] = m
+        lookup[m.signature] = m
+
+      else
+        # Aspect routines are not incorporated
+        if (m.type_context.is_aspect) return
 
         list.add( m )
         lookup[m.signature] = m
