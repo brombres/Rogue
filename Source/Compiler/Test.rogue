@@ -3,13 +3,16 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      local reader = ParseReader(File("../Test.rogue"))
-      reader.seek_to(7,14)
-      print( (reader.line + "").left_justified(6) )
-      forEach (ch in reader)
-        print ch
-        if (ch == '\n') print( (reader.line + "").left_justified(6) )
-      endForEach
-      println
+      println Alpha() + "hi"
+endClass
 
+class Alpha
+  ENUMERATE
+    ALPHA = 1
+endClass
+
+class Beta : Alpha
+  METHODS
+    method init
+      println ALPHA
 endClass

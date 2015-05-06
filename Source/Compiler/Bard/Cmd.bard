@@ -752,10 +752,10 @@ class CmdContingent : CmdControlStructure
       scope.control_stack.remove_last
       return this
 
-    method set_control_logic( original:CmdContingent )->Cmd
+    method set_control_logic( original:CmdControlStructure )->Cmd
       prior.set_control_logic( original )
-      satisfied_label   = original.satisfied_label
-      unsatisfied_label = original.unsatisfied_label
+      satisfied_label   = (original as CmdContingent).satisfied_label
+      unsatisfied_label = (original as CmdContingent).unsatisfied_label
       return this
 
     method write_cpp( writer:CPPWriter )
@@ -1567,7 +1567,8 @@ class CmdFormattedString : Cmd
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
       endIf
-      return cmd.resolve( scope )
+
+      return cmd.resolve( scope ).cast_to( Program.type_String ).resolve( scope )
 
     method type->Type
       return Program.type_String
@@ -1692,7 +1693,7 @@ class CmdAccess : Cmd
         endIf
 
         if (not args)
-          local def = scope.this_type.definitions[ name ]
+          local def = scope.this_type.definition_lookup[ name ]
           if (def?) return def.clone
         endIf
 
@@ -1722,7 +1723,7 @@ class CmdAccess : Cmd
       endIf
 
       if (not args)
-        local def = context_type.definitions[ name ]
+        local def = context_type.definition_lookup[ name ]
         if (def?) return def.clone
       endIf
 
@@ -1831,7 +1832,7 @@ class CmdAccess : Cmd
 
     method type->Type
       local err = t.error( "[INTERNAL] '$' $::type() is not defined." (name,type_name) )
-      println err.stack_trace
+      #println err.stack_trace
       throw err
 endClass
 
@@ -1964,7 +1965,7 @@ class CmdAssign : Cmd
       return CmdAssign( t, target.clone(clone_args), new_value.clone(clone_args) )
 
     method write_cpp( writer:CPPWriter )
-      println StackTrace()
+      #println StackTrace()
       prior.write_cpp( writer )
 
     method resolve( scope:Scope )->Cmd
@@ -2771,6 +2772,14 @@ class CmdAdd : CmdBinary
 
     method fn_name->String
       return "operator+"
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type isNot Program.type_String and right_type is Program.type_String)
+        # non-string + string -> ("" + non-string) + string
+        left = CmdAdd( t, CmdLiteralString(t,""), left ).resolve( scope )
+        left_type = left.require_type
+      endIf
+      return prior.resolve_operator_method( scope, left_type, right_type )
 
     method symbol->String
       return "+"
@@ -3828,7 +3837,7 @@ class CmdReadArrayElement : Cmd
       elseIf (element_type.is_primitive)
         context.write_cpp( writer )
         writer.print( "->" )
-        whichIs (element_type)
+        which (element_type)
           case Program.type_Real:      writer.print( "reals[" )
           case Program.type_Float:     writer.print( "floats[" )
           case Program.type_Long:      writer.print( "longs[" )
@@ -3838,7 +3847,7 @@ class CmdReadArrayElement : Cmd
           case Program.type_Logical:   writer.print( "logical[" )
           others
             throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
-        endWhichIs
+        endWhich
         index.write_cpp( writer )
         writer.print( "]" )
 
@@ -3909,7 +3918,7 @@ class CmdWriteArrayElement : Cmd
       if (element_type.is_primitive)
         context.write_cpp( writer )
         writer.print( "->" )
-        whichIs (element_type)
+        which (element_type)
           case Program.type_Real:      writer.print( "reals[" )
           case Program.type_Float:     writer.print( "floats[" )
           case Program.type_Long:      writer.print( "longs[" )
@@ -3917,7 +3926,7 @@ class CmdWriteArrayElement : Cmd
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )
-        endWhichIs
+        endWhich
         index.write_cpp( writer )
         writer.print( "] = " )
         new_value.write_cpp( writer )

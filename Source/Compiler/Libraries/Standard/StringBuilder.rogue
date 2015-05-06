@@ -26,6 +26,9 @@ class StringBuilder
     method count->Integer
       inline this.characters.count
 
+    method get( index:Integer )->Character
+      inline this.characters[ index ]
+
     method needs_indent->Logical
       return (at_newline and indent > 0)
 

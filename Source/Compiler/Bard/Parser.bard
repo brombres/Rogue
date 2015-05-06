@@ -392,7 +392,8 @@ class Parser
         ++this_type.next_enum_offset
       endIf
 
-      this_type.definitions[ name ] = value
+      this_type.definition_lookup[ name ] = value
+      this_type.definition_list.add( name )
 
       return true
 

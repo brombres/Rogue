@@ -6,9 +6,6 @@ class String [native functional]
     routine create( characters:StringBuilder )->String
       return create( characters.characters )
 
-    routine operator+( left:Integer, right:String )->String
-      return StringBuilder().print( left ).print( right )->String
-
   METHODS
     method after_any( ch:Character )->String
       local i = locate( ch )
@@ -148,12 +145,6 @@ class String [native functional]
 
     method operator+( value:Integer )->String
       $if ("C++") inlineNative '$this->plus($value)'
-
-      #{
-    method operator+( value:Object )->String
-      if (value?) return this + value->String
-      else        return this + "null"
-      }#
 
     method operator<>( other:String )->Integer
       $if ("C++") inlineNative '$this->compare_to($other)'

@@ -38,4 +38,4 @@ vim:
 	cd ../../Syntax/Vim && make
 
 roguec: bcc
-	$(BARDVM) Bard/RogueC.bc Bard/RogueEntry.rogue
+	$(BARDVM) Bard/RogueC.bc Bard/RogueEntry.rogue --output=CPP/RogueProgram.cpp --main

@@ -231,25 +231,6 @@ class Scope
 
       if (candidates.has_match) return candidates.match
 
-      if (arg_count?)
-        #{
-        forEach (m in candidates.available)
-          contingent
-            forEach (index of args)
-              local arg_type = args[index].type
-              local param_type = m.parameters[index].type
-              necessary (arg_type.is_compatible_with(param_type))
-            endForEach
-          satisfied
-            candidates.compatible.add( m )
-          endContingent
-        endForEach
-        if (not candidates.refine_matches) return null
-
-        if (candidates.has_match) return candidates.match
-        }#
-      endIf
-
       if (arg_count == 1)
         # 1. Try candidate(arg) -> candidate(arg->toObject)
         # 2. Try candidate(arg) -> candidate(arg->toString)

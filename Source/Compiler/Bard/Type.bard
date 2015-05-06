@@ -20,7 +20,8 @@ class Type
     is_list      : Logical
     element_type : Type
 
-    definitions = Table<<String,Cmd>>()
+    definition_list   = String[]
+    definition_lookup = Table<<String,Cmd>>()
     prev_enum_cmd    : Cmd
     next_enum_offset = 0
 
@@ -152,7 +153,7 @@ class Type
 
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
-      if (this is Program.type_null) return true
+      if (this is Program.type_null and ancestor_type.is_reference) return true
 
       forEach (base_type in base_types)
         if (base_type.instance_of(ancestor_type)) return true
@@ -259,6 +260,11 @@ class Type
       if (base_class?) base_class.collect_base_types( flat_base_types )
       forEach (base_type in base_types)
         base_type.collect_base_types( flat_base_types )
+      endForEach
+
+      # Inherit definitions
+      forEach (base_type in base_types)
+        inherit_definitions( base_type )
       endForEach
 
       # Inherit properties
@@ -375,6 +381,18 @@ class Type
       list.add( this )
       forEach (base_type in base_types)
         base_type.collect_base_types( list )
+      endForEach
+
+    method inherit_definitions( from_type:Type )
+      forEach (def_name in from_type.definition_list)
+        if (not definition_lookup.contains(def_name))
+          definition_list.add( def_name )
+          definition_lookup[ def_name ] = from_type.definition_lookup[ def_name ]
+        endIf
+      endForEach
+
+      forEach (base_type in from_type.base_types)
+        inherit_definitions( base_type )
       endForEach
 
     method inherit_properties( list:Property[], lookup:Table<<String,Property>> )
