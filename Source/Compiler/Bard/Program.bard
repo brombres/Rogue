@@ -34,6 +34,10 @@ class Program [requisite singleton]
     type_Global      : Type
     type_Error       : Type
 
+    type_StringBuilder : Type
+    type_FileReader    : Type
+    type_FileWriter    : Type
+
     literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
     literal_string_list   = String[]
 
@@ -41,21 +45,31 @@ class Program [requisite singleton]
 
   METHODS
     method configure
-      type_null        = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
-      type_Real        = create_built_in_type( "Real",      Attribute.is_native | Attribute.is_primitive )
-      type_Float       = create_built_in_type( "Float",     Attribute.is_native | Attribute.is_primitive )
-      type_Long        = create_built_in_type( "Long",      Attribute.is_native | Attribute.is_primitive )
-      type_Integer     = create_built_in_type( "Integer",   Attribute.is_native | Attribute.is_primitive )
-      type_Character   = create_built_in_type( "Character", Attribute.is_native | Attribute.is_primitive )
-      type_Byte        = create_built_in_type( "Byte",      Attribute.is_native | Attribute.is_primitive )
-      type_Logical     = create_built_in_type( "Logical",   Attribute.is_native | Attribute.is_primitive )
+      type_null          = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
+      type_Real          = create_built_in_type( "Real",      Attribute.is_native | Attribute.is_primitive )
+      type_Float         = create_built_in_type( "Float",     Attribute.is_native | Attribute.is_primitive )
+      type_Long          = create_built_in_type( "Long",      Attribute.is_native | Attribute.is_primitive )
+      type_Integer       = create_built_in_type( "Integer",   Attribute.is_native | Attribute.is_primitive )
+      type_Character     = create_built_in_type( "Character", Attribute.is_native | Attribute.is_primitive )
+      type_Byte          = create_built_in_type( "Byte",      Attribute.is_native | Attribute.is_primitive )
+      type_Logical       = create_built_in_type( "Logical",   Attribute.is_native | Attribute.is_primitive )
 
-      type_Object      = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
-      type_String      = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_functional )
-      type_NativeArray = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
-      type_GenericList = create_built_in_type( "GenericList", Attribute.is_class )
-      type_Global      = create_built_in_type( "Global", Attribute.is_class )
-      type_Error       = create_built_in_type( "Error", Attribute.is_class )
+      type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
+      type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_functional )
+      type_StringBuilder = create_built_in_type( "StringBuilder", Attribute.is_class )
+      type_NativeArray   = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
+      type_GenericList   = create_built_in_type( "GenericList", Attribute.is_class )
+      type_Global        = create_built_in_type( "Global", Attribute.is_class )
+      type_Error         = create_built_in_type( "Error", Attribute.is_class )
+
+      type_FileReader    = create_built_in_type( "FileReader", Attribute.is_class | Attribute.is_native )
+      type_FileWriter    = create_built_in_type( "FileWriter", Attribute.is_class | Attribute.is_native )
+
+      type_Object.simplify_name = true
+      type_String.simplify_name = true
+      type_StringBuilder.simplify_name = true
+      type_FileReader.simplify_name = true
+      type_FileWriter.simplify_name = true
 
       type_null.organized = true
       type_null.defined   = true
@@ -240,7 +254,7 @@ class Program [requisite singleton]
 
     method write_cpp( filepath:String )
       forEach (type in type_list) type.assign_cpp_name
-      type_NativeArray.cpp_name = code_prefix + "Array"
+      type_NativeArray.cpp_class_name = "RogueArray"
 
       forEach (type in type_list)
         forEach (r in type.routine_list) r.assign_cpp_name
@@ -259,7 +273,7 @@ class Program [requisite singleton]
       # RogueType forward declarations
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print( "struct " ).print( type.cpp_name ).println( "Type;" );
+          writer.print( "struct " ).print( type.cpp_class_name ).println( "Type;" );
         endIf
       endForEach
       writer.println
@@ -267,7 +281,7 @@ class Program [requisite singleton]
       # RogueObject forward declarations
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print( "struct " ).print( type.cpp_name ).println( ";" );
+          writer.print( "struct " ).print( type.cpp_class_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -286,8 +300,8 @@ class Program [requisite singleton]
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print( "  " ).print( type.cpp_name ).print( "Type* type_" );
-          writer.print( type.cpp_name ).println( ";" );
+          writer.print( "  " ).print( type.cpp_class_name ).print( "Type* type_" );
+          writer.print( type.cpp_class_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -316,15 +330,6 @@ class Program [requisite singleton]
       writer.println //#include <stdio.h>//
       writer.println //#include "$.h"// (base_filename)
       writer.println
-
-      # init() forward declarations
-      #forEach (type in type_list)
-      #  if (not type.omit_output)
-      #    local m = type.find_method( "init()" )
-      #    if (m?) writer.print( type ).print( " " ).print( m.cpp_name ).print( "( " ).print( type ).println( " );" )
-      #  endIf
-      #endForEach
-      #writer.println
 
       # typedef each unique method signature
       local native_method_signature_list   = String[]
@@ -419,7 +424,7 @@ writer.println( "// " + type )
       # Create types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_name).println("Type();")
+          writer.print("type_").print(type.cpp_class_name).print(" = new ").print(type.cpp_class_name).println("Type();")
         endIf
       endForEach
       writer.println
@@ -427,7 +432,7 @@ writer.println( "// " + type )
       # Assign native type indices
       forEach (type in type_list)
         if (type.is_native or not type.omit_output)
-          writer.print("type_").print(type.cpp_name).print("->index = ").print( type.index ).println( ";" )
+          writer.print("type_").print(type.cpp_class_name).print("->index = ").print( type.index ).println( ";" )
         endIf
       endForEach
       writer.println
@@ -435,7 +440,7 @@ writer.println( "// " + type )
       # Configure types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("type_").print(type.cpp_name).println("->configure();" )
+          writer.print("type_").print(type.cpp_class_name).println("->configure();" )
         endIf
       endForEach
       writer.println
@@ -461,18 +466,18 @@ writer.println( "// " + type )
       writer.println
 
       # Copy command line args to System class
-      writer.println( "RogueSystem::executable_filepath = RogueString::create( argv[0] );" );
+      writer.println( "RogueClassSystem::executable_filepath = RogueString::create( argv[0] );" );
       writer.println( "for (int i=1; i<argc; ++i)" )
       writer.println( "{" )
-      writer.println( "  RogueStringList__add( RogueSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "  RogueStringList__add( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
       writer.println( "}" )
       writer.println
 
-      writer.print(   "Rogue_program.main_object = Rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )
+      writer.print(   "Rogue_program.main_object = Rogue_program.type_").print(main_class.cpp_class_name).println( "->create_object();" )
       # Call init_object() on main object
       local m = main_class.find_method( "init_object()" )
       if (m?)
-        writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)Rogue_program.main_object );")
+        writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
       endIf
 
       # End of configure()
@@ -488,7 +493,7 @@ writer.println( "// " + type )
       # Call init() on main object
       m = main_class.find_method( "init()" )
       if (m?)
-        writer.print(m.cpp_name).print("( (").print(main_class.cpp_name).println("*)Rogue_program.main_object );")
+        writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
       endIf
       writer.println( "Rogue_program.collect_garbage();" )
 
@@ -499,7 +504,7 @@ writer.println( "// " + type )
       # finish_tasks() method
       writer.println( @|void RogueProgram::finish_tasks()
                        |{
-                       |  while (RogueTaskManager__update(Rogue_program.type_RogueTaskManager->singleton()))
+                       |  while (RogueTaskManager__update(Rogue_program.type_RogueClassTaskManager->singleton()))
                        |  {
                        |    Rogue_program.collect_garbage();
                        |  }

@@ -20,6 +20,10 @@ class Type
     is_list      : Logical
     element_type : Type
 
+    simplify_name : Logical
+      # RogueInteger instead of RoguePrimitiveInteger, etc. - used for classes that are predefined
+      # in the infrastructure and that developers will often use directly.
+
     definition_list   = String[]
     definition_lookup = Table<<String,Cmd>>()
     prev_enum_cmd    : Cmd
@@ -39,7 +43,8 @@ class Type
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
-    cpp_name : String
+    cpp_class_name : String
+    #cpp_type_name  : String
     dynamic_method_table_index : Integer
 
   METHODS
@@ -84,20 +89,31 @@ class Type
 
     method assign_cpp_name
       if (is_array)
-        cpp_name = Program.code_prefix + "Array"
+        cpp_class_name = "RogueArray"
+
+      elseIf (this.is_primitive or this.simplify_name)
+        cpp_class_name = "Rogue" + name
+
+      elseIf (is_list)
+        cpp_class_name = "Rogue" + Program.validate_cpp_name( name )
+
+      elseIf (this.is_aspect)
+        cpp_class_name = "RogueAspect" + Program.validate_cpp_name( name )
+
+      elseIf (this.is_compound)
+        cpp_class_name = "RogueCompound" + Program.validate_cpp_name( name )
 
       else
-        cpp_name = Program.code_prefix + Program.validate_cpp_name( name )
-
-        forEach (s in settings_list)
-          s.cpp_name = Program.validate_cpp_name( s.name )
-        endForEach
-
-        forEach (p in property_list)
-          p.cpp_name = Program.validate_cpp_name( p.name )
-        endForEach
-
+        cpp_class_name = "RogueClass" + Program.validate_cpp_name( name )
       endIf
+
+      forEach (s in settings_list)
+        s.cpp_name = Program.validate_cpp_name( s.name )
+      endForEach
+
+      forEach (p in property_list)
+        p.cpp_name = Program.validate_cpp_name( p.name )
+      endForEach
 
     method compile_type->Type
       if (generic_type?) return generic_type
@@ -591,7 +607,7 @@ class Type
     method print_data_definition( writer:CPPWriter )
       if (omit_output) return
 
-      writer.print( "struct " ).print( cpp_name )
+      writer.print( "struct " ).print( cpp_class_name )
       if (is_class) writer.print( " : RogueObject" )
       writer.println.println( "{" )
       writer.indent += 2
@@ -665,7 +681,7 @@ class Type
     method print_type_definition( writer:CPPWriter )
       if (omit_output) return
 
-      writer.print( "struct " ).print( cpp_name ).println( "Type : RogueType" )
+      writer.print( "struct " ).print( cpp_class_name ).println( "Type : RogueType" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -674,18 +690,18 @@ class Type
       writer.println( "{" )
       writer.indent += 2;
 
-      writer.print( "object_size = (int) sizeof( " ).print(cpp_name).println(" );")
+      writer.print( "object_size = (int) sizeof( " ).print(cpp_class_name).println(" );")
 
       if (base_types.count?)
         writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
         forEach (i of base_types)
           writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
-          writer.print( base_types[i].cpp_name ).println( ";" )
+          writer.print( base_types[i].cpp_class_name ).println( ";" )
         endForEach
       endIf
 
-      writer.print( "methods = " ).print( Program.code_prefix ).print( "_dynamic_method_table + " )
+      writer.print( "methods = Rogue_dynamic_method_table + " )
       writer.print( dynamic_method_table_index ).println( ";" )
 
       #{
@@ -714,21 +730,6 @@ class Type
         writer.println( "}" )
         writer.println
       endIf
-      #{
-      writer.print( cpp_name ).println( "* create_object()" )
-      writer.println( "{" )
-      writer.print(   "  return " )
-      if (m_init_object?)
-        writer.print( m_init_object.cpp_name )
-        writer.print( "( " )
-      endIf
-      writer.print(   "(" ).print( cpp_name ).print( "*) Rogue_program.allocate_object( this, sizeof(" )
-      writer.print( cpp_name ).print( ") )" )
-      if (m_init_object?) writer.print( " )" )
-      writer.println( ";" )
-      writer.println( "}" )
-      writer.println
-      }#
 
       # name()
       writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )
@@ -803,17 +804,17 @@ class Type
         if (not m.is_inline and m.is_dynamic)
           buffer.clear
           if (m.return_type?)
-            buffer.print( m.return_type.compile_type.cpp_name )
+            buffer.print( m.return_type.compile_type.cpp_class_name )
             if (m.return_type.is_reference) buffer.print('*')
           else
             buffer.print( "void" )
           endIf
           buffer.print( "(*)(" )
-          buffer.print( m.type_context.compile_type.cpp_name ).print("*")
+          buffer.print( m.type_context.compile_type.cpp_class_name ).print("*")
           forEach (i of m.parameters)
             buffer.print(',')
             local param_type = m.parameters[i].type.compile_type
-            buffer.print( param_type.cpp_name )
+            buffer.print( param_type.cpp_class_name )
             if (param_type.is_reference) buffer.print('*')
           endForEach
           buffer.print( ")" )
@@ -856,9 +857,9 @@ class Type
 
     method print_type_configuration( writer:CPPWriter )
       if (omit_output) return
-      writer.print( "  type_" ).print( cpp_name ).print( " = Rogue_types[" ).print( index )
-      writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_name ).print( "\", sizeof(Class" )
-      writer.print( cpp_name ).println( ") );" )
+      writer.print( "  type_" ).print( cpp_class_name ).print( " = Rogue_types[" ).print( index )
+      writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_class_name ).print( "\", sizeof(Class" )
+      writer.print( cpp_class_name ).println( ") );" )
 
     method to->String
       return name

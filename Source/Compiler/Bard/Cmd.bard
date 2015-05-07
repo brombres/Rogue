@@ -4021,7 +4021,7 @@ class CmdConvertToPrimitiveType : CmdConvertToType
       return CmdConvertToPrimitiveType( t, operand.clone(clone_args), target_type )
 
     method write_cpp( writer:CPPWriter )
-      writer.print( "((" ).print( target_type.cpp_name ).print( ")(" )
+      writer.print( "((" ).print( target_type.cpp_class_name ).print( ")(" )
       operand.write_cpp( writer )
       writer.print( "))" )
 

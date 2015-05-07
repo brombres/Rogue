@@ -33,6 +33,7 @@ cpp: compile
 
 clean:
 	rm -f Bard/*.bc
+	rm -f CPP/RogueProgram.*
 
 vim:
 	cd ../../Syntax/Vim && make
