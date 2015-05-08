@@ -325,8 +325,9 @@ class CmdReturn : CmdStatement
 
     method write_cpp( writer:CPPWriter )
       if (value?)
-        writer.print "return "
+        writer.print( "return (" ).print( value.type ).print( ")(" )
         value.write_cpp( writer )
+        writer.print( ")" )
       else
         writer.print "return"
       endIf
@@ -2050,11 +2051,9 @@ class CmdReadSingleton : Cmd
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
-      writer.print( "ROGUE_SINGLETON(" ).print_type_name( of_type ).print( "," )
+      writer.print( "((" ).print( of_type.cpp_class_name )
       if (of_type.is_reference) writer.print( "*" )
-      writer.print( ")" )
-      #writer.print( "((" ).print( of_type ).print( ")" )
-      #writer.print_type_info( of_type ).print( "->singleton())" )
+      writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
 
     method require_type_context
       noAction
@@ -3013,6 +3012,9 @@ class CmdComparison : CmdBinary
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
 
       return this
+
+    method requires_parens->Logical
+      return false
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       throw t.error( "[INTERNAL] $::resolve_for_reference() is undefined." )

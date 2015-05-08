@@ -80,11 +80,6 @@ class CPPWriter
     method print_cast( from_type:Type, to_type:Type )->CPPWriter
       if (from_type is to_type) return this
       return print( "(" ).print( to_type ).print( ")" )
-      #{
-      if (to_type.is_aspect or from_type.is_aspect)
-        return print( "(" ).print( Program.type_Object ).print( ")" )
-      endIf
-      }#
       return this
 
     method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
@@ -111,8 +106,7 @@ class CPPWriter
     method print_type_info( type:Type )->CPPWriter
       type = type.compile_type
       print_indent
-      buffer.print( Program.program_name )
-      buffer.print( ".type_" ).print( type.cpp_class_name )
+      buffer.print( "Rogue_program.type_" ).print( type.cpp_name )
       return this
 
     method print_default_value( type:Type )->CPPWriter

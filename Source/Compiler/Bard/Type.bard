@@ -43,8 +43,9 @@ class Type
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
+    cpp_name       : String
     cpp_class_name : String
-    #cpp_type_name  : String
+    cpp_type_name  : String
     dynamic_method_table_index : Integer
 
   METHODS
@@ -88,24 +89,31 @@ class Type
       return p
 
     method assign_cpp_name
-      if (is_array)
+      cpp_name = Program.validate_cpp_name( name )
+
+      if (is_array or this is Program.type_NativeArray)
         cpp_class_name = "RogueArray"
+        cpp_name = "Array"
 
       elseIf (this.is_primitive or this.simplify_name)
-        cpp_class_name = "Rogue" + name
+        cpp_class_name = "Rogue" + cpp_name
 
       elseIf (is_list)
-        cpp_class_name = "Rogue" + Program.validate_cpp_name( name )
+        cpp_class_name = "Rogue" + cpp_name
 
+        #{
       elseIf (this.is_aspect)
-        cpp_class_name = "RogueAspect" + Program.validate_cpp_name( name )
+        cpp_class_name = "RogueAspect" + cpp_name
 
       elseIf (this.is_compound)
-        cpp_class_name = "RogueCompound" + Program.validate_cpp_name( name )
+        cpp_class_name = "RogueCompound" + cpp_name
+        }#
 
       else
-        cpp_class_name = "RogueClass" + Program.validate_cpp_name( name )
+        cpp_class_name = "RogueClass" + cpp_name
       endIf
+
+      cpp_type_name = "RogueType" + cpp_name
 
       forEach (s in settings_list)
         s.cpp_name = Program.validate_cpp_name( s.name )
@@ -681,7 +689,7 @@ class Type
     method print_type_definition( writer:CPPWriter )
       if (omit_output) return
 
-      writer.print( "struct " ).print( cpp_class_name ).println( "Type : RogueType" )
+      writer.print( "struct " ).print( cpp_type_name ).println( " : RogueType" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -697,7 +705,7 @@ class Type
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
         forEach (i of base_types)
           writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
-          writer.print( base_types[i].cpp_class_name ).println( ";" )
+          writer.print( base_types[i].compile_type.cpp_name ).println( ";" )
         endForEach
       endIf
 
@@ -838,7 +846,7 @@ class Type
       forEach (m in method_list)
         if (not m.is_inline)
           if (m.is_dynamic)
-            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).println( "," )
+            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).println( "," )
           else
             writer.println( "NULL," )
           endIf
@@ -857,7 +865,7 @@ class Type
 
     method print_type_configuration( writer:CPPWriter )
       if (omit_output) return
-      writer.print( "  type_" ).print( cpp_class_name ).print( " = Rogue_types[" ).print( index )
+      writer.print( "  type_" ).print( cpp_name ).print( " = Rogue_types[" ).print( index )
       writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_class_name ).print( "\", sizeof(Class" )
       writer.print( cpp_class_name ).println( ") );" )
 

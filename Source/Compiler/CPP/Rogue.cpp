@@ -429,7 +429,7 @@ RogueString* RogueString::create( int count )
 
   int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
 
-  RogueString* st = (RogueString*) Rogue_program.allocate_object( Rogue_program.type_RogueString, total_size );
+  RogueString* st = (RogueString*) Rogue_program.allocate_object( Rogue_program.type_String, total_size );
   st->count = count;
   st->hash_code = 0;
 
@@ -803,7 +803,7 @@ RogueArray* RogueArray::create( int count, int element_size, bool is_reference_a
   int data_size  = count * element_size;
   int total_size = sizeof(RogueArray) + data_size;
 
-  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( Rogue_program.type_RogueArray, total_size );
+  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( Rogue_program.type_Array, total_size );
 
   memset( array->bytes, 0, data_size );
   array->count = count;
@@ -862,20 +862,20 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   types = new RogueType*[ type_count ];
   memset( types, 0, sizeof(RogueType*) );
 
-  type_RogueReal      = new RogueRealType();
-  type_RogueFloat     = new RogueFloatType();
-  type_RogueLong      = new RogueLongType();
-  type_RogueInteger   = new RogueIntegerType();
-  type_RogueCharacter = new RogueCharacterType();
-  type_RogueByte      = new RogueByteType();
-  type_RogueLogical   = new RogueLogicalType();
+  type_Real      = new RogueRealType();
+  type_Float     = new RogueFloatType();
+  type_Long      = new RogueLongType();
+  type_Integer   = new RogueIntegerType();
+  type_Character = new RogueCharacterType();
+  type_Byte      = new RogueByteType();
+  type_Logical   = new RogueLogicalType();
 
-  type_RogueObject = new RogueObjectType();
-  type_RogueString = new RogueStringType();
-  type_RogueArray  = new RogueArrayType();
+  type_Object = new RogueObjectType();
+  type_String = new RogueStringType();
+  type_Array  = new RogueArrayType();
 
-  type_RogueFileReader = new RogueFileReaderType();
-  type_RogueFileWriter = new RogueFileWriterType();
+  type_FileReader = new RogueFileReaderType();
+  type_FileWriter = new RogueFileWriterType();
 
   for (int i=0; i<next_type_index; ++i)
   {
@@ -892,7 +892,7 @@ RogueProgramCore::~RogueProgramCore()
   while (objects)
   {
     RogueObject* next_object = objects->next_object;
-    Rogue_allocator.free( objects, objects->size );
+    Rogue_allocator.free( objects, objects->object_size );
     objects = next_object;
   }
 
@@ -914,7 +914,7 @@ RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
   obj->next_object = objects;
   objects = obj;
   obj->type = type;
-  obj->size = size;
+  obj->object_size = size;
 
   return obj;
 }
@@ -934,7 +934,7 @@ void RogueProgramCore::collect_garbage()
   RogueObject* cur = objects;
   while (cur)
   {
-    if (cur->size >= 0 && cur->reference_count > 0)
+    if (cur->object_size >= 0 && cur->reference_count > 0)
     {
       ROGUE_TRACE( cur );
     }
@@ -948,18 +948,18 @@ void RogueProgramCore::collect_garbage()
   while (cur)
   {
     RogueObject* next_object = cur->next_object;
-    if (cur->size < 0)
+    if (cur->object_size < 0)
     {
       // Discovered automatically during tracing.
       //printf( "Referenced %s\n", cur->type->name() );
-      cur->size = ~cur->size;
+      cur->object_size = ~cur->object_size;
       cur->next_object = survivors;
       survivors = cur;
     }
     else
     {
       //printf( "Unreferenced %s\n", cur->type->name() );
-      Rogue_allocator.free( cur, cur->size );
+      Rogue_allocator.free( cur, cur->object_size );
     }
     cur = next_object;
   }
@@ -1430,7 +1430,7 @@ void RogueFileReaderType::trace( RogueObject* obj )
 
 RogueFileReader* RogueFileReader__create( RogueString* filepath )
 {
-  RogueFileReader* reader = (RogueFileReader*) Rogue_program.type_RogueFileReader->create_object();
+  RogueFileReader* reader = (RogueFileReader*) Rogue_program.type_FileReader->create_object();
   RogueFileReader__open( reader, filepath );
   return reader;
 }
@@ -1546,7 +1546,7 @@ void RogueFileWriterType::trace( RogueObject* obj )
 
 RogueFileWriter* RogueFileWriter__create( RogueString* filepath )
 {
-  RogueFileWriter* writer = (RogueFileWriter*) Rogue_program.type_RogueFileWriter->create_object();
+  RogueFileWriter* writer = (RogueFileWriter*) Rogue_program.type_FileWriter->create_object();
   RogueFileWriter__open( writer, filepath );
   return writer;
 }
@@ -1707,6 +1707,14 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, Rogue
   return RogueStringBuilder__print( buffer, st );
 }
 
+
+//-----------------------------------------------------------------------------
+//  System
+//-----------------------------------------------------------------------------
+void RogueSystem__exit( int result_code )
+{
+  exit( result_code );
+}
 
 //-----------------------------------------------------------------------------
 //  Time

@@ -97,10 +97,9 @@ class Method
     method assign_cpp_name
       if (cpp_name?) return
       local buffer = StringBuilder()
-      buffer.print( "Rogue" )
       buffer.print( type_context.name ).print( "__" )
       buffer.print( name )
-      cpp_name = Program.validate_cpp_name( buffer->String )
+      cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
 
     method assign_signature
       if (signature?) return

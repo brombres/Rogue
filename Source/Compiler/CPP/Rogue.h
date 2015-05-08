@@ -47,15 +47,15 @@ struct RogueFileWriterType;
 #define ROGUE_TRACE( obj ) \
 { \
   RogueObject* _trace_obj = obj; \
-  if (_trace_obj && _trace_obj->size >= 0) \
+  if (_trace_obj && _trace_obj->object_size >= 0) \
   { \
-    _trace_obj->size = ~_trace_obj->size; \
+    _trace_obj->object_size = ~_trace_obj->object_size; \
     _trace_obj->type->trace( _trace_obj ); \
   } \
 }
 
-#define ROGUE_SINGLETON(name,star) ((name star)Rogue_program.type_##name->singleton())
-  //THIS->standard_output = ((RogueConsole*)Rogue_program.type_RogueConsole->singleton());
+#define ROGUE_SINGLETON(name) (Rogue_program.type_##name->singleton())
+  //THIS->standard_output = ((RogueConsole*)Rogue_program.type_Console->singleton());
 
 #define ROGUE_PROPERTY(name) p_##name
 
@@ -340,8 +340,8 @@ struct RogueObject
   RogueType*   type;
   // Type info for this object.
 
-  RogueInteger size;
-  // Set to be ~size when traced through during a garbage collection,
+  RogueInteger object_size;
+  // Set to be ~object_size when traced through during a garbage collection,
   // then flipped back again at the end of GC.
 
   RogueInteger reference_count;
@@ -453,20 +453,20 @@ struct RogueProgramCore
   int           type_count;
   int           next_type_index;
 
-  RogueRealType*      type_RogueReal;
-  RogueFloatType*     type_RogueFloat;
-  RogueLongType*      type_RogueLong;
-  RogueIntegerType*   type_RogueInteger;
-  RogueCharacterType* type_RogueCharacter;
-  RogueByteType*      type_RogueByte;
-  RogueLogicalType*   type_RogueLogical;
+  RogueRealType*      type_Real;
+  RogueFloatType*     type_Float;
+  RogueLongType*      type_Long;
+  RogueIntegerType*   type_Integer;
+  RogueCharacterType* type_Character;
+  RogueByteType*      type_Byte;
+  RogueLogicalType*   type_Logical;
 
-  RogueObjectType* type_RogueObject;
-  RogueStringType* type_RogueString;
-  RogueArrayType*  type_RogueArray;
+  RogueObjectType* type_Object;
+  RogueStringType* type_String;
+  RogueArrayType*  type_Array;
 
-  RogueFileReaderType*  type_RogueFileReader;
-  RogueFileWriterType*  type_RogueFileWriter;
+  RogueFileReaderType*  type_FileReader;
+  RogueFileWriterType*  type_FileWriter;
 
   // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
 
@@ -646,6 +646,11 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
+
+//-----------------------------------------------------------------------------
+//  System
+//-----------------------------------------------------------------------------
+void RogueSystem__exit( int result_code );
 
 //-----------------------------------------------------------------------------
 //  Time

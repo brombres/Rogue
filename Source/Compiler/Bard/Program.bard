@@ -199,6 +199,16 @@ class Program [requisite singleton]
         name = name.substring( code_prefix.count )
       endIf
 
+      # Convert "_*type" to "__*type"
+      local all_underscores = true
+      if (name.ends_with("type"))
+        forEach (i in 0..(name.count-5))
+          if (name[i] != '_') all_underscores = false; escapeForEach
+        endForEach
+        name = "_" + name
+      endIf
+
+
       local i1 = name.locate("<<")
       while (i1 != -1)
         local i2 = name.locate_last(">>")
@@ -273,7 +283,7 @@ class Program [requisite singleton]
       # RogueType forward declarations
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print( "struct " ).print( type.cpp_class_name ).println( "Type;" );
+          writer.print( "struct " ).print( type.cpp_type_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -300,8 +310,8 @@ class Program [requisite singleton]
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print( "  " ).print( type.cpp_class_name ).print( "Type* type_" );
-          writer.print( type.cpp_class_name ).println( ";" );
+          writer.print( "  " ).print( type.cpp_type_name ).print( "* type_" );
+          writer.print( type.cpp_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -424,7 +434,7 @@ writer.println( "// " + type )
       # Create types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("type_").print(type.cpp_class_name).print(" = new ").print(type.cpp_class_name).println("Type();")
+          writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_type_name).println("();")
         endIf
       endForEach
       writer.println
@@ -432,7 +442,7 @@ writer.println( "// " + type )
       # Assign native type indices
       forEach (type in type_list)
         if (type.is_native or not type.omit_output)
-          writer.print("type_").print(type.cpp_class_name).print("->index = ").print( type.index ).println( ";" )
+          writer.print("type_").print(type.cpp_name).print("->index = ").print( type.index ).println( ";" )
         endIf
       endForEach
       writer.println
@@ -440,7 +450,7 @@ writer.println( "// " + type )
       # Configure types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("type_").print(type.cpp_class_name).println("->configure();" )
+          writer.print("type_").print(type.cpp_name).println("->configure();" )
         endIf
       endForEach
       writer.println
@@ -473,7 +483,7 @@ writer.println( "// " + type )
       writer.println( "}" )
       writer.println
 
-      writer.print(   "Rogue_program.main_object = Rogue_program.type_").print(main_class.cpp_class_name).println( "->create_object();" )
+      writer.print(   "Rogue_program.main_object = Rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )
       # Call init_object() on main object
       local m = main_class.find_method( "init_object()" )
       if (m?)
@@ -504,7 +514,7 @@ writer.println( "// " + type )
       # finish_tasks() method
       writer.println( @|void RogueProgram::finish_tasks()
                        |{
-                       |  while (RogueTaskManager__update(Rogue_program.type_RogueClassTaskManager->singleton()))
+                       |  while (RogueTaskManager__update(Rogue_program.type_TaskManager->singleton()))
                        |  {
                        |    Rogue_program.collect_garbage();
                        |  }
