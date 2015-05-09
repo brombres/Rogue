@@ -82,6 +82,16 @@ class CPPWriter
       return print( "(" ).print( to_type ).print( ")" )
       return this
 
+    method print_open_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      print( "(" )
+      return print_cast( from_type, to_type )
+
+    method print_close_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      print( ")" )
+      return this
+
     method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
       if (from_type is to_type)
         cmd.write_cpp( this )
@@ -124,10 +134,12 @@ class CPPWriter
           which (ch)
             case '"'
               if (in_string) print( "\\\"" )
-              else           print( "'" )
+              else           print( "\"" )
             case '\''
               if (in_string) print( "'" )
               else           print( "\\'" )
+            case '\\'
+              print( "\\\\" )
             others
               print( ""+ch )
           endWhich

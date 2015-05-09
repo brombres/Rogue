@@ -88,11 +88,8 @@ class Cmd
     method is_literal->Logical
       return false
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       throw t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
-
-    method write_cpp_statement( writer:CPPWriter )
-      write_cpp( writer )
 
     method require_type_context
       if (type?) throw t.error( //Type name expected, e.g. "$.".// (type) )
@@ -194,9 +191,9 @@ class CmdStatementList : Cmd[]
       Analyzer.context.pop_local_scope
       }#
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       forEach (statement in this)
-        statement.write_cpp_statement( writer )
+        statement.write_cpp( writer, true )
         if (statement.requires_semicolon) writer.println ";"
       endForEach
 
@@ -233,7 +230,7 @@ class CmdArgs : Cmd[]
       forEach (cmd in this) result.add( cmd.clone(clone_args) )
       return result
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local first = true
       forEach (arg in this)
         if (first) first = false
@@ -279,7 +276,7 @@ class CmdLocalDeclaration : CmdStatement
     method exit_scope( scope:Scope )
       scope.pop_local
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
       if (local_info.initial_value?)
         writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
@@ -323,7 +320,7 @@ class CmdReturn : CmdStatement
         return CmdReturn( t, clone(value,clone_args) )
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value?)
         writer.print( "return (" ).print( value.type ).print( ")(" )
         value.write_cpp( writer )
@@ -416,7 +413,7 @@ class CmdBlock : CmdControlStructure
         return result
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println( "{" )
       writer.indent += 2
       statements.write_cpp( writer )
@@ -513,7 +510,7 @@ class CmdIf : CmdControlStructure
       if (else_ifs is null) else_ifs = CmdElseIf[]
       else_ifs.add( cmd_else_if )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if (" )
       condition.write_cpp( writer )
       writer.println( ")" )
@@ -570,7 +567,7 @@ class CmdElseIf
     method clone( clone_args=null:CloneArgs )->CmdElseIf
       return CmdElseIf( cmd_if, condition.clone(clone_args), statements.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "else if (" )
       condition.write_cpp( writer )
       writer.println( ")" )
@@ -759,7 +756,7 @@ class CmdContingent : CmdControlStructure
       unsatisfied_label = (original as CmdContingent).unsatisfied_label
       return this
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println( "{" )
       writer.indent += 2
       writer.println( "{" )
@@ -888,7 +885,7 @@ class CmdGenericLoop : CmdControlStructure
       scope.control_stack.remove_last
       return this
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (control_statements?)
         writer.println( "{" )
         writer.indent += 2
@@ -991,7 +988,6 @@ class CmdForEach : CmdControlStructure
           index_var.initial_value = CmdLiteralInteger( t, 0 )
           last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
         else
-          local args = CmdArgs()
           index_var.initial_value = CmdSubtract( t, CmdAccess(t,CmdReadLocal(t,collection_var), "count"), CmdLiteralInteger(t,1) )
           last_cmd = CmdLiteralInteger( t, 0 )
         endIf
@@ -1114,7 +1110,7 @@ class CmdTry : CmdControlStructure
 
       return this
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println "try"
       writer.println "{"
       writer.indent += 2
@@ -1153,7 +1149,7 @@ class CmdCatch : Cmd
 
       return this
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.cpp_name ).println( " )" )
       writer.println( "{" )
       writer.indent += 2
@@ -1181,7 +1177,7 @@ class CmdThrow : Cmd
       endIf
       return this
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "throw " )
       expression.write_cpp( writer )
 endClass
@@ -1223,7 +1219,7 @@ class CmdEscape : Cmd
 
       throw t.error( "No enclosing structure to escape." )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "goto " + target_cmd.escape_label
 
 endClass
@@ -1261,7 +1257,7 @@ class CmdNextIteration : Cmd
 
       throw t.error( "No enclosing loop for 'nextIteration' to affect." )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "continue"
 
 endClass
@@ -1309,7 +1305,7 @@ class CmdNecessary : Cmd
 
       throw t.error( "No enclosing contingent." )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if ( !(" )
       condition.write_cpp( writer )
       writer.print( ") ) goto " ).print( target_cmd.unsatisfied_label )
@@ -1358,7 +1354,7 @@ class CmdSufficient : Cmd
 
       throw t.error( "No enclosing contingent." )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if (" )
       condition.write_cpp( writer )
       writer.print( ") goto " ).print( target_cmd.satisfied_label )
@@ -1383,7 +1379,7 @@ class CmdLiteralNull : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralNull( t )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "NULL" )
 
     method resolve( scope:Scope )->this
@@ -1403,7 +1399,7 @@ class CmdLiteralReal : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralReal( t, value )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value )
 
     method resolve( scope:Scope )->Cmd
@@ -1431,7 +1427,7 @@ class CmdLiteralInteger : CmdLiteral
         return prior.cast_to( target_type )
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value )
 
     method resolve( scope:Scope )->Cmd
@@ -1452,7 +1448,7 @@ class CmdLiteralCharacter : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralCharacter( t, value )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "(RogueCharacter)" )
       if (value >= 32 and value <= 126)
         which (value)
@@ -1486,7 +1482,7 @@ class CmdLiteralLogical : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralLogical( t, value )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value) writer.print "true"
       else       writer.print "false"
 
@@ -1509,7 +1505,7 @@ class CmdLiteralString : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralString( t, value, index )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value?)
         writer.print( "Rogue_program.literal_strings[" ).print( index ).print( "]" )
       else
@@ -1891,17 +1887,16 @@ class CmdCreateObject : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCreateObject( t, of_type )
 
-    method write_cpp( writer:CPPWriter )
-      writer.print( "((" ).print(of_type).print(")") 
-      write_cpp_statement( writer )
-      writer.print( ")" )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
 
-    method write_cpp_statement( writer:CPPWriter )
       if (of_type.is_compound)
         writer.print_type_name( of_type )
       else
         writer.print_type_info(of_type).print( "->create_and_init_object()")
       endIf
+
+      if (not is_statement) writer.print( ")" )
 
     method resolve( scope:Scope )->Cmd
       of_type.organize
@@ -1923,7 +1918,7 @@ class CmdCreateCompound : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCreateCompound( t, of_type, args.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( of_type ).print( "(" )
       if (args.count?)
         writer.print( " " )
@@ -1965,7 +1960,7 @@ class CmdAssign : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdAssign( t, target.clone(clone_args), new_value.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       #println StackTrace()
       prior.write_cpp( writer )
 
@@ -1995,7 +1990,7 @@ class CmdThisContext : Cmd
         return CmdThisContext( t, this_type )
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "THIS"
 
     method require_type_context
@@ -2047,7 +2042,7 @@ class CmdReadSingleton : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadSingleton( t, of_type )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
@@ -2087,8 +2082,10 @@ class CmdReadLocal : Cmd
 
       return CmdReadLocal( t, local_info )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( local_info.type.compile_type, local_info.type )
       writer.print( local_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( local_info.type.compile_type, local_info.type )
 
     method resolve( scope:Scope )->Cmd
       #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
@@ -2123,7 +2120,7 @@ class CmdWriteLocal : Cmd
       endIf
       return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.cpp_name ).print(" = ")
       writer.print( "((" ).print( local_info.type ).print( ")" )
       new_value.write_cpp( writer )
@@ -2149,9 +2146,11 @@ class CmdReadSetting : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadSetting( t, setting_info )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( setting_info.type.compile_type, setting_info.type )
       writer.print_type_name( setting_info.type_context ).print( "::" )
       writer.print( setting_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( setting_info.type.compile_type, setting_info.type )
 
     method resolve( scope:Scope )->Cmd
       setting_info.type_context.resolve
@@ -2173,7 +2172,7 @@ class CmdWriteSetting : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdWriteSetting( t, setting_info, new_value.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print_type_name( setting_info.type_context ).print( "::" )
       writer.print( setting_info.cpp_name ).print(" = ")
 
@@ -2204,10 +2203,12 @@ class CmdReadProperty : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadProperty( t, context.clone(clone_args), property_info )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( property_info.type.compile_type, property_info.type )
       context.write_cpp( writer )
       writer.print_access_operator( context.type )  # -> or .
       writer.print( property_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( property_info.type.compile_type, property_info.type )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
@@ -2233,7 +2234,7 @@ class CmdWriteProperty : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdWriteProperty( t, context.clone(clone_args), property_info, new_value.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )
       writer.print_access_operator( context.type )  # -> or .
       writer.print( property_info.cpp_name ).print(" = ")
@@ -2284,8 +2285,10 @@ class CmdCallRoutine : CmdCall
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallRoutine( t, method_info, args.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+
       writer.print( compile_target.cpp_name )
       writer.print( "(" )
       if (args.count?)
@@ -2306,6 +2309,7 @@ class CmdCallRoutine : CmdCall
         writer.print( " " )
       endIf
       writer.print( ")" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
 endClass
 
 class CmdCallAspectMethod : CmdCall
@@ -2313,8 +2317,9 @@ class CmdCallAspectMethod : CmdCall
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallAspectMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
       writer.print( compile_target.cpp_name )
       writer.print( "( " )
       writer.print( "(" )
@@ -2335,6 +2340,7 @@ class CmdCallAspectMethod : CmdCall
         ++i
       endForEach
       writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
 endClass
 
 
@@ -2359,8 +2365,9 @@ class CmdCallDynamicMethod : CmdCallMethod
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
       if (compile_target.is_overridden)
         writer.print( "call_" ).print( compile_target.cpp_typedef )
         writer.print( "( " )
@@ -2386,8 +2393,9 @@ class CmdCallDynamicMethod : CmdCallMethod
         writer.print( " )" )
 
       else
-        CmdCallStaticMethod( t, context, method_info, args ).write_cpp( writer )
+        CmdCallStaticMethod( t, context, method_info, args ).write_cpp( writer, is_statement )
       endIf
+      if (not is_statement) writer.print( ")" )  # end of return type cast
 endClass
 
 
@@ -2400,8 +2408,9 @@ class CmdCallStaticMethod : CmdCallMethod
       if (not context) context = CmdThisContext(t,method_info.type_context)
       return prior.resolve( scope )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
       writer.print( compile_target.cpp_name )
       writer.print( "( " )
       writer.print_cast( context.type, compile_target.type_context, context )
@@ -2419,6 +2428,7 @@ class CmdCallStaticMethod : CmdCallMethod
         ++i
       endForEach
       writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
 endClass
 
 
@@ -2445,8 +2455,9 @@ class CmdCallNativeRoutine : CmdCall
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallNativeRoutine( t, method_info, args.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
       writer.print( compile_target.cpp_name )
       writer.print( "( " )
       local i = 0
@@ -2463,6 +2474,7 @@ class CmdCallNativeRoutine : CmdCall
         ++i
       endForEach
       writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
 endClass
 
 class CmdCallNativeMethod : CmdCall
@@ -2470,8 +2482,9 @@ class CmdCallNativeMethod : CmdCall
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
       writer.print( compile_target.cpp_name )
       writer.print( "( " )
       context.write_cpp( writer )
@@ -2489,11 +2502,12 @@ class CmdCallNativeMethod : CmdCall
         ++i
       endForEach
       writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
 endClass
 
 class CmdCallInlineNative : CmdCall
   METHODS
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local st = method_info.native_code
 
       local dollar = st.locate('$')
@@ -2592,7 +2606,7 @@ class CmdUnary : Cmd
     method prefix_symbol->String
       return ""
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( cpp_prefix_symbol ).print( "(" )
       operand.write_cpp( writer )
       writer.print( ")" ).print( cpp_suffix_symbol )
@@ -2707,7 +2721,7 @@ class CmdBinary : Cmd
     method fn_name->String
       throw t.error( "[INTERNAL] $::fn_name() is not defined." (type_name) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (requires_parens) writer.print( "(" )
       left.write_cpp( writer )
       writer.print( " " ).print( cpp_symbol ).print( " " )
@@ -2722,7 +2736,7 @@ class CmdBinary : Cmd
       right = right.resolve( scope )
       local left_type = left.require_type
       local right_type = right.require_type
-      return resolve_for_types( scope, left.require_type, right.require_type )
+      return resolve_for_types( scope, left_type, right_type )
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       local operator_method_call = resolve_operator_method( scope, left_type, right_type )
@@ -2864,7 +2878,7 @@ class CmdMod : CmdBinary
         return this
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( Program.program_name ).print( ".mod( " )
       left.write_cpp( writer )
       writer.print( ", " )
@@ -2893,7 +2907,7 @@ class CmdPower : CmdBinary
         return this
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( left.type ).print( ") pow((double)")
       left.write_cpp( writer )
       writer.print( ", (double)" )
@@ -3426,7 +3440,7 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
     method cpp_symbol->String
       return ">>>"
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "Rogue_program.shift_right( " )
       left.write_cpp( writer )
       writer.print( ", " )
@@ -3510,7 +3524,7 @@ class CmdAdjustLocal : Cmd
         return CmdAdjustLocal( t, local_info, delta )
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )
       else           writer.print( "--" )
       writer.print( local_info.cpp_name )
@@ -3542,7 +3556,7 @@ class CmdAdjustProperty : Cmd
       }#
       return CmdAdjustProperty( t, context.clone(clone_args), property_info, delta )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )
       else           writer.print( "--" )
       context.write_cpp( writer )
@@ -3607,7 +3621,7 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
         return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
       endIf
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
       new_value.write_cpp( writer )
 
@@ -3666,7 +3680,7 @@ class CmdOpAssignSetting : CmdResolvedOpWithAssign
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdOpAssignSetting( t, setting_info, op, new_value.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print_type_name( setting_info.type_context ).print( "::" )
       writer.print( setting_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
       new_value.write_cpp( writer )
@@ -3726,7 +3740,7 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdOpAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )
       writer.print_access_operator( context.type )  # -> or .
       writer.print( property_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
@@ -3797,7 +3811,7 @@ class CmdCreateArray : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCreateArray( t, array_type, count_cmd.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "RogueArray::create( " )
       count_cmd.write_cpp( writer )
       writer.print( ", sizeof(" ).print_type_name( array_type.element_type ).print( ")" )
@@ -3825,8 +3839,9 @@ class CmdReadArrayElement : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadArrayElement( t, context.clone(clone_args), index.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local element_type = array_type.element_type
+      if (not is_statement) writer.print_open_cast( element_type.compile_type, element_type )
       if (element_type.is_reference)
         writer.print( "((" )
         writer.print( element_type )
@@ -3862,6 +3877,7 @@ class CmdReadArrayElement : Cmd
         writer.print( "]" )
 
       endIf
+      if (not is_statement) writer.print_close_cast( element_type.compile_type, element_type )
 
 
     method resolve( scope:Scope )->Cmd
@@ -3887,7 +3903,7 @@ class CmdReadArrayCount : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadArrayCount( t, context.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )
       writer.print( "->count" )
         
@@ -3915,7 +3931,7 @@ class CmdWriteArrayElement : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdWriteArrayElement( t, context.clone(clone_args), index.clone(clone_args), new_value.clone(clone_args) )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local element_type = array_type.element_type
       if (element_type.is_primitive)
         context.write_cpp( writer )
@@ -3986,7 +4002,7 @@ class CmdCastToType : CmdTypeOperator
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCastToType( t, operand.clone(clone_args), target_type )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( target_type ).print( ")(" )
       operand.write_cpp( writer )
       writer.print( "))" )
@@ -4022,13 +4038,13 @@ class CmdConvertToPrimitiveType : CmdConvertToType
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdConvertToPrimitiveType( t, operand.clone(clone_args), target_type )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( target_type.cpp_class_name ).print( ")(" )
       operand.write_cpp( writer )
       writer.print( "))" )
 
     method resolve( scope:Scope )->Cmd
-      local operand_type = operand.require_type
+      operand = operand.resolve(scope).require_value
       return this
 endClass
 
@@ -4037,7 +4053,7 @@ class CmdAs : CmdTypeOperator
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdAs( t, operand.clone(clone_args), target_type )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( target_type ).print( ")(RogueObject::as(" )
       operand.write_cpp( writer )
       writer.print( "," )
@@ -4062,7 +4078,7 @@ class CmdInstanceOf : CmdTypeOperator
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdInstanceOf( t, operand.clone(clone_args), target_type )
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "RogueObject::instance_of(" )
       operand.write_cpp( writer )
       writer.print( "," )
@@ -4226,7 +4242,7 @@ class CmdTaskControl : Cmd
       current_section.statements.add( cmd )
       return this
 
-    method write_cpp( writer:CPPWriter )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println( "switch (++THIS->ip)" )
       writer.println( "{" )
       writer.indent += 2
@@ -4360,7 +4376,6 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       fn_type.base_types.add( base_type )
 
       local m_call = fn_type.add_method( t, "call" )
-      local args = CmdArgs()
       if (parameters?)
         forEach (param in parameters)
           m_call.add_parameter( t, param.name, param.type )
@@ -4370,7 +4385,6 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       m_call.return_type = return_type
       m_call.statements = statements
 
-      local cmd : Cmd
       if (with_args?)
         local m_init = fn_type.add_method( t, "init" )
         local create_args = CmdArgs()

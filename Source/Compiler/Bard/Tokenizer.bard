@@ -259,7 +259,6 @@ class Tokenizer
         else              return TokenType.symbol_exclamation_point
 
       elseIf (ch == '$' )
-        local token_type : TokenType
         local id = read_identifier
         which (id)
           case "define":   add_new_token( TokenType.directive_define )
@@ -580,7 +579,6 @@ class Tokenizer
       reader.read  # '#'
       if (consume('{'))
         local nesting_count = 1
-        local keep_reading = true
         while (reader.has_another)
           local ch = reader.read
           which (ch)
@@ -715,8 +713,6 @@ class Tokenizer
       while (reader.has_another)
         local ch = reader.peek
         if (ch == 10)
-          local eol_line = reader.line
-          local eol_column = reader.column
           reader.read
           consume_spaces
           if (consume('|'))

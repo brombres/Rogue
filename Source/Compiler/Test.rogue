@@ -3,16 +3,6 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      println Alpha() + "hi"
+      println "Hello World!"
 endClass
 
-class Alpha
-  ENUMERATE
-    ALPHA = 1
-endClass
-
-class Beta : Alpha
-  METHODS
-    method init
-      println ALPHA
-endClass

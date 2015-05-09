@@ -40,3 +40,4 @@ vim:
 
 roguec: bcc
 	$(BARDVM) Bard/RogueC.bc Bard/RogueEntry.rogue --output=CPP/RogueProgram.cpp --main
+	cd CPP && make

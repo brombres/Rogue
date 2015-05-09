@@ -1646,7 +1646,7 @@ class Parser
 
     method parse_specialization_string->String
       string_buffer.clear
-      local t = read   # '<<'
+      read   # '<<'
       string_buffer.print( "<<" )
 
       local first = true

@@ -400,7 +400,7 @@ class Method
       # Convert resolved method into task "functor"
       forEach (v in m_temp.locals)
         local p_name = v.name + "_" + v.index
-        local p = task_type.add_property( v.t, p_name, v.type )
+        task_type.add_property( v.t, p_name, v.type )
       endForEach
 
       local task_args = TaskArgs( task_type, m_execute, this.type_context, this )
