@@ -295,7 +295,9 @@ class Method
       if (resolved) return
       resolved = true
 
-      forEach (param in parameters) param.type.organize
+      forEach (param in parameters)
+        param.type.organize
+      endForEach
       if (return_type?) return_type.organize
 
       if (type_context.generic_type?)

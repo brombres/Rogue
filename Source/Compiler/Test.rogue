@@ -4,10 +4,9 @@ class Test
   METHODS
     method init
       println "Hello World!"
-      local table = Table<<String,String[]>>()
-      table["op+"] = String[]
-      table["op+"]["op+(Byte)"] = "yes"
-      local list =  table["op+"]
+      
+      local list = [0,1,2,3,4,5,6,7,8]
+      list.remove(4)
       println list
 endClass
 

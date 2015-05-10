@@ -592,16 +592,6 @@ class Type
         p.type.organize
       endForEach
 
-      #{
-      local need_init_object = false
-      forEach (p in property_list)
-        if (p.initial_value?)
-          need_init_object = true
-          escapeForEach
-        endIf
-      endForEach
-      }#
-
       forEach (r in routine_list)
         r.resolve
       endForEach

@@ -137,13 +137,13 @@ class ListOps<<$DataType>>
 
     routine locate( list:$DataType[], value:$DataType )->Integer
       forEach (i of list)
-        if (list[i] == value) return i
+        if (value == list[i]) return i
       endForEach
       return -1
 
     routine locate_last( list:$DataType[], value:$DataType )->Integer
       forEach (i of list step -1)
-        if (list[i] == value) return i
+        if (value == list[i]) return i
       endForEach
       return -1
 endClass

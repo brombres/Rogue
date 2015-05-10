@@ -1868,7 +1868,8 @@ class CmdElementAccess : Cmd
       else
         local args = CmdArgs()
         args.add( index ).add( new_value )
-        return scope.resolve_call( context_type, CmdAccess(t,context,"set",args), true )
+        local result = scope.resolve_call( context_type, CmdAccess(t,context,"set",args), true )
+        return result
       endIf
 
 endClass
@@ -3814,7 +3815,7 @@ class CmdCreateArray : Cmd
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "RogueArray::create( " )
       count_cmd.write_cpp( writer )
-      writer.print( ", sizeof(" ).print_type_name( array_type.element_type ).print( ")" )
+      writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
       if (array_type.element_type.is_reference) writer.print( ", true" )
       writer.print( " )" )
 
