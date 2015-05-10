@@ -512,7 +512,7 @@ class Parser
 
       consume_eols
       if (consume(TokenType.keyword_inlineNative))
-        # native "$this.fn($arg)"
+        # inlineNative "$this.fn($arg)"
         this_method.attributes.add( Attribute.is_native )
         local buffer = StringBuilder()
         local found_native_code = false

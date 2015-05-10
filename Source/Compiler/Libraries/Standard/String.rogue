@@ -187,7 +187,10 @@ class String [native functional]
       if (n < 0) return substring( -n, this_count-1 )
       else       return substring( this_count-n, this_count-1 )
 
-    method substring( i1:Integer, i2=-1:Integer )->String
+    method substring( i1:Integer )->String
+      $if ("C++") inlineNative '$this->substring($i1)'
+
+    method substring( i1:Integer, i2:Integer )->String
       $if ("C++") inlineNative '$this->substring($i1,$i2)'
 
     method to->Integer

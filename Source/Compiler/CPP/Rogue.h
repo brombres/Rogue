@@ -392,7 +392,8 @@ struct RogueString : RogueObject
   RogueString* plus( RogueLong value );
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
-  RogueString* substring( RogueInteger i1, RogueInteger i2=-1 );
+  RogueString* substring( RogueInteger i1 );
+  RogueString* substring( RogueInteger i1, RogueInteger i2 );
   bool         to_c_string( char* buffer, int buffer_size );
   RogueInteger to_integer();
   RogueReal    to_real();

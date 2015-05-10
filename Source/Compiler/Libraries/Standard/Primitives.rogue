@@ -63,7 +63,7 @@ class Character [primitive]
       if (this >= '0' and this <= '9') return (this - '0')
       if (this >= 'a' and this <= 'z') return (this - 'a') + 10
       if (this >= 'A' and this <= 'Z') return (this - 'A') + 10
-      return 0
+      return -1
 endClass
 
 class Byte [primitive]

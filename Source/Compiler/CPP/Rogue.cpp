@@ -706,11 +706,17 @@ RogueReal    RogueString::to_real()
   }
 }
 
+
+RogueString* RogueString::substring( RogueInteger i1 )
+{
+  return substring( i1, count-1 );
+}
+
 RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
 {
   // Clamp i1 and i2
   if (i1 < 0) i1 = 0;
-  if (i2 == -1 || i2 >= count) i2 = count - 1;
+  if (i2 >= count) i2 = count - 1;
 
   // Return empty quotes if zero-length
   if (i1 > i2) return Rogue_program.literal_strings[0]; // empty string

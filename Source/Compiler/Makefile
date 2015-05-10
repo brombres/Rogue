@@ -45,4 +45,4 @@ roguec: bcc
 	cd CPP && make
 	cp CPP/a.out roguec
 	chmod a+x roguec
-	./roguec Test.rogue --output=CPP/RogueProgram.cpp --main
+	./roguec Bard/RogueEntry.rogue --output=CPP/RogueProgram.cpp --main
