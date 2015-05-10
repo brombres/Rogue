@@ -56,6 +56,13 @@ class Cmd
 
     method exit_scope( scope:Scope )
 
+    method find_operation_result_type( left_type:Type, right_type:Type )->Type
+      local result = find_common_type( left_type, right_type )
+      if (not result) return left_type
+
+      if (result is Program.type_Byte or result is Program.type_Character) return Program.type_Integer
+      return result
+
     method find_common_type( left_type:Type, right_type:Type )->Type
       if (left_type is null)  return right_type
       if (right_type is null) return left_type
@@ -2767,7 +2774,7 @@ class CmdBinary : Cmd
       throw t.error( "[INTERNAL] $::symbol() is not defined." (type_name) )
 
     method type->Type
-      return left.type
+      return find_operation_result_type( left.require_type, right.require_type )
 endClass
 
 class CmdAdd : CmdBinary

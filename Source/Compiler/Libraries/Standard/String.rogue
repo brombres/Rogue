@@ -202,28 +202,30 @@ class String [native functional]
     method to_lowercase->String
       local has_uc = false
       forEach (ch in this)
-        if (ch >= 'A' and ch <= 'Z') has_uc = true #; escapeForEach TODO(abe)
+        if (ch >= 'A' and ch <= 'Z') has_uc = true; escapeForEach
       endForEach
 
       if (not has_uc) return this
 
       local result = StringBuilder( count )
       forEach (ch in this)
-        if (ch >= 'A' and ch <= 'Z') result.print( ((ch-'A')+'a') )
+        if (ch >= 'A' and ch <= 'Z') result.print( ((ch-'A')+'a')->Character )
+        else                         result.print( ch )
       endForEach
       return result->String
 
     method to_uppercase->String
       local has_lc = false
       forEach (ch in this)
-        if (ch >= 'a' and ch <= 'a') has_lc = true #; escapeForEach TODO(abe)
+        if (ch >= 'a' and ch <= 'a') has_lc = true; escapeForEach
       endForEach
 
       if (not has_lc) return this
 
       local result = StringBuilder( count )
       forEach (ch in this)
-        if (ch >= 'a' and ch <= 'z') result.print( ((ch-'a')+'A') )
+        if (ch >= 'a' and ch <= 'z') result.print( ((ch-'a')+'A')->Character )
+        else                         result.print( ch )
       endForEach
       return result->String
 endClass

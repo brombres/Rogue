@@ -1376,10 +1376,10 @@ RogueLogical RogueFile__save( RogueString* filepath, RogueString* data )
   // Reuse 'path' as a write buffer
   int remaining = data->count;
   RogueCharacter* src = data->characters - 1;
-  unsigned char* dest = ((unsigned char*) path) - 1;
 
   while (remaining > 0)
   {
+    unsigned char* dest = ((unsigned char*) path) - 1;
     int block_size = remaining;
     if (block_size > sizeof(path)) block_size = sizeof(path);
     int copy_count = block_size;

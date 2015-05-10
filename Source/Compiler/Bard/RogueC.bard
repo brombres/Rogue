@@ -39,6 +39,7 @@ class RogueC [singleton]
         endIf
 
         Program.write_cpp( output_filepath )
+
       catch (err:Error)
         println err
         Runtime.exit(1)
