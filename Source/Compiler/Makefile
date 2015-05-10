@@ -1,4 +1,5 @@
 .PHONY: cpp
+.PHONY: roguec
 
 ROGUE_SOURCE = $(shell ls Bard/*.bard)
 BARDVM = ../../Programs/Bard/Programs/Mac/bard
@@ -30,6 +31,7 @@ list: go
 
 cpp: compile
 	cd CPP && make
+	CPP/a.out
 
 clean:
 	rm -f Bard/*.bc
@@ -41,3 +43,6 @@ vim:
 roguec: bcc
 	$(BARDVM) Bard/RogueC.bc Bard/RogueEntry.rogue --output=CPP/RogueProgram.cpp --main
 	cd CPP && make
+	cp CPP/a.out roguec
+	chmod a+x roguec
+	./roguec Test.rogue --output=CPP/RogueProgram.cpp --main

@@ -317,8 +317,8 @@ class Program [requisite singleton]
       writer.println
       writer.println( "  RogueProgram();" )
       writer.println( "  ~RogueProgram();" )
-      writer.println( "  void configure( int argc, char* argv[] );" )
-      writer.println( "  void launch();" )
+      writer.println( "  void configure();" )
+      writer.println( "  void launch( int argc, char* argv[] );" )
       writer.println( "  void finish_tasks();" )
       writer.println( "};" )
       writer.println
@@ -427,7 +427,7 @@ writer.println( "// " + type )
       writer.println
 
       # configure() method
-      writer.println( "void RogueProgram::configure( int argc, char* argv[] )" )
+      writer.println( "void RogueProgram::configure()" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -464,11 +464,21 @@ writer.println( "// " + type )
       endForEach
       writer.println
 
+      # End of configure()
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+      # launch()
+      writer.println( "void RogueProgram::launch( int argc, char* argv[] )" )
+      writer.println( "{" )
+      writer.indent += 2
+
       # Call all init_class() methods
       forEach (type in type_list)
         if (not type.omit_output)
           local m = type.find_routine( "init_class()" )
-          if (m?)
+          if (m? and m.type_context is type)
             writer.print( m.cpp_name ).println( "();" )
           endIf
         endIf
@@ -483,28 +493,21 @@ writer.println( "// " + type )
       writer.println( "}" )
       writer.println
 
-      writer.print(   "Rogue_program.main_object = Rogue_program.type_").print(main_class.cpp_name).println( "->create_object();" )
-      # Call init_object() on main object
-      local m = main_class.find_method( "init_object()" )
-      if (m?)
-        writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
+      # Create main object
+      local main_class_type = "Rogue_program.type_" + main_class.cpp_name
+      if (main_class.is_singleton)
+        writer.print( "Rogue_program.main_object = " ).print( main_class_type ).println( "->singleton();" )
+
+      else
+        writer.print( "Rogue_program.main_object = " ).print( main_class_type ).println( "->create_and_init_object();" )
+
+        # Call init() on main object
+        local m = main_class.find_method( "init()" )
+        if (m?)
+          writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
+        endIf
       endIf
 
-      # End of configure()
-      writer.indent -= 2
-      writer.println( "}" )
-      writer.println
-
-      # launch()
-      writer.println( "void RogueProgram::launch()" )
-      writer.println( "{" )
-      writer.indent += 2
-
-      # Call init() on main object
-      m = main_class.find_method( "init()" )
-      if (m?)
-        writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
-      endIf
       writer.println( "Rogue_program.collect_garbage();" )
 
       writer.indent -= 2
@@ -533,8 +536,8 @@ writer.println( "// " + type )
         writer.println
         writer.println( @|int main( int argc, char* argv[] )
                          |{
-                         |  Rogue_program.configure( argc, argv );
-                         |  Rogue_program.launch();
+                         |  Rogue_program.configure();
+                         |  Rogue_program.launch( argc, argv );
                          |  Rogue_program.finish_tasks();
                          |  return 0;
                          |}

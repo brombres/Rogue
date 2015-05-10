@@ -4,5 +4,18 @@ class Test
   METHODS
     method init
       println "Hello World!"
+      local table = Table<<String,String[]>>()
+      table["op+"] = String[]
+      table["op+"]["op+(Byte)"] = "yes"
+      local list =  table["op+"]
+      println list
 endClass
 
+class Alpha( value:Integer )
+  METHODS
+    method operator+( n:Integer )->Alpha
+      inline Alpha( n + this.value )
+endClass
+
+class Beta : Alpha
+endClass

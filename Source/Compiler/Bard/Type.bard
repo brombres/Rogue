@@ -616,7 +616,15 @@ class Type
       if (omit_output) return
 
       writer.print( "struct " ).print( cpp_class_name )
-      if (is_class) writer.print( " : RogueObject" )
+      local is_error = false
+      if (is_class)
+        if (instance_of(Program.type_Error))
+          is_error = true
+          writer.print( " : " ).print_type_name( base_class )
+        else
+          writer.print( " : RogueObject" )
+        endIf
+      endIf
       writer.println.println( "{" )
       writer.indent += 2
 
@@ -631,7 +639,9 @@ class Type
 
       writer.println "// PROPERTIES"
       forEach (p in property_list)
-        writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+        if (not is_error or p.type_context is this)
+          writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+        endIf
       endForEach
       writer.println
 
@@ -748,14 +758,19 @@ class Type
         writer.print( this ).println( " singleton()" )
         writer.println( "{" )
         writer.indent += 2
-        writer.print( "if ( !_singleton ) _singleton = " )
+        writer.println( "if ( !_singleton )" )
+        writer.println( "{" )
+        writer.println( "  _singleton = create_object();" )
+        writer.println( "  init_object( _singleton );" )
+
         local m_init = find_method( "init()" )
         if (m_init?)
-          writer.print( m_init.cpp_name )
-          writer.print( "( (" ).print( this ).println( ")create_and_init_object() );" )
-        else
-          writer.println( "create_and_init_object();" )
+          writer.print( "  " ).print( m_init.cpp_name )
+          writer.print( "( (" ).print( this ).println( ") _singleton );" )
         endIf
+
+        writer.println( "}" )
+
         writer.print( "return (" ).print( this ).println( ") _singleton;" )
         writer.indent -= 2
         writer.println( "}" )
