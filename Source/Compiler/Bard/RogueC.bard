@@ -17,8 +17,16 @@ class RogueC [singleton]
         process_command_line_arguments
 
         if (source_files.count == 0)
-          println "USAGE"
-          println "  roguec [options] file1.rogue [file2.rogue ...] [--output=destpath/file.cpp]"
+          println @|USAGE
+                   |  roguec [options] file1.rogue [file2.rogue ...]
+                   |
+                   |OPTIONS
+                   |  --main
+                   |    Include a main() function in the .cpp output file.
+                   |
+                   |  --output=destpath/[file]
+                   |    Specify the destination folder and optionally the base output filename
+                   |    (default: RogueProgram).
           Runtime.exit( 1 )
         endIf
 
@@ -32,10 +40,14 @@ class RogueC [singleton]
         Program.resolve
 
         if (output_filepath is null)
-          output_filepath = File(first_filepath).filename
+          output_filepath = File.filename(first_filepath)
           if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
         else
-          if (output_filepath.to_lowercase.ends_with(".cpp")) output_filepath = output_filepath.leftmost(-4)
+          if (File.is_folder(output_filepath))
+            output_filepath = File.path(output_filepath) + "/RogueProgram"
+          elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
+            output_filepath = output_filepath.leftmost(-4)
+          endIf
         endIf
 
         Program.write_cpp( output_filepath )

@@ -22,6 +22,12 @@ class File
 
     routine load_as_string( filepath:String )->String [native]
 
+    routine path( filepath:String )->String
+      local i = filepath.locate_last( '/' )
+      if (i == -1) i = filepath.locate_last( '\\' )
+      if (i == -1) return ""
+      return filepath.substring( 0, i-1 )
+
     routine reader( filepath:String )->FileReader
       return FileReader( filepath )
 
@@ -55,6 +61,9 @@ class File
 
     method load_as_string->String
       inline File.load_as_string( this.filepath )
+
+    method path->String
+      inline File.path( this.filepath )
 
     method reader->FileReader
       inline File.reader( this.filepath )

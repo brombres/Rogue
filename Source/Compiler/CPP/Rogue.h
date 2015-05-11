@@ -665,4 +665,3 @@ void RogueSystem__exit( int result_code );
 //-----------------------------------------------------------------------------
 RogueReal RogueTime__current();
 
-#include "RogueProgram.h"
