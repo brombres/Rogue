@@ -3,34 +3,5 @@ $include "Libraries/Standard"
 class Test
   METHODS
     method init
-      local st = "$this->plus($value)"
-      local names = ["value"]
-
-      local dollar = st.locate('$')
-      while (dollar != -1)
-        println( dollar + ":" + st.substring(0,dollar-1) )
-        st = st.substring( dollar+1 )
-        
-        local best_match : String
-        forEach (name in names)
-          if (st.begins_with(name))
-            if (best_match is null or name.count > best_match.count) best_match = name
-          endIf
-        endForEach
-
-        if (best_match?)
-          println best_match
-          st = st.substring( best_match.count )
-        else
-          if (st.begins_with("this"))
-            println "this"
-            st = st.substring( 4 )
-          endIf
-        endIf
-
-        dollar = st.locate('$')
-      endWhile
-
-      println st
-
+      println "Hello World!"
 endClass

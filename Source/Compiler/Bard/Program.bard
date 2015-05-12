@@ -273,10 +273,16 @@ class Program [requisite singleton]
 
       # .H header -------------------------------------------------------------
       local writer = CPPWriter( filepath + ".h" )
-      writer.println
 
-      writer.println //#pragma  once//
-      writer.println //#include "Rogue.h"//
+      # Embed Rogue.h 
+      writer.println( "//=============================================================================" )
+      writer.println( "// Embedded copy of Rogue.h" )
+      writer.println( "//=============================================================================" )
+      forEach (ch in FileReader("CPP/Rogue.h")) writer.buffer.print( ch )
+
+      writer.println( "//=============================================================================" )
+      writer.println( "// Code generated from Rogue source" )
+      writer.println( "//=============================================================================" )
       writer.println //#include <cmath>//
       writer.println
 
@@ -328,18 +334,29 @@ class Program [requisite singleton]
       writer.println
 
       writer.println( "extern RogueProgram Rogue_program;" );
+      writer.println
 
       writer.close
 
       # .CPP implementation ---------------------------------------------------
       writer = CPPWriter( filepath + ".cpp" )
-      writer.println
 
       local base_filename = filepath
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
       writer.println //#include <stdio.h>//
       writer.println //#include "$.h"// (base_filename)
       writer.println
+
+      # Embed Rogue.cpp
+      writer.println( "//=============================================================================" )
+      writer.println( "// Embedded copy of Rogue.cpp" )
+      writer.println( "//=============================================================================" )
+      forEach (ch in FileReader("CPP/Rogue.cpp")) writer.buffer.print( ch )
+
+
+      writer.println( "//=============================================================================" )
+      writer.println( "// Code generated from Rogue source" )
+      writer.println( "//=============================================================================" )
 
       # typedef each unique method signature
       local native_method_signature_list   = String[]

@@ -22,7 +22,7 @@ vm:
 	cd ../../Programs/Bard && make
 
 compile:
-	$(BARDVM) Bard/RogueC.bc Test.rogue --output=CPP/RogueProgram.cpp --main
+	$(BARDVM) Bard/RogueC.bc Test.rogue --output=Test.cpp --main
 
 list: go
 	cat CPP/RogueProgram.h
@@ -30,8 +30,8 @@ list: go
 	cat CPP/RogueProgram.cpp
 
 cpp: compile
-	cd CPP && make
-	CPP/a.out
+	#cd CPP && make
+	#CPP/a.out
 
 clean:
 	rm -f Bard/*.bc

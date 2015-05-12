@@ -52,8 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "Rogue.h"
-#include "RogueProgram.h"
 
 #ifndef PATH_MAX
 #  define PATH_MAX 4096
