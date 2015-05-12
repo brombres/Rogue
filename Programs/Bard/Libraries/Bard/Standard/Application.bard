@@ -1,8 +1,0 @@
-class Application [singleton]
-  METHODS
-    method default_asset_path->String
-      return native_default_asset_path
-
-    method native_default_asset_path->String [native]
-
-endClass
