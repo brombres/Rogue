@@ -272,13 +272,14 @@ class Program [requisite singleton]
       endForEach
 
       # .H header -------------------------------------------------------------
+      println "Writing $.h..." (filepath)
       local writer = CPPWriter( filepath + ".h" )
 
       # Embed Rogue.h 
       writer.println( "//=============================================================================" )
       writer.println( "// Embedded copy of Rogue.h" )
       writer.println( "//=============================================================================" )
-      forEach (ch in FileReader("Rogue.h")) writer.buffer.print( ch )
+      forEach (ch in FileReader(RogueC.libraries_folder+"CPP/Rogue.h")) writer.buffer.print( ch )
 
       writer.println( "//=============================================================================" )
       writer.println( "// Code generated from Rogue source" )
@@ -339,6 +340,7 @@ class Program [requisite singleton]
       writer.close
 
       # .CPP implementation ---------------------------------------------------
+      println "Writing $.cpp..." (filepath)
       writer = CPPWriter( filepath + ".cpp" )
 
       local base_filename = filepath
@@ -351,7 +353,7 @@ class Program [requisite singleton]
       writer.println( "//=============================================================================" )
       writer.println( "// Embedded copy of Rogue.cpp" )
       writer.println( "//=============================================================================" )
-      forEach (ch in FileReader("Rogue.cpp")) writer.buffer.print( ch )
+      forEach (ch in FileReader(RogueC.libraries_folder+"CPP/Rogue.cpp")) writer.buffer.print( ch )
 
       writer.println( "//=============================================================================" )
       writer.println( "// Code generated from Rogue source" )

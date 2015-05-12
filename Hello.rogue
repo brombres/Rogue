@@ -1,0 +1,5 @@
+class HelloWorld
+  METHODS
+    method init
+      println "Hello World!"
+endClass
