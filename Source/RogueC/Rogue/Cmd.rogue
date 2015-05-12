@@ -1061,7 +1061,8 @@ class CmdForEach : CmdControlStructure
           statements.insert( CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
         endIf
 
-        local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(collection.t,collection,"has_another"), statements )
+        local rt = reader_var.t
+        local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(rt,CmdReadLocal(rt,reader_var),"has_another"), statements )
         cmd_loop.set_control_logic( this )
         cmd_loop.add_control_var( reader_var )
         if (index_var?)

@@ -1,3 +1,25 @@
+$include "Libraries/Standard"
+
+$include "Attributes.rogue"
+$include "CPPWriter.rogue"
+$include "CloneArgs.rogue"
+$include "Cmd.rogue"
+$include "Local.rogue"
+$include "Method.rogue"
+$include "Parser.rogue"
+$include "Preprocessor.rogue"
+$include "Program.rogue"
+$include "Property.rogue"
+$include "RogueError.rogue"
+$include "Scope.rogue"
+$include "Template.rogue"
+$include "Token.rogue"
+$include "TokenReader.rogue"
+$include "TokenType.rogue"
+$include "Tokenizer.rogue"
+$include "Type.rogue"
+
+
 class RogueC [singleton]
   PROPERTIES
     included_files = String[]
@@ -139,26 +161,4 @@ class RogueC [singleton]
       if (arg.contains('=')) throw RogueError( "Unexpected value for command line argument '$'." (expecting) )
 
 endClass
-
-$include "Libraries/Standard"
-
-$include "Attributes.rogue"
-$include "CPPWriter.rogue"
-$include "CloneArgs.rogue"
-$include "Cmd.rogue"
-$include "Local.rogue"
-$include "Method.rogue"
-$include "Parser.rogue"
-$include "Preprocessor.rogue"
-$include "Program.rogue"
-$include "Property.rogue"
-$include "RogueError.rogue"
-$include "Scope.rogue"
-$include "Template.rogue"
-$include "Token.rogue"
-$include "TokenReader.rogue"
-$include "TokenType.rogue"
-$include "Tokenizer.rogue"
-$include "Type.rogue"
-
 

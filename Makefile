@@ -1,8 +1,13 @@
-ROGUEC_SRC = $(shell find Source/Compiler/Rogue)
+ROGUEC_SRC = $(shell find Source/RogueC/Rogue)
 
 all: roguec
 
-roguec: bootstrap_roguec /usr/local/bin/roguec Programs/roguec Source/Compiler/CPP/RogueC.cpp
+remake: touch_roguec roguec
+
+roguec: bootstrap_roguec /usr/local/bin/roguec Programs/roguec Source/RogueC/CPP/RogueC.cpp
+
+touch_roguec:
+	touch Source/RogueC/Rogue/RogueC.rogue
 
 bootstrap_roguec:
 	@if [ ! -f "Programs/roguec" ]; \
@@ -10,16 +15,16 @@ bootstrap_roguec:
 	  echo -------------------------------------------------------------------------------; \
 	  echo Compiling Programs/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo g++ -Wall -O3 Source/Compiler/CPP/RogueC.cpp -o Programs/roguec; \
-	  g++ -Wall -O3 Source/Compiler/CPP/RogueC.cpp -o Programs/roguec; \
+	  echo g++ -Wall -O3 Source/RogueC/CPP/RogueC.cpp -o Programs/roguec; \
+	  g++ -Wall -O3 Source/RogueC/CPP/RogueC.cpp -o Programs/roguec; \
 	fi;
 
-Programs/roguec: Source/Compiler/CPP/RogueC.cpp
+Programs/roguec: Source/RogueC/CPP/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.cpp -> Programs/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	g++ -Wall -O3 Source/Compiler/CPP/RogueC.cpp -o Programs/roguec
+	g++ -Wall -O3 Source/RogueC/CPP/RogueC.cpp -o Programs/roguec
 
 /usr/local/bin/roguec:
 	@echo -------------------------------------------------------------------------------
@@ -28,8 +33,8 @@ Programs/roguec: Source/Compiler/CPP/RogueC.cpp
 	printf "%s\nexec \"%s/Programs/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > /usr/local/bin/roguec
 	chmod a+x /usr/local/bin/roguec
 
-Source/Compiler/CPP/RogueC.cpp: $(ROGUEC_SRC)
+Source/RogueC/CPP/RogueC.cpp: $(ROGUEC_SRC)
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp..."
 	@echo -------------------------------------------------------------------------------
-	cd Source/Compiler && roguec Rogue/RogueC.rogue --main --output=CPP/RogueC
+	cd Source/RogueC && roguec Rogue/RogueC.rogue --main --output=CPP/RogueC
