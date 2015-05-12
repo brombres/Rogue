@@ -36,7 +36,7 @@ Programs/RogueC/roguec: Source/RogueC/RogueC.cpp
 
 libraries:
 	@mkdir -p Programs/RogueC
-	@rsync -rtd Source/Libraries Programs/RogueC
+	@rsync -rt --delete Source/Libraries Programs/RogueC
 
 /usr/local/bin/roguec:
 	@echo -------------------------------------------------------------------------------
