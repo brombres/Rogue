@@ -22,8 +22,8 @@ $include "Type.rogue"
 
 class RogueC [singleton]
   PROPERTIES
-    included_files = String[]
-    prefix_path_list   = String[]
+    included_files   = String[]
+    prefix_path_list = String[]
     prefix_path_lookup = Table<<String,Logical>>()
     compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
 
@@ -35,6 +35,9 @@ class RogueC [singleton]
 
   METHODS
     method init
+      local libs = File.path(System.executable_filepath) + "/Libraries/"
+      if (File.exists(libs)) prefix_path_list.add( libs )
+
       try
         process_command_line_arguments
 
@@ -58,6 +61,7 @@ class RogueC [singleton]
         forEach (filepath in source_files)
           include( filepath )
         endForEach
+        include( "Standard" )
 
         Program.resolve
 

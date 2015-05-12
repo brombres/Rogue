@@ -278,7 +278,7 @@ class Program [requisite singleton]
       writer.println( "//=============================================================================" )
       writer.println( "// Embedded copy of Rogue.h" )
       writer.println( "//=============================================================================" )
-      forEach (ch in FileReader("CPP/Rogue.h")) writer.buffer.print( ch )
+      forEach (ch in FileReader("Rogue.h")) writer.buffer.print( ch )
 
       writer.println( "//=============================================================================" )
       writer.println( "// Code generated from Rogue source" )
@@ -351,7 +351,7 @@ class Program [requisite singleton]
       writer.println( "//=============================================================================" )
       writer.println( "// Embedded copy of Rogue.cpp" )
       writer.println( "//=============================================================================" )
-      forEach (ch in FileReader("CPP/Rogue.cpp")) writer.buffer.print( ch )
+      forEach (ch in FileReader("Rogue.cpp")) writer.buffer.print( ch )
 
       writer.println( "//=============================================================================" )
       writer.println( "// Code generated from Rogue source" )

@@ -682,16 +682,16 @@ struct RogueTypeError;
 struct RogueTypeRogueC;
 struct RogueTypeStringList;
 struct RogueTypeString_LogicalTable;
+struct RogueTypeSystem;
+struct RogueTypeFile;
 struct RogueTypeRuntime;
 struct RogueTypeProgram;
 struct RogueTypeToken;
-struct RogueTypeFile;
 struct RogueTypeRogueError;
 struct RogueTypeStringListOps;
 struct RogueTypeParser;
 struct RogueTypeObjectList;
 struct RogueTypeObjectListOps;
-struct RogueTypeSystem;
 struct RogueTypeTaskManager;
 struct RogueTypeTask;
 struct RogueTypeTaskManager__await_all__task49;
@@ -894,16 +894,16 @@ struct RogueClassError;
 struct RogueClassRogueC;
 struct RogueStringList;
 struct RogueClassString_LogicalTable;
+struct RogueClassSystem;
+struct RogueClassFile;
 struct RogueClassRuntime;
 struct RogueClassProgram;
 struct RogueClassToken;
-struct RogueClassFile;
 struct RogueClassRogueError;
 struct RogueClassStringListOps;
 struct RogueClassParser;
 struct RogueObjectList;
 struct RogueClassObjectListOps;
-struct RogueClassSystem;
 struct RogueClassTaskManager;
 struct RogueClassTask;
 struct RogueClassTaskManager__await_all__task49;
@@ -1173,6 +1173,23 @@ struct RogueClassString_LogicalTable : RogueObject
 
 };
 
+struct RogueClassSystem : RogueObject
+{
+  // SETTINGS
+  static RogueStringList* command_line_arguments;
+  static RogueString* executable_filepath;
+
+  // PROPERTIES
+
+};
+
+struct RogueClassFile : RogueObject
+{
+  // PROPERTIES
+  RogueString* filepath;
+
+};
+
 struct RogueClassRuntime : RogueObject
 {
   // PROPERTIES
@@ -1228,13 +1245,6 @@ struct RogueClassToken : RogueObject
 
 };
 
-struct RogueClassFile : RogueObject
-{
-  // PROPERTIES
-  RogueString* filepath;
-
-};
-
 struct RogueClassRogueError : RogueClassError
 {
   // PROPERTIES
@@ -1273,16 +1283,6 @@ struct RogueObjectList : RogueObject
 
 struct RogueClassObjectListOps : RogueObject
 {
-  // PROPERTIES
-
-};
-
-struct RogueClassSystem : RogueObject
-{
-  // SETTINGS
-  static RogueStringList* command_line_arguments;
-  static RogueString* executable_filepath;
-
   // PROPERTIES
 
 };
@@ -3231,16 +3231,16 @@ struct RogueProgram : RogueProgramCore
   RogueTypeRogueC* type_RogueC;
   RogueTypeStringList* type_StringList;
   RogueTypeString_LogicalTable* type_String_LogicalTable;
+  RogueTypeSystem* type_System;
+  RogueTypeFile* type_File;
   RogueTypeRuntime* type_Runtime;
   RogueTypeProgram* type_Program;
   RogueTypeToken* type_Token;
-  RogueTypeFile* type_File;
   RogueTypeRogueError* type_RogueError;
   RogueTypeStringListOps* type_StringListOps;
   RogueTypeParser* type_Parser;
   RogueTypeObjectList* type_ObjectList;
   RogueTypeObjectListOps* type_ObjectListOps;
-  RogueTypeSystem* type_System;
   RogueTypeTaskManager* type_TaskManager;
   RogueTypeTask* type_Task;
   RogueTypeTaskManager__await_all__task49* type_TaskManager__await_all__task49;
@@ -3609,6 +3609,13 @@ RogueLogical RogueString_LogicalTable__remove( RogueClassString_LogicalTable* TH
 void RogueString_LogicalTable__set( RogueClassString_LogicalTable* THIS, RogueString* key_0, RogueLogical value_1 );
 RogueStringBuilder* RogueString_LogicalTable__print_to( RogueClassString_LogicalTable* THIS, RogueStringBuilder* buffer_0 );
 RogueClassString_LogicalTable* RogueString_LogicalTable__init_object( RogueClassString_LogicalTable* THIS );
+RogueString* RogueSystem__type_name( RogueClassSystem* THIS );
+RogueClassSystem* RogueSystem__init_object( RogueClassSystem* THIS );
+RogueString* RogueFile__to_String( RogueClassFile* THIS );
+RogueString* RogueFile__type_name( RogueClassFile* THIS );
+RogueClassFile* RogueFile__init( RogueClassFile* THIS, RogueString* _auto_22_0 );
+RogueString* RogueFile__filename( RogueClassFile* THIS );
+RogueClassFile* RogueFile__init_object( RogueClassFile* THIS );
 RogueString* RogueRuntime__type_name( RogueClassRuntime* THIS );
 RogueClassRuntime* RogueRuntime__init_object( RogueClassRuntime* THIS );
 RogueString* RogueProgram__type_name( RogueClassProgram* THIS );
@@ -3628,13 +3635,13 @@ RogueClassProgram* RogueProgram__init_object( RogueClassProgram* THIS );
 RogueString* RogueStringArray__type_name( RogueArray* THIS );
 RogueString* RogueToken__to_String( RogueClassToken* THIS );
 RogueString* RogueToken__type_name( RogueClassToken* THIS );
-RogueClassToken* RogueToken__init( RogueClassToken* THIS, RogueClassTokenType* _auto_23_0 );
+RogueClassToken* RogueToken__init( RogueClassToken* THIS, RogueClassTokenType* _auto_26_0 );
 RogueClassToken* RogueToken__clone( RogueClassToken* THIS );
 RogueClassRogueError* RogueToken__error( RogueClassToken* THIS, RogueString* message_0 );
 RogueLogical RogueToken__is_directive( RogueClassToken* THIS );
 RogueLogical RogueToken__is_structure( RogueClassToken* THIS );
 RogueString* RogueToken__quoted_name( RogueClassToken* THIS );
-RogueClassToken* RogueToken__set_location( RogueClassToken* THIS, RogueString* _auto_24_0, RogueInteger _auto_25_1, RogueInteger _auto_26_2 );
+RogueClassToken* RogueToken__set_location( RogueClassToken* THIS, RogueString* _auto_27_0, RogueInteger _auto_28_1, RogueInteger _auto_29_2 );
 RogueClassToken* RogueToken__set_location( RogueClassToken* THIS, RogueClassToken* existing_0 );
 RogueCharacter RogueToken__to_Character( RogueClassToken* THIS );
 RogueInteger RogueToken__to_Integer( RogueClassToken* THIS );
@@ -3642,11 +3649,6 @@ RogueReal RogueToken__to_Real( RogueClassToken* THIS );
 RogueClassType* RogueToken__to_Type( RogueClassToken* THIS );
 RogueClassType* Rogue_Token__generic_type( RogueClassToken* THIS );
 RogueClassToken* RogueToken__init_object( RogueClassToken* THIS );
-RogueString* RogueFile__to_String( RogueClassFile* THIS );
-RogueString* RogueFile__type_name( RogueClassFile* THIS );
-RogueClassFile* RogueFile__init( RogueClassFile* THIS, RogueString* _auto_29_0 );
-RogueString* RogueFile__filename( RogueClassFile* THIS );
-RogueClassFile* RogueFile__init_object( RogueClassFile* THIS );
 RogueString* RogueRogueError__to_String( RogueClassRogueError* THIS );
 RogueString* RogueRogueError__type_name( RogueClassRogueError* THIS );
 RogueClassRogueError* RogueRogueError__init_object( RogueClassRogueError* THIS );
@@ -3756,8 +3758,6 @@ RogueObject* RogueObjectList__remove_last( RogueObjectList* THIS );
 RogueString* RogueObjectArray__type_name( RogueArray* THIS );
 RogueString* RogueObjectListOps__type_name( RogueClassObjectListOps* THIS );
 RogueClassObjectListOps* RogueObjectListOps__init_object( RogueClassObjectListOps* THIS );
-RogueString* RogueSystem__type_name( RogueClassSystem* THIS );
-RogueClassSystem* RogueSystem__init_object( RogueClassSystem* THIS );
 RogueString* RogueTaskManager__type_name( RogueClassTaskManager* THIS );
 RogueClassTaskManager* RogueTaskManager__add( RogueClassTaskManager* THIS, RogueClassTask* task_0 );
 RogueClassTask* RogueTaskManager__await_all( RogueClassTaskManager* THIS, RogueObjectList* tasks_0 );

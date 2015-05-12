@@ -1,7 +1,0 @@
-$include "Libraries/Standard"
-
-class Test
-  METHODS
-    method init
-      println "Hello World!"
-endClass
