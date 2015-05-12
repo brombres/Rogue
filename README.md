@@ -11,7 +11,14 @@ Rogue
 **NOTES**
 
 1. Running make will compile the `roguec` compiler from C++ source and create the executable script `/usr/local/bin/roguec`
+
 2. Run `roguec` by itself for options.
+
+3.  Compile Hello.rogue for a simple test:
+
+        roguec Hello.rogue --main
+        g++ Hello.cpp -o hello
+        ./hello
 
 ## Version History
 **v0.0.1 (Beta)** - May 12, 2015
