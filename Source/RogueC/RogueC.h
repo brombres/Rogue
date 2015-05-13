@@ -684,7 +684,6 @@ struct RogueTypeStringList;
 struct RogueTypeString_LogicalTable;
 struct RogueTypeSystem;
 struct RogueTypeFile;
-struct RogueTypeRuntime;
 struct RogueTypeProgram;
 struct RogueTypeToken;
 struct RogueTypeRogueError;
@@ -896,7 +895,6 @@ struct RogueStringList;
 struct RogueClassString_LogicalTable;
 struct RogueClassSystem;
 struct RogueClassFile;
-struct RogueClassRuntime;
 struct RogueClassProgram;
 struct RogueClassToken;
 struct RogueClassRogueError;
@@ -1154,6 +1152,7 @@ struct RogueClassRogueC : RogueObject
   RogueString* first_filepath;
   RogueString* output_filepath;
   RogueString* target;
+  RogueString* execute_args;
 
 };
 
@@ -1188,12 +1187,6 @@ struct RogueClassFile : RogueObject
 {
   // PROPERTIES
   RogueString* filepath;
-
-};
-
-struct RogueClassRuntime : RogueObject
-{
-  // PROPERTIES
 
 };
 
@@ -3234,7 +3227,6 @@ struct RogueProgram : RogueProgramCore
   RogueTypeString_LogicalTable* type_String_LogicalTable;
   RogueTypeSystem* type_System;
   RogueTypeFile* type_File;
-  RogueTypeRuntime* type_Runtime;
   RogueTypeProgram* type_Program;
   RogueTypeToken* type_Token;
   RogueTypeRogueError* type_RogueError;
@@ -3617,8 +3609,6 @@ RogueString* RogueFile__type_name( RogueClassFile* THIS );
 RogueClassFile* RogueFile__init( RogueClassFile* THIS, RogueString* _auto_22_0 );
 RogueString* RogueFile__filename( RogueClassFile* THIS );
 RogueClassFile* RogueFile__init_object( RogueClassFile* THIS );
-RogueString* RogueRuntime__type_name( RogueClassRuntime* THIS );
-RogueClassRuntime* RogueRuntime__init_object( RogueClassRuntime* THIS );
 RogueString* RogueProgram__type_name( RogueClassProgram* THIS );
 void RogueProgram__configure( RogueClassProgram* THIS );
 RogueString* RogueProgram__create_unique_id( RogueClassProgram* THIS );

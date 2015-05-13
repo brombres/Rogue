@@ -32,6 +32,8 @@ class RogueC [singleton]
     output_filepath : String
     target = "C++"
 
+    execute_args    : String
+
   METHODS
     method init
       local libs = File.path(System.executable_filepath) + "/Libraries/"
@@ -55,11 +57,16 @@ class RogueC [singleton]
                    |  --main
                    |    Include a main() function in the .cpp output file.
                    |
+                   |  --execute[="args"]
+                   |    Use g++ to compile and run the .cpp output of the compiled .rogue program.
+                   |    Automatically enables the --main option.
+                   |    The C++ file is compiled to the filename "a.out".
+                   |
                    |  --output=destpath/[file]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
                    |
-          Runtime.exit( 1 )
+          System.exit( 1 )
         endIf
 
         compile_targets["C++"] = true
@@ -85,9 +92,16 @@ class RogueC [singleton]
 
         Program.write_cpp( output_filepath )
 
+        if (execute_args?)
+          local cmd = "g++ $.cpp && ./a.out $" (output_filepath,execute_args)
+          println cmd
+          println
+          System.run( cmd )
+        endIf
+
       catch (err:Error)
         println err
-        Runtime.exit(1)
+        System.exit(1)
       endTry
 
     method include( filepath:String )
@@ -97,6 +111,12 @@ class RogueC [singleton]
     method include( t:Token, filepath:String )
       # Preemptively (immediately) parses the given file.
       local file = File(filepath)
+
+      if (not file.exists and File.exists(filepath+".rogue"))
+        filepath += ".rogue"
+        file = File( filepath )
+      endIf
+
       if (not file.exists)
         forEach (prefix in prefix_path_list)
           local prefixed_filepath = prefix + filepath
@@ -104,6 +124,10 @@ class RogueC [singleton]
           if (prefixed_file.exists)
             filepath = prefixed_filepath
             file = prefixed_file
+            escapeForEach
+          elseIf (File.exists(prefixed_filepath+".rogue"))
+            filepath = prefixed_filepath + ".rogue"
+            file = File( filepath )
             escapeForEach
           endIf
         endForEach
@@ -145,7 +169,7 @@ class RogueC [singleton]
       Parser( filepath ).parse_elements
 
     method process_command_line_arguments
-      forEach (arg in Runtime.command_line_arguments)
+      forEach (arg in System.command_line_arguments)
         local value = arg.after_first('=')
         arg = arg.before_first('=')
         if (arg.begins_with("--"))
@@ -153,6 +177,10 @@ class RogueC [singleton]
           if (arg == "--output")
             if (value.count == 0) throw RogueError( //Output filepath expected after "--output="// )
             output_filepath = value
+
+          elseIf (arg == "--execute")
+            generate_main = true
+            execute_args = value
 
           elseIf (arg == "--main")
             if (value.count?) throw RogueError( "Unexpected value for '--main' option." )

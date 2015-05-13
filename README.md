@@ -17,8 +17,12 @@ Rogue
 3.  Compile Hello.rogue for a simple test:
 
         roguec Hello.rogue --main
-        g++ Hello.cpp -o hello
-        ./hello
+        g++ Hello.cpp -o a.out
+        ./a.out
+
+    OR
+
+        roguec Hello --execute
 
 ## Version History
 **v0.0.1 (Beta)** - May 12, 2015
