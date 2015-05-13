@@ -60,7 +60,6 @@ class RogueC [singleton]
                    |  --execute[="args"]
                    |    Use g++ to compile and run the .cpp output of the compiled .rogue program.
                    |    Automatically enables the --main option.
-                   |    The C++ file is compiled to the filename "a.out".
                    |
                    |  --output=destpath/[file]
                    |    Specify the destination folder and optionally the base filename for the
@@ -93,7 +92,8 @@ class RogueC [singleton]
         Program.write_cpp( output_filepath )
 
         if (execute_args?)
-          local cmd = "g++ $.cpp && ./a.out $" (output_filepath,execute_args)
+          local exe = output_filepath.to_lowercase
+          local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
           println cmd
           println
           System.run( cmd )
@@ -112,7 +112,7 @@ class RogueC [singleton]
       # Preemptively (immediately) parses the given file.
       local file = File(filepath)
 
-      if (not file.exists and File.exists(filepath+".rogue"))
+      if (File.exists(filepath+".rogue"))
         filepath += ".rogue"
         file = File( filepath )
       endIf
@@ -121,13 +121,13 @@ class RogueC [singleton]
         forEach (prefix in prefix_path_list)
           local prefixed_filepath = prefix + filepath
           local prefixed_file = File( prefixed_filepath )
-          if (prefixed_file.exists)
-            filepath = prefixed_filepath
-            file = prefixed_file
-            escapeForEach
-          elseIf (File.exists(prefixed_filepath+".rogue"))
+          if (File.exists(prefixed_filepath+".rogue"))
             filepath = prefixed_filepath + ".rogue"
             file = File( filepath )
+            escapeForEach
+          elseIf (prefixed_file.exists)
+            filepath = prefixed_filepath
+            file = prefixed_file
             escapeForEach
           endIf
         endForEach

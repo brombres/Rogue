@@ -46,7 +46,7 @@ struct RogueFileWriterType;
 
 #define ROGUE_TRACE( obj ) \
 { \
-  RogueObject* _trace_obj = obj; \
+  RogueObject* _trace_obj = (RogueObject*)(obj); \
   if (_trace_obj && _trace_obj->object_size >= 0) \
   { \
     _trace_obj->object_size = ~_trace_obj->object_size; \

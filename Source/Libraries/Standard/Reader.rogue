@@ -18,6 +18,9 @@ class LineReader : Reader<<String>>
     method init( source )
       next = prepare_next
 
+    method init( file:File )
+      init( file.reader )
+
     method has_another->Logical
       return next?
 

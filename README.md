@@ -17,8 +17,8 @@ Rogue
 3.  Compile Hello.rogue for a simple test:
 
         roguec Hello.rogue --main
-        g++ Hello.cpp -o a.out
-        ./a.out
+        g++ Hello.cpp -o hello
+        hello
 
     OR
 
