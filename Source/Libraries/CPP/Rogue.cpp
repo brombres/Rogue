@@ -1204,6 +1204,17 @@ void* RogueAllocator::free_permanent( void* data, int size )
 
 RogueAllocator Rogue_allocator;
 
+//-----------------------------------------------------------------------------
+//  Console
+//-----------------------------------------------------------------------------
+RogueString* RogueConsole__input( RogueString* prompt )
+{
+  if (prompt) RogueString::print( prompt );
+
+  char st[4096];
+  fgets( st, 4096, stdin );
+  return RogueString::create( st );
+}
 
 //-----------------------------------------------------------------------------
 //  File

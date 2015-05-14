@@ -1,0 +1,33 @@
+class NameGenerator
+  PROPERTIES
+    word_length = Integer[]
+
+  METHODS
+    method init
+      local file_list = String[]
+
+      forEach (filepath in System.command_line_arguments)
+        file_list.add( filepath )
+      endForEach
+
+      if (file_list.count == 0) file_list.add( "TrainingSet.txt" )
+
+      forEach (filepath in file_list) process( filepath )
+
+      println
+      local count = Console.input( "Generate how many names? " )
+      println count->Integer + 1
+
+    method process( filepath:String )
+      if (not File.exists(filepath))
+        println( "Unable to open $ for reading." (filepath) )
+        System.exit( 1 )
+      endIf
+
+      println( "Reading $..." (filepath) )
+
+      forEach (line in LineReader(File(filepath)))
+        println line
+      endForEach
+
+endClass

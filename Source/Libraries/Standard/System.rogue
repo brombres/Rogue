@@ -9,9 +9,11 @@ class System [requisite]
 
     routine run( command:String )
       inlineNative
-        @|char cmd_buffer[4096];
-        @|$command->to_c_string( cmd_buffer, 4096 );
-        @|system( cmd_buffer );
+        @|{
+         |  char cmd_buffer[4096];
+         |  $command->to_c_string( cmd_buffer, 4096 );
+         |  system( cmd_buffer );
+         |}
 endClass
 
 # TEMP BRIDGE

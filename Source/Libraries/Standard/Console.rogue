@@ -1,4 +1,7 @@
 class Console [singleton]
+  ROUTINES
+    routine input( prompt=null:String )->String [native]
+
   METHODS
     method print( value:String )
       native_print( value )
