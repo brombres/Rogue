@@ -16,7 +16,7 @@ bootstrap_roguec:
 	  echo -------------------------------------------------------------------------------; \
 	  echo Compiling Programs/RogueC/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo g++ -Wall -O3 Source/RogueC/RogueC.cpp -o Programs/RogueC/roguec; \
+	  echo g++ -Wall $(ROGUEC_FLAGS) Source/RogueC/RogueC.cpp -o Programs/RogueC/roguec; \
 	  mkdir -p Programs/RogueC; \
 	  g++ $(ROGUEC_FLAGS) Source/RogueC/RogueC.cpp -o Programs/RogueC/roguec; \
 	fi;

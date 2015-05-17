@@ -187,6 +187,37 @@ class String [native functional]
       if (n < 0) return substring( -n, this_count-1 )
       else       return substring( this_count-n, this_count-1 )
 
+    method split( separator:Character )->String[]
+      local result = String[]
+
+      local i1 = 0
+      local i2 = locate( separator, i1 )
+      while (i2 != -1)
+        result.add( substring(i1,i2-1) )
+        i1 = i2 + 1
+        i2 = locate( separator, i1 )
+      endWhile
+
+      result.add( substring(i1) )
+
+      return result
+
+    method split( separator:String )->String[]
+      local result = String[]
+      local separator_count = separator.count
+
+      local i1 = 0
+      local i2 = locate( separator, i1 )
+      while (i2 != -1)
+        result.add( substring(i1,i2-1) )
+        i1 = i2 + separator_count
+        i2 = locate( separator, i1 )
+      endWhile
+
+      result.add( substring(i1) )
+
+      return result
+
     method substring( i1:Integer )->String
       $if ("C++") inlineNative '$this->substring($i1)'
 

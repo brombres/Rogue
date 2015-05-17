@@ -1213,7 +1213,12 @@ RogueString* RogueConsole__input( RogueString* prompt )
 
   char st[4096];
   fgets( st, 4096, stdin );
-  return RogueString::create( st );
+
+  // discard \n
+  int len = strlen( st );
+  if (len) st[--len] = 0;
+
+  return RogueString::create( st, len );
 }
 
 //-----------------------------------------------------------------------------

@@ -77,6 +77,13 @@ class List<<$DataType:Object>> : GenericList
     method locate_last( value:$DataType )->Integer
       inline ListOps<<$DataType>>.locate_last( this, value )
 
+    method random->$DataType
+      # Returns an element at random
+      local default_value : $DataType
+      if (not count) return default_value
+
+      return this[ Random.next_integer(this.count) ]
+
     method reserve( additional_count:Integer )->$DataType[]
       local required_capacity = count + additional_count
 

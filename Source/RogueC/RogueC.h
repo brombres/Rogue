@@ -569,6 +569,11 @@ struct RogueError : RogueObject
 };
 
 //-----------------------------------------------------------------------------
+//  Console
+//-----------------------------------------------------------------------------
+RogueString* RogueConsole__input( RogueString* prompt );
+
+//-----------------------------------------------------------------------------
 //  File
 //-----------------------------------------------------------------------------
 RogueString* RogueFile__absolute_filepath( RogueString* filepath );
@@ -4569,6 +4574,7 @@ RogueString* RogueCmdElementAccess__type_name( RogueClassCmdElementAccess* THIS 
 RogueClassCmd* RogueCmdElementAccess__clone( RogueClassCmdElementAccess* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdElementAccess__resolve( RogueClassCmdElementAccess* THIS, RogueClassScope* scope_0 );
 RogueClassCmd* RogueCmdElementAccess__resolve_assignment( RogueClassCmdElementAccess* THIS, RogueClassScope* scope_0, RogueClassCmd* new_value_1 );
+RogueClassCmd* RogueCmdElementAccess__resolve_modify( RogueClassCmdElementAccess* THIS, RogueClassScope* scope_0, RogueInteger delta_1 );
 RogueClassCmdElementAccess* RogueCmdElementAccess__init_object( RogueClassCmdElementAccess* THIS );
 RogueClassCmdElementAccess* RogueCmdElementAccess__init( RogueClassCmdElementAccess* THIS, RogueClassToken* _auto_320_0, RogueClassCmd* _auto_321_1, RogueClassCmd* _auto_322_2 );
 RogueString* RogueCmdConvertToType__type_name( RogueClassCmdConvertToType* THIS );
@@ -4899,6 +4905,7 @@ RogueString* RogueCmdReadArrayElement__type_name( RogueClassCmdReadArrayElement*
 RogueClassCmd* RogueCmdReadArrayElement__clone( RogueClassCmdReadArrayElement* THIS, RogueClassCloneArgs* clone_args_0 );
 void RogueCmdReadArrayElement__write_cpp( RogueClassCmdReadArrayElement* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmd* RogueCmdReadArrayElement__resolve( RogueClassCmdReadArrayElement* THIS, RogueClassScope* scope_0 );
+RogueClassCmd* RogueCmdReadArrayElement__resolve_modify( RogueClassCmdReadArrayElement* THIS, RogueClassScope* scope_0, RogueInteger delta_1 );
 RogueClassType* Rogue_CmdReadArrayElement__type( RogueClassCmdReadArrayElement* THIS );
 RogueClassCmdReadArrayElement* RogueCmdReadArrayElement__init_object( RogueClassCmdReadArrayElement* THIS );
 RogueClassCmdReadArrayElement* RogueCmdReadArrayElement__init( RogueClassCmdReadArrayElement* THIS, RogueClassToken* _auto_742_0, RogueClassCmd* _auto_743_1, RogueClassCmd* _auto_744_2 );

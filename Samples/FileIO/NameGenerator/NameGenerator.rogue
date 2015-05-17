@@ -1,10 +1,16 @@
 class NameGenerator
   PROPERTIES
-    word_length = Integer[]
+    word_lengths     = Integer[]
+    starting_letters = Integer[]
+    frequency        = Integer[][]
 
   METHODS
     method init
       local file_list = String[]
+
+      forEach (ch1 in 0..25)
+        frequency.add( Integer[](27,0) )
+      endForEach
 
       forEach (filepath in System.command_line_arguments)
         file_list.add( filepath )
@@ -14,9 +20,17 @@ class NameGenerator
 
       forEach (filepath in file_list) process( filepath )
 
+      #println word_lengths
+      #print_frequency_table
+
       println
-      local count = Console.input( "Generate how many names? " )
-      println count->Integer + 1
+      print_name
+      println
+      println "Tap [RETURN] to generate another name or CTRL+C to end program."
+      loop
+        Console.input( "" )
+        print_name
+      endLoop
 
     method process( filepath:String )
       if (not File.exists(filepath))
@@ -27,7 +41,59 @@ class NameGenerator
       println( "Reading $..." (filepath) )
 
       forEach (line in LineReader(File(filepath)))
-        println line
+        line = line.to_lowercase
+
+        forEach (word in line.split(' ')) word_lengths.add( word.count )
+
+        local prev = 0->Character
+        forEach (cur in line)
+          if (prev.is_letter)
+            if (cur.is_letter)
+              ++frequency[prev-'a'][cur-'a']
+              ++frequency[prev-'a'][26]  # total count of row
+            endIf
+          else
+            if (cur.is_letter) starting_letters.add( cur-'a' )
+          endIf
+
+          prev = cur
+        endForEach
       endForEach
 
+    method print_frequency_table
+      # header
+      print " "
+      forEach (ch2 in 'A'..'Z') print ch2->String.right_justified(4)
+      println
+
+      # rows
+      forEach (ch1 in 'A'..'Z')
+        print ch1
+        forEach (ch2 in 0..25) print frequency[ch1-'A'][ch2]->String.right_justified(4)
+        println
+      endForEach
+
+    method print_name
+      local len        = word_lengths.random
+      local cur_letter = starting_letters.random
+      forEach (1..word_lengths.random)
+        print ((cur_letter + 'a')->Character)
+        local row = frequency[ cur_letter ]
+        local row_count = row[26]
+        if (row_count?)
+          local r = Random.next_integer( row_count )
+          forEach (i in 0..25)
+            r -= row[i]
+            if (r < 0)
+              cur_letter = i
+              escapeForEach
+            endIf
+          endForEach
+        else
+          # no letters follow the current letter
+          cur_letter = starting_letters.random
+        endIf
+      endForEach
+      println
 endClass
+

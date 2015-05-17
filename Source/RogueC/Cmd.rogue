@@ -1880,6 +1880,9 @@ class CmdElementAccess : Cmd
         return result
       endIf
 
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return clone.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInteger(t,delta)) )
+
 endClass
 
 
@@ -3896,6 +3899,9 @@ class CmdReadArrayElement : Cmd
       array_type = context.require_type
       index = index.resolve(scope).require_integer
       return this
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return CmdWriteArrayElement( t, context, index.clone, CmdAdd(t,this,CmdLiteralInteger(t,delta)) ).resolve( scope )
 
     method type->Type
       return array_type.element_type
