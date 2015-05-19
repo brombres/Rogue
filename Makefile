@@ -1,3 +1,5 @@
+.PHONY: test
+
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
 ROGUEC_FLAGS = -O3
 
@@ -51,6 +53,9 @@ libraries:
 	@echo "  g++ Hello.cpp -o hello"
 	@echo "  ./hello"
 	@echo
+
+test:
+	roguec Test.rogue --execute
 
 clean:
 	rm -rf Programs/RogueC
