@@ -7,7 +7,7 @@ all: roguec
 
 remake: touch_roguec roguec
 
-roguec: bootstrap_roguec /usr/local/bin/roguec libraries Source/RogueC/RogueC.cpp Programs/RogueC/roguec
+roguec: bootstrap_roguec /usr/local/bin /usr/local/bin/roguec libraries Source/RogueC/RogueC.cpp Programs/RogueC/roguec
 
 touch_roguec:
 	touch Source/RogueC/RogueC.rogue
@@ -39,6 +39,12 @@ Programs/RogueC/roguec: Source/RogueC/RogueC.cpp
 libraries:
 	@mkdir -p Programs/RogueC
 	@rsync -rt --delete Source/Libraries Programs/RogueC
+
+/usr/local/bin:
+	sudo mkdir -p /usr/local/bin
+	sudo chgrp admin /usr/local /usr/local/bin
+	sudo chown $$USER /usr/local/bin
+
 
 /usr/local/bin/roguec:
 	@echo -------------------------------------------------------------------------------
