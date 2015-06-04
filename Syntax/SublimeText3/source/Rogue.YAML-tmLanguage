@@ -51,9 +51,6 @@ patterns:
 - name: storage.type.rogue
   match: \b(augment|endAugment|framework|endFramework)\b
 
-- name: variable.language.rogue
-  match: \b(this|prior)\b
-
 - name: keyword.other.rogue
   match: \b(insertUnderlying|useFramework)\b
 
@@ -75,6 +72,8 @@ patterns:
 - include: '#keywords_loop'
 
 - include: '#keywords_other'
+
+- include: '#language_variables'
 
 - include: '#strings'
 
@@ -118,6 +117,10 @@ repository:
   types:
     name: storage.type.rogue
     match: \b(Integer|Byte|Character|Real|Logical|null|String)\b
+
+  language_variables:
+    name: variable.language.rogue
+    match: \b(this|prior)\b
 
   keywords_formatting:
     patterns:
@@ -173,7 +176,7 @@ repository:
     end: (\))
     patterns:
     - name: variable.parameter.rogue
-      match: (?<!:|=)\b\w+[^"'=](?:(?=\=)|(?=:)|(?=,)|(?=\)))
+      match: (?<!:|=|\.)\b\w+[^"'=](?:(?=\=)|(?=:)|(?=,)|(?=\)))
     - include: '#strings'
     - include: '#constants'
     - include: '#operators'
@@ -190,6 +193,7 @@ repository:
     patterns:
     - include: '#scope_declaration'
     - include: '#types'
+    - include: '#language_variables'
 
   strings:
     patterns:

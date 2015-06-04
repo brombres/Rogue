@@ -98,12 +98,6 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(this|prior)\b</string>
-			<key>name</key>
-			<string>variable.language.rogue</string>
-		</dict>
-		<dict>
-			<key>match</key>
 			<string>\b(insertUnderlying|useFramework)\b</string>
 			<key>name</key>
 			<string>keyword.other.rogue</string>
@@ -145,6 +139,10 @@
 		<dict>
 			<key>include</key>
 			<string>#keywords_other</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>#language_variables</string>
 		</dict>
 		<dict>
 			<key>include</key>
@@ -305,6 +303,13 @@
 				</dict>
 			</array>
 		</dict>
+		<key>language_variables</key>
+		<dict>
+			<key>match</key>
+			<string>\b(this|prior)\b</string>
+			<key>name</key>
+			<string>variable.language.rogue</string>
+		</dict>
 		<key>method_name</key>
 		<dict>
 			<key>match</key>
@@ -324,7 +329,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>(?&lt;!:|=)\b\w+[^"'=](?:(?=\=)|(?=:)|(?=,)|(?=\)))</string>
+					<string>(?&lt;!:|=|\.)\b\w+[^"'=](?:(?=\=)|(?=:)|(?=,)|(?=\)))</string>
 					<key>name</key>
 					<string>variable.parameter.rogue</string>
 				</dict>
@@ -363,6 +368,10 @@
 				<dict>
 					<key>include</key>
 					<string>#types</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>#language_variables</string>
 				</dict>
 			</array>
 		</dict>
