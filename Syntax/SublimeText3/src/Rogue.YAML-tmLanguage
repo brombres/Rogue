@@ -100,12 +100,12 @@ repository:
       match: \b(and|or|xor|not|instanceOf|is|isNot|notInstanceOf|duplicate)\b
 
     - name: keyword.operator.rogue
-      match: (=|==|!=|\+|-|\*|\/|\^|%|>|>=|<|<=)
+      match: (=|==|!=|\+|(?<!=\s)(?<!=)-|\*|\/|\^|%|(?<!>)>(?!>)|>=|(?<!<)<(?!<)|<=)
 
   constants:
     patterns:
     - name: constant.numeric.rogue
-      match: \b[0-9]+\b
+      match: (\b|\-)[0-9]+\b
 
     - name: constant.language.rogue
       match: \b(true|false|null|void|gt|lt|eq|infinity|NaN)\b
@@ -176,7 +176,7 @@ repository:
     end: (\))
     patterns:
     - name: variable.parameter.rogue
-      match: (?<!:|=|\.)\b\w+[^"'=](?:(?=\=)|(?=:)|(?=,)|(?=\)))
+      match: (?<!:|=|\.|\$|-)\b\w+(?:(?=\=)|(?=:)|(?=,)|(?=\)))
     - include: '#strings'
     - include: '#constants'
     - include: '#operators'
