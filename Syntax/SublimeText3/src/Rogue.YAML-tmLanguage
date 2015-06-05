@@ -1,0 +1,205 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+#
+# Sublime Text 3 syntax file
+# Language: Rogue
+# Maintainer: Shea Orr <sorr556@gmail.com>
+# URL: https://github.com/Plasmaworks/Rogue
+# Last Change: 2015.06.03
+#
+# Mac OSX: Place in '~/Library/Application Support/Sublime Text 3/Packages/User/'
+# Install AAAPackageDev for Sublime Text 3 (https://github.com/SublimeText/AAAPackageDev)
+# With this file open in Sublime Text 3, run 'AAAPackageDev:Convert(YAML,JSON,PLIST) to...'
+# from the Commmand Pallet to convert to tmLanguage format for use
+#
+---
+name: Rogue
+scopeName: source.rogue
+fileTypes: [rogue]
+uuid: 973adfa5-9430-470d-bbe6-7f8d2c07ca1c
+
+patterns:
+- comment: Class|Aspect|Compound|Enumeration declaration
+  name: meta.class.rogue
+  begin: \b(class|compound|enumeration)\b\s*
+  beginCaptures:
+    '1': {name: storage.type.rogue}
+  end: ($)
+  patterns:
+  - include: '#scope_declaration'
+  - include: '#types'
+
+- comment: Method|Routine|Task declaration
+  name: meta.methodtype.rogue
+  begin: \b(method|routine|task)\b\s*
+  beginCaptures:
+    '1': {name: storage.type.rogue}
+  end: ($)
+  patterns:
+  - include: '#method_name'
+  - include: '#method_params'
+  - include: '#method_return'
+
+- name: storage.type.rogue
+  match: \b(endClass|endAspect|endCompound|endEnumeration)\b
+
+- name: storage.type.rogue
+  match: \b(delegate|endDelegate|function|endFunction|primitive|endPrimitive)\b
+
+- name: storage.type.rogue
+  match: \b(with|endWith)\b
+
+- name: storage.type.rogue
+  match: \b(augment|endAugment|framework|endFramework)\b
+
+- name: keyword.other.rogue
+  match: \b(insertUnderlying|useFramework)\b
+
+- name: support.function.rogue
+  match: \b(require|ensure|assert)\b
+
+- include: '#comments'
+
+- include: '#operators'
+
+- include: '#constants'
+
+- include: '#types'
+
+- include: '#keywords_formatting'
+
+- include: '#keywords_control'
+
+- include: '#keywords_loop'
+
+- include: '#keywords_other'
+
+- include: '#language_variables'
+
+- include: '#strings'
+
+- include: '#scope_declaration'
+
+repository:
+  comments:
+    patterns:
+    - name: meta.comment.block.rogue
+      contentName: comment.block.rogue
+      begin: (\#\{)
+      beginCaptures: 
+        '1': {name: comment.block.begin.rogue}
+      end: (\}\#)
+      endCaptures: 
+        '1': {name: comment.block.end.rogue}
+
+    - name: comment.line.number-sign.rogue
+      match: ((#).*)
+
+  operators:
+    patterns:
+    - name: keyword.operator.rogue
+      match: \b(and|or|xor|not|instanceOf|is|isNot|notInstanceOf|duplicate)\b
+
+    - name: keyword.operator.rogue
+      match: (=|==|!=|\+|(?<!=\s)(?<!=)-|\*|\/|\^|%|(?<!>)>(?!>)|>=|(?<!<)<(?!<)|<=)
+
+  constants:
+    patterns:
+    - name: constant.numeric.rogue
+      match: (\b|\-)[0-9]+\b
+
+    - name: constant.language.rogue
+      match: \b(true|false|null|void|gt|lt|eq|infinity|NaN)\b
+
+    - comment: Bytes
+      name: constant.other.rogue
+      match: (?:0x([0-9]|[A-F]){2})
+
+  types:
+    name: storage.type.rogue
+    match: \b(Integer|Byte|Character|Real|Logical|null|String)\b
+
+  language_variables:
+    name: variable.language.rogue
+    match: \b(this|prior)\b
+
+  keywords_formatting:
+    patterns:
+    - name: keyword.other.rogue
+      match: \b(ENUMERATE|DEFINITIONS|SETTINGS|CATEGORIES)\b
+
+    - name: keyword.other.rogue
+      match: \b(PROPERTIES|METHODS|ROUTINES)\b
+
+  keywords_control:
+    patterns:
+    - name: keyword.control.rogue
+      match: \b(which|whichIs|case|caseNext|others|endWhich|endWhichIs|block|endBlock)\b
+
+    - name: keyword.control.rogue
+      match: \b(if|elseIf|else|endIf|contingent|endContingent|satisfied|unsatisfied|try|catch|endTry)\b
+
+    - name: keyword.control.rogue
+      match: \b(return|necessary|sufficient|noAction|yield|yieldAndWait|yieldWhile|withTimeout)\b
+
+    - name: keyword.control.rogue
+      match: \b(try|catch|finally)\b
+
+  keywords_loop:
+    patterns:
+    - name: keyword.loop.rogue
+      match: \b(while|endWhile|forEach|endForEach|in|of|step|await)\b
+
+    - name: keyword.loop.rogue
+      match: \b(loop|endloop)\b
+
+  keywords_other:
+    patterns:
+    - name: keyword.other.rogue
+      match: \b(escapeForEach|escapeWhile|escapeLoop|escapeTry)\b
+    - name: keyword.other.rogue
+      match: \b(escapeWhich|escapeWhichIs|escapeIf|escapeContingent|escapeBlock|nextIteration)\b
+
+  scope_declaration:
+    patterns:
+    - name: storage.modifier.rogue
+      match: \b(overlaying|underlying)\b
+
+    - name: storage.modifier.rogue
+      match: \b(readOnly|writeOnly|public|private|limited|const|local|deferred|singleton|managed|primitive|aspect)\b
+
+    - name: storage.modifier.rogue
+      match: \b(native|inline|inlineNative|requisite|abstract|final|propagated|functional|dynamicAccess|marshalling|omit)\b
+
+  method_params:
+    name: meta.method.params.rogue
+    begin: (\()
+    end: (\))
+    patterns:
+    - name: variable.parameter.rogue
+      match: (?<!:|=|\.|\$|-)\b\w+(?:(?=\=)|(?=:)|(?=,)|(?=\)))
+    - include: '#strings'
+    - include: '#constants'
+    - include: '#operators'
+    - include: '#types'
+
+  method_name:
+    name: entity.name.function.rogue
+    match: ((\w+)((?=\()|(?=\-)|(?=\n)))
+
+  method_return:
+    name: meta.method.return.rogue
+    begin: (->)
+    end: ($)
+    patterns:
+    - include: '#scope_declaration'
+    - include: '#types'
+    - include: '#language_variables'
+
+  strings:
+    patterns:
+    - name: string.quoted.double.rogue
+      match: (")(?:(?=(\\?))\2.)*?\1
+
+    - name: string.quoted.single.rogue
+      match: (')(?:(?=(\\?))\2.)*?\1
+...
