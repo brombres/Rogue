@@ -1,0 +1,11 @@
+compound Nullable<<$DataType:Object>>( value:$DataType, exists:Logical )
+  ROUTINES
+    routine create()->Nullable<<$DataType>>
+      return Nullable<<$DataType>>( Nullable<<$DataType>>.null_value, false )
+
+    routine create( value:$DataType )->Nullable<<$DataType>>
+      return Nullable<<$DataType>>( value, true )
+
+    routine null_value->$DataType
+      inlineNative "0"
+endCompound

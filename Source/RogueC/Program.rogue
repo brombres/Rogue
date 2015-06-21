@@ -303,9 +303,18 @@ class Program [requisite singleton]
       endForEach
       writer.println
 
-      # RogueObject definitions
+      # Compound definitions
       forEach (type in type_list)
-        if (not type.omit_output)
+        if (type.is_compound and not type.omit_output)
+          type.print_data_definition( writer )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
+      # Class definitions
+      forEach (type in type_list)
+        if (not type.is_compound and not type.omit_output)
           type.print_data_definition( writer )
           writer.println
         endIf

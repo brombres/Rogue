@@ -407,6 +407,13 @@ class Type
         base_type.collect_base_types( list )
       endForEach
 
+    method has_references->Logical
+      forEach (p in property_list)
+        if (p.type.is_reference) return true
+        if (p.type.is_compound and p.type.has_references) return true
+      endForEach
+      return false
+
     method inherit_definitions( from_type:Type )
       forEach (def_name in from_type.definition_list)
         if (not definition_lookup.contains(def_name))
@@ -681,6 +688,23 @@ class Type
         writer.println( "  return !(*this == other);" )
         writer.println( "}" )
         writer.println
+
+        # trace() method
+        if (has_references)
+          writer.println(   "void trace()" )
+          writer.println( "{" )
+          writer.indent += 2
+          forEach (p in property_list)
+            if (p.type.is_reference)
+              writer.print("ROGUE_TRACE( " ).print( p.cpp_name ).println( " );" )
+            elseIf (p.type.has_references)
+              # Compound
+              writer.print( p.cpp_name ).println( ".trace();" )
+            endIf
+          endForEach
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
       endIf
 
       writer.indent -= 2
@@ -768,12 +792,7 @@ class Type
       endIf
 
       # trace()
-      local has_references = false
-      forEach (p in property_list)
-        if (p.type.is_reference) has_references = true; escapeForEach
-      endForEach
-
-      if (has_references)
+      if (is_class and has_references)
         writer.println(   "void trace( RogueObject* THIS )" )
         writer.println( "{" )
         forEach (p in property_list)
@@ -781,6 +800,11 @@ class Type
             writer.print( "  ROGUE_TRACE( ((")
             writer.print(this)  # cast RogueObject* ref to actual type
             writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
+          elseIf (p.type.has_references)
+            # Compound
+            writer.print( "  ((")
+            writer.print(this)  # cast RogueObject* ref to actual type
+            writer.print(")THIS)->" ).print( p.cpp_name ).println( ".trace();" )
           endIf
         endForEach
         writer.println( "}" )

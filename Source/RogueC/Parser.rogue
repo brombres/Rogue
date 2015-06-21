@@ -174,7 +174,9 @@ class Parser
             consume_eols
             if (consume(TokenType.symbol_equals)) parse_expression
             consume_eols
-            if (consume(TokenType.symbol_colon)) parse_possible_type
+            if (consume(TokenType.symbol_colon))
+              if (not consume(TokenType.placeholder_id)) parse_possible_type
+            endIf
             consume_eols
           endWhile
           must_consume( TokenType.symbol_close_paren )
