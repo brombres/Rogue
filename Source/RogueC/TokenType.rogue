@@ -104,6 +104,7 @@ class TokenType
     keyword_as                   : TokenType
     keyword_false                : TokenType
     keyword_instanceOf           : TokenType
+    keyword_meta                 : TokenType
     keyword_not                  : TokenType
     keyword_notInstanceOf        : TokenType
     keyword_or                   : TokenType

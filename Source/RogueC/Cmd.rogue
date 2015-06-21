@@ -1397,6 +1397,29 @@ class CmdLiteralNull : CmdLiteral
       return Program.type_null
 endClass
 
+class CmdDefaultValue : CmdLiteral
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method init( t, of_type )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdDefaultValue( t, of_type )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      local default_value = of_type.create_default_value( t )
+      if (of_type.is_reference)
+        return CmdCastToType( t, default_value, of_type )
+      else
+        return default_value
+      endIf
+
+    method type->Type
+      return of_type
+endClass
+
 class CmdLiteralReal : CmdLiteral
   PROPERTIES
     value : Real
@@ -2001,6 +2024,9 @@ class CmdThisContext : Cmd
       else
         return CmdThisContext( t, this_type )
       endIf
+
+    method implicit_type->Type
+      return this_type
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "THIS"

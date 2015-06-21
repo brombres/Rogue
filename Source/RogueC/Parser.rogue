@@ -1564,8 +1564,7 @@ class Parser
 
       if (consume(TokenType.symbol_dot))
         # Part access e.g. obj.value
-        local access = parse_access( t )
-        access.context = context
+        local access = parse_access( t, context )
         return parse_member_access( access )
 
       elseIf (consume(TokenType.symbol_open_bracket))
@@ -1614,8 +1613,25 @@ class Parser
 
       return context
 
-    method parse_access( t:Token )->CmdAccess
+    method parse_access( t:Token, context=null:Cmd )->Cmd
       consume_eols
+
+      if (consume(TokenType.keyword_meta))
+        local context_type : Type
+        if (context?) context_type = context.implicit_type
+        else          context_type = this_type
+        if (not context_type) throw t.error( "Unable to determine type for metadata access." )
+
+        must_consume( TokenType.symbol_dot )
+        t = peek
+        local id = read_identifier
+        which (id)
+          case "default_value"
+            return CmdDefaultValue( t, context_type )
+          others
+            throw t.error( "'default_value' expected after 'meta.'." )
+        endWhich
+      endIf
 
       local name = read_identifier( true )
       if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
@@ -1624,6 +1640,7 @@ class Parser
 
       local access = CmdAccess( t, name )
       access.args = parse_args
+      access.context = context
       return access
 
     # TODO: Add multi-line handling
@@ -1720,7 +1737,7 @@ class Parser
         must_consume( TokenType.symbol_close_paren )
         return result
 
-      elseIf (next_is(TokenType.identifier) or next_is(TokenType.symbol_at))
+      elseIf (next_is(TokenType.identifier) or next_is(TokenType.symbol_at) or next_is(TokenType.keyword_meta))
         local result = parse_access( t )
         return result
 

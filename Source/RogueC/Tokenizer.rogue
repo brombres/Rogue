@@ -166,6 +166,7 @@ class Tokenizer
       TokenType.keyword_as                   = define( TokenType("as") )
       TokenType.keyword_false                = define( TokenType("false") )
       TokenType.keyword_instanceOf           = define( TokenType("instanceOf") )
+      TokenType.keyword_meta                 = define( TokenType("meta") )
       TokenType.keyword_not                  = define( TokenType("not") )
       TokenType.keyword_notInstanceOf        = define( TokenType("notInstanceOf") )
       TokenType.keyword_or                   = define( TokenType("or") )
