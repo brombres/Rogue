@@ -797,7 +797,6 @@ struct RogueTypeCmdMod;
 struct RogueTypeCmdPower;
 struct RogueTypeCmdNegate;
 struct RogueTypeCmdBitwiseNot;
-struct RogueTypeCmdLogicalize;
 struct RogueTypeCmdElementAccess;
 struct RogueTypeCmdConvertToType;
 struct RogueTypeCmdCreateCallback;
@@ -833,6 +832,7 @@ struct RogueTypeTaskArgs;
 struct RogueTypeCmdTaskControl;
 struct RogueTypeCmdTaskControlSection;
 struct RogueTypeCmdCastToType;
+struct RogueTypeCmdLogicalize;
 struct RogueTypeCmdListOps;
 struct RogueTypeLocalListOps;
 struct RogueTypeTaskListOps;
@@ -1011,7 +1011,6 @@ struct RogueClassCmdMod;
 struct RogueClassCmdPower;
 struct RogueClassCmdNegate;
 struct RogueClassCmdBitwiseNot;
-struct RogueClassCmdLogicalize;
 struct RogueClassCmdElementAccess;
 struct RogueClassCmdConvertToType;
 struct RogueClassCmdCreateCallback;
@@ -1047,6 +1046,7 @@ struct RogueClassTaskArgs;
 struct RogueClassCmdTaskControl;
 struct RogueClassCmdTaskControlSection;
 struct RogueClassCmdCastToType;
+struct RogueClassCmdLogicalize;
 struct RogueClassCmdListOps;
 struct RogueClassLocalListOps;
 struct RogueClassTaskListOps;
@@ -2472,14 +2472,6 @@ struct RogueClassCmdBitwiseNot : RogueObject
 
 };
 
-struct RogueClassCmdLogicalize : RogueObject
-{
-  // PROPERTIES
-  RogueClassToken* t;
-  RogueClassCmd* operand;
-
-};
-
 struct RogueClassCmdElementAccess : RogueObject
 {
   // PROPERTIES
@@ -2779,6 +2771,14 @@ struct RogueClassCmdCastToType : RogueObject
   RogueClassToken* t;
   RogueClassCmd* operand;
   RogueClassType* _target_type;
+
+};
+
+struct RogueClassCmdLogicalize : RogueObject
+{
+  // PROPERTIES
+  RogueClassToken* t;
+  RogueClassCmd* operand;
 
 };
 
@@ -3369,7 +3369,6 @@ struct RogueProgram : RogueProgramCore
   RogueTypeCmdPower* type_CmdPower;
   RogueTypeCmdNegate* type_CmdNegate;
   RogueTypeCmdBitwiseNot* type_CmdBitwiseNot;
-  RogueTypeCmdLogicalize* type_CmdLogicalize;
   RogueTypeCmdElementAccess* type_CmdElementAccess;
   RogueTypeCmdConvertToType* type_CmdConvertToType;
   RogueTypeCmdCreateCallback* type_CmdCreateCallback;
@@ -3405,6 +3404,7 @@ struct RogueProgram : RogueProgramCore
   RogueTypeCmdTaskControl* type_CmdTaskControl;
   RogueTypeCmdTaskControlSection* type_CmdTaskControlSection;
   RogueTypeCmdCastToType* type_CmdCastToType;
+  RogueTypeCmdLogicalize* type_CmdLogicalize;
   RogueTypeCmdListOps* type_CmdListOps;
   RogueTypeLocalListOps* type_LocalListOps;
   RogueTypeTaskListOps* type_TaskListOps;
@@ -3760,8 +3760,6 @@ RogueClassCmd* RogueParser__parse_multiply_divide_mod( RogueClassParser* THIS, R
 RogueClassCmd* RogueParser__parse_power( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_power( RogueClassParser* THIS, RogueClassCmd* lhs_0 );
 RogueClassCmd* RogueParser__parse_pre_unary( RogueClassParser* THIS );
-RogueClassCmd* RogueParser__parse_post_unary( RogueClassParser* THIS );
-RogueClassCmd* RogueParser__parse_post_unary( RogueClassParser* THIS, RogueClassCmd* operand_0 );
 RogueClassCmd* RogueParser__parse_member_access( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_member_access( RogueClassParser* THIS, RogueClassCmd* context_0 );
 RogueClassCmd* RogueParser__parse_access( RogueClassParser* THIS, RogueClassToken* t_0, RogueClassCmd* context_1 );
@@ -4612,15 +4610,6 @@ RogueClassCmdBitwiseNot* RogueCmdBitwiseNot__init_object( RogueClassCmdBitwiseNo
 RogueString* RogueCmdBitwiseNot__cpp_prefix_symbol( RogueClassCmdBitwiseNot* THIS );
 RogueString* RogueCmdBitwiseNot__prefix_symbol( RogueClassCmdBitwiseNot* THIS );
 RogueClassCmd* RogueCmdBitwiseNot__resolve_for_literal_operand( RogueClassCmdBitwiseNot* THIS, RogueClassScope* scope_0 );
-RogueString* RogueCmdLogicalize__type_name( RogueClassCmdLogicalize* THIS );
-RogueClassCmd* RogueCmdLogicalize__clone( RogueClassCmdLogicalize* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassType* Rogue_CmdLogicalize__type( RogueClassCmdLogicalize* THIS );
-RogueClassCmdLogicalize* RogueCmdLogicalize__init_object( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__cpp_prefix_symbol( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__cpp_suffix_symbol( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__prefix_symbol( RogueClassCmdLogicalize* THIS );
-RogueClassCmd* RogueCmdLogicalize__resolve_for_literal_operand( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
-RogueString* RogueCmdLogicalize__suffix_symbol( RogueClassCmdLogicalize* THIS );
 RogueString* RogueCmdElementAccess__type_name( RogueClassCmdElementAccess* THIS );
 RogueClassCmd* RogueCmdElementAccess__clone( RogueClassCmdElementAccess* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdElementAccess__resolve( RogueClassCmdElementAccess* THIS, RogueClassScope* scope_0 );
@@ -4819,6 +4808,15 @@ RogueClassCmd* RogueCmdCastToType__clone( RogueClassCmdCastToType* THIS, RogueCl
 void RogueCmdCastToType__write_cpp( RogueClassCmdCastToType* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmd* RogueCmdCastToType__resolve( RogueClassCmdCastToType* THIS, RogueClassScope* scope_0 );
 RogueClassCmdCastToType* RogueCmdCastToType__init_object( RogueClassCmdCastToType* THIS );
+RogueString* RogueCmdLogicalize__type_name( RogueClassCmdLogicalize* THIS );
+RogueClassCmd* RogueCmdLogicalize__clone( RogueClassCmdLogicalize* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassType* Rogue_CmdLogicalize__type( RogueClassCmdLogicalize* THIS );
+RogueClassCmdLogicalize* RogueCmdLogicalize__init_object( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__cpp_prefix_symbol( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__cpp_suffix_symbol( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__prefix_symbol( RogueClassCmdLogicalize* THIS );
+RogueClassCmd* RogueCmdLogicalize__resolve_for_literal_operand( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
+RogueString* RogueCmdLogicalize__suffix_symbol( RogueClassCmdLogicalize* THIS );
 RogueString* RogueCmdListOps__type_name( RogueClassCmdListOps* THIS );
 RogueClassCmdListOps* RogueCmdListOps__init_object( RogueClassCmdListOps* THIS );
 RogueString* RogueString_MethodTableEntryArray__type_name( RogueArray* THIS );

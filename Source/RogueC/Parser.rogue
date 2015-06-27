@@ -259,7 +259,7 @@ class Parser
       must_consume( TokenType.symbol_close_bracket )
 
     method ensure_unspecialized_element_type( t:Token, attributes:Attributes )
-      if ((attributes.flags & Attribute.type_mask)?)
+      if ((attributes.flags & Attribute.type_mask))
         throw t.error( "A class cannot be both '$' and '$'." (t->String,attributes.element_type_name) )
       endIf
 
@@ -377,7 +377,7 @@ class Parser
         throw peek.error( "Definition expected." )
       endIf
 
-      if (value?)
+      if (value)
         if (value instanceOf CmdLiteralInteger)
           this_type.prev_enum_cmd = null
           this_type.next_enum_offset = (value as CmdLiteralInteger).value + 1
@@ -386,7 +386,7 @@ class Parser
           this_type.next_enum_offset = 1
         endIf
       else
-        if (this_type.prev_enum_cmd?)
+        if (this_type.prev_enum_cmd)
           value = CmdAdd( t, this_type.prev_enum_cmd.clone, CmdLiteralInteger(t,this_type.next_enum_offset) )
         else
           value = CmdLiteralInteger( t, this_type.next_enum_offset )
@@ -433,7 +433,7 @@ class Parser
         forEach (p in property_list)
           local name = "property"
           if (as_settings) name = "setting"
-          if (p.initial_value?)
+          if (p.initial_value)
             p.type = p.initial_value.implicit_type
             if (p.type is null) 
               println p.initial_value.type_name
@@ -522,7 +522,7 @@ class Parser
           if (consume(TokenType.keyword_inlineNative) or consume_eols)
           elseIf (next_is(TokenType.literal_string))
             found_native_code = true
-            if (buffer.count?) buffer.println
+            if (buffer.count) buffer.println
             buffer.print( read->String )
           else
             escapeWhile
@@ -813,7 +813,7 @@ class Parser
         local rhs = parse_expression
         local access = rhs as CmdAccess
         if (access is null) throw rhs.error( "Property access or method call expected." )
-        while (access.operand?)
+        while (access.operand)
           local operand = access.operand as CmdAccess
           if (operand is null) throw access.operand.t.error( "Property access or method call expected." )
           access = operand
@@ -845,7 +845,7 @@ class Parser
       # No-parens args can follow an initial expression
       if (not next_is_end_command)
         local access = expression as CmdAccess
-        if (access? and access.args is null)
+        if (access and access.args is null)
           local args = CmdArgs()
           while (not next_is_end_command and not peek.is_structure)
             args.add( parse_expression )
@@ -946,7 +946,7 @@ class Parser
         forEach (v in local_declarations) v.type = type
       else
         forEach (v in local_declarations)
-          if (v.type is null and v.initial_value?)
+          if (v.type is null and v.initial_value)
             v.type = v.initial_value.implicit_type
           endIf
         endForEach
@@ -972,7 +972,7 @@ class Parser
         endIf
 
         reader.position = starting_position
-        if (name?) return Program.get_type_reference( t, name )
+        if (name) return Program.get_type_reference( t, name )
         else       return generic_type
 
       elseIf (next_is(TokenType.identifier))
@@ -1004,7 +1004,7 @@ class Parser
           else       name += ','
           local g_type = peek_generic_type
           local r_type = parse_type
-          if (g_type?)
+          if (g_type)
             found_generic = true
             name += g_type.name
           else
@@ -1036,7 +1036,7 @@ class Parser
       local name : String
 
       local t = peek
-      if (t->Type?)
+      if (t->Type)
         local type = read->Type
         if (next_is(TokenType.symbol_empty_brackets))
           name = type.name
@@ -1201,8 +1201,8 @@ class Parser
 
       local expr = parse_expression
       local access = expr as CmdAccess
-      if (access?)
-        if (access.context? or access.args?)
+      if (access)
+        if (access.context or access.args)
           throw access.t.error( "Single identifier expected for control variable name." )
         else
           local index_var_name : String
@@ -1216,8 +1216,8 @@ class Parser
           if (consume(TokenType.keyword_in))
             local collection = parse_expression
             local range = collection as CmdRange
-            if (range?)
-              if (index_var_name? ) throw range.t.error( "Cannot use 'at' with a range." )
+            if (range)
+              if (index_var_name ) throw range.t.error( "Cannot use 'at' with a range." )
 
               local control_var = this_method.add_local( t, access.name )
               control_var.initial_value = range.first
@@ -1259,10 +1259,10 @@ class Parser
             endIf
 
           elseIf (consume(TokenType.keyword_of))
-            if (index_var_name? ) throw t.error( "Cannot use 'at' with forEach-of." )
+            if (index_var_name ) throw t.error( "Cannot use 'at' with forEach-of." )
             local collection = parse_expression
             local range = collection as CmdRange
-            if (range?)
+            if (range)
               throw t.error( "Use forEach-in with a literal range instead of forEach-of." )
             else
               local step_cmd : Cmd
@@ -1285,7 +1285,7 @@ class Parser
       else
         # forEach (expr) e.g. forEach (1..n)
         local range = expr as CmdRange
-        if (range?)
+        if (range)
           local control_var = this_method.add_local( t, Program.create_unique_id )
           control_var.initial_value = range.first
 
@@ -1544,8 +1544,10 @@ class Parser
         consume_eols
         return CmdBitwiseNot( t, parse_pre_unary )
       endIf
-      return parse_post_unary
+      return parse_member_access
+      #return parse_post_unary
 
+      #{
     method parse_post_unary->Cmd
       return parse_post_unary( parse_member_access )
 
@@ -1555,6 +1557,7 @@ class Parser
         return parse_post_unary( CmdLogicalize(t,operand) )
       endIf
       return operand
+      }#
 
     method parse_member_access->Cmd
       return parse_member_access( parse_term )
@@ -1618,7 +1621,7 @@ class Parser
 
       if (consume(TokenType.keyword_meta))
         local context_type : Type
-        if (context?) context_type = context.implicit_type
+        if (context) context_type = context.implicit_type
         else          context_type = this_type
         if (not context_type) throw t.error( "Unable to determine type for metadata access." )
 
@@ -1689,23 +1692,23 @@ class Parser
 
         local t = peek
         if (consume(TokenType.symbol_backslash))
-          if (tokens?) tokens.add( t )
+          if (tokens) tokens.add( t )
           buffer.print("\\")
 
           if (not reader.has_another) throw t.error( "Unexpected end of input." )
 
           t = read
           buffer.print( t )
-          if (tokens?) tokens.add( t )
+          if (tokens) tokens.add( t )
 
         elseIf (t.type is TokenType.symbol_comma)
           if (nesting_level == 1) return
           read
-          if (tokens?) tokens.add( t )
+          if (tokens) tokens.add( t )
           buffer.print(',')
 
         elseIf (consume(TokenType.symbol_open_specialize))
-          if (tokens?) tokens.add( t )
+          if (tokens) tokens.add( t )
           buffer.print("<<")
           ++nesting_level
 
@@ -1715,12 +1718,12 @@ class Parser
             return
           else
             read
-            if (tokens?) tokens.add( t )
+            if (tokens) tokens.add( t )
             buffer.print( ">>" )
           endIf
 
         else
-          if (tokens?) tokens.add( t )
+          if (tokens) tokens.add( t )
           buffer.print( read->String )
         endIf
       endWhile
@@ -1789,7 +1792,7 @@ class Parser
       elseIf (consume(TokenType.symbol_open_bracket))
         # [ literal, list ]
         #{
-        if (parsing_properties?)
+        if (parsing_properties)
           local cmd = CmdNewObject( t, Program.get_type_reference(t,"PropertyList") ) : Cmd
 
           local first = true

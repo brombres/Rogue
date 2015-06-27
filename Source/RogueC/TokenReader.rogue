@@ -10,7 +10,7 @@ class TokenReader
 
     method error( message:String )->Error
       if (has_another) return peek.error( message )
-      if (count?) return tokens.last.error( message )
+      if (count) return tokens.last.error( message )
       return RogueError( message )
 
     method has_another->Logical
@@ -42,9 +42,9 @@ class TokenReader
       local buffer = StringBuilder()
       local i = i1
       while (i <= i2)
-        local lhs_is_letter = (buffer.count? and buffer.last.is_letter)
+        local lhs_is_letter = (buffer.count and buffer.last.is_letter)
         local token_as_string = tokens[i].to_source_string
-        local rhs_is_letter = token_as_string.count? and token_as_string[0].is_letter
+        local rhs_is_letter = token_as_string.count and token_as_string[0].is_letter
         if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
         buffer.print( tokens[i].to_source_string )
         ++i
@@ -68,13 +68,13 @@ class PreprocessorTokenReader
 
     method error( message:String )->Error
       if (has_another) return peek.error( message )
-      if (count?) return tokens.last.error( message )
+      if (count) return tokens.last.error( message )
       return RogueError( message )
 
     method expand_definition( t:Token )
       local entry = Preprocessor.definitions.find( t->String )
-      if (entry?)
-        if (entry.value?)
+      if (entry)
+        if (entry.value)
           local def_tokens = entry.value
           entry.value = null   # temporarily null to prevent infinite recursion
           forEach (def_t in def_tokens)
@@ -92,14 +92,14 @@ class PreprocessorTokenReader
 
     method has_another->Logical
       peek
-      return queue.count?
+      return queue.count
 
     method next_is( type:TokenType )->Logical
       if (position == count and queue.count == 0) return false
       return (peek.type is type)
 
     method peek->Token
-      if (queue.count?) return queue.last
+      if (queue.count) return queue.last
       return peek(0)
 
     method peek( num_ahead:Integer )->Token
@@ -145,9 +145,9 @@ class PreprocessorTokenReader
       local buffer = StringBuilder()
       local i = i1
       while (i <= i2)
-        local lhs_is_letter = (buffer.count? and buffer.last.is_letter)
+        local lhs_is_letter = (buffer.count and buffer.last.is_letter)
         local token_as_string = tokens[i].to_source_string
-        local rhs_is_letter = token_as_string.count? and token_as_string[0].is_letter
+        local rhs_is_letter = token_as_string.count and token_as_string[0].is_letter
         if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
         buffer.print( tokens[i].to_source_string )
         ++i

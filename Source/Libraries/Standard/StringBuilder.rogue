@@ -53,18 +53,18 @@ class StringBuilder
     method print( value:Long )->this [native]
 
     method print( value:Object )->this
-      if (value?) return print( value->String )
+      if (value) return print( value->String )
       return print( "null" )
 
     method print( value:Real, decimal_places=4:Integer )->this [native]
 
     method print( value:String )->this
-      if (value?)
-        if (indent?)
+      if (value)
+        if (indent)
           forEach (ch in value) print( ch )
         else
           forEach (ch in value) characters.add( ch )
-          if (value.count? and value.last == '\n') at_newline = true
+          if (value.count and value.last == '\n') at_newline = true
         endIf
         return this
       else

@@ -91,10 +91,10 @@ class Program [requisite singleton]
 
     method find_type( name:String )->Type
       local type = type_lookup[ name ]
-      if (type?) return type
+      if (type) return type
 
       local template = find_template( name )
-      if (template?)
+      if (template)
         type = Type( template.t, name )
         type_lookup[name] = type
         return type
@@ -104,7 +104,7 @@ class Program [requisite singleton]
 
     method get_type_reference( t:Token, name:String )->Type
       local type = type_lookup[ name ]
-      if (type?) return type
+      if (type) return type
 
       type = Type( t, name )
       type_lookup[name] = type
@@ -113,7 +113,7 @@ class Program [requisite singleton]
 
     method get_callback_type_signature( parameter_types:Type[] )->String
       string_buffer.clear.print( "(" )
-      if (parameter_types?)
+      if (parameter_types)
         local first = true
         forEach (type in parameter_types)
           if (first) first = false
@@ -126,7 +126,7 @@ class Program [requisite singleton]
 
     method get_callback_type_reference( t:Token, parameter_types:Type[], return_type:Type )->Type
       local name = "Callback" + get_callback_type_signature( parameter_types )
-      if (return_type?) name += "->" + return_type.name
+      if (return_type) name += "->" + return_type.name
 
       local type = get_type_reference( t, name )
       if (type.defined) return type
@@ -134,10 +134,10 @@ class Program [requisite singleton]
       type.defined = true
       type.attributes.add( Attribute.is_class )
       local m_call = type.add_method( t, "call" )
-      if (parameter_types?)
+      if (parameter_types)
         forEach (i of parameter_types) m_call.add_parameter( t, "param"+(i+1), parameter_types[i] )
       endIf
-      if (return_type?)
+      if (return_type)
         m_call.return_type = return_type
         m_call.statements.add( CmdReturn(t,return_type.create_default_value(t)) )
       endIf
@@ -151,9 +151,9 @@ class Program [requisite singleton]
       return type
 
     method resolve
-      if (explicit_main_class_t?)
+      if (explicit_main_class_t)
         main_class = get_type_reference( explicit_main_class_t, explicit_main_class_name )
-      elseIf (implicit_main_class_t?)
+      elseIf (implicit_main_class_t)
         main_class = get_type_reference( implicit_main_class_t, implicit_main_class_name )
       else
         throw RogueError( "No candidates for main class." )
@@ -177,11 +177,11 @@ class Program [requisite singleton]
 
       main_class.resolve
       local m = main_class.find_method( "init()" )
-      if (m?) m.resolve
+      if (m) m.resolve
 
       # Reference and resolve all requisite type templates
       forEach (templ in template_list)
-        if ((templ.attributes.flags & Attribute.is_requisite)? and not templ.type_parameters)
+        if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
           get_type_reference( templ.t, templ.name ).resolve
         endIf
       endForEach
@@ -394,7 +394,7 @@ class Program [requisite singleton]
         writer.println( " )" )
         writer.println( "{" )
         writer.print( "  " )
-        if (m.return_type?) writer.print( "return " )
+        if (m.return_type) writer.print( "return " )
         writer.print( "((" ).print( m.cpp_typedef )
         writer.print( ")(THIS->type->methods[i]))( THIS" )
         forEach (i of m.parameters)
@@ -440,7 +440,7 @@ writer.println( "// " + type )
       # RogueProgram constructor
       local type_count = 0
       forEach (type in type_list)
-        if (not (type.generic_type? or type.is_array)) ++type_count
+        if (not (type.generic_type or type.is_array)) ++type_count
       endForEach
       writer.print( "RogueProgram::RogueProgram() : RogueProgramCore(" ).print( type_count ).println( ")" )
       writer.println  "{"
@@ -505,7 +505,7 @@ writer.println( "// " + type )
       forEach (type in type_list)
         if (not type.omit_output)
           local m = type.find_routine( "init_class()" )
-          if (m? and m.type_context is type)
+          if (m and m.type_context is type)
             writer.print( m.cpp_name ).println( "();" )
           endIf
         endIf
@@ -530,7 +530,7 @@ writer.println( "// " + type )
 
         # Call init() on main object
         local m = main_class.find_method( "init()" )
-        if (m?)
+        if (m)
           writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
         endIf
       endIf

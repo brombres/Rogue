@@ -86,7 +86,7 @@ class PropertyValue
       return 0
 
     method to->Logical
-      return (this->Integer?)
+      return (this->Integer)
 
     method to->Real
       return this->Integer->Real

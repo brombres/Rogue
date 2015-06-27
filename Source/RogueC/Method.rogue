@@ -61,7 +61,7 @@ class Method
 
     method incorporate( into_type:Type )->Method
       local m = clone.set_type_context( into_type ).set_incorporated
-      if (aspect_statements?)
+      if (aspect_statements)
         # If aspect_statements is non-null then the aspect method was already resolved
         # prior to the clone() above and we need to copy the statements.
         # If it's null then we've already cloned the statement list when we clone()d
@@ -95,14 +95,14 @@ class Method
       return p
 
     method assign_cpp_name
-      if (cpp_name?) return
+      if (cpp_name) return
       local buffer = StringBuilder()
       buffer.print( type_context.name ).print( "__" )
       buffer.print( name )
       cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
 
     method assign_signature
-      if (signature?) return
+      if (signature) return
       local buffer = StringBuilder()
       buffer.print name
       buffer.print "("
@@ -116,38 +116,38 @@ class Method
       signature = buffer->String
 
     method compile_target->Method
-      if (generic_method?) return generic_method
+      if (generic_method) return generic_method
       return this
 
     method is_dynamic->Logical
-      return (attributes.flags & Attribute.is_dynamic)?
+      return (attributes.flags & Attribute.is_dynamic)
 
     method is_generated->Logical
-      return (attributes.flags & Attribute.is_generated)?
+      return (attributes.flags & Attribute.is_generated)
 
     method is_incorporated->Logical
-      return (attributes.flags & Attribute.is_incorporated)?
+      return (attributes.flags & Attribute.is_incorporated)
 
     method is_initializer->Logical
-      return (attributes.flags & Attribute.is_initializer)?
+      return (attributes.flags & Attribute.is_initializer)
 
     method is_inline->Logical
-      return (attributes.flags & Attribute.is_inline)?
+      return (attributes.flags & Attribute.is_inline)
 
     method is_native->Logical
-      return (attributes.flags & Attribute.is_native)?
+      return (attributes.flags & Attribute.is_native)
 
     method is_overridden->Logical
-      return (attributes.flags & Attribute.is_overridden)?
+      return (attributes.flags & Attribute.is_overridden)
 
     method is_routine->Logical
-      return (attributes.flags & Attribute.is_routine)?
+      return (attributes.flags & Attribute.is_routine)
 
     method is_task->Logical
-      return (attributes.flags & Attribute.is_task)?
+      return (attributes.flags & Attribute.is_task)
 
     method is_task_conversion->Logical
-      return (attributes.flags & Attribute.is_task_conversion)?
+      return (attributes.flags & Attribute.is_task_conversion)
 
     method omit_output->Logical
       return is_native or is_inline or (is_generated and name=="create" and type_context.is_compound)
@@ -166,7 +166,7 @@ class Method
 
       if (is_task)
         task_result_type = return_type
-        if (return_type?)
+        if (return_type)
           return_type.organize
           return_type = Program.get_type_reference( t, "TaskWithResult<<$>>"(return_type.name) )
         else
@@ -179,7 +179,7 @@ class Method
         if (not is_routine) 
           local property = type_context.find_property( param.name )
 
-          if (property?)
+          if (property)
             if (param.type is null)
               # Autostore parameter
               local new_name = Program.create_unique_id
@@ -203,13 +203,13 @@ class Method
         # Add method to type's lookup table.
         if (is_routine)
           local existing_m = type_context.routine_lookup_by_signature[signature]
-          if (existing_m? and existing_m.type_context is type_context)
+          if (existing_m and existing_m.type_context is type_context)
             throw t.error( "A routine with the signature $ is already defined." (signature) )
           endIf
           type_context.routine_lookup_by_signature[signature] = this
         else
           local existing_m = type_context.method_lookup_by_signature[signature]
-          if (existing_m? and existing_m.type_context is type_context)
+          if (existing_m and existing_m.type_context is type_context)
             throw t.error( "A method with the signature $ is already defined." (signature) )
           endIf
           type_context.method_lookup_by_signature[signature] = this
@@ -217,7 +217,7 @@ class Method
       endIf
 
       min_args = parameters.count
-      while (min_args >= 1 and parameters[min_args-1].initial_value?)
+      while (min_args >= 1 and parameters[min_args-1].initial_value)
         --min_args
       endWhile
 
@@ -242,7 +242,7 @@ class Method
         endIf
         writer.print( " THIS" )
       endIf
-      if (parameters.count?)
+      if (parameters.count)
         forEach (param in parameters)
           if (first) writer.print( " " ); first = false
           else       writer.print( ", " )
@@ -263,10 +263,10 @@ class Method
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
         writer.indent += 2
-        if (incorporating_classes?)
+        if (incorporating_classes)
           forEach (ic in incorporating_classes)
             writer.print("case ").print(ic.index).println(":")
-            if (return_type?) writer.print( "  return " )
+            if (return_type) writer.print( "  return " )
             else              writer.print( "  " )
             local m = ic.find_method(signature).compile_target
             writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
@@ -276,7 +276,7 @@ class Method
             writer.println( " );" )
           endForEach
         endIf
-        if (return_type?)
+        if (return_type)
           writer.println( "default:" )
           writer.print( "  return " ).print_default_value( return_type ).println( ";" )
         endIf
@@ -298,9 +298,9 @@ class Method
       forEach (param in parameters)
         param.type.organize
       endForEach
-      if (return_type?) return_type.organize
+      if (return_type) return_type.organize
 
-      if (type_context.generic_type?)
+      if (type_context.generic_type)
         # Find the generic version of this method
         type_context.generic_type.organize
         local buffer = StringBuilder()
@@ -310,7 +310,7 @@ class Method
         forEach (p in parameters)
           if (first) first = false
           else       buffer.print( "," )
-          if (p.generic_type?) buffer.print( p.generic_type.name )
+          if (p.generic_type) buffer.print( p.generic_type.name )
           else                 buffer.print( p.type.name )
         endForEach
 
@@ -337,11 +337,11 @@ class Method
       statements.resolve( scope )
 
       if (scope.local_list.count > parameters.count) throw t.error( "locals left on scope stack" )
-      if (scope.control_stack.count?) throw t.error( "control stucture left on scope stack" )
+      if (scope.control_stack.count) throw t.error( "control stucture left on scope stack" )
 
       if (is_initializer)
         local return_t = t
-        if (statements.count?) return_t = statements.last.t
+        if (statements.count) return_t = statements.last.t
         statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
       endIf
 
@@ -411,7 +411,7 @@ class Method
 
       forEach (statement in m_temp.statements)
         statement = statement.clone( task_args )
-        if (statement?) task_args.add( statement )
+        if (statement) task_args.add( statement )
       endForEach
       if (task_args.cmd_task_control.current_section.statements.count == 0)
         task_args.cmd_task_control.current_section.statements.add( task_args.create_return(t) )

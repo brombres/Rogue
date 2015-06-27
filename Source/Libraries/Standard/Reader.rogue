@@ -22,7 +22,7 @@ class LineReader : Reader<<String>>
       init( file.reader )
 
     method has_another->Logical
-      return next?
+      return next
 
     method peek->String
       return next

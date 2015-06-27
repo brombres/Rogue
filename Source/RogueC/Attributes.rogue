@@ -37,7 +37,7 @@ class Attributes
 
     method clone->Attributes
       local result = Attributes( flags )
-      if (tags?)
+      if (tags)
         forEach (tag in tags)
           result.add( tag )
         endForEach
@@ -55,7 +55,7 @@ class Attributes
 
     method add( other:Attributes )->Attributes
       flags |= other.flags
-      if (other.tags?)
+      if (other.tags)
         forEach (tag in other.tags) add( tag )
       endIf
       return this

@@ -58,7 +58,7 @@ class String [native functional]
       return substring( 0, i-1 )
 
     method begins_with( ch:Character )->Logical
-      return (count? and this[0] == ch)
+      return (count and this[0] == ch)
 
     method begins_with( other:String )->Logical
       local other_count = other.count
@@ -157,8 +157,8 @@ class String [native functional]
       $if ("C++") inlineNative '$this->plus($value)'
 
     method operator+( value:Object )->String
-      if (value?) return this + value->String
-      else        return this + "null"
+      if (value) return this + value->String
+      else       return this + "null"
 
     method operator+( value:Real )->String
       $if ("C++") inlineNative '$this->plus($value)'

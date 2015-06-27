@@ -18,7 +18,7 @@ class Property
       local result = Property( t, type_context, name )
       result.type = type
       result.attributes = attributes
-      if (initial_value?) result.initial_value = initial_value.clone
+      if (initial_value) result.initial_value = initial_value.clone
       result.generic_type = generic_type
       result.cpp_name = cpp_name
       return result

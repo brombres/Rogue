@@ -16,7 +16,7 @@ class Scope
 
     method push_local( v:Local )
       local existing = find_local( v.name )
-      if (existing?) throw v.t.error( //A local variable named "$" already exists.// (v.name) ) 
+      if (existing) throw v.t.error( //A local variable named "$" already exists.// (v.name) ) 
       local_list.add( v )
       locals_by_name[v.name] = v
 
@@ -25,11 +25,11 @@ class Scope
       locals_by_name.remove( local_list.remove_last.name )
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Cmd
-      local m = find_method( type_context, access, error_on_fail and access.context?, suppress_inherited )
+      local m = find_method( type_context, access, error_on_fail and access.context, suppress_inherited )
       if (not m and not access.context)
         # No context specified; try Global context
         m = find_method( Program.type_Global, access, false, suppress_inherited )
-        if (m?)
+        if (m)
           type_context = Program.type_Global
           access.context = CmdReadSingleton( access.t, Program.type_Global )
         elseIf (error_on_fail)
@@ -47,7 +47,7 @@ class Scope
       local t = access.t
 
       local context = access.context
-      if (context?)
+      if (context)
         if (m.is_routine and context instanceOf CmdLiteralThis)
           throw t.error( "Cannot call a method from a routine without an object context (obj.$()(...))." (m.name) )
         endIf
@@ -73,7 +73,7 @@ class Scope
       if (m.is_routine)
         # routine
         if (m.is_native)
-          if (m.native_code?)
+          if (m.native_code)
             context = context.resolve( this )
             context.require_type_context
             cmd = CmdCallInlineNativeRoutine( t, m, args )
@@ -86,7 +86,7 @@ class Scope
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
             local inline_statement = statement.clone( inline_args )
-            if (inline_statement?) inline_statements.add( inline_statement )
+            if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
           inline_statements.resolve( this )
@@ -105,14 +105,14 @@ class Scope
           if (type_context.is_array)
             which (m.name)
               case "count"
-                if (args? and args.count?) throw t.error( "Invalid arguments to array count." )
+                if (args and args.count) throw t.error( "Invalid arguments to array count." )
                 return CmdReadArrayCount( t, context ).resolve( this )
               #others
                 #throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
             endWhich
           endIf
 
-          if (m.native_code?)
+          if (m.native_code)
             cmd = CmdCallInlineNativeMethod( t, context, m, args )
           else
             cmd = CmdCallNativeMethod( t, context, m, args )
@@ -123,7 +123,7 @@ class Scope
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
             local inline_statement = statement.clone( inline_args )
-            if (inline_statement?) inline_statements.add( inline_statement )
+            if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
           inline_statements.resolve( this )
@@ -146,14 +146,14 @@ class Scope
       local candidates = CandidateMethods( type_context, access, error_on_fail )
 
       local list = type_context.routine_lookup_by_name[ access.name ]
-      if (list?)
+      if (list)
         forEach (m in list)
           candidates.available.add( m )
         endForEach
       endIf
 
       list = type_context.method_lookup_by_name[ access.name ]
-      if (list?)
+      if (list)
         forEach (m in list)
           candidates.available.add( m )
         endForEach
@@ -173,7 +173,7 @@ class Scope
           endIf
         endForEach
 
-        if (most_specific_type?)
+        if (most_specific_type)
           # Keep only the initializer methods defined in the most specific type
           forEach (m in candidates.available)
             if (m.type_context is most_specific_type) candidates.compatible.add( m )
@@ -185,7 +185,7 @@ class Scope
       local args = access.args
 
       local arg_count = 0
-      if (args?)
+      if (args)
         args.resolve( this )
         arg_count = args.count
         forEach (arg in args) arg.type.organize
@@ -197,7 +197,7 @@ class Scope
       endForEach
       if (not candidates.update_matches) return null
 
-      if (arg_count?)
+      if (arg_count)
         # Exact arg type check
         forEach (m in candidates.available)
           contingent
@@ -213,7 +213,7 @@ class Scope
         if (not candidates.refine_matches) return null
       endIf
 
-      if (arg_count?)
+      if (arg_count)
         # Compatible arg check
         forEach (m in candidates.available)
           contingent
@@ -302,7 +302,7 @@ class CandidateMethods
           local call_sig_buffer = StringBuilder()
           call_sig_buffer.print( type_context.name ).print( "::" )
           call_sig_buffer.print( access.name ).print( "(" )
-          if (access.args?)
+          if (access.args)
             forEach (index of access.args)
               if (index > 0) call_sig_buffer.print(',')
               call_sig_buffer.print( access.args[index].require_type.name )

@@ -62,7 +62,7 @@ class Tokenizer
       return true
 
     method configure_token_types
-      if (TokenType.lookup?) return
+      if (TokenType.lookup) return
 
       TokenType.lookup        = Table<<String,TokenType>>()
 
@@ -532,7 +532,7 @@ class Tokenizer
       if (ch.is_letter or ch == '_')
         local id = read_identifier
         local keyword_type = TokenType.lookup[id]
-        if (keyword_type?) return add_new_token( keyword_type )
+        if (keyword_type) return add_new_token( keyword_type )
         else               return add_new_token( TokenType.identifier, id )
         return true
 
@@ -607,7 +607,7 @@ class Tokenizer
         while (reader.has_another and reader.peek != '\n') buffer.print( reader.read )
       endIf
 
-      if (tokens.count? and tokens.last.type is TokenType.eol)
+      if (tokens.count and tokens.last.type is TokenType.eol)
         # Store comments in preceding EOL, if any.
         (tokens.last as EOLToken).comment += buffer->String
       endIf

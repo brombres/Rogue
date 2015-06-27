@@ -124,7 +124,7 @@ class Type
       endForEach
 
     method compile_type->Type
-      if (generic_type?) return generic_type
+      if (generic_type) return generic_type
       return this
 
     method create_default_value( _t:Token )->Cmd
@@ -149,13 +149,13 @@ class Type
 
     method find_method( signature:String )->Method
       local m = method_lookup_by_signature[signature]
-      if (m?) return m
+      if (m) return m
 
       return find_routine( signature )
 
     method find_routine( signature:String )->Method
       local m = routine_lookup_by_signature[signature]
-      if (m?) return m
+      if (m) return m
 
       return null
 
@@ -169,11 +169,11 @@ class Type
 
     method has_method_named( m_name:String )->Logical
       local list = method_lookup_by_name[m_name]
-      return (list? and list.count?)
+      return (list and list.count)
 
     method has_routine_named( r_name:String )->Logical
       local list = routine_lookup_by_name[r_name]
-      return (list? and list.count?)
+      return (list and list.count)
 
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
@@ -206,16 +206,16 @@ class Type
       return (attributes.flags & Attribute.type_mask) == Attribute.is_compound
 
     method is_functional->Logical
-      return (attributes.flags & Attribute.is_functional)?
+      return (attributes.flags & Attribute.is_functional)
 
     method is_generic->Logical
-      return generic_type?
+      return generic_type
 
     method is_immutable->Logical
-      return (attributes.flags & Attribute.is_immutable)?
+      return (attributes.flags & Attribute.is_immutable)
 
     method is_native->Logical
-      return (attributes.flags & Attribute.is_native)?
+      return (attributes.flags & Attribute.is_native)
 
     method is_primitive->Logical
       return (attributes.flags & Attribute.type_mask) == Attribute.is_primitive
@@ -229,7 +229,7 @@ class Type
       endWhich
 
     method is_singleton->Logical
-      return (attributes.flags & Attribute.is_singleton)?
+      return (attributes.flags & Attribute.is_singleton)
 
     method organize->Type
       if (organized) return this
@@ -241,7 +241,7 @@ class Type
       if (not defined)
         defined = true
         local template = Program.find_template( name )
-        if (template?)
+        if (template)
           template.instantiate( this )
         else
           throw t.error( "Reference to undefined type '$'." (name) )
@@ -266,7 +266,7 @@ class Type
       if (is_class)
         forEach (base_type in base_types)
           if (base_type.is_class)
-            if (base_class? and base_class isNot base_type)
+            if (base_class and base_class isNot base_type)
               throw t.error( "Class $ can only have one base class ($ and $ are both specified as base classes)." (name,base_class,base_type) )
             else
               base_class = base_type
@@ -281,7 +281,7 @@ class Type
       endIf
 
       # Collect flat list base types while removing duplicates
-      if (base_class?) base_class.collect_base_types( flat_base_types )
+      if (base_class) base_class.collect_base_types( flat_base_types )
       forEach (base_type in base_types)
         base_type.collect_base_types( flat_base_types )
       endForEach
@@ -341,7 +341,7 @@ class Type
       endForEach
 
       # Create or locate init_class() to initialize settings
-      if (settings_list.count? and not is_native)
+      if (settings_list.count and not is_native)
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
 
@@ -349,7 +349,7 @@ class Type
         local i = settings_list.count - 1
         while (i >= 0)
           local s = settings_list[i]
-          if (s.initial_value?)
+          if (s.initial_value)
             m.statements.insert( CmdWriteSetting(s.t, s, s.initial_value.clone) )
           endIf
           --i
@@ -362,7 +362,7 @@ class Type
         local prior_m = m
         if (not m or m.type_context isNot this)
           m = add_method( t, "init_object" ).organize
-          if (prior_m?)
+          if (prior_m)
             prior_m.attributes.add( Attribute.is_dynamic )
             prior_m.attributes.add( Attribute.is_overridden )
             m.attributes.add( Attribute.is_dynamic )
@@ -377,7 +377,7 @@ class Type
         local i = property_list.count - 1
         while (i >= 0)
           local p = property_list[i]
-          if (p.initial_value?)
+          if (p.initial_value)
             m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.clone) )
           endIf
           --i
@@ -439,15 +439,15 @@ class Type
 
     method inherit_property( p:Property, list:Property[], lookup:Table<<String,Property>> )
       local existing_p = lookup[ p.name ]
-      if (existing_p?)
+      if (existing_p)
         local i = list.locate( existing_p )
 
         if (p.type_context is existing_p.type_context)
           throw p.t.error( //A property named "$" already exists.// (p.name) )
         else
           if (p.type is existing_p.type)
-            if (p.initial_value?)
-              if (existing_p.initial_value?)
+            if (p.initial_value)
+              if (existing_p.initial_value)
                 if (p.type.instance_of(existing_p.type))
                   # Use the new declaration with its updated initial value
                   if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
@@ -496,7 +496,7 @@ class Type
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
-      if (existing_m?)
+      if (existing_m)
         local i = list.locate( existing_m )
 
         if (not existing_m.is_incorporated)
@@ -546,7 +546,7 @@ class Type
     method inherit_routine( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
-      if (existing_m?)
+      if (existing_m)
         local i = list.locate( existing_m )
 
         # Aspect routines are not incorporated
@@ -582,7 +582,7 @@ class Type
       endForEach
 
     method omit_output->Logical
-      return is_native or generic_type?
+      return is_native or generic_type
 
     method resolve->Type
       if (resolved) return this
@@ -590,9 +590,9 @@ class Type
 
       organize
 
-      if (element_type?) element_type.organize
+      if (element_type) element_type.organize
 
-      if (generic_type?) generic_type.organize
+      if (generic_type) generic_type.organize
 
       forEach (s in settings_list) s.type.organize
       forEach (p in property_list)
@@ -626,7 +626,7 @@ class Type
       writer.indent += 2
 
       # Settings
-      if (settings_list.count?)
+      if (settings_list.count)
         writer.println "// SETTINGS"
         forEach (s in settings_list)
           writer.print( "static " ).print( s.type ).print(" ").print( s.cpp_name ).println(";")
@@ -643,7 +643,7 @@ class Type
       writer.println
 
       if (is_compound)
-        if (property_list.count?)
+        if (property_list.count)
           # Default Constructor
           writer.print( this ).print( "() : " )
           local first = true
@@ -724,7 +724,7 @@ class Type
 
       writer.print( "object_size = (int) sizeof( " ).print(cpp_class_name).println(" );")
 
-      if (base_types.count?)
+      if (base_types.count)
         writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
         forEach (i of base_types)
@@ -737,10 +737,10 @@ class Type
       writer.print( dynamic_method_table_index ).println( ";" )
 
       #{
-      if (settings_list.count?)
+      if (settings_list.count)
         local initialized_settings = false
         forEach (s in settings_list)
-          if (s.initial_value?)
+          if (s.initial_value)
           endIf
         endForEach
         if (initialized_settings) writer.println
@@ -753,7 +753,7 @@ class Type
 
       # create_object()
       local m_init_object = find_method( "init_object()" )
-      if (m_init_object? and m_init_object.statements.count > 1)
+      if (m_init_object and m_init_object.statements.count > 1)
         local type_Object = Program.type_Object
         writer.print( type_Object ).print( " init_object( " ).print( type_Object ).println( " THIS )" )
         writer.println( "{" )
@@ -778,7 +778,7 @@ class Type
         writer.println( "  init_object( _singleton );" )
 
         local m_init = find_method( "init()" )
-        if (m_init?)
+        if (m_init)
           writer.print( "  " ).print( m_init.cpp_name )
           writer.print( "( (" ).print( this ).println( ") _singleton );" )
         endIf
@@ -840,7 +840,7 @@ class Type
       forEach (m in method_list)
         if (not m.is_inline and m.is_dynamic)
           buffer.clear
-          if (m.return_type?)
+          if (m.return_type)
             buffer.print( m.return_type.compile_type.cpp_class_name )
             if (m.return_type.is_reference) buffer.print('*')
           else
@@ -857,7 +857,7 @@ class Type
           buffer.print( ")" )
           local sig = buffer->String
           local mapping = lookup[sig]
-          if (mapping?)
+          if (mapping)
             m.cpp_typedef = mapping.cpp_typedef
           else
             m.cpp_typedef = "ROGUEM" + list.count

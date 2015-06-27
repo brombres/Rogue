@@ -59,7 +59,7 @@ class EOLToken : Token
     method init( type, comment )
 
     method to->String
-      if (comment.count?) return //EOL  # $// (comment)
+      if (comment.count) return //EOL  # $// (comment)
       return "EOL"
 endClass
 

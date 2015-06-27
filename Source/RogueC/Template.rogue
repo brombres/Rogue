@@ -27,7 +27,7 @@ class Template
 
       if (type.name.ends_with(']'))
         instantiate_list( type )
-      elseIf (type_parameters?)
+      elseIf (type_parameters)
         instantiate_parameterized_type( type )
       else
         instantiate_standard_type( type )
@@ -99,10 +99,10 @@ class Template
         type_specializers[specializer.name] = specializer
 
         local is_generic = false
-        if (param.generic_mapping?)
+        if (param.generic_mapping)
           param.generic_mapping.organize
           local specializer_type = Program.find_type( buffer->String )
-          if (specializer_type?)
+          if (specializer_type)
             specializer.type = specializer_type
             specializer_type.organize
             if (specializer_type.instance_of(param.generic_mapping))
@@ -143,8 +143,8 @@ class Template
       forEach (template_t in tokens)
         if (template_t.type is TokenType.placeholder_id)
           local specializer = type_specializers[ template_t->String ]
-          if (specializer?)
-            if (specializer.tokens?)
+          if (specializer)
+            if (specializer.tokens)
               # Insert template copy of tokens
               forEach (specializer_t in specializer.tokens)
                 instance_tokens.add( specializer_t )

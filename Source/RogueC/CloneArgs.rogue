@@ -10,7 +10,7 @@ class InlineArgs : CloneArgs
 
   METHODS
     method init( this_context, method_info, args:CmdArgs )
-      if (args?)
+      if (args)
         arg_lookup = Table<<String,Cmd>>()
         forEach (index of args)
           arg_lookup[ method_info.parameters[index].name ] = args[index]
@@ -24,16 +24,16 @@ class InlineArgs : CloneArgs
       return this_context.clone()
 
     method inline_access( access:CmdAccess )->Cmd
-      if (access.context?) return access
+      if (access.context) return access
 
       local arg = arg_lookup[ access.name ]
       if (not arg) return access
 
       local dup = arg.clone
-      if (access.args?)
+      if (access.args)
         local new_access = dup as CmdAccess
-        if (new_access?)
-          if (new_access.args?)
+        if (new_access)
+          if (new_access.args)
             throw access.t.error( "Illegal arguments on inline code." )
           else
             new_access.args = access.args
@@ -72,7 +72,7 @@ class TaskArgs : CloneArgs
       cmd_task_control = CmdTaskControl( task_method.t )
 
     method add( cmd:Cmd )->TaskArgs
-      if (cmd?) cmd_task_control.current_section.statements.add( cmd ) 
+      if (cmd) cmd_task_control.current_section.statements.add( cmd ) 
       return this
 
     method add_jump( t:Token, to_section:CmdTaskControlSection )->TaskArgs
@@ -95,7 +95,7 @@ class TaskArgs : CloneArgs
 
     method create_return( t:Token, value=null:Cmd )->Cmd
       local result = CmdBlock( t )
-      if (value?) result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
+      if (value) result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
       result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return result

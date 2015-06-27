@@ -9,7 +9,7 @@ class Global [singleton]
       return this
 
     method flush->this
-      if (global_output_buffer.count?)
+      if (global_output_buffer.count)
         standard_output.print( global_output_buffer )
         global_output_buffer.clear
       endIf

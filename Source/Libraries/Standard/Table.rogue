@@ -37,7 +37,7 @@ class Table<<$KeyType:Object,$ValueType:Object>>
       return Table<<$KeyType,$ValueType>>( this )
 
     method contains( key:$KeyType )->Logical
-      return find(key)?
+      return find(key)
 
     method count->Integer
       return keys.count
@@ -46,7 +46,7 @@ class Table<<$KeyType:Object,$ValueType:Object>>
       local hash = key.hash_code
       local entry = bins[ hash & bin_mask ]
 
-      while (entry?)
+      while (entry)
         if (entry.hash == hash and entry.key == key) return entry
         entry = entry.next_entry
       endWhile
@@ -55,7 +55,7 @@ class Table<<$KeyType:Object,$ValueType:Object>>
 
     method get( key:$KeyType )->$ValueType
       local entry = find( key )
-      if (entry?)
+      if (entry)
         return entry.value
       else
         local default_value : $ValueType
@@ -76,7 +76,7 @@ class Table<<$KeyType:Object,$ValueType:Object>>
       endIf
 
       local next_entry = entry.next_entry
-      while (next_entry?)
+      while (next_entry)
         # Later item in hash bin
         if (next_entry.hash == hash and next_entry.key == key)
           local result = entry.value
@@ -95,7 +95,7 @@ class Table<<$KeyType:Object,$ValueType:Object>>
       local index = hash & bin_mask
       local entry = bins[ index ]
 
-      while (entry?)
+      while (entry)
         if (entry.hash == hash and entry.key == key)
           entry.value = value
           return

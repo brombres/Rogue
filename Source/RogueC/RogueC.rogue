@@ -91,7 +91,7 @@ class RogueC [singleton]
 
         Program.write_cpp( output_filepath )
 
-        if (execute_args?)
+        if (execute_args)
           local exe = output_filepath.to_lowercase
           local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
           println cmd
@@ -135,7 +135,7 @@ class RogueC [singleton]
 
       if (not file.exists)
         local mesg = //No such file "$".// (filepath)
-        if (t?) throw t.error( mesg )
+        if (t) throw t.error( mesg )
         else    throw RogueError( mesg )
       endIf
 
@@ -144,7 +144,7 @@ class RogueC [singleton]
         local file2 = File( path2 )
         if (not file2.exists or file2.is_folder)
           local mesg = //Can not find "$" to include.// (path2)
-          if (t?) throw t.error( mesg )
+          if (t) throw t.error( mesg )
           else    throw RogueError( mesg )
         else
           filepath = path2
@@ -183,7 +183,7 @@ class RogueC [singleton]
             execute_args = value
 
           elseIf (arg == "--main")
-            if (value.count?) throw RogueError( "Unexpected value for '--main' option." )
+            if (value.count) throw RogueError( "Unexpected value for '--main' option." )
             generate_main = true
 
           else

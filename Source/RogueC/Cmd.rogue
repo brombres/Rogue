@@ -29,6 +29,8 @@ class Cmd
           endIf
         endIf
 
+        if (target_type is Program.type_Logical) return CmdLogicalize(t,this)
+
         throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
       endIf
       #endIf
@@ -37,15 +39,15 @@ class Cmd
       throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
 
     method clone( other:Cmd, clone_args=null:CloneArgs )->Cmd
-      if (other?) return other.clone( clone_args )
+      if (other) return other.clone( clone_args )
       return null
 
     method clone( args:CmdArgs, clone_args=null:CloneArgs )->CmdArgs
-      if (args?) return args.clone( clone_args )
+      if (args) return args.clone( clone_args )
       return null
 
     method clone( statements:CmdStatementList, clone_args=null:CloneArgs )->CmdStatementList
-      if (statements?) return statements.clone( clone_args )
+      if (statements) return statements.clone( clone_args )
       return null
 
     method combine_literal_operands( common_type:Type )->Cmd
@@ -86,7 +88,7 @@ class Cmd
 
     method must_find_common_type( left_type:Type, right_type:Type )->Type
       local common_type = find_common_type( left_type, right_type )
-      if (common_type?) return common_type
+      if (common_type) return common_type
       throw t.error( "Types $ and $ are incompatible." (left_type,right_type) )
 
     method implicit_type->Type
@@ -99,7 +101,7 @@ class Cmd
       throw t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
 
     method require_type_context
-      if (type?) throw t.error( //Type name expected, e.g. "$.".// (type) )
+      if (type) throw t.error( //Type name expected, e.g. "$.".// (type) )
       else       throw t.error( //Type name expected.// )
 
     method require_integer->Cmd
@@ -110,9 +112,8 @@ class Cmd
       return this
 
     method require_logical->Cmd
-      local _type = type
-      if (_type is null or _type isNot Program.type_Logical)
-        throw t.error( "Logical value expected." )
+      if (require_type isNot Program.type_Logical)
+        return CmdLogicalize( t, this )
       endIf
       return this
 
@@ -159,12 +160,12 @@ class CmdStatementList : Cmd[]
 
     method init( statement:Cmd )
       init
-      if (statement?) add( statement )
+      if (statement) add( statement )
 
     method init( statement1:Cmd, statement2:Cmd )
       init
-      if (statement1?) add( statement1 )
-      if (statement2?) add( statement2 )
+      if (statement1) add( statement1 )
+      if (statement2) add( statement2 )
 
       #{
     method has_side_effects->Logical
@@ -178,7 +179,7 @@ class CmdStatementList : Cmd[]
       local result = CmdStatementList( count )
       forEach (cmd in this)
         cmd = cmd.clone( clone_args )
-        if (cmd? ) result.add( cmd )
+        if (cmd ) result.add( cmd )
       endForEach
       return result
 
@@ -272,9 +273,9 @@ class CmdLocalDeclaration : CmdStatement
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         local new_value = local_info.initial_value
-        if (new_value?) new_value = new_value.clone( clone_args )
+        if (new_value) new_value = new_value.clone( clone_args )
         return task_args.replace_write_local( t, local_info, new_value )
       else
         return CmdLocalDeclaration( t, local_info )
@@ -285,7 +286,7 @@ class CmdLocalDeclaration : CmdStatement
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
-      if (local_info.initial_value?)
+      if (local_info.initial_value)
         writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
         local_info.initial_value.write_cpp( writer )
         writer.print( ")" )
@@ -296,7 +297,7 @@ class CmdLocalDeclaration : CmdStatement
     method resolve( scope:Scope )->Cmd
       scope.push_local( local_info )
 
-      if (local_info.initial_value?)
+      if (local_info.initial_value)
         local_info.initial_value = local_info.initial_value.resolve( scope )
         local initial_value_type = local_info.initial_value.require_type
         if (local_info.type is null) local_info.type = initial_value_type
@@ -321,14 +322,14 @@ class CmdReturn : CmdStatement
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         return task_args.create_return( t, clone(value,clone_args) )
       else
         return CmdReturn( t, clone(value,clone_args) )
       endIf
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (value?)
+      if (value)
         writer.print( "return (" ).print( value.type ).print( ")(" )
         value.write_cpp( writer )
         writer.print( ")" )
@@ -337,7 +338,7 @@ class CmdReturn : CmdStatement
       endIf
 
     method resolve( scope:Scope )->Cmd
-      if (value?)
+      if (value)
         if (not scope.this_method.return_type)
           throw t.error( "$ is not declared as returning a value." (scope.this_method.signature) )
         endIf
@@ -407,7 +408,7 @@ class CmdBlock : CmdControlStructure
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args? and this.contains_yield)
+      if (task_args and this.contains_yield)
         forEach (statement in statements)
           task_args.add( statement.clone(task_args) )
         endForEach
@@ -426,7 +427,7 @@ class CmdBlock : CmdControlStructure
       statements.write_cpp( writer )
       writer.indent -= 2
       writer.println( "}" )
-      if (escape_label?) writer.print( escape_label ).println( ":;" )
+      if (escape_label) writer.print( escape_label ).println( ":;" )
 
     method requires_semicolon->Logical
       return false
@@ -455,7 +456,7 @@ class CmdIf : CmdControlStructure
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args? and this.contains_yield)
+      if (task_args and this.contains_yield)
         local next_section = task_args.create_section
         local end_section = task_args.create_section
         task_escape_section = end_section
@@ -466,7 +467,7 @@ class CmdIf : CmdControlStructure
         task_args.add_jump( t, end_section )
         task_args.begin_section( next_section )
 
-        if (else_ifs?)
+        if (else_ifs)
           forEach (e in else_ifs)
             next_section = task_args.create_section
             task_args.add_conditional_jump( CmdLogicalNot(t,e.condition.clone(clone_args)), next_section )
@@ -478,7 +479,7 @@ class CmdIf : CmdControlStructure
           endForEach
         endIf
 
-        if (else_statements?)
+        if (else_statements)
           forEach (statement in else_statements)
             task_args.add( statement.clone(task_args) )
           endForEach
@@ -499,7 +500,7 @@ class CmdIf : CmdControlStructure
         result.statements = statements.clone( clone_args )
 
         local cloned_else_ifs : CmdElseIf[]
-        if (else_ifs?)
+        if (else_ifs)
           cloned_else_ifs = CmdElseIf[]( else_ifs.count )
           forEach (e in else_ifs)
             cloned_else_ifs.add( e.clone(clone_args) )
@@ -527,13 +528,13 @@ class CmdIf : CmdControlStructure
       writer.indent -= 2
       writer.println( "}" )
 
-      if (else_ifs?)
+      if (else_ifs)
         forEach (else_if in else_ifs)
           else_if.write_cpp( writer )
         endForEach
       endIf
 
-      if (else_statements?)
+      if (else_statements)
         writer.println( "else" )
         writer.println( "{" )
         writer.indent += 2
@@ -542,17 +543,17 @@ class CmdIf : CmdControlStructure
         writer.println( "}" )
       endIf
 
-      if (escape_label?) writer.print( escape_label ).println( ":;" )
+      if (escape_label) writer.print( escape_label ).println( ":;" )
 
     method resolve( scope:Scope )->CmdIf
       scope.control_stack.add( this )
 
       condition = condition.resolve( scope ).require_logical
       statements.resolve( scope )
-      if (else_ifs?)
+      if (else_ifs)
         forEach (else_if in else_ifs) else_if.resolve( scope )
       endIf
-      if (else_statements?) else_statements.resolve( scope )
+      if (else_statements) else_statements.resolve( scope )
 
       scope.control_stack.remove_last
       return this
@@ -607,7 +608,7 @@ class CmdWhich : CmdControlStructure
       forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
       result.cases = cloned_cases
 
-      if (case_others?) result.case_others = case_others.clone( clone_args )
+      if (case_others) result.case_others = case_others.clone( clone_args )
       return result
 
     method add_case( case_t:Token )->CmdWhichCase
@@ -636,7 +637,7 @@ class CmdWhich : CmdControlStructure
         result.statements.add( CmdLocalDeclaration(t,expression_var) )
       endIf
 
-      if (cases.count?)
+      if (cases.count)
         local cmd_if = CmdIf( expression.t, cases.first.as_conditional(var_name), cases.first.statements )
         forEach (i of cases)
           if (i > 0)
@@ -644,12 +645,12 @@ class CmdWhich : CmdControlStructure
             cmd_if.add( CmdElseIf(cmd_if,c.as_conditional(var_name),c.statements) )
           endIf
         endForEach
-        if (case_others?)
+        if (case_others)
           cmd_if.else_statements = case_others.statements
         endIf
         result.statements.add( cmd_if )
 
-      elseIf (case_others?)
+      elseIf (case_others)
         # 'others' statements always happen
         forEach (cmd in case_others.statements) result.statements.add(cmd)
       endIf
@@ -671,7 +672,7 @@ class CmdWhichCase : Cmd
     method as_conditional( expression_var_name:String )->Cmd
       local cmd : Cmd
       forEach (condition in conditions)
-        if (cmd?)
+        if (cmd)
           cmd = CmdLogicalOr( t, cmd, CmdCompareEQ(t,CmdAccess(t,expression_var_name),condition) )
         else
           cmd = CmdCompareEQ( t, CmdAccess(t,expression_var_name), condition )
@@ -699,7 +700,7 @@ class CmdContingent : CmdControlStructure
 
     method clone( clone_args:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args? and this.contains_yield)
+      if (task_args and this.contains_yield)
         satisfied_section = task_args.create_section
         unsatisfied_section = task_args.create_section
         local end_section = task_args.create_section
@@ -711,7 +712,7 @@ class CmdContingent : CmdControlStructure
         task_args.add_jump( t, satisfied_section )
 
         task_args.begin_section( satisfied_section )
-        if (satisfied_statements?)
+        if (satisfied_statements)
           forEach (statement in satisfied_statements)
             task_args.add( statement.clone(task_args) )
           endForEach
@@ -719,7 +720,7 @@ class CmdContingent : CmdControlStructure
         task_args.add_jump( t, end_section )
 
         task_args.begin_section( unsatisfied_section )
-        if (unsatisfied_statements?)
+        if (unsatisfied_statements)
           forEach (statement in unsatisfied_statements)
             task_args.add( statement.clone(task_args) )
           endForEach
@@ -748,11 +749,11 @@ class CmdContingent : CmdControlStructure
     method resolve( scope:Scope )->CmdContingent
       scope.control_stack.add( this )
 
-      if (not escape_label?) escape_label = Program.create_unique_id
+      if (not escape_label) escape_label = Program.create_unique_id
 
       statements.resolve( scope )
-      if (satisfied_statements?)   satisfied_statements.resolve( scope )
-      if (unsatisfied_statements?) unsatisfied_statements.resolve( scope )
+      if (satisfied_statements)   satisfied_statements.resolve( scope )
+      if (unsatisfied_statements) unsatisfied_statements.resolve( scope )
 
       scope.control_stack.remove_last
       return this
@@ -771,15 +772,15 @@ class CmdContingent : CmdControlStructure
 
       statements.write_cpp( writer )
 
-      if (satisfied_label?)   writer.print( satisfied_label ).println( ":;" )
-      if (satisfied_statements?) satisfied_statements.write_cpp( writer )
+      if (satisfied_label)   writer.print( satisfied_label ).println( ":;" )
+      if (satisfied_statements) satisfied_statements.write_cpp( writer )
       writer.print( "goto " ).print( escape_label ).println( ";" )
 
       writer.indent -= 2
       writer.println( "}" )
 
-      if (unsatisfied_label?)      writer.print( unsatisfied_label ).println( ":;" )
-      if (unsatisfied_statements?) unsatisfied_statements.write_cpp( writer )
+      if (unsatisfied_label)      writer.print( unsatisfied_label ).println( ":;" )
+      if (unsatisfied_statements) unsatisfied_statements.write_cpp( writer )
 
       writer.indent -= 2
       writer.println( "}" )
@@ -802,16 +803,16 @@ class CmdGenericLoop : CmdControlStructure
     method init( t, control_type, condition, statements=CmdStatementList(), upkeep=null, control_statements=null )
 
     method init( t, control_type, condition, statements=CmdStatementList(), upkeep_cmd:Cmd, control_statements=null )
-      if (upkeep_cmd?)
+      if (upkeep_cmd)
         upkeep = CmdStatementList(1)
         upkeep.add( upkeep_cmd )
       endIf
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args? and this.contains_yield)
+      if (task_args and this.contains_yield)
         # Control variable initialization
-        if (control_statements?)
+        if (control_statements)
           forEach (statement in control_statements)
             task_args.add( statement.clone(task_args) )
           endForEach
@@ -822,7 +823,7 @@ class CmdGenericLoop : CmdControlStructure
         local after_section = task_args.create_section
         task_escape_section = after_section
         task_upkeep_section = task_args.create_section
-        if (condition?)
+        if (condition)
           task_args.add_conditional_jump( CmdLogicalNot(t,clone(condition,clone_args)), after_section )
         endIf
 
@@ -835,7 +836,7 @@ class CmdGenericLoop : CmdControlStructure
         task_args.begin_section( task_upkeep_section )
 
         # Upkeep
-        if (upkeep?)
+        if (upkeep)
           forEach (statement in upkeep)
             task_args.add( statement.clone(task_args) )
           endForEach
@@ -874,18 +875,18 @@ class CmdGenericLoop : CmdControlStructure
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
-      if (control_statements?)
+      if (control_statements)
         forEach (i of control_statements)
           control_statements[i] = control_statements[i].resolve( scope )
         endForEach
       endIf
 
-      if (condition?) condition = condition.resolve( scope )
+      if (condition) condition = condition.resolve( scope )
       statements.resolve( scope )
 
-      if (upkeep?) upkeep.resolve( scope )
+      if (upkeep) upkeep.resolve( scope )
 
-      if (control_statements?)
+      if (control_statements)
         forEach (statement in control_statements) statement.exit_scope( scope )
       endIf
 
@@ -893,11 +894,11 @@ class CmdGenericLoop : CmdControlStructure
       return this
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (control_statements?)
+      if (control_statements)
         writer.println( "{" )
         writer.indent += 2
 
-        if (control_statements?)
+        if (control_statements)
           forEach (statement in control_statements)
             statement.write_cpp( writer )
             writer.println( ";" )
@@ -906,12 +907,12 @@ class CmdGenericLoop : CmdControlStructure
 
       endIf
 
-      if (upkeep? or not condition)
+      if (upkeep or not condition)
         writer.print( "for (;" )
-        if (condition?) condition.write_cpp( writer )
+        if (condition) condition.write_cpp( writer )
         writer.print( ";" )
         local first = true
-        if (upkeep?)
+        if (upkeep)
           forEach (statement in upkeep)
             if (first) first = false
             else       writer.print( "," )
@@ -930,12 +931,12 @@ class CmdGenericLoop : CmdControlStructure
       writer.indent -= 2
       writer.println( "}" )
 
-      if (control_statements?)
+      if (control_statements)
         writer.indent -= 2
         writer.println( "}" )
       endIf
 
-      if (escape_label?)
+      if (escape_label)
         writer.print( escape_label ).println( ":;" )
       endIf
 
@@ -966,16 +967,16 @@ class CmdForEach : CmdControlStructure
       collection = collection.resolve( scope )
       local collection_type = collection.require_type.organize
 
-      local has_count = (collection_type.find_property("count")? or collection_type.find_method("count()")?)
+      local has_count = (collection_type.find_property("count") or collection_type.find_method("count()"))
       local m_at  = collection_type.find_method("at(Integer)")
       local m_get = collection_type.find_method("get(Integer)")
-      local has_get = m_get? or m_at?
+      local has_get = m_get or m_at
 
       local step_size = 1
-      if (step_cmd?)
+      if (step_cmd)
         step_cmd = step_cmd.resolve( scope )
         local literal_integer_cmd = step_cmd as CmdLiteralInteger
-        if (literal_integer_cmd?)
+        if (literal_integer_cmd)
           step_size = literal_integer_cmd.value
         else
           throw step_cmd.t.error( "Literal integer value expected." )
@@ -983,7 +984,7 @@ class CmdForEach : CmdControlStructure
       endIf
 
       if (has_count and has_get)
-        if (m_at?) m_get = m_at  # prefer at(Integer) over get(Integer)
+        if (m_at) m_get = m_at  # prefer at(Integer) over get(Integer)
 
         collection = collection.resolve( scope )
         local collection_var = scope.this_method.add_local( t, Program.create_unique_id, collection.require_type, collection )
@@ -1000,7 +1001,7 @@ class CmdForEach : CmdControlStructure
         endIf
 
         local control_var : Local
-        if (control_var_name?)
+        if (control_var_name)
           control_var = scope.this_method.add_local( t, control_var_name )
           control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, CmdArgs(CmdReadLocal(t,index_var)) )
           statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
@@ -1037,23 +1038,23 @@ class CmdForEach : CmdControlStructure
         #     statements
         #     ++index
         #   endWhile
-        local has_another = (collection_type.find_property("has_another")? or collection_type.find_method("has_another()")?)
+        local has_another = (collection_type.find_property("has_another") or collection_type.find_method("has_another()"))
         local m_read  = collection_type.find_method("read()")
         if (not has_another or not m_read)
           throw collection.t.error( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at) or a reader (.has_another, .read)." )
         endIf
         if (not m_read.return_type) throw collection.t.error( "Object's read() method does not return a value." )
-        if (step_cmd?)
+        if (step_cmd)
           throw step_cmd.t.error( "Cannot specify a step size for a reader - only for an indexed collection." )
         endIf
 
         local reader_var = scope.this_method.add_local( t, Program.create_unique_id, collection_type, collection  )
         local index_var : Local
-        if (index_var_name?)
+        if (index_var_name)
           index_var = scope.this_method.add_local( t, index_var_name, Program.type_Integer, CmdLiteralInteger(t,0) )
         endIf
 
-        if (control_var_name?)
+        if (control_var_name)
           local control_var = scope.this_method.add_local( t, control_var_name, m_read.return_type,
             CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
           statements.insert( CmdLocalDeclaration(collection.t,control_var) )
@@ -1065,7 +1066,7 @@ class CmdForEach : CmdControlStructure
         local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(rt,CmdReadLocal(rt,reader_var),"has_another"), statements )
         cmd_loop.set_control_logic( this )
         cmd_loop.add_control_var( reader_var )
-        if (index_var?)
+        if (index_var)
           cmd_loop.add_control_var( index_var )
           cmd_loop.add_upkeep( CmdAdjustLocal(t,index_var,1) )
         endIf
@@ -1129,7 +1130,7 @@ class CmdTry : CmdControlStructure
         c.write_cpp( writer )
       endForEach
 
-      if (escape_label?)
+      if (escape_label)
         writer.print( escape_label ).println( ":;" )
       endIf
 endClass
@@ -1203,12 +1204,12 @@ class CmdEscape : Cmd
     method init( t, control_type, target_cmd=null )
 
     method clone( clone_args:CloneArgs )->Cmd
-      if (target_cmd.task_escape_section?)
+      if (target_cmd.task_escape_section)
         local task_args = (clone_args as TaskArgs)
         return task_args.create_escape( t, target_cmd.task_escape_section ) 
       else
         local new_target = target_cmd
-        while (new_target.cloned_command?) new_target = new_target.cloned_command
+        while (new_target.cloned_command) new_target = new_target.cloned_command
         return CmdEscape( t, control_type, new_target )
       endIf
 
@@ -1218,8 +1219,8 @@ class CmdEscape : Cmd
         --i
         local cmd = scope.control_stack[i]
         if (cmd.control_type == control_type)
-          while (cmd.cloned_command?) cmd = cmd.cloned_command
-          if (not cmd.escape_label?) cmd.escape_label = Program.create_unique_id
+          while (cmd.cloned_command) cmd = cmd.cloned_command
+          if (not cmd.escape_label) cmd.escape_label = Program.create_unique_id
           target_cmd = cmd
           return this
         endIf
@@ -1241,12 +1242,12 @@ class CmdNextIteration : Cmd
     method init( t, target_cmd=null )
 
     method clone( clone_args:CloneArgs )->Cmd
-      if (target_cmd.task_upkeep_section?)
+      if (target_cmd.task_upkeep_section)
         local task_args = (clone_args as TaskArgs)
         return task_args.create_escape( t, target_cmd.task_upkeep_section ) 
       else
         local new_target = target_cmd
-        while (new_target.cloned_command?) new_target = new_target.cloned_command
+        while (new_target.cloned_command) new_target = new_target.cloned_command
         return CmdNextIteration( t, new_target )
       endIf
 
@@ -1256,8 +1257,8 @@ class CmdNextIteration : Cmd
         --i
         local cmd = scope.control_stack[i]
         if (cmd.control_type >= CmdControlStructure.type_first_loop)
-          while (cmd.cloned_command?) cmd = cmd.cloned_command
-          if (not cmd.upkeep_label?) cmd.upkeep_label = Program.create_unique_id
+          while (cmd.cloned_command) cmd = cmd.cloned_command
+          if (not cmd.upkeep_label) cmd.upkeep_label = Program.create_unique_id
           target_cmd = cmd
           return this
         endIf
@@ -1280,32 +1281,32 @@ class CmdNecessary : Cmd
     method init( t, condition, target_cmd=null )
 
     method clone( clone_args:CloneArgs )->Cmd
-      if (target_cmd.unsatisfied_section?)
+      if (target_cmd.unsatisfied_section)
         local task_args = (clone_args as TaskArgs)
         local cmd_jump = task_args.create_escape( t, target_cmd.unsatisfied_section ) 
-        if (condition?)
+        if (condition)
           return CmdIf( t, CmdLogicalNot(t,condition.clone(task_args)), CmdStatementList(cmd_jump) )
         else
           return cmd_jump
         endIf
       else
         local new_target = target_cmd : CmdControlStructure
-        while (new_target.cloned_command?) new_target = new_target.cloned_command
+        while (new_target.cloned_command) new_target = new_target.cloned_command
         return CmdNecessary( t, clone(condition,clone_args), new_target as CmdContingent )
       endIf
 
 
     method resolve( scope:Scope )->Cmd
-      if (condition?) condition = condition.resolve( scope )
+      if (condition) condition = condition.resolve( scope )
 
       local i = scope.control_stack.count
       while (i > 0)
         --i
         local cmd = scope.control_stack[i]
         if (cmd.control_type == CmdControlStructure.type_contingent)
-          while (cmd.cloned_command?) cmd = cmd.cloned_command
+          while (cmd.cloned_command) cmd = cmd.cloned_command
           local cmd_contingent = cmd as CmdContingent
-          if (not cmd_contingent.unsatisfied_label?) cmd_contingent.unsatisfied_label = Program.create_unique_id
+          if (not cmd_contingent.unsatisfied_label) cmd_contingent.unsatisfied_label = Program.create_unique_id
           target_cmd = cmd_contingent
           return this
         endIf
@@ -1329,32 +1330,32 @@ class CmdSufficient : Cmd
     method init( t, condition, target_cmd=null )
 
     method clone( clone_args:CloneArgs )->Cmd
-      if (target_cmd.satisfied_section?)
+      if (target_cmd.satisfied_section)
         local task_args = (clone_args as TaskArgs)
         local cmd_jump = task_args.create_escape( t, target_cmd.satisfied_section ) 
-        if (condition?)
+        if (condition)
           return CmdIf( t, condition.clone(task_args), CmdStatementList(cmd_jump) )
         else
           return cmd_jump
         endIf
       else
         local new_target = target_cmd : CmdControlStructure
-        while (new_target.cloned_command?) new_target = new_target.cloned_command
+        while (new_target.cloned_command) new_target = new_target.cloned_command
         return CmdSufficient( t, clone(condition,clone_args), new_target as CmdContingent )
       endIf
 
 
     method resolve( scope:Scope )->Cmd
-      if (condition?) condition = condition.resolve( scope )
+      if (condition) condition = condition.resolve( scope )
 
       local i = scope.control_stack.count
       while (i > 0)
         --i
         local cmd = scope.control_stack[i]
         if (cmd.control_type == CmdControlStructure.type_contingent)
-          while (cmd.cloned_command?) cmd = cmd.cloned_command
+          while (cmd.cloned_command) cmd = cmd.cloned_command
           local cmd_contingent = cmd as CmdContingent
-          if (not cmd_contingent.satisfied_label?) cmd_contingent.satisfied_label = Program.create_unique_id
+          if (not cmd_contingent.satisfied_label) cmd_contingent.satisfied_label = Program.create_unique_id
           target_cmd = cmd_contingent
           return this
         endIf
@@ -1537,7 +1538,7 @@ class CmdLiteralString : CmdLiteral
       return CmdLiteralString( t, value, index )
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (value?)
+      if (value)
         writer.print( "Rogue_program.literal_strings[" ).print( index ).print( "]" )
       else
         writer.print( "0" );
@@ -1545,7 +1546,7 @@ class CmdLiteralString : CmdLiteral
 
     method resolve( scope:Scope )->Cmd
       Program.type_String.resolve
-      if (value?)
+      if (value)
         if (not Program.literal_string_lookup.contains(value))
           index = Program.literal_string_list.count
           Program.literal_string_lookup[value] = index
@@ -1589,7 +1590,7 @@ class CmdFormattedString : Cmd
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
       endForEach
-      if (fmt.count?)
+      if (fmt.count)
         if (fmt.locate('$') != -1)
           throw t.error( "More format markers ('$') than arguments in formatted string." )
         endIf
@@ -1630,24 +1631,24 @@ class CmdAccess : Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
 
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?) return inline_args.inline_access( result )
+      if (inline_args) return inline_args.inline_access( result )
       return result
 
     method implicit_type->Type
       return Program.find_type( name )
 
     method resolve( scope:Scope )->Cmd
-      if (args?) args.resolve( scope )
+      if (args) args.resolve( scope )
 
       if (context is null)
         local v = scope.find_local( name )
-        if (v?)
-          if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+        if (v)
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
           return CmdReadLocal(t,v).resolve(scope)
         endIf
 
         local new_type = Program.find_type( name )
-        if (new_type?)
+        if (new_type)
           # new TypeName(...)
           new_type.organize
 
@@ -1679,7 +1680,7 @@ class CmdAccess : Cmd
           local cmd_create = CmdCreateObject( t, new_type )
           local cmd_new = cmd_create : Cmd
 
-          local must_find = args.count? or new_type.is_native
+          local must_find = args.count or new_type.is_native
           local cmd_call : Cmd
           if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false, true )
           if (not cmd_call)
@@ -1691,27 +1692,27 @@ class CmdAccess : Cmd
             endIf
           endIf
 
-          if (cmd_call?) cmd_new = cmd_call
+          if (cmd_call) cmd_new = cmd_call
 
           return cmd_new.resolve(scope)
         endIf
 
         # ---- No call context ----
         local result = scope.resolve_call( scope.this_type, this, false )
-        if (result?)
+        if (result)
           check_for_recursive_getter( scope )
           return result
         endIf
 
         local p = scope.this_type.find_setting( name )
-        if (p?)
-          if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+        if (p)
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
           else       return CmdReadSetting( t, p )
         endIf
 
         p = scope.this_type.find_property( name )
-        if (p?)
-          if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+        if (p)
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
 
           if (scope.this_method.is_routine)
             throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
@@ -1722,7 +1723,7 @@ class CmdAccess : Cmd
 
         if (not args)
           local def = scope.this_type.definition_lookup[ name ]
-          if (def?) return def.clone
+          if (def) return def.clone
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -1735,24 +1736,24 @@ class CmdAccess : Cmd
       context_type.organize
 
       local result = scope.resolve_call( context_type, this, false )
-      if (result?) return result
+      if (result) return result
 
       local p = context_type.find_setting( name )
-      if (p?)
-        if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+      if (p)
+        if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
         context.require_type_context
         return CmdReadSetting( t, p).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
-      if (p?)
-        if (args?) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+      if (p)
+        if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
         return CmdReadProperty( t, context, p )
       endIf
 
       if (not args)
         local def = context_type.definition_lookup[ name ]
-        if (def?) return def.clone
+        if (def) return def.clone
       endIf
 
       return scope.resolve_call( context_type, this, true )
@@ -1761,19 +1762,19 @@ class CmdAccess : Cmd
     method check_for_recursive_getter( scope:Scope )
       local this_type = scope.this_type
       if (name != scope.this_method.name) return
-      if (args? and args.count > 0)  return
-      if (not (this_type.find_property(name)? or this_type.find_setting(name)?)) return
+      if (args and args.count > 0)  return
+      if (not (this_type.find_property(name) or this_type.find_setting(name))) return
 
       throw t.error( "Recursive call to getter " + name + "() - write @" + name + " instead." )
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      if (args?) throw t.error( "The result of a call cannot assigned to." )
+      if (args) throw t.error( "The result of a call cannot assigned to." )
 
       if (context is null)
         if (name[0] != '@')
           local setter_name = "set_" + name
           local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
-          if (setter?)
+          if (setter)
             if (scope.this_method.name == setter_name)
               throw t.error( "Recursive call to setter set_" + name + "() - write \"@" + name + " = ...\" instead." )
             endIf
@@ -1782,14 +1783,14 @@ class CmdAccess : Cmd
         endIf
 
         local v = scope.find_local( name )
-        if (v?) return CmdWriteLocal(t,v,new_value).resolve(scope)
+        if (v) return CmdWriteLocal(t,v,new_value).resolve(scope)
 
         local p = scope.this_method.type_context.find_setting( name )
-        if (p?) return CmdWriteSetting( t, p, new_value )
+        if (p) return CmdWriteSetting( t, p, new_value )
 
         if (scope.this_method.is_routine)
           p = scope.this_method.type_context.find_property( name )
-          if (p?) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
 
         context = CmdThisContext( t, scope.this_type )
@@ -1803,17 +1804,17 @@ class CmdAccess : Cmd
       if (name[0] != '@')
         local setter_name = "set_" + name
         local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), false )
-        if (setter?) return setter
+        if (setter) return setter
       endIf
 
       local p = context_type.find_setting( name )
-      if (p?)
+      if (p)
         context.require_type_context
         return CmdWriteSetting( t, p, new_value ).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
-      if (p?) 
+      if (p) 
         if (scope.this_method.is_routine)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         else
@@ -1826,15 +1827,15 @@ class CmdAccess : Cmd
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       if (args is null)
         local v = scope.find_local( name )
-        if (v?)
-          if (args?) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+        if (v)
+          if (args) throw t.error( "Local variable '$' cannot be called like a method."(name) )
           return CmdLocalOpWithAssign(t,v,op,new_value).resolve(scope)
         endIf
       endIf
 
       local context_type : Type
 
-      if (context?)
+      if (context)
         context = context.resolve( scope )
         context_type = context.require_type
       else
@@ -1842,14 +1843,14 @@ class CmdAccess : Cmd
       endIf
 
       local p = context_type.find_setting( name )
-      if (p?)
-        if (context?) context.require_type_context
+      if (p)
+        if (context) context.require_type_context
         return CmdOpAssignSetting( t, p, op, new_value ).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
-      if (p?)
-        if (not context?) context = CmdThisContext( t, context_type )
+      if (p)
+        if (not context) context = CmdThisContext( t, context_type )
         if (scope.this_method.is_routine)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
@@ -1955,7 +1956,7 @@ class CmdCreateCompound : Cmd
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( of_type ).print( "(" )
-      if (args.count?)
+      if (args.count)
         writer.print( " " )
         local first = true
         forEach (arg in args)
@@ -2016,10 +2017,10 @@ class CmdThisContext : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?) return inline_args.inline_this
+      if (inline_args) return inline_args.inline_this
 
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         return task_args.cmd_read_context(t)
       else
         return CmdThisContext( t, this_type )
@@ -2049,10 +2050,10 @@ class CmdLiteralThis : CmdThisContext
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?) return inline_args.inline_this
+      if (inline_args) return inline_args.inline_this
 
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         return task_args.cmd_read_context(t)
       else
         return CmdLiteralThis( t, this_type )
@@ -2109,11 +2110,11 @@ class CmdReadLocal : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?)
+      if (inline_args)
         return inline_args.inline_read_local( this )
       else
         local task_args = (clone_args as TaskArgs)
-        if (task_args?)
+        if (task_args)
           return task_args.cmd_read(t,local_info)
         endIf
       endIf
@@ -2148,11 +2149,11 @@ class CmdWriteLocal : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local inline_args = (clone_args as InlineArgs)
-      if (inline_args?)
+      if (inline_args)
         return inline_args.inline_write_local( this )
       else
         local task_args = (clone_args as TaskArgs)
-        if (task_args?)
+        if (task_args)
           return task_args.cmd_write( t,local_info, new_value.clone(clone_args) )
         endIf
       endIf
@@ -2307,7 +2308,7 @@ class CmdCall : Cmd
     method init( t, context, method_info, args )
 
     method resolve( scope:Scope )->Cmd
-      if (context?) context = context.resolve(scope).require_value
+      if (context) context = context.resolve(scope).require_value
       args.resolve( scope )
       return this
 
@@ -2329,13 +2330,13 @@ class CmdCallRoutine : CmdCall
 
       writer.print( compile_target.cpp_name )
       writer.print( "(" )
-      if (args.count?)
+      if (args.count)
         writer.print( " " )
         local i = 0
         forEach (arg in args)
           if (i > 0) writer.print( ", " )
           local param_type = compile_target.parameters[i].type
-          if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+          if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
             writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
             arg.write_cpp( writer )
             writer.print( "))" )
@@ -2368,7 +2369,7 @@ class CmdCallAspectMethod : CmdCall
       forEach (arg in args)
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
@@ -2419,7 +2420,7 @@ class CmdCallDynamicMethod : CmdCallMethod
         forEach (arg in args)
           writer.print( ", " )
           local param_type = compile_target.parameters[i].type
-          if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+          if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
             writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
             arg.write_cpp( writer )
             writer.print( ")" )
@@ -2456,7 +2457,7 @@ class CmdCallStaticMethod : CmdCallMethod
       forEach (arg in args)
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
           arg.write_cpp( writer )
           writer.print( ")" )
@@ -2502,7 +2503,7 @@ class CmdCallNativeRoutine : CmdCall
       forEach (arg in args)
         if (i > 0) writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
@@ -2530,7 +2531,7 @@ class CmdCallNativeMethod : CmdCall
       forEach (arg in args)
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method? and method_info.parameters[i].generic_type?) or param_type.is_aspect)
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
@@ -2560,7 +2561,7 @@ class CmdCallInlineNative : CmdCall
           endIf
         endForEach
 
-        if (best_match?)
+        if (best_match)
           args[ best_match.index ].write_cpp( writer )
           st = st.substring( best_match.name.count )
         else
@@ -2778,7 +2779,7 @@ class CmdBinary : Cmd
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       local operator_method_call = resolve_operator_method( scope, left_type, right_type )
-      if (operator_method_call?) return operator_method_call
+      if (operator_method_call) return operator_method_call
 
       local common_type = must_find_common_type( left_type, right_type )
       left = left.cast_to( common_type )
@@ -3048,7 +3049,7 @@ class CmdComparison : CmdBinary
 
       if (left_type.is_compound or right_type.is_compound)
         local result = resolve_for_reference( scope, left_type, right_type, false )
-        if (result?) return result
+        if (result) return result
 
         if (left_type is right_type) return this
         throw t.error( "Incompatible types for comparison: $ and $." (left_type,right_type) )
@@ -3094,19 +3095,19 @@ class CmdCompareEQ : CmdComparison
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
-      if (cmd?) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
+      if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator==",CmdArgs(left)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator!=",CmdArgs(left)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       if (not force_error) return null
 
@@ -3133,19 +3134,19 @@ class CmdCompareNE : CmdComparison
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
-      if (cmd?) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
+      if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator!=",CmdArgs(left)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator==",CmdArgs(left)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       if (not force_error) return null
 
@@ -3172,19 +3173,19 @@ class CmdCompareLT : CmdComparison
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
-      if (cmd?) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
+      if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>",CmdArgs(left)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<=",CmdArgs(left)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       if (not force_error) return null
 
@@ -3211,19 +3212,19 @@ class CmdCompareLE : CmdComparison
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
-      if (cmd?) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
+      if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>=",CmdArgs(left)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<",CmdArgs(left)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       if (not force_error) return null
 
@@ -3250,19 +3251,19 @@ class CmdCompareGT : CmdComparison
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
-      if (cmd?) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
+      if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<",CmdArgs(left)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>=",CmdArgs(left)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       if (not force_error) return null
 
@@ -3289,19 +3290,19 @@ class CmdCompareGE : CmdComparison
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
-      if (cmd?) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
+      if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
 
       cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<=",CmdArgs(left)), false )
-      if (cmd?) return cmd
+      if (cmd) return cmd
 
       cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>",CmdArgs(left)), false )
-      if (cmd?) return CmdLogicalNot( t, cmd )
+      if (cmd) return CmdLogicalNot( t, cmd )
 
       if (not force_error) return null
 
@@ -3556,7 +3557,7 @@ class CmdAdjustLocal : Cmd
 
     method clone( clone_args:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
       else
         return CmdAdjustLocal( t, local_info, delta )
@@ -3587,7 +3588,7 @@ class CmdAdjustProperty : Cmd
     method clone( clone_args:CloneArgs )->Cmd
       #{
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.cmd_read(t,local_info)), delta )
       else
       endIf
@@ -3653,7 +3654,7 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         return CmdOpWithAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.clone(task_args) )
       else
         return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
@@ -3666,11 +3667,11 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
     method resolve( scope:Scope )->Cmd
       if (local_info.type.is_reference)
         local m_name = "operator" + op->String
-        if (local_info.type.method_lookup_by_name[m_name]?)
+        if (local_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
         else
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
-          if (local_info.type.method_lookup_by_name[m_name]?)
+          if (local_info.type.method_lookup_by_name[m_name])
             return CmdWriteLocal( t, local_info,
             CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ) ).resolve( scope )
           else
@@ -3694,8 +3695,8 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess
-          if (not access?) throw new_value.t.error( "Property or method name expected." )
-          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          if (not access) throw new_value.t.error( "Property or method name expected." )
+          if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
           access.context = CmdReadLocal( t, local_info )
           return CmdWriteLocal( t, local_info, access ).resolve( scope )
       endWhich
@@ -3726,11 +3727,11 @@ class CmdOpAssignSetting : CmdResolvedOpWithAssign
     method resolve( scope:Scope )->Cmd
       if (setting_info.type.is_reference)
         local m_name = "operator" + op->String
-        if (setting_info.type.method_lookup_by_name[m_name]?)
+        if (setting_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadSetting(t,setting_info), m_name, new_value ).resolve( scope )
         else
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
-          if (setting_info.type.method_lookup_by_name[m_name]?)
+          if (setting_info.type.method_lookup_by_name[m_name])
             return CmdWriteSetting( t, setting_info,
               CmdAccess(t, CmdReadSetting(t,setting_info), m_name, new_value) ).resolve( scope )
           else
@@ -3754,8 +3755,8 @@ class CmdOpAssignSetting : CmdResolvedOpWithAssign
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess
-          if (not access?) throw new_value.t.error( "Property or method name expected." )
-          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          if (not access) throw new_value.t.error( "Property or method name expected." )
+          if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
           access.context = CmdReadSetting( t, setting_info )
           return CmdWriteSetting( t, setting_info, access ).resolve( scope )
       endWhich
@@ -3787,11 +3788,11 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
     method resolve( scope:Scope )->Cmd
       if (property_info.type.is_reference)
         local m_name = "operator" + op->String
-        if (property_info.type.method_lookup_by_name[m_name]?)
+        if (property_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )
         else
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
-          if (property_info.type.method_lookup_by_name[m_name]?)
+          if (property_info.type.method_lookup_by_name[m_name])
             return CmdWriteProperty( t, context, property_info,
               CmdAccess(t, CmdReadProperty(t,clone(context),property_info), m_name, new_value) ).resolve( scope )
           else
@@ -3815,8 +3816,8 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess
-          if (not access?) throw new_value.t.error( "Property or method name expected." )
-          if (access.context?) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          if (not access) throw new_value.t.error( "Property or method name expected." )
+          if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
           access.context = CmdReadProperty( t, clone(context), property_info )
           return CmdWriteProperty( t, context, property_info, access ).resolve( scope )
       endWhich
@@ -3919,7 +3920,7 @@ class CmdReadArrayElement : Cmd
 
 
     method resolve( scope:Scope )->Cmd
-      if (array_type?) return this
+      if (array_type) return this
 
       context = context.resolve(scope)
       array_type = context.require_type
@@ -3949,7 +3950,7 @@ class CmdReadArrayCount : Cmd
       writer.print( "->count" )
         
     method resolve( scope:Scope )->Cmd
-      if (array_type?) return this
+      if (array_type) return this
 
       context = context.resolve(scope)
       array_type = context.require_type
@@ -4009,7 +4010,7 @@ class CmdWriteArrayElement : Cmd
       endIf
 
     method resolve( scope:Scope )->Cmd
-      if (array_type?) return this
+      if (array_type) return this
 
       context = context.resolve(scope)
       array_type = context.require_type
@@ -4153,7 +4154,7 @@ class CmdCreateList : Cmd
 
     method resolve( scope:Scope )->Cmd
       args.resolve( scope )
-      if (not list_type and args.count?)
+      if (not list_type and args.count)
         local common_type = args.first.type
         forEach (arg in args)
           common_type = find_common_type( common_type, arg.type )
@@ -4162,7 +4163,7 @@ class CmdCreateList : Cmd
         list_type.organize
       endIf
 
-      if (list_type?)
+      if (list_type)
         local element_type = list_type.element_type
         forEach (index of args)
           args[index] = args[index].resolve( scope ).cast_to( element_type ).resolve( scope )
@@ -4172,7 +4173,7 @@ class CmdCreateList : Cmd
       if (not list_type) throw t.error( "TODO: [] -> Property[]" )
 
       local initial_capacity = 10
-      if (args.count?) initial_capacity = args.count
+      if (args.count) initial_capacity = args.count
 
       local cmd : Cmd
       cmd = CmdAccess( t, list_type.name, CmdArgs(CmdLiteralInteger(t,initial_capacity)) )
@@ -4198,7 +4199,7 @@ class CmdAwait : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         throw t.error( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." )
       else
         return CmdAwait( t, expression.clone(task_args), statement_list.clone(task_args), result_var )
@@ -4212,8 +4213,8 @@ class CmdAwait : Cmd
       expression = expression.resolve( scope )
       local task_type = expression.require_type
       local p_result = task_type.find_property( "result" )
-      if (result_var?)
-        if (p_result?)
+      if (result_var)
+        if (p_result)
           # Fix up local 'result' type to match task result type
           result_var.type = p_result.type
         else
@@ -4227,7 +4228,7 @@ class CmdAwait : Cmd
         
       statement_list.add( CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update")) )
 
-      if (result_var?)
+      if (result_var)
         statement_list.add( CmdWriteLocal(t, result_var, CmdReadProperty(t,CmdReadLocal(t,task_var),p_result)) )
       endIf
 
@@ -4241,7 +4242,7 @@ class CmdYield : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
-      if (task_args?)
+      if (task_args)
         task_args.add_yield( t )
         return null
       else
@@ -4319,7 +4320,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
       return CmdCreateCallback( t, context.clone(clone_args), name, signature, return_type )
 
     method resolve( scope:Scope )->Cmd
-      if (name == "to" and return_type?) name = "to_" + return_type.name
+      if (name == "to" and return_type) name = "to_" + return_type.name
 
       context = context.resolve( scope )
       local context_type = context.require_type
@@ -4335,7 +4336,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
       endIf
 
       local parameter_types : Type[]
-      if (m.parameters.count?)
+      if (m.parameters.count)
         parameter_types = Type[]
         forEach (p in m.parameters) parameter_types.add( p.type )
       endIf
@@ -4352,7 +4353,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
 
         local m_call = callback_type.add_method( t, "call" )
         local args = CmdArgs()
-        if (parameter_types?)
+        if (parameter_types)
           forEach (i of parameter_types)
             local param_name = "param" + (i+1)
             m_call.add_parameter( t, param_name, parameter_types[i] )
@@ -4371,7 +4372,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
           cmd = CmdAccess( t, CmdAccess(t,"context"), name, args )
         endIf
 
-        if (m.return_type?)
+        if (m.return_type)
           m_call.return_type = m.return_type
           cmd = CmdReturn( t, cmd )
         endIf
@@ -4392,7 +4393,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
   METHODS
     method clone( clone_args:CloneArgs )->CmdCreateFunction
       local args2 : FnArg[]
-      if (with_args?)
+      if (with_args)
         args2 = FnArg[]
         forEach (arg in with_args)
           args2.add( FnArg( arg.name, arg.value.clone(clone_args) ).set_type( arg.type ) )
@@ -4402,7 +4403,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
 
     method resolve( scope:Scope )->Cmd
       local parameter_types : Type[]
-      if (parameters? and parameters.count?)
+      if (parameters and parameters.count)
         parameter_types = Type[]
         forEach (param in parameters) parameter_types.add( param.type )
       endIf
@@ -4417,7 +4418,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       fn_type.base_types.add( base_type )
 
       local m_call = fn_type.add_method( t, "call" )
-      if (parameters?)
+      if (parameters)
         forEach (param in parameters)
           m_call.add_parameter( t, param.name, param.type )
         endForEach
@@ -4426,7 +4427,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       m_call.return_type = return_type
       m_call.statements = statements
 
-      if (with_args?)
+      if (with_args)
         local m_init = fn_type.add_method( t, "init" )
         local create_args = CmdArgs()
         forEach (fn_arg in with_args)
