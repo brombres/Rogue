@@ -966,9 +966,17 @@ class Parser
         local t = peek
         local generic_type = read.generic_type
         local name : String
-        if (next_is(TokenType.symbol_empty_brackets))
+        if (next_is(TokenType.symbol_empty_brackets) or next_is(TokenType.symbol_question_mark))
           name = generic_type.name
-          while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+          loop
+            if (consume(TokenType.symbol_empty_brackets))
+              name += "[]"
+            elseIf (consume(TokenType.symbol_question_mark))
+              name += "?"
+            else
+              escapeLoop
+            endIf
+          endLoop
         endIf
 
         reader.position = starting_position
@@ -1019,8 +1027,16 @@ class Parser
 
         name += ">>"
 
-        if (next_is(TokenType.symbol_empty_brackets))
-          while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+        if (next_is(TokenType.symbol_empty_brackets) or next_is(TokenType.symbol_question_mark))
+          loop
+            if (consume(TokenType.symbol_empty_brackets))
+              name += "[]"
+            elseIf (consume(TokenType.symbol_question_mark))
+              name += "?"
+            else
+              escapeLoop
+            endIf
+          endLoop
         endIf
 
         reader.position = starting_position
@@ -1038,9 +1054,17 @@ class Parser
       local t = peek
       if (t->Type)
         local type = read->Type
-        if (next_is(TokenType.symbol_empty_brackets))
+        if (next_is(TokenType.symbol_empty_brackets) or next_is(TokenType.symbol_question_mark))
           name = type.name
-          while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+          loop
+            if (consume(TokenType.symbol_empty_brackets))
+              name += "[]"
+            elseIf (consume(TokenType.symbol_question_mark))
+              name += "?"
+            else
+              escapeLoop
+            endIf
+          endLoop
         else
           return type
         endIf
@@ -1079,7 +1103,16 @@ class Parser
         name = Program.get_callback_type_reference( t, parameter_types, return_type ).name
       endIf
 
-      while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+      loop
+        if (consume(TokenType.symbol_empty_brackets))
+          name += "[]"
+        elseIf (consume(TokenType.symbol_question_mark))
+          name += "?"
+        else
+          escapeLoop
+        endIf
+      endLoop
+
       return name
 
     method parse_if->CmdIf
@@ -1651,7 +1684,15 @@ class Parser
       local name = read_identifier( true )
       if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
 
-      while (consume(TokenType.symbol_empty_brackets)) name += "[]"
+      loop
+        if (consume(TokenType.symbol_empty_brackets))
+          name += "[]"
+        elseIf (consume(TokenType.symbol_question_mark))
+          name += "?"
+        else
+          escapeLoop
+        endIf
+      endLoop
 
       local access = CmdAccess( t, name )
       access.args = parse_args
