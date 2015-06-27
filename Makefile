@@ -1,7 +1,7 @@
 .PHONY: test
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
-#ROGUEC_FLAGS = -O3
+ROGUEC_FLAGS = -O3
 
 all: roguec
 

@@ -1,0 +1,11 @@
+compound Optional<<$DataType:Object>>( value:$DataType, exists:Logical )
+  ROUTINES
+  routine create()->Optional<<$DataType>>
+    return Optional<<$DataType>>( Optional<<$DataType>>.null_value, false )
+
+  routine create( value:$DataType )->Optional<<$DataType>>
+    return Optional<<$DataType>>( value, true )
+
+    routine null_value->$DataType
+      inlineNative "0"
+endCompound
