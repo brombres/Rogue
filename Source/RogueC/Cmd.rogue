@@ -359,6 +359,7 @@ class CmdControlStructure : CmdStatement
     type_block
     type_contingent
     type_if
+    type_else_if  # A nested if/else that was originally an elseIf
     type_try
     type_which
 
@@ -445,14 +446,13 @@ endClass
 class CmdIf : CmdControlStructure
   PROPERTIES
     condition           : Cmd
-    else_ifs            : CmdElseIf[]
     else_statements     : CmdStatementList
 
   METHODS
     method init( t, condition=null, control_type=CmdControlStructure.type_if )
       statements = CmdStatementList()
 
-    method init( t, condition, statements, else_ifs=null, else_statements=null, control_type=CmdControlStructure.type_if )
+    method init( t, condition, statements, control_type=CmdControlStructure.type_if )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -466,18 +466,6 @@ class CmdIf : CmdControlStructure
         endForEach
         task_args.add_jump( t, end_section )
         task_args.begin_section( next_section )
-
-        if (else_ifs)
-          forEach (e in else_ifs)
-            next_section = task_args.create_section
-            task_args.add_conditional_jump( CmdLogicalNot(t,e.condition.clone(clone_args)), next_section )
-            forEach (statement in e.statements)
-              task_args.add( statement.clone(task_args) )
-            endForEach
-            task_args.add_jump( t, end_section )
-            task_args.begin_section( next_section )
-          endForEach
-        endIf
 
         if (else_statements)
           forEach (statement in else_statements)
@@ -499,24 +487,11 @@ class CmdIf : CmdControlStructure
         cloned_command = result
         result.statements = statements.clone( clone_args )
 
-        local cloned_else_ifs : CmdElseIf[]
-        if (else_ifs)
-          cloned_else_ifs = CmdElseIf[]( else_ifs.count )
-          forEach (e in else_ifs)
-            cloned_else_ifs.add( e.clone(clone_args) )
-          endForEach
-        endIf
-        result.else_ifs = cloned_else_ifs
-
         result.else_statements = clone( else_statements, clone_args )
 
         return result
 
       endIf
-
-    method add( cmd_else_if:CmdElseIf )
-      if (else_ifs is null) else_ifs = CmdElseIf[]
-      else_ifs.add( cmd_else_if )
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if (" )
@@ -528,19 +503,20 @@ class CmdIf : CmdControlStructure
       writer.indent -= 2
       writer.println( "}" )
 
-      if (else_ifs)
-        forEach (else_if in else_ifs)
-          else_if.write_cpp( writer )
-        endForEach
-      endIf
-
       if (else_statements)
-        writer.println( "else" )
-        writer.println( "{" )
-        writer.indent += 2
-        else_statements.write_cpp( writer )
-        writer.indent -= 2
-        writer.println( "}" )
+        if (else_statements.count == 1 and else_statements.first instanceOf CmdIf)
+          # Write the else/if in the "else if" style.
+          writer.print( "else " )
+          else_statements.write_cpp( writer )
+        else
+          # General 'else' block.
+          writer.println( "else" )
+          writer.println( "{" )
+          writer.indent += 2
+          else_statements.write_cpp( writer )
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
       endIf
 
       if (escape_label) writer.print( escape_label ).println( ":;" )
@@ -550,45 +526,12 @@ class CmdIf : CmdControlStructure
 
       condition = condition.resolve( scope ).require_logical
       statements.resolve( scope )
-      if (else_ifs)
-        forEach (else_if in else_ifs) else_if.resolve( scope )
-      endIf
       if (else_statements) else_statements.resolve( scope )
 
       scope.control_stack.remove_last
       return this
 endClass
 
-
-class CmdElseIf
-  PROPERTIES
-    cmd_if     : CmdIf
-    condition  : Cmd
-    statements : CmdStatementList
-
-  METHODS
-    method init( cmd_if )
-      statements = CmdStatementList()
-
-    method init( cmd_if, condition, statements )
-
-    method clone( clone_args=null:CloneArgs )->CmdElseIf
-      return CmdElseIf( cmd_if, condition.clone(clone_args), statements.clone(clone_args) )
-
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "else if (" )
-      condition.write_cpp( writer )
-      writer.println( ")" )
-      writer.println( "{" )
-      writer.indent += 2
-      statements.write_cpp( writer )
-      writer.indent -= 2
-      writer.println( "}" )
-
-    method resolve( scope:Scope )
-      condition = condition.resolve( scope ).require_logical
-      statements.resolve( scope )
-endClass
 
 class CmdWhich : CmdControlStructure
   PROPERTIES
@@ -639,14 +582,19 @@ class CmdWhich : CmdControlStructure
 
       if (cases.count)
         local cmd_if = CmdIf( expression.t, cases.first.as_conditional(var_name), cases.first.statements )
+        local cur_if = cmd_if
         forEach (i of cases)
           if (i > 0)
             local c = cases[i]
-            cmd_if.add( CmdElseIf(cmd_if,c.as_conditional(var_name),c.statements) )
+            local cmd_else_if = CmdIf( c.t, c.as_conditional(var_name), CmdControlStructure.type_else_if )
+            cmd_else_if.statements = c.statements
+
+            cur_if.else_statements = CmdStatementList( cmd_else_if )
+            cur_if = cmd_else_if
           endIf
         endForEach
         if (case_others)
-          cmd_if.else_statements = case_others.statements
+          cur_if.else_statements = case_others.statements
         endIf
         result.statements.add( cmd_if )
 

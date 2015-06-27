@@ -1091,28 +1091,34 @@ class Parser
         # multi-line if
         parse_multi_line_statements( cmd_if.statements )
 
+        t = peek
+        local cur_if = cmd_if
         while (next_is(TokenType.keyword_elseIf))
           # Need logic to avoid dangling elseIf problems.
           local starting_position = reader.position
-          t = read
+          read  # 'elseIf'
+
           local elseIf_condition = parse_expression
+
           if (consume(TokenType.eol))
             # This elseIf IS part of the current multiline 'if'
-            local cmd_else_if = CmdElseIf( cmd_if )
-            cmd_if.add( cmd_else_if )
-            cmd_else_if.condition = elseIf_condition
+            local cmd_else_if = CmdIf( t, elseIf_condition, CmdControlStructure.type_else_if  )
             parse_multi_line_statements( cmd_else_if.statements )
+            cur_if.else_statements = CmdStatementList()
+            cur_if.else_statements.add( cmd_else_if )
+            cur_if = cmd_else_if
           else
             # This elseIf actually belongs to something else; undo and abort
             reader.position = starting_position
             escapeWhile
           endIf
+          t = peek
         endWhile
 
         if (next_is(TokenType.keyword_else) and reader.peek(1).type is TokenType.eol)
           read
-          cmd_if.else_statements = CmdStatementList()
-          parse_multi_line_statements( cmd_if.else_statements )
+          cur_if.else_statements = CmdStatementList()
+          parse_multi_line_statements( cur_if.else_statements )
         endIf
 
         must_consume( TokenType.keyword_endIf )
@@ -1122,28 +1128,34 @@ class Parser
         parse_single_line_statements( cmd_if.statements )
         consume_eols
 
+        t = peek
+        local cur_if = cmd_if
         while (next_is(TokenType.keyword_elseIf))
           # Need logic to avoid dangling elseIf problems.
           local starting_position = reader.position
-          t = read
+          read  # 'elseIf'
+
           local elseIf_condition = parse_expression
+
           if (next_is(TokenType.eol))
             # This elseIf belongs to another if statement - undo and abort
             reader.position = starting_position
             escapeWhile
           else
-            local cmd_else_if = CmdElseIf( cmd_if )
-            cmd_if.add( cmd_else_if )
-            cmd_else_if.condition = elseIf_condition
+            local cmd_else_if = CmdIf( t, elseIf_condition, CmdControlStructure.type_else_if )
             parse_single_line_statements( cmd_else_if.statements )
+            cur_if.else_statements = CmdStatementList()
+            cur_if.else_statements.add( cmd_else_if )
+            cur_if = cmd_else_if
             must_consume_eols
           endIf
+          t = peek
         endWhile
 
         if (next_is(TokenType.keyword_else) and reader.peek(1).type isNot TokenType.eol)
           read
-          cmd_if.else_statements = CmdStatementList()
-          parse_single_line_statements( cmd_if.else_statements )
+          cur_if.else_statements = CmdStatementList()
+          parse_single_line_statements( cur_if.else_statements )
         endIf
       endIf
 
