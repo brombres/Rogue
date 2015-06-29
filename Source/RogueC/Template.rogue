@@ -27,6 +27,8 @@ class Template
 
       if (type.name.ends_with(']'))
         instantiate_list( type )
+      elseIf (type.name.ends_with('?'))
+        instantiate_optional( type )
       elseIf (type_parameters)
         instantiate_parameterized_type( type )
       else
@@ -41,6 +43,39 @@ class Template
       if (type.element_type.instance_of(Program.type_Object) and type.element_type isNot Program.type_Object)
         is_generic = true
         type.generic_type = Program.get_type_reference( t, "Object[]" )
+        type.generic_type.resolve
+      endIf
+
+      local instance_tokens = Token[]( tokens.count )
+      forEach (template_t in tokens)
+        if (template_t.type is TokenType.placeholder_id)
+          if (template_t->String == "$DataType")
+            if (is_generic)
+              # Insert type identifier for generic mapping
+              local from_type = type.element_type
+              local to_type = Program.type_Object
+              instance_tokens.add( TokenType.type_identifier.create_token(template_t,from_type,to_type) )
+            else
+              instance_tokens.add( TokenType.identifier.create_token(template_t,type.element_type.name) )
+            endIf
+          else
+            instance_tokens.add( template_t )
+          endIf
+        else
+          instance_tokens.add( template_t )
+        endIf
+      endForEach
+
+      Parser(instance_tokens).parse_type_def( type )
+
+    method instantiate_optional( type:Type )
+      type.is_optional = true
+      type.element_type = Program.get_type_reference( t, type.name.leftmost(-1) ).organize
+
+      local is_generic = false
+      if (type.element_type.instance_of(Program.type_Object) and type.element_type isNot Program.type_Object)
+        is_generic = true
+        type.generic_type = Program.get_type_reference( t, "Object?" )
         type.generic_type.resolve
       endIf
 

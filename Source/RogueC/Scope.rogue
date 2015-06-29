@@ -4,7 +4,6 @@ class Scope
     this_method : Method
 
     local_list = Local[]
-    locals_by_name = Table<<String,Local>>() : Table<<String,Local>>
 
     control_stack = CmdControlStructure[]
 
@@ -12,17 +11,22 @@ class Scope
     method init( this_type, this_method )
 
     method find_local( name:String )->Local
-      return locals_by_name[ name ]
+      local i = local_list.count - 1
+      while (i >= 0)
+        if (local_list[i].name == name) return local_list[i]
+        --i
+      endWhile
+      return null
 
-    method push_local( v:Local )
-      local existing = find_local( v.name )
-      if (existing) throw v.t.error( //A local variable named "$" already exists.// (v.name) ) 
+    method push_local( v:Local, validate_name=true:Logical )
+      if (validate_name)
+        local existing = find_local( v.name )
+        if (existing) throw v.t.error( //A local variable named "$" already exists.// (v.name) ) 
+      endIf
       local_list.add( v )
-      locals_by_name[v.name] = v
 
     method pop_local
-      if (locals_by_name.count == 0) throw RogueError( "[INTERNAL] Scope::pop_local() called when local list is empty." )
-      locals_by_name.remove( local_list.remove_last.name )
+      local_list.remove_last
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Cmd
       local m = find_method( type_context, access, error_on_fail and access.context, suppress_inherited )

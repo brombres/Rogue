@@ -86,8 +86,12 @@ class Program [requisite singleton]
       return unique_integer - 1
 
     method find_template( name:String )->Template
-      if (name.ends_with(']')) return template_lookup[ "List" ]
-      return template_lookup[ name.before_first('<') ]
+      which (name.last)
+        case '?': return template_lookup[ "Optional" ]
+        case ']': return template_lookup[ "List" ]
+        others
+          return template_lookup[ name.before_first('<') ]
+      endWhich
 
     method find_type( name:String )->Type
       local type = type_lookup[ name ]
@@ -208,8 +212,14 @@ class Program [requisite singleton]
         name = "_" + name
       endIf
 
+      # Type? -> OptionalType
+      local i1 = name.locate('?')
+      while (i1 != -1)
+        name = "Optional" + name.leftmost(i1) + name.substring(i1+1)
+        i1 = name.locate('?')
+      endWhile
 
-      local i1 = name.locate("<<")
+      i1 = name.locate("<<")
       while (i1 != -1)
         local i2 = name.locate_last(">>")
         if (i2 == -1) escapeWhile

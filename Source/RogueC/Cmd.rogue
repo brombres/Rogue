@@ -3,6 +3,12 @@ class Cmd
     t : Token
 
   METHODS
+    method access_name->String
+      return null
+
+    method access_cpp_name->String
+      return null
+
     method call_prior( scope:Scope )->Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
@@ -30,6 +36,14 @@ class Cmd
         endIf
 
         if (target_type is Program.type_Logical) return CmdLogicalize(t,this)
+
+        if (target_type.is_optional)
+          if (this_type is target_type.element_type)
+            return CmdCreateOptionalValue( t, target_type, this )
+          elseIf (this_type is Program.type_null)
+            return CmdCreateOptionalValue( t, target_type, null )
+          endIf
+        endIf
 
         throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
       endIf
@@ -111,9 +125,9 @@ class Cmd
       endIf
       return this
 
-    method require_logical->Cmd
+    method require_logical( scope:Scope )->Cmd
       if (require_type isNot Program.type_Logical)
-        return CmdLogicalize( t, this )
+        return CmdLogicalize( t, this ).resolve( scope )
       endIf
       return this
 
@@ -141,6 +155,9 @@ class Cmd
 
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
+
+    method optional_value->Cmd
+      throw t.error( "[INTERNAL] $::optional_value() is not defined." (type_name) )
 
     method type->Type
       throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
@@ -404,8 +421,7 @@ class CmdBlock : CmdControlStructure
     method init( t, control_type=CmdControlStructure.type_block )
       statements = CmdStatementList()
 
-    method init( t, statements )
-      control_type = CmdControlStructure.type_block
+    method init( t, statements, control_type=CmdControlStructure.type_block )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -521,10 +537,19 @@ class CmdIf : CmdControlStructure
 
       if (escape_label) writer.print( escape_label ).println( ":;" )
 
-    method resolve( scope:Scope )->CmdIf
-      scope.control_stack.add( this )
+    method resolve( scope:Scope )->Cmd
+      condition = condition.resolve( scope ).require_logical( scope )
 
-      condition = condition.resolve( scope ).require_logical
+      if (condition instanceOf CmdLogicalizeOptionalValue and condition.access_name)
+        local body      = CmdBlock( t, statements, CmdControlStructure.type_if )
+        local else_body : CmdBlock
+        if (else_statements) else_body = CmdBlock( t, statements, CmdControlStructure.type_if )
+        local result = CmdCheckOptionalValue( t, body, else_body )
+        result.add_check( condition ).resolve( scope )
+        return result
+      endIf
+
+      scope.control_stack.add( this )
       statements.resolve( scope )
       if (else_statements) else_statements.resolve( scope )
 
@@ -2029,6 +2054,12 @@ class CmdReadSingleton : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadSingleton( t, of_type )
 
+    method access_name->String
+      return of_type.name
+
+    method access_cpp_name->String
+      return of_type.cpp_name
+
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
@@ -2068,6 +2099,12 @@ class CmdReadLocal : Cmd
       endIf
 
       return CmdReadLocal( t, local_info )
+
+    method access_name->String
+      return local_info.name
+
+    method access_cpp_name->String
+      return local_info.cpp_name
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( local_info.type.compile_type, local_info.type )
@@ -2133,6 +2170,12 @@ class CmdReadSetting : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadSetting( t, setting_info )
 
+    method access_name->String
+      return setting_info.name
+
+    method access_cpp_name->String
+      return setting_info.cpp_name
+
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( setting_info.type.compile_type, setting_info.type )
       writer.print_type_name( setting_info.type_context ).print( "::" )
@@ -2189,6 +2232,12 @@ class CmdReadProperty : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadProperty( t, context.clone(clone_args), property_info )
+
+    method access_name->String
+      return property_info.name
+
+    method access_cpp_name->String
+      return property_info.cpp_name
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( property_info.type.compile_type, property_info.type )
@@ -2630,6 +2679,14 @@ class CmdLogicalize : CmdUnary
     method prefix_symbol->String
       return ""
 
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      if (operand.require_type.is_optional)
+        return CmdLogicalizeOptionalValue( t, operand )
+      else
+        return this
+      endIf
+
     method resolve_for_literal_operand( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
       return this
@@ -2915,8 +2972,8 @@ class CmdBinaryLogical : CmdBinary
       throw t.error( "[INTERNAL] $::combine_literal_operands(Logical,Logical) is not defined." (type_name) )
 
     method resolve( scope:Scope )->Cmd
-      left = left.resolve( scope ).require_logical
-      right = right.resolve( scope ).require_logical
+      left = left.resolve( scope ).require_logical( scope )
+      right = right.resolve( scope ).require_logical( scope )
       if (left.is_literal and right.is_literal)
         return CmdLiteralLogical(
             t,
@@ -4395,6 +4452,128 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
 
 endClass
 
+#------------------------------------------------------------------------------
+# Optional
+#------------------------------------------------------------------------------
+class CmdCreateOptionalValue : Cmd
+  PROPERTIES
+    of_type : Type
+    value   : Cmd
+
+  METHODS
+    method init( t, of_type, value=null )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateOptionalValue( t, of_type, clone(value,clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( of_type )
+      if (value)
+        writer.print( "( " )
+        value.write_cpp( writer )
+        writer.print( ", true )" )
+      else
+        writer.print( "()" )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      if (value) value = value.resolve( scope )
+      return this
+
+    method type->Type
+      return of_type
+endClass
+
+class CmdCheckOptionalValue : Cmd
+  PROPERTIES
+    args           = CmdArgs()
+    checked_locals = Local[]
+    body           : Cmd
+    else_body      : Cmd
+
+  METHODS
+    method init( t, body, else_body=null )
+
+    method clone( clone_args:CloneArgs )->CmdCheckOptionalValue
+      return CmdCheckOptionalValue( t, body, else_body )
+
+    method add_check( value:Cmd )->this
+      args.add( value )
+      return this
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->this
+      args.resolve( scope )
+
+      forEach (i of args)
+        if (i == checked_locals.count)
+          local arg = args[i]
+          local arg_type = arg.optional_value.type.element_type
+          checked_locals.add( scope.this_method.add_local(arg.t,arg.access_name,arg_type) )
+        endIf
+      endForEach
+
+      forEach (checked_local in checked_locals) scope.push_local( checked_local, false )
+      body = body.resolve( scope )
+      forEach (1..checked_locals.count)
+        println "REMOVE CHECKED"
+        scope.pop_local
+      endForEach
+      if (else_body) else_body = else_body.resolve( scope )
+
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      forEach (checked_local in checked_locals)
+        writer.print( checked_local.type ).print( " " ).print( checked_local.cpp_name ).println( ";" )
+      endForEach
+      writer.print( "if (" )
+      forEach (i of checked_locals)
+        if (i > 0) writer.print( " && " )
+        args[i].optional_value.write_cpp( writer )
+        local checked = checked_locals[i]
+        local cast_type = args[i].optional_value.compile_type.element_type
+        writer.print( ".check((" ).print(cast_type).print( "*)&" ).print( checked.cpp_name ).print( ")" )
+      endForEach
+      writer.println( ")" )
+      body.write_cpp( writer )
+      if (else_body) else_body.write_cpp( writer )
+
+endClass
+
+class CmdLogicalizeOptionalValue : Cmd
+  PROPERTIES
+    value : Cmd
+
+  METHODS
+    method init( t, value )
+
+    method access_name->String
+      return value.access_name
+
+    method access_cpp_name->String
+      return value.access_cpp_name
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalizeOptionalValue( t, value.clone(clone_args) )
+
+    method optional_value->Cmd
+      return value
+
+    method resolve( scope:Scope )->this
+      value = value.resolve( scope ).require_value
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      value.write_cpp( writer )
+      writer.print( ".exists" )
+
+    method type->Type
+      return Program.type_Logical
+endClass
 
 #------------------------------------------------------------------------------
 # Miscellaneous

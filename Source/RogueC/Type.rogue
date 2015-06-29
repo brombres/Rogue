@@ -18,6 +18,7 @@ class Type
 
     is_array     : Logical
     is_list      : Logical
+    is_optional  : Logical
     element_type : Type
 
     simplify_name : Logical
@@ -705,6 +706,18 @@ class Type
           writer.indent -= 2
           writer.println( "}" )
         endIf
+
+        # check()
+        if (is_optional)
+          writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
+          writer.println( "{" )
+          writer.println( "  if ( !exists ) return false;" )
+          writer.println( "  *checked = value;" )
+          writer.println( "  return true;" )
+          writer.println( "}" )
+          writer.println
+        endIf
+
       endIf
 
       writer.indent -= 2
