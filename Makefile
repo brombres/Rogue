@@ -1,7 +1,7 @@
 .PHONY: test
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
-ROGUEC_FLAGS = -O3
+#ROGUEC_FLAGS = -O3
 
 all: roguec
 
@@ -62,6 +62,13 @@ libraries:
 
 test:
 	roguec Test.rogue --execute
+
+x3:
+	make remake
+	sleep 1
+	make remake
+	sleep 1
+	make remake
 
 clean:
 	rm -rf Programs/RogueC
