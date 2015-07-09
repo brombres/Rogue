@@ -3957,7 +3957,7 @@ RogueClassCmd* RogueCmd__clone( RogueClassCmd* THIS, RogueClassCloneArgs* clone_
 RogueClassCmd* RogueCmd__clone( RogueClassCmd* THIS, RogueClassCmd* other_0, RogueClassCloneArgs* clone_args_1 );
 RogueClassCmdArgs* RogueCmd__clone( RogueClassCmd* THIS, RogueClassCmdArgs* args_0, RogueClassCloneArgs* clone_args_1 );
 RogueClassCmdStatementList* RogueCmd__clone( RogueClassCmd* THIS, RogueClassCmdStatementList* statements_0, RogueClassCloneArgs* clone_args_1 );
-RogueClassCmd* RogueCmd__collect_null_checks( RogueClassCmd* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
+void RogueCmd__collect_null_checks( RogueClassCmd* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
 RogueClassCmd* RogueCmd__combine_literal_operands( RogueClassCmd* THIS, RogueClassType* common_type_0 );
 RogueClassType* Rogue_Cmd__compile_type( RogueClassCmd* THIS );
 void RogueCmd__exit_scope( RogueClassCmd* THIS, RogueClassScope* scope_0 );
@@ -4451,7 +4451,7 @@ RogueClassCmd* RogueCmdBinaryLogical__resolve_operator_method( RogueClassCmdBina
 RogueLogical RogueCmdBinaryLogical__combine_literal_operands( RogueClassCmdBinaryLogical* THIS, RogueLogical a_0, RogueLogical b_1 );
 RogueString* RogueCmdLogicalOr__type_name( RogueClassCmdLogicalOr* THIS );
 RogueClassCmd* RogueCmdLogicalOr__clone( RogueClassCmdLogicalOr* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdLogicalOr__collect_null_checks( RogueClassCmdLogicalOr* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
+void RogueCmdLogicalOr__collect_null_checks( RogueClassCmdLogicalOr* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
 RogueLogical RogueCmdLogicalOr__null_checkable( RogueClassCmdLogicalOr* THIS, RogueLogical positive_0 );
 RogueClassCmdLogicalOr* RogueCmdLogicalOr__init_object( RogueClassCmdLogicalOr* THIS );
 RogueString* RogueCmdLogicalOr__cpp_symbol( RogueClassCmdLogicalOr* THIS );
@@ -4459,7 +4459,7 @@ RogueString* RogueCmdLogicalOr__symbol( RogueClassCmdLogicalOr* THIS );
 RogueLogical RogueCmdLogicalOr__combine_literal_operands( RogueClassCmdLogicalOr* THIS, RogueLogical a_0, RogueLogical b_1 );
 RogueString* RogueCmdLogicalAnd__type_name( RogueClassCmdLogicalAnd* THIS );
 RogueClassCmd* RogueCmdLogicalAnd__clone( RogueClassCmdLogicalAnd* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdLogicalAnd__collect_null_checks( RogueClassCmdLogicalAnd* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
+void RogueCmdLogicalAnd__collect_null_checks( RogueClassCmdLogicalAnd* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
 RogueLogical RogueCmdLogicalAnd__null_checkable( RogueClassCmdLogicalAnd* THIS, RogueLogical positive_0 );
 RogueClassCmdLogicalAnd* RogueCmdLogicalAnd__init_object( RogueClassCmdLogicalAnd* THIS );
 RogueString* RogueCmdLogicalAnd__cpp_symbol( RogueClassCmdLogicalAnd* THIS );
@@ -4520,7 +4520,7 @@ RogueClassCmdTypeOperator* RogueCmdTypeOperator__init_object( RogueClassCmdTypeO
 RogueClassCmdTypeOperator* RogueCmdTypeOperator__init( RogueClassCmdTypeOperator* THIS, RogueClassToken* _auto_316_0, RogueClassCmd* _auto_317_1, RogueClassType* _auto_318_2 );
 RogueString* RogueCmdLogicalNot__type_name( RogueClassCmdLogicalNot* THIS );
 RogueClassCmd* RogueCmdLogicalNot__clone( RogueClassCmdLogicalNot* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdLogicalNot__collect_null_checks( RogueClassCmdLogicalNot* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
+void RogueCmdLogicalNot__collect_null_checks( RogueClassCmdLogicalNot* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
 RogueLogical RogueCmdLogicalNot__null_checkable( RogueClassCmdLogicalNot* THIS, RogueLogical positive_0 );
 RogueClassType* Rogue_CmdLogicalNot__type( RogueClassCmdLogicalNot* THIS );
 RogueClassCmdLogicalNot* RogueCmdLogicalNot__init_object( RogueClassCmdLogicalNot* THIS );
@@ -4834,7 +4834,7 @@ RogueClassCmd* RogueCmdLogicalize__resolve_for_literal_operand( RogueClassCmdLog
 RogueString* RogueCmdLogicalize__suffix_symbol( RogueClassCmdLogicalize* THIS );
 RogueString* RogueCmdCreateOptionalValue__type_name( RogueClassCmdCreateOptionalValue* THIS );
 RogueClassCmd* RogueCmdCreateOptionalValue__clone( RogueClassCmdCreateOptionalValue* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdCreateOptionalValue__collect_null_checks( RogueClassCmdCreateOptionalValue* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
+void RogueCmdCreateOptionalValue__collect_null_checks( RogueClassCmdCreateOptionalValue* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
 RogueLogical RogueCmdCreateOptionalValue__null_checkable( RogueClassCmdCreateOptionalValue* THIS, RogueLogical positive_0 );
 void RogueCmdCreateOptionalValue__write_cpp( RogueClassCmdCreateOptionalValue* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmd* RogueCmdCreateOptionalValue__resolve( RogueClassCmdCreateOptionalValue* THIS, RogueClassScope* scope_0 );
@@ -5093,7 +5093,7 @@ RogueString* RogueCmdLogicalizeOptionalValue__type_name( RogueClassCmdLogicalize
 RogueString* RogueCmdLogicalizeOptionalValue__access_name( RogueClassCmdLogicalizeOptionalValue* THIS );
 RogueString* RogueCmdLogicalizeOptionalValue__access_cpp_name( RogueClassCmdLogicalizeOptionalValue* THIS );
 RogueClassCmd* RogueCmdLogicalizeOptionalValue__clone( RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdLogicalizeOptionalValue__collect_null_checks( RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
+void RogueCmdLogicalizeOptionalValue__collect_null_checks( RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassCmdCheckOptionalValue* cmd_checks_0 );
 RogueLogical RogueCmdLogicalizeOptionalValue__null_checkable( RogueClassCmdLogicalizeOptionalValue* THIS, RogueLogical _positive_0 );
 void RogueCmdLogicalizeOptionalValue__write_cpp( RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdLogicalizeOptionalValue* RogueCmdLogicalizeOptionalValue__resolve( RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassScope* scope_0 );

@@ -64,9 +64,8 @@ class Cmd
       if (statements) return statements.clone( clone_args )
       return null
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )->Cmd
+    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
       cmd_checks.add_check( this )
-      return null
 
     method combine_literal_operands( common_type:Type )->Cmd
       return this
@@ -531,40 +530,23 @@ class CmdIf : CmdControlStructure
 
       if (condition.null_checkable(true))
         local result = CmdCheckOptionalValue( t )
-        local remaining_condition = condition.collect_null_checks( result )
-        if (remaining_condition)
-          # All null-checks removed from original condition; one or more conditions remain.
-          # Return a CmdCheckOptionalValue that wraps the original 'if' statement.
-          condition = remaining_condition
-          result.body = CmdBlock( this )
-          return result.resolve( scope )
-        else
-          # All null-checks removed from original condition; no conditions remain.
-          # Return a CmdCheckOptionalValue that contains the original if's body and else-body.
-          result.body = CmdBlock( t, statements, CmdControlStructure.type_if )
-          if (else_statements) result.else_body = CmdBlock( t, else_statements, CmdControlStructure.type_if )
-          return result.resolve( scope )
-        endIf
+        condition.collect_null_checks( result )
+
+        # Return a CmdCheckOptionalValue that contains the original if's body and else-body.
+        result.body = CmdBlock( t, statements, CmdControlStructure.type_if )
+        if (else_statements) result.else_body = CmdBlock( t, else_statements, CmdControlStructure.type_if )
+        return result.resolve( scope )
 
       elseIf (condition.null_checkable(false))
         # Same as positive check except if and else bodies are switched.
         local result = CmdCheckOptionalValue( t )
-        local remaining_condition = condition.collect_null_checks( result )
-        if (remaining_condition)
-          # All null-checks removed from original condition; one or more conditions remain.
-          # Return a CmdCheckOptionalValue that wraps the original 'if' statement.
-          condition = remaining_condition
-          result.body = CmdBlock( t )
-          result.else_body = CmdBlock( this )
-          return result.resolve( scope )
-        else
-          # All null-checks removed from original condition; no conditions remain.
-          # Return a CmdCheckOptionalValue that contains the original if's body and else-body.
-          result.else_body = CmdBlock( t, statements, CmdControlStructure.type_if )
-          if (else_statements) result.body = CmdBlock( t, else_statements, CmdControlStructure.type_if )
-          else                 result.body = CmdBlock(t)
-          return result.resolve( scope )
-        endIf
+        condition.collect_null_checks( result )
+
+        # Return a CmdCheckOptionalValue that contains the original if's body and else-body.
+        result.else_body = CmdBlock( t, statements, CmdControlStructure.type_if )
+        if (else_statements) result.body = CmdBlock( t, else_statements, CmdControlStructure.type_if )
+        else                 result.body = CmdBlock(t)
+        return result.resolve( scope )
       endIf
 
       condition = condition.require_logical( scope )
@@ -2757,8 +2739,8 @@ class CmdLogicalNot : CmdUnary
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalNot( t, operand.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )->Cmd
-      return operand.collect_null_checks( cmd_checks )
+    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
+      operand.collect_null_checks( cmd_checks )
 
     method cpp_prefix_symbol->String
       return "!"
@@ -3056,18 +3038,9 @@ class CmdLogicalAnd : CmdBinaryLogical
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalAnd( t, left.clone(clone_args), right.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )->Cmd
-      local remaining = left.collect_null_checks( cmd_checks )
-      if (remaining)
-        left = remaining
-        return this
-      else
-        if (right.null_checkable(true))
-          return right.collect_null_checks( cmd_checks )
-        else
-          return right
-        endIf
-      endIf
+    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
+      left.collect_null_checks( cmd_checks )
+      right.collect_null_checks( cmd_checks )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a and b)
@@ -3076,11 +3049,15 @@ class CmdLogicalAnd : CmdBinaryLogical
       return "&&"
 
     method null_checkable( positive:Logical )->Logical
-      
       # 'and' can only be used to perform a positive null check
       if (not positive) return false
 
-      return left.null_checkable( true )
+      local left_checkable = left.null_checkable( true )
+      local right_checkable = right.null_checkable( true )
+      if (not left_checkable and not right_checkable) return false
+      if (left_checkable and right_checkable) return true
+
+      throw t.error( "One operand of 'and' is a positive optional value check but the other is not." )
 
     method symbol->String
       return "and"
@@ -3092,18 +3069,9 @@ class CmdLogicalOr : CmdBinaryLogical
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalOr( t, left.clone(clone_args), right.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )->Cmd
-      local remaining = left.collect_null_checks( cmd_checks )
-      if (remaining)
-        left = remaining
-        return this
-      else
-        if (right.null_checkable(false))
-          return right.collect_null_checks( cmd_checks )
-        else
-          return right
-        endIf
-      endIf
+    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
+      left.collect_null_checks( cmd_checks )
+      right.collect_null_checks( cmd_checks )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a or b)
@@ -3116,7 +3084,12 @@ class CmdLogicalOr : CmdBinaryLogical
       # 'or' can only be used to perform a negative null check
       if (positive) return false
 
-      return left.null_checkable( false )
+      local left_checkable = left.null_checkable( false )
+      local right_checkable = right.null_checkable( false )
+      if (not left_checkable and not right_checkable) return false
+      if (left_checkable and right_checkable) return true
+
+      throw t.error( "One operand of 'or' is a negative optional value check but the other is not." )
 
     method symbol->String
       return "or"
@@ -4565,9 +4538,8 @@ class CmdCreateOptionalValue : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCreateOptionalValue( t, of_type, clone(value,clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )->Cmd
+    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
       cmd_checks.add_check( this )
-      return null
 
     method null_checkable( positive:Logical )->Logical
       return true
@@ -4673,9 +4645,8 @@ class CmdLogicalizeOptionalValue : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalizeOptionalValue( t, value.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )->Cmd
+    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
       cmd_checks.add_check( value )
-      return null
 
     method null_checkable( _positive:Logical )->Logical
       return true
