@@ -4544,16 +4544,6 @@ class CmdCreateOptionalValue : Cmd
     method null_checkable( positive:Logical )->Logical
       return true
 
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( of_type )
-      if (value)
-        writer.print( "( " )
-        value.write_cpp( writer )
-        writer.print( ", true )" )
-      else
-        writer.print( "()" )
-      endIf
-
     method resolve( scope:Scope )->Cmd
       of_type.organize
       if (value) value = value.resolve( scope )
@@ -4561,6 +4551,27 @@ class CmdCreateOptionalValue : Cmd
 
     method type->Type
       return of_type
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (of_type.element_type.is_reference)
+        # Reference types don't need an intermediate type to signify null
+        if (value)
+          value.write_cpp( writer )
+        else
+          writer.print "null"
+        endIf
+      else
+        # Non-reference types are kept in Optional<<DataType>> wrappers
+        writer.print( of_type )
+        if (value)
+          writer.print( "( " )
+          value.write_cpp( writer )
+          writer.print( ", true )" )
+        else
+          writer.print( "()" )
+        endIf
+      endIf
+
 endClass
 
 class CmdCheckOptionalValue : Cmd
@@ -4588,20 +4599,22 @@ class CmdCheckOptionalValue : Cmd
     method resolve( scope:Scope )->this
       args.resolve( scope )
 
-      forEach (i of args)
-        if (i == checked_locals.count)
-          local arg = args[i]
+      if (not checked_locals.count)
+        forEach (arg in args)
           local arg_type = arg.optional_value.type.element_type
           checked_locals.add( scope.this_method.add_local(arg.t,arg.access_name,arg_type) )
-        endIf
-      endForEach
+        endForEach
+      endIf
 
-      forEach (checked_local in checked_locals) scope.push_local( checked_local, false )
-      body = body.resolve( scope )
-      forEach (1..checked_locals.count)
-        scope.pop_local
+      forEach (checked_local in checked_locals)
+        scope.push_local( checked_local, false )
       endForEach
-      if (else_body) else_body = else_body.resolve( scope )
+      body = body.resolve( scope )
+      forEach (checked_local in checked_locals) scope.pop_local
+
+      if (else_body)
+        else_body = else_body.resolve( scope )
+      endIf
 
       return this
 
@@ -4612,10 +4625,17 @@ class CmdCheckOptionalValue : Cmd
       writer.print( "if (" )
       forEach (i of checked_locals)
         if (i > 0) writer.print( " && " )
-        args[i].optional_value.write_cpp( writer )
         local checked = checked_locals[i]
-        local cast_type = args[i].optional_value.compile_type.element_type
-        writer.print( ".check((" ).print(cast_type).print( "*)&" ).print( checked.cpp_name ).print( ")" )
+        local optional_type = args[i].optional_value.type.element_type
+        if (optional_type.is_reference)
+          writer.print( "(" ).print( checked.cpp_name ).print( "=" )
+          args[i].optional_value.write_cpp( writer )
+          writer.print( ")" )
+        else
+          args[i].optional_value.write_cpp( writer )
+          local cast_type = args[i].optional_value.compile_type.element_type
+          writer.print( ".check((" ).print(cast_type).print( "*)&" ).print( checked.cpp_name ).print( ")" )
+        endIf
       endForEach
       writer.println( ")" )
       body.write_cpp( writer )
@@ -4660,7 +4680,9 @@ class CmdLogicalizeOptionalValue : Cmd
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       value.write_cpp( writer )
-      writer.print( ".exists" )
+      if (not value.optional_value.compile_type.element_type.is_reference)
+        writer.print( ".exists" )
+      endIf
 
     method type->Type
       return Program.type_Logical

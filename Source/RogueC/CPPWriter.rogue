@@ -73,9 +73,13 @@ class CPPWriter
       return this
 
     method print( type:Type )->CPPWriter
-      print_type_name( type )
-      if (type and type.compile_type.is_reference) buffer.print("*")
-      return this
+      if (type and type.is_optional and type.element_type.is_reference)
+        return print( type.element_type )
+      else
+        print_type_name( type )
+        if (type and type.compile_type.is_reference) buffer.print("*")
+        return this
+      endIf
 
     method print_cast( from_type:Type, to_type:Type )->CPPWriter
       if (from_type is to_type) return this
@@ -121,10 +125,10 @@ class CPPWriter
 
     method print_default_value( type:Type )->CPPWriter
       type = type.compile_type
-      if (type.is_compound)
-        print( type ).print( "()" )
-      else
+      if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
         buffer.print( "0" )
+      else
+        print( type ).print( "()" )
       endIf
       return this
 

@@ -583,7 +583,7 @@ class Type
       endForEach
 
     method omit_output->Logical
-      return is_native or generic_type
+      return is_native or generic_type or (is_optional and element_type.is_reference)
 
     method resolve->Type
       if (resolved) return this
