@@ -102,13 +102,10 @@ class Type
       elseIf (is_list)
         cpp_class_name = "Rogue" + cpp_name
 
-        #{
-      elseIf (this.is_aspect)
-        cpp_class_name = "RogueAspect" + cpp_name
-
-      elseIf (this.is_compound)
-        cpp_class_name = "RogueCompound" + cpp_name
-        }#
+      elseIf (is_optional and element_type.is_primitive)
+        cpp_name = Program.validate_cpp_name( "Optional" + element_type.name )
+        cpp_class_name = "Rogue" + cpp_name
+        attributes.add( Attribute.is_native )
 
       else
         cpp_class_name = "RogueClass" + cpp_name
@@ -656,34 +653,54 @@ class Type
           writer.println( " {}" )
           writer.println
 
-          # Standard Constructor
-          writer.print( this ).print( "( " )
-          first = true
-          forEach (p in property_list)
-            if (first) first = false
-            else       writer.print( ", " )
-            writer.print( p.type ).print(" ").print( p.cpp_name )
-          endForEach
-          writer.print( " ) : " )
-          first = true
-          forEach (p in property_list)
-            if (first) first = false
-            else       writer.print( ", " )
-            writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
-          endForEach
-          writer.println( " {}" )
-          writer.println
+          if (is_optional)
+            # Value Constructor, exists->true
+            writer.print( this ).print( "( " ).print( property_list.first.cpp_name )
+            writer.print( " value ) : value(value), exists(true) {}" )
+          else
+            # Standard Constructor
+            writer.print( this ).print( "( " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.type ).print(" ").print( p.cpp_name )
+            endForEach
+            writer.print( " ) : " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
+            endForEach
+            writer.println( " {}" )
+            writer.println
+          endIf
         endIf
 
         # Default operator== and operator!= 
         writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
         writer.println( "{" )
-        forEach (p in property_list)
-          writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
-        endForEach
-        writer.println( "  return true;" )
+        if (is_optional)
+          writer.print( "  if (exists)" )
+          writer.print( "  {" )
+          writer.print( "    if (other.exists) return value == other.value;" )
+          writer.print( "    else              return false;" )
+          writer.print( "  }" )
+          writer.print( "  else" )
+          writer.print( "  {" )
+          writer.print( "    if (other.exists) return false;" )
+          writer.print( "    else              return true;" )
+          writer.print( "  }" )
+        else
+          forEach (p in property_list)
+            writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
+          endForEach
+          writer.println( "  return true;" )
+        endIf
         writer.println( "}" )
         writer.println
+
         writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
         writer.println( "{" )
         writer.println( "  return !(*this == other);" )

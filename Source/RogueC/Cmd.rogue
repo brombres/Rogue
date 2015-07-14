@@ -4566,7 +4566,7 @@ class CmdCreateOptionalValue : Cmd
         if (value)
           writer.print( "( " )
           value.write_cpp( writer )
-          writer.print( ", true )" )
+          writer.print( " )" )
         else
           writer.print( "()" )
         endIf

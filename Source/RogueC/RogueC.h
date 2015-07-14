@@ -325,6 +325,311 @@ struct RogueLogicalType : RogueType
 
 
 //-----------------------------------------------------------------------------
+//  Optional Primitive Types
+//-----------------------------------------------------------------------------
+struct RogueOptionalReal
+{
+  RogueReal value;
+  RogueLogical exists;
+
+  RogueOptionalReal() : value(0), exists(false) { }
+  RogueOptionalReal( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueReal* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalReal& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalReal& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalFloat
+{
+  RogueFloat value;
+  RogueLogical exists;
+
+  RogueOptionalFloat() : value(0), exists(false) { }
+  RogueOptionalFloat( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueFloat* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalFloat& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalFloat& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalLong
+{
+  RogueLong value;
+  RogueLogical exists;
+
+  RogueOptionalLong() : value(0), exists(false) { }
+  RogueOptionalLong( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueLong* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalLong& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalLong& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalInteger
+{
+  RogueInteger value;
+  RogueLogical exists;
+
+  RogueOptionalInteger() : value(0), exists(false) { }
+  RogueOptionalInteger( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueInteger* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalInteger& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalInteger& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalCharacter
+{
+  RogueCharacter value;
+  RogueLogical exists;
+
+  RogueOptionalCharacter() : value(0), exists(false) { }
+  RogueOptionalCharacter( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueCharacter* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalCharacter& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalCharacter& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalByte
+{
+  RogueByte value;
+  RogueLogical exists;
+
+  RogueOptionalByte() : value(0), exists(false) { }
+  RogueOptionalByte( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueByte* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalByte& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalByte& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalLogical
+{
+  RogueLogical value;
+  RogueLogical exists;
+
+  RogueOptionalLogical() : value(0), exists(false) { }
+  RogueOptionalLogical( RogueLogical value ) : value(value), exists(true) { }
+
+  bool check( RogueLogical* checked )
+  {
+    if ( !exists ) return false;
+    *checked = value;
+    return true;
+  }
+
+
+  bool operator==( const RogueOptionalLogical& other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalLogical& other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+
+struct RogueOptionalRealType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalReal); }
+  const char* name() { return "Real?"; }
+};
+
+struct RogueOptionalFloatType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalFloat); }
+  const char* name() { return "Float?"; }
+};
+
+struct RogueOptionalLongType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalLong); }
+  const char* name() { return "Long?"; }
+};
+
+struct RogueOptionalIntegerType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalInteger); }
+  const char* name() { return "Integer?"; }
+};
+
+struct RogueOptionalCharacterType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalCharacter); }
+  const char* name() { return "Character?"; }
+};
+
+struct RogueOptionalByteType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalByte); }
+  const char* name() { return "Byte?"; }
+};
+
+struct RogueOptionalLogicalType : RogueType
+{
+  void configure() { object_size = sizeof(RogueOptionalLogical); }
+  const char* name() { return "Logical?"; }
+};
+
+
+//-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
 struct RogueObjectType : RogueType
@@ -442,7 +747,7 @@ struct RogueArray : RogueObject
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-#define ROGUE_BUILT_IN_TYPE_COUNT 12
+#define ROGUE_BUILT_IN_TYPE_COUNT 19
 
 struct RogueProgramCore
 {
@@ -464,6 +769,14 @@ struct RogueProgramCore
   RogueCharacterType* type_Character;
   RogueByteType*      type_Byte;
   RogueLogicalType*   type_Logical;
+
+  RogueOptionalRealType*      type_OptionalReal;
+  RogueOptionalFloatType*     type_OptionalFloat;
+  RogueOptionalLongType*      type_OptionalLong;
+  RogueOptionalIntegerType*   type_OptionalInteger;
+  RogueOptionalCharacterType* type_OptionalCharacter;
+  RogueOptionalByteType*      type_OptionalByte;
+  RogueOptionalLogicalType*   type_OptionalLogical;
 
   RogueObjectType* type_Object;
   RogueStringType* type_String;

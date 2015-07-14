@@ -119,6 +119,9 @@ class String [native functional]
       if (n >= 0) return substring( 0, n-1 )
       else        return substring( 0, (count + n) - 1 )
 
+    method index_of( ch:Character, i1=null:Integer? )->Integer?
+      $if ("C++") inlineNative '$this->index_of($ch,$i1)'
+
     method locate( ch:Character, i1=0:Integer )->Integer
       $if ("C++") inlineNative '$this->locate($ch,$i1)'
 

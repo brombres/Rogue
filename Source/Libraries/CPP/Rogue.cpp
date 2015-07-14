@@ -518,6 +518,22 @@ RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_inde
   return true;
 }
 
+RogueOptionalInteger RogueString::index_of( RogueCharacter ch, RogueOptionalInteger optional_i1 )
+{
+  RogueInteger    limit = count;
+  RogueCharacter* data  = characters;
+  RogueInteger    i1 = optional_i1.exists ? (optional_i1.value-1) : -1;
+
+  while (++i1 < limit)
+  {
+    if (data[i1] == ch)
+    {
+      return RogueOptionalInteger(i1);
+    }
+  }
+  return RogueOptionalInteger();
+}
+
 RogueInteger RogueString::locate( RogueCharacter ch, RogueInteger i1 )
 {
   RogueInteger    limit = count;
@@ -873,6 +889,14 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   type_Character = new RogueCharacterType();
   type_Byte      = new RogueByteType();
   type_Logical   = new RogueLogicalType();
+
+  type_OptionalReal      = new RogueOptionalRealType();
+  type_OptionalFloat     = new RogueOptionalFloatType();
+  type_OptionalLong      = new RogueOptionalLongType();
+  type_OptionalInteger   = new RogueOptionalIntegerType();
+  type_OptionalCharacter = new RogueOptionalCharacterType();
+  type_OptionalByte      = new RogueOptionalByteType();
+  type_OptionalLogical   = new RogueOptionalLogicalType();
 
   type_Object = new RogueObjectType();
   type_String = new RogueStringType();
