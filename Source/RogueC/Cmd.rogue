@@ -335,6 +335,10 @@ class CmdLocalDeclaration : CmdStatement
         throw t.error( "Cannot determine type of local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Integer)." (local_info.name,local_info.name) )
       endIf
 
+      if (local_info.initial_value)
+        local_info.initial_value = local_info.initial_value.cast_to( local_info.type ).resolve( scope )
+      endIf
+
       local_info.type.organize
 
       return this
@@ -1389,6 +1393,13 @@ class CmdLiteralNull : CmdLiteral
   METHODS
     method init( t )
 
+    method cast_to( target_type:Type )->Cmd
+      if (target_type.is_optional)
+        return CmdCreateOptionalValue( t, target_type )
+      else
+        return prior.cast_to( target_type )
+      endIf
+
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralNull( t )
 
@@ -1699,6 +1710,11 @@ class CmdAccess : Cmd
           if (cmd_call) cmd_new = cmd_call
 
           return cmd_new.resolve(scope)
+
+        else
+          if (name.ends_with('?'))
+            return CmdLogicalize( t, CmdAccess(t,context,name.leftmost(-1),args) ).resolve( scope )
+          endIf
         endIf
 
         # ---- No call context ----
@@ -2187,7 +2203,8 @@ class CmdWriteLocal : Cmd
 
     method resolve( scope:Scope )->Cmd
       local_info.type.organize
-      new_value = new_value.resolve(scope).cast_to( local_info.type ).resolve( scope )
+      new_value = new_value.resolve(scope)
+      new_value = new_value.cast_to( local_info.type ).resolve( scope )
       return this
 
     method type->Type
@@ -4680,7 +4697,7 @@ class CmdLogicalizeOptionalValue : Cmd
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       value.write_cpp( writer )
-      if (not value.optional_value.compile_type.element_type.is_reference)
+      if (not value.compile_type.is_reference)
         writer.print( ".exists" )
       endIf
 

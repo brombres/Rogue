@@ -1589,10 +1589,9 @@ class Parser
         consume_eols
         return CmdBitwiseNot( t, parse_pre_unary )
       endIf
-      return parse_member_access
-      #return parse_post_unary
+      #return parse_member_access
+      return parse_post_unary
 
-      #{
     method parse_post_unary->Cmd
       return parse_post_unary( parse_member_access )
 
@@ -1602,7 +1601,6 @@ class Parser
         return parse_post_unary( CmdLogicalize(t,operand) )
       endIf
       return operand
-      }#
 
     method parse_member_access->Cmd
       return parse_member_access( parse_term )

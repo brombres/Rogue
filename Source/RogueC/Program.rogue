@@ -87,8 +87,11 @@ class Program [requisite singleton]
 
     method find_template( name:String )->Template
       which (name.last)
-        case '?': return template_lookup[ "Optional" ]
-        case ']': return template_lookup[ "List" ]
+        case '?'
+          if (find_type(name.leftmost(-1))) return template_lookup[ "Optional" ]
+          else return null
+        case ']'
+          return template_lookup[ "List" ]
         others
           return template_lookup[ name.before_first('<') ]
       endWhich
