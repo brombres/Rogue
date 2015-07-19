@@ -333,7 +333,7 @@ struct RogueOptionalReal
   RogueLogical exists;
 
   RogueOptionalReal() : value(0), exists(false) { }
-  RogueOptionalReal( RogueLogical value ) : value(value), exists(true) { }
+  RogueOptionalReal( RogueReal value ) : value(value), exists(true) { }
 
   bool check( RogueReal* checked )
   {
@@ -370,7 +370,7 @@ struct RogueOptionalFloat
   RogueLogical exists;
 
   RogueOptionalFloat() : value(0), exists(false) { }
-  RogueOptionalFloat( RogueLogical value ) : value(value), exists(true) { }
+  RogueOptionalFloat( RogueFloat value ) : value(value), exists(true) { }
 
   bool check( RogueFloat* checked )
   {
@@ -407,7 +407,7 @@ struct RogueOptionalLong
   RogueLogical exists;
 
   RogueOptionalLong() : value(0), exists(false) { }
-  RogueOptionalLong( RogueLogical value ) : value(value), exists(true) { }
+  RogueOptionalLong( RogueLong value ) : value(value), exists(true) { }
 
   bool check( RogueLong* checked )
   {
@@ -444,7 +444,7 @@ struct RogueOptionalInteger
   RogueLogical exists;
 
   RogueOptionalInteger() : value(0), exists(false) { }
-  RogueOptionalInteger( RogueLogical value ) : value(value), exists(true) { }
+  RogueOptionalInteger( RogueInteger value ) : value(value), exists(true) { }
 
   bool check( RogueInteger* checked )
   {
@@ -481,7 +481,7 @@ struct RogueOptionalCharacter
   RogueLogical exists;
 
   RogueOptionalCharacter() : value(0), exists(false) { }
-  RogueOptionalCharacter( RogueLogical value ) : value(value), exists(true) { }
+  RogueOptionalCharacter( RogueCharacter value ) : value(value), exists(true) { }
 
   bool check( RogueCharacter* checked )
   {
@@ -518,7 +518,7 @@ struct RogueOptionalByte
   RogueLogical exists;
 
   RogueOptionalByte() : value(0), exists(false) { }
-  RogueOptionalByte( RogueLogical value ) : value(value), exists(true) { }
+  RogueOptionalByte( RogueByte value ) : value(value), exists(true) { }
 
   bool check( RogueByte* checked )
   {
@@ -689,6 +689,10 @@ struct RogueString : RogueObject
 
   RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
+  RogueOptionalInteger index_of( RogueCharacter ch, RogueOptionalInteger optional_i1 );
+  RogueOptionalInteger index_of( RogueString* other, RogueOptionalInteger optional_i1 );
+  RogueOptionalInteger last_index_of( RogueCharacter ch, RogueOptionalInteger i1 );
+  RogueOptionalInteger last_index_of( RogueString* other, RogueOptionalInteger i1 );
   RogueInteger locate( RogueCharacter ch, RogueInteger i1 );
   RogueInteger locate( RogueString* other, RogueInteger i1 );
   RogueInteger locate_last( RogueCharacter ch, RogueInteger i1 );
@@ -3826,6 +3830,8 @@ RogueString* RogueString__right_justified( RogueString* THIS, RogueInteger space
 RogueString* RogueString__rightmost( RogueString* THIS, RogueInteger n_0 );
 RogueStringList* RogueString__split( RogueString* THIS, RogueCharacter separator_0 );
 RogueStringList* RogueString__split( RogueString* THIS, RogueString* separator_0 );
+RogueStringList* RogueString__split2( RogueString* THIS, RogueCharacter separator_0 );
+RogueStringList* RogueString__split2( RogueString* THIS, RogueString* separator_0 );
 RogueString* RogueString__to_String( RogueString* THIS );
 RogueString* RogueString__to_lowercase( RogueString* THIS );
 RogueString* RogueString__to_uppercase( RogueString* THIS );
@@ -3883,6 +3889,7 @@ RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS, Rogue
 RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS, RogueString* value_0 );
 RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* THIS, RogueInteger additional_count_0 );
 RogueStringBuilder* RogueStringBuilder__init_object( RogueStringBuilder* THIS );
+RogueString* RogueOptionalInteger__type_name( RogueOptionalInteger THIS );
 RogueInteger RogueLogical__hash_code( RogueLogical THIS );
 RogueString* RogueLogical__to_String( RogueLogical THIS );
 RogueString* RogueLogical__type_name( RogueLogical THIS );

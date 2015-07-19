@@ -534,6 +534,31 @@ RogueOptionalInteger RogueString::index_of( RogueCharacter ch, RogueOptionalInte
   return RogueOptionalInteger();
 }
 
+RogueOptionalInteger RogueString::index_of( RogueString* other, RogueOptionalInteger optional_i1 )
+{
+  RogueInteger    other_count = other->count;
+  if (other_count == 1) return index_of( other->characters[0], optional_i1 );
+
+  RogueInteger    this_limit = (count - other_count) + 1;
+  if (!other_count || this_limit <= 0) return RogueOptionalInteger();
+
+  RogueInteger i1;
+  if (optional_i1.exists)
+  {
+    i1 = optional_i1.value - 1;
+    if (i1 < -1) i1 = -1;
+  }
+  else
+  {
+    i1 = -1;
+  }
+  while (++i1 < this_limit)
+  {
+    if (contains(other,i1)) return RogueOptionalInteger(i1);
+  }
+  return RogueOptionalInteger();
+}
+
 RogueInteger RogueString::locate( RogueCharacter ch, RogueInteger i1 )
 {
   RogueInteger    limit = count;
@@ -545,6 +570,56 @@ RogueInteger RogueString::locate( RogueCharacter ch, RogueInteger i1 )
     if (data[i1] == ch) return i1;
   }
   return -1;
+}
+
+RogueOptionalInteger RogueString::last_index_of( RogueCharacter ch, RogueOptionalInteger i1 )
+{
+  RogueInteger    limit = count;
+  RogueCharacter* data  = characters;
+
+  int i;
+  if (i1.exists)
+  {
+    i = i1.value + 1;
+    if (i > limit) i = limit;
+  }
+  else
+  {
+    i = limit;
+  }
+
+  while (--i >= 0)
+  {
+    if (data[i] == ch) return RogueOptionalInteger(i);
+  }
+
+  return RogueOptionalInteger();
+}
+
+RogueOptionalInteger RogueString::last_index_of( RogueString* other, RogueOptionalInteger i1 )
+{
+  RogueInteger    other_count = other->count;
+  if (other_count == 1) return last_index_of( other->characters[0], i1 );
+
+  RogueInteger    this_limit = (count - other_count) + 1;
+  if (!other_count || this_limit <= 0) return RogueOptionalInteger();
+
+  int i;
+  if (i1.exists)
+  {
+    i = i1.value + 1;
+    if (i > this_limit) i = this_limit;
+  }
+  else
+  {
+    i = this_limit;
+  }
+
+  while (--i >= 0)
+  {
+    if (contains(other,i)) return RogueOptionalInteger(i);
+  }
+  return RogueOptionalInteger();
 }
 
 RogueInteger RogueString::locate( RogueString* other, RogueInteger i1 )

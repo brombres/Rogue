@@ -885,7 +885,7 @@ class CmdGenericLoop : CmdControlStructure
         endForEach
       endIf
 
-      if (condition) condition = condition.resolve( scope )
+      if (condition) condition = condition.resolve( scope ).require_logical( scope )
       statements.resolve( scope )
 
       if (upkeep) upkeep.resolve( scope )
@@ -4687,6 +4687,7 @@ class CmdLogicalizeOptionalValue : Cmd
     method type->Type
       return Program.type_Logical
 endClass
+
 
 #------------------------------------------------------------------------------
 # Miscellaneous

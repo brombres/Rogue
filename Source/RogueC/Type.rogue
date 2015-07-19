@@ -189,6 +189,7 @@ class Type
         if (this is Program.type_Logical xor other is Program.type_Logical) return false 
         return true
       endIf
+      if (other.is_optional and other.element_type is this) return true
       return (this.instance_of(other))
 
     method is_direct->Logical

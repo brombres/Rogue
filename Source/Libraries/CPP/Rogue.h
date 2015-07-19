@@ -687,6 +687,9 @@ struct RogueString : RogueObject
   RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
   RogueOptionalInteger index_of( RogueCharacter ch, RogueOptionalInteger optional_i1 );
+  RogueOptionalInteger index_of( RogueString* other, RogueOptionalInteger optional_i1 );
+  RogueOptionalInteger last_index_of( RogueCharacter ch, RogueOptionalInteger i1 );
+  RogueOptionalInteger last_index_of( RogueString* other, RogueOptionalInteger i1 );
   RogueInteger locate( RogueCharacter ch, RogueInteger i1 );
   RogueInteger locate( RogueString* other, RogueInteger i1 );
   RogueInteger locate_last( RogueCharacter ch, RogueInteger i1 );

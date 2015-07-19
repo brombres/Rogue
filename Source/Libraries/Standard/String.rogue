@@ -8,54 +8,54 @@ class String [native functional]
 
   METHODS
     method after_any( ch:Character )->String
-      local i = locate( ch )
-      if (i == -1) return this
-      return substring( i+1 )
+      local i = index_of( ch )
+      if (i) return substring( i+1 )
+      else   return this
 
     method after_any( st:String )->String
-      local i = locate( st )
-      if (i == -1) return this
-      return substring( i+st.count )
+      local i = index_of( st )
+      if (i) return substring( i+st.count )
+      else   return this
 
     method after_first( ch:Character )->String
-      local i = locate( ch )
-      if (i == -1) return ""
-      return substring( i+1 )
+      local i = index_of( ch )
+      if (i) return substring( i+1 )
+      else   return ""
 
     method after_first( st:String )->String
-      local i = locate( st )
-      if (i == -1) return ""
-      return substring( i+st.count )
+      local i = index_of( st )
+      if (i) return substring( i+st.count )
+      else   return ""
 
     method after_last( ch:Character )->String
-      local i = locate_last( ch )
-      if (i == -1) return ""
-      return substring( i+1 )
+      local i = last_index_of( ch )
+      if (i) return substring( i+1 )
+      else   return ""
 
     method after_last( st:String )->String
-      local i = locate_last( st )
-      if (i == -1) return ""
-      return substring( i+st.count )
+      local i = last_index_of( st )
+      if (i) return substring( i+st.count )
+      else   return ""
 
     method before_first( ch:Character )->String
-      local i = locate( ch )
-      if (i == -1) return this
-      return substring( 0, i-1 )
+      local i = index_of( ch )
+      if (i) return substring( 0, i-1 )
+      else   return this
 
     method before_first( st:String )->String
-      local i = locate( st )
-      if (i == -1) return this
-      return substring( 0, i-1 )
+      local i = index_of( st )
+      if (i) return substring( 0, i-1 )
+      else   return this
 
     method before_last( ch:Character )->String
-      local i = locate_last( ch )
-      if (i == -1) return this
-      return substring( 0, i-1 )
+      local i = last_index_of( ch )
+      if (i) return substring( 0, i-1 )
+      else   return this
 
     method before_last( st:String )->String
-      local i = locate_last( st )
-      if (i == -1) return this
-      return substring( 0, i-1 )
+      local i = last_index_of( st )
+      if (i) return substring( 0, i-1 )
+      else   return this
 
     method begins_with( ch:Character )->Logical
       return (count and this[0] == ch)
@@ -88,14 +88,14 @@ class String [native functional]
       return substring( i )
 
     method from_last( ch:Character )->String
-      local i = locate_last( ch )
-      if (i == -1) return ""
-      return substring( i )
+      local i = last_index_of( ch )
+      if (i) return substring( i )
+      else   return ""
 
     method from_last( st:String )->String
-      local i = locate_last( st )
-      if (i == -1) return ""
-      return substring( i )
+      local i = last_index_of( st )
+      if (i) return substring( i )
+      else   return ""
 
     method get( index:Integer )->Character
       $if ("C++") inlineNative '$this->characters[$index]'
@@ -121,6 +121,15 @@ class String [native functional]
 
     method index_of( ch:Character, i1=null:Integer? )->Integer?
       $if ("C++") inlineNative '$this->index_of($ch,$i1)'
+
+    method index_of( other:String, i1=null:Integer? )->Integer?
+      $if ("C++") inlineNative '$this->index_of($other,$i1)'
+
+    method last_index_of( ch:Character, starting_index=null:Integer? )->Integer?
+      $if ("C++") inlineNative '$this->last_index_of($ch,$starting_index)'
+
+    method last_index_of( other:String, starting_index=null:Integer? )->Integer?
+      $if ("C++") inlineNative '$this->last_index_of($other,$starting_index)'
 
     method locate( ch:Character, i1=0:Integer )->Integer
       $if ("C++") inlineNative '$this->locate($ch,$i1)'
@@ -215,6 +224,41 @@ class String [native functional]
         result.add( substring(i1,i2-1) )
         i1 = i2 + separator_count
         i2 = locate( separator, i1 )
+      endWhile
+
+      result.add( substring(i1) )
+
+      return result
+
+    method split2( separator:Character )->String[]
+      local result = String[]
+
+      local i1 = 0
+      local i2 = index_of( separator, i1 )
+      while (i2)
+        if (i2)
+          result.add( substring(i1,i2-1) )
+          i1 = i2 + 1
+        endIf
+        i2 = index_of( separator, i1 )
+      endWhile
+
+      result.add( substring(i1) )
+
+      return result
+
+    method split2( separator:String )->String[]
+      local result = String[]
+      local separator_count = separator.count
+
+      local i1 = 0
+      local i2 = index_of( separator, i1 )
+      while (i2)
+        if (i2)
+          result.add( substring(i1,i2-1) )
+          i1 = i2 + separator_count
+        endIf
+        i2 = index_of( separator, i1 )
       endWhile
 
       result.add( substring(i1) )
