@@ -9,52 +9,52 @@ class String [native functional]
   METHODS
     method after_any( ch:Character )->String
       local i = index_of( ch )
-      if (i.exists) return substring( i+1 )
+      if (i.exists) return substring( i.value+1 )
       else          return this
 
     method after_any( st:String )->String
       local i = index_of( st )
-      if (i.exists) return substring( i+st.count )
+      if (i.exists) return substring( i.value+st.count )
       else          return this
 
     method after_first( ch:Character )->String
       local i = index_of( ch )
-      if (i.exists) return substring( i+1 )
+      if (i.exists) return substring( i.value+1 )
       else          return ""
 
     method after_first( st:String )->String
       local i = index_of( st )
-      if (i.exists) return substring( i+st.count )
+      if (i.exists) return substring( i.value+st.count )
       else          return ""
 
     method after_last( ch:Character )->String
       local i = last_index_of( ch )
-      if (i.exists) return substring( i+1 )
+      if (i.exists) return substring( i.value+1 )
       else          return ""
 
     method after_last( st:String )->String
       local i = last_index_of( st )
-      if (i.exists) return substring( i+st.count )
+      if (i.exists) return substring( i.value+st.count )
       else          return ""
 
     method before_first( ch:Character )->String
       local i = index_of( ch )
-      if (i.exists) return substring( 0, i-1 )
+      if (i.exists) return substring( 0, i.value-1 )
       else          return this
 
     method before_first( st:String )->String
       local i = index_of( st )
-      if (i.exists) return substring( 0, i-1 )
+      if (i.exists) return substring( 0, i.value-1 )
       else          return this
 
     method before_last( ch:Character )->String
       local i = last_index_of( ch )
-      if (i.exists) return substring( 0, i-1 )
+      if (i.exists) return substring( 0, i.value-1 )
       else          return this
 
     method before_last( st:String )->String
       local i = last_index_of( st )
-      if (i.exists) return substring( 0, i-1 )
+      if (i.exists) return substring( 0, i.value-1 )
       else          return this
 
     method begins_with( ch:Character )->Logical
@@ -89,12 +89,12 @@ class String [native functional]
 
     method from_last( ch:Character )->String
       local i = last_index_of( ch )
-      if (i.exists) return substring( i )
+      if (i.exists) return substring( i.value )
       else          return ""
 
     method from_last( st:String )->String
       local i = last_index_of( st )
-      if (i.exists) return substring( i )
+      if (i.exists) return substring( i.value )
       else          return ""
 
     method get( index:Integer )->Character

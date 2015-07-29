@@ -64,9 +64,6 @@ class Cmd
       if (statements) return statements.clone( clone_args )
       return null
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
-      cmd_checks.add_check( this )
-
     method combine_literal_operands( common_type:Type )->Cmd
       return this
 
@@ -107,14 +104,6 @@ class Cmd
       local common_type = find_common_type( left_type, right_type )
       if (common_type) return common_type
       throw t.error( "Types $ and $ are incompatible." (left_type,right_type) )
-
-    method null_checkable( positive:Logical )->Logical
-      # Only a positive null check can be performed on a general optional value
-      if (not positive) return false
-
-      local my_type = type
-      if (not my_type) return false
-      return my_type.is_optional
 
     method implicit_type->Type
       return null
@@ -166,9 +155,6 @@ class Cmd
 
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
-
-    method optional_value->Cmd
-      throw t.error( "[INTERNAL] $::optional_value() is not defined." (type_name) )
 
     method type->Type
       throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
@@ -531,28 +517,6 @@ class CmdIf : CmdControlStructure
 
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
-
-      if (condition.null_checkable(true))
-        local result = CmdCheckOptionalValue( t )
-        condition.collect_null_checks( result )
-
-        # Return a CmdCheckOptionalValue that contains the original if's body and else-body.
-        result.body = CmdBlock( t, statements, CmdControlStructure.type_if )
-        if (else_statements) result.else_body = CmdBlock( t, else_statements, CmdControlStructure.type_if )
-        return result.resolve( scope )
-
-      elseIf (condition.null_checkable(false))
-        # Same as positive check except if and else bodies are switched.
-        local result = CmdCheckOptionalValue( t )
-        condition.collect_null_checks( result )
-
-        # Return a CmdCheckOptionalValue that contains the original if's body and else-body.
-        result.else_body = CmdBlock( t, statements, CmdControlStructure.type_if )
-        if (else_statements) result.body = CmdBlock( t, else_statements, CmdControlStructure.type_if )
-        else                 result.body = CmdBlock(t)
-        return result.resolve( scope )
-      endIf
-
       condition = condition.require_logical( scope )
 
       scope.control_stack.add( this )
@@ -2168,9 +2132,6 @@ class CmdReadLocal : Cmd
     method access_cpp_name->String
       return local_info.cpp_name
 
-    method optional_value->Cmd
-      return this
-
     method resolve( scope:Scope )->Cmd
       #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
       local_info.type.organize
@@ -2771,14 +2732,8 @@ class CmdLogicalNot : CmdUnary
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalNot( t, operand.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
-      operand.collect_null_checks( cmd_checks )
-
     method cpp_prefix_symbol->String
       return "!"
-
-    method null_checkable( positive:Logical )->Logical
-      return operand.null_checkable( not positive )
 
     method prefix_symbol->String
       return "not "
@@ -3070,26 +3025,11 @@ class CmdLogicalAnd : CmdBinaryLogical
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalAnd( t, left.clone(clone_args), right.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
-      left.collect_null_checks( cmd_checks )
-      right.collect_null_checks( cmd_checks )
-
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a and b)
 
     method cpp_symbol->String
       return "&&"
-
-    method null_checkable( positive:Logical )->Logical
-      # 'and' can only be used to perform a positive null check
-      if (not positive) return false
-
-      local left_checkable = left.null_checkable( true )
-      local right_checkable = right.null_checkable( true )
-      if (not left_checkable and not right_checkable) return false
-      if (left_checkable and right_checkable) return true
-
-      throw t.error( "One operand of 'and' is a positive optional value check but the other is not." )
 
     method symbol->String
       return "and"
@@ -3101,27 +3041,11 @@ class CmdLogicalOr : CmdBinaryLogical
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalOr( t, left.clone(clone_args), right.clone(clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
-      left.collect_null_checks( cmd_checks )
-      right.collect_null_checks( cmd_checks )
-
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a or b)
 
     method cpp_symbol->String
       return "||"
-
-    method null_checkable( positive:Logical )->Logical
-      
-      # 'or' can only be used to perform a negative null check
-      if (positive) return false
-
-      local left_checkable = left.null_checkable( false )
-      local right_checkable = right.null_checkable( false )
-      if (not left_checkable and not right_checkable) return false
-      if (left_checkable and right_checkable) return true
-
-      throw t.error( "One operand of 'or' is a negative optional value check but the other is not." )
 
     method symbol->String
       return "or"
@@ -4570,12 +4494,6 @@ class CmdCreateOptionalValue : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCreateOptionalValue( t, of_type, clone(value,clone_args) )
 
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
-      cmd_checks.add_check( this )
-
-    method null_checkable( positive:Logical )->Logical
-      return true
-
     method resolve( scope:Scope )->Cmd
       of_type.organize
       if (value) value = value.resolve( scope )
@@ -4606,77 +4524,6 @@ class CmdCreateOptionalValue : Cmd
 
 endClass
 
-class CmdCheckOptionalValue : Cmd
-  PROPERTIES
-    args           = CmdArgs()
-    checked_locals = Local[]
-    body           : Cmd
-    else_body      : Cmd
-
-  METHODS
-    method init( t )
-
-    method init( t, body, else_body )
-
-    method clone( clone_args:CloneArgs )->CmdCheckOptionalValue
-      return CmdCheckOptionalValue( t, body, else_body )
-
-    method add_check( value:Cmd )->this
-      args.add( value )
-      return this
-
-    method requires_semicolon->Logical
-      return false
-
-    method resolve( scope:Scope )->this
-      args.resolve( scope )
-
-      if (not checked_locals.count)
-        forEach (arg in args)
-          local arg_type = arg.optional_value.type.element_type
-          checked_locals.add( scope.this_method.add_local(arg.t,arg.access_name,arg_type) )
-        endForEach
-      endIf
-
-      forEach (checked_local in checked_locals)
-        scope.push_local( checked_local, false )
-      endForEach
-      body = body.resolve( scope )
-      forEach (checked_local in checked_locals) scope.pop_local
-
-      if (else_body)
-        else_body = else_body.resolve( scope )
-      endIf
-
-      return this
-
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      forEach (checked_local in checked_locals)
-        writer.print( checked_local.type ).print( " " ).print( checked_local.cpp_name ).println( ";" )
-      endForEach
-      writer.print( "if (" )
-      forEach (i of checked_locals)
-        if (i > 0) writer.print( " && " )
-        local checked = checked_locals[i]
-        local optional_type = args[i].optional_value.type.element_type
-        if (optional_type.is_reference)
-          writer.print( "(" ).print( checked.cpp_name ).print( "=" )
-          args[i].optional_value.write_cpp( writer )
-          writer.print( ")" )
-        else
-          args[i].optional_value.write_cpp( writer )
-          local cast_type = args[i].optional_value.compile_type.element_type
-          writer.print( ".check((" ).print(cast_type).print( "*)&" ).print( checked.cpp_name ).print( ")" )
-        endIf
-      endForEach
-      writer.println( ")" )
-      body.write_cpp( writer )
-      if (else_body)
-        writer.println "else"
-        else_body.write_cpp( writer )
-      endIf
-
-endClass
 
 class CmdLogicalizeOptionalValue : Cmd
   PROPERTIES
@@ -4696,15 +4543,6 @@ class CmdLogicalizeOptionalValue : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalizeOptionalValue( t, value.clone(clone_args) )
-
-    method collect_null_checks( cmd_checks:CmdCheckOptionalValue )
-      cmd_checks.add_check( value )
-
-    method null_checkable( _positive:Logical )->Logical
-      return true
-
-    method optional_value->Cmd
-      return value
 
     method resolve( scope:Scope )->this
       value = value.resolve( scope ).require_value
