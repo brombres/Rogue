@@ -18526,12 +18526,8 @@ RogueStringList* RogueString__split2( RogueString* THIS, RogueCharacter separato
   RogueOptionalInteger i2_3 = (THIS->index_of(separator_0,RogueOptionalInteger( i1_2 )));
   while (i2_3.exists)
   {
-    RogueInteger i2_4;
-    if (i2_3.check((RogueInteger*)&i2_4))
-    {
-      RogueStringList__add( result_1, THIS->substring(i1_2,(i2_4 - 1)) );
-      i1_2 = ((RogueInteger)(i2_4 + 1));
-    }
+    RogueStringList__add( result_1, THIS->substring(i1_2,(i2_3.value - 1)) );
+    i1_2 = ((RogueInteger)(i2_3.value + 1));
     i2_3 = ((RogueOptionalInteger)THIS->index_of(separator_0,RogueOptionalInteger( i1_2 )));
   }
   RogueStringList__add( result_1, THIS->substring(i1_2) );
@@ -18546,12 +18542,8 @@ RogueStringList* RogueString__split2( RogueString* THIS, RogueString* separator_
   RogueOptionalInteger i2_4 = (THIS->index_of(separator_0,RogueOptionalInteger( i1_3 )));
   while (i2_4.exists)
   {
-    RogueInteger i2_5;
-    if (i2_4.check((RogueInteger*)&i2_5))
-    {
-      RogueStringList__add( result_1, THIS->substring(i1_3,(i2_5 - 1)) );
-      i1_3 = ((RogueInteger)(i2_5 + separator_count_2));
-    }
+    RogueStringList__add( result_1, THIS->substring(i1_3,(i2_4.value - 1)) );
+    i1_3 = ((RogueInteger)(i2_4.value + separator_count_2));
     i2_4 = ((RogueOptionalInteger)THIS->index_of(separator_0,RogueOptionalInteger( i1_3 )));
   }
   RogueStringList__add( result_1, THIS->substring(i1_3) );
