@@ -4572,7 +4572,10 @@ class CmdGetOptionalValue : Cmd
       return CmdGetOptionalValue( t, value.clone(clone_args) )
 
     method resolve( scope:Scope )->this
-      value = value.resolve( scope ).require_value
+      value = value.resolve( scope )
+      if (not value.require_type.is_optional)
+        throw t.error( "|Value bars| can only be used on optional values." )
+      endIf
       return this
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )

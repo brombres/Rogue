@@ -5,10 +5,10 @@ class File
     routine exists( filepath:String )->Logical [native]
 
     routine filename( filepath:String )->String
-      local i = filepath.locate_last( '/' )
-      if (i == -1) i = filepath.locate_last( '\\' )
-      if (i == -1) return filepath
-      return filepath.substring( i+1 )
+      local i = filepath.last_index_of( '/' )
+      if (not i?) i = filepath.last_index_of( '\\' )
+      if (not i?) return filepath
+      return filepath.substring( ||i||+1 )
 
     routine is_folder( filepath:String )->Logical  [native]
 

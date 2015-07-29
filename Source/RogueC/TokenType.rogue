@@ -166,6 +166,7 @@ class TokenType
     symbol_upToLessThan          : TokenType
     symbol_vertical_bar          : TokenType
     symbol_vertical_bar_equals   : TokenType
+    symbol_double_vertical_bar   : TokenType
 
   PROPERTIES
     name : String

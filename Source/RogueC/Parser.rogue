@@ -1498,9 +1498,11 @@ class Parser
 
     method parse_bitwise_or( lhs:Cmd )->Cmd
       local t = peek
+      local starting_pos = reader.position
       if (consume(TokenType.symbol_vertical_bar))
         consume_eols
-        return parse_bitwise_or( CmdBitwiseOr(t,lhs,parse_bitwise_and) )
+        local rhs = parse_bitwise_and
+        return parse_bitwise_or( CmdBitwiseOr(t,lhs,rhs) )
       endIf
       return lhs
 
@@ -1910,6 +1912,11 @@ class Parser
       elseIf (consume(TokenType.symbol_empty_brackets))
         return CmdAccess( t, "PropertyList",  CmdArgs() )
 
+      elseIf (consume(TokenType.symbol_double_vertical_bar))
+        local expr = parse_expression
+        must_consume( TokenType.symbol_double_vertical_bar )
+        return CmdGetOptionalValue( t, expr )
+
       elseIf (consume(TokenType.keyword_prior))
         consume_eols
         must_consume( TokenType.symbol_dot )
@@ -2006,7 +2013,7 @@ class Parser
 
       else
         #throw peek.error( "Syntax error: unexpected '$'." (peek) )
-trace peek.type
+        #trace peek.type
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
 
