@@ -1917,6 +1917,13 @@ class Parser
         must_consume( TokenType.symbol_double_vertical_bar )
         return CmdGetOptionalValue( t, expr )
 
+        #{
+      elseIf (consume(TokenType.symbol_vertical_bar))
+        local expr = parse_expression
+        must_consume( TokenType.symbol_vertical_bar )
+        return CmdGetOptionalValue( t, expr )
+        }#
+
       elseIf (consume(TokenType.keyword_prior))
         consume_eols
         must_consume( TokenType.symbol_dot )

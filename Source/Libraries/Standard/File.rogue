@@ -23,10 +23,10 @@ class File
     routine load_as_string( filepath:String )->String [native]
 
     routine path( filepath:String )->String
-      local i = filepath.locate_last( '/' )
-      if (i == -1) i = filepath.locate_last( '\\' )
-      if (i == -1) return ""
-      return filepath.substring( 0, i-1 )
+      local i = filepath.last_index_of( '/' )
+      if (not i?) i = filepath.last_index_of( '\\' )
+      if (not i?) return ""
+      return filepath.substring( 0, ||i||-1 )
 
     routine reader( filepath:String )->FileReader
       return FileReader( filepath )

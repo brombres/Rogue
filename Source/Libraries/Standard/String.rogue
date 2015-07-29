@@ -120,16 +120,16 @@ class String [native functional]
       else        return substring( 0, (count + n) - 1 )
 
     method index_of( ch:Character, i1=null:Integer? )->Integer?
-      $if ("C++") inlineNative '$this->index_of($ch,$i1)'
+      $if ("C++") inlineNative '($this->index_of($ch,$i1))'
 
     method index_of( other:String, i1=null:Integer? )->Integer?
-      $if ("C++") inlineNative '$this->index_of($other,$i1)'
+      $if ("C++") inlineNative '($this->index_of($other,$i1))'
 
     method last_index_of( ch:Character, starting_index=null:Integer? )->Integer?
-      $if ("C++") inlineNative '$this->last_index_of($ch,$starting_index)'
+      $if ("C++") inlineNative '($this->last_index_of($ch,$starting_index))'
 
     method last_index_of( other:String, starting_index=null:Integer? )->Integer?
-      $if ("C++") inlineNative '$this->last_index_of($other,$starting_index)'
+      $if ("C++") inlineNative '($this->last_index_of($other,$starting_index))'
 
     method locate( ch:Character, i1=0:Integer )->Integer
       $if ("C++") inlineNative '$this->locate($ch,$i1)'

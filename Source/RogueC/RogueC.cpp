@@ -16391,10 +16391,10 @@ void RogueSystem__init_class()
 
 RogueString* RogueFile__filename( RogueString* filepath_0 )
 {
-  RogueOptionalInteger i_1 = (filepath_0->last_index_of((RogueCharacter)'/',RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((filepath_0->last_index_of((RogueCharacter)'/',RogueOptionalInteger())));
   if (!(i_1.exists))
   {
-    i_1 = ((RogueOptionalInteger)filepath_0->last_index_of((RogueCharacter)'\\',RogueOptionalInteger()));
+    i_1 = ((RogueOptionalInteger)(filepath_0->last_index_of((RogueCharacter)'\\',RogueOptionalInteger())));
   }
   if (!(i_1.exists))
   {
@@ -16422,16 +16422,16 @@ RogueByteList* RogueFile__load_as_bytes( RogueString* filepath_0 )
 
 RogueString* RogueFile__path( RogueString* filepath_0 )
 {
-  RogueInteger i_1 = (((RogueString__locate_last( filepath_0, (RogueCharacter)'/' ))));
-  if (i_1 == -1)
+  RogueOptionalInteger i_1 = ((filepath_0->last_index_of((RogueCharacter)'/',RogueOptionalInteger())));
+  if (!(i_1.exists))
   {
-    i_1 = ((RogueInteger)((RogueString__locate_last( filepath_0, (RogueCharacter)'\\' ))));
+    i_1 = ((RogueOptionalInteger)(filepath_0->last_index_of((RogueCharacter)'\\',RogueOptionalInteger())));
   }
-  if (i_1 == -1)
+  if (!(i_1.exists))
   {
     return (RogueString*)(Rogue_program.literal_strings[0]);
   }
-  return (RogueString*)(filepath_0->substring(0,(i_1 - 1)));
+  return (RogueString*)(filepath_0->substring(0,(i_1.value - 1)));
 }
 
 RogueFileReader* RogueFile__reader( RogueString* filepath_0 )
@@ -17628,7 +17628,7 @@ RogueString* RogueInteger__type_name( RogueInteger THIS )
 
 RogueString* RogueString__after_any( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->index_of(ch_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->index_of(ch_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring((i_1.value + 1)));
@@ -17641,7 +17641,7 @@ RogueString* RogueString__after_any( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__after_any( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->index_of(st_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->index_of(st_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring((i_1.value + st_0->count)));
@@ -17654,7 +17654,7 @@ RogueString* RogueString__after_any( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__after_first( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->index_of(ch_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->index_of(ch_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring((i_1.value + 1)));
@@ -17667,7 +17667,7 @@ RogueString* RogueString__after_first( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__after_first( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->index_of(st_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->index_of(st_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring((i_1.value + st_0->count)));
@@ -17680,7 +17680,7 @@ RogueString* RogueString__after_first( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__after_last( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->last_index_of(ch_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->last_index_of(ch_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring((i_1.value + 1)));
@@ -17693,7 +17693,7 @@ RogueString* RogueString__after_last( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__after_last( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->last_index_of(st_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->last_index_of(st_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring((i_1.value + st_0->count)));
@@ -17706,7 +17706,7 @@ RogueString* RogueString__after_last( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__before_first( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->index_of(ch_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->index_of(ch_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring(0,(i_1.value - 1)));
@@ -17719,7 +17719,7 @@ RogueString* RogueString__before_first( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__before_first( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->index_of(st_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->index_of(st_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring(0,(i_1.value - 1)));
@@ -17732,7 +17732,7 @@ RogueString* RogueString__before_first( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__before_last( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->last_index_of(ch_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->last_index_of(ch_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring(0,(i_1.value - 1)));
@@ -17745,7 +17745,7 @@ RogueString* RogueString__before_last( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__before_last( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->last_index_of(st_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->last_index_of(st_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring(0,(i_1.value - 1)));
@@ -17800,7 +17800,7 @@ RogueString* RogueString__from_first( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__from_last( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->last_index_of(ch_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->last_index_of(ch_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring(i_1.value));
@@ -17813,7 +17813,7 @@ RogueString* RogueString__from_last( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__from_last( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = (THIS->last_index_of(st_0,RogueOptionalInteger()));
+  RogueOptionalInteger i_1 = ((THIS->last_index_of(st_0,RogueOptionalInteger())));
   if (i_1.exists)
   {
     return (RogueString*)(THIS->substring(i_1.value));
@@ -17976,12 +17976,12 @@ RogueStringList* RogueString__split2( RogueString* THIS, RogueCharacter separato
 {
   RogueStringList* result_1 = (((RogueStringList__init( ((RogueStringList*)Rogue_program.type_StringList->create_and_init_object()) ))));
   RogueInteger i1_2 = (0);
-  RogueOptionalInteger i2_3 = (THIS->index_of(separator_0,RogueOptionalInteger( i1_2 )));
+  RogueOptionalInteger i2_3 = ((THIS->index_of(separator_0,RogueOptionalInteger( i1_2 ))));
   while (i2_3.exists)
   {
     RogueStringList__add( result_1, THIS->substring(i1_2,(i2_3.value - 1)) );
     i1_2 = ((RogueInteger)(i2_3.value + 1));
-    i2_3 = ((RogueOptionalInteger)THIS->index_of(separator_0,RogueOptionalInteger( i1_2 )));
+    i2_3 = ((RogueOptionalInteger)(THIS->index_of(separator_0,RogueOptionalInteger( i1_2 ))));
   }
   RogueStringList__add( result_1, THIS->substring(i1_2) );
   return (RogueStringList*)(result_1);
@@ -17992,12 +17992,12 @@ RogueStringList* RogueString__split2( RogueString* THIS, RogueString* separator_
   RogueStringList* result_1 = (((RogueStringList__init( ((RogueStringList*)Rogue_program.type_StringList->create_and_init_object()) ))));
   RogueInteger separator_count_2 = (separator_0->count);
   RogueInteger i1_3 = (0);
-  RogueOptionalInteger i2_4 = (THIS->index_of(separator_0,RogueOptionalInteger( i1_3 )));
+  RogueOptionalInteger i2_4 = ((THIS->index_of(separator_0,RogueOptionalInteger( i1_3 ))));
   while (i2_4.exists)
   {
     RogueStringList__add( result_1, THIS->substring(i1_3,(i2_4.value - 1)) );
     i1_3 = ((RogueInteger)(i2_4.value + separator_count_2));
-    i2_4 = ((RogueOptionalInteger)THIS->index_of(separator_0,RogueOptionalInteger( i1_3 )));
+    i2_4 = ((RogueOptionalInteger)(THIS->index_of(separator_0,RogueOptionalInteger( i1_3 ))));
   }
   RogueStringList__add( result_1, THIS->substring(i1_3) );
   return (RogueStringList*)(result_1);
@@ -19679,32 +19679,32 @@ RogueString* RogueProgram__validate_cpp_name( RogueClassProgram* THIS, RogueStri
     _auto_70:;
     name_0 = ((RogueString*)Rogue_program.literal_strings[66]->plus(name_0));
   }
-  RogueInteger i1_5 = (name_0->locate((RogueCharacter)'?',0));
-  while (i1_5 != -1)
+  RogueOptionalInteger i1_5 = ((name_0->index_of((RogueCharacter)'?',RogueOptionalInteger())));
+  while (i1_5.exists)
   {
-    name_0 = ((RogueString*)Rogue_program.literal_strings[55]->plus(((RogueString__leftmost( name_0, i1_5 ))))->plus(name_0->substring((i1_5 + 1))));
-    i1_5 = ((RogueInteger)name_0->locate((RogueCharacter)'?',0));
+    name_0 = ((RogueString*)Rogue_program.literal_strings[55]->plus(((RogueString__leftmost( name_0, i1_5.value ))))->plus(name_0->substring((i1_5.value + 1))));
+    i1_5 = ((RogueOptionalInteger)(name_0->index_of((RogueCharacter)'?',RogueOptionalInteger())));
   }
-  i1_5 = ((RogueInteger)name_0->locate(Rogue_program.literal_strings[67],0));
-  while (i1_5 != -1)
+  i1_5 = ((RogueOptionalInteger)(name_0->index_of(Rogue_program.literal_strings[67],RogueOptionalInteger())));
+  while (i1_5.exists)
   {
-    RogueInteger i2_6 = (((RogueString__locate_last( name_0, Rogue_program.literal_strings[68] ))));
-    if (i2_6 == -1)
+    RogueOptionalInteger i2_6 = ((name_0->last_index_of(Rogue_program.literal_strings[68],RogueOptionalInteger())));
+    if (!(i2_6.exists))
     {
       goto _auto_71;
     }
-    RogueString* before_7 = (name_0->substring(0,(i1_5 - 1)));
-    RogueString* after_8 = (name_0->substring((i2_6 + 2)));
-    RogueString* middle_9 = (name_0->substring((i1_5 + 2),(i2_6 - 1)));
+    RogueString* before_7 = (name_0->substring(0,(i1_5.value - 1)));
+    RogueString* after_8 = (name_0->substring((i2_6.value + 2)));
+    RogueString* middle_9 = (name_0->substring((i1_5.value + 2),(i2_6.value - 1)));
     name_0 = ((RogueString*)((RogueStringBuilder__to_String( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__init( ((RogueStringBuilder*)Rogue_program.type_StringBuilder->create_and_init_object()) ))), ((RogueProgram__validate_cpp_name( THIS, middle_9 ))) ))), before_7 ))), after_8 ))) ))));
-    i1_5 = ((RogueInteger)name_0->locate(Rogue_program.literal_strings[67],0));
+    i1_5 = ((RogueOptionalInteger)(name_0->index_of(Rogue_program.literal_strings[67],RogueOptionalInteger())));
   }
   _auto_71:;
-  i1_5 = ((RogueInteger)name_0->locate(Rogue_program.literal_strings[69],0));
-  while (i1_5 != -1)
+  i1_5 = ((RogueOptionalInteger)(name_0->index_of(Rogue_program.literal_strings[69],RogueOptionalInteger())));
+  while (i1_5.exists)
   {
-    name_0 = ((RogueString*)name_0->substring(0,(i1_5 - 1))->plus(Rogue_program.literal_strings[56])->plus(name_0->substring((i1_5 + 2))));
-    i1_5 = ((RogueInteger)name_0->locate(Rogue_program.literal_strings[69],0));
+    name_0 = ((RogueString*)name_0->substring(0,(i1_5.value - 1))->plus(Rogue_program.literal_strings[56])->plus(name_0->substring((i1_5.value + 2))));
+    i1_5 = ((RogueOptionalInteger)(name_0->index_of(Rogue_program.literal_strings[69],RogueOptionalInteger())));
   }
   RogueStringBuilder__clear( THIS->string_buffer );
   if (begins_with_code_prefix_1)
