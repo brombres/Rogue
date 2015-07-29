@@ -1755,6 +1755,21 @@ class CmdAccess : Cmd
       local context_type = context.require_type
       context_type.organize
 
+      if (context_type.is_optional)
+        which (name)
+          case "exists"
+            if (args and args.count) throw t.error( "Optional value existence check takes no arguments." )
+            return CmdLogicalizeOptionalValue( t, context )
+
+          case "value"
+            if (args and args.count) throw t.error( "Optional value retrieval takes no arguments." )
+            return CmdGetOptionalValue( t, context )
+
+          others
+            throw t.error( "'exists' and 'value' are the only valid properties of an optional type." )
+        endWhich
+      endIf
+
       local result = scope.resolve_call( context_type, this, false )
       if (result) return result
 
@@ -4575,7 +4590,7 @@ class CmdCreateOptionalValue : Cmd
         if (value)
           value.write_cpp( writer )
         else
-          writer.print "null"
+          writer.print "NULL"
         endIf
       else
         # Non-reference types are kept in Optional<<DataType>> wrappers
@@ -4696,13 +4711,40 @@ class CmdLogicalizeOptionalValue : Cmd
       return this
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      value.write_cpp( writer )
-      if (not value.compile_type.is_reference)
+      if (value.compile_type.element_type.is_reference)
+        writer.print( "!!" )
+        value.write_cpp( writer )
+      else
+        value.write_cpp( writer )
         writer.print( ".exists" )
       endIf
 
     method type->Type
       return Program.type_Logical
+endClass
+
+class CmdGetOptionalValue : Cmd
+  PROPERTIES
+    value    : Cmd
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdGetOptionalValue( t, value.clone(clone_args) )
+
+    method resolve( scope:Scope )->this
+      value = value.resolve( scope ).require_value
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      value.write_cpp( writer )
+      if (not value.compile_type.element_type.is_reference)
+        writer.print( ".value" )
+      endIf
+
+    method type->Type
+      return value.type.element_type
 endClass
 
 
