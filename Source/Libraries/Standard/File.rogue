@@ -8,7 +8,7 @@ class File
       local i = filepath.last_index_of( '/' )
       if (not i?) i = filepath.last_index_of( '\\' )
       if (not i?) return filepath
-      return filepath.substring( ||i||+1 )
+      return filepath.substring( i.value+1 )
 
     routine is_folder( filepath:String )->Logical  [native]
 
@@ -26,7 +26,7 @@ class File
       local i = filepath.last_index_of( '/' )
       if (not i?) i = filepath.last_index_of( '\\' )
       if (not i?) return ""
-      return filepath.substring( 0, ||i||-1 )
+      return filepath.substring( 0, i!-1 )
 
     routine reader( filepath:String )->FileReader
       return FileReader( filepath )

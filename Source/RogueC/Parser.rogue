@@ -1601,6 +1601,8 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
+      elseIf (consume(TokenType.symbol_exclamation_point))
+        return parse_post_unary( CmdGetOptionalValue(t,operand) )
       endIf
       return operand
 
@@ -1912,6 +1914,7 @@ class Parser
       elseIf (consume(TokenType.symbol_empty_brackets))
         return CmdAccess( t, "PropertyList",  CmdArgs() )
 
+        #{
       elseIf (consume(TokenType.symbol_double_vertical_bar))
         local expr = parse_expression
         must_consume( TokenType.symbol_double_vertical_bar )
@@ -1921,6 +1924,7 @@ class Parser
         local expr = parse_expression
         must_consume( TokenType.symbol_vertical_bar )
         return CmdGetOptionalValue( t, expr )
+        }#
 
       elseIf (consume(TokenType.keyword_prior))
         consume_eols

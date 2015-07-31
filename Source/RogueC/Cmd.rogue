@@ -4574,7 +4574,7 @@ class CmdGetOptionalValue : Cmd
     method resolve( scope:Scope )->this
       value = value.resolve( scope )
       if (not value.require_type.is_optional)
-        throw t.error( "|Value bars| can only be used on optional values." )
+        throw t.error( "The optional value retriever ('!') can only be used on optional values." )
       endIf
       return this
 
