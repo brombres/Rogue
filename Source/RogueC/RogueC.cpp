@@ -22680,91 +22680,97 @@ RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS )
     RogueParser__must_consume( THIS, RogueClassTokenType::symbol_double_vertical_bar, ((RogueString*)(NULL)) );
     return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdGetOptionalValue__init( ((RogueClassCmdGetOptionalValue*)Rogue_program.type_CmdGetOptionalValue->create_and_init_object()), t_0, expr_10 ))))));
   }
+  else if (((RogueParser__consume( THIS, RogueClassTokenType::symbol_vertical_bar ))))
+  {
+    RogueClassCmd* expr_11 = (((RogueParser__parse_expression( THIS ))));
+    RogueParser__must_consume( THIS, RogueClassTokenType::symbol_vertical_bar, ((RogueString*)(NULL)) );
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdGetOptionalValue__init( ((RogueClassCmdGetOptionalValue*)Rogue_program.type_CmdGetOptionalValue->create_and_init_object()), t_0, expr_11 ))))));
+  }
   else if (((RogueParser__consume( THIS, RogueClassTokenType::keyword_prior ))))
   {
     RogueParser__consume_eols( THIS );
     RogueParser__must_consume( THIS, RogueClassTokenType::symbol_dot, ((RogueString*)(NULL)) );
     RogueParser__consume_eols( THIS );
-    RogueString* name_11 = (((RogueParser__read_identifier( THIS, false ))));
-    RogueClassCmdArgs* args_12 = (((RogueParser__parse_args( THIS, RogueClassTokenType::symbol_open_paren, RogueClassTokenType::symbol_close_paren ))));
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdCallPriorMethod__init( ((RogueClassCmdCallPriorMethod*)Rogue_program.type_CmdCallPriorMethod->create_and_init_object()), t_0, name_11, args_12 ))))));
+    RogueString* name_12 = (((RogueParser__read_identifier( THIS, false ))));
+    RogueClassCmdArgs* args_13 = (((RogueParser__parse_args( THIS, RogueClassTokenType::symbol_open_paren, RogueClassTokenType::symbol_close_paren ))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdCallPriorMethod__init( ((RogueClassCmdCallPriorMethod*)Rogue_program.type_CmdCallPriorMethod->create_and_init_object()), t_0, name_12, args_13 ))))));
   }
   else if (((RogueParser__consume( THIS, RogueClassTokenType::keyword_await ))))
   {
-    RogueClassLocal* result_var_13 = (((RogueMethod__add_local( THIS->this_method, t_0, ((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) ))), ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object, ((RogueClassCmd*)(NULL)) ))));
-    RogueClassCmdStatementList* statement_list_14 = (((RogueCmdStatementList__init( ((RogueClassCmdStatementList*)Rogue_program.type_CmdStatementList->create_and_init_object()) ))));
-    RogueObjectList__add( ((RogueObjectList*)THIS->cur_statement_list), ((RogueObject*)((RogueClassCmd*)(((RogueCmdLocalDeclaration__init( ((RogueClassCmdLocalDeclaration*)Rogue_program.type_CmdLocalDeclaration->create_and_init_object()), t_0, result_var_13 )))))) );
-    RogueObjectList__add( ((RogueObjectList*)THIS->cur_statement_list), ((RogueObject*)((RogueClassCmd*)(((RogueCmdAwait__init( ((RogueClassCmdAwait*)Rogue_program.type_CmdAwait->create_and_init_object()), t_0, ((RogueParser__parse_expression( THIS ))), statement_list_14, result_var_13 )))))) );
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), t_0, result_var_13->name ))))));
+    RogueClassLocal* result_var_14 = (((RogueMethod__add_local( THIS->this_method, t_0, ((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) ))), ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object, ((RogueClassCmd*)(NULL)) ))));
+    RogueClassCmdStatementList* statement_list_15 = (((RogueCmdStatementList__init( ((RogueClassCmdStatementList*)Rogue_program.type_CmdStatementList->create_and_init_object()) ))));
+    RogueObjectList__add( ((RogueObjectList*)THIS->cur_statement_list), ((RogueObject*)((RogueClassCmd*)(((RogueCmdLocalDeclaration__init( ((RogueClassCmdLocalDeclaration*)Rogue_program.type_CmdLocalDeclaration->create_and_init_object()), t_0, result_var_14 )))))) );
+    RogueObjectList__add( ((RogueObjectList*)THIS->cur_statement_list), ((RogueObject*)((RogueClassCmd*)(((RogueCmdAwait__init( ((RogueClassCmdAwait*)Rogue_program.type_CmdAwait->create_and_init_object()), t_0, ((RogueParser__parse_expression( THIS ))), statement_list_15, result_var_14 )))))) );
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), t_0, result_var_14->name ))))));
   }
   else if (((RogueParser__consume( THIS, RogueClassTokenType::keyword_function ))))
   {
-    RogueObjectList* parameters_15 = 0;
-    RogueClassType* return_type_16 = 0;
+    RogueObjectList* parameters_16 = 0;
+    RogueClassType* return_type_17 = 0;
     if (((RogueParser__consume( THIS, RogueClassTokenType::symbol_open_paren ))))
     {
       if (!(((RogueParser__consume( THIS, RogueClassTokenType::symbol_close_paren )))))
       {
-        parameters_15 = ((RogueObjectList*)((RogueObjectList*)((RogueObjectList*)RogueObjectList__init( ((RogueObjectList*)((RogueObjectList*)Rogue_program.type_ObjectList->create_and_init_object())) ))));
-        RogueLogical first_17 = (true);
-        while ((first_17 || ((RogueParser__consume( THIS, RogueClassTokenType::symbol_comma )))))
+        parameters_16 = ((RogueObjectList*)((RogueObjectList*)((RogueObjectList*)RogueObjectList__init( ((RogueObjectList*)((RogueObjectList*)Rogue_program.type_ObjectList->create_and_init_object())) ))));
+        RogueLogical first_18 = (true);
+        while ((first_18 || ((RogueParser__consume( THIS, RogueClassTokenType::symbol_comma )))))
         {
-          first_17 = ((RogueLogical)false);
-          RogueClassFnParam* param_18 = (((RogueFnParam__init( ((RogueClassFnParam*)Rogue_program.type_FnParam->create_and_init_object()), ((RogueParser__read_identifier( THIS, false ))) ))));
+          first_18 = ((RogueLogical)false);
+          RogueClassFnParam* param_19 = (((RogueFnParam__init( ((RogueClassFnParam*)Rogue_program.type_FnParam->create_and_init_object()), ((RogueParser__read_identifier( THIS, false ))) ))));
           RogueParser__must_consume( THIS, RogueClassTokenType::symbol_colon, ((RogueString*)(NULL)) );
-          param_18->_type = ((Rogue_Parser__parse_type( THIS )));
-          RogueObjectList__add( ((RogueObjectList*)((RogueObjectList*)parameters_15)), ((RogueObject*)param_18) );
+          param_19->_type = ((Rogue_Parser__parse_type( THIS )));
+          RogueObjectList__add( ((RogueObjectList*)((RogueObjectList*)parameters_16)), ((RogueObject*)param_19) );
         }
         RogueParser__must_consume( THIS, RogueClassTokenType::symbol_close_paren, ((RogueString*)(NULL)) );
       }
     }
     if (((RogueParser__consume( THIS, RogueClassTokenType::symbol_arrow ))))
     {
-      return_type_16 = ((RogueClassType*)((Rogue_Parser__parse_type( THIS ))));
+      return_type_17 = ((RogueClassType*)((Rogue_Parser__parse_type( THIS ))));
     }
-    RogueObjectList* with_args_19 = 0;
+    RogueObjectList* with_args_20 = 0;
     if (((RogueParser__consume( THIS, RogueClassTokenType::keyword_with ))))
     {
       RogueParser__must_consume( THIS, RogueClassTokenType::symbol_open_paren, ((RogueString*)(NULL)) );
       if (!(((RogueParser__consume( THIS, RogueClassTokenType::symbol_close_paren )))))
       {
-        with_args_19 = ((RogueObjectList*)((RogueObjectList*)((RogueObjectList*)RogueObjectList__init( ((RogueObjectList*)((RogueObjectList*)Rogue_program.type_ObjectList->create_and_init_object())) ))));
-        RogueLogical first_20 = (true);
-        while ((first_20 || ((RogueParser__consume( THIS, RogueClassTokenType::symbol_comma )))))
+        with_args_20 = ((RogueObjectList*)((RogueObjectList*)((RogueObjectList*)RogueObjectList__init( ((RogueObjectList*)((RogueObjectList*)Rogue_program.type_ObjectList->create_and_init_object())) ))));
+        RogueLogical first_21 = (true);
+        while ((first_21 || ((RogueParser__consume( THIS, RogueClassTokenType::symbol_comma )))))
         {
-          first_20 = ((RogueLogical)false);
-          RogueClassToken* t2_21 = (((RogueParser__peek( THIS ))));
-          RogueString* name_22 = (((RogueParser__read_identifier( THIS, false ))));
-          RogueClassCmd* value_23 = 0;
+          first_21 = ((RogueLogical)false);
+          RogueClassToken* t2_22 = (((RogueParser__peek( THIS ))));
+          RogueString* name_23 = (((RogueParser__read_identifier( THIS, false ))));
+          RogueClassCmd* value_24 = 0;
           if (((RogueParser__consume( THIS, RogueClassTokenType::symbol_equals ))))
           {
-            value_23 = ((RogueClassCmd*)((RogueParser__parse_expression( THIS ))));
+            value_24 = ((RogueClassCmd*)((RogueParser__parse_expression( THIS ))));
           }
           else
           {
-            value_23 = ((RogueClassCmd*)((RogueClassCmd*)(((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), t2_21, name_22 ))))));
+            value_24 = ((RogueClassCmd*)((RogueClassCmd*)(((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), t2_22, name_23 ))))));
           }
-          RogueClassFnArg* arg_24 = (((RogueFnArg__init( ((RogueClassFnArg*)Rogue_program.type_FnArg->create_and_init_object()), name_22, value_23 ))));
+          RogueClassFnArg* arg_25 = (((RogueFnArg__init( ((RogueClassFnArg*)Rogue_program.type_FnArg->create_and_init_object()), name_23, value_24 ))));
           if (((RogueParser__consume( THIS, RogueClassTokenType::symbol_colon ))))
           {
-            Rogue_FnArg__set_type( arg_24, ((Rogue_Parser__parse_type( THIS ))) );
+            Rogue_FnArg__set_type( arg_25, ((Rogue_Parser__parse_type( THIS ))) );
           }
-          RogueObjectList__add( ((RogueObjectList*)((RogueObjectList*)with_args_19)), ((RogueObject*)arg_24) );
+          RogueObjectList__add( ((RogueObjectList*)((RogueObjectList*)with_args_20)), ((RogueObject*)arg_25) );
         }
         RogueParser__must_consume( THIS, RogueClassTokenType::symbol_close_paren, ((RogueString*)(NULL)) );
       }
     }
-    RogueClassCmdStatementList* statements_25 = (((RogueCmdStatementList__init( ((RogueClassCmdStatementList*)Rogue_program.type_CmdStatementList->create_and_init_object()) ))));
+    RogueClassCmdStatementList* statements_26 = (((RogueCmdStatementList__init( ((RogueClassCmdStatementList*)Rogue_program.type_CmdStatementList->create_and_init_object()) ))));
     if (((RogueParser__consume_eols( THIS ))))
     {
-      RogueParser__parse_multi_line_statements( THIS, statements_25 );
+      RogueParser__parse_multi_line_statements( THIS, statements_26 );
       RogueParser__must_consume( THIS, RogueClassTokenType::keyword_endFunction, ((RogueString*)(NULL)) );
     }
     else
     {
-      RogueParser__parse_single_line_statements( THIS, statements_25 );
+      RogueParser__parse_single_line_statements( THIS, statements_26 );
     }
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdCreateFunction__init( ((RogueClassCmdCreateFunction*)Rogue_program.type_CmdCreateFunction->create_and_init_object()), t_0, ((RogueObjectList*)parameters_15), return_type_16, ((RogueObjectList*)with_args_19), statements_25 ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdCreateFunction__init( ((RogueClassCmdCreateFunction*)Rogue_program.type_CmdCreateFunction->create_and_init_object()), t_0, ((RogueObjectList*)parameters_16), return_type_17, ((RogueObjectList*)with_args_20), statements_26 ))))));
   }
   else
   {
