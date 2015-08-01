@@ -2676,7 +2676,7 @@ class CmdUnary : Cmd
       writer.print( ")" ).print( cpp_suffix_symbol )
 
     method resolve( scope:Scope )->Cmd
-      operand = operand.resolve( scope )
+      operand = operand.resolve( scope ).require_value
       if (operand.is_literal) return resolve_for_literal_operand( scope )
       else                    return resolve_for_operand_type( scope, operand.require_type )
 
@@ -2737,6 +2737,11 @@ class CmdLogicalNot : CmdUnary
 
     method prefix_symbol->String
       return "not "
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_logical( scope )
+      if (operand.is_literal) return resolve_for_literal_operand( scope )
+      else                    return resolve_for_operand_type( scope, operand.require_type )
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal)

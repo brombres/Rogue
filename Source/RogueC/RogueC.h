@@ -4832,6 +4832,7 @@ RogueClassCmdTypeOperator* RogueCmdTypeOperator__init_object( RogueClassCmdTypeO
 RogueClassCmdTypeOperator* RogueCmdTypeOperator__init( RogueClassCmdTypeOperator* THIS, RogueClassToken* _auto_316_0, RogueClassCmd* _auto_317_1, RogueClassType* _auto_318_2 );
 RogueString* RogueCmdLogicalNot__type_name( RogueClassCmdLogicalNot* THIS );
 RogueClassCmd* RogueCmdLogicalNot__clone( RogueClassCmdLogicalNot* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassCmd* RogueCmdLogicalNot__resolve( RogueClassCmdLogicalNot* THIS, RogueClassScope* scope_0 );
 RogueClassType* Rogue_CmdLogicalNot__type( RogueClassCmdLogicalNot* THIS );
 RogueClassCmdLogicalNot* RogueCmdLogicalNot__init_object( RogueClassCmdLogicalNot* THIS );
 RogueString* RogueCmdLogicalNot__cpp_prefix_symbol( RogueClassCmdLogicalNot* THIS );
