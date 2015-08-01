@@ -71,11 +71,11 @@ class List<<$DataType:Object>> : GenericList
     method last->$DataType
       return this.data[ count - 1 ]
 
-    method index_of( value:$DataType )->Integer?
-      inline ListOps<<$DataType>>.index_of( this, value )
+    method locate( value:$DataType )->Integer?
+      inline ListOps<<$DataType>>.locate( this, value )
 
-    method last_index_of( value:$DataType )->Integer?
-      inline ListOps<<$DataType>>.last_index_of( this, value )
+    method locate_last( value:$DataType )->Integer?
+      inline ListOps<<$DataType>>.locate_last( this, value )
 
     method random->$DataType
       # Returns an element at random
@@ -100,7 +100,7 @@ class List<<$DataType:Object>> : GenericList
       return this
 
     method remove( value:$DataType )->$DataType
-      local index = index_of( value )
+      local index = locate( value )
       if (index)
         return remove_at( index! )
       else
@@ -141,15 +141,15 @@ endClass
 class ListOps<<$DataType>>
   ROUTINES
     routine contains( list:$DataType[], value:$DataType )->Logical
-      return index_of( list, value )?
+      return locate( list, value )?
 
-    routine index_of( list:$DataType[], value:$DataType )->Integer?
+    routine locate( list:$DataType[], value:$DataType )->Integer?
       forEach (i of list)
         if (value == list[i]) return i
       endForEach
       return null
 
-    routine last_index_of( list:$DataType[], value:$DataType )->Integer?
+    routine locate_last( list:$DataType[], value:$DataType )->Integer?
       forEach (i of list step -1)
         if (value == list[i]) return i
       endForEach

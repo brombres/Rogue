@@ -366,7 +366,7 @@ class Type
             prior_m.attributes.add( Attribute.is_overridden )
             m.attributes.add( Attribute.is_dynamic )
             method_list.remove( m )
-            method_list[ method_list.index_of( prior_m )! ] = m
+            method_list[ method_list.locate( prior_m )! ] = m
           endIf
         endIf
         m.return_type = this
@@ -439,7 +439,7 @@ class Type
     method inherit_property( p:Property, list:Property[], lookup:Table<<String,Property>> )
       local existing_p = lookup[ p.name ]
       if (existing_p)
-        local i = list.index_of( existing_p )!
+        local i = list.locate( existing_p )!
 
         if (p.type_context is existing_p.type_context)
           throw p.t.error( //A property named "$" already exists.// (p.name) )
@@ -496,7 +496,7 @@ class Type
       local existing_m = lookup[ m.signature ]
 
       if (existing_m)
-        local i = list.index_of( existing_m )!
+        local i = list.locate( existing_m )!
 
         if (not existing_m.is_incorporated)
           if (m.type_context is existing_m.type_context)
@@ -546,7 +546,7 @@ class Type
       local existing_m = lookup[ m.signature ]
 
       if (existing_m)
-        local i = list.index_of( existing_m )!
+        local i = list.locate( existing_m )!
 
         # Aspect routines are not incorporated
         if (m.type_context.is_aspect) return

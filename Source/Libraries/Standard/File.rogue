@@ -5,8 +5,8 @@ class File
     routine exists( filepath:String )->Logical [native]
 
     routine filename( filepath:String )->String
-      local i = filepath.last_index_of( '/' )
-      if (not i?) i = filepath.last_index_of( '\\' )
+      local i = filepath.locate_last( '/' )
+      if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return filepath
       return filepath.substring( i.value+1 )
 
@@ -23,8 +23,8 @@ class File
     routine load_as_string( filepath:String )->String [native]
 
     routine path( filepath:String )->String
-      local i = filepath.last_index_of( '/' )
-      if (not i?) i = filepath.last_index_of( '\\' )
+      local i = filepath.locate_last( '/' )
+      if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return ""
       return filepath.substring( 0, i!-1 )
 

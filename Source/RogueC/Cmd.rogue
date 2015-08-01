@@ -1559,7 +1559,7 @@ class CmdFormattedString : Cmd
       local fmt = format
       forEach (arg in args)
         arg = arg.resolve(scope).require_value
-        local i = fmt.index_of( '$' )
+        local i = fmt.locate( '$' )
         if (not i) throw t.error( "More arguments than format markers ('$') in formatted string." )
         if (i! > 0)
           cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i!))) )
@@ -1570,7 +1570,7 @@ class CmdFormattedString : Cmd
         cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
       endForEach
       if (fmt.count)
-        if (fmt.index_of('$'))
+        if (fmt.locate('$'))
           throw t.error( "More format markers ('$') than arguments in formatted string." )
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
@@ -2574,7 +2574,7 @@ class CmdCallInlineNative : CmdCall
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local st = method_info.native_code
 
-      local dollar = st.index_of('$')
+      local dollar = st.locate('$')
       while (dollar)
         writer.print( st.substring(0,dollar!-1) )
         st = st.substring( dollar!+1 )
@@ -2596,7 +2596,7 @@ class CmdCallInlineNative : CmdCall
           endIf
         endIf
 
-        dollar = st.index_of('$')
+        dollar = st.locate('$')
       endWhile
 
       writer.print( st )

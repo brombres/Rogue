@@ -518,7 +518,7 @@ RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_inde
   return true;
 }
 
-RogueOptionalInteger RogueString::index_of( RogueCharacter ch, RogueOptionalInteger optional_i1 )
+RogueOptionalInteger RogueString::locate( RogueCharacter ch, RogueOptionalInteger optional_i1 )
 {
   RogueInteger    limit = count;
   RogueCharacter* data  = characters;
@@ -534,10 +534,10 @@ RogueOptionalInteger RogueString::index_of( RogueCharacter ch, RogueOptionalInte
   return RogueOptionalInteger();
 }
 
-RogueOptionalInteger RogueString::index_of( RogueString* other, RogueOptionalInteger optional_i1 )
+RogueOptionalInteger RogueString::locate( RogueString* other, RogueOptionalInteger optional_i1 )
 {
   RogueInteger    other_count = other->count;
-  if (other_count == 1) return index_of( other->characters[0], optional_i1 );
+  if (other_count == 1) return locate( other->characters[0], optional_i1 );
 
   RogueInteger    this_limit = (count - other_count) + 1;
   if (!other_count || this_limit <= 0) return RogueOptionalInteger();
@@ -559,20 +559,7 @@ RogueOptionalInteger RogueString::index_of( RogueString* other, RogueOptionalInt
   return RogueOptionalInteger();
 }
 
-RogueInteger RogueString::locate( RogueCharacter ch, RogueInteger i1 )
-{
-  RogueInteger    limit = count;
-  RogueCharacter* data  = characters;
-  if (--i1 < -1) i1 = -1;
-
-  while (++i1 < limit)
-  {
-    if (data[i1] == ch) return i1;
-  }
-  return -1;
-}
-
-RogueOptionalInteger RogueString::last_index_of( RogueCharacter ch, RogueOptionalInteger i1 )
+RogueOptionalInteger RogueString::locate_last( RogueCharacter ch, RogueOptionalInteger i1 )
 {
   RogueInteger    limit = count;
   RogueCharacter* data  = characters;
@@ -596,10 +583,10 @@ RogueOptionalInteger RogueString::last_index_of( RogueCharacter ch, RogueOptiona
   return RogueOptionalInteger();
 }
 
-RogueOptionalInteger RogueString::last_index_of( RogueString* other, RogueOptionalInteger i1 )
+RogueOptionalInteger RogueString::locate_last( RogueString* other, RogueOptionalInteger i1 )
 {
   RogueInteger    other_count = other->count;
-  if (other_count == 1) return last_index_of( other->characters[0], i1 );
+  if (other_count == 1) return locate_last( other->characters[0], i1 );
 
   RogueInteger    this_limit = (count - other_count) + 1;
   if (!other_count || this_limit <= 0) return RogueOptionalInteger();
@@ -620,55 +607,6 @@ RogueOptionalInteger RogueString::last_index_of( RogueString* other, RogueOption
     if (contains(other,i)) return RogueOptionalInteger(i);
   }
   return RogueOptionalInteger();
-}
-
-RogueInteger RogueString::locate( RogueString* other, RogueInteger i1 )
-{
-  RogueInteger    other_count = other->count;
-  if (other_count == 1) return locate( other->characters[0], i1 );
-
-  RogueInteger    this_limit = (count - other_count) + 1;
-  if (!other_count || this_limit <= 0) return -1;
-
-  if (--i1 < -1) i1 = -1;
-  while (++i1 < this_limit)
-  {
-    if (contains(other,i1)) return i1;
-  }
-  return -1;
-}
-
-RogueInteger RogueString::locate_last( RogueCharacter ch, RogueInteger i1 )
-{
-  RogueInteger    limit = count;
-  RogueCharacter* data  = characters;
-
-  int i = i1 + 1;
-  if (i > limit) i = limit;
-
-  while (--i >= 0)
-  {
-    if (data[i] == ch) return i;
-  }
-  return -1;
-}
-
-RogueInteger RogueString::locate_last( RogueString* other, RogueInteger i1 )
-{
-  RogueInteger    other_count = other->count;
-  if (other_count == 1) return locate_last( other->characters[0], i1 );
-
-  RogueInteger    this_limit = (count - other_count) + 1;
-  if (!other_count || this_limit <= 0) return -1;
-
-  int i = i1 + 1;
-  if (i > this_limit) i = this_limit;
-
-  while (--i >= 0)
-  {
-    if (contains(other,i)) return i;
-  }
-  return -1;
 }
 
 RogueString* RogueString::plus( const char* c_str )

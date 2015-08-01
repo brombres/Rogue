@@ -216,21 +216,15 @@ class Program [requisite singleton]
       endIf
 
       # Type? -> OptionalType
-      local i1 = name.index_of('?')
-      #local i1b = name.index_of('?')
-      #if ((i1!=-1 != i1b.exists) or (i1b.exists and i1 != i1b.value))
-      #println "---------------------------"
-      #println "i1:$ i1b $:$" (i1,i1b?,i1b.value)
-      #println "---------------------------"
-      #endIf
+      local i1 = name.locate('?')
       while (i1?)
         name = "Optional" + name.leftmost(i1.value) + name.substring(i1.value+1)
-        i1 = name.index_of('?')
+        i1 = name.locate('?')
       endWhile
 
-      i1 = name.index_of("<<")
+      i1 = name.locate("<<")
       while (i1?)
-        local i2 = name.last_index_of(">>")
+        local i2 = name.locate_last(">>")
         if (not i2?) escapeWhile
 
         local before = name.substring(0,i1.value-1)
@@ -243,14 +237,14 @@ class Program [requisite singleton]
         # Example:
         #   Table<<String,Integer>>[] -> StringIntegerTable[]
 
-        i1 = name.index_of("<<")
+        i1 = name.locate("<<")
       endWhile
 
       #   StringIntegerTable[] -> StringIntegerTableList
-      i1 = name.index_of("[]")
+      i1 = name.locate("[]")
       while (i1?)
         name = name.substring(0,i1.value-1) + "List" + name.substring(i1.value+2)
-        i1 = name.index_of("[]")
+        i1 = name.locate("[]")
       endWhile
 
       string_buffer.clear
