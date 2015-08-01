@@ -1559,18 +1559,18 @@ class CmdFormattedString : Cmd
       local fmt = format
       forEach (arg in args)
         arg = arg.resolve(scope).require_value
-        local i = fmt.locate( '$' )
-        if (i == -1) throw t.error( "More arguments than format markers ('$') in formatted string." )
-        if (i > 0)
-          cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i))) )
-          fmt = fmt.substring(i+1)
+        local i = fmt.index_of( '$' )
+        if (not i) throw t.error( "More arguments than format markers ('$') in formatted string." )
+        if (i! > 0)
+          cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i!))) )
+          fmt = fmt.substring(i!+1)
         else
           fmt = fmt.substring(1)
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
       endForEach
       if (fmt.count)
-        if (fmt.locate('$') != -1)
+        if (fmt.index_of('$'))
           throw t.error( "More format markers ('$') than arguments in formatted string." )
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
@@ -2574,10 +2574,10 @@ class CmdCallInlineNative : CmdCall
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local st = method_info.native_code
 
-      local dollar = st.locate('$')
-      while (dollar != -1)
-        writer.print( st.substring(0,dollar-1) )
-        st = st.substring( dollar+1 )
+      local dollar = st.index_of('$')
+      while (dollar)
+        writer.print( st.substring(0,dollar!-1) )
+        st = st.substring( dollar!+1 )
         
         local best_match : Local
         forEach (p in method_info.parameters)
@@ -2596,7 +2596,7 @@ class CmdCallInlineNative : CmdCall
           endIf
         endIf
 
-        dollar = st.locate('$')
+        dollar = st.index_of('$')
       endWhile
 
       writer.print( st )

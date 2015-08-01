@@ -16284,100 +16284,100 @@ RogueString* RogueFile__path( RogueString* filepath_0 );
 RogueFileReader* RogueFile__reader( RogueString* filepath_0 );
 RogueFileWriter* RogueFile__writer( RogueString* filepath_0 );
 RogueLogical RogueStringListOps__contains( RogueStringList* list_0, RogueString* value_1 );
-RogueInteger RogueStringListOps__locate( RogueStringList* list_0, RogueString* value_1 );
-RogueInteger RogueStringListOps__locate_last( RogueStringList* list_0, RogueString* value_1 );
+RogueOptionalInteger RogueStringListOps__index_of( RogueStringList* list_0, RogueString* value_1 );
+RogueOptionalInteger RogueStringListOps__last_index_of( RogueStringList* list_0, RogueString* value_1 );
 RogueLogical RogueObjectListOps__contains( RogueObjectList* list_0, RogueObject* value_1 );
-RogueInteger RogueObjectListOps__locate( RogueObjectList* list_0, RogueObject* value_1 );
-RogueInteger RogueObjectListOps__locate_last( RogueObjectList* list_0, RogueObject* value_1 );
+RogueOptionalInteger RogueObjectListOps__index_of( RogueObjectList* list_0, RogueObject* value_1 );
+RogueOptionalInteger RogueObjectListOps__last_index_of( RogueObjectList* list_0, RogueObject* value_1 );
 void RogueTokenType__init_class();
 RogueLogical RogueCharacterListOps__contains( RogueCharacterList* list_0, RogueCharacter value_1 );
-RogueInteger RogueCharacterListOps__locate( RogueCharacterList* list_0, RogueCharacter value_1 );
-RogueInteger RogueCharacterListOps__locate_last( RogueCharacterList* list_0, RogueCharacter value_1 );
+RogueOptionalInteger RogueCharacterListOps__index_of( RogueCharacterList* list_0, RogueCharacter value_1 );
+RogueOptionalInteger RogueCharacterListOps__last_index_of( RogueCharacterList* list_0, RogueCharacter value_1 );
 void RoguePreprocessor__init_class();
 RogueLogical RogueTokenListOps__contains( RogueObjectList* list_0, RogueClassToken* value_1 );
-RogueInteger RogueTokenListOps__locate( RogueObjectList* list_0, RogueClassToken* value_1 );
-RogueInteger RogueTokenListOps__locate_last( RogueObjectList* list_0, RogueClassToken* value_1 );
+RogueOptionalInteger RogueTokenListOps__index_of( RogueObjectList* list_0, RogueClassToken* value_1 );
+RogueOptionalInteger RogueTokenListOps__last_index_of( RogueObjectList* list_0, RogueClassToken* value_1 );
 RogueLogical RogueTemplateListOps__contains( RogueObjectList* list_0, RogueClassTemplate* value_1 );
-RogueInteger RogueTemplateListOps__locate( RogueObjectList* list_0, RogueClassTemplate* value_1 );
-RogueInteger RogueTemplateListOps__locate_last( RogueObjectList* list_0, RogueClassTemplate* value_1 );
+RogueOptionalInteger RogueTemplateListOps__index_of( RogueObjectList* list_0, RogueClassTemplate* value_1 );
+RogueOptionalInteger RogueTemplateListOps__last_index_of( RogueObjectList* list_0, RogueClassTemplate* value_1 );
 RogueLogical RogueMethodListOps__contains( RogueObjectList* list_0, RogueClassMethod* value_1 );
-RogueInteger RogueMethodListOps__locate( RogueObjectList* list_0, RogueClassMethod* value_1 );
-RogueInteger RogueMethodListOps__locate_last( RogueObjectList* list_0, RogueClassMethod* value_1 );
+RogueOptionalInteger RogueMethodListOps__index_of( RogueObjectList* list_0, RogueClassMethod* value_1 );
+RogueOptionalInteger RogueMethodListOps__last_index_of( RogueObjectList* list_0, RogueClassMethod* value_1 );
 RogueLogical RogueTypeListOps__contains( RogueObjectList* list_0, RogueClassType* value_1 );
-RogueInteger RogueTypeListOps__locate( RogueObjectList* list_0, RogueClassType* value_1 );
-RogueInteger RogueTypeListOps__locate_last( RogueObjectList* list_0, RogueClassType* value_1 );
+RogueOptionalInteger RogueTypeListOps__index_of( RogueObjectList* list_0, RogueClassType* value_1 );
+RogueOptionalInteger RogueTypeListOps__last_index_of( RogueObjectList* list_0, RogueClassType* value_1 );
 RogueLogical RoguePropertyListOps__contains( RogueObjectList* list_0, RogueClassProperty* value_1 );
-RogueInteger RoguePropertyListOps__locate( RogueObjectList* list_0, RogueClassProperty* value_1 );
-RogueInteger RoguePropertyListOps__locate_last( RogueObjectList* list_0, RogueClassProperty* value_1 );
+RogueOptionalInteger RoguePropertyListOps__index_of( RogueObjectList* list_0, RogueClassProperty* value_1 );
+RogueOptionalInteger RoguePropertyListOps__last_index_of( RogueObjectList* list_0, RogueClassProperty* value_1 );
 RogueLogical RogueCmdListOps__contains( RogueObjectList* list_0, RogueClassCmd* value_1 );
-RogueInteger RogueCmdListOps__locate( RogueObjectList* list_0, RogueClassCmd* value_1 );
-RogueInteger RogueCmdListOps__locate_last( RogueObjectList* list_0, RogueClassCmd* value_1 );
+RogueOptionalInteger RogueCmdListOps__index_of( RogueObjectList* list_0, RogueClassCmd* value_1 );
+RogueOptionalInteger RogueCmdListOps__last_index_of( RogueObjectList* list_0, RogueClassCmd* value_1 );
 RogueLogical RogueLocalListOps__contains( RogueObjectList* list_0, RogueClassLocal* value_1 );
-RogueInteger RogueLocalListOps__locate( RogueObjectList* list_0, RogueClassLocal* value_1 );
-RogueInteger RogueLocalListOps__locate_last( RogueObjectList* list_0, RogueClassLocal* value_1 );
+RogueOptionalInteger RogueLocalListOps__index_of( RogueObjectList* list_0, RogueClassLocal* value_1 );
+RogueOptionalInteger RogueLocalListOps__last_index_of( RogueObjectList* list_0, RogueClassLocal* value_1 );
 RogueLogical RogueTaskListOps__contains( RogueObjectList* list_0, RogueClassTask* value_1 );
-RogueInteger RogueTaskListOps__locate( RogueObjectList* list_0, RogueClassTask* value_1 );
-RogueInteger RogueTaskListOps__locate_last( RogueObjectList* list_0, RogueClassTask* value_1 );
+RogueOptionalInteger RogueTaskListOps__index_of( RogueObjectList* list_0, RogueClassTask* value_1 );
+RogueOptionalInteger RogueTaskListOps__last_index_of( RogueObjectList* list_0, RogueClassTask* value_1 );
 RogueLogical RogueString_LogicalTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 );
-RogueInteger RogueString_LogicalTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 );
-RogueInteger RogueString_LogicalTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 );
+RogueOptionalInteger RogueString_LogicalTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 );
+RogueOptionalInteger RogueString_LogicalTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 );
 RogueLogical RogueByteListOps__contains( RogueByteList* list_0, RogueByte value_1 );
-RogueInteger RogueByteListOps__locate( RogueByteList* list_0, RogueByte value_1 );
-RogueInteger RogueByteListOps__locate_last( RogueByteList* list_0, RogueByte value_1 );
+RogueOptionalInteger RogueByteListOps__index_of( RogueByteList* list_0, RogueByte value_1 );
+RogueOptionalInteger RogueByteListOps__last_index_of( RogueByteList* list_0, RogueByte value_1 );
 RogueLogical RogueCmdWhichCaseListOps__contains( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 );
-RogueInteger RogueCmdWhichCaseListOps__locate( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 );
-RogueInteger RogueCmdWhichCaseListOps__locate_last( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 );
+RogueOptionalInteger RogueCmdWhichCaseListOps__index_of( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 );
+RogueOptionalInteger RogueCmdWhichCaseListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 );
 RogueLogical RogueCmdCatchListOps__contains( RogueObjectList* list_0, RogueClassCmdCatch* value_1 );
-RogueInteger RogueCmdCatchListOps__locate( RogueObjectList* list_0, RogueClassCmdCatch* value_1 );
-RogueInteger RogueCmdCatchListOps__locate_last( RogueObjectList* list_0, RogueClassCmdCatch* value_1 );
+RogueOptionalInteger RogueCmdCatchListOps__index_of( RogueObjectList* list_0, RogueClassCmdCatch* value_1 );
+RogueOptionalInteger RogueCmdCatchListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdCatch* value_1 );
 RogueLogical RogueFnParamListOps__contains( RogueObjectList* list_0, RogueClassFnParam* value_1 );
-RogueInteger RogueFnParamListOps__locate( RogueObjectList* list_0, RogueClassFnParam* value_1 );
-RogueInteger RogueFnParamListOps__locate_last( RogueObjectList* list_0, RogueClassFnParam* value_1 );
+RogueOptionalInteger RogueFnParamListOps__index_of( RogueObjectList* list_0, RogueClassFnParam* value_1 );
+RogueOptionalInteger RogueFnParamListOps__last_index_of( RogueObjectList* list_0, RogueClassFnParam* value_1 );
 RogueLogical RogueFnArgListOps__contains( RogueObjectList* list_0, RogueClassFnArg* value_1 );
-RogueInteger RogueFnArgListOps__locate( RogueObjectList* list_0, RogueClassFnArg* value_1 );
-RogueInteger RogueFnArgListOps__locate_last( RogueObjectList* list_0, RogueClassFnArg* value_1 );
+RogueOptionalInteger RogueFnArgListOps__index_of( RogueObjectList* list_0, RogueClassFnArg* value_1 );
+RogueOptionalInteger RogueFnArgListOps__last_index_of( RogueObjectList* list_0, RogueClassFnArg* value_1 );
 RogueLogical RogueTypeParameterListOps__contains( RogueObjectList* list_0, RogueClassTypeParameter* value_1 );
-RogueInteger RogueTypeParameterListOps__locate( RogueObjectList* list_0, RogueClassTypeParameter* value_1 );
-RogueInteger RogueTypeParameterListOps__locate_last( RogueObjectList* list_0, RogueClassTypeParameter* value_1 );
+RogueOptionalInteger RogueTypeParameterListOps__index_of( RogueObjectList* list_0, RogueClassTypeParameter* value_1 );
+RogueOptionalInteger RogueTypeParameterListOps__last_index_of( RogueObjectList* list_0, RogueClassTypeParameter* value_1 );
 RogueLogical RogueString_TemplateTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TemplateTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TemplateTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TemplateTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TemplateTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_ObjectTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_ObjectTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_ObjectTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_ObjectTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_ObjectTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_TypeTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TypeTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TypeTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TypeTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TypeTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_IntegerTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 );
-RogueInteger RogueString_IntegerTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 );
-RogueInteger RogueString_IntegerTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 );
+RogueOptionalInteger RogueString_IntegerTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 );
+RogueOptionalInteger RogueString_IntegerTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 );
 RogueLogical RogueCmdControlStructureListOps__contains( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 );
-RogueInteger RogueCmdControlStructureListOps__locate( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 );
-RogueInteger RogueCmdControlStructureListOps__locate_last( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 );
+RogueOptionalInteger RogueCmdControlStructureListOps__index_of( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 );
+RogueOptionalInteger RogueCmdControlStructureListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 );
 RogueLogical RogueString_MethodTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_MethodTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_MethodTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_MethodTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_MethodTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_TokenTypeTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TokenTypeTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TokenTypeTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TokenTypeTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TokenTypeTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_CmdTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_CmdTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_CmdTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_CmdTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_CmdTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueCmdTaskControlSectionListOps__contains( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 );
-RogueInteger RogueCmdTaskControlSectionListOps__locate( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 );
-RogueInteger RogueCmdTaskControlSectionListOps__locate_last( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 );
+RogueOptionalInteger RogueCmdTaskControlSectionListOps__index_of( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 );
+RogueOptionalInteger RogueCmdTaskControlSectionListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 );
 RogueLogical RogueString_TypeSpecializerTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TypeSpecializerTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TypeSpecializerTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TypeSpecializerTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TypeSpecializerTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_PropertyTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_PropertyTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_PropertyTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_PropertyTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_PropertyTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_MethodListTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_MethodListTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_MethodListTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_MethodListTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_MethodListTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 RogueLogical RogueString_TokenListTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TokenListTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
-RogueInteger RogueString_TokenListTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TokenListTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
+RogueOptionalInteger RogueString_TokenListTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 );
 
 RogueString* RogueString__create( RogueStringBuilder* characters_0 )
 {
@@ -16446,10 +16446,10 @@ RogueFileWriter* RogueFile__writer( RogueString* filepath_0 )
 
 RogueLogical RogueStringListOps__contains( RogueStringList* list_0, RogueString* value_1 )
 {
-  return (RogueLogical)((RogueStringListOps__locate( list_0, value_1 )) != -1);
+  return (RogueLogical)((RogueStringListOps__index_of( list_0, value_1 )).exists);
 }
 
-RogueInteger RogueStringListOps__locate( RogueStringList* list_0, RogueString* value_1 )
+RogueOptionalInteger RogueStringListOps__index_of( RogueStringList* list_0, RogueString* value_1 )
 {
   {
     RogueStringList* _auto_162_2 = (list_0);
@@ -16458,14 +16458,14 @@ RogueInteger RogueStringListOps__locate( RogueStringList* list_0, RogueString* v
     {
       if (value_1->compare_to(((RogueString*)(list_0->data->objects[i_3]))) == 0)
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueStringListOps__locate_last( RogueStringList* list_0, RogueString* value_1 )
+RogueOptionalInteger RogueStringListOps__last_index_of( RogueStringList* list_0, RogueString* value_1 )
 {
   {
     RogueStringList* _auto_163_2 = (list_0);
@@ -16474,19 +16474,19 @@ RogueInteger RogueStringListOps__locate_last( RogueStringList* list_0, RogueStri
     {
       if (value_1->compare_to(((RogueString*)(list_0->data->objects[i_3]))) == 0)
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueObjectListOps__contains( RogueObjectList* list_0, RogueObject* value_1 )
 {
-  return (RogueLogical)((RogueObjectListOps__locate( list_0, value_1 )) != -1);
+  return (RogueLogical)((RogueObjectListOps__index_of( list_0, value_1 )).exists);
 }
 
-RogueInteger RogueObjectListOps__locate( RogueObjectList* list_0, RogueObject* value_1 )
+RogueOptionalInteger RogueObjectListOps__index_of( RogueObjectList* list_0, RogueObject* value_1 )
 {
   {
     RogueObjectList* _auto_372_2 = (list_0);
@@ -16495,14 +16495,14 @@ RogueInteger RogueObjectListOps__locate( RogueObjectList* list_0, RogueObject* v
     {
       if (((RogueObject__operatorEQUALSEQUALS( value_1, ((RogueObject*)(list_0->data->objects[i_3])) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueObjectListOps__locate_last( RogueObjectList* list_0, RogueObject* value_1 )
+RogueOptionalInteger RogueObjectListOps__last_index_of( RogueObjectList* list_0, RogueObject* value_1 )
 {
   {
     RogueObjectList* _auto_373_2 = (list_0);
@@ -16511,11 +16511,11 @@ RogueInteger RogueObjectListOps__locate_last( RogueObjectList* list_0, RogueObje
     {
       if (((RogueObject__operatorEQUALSEQUALS( value_1, ((RogueObject*)(list_0->data->objects[i_3])) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 void RogueTokenType__init_class()
@@ -16524,10 +16524,10 @@ void RogueTokenType__init_class()
 
 RogueLogical RogueCharacterListOps__contains( RogueCharacterList* list_0, RogueCharacter value_1 )
 {
-  return (RogueLogical)((RogueCharacterListOps__locate( list_0, value_1 )) != -1);
+  return (RogueLogical)((RogueCharacterListOps__index_of( list_0, value_1 )).exists);
 }
 
-RogueInteger RogueCharacterListOps__locate( RogueCharacterList* list_0, RogueCharacter value_1 )
+RogueOptionalInteger RogueCharacterListOps__index_of( RogueCharacterList* list_0, RogueCharacter value_1 )
 {
   {
     RogueCharacterList* _auto_597_2 = (list_0);
@@ -16536,14 +16536,14 @@ RogueInteger RogueCharacterListOps__locate( RogueCharacterList* list_0, RogueCha
     {
       if (value_1 == list_0->data->characters[i_3])
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueCharacterListOps__locate_last( RogueCharacterList* list_0, RogueCharacter value_1 )
+RogueOptionalInteger RogueCharacterListOps__last_index_of( RogueCharacterList* list_0, RogueCharacter value_1 )
 {
   {
     RogueCharacterList* _auto_598_2 = (list_0);
@@ -16552,11 +16552,11 @@ RogueInteger RogueCharacterListOps__locate_last( RogueCharacterList* list_0, Rog
     {
       if (value_1 == list_0->data->characters[i_3])
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 void RoguePreprocessor__init_class()
@@ -16566,10 +16566,10 @@ void RoguePreprocessor__init_class()
 
 RogueLogical RogueTokenListOps__contains( RogueObjectList* list_0, RogueClassToken* value_1 )
 {
-  return (RogueLogical)((RogueTokenListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueTokenListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueTokenListOps__locate( RogueObjectList* list_0, RogueClassToken* value_1 )
+RogueOptionalInteger RogueTokenListOps__index_of( RogueObjectList* list_0, RogueClassToken* value_1 )
 {
   {
     RogueObjectList* _auto_781_2 = (((RogueObjectList*)list_0));
@@ -16578,14 +16578,14 @@ RogueInteger RogueTokenListOps__locate( RogueObjectList* list_0, RogueClassToken
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassToken*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueTokenListOps__locate_last( RogueObjectList* list_0, RogueClassToken* value_1 )
+RogueOptionalInteger RogueTokenListOps__last_index_of( RogueObjectList* list_0, RogueClassToken* value_1 )
 {
   {
     RogueObjectList* _auto_782_2 = (((RogueObjectList*)list_0));
@@ -16594,19 +16594,19 @@ RogueInteger RogueTokenListOps__locate_last( RogueObjectList* list_0, RogueClass
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassToken*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueTemplateListOps__contains( RogueObjectList* list_0, RogueClassTemplate* value_1 )
 {
-  return (RogueLogical)((RogueTemplateListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueTemplateListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueTemplateListOps__locate( RogueObjectList* list_0, RogueClassTemplate* value_1 )
+RogueOptionalInteger RogueTemplateListOps__index_of( RogueObjectList* list_0, RogueClassTemplate* value_1 )
 {
   {
     RogueObjectList* _auto_783_2 = (((RogueObjectList*)list_0));
@@ -16615,14 +16615,14 @@ RogueInteger RogueTemplateListOps__locate( RogueObjectList* list_0, RogueClassTe
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassTemplate*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueTemplateListOps__locate_last( RogueObjectList* list_0, RogueClassTemplate* value_1 )
+RogueOptionalInteger RogueTemplateListOps__last_index_of( RogueObjectList* list_0, RogueClassTemplate* value_1 )
 {
   {
     RogueObjectList* _auto_784_2 = (((RogueObjectList*)list_0));
@@ -16631,19 +16631,19 @@ RogueInteger RogueTemplateListOps__locate_last( RogueObjectList* list_0, RogueCl
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassTemplate*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueMethodListOps__contains( RogueObjectList* list_0, RogueClassMethod* value_1 )
 {
-  return (RogueLogical)((RogueMethodListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueMethodListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueMethodListOps__locate( RogueObjectList* list_0, RogueClassMethod* value_1 )
+RogueOptionalInteger RogueMethodListOps__index_of( RogueObjectList* list_0, RogueClassMethod* value_1 )
 {
   {
     RogueObjectList* _auto_817_2 = (((RogueObjectList*)list_0));
@@ -16652,14 +16652,14 @@ RogueInteger RogueMethodListOps__locate( RogueObjectList* list_0, RogueClassMeth
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassMethod*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueMethodListOps__locate_last( RogueObjectList* list_0, RogueClassMethod* value_1 )
+RogueOptionalInteger RogueMethodListOps__last_index_of( RogueObjectList* list_0, RogueClassMethod* value_1 )
 {
   {
     RogueObjectList* _auto_818_2 = (((RogueObjectList*)list_0));
@@ -16668,19 +16668,19 @@ RogueInteger RogueMethodListOps__locate_last( RogueObjectList* list_0, RogueClas
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassMethod*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueTypeListOps__contains( RogueObjectList* list_0, RogueClassType* value_1 )
 {
-  return (RogueLogical)((RogueTypeListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueTypeListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueTypeListOps__locate( RogueObjectList* list_0, RogueClassType* value_1 )
+RogueOptionalInteger RogueTypeListOps__index_of( RogueObjectList* list_0, RogueClassType* value_1 )
 {
   {
     RogueObjectList* _auto_819_2 = (((RogueObjectList*)list_0));
@@ -16689,14 +16689,14 @@ RogueInteger RogueTypeListOps__locate( RogueObjectList* list_0, RogueClassType* 
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassType*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueTypeListOps__locate_last( RogueObjectList* list_0, RogueClassType* value_1 )
+RogueOptionalInteger RogueTypeListOps__last_index_of( RogueObjectList* list_0, RogueClassType* value_1 )
 {
   {
     RogueObjectList* _auto_820_2 = (((RogueObjectList*)list_0));
@@ -16705,19 +16705,19 @@ RogueInteger RogueTypeListOps__locate_last( RogueObjectList* list_0, RogueClassT
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassType*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RoguePropertyListOps__contains( RogueObjectList* list_0, RogueClassProperty* value_1 )
 {
-  return (RogueLogical)((RoguePropertyListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RoguePropertyListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RoguePropertyListOps__locate( RogueObjectList* list_0, RogueClassProperty* value_1 )
+RogueOptionalInteger RoguePropertyListOps__index_of( RogueObjectList* list_0, RogueClassProperty* value_1 )
 {
   {
     RogueObjectList* _auto_821_2 = (((RogueObjectList*)list_0));
@@ -16726,14 +16726,14 @@ RogueInteger RoguePropertyListOps__locate( RogueObjectList* list_0, RogueClassPr
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassProperty*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RoguePropertyListOps__locate_last( RogueObjectList* list_0, RogueClassProperty* value_1 )
+RogueOptionalInteger RoguePropertyListOps__last_index_of( RogueObjectList* list_0, RogueClassProperty* value_1 )
 {
   {
     RogueObjectList* _auto_822_2 = (((RogueObjectList*)list_0));
@@ -16742,19 +16742,19 @@ RogueInteger RoguePropertyListOps__locate_last( RogueObjectList* list_0, RogueCl
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassProperty*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueCmdListOps__contains( RogueObjectList* list_0, RogueClassCmd* value_1 )
 {
-  return (RogueLogical)((RogueCmdListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueCmdListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueCmdListOps__locate( RogueObjectList* list_0, RogueClassCmd* value_1 )
+RogueOptionalInteger RogueCmdListOps__index_of( RogueObjectList* list_0, RogueClassCmd* value_1 )
 {
   {
     RogueObjectList* _auto_888_2 = (((RogueObjectList*)list_0));
@@ -16763,14 +16763,14 @@ RogueInteger RogueCmdListOps__locate( RogueObjectList* list_0, RogueClassCmd* va
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmd*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueCmdListOps__locate_last( RogueObjectList* list_0, RogueClassCmd* value_1 )
+RogueOptionalInteger RogueCmdListOps__last_index_of( RogueObjectList* list_0, RogueClassCmd* value_1 )
 {
   {
     RogueObjectList* _auto_889_2 = (((RogueObjectList*)list_0));
@@ -16779,19 +16779,19 @@ RogueInteger RogueCmdListOps__locate_last( RogueObjectList* list_0, RogueClassCm
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmd*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueLocalListOps__contains( RogueObjectList* list_0, RogueClassLocal* value_1 )
 {
-  return (RogueLogical)((RogueLocalListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueLocalListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueLocalListOps__locate( RogueObjectList* list_0, RogueClassLocal* value_1 )
+RogueOptionalInteger RogueLocalListOps__index_of( RogueObjectList* list_0, RogueClassLocal* value_1 )
 {
   {
     RogueObjectList* _auto_896_2 = (((RogueObjectList*)list_0));
@@ -16800,14 +16800,14 @@ RogueInteger RogueLocalListOps__locate( RogueObjectList* list_0, RogueClassLocal
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassLocal*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueLocalListOps__locate_last( RogueObjectList* list_0, RogueClassLocal* value_1 )
+RogueOptionalInteger RogueLocalListOps__last_index_of( RogueObjectList* list_0, RogueClassLocal* value_1 )
 {
   {
     RogueObjectList* _auto_897_2 = (((RogueObjectList*)list_0));
@@ -16816,19 +16816,19 @@ RogueInteger RogueLocalListOps__locate_last( RogueObjectList* list_0, RogueClass
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassLocal*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueTaskListOps__contains( RogueObjectList* list_0, RogueClassTask* value_1 )
 {
-  return (RogueLogical)((RogueTaskListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueTaskListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueTaskListOps__locate( RogueObjectList* list_0, RogueClassTask* value_1 )
+RogueOptionalInteger RogueTaskListOps__index_of( RogueObjectList* list_0, RogueClassTask* value_1 )
 {
   {
     RogueObjectList* _auto_898_2 = (((RogueObjectList*)list_0));
@@ -16837,14 +16837,14 @@ RogueInteger RogueTaskListOps__locate( RogueObjectList* list_0, RogueClassTask* 
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassTask*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueTaskListOps__locate_last( RogueObjectList* list_0, RogueClassTask* value_1 )
+RogueOptionalInteger RogueTaskListOps__last_index_of( RogueObjectList* list_0, RogueClassTask* value_1 )
 {
   {
     RogueObjectList* _auto_899_2 = (((RogueObjectList*)list_0));
@@ -16853,19 +16853,19 @@ RogueInteger RogueTaskListOps__locate_last( RogueObjectList* list_0, RogueClassT
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassTask*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_LogicalTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_LogicalTableEntryListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueString_LogicalTableEntryListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueString_LogicalTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 )
+RogueOptionalInteger RogueString_LogicalTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_900_2 = (((RogueObjectList*)list_0));
@@ -16874,14 +16874,14 @@ RogueInteger RogueString_LogicalTableEntryListOps__locate( RogueObjectList* list
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassString_LogicalTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_LogicalTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 )
+RogueOptionalInteger RogueString_LogicalTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_LogicalTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_901_2 = (((RogueObjectList*)list_0));
@@ -16890,19 +16890,19 @@ RogueInteger RogueString_LogicalTableEntryListOps__locate_last( RogueObjectList*
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassString_LogicalTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueByteListOps__contains( RogueByteList* list_0, RogueByte value_1 )
 {
-  return (RogueLogical)((RogueByteListOps__locate( list_0, value_1 )) != -1);
+  return (RogueLogical)((RogueByteListOps__index_of( list_0, value_1 )).exists);
 }
 
-RogueInteger RogueByteListOps__locate( RogueByteList* list_0, RogueByte value_1 )
+RogueOptionalInteger RogueByteListOps__index_of( RogueByteList* list_0, RogueByte value_1 )
 {
   {
     RogueByteList* _auto_902_2 = (list_0);
@@ -16911,14 +16911,14 @@ RogueInteger RogueByteListOps__locate( RogueByteList* list_0, RogueByte value_1 
     {
       if (value_1 == list_0->data->bytes[i_3])
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueByteListOps__locate_last( RogueByteList* list_0, RogueByte value_1 )
+RogueOptionalInteger RogueByteListOps__last_index_of( RogueByteList* list_0, RogueByte value_1 )
 {
   {
     RogueByteList* _auto_903_2 = (list_0);
@@ -16927,19 +16927,19 @@ RogueInteger RogueByteListOps__locate_last( RogueByteList* list_0, RogueByte val
     {
       if (value_1 == list_0->data->bytes[i_3])
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueCmdWhichCaseListOps__contains( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 )
 {
-  return (RogueLogical)((RogueCmdWhichCaseListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueCmdWhichCaseListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueCmdWhichCaseListOps__locate( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 )
+RogueOptionalInteger RogueCmdWhichCaseListOps__index_of( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 )
 {
   {
     RogueObjectList* _auto_939_2 = (((RogueObjectList*)list_0));
@@ -16948,14 +16948,14 @@ RogueInteger RogueCmdWhichCaseListOps__locate( RogueObjectList* list_0, RogueCla
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdWhichCase*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueCmdWhichCaseListOps__locate_last( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 )
+RogueOptionalInteger RogueCmdWhichCaseListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdWhichCase* value_1 )
 {
   {
     RogueObjectList* _auto_940_2 = (((RogueObjectList*)list_0));
@@ -16964,19 +16964,19 @@ RogueInteger RogueCmdWhichCaseListOps__locate_last( RogueObjectList* list_0, Rog
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdWhichCase*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueCmdCatchListOps__contains( RogueObjectList* list_0, RogueClassCmdCatch* value_1 )
 {
-  return (RogueLogical)((RogueCmdCatchListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueCmdCatchListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueCmdCatchListOps__locate( RogueObjectList* list_0, RogueClassCmdCatch* value_1 )
+RogueOptionalInteger RogueCmdCatchListOps__index_of( RogueObjectList* list_0, RogueClassCmdCatch* value_1 )
 {
   {
     RogueObjectList* _auto_941_2 = (((RogueObjectList*)list_0));
@@ -16985,14 +16985,14 @@ RogueInteger RogueCmdCatchListOps__locate( RogueObjectList* list_0, RogueClassCm
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdCatch*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueCmdCatchListOps__locate_last( RogueObjectList* list_0, RogueClassCmdCatch* value_1 )
+RogueOptionalInteger RogueCmdCatchListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdCatch* value_1 )
 {
   {
     RogueObjectList* _auto_942_2 = (((RogueObjectList*)list_0));
@@ -17001,19 +17001,19 @@ RogueInteger RogueCmdCatchListOps__locate_last( RogueObjectList* list_0, RogueCl
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdCatch*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueFnParamListOps__contains( RogueObjectList* list_0, RogueClassFnParam* value_1 )
 {
-  return (RogueLogical)((RogueFnParamListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueFnParamListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueFnParamListOps__locate( RogueObjectList* list_0, RogueClassFnParam* value_1 )
+RogueOptionalInteger RogueFnParamListOps__index_of( RogueObjectList* list_0, RogueClassFnParam* value_1 )
 {
   {
     RogueObjectList* _auto_943_2 = (((RogueObjectList*)list_0));
@@ -17022,14 +17022,14 @@ RogueInteger RogueFnParamListOps__locate( RogueObjectList* list_0, RogueClassFnP
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassFnParam*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueFnParamListOps__locate_last( RogueObjectList* list_0, RogueClassFnParam* value_1 )
+RogueOptionalInteger RogueFnParamListOps__last_index_of( RogueObjectList* list_0, RogueClassFnParam* value_1 )
 {
   {
     RogueObjectList* _auto_944_2 = (((RogueObjectList*)list_0));
@@ -17038,19 +17038,19 @@ RogueInteger RogueFnParamListOps__locate_last( RogueObjectList* list_0, RogueCla
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassFnParam*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueFnArgListOps__contains( RogueObjectList* list_0, RogueClassFnArg* value_1 )
 {
-  return (RogueLogical)((RogueFnArgListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueFnArgListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueFnArgListOps__locate( RogueObjectList* list_0, RogueClassFnArg* value_1 )
+RogueOptionalInteger RogueFnArgListOps__index_of( RogueObjectList* list_0, RogueClassFnArg* value_1 )
 {
   {
     RogueObjectList* _auto_945_2 = (((RogueObjectList*)list_0));
@@ -17059,14 +17059,14 @@ RogueInteger RogueFnArgListOps__locate( RogueObjectList* list_0, RogueClassFnArg
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassFnArg*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueFnArgListOps__locate_last( RogueObjectList* list_0, RogueClassFnArg* value_1 )
+RogueOptionalInteger RogueFnArgListOps__last_index_of( RogueObjectList* list_0, RogueClassFnArg* value_1 )
 {
   {
     RogueObjectList* _auto_946_2 = (((RogueObjectList*)list_0));
@@ -17075,19 +17075,19 @@ RogueInteger RogueFnArgListOps__locate_last( RogueObjectList* list_0, RogueClass
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassFnArg*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueTypeParameterListOps__contains( RogueObjectList* list_0, RogueClassTypeParameter* value_1 )
 {
-  return (RogueLogical)((RogueTypeParameterListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueTypeParameterListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueTypeParameterListOps__locate( RogueObjectList* list_0, RogueClassTypeParameter* value_1 )
+RogueOptionalInteger RogueTypeParameterListOps__index_of( RogueObjectList* list_0, RogueClassTypeParameter* value_1 )
 {
   {
     RogueObjectList* _auto_947_2 = (((RogueObjectList*)list_0));
@@ -17096,14 +17096,14 @@ RogueInteger RogueTypeParameterListOps__locate( RogueObjectList* list_0, RogueCl
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassTypeParameter*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueTypeParameterListOps__locate_last( RogueObjectList* list_0, RogueClassTypeParameter* value_1 )
+RogueOptionalInteger RogueTypeParameterListOps__last_index_of( RogueObjectList* list_0, RogueClassTypeParameter* value_1 )
 {
   {
     RogueObjectList* _auto_948_2 = (((RogueObjectList*)list_0));
@@ -17112,19 +17112,19 @@ RogueInteger RogueTypeParameterListOps__locate_last( RogueObjectList* list_0, Ro
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassTypeParameter*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_TemplateTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_TemplateTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_TemplateTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_TemplateTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TemplateTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_955_2 = (((RogueObjectList*)list_0));
@@ -17133,14 +17133,14 @@ RogueInteger RogueString_TemplateTableEntryListOps__locate( RogueObjectList* lis
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_TemplateTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TemplateTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_956_2 = (((RogueObjectList*)list_0));
@@ -17149,19 +17149,19 @@ RogueInteger RogueString_TemplateTableEntryListOps__locate_last( RogueObjectList
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_ObjectTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_ObjectTableEntryListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueString_ObjectTableEntryListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueString_ObjectTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_ObjectTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_957_2 = (((RogueObjectList*)list_0));
@@ -17170,14 +17170,14 @@ RogueInteger RogueString_ObjectTableEntryListOps__locate( RogueObjectList* list_
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_ObjectTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_ObjectTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_958_2 = (((RogueObjectList*)list_0));
@@ -17186,19 +17186,19 @@ RogueInteger RogueString_ObjectTableEntryListOps__locate_last( RogueObjectList* 
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_TypeTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_TypeTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_TypeTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_TypeTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TypeTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_971_2 = (((RogueObjectList*)list_0));
@@ -17207,14 +17207,14 @@ RogueInteger RogueString_TypeTableEntryListOps__locate( RogueObjectList* list_0,
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_TypeTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TypeTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_972_2 = (((RogueObjectList*)list_0));
@@ -17223,19 +17223,19 @@ RogueInteger RogueString_TypeTableEntryListOps__locate_last( RogueObjectList* li
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_IntegerTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_IntegerTableEntryListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueString_IntegerTableEntryListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueString_IntegerTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 )
+RogueOptionalInteger RogueString_IntegerTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_973_2 = (((RogueObjectList*)list_0));
@@ -17244,14 +17244,14 @@ RogueInteger RogueString_IntegerTableEntryListOps__locate( RogueObjectList* list
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassString_IntegerTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_IntegerTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 )
+RogueOptionalInteger RogueString_IntegerTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_IntegerTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_974_2 = (((RogueObjectList*)list_0));
@@ -17260,19 +17260,19 @@ RogueInteger RogueString_IntegerTableEntryListOps__locate_last( RogueObjectList*
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassString_IntegerTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueCmdControlStructureListOps__contains( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 )
 {
-  return (RogueLogical)((RogueCmdControlStructureListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueCmdControlStructureListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueCmdControlStructureListOps__locate( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 )
+RogueOptionalInteger RogueCmdControlStructureListOps__index_of( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 )
 {
   {
     RogueObjectList* _auto_988_2 = (((RogueObjectList*)list_0));
@@ -17281,14 +17281,14 @@ RogueInteger RogueCmdControlStructureListOps__locate( RogueObjectList* list_0, R
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdControlStructure*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueCmdControlStructureListOps__locate_last( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 )
+RogueOptionalInteger RogueCmdControlStructureListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdControlStructure* value_1 )
 {
   {
     RogueObjectList* _auto_989_2 = (((RogueObjectList*)list_0));
@@ -17297,19 +17297,19 @@ RogueInteger RogueCmdControlStructureListOps__locate_last( RogueObjectList* list
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdControlStructure*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_MethodTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_MethodTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_MethodTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_MethodTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_MethodTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_990_2 = (((RogueObjectList*)list_0));
@@ -17318,14 +17318,14 @@ RogueInteger RogueString_MethodTableEntryListOps__locate( RogueObjectList* list_
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_MethodTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_MethodTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_991_2 = (((RogueObjectList*)list_0));
@@ -17334,19 +17334,19 @@ RogueInteger RogueString_MethodTableEntryListOps__locate_last( RogueObjectList* 
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_TokenTypeTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_TokenTypeTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_TokenTypeTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_TokenTypeTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TokenTypeTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_998_2 = (((RogueObjectList*)list_0));
@@ -17355,14 +17355,14 @@ RogueInteger RogueString_TokenTypeTableEntryListOps__locate( RogueObjectList* li
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_TokenTypeTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TokenTypeTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_999_2 = (((RogueObjectList*)list_0));
@@ -17371,19 +17371,19 @@ RogueInteger RogueString_TokenTypeTableEntryListOps__locate_last( RogueObjectLis
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_CmdTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_CmdTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_CmdTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_CmdTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_CmdTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1000_2 = (((RogueObjectList*)list_0));
@@ -17392,14 +17392,14 @@ RogueInteger RogueString_CmdTableEntryListOps__locate( RogueObjectList* list_0, 
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_CmdTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_CmdTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1001_2 = (((RogueObjectList*)list_0));
@@ -17408,19 +17408,19 @@ RogueInteger RogueString_CmdTableEntryListOps__locate_last( RogueObjectList* lis
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueCmdTaskControlSectionListOps__contains( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 )
 {
-  return (RogueLogical)((RogueCmdTaskControlSectionListOps__locate( ((RogueObjectList*)list_0), value_1 )) != -1);
+  return (RogueLogical)((RogueCmdTaskControlSectionListOps__index_of( ((RogueObjectList*)list_0), value_1 )).exists);
 }
 
-RogueInteger RogueCmdTaskControlSectionListOps__locate( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 )
+RogueOptionalInteger RogueCmdTaskControlSectionListOps__index_of( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 )
 {
   {
     RogueObjectList* _auto_1002_2 = (((RogueObjectList*)list_0));
@@ -17429,14 +17429,14 @@ RogueInteger RogueCmdTaskControlSectionListOps__locate( RogueObjectList* list_0,
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdTaskControlSection*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueCmdTaskControlSectionListOps__locate_last( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 )
+RogueOptionalInteger RogueCmdTaskControlSectionListOps__last_index_of( RogueObjectList* list_0, RogueClassCmdTaskControlSection* value_1 )
 {
   {
     RogueObjectList* _auto_1003_2 = (((RogueObjectList*)list_0));
@@ -17445,19 +17445,19 @@ RogueInteger RogueCmdTaskControlSectionListOps__locate_last( RogueObjectList* li
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)value_1), ((RogueObject*)(((RogueClassCmdTaskControlSection*)(((RogueObjectList*)list_0)->data->objects[i_3])))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_TypeSpecializerTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_TypeSpecializerTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_TypeSpecializerTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_TypeSpecializerTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TypeSpecializerTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1004_2 = (((RogueObjectList*)list_0));
@@ -17466,14 +17466,14 @@ RogueInteger RogueString_TypeSpecializerTableEntryListOps__locate( RogueObjectLi
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_TypeSpecializerTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TypeSpecializerTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1005_2 = (((RogueObjectList*)list_0));
@@ -17482,19 +17482,19 @@ RogueInteger RogueString_TypeSpecializerTableEntryListOps__locate_last( RogueObj
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_PropertyTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_PropertyTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_PropertyTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_PropertyTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_PropertyTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1006_2 = (((RogueObjectList*)list_0));
@@ -17503,14 +17503,14 @@ RogueInteger RogueString_PropertyTableEntryListOps__locate( RogueObjectList* lis
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_PropertyTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_PropertyTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1007_2 = (((RogueObjectList*)list_0));
@@ -17519,19 +17519,19 @@ RogueInteger RogueString_PropertyTableEntryListOps__locate_last( RogueObjectList
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_MethodListTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_MethodListTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_MethodListTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_MethodListTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_MethodListTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1008_2 = (((RogueObjectList*)list_0));
@@ -17540,14 +17540,14 @@ RogueInteger RogueString_MethodListTableEntryListOps__locate( RogueObjectList* l
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_MethodListTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_MethodListTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1009_2 = (((RogueObjectList*)list_0));
@@ -17556,19 +17556,19 @@ RogueInteger RogueString_MethodListTableEntryListOps__locate_last( RogueObjectLi
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueLogical RogueString_TokenListTableEntryListOps__contains( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
-  return (RogueLogical)((RogueString_TokenListTableEntryListOps__locate( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )) != -1);
+  return (RogueLogical)((RogueString_TokenListTableEntryListOps__index_of( ((RogueObjectList*)list_0), ((RogueClassString_ObjectTableEntry*)value_1) )).exists);
 }
 
-RogueInteger RogueString_TokenListTableEntryListOps__locate( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TokenListTableEntryListOps__index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1012_2 = (((RogueObjectList*)list_0));
@@ -17577,14 +17577,14 @@ RogueInteger RogueString_TokenListTableEntryListOps__locate( RogueObjectList* li
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
-RogueInteger RogueString_TokenListTableEntryListOps__locate_last( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
+RogueOptionalInteger RogueString_TokenListTableEntryListOps__last_index_of( RogueObjectList* list_0, RogueClassString_ObjectTableEntry* value_1 )
 {
   {
     RogueObjectList* _auto_1013_2 = (((RogueObjectList*)list_0));
@@ -17593,11 +17593,11 @@ RogueInteger RogueString_TokenListTableEntryListOps__locate_last( RogueObjectLis
     {
       if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)((RogueClassString_ObjectTableEntry*)value_1)), ((RogueObject*)(((RogueClassString_ObjectTableEntry*)((RogueClassString_ObjectTableEntry*)(((RogueObjectList*)list_0)->data->objects[i_3]))))) ))))
       {
-        return (RogueInteger)(i_3);
+        return (RogueOptionalInteger)(RogueOptionalInteger( i_3 ));
       }
     }
   }
-  return (RogueInteger)(-1);
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 
@@ -17769,7 +17769,7 @@ RogueLogical RogueString__begins_with( RogueString* THIS, RogueString* other_0 )
 
 RogueLogical RogueString__contains( RogueString* THIS, RogueString* substring_0 )
 {
-  return (RogueLogical)(THIS->locate(substring_0,0) >= 0);
+  return (RogueLogical)((THIS->index_of(substring_0,RogueOptionalInteger())).exists);
 }
 
 RogueLogical RogueString__ends_with( RogueString* THIS, RogueString* other_0 )
@@ -17780,22 +17780,22 @@ RogueLogical RogueString__ends_with( RogueString* THIS, RogueString* other_0 )
 
 RogueString* RogueString__from_first( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueInteger i_1 = (THIS->locate(ch_0,0));
-  if (i_1 == -1)
+  RogueOptionalInteger i_1 = ((THIS->index_of(ch_0,RogueOptionalInteger())));
+  if (!(i_1.exists))
   {
     return (RogueString*)(Rogue_program.literal_strings[0]);
   }
-  return (RogueString*)(THIS->substring(i_1));
+  return (RogueString*)(THIS->substring(i_1.value));
 }
 
 RogueString* RogueString__from_first( RogueString* THIS, RogueString* st_0 )
 {
-  RogueInteger i_1 = (THIS->locate(st_0,0));
-  if (i_1 == -1)
+  RogueOptionalInteger i_1 = ((THIS->index_of(st_0,RogueOptionalInteger())));
+  if (!(i_1.exists))
   {
     return (RogueString*)(Rogue_program.literal_strings[0]);
   }
-  return (RogueString*)(THIS->substring(i_1));
+  return (RogueString*)(THIS->substring(i_1.value));
 }
 
 RogueString* RogueString__from_last( RogueString* THIS, RogueCharacter ch_0 )
@@ -17858,16 +17858,6 @@ RogueString* RogueString__leftmost( RogueString* THIS, RogueInteger n_0 )
   {
     return (RogueString*)(THIS->substring(0,((THIS->count + n_0) - 1)));
   }
-}
-
-RogueInteger RogueString__locate_last( RogueString* THIS, RogueCharacter ch_0 )
-{
-  return (RogueInteger)(THIS->locate_last(ch_0,(THIS->count - 1)));
-}
-
-RogueInteger RogueString__locate_last( RogueString* THIS, RogueString* other_0 )
-{
-  return (RogueInteger)(THIS->locate_last(other_0,(THIS->count - other_0->count)));
 }
 
 RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueLogical value_0 )
@@ -17939,37 +17929,6 @@ RogueString* RogueString__rightmost( RogueString* THIS, RogueInteger n_0 )
   {
     return (RogueString*)(THIS->substring((this_count_1 - n_0),(this_count_1 - 1)));
   }
-}
-
-RogueStringList* RogueString__split( RogueString* THIS, RogueCharacter separator_0 )
-{
-  RogueStringList* result_1 = (((RogueStringList__init( ((RogueStringList*)Rogue_program.type_StringList->create_and_init_object()) ))));
-  RogueInteger i1_2 = (0);
-  RogueInteger i2_3 = (THIS->locate(separator_0,i1_2));
-  while (i2_3 != -1)
-  {
-    RogueStringList__add( result_1, THIS->substring(i1_2,(i2_3 - 1)) );
-    i1_2 = ((RogueInteger)(i2_3 + 1));
-    i2_3 = ((RogueInteger)THIS->locate(separator_0,i1_2));
-  }
-  RogueStringList__add( result_1, THIS->substring(i1_2) );
-  return (RogueStringList*)(result_1);
-}
-
-RogueStringList* RogueString__split( RogueString* THIS, RogueString* separator_0 )
-{
-  RogueStringList* result_1 = (((RogueStringList__init( ((RogueStringList*)Rogue_program.type_StringList->create_and_init_object()) ))));
-  RogueInteger separator_count_2 = (separator_0->count);
-  RogueInteger i1_3 = (0);
-  RogueInteger i2_4 = (THIS->locate(separator_0,i1_3));
-  while (i2_4 != -1)
-  {
-    RogueStringList__add( result_1, THIS->substring(i1_3,(i2_4 - 1)) );
-    i1_3 = ((RogueInteger)(i2_4 + separator_count_2));
-    i2_4 = ((RogueInteger)THIS->locate(separator_0,i1_3));
-  }
-  RogueStringList__add( result_1, THIS->substring(i1_3) );
-  return (RogueStringList*)(result_1);
 }
 
 RogueStringList* RogueString__split2( RogueString* THIS, RogueCharacter separator_0 )
@@ -18265,13 +18224,16 @@ RogueCharacterList* RogueCharacterList__reserve( RogueCharacterList* THIS, Rogue
 
 RogueCharacter RogueCharacterList__remove( RogueCharacterList* THIS, RogueCharacter value_0 )
 {
-  RogueInteger index_1 = ((RogueCharacterListOps__locate( THIS, value_0 )));
-  if (index_1 == -1)
+  RogueOptionalInteger index_1 = ((RogueCharacterListOps__index_of( THIS, value_0 )));
+  if (index_1.exists)
+  {
+    return (RogueCharacter)(((RogueCharacterList__remove_at( THIS, index_1.value ))));
+  }
+  else
   {
     RogueCharacter zero_value_2 = 0;
     return (RogueCharacter)(zero_value_2);
   }
-  return (RogueCharacter)(((RogueCharacterList__remove_at( THIS, index_1 ))));
 }
 
 RogueCharacter RogueCharacterList__remove_at( RogueCharacterList* THIS, RogueInteger index_0 )
@@ -18772,13 +18734,16 @@ RogueStringList* RogueStringList__reserve( RogueStringList* THIS, RogueInteger a
 
 RogueString* RogueStringList__remove( RogueStringList* THIS, RogueString* value_0 )
 {
-  RogueInteger index_1 = ((RogueStringListOps__locate( THIS, value_0 )));
-  if (index_1 == -1)
+  RogueOptionalInteger index_1 = ((RogueStringListOps__index_of( THIS, value_0 )));
+  if (index_1.exists)
+  {
+    return (RogueString*)(((RogueStringList__remove_at( THIS, index_1.value ))));
+  }
+  else
   {
     RogueString* zero_value_2 = 0;
     return (RogueString*)(zero_value_2);
   }
-  return (RogueString*)(((RogueStringList__remove_at( THIS, index_1 ))));
 }
 
 RogueString* RogueStringList__remove_at( RogueStringList* THIS, RogueInteger index_0 )
@@ -22948,13 +22913,16 @@ RogueObjectList* RogueObjectList__reserve( RogueObjectList* THIS, RogueInteger a
 
 RogueObject* RogueObjectList__remove( RogueObjectList* THIS, RogueObject* value_0 )
 {
-  RogueInteger index_1 = ((RogueObjectListOps__locate( THIS, value_0 )));
-  if (index_1 == -1)
+  RogueOptionalInteger index_1 = ((RogueObjectListOps__index_of( THIS, value_0 )));
+  if (index_1.exists)
+  {
+    return (RogueObject*)(((RogueObjectList__remove_at( THIS, index_1.value ))));
+  }
+  else
   {
     RogueObject* zero_value_2 = 0;
     return (RogueObject*)(zero_value_2);
   }
-  return (RogueObject*)(((RogueObjectList__remove_at( THIS, index_1 ))));
 }
 
 RogueObject* RogueObjectList__remove_at( RogueObjectList* THIS, RogueInteger index_0 )
@@ -24051,7 +24019,7 @@ RogueClassType* RogueType__organize( RogueClassType* THIS )
         RogueAttributes__add( prior_m_11->attributes, 4096 );
         RogueAttributes__add( m_10->attributes, 2048 );
         RogueObjectList__remove( ((RogueObjectList*)((RogueObjectList*)THIS->method_list)), ((RogueObject*)m_10) );
-        ((RogueObjectList*)THIS->method_list)->data->objects[(RogueMethodListOps__locate( ((RogueObjectList*)THIS->method_list), prior_m_11 ))] = m_10;
+        ((RogueObjectList*)THIS->method_list)->data->objects[(RogueMethodListOps__index_of( ((RogueObjectList*)THIS->method_list), prior_m_11 )).value] = m_10;
       }
     }
     m_10->_return_type = THIS;
@@ -24188,7 +24156,7 @@ void RogueType__inherit_property( RogueClassType* THIS, RogueClassProperty* p_0,
   RogueClassProperty* existing_p_3 = (((RogueClassProperty*)((RogueClassProperty*)RogueString_ObjectTable__get( ((RogueClassString_ObjectTable*)((RogueClassString_ObjectTable*)lookup_2)), p_0->name ))));
   if (!!(existing_p_3))
   {
-    RogueInteger i_4 = ((RoguePropertyListOps__locate( ((RogueObjectList*)list_1), existing_p_3 )));
+    RogueInteger i_4 = ((RoguePropertyListOps__index_of( ((RogueObjectList*)list_1), existing_p_3 )).value);
     if (p_0->type_context == existing_p_3->type_context)
     {
       throw ((RogueToken__error( p_0->t, ((RogueStringBuilder__to_String( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__init( ((RogueStringBuilder*)Rogue_program.type_StringBuilder->create_and_init_object()) ))), Rogue_program.literal_strings[279] ))), p_0->name ))), Rogue_program.literal_strings[278] ))) ))) )));
@@ -24276,7 +24244,7 @@ void RogueType__inherit_method( RogueClassType* THIS, RogueClassMethod* m_0, Rog
   RogueClassMethod* existing_m_3 = (((RogueClassMethod*)((RogueClassMethod*)RogueString_ObjectTable__get( ((RogueClassString_ObjectTable*)((RogueClassString_ObjectTable*)lookup_2)), m_0->signature ))));
   if (!!(existing_m_3))
   {
-    RogueInteger i_4 = ((RogueMethodListOps__locate( ((RogueObjectList*)list_1), existing_m_3 )));
+    RogueInteger i_4 = ((RogueMethodListOps__index_of( ((RogueObjectList*)list_1), existing_m_3 )).value);
     if (!(((RogueMethod__is_incorporated( existing_m_3 )))))
     {
       if (m_0->type_context == existing_m_3->type_context)
@@ -24352,7 +24320,7 @@ void RogueType__inherit_routine( RogueClassType* THIS, RogueClassMethod* m_0, Ro
   RogueClassMethod* existing_m_3 = (((RogueClassMethod*)((RogueClassMethod*)RogueString_ObjectTable__get( ((RogueClassString_ObjectTable*)((RogueClassString_ObjectTable*)lookup_2)), m_0->signature ))));
   if (!!(existing_m_3))
   {
-    RogueInteger i_4 = ((RogueMethodListOps__locate( ((RogueObjectList*)list_1), existing_m_3 )));
+    RogueInteger i_4 = ((RogueMethodListOps__index_of( ((RogueObjectList*)list_1), existing_m_3 )).value);
     if (((RogueType__is_aspect( m_0->type_context ))))
     {
       return;
@@ -27261,13 +27229,16 @@ RogueByteList* RogueByteList__reserve( RogueByteList* THIS, RogueInteger additio
 
 RogueByte RogueByteList__remove( RogueByteList* THIS, RogueByte value_0 )
 {
-  RogueInteger index_1 = ((RogueByteListOps__locate( THIS, value_0 )));
-  if (index_1 == -1)
+  RogueOptionalInteger index_1 = ((RogueByteListOps__index_of( THIS, value_0 )));
+  if (index_1.exists)
+  {
+    return (RogueByte)(((RogueByteList__remove_at( THIS, index_1.value ))));
+  }
+  else
   {
     RogueByte zero_value_2 = 0;
     return (RogueByte)(zero_value_2);
   }
-  return (RogueByte)(((RogueByteList__remove_at( THIS, index_1 ))));
 }
 
 RogueByte RogueByteList__remove_at( RogueByteList* THIS, RogueInteger index_0 )
@@ -33721,15 +33692,15 @@ RogueClassCmd* RogueCmdFormattedString__resolve( RogueClassCmdFormattedString* T
     {
       RogueClassCmd* arg_6 = (((RogueClassCmd*)(_auto_753_4->data->objects[_auto_754_5])));
       arg_6 = ((RogueClassCmd*)((RogueCmd__require_value( (call_ROGUEM40( 26, (RogueClassCmd*)(arg_6), scope_0 )) ))));
-      RogueInteger i_3 = (fmt_2->locate((RogueCharacter)'$',0));
-      if (i_3 == -1)
+      RogueOptionalInteger i_3 = ((fmt_2->index_of((RogueCharacter)'$',RogueOptionalInteger())));
+      if (!(i_3.exists))
       {
         throw ((RogueToken__error( THIS->t, Rogue_program.literal_strings[798] )));
       }
-      if (i_3 > 0)
+      if (i_3.value > 0)
       {
-        cmd_1 = ((RogueClassCmdAccess*)((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), THIS->t, ((RogueClassCmd*)(cmd_1)), Rogue_program.literal_strings[799], ((RogueCmdArgs__init( ((RogueClassCmdArgs*)Rogue_program.type_CmdArgs->create_and_init_object()), ((RogueClassCmd*)(((RogueCmdLiteralString__init( ((RogueClassCmdLiteralString*)Rogue_program.type_CmdLiteralString->create_and_init_object()), THIS->t, ((RogueString__leftmost( fmt_2, i_3 ))), 0 ))))) ))) ))));
-        fmt_2 = ((RogueString*)fmt_2->substring((i_3 + 1)));
+        cmd_1 = ((RogueClassCmdAccess*)((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), THIS->t, ((RogueClassCmd*)(cmd_1)), Rogue_program.literal_strings[799], ((RogueCmdArgs__init( ((RogueClassCmdArgs*)Rogue_program.type_CmdArgs->create_and_init_object()), ((RogueClassCmd*)(((RogueCmdLiteralString__init( ((RogueClassCmdLiteralString*)Rogue_program.type_CmdLiteralString->create_and_init_object()), THIS->t, ((RogueString__leftmost( fmt_2, i_3.value ))), 0 ))))) ))) ))));
+        fmt_2 = ((RogueString*)fmt_2->substring((i_3.value + 1)));
       }
       else
       {
@@ -33740,7 +33711,7 @@ RogueClassCmd* RogueCmdFormattedString__resolve( RogueClassCmdFormattedString* T
   }
   if (!!(fmt_2->count))
   {
-    if (fmt_2->locate((RogueCharacter)'$',0) != -1)
+    if ((fmt_2->index_of((RogueCharacter)'$',RogueOptionalInteger())).exists)
     {
       throw ((RogueToken__error( THIS->t, Rogue_program.literal_strings[800] )));
     }
@@ -37095,11 +37066,11 @@ RogueString* RogueCmdCallInlineNative__type_name( RogueClassCmdCallInlineNative*
 void RogueCmdCallInlineNative__write_cpp( RogueClassCmdCallInlineNative* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 )
 {
   RogueString* st_2 = (THIS->method_info->native_code);
-  RogueInteger dollar_3 = (st_2->locate((RogueCharacter)'$',0));
-  while (dollar_3 != -1)
+  RogueOptionalInteger dollar_3 = ((st_2->index_of((RogueCharacter)'$',RogueOptionalInteger())));
+  while (dollar_3.exists)
   {
-    RogueCPPWriter__print( writer_0, st_2->substring(0,(dollar_3 - 1)) );
-    st_2 = ((RogueString*)st_2->substring((dollar_3 + 1)));
+    RogueCPPWriter__print( writer_0, st_2->substring(0,(dollar_3.value - 1)) );
+    st_2 = ((RogueString*)st_2->substring((dollar_3.value + 1)));
     RogueClassLocal* best_match_4 = 0;
     {
       RogueObjectList* _auto_975_5 = (((RogueObjectList*)THIS->method_info->parameters));
@@ -37126,7 +37097,7 @@ void RogueCmdCallInlineNative__write_cpp( RogueClassCmdCallInlineNative* THIS, R
       call_ROGUEM686( 33, (RogueClassCmdCallInlineNative*)(THIS), writer_0 );
       st_2 = ((RogueString*)st_2->substring(4));
     }
-    dollar_3 = ((RogueInteger)st_2->locate((RogueCharacter)'$',0));
+    dollar_3 = ((RogueOptionalInteger)(st_2->index_of((RogueCharacter)'$',RogueOptionalInteger())));
   }
   RogueCPPWriter__print( writer_0, st_2 );
 }

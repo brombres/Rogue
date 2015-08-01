@@ -65,7 +65,7 @@ class String [native functional]
       return (count >= other_count and contains_at(other,0))
 
     method contains( substring:String )->Logical
-      return locate(substring) >= 0
+      return index_of(substring)?
 
     method contains_at( substring:String, at_index:Integer )->Logical
       $if ("C++") inlineNative '$this->contains($substring,$at_index)'
@@ -78,14 +78,14 @@ class String [native functional]
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
     method from_first( ch:Character )->String
-      local i = locate( ch )
-      if (i == -1) return ""
-      return substring( i )
+      local i = index_of( ch )
+      if (not i) return ""
+      return substring( i! )
 
     method from_first( st:String )->String
-      local i = locate( st )
-      if (i == -1) return ""
-      return substring( i )
+      local i = index_of( st )
+      if (not i) return ""
+      return substring( i! )
 
     method from_last( ch:Character )->String
       local i = last_index_of( ch )
@@ -130,24 +130,6 @@ class String [native functional]
 
     method last_index_of( other:String, starting_index=null:Integer? )->Integer?
       $if ("C++") inlineNative '($this->last_index_of($other,$starting_index))'
-
-    method locate( ch:Character, i1=0:Integer )->Integer
-      $if ("C++") inlineNative '$this->locate($ch,$i1)'
-
-    method locate( other:String, i1=0:Integer )->Integer
-      $if ("C++") inlineNative '$this->locate($other,$i1)'
-
-    method locate_last( ch:Character )->Integer
-      return locate_last( ch, count-1 )
-
-    method locate_last( ch:Character, starting_index:Integer )->Integer
-      $if ("C++") inlineNative '$this->locate_last($ch,$starting_index)'
-
-    method locate_last( other:String )->Integer
-      return locate_last( other, count-other.count )
-
-    method locate_last( other:String, starting_index:Integer )->Integer
-      $if ("C++") inlineNative '$this->locate_last($other,$starting_index)'
 
     method operator+( value:Byte )->String
       inline this + value->Integer
@@ -198,37 +180,6 @@ class String [native functional]
       local this_count = count
       if (n < 0) return substring( -n, this_count-1 )
       else       return substring( this_count-n, this_count-1 )
-
-    method split( separator:Character )->String[]
-      local result = String[]
-
-      local i1 = 0
-      local i2 = locate( separator, i1 )
-      while (i2 != -1)
-        result.add( substring(i1,i2-1) )
-        i1 = i2 + 1
-        i2 = locate( separator, i1 )
-      endWhile
-
-      result.add( substring(i1) )
-
-      return result
-
-    method split( separator:String )->String[]
-      local result = String[]
-      local separator_count = separator.count
-
-      local i1 = 0
-      local i2 = locate( separator, i1 )
-      while (i2 != -1)
-        result.add( substring(i1,i2-1) )
-        i1 = i2 + separator_count
-        i2 = locate( separator, i1 )
-      endWhile
-
-      result.add( substring(i1) )
-
-      return result
 
     method split2( separator:Character )->String[]
       local result = String[]
