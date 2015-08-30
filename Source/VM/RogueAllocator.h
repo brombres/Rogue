@@ -4,6 +4,8 @@
 //  2015.08.27 by Abe Pralle
 //=============================================================================
 #pragma once
+#ifndef ROGUE_ALLOCATOR_H
+#define ROGUE_ALLOCATOR_H
 
 #include "Rogue.h"
 
@@ -54,3 +56,5 @@ void RogueAllocator_retire( RogueAllocator* THIS );
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size );
 void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
+
+#endif // ROGUE_ALLOCATOR_H

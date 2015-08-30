@@ -137,6 +137,7 @@
 //-----------------------------------------------------------------------------
 typedef struct RogueObject RogueObject;
 typedef struct RogueVM     RogueVM;
+typedef struct RogueType   RogueType;
 //struct Object;
 //struct ParseReader;
 //struct Scope;
@@ -164,6 +165,9 @@ typedef struct RogueVM     RogueVM;
 //
 
 #include "RogueAllocator.h"
+#include "RogueObject.h"
+#include "RogueString.h"
+#include "RogueType.h"
 #include "RogueETC.h"
 #include "RogueReader.h"
 #include "RogueCmd.h"

@@ -25,4 +25,6 @@ typedef struct RogueReader
   RogueReaderPosition position;
 } RogueReader;
 
+RogueReader* RogueReader_create( const char* filepath );
+
 #endif // ROGUE_READER_H
