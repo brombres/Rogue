@@ -12,3 +12,4 @@ Programs/roguec
 Samples/**/*.h
 Samples/**/*.cpp
 namegenerator
+Source/VM/Build
