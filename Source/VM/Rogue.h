@@ -136,7 +136,7 @@
 //  FORWARD DECLARATIONS
 //-----------------------------------------------------------------------------
 typedef struct RogueObject RogueObject;
-typedef struct RogueVM RogueVM;
+typedef struct RogueVM     RogueVM;
 //struct Object;
 //struct ParseReader;
 //struct Scope;
@@ -167,5 +167,6 @@ typedef struct RogueVM RogueVM;
 #include "RogueETC.h"
 #include "RogueReader.h"
 #include "RogueCmd.h"
+#include "RogueVM.h"
 
 #endif // ROGUE_H
