@@ -6,6 +6,12 @@ int main()
   printf( "+Rogue Test\n" );
 
   RogueVM* vm = RogueVM_create();
+
+  RogueString* st = RogueString_create_from_utf8( vm, "abc", -1 );
+
+  RogueString_log( st );
+  printf("\n");
+
   RogueVM_delete( vm );
 
   //RogueCmd* expression = RogueCmd_create_binary( &RogueCmdType_add_integer,

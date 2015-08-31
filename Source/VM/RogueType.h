@@ -13,6 +13,7 @@
 struct RogueType
 {
   RogueVM*     vm;
+  RogueString* name;
   RogueInteger object_size;
 };
 

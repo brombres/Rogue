@@ -11,8 +11,8 @@ RogueVM* RogueVM_create()
   memset( THIS, 0, sizeof(RogueVM) );
   RogueAllocator_init( &THIS->allocator );
 
-  // TODO
-  // type_String = 
+  THIS->type_String = RogueType_create( THIS );
+  THIS->type_String->name = (RogueString*) RogueVM_consolidate_utf8( THIS, "String", -1 );
 
   return THIS;
 }
@@ -25,5 +25,21 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
     free( THIS );
   }
   return 0;
+}
+
+RogueString* RogueVM_consolidate( RogueVM* THIS, RogueString* st )
+{
+  // TODO
+  return st;
+}
+
+RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* characters, RogueInteger count )
+{
+  return RogueVM_consolidate( THIS, RogueString_create_from_characters(THIS, characters, count) );
+}
+
+RogueString* RogueVM_consolidate_utf8( RogueVM* THIS, const char* utf8, int utf8_count )
+{
+  return RogueVM_consolidate( THIS, RogueString_create_from_utf8(THIS, utf8, utf8_count) );
 }
 

@@ -6,7 +6,7 @@
 #include "Rogue.h"
 #include <string.h>
 
-RogueString* RogueString_create( RogueVM* vm, int count )
+RogueString* RogueString_create( RogueVM* vm, RogueInteger count )
 {
   int size = sizeof(RogueString) + count * sizeof(RogueCharacter);
   RogueString* THIS = (RogueString*) RogueObject_create( vm->type_String, size );
@@ -14,7 +14,14 @@ RogueString* RogueString_create( RogueVM* vm, int count )
   return THIS;
 }
 
-RogueString* RogueString_from_utf8( RogueVM* vm, const char* utf8, int utf8_count )
+RogueString* RogueString_create_from_characters( RogueVM* vm, RogueCharacter* characters, RogueInteger count )
+{
+  RogueString* THIS = RogueString_create( vm, count );
+  memcpy( THIS->characters, characters, count*sizeof(RogueCharacter) );
+  return RogueString_update_hash_code( THIS );
+}
+
+RogueString* RogueString_create_from_utf8( RogueVM* vm, const char* utf8, int utf8_count )
 {
   int decoded_count;
   RogueString* THIS;
@@ -24,6 +31,23 @@ RogueString* RogueString_from_utf8( RogueVM* vm, const char* utf8, int utf8_coun
   THIS = RogueString_create( vm, decoded_count );
   RogueUTF8_decode( utf8, utf8_count, THIS->characters, decoded_count );
   return RogueString_update_hash_code( THIS );
+}
+
+void RogueString_log( RogueString* THIS )
+{
+  if ( !THIS )
+  {
+    printf( "null" );
+  }
+  else
+  {
+    int i;
+    for (i=0; i<THIS->count; ++i)
+    {
+      RogueCharacter ch = THIS->characters[i];
+      putc( (char) ch, stdout );
+    }
+  }
 }
 
 RogueString* RogueString_update_hash_code( RogueString* THIS )
