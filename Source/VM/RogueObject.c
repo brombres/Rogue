@@ -13,7 +13,10 @@ RogueObject* RogueObject_create( RogueType* type, RogueInteger size )
   THIS = (RogueObject*) RogueAllocator_allocate( &type->vm->allocator, size );
 
   THIS->allocation.size = size;
-  // TODO: fill in other headers
+  THIS->allocation.reference_count = 0;
+  THIS->allocation.next_allocation = (RogueAllocation*) type->vm->objects;
+  type->vm->objects = THIS;
+  THIS->type = type;
 
   return THIS;
 }

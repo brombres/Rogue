@@ -10,6 +10,9 @@
 struct RogueVM
 {
   RogueAllocator allocator;
+  RogueObject*   objects;
+
+  RogueType*     type_String;
 };
 
 RogueVM* RogueVM_create();
