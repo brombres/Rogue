@@ -139,7 +139,7 @@ typedef struct RogueObject RogueObject;
 typedef struct RogueVM     RogueVM;
 typedef struct RogueType   RogueType;
 typedef struct RogueString RogueString;
-typedef struct RogueStringBuidler RogueStringBuidler;
+typedef struct RogueStringBuilder RogueStringBuilder;
 //struct Object;
 //struct ParseReader;
 //struct Scope;

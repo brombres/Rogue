@@ -7,6 +7,8 @@
 
 int RogueUTF8_decoded_count( const char* utf8_data, int utf8_count )
 {
+  // Returns the number of 16-bit Characters required to hold the decoded value
+  // of the given UTF-8 string.
   if (utf8_count == -1) utf8_count = (int) strlen( utf8_data );
 
   const char* cur   = utf8_data - 1;
@@ -27,7 +29,7 @@ int RogueUTF8_decoded_count( const char* utf8_data, int utf8_count )
   return result_count;
 }
 
-void RogueUTF8_decode( const char* utf8_data, int utf8_count, RogueCharacter* dest_buffer, int decoded_count )
+void RogueUTF8_decode( const char* utf8_data, RogueCharacter* dest_buffer, int decoded_count )
 {
   RogueByte*      src  = (RogueByte*)(utf8_data - 1);
   RogueCharacter* dest = dest_buffer - 1;

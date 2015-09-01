@@ -29,7 +29,7 @@ RogueString* RogueString_create_from_utf8( RogueVM* vm, const char* utf8, int ut
   if (utf8_count == -1) utf8_count = strlen( utf8 );
   decoded_count = RogueUTF8_decoded_count( utf8, utf8_count );
   THIS = RogueString_create( vm, decoded_count );
-  RogueUTF8_decode( utf8, utf8_count, THIS->characters, decoded_count );
+  RogueUTF8_decode( utf8, THIS->characters, decoded_count );
   return RogueString_update_hash_code( THIS );
 }
 
