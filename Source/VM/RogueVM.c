@@ -12,6 +12,7 @@ RogueVM* RogueVM_create()
   RogueAllocator_init( &THIS->allocator );
 
   THIS->type_ObjectArray = RogueTypeObjectArray_create( THIS );
+  THIS->type_ObjectList  = RogueTypeObjectList_create( THIS );
   THIS->type_String      = RogueTypeString_create( THIS );
   THIS->type_Table       = RogueTypeTable_create( THIS );
   THIS->type_TableEntry  = RogueTypeTableEntry_create( THIS );
@@ -24,6 +25,7 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
   if (THIS)
   {
     RogueType_delete( THIS->type_ObjectArray );
+    RogueType_delete( THIS->type_ObjectList );
     RogueType_delete( THIS->type_String );
     RogueType_delete( THIS->type_Table );
     RogueType_delete( THIS->type_TableEntry );

@@ -31,7 +31,6 @@ void RogueStringBuilder_print_integer( RogueStringBuilder* THIS, RogueInteger va
 void RogueStringBuilder_print_long( RogueStringBuilder* THIS, RogueLong value );
 void RogueStringBuilder_print_object( RogueStringBuilder* THIS, RogueObject* value );
 void RogueStringBuilder_print_real( RogueStringBuilder* THIS, RogueReal value );
-void RogueStringBuilder_print_char( RogueStringBuilder* THIS, const char value );
 void RogueStringBuilder_print_c_string( RogueStringBuilder* THIS, const char* value );
 void RogueStringBuilder_print_string_builder( RogueStringBuilder* THIS, RogueStringBuilder* other );
 

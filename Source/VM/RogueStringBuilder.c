@@ -84,7 +84,7 @@ void RogueStringBuilder_print_character( RogueStringBuilder* THIS, RogueCharacte
 void RogueStringBuilder_print_characters( RogueStringBuilder* THIS, RogueCharacter* values, RogueInteger len )
 {
   RogueStringBuilder_reserve( THIS, len );
-  memcpy( THIS->characters, values, len*sizeof(RogueCharacter) );
+  memcpy( THIS->characters+THIS->count, values, len*sizeof(RogueCharacter) );
   THIS->count += len;
 }
 
@@ -121,12 +121,6 @@ void RogueStringBuilder_print_real( RogueStringBuilder* THIS, RogueReal value )
   char st[40];
   sprintf( st, "%.4lf", value );
   RogueStringBuilder_print_c_string( THIS, st );
-}
-
-void RogueStringBuilder_print_char( RogueStringBuilder* THIS, const char value )
-{
-  if (THIS->count == THIS->capacity) RogueStringBuilder_reserve( THIS, 1 );
-  THIS->characters[ THIS->count++ ] = value;
 }
 
 void RogueStringBuilder_print_c_string( RogueStringBuilder* THIS, const char* value )

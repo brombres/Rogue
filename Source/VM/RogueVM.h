@@ -13,6 +13,7 @@ struct RogueVM
   RogueObject*   objects;
 
   RogueType*     type_ObjectArray;
+  RogueType*     type_ObjectList;
   RogueType*     type_String;
   RogueType*     type_Table;
   RogueType*     type_TableEntry;

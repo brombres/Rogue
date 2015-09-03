@@ -9,7 +9,14 @@
 RogueType* RogueTypeString_create( RogueVM* vm )
 {
   RogueType* THIS = RogueType_create( vm, "String", sizeof(RogueString) );
+  THIS->print = RoguePrintFn_string;
   return THIS;
+}
+
+void RoguePrintFn_string( void* object, RogueStringBuilder* builder )
+{
+
+  RogueStringBuilder_print_characters( builder, ((RogueString*)object)->characters, ((RogueString*)object)->count );
 }
 
 RogueString* RogueString_create( RogueVM* vm, RogueInteger count )

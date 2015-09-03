@@ -8,6 +8,7 @@
 #define ROGUE_ARRAY_H
 
 RogueType* RogueTypeObjectArray_create( RogueVM* vm );
+void RoguePrintFn_object_array( void* array_ptr, RogueStringBuilder* builder );
 
 struct RogueArray
 {
@@ -15,7 +16,8 @@ struct RogueArray
   RogueInteger count;
   union
   {
-    RogueObject* objects[0];
+    RogueByte bytes[0];
+    void*     objects[0];
   };
 };
 

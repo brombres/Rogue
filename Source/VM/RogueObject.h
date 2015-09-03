@@ -13,6 +13,7 @@ struct RogueObject
   RogueType*      type;
 };
 
-RogueObject* RogueObject_create( RogueType* type, RogueInteger size );
+void RogueObject_print( void* THIS );
+void RogueObject_println( void* THIS );
 
 #endif // ROGUE_OBJECT_H

@@ -7,23 +7,15 @@ int main()
 
   RogueVM* vm = RogueVM_create();
 
-  RogueArray* array = RogueArray_create( vm->type_ObjectArray, 5 );
-  printf( "Array count: %d\n", array->count );
+  RogueList* list = RogueList_create( vm->type_ObjectList, 1);
 
-  array->objects[0] = (RogueObject*) RogueVM_consolidate_utf8( vm, "zero", -1 );
-  array->objects[1] = (RogueObject*) RogueVM_consolidate_utf8( vm, "one", -1 );
-  array->objects[2] = (RogueObject*) RogueVM_consolidate_utf8( vm, "two", -1 );
-  array->objects[3] = (RogueObject*) RogueVM_consolidate_utf8( vm, "three", -1 );
-  array->objects[4] = (RogueObject*) RogueVM_consolidate_utf8( vm, "four", -1 );
+  RogueList_add_object( list, RogueVM_consolidate_utf8(vm,"one",-1) );
+  RogueList_add_object( list, RogueVM_consolidate_utf8(vm,"two",-1) );
+  RogueList_add_object( list, RogueVM_consolidate_utf8(vm,"three",-1) );
+  RogueList_add_object( list, RogueVM_consolidate_utf8(vm,"four",-1) );
+  RogueList_add_object( list, RogueVM_consolidate_utf8(vm,"five",-1) );
 
-  {
-    int i;
-    for (i=0; i<array->count; ++i)
-    {
-      RogueString_log( (RogueString*) array->objects[i] );
-      printf("\n");
-    }
-  }
+  RogueObject_println( list );
 
   RogueVM_delete( vm );
 

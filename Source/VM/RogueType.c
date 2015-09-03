@@ -5,6 +5,19 @@
 //=============================================================================
 #include "Rogue.h"
 
+//-----------------------------------------------------------------------------
+//  Dynamic Functions
+//-----------------------------------------------------------------------------
+void RoguePrintFn_default( void* object, RogueStringBuilder* builder )
+{
+  RogueStringBuilder_print_character( builder, '(' );
+  RogueStringBuilder_print_c_string( builder, ((RogueObject*)object)->type->name );
+  RogueStringBuilder_print_character( builder, ')' );
+}
+
+//-----------------------------------------------------------------------------
+//  RogueType
+//-----------------------------------------------------------------------------
 RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_size )
 {
   int len = strlen( name );
@@ -17,6 +30,8 @@ RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_
   strcpy( THIS->name, name );
 
   THIS->object_size = object_size;
+
+  THIS->print = RoguePrintFn_default;
 
   return THIS;
 }
@@ -31,7 +46,7 @@ RogueType* RogueType_delete( RogueType* THIS )
   return 0;
 }
 
-RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
+void* RogueType_create_object( RogueType* THIS, RogueInteger size )
 {
   RogueObject* object;
 

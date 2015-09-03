@@ -10,7 +10,10 @@
 //-----------------------------------------------------------------------------
 //  Dynamic Functions
 //-----------------------------------------------------------------------------
-typedef void (*RogueTraceFn)( RogueType* THIS, RogueObject* object );
+typedef void (*RogueTraceFn)( void* object );
+typedef void (*RoguePrintFn)( void* object, RogueStringBuilder* builder );
+
+void RoguePrintFn_default( void* object, RogueStringBuilder* builder );
 
 
 //-----------------------------------------------------------------------------
@@ -25,11 +28,12 @@ struct RogueType
   RogueInteger  element_size;
 
   RogueTraceFn  trace;
+  RoguePrintFn  print;
 };
 
 RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_size );
 RogueType* RogueType_delete( RogueType* THIS );
 
-RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );
+void* RogueType_create_object( RogueType* THIS, RogueInteger size );
 
 #endif // ROGUE_TYPE_H
