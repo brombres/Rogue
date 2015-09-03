@@ -8,12 +8,28 @@
 //-----------------------------------------------------------------------------
 //  Dynamic Functions
 //-----------------------------------------------------------------------------
+int RogueEqualsFn_default( void* object_a, void* object_b )
+{
+  return (object_a == object_b);
+}
+
+int RogueEqualsCStringFn_default( void* object_a, const char* b )
+{
+  return 0;
+}
+
+RogueInteger RogueHashCodeFn_default( void* object )
+{
+  return (RogueInteger)(intptr_t)object;
+}
+
 void RoguePrintFn_default( void* object, RogueStringBuilder* builder )
 {
   RogueStringBuilder_print_character( builder, '(' );
   RogueStringBuilder_print_c_string( builder, ((RogueObject*)object)->type->name );
   RogueStringBuilder_print_character( builder, ')' );
 }
+
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -31,6 +47,9 @@ RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_
 
   THIS->object_size = object_size;
 
+  THIS->equals = RogueEqualsFn_default;
+  THIS->equals_c_string = RogueEqualsCStringFn_default;
+  THIS->hash_code = RogueHashCodeFn_default;
   THIS->print = RoguePrintFn_default;
 
   return THIS;

@@ -60,4 +60,6 @@ struct RogueTable
 
 RogueTable* RogueTable_create( RogueVM* vm, RogueInteger initial_bin_count );
 
+RogueTableEntry* RogueTable_acquire( RogueVM* vm, const char* key, int create_if_necessary );
+
 #endif // ROGUE_TABLE_H

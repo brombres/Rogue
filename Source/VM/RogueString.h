@@ -10,7 +10,6 @@
 #include "Rogue.h"
 
 RogueType* RogueTypeString_create( RogueVM* vm );
-void       RoguePrintFn_string( void* object, RogueStringBuilder* builder );
 
 struct RogueString
 {

@@ -10,10 +10,16 @@
 //-----------------------------------------------------------------------------
 //  Dynamic Functions
 //-----------------------------------------------------------------------------
-typedef void (*RogueTraceFn)( void* object );
-typedef void (*RoguePrintFn)( void* object, RogueStringBuilder* builder );
+typedef int          (*RogueEqualsFn)( void* object_a, void* object_b );
+typedef int          (*RogueEqualsCStringFn)( void* object_a, const char* b );
+typedef RogueInteger (*RogueHashCodeFn)( void* object );
+typedef void         (*RoguePrintFn)( void* object, RogueStringBuilder* builder );
+typedef void         (*RogueTraceFn)( void* object );
 
-void RoguePrintFn_default( void* object, RogueStringBuilder* builder );
+int          RogueEqualsFn_default( void* object_a, void* object_b );
+int          RogueEqualsCStringFn_default( void* object_a, const char* b );
+RogueInteger RogueHashCodeFn_default( void* object );
+void         RoguePrintFn_default( void* object, RogueStringBuilder* builder );
 
 
 //-----------------------------------------------------------------------------
@@ -27,8 +33,11 @@ struct RogueType
   RogueInteger  object_size;
   RogueInteger  element_size;
 
-  RogueTraceFn  trace;
-  RoguePrintFn  print;
+  RogueEqualsFn        equals;
+  RogueEqualsCStringFn equals_c_string;
+  RogueHashCodeFn      hash_code;
+  RoguePrintFn         print;
+  RogueTraceFn         trace;
 };
 
 RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_size );

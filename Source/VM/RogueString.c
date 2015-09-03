@@ -6,17 +6,62 @@
 #include "Rogue.h"
 #include <string.h>
 
-RogueType* RogueTypeString_create( RogueVM* vm )
+int RogueEqualsFn_string( void* object_a, void* object_b )
 {
-  RogueType* THIS = RogueType_create( vm, "String", sizeof(RogueString) );
-  THIS->print = RoguePrintFn_string;
-  return THIS;
+  RogueString* a;
+  RogueString* b;
+
+  if (object_a == object_b) return 1;
+
+  a = object_a;
+  b = object_b;
+  if (a->object.type != b->object.type) return 0;
+
+  if (a->hash_code != b->hash_code || a->count != b->count) return 0;
+
+  return (0 == memcmp(a->characters,b->characters,a->count*sizeof(RogueCharacter)));
+}
+
+int RogueEqualsCStringFn_string( void* object_a, const char* b )
+{
+  RogueCharacter* characters;
+  RogueString* a = object_a;
+  int b_len = strlen( b );
+  char ch;
+
+  if (a->count != b_len) return 0;
+
+  characters = a->characters - 1;
+  --b;
+
+  while ( (ch = *(++b)) )
+  {
+    if (*(++characters) != ch) return 0;
+  }
+
+  return 1;
+}
+
+RogueInteger RogueHashCodeFn_string( void* object )
+{
+  return ((RogueString*)object)->hash_code;
 }
 
 void RoguePrintFn_string( void* object, RogueStringBuilder* builder )
 {
 
   RogueStringBuilder_print_characters( builder, ((RogueString*)object)->characters, ((RogueString*)object)->count );
+}
+
+
+RogueType* RogueTypeString_create( RogueVM* vm )
+{
+  RogueType* THIS = RogueType_create( vm, "String", sizeof(RogueString) );
+  THIS->print           = RoguePrintFn_string;
+  THIS->equals          = RogueEqualsFn_string;
+  THIS->equals_c_string = RogueEqualsCStringFn_string;
+  THIS->hash_code       = RogueHashCodeFn_string;
+  return THIS;
 }
 
 RogueString* RogueString_create( RogueVM* vm, RogueInteger count )

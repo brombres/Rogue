@@ -7,9 +7,11 @@ int main()
 
   RogueVM* vm = RogueVM_create();
 
-  RogueTable* table = RogueTable_create( vm, 5 );
-
-  RogueObject_println( table );
+  RogueString* st = RogueVM_consolidate_c_string( vm, "AB", -1 );
+  printf( "hash: %d\n", st->object.type->hash_code(st) );
+  printf( "equals: %d\n", st->object.type->equals_c_string(st,"AB") );
+  printf( "equals: %d\n", st->object.type->equals_c_string(st,"A") );
+  printf( "equals: %d\n", st->object.type->equals_c_string(st,"ABC") );
 
   RogueVM_delete( vm );
 
