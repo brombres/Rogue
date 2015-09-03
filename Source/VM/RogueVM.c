@@ -47,7 +47,7 @@ RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* char
   return RogueVM_consolidate( THIS, RogueString_create_from_characters(THIS, characters, count) );
 }
 
-RogueString* RogueVM_consolidate_utf8( RogueVM* THIS, const char* utf8, int utf8_count )
+RogueString* RogueVM_consolidate_c_string( RogueVM* THIS, const char* utf8, int utf8_count )
 {
   return RogueVM_consolidate( THIS, RogueString_create_from_utf8(THIS, utf8, utf8_count) );
 }

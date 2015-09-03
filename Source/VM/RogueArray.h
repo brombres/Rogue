@@ -22,5 +22,6 @@ struct RogueArray
 };
 
 RogueArray* RogueArray_create( RogueType* array_type, RogueInteger count );
+RogueArray* RogueObjectArray_create( RogueVM* vm, RogueInteger count );
 
 #endif // ROGUE_ARRAY_H

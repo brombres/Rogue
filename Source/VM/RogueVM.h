@@ -24,7 +24,7 @@ RogueVM* RogueVM_delete( RogueVM* THIS );
 
 RogueString* RogueVM_consolidate( RogueVM* THIS, RogueString* st );
 RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* characters, RogueInteger count );
-RogueString* RogueVM_consolidate_utf8( RogueVM* THIS, const char* utf8, int utf8_count );
+RogueString* RogueVM_consolidate_c_string( RogueVM* THIS, const char* utf8, int utf8_count );
 
 #endif // ROGUE_VM_H
 

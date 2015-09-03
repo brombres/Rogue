@@ -18,6 +18,7 @@ struct RogueList
 };
 
 RogueList* RogueList_create( RogueType* list_type, RogueInteger initial_capacity );
+RogueList* RogueObjectList_create( RogueVM* vm, RogueInteger initial_capacity );
 
 RogueList* RogueList_add_object( RogueList* THIS, void* object );
 RogueList* RogueList_reserve( RogueList* THIS, RogueInteger additional_capacity );

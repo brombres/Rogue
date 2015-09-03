@@ -41,3 +41,9 @@ RogueArray* RogueArray_create( RogueType* array_type, RogueInteger count )
   THIS->count = count;
   return THIS;
 }
+
+RogueArray* RogueObjectArray_create( RogueVM* vm, RogueInteger count )
+{
+  return RogueArray_create( vm->type_ObjectArray, count );
+}
+
