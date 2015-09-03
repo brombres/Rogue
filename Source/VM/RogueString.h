@@ -9,6 +9,8 @@
 
 #include "Rogue.h"
 
+RogueType* RogueTypeString_create( RogueVM* vm );
+
 struct RogueString
 {
   RogueObject    object;

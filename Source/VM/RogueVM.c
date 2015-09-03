@@ -11,8 +11,10 @@ RogueVM* RogueVM_create()
   memset( THIS, 0, sizeof(RogueVM) );
   RogueAllocator_init( &THIS->allocator );
 
-  THIS->type_String = RogueType_create( THIS );
-  THIS->type_String->name = (RogueString*) RogueVM_consolidate_utf8( THIS, "String", -1 );
+  THIS->type_ObjectArray = RogueTypeObjectArray_create( THIS );
+  THIS->type_String      = RogueTypeString_create( THIS );
+  THIS->type_Table       = RogueTypeTable_create( THIS );
+  THIS->type_TableEntry  = RogueTypeTableEntry_create( THIS );
 
   return THIS;
 }
@@ -21,6 +23,11 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
 {
   if (THIS)
   {
+    RogueType_delete( THIS->type_ObjectArray );
+    RogueType_delete( THIS->type_String );
+    RogueType_delete( THIS->type_Table );
+    RogueType_delete( THIS->type_TableEntry );
+
     RogueAllocator_retire( &THIS->allocator );
     free( THIS );
   }

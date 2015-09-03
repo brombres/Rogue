@@ -12,7 +12,10 @@ struct RogueVM
   RogueAllocator allocator;
   RogueObject*   objects;
 
+  RogueType*     type_ObjectArray;
   RogueType*     type_String;
+  RogueType*     type_Table;
+  RogueType*     type_TableEntry;
 };
 
 RogueVM* RogueVM_create();
