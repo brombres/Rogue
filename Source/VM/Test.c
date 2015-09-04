@@ -8,9 +8,16 @@ int main()
   RogueVM* vm = RogueVM_create();
 
   RogueParseReader* reader = RogueParseReader_create( vm, ROGUE_STRING(vm,"Test.c") );
+
+  printf( "%6d  ", 1 );
   while (RogueParseReader_has_another(reader))
   {
-    putc( RogueParseReader_read(reader), stdout );
+    RogueCharacter ch = RogueParseReader_read(reader);
+    putc( ch, stdout );
+    if (ch == 10)
+    {
+      printf( "%6d  ", reader->position.line );
+    }
   }
 
   RogueVM_delete( vm );

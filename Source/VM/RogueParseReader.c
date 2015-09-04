@@ -21,6 +21,8 @@ RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath )
 {
   RogueParseReader* reader = RogueType_create_object( vm->type_ParseReader, -1 );
   reader->filepath = RogueVM_consolidate_string( vm, filepath );
+  reader->position.line = 1;
+  reader->position.column = 1;
 
   {
     RogueInteger size;
@@ -54,8 +56,30 @@ int RogueParseReader_has_another( RogueParseReader* THIS )
   return (THIS->position.index < THIS->count);
 }
 
+RogueCharacter RogueParseReader_peek( RogueParseReader* THIS, RogueInteger lookahead )
+{
+  RogueInteger index = THIS->position.index + lookahead;
+  if (index >= THIS->count) return 0;
+  return THIS->data->characters[ index ];
+}
+
 RogueCharacter RogueParseReader_read( RogueParseReader* THIS )
 {
-  return (THIS->data->characters[ THIS->position.index++ ]);
+  RogueCharacter result = THIS->data->characters[ THIS->position.index++ ];
+  switch (result)
+  {
+    case '\t':
+      THIS->position.column += 2;
+      return result;
+
+    case '\n':
+      THIS->position.column = 1;
+      ++THIS->position.line;
+      return result;
+
+    default:
+      ++THIS->position.column;
+      return result;
+  }
 }
 
