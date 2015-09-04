@@ -7,11 +7,11 @@ int main()
 
   RogueVM* vm = RogueVM_create();
 
-  //RogueParseReader* reader = RogueParseReader_create( vm, ROGUE_STRING(vm,"Test.c") );
-
-  RogueString* st = ROGUE_STRING( vm, "Hello World!" );
-  printf( "%s\n", RogueString_to_c_string(st) );
-  printf( "%s\n", RogueString_to_c_string(ROGUE_STRING(vm,"Hi")) );
+  RogueParseReader* reader = RogueParseReader_create( vm, ROGUE_STRING(vm,"Test.c") );
+  while (RogueParseReader_has_another(reader))
+  {
+    putc( RogueParseReader_read(reader), stdout );
+  }
 
   RogueVM_delete( vm );
 

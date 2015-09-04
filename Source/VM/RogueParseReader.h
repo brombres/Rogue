@@ -31,8 +31,12 @@ struct RogueParseReader
   RogueString*       filepath;
   RogueParsePosition position;
   RogueInteger       count;
+  RogueArray*        data;
 };
 
 RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath );
+
+int            RogueParseReader_has_another( RogueParseReader* THIS );
+RogueCharacter RogueParseReader_read( RogueParseReader* THIS );
 
 #endif // ROGUE_READER_H
