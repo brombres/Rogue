@@ -22,6 +22,15 @@ int RogueEqualsFn_string( void* object_a, void* object_b )
   return (0 == memcmp(a->characters,b->characters,a->count*sizeof(RogueCharacter)));
 }
 
+int RogueEqualsCharactersFn_string( void* object, RogueInteger hash_code,
+    RogueCharacter* characters, RogueInteger count )
+{
+  RogueString* THIS = object;
+  if (THIS->hash_code != hash_code || THIS->count != count) return 0;
+
+  return (0 == memcmp(THIS->characters,characters,count*sizeof(RogueCharacter)));
+}
+
 int RogueEqualsCStringFn_string( void* object_a, const char* b )
 {
   RogueCharacter* characters;
@@ -57,10 +66,11 @@ void RoguePrintFn_string( void* object, RogueStringBuilder* builder )
 RogueType* RogueTypeString_create( RogueVM* vm )
 {
   RogueType* THIS = RogueType_create( vm, "String", sizeof(RogueString) );
-  THIS->print           = RoguePrintFn_string;
-  THIS->equals          = RogueEqualsFn_string;
-  THIS->equals_c_string = RogueEqualsCStringFn_string;
-  THIS->hash_code       = RogueHashCodeFn_string;
+  THIS->print             = RoguePrintFn_string;
+  THIS->equals            = RogueEqualsFn_string;
+  THIS->equals_c_string   = RogueEqualsCStringFn_string;
+  THIS->equals_characters = RogueEqualsCharactersFn_string;
+  THIS->hash_code         = RogueHashCodeFn_string;
   return THIS;
 }
 
@@ -79,15 +89,15 @@ RogueString* RogueString_create_from_characters( RogueVM* vm, RogueCharacter* ch
   return RogueString_update_hash_code( THIS );
 }
 
-RogueString* RogueString_create_from_utf8( RogueVM* vm, const char* utf8, int utf8_count )
+RogueString* RogueString_create_from_c_string( RogueVM* vm, const char* utf8 )
 {
   int decoded_count;
   RogueString* THIS;
 
-  if (utf8_count == -1) utf8_count = strlen( utf8 );
+  RogueInteger utf8_count = strlen( utf8 );
   decoded_count = RogueUTF8_decoded_count( utf8, utf8_count );
   THIS = RogueString_create( vm, decoded_count );
-  RogueUTF8_decode( utf8, THIS->characters, decoded_count );
+  RogueUTF8_decode( utf8, utf8_count, THIS->characters );
   return RogueString_update_hash_code( THIS );
 }
 
@@ -119,5 +129,50 @@ RogueString* RogueString_update_hash_code( RogueString* THIS )
   }
   THIS->hash_code = hash_code;
   return THIS;
+}
+
+RogueInteger RogueString_calculate_hash_code( const char* st )
+{
+  RogueInteger hash_code = 0;
+  RogueInteger ch;
+  --st;
+  while ( (ch = *(++st)) )
+  {
+    hash_code = ((hash_code << 3) - hash_code) + ch;
+  }
+  return hash_code;
+}
+
+RogueInteger RogueString_calculate_hash_code_for_characters( RogueCharacter* characters, RogueInteger count )
+{
+  RogueInteger hash_code = 0;
+  --characters;
+  while (--count >= 0)
+  {
+    hash_code = ((hash_code << 3) - hash_code) + *(++characters);
+  }
+  return hash_code;
+}
+
+char* RogueString_to_c_string( RogueString* st )
+{
+  if (st)
+  {
+    char* c_string;
+    RogueVM* vm = st->object.type->vm;
+    RogueInteger utf8_count = RogueUTF8_encoded_count( st->characters, st->count );
+
+    RogueList_resize( vm->c_string_buffer, utf8_count + 1 );
+
+    c_string = (char*) vm->c_string_buffer->array->bytes;
+    RogueUTF8_encode( st->characters, st->count, c_string );
+
+    c_string[ utf8_count ] = 0;  // null terminate
+    return c_string;
+  }
+  else
+  {
+    return "null";
+  }
 }
 

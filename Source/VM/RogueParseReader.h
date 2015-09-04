@@ -1,30 +1,38 @@
 //=============================================================================
-//  RogueReader.h
+//  RogueParseReader.h
 //
-//  2015.08.29 by Abe Pralle
+//  2015.09.03 by Abe Pralle
 //=============================================================================
 #pragma once
 #ifndef ROGUE_READER_H
 #define ROGUE_READER_H
 
 //-----------------------------------------------------------------------------
-//  RogueReaderPosition
+//  ParseReader Type
 //-----------------------------------------------------------------------------
-typedef struct RogueReaderPosition
+RogueType* RogueTypeParseReader_create( RogueVM* vm );
+
+//-----------------------------------------------------------------------------
+//  ParsePosition
+//-----------------------------------------------------------------------------
+struct RogueParsePosition
 {
   int index;
   int line;
   int column;
-} RogueReaderPosition;
+};
 
 //-----------------------------------------------------------------------------
-//  RogueReader
+//  ParseReader Object
 //-----------------------------------------------------------------------------
-typedef struct RogueReader
+struct RogueParseReader
 {
-  RogueReaderPosition position;
-} RogueReader;
+  RogueObject        object;
+  RogueString*       filepath;
+  RogueParsePosition position;
+  RogueInteger       count;
+};
 
-RogueReader* RogueReader_create( const char* filepath );
+RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath );
 
 #endif // ROGUE_READER_H

@@ -29,9 +29,10 @@ void RogueStringBuilder_print_character( RogueStringBuilder* THIS, RogueCharacte
 void RogueStringBuilder_print_characters( RogueStringBuilder* THIS, RogueCharacter* values, RogueInteger len );
 void RogueStringBuilder_print_integer( RogueStringBuilder* THIS, RogueInteger value );
 void RogueStringBuilder_print_long( RogueStringBuilder* THIS, RogueLong value );
-void RogueStringBuilder_print_object( RogueStringBuilder* THIS, RogueObject* value );
+void RogueStringBuilder_print_object( RogueStringBuilder* THIS, void* value );
 void RogueStringBuilder_print_real( RogueStringBuilder* THIS, RogueReal value );
 void RogueStringBuilder_print_c_string( RogueStringBuilder* THIS, const char* value );
+void RogueStringBuilder_print_c_string_with_count( RogueStringBuilder* THIS, const char* value, RogueInteger count );
 void RogueStringBuilder_print_string_builder( RogueStringBuilder* THIS, RogueStringBuilder* other );
 
 void RogueStringBuilder_reserve( RogueStringBuilder* THIS, RogueInteger additional );

@@ -37,6 +37,8 @@
 #  define ROGUE_LOG(...) printf( __VA_ARGS__ )
 #endif
 
+#define ROGUE_STRING(vm,c_string) RogueString_create_from_c_string(vm,c_string)
+
 #include <setjmp.h>
 
 #if defined(ROGUE_PLATFORM_MAC)
@@ -138,6 +140,8 @@
 typedef struct RogueArray         RogueArray;
 typedef struct RogueList          RogueList;
 typedef struct RogueObject        RogueObject;
+typedef struct RogueParsePosition RogueParsePosition;
+typedef struct RogueParseReader   RogueParseReader;
 typedef struct RogueType          RogueType;
 typedef struct RogueString        RogueString;
 typedef struct RogueStringBuilder RogueStringBuilder;
@@ -176,12 +180,12 @@ typedef struct RogueVM            RogueVM;
 #include "RogueString.h"
 #include "RogueType.h"
 #include "RogueETC.h"
-#include "RogueReader.h"
 #include "RogueCmd.h"
+#include "RogueStringBuilder.h"
 #include "RogueVM.h"
 #include "RogueArray.h"
 #include "RogueList.h"
-#include "RogueStringBuilder.h"
+#include "RogueParseReader.h"
 #include "RogueTable.h"
 
 #endif // ROGUE_H

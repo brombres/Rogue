@@ -7,11 +7,11 @@ int main()
 
   RogueVM* vm = RogueVM_create();
 
-  RogueString* st = RogueVM_consolidate_c_string( vm, "AB", -1 );
-  printf( "hash: %d\n", st->object.type->hash_code(st) );
-  printf( "equals: %d\n", st->object.type->equals_c_string(st,"AB") );
-  printf( "equals: %d\n", st->object.type->equals_c_string(st,"A") );
-  printf( "equals: %d\n", st->object.type->equals_c_string(st,"ABC") );
+  //RogueParseReader* reader = RogueParseReader_create( vm, ROGUE_STRING(vm,"Test.c") );
+
+  RogueString* st = ROGUE_STRING( vm, "Hello World!" );
+  printf( "%s\n", RogueString_to_c_string(st) );
+  printf( "%s\n", RogueString_to_c_string(ROGUE_STRING(vm,"Hi")) );
 
   RogueVM_delete( vm );
 

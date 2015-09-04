@@ -21,9 +21,16 @@ struct RogueString
 
 RogueString* RogueString_create( RogueVM* vm, RogueInteger count );
 RogueString* RogueString_create_from_characters( RogueVM* vm, RogueCharacter* characters, RogueInteger count );
-RogueString* RogueString_create_from_utf8( RogueVM* vm, const char* utf8, int utf8_count );
+RogueString* RogueString_create_from_c_string( RogueVM* vm, const char* utf8 );
 
 void         RogueString_log( RogueString* THIS );
 RogueString* RogueString_update_hash_code( RogueString* THIS );
+
+RogueInteger RogueString_calculate_hash_code( const char* st );
+RogueInteger RogueString_calculate_hash_code_for_characters( RogueCharacter* characters, RogueInteger count );
+
+char* RogueString_to_c_string( RogueString* st );
+// The C String is kept in an internal buffer and is valid until ether the next 
+// RogueString_to_c_string() call or the VM is destroyed. 
 
 #endif // ROGUE_STRING_H

@@ -46,7 +46,7 @@ RogueTableEntry* RogueTableReader_read( RogueTableReader* reader );
 //  Table
 //-----------------------------------------------------------------------------
 RogueType* RogueTypeTable_create( RogueVM* vm );
-void       RoguePrintFn_table( void* table_ptr, RogueStringBuilder* builder );
+void       RoguePrintFn_table( void* table, RogueStringBuilder* builder );
 
 struct RogueTable
 {
@@ -60,6 +60,10 @@ struct RogueTable
 
 RogueTable* RogueTable_create( RogueVM* vm, RogueInteger initial_bin_count );
 
-RogueTableEntry* RogueTable_acquire( RogueVM* vm, const char* key, int create_if_necessary );
+RogueTableEntry* RogueTable_find_c_string( void* table, const char* key, int create_if_necessary );
+RogueTableEntry* RogueTable_find_characters( void* table, RogueInteger hash_code,
+    RogueCharacter* characters, RogueInteger count, int create_if_necessary );
+RogueTable*      RogueTable_set_c_string_to_c_string( void* THIS, const char* key, const char* value );
+RogueTable*      RogueTable_set_c_string_to_object( void* THIS, const char* key, void* value );
 
 #endif // ROGUE_TABLE_H

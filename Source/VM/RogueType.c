@@ -18,6 +18,12 @@ int RogueEqualsCStringFn_default( void* object_a, const char* b )
   return 0;
 }
 
+int RogueEqualsCharactersFn_default( void* object_a, RogueInteger hash_code,
+    RogueCharacter* characters, RogueInteger count )
+{
+  return 0;
+}
+
 RogueInteger RogueHashCodeFn_default( void* object )
 {
   return (RogueInteger)(intptr_t)object;
@@ -49,6 +55,7 @@ RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_
 
   THIS->equals = RogueEqualsFn_default;
   THIS->equals_c_string = RogueEqualsCStringFn_default;
+  THIS->equals_characters = RogueEqualsCharactersFn_default;
   THIS->hash_code = RogueHashCodeFn_default;
   THIS->print = RoguePrintFn_default;
 

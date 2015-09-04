@@ -102,13 +102,11 @@ void RogueStringBuilder_print_long( RogueStringBuilder* THIS, RogueLong value )
   RogueStringBuilder_print_c_string( THIS, st );
 }
 
-void RogueStringBuilder_print_object( RogueStringBuilder* THIS, RogueObject* value )
+void RogueStringBuilder_print_object( RogueStringBuilder* THIS, void* value )
 {
   if (value)
   {
-    RogueStringBuilder_print_c_string( THIS, "(An Object)" );
-    //RogueStringBuilder_print_character( THIS, '(' );
-    //RogueStringBuilder_print_character( THIS, ')' );
+    ((RogueObject*)value)->type->print( value, THIS );
   }
   else
   {
@@ -125,11 +123,18 @@ void RogueStringBuilder_print_real( RogueStringBuilder* THIS, RogueReal value )
 
 void RogueStringBuilder_print_c_string( RogueStringBuilder* THIS, const char* value )
 {
-  int count = strlen( value );
-  int decoded_count = RogueUTF8_decoded_count( value, count );
+  RogueStringBuilder_print_c_string_with_count( THIS, value, -1 );
+}
+
+void RogueStringBuilder_print_c_string_with_count( RogueStringBuilder* THIS, const char* value, RogueInteger count )
+{
+  int decoded_count;
+
+  if (count <= -1) count = strlen( value );
+  decoded_count = RogueUTF8_decoded_count( value, count );
 
   RogueStringBuilder_reserve( THIS, decoded_count );
-  RogueUTF8_decode( value, THIS->characters+THIS->count, decoded_count );
+  RogueUTF8_decode( value, count, THIS->characters+THIS->count );
   THIS->count += decoded_count;
 }
 
