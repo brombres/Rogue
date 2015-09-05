@@ -17,11 +17,7 @@ struct RogueAllocation
   // PROPERTIES
   RogueInteger     size;
   RogueInteger     reference_count;
-  RogueAllocator*  allocator;
   RogueAllocation* next_allocation;
 };
-
-void* RogueAllocation_create( RogueVM* vm, RogueInteger size );
-void* RogueAllocation_delete( RogueVM* vm, void* THIS );
 
 #endif // ROGUE_ALLOCATION_H

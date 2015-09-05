@@ -52,15 +52,6 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
   return 0;
 }
 
-void* RogueVM_allocate( RogueVM* THIS, RogueInteger size )
-{
-  RogueAllocation* allocation = (RogueAllocation*) RogueAllocator_allocate( &THIS->allocator, size );
-  memset( allocation, 0, size );
-  allocation->next_allocation = THIS->allocations;
-  THIS->allocations = allocation;
-  return allocation;
-}
-
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st )
 {
   RogueTableEntry* entry = RogueTable_find_characters( THIS->consolidation_table, st->hash_code,

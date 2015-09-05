@@ -49,7 +49,6 @@ void RogueAllocator_init( RogueVM* vm, RogueAllocator* THIS )
   {
     THIS->free_allocations[i] = 0;
   }
-  THIS->allocations = 0;
 }
 
 void RogueAllocator_retire( RogueAllocator* THIS )
@@ -125,17 +124,15 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   memset( allocation, 0, size );
 
   allocation->size = size;
-  allocation->allocator = THIS;
-  allocation->next_allocation = THIS->allocations;
-
-  return (THIS->allocations = allocation);
+  return allocation;
 }
 
 
-void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
+void* RogueAllocator_free( RogueAllocator* THIS, void* data )
 {
   if (data)
   {
+    int size = ((RogueAllocation*)data)->size;
     if (size > ROGUE_MM_SMALL_ALLOCATION_SIZE_LIMIT)
     {
       free( data );

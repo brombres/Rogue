@@ -12,7 +12,7 @@ void* RogueObject_create( RogueType* of_type, RogueInteger size )
 
   if (size == -1) size = of_type->object_size;
 
-  object = RogueAllocation_create( vm, size );
+  object = RogueAllocator_allocate( &vm->allocator, size );
 
   object->type = of_type;
   object->allocation.next_allocation = (RogueAllocation*) vm->objects;

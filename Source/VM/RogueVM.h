@@ -10,7 +10,7 @@
 struct RogueVM
 {
   RogueAllocator     allocator;
-  RogueAllocation*   allocations; // internal allocations
+  RogueAllocation*   vm_objects; // internal allocations
   RogueObject*       objects;     // runtime objects
   RogueTable*        consolidation_table;
   RogueList*         c_string_buffer;
@@ -32,8 +32,6 @@ struct RogueVM
 
 RogueVM* RogueVM_create();
 RogueVM* RogueVM_delete( RogueVM* THIS );
-
-void* RogueVM_allocate( RogueVM* THIS, RogueInteger size );
 
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st );
 RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* characters, RogueInteger count );
