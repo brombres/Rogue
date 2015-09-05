@@ -43,7 +43,8 @@ int RogueTokenizer_tokenize_another( RogueTokenizer* THIS )
   ch = RogueParseReader_peek( THIS->reader, 0 );
   if (ch == '\n')
   {
-    printf( "EOL\n" );
+    RogueParseReader_read( THIS->reader );
+    RogueVMList_add( THIS->tokens, RogueCmd_create(THIS->vm->cmd_type_EOL) );
   }
 
   return 0;

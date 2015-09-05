@@ -25,7 +25,7 @@ RogueVM* RogueVM_create()
   THIS->global_commands = RogueObjectList_create( THIS, 20 );
   THIS->consolidation_table = RogueTable_create( THIS, 128 );
 
-  THIS->cmd_type_eol = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, sizeof(RogueCmd) );
+  THIS->cmd_type_EOL = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, sizeof(RogueCmd) );
 
   return THIS;
 }

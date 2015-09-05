@@ -10,8 +10,8 @@
 struct RogueVM
 {
   RogueAllocator     allocator;
-  RogueAllocation*   vm_objects; // internal allocations
-  RogueObject*       objects;     // runtime objects
+  void*              cmd_objects; // internal allocations
+  void*              objects;     // runtime objects
   RogueTable*        consolidation_table;
   RogueList*         c_string_buffer;
   RogueList*         global_commands;
@@ -26,7 +26,7 @@ struct RogueVM
   RogueType*         type_Table;
   RogueType*         type_TableEntry;
 
-  RogueCmdType*      cmd_type_eol;
+  RogueCmdType*      cmd_type_EOL;
 };
 
 RogueVM* RogueVM_create();

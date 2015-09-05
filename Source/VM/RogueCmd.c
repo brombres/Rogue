@@ -1,5 +1,5 @@
 //=============================================================================
-//  Rogue.c
+//  RogueCmd.c
 //
 //  2015.08.29 by Abe Pralle
 //=============================================================================
@@ -25,12 +25,13 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
 void* RogueCmd_create( RogueCmdType* of_type  )
 {
   RogueCmd* cmd;
+  RogueVM* vm = of_type->vm;
 
-  cmd = (RogueCmd*) RogueAllocator_allocate( &of_type->vm->allocator, of_type->object_size );
+  cmd = (RogueCmd*) RogueAllocator_allocate( &vm->allocator, of_type->object_size );
 
   cmd->type = of_type;
-
-  //of_type->vm->vm_objects = cmd;
+  cmd->allocation.next_allocation = vm->cmd_objects;
+  vm->cmd_objects = cmd;
 
   return cmd;
 }
