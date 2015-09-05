@@ -40,14 +40,16 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
-void RogueAllocator_init( RogueAllocator* THIS )
+void RogueAllocator_init( RogueVM* vm, RogueAllocator* THIS )
 {
   int i;
+  THIS->vm = vm;
   THIS->pages = 0;
   for (i=0; i<ROGUE_MM_SLOT_COUNT; ++i)
   {
-    THIS->free_objects[i] = NULL;
+    THIS->free_allocations[i] = 0;
   }
+  THIS->allocations = 0;
 }
 
 void RogueAllocator_retire( RogueAllocator* THIS )
@@ -63,56 +65,70 @@ void RogueAllocator_retire( RogueAllocator* THIS )
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
   int slot, s;
-  RogueAllocation* obj;
+  RogueAllocation* allocation;
 
-  if (size > ROGUE_MM_SMALL_ALLOCATION_SIZE_LIMIT) return malloc( size );
-
-  if (size <= 0) size = ROGUE_MM_GRANULARITY_SIZE;
-  else           size = (size + ROGUE_MM_GRANULARITY_MASK) & ~ROGUE_MM_GRANULARITY_MASK;
-
-  slot = (size >> ROGUE_MM_GRANULARITY_BITS);
-  obj = THIS->free_objects[slot];
-  
-  if (obj)
+  if (size > ROGUE_MM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
-    //printf( "found free object\n");
-    THIS->free_objects[slot] = obj->next_allocation;
-    return obj;
+    allocation = malloc( size );
   }
-
-  // No free objects for requested size.
-
-  // Try allocating a new object from the current page.
-  if ( !THIS->pages )
+  else
   {
-    THIS->pages = RogueAllocationPage_create(0);
-  }
+    if (size <= 0) size = ROGUE_MM_GRANULARITY_SIZE;
+    else           size = (size + ROGUE_MM_GRANULARITY_MASK) & ~ROGUE_MM_GRANULARITY_MASK;
 
-  obj = (RogueAllocation*) RogueAllocationPage_allocate( THIS->pages, size );
-  if (obj) return obj;
+    slot = (size >> ROGUE_MM_GRANULARITY_BITS);
+    allocation = THIS->free_allocations[slot];
 
-
-  // Not enough room on allocation page.  Allocate any smaller blocks
-  // we're able to and then move on to a new page.
-  s = slot - 1;
-  while (s >= 1)
-  {
-    obj = (RogueAllocation*) RogueAllocationPage_allocate( THIS->pages, s << ROGUE_MM_GRANULARITY_BITS );
-    if (obj)
+    if (allocation)
     {
-      //printf( "free obj size %d\n", (s << ROGUE_MM_GRANULARITY_BITS) );
-      obj->next_allocation = THIS->free_objects[s];
-      THIS->free_objects[s] = obj;
+      // Remove available free allocation from free allocations list
+      THIS->free_allocations[slot] = allocation->next_allocation;
     }
     else
     {
-      --s;
+      // No free allocations for requested size.
+
+      // Try allocating a new allocation from the current page.
+      if ( !THIS->pages )
+      {
+        THIS->pages = RogueAllocationPage_create(0);
+      }
+
+      allocation = (RogueAllocation*) RogueAllocationPage_allocate( THIS->pages, size );
+      if ( !allocation )
+      {
+        // Not enough room on allocation page.  Allocate any smaller blocks
+        // we're able to and then move on to a new page.
+        s = slot - 1;
+        while (s >= 1)
+        {
+          allocation = (RogueAllocation*) RogueAllocationPage_allocate( THIS->pages, s << ROGUE_MM_GRANULARITY_BITS );
+          if (allocation)
+          {
+            //printf( "free allocation size %d\n", (s << ROGUE_MM_GRANULARITY_BITS) );
+            allocation->next_allocation = THIS->free_allocations[s];
+            THIS->free_allocations[s] = allocation;
+          }
+          else
+          {
+            --s;
+          }
+        }
+
+        // New page; this will work for sure.
+        THIS->pages = RogueAllocationPage_create( THIS->pages );
+        allocation = RogueAllocationPage_allocate( THIS->pages, size );
+      }
     }
   }
 
-  // New page; this will work for sure.
-  THIS->pages = RogueAllocationPage_create( THIS->pages );
-  return RogueAllocationPage_allocate( THIS->pages, size );
+  memset( allocation, 0, size );
+
+  allocation->size = size;
+  allocation->allocator = THIS;
+  allocation->next_allocation = THIS->allocations;
+
+  return (THIS->allocations = allocation);
 }
 
 
@@ -126,12 +142,12 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
     }
     else
     {
-      // Return object to small allocation pool
+      // Return allocation to small allocation pool
       RogueAllocation* allocation = (RogueAllocation*) data;
       int slot = (size + ROGUE_MM_GRANULARITY_MASK) >> ROGUE_MM_GRANULARITY_BITS;
       if (slot <= 0) slot = 1;
-      allocation->next_allocation = THIS->free_objects[slot];
-      THIS->free_objects[slot] = allocation;
+      allocation->next_allocation = THIS->free_allocations[slot];
+      THIS->free_allocations[slot] = allocation;
     }
   }
 

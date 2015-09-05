@@ -138,6 +138,7 @@
 //  FORWARD DECLARATIONS
 //-----------------------------------------------------------------------------
 typedef struct RogueAllocation    RogueAllocation;
+typedef struct RogueAllocator     RogueAllocator;
 typedef struct RogueArray         RogueArray;
 typedef struct RogueCmd           RogueCmd;
 typedef struct RogueCmdType       RogueCmdType;

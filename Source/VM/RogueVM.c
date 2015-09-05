@@ -9,7 +9,7 @@ RogueVM* RogueVM_create()
 {
   RogueVM* THIS = (RogueVM*) malloc( sizeof(RogueVM) );
   memset( THIS, 0, sizeof(RogueVM) );
-  RogueAllocator_init( &THIS->allocator );
+  RogueAllocator_init( THIS, &THIS->allocator );
 
   THIS->type_ByteArray      = RogueTypeByteArray_create( THIS );
   THIS->type_ByteList       = RogueTypeByteList_create( THIS );

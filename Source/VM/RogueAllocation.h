@@ -17,6 +17,7 @@ struct RogueAllocation
   // PROPERTIES
   RogueInteger     size;
   RogueInteger     reference_count;
+  RogueAllocator*  allocator;
   RogueAllocation* next_allocation;
 };
 

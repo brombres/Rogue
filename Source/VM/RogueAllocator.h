@@ -31,13 +31,15 @@ void*                RogueAllocationPage_allocate( RogueAllocationPage* THIS, in
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
-typedef struct RogueAllocator
+struct RogueAllocator
 {
+  RogueVM*             vm;
   RogueAllocationPage* pages;
-  RogueAllocation*     free_objects[ROGUE_MM_SLOT_COUNT];
-} RogueAllocator;
+  RogueAllocation*     free_allocations[ROGUE_MM_SLOT_COUNT];
+  RogueAllocation*     allocations;
+};
 
-void RogueAllocator_init( RogueAllocator* THIS );
+void RogueAllocator_init( RogueVM* vm, RogueAllocator* THIS );
 void RogueAllocator_retire( RogueAllocator* THIS );
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size );
