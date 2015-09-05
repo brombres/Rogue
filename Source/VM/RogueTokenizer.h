@@ -8,20 +8,19 @@
 #define ROGUE_TOKENIZER_H
 
 //-----------------------------------------------------------------------------
-//  Tokenizer Type
-//-----------------------------------------------------------------------------
-RogueType* RogueTypeTokenizer_create( RogueVM* vm );
-
-
-//-----------------------------------------------------------------------------
 //  Tokenizer Object
 //-----------------------------------------------------------------------------
 struct RogueTokenizer
 {
-  RogueObject       object;
+  RogueAllocation   allocation;
+  RogueVM*          vm;
   RogueParseReader* reader;
+  RogueVMList*      tokens;
 };
 
 RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filepath );
+RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS );
+int             RogueTokenizer_tokenize( RogueTokenizer* THIS );
+int             RogueTokenizer_tokenize_another( RogueTokenizer* THIS );
 
 #endif // ROGUE_TOKENIZER_H

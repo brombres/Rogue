@@ -8,7 +8,7 @@ int main()
   RogueVM* vm = RogueVM_create();
 
   RogueTokenizer* tokenizer = RogueTokenizer_create_with_file( vm, ROGUE_STRING(vm,"Test.c") );
-  //RogueList* tokens = RogueTokenizer_tokenize( tokenizer );
+  RogueTokenizer_tokenize( tokenizer );
 
   RogueVM_delete( vm );
 

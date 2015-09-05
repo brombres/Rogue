@@ -13,8 +13,9 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
 {
   RogueCmdType* cmd_type = (RogueCmdType*) RogueAllocator_allocate( &vm->allocator,
       sizeof(RogueCmdType) );
+  cmd_type->vm = vm;
   cmd_type->token_type = token_type;
-  if (object_size == -1) object_size = sizeof(RogueCmd);
+  cmd_type->object_size = object_size;
   return cmd_type;
 }
 
@@ -23,21 +24,14 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
 //-----------------------------------------------------------------------------
 void* RogueCmd_create( RogueCmdType* of_type  )
 {
-  /*
-  RogueCmd* object;
+  RogueCmd* cmd;
 
-  if (size == -1) size = of_type->object_size;
-  object = (RogueCmd*) RogueAllocator_allocate( &of_type->vm->allocator, size );
-  memset( object, 0, size );
+  cmd = (RogueCmd*) RogueAllocator_allocate( &of_type->vm->allocator, of_type->object_size );
 
-  object->allocation.size = size;
-  object->allocation.reference_count = 0;
-  object->allocation.next_allocation = (RogueAllocation*) of_type->vm->objects;
-  of_type->vm->objects = object;
-  object->type = of_type;
+  cmd->type = of_type;
 
-  return object;
-  */
-  return 0;
+  //of_type->vm->vm_objects = cmd;
+
+  return cmd;
 }
 

@@ -28,7 +28,7 @@ struct RogueVMList
 RogueVMList* RogueVMList_create( RogueVM* vm, RogueInteger initial_capacity );
 RogueVMList* RogueVMList_delete( RogueVMList* THIS );
 
-RogueVMList* RogueVMList_add_object( RogueVMList* THIS, void* object );
+RogueVMList* RogueVMList_add( RogueVMList* THIS, void* object );
 RogueVMList* RogueVMList_reserve( RogueVMList* THIS, RogueInteger additional_capacity );
 
 #endif // ROGUE_VM_LIST_H

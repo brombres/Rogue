@@ -25,7 +25,6 @@ struct RogueVM
   RogueType*         type_String;
   RogueType*         type_Table;
   RogueType*         type_TableEntry;
-  RogueType*         type_Tokenizer;
 
   RogueCmdType*      cmd_type_eol;
 };

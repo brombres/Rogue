@@ -60,6 +60,24 @@ int RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch )
   return 1;
 }
 
+int RogueParseReader_consume_whitespace( RogueParseReader* THIS )
+{
+  int consumed_any = 0;
+  int count = THIS->count;
+  int i = THIS->position.index;
+  while (i < count)
+  {
+    RogueCharacter ch = THIS->data->characters[i];
+    if (ch <= 32 || ch == 127)
+    {
+      if (ch == '\n') return consumed_any;
+      consumed_any = 1;
+    }
+    i = ++THIS->position.index;
+  }
+  return consumed_any;
+}
+
 int RogueParseReader_has_another( RogueParseReader* THIS )
 {
   return (THIS->position.index < THIS->count);

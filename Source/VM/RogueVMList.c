@@ -23,7 +23,7 @@ RogueVMList* RogueVMList_delete( RogueVMList* THIS )
 }
 
 
-RogueVMList* RogueVMList_add_object( RogueVMList* THIS, void* object )
+RogueVMList* RogueVMList_add( RogueVMList* THIS, void* object )
 {
   RogueVMList_reserve( THIS, 1 );
   THIS->array->objects[ THIS->count++ ] = object;
@@ -41,6 +41,7 @@ RogueVMList* RogueVMList_reserve( RogueVMList* THIS, RogueInteger additional_cap
   double_capacity = THIS->capacity << 1;
   if (double_capacity > required_capacity) required_capacity = double_capacity;
 
+printf( "new capacity %d\n", required_capacity );
   {
     RogueAllocator* allocator = &THIS->vm->allocator;
     RogueInteger array_size = sizeof(RogueVMArray) + required_capacity * sizeof(void*);
@@ -48,6 +49,7 @@ RogueVMList* RogueVMList_reserve( RogueVMList* THIS, RogueInteger additional_cap
     memcpy( new_array->bytes, THIS->array->bytes, THIS->count * sizeof(void*) );
     RogueAllocator_free( allocator, THIS->array );
     THIS->array = new_array;
+    THIS->capacity = required_capacity;
   }
 
   return THIS;
