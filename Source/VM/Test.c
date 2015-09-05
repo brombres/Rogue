@@ -7,18 +7,8 @@ int main()
 
   RogueVM* vm = RogueVM_create();
 
-  RogueParseReader* reader = RogueParseReader_create( vm, ROGUE_STRING(vm,"Test.c") );
-
-  printf( "%6d  ", 1 );
-  while (RogueParseReader_has_another(reader))
-  {
-    RogueCharacter ch = RogueParseReader_read(reader);
-    putc( ch, stdout );
-    if (ch == 10)
-    {
-      printf( "%6d  ", reader->position.line );
-    }
-  }
+  RogueTokenizer* tokenizer = RogueTokenizer_create_with_file( vm, ROGUE_STRING(vm,"Test.c") );
+  //RogueList* tokens = RogueTokenizer_tokenize( tokenizer );
 
   RogueVM_delete( vm );
 

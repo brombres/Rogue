@@ -10,20 +10,6 @@
 #include "Rogue.h"
 
 //-----------------------------------------------------------------------------
-//  RogueAllocation
-//-----------------------------------------------------------------------------
-typedef struct RogueAllocation RogueAllocation;
-
-struct RogueAllocation
-{
-  // PROPERTIES
-  RogueInteger     size;
-  RogueInteger     reference_count;
-  RogueAllocation* next_allocation;
-};
-
-
-//-----------------------------------------------------------------------------
 //  RogueAllocationPage
 //-----------------------------------------------------------------------------
 typedef struct RogueAllocationPage RogueAllocationPage;

@@ -8,16 +8,15 @@
 void* RogueObject_create( RogueType* of_type, RogueInteger size )
 {
   RogueObject* object;
+  RogueVM*     vm = of_type->vm;
 
   if (size == -1) size = of_type->object_size;
-  object = (RogueObject*) RogueAllocator_allocate( &of_type->vm->allocator, size );
-  memset( object, 0, size );
 
-  object->allocation.size = size;
-  object->allocation.reference_count = 0;
-  object->allocation.next_allocation = (RogueAllocation*) of_type->vm->objects;
-  of_type->vm->objects = object;
+  object = RogueAllocation_create( vm, size );
+
   object->type = of_type;
+  object->allocation.next_allocation = (RogueAllocation*) vm->objects;
+  vm->objects = object;
 
   return object;
 }
