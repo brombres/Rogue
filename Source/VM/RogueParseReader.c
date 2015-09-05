@@ -19,7 +19,7 @@ RogueType* RogueTypeParseReader_create( RogueVM* vm )
 //-----------------------------------------------------------------------------
 RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath )
 {
-  RogueParseReader* reader = RogueType_create_object( vm->type_ParseReader, -1 );
+  RogueParseReader* reader = RogueObject_create( vm->type_ParseReader, -1 );
   reader->filepath = RogueVM_consolidate_string( vm, filepath );
   reader->position.line = 1;
   reader->position.column = 1;
@@ -49,6 +49,15 @@ RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath )
   }
 
   return reader;
+}
+
+int RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch )
+{
+  RogueInteger index = THIS->position.index;
+  if (index == THIS->count) return 0;
+  if (ch != THIS->data->characters[index]) return 0;
+  ++THIS->position.index;
+  return 1;
 }
 
 int RogueParseReader_has_another( RogueParseReader* THIS )

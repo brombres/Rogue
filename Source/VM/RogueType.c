@@ -72,20 +72,3 @@ RogueType* RogueType_delete( RogueType* THIS )
   return 0;
 }
 
-void* RogueType_create_object( RogueType* THIS, RogueInteger size )
-{
-  RogueObject* object;
-
-  if (size == -1) size = THIS->object_size;
-  object = (RogueObject*) RogueAllocator_allocate( &THIS->vm->allocator, size );
-  memset( object, 0, size );
-
-  object->allocation.size = size;
-  object->allocation.reference_count = 0;
-  object->allocation.next_allocation = (RogueAllocation*) THIS->vm->objects;
-  THIS->vm->objects = object;
-  object->type = THIS;
-
-  return object;
-}
-

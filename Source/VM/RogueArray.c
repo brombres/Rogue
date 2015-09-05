@@ -64,7 +64,7 @@ RogueArray* RogueArray_create( RogueType* array_type, RogueInteger count )
 
   if (count < 0) count = 0;
 
-  THIS = (RogueArray*) RogueType_create_object( array_type,
+  THIS = (RogueArray*) RogueObject_create( array_type,
       sizeof(RogueArray) + count * array_type->element_size );
   THIS->count = count;
   return THIS;

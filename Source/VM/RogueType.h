@@ -47,6 +47,4 @@ struct RogueType
 RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_size );
 RogueType* RogueType_delete( RogueType* THIS );
 
-void* RogueType_create_object( RogueType* THIS, RogueInteger size );
-
 #endif // ROGUE_TYPE_H

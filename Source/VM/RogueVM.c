@@ -20,9 +20,13 @@ RogueVM* RogueVM_create()
   THIS->type_String         = RogueTypeString_create( THIS );
   THIS->type_Table          = RogueTypeTable_create( THIS );
   THIS->type_TableEntry     = RogueTypeTableEntry_create( THIS );
+  THIS->type_Tokenizer      = RogueTypeTokenizer_create( THIS );
 
   THIS->c_string_buffer = RogueByteList_create( THIS, 200 );
+  THIS->global_commands = RogueObjectList_create( THIS, 20 );
   THIS->consolidation_table = RogueTable_create( THIS, 128 );
+
+  THIS->cmd_type_eol = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, -1 );
 
   return THIS;
 }
@@ -40,11 +44,21 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
     RogueType_delete( THIS->type_String );
     RogueType_delete( THIS->type_Table );
     RogueType_delete( THIS->type_TableEntry );
+    RogueType_delete( THIS->type_Tokenizer );
 
     RogueAllocator_retire( &THIS->allocator );
     free( THIS );
   }
   return 0;
+}
+
+void* RogueVM_allocate( RogueVM* THIS, RogueInteger size )
+{
+  RogueAllocation* allocation = (RogueAllocation*) RogueAllocator_allocate( &THIS->allocator, size );
+  memset( allocation, 0, size );
+  allocation->next_allocation = THIS->allocations;
+  THIS->allocations = allocation;
+  return allocation;
 }
 
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st )

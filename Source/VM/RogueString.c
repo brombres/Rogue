@@ -77,7 +77,7 @@ RogueType* RogueTypeString_create( RogueVM* vm )
 RogueString* RogueString_create( RogueVM* vm, RogueInteger count )
 {
   int size = sizeof(RogueString) + count * sizeof(RogueCharacter);
-  RogueString* THIS = (RogueString*) RogueType_create_object( vm->type_String, size );
+  RogueString* THIS = (RogueString*) RogueObject_create( vm->type_String, size );
   THIS->count = count;
   return THIS;
 }

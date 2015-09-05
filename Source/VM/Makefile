@@ -9,6 +9,9 @@ O_FILES = $(C_FILES:%.c=Build/%.o)
 all: Build a.out
 	./a.out
 
+etc:
+	roguec MakeETC.rogue --execute
+
 Build:
 	@mkdir -p Build
 

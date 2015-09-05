@@ -17,7 +17,7 @@ RogueType* RogueTypeTableEntry_create( RogueVM* vm )
 RogueTableEntry* RogueTableEntry_create( RogueVM* vm, RogueInteger hash_code,
                                          void* key, void* value )
 {
-  RogueTableEntry* THIS = (RogueTableEntry*) RogueType_create_object( vm->type_TableEntry, -1 );
+  RogueTableEntry* THIS = (RogueTableEntry*) RogueObject_create( vm->type_TableEntry, -1 );
   THIS->hash_code = hash_code;
   THIS->key = key;
   THIS->value = value;
@@ -102,7 +102,7 @@ void RoguePrintFn_table( void* table, RogueStringBuilder* builder )
 
 RogueTable* RogueTable_create( RogueVM* vm, RogueInteger initial_bin_count )
 {
-  RogueTable*  table = RogueType_create_object( vm->type_Table, -1 );
+  RogueTable*  table = RogueObject_create( vm->type_Table, -1 );
   RogueInteger bin_count = 1;
 
   if (initial_bin_count <= 0) initial_bin_count = 16;

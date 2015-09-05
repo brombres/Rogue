@@ -1,35 +1,27 @@
 //=============================================================================
-//  RogueCmd.h
+//  RogueTokenizer.c
 //
-//  2015.08.29 by Abe Pralle
+//  2015.09.04 by Abe Pralle
 //=============================================================================
-#pragma once
-#ifndef ROGUE_CMD_H
-#define ROGUE_CMD_H
-
 #include "Rogue.h"
 
 //-----------------------------------------------------------------------------
-//  RogueCmdType
+//  Tokenizer Type
 //-----------------------------------------------------------------------------
-struct RogueCmdType
+RogueType* RogueTypeTokenizer_create( RogueVM* vm )
 {
-  RogueVM*       vm;
-  RogueTokenType token_type;
-  RogueInteger   object_size;
-};
+  RogueType* THIS = RogueType_create( vm, "Tokenizer", sizeof(RogueTokenizer) );
+  return THIS;
+}
 
-RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type, RogueInteger object_size );
 
 //-----------------------------------------------------------------------------
-//  RogueCmd
+//  Tokenizer Object
 //-----------------------------------------------------------------------------
-struct RogueCmd
+RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filepath )
 {
-  RogueAllocation allocation;
-  RogueCmdType*   type;
-};
+  RogueTokenizer* tokenizer = RogueObject_create( vm->type_Tokenizer, sizeof(RogueTokenizer) );
+  tokenizer->reader = RogueParseReader_create( vm, filepath );
+  return tokenizer;
+}
 
-void* RogueCmd_create( RogueCmdType* of_type );
-
-#endif // ROGUE_CMD_H

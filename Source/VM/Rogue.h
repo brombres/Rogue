@@ -138,6 +138,8 @@
 //  FORWARD DECLARATIONS
 //-----------------------------------------------------------------------------
 typedef struct RogueArray         RogueArray;
+typedef struct RogueCmd           RogueCmd;
+typedef struct RogueCmdType       RogueCmdType;
 typedef struct RogueList          RogueList;
 typedef struct RogueObject        RogueObject;
 typedef struct RogueParsePosition RogueParsePosition;
@@ -147,6 +149,7 @@ typedef struct RogueString        RogueString;
 typedef struct RogueStringBuilder RogueStringBuilder;
 typedef struct RogueTable         RogueTable;
 typedef struct RogueTableEntry    RogueTableEntry;
+typedef struct RogueTokenizer     RogueTokenizer;
 typedef struct RogueVM            RogueVM;
 //struct Object;
 //struct ParseReader;
@@ -174,12 +177,14 @@ typedef struct RogueVM            RogueVM;
 //};
 //
 
+#include "RogueTokenType.h"
 #include "RogueUTF8.h"
 #include "RogueAllocator.h"
 #include "RogueObject.h"
 #include "RogueString.h"
 #include "RogueType.h"
 #include "RogueETC.h"
+#include "RogueTokenizer.h"
 #include "RogueCmd.h"
 #include "RogueStringBuilder.h"
 #include "RogueVM.h"

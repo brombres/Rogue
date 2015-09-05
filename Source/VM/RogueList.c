@@ -52,7 +52,7 @@ RogueType* RogueTypeObjectList_create( RogueVM* vm )
 //-----------------------------------------------------------------------------
 RogueList* RogueList_create( RogueType* list_type, RogueType* array_type, RogueInteger initial_capacity )
 {
-  RogueList* THIS = (RogueList*) RogueType_create_object( list_type, -1 );
+  RogueList* THIS = (RogueList*) RogueObject_create( list_type, -1 );
   THIS->array = RogueArray_create( array_type, initial_capacity );
   return THIS;
 }

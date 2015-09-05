@@ -36,6 +36,7 @@ struct RogueParseReader
 
 RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath );
 
+int            RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch );
 int            RogueParseReader_has_another( RogueParseReader* THIS );
 RogueCharacter RogueParseReader_peek( RogueParseReader* THIS, RogueInteger lookahead );
 RogueCharacter RogueParseReader_read( RogueParseReader* THIS );
