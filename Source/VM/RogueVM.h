@@ -32,6 +32,8 @@ struct RogueVM
   RogueType*         type_TableEntry;
 
   RogueCmdType*      cmd_type_eol;
+  RogueCmdType*      cmd_type_literal_integer;
+  RogueCmdType*      cmd_type_symbol_close_paren;
   RogueCmdType*      cmd_type_symbol_exclamation;
   RogueCmdType*      cmd_type_symbol_eq;
   RogueCmdType*      cmd_type_symbol_equals;
@@ -40,6 +42,8 @@ struct RogueVM
   RogueCmdType*      cmd_type_symbol_le;
   RogueCmdType*      cmd_type_symbol_lt;
   RogueCmdType*      cmd_type_symbol_ne;
+  RogueCmdType*      cmd_type_symbol_open_paren;
+  RogueCmdType*      cmd_type_symbol_plus;
   RogueCmdType*      cmd_type_symbol_pound;
 };
 

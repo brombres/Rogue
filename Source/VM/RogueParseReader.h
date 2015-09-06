@@ -36,10 +36,12 @@ struct RogueParseReader
 
 RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath );
 
-int            RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch );
-int            RogueParseReader_consume_whitespace( RogueParseReader* THIS );
-int            RogueParseReader_has_another( RogueParseReader* THIS );
+RogueLogical   RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch );
+RogueLogical   RogueParseReader_consume_whitespace( RogueParseReader* THIS );
+RogueLogical   RogueParseReader_has_another( RogueParseReader* THIS );
+RogueLogical   RogueParseReader_next_is_digit( RogueParseReader* THIS, RogueInteger base );
 RogueCharacter RogueParseReader_peek( RogueParseReader* THIS, RogueInteger lookahead );
 RogueCharacter RogueParseReader_read( RogueParseReader* THIS );
+RogueInteger   RogueParseReader_read_digit( RogueParseReader* THIS );
 
 #endif // ROGUE_READER_H

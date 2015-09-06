@@ -26,6 +26,11 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
   return cmd_type;
 }
 
+void RogueCmdLiteralInteger_print( void* cmd )
+{
+  printf( "%d", ((RogueCmdLiteralInteger*)cmd)->value );
+}
+
 //-----------------------------------------------------------------------------
 //  RogueCmd
 //-----------------------------------------------------------------------------

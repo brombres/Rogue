@@ -94,24 +94,26 @@
 //-----------------------------------------------------------------------------
 //  FORWARD DECLARATIONS
 //-----------------------------------------------------------------------------
-typedef struct RogueAllocation    RogueAllocation;
-typedef struct RogueAllocator     RogueAllocator;
-typedef struct RogueArray         RogueArray;
-typedef struct RogueCmd           RogueCmd;
-typedef struct RogueCmdType       RogueCmdType;
-typedef struct RogueErrorHandler  RogueErrorHandler;
-typedef struct RogueList          RogueList;
-typedef struct RogueObject        RogueObject;
-typedef struct RogueParsePosition RogueParsePosition;
-typedef struct RogueParseReader   RogueParseReader;
-typedef struct RogueType          RogueType;
-typedef struct RogueString        RogueString;
-typedef struct RogueStringBuilder RogueStringBuilder;
-typedef struct RogueTable         RogueTable;
-typedef struct RogueTableEntry    RogueTableEntry;
-typedef struct RogueTokenizer     RogueTokenizer;
-typedef struct RogueVM            RogueVM;
-typedef struct RogueVMList        RogueVMList;
+typedef struct RogueAllocation        RogueAllocation;
+typedef struct RogueAllocator         RogueAllocator;
+typedef struct RogueArray             RogueArray;
+typedef struct RogueCmd               RogueCmd;
+typedef struct RogueCmdBinaryOp       RogueCmdBinaryOp;
+typedef struct RogueCmdLiteralInteger RogueCmdLiteralInteger;
+typedef struct RogueCmdType           RogueCmdType;
+typedef struct RogueErrorHandler      RogueErrorHandler;
+typedef struct RogueList              RogueList;
+typedef struct RogueObject            RogueObject;
+typedef struct RogueParsePosition     RogueParsePosition;
+typedef struct RogueParseReader       RogueParseReader;
+typedef struct RogueType              RogueType;
+typedef struct RogueString            RogueString;
+typedef struct RogueStringBuilder     RogueStringBuilder;
+typedef struct RogueTable             RogueTable;
+typedef struct RogueTableEntry        RogueTableEntry;
+typedef struct RogueTokenizer         RogueTokenizer;
+typedef struct RogueVM                RogueVM;
+typedef struct RogueVMList            RogueVMList;
 //struct Object;
 //struct ParseReader;
 //struct Scope;
@@ -139,6 +141,7 @@ typedef struct RogueVMList        RogueVMList;
 //
 
 #include "RogueError.h"
+#include "RogueStringBuilder.h"
 #include "RogueTokenType.h"
 #include "RogueUTF8.h"
 #include "RogueAllocation.h"
@@ -149,7 +152,6 @@ typedef struct RogueVMList        RogueVMList;
 #include "RogueETC.h"
 #include "RogueTokenizer.h"
 #include "RogueCmd.h"
-#include "RogueStringBuilder.h"
 #include "RogueParseReader.h"
 #include "RogueVM.h"
 #include "RogueVMList.h"

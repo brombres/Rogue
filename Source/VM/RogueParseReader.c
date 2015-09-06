@@ -87,6 +87,20 @@ int RogueParseReader_has_another( RogueParseReader* THIS )
   return (THIS->position.index < THIS->count);
 }
 
+RogueLogical RogueParseReader_next_is_digit( RogueParseReader* THIS, RogueInteger base )
+{
+  RogueCharacter ch;
+  RogueInteger index = THIS->position.index;
+
+  if (index >= THIS->count) return 0;
+
+  ch = THIS->data->characters[ index ];
+  if (ch >= '0' && ch <= '9') return 1;
+  if (ch >= 'a' && ch <= 'z' && ((ch-'a')+10) < base) return 1;
+  if (ch >= 'A' && ch <= 'Z' && ((ch-'A')+10) < base) return 1;
+  return 0;
+}
+
 RogueCharacter RogueParseReader_peek( RogueParseReader* THIS, RogueInteger lookahead )
 {
   RogueInteger index = THIS->position.index + lookahead;
@@ -112,5 +126,16 @@ RogueCharacter RogueParseReader_read( RogueParseReader* THIS )
       ++THIS->position.column;
       return result;
   }
+}
+
+RogueInteger RogueParseReader_read_digit( RogueParseReader* THIS )
+{
+  RogueInteger digit = RogueParseReader_read( THIS );
+
+  if (digit >= '0' && digit <= '9') digit -= '0';
+  else if (digit >= 'a' && digit <= 'z') digit = 10 + (digit - 'a');
+  else if (digit >= 'A' && digit <= 'Z') digit = 10 + (digit - 'A');
+
+  return digit;
 }
 

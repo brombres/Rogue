@@ -12,18 +12,21 @@
 //-----------------------------------------------------------------------------
 struct RogueTokenizer
 {
-  RogueAllocation   allocation;
-  RogueVM*          vm;
-  RogueParseReader* reader;
-  RogueVMList*      tokens;
+  RogueAllocation    allocation;
+  RogueVM*           vm;
+  RogueParseReader*  reader;
+  RogueVMList*       tokens;
+  RogueStringBuilder builder;
 
   RogueInteger      position;
 };
 
 RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filepath );
 RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS );
+RogueLogical    RogueTokenizer_next_is_real( RogueTokenizer* THIS );
 RogueLogical    RogueTokenizer_tokenize( RogueTokenizer* THIS );
 RogueLogical    RogueTokenizer_tokenize_another( RogueTokenizer* THIS );
+void            RogueTokenizer_tokenize_integer_or_long( RogueTokenizer* THIS, RogueInteger base );
 RogueCmdType*   RogueTokenizer_tokenize_symbol( RogueTokenizer* THIS );
 
 RogueLogical    RogueTokenizer_has_another( RogueTokenizer* THIS );

@@ -13,14 +13,30 @@ RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filep
   RogueTokenizer* tokenizer = RogueAllocator_allocate( &vm->allocator, sizeof(RogueTokenizer) );
   tokenizer->vm     = vm;
   tokenizer->reader = RogueParseReader_create( vm, filepath );
+  RogueStringBuilder_init( &tokenizer->builder, vm, -1 );
   return tokenizer;
 }
 
 RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS )
 {
+  RogueStringBuilder_retire( &THIS->builder );
   RogueAllocator_free( &THIS->vm->allocator, THIS->tokens );
   RogueAllocator_free( &THIS->vm->allocator, THIS );
   return 0;
+}
+
+RogueLogical RogueTokenizer_next_is_real( RogueTokenizer* THIS )
+{
+  RogueInteger   lookahead = 0;
+  RogueCharacter ch = RogueParseReader_peek( THIS->reader, lookahead );
+  while (ch >= '0' && ch <'9')
+  {
+    ch = RogueParseReader_peek( THIS->reader, ++lookahead );
+  }
+  if (ch == 'e' || ch == 'E') return 1;
+  if (ch != '.') return 0;
+  ch = RogueParseReader_peek( THIS->reader, ++lookahead );
+  return (ch >= '0' && ch <= '9');
 }
 
 RogueLogical RogueTokenizer_tokenize( RogueTokenizer* THIS )
@@ -48,6 +64,12 @@ RogueLogical RogueTokenizer_tokenize_another( RogueTokenizer* THIS )
     RogueVMList_add( THIS->tokens, RogueCmd_create(THIS->vm->cmd_type_eol) );
     return 1;
   }
+
+  if (ch >= '0' && ch <= '9')
+  {
+    RogueTokenizer_tokenize_integer_or_long( THIS, 10 );
+    return 1;
+  }
   
   {
     RogueCmdType* type = RogueTokenizer_tokenize_symbol( THIS );
@@ -63,6 +85,22 @@ RogueLogical RogueTokenizer_tokenize_another( RogueTokenizer* THIS )
   return 0;
 }
 
+void RogueTokenizer_tokenize_integer_or_long( RogueTokenizer* THIS, RogueInteger base )
+{
+  RogueLong value = 0;
+
+  while (RogueParseReader_next_is_digit(THIS->reader, base))
+  {
+    value = value * base + RogueParseReader_read_digit( THIS->reader );
+  }
+
+  {
+    RogueCmdLiteralInteger* cmd = RogueCmd_create( THIS->vm->cmd_type_literal_integer );
+    cmd->value = value;
+    RogueVMList_add( THIS->tokens, cmd );
+  }
+}
+
 RogueCmdType* RogueTokenizer_tokenize_symbol( RogueTokenizer* THIS )
 {
   RogueParsePosition pos = THIS->reader->position;
@@ -75,6 +113,12 @@ RogueCmdType* RogueTokenizer_tokenize_symbol( RogueTokenizer* THIS )
       return vm->cmd_type_symbol_exclamation;
     case '#':
       return vm->cmd_type_symbol_pound;
+    case '(':
+      return vm->cmd_type_symbol_open_paren;
+    case ')':
+      return vm->cmd_type_symbol_close_paren;
+    case '+':
+      return vm->cmd_type_symbol_plus;
     case '<':
       if (RogueParseReader_consume(THIS->reader,'=')) return vm->cmd_type_symbol_le;
       return vm->cmd_type_symbol_lt;

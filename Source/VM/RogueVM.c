@@ -28,7 +28,12 @@ RogueVM* RogueVM_create()
   THIS->consolidation_table = RogueTable_create( THIS, 128 );
 
   THIS->cmd_type_eol = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, "[end of line]", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_pound = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_POUND, "#", sizeof(RogueCmd) );
+
+  THIS->cmd_type_literal_integer = RogueCmdType_create( THIS, ROGUE_TOKEN_LITERAL_INTEGER,
+      "[integer]", sizeof(RogueCmdLiteralInteger) );
+  THIS->cmd_type_literal_integer->print = RogueCmdLiteralInteger_print;
+
+  THIS->cmd_type_symbol_close_paren = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_CLOSE_PAREN, ")", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_eq = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EQ, "==", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_equals = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EQUALS, "=", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_exclamation = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EXCLAMATION, "!", sizeof(RogueCmd) );
@@ -37,6 +42,9 @@ RogueVM* RogueVM_create()
   THIS->cmd_type_symbol_le = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_LE, ">=", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_lt = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_LT, "<", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_ne = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_NE, "!=", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_open_paren = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_OPEN_PAREN, "(", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_plus = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_PLUS, "+", sizeof(RogueCmdBinaryOp) );
+  THIS->cmd_type_symbol_pound = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_POUND, "#", sizeof(RogueCmd) );
 
   return THIS;
 }

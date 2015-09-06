@@ -26,6 +26,8 @@ struct RogueCmdType
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
     const char* name, RogueInteger object_size );
 
+void RogueCmdLiteralInteger_print( void* cmd );
+
 //-----------------------------------------------------------------------------
 //  RogueCmd
 //-----------------------------------------------------------------------------
@@ -33,6 +35,19 @@ struct RogueCmd
 {
   RogueAllocation allocation;
   RogueCmdType*   type;
+};
+
+struct RogueCmdLiteralInteger
+{
+  RogueCmd     cmd;
+  RogueInteger value;
+};
+
+struct RogueCmdBinaryOp
+{
+  RogueCmd cmd;
+  void*    left;
+  void*    right;
 };
 
 void* RogueCmd_create( RogueCmdType* of_type );
