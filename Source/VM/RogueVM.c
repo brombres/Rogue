@@ -11,6 +11,8 @@ RogueVM* RogueVM_create()
   memset( THIS, 0, sizeof(RogueVM) );
   RogueAllocator_init( THIS, &THIS->allocator );
 
+  RogueStringBuilder_init( &THIS->error_message_builder, THIS, -1 );
+
   THIS->type_ByteArray      = RogueTypeByteArray_create( THIS );
   THIS->type_ByteList       = RogueTypeByteList_create( THIS );
   THIS->type_CharacterArray = RogueTypeCharacterArray_create( THIS );
@@ -27,6 +29,14 @@ RogueVM* RogueVM_create()
 
   THIS->cmd_type_eol = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, "[end of line]", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_pound = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_POUND, "#", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_eq = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EQ, "==", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_equals = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EQUALS, "=", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_exclamation = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EXCLAMATION, "!", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_ge = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_GE, ">=", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_gt = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_GT, ">", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_le = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_LE, ">=", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_lt = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_LT, "<", sizeof(RogueCmd) );
+  THIS->cmd_type_symbol_ne = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_NE, "!=", sizeof(RogueCmd) );
 
   return THIS;
 }
@@ -45,6 +55,7 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
     RogueType_delete( THIS->type_Table );
     RogueType_delete( THIS->type_TableEntry );
 
+    RogueStringBuilder_retire( &THIS->error_message_builder );
     RogueAllocator_retire( &THIS->allocator );
     free( THIS );
   }
@@ -73,4 +84,46 @@ RogueString* RogueVM_consolidate_c_string( RogueVM* THIS, const char* utf8 )
   entry->value = entry->key;
   return entry->value;
 }
+
+RogueString* RogueVM_error_string( RogueVM* THIS )
+{
+  RogueString* result;
+  const char* bar;
+
+  RogueStringBuilder buffer;
+  RogueStringBuilder_init( &buffer, THIS, -1 );
+
+  bar = "===============================================================================\n";
+  RogueStringBuilder_print_c_string( &buffer, bar );
+  RogueStringBuilder_print_c_string( &buffer, "ERROR" );
+  if (THIS->error_filepath)
+  {
+    RogueStringBuilder_print_c_string( &buffer, " in " );
+    RogueStringBuilder_print_object( &buffer, THIS->error_filepath );
+    if (THIS->error_position.line)
+    {
+      RogueStringBuilder_print_c_string( &buffer, " line " );
+      RogueStringBuilder_print_integer( &buffer, THIS->error_position.line );
+      RogueStringBuilder_print_c_string( &buffer, ", column " );
+      RogueStringBuilder_print_integer( &buffer, THIS->error_position.column );
+    }
+    RogueStringBuilder_print_c_string( &buffer, ":\n  " );
+  }
+  RogueStringBuilder_print_characters( &buffer, THIS->error_message_builder.characters,
+      THIS->error_message_builder.count );
+  RogueStringBuilder_print_character( &buffer, '\n' );
+  RogueStringBuilder_print_c_string( &buffer, bar );
+
+  result = RogueStringBuilder_to_string( &buffer );
+
+  RogueStringBuilder_retire( &buffer );
+
+  return result;
+}
+
+void RogueVM_log_error( RogueVM* THIS )
+{
+  RogueString_log( RogueVM_error_string(THIS) );
+}
+
 

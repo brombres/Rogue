@@ -39,39 +39,6 @@
 
 #define ROGUE_STRING(vm,c_string) RogueString_create_from_c_string(vm,c_string)
 
-#include <setjmp.h>
-
-#if defined(ROGUE_PLATFORM_MAC)
-#  define ROGUE_SETJMP  _setjmp
-#  define ROGUE_LONGJMP _longjmp
-#else
-#  define ROGUE_SETJMP  setjmp
-#  define ROGUE_LONGJMP longjmp
-#endif
-
-#define ROGUE_TRY(vm) \
-  { \
-    JumpBuffer local_jump_buffer; \
-    local_jump_buffer.previous_jump_buffer = vm->jump_buffer; \
-    vm->jump_buffer = &local_jump_buffer; \
-    int local_exception_code; \
-    if ( !(local_exception_code = ROGUE_SETJMP(local_jump_buffer.info)) ) \
-    { \
-
-#define ROGUE_CATCH_ANY \
-    } else {
-
-#define ROGUE_CATCH(err) \
-    } else { \
-      err = local_exception_code;
-
-#define ROGUE_END_TRY(vm) \
-    } \
-    vm->jump_buffer = local_jump_buffer.previous_jump_buffer; \
-  }
-
-#define ROGUE_THROW(vm,code) ROGUE_LONGJMP( vm->jump_buffer->info, code )
-
 #if defined(ROGUE_PLATFORM_WINDOWS)
   typedef double           RogueReal;
   typedef float            RogueFloat;
@@ -89,16 +56,6 @@
   typedef uint8_t          RogueByte;
   typedef RogueInteger     RogueLogical;
 #endif
-
-//-----------------------------------------------------------------------------
-//  Jump Buffer
-//-----------------------------------------------------------------------------
-//struct JumpBuffer
-//{
-//  jmp_buf     info;
-//  JumpBuffer* previous_jump_buffer;
-//};
-
 
 //-----------------------------------------------------------------------------
 //  Allocator
@@ -142,6 +99,7 @@ typedef struct RogueAllocator     RogueAllocator;
 typedef struct RogueArray         RogueArray;
 typedef struct RogueCmd           RogueCmd;
 typedef struct RogueCmdType       RogueCmdType;
+typedef struct RogueErrorHandler  RogueErrorHandler;
 typedef struct RogueList          RogueList;
 typedef struct RogueObject        RogueObject;
 typedef struct RogueParsePosition RogueParsePosition;
@@ -180,6 +138,7 @@ typedef struct RogueVMList        RogueVMList;
 //};
 //
 
+#include "RogueError.h"
 #include "RogueTokenType.h"
 #include "RogueUTF8.h"
 #include "RogueAllocation.h"
@@ -191,11 +150,11 @@ typedef struct RogueVMList        RogueVMList;
 #include "RogueTokenizer.h"
 #include "RogueCmd.h"
 #include "RogueStringBuilder.h"
+#include "RogueParseReader.h"
 #include "RogueVM.h"
 #include "RogueVMList.h"
 #include "RogueArray.h"
 #include "RogueList.h"
-#include "RogueParseReader.h"
 #include "RogueTable.h"
 
 #endif // ROGUE_H

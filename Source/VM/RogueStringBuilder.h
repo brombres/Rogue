@@ -13,15 +13,15 @@
 
 struct RogueStringBuilder
 {
+  RogueVM*        vm;
   RogueInteger    count;
   RogueInteger    capacity;
   RogueCharacter* characters;
   RogueCharacter  internal_buffer[ROGUE_STRING_BUILDER_INTERNAL_BUFFER_SIZE];
 };
 
-void RogueStringBuilder_init( RogueStringBuilder* THIS, RogueInteger initial_capacity );
+void RogueStringBuilder_init( RogueStringBuilder* THIS, RogueVM* vm, RogueInteger initial_capacity );
 void RogueStringBuilder_retire( RogueStringBuilder* THIS );
-
 
 void RogueStringBuilder_log( RogueStringBuilder* THIS );
 
@@ -36,5 +36,6 @@ void RogueStringBuilder_print_c_string_with_count( RogueStringBuilder* THIS, con
 void RogueStringBuilder_print_string_builder( RogueStringBuilder* THIS, RogueStringBuilder* other );
 
 void RogueStringBuilder_reserve( RogueStringBuilder* THIS, RogueInteger additional );
+RogueString* RogueStringBuilder_to_string( RogueStringBuilder* THIS );
 
 #endif // ROGUE_STRING_BUILDER_H

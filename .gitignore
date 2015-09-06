@@ -3,7 +3,7 @@
 Source/Compiler/Bard/RogueC.bc
 Programs/Bard/Programs/Mac
 Programs/Bard/Programs/Windows
-Test.rogue
+/Test.rogue
 Test.cpp
 Test.h
 a.out

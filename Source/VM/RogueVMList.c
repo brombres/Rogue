@@ -42,7 +42,6 @@ RogueVMList* RogueVMList_reserve( RogueVMList* THIS, RogueInteger additional_cap
   double_capacity = THIS->capacity << 1;
   if (double_capacity > required_capacity) required_capacity = double_capacity;
 
-printf( "new capacity %d\n", required_capacity );
   {
     RogueAllocator* allocator = &THIS->vm->allocator;
     RogueInteger array_size = sizeof(RogueVMArray) + required_capacity * sizeof(void*);

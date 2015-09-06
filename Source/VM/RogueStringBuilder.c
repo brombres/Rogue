@@ -5,8 +5,9 @@
 //=============================================================================
 #include "Rogue.h"
 
-void RogueStringBuilder_init( RogueStringBuilder* THIS, RogueInteger initial_capacity )
+void RogueStringBuilder_init( RogueStringBuilder* THIS, RogueVM* vm, RogueInteger initial_capacity )
 {
+  THIS->vm = vm;
   THIS->count = 0;
   if (initial_capacity <= ROGUE_STRING_BUILDER_INTERNAL_BUFFER_SIZE)
   {
@@ -157,5 +158,10 @@ void RogueStringBuilder_reserve( RogueStringBuilder* THIS, RogueInteger addition
   if (THIS->characters != THIS->internal_buffer) free( THIS->characters );
   THIS->characters = new_characters;
   THIS->capacity = required;
+}
+
+RogueString* RogueStringBuilder_to_string( RogueStringBuilder* THIS )
+{
+  return RogueString_create_from_characters( THIS->vm, THIS->characters, THIS->count );
 }
 

@@ -16,6 +16,11 @@ struct RogueVM
   RogueList*         c_string_buffer;
   RogueList*         global_commands;
 
+  RogueErrorHandler* error_handler;
+  RogueString*       error_filepath;
+  RogueParsePosition error_position;
+  RogueStringBuilder error_message_builder;
+
   RogueType*         type_ByteArray;
   RogueType*         type_ByteList;
   RogueType*         type_CharacterArray;
@@ -27,6 +32,14 @@ struct RogueVM
   RogueType*         type_TableEntry;
 
   RogueCmdType*      cmd_type_eol;
+  RogueCmdType*      cmd_type_symbol_exclamation;
+  RogueCmdType*      cmd_type_symbol_eq;
+  RogueCmdType*      cmd_type_symbol_equals;
+  RogueCmdType*      cmd_type_symbol_ge;
+  RogueCmdType*      cmd_type_symbol_gt;
+  RogueCmdType*      cmd_type_symbol_le;
+  RogueCmdType*      cmd_type_symbol_lt;
+  RogueCmdType*      cmd_type_symbol_ne;
   RogueCmdType*      cmd_type_symbol_pound;
 };
 
@@ -36,6 +49,9 @@ RogueVM* RogueVM_delete( RogueVM* THIS );
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st );
 RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* characters, RogueInteger count );
 RogueString* RogueVM_consolidate_c_string( RogueVM* THIS, const char* utf8 );
+
+RogueString* RogueVM_error_string( RogueVM* THIS );
+void         RogueVM_log_error( RogueVM* THIS );
 
 //int RogueVM_parse( RogueVM* THIS, const char* utf8 );
 

@@ -65,13 +65,32 @@ RogueLogical RogueTokenizer_tokenize_another( RogueTokenizer* THIS )
 
 RogueCmdType* RogueTokenizer_tokenize_symbol( RogueTokenizer* THIS )
 {
+  RogueParsePosition pos = THIS->reader->position;
   RogueCharacter ch = RogueParseReader_read( THIS->reader );
   RogueVM* vm = THIS->vm;
   switch (ch)
   {
+    case '!':
+      if (RogueParseReader_consume(THIS->reader,'=')) return vm->cmd_type_symbol_ne;
+      return vm->cmd_type_symbol_exclamation;
     case '#':
       return vm->cmd_type_symbol_pound;
+    case '<':
+      if (RogueParseReader_consume(THIS->reader,'=')) return vm->cmd_type_symbol_le;
+      return vm->cmd_type_symbol_lt;
+    case '=':
+      if (RogueParseReader_consume(THIS->reader,'=')) return vm->cmd_type_symbol_eq;
+      return vm->cmd_type_symbol_equals;
+    case '>':
+      if (RogueParseReader_consume(THIS->reader,'=')) return vm->cmd_type_symbol_ge;
+      return vm->cmd_type_symbol_gt;
   }
+
+  RogueStringBuilder_print_c_string( &vm->error_message_builder, "Unexpected character '" );
+  RogueStringBuilder_print_character( &vm->error_message_builder, ch ); 
+  RogueStringBuilder_print_c_string( &vm->error_message_builder, "'." );
+  ROGUE_THROW( vm, THIS->reader->filepath, pos, 0 );
+
   return 0;
 }
 

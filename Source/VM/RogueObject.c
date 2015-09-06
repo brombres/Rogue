@@ -25,7 +25,7 @@ void* RogueObject_create( RogueType* of_type, RogueInteger size )
 void RogueObject_print( void* THIS )
 {
   RogueStringBuilder builder;
-  RogueStringBuilder_init( &builder, -1 );
+  RogueStringBuilder_init( &builder, ((RogueObject*)THIS)->type->vm, -1 );
 
   ((RogueObject*)THIS)->type->print( THIS, &builder );
 
