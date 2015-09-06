@@ -9,6 +9,7 @@ RogueVMList* RogueVMList_create( RogueVM* vm, RogueInteger initial_capacity )
 {
   RogueVMList* list = RogueAllocator_allocate( &vm->allocator, sizeof(RogueVMList) );
   RogueInteger array_size = sizeof(RogueVMArray) + initial_capacity * sizeof(void*);
+  list->vm = vm;
   list->array = RogueAllocator_allocate( &vm->allocator, array_size );
   list->capacity = initial_capacity;
   return list;

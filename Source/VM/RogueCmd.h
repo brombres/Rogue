@@ -9,17 +9,22 @@
 
 #include "Rogue.h"
 
+typedef void (*RogueCmdPrintFn)( void* cmd );
+
 //-----------------------------------------------------------------------------
 //  RogueCmdType
 //-----------------------------------------------------------------------------
 struct RogueCmdType
 {
-  RogueVM*       vm;
-  RogueTokenType token_type;
-  RogueInteger   object_size;
+  RogueVM*        vm;
+  RogueTokenType  token_type;
+  RogueInteger    object_size;
+  const char*     name;
+  RogueCmdPrintFn print;
 };
 
-RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type, RogueInteger object_size );
+RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
+    const char* name, RogueInteger object_size );
 
 //-----------------------------------------------------------------------------
 //  RogueCmd

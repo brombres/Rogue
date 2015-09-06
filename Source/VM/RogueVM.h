@@ -26,7 +26,8 @@ struct RogueVM
   RogueType*         type_Table;
   RogueType*         type_TableEntry;
 
-  RogueCmdType*      cmd_type_EOL;
+  RogueCmdType*      cmd_type_eol;
+  RogueCmdType*      cmd_type_symbol_pound;
 };
 
 RogueVM* RogueVM_create();

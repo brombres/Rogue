@@ -10,6 +10,13 @@ int main()
   RogueTokenizer* tokenizer = RogueTokenizer_create_with_file( vm, ROGUE_STRING(vm,"Test.c") );
   RogueTokenizer_tokenize( tokenizer );
 
+  while (RogueTokenizer_has_another(tokenizer))
+  {
+    RogueCmd* cmd = RogueTokenizer_read( tokenizer );
+    cmd->type->print( cmd );
+    printf("\n");
+  }
+
   RogueVM_delete( vm );
 
   //RogueCmd* expression = RogueCmd_create_binary( &RogueCmdType_add_integer,

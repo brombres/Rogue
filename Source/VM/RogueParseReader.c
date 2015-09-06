@@ -73,6 +73,10 @@ int RogueParseReader_consume_whitespace( RogueParseReader* THIS )
       if (ch == '\n') return consumed_any;
       consumed_any = 1;
     }
+    else
+    {
+      return consumed_any;
+    }
     i = ++THIS->position.index;
   }
   return consumed_any;

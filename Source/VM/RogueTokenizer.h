@@ -16,11 +16,19 @@ struct RogueTokenizer
   RogueVM*          vm;
   RogueParseReader* reader;
   RogueVMList*      tokens;
+
+  RogueInteger      position;
 };
 
 RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filepath );
 RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS );
-int             RogueTokenizer_tokenize( RogueTokenizer* THIS );
-int             RogueTokenizer_tokenize_another( RogueTokenizer* THIS );
+RogueLogical    RogueTokenizer_tokenize( RogueTokenizer* THIS );
+RogueLogical    RogueTokenizer_tokenize_another( RogueTokenizer* THIS );
+RogueCmdType*   RogueTokenizer_tokenize_symbol( RogueTokenizer* THIS );
+
+RogueLogical    RogueTokenizer_has_another( RogueTokenizer* THIS );
+RogueCmd*       RogueTokenizer_peek( RogueTokenizer* THIS, RogueInteger lookahead );
+RogueTokenType  RogueTokenizer_peek_type( RogueTokenizer* THIS, RogueInteger lookahead );
+RogueCmd*       RogueTokenizer_read( RogueTokenizer* THIS );
 
 #endif // ROGUE_TOKENIZER_H

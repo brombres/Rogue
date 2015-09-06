@@ -8,14 +8,21 @@
 //-----------------------------------------------------------------------------
 //  RogueCmdType
 //-----------------------------------------------------------------------------
+void RogueCmdPrintFn_default( void* cmd )
+{
+  printf( "%s", ((RogueCmd*)cmd)->type->name );
+}
+
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
-  RogueInteger object_size )
+  const char* name, RogueInteger object_size )
 {
   RogueCmdType* cmd_type = (RogueCmdType*) RogueAllocator_allocate( &vm->allocator,
       sizeof(RogueCmdType) );
   cmd_type->vm = vm;
   cmd_type->token_type = token_type;
   cmd_type->object_size = object_size;
+  cmd_type->name = name;
+  cmd_type->print = RogueCmdPrintFn_default;
   return cmd_type;
 }
 
