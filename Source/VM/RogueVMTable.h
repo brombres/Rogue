@@ -13,13 +13,15 @@
 struct RogueVMTableEntry
 {
   RogueAllocation    allocation;
-  RogueString*       key;
-  void*              value;
-  RogueVMTableEntry* next_entry;
   RogueInteger       hash_code;
+  RogueInteger       key_length;
+  RogueVM*           vm;
+  RogueVMTableEntry* next_entry;
+  void*              value;
+  char               key[0];
 };
 
-RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, RogueString* key, void* value );
+RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, const char* key, void* value );
 RogueVMTableEntry* RogueVMTableEntry_delete( RogueVMTableEntry* THIS );
 
 
@@ -56,11 +58,9 @@ struct RogueVMTable
 RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count );
 RogueVMTable* RogueVMTable_delete( RogueVMTable* THIS );
 
-RogueVMTableEntry* RogueVMTable_find( void* table, RogueString* key, int create_if_necessary );
-RogueVMTableEntry* RogueVMTable_find_c_string( void* table, const char* key, int create_if_necessary );
-void*              RogueVMTable_get( void* THIS, RogueString* key );
-void*              RogueVMTable_get_c_string( void* THIS, const char* key );
-RogueVMTable*      RogueVMTable_set( void* THIS, RogueString* key, void* value );
-RogueVMTable*      RogueVMTable_set_c_string( void* THIS, const char* key, void* value );
+void               RogueVMTable_clear( void* THIS );
+RogueVMTableEntry* RogueVMTable_find( void* THIS, const char* key, int create_if_necessary );
+void*              RogueVMTable_get( void* THIS, const char* key );
+RogueVMTable*      RogueVMTable_set( void* THIS, const char* key, void* value );
 
 #endif // ROGUE_VM_TABLE_H

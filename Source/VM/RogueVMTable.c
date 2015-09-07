@@ -8,19 +8,21 @@
 //-----------------------------------------------------------------------------
 //  VMTableEntry
 //-----------------------------------------------------------------------------
-RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, RogueString* key, void* value )
+RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, const char* key, void* value )
 {
-  RogueVMTableEntry* THIS = RogueAllocator_allocate( &vm->allocator, sizeof(RogueVMTableEntry) );
-  THIS->key = key;
-  THIS->hash_code = key->hash_code;
+  RogueInteger key_length = (RogueInteger) strlen( key );
+  RogueVMTableEntry* THIS = RogueAllocator_allocate( &vm->allocator, sizeof(RogueVMTableEntry) + (key_length+1) );
+  THIS->vm = vm;
+  THIS->hash_code = RogueString_calculate_hash_code( key );
   THIS->value = value;
+  THIS->key_length = key_length;
+  strcpy( THIS->key, key );
   return THIS;
 }
 
 RogueVMTableEntry* RogueVMTableEntry_delete( RogueVMTableEntry* THIS )
 {
-  RogueVM* vm = THIS->key->object.type->vm;
-  RogueAllocator_free( &vm->allocator, THIS );
+  RogueAllocator_free( &THIS->vm->allocator, THIS );
   return 0;
 }
 
@@ -98,38 +100,21 @@ RogueVMTable* RogueVMTable_delete( RogueVMTable* THIS )
   return 0;
 }
 
-RogueVMTableEntry* RogueVMTable_find( void* table, RogueString* key, int create_if_necessary )
+void RogueVMTable_clear( void* table )
 {
+  RogueVMTableReader reader;
   RogueVMTable*      THIS = table;
-  RogueInteger       hash_code = key->hash_code;
-  RogueInteger       bindex = hash_code & THIS->bin_mask;
-  RogueVMTableEntry* cur = THIS->bins->objects[ bindex ];
 
-  while (cur)
+  RogueVMTableReader_init( &reader, THIS );
+  while (RogueVMTableReader_has_another(&reader))
   {
-    if (cur->hash_code == hash_code && ((RogueObject*)cur->key)->type->equals(cur->key,key))
-    {
-      return cur;
-    }
-    cur = cur->next_entry;
+    RogueVMTableEntry_delete( RogueVMTableReader_read(&reader) );
   }
-
-  if (create_if_necessary)
-  {
-    RogueVM* vm = THIS->vm;
-    cur = RogueVMTableEntry_create( vm, RogueVM_consolidate_string(vm,key), 0 );
-    cur->next_entry = THIS->bins->objects[ bindex ];
-    THIS->bins->objects[ bindex ] = cur;
-    ++THIS->count;
-    return cur;
-  }
-  else
-  {
-    return 0;
-  }
+  THIS->count = 0;
+  memset( THIS->bins->objects, 0, THIS->bin_count * sizeof(void*) );
 }
 
-RogueVMTableEntry* RogueVMTable_find_c_string( void* table, const char* key, int create_if_necessary )
+RogueVMTableEntry* RogueVMTable_find( void* table, const char* key, int create_if_necessary )
 {
   RogueVMTable*      THIS = table;
   RogueInteger       hash_code = RogueString_calculate_hash_code( key );
@@ -138,7 +123,7 @@ RogueVMTableEntry* RogueVMTable_find_c_string( void* table, const char* key, int
 
   while (cur)
   {
-    if (cur->hash_code == hash_code && ((RogueObject*)cur->key)->type->equals_c_string(cur->key,key))
+    if (cur->hash_code == hash_code && 0 == strcmp(cur->key,key))
     {
       return cur;
     }
@@ -148,7 +133,7 @@ RogueVMTableEntry* RogueVMTable_find_c_string( void* table, const char* key, int
   if (create_if_necessary)
   {
     RogueVM* vm = THIS->vm;
-    cur = RogueVMTableEntry_create( vm, RogueVM_consolidate_c_string(vm,key), 0 );
+    cur = RogueVMTableEntry_create( vm, key, 0 );
     cur->next_entry = THIS->bins->objects[ bindex ];
     THIS->bins->objects[ bindex ] = cur;
     ++THIS->count;
@@ -160,29 +145,16 @@ RogueVMTableEntry* RogueVMTable_find_c_string( void* table, const char* key, int
   }
 }
 
-void* RogueVMTable_get( void* THIS, RogueString* key )
+void* RogueVMTable_get( void* THIS, const char* key )
 {
   RogueVMTableEntry* entry = RogueVMTable_find( THIS, key, 0 );
   if (entry) return entry->value;
   return 0;
 }
 
-void* RogueVMTable_get_c_string( void* THIS, const char* key )
-{
-  RogueVMTableEntry* entry = RogueVMTable_find_c_string( THIS, key, 0 );
-  if (entry) return entry->value;
-  return 0;
-}
-
-RogueVMTable* RogueVMTable_set( void* THIS, RogueString* key, void* value )
+RogueVMTable* RogueVMTable_set( void* THIS, const char* key, void* value )
 {
   RogueVMTable_find( THIS, key, 1 )->value = value;
-  return THIS;
-}
-
-RogueVMTable* RogueVMTable_set_c_string( void* THIS, const char* key, void* value )
-{
-  RogueVMTable_find_c_string( THIS, key, 1 )->value = value;
   return THIS;
 }
 

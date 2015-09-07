@@ -103,7 +103,7 @@ RogueType* RogueVM_create_type( RogueVM* THIS, RogueCmd* origin, const char* nam
 {
   RogueType* type = RogueType_create( THIS, origin, name, object_size );
   RogueVMList_add( THIS->type_list, type );
-  //RogueVMTable_set_c_string( THIS->type_lookup, type->name, type );
+  RogueVMTable_set( THIS->type_lookup, type->name, type );
   return type;
 }
 
