@@ -65,7 +65,7 @@ void RoguePrintFn_string( void* object, RogueStringBuilder* builder )
 
 RogueType* RogueTypeString_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "String", sizeof(RogueString) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "String", sizeof(RogueString) );
   THIS->print             = RoguePrintFn_string;
   THIS->equals            = RogueEqualsFn_string;
   THIS->equals_c_string   = RogueEqualsCStringFn_string;

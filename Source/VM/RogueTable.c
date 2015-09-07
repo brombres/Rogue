@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 RogueType* RogueTypeTableEntry_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "TableEntry", sizeof(RogueTableEntry) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "TableEntry", sizeof(RogueTableEntry) );
   return THIS;
 }
 
@@ -74,7 +74,7 @@ RogueTableEntry* RogueTableReader_read( RogueTableReader* reader )
 //-----------------------------------------------------------------------------
 RogueType* RogueTypeTable_create( RogueVM* vm )
 {
-  RogueType* table = RogueType_create( vm, "Table", sizeof(RogueTable) );
+  RogueType* table = RogueVM_create_type( vm, 0, "Table", sizeof(RogueTable) );
   table->print = RoguePrintFn_table;
   return table;
 }

@@ -21,6 +21,9 @@ struct RogueVM
   RogueParsePosition error_position;
   RogueStringBuilder error_message_builder;
 
+  RogueVMList*       type_list;
+  RogueVMTable*      type_lookup;
+
   RogueType*         type_ByteArray;
   RogueType*         type_ByteList;
   RogueType*         type_CharacterArray;
@@ -53,6 +56,8 @@ RogueVM* RogueVM_delete( RogueVM* THIS );
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st );
 RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* characters, RogueInteger count );
 RogueString* RogueVM_consolidate_c_string( RogueVM* THIS, const char* utf8 );
+
+RogueType*   RogueVM_create_type( RogueVM* THIS, RogueCmd* origin, const char* name, RogueInteger object_size );
 
 RogueString* RogueVM_error_string( RogueVM* THIS );
 void         RogueVM_log_error( RogueVM* THIS );

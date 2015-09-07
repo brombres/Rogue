@@ -36,7 +36,7 @@ void RoguePrintFn_object_array( void* array_ptr, RogueStringBuilder* builder )
 
 RogueType* RogueTypeByteArray_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "ByteArray", sizeof(RogueArray) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "ByteArray", sizeof(RogueArray) );
   THIS->element_size = sizeof(RogueByte);
   THIS->print = RoguePrintFn_byte_array;
   return THIS;
@@ -44,7 +44,7 @@ RogueType* RogueTypeByteArray_create( RogueVM* vm )
 
 RogueType* RogueTypeCharacterArray_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "CharacterArray", sizeof(RogueArray) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "CharacterArray", sizeof(RogueArray) );
   THIS->element_size = sizeof(RogueCharacter);
   THIS->print = RoguePrintFn_character_array;
   return THIS;
@@ -52,7 +52,7 @@ RogueType* RogueTypeCharacterArray_create( RogueVM* vm )
 
 RogueType* RogueTypeObjectArray_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "ObjectArray", sizeof(RogueArray) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "ObjectArray", sizeof(RogueArray) );
   THIS->element_size = sizeof(RogueObject*);
   THIS->print = RoguePrintFn_object_array;
   return THIS;

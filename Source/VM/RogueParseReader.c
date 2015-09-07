@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 RogueType* RogueTypeParseReader_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "ParseReader", sizeof(RogueParseReader) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "ParseReader", sizeof(RogueParseReader) );
   return THIS;
 }
 

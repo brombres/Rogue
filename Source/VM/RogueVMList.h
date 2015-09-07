@@ -19,10 +19,11 @@ typedef struct RogueVMArray
 
 struct RogueVMList
 {
-  RogueVM*      vm;
-  RogueVMArray* array;
-  RogueInteger  capacity;
-  RogueInteger  count;
+  RogueAllocation allocation;
+  RogueVM*        vm;
+  RogueVMArray*   array;
+  RogueInteger    capacity;
+  RogueInteger    count;
 };
 
 RogueVMList* RogueVMList_create( RogueVM* vm, RogueInteger initial_capacity );

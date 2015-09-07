@@ -1,0 +1,66 @@
+//=============================================================================
+//  RogueVMTable.h
+//
+//  2015.09.06 by Abe Pralle
+//=============================================================================
+#pragma once
+#ifndef ROGUE_VM_TABLE_H
+#define ROGUE_VM_TABLE_H
+
+//-----------------------------------------------------------------------------
+//  VMTableEntry
+//-----------------------------------------------------------------------------
+struct RogueVMTableEntry
+{
+  RogueAllocation    allocation;
+  RogueString*       key;
+  void*              value;
+  RogueVMTableEntry* next_entry;
+  RogueInteger       hash_code;
+};
+
+RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, RogueString* key, void* value );
+RogueVMTableEntry* RogueVMTableEntry_delete( RogueVMTableEntry* THIS );
+
+
+//-----------------------------------------------------------------------------
+//  VMTableReader
+//-----------------------------------------------------------------------------
+struct RogueVMTableReader
+{
+  RogueVMTable*      table;
+  RogueVMTableEntry* next_entry;
+  RogueInteger       bindex;
+  RogueInteger       index;
+};
+
+void               RogueVMTableReader_init( RogueVMTableReader* reader, RogueVMTable* table );
+RogueVMTableEntry* RogueVMTableReader_advance( RogueVMTableReader* reader, RogueVMTableEntry* cur );
+int                RogueVMTableReader_has_another( RogueVMTableReader* reader );
+RogueVMTableEntry* RogueVMTableReader_read( RogueVMTableReader* reader );
+
+
+//-----------------------------------------------------------------------------
+//  VMTable
+//-----------------------------------------------------------------------------
+struct RogueVMTable
+{
+  RogueAllocation allocation;
+  RogueVM*        vm;
+  RogueVMArray*   bins;
+  RogueInteger    bin_count;
+  RogueInteger    bin_mask;
+  RogueInteger    count;
+};
+
+RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count );
+RogueVMTable* RogueVMTable_delete( RogueVMTable* THIS );
+
+RogueVMTableEntry* RogueVMTable_find( void* table, RogueString* key, int create_if_necessary );
+RogueVMTableEntry* RogueVMTable_find_c_string( void* table, const char* key, int create_if_necessary );
+void*              RogueVMTable_get( void* THIS, RogueString* key );
+void*              RogueVMTable_get_c_string( void* THIS, const char* key );
+RogueVMTable*      RogueVMTable_set( void* THIS, RogueString* key, void* value );
+RogueVMTable*      RogueVMTable_set_c_string( void* THIS, const char* key, void* value );
+
+#endif // ROGUE_VM_TABLE_H

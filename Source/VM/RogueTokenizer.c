@@ -20,7 +20,7 @@ RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filep
 RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS )
 {
   RogueStringBuilder_retire( &THIS->builder );
-  RogueAllocator_free( &THIS->vm->allocator, THIS->tokens );
+  if (THIS->tokens) RogueVMList_delete( THIS->tokens );
   RogueAllocator_free( &THIS->vm->allocator, THIS );
   return 0;
 }

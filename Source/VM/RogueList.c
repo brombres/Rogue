@@ -33,7 +33,7 @@ void RoguePrintFn_object_list( void* list_ptr, RogueStringBuilder* builder )
 
 RogueType* RogueTypeByteList_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "Byte[]", sizeof(RogueList) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "Byte[]", sizeof(RogueList) );
   THIS->element_size = sizeof(RogueByte);
   THIS->print = RoguePrintFn_byte_list;
   return THIS;
@@ -41,7 +41,7 @@ RogueType* RogueTypeByteList_create( RogueVM* vm )
 
 RogueType* RogueTypeObjectList_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueType_create( vm, "Object[]", sizeof(RogueList) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "Object[]", sizeof(RogueList) );
   THIS->element_size = sizeof(RogueObject*);
   THIS->print = RoguePrintFn_object_list;
   return THIS;

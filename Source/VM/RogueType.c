@@ -40,13 +40,14 @@ void RoguePrintFn_default( void* object, RogueStringBuilder* builder )
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_size )
+RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, RogueInteger object_size )
 {
   int len = strlen( name );
 
   RogueType* THIS = (RogueType*) malloc( sizeof(RogueType) );
   memset( THIS, 0, sizeof(RogueType) );
   THIS->vm = vm;
+  THIS->origin = origin;
 
   THIS->name = (char*) malloc( len+1 );
   strcpy( THIS->name, name );
@@ -59,6 +60,8 @@ RogueType* RogueType_create( RogueVM* vm, const char* name, RogueInteger object_
   THIS->hash_code = RogueHashCodeFn_default;
   THIS->print = RoguePrintFn_default;
 
+  THIS->methods = RogueVMList_create( vm, 20 );
+
   return THIS;
 }
 
@@ -66,6 +69,7 @@ RogueType* RogueType_delete( RogueType* THIS )
 {
   if (THIS)
   {
+    if (THIS->methods) RogueVMList_delete( THIS->methods );
     free( THIS->name );
     free( THIS );
   }
