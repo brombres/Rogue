@@ -129,8 +129,10 @@ RogueString* RogueVM_error_string( RogueVM* THIS )
       RogueStringBuilder_print_c_string( &buffer, ", column " );
       RogueStringBuilder_print_integer( &buffer, THIS->error_position.column );
     }
-    RogueStringBuilder_print_c_string( &buffer, ":\n  " );
+    RogueStringBuilder_print_character( &buffer, ":" );
   }
+  RogueStringBuilder_print_c_string( &buffer, "\n" );
+
   RogueStringBuilder_print_characters( &buffer, THIS->error_message_builder.characters,
       THIS->error_message_builder.count );
   RogueStringBuilder_print_character( &buffer, '\n' );
@@ -148,4 +150,24 @@ void RogueVM_log_error( RogueVM* THIS )
   RogueString_log( RogueVM_error_string(THIS) );
 }
 
+RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
+{
+  RogueLogical success = 1;
+  RogueParser* parser;
+
+  ROGUE_TRY(THIS)
+  {
+    parser = RogueParser_create_with_filepath( THIS, filepath );
+    RogueParser_parse_elements( parser );
+  }
+  ROGUE_CATCH(THIS)
+  {
+    RogueVM_log_error( THIS );
+    success = 0;
+  }
+  ROGUE_END_TRY(THIS)
+
+  RogueParser_delete( parser );
+  return success;
+}
 

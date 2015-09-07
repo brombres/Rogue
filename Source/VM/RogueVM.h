@@ -62,6 +62,10 @@ RogueType*   RogueVM_create_type( RogueVM* THIS, RogueCmd* origin, const char* n
 RogueString* RogueVM_error_string( RogueVM* THIS );
 void         RogueVM_log_error( RogueVM* THIS );
 
+RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath );
+
+
+
 //int RogueVM_parse( RogueVM* THIS, const char* utf8 );
 
 #endif // ROGUE_VM_H

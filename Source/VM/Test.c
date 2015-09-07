@@ -5,25 +5,21 @@ int main()
 {
   RogueVM* vm = RogueVM_create();
 
-  ROGUE_TRY(vm)
-  {
-    RogueTokenizer* tokenizer = RogueTokenizer_create_with_file( vm, ROGUE_STRING(vm,"Test.rogue") );
-    RogueTokenizer_tokenize( tokenizer );
+  RogueVM_load_file( vm, "Test.rogue" );
 
-    printf( "-------------------------------------------------------------------------------\n" );
-    while (RogueTokenizer_has_another(tokenizer))
-    {
-      RogueCmd* cmd = RogueTokenizer_read( tokenizer );
-      cmd->type->print( cmd );
-      printf("\n");
-    }
-    printf( "-------------------------------------------------------------------------------\n" );
-  }
-  ROGUE_CATCH(vm)
+  /*
+  RogueTokenizer* tokenizer = RogueTokenizer_create_with_file( vm, ROGUE_STRING(vm,"Test.rogue") );
+  RogueTokenizer_tokenize( tokenizer );
+
+  printf( "-------------------------------------------------------------------------------\n" );
+  while (RogueTokenizer_has_another(tokenizer))
   {
-    RogueVM_log_error( vm );
+    RogueCmd* cmd = RogueTokenizer_read( tokenizer );
+    cmd->type->print( cmd );
+    printf("\n");
   }
-  ROGUE_END_TRY(vm)
+  printf( "-------------------------------------------------------------------------------\n" );
+  */
 
   RogueVM_delete( vm );
 

@@ -23,6 +23,7 @@ struct RogueTokenizer
 
 RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filepath );
 RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS );
+
 RogueLogical    RogueTokenizer_next_is_real( RogueTokenizer* THIS );
 RogueLogical    RogueTokenizer_tokenize( RogueTokenizer* THIS );
 RogueLogical    RogueTokenizer_tokenize_another( RogueTokenizer* THIS );

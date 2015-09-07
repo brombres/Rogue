@@ -35,6 +35,9 @@ struct RogueCmd
 {
   RogueAllocation allocation;
   RogueCmdType*   type;
+  RogueString*    filepath;
+  RogueInteger    line;
+  RogueInteger    column;
 };
 
 struct RogueCmdLiteralInteger
@@ -51,5 +54,6 @@ struct RogueCmdBinaryOp
 };
 
 void* RogueCmd_create( RogueCmdType* of_type );
+void  RogueCmd_throw_error( RogueCmd* THIS, const char* message );
 
 #endif // ROGUE_CMD_H

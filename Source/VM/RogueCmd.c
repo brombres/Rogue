@@ -48,3 +48,11 @@ void* RogueCmd_create( RogueCmdType* of_type  )
   return cmd;
 }
 
+void  RogueCmd_throw_error( RogueCmd* THIS, const char* message )
+{
+  RogueParsePosition position;
+  position.line = THIS->line;
+  position.column = THIS->column;
+  ROGUE_THROW( THIS->type->vm, THIS->filepath, position, message );
+}
+

@@ -106,6 +106,7 @@ typedef struct RogueList              RogueList;
 typedef struct RogueObject            RogueObject;
 typedef struct RogueParsePosition     RogueParsePosition;
 typedef struct RogueParseReader       RogueParseReader;
+typedef struct RogueParser            RogueParser;
 typedef struct RogueType              RogueType;
 typedef struct RogueString            RogueString;
 typedef struct RogueStringBuilder     RogueStringBuilder;
