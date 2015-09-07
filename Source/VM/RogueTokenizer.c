@@ -25,6 +25,14 @@ RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS )
   return 0;
 }
 
+void RogueTokenizer_add_token( RogueTokenizer* THIS, void* token )
+{
+  ((RogueCmd*)token)->filepath = THIS->reader->filepath;
+  ((RogueCmd*)token)->line = THIS->parse_position.line;
+  ((RogueCmd*)token)->column = THIS->parse_position.column;
+  RogueVMList_add( THIS->tokens, token );
+}
+
 RogueLogical RogueTokenizer_next_is_real( RogueTokenizer* THIS )
 {
   RogueInteger   lookahead = 0;
@@ -57,11 +65,12 @@ RogueLogical RogueTokenizer_tokenize_another( RogueTokenizer* THIS )
   RogueParseReader_consume_whitespace( THIS->reader );
   if ( !RogueParseReader_has_another(THIS->reader) ) return 0;
 
+  THIS->parse_position = THIS->reader->position;
   ch = RogueParseReader_peek( THIS->reader, 0 );
   if (ch == '\n')
   {
     RogueParseReader_read( THIS->reader );
-    RogueVMList_add( THIS->tokens, RogueCmd_create(THIS->vm->cmd_type_eol) );
+    RogueTokenizer_add_token( THIS, RogueCmd_create(THIS->vm->cmd_type_eol) );
     return 1;
   }
 
@@ -75,7 +84,7 @@ RogueLogical RogueTokenizer_tokenize_another( RogueTokenizer* THIS )
     RogueCmdType* type = RogueTokenizer_tokenize_symbol( THIS );
     if (type)
     {
-      RogueVMList_add( THIS->tokens, RogueCmd_create(type) );
+      RogueTokenizer_add_token( THIS, RogueCmd_create(type) );
     }
     // else next token was parsed (otherwise exception would be thrown), but the
     // method handled adding it to the token list since it required special handling.
@@ -97,7 +106,7 @@ void RogueTokenizer_tokenize_integer_or_long( RogueTokenizer* THIS, RogueInteger
   {
     RogueCmdLiteralInteger* cmd = RogueCmd_create( THIS->vm->cmd_type_literal_integer );
     cmd->value = value;
-    RogueVMList_add( THIS->tokens, cmd );
+    RogueTokenizer_add_token( THIS, cmd );
   }
 }
 

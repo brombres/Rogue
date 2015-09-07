@@ -17,13 +17,14 @@ struct RogueTokenizer
   RogueParseReader*  reader;
   RogueVMList*       tokens;
   RogueStringBuilder builder;
-
-  RogueInteger      position;
+  RogueParsePosition parse_position;
+  RogueInteger       position;
 };
 
 RogueTokenizer* RogueTokenizer_create_with_file( RogueVM* vm, RogueString* filepath );
 RogueTokenizer* RogueTokenizer_delete( RogueTokenizer* THIS );
 
+void            RogueTokenizer_add_token( RogueTokenizer* THIS, void* token );
 RogueLogical    RogueTokenizer_next_is_real( RogueTokenizer* THIS );
 RogueLogical    RogueTokenizer_tokenize( RogueTokenizer* THIS );
 RogueLogical    RogueTokenizer_tokenize_another( RogueTokenizer* THIS );

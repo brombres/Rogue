@@ -129,7 +129,7 @@ RogueString* RogueVM_error_string( RogueVM* THIS )
       RogueStringBuilder_print_c_string( &buffer, ", column " );
       RogueStringBuilder_print_integer( &buffer, THIS->error_position.column );
     }
-    RogueStringBuilder_print_character( &buffer, ":" );
+    RogueStringBuilder_print_character( &buffer, ':' );
   }
   RogueStringBuilder_print_c_string( &buffer, "\n" );
 

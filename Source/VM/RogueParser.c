@@ -47,9 +47,13 @@ void RogueParser_parse_elements( RogueParser* THIS )
   while (RogueTokenizer_has_another(THIS->tokenizer))
   {
     // Parse global 
+    RogueCmd* cmd = RogueTokenizer_peek( THIS->tokenizer, 0 );
+
     RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "Unexpected '" );
-    RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "(TODO)'." );
-    RogueCmd_throw_error( RogueTokenizer_peek(THIS->tokenizer,0), 0 );
+    cmd->type->print( cmd, &THIS->vm->error_message_builder );
+    RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "'." );
+
+    RogueCmd_throw_error( cmd, 0 );
   }
 }
 

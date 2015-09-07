@@ -8,9 +8,9 @@
 //-----------------------------------------------------------------------------
 //  RogueCmdType
 //-----------------------------------------------------------------------------
-void RogueCmdPrintFn_default( void* cmd )
+void RogueCmdPrintFn_default( void* cmd, RogueStringBuilder* builder )
 {
-  printf( "%s", ((RogueCmd*)cmd)->type->name );
+  RogueStringBuilder_print_c_string( builder, ((RogueCmd*)cmd)->type->name );
 }
 
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
@@ -26,9 +26,9 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
   return cmd_type;
 }
 
-void RogueCmdLiteralInteger_print( void* cmd )
+void RogueCmdLiteralInteger_print( void* cmd, RogueStringBuilder* builder )
 {
-  printf( "%d", ((RogueCmdLiteralInteger*)cmd)->value );
+  RogueStringBuilder_print_integer( builder, ((RogueCmdLiteralInteger*)cmd)->value );
 }
 
 //-----------------------------------------------------------------------------

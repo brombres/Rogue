@@ -9,7 +9,7 @@
 
 #include "Rogue.h"
 
-typedef void (*RogueCmdPrintFn)( void* cmd );
+typedef void (*RogueCmdPrintFn)( void* cmd, RogueStringBuilder* builder );
 
 //-----------------------------------------------------------------------------
 //  RogueCmdType
@@ -26,7 +26,7 @@ struct RogueCmdType
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
     const char* name, RogueInteger object_size );
 
-void RogueCmdLiteralInteger_print( void* cmd );
+void RogueCmdLiteralInteger_print( void* cmd, RogueStringBuilder* builder );
 
 //-----------------------------------------------------------------------------
 //  RogueCmd
