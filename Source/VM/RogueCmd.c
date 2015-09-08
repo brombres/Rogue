@@ -13,6 +13,21 @@ void RogueCmdPrintFn_default( void* cmd, RogueStringBuilder* builder )
   RogueStringBuilder_print_c_string( builder, ((RogueCmd*)cmd)->type->name );
 }
 
+RogueType* RogueCmdTypeFn_default( void* cmd )
+{
+  return 0;
+}
+
+RogueType* RogueCmdTypeFn_integer( void* cmd )
+{
+  return ((RogueCmd*)cmd)->type->vm->type_Integer;
+}
+
+RogueType* RogueCmdTypeFn_same_as_operand( void* cmd )
+{
+  return ((RogueCmdUnaryOp*)cmd)->operand->type->type( ((RogueCmdUnaryOp*)cmd)->operand );
+}
+
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
   const char* name, RogueInteger object_size )
 {
@@ -23,6 +38,7 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
   cmd_type->object_size = object_size;
   cmd_type->name = name;
   cmd_type->print = RogueCmdPrintFn_default;
+  cmd_type->type  = RogueCmdTypeFn_default;
   return cmd_type;
 }
 

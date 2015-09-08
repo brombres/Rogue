@@ -101,6 +101,7 @@ typedef struct RogueCmd               RogueCmd;
 typedef struct RogueCmdBinaryOp       RogueCmdBinaryOp;
 typedef struct RogueCmdLiteralInteger RogueCmdLiteralInteger;
 typedef struct RogueCmdType           RogueCmdType;
+typedef struct RogueCmdUnaryOp        RogueCmdUnaryOp;
 typedef struct RogueErrorHandler      RogueErrorHandler;
 typedef struct RogueList              RogueList;
 typedef struct RogueObject            RogueObject;

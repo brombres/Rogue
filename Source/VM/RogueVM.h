@@ -27,6 +27,7 @@ struct RogueVM
   RogueType*         type_ByteArray;
   RogueType*         type_ByteList;
   RogueType*         type_CharacterArray;
+  RogueType*         type_Integer;
   RogueType*         type_ObjectArray;
   RogueType*         type_ObjectList;
   RogueType*         type_ParseReader;

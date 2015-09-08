@@ -19,6 +19,7 @@ RogueVM* RogueVM_create()
   THIS->type_ByteArray      = RogueTypeByteArray_create( THIS );
   THIS->type_ByteList       = RogueTypeByteList_create( THIS );
   THIS->type_CharacterArray = RogueTypeCharacterArray_create( THIS );
+  THIS->type_Integer        = RogueVM_create_type( THIS, 0, "Integer", sizeof(RogueInteger) );
   THIS->type_ObjectArray    = RogueTypeObjectArray_create( THIS );
   THIS->type_ObjectList     = RogueTypeObjectList_create( THIS );
   THIS->type_ParseReader    = RogueTypeParseReader_create( THIS );
@@ -62,6 +63,7 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
     RogueType_delete( THIS->type_ByteArray );
     RogueType_delete( THIS->type_ByteList );
     RogueType_delete( THIS->type_CharacterArray );
+    RogueType_delete( THIS->type_Integer );
     RogueType_delete( THIS->type_ObjectArray );
     RogueType_delete( THIS->type_ObjectList );
     RogueType_delete( THIS->type_ParseReader );
