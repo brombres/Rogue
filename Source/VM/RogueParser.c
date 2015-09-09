@@ -22,9 +22,9 @@ RogueParser* RogueParser_delete( RogueParser* THIS )
   return 0;
 }
 
-RogueLogical RogueParser_consume( RogueParser* THIS, RogueTokenType token_type )
+RogueLogical RogueParser_consume( RogueParser* THIS, RogueCmdID cmd_id )
 {
-  if ( RogueTokenizer_peek_type(THIS->tokenizer,0) != token_type ) return 0;
+  if ( RogueTokenizer_peek_type(THIS->tokenizer,0) != cmd_id ) return 0;
   RogueTokenizer_read( THIS->tokenizer );
   return 1;
 }
@@ -32,7 +32,7 @@ RogueLogical RogueParser_consume( RogueParser* THIS, RogueTokenType token_type )
 RogueLogical RogueParser_consume_eols( RogueParser* THIS )
 {
   RogueLogical success = 0;
-  while (RogueParser_consume(THIS,ROGUE_TOKEN_EOL))
+  while (RogueParser_consume(THIS,ROGUE_CMD_EOL))
   {
     success = 1;
   }
@@ -50,7 +50,7 @@ void RogueParser_parse_elements( RogueParser* THIS )
     RogueCmd* cmd = RogueTokenizer_peek( THIS->tokenizer, 0 );
 
     RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "Unexpected '" );
-    cmd->type->print_fn( cmd, &THIS->vm->error_message_builder );
+    RogueCmd_print( cmd, &THIS->vm->error_message_builder );
     RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "'." );
 
     RogueCmd_throw_error( cmd, 0 );

@@ -158,11 +158,11 @@ RogueCmd* RogueTokenizer_peek( RogueTokenizer* THIS, RogueInteger lookahead )
   else                             return 0;
 }
 
-RogueTokenType RogueTokenizer_peek_type( RogueTokenizer* THIS, RogueInteger lookahead )
+RogueCmdID RogueTokenizer_peek_type( RogueTokenizer* THIS, RogueInteger lookahead )
 {
   RogueInteger index = THIS->position + lookahead;
-  if (index < THIS->tokens->count) return ((RogueCmd*)THIS->tokens->array->objects[index])->type->token_type;
-  else                             return ROGUE_TOKEN_UNDEFINED;
+  if (index < THIS->tokens->count) return ((RogueCmd*)THIS->tokens->array->objects[index])->type->cmd_id;
+  else                             return ROGUE_CMD_UNDEFINED;
 }
 
 RogueCmd* RogueTokenizer_read( RogueTokenizer* THIS )

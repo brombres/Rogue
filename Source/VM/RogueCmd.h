@@ -9,11 +9,26 @@
 
 #include "Rogue.h"
 
-typedef void       (*RogueCmdInitFn)( void* cmd );
-typedef void       (*RogueCmdPrintFn)( void* cmd, RogueStringBuilder* builder );
-typedef RogueType* (*RogueCmdTypeFn)( void* cmd );
+enum RogueCmdID
+{
+  ROGUE_CMD_UNDEFINED,
+  ROGUE_CMD_EOL,
+  ROGUE_CMD_LITERAL_INTEGER,
+  ROGUE_CMD_SYMBOL_CLOSE_PAREN,
+  ROGUE_CMD_SYMBOL_EQ,
+  ROGUE_CMD_SYMBOL_EQUALS,
+  ROGUE_CMD_SYMBOL_EXCLAMATION,
+  ROGUE_CMD_SYMBOL_GE,
+  ROGUE_CMD_SYMBOL_GT,
+  ROGUE_CMD_SYMBOL_LE,
+  ROGUE_CMD_SYMBOL_LT,
+  ROGUE_CMD_SYMBOL_NE,
+  ROGUE_CMD_SYMBOL_OPEN_PAREN,
+  ROGUE_CMD_SYMBOL_PLUS,
+  ROGUE_CMD_SYMBOL_POUND,
 
-RogueType* RogueCmdTypeFn_same_as_operand( void* cmd );
+  ROGUE_CMD_STATEMENT_LIST,
+};
 
 //-----------------------------------------------------------------------------
 //  RogueCmdType
@@ -22,19 +37,13 @@ struct RogueCmdType
 {
   RogueAllocation allocation;
   RogueVM*        vm;
-  RogueTokenType  token_type;
+  RogueCmdID  cmd_id;
   RogueInteger    object_size;
   const char*     name;
-
-  RogueCmdInitFn  init_fn;
-  RogueCmdPrintFn print_fn;
-  RogueCmdTypeFn  type_fn;
 };
 
-RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
+RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueCmdID cmd_id,
     const char* name, RogueInteger object_size );
-
-void RogueCmdLiteralInteger_print( void* cmd, RogueStringBuilder* builder );
 
 //-----------------------------------------------------------------------------
 //  RogueCmd
@@ -75,7 +84,10 @@ struct RogueCmdBinaryOp
   RogueCmd* right;
 };
 
-void* RogueCmd_create( RogueCmdType* of_type );
-void  RogueCmd_throw_error( RogueCmd* THIS, const char* message );
+void*         RogueCmd_create( RogueCmdType* of_type );
+void          RogueCmd_init( void* THIS );
+void          RogueCmd_print( void* THIS, RogueStringBuilder* builder );
+void          RogueCmd_throw_error( RogueCmd* THIS, const char* message );
+RogueCmdType* RogueCmd_type( void* THIS );
 
 #endif // ROGUE_CMD_H

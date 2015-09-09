@@ -109,6 +109,7 @@ typedef struct RogueObject            RogueObject;
 typedef struct RogueParsePosition     RogueParsePosition;
 typedef struct RogueParseReader       RogueParseReader;
 typedef struct RogueParser            RogueParser;
+typedef enum   RogueCmdID         RogueCmdID;
 typedef struct RogueType              RogueType;
 typedef struct RogueString            RogueString;
 typedef struct RogueStringBuilder     RogueStringBuilder;
@@ -148,7 +149,6 @@ typedef struct RogueVMTableReader     RogueVMTableReader;
 
 #include "RogueError.h"
 #include "RogueStringBuilder.h"
-#include "RogueTokenType.h"
 #include "RogueUTF8.h"
 #include "RogueAllocation.h"
 #include "RogueAllocator.h"

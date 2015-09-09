@@ -36,7 +36,7 @@ struct RogueVM
   RogueType*         type_TableEntry;
 
   RogueCmdType*      cmd_type_eol;
-  RogueCmdType*      cmd_type_list;
+  RogueCmdType*      cmd_type_statement_list;
   RogueCmdType*      cmd_type_literal_integer;
   RogueCmdType*      cmd_type_symbol_close_paren;
   RogueCmdType*      cmd_type_symbol_exclamation;

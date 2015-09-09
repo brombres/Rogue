@@ -33,7 +33,7 @@ RogueCmdType*   RogueTokenizer_tokenize_symbol( RogueTokenizer* THIS );
 
 RogueLogical    RogueTokenizer_has_another( RogueTokenizer* THIS );
 RogueCmd*       RogueTokenizer_peek( RogueTokenizer* THIS, RogueInteger lookahead );
-RogueTokenType  RogueTokenizer_peek_type( RogueTokenizer* THIS, RogueInteger lookahead );
+RogueCmdID  RogueTokenizer_peek_type( RogueTokenizer* THIS, RogueInteger lookahead );
 RogueCmd*       RogueTokenizer_read( RogueTokenizer* THIS );
 
 #endif // ROGUE_TOKENIZER_H

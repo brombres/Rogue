@@ -23,29 +23,18 @@ RogueType* RogueCmdTypeFn_integer( void* cmd )
   return ((RogueCmd*)cmd)->type->vm->type_Integer;
 }
 
-RogueType* RogueCmdTypeFn_same_as_operand( void* cmd )
-{
-  return ((RogueCmdUnaryOp*)cmd)->operand->type->type_fn( ((RogueCmdUnaryOp*)cmd)->operand );
-}
-
-RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
+RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueCmdID cmd_id,
   const char* name, RogueInteger object_size )
 {
   RogueCmdType* cmd_type = (RogueCmdType*) RogueAllocator_allocate( &vm->allocator,
       sizeof(RogueCmdType) );
   cmd_type->vm = vm;
-  cmd_type->token_type = token_type;
+  cmd_type->cmd_id = cmd_id;
   cmd_type->object_size = object_size;
   cmd_type->name = name;
-  cmd_type->print_fn = RogueCmdPrintFn_default;
-  cmd_type->type_fn  = RogueCmdTypeFn_default;
   return cmd_type;
 }
 
-void RogueCmdLiteralInteger_print( void* cmd, RogueStringBuilder* builder )
-{
-  RogueStringBuilder_print_integer( builder, ((RogueCmdLiteralInteger*)cmd)->value );
-}
 
 //-----------------------------------------------------------------------------
 //  RogueCmd
@@ -58,10 +47,29 @@ void* RogueCmd_create( RogueCmdType* of_type  )
   cmd = RogueVMObject_create( vm, of_type->object_size );
 
   cmd->type = of_type;
-
-  if (of_type->init_fn) of_type->init_fn( cmd );
+  RogueCmd_init( cmd );
 
   return cmd;
+}
+
+void RogueCmd_print( void* THIS, RogueStringBuilder* builder )
+{
+  switch (((RogueCmd*)THIS)->type->cmd_id)
+  {
+    case ROGUE_CMD_LITERAL_INTEGER:
+      RogueStringBuilder_print_integer( builder, ((RogueCmdLiteralInteger*)THIS)->value );
+      break;
+
+    default:;
+  }
+}
+
+void RogueCmd_init( void* THIS )
+{
+  switch (((RogueCmd*)THIS)->type->cmd_id)
+  {
+    default:;
+  }
 }
 
 void  RogueCmd_throw_error( RogueCmd* THIS, const char* message )
@@ -70,6 +78,16 @@ void  RogueCmd_throw_error( RogueCmd* THIS, const char* message )
   position.line = THIS->line;
   position.column = THIS->column;
   ROGUE_THROW( THIS->type->vm, THIS->filepath, position, message );
+}
+
+RogueCmdType* RogueCmd_type( void* THIS )
+{
+  switch (((RogueCmd*)THIS)->type->cmd_id)
+  {
+  //return ((RogueCmdUnaryOp*)cmd)->operand->type->type_fn( ((RogueCmdUnaryOp*)cmd)->operand );
+    default:
+      return 0;
+  }
 }
 
 void RogueCmdStatementList_init( void* cmd )
