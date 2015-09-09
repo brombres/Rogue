@@ -9,6 +9,13 @@
 
 #include "Rogue.h"
 
+struct RogueCharacterInfo
+{
+  RogueCharacter* characters;
+  RogueInteger    count;
+  RogueInteger    hash_code;
+};
+
 RogueType* RogueTypeString_create( RogueVM* vm );
 
 struct RogueString

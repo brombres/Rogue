@@ -6,71 +6,80 @@
 #include "Rogue.h"
 #include <string.h>
 
-int RogueEqualsFn_string( void* object_a, void* object_b )
-{
-  RogueString* a;
-  RogueString* b;
-
-  if (object_a == object_b) return 1;
-
-  a = object_a;
-  b = object_b;
-  if (a->object.type != b->object.type) return 0;
-
-  if (a->hash_code != b->hash_code || a->count != b->count) return 0;
-
-  return (0 == memcmp(a->characters,b->characters,a->count*sizeof(RogueCharacter)));
-}
-
-int RogueEqualsCharactersFn_string( void* object, RogueInteger hash_code,
-    RogueCharacter* characters, RogueInteger count )
-{
-  RogueString* THIS = object;
-  if (THIS->hash_code != hash_code || THIS->count != count) return 0;
-
-  return (0 == memcmp(THIS->characters,characters,count*sizeof(RogueCharacter)));
-}
-
-int RogueEqualsCStringFn_string( void* object_a, const char* b )
-{
-  RogueCharacter* characters;
-  RogueString* a = object_a;
-  int b_len = strlen( b );
-  char ch;
-
-  if (a->count != b_len) return 0;
-
-  characters = a->characters - 1;
-  --b;
-
-  while ( (ch = *(++b)) )
-  {
-    if (*(++characters) != ch) return 0;
-  }
-
-  return 1;
-}
-
-RogueInteger RogueHashCodeFn_string( void* object )
-{
-  return ((RogueString*)object)->hash_code;
-}
-
 void RoguePrintFn_string( void* object, RogueStringBuilder* builder )
 {
 
   RogueStringBuilder_print_characters( builder, ((RogueString*)object)->characters, ((RogueString*)object)->count );
 }
 
+RogueInteger RogueTypeString_intrinsic_fn( RogueIntrinsicFnType fn_type,
+    RogueObject* context, void* parameter )
+{
+  switch (fn_type)
+  {
+    case ROGUE_INTRINSIC_FN_TRACE:
+      break;
+
+    case ROGUE_INTRINSIC_FN_HASH_CODE:
+      return ((RogueString*)context)->hash_code;
+
+    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_OBJECT:
+    {
+      RogueString* a;
+      RogueString* b;
+
+      if (context == parameter) return 1;
+
+      a = (RogueString*) context;
+      b = parameter;
+      if (a->object.type != b->object.type) return 0;
+
+      if (a->hash_code != b->hash_code || a->count != b->count) return 0;
+
+      return (0 == memcmp(a->characters,b->characters,a->count*sizeof(RogueCharacter)));
+      break;
+    }
+
+    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_C_STRING:
+    {
+      RogueCharacter* characters;
+      RogueString* a = (RogueString*) context;
+      const char* b = parameter;
+
+      int b_len = strlen( b );
+      char ch;
+
+      if (a->count != b_len) return 0;
+
+      characters = a->characters - 1;
+      --b;
+
+      while ( (ch = *(++b)) )
+      {
+        if (*(++characters) != ch) return 0;
+      }
+
+      return 1;
+    }
+
+    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_CHARACTERS:
+      {
+        RogueString* THIS = (RogueString*) context;
+        RogueCharacterInfo* info = parameter;
+        if (THIS->hash_code != info->hash_code || THIS->count != info->count) return 0;
+
+        return (0 == memcmp(THIS->characters,info->characters,info->count*sizeof(RogueCharacter)));
+      }
+      return 0;
+  }
+
+  return 0;
+}
 
 RogueType* RogueTypeString_create( RogueVM* vm )
 {
   RogueType* THIS = RogueVM_create_type( vm, 0, "String", sizeof(RogueString) );
   THIS->print             = RoguePrintFn_string;
-  THIS->equals            = RogueEqualsFn_string;
-  THIS->equals_c_string   = RogueEqualsCStringFn_string;
-  THIS->equals_characters = RogueEqualsCharactersFn_string;
-  THIS->hash_code         = RogueHashCodeFn_string;
   return THIS;
 }
 

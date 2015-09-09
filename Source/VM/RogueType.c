@@ -8,25 +8,27 @@
 //-----------------------------------------------------------------------------
 //  Dynamic Functions
 //-----------------------------------------------------------------------------
-int RogueEqualsFn_default( void* object_a, void* object_b )
+RogueInteger RogueIntrinsicFn_default( RogueIntrinsicFnType fn_type,
+    RogueObject* context, void* parameter )
 {
-  return (object_a == object_b);
-}
+  switch (fn_type)
+  {
+    case ROGUE_INTRINSIC_FN_TRACE:
+      break;
 
-int RogueEqualsCStringFn_default( void* object_a, const char* b )
-{
+    case ROGUE_INTRINSIC_FN_HASH_CODE:
+      return (RogueInteger)(intptr_t)context;
+
+    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_OBJECT:
+      return (context == parameter);
+
+    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_C_STRING:
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_CHARACTERS:
+      return 0;
+  }
   return 0;
-}
-
-int RogueEqualsCharactersFn_default( void* object_a, RogueInteger hash_code,
-    RogueCharacter* characters, RogueInteger count )
-{
-  return 0;
-}
-
-RogueInteger RogueHashCodeFn_default( void* object )
-{
-  return (RogueInteger)(intptr_t)object;
 }
 
 void RoguePrintFn_default( void* object, RogueStringBuilder* builder )
@@ -54,10 +56,7 @@ RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, Ro
 
   THIS->object_size = object_size;
 
-  THIS->equals = RogueEqualsFn_default;
-  THIS->equals_c_string = RogueEqualsCStringFn_default;
-  THIS->equals_characters = RogueEqualsCharactersFn_default;
-  THIS->hash_code = RogueHashCodeFn_default;
+  THIS->intrinsic_fn = RogueIntrinsicFn_default;
   THIS->print = RoguePrintFn_default;
 
   THIS->methods = RogueVMList_create( vm, 20 );

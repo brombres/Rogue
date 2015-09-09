@@ -126,7 +126,7 @@ RogueTableEntry* RogueTable_find_c_string( void* table, const char* key, int cre
 
   while (cur)
   {
-    if (cur->hash_code == hash_code && ((RogueObject*)cur->key)->type->equals_c_string(cur->key,key))
+    if (cur->hash_code == hash_code && RogueObject_equals_c_string(cur->key,key))
     {
       return cur;
     }
@@ -157,7 +157,7 @@ RogueTableEntry* RogueTable_find_characters( void* table, RogueInteger hash_code
 
   while (cur)
   {
-    if (cur->hash_code == hash_code && ((RogueObject*)cur->key)->type->equals_characters(cur->key,hash_code,characters,count))
+    if (cur->hash_code == hash_code && RogueObject_equals_characters(cur->key,characters,count,hash_code))
     {
       return cur;
     }

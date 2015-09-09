@@ -15,7 +15,11 @@ struct RogueObject
 
 void* RogueObject_create( RogueType* type, RogueInteger size );
 
-void RogueObject_print( void* THIS );
-void RogueObject_println( void* THIS );
+RogueLogical RogueObject_equals_c_string( void* THIS, const char* c_string );
+RogueLogical RogueObject_equals_characters( void* THIS, RogueCharacter* characters,
+                                            RogueInteger count, RogueInteger hash_code );
+RogueInteger RogueObject_hash_code( void* THIS );
+void         RogueObject_print( void* THIS );
+void         RogueObject_println( void* THIS );
 
 #endif // ROGUE_OBJECT_H

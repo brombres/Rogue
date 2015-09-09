@@ -97,6 +97,7 @@
 typedef struct RogueAllocation        RogueAllocation;
 typedef struct RogueAllocator         RogueAllocator;
 typedef struct RogueArray             RogueArray;
+typedef struct RogueCharacterInfo     RogueCharacterInfo;
 typedef struct RogueCmd               RogueCmd;
 typedef struct RogueCmdBinaryOp       RogueCmdBinaryOp;
 typedef struct RogueCmdLiteralInteger RogueCmdLiteralInteger;
@@ -104,6 +105,7 @@ typedef struct RogueCmdStatementList  RogueCmdStatementList;
 typedef struct RogueCmdType           RogueCmdType;
 typedef struct RogueCmdUnaryOp        RogueCmdUnaryOp;
 typedef struct RogueErrorHandler      RogueErrorHandler;
+typedef enum   RogueIntrinsicFnType   RogueIntrinsicFnType;
 typedef struct RogueList              RogueList;
 typedef struct RogueObject            RogueObject;
 typedef struct RogueParsePosition     RogueParsePosition;
