@@ -25,7 +25,7 @@ RogueType* RogueCmdTypeFn_integer( void* cmd )
 
 RogueType* RogueCmdTypeFn_same_as_operand( void* cmd )
 {
-  return ((RogueCmdUnaryOp*)cmd)->operand->type->type( ((RogueCmdUnaryOp*)cmd)->operand );
+  return ((RogueCmdUnaryOp*)cmd)->operand->type->type_fn( ((RogueCmdUnaryOp*)cmd)->operand );
 }
 
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
@@ -37,8 +37,8 @@ RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
   cmd_type->token_type = token_type;
   cmd_type->object_size = object_size;
   cmd_type->name = name;
-  cmd_type->print = RogueCmdPrintFn_default;
-  cmd_type->type  = RogueCmdTypeFn_default;
+  cmd_type->print_fn = RogueCmdPrintFn_default;
+  cmd_type->type_fn  = RogueCmdTypeFn_default;
   return cmd_type;
 }
 
@@ -55,11 +55,11 @@ void* RogueCmd_create( RogueCmdType* of_type  )
   RogueCmd* cmd;
   RogueVM* vm = of_type->vm;
 
-  cmd = (RogueCmd*) RogueAllocator_allocate( &vm->allocator, of_type->object_size );
+  cmd = RogueVMObject_create( vm, of_type->object_size );
 
   cmd->type = of_type;
-  cmd->allocation.next_allocation = vm->cmd_objects;
-  vm->cmd_objects = cmd;
+
+  if (of_type->init_fn) of_type->init_fn( cmd );
 
   return cmd;
 }
@@ -70,5 +70,11 @@ void  RogueCmd_throw_error( RogueCmd* THIS, const char* message )
   position.line = THIS->line;
   position.column = THIS->column;
   ROGUE_THROW( THIS->type->vm, THIS->filepath, position, message );
+}
+
+void RogueCmdStatementList_init( void* cmd )
+{
+  RogueCmdStatementList* list = cmd;
+  list->statements = RogueVMList_create( list->cmd.type->vm, 5 );
 }
 

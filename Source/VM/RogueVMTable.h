@@ -22,7 +22,6 @@ struct RogueVMTableEntry
 };
 
 RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, const char* key, void* value );
-RogueVMTableEntry* RogueVMTableEntry_delete( RogueVMTableEntry* THIS );
 
 
 //-----------------------------------------------------------------------------

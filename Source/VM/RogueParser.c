@@ -50,7 +50,7 @@ void RogueParser_parse_elements( RogueParser* THIS )
     RogueCmd* cmd = RogueTokenizer_peek( THIS->tokenizer, 0 );
 
     RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "Unexpected '" );
-    cmd->type->print( cmd, &THIS->vm->error_message_builder );
+    cmd->type->print_fn( cmd, &THIS->vm->error_message_builder );
     RogueStringBuilder_print_c_string( &THIS->vm->error_message_builder, "'." );
 
     RogueCmd_throw_error( cmd, 0 );

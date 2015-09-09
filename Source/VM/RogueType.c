@@ -69,7 +69,6 @@ RogueType* RogueType_delete( RogueType* THIS )
 {
   if (THIS)
   {
-    if (THIS->methods) RogueVMList_delete( THIS->methods );
     free( THIS->name );
     free( THIS );
   }

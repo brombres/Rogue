@@ -100,6 +100,7 @@ typedef struct RogueArray             RogueArray;
 typedef struct RogueCmd               RogueCmd;
 typedef struct RogueCmdBinaryOp       RogueCmdBinaryOp;
 typedef struct RogueCmdLiteralInteger RogueCmdLiteralInteger;
+typedef struct RogueCmdStatementList  RogueCmdStatementList;
 typedef struct RogueCmdType           RogueCmdType;
 typedef struct RogueCmdUnaryOp        RogueCmdUnaryOp;
 typedef struct RogueErrorHandler      RogueErrorHandler;
@@ -160,6 +161,7 @@ typedef struct RogueVMTableReader     RogueVMTableReader;
 #include "RogueCmd.h"
 #include "RogueParser.h"
 #include "RogueVM.h"
+#include "RogueVMObject.h"
 #include "RogueVMList.h"
 #include "RogueVMTable.h"
 #include "RogueArray.h"

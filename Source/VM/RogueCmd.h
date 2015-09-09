@@ -9,6 +9,7 @@
 
 #include "Rogue.h"
 
+typedef void       (*RogueCmdInitFn)( void* cmd );
 typedef void       (*RogueCmdPrintFn)( void* cmd, RogueStringBuilder* builder );
 typedef RogueType* (*RogueCmdTypeFn)( void* cmd );
 
@@ -19,12 +20,15 @@ RogueType* RogueCmdTypeFn_same_as_operand( void* cmd );
 //-----------------------------------------------------------------------------
 struct RogueCmdType
 {
+  RogueAllocation allocation;
   RogueVM*        vm;
   RogueTokenType  token_type;
   RogueInteger    object_size;
   const char*     name;
-  RogueCmdPrintFn print;
-  RogueCmdTypeFn  type;
+
+  RogueCmdInitFn  init_fn;
+  RogueCmdPrintFn print_fn;
+  RogueCmdTypeFn  type_fn;
 };
 
 RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueTokenType token_type,
@@ -43,6 +47,14 @@ struct RogueCmd
   RogueInteger    line;
   RogueInteger    column;
 };
+
+struct RogueCmdStatementList
+{
+  RogueCmd     cmd;
+  RogueVMList* statements;
+};
+
+void RogueCmdStatementList_init( void* cmd );
 
 struct RogueCmdLiteralInteger
 {

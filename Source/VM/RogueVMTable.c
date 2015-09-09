@@ -11,19 +11,13 @@
 RogueVMTableEntry* RogueVMTableEntry_create( RogueVM* vm, const char* key, void* value )
 {
   RogueInteger key_length = (RogueInteger) strlen( key );
-  RogueVMTableEntry* THIS = RogueAllocator_allocate( &vm->allocator, sizeof(RogueVMTableEntry) + (key_length+1) );
+  RogueVMTableEntry* THIS = RogueVMObject_create( vm, sizeof(RogueVMTableEntry) + (key_length+1) );
   THIS->vm = vm;
   THIS->hash_code = RogueString_calculate_hash_code( key );
   THIS->value = value;
   THIS->key_length = key_length;
   strcpy( THIS->key, key );
   return THIS;
-}
-
-RogueVMTableEntry* RogueVMTableEntry_delete( RogueVMTableEntry* THIS )
-{
-  RogueAllocator_free( &THIS->vm->allocator, THIS );
-  return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -76,7 +70,7 @@ RogueVMTableEntry* RogueVMTableReader_read( RogueVMTableReader* reader )
 //-----------------------------------------------------------------------------
 RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count )
 {
-  RogueVMTable*  table = RogueAllocator_allocate( &vm->allocator, sizeof(RogueVMTable) );
+  RogueVMTable*  table = RogueVMObject_create( vm, sizeof(RogueVMTable) );
   RogueInteger bin_count = 1;
 
   table->vm = vm;
@@ -88,28 +82,15 @@ RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count )
 
   table->bin_count = bin_count;
   table->bin_mask = bin_count - 1;
-  table->bins = RogueAllocator_allocate( &vm->allocator, bin_count * sizeof(void*) );
+  table->bins = RogueVMObject_create( vm, bin_count * sizeof(void*) );
 
   return table;
 }
 
-RogueVMTable* RogueVMTable_delete( RogueVMTable* THIS )
-{
-  RogueAllocator_free( &THIS->vm->allocator, THIS->bins );
-  RogueAllocator_free( &THIS->vm->allocator, THIS );
-  return 0;
-}
-
 void RogueVMTable_clear( void* table )
 {
-  RogueVMTableReader reader;
   RogueVMTable*      THIS = table;
 
-  RogueVMTableReader_init( &reader, THIS );
-  while (RogueVMTableReader_has_another(&reader))
-  {
-    RogueVMTableEntry_delete( RogueVMTableReader_read(&reader) );
-  }
   THIS->count = 0;
   memset( THIS->bins->objects, 0, THIS->bin_count * sizeof(void*) );
 }

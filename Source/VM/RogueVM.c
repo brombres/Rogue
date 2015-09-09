@@ -31,11 +31,12 @@ RogueVM* RogueVM_create()
   THIS->global_commands = RogueObjectList_create( THIS, 20 );
   THIS->consolidation_table = RogueTable_create( THIS, 128 );
 
-  THIS->cmd_type_eol = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, "[end of line]", sizeof(RogueCmd) );
+  THIS->cmd_type_eol  = RogueCmdType_create( THIS, ROGUE_TOKEN_EOL, "[end of line]", sizeof(RogueCmd) );
+  THIS->cmd_type_list = RogueCmdType_create( THIS, 0, "", sizeof(RogueCmdStatementList) );
 
   THIS->cmd_type_literal_integer = RogueCmdType_create( THIS, ROGUE_TOKEN_LITERAL_INTEGER,
       "[integer]", sizeof(RogueCmdLiteralInteger) );
-  THIS->cmd_type_literal_integer->print = RogueCmdLiteralInteger_print;
+  THIS->cmd_type_literal_integer->print_fn = RogueCmdLiteralInteger_print;
 
   THIS->cmd_type_symbol_close_paren = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_CLOSE_PAREN, ")", sizeof(RogueCmd) );
   THIS->cmd_type_symbol_eq = RogueCmdType_create( THIS, ROGUE_TOKEN_SYMBOL_EQ, "==", sizeof(RogueCmd) );
@@ -57,9 +58,6 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
 {
   if (THIS)
   {
-    RogueVMList_delete( THIS->type_list );
-    RogueVMTable_delete( THIS->type_lookup );
-
     RogueType_delete( THIS->type_ByteArray );
     RogueType_delete( THIS->type_ByteList );
     RogueType_delete( THIS->type_CharacterArray );
