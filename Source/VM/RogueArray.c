@@ -5,40 +5,133 @@
 //=============================================================================
 #include "Rogue.h"
 
-void RoguePrintFn_byte_array( void* array_ptr, RogueStringBuilder* builder )
+RogueInteger RogueByteArray_intrinsic_fn( RogueIntrinsicFnType fn_type,
+    RogueObject* context, void* parameter )
 {
-  RogueArray* array = array_ptr;
-  RogueStringBuilder_print_c_string_with_count( builder, (char*) array->bytes, array->count );
-}
-
-void RoguePrintFn_character_array( void* array_ptr, RogueStringBuilder* builder )
-{
-  RogueArray* array = array_ptr;
-  RogueStringBuilder_print_characters( builder, array->characters, array->count );
-}
-
-void RoguePrintFn_object_array( void* array_ptr, RogueStringBuilder* builder )
-{
-  RogueArray* array = array_ptr;
-  int i;
-
-  RogueStringBuilder_print_character( builder, '[' );
-  for (i=0; i<array->count; ++i)
+  switch (fn_type)
   {
-    RogueObject* object = array->objects[i];
-    if (i > 0) RogueStringBuilder_print_character( builder, ',' );
+    case ROGUE_INTRINSIC_FN_TRACE:
+      return 0;
 
-    if (object) object->type->print( object, builder );
-    else        RogueStringBuilder_print_c_string( builder, "null" );
+    case ROGUE_INTRINSIC_FN_HASH_CODE:
+      return ((RogueArray*)context)->count;
+
+    case ROGUE_INTRINSIC_FN_TO_STRING:
+    {
+      RogueStringBuilder* builder = parameter;
+      RogueStringBuilder_print_c_string_with_count( builder, 
+          (char*) ((RogueArray*)context)->bytes,
+          ((RogueArray*)context)->count
+        );
+      return 0;
+    }
+
+    case ROGUE_INTRINSIC_FN_EQUALS_OBJECT:
+      printf( "TODO: RogueByteArray_intrinsic_fn EQUALS_OBJECT\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_EQUALS_C_STRING:
+      printf( "TODO: RogueByteArray_intrinsic_fn EQUALS_C_STRING\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS:
+      printf( "TODO: RogueByteArray_intrinsic_fn EQUALS_CHARACTERS\n" );
+      return 0;
   }
-  RogueStringBuilder_print_character( builder, ']' );
+
+  return 0;
+}
+
+RogueInteger RogueCharacterArray_intrinsic_fn( RogueIntrinsicFnType fn_type,
+    RogueObject* context, void* parameter )
+{
+  switch (fn_type)
+  {
+    case ROGUE_INTRINSIC_FN_TRACE:
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_HASH_CODE:
+      return ((RogueArray*)context)->count;
+
+    case ROGUE_INTRINSIC_FN_TO_STRING:
+    {
+      RogueStringBuilder* builder = parameter;
+      RogueStringBuilder_print_characters( builder, 
+          ((RogueArray*)context)->characters,
+          ((RogueArray*)context)->count
+        );
+      return 0;
+    }
+
+    case ROGUE_INTRINSIC_FN_EQUALS_OBJECT:
+      printf( "TODO: RogueCharacterArray_intrinsic_fn EQUALS_OBJECT\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_EQUALS_C_STRING:
+      printf( "TODO: RogueCharacterArray_intrinsic_fn EQUALS_C_STRING\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS:
+      printf( "TODO: RogueCharacterArray_intrinsic_fn EQUALS_CHARACTERS\n" );
+      return 0;
+  }
+
+  return 0;
+}
+
+RogueInteger RogueObjectArray_intrinsic_fn( RogueIntrinsicFnType fn_type,
+    RogueObject* context, void* parameter )
+{
+  switch (fn_type)
+  {
+    case ROGUE_INTRINSIC_FN_TRACE:
+      printf( "TODO: RogueObjectArray TRACE\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_HASH_CODE:
+      printf( "TODO: RogueObjectArray HASH_CODE\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_TO_STRING:
+    {
+      RogueStringBuilder* builder = parameter;
+      RogueArray* array = (RogueArray*) context;
+      int i;
+
+      RogueStringBuilder_print_character( builder, '[' );
+      for (i=0; i<array->count; ++i)
+      {
+        RogueObject* object = array->objects[i];
+        if (i > 0) RogueStringBuilder_print_character( builder, ',' );
+
+        if (object) RogueObject_to_string( object, builder );
+        else        RogueStringBuilder_print_c_string( builder, "null" );
+      }
+      RogueStringBuilder_print_character( builder, ']' );
+      return 0;
+    }
+
+    case ROGUE_INTRINSIC_FN_EQUALS_OBJECT:
+      printf( "TODO: RogueCharacterArray_intrinsic_fn EQUALS_OBJECT\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_EQUALS_C_STRING:
+      printf( "TODO: RogueCharacterArray_intrinsic_fn EQUALS_C_STRING\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS:
+      printf( "TODO: RogueCharacterArray_intrinsic_fn EQUALS_CHARACTERS\n" );
+      return 0;
+  }
+
+  return 0;
 }
 
 RogueType* RogueTypeByteArray_create( RogueVM* vm )
 {
   RogueType* THIS = RogueVM_create_type( vm, 0, "ByteArray", sizeof(RogueArray) );
   THIS->element_size = sizeof(RogueByte);
-  THIS->print = RoguePrintFn_byte_array;
+  THIS->intrinsic_fn = RogueByteArray_intrinsic_fn;
   return THIS;
 }
 
@@ -46,7 +139,7 @@ RogueType* RogueTypeCharacterArray_create( RogueVM* vm )
 {
   RogueType* THIS = RogueVM_create_type( vm, 0, "CharacterArray", sizeof(RogueArray) );
   THIS->element_size = sizeof(RogueCharacter);
-  THIS->print = RoguePrintFn_character_array;
+  THIS->intrinsic_fn = RogueCharacterArray_intrinsic_fn;
   return THIS;
 }
 
@@ -54,7 +147,7 @@ RogueType* RogueTypeObjectArray_create( RogueVM* vm )
 {
   RogueType* THIS = RogueVM_create_type( vm, 0, "ObjectArray", sizeof(RogueArray) );
   THIS->element_size = sizeof(RogueObject*);
-  THIS->print = RoguePrintFn_object_array;
+  THIS->intrinsic_fn = RogueObjectArray_intrinsic_fn;
   return THIS;
 }
 

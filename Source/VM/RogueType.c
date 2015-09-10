@@ -19,23 +19,25 @@ RogueInteger RogueIntrinsicFn_default( RogueIntrinsicFnType fn_type,
     case ROGUE_INTRINSIC_FN_HASH_CODE:
       return (RogueInteger)(intptr_t)context;
 
-    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_OBJECT:
+    case ROGUE_INTRINSIC_FN_TO_STRING:
+    {
+      RogueStringBuilder* builder = (RogueStringBuilder*) parameter;
+      RogueStringBuilder_print_character( builder, '(' );
+      RogueStringBuilder_print_c_string( builder, context->type->name );
+      RogueStringBuilder_print_character( builder, ')' );
+      return 0;
+    }
+
+    case ROGUE_INTRINSIC_FN_EQUALS_OBJECT:
       return (context == parameter);
 
-    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_C_STRING:
+    case ROGUE_INTRINSIC_FN_EQUALS_C_STRING:
       return 0;
 
-    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_CHARACTERS:
+    case ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS:
       return 0;
   }
   return 0;
-}
-
-void RoguePrintFn_default( void* object, RogueStringBuilder* builder )
-{
-  RogueStringBuilder_print_character( builder, '(' );
-  RogueStringBuilder_print_c_string( builder, ((RogueObject*)object)->type->name );
-  RogueStringBuilder_print_character( builder, ')' );
 }
 
 
@@ -57,7 +59,6 @@ RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, Ro
   THIS->object_size = object_size;
 
   THIS->intrinsic_fn = RogueIntrinsicFn_default;
-  THIS->print = RoguePrintFn_default;
 
   THIS->methods = RogueVMList_create( vm, 20 );
 

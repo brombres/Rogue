@@ -72,32 +72,50 @@ RogueTableEntry* RogueTableReader_read( RogueTableReader* reader )
 //-----------------------------------------------------------------------------
 //  Table
 //-----------------------------------------------------------------------------
+RogueInteger RogueTable_intrinsic_fn( RogueIntrinsicFnType fn_type,
+    RogueObject* context, void* parameter )
+{
+  switch (fn_type)
+  {
+    case ROGUE_INTRINSIC_FN_TRACE:
+      printf( "TODO: Table TRACE\n" );
+      return 0;
+
+    case ROGUE_INTRINSIC_FN_HASH_CODE:
+      return ((RogueTable*)context)->count;
+
+    case ROGUE_INTRINSIC_FN_TO_STRING:
+    {
+      RogueStringBuilder* builder = parameter;
+      RogueTableReader reader;
+      int first = 1;
+
+      RogueStringBuilder_print_character( builder, '{' );
+
+      RogueTableReader_init( &reader, (RogueTable*)context );
+      while (RogueTableReader_has_another(&reader))
+      {
+        RogueTableEntry* entry = RogueTableReader_read( &reader );
+        if (first) first = 0;
+        else       RogueStringBuilder_print_character( builder, ',' );
+        RogueStringBuilder_print_object( builder, entry->key );
+        RogueStringBuilder_print_character( builder, ':' );
+        RogueStringBuilder_print_object( builder, entry->value );
+      }
+
+      RogueStringBuilder_print_character( builder, '}' );
+    }
+
+    default:
+      return 0;
+  }
+}
+
 RogueType* RogueTypeTable_create( RogueVM* vm )
 {
   RogueType* table = RogueVM_create_type( vm, 0, "Table", sizeof(RogueTable) );
-  table->print = RoguePrintFn_table;
+  table->intrinsic_fn = RogueTable_intrinsic_fn;
   return table;
-}
-
-void RoguePrintFn_table( void* table, RogueStringBuilder* builder )
-{
-  RogueTableReader reader;
-  int first = 1;
-
-  RogueStringBuilder_print_character( builder, '{' );
-
-  RogueTableReader_init( &reader, table );
-  while (RogueTableReader_has_another(&reader))
-  {
-    RogueTableEntry* entry = RogueTableReader_read( &reader );
-    if (first) first = 0;
-    else       RogueStringBuilder_print_character( builder, ',' );
-    RogueStringBuilder_print_object( builder, entry->key );
-    RogueStringBuilder_print_character( builder, ':' );
-    RogueStringBuilder_print_object( builder, entry->value );
-  }
-
-  RogueStringBuilder_print_character( builder, '}' );
 }
 
 RogueTable* RogueTable_create( RogueVM* vm, RogueInteger initial_bin_count )

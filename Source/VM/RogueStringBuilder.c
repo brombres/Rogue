@@ -107,7 +107,7 @@ void RogueStringBuilder_print_object( RogueStringBuilder* THIS, void* value )
 {
   if (value)
   {
-    ((RogueObject*)value)->type->print( value, THIS );
+    RogueObject_to_string( value, THIS );
   }
   else
   {

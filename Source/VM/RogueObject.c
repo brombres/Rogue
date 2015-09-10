@@ -24,7 +24,7 @@ void* RogueObject_create( RogueType* of_type, RogueInteger size )
 RogueLogical RogueObject_equals_c_string( void* THIS, const char* c_string )
 {
   return ((RogueObject*)THIS)->type->intrinsic_fn(
-      ROGUE_INTRINSIC_FN_OBJECT_EQUALS_C_STRING,
+      ROGUE_INTRINSIC_FN_EQUALS_C_STRING,
       (RogueObject*)THIS,
       (void*)c_string
     );
@@ -39,7 +39,7 @@ RogueLogical RogueObject_equals_characters( void* THIS, RogueCharacter* characte
   info.hash_code = hash_code;
 
   return ((RogueObject*)THIS)->type->intrinsic_fn(
-      ROGUE_INTRINSIC_FN_OBJECT_EQUALS_CHARACTERS,
+      ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS,
       (RogueObject*)THIS,
       &info
     );
@@ -55,7 +55,7 @@ void RogueObject_print( void* THIS )
   RogueStringBuilder builder;
   RogueStringBuilder_init( &builder, ((RogueObject*)THIS)->type->vm, -1 );
 
-  ((RogueObject*)THIS)->type->print( THIS, &builder );
+  RogueObject_to_string( THIS, &builder );
 
   RogueStringBuilder_log( &builder );
 }
@@ -66,3 +66,7 @@ void RogueObject_println( void* THIS )
   printf( "\n" );
 }
 
+void RogueObject_to_string( void* THIS, RogueStringBuilder* builder )
+{
+  ((RogueObject*)THIS)->type->intrinsic_fn( ROGUE_INTRINSIC_FN_TO_STRING, (RogueObject*)THIS, builder );
+}

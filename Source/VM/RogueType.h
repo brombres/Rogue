@@ -11,9 +11,10 @@ enum RogueIntrinsicFnType
 {
   ROGUE_INTRINSIC_FN_TRACE,
   ROGUE_INTRINSIC_FN_HASH_CODE,
-  ROGUE_INTRINSIC_FN_OBJECT_EQUALS_OBJECT,
-  ROGUE_INTRINSIC_FN_OBJECT_EQUALS_C_STRING,
-  ROGUE_INTRINSIC_FN_OBJECT_EQUALS_CHARACTERS,
+  ROGUE_INTRINSIC_FN_TO_STRING,     
+  ROGUE_INTRINSIC_FN_EQUALS_OBJECT,
+  ROGUE_INTRINSIC_FN_EQUALS_C_STRING,
+  ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS,
 };
 
 //-----------------------------------------------------------------------------
@@ -27,7 +28,6 @@ typedef int          (*RogueEqualsCharactersFn)( void* object_a,
                        RogueInteger hash_code, RogueCharacter* characters, RogueInteger count );
 typedef int          (*RogueEqualsCStringFn)( void* object_a, const char* b );
 typedef RogueInteger (*RogueHashCodeFn)( void* object );
-typedef void         (*RoguePrintFn)( void* object, RogueStringBuilder* builder );
 typedef void         (*RogueTraceFn)( void* object );
 
 int          RogueEqualsCharactersFn_default( void* object_a, RogueInteger, RogueCharacter*, RogueInteger );
@@ -46,8 +46,6 @@ struct RogueType
   RogueInteger  element_size;
 
   RogueIntrinsicFn        intrinsic_fn;
-  RoguePrintFn            print;
-  RogueTraceFn            trace;
 
   RogueVMList*            methods;
 };

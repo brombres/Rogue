@@ -6,24 +6,21 @@
 #include "Rogue.h"
 #include <string.h>
 
-void RoguePrintFn_string( void* object, RogueStringBuilder* builder )
-{
-
-  RogueStringBuilder_print_characters( builder, ((RogueString*)object)->characters, ((RogueString*)object)->count );
-}
-
-RogueInteger RogueTypeString_intrinsic_fn( RogueIntrinsicFnType fn_type,
+RogueInteger RogueString_intrinsic_fn( RogueIntrinsicFnType fn_type,
     RogueObject* context, void* parameter )
 {
   switch (fn_type)
   {
     case ROGUE_INTRINSIC_FN_TRACE:
-      break;
+      return 0;
 
     case ROGUE_INTRINSIC_FN_HASH_CODE:
       return ((RogueString*)context)->hash_code;
 
-    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_OBJECT:
+    case ROGUE_INTRINSIC_FN_TO_STRING:
+      RogueStringBuilder_print_characters( parameter, ((RogueString*)context)->characters, ((RogueString*)context)->count );
+
+    case ROGUE_INTRINSIC_FN_EQUALS_OBJECT:
     {
       RogueString* a;
       RogueString* b;
@@ -40,7 +37,7 @@ RogueInteger RogueTypeString_intrinsic_fn( RogueIntrinsicFnType fn_type,
       break;
     }
 
-    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_C_STRING:
+    case ROGUE_INTRINSIC_FN_EQUALS_C_STRING:
     {
       RogueCharacter* characters;
       RogueString* a = (RogueString*) context;
@@ -62,7 +59,7 @@ RogueInteger RogueTypeString_intrinsic_fn( RogueIntrinsicFnType fn_type,
       return 1;
     }
 
-    case ROGUE_INTRINSIC_FN_OBJECT_EQUALS_CHARACTERS:
+    case ROGUE_INTRINSIC_FN_EQUALS_CHARACTERS:
       {
         RogueString* THIS = (RogueString*) context;
         RogueCharacterInfo* info = parameter;
@@ -78,8 +75,8 @@ RogueInteger RogueTypeString_intrinsic_fn( RogueIntrinsicFnType fn_type,
 
 RogueType* RogueTypeString_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueVM_create_type( vm, 0, "String", sizeof(RogueString) );
-  THIS->print             = RoguePrintFn_string;
+  RogueType* THIS    = RogueVM_create_type( vm, 0, "String", sizeof(RogueString) );
+  THIS->intrinsic_fn = RogueString_intrinsic_fn;
   return THIS;
 }
 

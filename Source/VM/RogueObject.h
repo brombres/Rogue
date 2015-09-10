@@ -21,5 +21,6 @@ RogueLogical RogueObject_equals_characters( void* THIS, RogueCharacter* characte
 RogueInteger RogueObject_hash_code( void* THIS );
 void         RogueObject_print( void* THIS );
 void         RogueObject_println( void* THIS );
+void         RogueObject_to_string( void* THIS, RogueStringBuilder* builder );
 
 #endif // ROGUE_OBJECT_H
