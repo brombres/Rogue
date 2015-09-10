@@ -48,7 +48,7 @@ RogueLogical RogueTokenizer_next_is_real( RogueTokenizer* THIS )
 
 RogueLogical RogueTokenizer_tokenize( RogueTokenizer* THIS )
 {
-  if ( !THIS->tokens ) THIS->tokens = RogueVMList_create( THIS->vm, 20 );
+  if ( !THIS->tokens ) THIS->tokens = RogueVMList_create( THIS->vm, 20, RogueVMTraceCmd );
   THIS->tokens->count = 0;
 
   while (RogueTokenizer_tokenize_another(THIS))

@@ -93,6 +93,6 @@ RogueCmdType* RogueCmd_type( void* THIS )
 void RogueCmdStatementList_init( void* cmd )
 {
   RogueCmdStatementList* list = cmd;
-  list->statements = RogueVMList_create( list->cmd.type->vm, 5 );
+  list->statements = RogueVMList_create( list->cmd.type->vm, 5, RogueVMTraceCmd );
 }
 

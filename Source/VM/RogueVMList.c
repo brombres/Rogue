@@ -5,13 +5,14 @@
 //=============================================================================
 #include "Rogue.h"
 
-RogueVMList* RogueVMList_create( RogueVM* vm, RogueInteger initial_capacity )
+RogueVMList* RogueVMList_create( RogueVM* vm, RogueInteger initial_capacity, RogueVMTraceFn trace_fn )
 {
   RogueVMList* list = RogueVMObject_create( vm, sizeof(RogueVMList) );
   RogueInteger array_size = sizeof(RogueVMArray) + initial_capacity * sizeof(void*);
   list->vm = vm;
   list->array = RogueVMObject_create( vm, array_size );
   list->capacity = initial_capacity;
+  list->trace_fn = trace_fn;
   return list;
 }
 
@@ -42,5 +43,20 @@ RogueVMList* RogueVMList_reserve( RogueVMList* THIS, RogueInteger additional_cap
   }
 
   return THIS;
+}
+
+void RogueVMList_trace( RogueVMList* THIS )
+{
+  int    count = THIS->count;
+  void** data = THIS->array->objects - 1;
+  RogueVMTraceFn trace_fn = THIS->trace_fn;
+
+  THIS->allocation.size ^= -1;
+
+  while (--count >= 0)
+  {
+    RogueAllocation* cur = *(++data);
+    if (cur && cur->size >= 0) trace_fn( cur );
+  }
 }
 

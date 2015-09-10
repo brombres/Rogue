@@ -21,6 +21,7 @@ int main()
   printf( "-------------------------------------------------------------------------------\n" );
   */
 
+  RogueVM_collect_garbage( vm );
   RogueVM_delete( vm );
 
   //RogueCmd* expression = RogueCmd_create_binary( &RogueCmdType_add_integer,

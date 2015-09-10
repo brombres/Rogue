@@ -10,11 +10,13 @@
 struct RogueVM
 {
   RogueAllocator     allocator;
+
+  RogueLogical       have_new_vm_objects;
   RogueAllocation*   vm_objects;
   void*              objects;     // runtime objects
   RogueTable*        consolidation_table;
   RogueList*         c_string_buffer;
-  RogueList*         global_commands;
+  RogueVMList*       global_commands;
 
   RogueErrorHandler* error_handler;
   RogueString*       error_filepath;
@@ -54,6 +56,8 @@ struct RogueVM
 
 RogueVM* RogueVM_create();
 RogueVM* RogueVM_delete( RogueVM* THIS );
+
+void         RogueVM_collect_garbage( RogueVM* THIS );
 
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st );
 RogueString* RogueVM_consolidate_characters( RogueVM* THIS, RogueCharacter* characters, RogueInteger count );

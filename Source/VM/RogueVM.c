@@ -13,7 +13,7 @@ RogueVM* RogueVM_create()
 
   RogueStringBuilder_init( &THIS->error_message_builder, THIS, -1 );
 
-  THIS->type_list   = RogueVMList_create( THIS, 50 );
+  THIS->type_list   = RogueVMList_create( THIS, 50, RogueVMTraceType );
   THIS->type_lookup = RogueVMTable_create( THIS, 64 );
 
   THIS->type_ByteArray      = RogueTypeByteArray_create( THIS );
@@ -28,7 +28,7 @@ RogueVM* RogueVM_create()
   THIS->type_TableEntry     = RogueTypeTableEntry_create( THIS );
 
   THIS->c_string_buffer = RogueByteList_create( THIS, 200 );
-  THIS->global_commands = RogueObjectList_create( THIS, 20 );
+  THIS->global_commands = RogueVMList_create( THIS, 20, RogueVMTraceCmd );
   THIS->consolidation_table = RogueTable_create( THIS, 128 );
 
   THIS->cmd_type_eol  = RogueCmdType_create( THIS, ROGUE_CMD_EOL, "[end of line]", sizeof(RogueCmd) );
@@ -73,6 +73,45 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
     free( THIS );
   }
   return 0;
+}
+
+void RogueVM_collect_garbage( RogueVM* THIS )
+{
+  if (THIS->have_new_vm_objects)
+  {
+printf( "GC system objects\n" );
+
+    RogueAllocation* survivors = 0;
+    THIS->have_new_vm_objects = 0;
+
+    // Trace known system objects
+    // TODO
+    RogueVMList_trace( THIS->global_commands );
+    RogueVMList_trace( THIS->type_list );
+
+    // Keep or destroy each object in the master list
+    RogueAllocation* cur = THIS->vm_objects;
+    THIS->vm_objects = 0;
+    while (cur)
+    {
+      RogueAllocation* next = cur->next_allocation;
+      if (cur->size < 0)
+      {
+        // Keep
+        cur->size = ~cur->size;
+        cur->next_allocation = survivors;
+        survivors = cur;
+      }
+      else
+      {
+printf( "Freeing system object of size %d\n", cur->size );
+        RogueAllocator_free( &THIS->allocator, cur );
+      }
+      cur = next;
+    }
+
+    THIS->vm_objects = survivors;
+  }
 }
 
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st )

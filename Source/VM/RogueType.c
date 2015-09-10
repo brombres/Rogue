@@ -60,7 +60,7 @@ RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, Ro
 
   THIS->intrinsic_fn = RogueIntrinsicFn_default;
 
-  THIS->methods = RogueVMList_create( vm, 20 );
+  THIS->methods = RogueVMList_create( vm, 20, RogueVMTraceMethod );
 
   return THIS;
 }
