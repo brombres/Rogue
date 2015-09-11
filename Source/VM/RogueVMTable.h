@@ -52,14 +52,15 @@ struct RogueVMTable
   RogueInteger    bin_count;
   RogueInteger    bin_mask;
   RogueInteger    count;
+  RogueVMTraceFn  trace_fn;
 };
 
-RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count );
-RogueVMTable* RogueVMTable_delete( RogueVMTable* THIS );
+RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count, RogueVMTraceFn trace_fn );
 
 void               RogueVMTable_clear( void* THIS );
 RogueVMTableEntry* RogueVMTable_find( void* THIS, const char* key, int create_if_necessary );
 void*              RogueVMTable_get( void* THIS, const char* key );
 RogueVMTable*      RogueVMTable_set( void* THIS, const char* key, void* value );
+void               RogueVMTable_trace( RogueVMTable* THIS );
 
 #endif // ROGUE_VM_TABLE_H

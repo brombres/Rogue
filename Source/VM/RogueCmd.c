@@ -80,6 +80,33 @@ void  RogueCmd_throw_error( RogueCmd* THIS, const char* message )
   ROGUE_THROW( THIS->type->vm, THIS->filepath, position, message );
 }
 
+void RogueCmd_trace( void* THIS )
+{
+  if ( !THIS || ((RogueCmd*)THIS)->allocation.size < 0 ) return;
+  ((RogueCmd*)THIS)->allocation.size ^= -1;
+
+  switch (((RogueCmd*)THIS)->type->cmd_id)
+  {
+    case ROGUE_CMD_SYMBOL_EQ:
+    case ROGUE_CMD_SYMBOL_EQUALS:
+    case ROGUE_CMD_SYMBOL_GE:
+    case ROGUE_CMD_SYMBOL_GT:
+    case ROGUE_CMD_SYMBOL_LE:
+    case ROGUE_CMD_SYMBOL_LT:
+    case ROGUE_CMD_SYMBOL_NE:
+    case ROGUE_CMD_SYMBOL_PLUS:
+      RogueCmd_trace( ((RogueCmdBinaryOp*)THIS)->left );
+      RogueCmd_trace( ((RogueCmdBinaryOp*)THIS)->right );
+      break;
+
+    case ROGUE_CMD_STATEMENT_LIST:
+      RogueVMList_trace( ((RogueCmdStatementList*)THIS)->statements );
+      break;
+
+    default:;
+  }
+}
+
 RogueCmdType* RogueCmd_type( void* THIS )
 {
   switch (((RogueCmd*)THIS)->type->cmd_id)

@@ -37,7 +37,7 @@ struct RogueCmdType
 {
   RogueAllocation allocation;
   RogueVM*        vm;
-  RogueCmdID  cmd_id;
+  RogueCmdID      cmd_id;
   RogueInteger    object_size;
   const char*     name;
 };
@@ -88,6 +88,7 @@ void*         RogueCmd_create( RogueCmdType* of_type );
 void          RogueCmd_init( void* THIS );
 void          RogueCmd_print( void* THIS, RogueStringBuilder* builder );
 void          RogueCmd_throw_error( RogueCmd* THIS, const char* message );
+void          RogueCmd_trace( void* THIS );
 RogueCmdType* RogueCmd_type( void* THIS );
 
 #endif // ROGUE_CMD_H

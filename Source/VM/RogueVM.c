@@ -14,7 +14,7 @@ RogueVM* RogueVM_create()
   RogueStringBuilder_init( &THIS->error_message_builder, THIS, -1 );
 
   THIS->type_list   = RogueVMList_create( THIS, 50, RogueVMTraceType );
-  THIS->type_lookup = RogueVMTable_create( THIS, 64 );
+  THIS->type_lookup = RogueVMTable_create( THIS, 64, RogueVMTraceType );
 
   THIS->type_ByteArray      = RogueTypeByteArray_create( THIS );
   THIS->type_ByteList       = RogueTypeByteList_create( THIS );
@@ -57,17 +57,6 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
 {
   if (THIS)
   {
-    RogueType_delete( THIS->type_ByteArray );
-    RogueType_delete( THIS->type_ByteList );
-    RogueType_delete( THIS->type_CharacterArray );
-    RogueType_delete( THIS->type_Integer );
-    RogueType_delete( THIS->type_ObjectArray );
-    RogueType_delete( THIS->type_ObjectList );
-    RogueType_delete( THIS->type_ParseReader );
-    RogueType_delete( THIS->type_String );
-    RogueType_delete( THIS->type_Table );
-    RogueType_delete( THIS->type_TableEntry );
-
     RogueStringBuilder_retire( &THIS->error_message_builder );
     RogueAllocator_retire( &THIS->allocator );
     free( THIS );
@@ -77,19 +66,18 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
 
 void RogueVM_collect_garbage( RogueVM* THIS )
 {
+  // GC system objects
   if (THIS->have_new_vm_objects)
   {
-printf( "GC system objects\n" );
-
     RogueAllocation* survivors = 0;
     THIS->have_new_vm_objects = 0;
 
     // Trace known system objects
-    // TODO
     RogueVMList_trace( THIS->global_commands );
     RogueVMList_trace( THIS->type_list );
+    RogueVMTable_trace( THIS->type_lookup );
 
-    // Keep or destroy each object in the master list
+    // Keep or free each object in the master list
     RogueAllocation* cur = THIS->vm_objects;
     THIS->vm_objects = 0;
     while (cur)
@@ -98,13 +86,12 @@ printf( "GC system objects\n" );
       if (cur->size < 0)
       {
         // Keep
-        cur->size = ~cur->size;
+        cur->size ^= -1;
         cur->next_allocation = survivors;
         survivors = cur;
       }
       else
       {
-printf( "Freeing system object of size %d\n", cur->size );
         RogueAllocator_free( &THIS->allocator, cur );
       }
       cur = next;
@@ -112,6 +99,37 @@ printf( "Freeing system object of size %d\n", cur->size );
 
     THIS->vm_objects = survivors;
   }
+
+  // GC runtime objects
+  RogueAllocation* survivors = 0;
+
+  // Trace known objects
+  RogueObject_trace( THIS->consolidation_table );
+  RogueObject_trace( THIS->c_string_buffer );
+
+  // Keep or free each object in the master list
+  RogueAllocation* cur = THIS->objects;
+  THIS->objects = 0;
+  while (cur)
+  {
+    RogueAllocation* next = cur->next_allocation;
+    if (cur->size < 0)
+    {
+      // Keep
+      cur->size ^= -1;
+      cur->next_allocation = survivors;
+      survivors = cur;
+    }
+    else
+    {
+      //printf( "Freeing runtime object of type %s\n", ((RogueObject*)cur)->type->name );
+      //RogueObject_println( cur );
+      RogueAllocator_free( &THIS->allocator, cur );
+    }
+    cur = next;
+  }
+
+  THIS->objects = survivors;
 }
 
 RogueString* RogueVM_consolidate_string( RogueVM* THIS, RogueString* st )

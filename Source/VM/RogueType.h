@@ -38,19 +38,21 @@ void         RoguePrintFn_default( void* object, RogueStringBuilder* builder );
 //-----------------------------------------------------------------------------
 struct RogueType
 {
-  RogueVM*      vm;
-  RogueCmd*     origin;
-  char*         name;
-  RogueString*  name_object;
-  RogueInteger  object_size;
-  RogueInteger  element_size;
+  RogueAllocation allocation;
+  RogueVM*        vm;
+  RogueCmd*       origin;
+  char*           name;
+  RogueString*    name_object;
+  RogueInteger    object_size;
+  RogueInteger    element_size;
 
-  RogueIntrinsicFn        intrinsic_fn;
+  RogueIntrinsicFn intrinsic_fn;
 
-  RogueVMList*            methods;
+  RogueVMList*     methods;
+  char             name_data[0];
 };
 
 RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, RogueInteger object_size );
-RogueType* RogueType_delete( RogueType* THIS );
+void       RogueType_trace( RogueType* THIS );
 
 #endif // ROGUE_TYPE_H

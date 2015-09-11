@@ -68,12 +68,14 @@ RogueVMTableEntry* RogueVMTableReader_read( RogueVMTableReader* reader )
 //-----------------------------------------------------------------------------
 //  VMTable
 //-----------------------------------------------------------------------------
-RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count )
+RogueVMTable* RogueVMTable_create( RogueVM* vm, RogueInteger initial_bin_count,
+   RogueVMTraceFn trace_fn )
 {
   RogueVMTable*  table = RogueVMObject_create( vm, sizeof(RogueVMTable) );
   RogueInteger bin_count = 1;
 
   table->vm = vm;
+  table->trace_fn = trace_fn;
 
   if (initial_bin_count <= 0) initial_bin_count = 16;
 
@@ -139,3 +141,22 @@ RogueVMTable* RogueVMTable_set( void* THIS, const char* key, void* value )
   return THIS;
 }
 
+void RogueVMTable_trace( RogueVMTable* THIS )
+{
+  if (THIS && THIS->allocation.size >= 0)
+  {
+    RogueVMTableReader reader;
+    RogueVMTraceFn trace_fn = THIS->trace_fn;
+    THIS->allocation.size ^= -1;
+
+    THIS->bins->allocation.size ^= -1;
+
+    RogueVMTableReader_init( &reader, THIS );
+    while (RogueVMTableReader_has_another(&reader))
+    {
+      RogueVMTableEntry* entry = RogueVMTableReader_read( &reader );
+      entry->allocation.size ^= -1;
+      trace_fn( entry->value );
+    }
+  }
+}

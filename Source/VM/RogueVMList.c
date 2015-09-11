@@ -47,16 +47,21 @@ RogueVMList* RogueVMList_reserve( RogueVMList* THIS, RogueInteger additional_cap
 
 void RogueVMList_trace( RogueVMList* THIS )
 {
-  int    count = THIS->count;
-  void** data = THIS->array->objects - 1;
-  RogueVMTraceFn trace_fn = THIS->trace_fn;
-
-  THIS->allocation.size ^= -1;
-
-  while (--count >= 0)
+  if (THIS->allocation.size >= 0)
   {
-    RogueAllocation* cur = *(++data);
-    if (cur && cur->size >= 0) trace_fn( cur );
+    int    count = THIS->count;
+    void** data = THIS->array->objects - 1;
+    RogueVMTraceFn trace_fn = THIS->trace_fn;
+
+    THIS->allocation.size ^= -1;
+
+    THIS->array->allocation.size ^= -1;
+
+    while (--count >= 0)
+    {
+      RogueAllocation* cur = *(++data);
+      if (cur && cur->size >= 0) trace_fn( cur );
+    }
   }
 }
 

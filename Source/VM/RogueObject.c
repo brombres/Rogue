@@ -70,3 +70,12 @@ void RogueObject_to_string( void* THIS, RogueStringBuilder* builder )
 {
   ((RogueObject*)THIS)->type->intrinsic_fn( ROGUE_INTRINSIC_FN_TO_STRING, (RogueObject*)THIS, builder );
 }
+
+void RogueObject_trace( void* THIS )
+{
+  if (THIS && ((RogueObject*)THIS)->allocation.size >= 0)
+  {
+    ((RogueObject*)THIS)->type->intrinsic_fn( ROGUE_INTRINSIC_FN_TRACE, (RogueObject*)THIS, 0 );
+  }
+}
+

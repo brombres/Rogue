@@ -9,11 +9,11 @@
 
 #include "Rogue.h"
 
-typedef void (*RogueVMTraceFn)( RogueAllocation* allocation );
+typedef void (*RogueVMTraceFn)( void* allocation );
 
-void RogueVMTraceCmd( RogueAllocation* allocation );
-void RogueVMTraceMethod( RogueAllocation* allocation );
-void RogueVMTraceType( RogueAllocation* allocation );
+void RogueVMTraceCmd( void* allocation );
+void RogueVMTraceMethod( void* allocation );
+void RogueVMTraceType( void* allocation );
 
 void* RogueVMObject_create( RogueVM* vm, RogueInteger size );
 

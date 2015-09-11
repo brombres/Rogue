@@ -22,5 +22,6 @@ RogueInteger RogueObject_hash_code( void* THIS );
 void         RogueObject_print( void* THIS );
 void         RogueObject_println( void* THIS );
 void         RogueObject_to_string( void* THIS, RogueStringBuilder* builder );
+void         RogueObject_trace( void* THIS );
 
 #endif // ROGUE_OBJECT_H

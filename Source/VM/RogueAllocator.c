@@ -61,10 +61,11 @@ void RogueAllocator_retire( RogueAllocator* THIS )
   }
 }
 
-void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
+void* RogueAllocator_allocate( RogueAllocator* THIS, int original_size )
 {
   int slot, s;
   RogueAllocation* allocation;
+  RogueInteger size = original_size;
 
   if (size > ROGUE_MM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
@@ -123,7 +124,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   memset( allocation, 0, size );
 
-  allocation->size = size;
+  allocation->size = original_size;
   return allocation;
 }
 

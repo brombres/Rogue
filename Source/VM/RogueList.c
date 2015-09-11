@@ -14,6 +14,8 @@ RogueInteger RogueByteList_intrinsic_fn( RogueIntrinsicFnType fn_type,
   switch (fn_type)
   {
     case ROGUE_INTRINSIC_FN_TRACE:
+      context->allocation.size ^= -1;
+      ((RogueList*)context)->array->object.allocation.size ^= -1;
       return 0;
 
     case ROGUE_INTRINSIC_FN_HASH_CODE:
@@ -51,6 +53,8 @@ RogueInteger RogueObjectList_intrinsic_fn( RogueIntrinsicFnType fn_type,
   switch (fn_type)
   {
     case ROGUE_INTRINSIC_FN_TRACE:
+      context->allocation.size ^= -1;
+      ((RogueList*)context)->array->object.allocation.size ^= -1;
       printf( "TODO: RogueObjectList TRACE\n" );
       return 0;
 

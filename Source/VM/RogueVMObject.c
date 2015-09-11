@@ -5,19 +5,19 @@
 //=============================================================================
 #include "Rogue.h"
 
-void RogueVMTraceCmd( RogueAllocation* allocation )
+void RogueVMTraceCmd( void* allocation )
 {
   printf( "TODO: RogueVMTraceCmd()\n" );
 }
 
-void RogueVMTraceMethod( RogueAllocation* allocation )
+void RogueVMTraceMethod( void* allocation )
 {
   printf( "TODO: RogueVMTraceMethod()\n" );
 }
 
-void RogueVMTraceType( RogueAllocation* allocation )
+void RogueVMTraceType( void* allocation )
 {
-  printf( "TODO: RogueVMTraceType()\n" );
+  RogueType_trace( allocation );
 }
 
 void* RogueVMObject_create( RogueVM* vm, RogueInteger size )

@@ -14,6 +14,10 @@ RogueInteger RogueIntrinsicFn_default( RogueIntrinsicFnType fn_type,
   switch (fn_type)
   {
     case ROGUE_INTRINSIC_FN_TRACE:
+      if (context && context->allocation.size >= 0)
+      {
+        context->allocation.size ^= -1;
+      }
       break;
 
     case ROGUE_INTRINSIC_FN_HASH_CODE:
@@ -48,12 +52,12 @@ RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, Ro
 {
   int len = strlen( name );
 
-  RogueType* THIS = (RogueType*) malloc( sizeof(RogueType) );
+  RogueType* THIS = (RogueType*) malloc( sizeof(RogueType)+len+1 );
   memset( THIS, 0, sizeof(RogueType) );
   THIS->vm = vm;
   THIS->origin = origin;
 
-  THIS->name = (char*) malloc( len+1 );
+  THIS->name = THIS->name_data;
   strcpy( THIS->name, name );
 
   THIS->object_size = object_size;
@@ -65,13 +69,13 @@ RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, Ro
   return THIS;
 }
 
-RogueType* RogueType_delete( RogueType* THIS )
+void  RogueType_trace( RogueType* THIS )
 {
-  if (THIS)
+  if (THIS && THIS->allocation.size >= 0)
   {
-    free( THIS->name );
-    free( THIS );
+    THIS->allocation.size ^= -1;
+    RogueVMList_trace( THIS->methods );
+    if (THIS->origin) RogueCmd_trace( THIS->origin );
   }
-  return 0;
 }
 

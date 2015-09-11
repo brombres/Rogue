@@ -78,8 +78,22 @@ RogueInteger RogueTable_intrinsic_fn( RogueIntrinsicFnType fn_type,
   switch (fn_type)
   {
     case ROGUE_INTRINSIC_FN_TRACE:
-      printf( "TODO: Table TRACE\n" );
-      return 0;
+      if (context && context->allocation.size >= 0)
+      {
+        RogueTableReader reader;
+        context->allocation.size ^= -1;
+        ((RogueTable*)context)->bins->object.allocation.size ^= -1;
+
+        RogueTableReader_init( &reader, (RogueTable*)context );
+        while (RogueTableReader_has_another(&reader))
+        {
+          RogueTableEntry* entry = RogueTableReader_read( &reader );
+          RogueObject_trace( entry );
+          RogueObject_trace( entry->key );
+          RogueObject_trace( entry->value );
+        }
+        return 0;
+      }
 
     case ROGUE_INTRINSIC_FN_HASH_CODE:
       return ((RogueTable*)context)->count;
