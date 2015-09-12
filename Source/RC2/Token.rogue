@@ -1,0 +1,77 @@
+$include "TokenType.rogue"
+
+class Token
+  PROPERTIES
+    filepath : String
+    type     : Integer
+    line     : Integer
+    column   : Integer
+
+  METHODS
+    method init( type )
+
+    method describe->String
+      return describe(type)
+
+    method error( message:String )->RogueError
+      return RogueError( message, filepath, line, column )
+
+    method to->String
+      return name(type)
+
+  ROUTINES
+    routine describe( type:Integer )->String
+      which (type)
+        case TokenType.EOI, TokenType.EOL
+          return name(type)
+
+        others
+          return "'$'" (name(type))
+      endWhich
+
+    routine name( type:Integer )->String
+      which (type)
+        case TokenType.EOI
+          return "end of input"
+
+        case TokenType.EOL
+          return "end of line"
+
+        case TokenType.IDENTIFIER
+          return "identifier"
+
+        case TokenType.LITERAL_STRING
+          return "literal string"
+
+        others
+          return "(Token Type $)" (type)
+      endWhich
+endClass
+
+class IdentifierToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( value )
+      prior.init( TokenType.IDENTIFIER )
+
+    method describe->String
+      return value
+
+    method to->String
+      return value
+endClass
+
+class LiteralStringToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( value )
+      prior.init( TokenType.IDENTIFIER )
+
+    method to->String
+      return //"$"// (value)
+endClass
+

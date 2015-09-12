@@ -1,0 +1,9 @@
+class TokenType
+  ENUMERATE
+    EOI
+    EOL
+    IDENTIFIER
+    LITERAL_INTEGER
+    LITERAL_STRING
+    SYMBOL_SEMICOLON
+endClass

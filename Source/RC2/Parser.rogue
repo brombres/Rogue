@@ -1,0 +1,56 @@
+$include "Tokenizer.rogue"
+$include "TokenReader.rogue"
+
+class Parser
+  PROPERTIES
+    reader : TokenReader
+
+  METHODS
+    method init( filepath:String )
+      println "Parsing $..." (filepath)
+      reader = TokenReader( Tokenizer(filepath).tokenize )
+
+    method consume( token_type:Integer )->Logical
+      if (reader.peek.type != token_type) return false
+      reader.read
+      return true
+
+    method must_consume( token_type:Integer )
+      if (consume(token_type)) return
+      local t = reader.peek
+      throw reader.peek.error( "$ expected, found $." ...
+        (Token.describe(token_type),t.describe) )
+      
+    method must_consume_end_cmd
+      if (not (consume(TokenType.EOL) or consume(TokenType.SYMBOL_SEMICOLON)))
+        must_consume( TokenType.EOL )
+      endIf
+
+    method parse_elements
+      while (reader.has_another)
+        local cmd = parse_statement
+      endWhile
+
+    method parse_statement->Cmd
+      local expression = parse_expression
+      must_consume_end_cmd
+      return expression
+
+    method parse_expression->Cmd
+      return parse_term
+
+    method parse_term->Cmd
+      local t = reader.read
+
+      which (t.type)
+        case TokenType.LITERAL_STRING
+          return CmdLiteralString( t, t->String )
+      endWhich
+
+      throw t.error( "Unexpected $." (t.describe) )
+
+    method peek->Token
+      return reader.peek
+
+endClass
+

@@ -1,0 +1,235 @@
+$include "RogueError.rogue"
+$include "Parser.rogue"
+
+class RC2 [singleton]
+  PROPERTIES
+    included_files = Table<<String,String>>()
+
+  METHODS
+    method init
+      try
+        include( "Test.rogue" )
+      catch (error:RogueError)
+        println error->String
+        System.exit( 1 );
+      endTry
+
+    method include( filepath:String )
+      if (not File.exists(filepath))
+        throw RogueError( //No such file "$".// (filepath) )
+      endIf
+
+      filepath = File.absolute_filepath( filepath )
+      if (included_files.contains(filepath)) return
+
+      included_files[filepath] = filepath
+
+      Parser( filepath ).parse_elements
+
+endClass
+
+#{
+$include "Attributes.rogue"
+$include "CPPWriter.rogue"
+$include "CloneArgs.rogue"
+$include "Cmd.rogue"
+$include "Local.rogue"
+$include "Method.rogue"
+$include "Parser.rogue"
+$include "Preprocessor.rogue"
+$include "Program.rogue"
+$include "Property.rogue"
+$include "RogueError.rogue"
+$include "Scope.rogue"
+$include "Template.rogue"
+$include "Token.rogue"
+$include "TokenReader.rogue"
+$include "TokenType.rogue"
+$include "Tokenizer.rogue"
+$include "Type.rogue"
+
+
+class RogueC [singleton]
+  PROPERTIES
+    included_files   = String[]
+    prefix_path_list = String[]
+    prefix_path_lookup = Table<<String,Logical>>()
+    compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
+    libraries_folder = ""
+
+    source_files    = String[]
+    generate_main   : Logical
+    first_filepath  : String
+    output_filepath : String
+    target = "C++"
+
+    execute_args    : String
+
+  METHODS
+    method init
+      local libs = File.path(System.executable_filepath) + "/Libraries/"
+      if (File.exists(libs))
+        libraries_folder = libs
+        prefix_path_list.add( libs )
+      endIf
+
+      try
+        process_command_line_arguments
+
+        if (source_files.count == 0)
+          println @|
+                   |Rogue Compiler v0.0.1
+                   |May 12, 2015
+                   |
+                   |USAGE
+                   |  roguec [options] file1.rogue [file2.rogue ...]
+                   |
+                   |OPTIONS
+                   |  --main
+                   |    Include a main() function in the .cpp output file.
+                   |
+                   |  --execute[="args"]
+                   |    Use g++ to compile and run the .cpp output of the compiled .rogue program.
+                   |    Automatically enables the --main option.
+                   |
+                   |  --output=destpath/[file]
+                   |    Specify the destination folder and optionally the base filename for the
+                   |    output.
+                   |
+          System.exit( 1 )
+        endIf
+
+        compile_targets["C++"] = true
+        Program.configure
+
+        forEach (filepath in source_files)
+          include( filepath )
+        endForEach
+        include( "Standard" )
+
+        Program.resolve
+
+        if (output_filepath is null)
+          output_filepath = File.filename(first_filepath)
+          if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
+        else
+          if (File.is_folder(output_filepath))
+            output_filepath = File.path(output_filepath) + "/RogueProgram"
+          elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
+            output_filepath = output_filepath.leftmost(-4)
+          endIf
+        endIf
+
+        Program.write_cpp( output_filepath )
+
+        if (execute_args)
+          local exe = output_filepath.to_lowercase
+          local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
+          println cmd
+          println
+          System.run( cmd )
+        endIf
+
+      catch (err:Error)
+        println err
+        System.exit(1)
+      endTry
+
+    method include( filepath:String )
+      if (not first_filepath) first_filepath = filepath
+      include( null, filepath )
+
+    method include( t:Token, filepath:String )
+      # Preemptively (immediately) parses the given file.
+      local file = File(filepath)
+
+      if (File.exists(filepath+".rogue"))
+        filepath += ".rogue"
+        file = File( filepath )
+      endIf
+
+      if (not file.exists)
+        forEach (prefix in prefix_path_list)
+          local prefixed_filepath = prefix + filepath
+          local prefixed_file = File( prefixed_filepath )
+          if (File.exists(prefixed_filepath+".rogue"))
+            filepath = prefixed_filepath + ".rogue"
+            file = File( filepath )
+            escapeForEach
+          elseIf (prefixed_file.exists)
+            filepath = prefixed_filepath
+            file = prefixed_file
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (not file.exists)
+        local mesg = //No such file "$".// (filepath)
+        if (t) throw t.error( mesg )
+        else    throw RogueError( mesg )
+      endIf
+
+      if (file.is_folder)
+        local path2 = "$/$.rogue" (filepath,file.filename)
+        local file2 = File( path2 )
+        if (not file2.exists or file2.is_folder)
+          local mesg = //Can not find "$" to include.// (path2)
+          if (t) throw t.error( mesg )
+          else    throw RogueError( mesg )
+        else
+          filepath = path2
+          file = file2
+        endIf
+      endIf
+
+      filepath = file.absolute_filepath
+      if (included_files.contains(filepath)) return
+
+      if (included_files.count == 0) Program.first_filepath = filepath
+
+      included_files.add( filepath )
+
+      local prefix = filepath.before_last('/') + "/"
+      if (not prefix_path_lookup.contains(prefix))
+        prefix_path_lookup[prefix] = true
+        prefix_path_list.add( prefix )
+      endIf
+
+      #println "Parsing " + filepath
+      Parser( filepath ).parse_elements
+
+    method process_command_line_arguments
+      forEach (arg in System.command_line_arguments)
+        local value = arg.after_first('=')
+        arg = arg.before_first('=')
+        if (arg.begins_with("--"))
+          # Option
+          if (arg == "--output")
+            if (value.count == 0) throw RogueError( //Output filepath expected after "--output="// )
+            output_filepath = value
+
+          elseIf (arg == "--execute")
+            generate_main = true
+            execute_args = value
+
+          elseIf (arg == "--main")
+            if (value.count) throw RogueError( "Unexpected value for '--main' option." )
+            generate_main = true
+
+          else
+            throw RogueError( "Unknown option '$'." (arg) )
+          endIf
+        else
+          # Input Filename
+          source_files.add( arg )
+        endIf
+      endForEach
+
+    method require_valueless( arg:String, expecting:String )
+      if (arg == expecting) return
+      if (arg.contains('=')) throw RogueError( "Unexpected value for command line argument '$'." (expecting) )
+
+endClass
+
+}#

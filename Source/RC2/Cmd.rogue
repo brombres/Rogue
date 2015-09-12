@@ -1,0 +1,15 @@
+class Cmd
+  PROPERTIES
+    t : Token
+
+  METHODS
+endClass
+
+class CmdLiteralString : Cmd
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( t, value )
+endClass
+

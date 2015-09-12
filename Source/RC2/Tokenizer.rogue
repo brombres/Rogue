@@ -1,0 +1,107 @@
+$include "Cmd.rogue"
+
+class Tokenizer
+  PROPERTIES
+    filepath   : String
+    reader     : ParseReader
+    tokens     : Token[]
+    line       : Integer
+    column     : Integer
+    buffer     = StringBuilder()
+  
+  METHODS
+    method init( filepath )
+      reader = ParseReader( filepath )
+
+    method tokenize->Token[]
+      tokens = Token[]
+      while (tokenize_another)
+        noAction
+      endWhile
+
+      add( Token(TokenType.EOI) )
+
+      return tokens
+
+    method add( t:Token )
+      t.filepath = filepath
+      t.line = line
+      t.column = column
+      tokens.add( t )
+
+    method consume( ch:Character )->Logical
+      return reader.consume( ch )
+
+    method describe( ch:Character )->String
+      if (ch == 0)  return "end of input"
+      if (ch == 10) return "end of line"
+      return "'$'" (ch)
+
+    method must_consume( ch:Character, message=null:String )
+      if (consume(ch)) return
+
+      if (not message)
+        message = "Expected $, found $." (describe(ch),describe(reader.peek))
+      endIf
+
+      throw RogueError( message, filepath, reader.line, reader.column )
+
+    method consume_whitespace
+      reader.consume_spaces
+
+    method tokenize_another->Logical
+      consume_whitespace
+      if (not reader.has_another) return false
+
+      line = reader.line
+      column = reader.column
+
+      local ch = reader.peek
+
+      if (ch == '\n')
+        reader.read
+        add( Token(TokenType.EOL) )
+        return true
+      endIf
+
+      if ((ch>='a' and ch<='z') or (ch>='A' and ch<='Z') or (ch=='_'))
+        tokenize_identifier
+        return true
+      endIf
+
+      if (ch == '"')
+        tokenize_string
+        return true
+      endIf
+
+      reader.read
+      return true
+
+    method tokenize_identifier
+      buffer.clear
+
+      local ch = reader.peek
+      while ((ch>='a' and ch<='z') or (ch>='A' and ch<='Z') or
+             (ch=='_') or (ch>='0' and ch<='9'))
+        buffer.print( reader.read )
+        ch = reader.peek
+      endWhile
+      
+      add( IdentifierToken(buffer->String) )
+
+    method tokenize_string
+      buffer.clear
+      consume( '"' )
+
+      while (reader.has_another)
+        local ch = reader.peek
+        if (ch == 0 or ch == '\n' or ch == '"') escapeWhile
+        buffer.print( reader.read )
+      endWhile
+
+      must_consume( '"' )
+
+      add( LiteralStringToken(buffer->String) )
+
+endClass
+

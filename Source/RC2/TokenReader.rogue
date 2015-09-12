@@ -1,0 +1,25 @@
+$include "Token.rogue"
+
+class TokenReader
+  PROPERTIES
+    tokens   : Token[]
+    position : Integer
+
+  METHODS
+    method init( tokens )
+
+    method has_another->Logical
+      return position < tokens.count
+
+    method peek->Token
+      return tokens[position]
+
+    method peek( lookahead:Integer )->Token
+      local index = position + lookahead
+      if (index >= tokens.count) return tokens.last
+      return tokens[index]
+
+    method read->Token
+      ++position
+      return tokens[position-1]
+endClass
