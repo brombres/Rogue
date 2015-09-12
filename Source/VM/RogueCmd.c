@@ -23,13 +23,13 @@ RogueType* RogueCmdTypeFn_integer( void* cmd )
   return ((RogueCmd*)cmd)->type->vm->type_Integer;
 }
 
-RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueCmdID cmd_id,
+RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueCmdID id,
   const char* name, RogueInteger object_size )
 {
   RogueCmdType* cmd_type = (RogueCmdType*) RogueAllocator_allocate( &vm->allocator,
       sizeof(RogueCmdType) );
   cmd_type->vm = vm;
-  cmd_type->cmd_id = cmd_id;
+  cmd_type->id = id;
   cmd_type->object_size = object_size;
   cmd_type->name = name;
   return cmd_type;
@@ -54,19 +54,20 @@ void* RogueCmd_create( RogueCmdType* of_type  )
 
 void RogueCmd_print( void* THIS, RogueStringBuilder* builder )
 {
-  switch (((RogueCmd*)THIS)->type->cmd_id)
+  switch (((RogueCmd*)THIS)->type->id)
   {
     case ROGUE_CMD_LITERAL_INTEGER:
       RogueStringBuilder_print_integer( builder, ((RogueCmdLiteralInteger*)THIS)->value );
       break;
 
-    default:;
+    default:
+      RogueStringBuilder_print_c_string( builder, ((RogueCmd*)THIS)->type->name );
   }
 }
 
 void RogueCmd_init( void* THIS )
 {
-  switch (((RogueCmd*)THIS)->type->cmd_id)
+  switch (((RogueCmd*)THIS)->type->id)
   {
     default:;
   }
@@ -85,7 +86,7 @@ void RogueCmd_trace( void* THIS )
   if ( !THIS || ((RogueCmd*)THIS)->allocation.size < 0 ) return;
   ((RogueCmd*)THIS)->allocation.size ^= -1;
 
-  switch (((RogueCmd*)THIS)->type->cmd_id)
+  switch (((RogueCmd*)THIS)->type->id)
   {
     case ROGUE_CMD_SYMBOL_EQ:
     case ROGUE_CMD_SYMBOL_EQUALS:
@@ -109,7 +110,7 @@ void RogueCmd_trace( void* THIS )
 
 RogueCmdType* RogueCmd_type( void* THIS )
 {
-  switch (((RogueCmd*)THIS)->type->cmd_id)
+  switch (((RogueCmd*)THIS)->type->id)
   {
   //return ((RogueCmdUnaryOp*)cmd)->operand->type->type_fn( ((RogueCmdUnaryOp*)cmd)->operand );
     default:

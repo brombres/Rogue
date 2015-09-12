@@ -26,7 +26,6 @@ enum RogueCmdID
   ROGUE_CMD_SYMBOL_OPEN_PAREN,
   ROGUE_CMD_SYMBOL_PLUS,
   ROGUE_CMD_SYMBOL_POUND,
-
   ROGUE_CMD_STATEMENT_LIST,
 };
 
@@ -37,12 +36,12 @@ struct RogueCmdType
 {
   RogueAllocation allocation;
   RogueVM*        vm;
-  RogueCmdID      cmd_id;
+  RogueCmdID      id;
   RogueInteger    object_size;
   const char*     name;
 };
 
-RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueCmdID cmd_id,
+RogueCmdType* RogueCmdType_create( RogueVM* vm, RogueCmdID id,
     const char* name, RogueInteger object_size );
 
 //-----------------------------------------------------------------------------
