@@ -7,16 +7,6 @@
 #ifndef ROGUE_VM_LIST_H
 #define ROGUE_VM_LIST_H
 
-typedef struct RogueVMArray
-{
-  RogueAllocation allocation;
-  union
-  {
-    RogueByte bytes[0];
-    void*     objects[0];
-  };
-} RogueVMArray;
-
 struct RogueVMList
 {
   RogueAllocation allocation;

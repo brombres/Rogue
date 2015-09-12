@@ -18,10 +18,10 @@ struct RogueStringBuilder
   RogueInteger    capacity;
   RogueCharacter* characters;
   RogueCharacter  internal_buffer[ROGUE_STRING_BUILDER_INTERNAL_BUFFER_SIZE];
+  RogueVMArray*   external_buffer;
 };
 
 void RogueStringBuilder_init( RogueStringBuilder* THIS, RogueVM* vm, RogueInteger initial_capacity );
-void RogueStringBuilder_retire( RogueStringBuilder* THIS );
 
 void RogueStringBuilder_log( RogueStringBuilder* THIS );
 

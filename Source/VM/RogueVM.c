@@ -57,7 +57,6 @@ RogueVM* RogueVM_delete( RogueVM* THIS )
 {
   if (THIS)
   {
-    RogueStringBuilder_retire( &THIS->error_message_builder );
     RogueAllocator_retire( &THIS->allocator );
     free( THIS );
   }
@@ -195,8 +194,6 @@ RogueString* RogueVM_error_string( RogueVM* THIS )
   RogueStringBuilder_print_c_string( &buffer, bar );
 
   result = RogueStringBuilder_to_string( &buffer );
-
-  RogueStringBuilder_retire( &buffer );
 
   return result;
 }

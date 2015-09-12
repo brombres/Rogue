@@ -52,7 +52,7 @@ RogueType* RogueType_create( RogueVM* vm, RogueCmd* origin, const char* name, Ro
 {
   int len = strlen( name );
 
-  RogueType* THIS = (RogueType*) malloc( sizeof(RogueType)+len+1 );
+  RogueType* THIS = RogueAllocator_allocate( &vm->allocator, sizeof(RogueType)+len+1 );
   memset( THIS, 0, sizeof(RogueType) );
   THIS->vm = vm;
   THIS->origin = origin;

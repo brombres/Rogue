@@ -119,6 +119,7 @@ typedef struct RogueTable             RogueTable;
 typedef struct RogueTableEntry        RogueTableEntry;
 typedef struct RogueTokenizer         RogueTokenizer;
 typedef struct RogueVM                RogueVM;
+typedef struct RogueVMArray           RogueVMArray;
 typedef struct RogueVMList            RogueVMList;
 typedef struct RogueVMTable           RogueVMTable;
 typedef struct RogueVMTableEntry      RogueVMTableEntry;
@@ -150,9 +151,10 @@ typedef struct RogueVMTableReader     RogueVMTableReader;
 //
 
 #include "RogueError.h"
-#include "RogueStringBuilder.h"
 #include "RogueUTF8.h"
 #include "RogueAllocation.h"
+#include "RogueVMArray.h"
+#include "RogueStringBuilder.h"
 #include "RogueAllocator.h"
 #include "RogueObject.h"
 #include "RogueString.h"

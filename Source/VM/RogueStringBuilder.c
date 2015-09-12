@@ -17,16 +17,8 @@ void RogueStringBuilder_init( RogueStringBuilder* THIS, RogueVM* vm, RogueIntege
   else
   {
     THIS->capacity = initial_capacity;
-    THIS->characters = (RogueCharacter*) malloc( initial_capacity * sizeof(RogueCharacter) );
-  }
-}
-
-void RogueStringBuilder_retire( RogueStringBuilder* THIS )
-{
-  if (THIS->characters != THIS->internal_buffer)
-  {
-    free( THIS->characters );
-    THIS->characters = 0;
+    THIS->external_buffer = RogueVMArray_create( vm, sizeof(RogueCharacter), initial_capacity );
+    THIS->characters = THIS->external_buffer->characters;
   }
 }
 
@@ -152,10 +144,10 @@ void RogueStringBuilder_reserve( RogueStringBuilder* THIS, RogueInteger addition
   RogueInteger doubled = THIS->capacity << 1;
   if (doubled > required) required = doubled;
 
-  RogueCharacter* new_characters = (RogueCharacter*)malloc( required*sizeof(RogueCharacter) );
+  THIS->external_buffer = RogueVMArray_create( THIS->vm, sizeof(RogueCharacter), required );
+  RogueCharacter* new_characters = THIS->external_buffer->characters;
   memcpy( new_characters, THIS->characters, THIS->count*sizeof(RogueCharacter) );
 
-  if (THIS->characters != THIS->internal_buffer) free( THIS->characters );
   THIS->characters = new_characters;
   THIS->capacity = required;
 }
