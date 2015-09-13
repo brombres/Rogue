@@ -8,10 +8,12 @@ class Tokenizer
     line       : Integer
     column     : Integer
     buffer     = StringBuilder()
+    keywords   = Table<<String,Integer>>()
   
   METHODS
     method init( filepath )
       reader = ParseReader( filepath )
+      configure_keywords
 
     method tokenize->Token[]
       tokens = Token[]
@@ -22,6 +24,9 @@ class Tokenizer
       add( Token(TokenType.EOI) )
 
       return tokens
+
+    method configure_keywords
+      keywords[ "log" ] = TokenType.KEYWORD_LOG
 
     method add( t:Token )
       t.filepath = filepath
@@ -87,7 +92,13 @@ class Tokenizer
         ch = reader.peek
       endWhile
       
-      add( IdentifierToken(buffer->String) )
+      local id = buffer->String
+      local entry = keywords.find( id )
+      if (entry)
+        add( Token(entry.value) )
+      else
+        add( IdentifierToken(id) )
+      endIf
 
     method tokenize_string
       buffer.clear

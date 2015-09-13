@@ -15,25 +15,41 @@ class Parser
       reader.read
       return true
 
+    method consume_end_cmds->Logical
+      local success = false
+      while (consume(TokenType.EOL) or consume(TokenType.SYMBOL_SEMICOLON))
+        success = true
+      endWhile
+      return success
+
     method must_consume( token_type:Integer )
       if (consume(token_type)) return
       local t = reader.peek
       throw reader.peek.error( "$ expected, found $." ...
         (Token.describe(token_type),t.describe) )
       
-    method must_consume_end_cmd
-      if (not (consume(TokenType.EOL) or consume(TokenType.SYMBOL_SEMICOLON)))
-        must_consume( TokenType.EOL )
-      endIf
+    method must_consume_end_cmds
+      if (not consume_end_cmds) must_consume( TokenType.EOL )
 
     method parse_elements
-      while (reader.has_another)
+      while (not consume(TokenType.EOI))
         local cmd = parse_statement
       endWhile
 
     method parse_statement->Cmd
+      local t = peek
+
+      if (consume(TokenType.KEYWORD_LOG))
+        local operand=null : Cmd
+        if (not consume_end_cmds)
+          operand = parse_expression
+          must_consume_end_cmds
+        endIf
+        return CmdLog( t, operand )
+      endIf
+
       local expression = parse_expression
-      must_consume_end_cmd
+      must_consume_end_cmds
       return expression
 
     method parse_expression->Cmd

@@ -22,7 +22,7 @@ class Token
   ROUTINES
     routine describe( type:Integer )->String
       which (type)
-        case TokenType.EOI, TokenType.EOL
+        case TokenType.EOI, TokenType.EOL, TokenType.LITERAL_STRING, TokenType.IDENTIFIER
           return name(type)
 
         others
@@ -39,6 +39,9 @@ class Token
 
         case TokenType.IDENTIFIER
           return "identifier"
+
+        case TokenType.KEYWORD_LOG
+          return "log"
 
         case TokenType.LITERAL_STRING
           return "literal string"
@@ -57,7 +60,7 @@ class IdentifierToken : Token
       prior.init( TokenType.IDENTIFIER )
 
     method describe->String
-      return value
+      return "identifier"
 
     method to->String
       return value
@@ -69,7 +72,10 @@ class LiteralStringToken : Token
 
   METHODS
     method init( value )
-      prior.init( TokenType.IDENTIFIER )
+      prior.init( TokenType.LITERAL_STRING )
+
+    method describe->String
+      return "literal string"
 
     method to->String
       return //"$"// (value)

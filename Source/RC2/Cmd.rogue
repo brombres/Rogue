@@ -13,3 +13,11 @@ class CmdLiteralString : Cmd
     method init( t, value )
 endClass
 
+class CmdLog : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+endClass
+
