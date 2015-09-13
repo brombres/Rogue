@@ -3,6 +3,24 @@ class Cmd
     t : Token
 
   METHODS
+    method write( writer:ETCWriter )
+      throw t.error( "[INTERNAL] $::write(ETCWriter) is undefined." (type_name) )
+endClass
+
+class CmdStatementList
+  PROPERTIES
+    statements = Cmd[]
+
+  METHODS
+    method add( statement:Cmd )->this
+      statements.add( statement )
+      return this
+
+    method write( writer:ETCWriter )
+      writer.write_integer_x( statements.count )
+      forEach (statement in statements)
+        statement.write( writer )
+      endForEach
 endClass
 
 class CmdLiteralString : Cmd
@@ -11,6 +29,13 @@ class CmdLiteralString : Cmd
 
   METHODS
     method init( t, value )
+
+    method write( writer:ETCWriter )
+      writer.write_integer_x( ETC.CMD_LITERAL_STRING )
+      writer.write_integer_x( value.count )
+      forEach (ch in value)
+        writer.write_integer_x( ch )
+      endForEach
 endClass
 
 class CmdLog : Cmd
@@ -19,5 +44,9 @@ class CmdLog : Cmd
 
   METHODS
     method init( t, operand )
+
+    method write( writer:ETCWriter )
+      writer.write_integer_x( ETC.CMD_LOG )
+      if (operand) operand.write( writer )
 endClass
 

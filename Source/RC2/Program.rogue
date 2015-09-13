@@ -1,0 +1,22 @@
+$include "ETCWriter.rogue"
+
+class Program [singleton]
+  PROPERTIES
+    immediate_statements = CmdStatementList()
+
+  METHODS
+    method generate_etc->String
+      local writer = ETCWriter()
+
+      writer.write_byte( 'E' )
+      writer.write_byte( 'T' )
+      writer.write_byte( 'C' )
+      writer.write_integer_x( 1 )
+
+      writer.write_integer_x( 0 )  # No class definitions
+
+      immediate_statements.write( writer )
+      immediate_statements.statements.clear
+
+      return writer->String
+endClass

@@ -1,0 +1,5 @@
+class ETC
+  ENUMERATE
+    CMD_LOG
+    CMD_LITERAL_STRING
+endClass

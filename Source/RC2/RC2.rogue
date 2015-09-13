@@ -1,5 +1,6 @@
-$include "RogueError.rogue"
 $include "Parser.rogue"
+$include "Program.rogue"
+$include "RogueError.rogue"
 
 class RC2 [singleton]
   PROPERTIES
@@ -9,6 +10,10 @@ class RC2 [singleton]
     method init
       try
         include( "Test.rogue" )
+
+        local etc = Program.generate_etc
+        File.save( "Test.etc", etc )
+
       catch (error:RogueError)
         println error->String
         System.exit( 1 );

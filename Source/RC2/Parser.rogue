@@ -34,6 +34,7 @@ class Parser
     method parse_elements
       while (not consume(TokenType.EOI))
         local cmd = parse_statement
+        Program.immediate_statements.add( cmd )
       endWhile
 
     method parse_statement->Cmd
@@ -60,7 +61,7 @@ class Parser
 
       which (t.type)
         case TokenType.LITERAL_STRING
-          return CmdLiteralString( t, t->String )
+          return CmdLiteralString( t, (t as LiteralStringToken).value )
       endWhich
 
       throw t.error( "Unexpected $." (t.describe) )

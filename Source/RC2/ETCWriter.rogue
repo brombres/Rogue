@@ -1,0 +1,60 @@
+$include "ETC.rogue"
+
+class ETCWriter
+  PROPERTIES
+    buffer = StringBuilder(1024)
+
+  METHODS
+    method write_byte( value:Integer )->this
+      buffer.print( (value & 255)->Character )
+      return this
+
+    method write_integer_x( value:Integer )->ETCWriter
+      if (value >= -64 and value <= 127)
+        # 0ddd dddd (0..127) OR
+        # 11dd dddd (-64..-1)
+        write_byte( value )
+
+      elseIf (value >= -0x1000 and value < 0x1000)
+        # 1000 cccc  dddddddd - 12-bit signed value in 2 bytes
+        value &= 0xFFF
+        write_byte( 0x80 | (value:>>:8) )
+        write_byte( value )
+
+      elseIf (value >= -0x100000 and value < 0x100000)
+        # 1001 bbbb  cccccccc  dddddddd - 20-bit signed value in 3 bytes
+        value &= 0xFffFF
+        write_byte( 0x90 | (value:>>:16) )
+        write_byte( value:>>:8 )
+        write_byte( value )
+
+      elseIf (value >= -0x10000000 and value < 0x10000000)
+        # 1010 aaaa  bbbbbbbb  cccccccc  dddddddd - 28-bit signed value in 4 bytes
+        value &= 0xfFFffFF
+        write_byte( 0xA0 | (value:>>:24) )
+        write_byte( value:>>:16 )
+        write_byte( value:>>:8 )
+        write_byte( value )
+
+      else
+        # 1011 xxxx  aaaaaaaa bbbbbbbb cccccccc dddddddd - 32-bit value in 5 bytes
+        write_byte( 0xB0 )
+        write_byte( value:>>:24 )
+        write_byte( value:>>:16 )
+        write_byte( value:>>:8 )
+        write_byte( value )
+      endIf
+
+      return this
+
+    method write_integer( value:Integer )->this
+        write_byte( value:>>:24 )
+        write_byte( value:>>:16 )
+        write_byte( value:>>:8 )
+        write_byte( value )
+      return this
+
+    method to->String
+      return buffer->String
+endClass
+
