@@ -22,7 +22,7 @@ RogueVM* RogueVM_create()
   THIS->type_Integer        = RogueVM_create_type( THIS, 0, "Integer", sizeof(RogueInteger) );
   THIS->type_ObjectArray    = RogueTypeObjectArray_create( THIS );
   THIS->type_ObjectList     = RogueTypeObjectList_create( THIS );
-  THIS->type_ParseReader    = RogueTypeParseReader_create( THIS );
+  THIS->type_ETCReader      = RogueTypeETCReader_create( THIS );
   THIS->type_String         = RogueTypeString_create( THIS );
   THIS->type_Table          = RogueTypeTable_create( THIS );
   THIS->type_TableEntry     = RogueTypeTableEntry_create( THIS );
@@ -166,6 +166,8 @@ RogueString* RogueVM_error_string( RogueVM* THIS )
 {
   RogueString* result;
   const char* bar;
+  RogueInteger line = 0;
+  RogueInteger column = 0;
 
   RogueStringBuilder buffer;
   RogueStringBuilder_init( &buffer, THIS, -1 );
@@ -177,12 +179,12 @@ RogueString* RogueVM_error_string( RogueVM* THIS )
   {
     RogueStringBuilder_print_c_string( &buffer, " in " );
     RogueStringBuilder_print_object( &buffer, THIS->error_filepath );
-    if (THIS->error_position.line)
+    if (line)
     {
       RogueStringBuilder_print_c_string( &buffer, " line " );
-      RogueStringBuilder_print_integer( &buffer, THIS->error_position.line );
+      RogueStringBuilder_print_integer( &buffer, line );
       RogueStringBuilder_print_c_string( &buffer, ", column " );
-      RogueStringBuilder_print_integer( &buffer, THIS->error_position.column );
+      RogueStringBuilder_print_integer( &buffer, column );
     }
     RogueStringBuilder_print_character( &buffer, ':' );
   }
@@ -206,6 +208,8 @@ void RogueVM_log_error( RogueVM* THIS )
 RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
 {
   RogueLogical success = 1;
+
+  /*
   RogueParser* parser;
 
   ROGUE_TRY(THIS)
@@ -221,6 +225,8 @@ RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
   ROGUE_END_TRY(THIS)
 
   RogueParser_delete( parser );
+  */
+
   return success;
 }
 

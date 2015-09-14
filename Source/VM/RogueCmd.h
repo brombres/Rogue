@@ -51,9 +51,6 @@ struct RogueCmd
 {
   RogueAllocation allocation;
   RogueCmdType*   type;
-  RogueString*    filepath;
-  RogueInteger    line;
-  RogueInteger    column;
 };
 
 struct RogueCmdStatementList

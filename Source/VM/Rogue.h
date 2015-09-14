@@ -109,15 +109,13 @@ typedef enum   RogueIntrinsicFnType   RogueIntrinsicFnType;
 typedef struct RogueList              RogueList;
 typedef struct RogueObject            RogueObject;
 typedef struct RogueParsePosition     RogueParsePosition;
-typedef struct RogueParseReader       RogueParseReader;
-typedef struct RogueParser            RogueParser;
-typedef enum   RogueCmdID         RogueCmdID;
+typedef struct RogueETCReader         RogueETCReader;
+typedef enum   RogueCmdID             RogueCmdID;
 typedef struct RogueType              RogueType;
 typedef struct RogueString            RogueString;
 typedef struct RogueStringBuilder     RogueStringBuilder;
 typedef struct RogueTable             RogueTable;
 typedef struct RogueTableEntry        RogueTableEntry;
-typedef struct RogueTokenizer         RogueTokenizer;
 typedef struct RogueVM                RogueVM;
 typedef struct RogueVMArray           RogueVMArray;
 typedef struct RogueVMList            RogueVMList;
@@ -129,7 +127,6 @@ typedef struct RogueVMTableReader     RogueVMTableReader;
 //struct Scope;
 //struct StringBuilder;
 //struct String;
-//struct Tokenizer;
 //
 
 //-----------------------------------------------------------------------------
@@ -160,10 +157,8 @@ typedef struct RogueVMTableReader     RogueVMTableReader;
 #include "RogueString.h"
 #include "RogueType.h"
 #include "RogueETC.h"
-#include "RogueParseReader.h"
-#include "RogueTokenizer.h"
+#include "RogueETCReader.h"
 #include "RogueCmd.h"
-#include "RogueParser.h"
 #include "RogueVM.h"
 #include "RogueVMObject.h"
 #include "RogueVMList.h"

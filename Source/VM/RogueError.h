@@ -32,9 +32,7 @@
     vm->error_handler = local_error_handler.previous_jump_buffer; \
   }
 
-#define ROGUE_THROW(vm,filepath,position,message) \
-  vm->error_filepath = filepath; \
-  vm->error_position = position; \
+#define ROGUE_THROW(vm,message) \
   if (message && ((char*)message)[0]) RogueStringBuilder_print_c_string( &vm->error_message_builder, message ); \
   ROGUE_LONGJMP( vm->error_handler->info, 1 )
 

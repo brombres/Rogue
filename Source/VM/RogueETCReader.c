@@ -1,28 +1,26 @@
 //=============================================================================
-//  RogueParseReader.c
+//  RogueETCReader.c
 //
 //  2015.09.03 by Abe Pralle
 //=============================================================================
 #include "Rogue.h"
 
 //-----------------------------------------------------------------------------
-//  ParseReader Type
+//  ETCReader Type
 //-----------------------------------------------------------------------------
-RogueType* RogueTypeParseReader_create( RogueVM* vm )
+RogueType* RogueTypeETCReader_create( RogueVM* vm )
 {
-  RogueType* THIS = RogueVM_create_type( vm, 0, "ParseReader", sizeof(RogueParseReader) );
+  RogueType* THIS = RogueVM_create_type( vm, 0, "ETCReader", sizeof(RogueETCReader) );
   return THIS;
 }
 
 //-----------------------------------------------------------------------------
-//  ParseReader Object
+//  ETCReader Object
 //-----------------------------------------------------------------------------
-RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath )
+RogueETCReader* RogueETCReader_create( RogueVM* vm, RogueString* filepath )
 {
-  RogueParseReader* reader = RogueObject_create( vm->type_ParseReader, -1 );
+  RogueETCReader* reader = RogueObject_create( vm->type_ETCReader, -1 );
   reader->filepath = RogueVM_consolidate_string( vm, filepath );
-  reader->position.line = 1;
-  reader->position.column = 1;
 
   {
     RogueInteger size;
@@ -51,7 +49,7 @@ RogueParseReader* RogueParseReader_create( RogueVM* vm, RogueString* filepath )
   return reader;
 }
 
-int RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch )
+int RogueETCReader_consume( RogueETCReader* THIS, RogueCharacter ch )
 {
   RogueInteger index = THIS->position.index;
   if (index == THIS->count) return 0;
@@ -60,7 +58,7 @@ int RogueParseReader_consume( RogueParseReader* THIS, RogueCharacter ch )
   return 1;
 }
 
-int RogueParseReader_consume_whitespace( RogueParseReader* THIS )
+int RogueETCReader_consume_whitespace( RogueETCReader* THIS )
 {
   int consumed_any = 0;
   int count = THIS->count;
@@ -82,12 +80,12 @@ int RogueParseReader_consume_whitespace( RogueParseReader* THIS )
   return consumed_any;
 }
 
-int RogueParseReader_has_another( RogueParseReader* THIS )
+int RogueETCReader_has_another( RogueETCReader* THIS )
 {
   return (THIS->position.index < THIS->count);
 }
 
-RogueLogical RogueParseReader_next_is_digit( RogueParseReader* THIS, RogueInteger base )
+RogueLogical RogueETCReader_next_is_digit( RogueETCReader* THIS, RogueInteger base )
 {
   RogueCharacter ch;
   RogueInteger index = THIS->position.index;
@@ -101,14 +99,14 @@ RogueLogical RogueParseReader_next_is_digit( RogueParseReader* THIS, RogueIntege
   return 0;
 }
 
-RogueCharacter RogueParseReader_peek( RogueParseReader* THIS, RogueInteger lookahead )
+RogueCharacter RogueETCReader_peek( RogueETCReader* THIS, RogueInteger lookahead )
 {
   RogueInteger index = THIS->position.index + lookahead;
   if (index >= THIS->count) return 0;
   return THIS->data->characters[ index ];
 }
 
-RogueCharacter RogueParseReader_read( RogueParseReader* THIS )
+RogueCharacter RogueETCReader_read( RogueETCReader* THIS )
 {
   RogueCharacter result = THIS->data->characters[ THIS->position.index++ ];
   switch (result)
@@ -128,9 +126,9 @@ RogueCharacter RogueParseReader_read( RogueParseReader* THIS )
   }
 }
 
-RogueInteger RogueParseReader_read_digit( RogueParseReader* THIS )
+RogueInteger RogueETCReader_read_digit( RogueETCReader* THIS )
 {
-  RogueInteger digit = RogueParseReader_read( THIS );
+  RogueInteger digit = RogueETCReader_read( THIS );
 
   if (digit >= '0' && digit <= '9') digit -= '0';
   else if (digit >= 'a' && digit <= 'z') digit = 10 + (digit - 'a');

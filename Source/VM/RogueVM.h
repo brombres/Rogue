@@ -32,7 +32,7 @@ struct RogueVM
   RogueType*         type_Integer;
   RogueType*         type_ObjectArray;
   RogueType*         type_ObjectList;
-  RogueType*         type_ParseReader;
+  RogueType*         type_ETCReader;
   RogueType*         type_String;
   RogueType*         type_Table;
   RogueType*         type_TableEntry;
