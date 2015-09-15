@@ -22,7 +22,6 @@ RogueVM* RogueVM_create()
   THIS->type_Integer        = RogueVM_create_type( THIS, 0, "Integer", sizeof(RogueInteger) );
   THIS->type_ObjectArray    = RogueTypeObjectArray_create( THIS );
   THIS->type_ObjectList     = RogueTypeObjectList_create( THIS );
-  THIS->type_ETCReader      = RogueTypeETCReader_create( THIS );
   THIS->type_String         = RogueTypeString_create( THIS );
   THIS->type_Table          = RogueTypeTable_create( THIS );
   THIS->type_TableEntry     = RogueTypeTableEntry_create( THIS );

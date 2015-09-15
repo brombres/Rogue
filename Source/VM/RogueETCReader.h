@@ -8,30 +8,21 @@
 #define ROGUE_READER_H
 
 //-----------------------------------------------------------------------------
-//  ETCReader Type
-//-----------------------------------------------------------------------------
-RogueType* RogueTypeETCReader_create( RogueVM* vm );
-
-//-----------------------------------------------------------------------------
-//  ETCReader Object
+//  ETCReader
 //-----------------------------------------------------------------------------
 struct RogueETCReader
 {
-  RogueObject        object;
+  RogueAllocation    allocation;
   RogueString*       filepath;
   RogueInteger       position;
   RogueInteger       count;
-  RogueArray*        data;
+  RogueVMArray*      data;
 };
 
-RogueETCReader* RogueETCReader_create( RogueVM* vm, RogueString* filepath );
+RogueETCReader* RogueETCReader_create_with_file( RogueVM* vm, RogueString* filepath );
 
-RogueLogical   RogueETCReader_consume( RogueETCReader* THIS, RogueCharacter ch );
-RogueLogical   RogueETCReader_consume_whitespace( RogueETCReader* THIS );
-RogueLogical   RogueETCReader_has_another( RogueETCReader* THIS );
-RogueLogical   RogueETCReader_next_is_digit( RogueETCReader* THIS, RogueInteger base );
-RogueCharacter RogueETCReader_peek( RogueETCReader* THIS, RogueInteger lookahead );
-RogueCharacter RogueETCReader_read( RogueETCReader* THIS );
-RogueInteger   RogueETCReader_read_digit( RogueETCReader* THIS );
+RogueInteger    RogueETCReader_read_byte( RogueETCReader* THIS );
+RogueLogical    RogueETCReader_has_another( RogueETCReader* THIS );
+RogueInteger    RogueETCReader_read_integer_x( RogueETCReader* THIS );
 
 #endif // ROGUE_READER_H

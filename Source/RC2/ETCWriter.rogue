@@ -15,21 +15,21 @@ class ETCWriter
         # 11dd dddd (-64..-1)
         write_byte( value )
 
-      elseIf (value >= -0x1000 and value < 0x1000)
-        # 1000 cccc  dddddddd - 12-bit signed value in 2 bytes
+      elseIf (value >= -0x800 and value < 0x800)
+        # 1000 cccc  dddddddd - 12-bit SIGNED value in 2 bytes
         value &= 0xFFF
         write_byte( 0x80 | (value:>>:8) )
         write_byte( value )
 
-      elseIf (value >= -0x100000 and value < 0x100000)
-        # 1001 bbbb  cccccccc  dddddddd - 20-bit signed value in 3 bytes
+      elseIf (value >= -0x80000 and value < 0x80000)
+        # 1001 bbbb  cccccccc  dddddddd - 20-bit SIGNED value in 3 bytes
         value &= 0xFffFF
         write_byte( 0x90 | (value:>>:16) )
         write_byte( value:>>:8 )
         write_byte( value )
 
-      elseIf (value >= -0x10000000 and value < 0x10000000)
-        # 1010 aaaa  bbbbbbbb  cccccccc  dddddddd - 28-bit signed value in 4 bytes
+      elseIf (value >= -0x8000000 and value < 0x8000000)
+        # 1010 aaaa  bbbbbbbb  cccccccc  dddddddd - 28-bit SIGNED value in 4 bytes
         value &= 0xfFFffFF
         write_byte( 0xA0 | (value:>>:24) )
         write_byte( value:>>:16 )
@@ -37,7 +37,7 @@ class ETCWriter
         write_byte( value )
 
       else
-        # 1011 xxxx  aaaaaaaa bbbbbbbb cccccccc dddddddd - 32-bit value in 5 bytes
+        # 1011 xxxx  aaaaaaaa bbbbbbbb cccccccc dddddddd - 32-bit signed value in 5 bytes
         write_byte( 0xB0 )
         write_byte( value:>>:24 )
         write_byte( value:>>:16 )

@@ -6,134 +6,107 @@
 #include "Rogue.h"
 
 //-----------------------------------------------------------------------------
-//  ETCReader Type
-//-----------------------------------------------------------------------------
-RogueType* RogueTypeETCReader_create( RogueVM* vm )
-{
-  RogueType* THIS = RogueVM_create_type( vm, 0, "ETCReader", sizeof(RogueETCReader) );
-  return THIS;
-}
-
-//-----------------------------------------------------------------------------
 //  ETCReader Object
 //-----------------------------------------------------------------------------
-RogueETCReader* RogueETCReader_create( RogueVM* vm, RogueString* filepath )
+RogueETCReader* RogueETCReader_create_with_file( RogueVM* vm, RogueString* filepath )
 {
-  RogueETCReader* reader = RogueObject_create( vm->type_ETCReader, -1 );
+  RogueETCReader* reader = RogueVMObject_create( vm, sizeof(RogueETCReader) );
   reader->filepath = RogueVM_consolidate_string( vm, filepath );
 
   {
     RogueInteger size;
     FILE* fp = fopen( RogueString_to_c_string(filepath), "rb" );
-    if (fp)
+    if ( !fp )
     {
-      RogueArray* file_bytes;
-      RogueInteger decoded_count;
-
-      fseek( fp, 0, SEEK_END );
-      size = (RogueInteger) ftell( fp );
-      fseek( fp, 0, SEEK_SET );
-
-      file_bytes = RogueByteArray_create( vm, size );
-      fread( file_bytes->bytes, 1, size, fp );
-      fclose( fp );
-
-      decoded_count = RogueUTF8_decoded_count( (char*) file_bytes->bytes, size );
-      reader->data = RogueCharacterArray_create( vm, decoded_count );
-      RogueUTF8_decode( (char*) file_bytes->bytes, size, reader->data->characters );
-
-      reader->count = size;
+      vm->error_filepath = filepath;
+      ROGUE_THROW( vm, "Unable to open file for reading." );
     }
+
+    fseek( fp, 0, SEEK_END );
+    size = (RogueInteger) ftell( fp );
+    fseek( fp, 0, SEEK_SET );
+
+    reader->data = RogueVMArray_create( vm, 1, size );
+    fread( reader->data->bytes, 1, size, fp );
+    fclose( fp );
+
+    reader->count = size;
   }
 
   return reader;
 }
 
-int RogueETCReader_consume( RogueETCReader* THIS, RogueCharacter ch )
+RogueInteger RogueETCReader_read_byte( RogueETCReader* THIS )
 {
-  RogueInteger index = THIS->position.index;
-  if (index == THIS->count) return 0;
-  if (ch != THIS->data->characters[index]) return 0;
-  ++THIS->position.index;
-  return 1;
-}
-
-int RogueETCReader_consume_whitespace( RogueETCReader* THIS )
-{
-  int consumed_any = 0;
-  int count = THIS->count;
-  int i = THIS->position.index;
-  while (i < count)
+  int index;
+  if ((index = ++THIS->position) > THIS->count)
   {
-    RogueCharacter ch = THIS->data->characters[i];
-    if (ch <= 32 || ch == 127)
-    {
-      if (ch == '\n') return consumed_any;
-      consumed_any = 1;
-    }
-    else
-    {
-      return consumed_any;
-    }
-    i = ++THIS->position.index;
+    --THIS->position;
+    return -1;
   }
-  return consumed_any;
+  return THIS->data->bytes[index-1];
 }
 
-int RogueETCReader_has_another( RogueETCReader* THIS )
+RogueLogical RogueETCReader_has_another( RogueETCReader* THIS )
 {
-  return (THIS->position.index < THIS->count);
+  return (THIS->position < THIS->count);
 }
 
-RogueLogical RogueETCReader_next_is_digit( RogueETCReader* THIS, RogueInteger base )
+RogueInteger RogueETCReader_read_integer_x( RogueETCReader* THIS )
 {
-  RogueCharacter ch;
-  RogueInteger index = THIS->position.index;
-
-  if (index >= THIS->count) return 0;
-
-  ch = THIS->data->characters[ index ];
-  if (ch >= '0' && ch <= '9') return 1;
-  if (ch >= 'a' && ch <= 'z' && ((ch-'a')+10) < base) return 1;
-  if (ch >= 'A' && ch <= 'Z' && ((ch-'A')+10) < base) return 1;
-  return 0;
-}
-
-RogueCharacter RogueETCReader_peek( RogueETCReader* THIS, RogueInteger lookahead )
-{
-  RogueInteger index = THIS->position.index + lookahead;
-  if (index >= THIS->count) return 0;
-  return THIS->data->characters[ index ];
-}
-
-RogueCharacter RogueETCReader_read( RogueETCReader* THIS )
-{
-  RogueCharacter result = THIS->data->characters[ THIS->position.index++ ];
-  switch (result)
+  RogueInteger b1 = RogueETCReader_read_byte( THIS );
+  if (b1 <= 0x7F)
   {
-    case '\t':
-      THIS->position.column += 2;
-      return result;
-
-    case '\n':
-      THIS->position.column = 1;
-      ++THIS->position.line;
-      return result;
-
-    default:
-      ++THIS->position.column;
-      return result;
+    // Use directly as 8-bit signed number (positive)
+    // 0ddddddd
+    return b1;
   }
-}
+  else if ((b1 & 0xc0) == 0xc0)
+  {
+    // Use directly as 8-bit signed number (negative)
+    // 11dddddd
+    return (char) b1;
+  }
+  else
+  {
+    switch (b1 & 0xf0)
+    {
+      case 0x80:
+      {
+        // 1000cccc  dddddddd - 12-bit SIGNED value in 2 bytes
+        RogueInteger result = ((b1 & 0xF) << 8) | RogueETCReader_read_byte( THIS );
+        if (result <= 0x7FF) return result;  // 0 or positive
+        return result - 0x1000;  // 0x800..0xFFF -> -0x800...-1
+      }
+      
+      case 0x81:
+      {
+        // 1001bbbb  cccccccc  dddddddd - 20-bit SIGNED value in 3 bytes
+        RogueInteger result = ((b1 & 0xF) << 8) | RogueETCReader_read_byte( THIS );
+        result |= RogueETCReader_read_byte( THIS );
+        if (result <= 0x7FFFF) return result;  // 0 or positive
+        return result - 0x100000;  // 0x80000..0xFFFFF -> -0x80000...-1
+      }
 
-RogueInteger RogueETCReader_read_digit( RogueETCReader* THIS )
-{
-  RogueInteger digit = RogueETCReader_read( THIS );
+      case 0x82:
+      {
+        // 1010aaaa bbbbbbbb  cccccccc  dddddddd - 28-bit SIGNED value in 4 bytes
+        RogueInteger result = ((b1 & 0xF) << 8) | RogueETCReader_read_byte( THIS );
+        result |= RogueETCReader_read_byte( THIS );
+        result |= RogueETCReader_read_byte( THIS );
+        if (result <= 0x7FFFFFF) return result;  // 0 or positive
+        return result - 0x10000000;  // 0x8000000..0xFFFFFFF -> -0x8000000...-1
+      }
 
-  if (digit >= '0' && digit <= '9') digit -= '0';
-  else if (digit >= 'a' && digit <= 'z') digit = 10 + (digit - 'a');
-  else if (digit >= 'A' && digit <= 'Z') digit = 10 + (digit - 'A');
-
-  return digit;
+      default:
+      {
+        // 1010xxxx aaaaaaaa bbbbbbbb  cccccccc  dddddddd - 32-bit signed value in 5 bytes
+        RogueInteger result = RogueETCReader_read_byte( THIS );
+        result |= RogueETCReader_read_byte( THIS );
+        result |= RogueETCReader_read_byte( THIS );
+        return (result | RogueETCReader_read_byte(THIS));
+      }
+    }
+  }
 }
 

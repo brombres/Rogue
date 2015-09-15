@@ -20,7 +20,6 @@ struct RogueVM
 
   RogueErrorHandler* error_handler;
   RogueString*       error_filepath;
-  RogueParsePosition error_position;
   RogueStringBuilder error_message_builder;
 
   RogueVMList*       type_list;

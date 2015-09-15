@@ -5,21 +5,25 @@ int main()
 {
   RogueVM* vm = RogueVM_create();
 
-  RogueVM_load_file( vm, "Test.rogue" );
+  //RogueVM_load_file( vm, "../RC2/Test.etc" );
 
-  /*
-  RogueTokenizer* tokenizer = RogueTokenizer_create_with_file( vm, ROGUE_STRING(vm,"Test.rogue") );
-  RogueTokenizer_tokenize( tokenizer );
-
-  printf( "-------------------------------------------------------------------------------\n" );
-  while (RogueTokenizer_has_another(tokenizer))
+  ROGUE_TRY(vm)
   {
-    RogueCmd* cmd = RogueTokenizer_read( tokenizer );
-    cmd->type->print( cmd );
-    printf("\n");
+    RogueETCReader* reader = RogueETCReader_create_with_file( vm, ROGUE_STRING(vm,"../RC2/Test.etc") );
+
+    printf( "-------------------------------------------------------------------------------\n" );
+    printf( "%c", RogueETCReader_read_byte(reader) );
+    printf( "%c", RogueETCReader_read_byte(reader) );
+    printf( "%c", RogueETCReader_read_byte(reader) );
+    printf( "\nVersion %d\n", RogueETCReader_read_integer_x(reader) );
+    printf( "-------------------------------------------------------------------------------\n" );
   }
-  printf( "-------------------------------------------------------------------------------\n" );
-  */
+  ROGUE_CATCH(vm)
+  {
+    RogueVM_log_error( vm );
+    return 1;
+  }
+  ROGUE_END_TRY(vm)
 
   RogueVM_collect_garbage( vm );
   RogueVM_delete( vm );
