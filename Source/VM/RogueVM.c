@@ -206,15 +206,13 @@ void RogueVM_log_error( RogueVM* THIS )
 
 RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
 {
-  RogueLogical success = 1;
-
-  /*
-  RogueParser* parser;
+  RogueLogical success;
 
   ROGUE_TRY(THIS)
   {
-    parser = RogueParser_create_with_filepath( THIS, filepath );
-    RogueParser_parse_elements( parser );
+    RogueETCReader* reader = RogueETCReader_create_with_file( THIS, ROGUE_STRING(THIS,"../RC2/Test.etc") );
+    RogueETCReader_load( reader );
+    success = 1;
   }
   ROGUE_CATCH(THIS)
   {
@@ -222,9 +220,6 @@ RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
     success = 0;
   }
   ROGUE_END_TRY(THIS)
-
-  RogueParser_delete( parser );
-  */
 
   return success;
 }

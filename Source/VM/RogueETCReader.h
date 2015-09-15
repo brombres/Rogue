@@ -13,6 +13,7 @@
 struct RogueETCReader
 {
   RogueAllocation    allocation;
+  RogueVM*           vm;
   RogueString*       filepath;
   RogueInteger       position;
   RogueInteger       count;
@@ -21,8 +22,11 @@ struct RogueETCReader
 
 RogueETCReader* RogueETCReader_create_with_file( RogueVM* vm, RogueString* filepath );
 
-RogueInteger    RogueETCReader_read_byte( RogueETCReader* THIS );
 RogueLogical    RogueETCReader_has_another( RogueETCReader* THIS );
+void            RogueETCReader_load( RogueETCReader* THIS );
+RogueInteger    RogueETCReader_read_byte( RogueETCReader* THIS );
 RogueInteger    RogueETCReader_read_integer_x( RogueETCReader* THIS );
+
+RogueCmdStatementList*  RogueETCReader_load_statement_list( RogueETCReader* THIS );
 
 #endif // ROGUE_READER_H

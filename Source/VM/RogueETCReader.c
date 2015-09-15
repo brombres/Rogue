@@ -11,6 +11,7 @@
 RogueETCReader* RogueETCReader_create_with_file( RogueVM* vm, RogueString* filepath )
 {
   RogueETCReader* reader = RogueVMObject_create( vm, sizeof(RogueETCReader) );
+  reader->vm = vm;
   reader->filepath = RogueVM_consolidate_string( vm, filepath );
 
   {
@@ -36,6 +37,33 @@ RogueETCReader* RogueETCReader_create_with_file( RogueVM* vm, RogueString* filep
   return reader;
 }
 
+RogueLogical RogueETCReader_has_another( RogueETCReader* THIS )
+{
+  return (THIS->position < THIS->count);
+}
+
+void RogueETCReader_load( RogueETCReader* THIS )
+{
+  printf( "-------------------------------------------------------------------------------\n" );
+  printf( "%c", RogueETCReader_read_byte(THIS) );
+  printf( "%c", RogueETCReader_read_byte(THIS) );
+  printf( "%c", RogueETCReader_read_byte(THIS) );
+  printf( "\nVersion %d\n", RogueETCReader_read_integer_x(THIS) );
+  printf( "-------------------------------------------------------------------------------\n" );
+
+  {
+    RogueInteger class_definition_count = RogueETCReader_read_integer_x( THIS );
+    printf( "Class definition count: %d\n", class_definition_count );
+  }
+
+  {
+    RogueCmdStatementList* immediate_commands;
+
+    immediate_commands = RogueETCReader_load_statement_list( THIS );
+    printf( "Immediate statement count: %d\n", immediate_commands->statements->count );
+  }
+}
+
 RogueInteger RogueETCReader_read_byte( RogueETCReader* THIS )
 {
   int index;
@@ -45,11 +73,6 @@ RogueInteger RogueETCReader_read_byte( RogueETCReader* THIS )
     return -1;
   }
   return THIS->data->bytes[index-1];
-}
-
-RogueLogical RogueETCReader_has_another( RogueETCReader* THIS )
-{
-  return (THIS->position < THIS->count);
 }
 
 RogueInteger RogueETCReader_read_integer_x( RogueETCReader* THIS )
@@ -110,3 +133,13 @@ RogueInteger RogueETCReader_read_integer_x( RogueETCReader* THIS )
   }
 }
 
+RogueCmdStatementList*  RogueETCReader_load_statement_list( RogueETCReader* THIS )
+{
+  RogueCmdStatementList* list = RogueCmdStatementList_create( THIS->vm );
+
+  RogueInteger count = RogueETCReader_read_integer_x( THIS );
+
+  // TODO: read statements
+
+  return list;
+}

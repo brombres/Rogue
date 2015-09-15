@@ -59,7 +59,7 @@ struct RogueCmdStatementList
   RogueVMList* statements;
 };
 
-void RogueCmdStatementList_init( void* cmd );
+RogueCmdStatementList* RogueCmdStatementList_create( RogueVM* vm );
 
 struct RogueCmdLiteralInteger
 {
