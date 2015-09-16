@@ -3,9 +3,14 @@ $include "ETCWriter.rogue"
 
 class Program [singleton]
   PROPERTIES
-    immediate_statements = CmdStatementList()
+    type_Integer : Type
+
+    immediate_commands = CmdStatementList()
 
   METHODS
+    method init
+      type_Integer = Type( Token.default_t, "Integer", Attribute.IS_PRIMITIVE );
+
     method generate_etc->String
       local writer = ETCWriter()
 
@@ -16,11 +21,11 @@ class Program [singleton]
 
       writer.write_integer_x( 0 )  # No class definitions
 
-      immediate_statements.write( writer )
-      immediate_statements.statements.clear
+      immediate_commands.write( writer )
+      immediate_commands.statements.clear
 
       return writer->String
 
     method resolve
-      immediate_statements.resolve( Scope() )
+      immediate_commands.resolve( Scope() )
 endClass

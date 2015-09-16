@@ -1,6 +1,9 @@
 $include "TokenType.rogue"
 
 class Token
+  SETTINGS
+    default_t = Token( 0, "[Internal]" )
+
   PROPERTIES
     filepath : String
     type     : Integer
@@ -9,6 +12,8 @@ class Token
 
   METHODS
     method init( type )
+
+    method init( type, filepath )
 
     method describe->String
       return describe(type)

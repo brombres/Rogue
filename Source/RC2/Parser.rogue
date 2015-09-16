@@ -34,7 +34,7 @@ class Parser
     method parse_elements
       while (not consume(TokenType.EOI))
         local cmd = parse_statement
-        Program.immediate_statements.add( cmd )
+        Program.immediate_commands.add( cmd )
       endWhile
 
     method parse_statement->Cmd

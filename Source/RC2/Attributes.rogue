@@ -1,0 +1,11 @@
+class Attribute
+  ENUMERATE
+    IS_PRIMITIVE = 1
+endClass
+
+class Attributes
+  PROPERTIES
+    flags : Integer
+
+  METHODS
+endClass
