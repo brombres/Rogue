@@ -84,7 +84,7 @@ class Tokenizer
         return true
       endIf
 
-      throw RogueError( "Unexpected character '$'." (ch), filepath, line, column )
+      tokenize_symbol
       return true
 
     method tokenize_identifier
@@ -131,6 +131,21 @@ class Tokenizer
       must_consume( '"' )
 
       add( LiteralStringToken(buffer->String) )
+
+    method tokenize_symbol
+      local ch = reader.read
+
+      local type = -1
+      which (ch)
+        case '+'
+          type = TokenType.SYMBOL_PLUS
+      endWhich
+
+      if (type != -1)
+        add( Token(type) )
+      else
+        throw RogueError( "Unexpected character '$'." (ch), filepath, line, column )
+      endIf
 
 endClass
 

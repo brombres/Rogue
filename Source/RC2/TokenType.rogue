@@ -6,5 +6,6 @@ class TokenType
     LITERAL_INTEGER
     LITERAL_STRING
     KEYWORD_LOG
+    SYMBOL_PLUS
     SYMBOL_SEMICOLON
 endClass

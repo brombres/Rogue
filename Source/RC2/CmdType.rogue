@@ -1,0 +1,8 @@
+class CmdType
+  ENUMERATE
+    STATEMENT_LIST
+    LOG
+    LITERAL_INTEGER
+    LITERAL_STRING
+    ADD
+endClass

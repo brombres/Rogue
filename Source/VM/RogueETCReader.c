@@ -206,6 +206,13 @@ void* RogueETCReader_load_expression( RogueETCReader* THIS )
     case ROGUE_CMD_LITERAL_STRING:
       return RogueCmdLiteralString_create( vm, RogueETCReader_read_string(THIS) );
 
+    case ROGUE_CMD_ADD:
+    {
+      RogueCmd* left  = RogueETCReader_load_expression( THIS );
+      RogueCmd* right = RogueETCReader_load_expression( THIS );
+      return RogueCmdBinaryOp_create( vm, ROGUE_CMD_ADD, left, right );
+    }
+
     default:
     {
       RogueVM* vm = THIS->vm;

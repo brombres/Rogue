@@ -43,8 +43,14 @@ class Token
         case TokenType.KEYWORD_LOG
           return "log"
 
+        case TokenType.LITERAL_INTEGER
+          return "literal integer"
+
         case TokenType.LITERAL_STRING
           return "literal string"
+
+        case TokenType.SYMBOL_PLUS
+          return "+"
 
         others
           return "(Token Type $)" (type)

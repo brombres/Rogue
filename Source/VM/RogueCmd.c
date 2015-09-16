@@ -109,6 +109,7 @@ RogueType* RogueCmd_type( void* THIS )
   switch (((RogueCmd*)THIS)->cmd_type)
   {
     case ROGUE_CMD_LITERAL_INTEGER:
+    case ROGUE_CMD_ADD:
       return vm->type_Integer;
 
     case ROGUE_CMD_LITERAL_STRING:
@@ -172,11 +173,15 @@ RogueInteger RogueCmd_execute_integer_op( void* THIS )
     case ROGUE_CMD_LITERAL_INTEGER:
       return ((RogueCmdLiteralInteger*)THIS)->value;
 
+    case ROGUE_CMD_ADD:
+      return RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->left ) +
+             RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->right );
+
     default:
     {
       RogueVM* vm = ((RogueCmd*)THIS)->vm;
       RogueStringBuilder_print_c_string( &vm->error_message_builder,
-          "[INTERNAL] RogueCmd_execute_string_op() not defined for Cmd type " );
+          "[INTERNAL] RogueCmd_execute_integer_op() not defined for Cmd type " );
       RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
       ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
     }

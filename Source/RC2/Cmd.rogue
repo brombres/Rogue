@@ -31,7 +31,7 @@ class CmdLiteralInteger : Cmd
     method init( t, value )
 
     method write( writer:ETCWriter )
-      writer.write_integer_x( ETC.CMD_LITERAL_INTEGER )
+      writer.write_integer_x( CmdType.LITERAL_INTEGER )
       writer.write_integer_x( value )
 endClass
 
@@ -43,7 +43,7 @@ class CmdLiteralString : Cmd
     method init( t, value )
 
     method write( writer:ETCWriter )
-      writer.write_integer_x( ETC.CMD_LITERAL_STRING )
+      writer.write_integer_x( CmdType.LITERAL_STRING )
       writer.write_integer_x( value.count )
       forEach (ch in value)
         writer.write_integer_x( ch )
@@ -58,7 +58,24 @@ class CmdLog : Cmd
     method init( t, operand )
 
     method write( writer:ETCWriter )
-      writer.write_integer_x( ETC.CMD_LOG )
+      writer.write_integer_x( CmdType.LOG )
       if (operand) operand.write( writer )
+endClass
+
+class CmdBinaryOp : Cmd
+  PROPERTIES
+    left  : Cmd
+    right : Cmd
+
+  METHODS
+    method init( t, left, right )
+endClass
+
+class CmdAdd : CmdBinaryOp
+  METHODS
+    method write( writer:ETCWriter )
+      writer.write_integer_x( CmdType.ADD )
+      left.write( writer )
+      right.write( writer )
 endClass
 

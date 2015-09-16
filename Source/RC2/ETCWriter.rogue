@@ -1,4 +1,4 @@
-$include "ETC.rogue"
+$include "CmdType.rogue"
 
 class ETCWriter
   PROPERTIES
