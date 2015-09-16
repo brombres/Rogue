@@ -174,7 +174,7 @@ void* RogueETCReader_load_statement( RogueETCReader* THIS )
   RogueInteger opcode = RogueETCReader_read_integer_x( THIS );
   switch (opcode)
   {
-    case ROGUE_CMD_LOG:
+    case ROGUE_CMD_LOG_VALUE:
     {
       RogueCmd* operand = RogueETCReader_load_expression( THIS );
       RogueType* type = RogueCmd_type( operand );

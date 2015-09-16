@@ -1,5 +1,3 @@
-$include "CmdType.rogue"
-
 class ETCWriter
   PROPERTIES
     buffer = StringBuilder(1024)

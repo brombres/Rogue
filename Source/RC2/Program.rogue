@@ -1,3 +1,4 @@
+$include "Type.rogue"
 $include "ETCWriter.rogue"
 
 class Program [singleton]
@@ -19,4 +20,7 @@ class Program [singleton]
       immediate_statements.statements.clear
 
       return writer->String
+
+    method resolve
+      immediate_statements.resolve( Scope() )
 endClass

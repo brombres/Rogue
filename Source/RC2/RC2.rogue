@@ -11,6 +11,8 @@ class RC2 [singleton]
       try
         include( "Test.rogue" )
 
+        Program.resolve
+
         local etc = Program.generate_etc
         File.save( "Test.etc", etc )
 

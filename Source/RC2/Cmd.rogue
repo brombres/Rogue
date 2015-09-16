@@ -1,8 +1,32 @@
+$include "Scope.rogue"
+
+class CmdType
+  ENUMERATE
+    STATEMENT_LIST
+    LOG
+    LOG_VALUE
+    LITERAL_INTEGER
+    LITERAL_STRING
+    ADD
+endClass
+
 class Cmd
   PROPERTIES
     t : Token
 
   METHODS
+    method require_value->Cmd
+      if (not type)
+        throw t.error( "Value expected but expression does not result in a value." );
+      endIf
+      return this
+
+    method resolve( scope:Scope )->Cmd
+      throw t.error( "[INTERNAL] $::resolve(Scope) is undefined." (type_name) )
+
+    method type->Type
+      return null
+
     method write( writer:ETCWriter )
       throw t.error( "[INTERNAL] $::write(ETCWriter) is undefined." (type_name) )
 endClass
@@ -15,6 +39,11 @@ class CmdStatementList
     method add( statement:Cmd )->this
       statements.add( statement )
       return this
+
+    method resolve( scope:Scope )
+      forEach (i of statements)
+        statements[i] = statements[i].resolve( scope )
+      endForEach
 
     method write( writer:ETCWriter )
       writer.write_integer_x( statements.count )
@@ -30,6 +59,9 @@ class CmdLiteralInteger : Cmd
   METHODS
     method init( t, value )
 
+    method resolve( scope:Scope )->Cmd
+      return this
+
     method write( writer:ETCWriter )
       writer.write_integer_x( CmdType.LITERAL_INTEGER )
       writer.write_integer_x( value )
@@ -41,6 +73,9 @@ class CmdLiteralString : Cmd
 
   METHODS
     method init( t, value )
+
+    method resolve( scope:Scope )->Cmd
+      return this
 
     method write( writer:ETCWriter )
       writer.write_integer_x( CmdType.LITERAL_STRING )
@@ -57,9 +92,17 @@ class CmdLog : Cmd
   METHODS
     method init( t, operand )
 
+    method resolve( scope:Scope )->Cmd
+      if (operand) operand = operand.resolve( scope )
+      return this
+
     method write( writer:ETCWriter )
-      writer.write_integer_x( CmdType.LOG )
-      if (operand) operand.write( writer )
+      if (operand)
+        writer.write_integer_x( CmdType.LOG_VALUE )
+        operand.write( writer )
+      else
+        writer.write_integer_x( CmdType.LOG )
+      endIf
 endClass
 
 class CmdBinaryOp : Cmd
@@ -73,6 +116,9 @@ endClass
 
 class CmdAdd : CmdBinaryOp
   METHODS
+    method resolve( scope:Scope )->Cmd
+      return this
+
     method write( writer:ETCWriter )
       writer.write_integer_x( CmdType.ADD )
       left.write( writer )
