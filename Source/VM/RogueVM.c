@@ -27,27 +27,8 @@ RogueVM* RogueVM_create()
   THIS->type_TableEntry     = RogueTypeTableEntry_create( THIS );
 
   THIS->c_string_buffer = RogueByteList_create( THIS, 200 );
-  THIS->global_commands = RogueVMList_create( THIS, 20, RogueVMTraceCmd );
+  THIS->immediate_commands = RogueCmdList_create( THIS, 20 );
   THIS->consolidation_table = RogueTable_create( THIS, 128 );
-
-  THIS->cmd_type_eol  = RogueCmdType_create( THIS, ROGUE_CMD_EOL, "[end of line]", sizeof(RogueCmd) );
-  THIS->cmd_type_statement_list = RogueCmdType_create( THIS, ROGUE_CMD_STATEMENT_LIST, "", sizeof(RogueCmdStatementList) );
-
-  THIS->cmd_type_literal_integer = RogueCmdType_create( THIS, ROGUE_CMD_LITERAL_INTEGER,
-      "[integer]", sizeof(RogueCmdLiteralInteger) );
-
-  THIS->cmd_type_symbol_close_paren = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_CLOSE_PAREN, ")", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_eq = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_EQ, "==", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_equals = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_EQUALS, "=", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_exclamation = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_EXCLAMATION, "!", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_ge = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_GE, ">=", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_gt = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_GT, ">", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_le = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_LE, ">=", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_lt = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_LT, "<", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_ne = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_NE, "!=", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_open_paren = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_OPEN_PAREN, "(", sizeof(RogueCmd) );
-  THIS->cmd_type_symbol_plus = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_PLUS, "+", sizeof(RogueCmdBinaryOp) );
-  THIS->cmd_type_symbol_pound = RogueCmdType_create( THIS, ROGUE_CMD_SYMBOL_POUND, "#", sizeof(RogueCmd) );
 
   return THIS;
 }
@@ -71,7 +52,7 @@ void RogueVM_collect_garbage( RogueVM* THIS )
     THIS->have_new_vm_objects = 0;
 
     // Trace known system objects
-    RogueVMList_trace( THIS->global_commands );
+    RogueCmd_trace( THIS->immediate_commands );
     RogueVMList_trace( THIS->type_list );
     RogueVMTable_trace( THIS->type_lookup );
 
@@ -212,6 +193,13 @@ RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
   {
     RogueETCReader* reader = RogueETCReader_create_with_file( THIS, ROGUE_STRING(THIS,"../RC2/Test.etc") );
     RogueETCReader_load( reader );
+
+    printf( "-------------------------------------------------------------------------------\n" );
+    RogueCmd_execute( THIS->immediate_commands );
+    printf( "-------------------------------------------------------------------------------\n" );
+
+    THIS->immediate_commands->statements->count = 0;
+
     success = 1;
   }
   ROGUE_CATCH(THIS)

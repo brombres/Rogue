@@ -26,7 +26,12 @@ RogueLogical    RogueETCReader_has_another( RogueETCReader* THIS );
 void            RogueETCReader_load( RogueETCReader* THIS );
 RogueInteger    RogueETCReader_read_byte( RogueETCReader* THIS );
 RogueInteger    RogueETCReader_read_integer_x( RogueETCReader* THIS );
+RogueString*    RogueETCReader_read_string( RogueETCReader* THIS );
 
-RogueCmdStatementList*  RogueETCReader_load_statement_list( RogueETCReader* THIS );
+RogueCmdList*   RogueETCReader_load_statement_list( RogueETCReader* THIS );
+void*           RogueETCReader_load_statement( RogueETCReader* THIS );
+void*           RogueETCReader_load_expression( RogueETCReader* THIS );
+
+void            RogueETCReader_throw_type_error( RogueETCReader* THIS, RogueType* type, RogueCmdType opcode );
 
 #endif // ROGUE_READER_H

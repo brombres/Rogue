@@ -44,12 +44,12 @@ RogueLogical RogueETCReader_has_another( RogueETCReader* THIS )
 
 void RogueETCReader_load( RogueETCReader* THIS )
 {
-  printf( "-------------------------------------------------------------------------------\n" );
-  printf( "%c", RogueETCReader_read_byte(THIS) );
-  printf( "%c", RogueETCReader_read_byte(THIS) );
-  printf( "%c", RogueETCReader_read_byte(THIS) );
-  printf( "\nVersion %d\n", RogueETCReader_read_integer_x(THIS) );
-  printf( "-------------------------------------------------------------------------------\n" );
+  RogueVM* vm = THIS->vm;
+
+  RogueETCReader_read_byte(THIS);  // 'E'
+  RogueETCReader_read_byte(THIS);  // 'T'
+  RogueETCReader_read_byte(THIS);  // 'C'
+  RogueETCReader_read_integer_x(THIS);  // Version 1
 
   {
     RogueInteger class_definition_count = RogueETCReader_read_integer_x( THIS );
@@ -57,10 +57,16 @@ void RogueETCReader_load( RogueETCReader* THIS )
   }
 
   {
-    RogueCmdStatementList* immediate_commands;
+    RogueInteger i;
+    RogueInteger count = RogueETCReader_read_integer_x( THIS );
 
-    immediate_commands = RogueETCReader_load_statement_list( THIS );
-    printf( "Immediate statement count: %d\n", immediate_commands->statements->count );
+    RogueVMList_reserve( vm->immediate_commands->statements, count );
+
+    for (i=0; i<count; ++i)
+    {
+      RogueCmd* cmd = RogueETCReader_load_statement( THIS );
+      RogueVMList_add( vm->immediate_commands->statements, cmd );
+    }
   }
 }
 
@@ -133,13 +139,92 @@ RogueInteger RogueETCReader_read_integer_x( RogueETCReader* THIS )
   }
 }
 
-RogueCmdStatementList*  RogueETCReader_load_statement_list( RogueETCReader* THIS )
+RogueString* RogueETCReader_read_string( RogueETCReader* THIS )
 {
-  RogueCmdStatementList* list = RogueCmdStatementList_create( THIS->vm );
-
+  RogueInteger i;
   RogueInteger count = RogueETCReader_read_integer_x( THIS );
+  RogueString* value = RogueString_create( THIS->vm, count );
+  RogueCharacter* dest = value->characters - 1;
+  for (i=0; i<count; ++i)
+  {
+    *(++dest) = (RogueCharacter) RogueETCReader_read_integer_x( THIS );
+  }
 
-  // TODO: read statements
+  return RogueVM_consolidate_string( THIS->vm, RogueString_update_hash_code(value) );
+}
+
+RogueCmdList*  RogueETCReader_load_statement_list( RogueETCReader* THIS )
+{
+  RogueInteger count = RogueETCReader_read_integer_x( THIS );
+  RogueCmdList* list = RogueCmdList_create( THIS->vm, count );
+  int i;
+
+  for (i=0; i<count; ++i)
+  {
+    RogueCmd* cmd = RogueETCReader_load_statement( THIS );
+    RogueVMList_add( list->statements, cmd );
+  }
 
   return list;
 }
+
+void* RogueETCReader_load_statement( RogueETCReader* THIS )
+{
+  RogueVM*     vm     = THIS->vm;
+  RogueInteger opcode = RogueETCReader_read_integer_x( THIS );
+  switch (opcode)
+  {
+    case ROGUE_CMD_LOG:
+    {
+      RogueCmd* operand = RogueETCReader_load_expression( THIS );
+      RogueType* type = RogueCmd_type( operand );
+
+      if (type == vm->type_Integer)     opcode = ROGUE_CMD_LOG_INTEGER;
+      else if (type == vm->type_String) opcode = ROGUE_CMD_LOG_STRING;
+      else RogueETCReader_throw_type_error( THIS, type, opcode );
+
+      return RogueCmdUnaryOp_create( vm, opcode, operand );
+    }
+
+    default:
+    {
+      RogueCmd* expression = RogueETCReader_load_expression( THIS );
+      return expression;
+    }
+  }
+}
+
+void* RogueETCReader_load_expression( RogueETCReader* THIS )
+{
+  RogueVM*     vm     = THIS->vm;
+  RogueInteger opcode = RogueETCReader_read_integer_x( THIS );
+  switch (opcode)
+  {
+    case ROGUE_CMD_LITERAL_STRING:
+      return RogueCmdLiteralString_create( vm, RogueETCReader_read_string(THIS) );
+
+    default:
+    {
+      RogueVM* vm = THIS->vm;
+      vm->error_filepath = THIS->filepath;
+      RogueStringBuilder_print_c_string( &vm->error_message_builder, "Invalid expression opcode: " );
+      RogueStringBuilder_print_integer( &vm->error_message_builder, opcode );
+      ROGUE_THROW( vm, "." );
+    }
+  }
+}
+
+void RogueETCReader_throw_type_error( RogueETCReader* THIS, RogueType* type, RogueCmdType opcode )
+{
+  RogueVM* vm = THIS->vm;
+  vm->error_filepath = THIS->filepath;
+  RogueStringBuilder_print_c_string( &vm->error_message_builder, "Invalid type " );
+  if (type)
+  {
+    RogueStringBuilder_print_c_string( &vm->error_message_builder, type->name );
+  }
+  RogueStringBuilder_print_c_string( &vm->error_message_builder, "for opcode " );
+  RogueStringBuilder_print_integer( &vm->error_message_builder, opcode );
+  ROGUE_THROW( vm, "." );
+}
+

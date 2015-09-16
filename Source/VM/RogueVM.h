@@ -16,7 +16,7 @@ struct RogueVM
   void*              objects;     // runtime objects
   RogueTable*        consolidation_table;
   RogueList*         c_string_buffer;
-  RogueVMList*       global_commands;
+  RogueCmdList*      immediate_commands;
 
   RogueErrorHandler* error_handler;
   RogueString*       error_filepath;
@@ -35,22 +35,6 @@ struct RogueVM
   RogueType*         type_String;
   RogueType*         type_Table;
   RogueType*         type_TableEntry;
-
-  RogueCmdType*      cmd_type_eol;
-  RogueCmdType*      cmd_type_statement_list;
-  RogueCmdType*      cmd_type_literal_integer;
-  RogueCmdType*      cmd_type_symbol_close_paren;
-  RogueCmdType*      cmd_type_symbol_exclamation;
-  RogueCmdType*      cmd_type_symbol_eq;
-  RogueCmdType*      cmd_type_symbol_equals;
-  RogueCmdType*      cmd_type_symbol_ge;
-  RogueCmdType*      cmd_type_symbol_gt;
-  RogueCmdType*      cmd_type_symbol_le;
-  RogueCmdType*      cmd_type_symbol_lt;
-  RogueCmdType*      cmd_type_symbol_ne;
-  RogueCmdType*      cmd_type_symbol_open_paren;
-  RogueCmdType*      cmd_type_symbol_plus;
-  RogueCmdType*      cmd_type_symbol_pound;
 };
 
 RogueVM* RogueVM_create();
