@@ -1,3 +1,5 @@
 log "Hello VM World!" 
+log 42
 log "Woot!"
+log 99
 

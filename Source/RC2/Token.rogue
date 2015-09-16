@@ -66,6 +66,21 @@ class IdentifierToken : Token
       return value
 endClass
 
+class LiteralIntegerToken : Token
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( value )
+      prior.init( TokenType.LITERAL_INTEGER )
+
+    method describe->String
+      return "literal integer"
+
+    method to->String
+      return "$" (value)
+endClass
+
 class LiteralStringToken : Token
   PROPERTIES
     value : String

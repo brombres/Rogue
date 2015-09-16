@@ -74,12 +74,17 @@ class Tokenizer
         return true
       endIf
 
+      if (ch >= '0' and ch <= '9')
+        tokenize_number
+        return true
+      endIf
+
       if (ch == '"')
         tokenize_string
         return true
       endIf
 
-      reader.read
+      throw RogueError( "Unexpected character '$'." (ch), filepath, line, column )
       return true
 
     method tokenize_identifier
@@ -99,6 +104,19 @@ class Tokenizer
       else
         add( IdentifierToken(id) )
       endIf
+
+    method tokenize_number
+      local whole = tokenize_integer
+      add( LiteralIntegerToken(whole) )
+
+    method tokenize_integer->Real
+      local result = 0.0
+      local ch = reader.peek
+      while (ch >= '0' and ch <= '9')
+        result = result * 10 + (reader.read - '0')
+        ch = reader.peek
+      endWhile
+      return result
 
     method tokenize_string
       buffer.clear

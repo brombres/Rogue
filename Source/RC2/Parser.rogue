@@ -60,6 +60,9 @@ class Parser
       local t = reader.read
 
       which (t.type)
+        case TokenType.LITERAL_INTEGER
+          return CmdLiteralInteger( t, (t as LiteralIntegerToken).value )
+
         case TokenType.LITERAL_STRING
           return CmdLiteralString( t, (t as LiteralStringToken).value )
       endWhich

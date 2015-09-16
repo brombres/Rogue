@@ -200,6 +200,9 @@ void* RogueETCReader_load_expression( RogueETCReader* THIS )
   RogueInteger opcode = RogueETCReader_read_integer_x( THIS );
   switch (opcode)
   {
+    case ROGUE_CMD_LITERAL_INTEGER:
+      return RogueCmdLiteralInteger_create( vm, RogueETCReader_read_integer_x(THIS) );
+
     case ROGUE_CMD_LITERAL_STRING:
       return RogueCmdLiteralString_create( vm, RogueETCReader_read_string(THIS) );
 

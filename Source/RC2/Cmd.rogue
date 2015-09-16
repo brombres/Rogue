@@ -23,6 +23,18 @@ class CmdStatementList
       endForEach
 endClass
 
+class CmdLiteralInteger : Cmd
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( t, value )
+
+    method write( writer:ETCWriter )
+      writer.write_integer_x( ETC.CMD_LITERAL_INTEGER )
+      writer.write_integer_x( value )
+endClass
+
 class CmdLiteralString : Cmd
   PROPERTIES
     value : String
