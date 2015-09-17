@@ -46,6 +46,8 @@ void RogueETCReader_load( RogueETCReader* THIS )
 {
   RogueVM* vm = THIS->vm;
 
+  vm->is_resolved = 0;
+
   RogueETCReader_read_byte(THIS);  // 'E'
   RogueETCReader_read_byte(THIS);  // 'T'
   RogueETCReader_read_byte(THIS);  // 'C'
@@ -79,6 +81,14 @@ RogueInteger RogueETCReader_read_byte( RogueETCReader* THIS )
     return -1;
   }
   return THIS->data->bytes[index-1];
+}
+
+RogueInteger RogueETCReader_read_integer( RogueETCReader* THIS )
+{
+  RogueInteger result = RogueETCReader_read_byte( THIS ) << 24;
+  result |= RogueETCReader_read_byte( THIS ) << 16;
+  result |= RogueETCReader_read_byte( THIS ) << 8;
+  return (result | RogueETCReader_read_byte( THIS ));
 }
 
 RogueInteger RogueETCReader_read_integer_x( RogueETCReader* THIS )
@@ -139,6 +149,13 @@ RogueInteger RogueETCReader_read_integer_x( RogueETCReader* THIS )
   }
 }
 
+RogueReal RogueETCReader_read_real( RogueETCReader* THIS )
+{
+  RogueLong result = RogueETCReader_read_integer( THIS );
+  result = (result << 32LL) | ((RogueLong) RogueETCReader_read_integer(THIS));
+  return *((RogueReal*)&result);
+}
+
 RogueString* RogueETCReader_read_string( RogueETCReader* THIS )
 {
   RogueInteger i;
@@ -177,13 +194,7 @@ void* RogueETCReader_load_statement( RogueETCReader* THIS )
     case ROGUE_CMD_LOG_VALUE:
     {
       RogueCmd* operand = RogueETCReader_load_expression( THIS );
-      RogueType* type = RogueCmd_type( operand );
-
-      if (type == vm->type_Integer)     opcode = ROGUE_CMD_LOG_INTEGER;
-      else if (type == vm->type_String) opcode = ROGUE_CMD_LOG_STRING;
-      else RogueETCReader_throw_type_error( THIS, type, opcode );
-
-      return RogueCmdUnaryOp_create( vm, opcode, operand );
+      return RogueCmdUnaryOp_create( vm, ROGUE_CMD_LOG_VALUE, operand );
     }
 
     default:
@@ -202,6 +213,9 @@ void* RogueETCReader_load_expression( RogueETCReader* THIS )
   {
     case ROGUE_CMD_LITERAL_INTEGER:
       return RogueCmdLiteralInteger_create( vm, RogueETCReader_read_integer_x(THIS) );
+
+    case ROGUE_CMD_LITERAL_REAL:
+      return RogueCmdLiteralReal_create( vm, RogueETCReader_read_real(THIS) );
 
     case ROGUE_CMD_LITERAL_STRING:
       return RogueCmdLiteralString_create( vm, RogueETCReader_read_string(THIS) );
@@ -233,7 +247,7 @@ void RogueETCReader_throw_type_error( RogueETCReader* THIS, RogueType* type, Rog
   {
     RogueStringBuilder_print_c_string( &vm->error_message_builder, type->name );
   }
-  RogueStringBuilder_print_c_string( &vm->error_message_builder, "for opcode " );
+  RogueStringBuilder_print_c_string( &vm->error_message_builder, " for opcode " );
   RogueStringBuilder_print_integer( &vm->error_message_builder, opcode );
   ROGUE_THROW( vm, "." );
 }

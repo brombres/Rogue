@@ -7,7 +7,14 @@ class ETCWriter
       buffer.print( (value & 255)->Character )
       return this
 
-    method write_integer_x( value:Integer )->ETCWriter
+    method write_integer( value:Integer )->this
+      write_byte( value :>>: 24 )
+      write_byte( value :>>: 16 )
+      write_byte( value :>>: 8 )
+      write_byte( value )
+      return this
+
+    method write_integer_x( value:Integer )->this
       if (value >= -64 and value <= 127)
         # 0ddd dddd (0..127) OR
         # 11dd dddd (-64..-1)
@@ -45,11 +52,10 @@ class ETCWriter
 
       return this
 
-    method write_integer( value:Integer )->this
-        write_byte( value:>>:24 )
-        write_byte( value:>>:16 )
-        write_byte( value:>>:8 )
-        write_byte( value )
+    method write_real( value:Real )->this
+      local c1 = buffer.count
+      write_integer( value.high_bits )
+      write_integer( value.low_bits )
       return this
 
     method to->String

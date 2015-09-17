@@ -74,6 +74,9 @@ class Parser
         case TokenType.LITERAL_INTEGER
           return CmdLiteralInteger( t, (t as LiteralIntegerToken).value )
 
+        case TokenType.LITERAL_REAL
+          return CmdLiteralReal( t, (t as LiteralRealToken).value )
+
         case TokenType.LITERAL_STRING
           return CmdLiteralString( t, (t as LiteralStringToken).value )
       endWhich

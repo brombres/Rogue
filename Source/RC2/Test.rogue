@@ -3,3 +3,5 @@ log 42
 log "Woot!"
 log 99
 log 3+4+5
+log 5.634e2
+log 4.1+4.2

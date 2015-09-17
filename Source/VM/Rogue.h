@@ -101,6 +101,7 @@ typedef struct RogueCharacterInfo     RogueCharacterInfo;
 typedef struct RogueCmd               RogueCmd;
 typedef struct RogueCmdBinaryOp       RogueCmdBinaryOp;
 typedef struct RogueCmdLiteralInteger RogueCmdLiteralInteger;
+typedef struct RogueCmdLiteralReal    RogueCmdLiteralReal;
 typedef struct RogueCmdLiteralString  RogueCmdLiteralString;
 typedef struct RogueCmdList  RogueCmdList;
 typedef enum   RogueCmdType           RogueCmdType;

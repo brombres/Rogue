@@ -6,6 +6,7 @@ int main()
   RogueVM* vm = RogueVM_create();
 
   RogueVM_load_file( vm, "../RC2/Test.etc" );
+  RogueVM_launch( vm );
 
   RogueVM_collect_garbage( vm );
   RogueVM_delete( vm );

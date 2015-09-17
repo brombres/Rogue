@@ -106,8 +106,37 @@ class Tokenizer
       endIf
 
     method tokenize_number
+      local is_real = false
       local whole = tokenize_integer
-      add( LiteralIntegerToken(whole) )
+      local fraction = 0.0
+      local exponent = 0.0
+
+      local ch1 = reader.peek
+      local ch2 = reader.peek(1)
+
+      if (ch1 == '.' and (ch2>='0' and ch2<='9'))
+        is_real = true
+        reader.read
+        fraction = tokenize_integer
+        while (fraction >= 1)
+          fraction /= 10
+        endWhile
+      endIf
+
+      if (consume('e') or consume('E'))
+        is_real = true
+        local is_negative = false
+        if (consume('-')) is_negative = true
+        else               consume( '+' )
+        exponent = tokenize_integer
+        if (is_negative) exponent = -exponent
+      endIf
+
+      if (is_real)
+        add( LiteralRealToken( (whole+fraction)*10^exponent ) )
+      else
+        add( LiteralIntegerToken(whole) )
+      endIf
 
     method tokenize_integer->Real
       local result = 0.0

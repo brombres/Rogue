@@ -25,7 +25,9 @@ RogueETCReader* RogueETCReader_create_with_file( RogueVM* vm, RogueString* filep
 RogueLogical    RogueETCReader_has_another( RogueETCReader* THIS );
 void            RogueETCReader_load( RogueETCReader* THIS );
 RogueInteger    RogueETCReader_read_byte( RogueETCReader* THIS );
+RogueInteger    RogueETCReader_read_integer( RogueETCReader* THIS );
 RogueInteger    RogueETCReader_read_integer_x( RogueETCReader* THIS );
+RogueReal       RogueETCReader_read_real( RogueETCReader* THIS );
 RogueString*    RogueETCReader_read_string( RogueETCReader* THIS );
 
 RogueCmdList*   RogueETCReader_load_statement_list( RogueETCReader* THIS );

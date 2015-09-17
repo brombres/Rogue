@@ -3,13 +3,21 @@ $include "ETCWriter.rogue"
 
 class Program [singleton]
   PROPERTIES
-    type_Integer : Type
+    type_Real      : Type
+    type_Integer   : Type
+    type_Character : Type
+    type_Byte      : Type
+    type_Logical   : Type
 
     immediate_commands = CmdStatementList()
 
   METHODS
     method init
-      type_Integer = Type( Token.default_t, "Integer", Attribute.IS_PRIMITIVE );
+      type_Real      = Type( Token.default_t, "Real",      Attribute.IS_PRIMITIVE );
+      type_Integer   = Type( Token.default_t, "Integer",   Attribute.IS_PRIMITIVE );
+      type_Character = Type( Token.default_t, "Character", Attribute.IS_PRIMITIVE );
+      type_Byte      = Type( Token.default_t, "Byte",      Attribute.IS_PRIMITIVE );
+      type_Logical   = Type( Token.default_t, "Logical",   Attribute.IS_PRIMITIVE );
 
     method generate_etc->String
       local writer = ETCWriter()

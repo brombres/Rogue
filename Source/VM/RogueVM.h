@@ -17,7 +17,9 @@ struct RogueVM
   RogueTable*        consolidation_table;
   RogueList*         c_string_buffer;
   RogueCmdList*      immediate_commands;
+  RogueLogical       is_resolved;
 
+  RogueLogical       has_error;
   RogueErrorHandler* error_handler;
   RogueString*       error_filepath;
   RogueStringBuilder error_message_builder;
@@ -32,6 +34,7 @@ struct RogueVM
   RogueType*         type_ObjectArray;
   RogueType*         type_ObjectList;
   RogueType*         type_ETCReader;
+  RogueType*         type_Real;
   RogueType*         type_String;
   RogueType*         type_Table;
   RogueType*         type_TableEntry;
@@ -52,6 +55,8 @@ RogueString* RogueVM_error_string( RogueVM* THIS );
 void         RogueVM_log_error( RogueVM* THIS );
 
 RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath );
+RogueLogical RogueVM_resolve( RogueVM* THIS );
+RogueLogical RogueVM_launch( RogueVM* THIS );
 
 
 

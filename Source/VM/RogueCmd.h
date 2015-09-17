@@ -16,11 +16,15 @@ enum RogueCmdType
   ROGUE_CMD_LOG,
   ROGUE_CMD_LOG_VALUE,
   ROGUE_CMD_LITERAL_INTEGER,
+  ROGUE_CMD_LITERAL_REAL,
   ROGUE_CMD_LITERAL_STRING,
   ROGUE_CMD_ADD,
 
   // VM commands
+  ROGUE_CMD_ADD_INTEGER,
+  ROGUE_CMD_ADD_REAL,
   ROGUE_CMD_LOG_INTEGER,
+  ROGUE_CMD_LOG_REAL,
   ROGUE_CMD_LOG_STRING,
 };
 
@@ -48,6 +52,12 @@ struct RogueCmdLiteralInteger
   RogueInteger value;
 };
 
+struct RogueCmdLiteralReal
+{
+  RogueCmd  cmd;
+  RogueReal value;
+};
+
 struct RogueCmdLiteralString
 {
   RogueCmd     cmd;
@@ -70,6 +80,7 @@ struct RogueCmdBinaryOp
 void*                   RogueCmd_create( RogueVM* vm, RogueCmdType cmd_type, size_t object_size );
 RogueCmdBinaryOp*       RogueCmdBinaryOp_create( RogueVM* vm, RogueCmdType cmd_type, RogueCmd* left, RogueCmd* right );
 RogueCmdLiteralInteger* RogueCmdLiteralInteger_create( RogueVM* vm, RogueInteger value );
+RogueCmdLiteralReal*    RogueCmdLiteralReal_create( RogueVM* vm, RogueReal value );
 RogueCmdLiteralString*  RogueCmdLiteralString_create( RogueVM* vm, RogueString* value );
 RogueCmdUnaryOp*        RogueCmdUnaryOp_create( RogueVM* vm, RogueCmdType cmd_type, RogueCmd* operand );
 void                    RogueCmd_print( void* THIS, RogueStringBuilder* builder );
@@ -81,6 +92,7 @@ void*        RogueCmd_resolve( void* THIS );
 
 void         RogueCmd_execute( void* THIS );
 RogueInteger RogueCmd_execute_integer_op( void* THIS );
+RogueReal    RogueCmd_execute_real_op( void* THIS );
 RogueString* RogueCmd_execute_string_op( void* THIS );
 
 #endif // ROGUE_CMD_H

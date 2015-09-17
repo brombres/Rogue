@@ -92,6 +92,21 @@ class LiteralIntegerToken : Token
       return "$" (value)
 endClass
 
+class LiteralRealToken : Token
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( value )
+      prior.init( TokenType.LITERAL_REAL )
+
+    method describe->String
+      return "literal real"
+
+    method to->String
+      return "$" (value)
+endClass
+
 class LiteralStringToken : Token
   PROPERTIES
     value : String

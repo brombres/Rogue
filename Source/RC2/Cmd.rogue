@@ -6,6 +6,7 @@ class CmdType
     LOG
     LOG_VALUE
     LITERAL_INTEGER
+    LITERAL_REAL
     LITERAL_STRING
     ADD
 endClass
@@ -65,6 +66,21 @@ class CmdLiteralInteger : Cmd
     method write( writer:ETCWriter )
       writer.write_integer_x( CmdType.LITERAL_INTEGER )
       writer.write_integer_x( value )
+endClass
+
+class CmdLiteralReal : Cmd
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( t, value )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method write( writer:ETCWriter )
+      writer.write_integer_x( CmdType.LITERAL_REAL )
+      writer.write_real( value )
 endClass
 
 class CmdLiteralString : Cmd

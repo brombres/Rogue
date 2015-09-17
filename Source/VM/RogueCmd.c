@@ -33,6 +33,13 @@ RogueCmdLiteralInteger* RogueCmdLiteralInteger_create( RogueVM* vm, RogueInteger
   return cmd;
 }
 
+RogueCmdLiteralReal* RogueCmdLiteralReal_create( RogueVM* vm, RogueReal value )
+{
+  RogueCmdLiteralReal* cmd = RogueCmd_create( vm, ROGUE_CMD_LITERAL_REAL, sizeof(RogueCmdLiteralReal) );
+  cmd->value = value;
+  return cmd;
+}
+
 RogueCmdLiteralString* RogueCmdLiteralString_create( RogueVM* vm, RogueString* value )
 {
   RogueCmdLiteralString* cmd = RogueCmd_create( vm, ROGUE_CMD_LITERAL_STRING, sizeof(RogueCmdLiteralString) );
@@ -109,8 +116,12 @@ RogueType* RogueCmd_type( void* THIS )
   switch (((RogueCmd*)THIS)->cmd_type)
   {
     case ROGUE_CMD_LITERAL_INTEGER:
-    case ROGUE_CMD_ADD:
+    case ROGUE_CMD_ADD_INTEGER:
       return vm->type_Integer;
+
+    case ROGUE_CMD_LITERAL_REAL:
+    case ROGUE_CMD_ADD_REAL:
+      return vm->type_Real;
 
     case ROGUE_CMD_LITERAL_STRING:
       return vm->type_String;
@@ -122,10 +133,35 @@ RogueType* RogueCmd_type( void* THIS )
 
 void* RogueCmd_resolve( void* THIS )
 {
-  //switch (((RogueCmd*)THIS)->cmd_type)
-  //{
-  //  case RogueCmd
-  //}
+  printf("resolve\n");
+  for (;;)
+  {
+    switch (((RogueCmd*)THIS)->cmd_type)
+    {
+      case ROGUE_CMD_LIST:
+      {
+        RogueInteger i;
+        RogueVMList*  statements = ((RogueCmdList*)THIS)->statements;
+        RogueVMArray* array = statements->array;
+        RogueInteger count = statements->count;
+        for (i=0; i<count; ++i)
+        {
+          array->objects[i] = RogueCmd_resolve( array->objects[i] );
+        }
+        return THIS;
+      }
+
+      default:
+      {
+        RogueVM* vm = ((RogueCmd*)THIS)->vm;
+        RogueStringBuilder_print_c_string( &vm->error_message_builder,
+            "[INTERNAL] RogueCmd_resolve() not defined for Cmd type " );
+        RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
+        ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
+      }
+    }
+    break;
+  }
 
   return THIS;
 }
@@ -148,6 +184,10 @@ void RogueCmd_execute( void* THIS )
 
     case ROGUE_CMD_LOG_INTEGER:
       printf( "%d\n", RogueCmd_execute_integer_op(((RogueCmdUnaryOp*)THIS)->operand) );
+      break;
+
+    case ROGUE_CMD_LOG_REAL:
+      printf( "%lf\n", RogueCmd_execute_real_op(((RogueCmdUnaryOp*)THIS)->operand) );
       break;
 
     case ROGUE_CMD_LOG_STRING:
@@ -173,6 +213,9 @@ RogueInteger RogueCmd_execute_integer_op( void* THIS )
     case ROGUE_CMD_LITERAL_INTEGER:
       return ((RogueCmdLiteralInteger*)THIS)->value;
 
+    case ROGUE_CMD_LITERAL_REAL:
+      return (RogueInteger)(((RogueCmdLiteralReal*)THIS)->value);
+
     case ROGUE_CMD_ADD:
       return RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->left ) +
              RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->right );
@@ -182,6 +225,31 @@ RogueInteger RogueCmd_execute_integer_op( void* THIS )
       RogueVM* vm = ((RogueCmd*)THIS)->vm;
       RogueStringBuilder_print_c_string( &vm->error_message_builder,
           "[INTERNAL] RogueCmd_execute_integer_op() not defined for Cmd type " );
+      RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
+      ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
+    }
+  }
+}
+
+RogueReal RogueCmd_execute_real_op( void* THIS )
+{
+  switch (((RogueCmd*)THIS)->cmd_type)
+  {
+    case ROGUE_CMD_LITERAL_INTEGER:
+      return ((RogueCmdLiteralReal*)THIS)->value;
+
+    case ROGUE_CMD_LITERAL_REAL:
+      return ((RogueCmdLiteralInteger*)THIS)->value;
+
+    case ROGUE_CMD_ADD:
+      return RogueCmd_execute_real_op( ((RogueCmdBinaryOp*)THIS)->left ) +
+             RogueCmd_execute_real_op( ((RogueCmdBinaryOp*)THIS)->right );
+
+    default:
+    {
+      RogueVM* vm = ((RogueCmd*)THIS)->vm;
+      RogueStringBuilder_print_c_string( &vm->error_message_builder,
+          "[INTERNAL] RogueCmd_execute_real_op() not defined for Cmd type " );
       RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
       ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
     }

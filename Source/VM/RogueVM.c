@@ -22,6 +22,7 @@ RogueVM* RogueVM_create()
   THIS->type_Integer        = RogueVM_create_type( THIS, 0, "Integer", sizeof(RogueInteger) );
   THIS->type_ObjectArray    = RogueTypeObjectArray_create( THIS );
   THIS->type_ObjectList     = RogueTypeObjectList_create( THIS );
+  THIS->type_Real           = RogueVM_create_type( THIS, 0, "Real", sizeof(RogueReal) );
   THIS->type_String         = RogueTypeString_create( THIS );
   THIS->type_Table          = RogueTypeTable_create( THIS );
   THIS->type_TableEntry     = RogueTypeTableEntry_create( THIS );
@@ -187,28 +188,64 @@ void RogueVM_log_error( RogueVM* THIS )
 
 RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
 {
-  RogueLogical success;
+  if (THIS->has_error) return 0;
 
   ROGUE_TRY(THIS)
   {
     RogueETCReader* reader = RogueETCReader_create_with_file( THIS, ROGUE_STRING(THIS,"../RC2/Test.etc") );
     RogueETCReader_load( reader );
-
-    printf( "-------------------------------------------------------------------------------\n" );
-    RogueCmd_execute( THIS->immediate_commands );
-    printf( "-------------------------------------------------------------------------------\n" );
-
-    THIS->immediate_commands->statements->count = 0;
-
-    success = 1;
   }
   ROGUE_CATCH(THIS)
   {
     RogueVM_log_error( THIS );
-    success = 0;
+    THIS->has_error = 1;
   }
   ROGUE_END_TRY(THIS)
 
-  return success;
+  return !THIS->has_error;
+}
+
+RogueLogical RogueVM_resolve( RogueVM* THIS )
+{
+  if (THIS->has_error) return 0;
+
+  ROGUE_TRY(THIS)
+  {
+    RogueCmd_resolve( THIS->immediate_commands );
+    THIS->is_resolved = 1;
+  }
+  ROGUE_CATCH(THIS)
+  {
+    RogueVM_log_error( THIS );
+    THIS->is_resolved = 0;
+  }
+  ROGUE_END_TRY(THIS)
+
+  return THIS->is_resolved;
+}
+
+RogueLogical RogueVM_launch( RogueVM* THIS )
+{
+  if (THIS->has_error) return 0;
+
+  ROGUE_TRY(THIS)
+  {
+    if (RogueVM_resolve(THIS))
+    {
+      printf( "-------------------------------------------------------------------------------\n" );
+      RogueCmd_execute( THIS->immediate_commands );
+      printf( "-------------------------------------------------------------------------------\n" );
+
+      THIS->immediate_commands->statements->count = 0;
+    }
+  }
+  ROGUE_CATCH(THIS)
+  {
+    RogueVM_log_error( THIS );
+    THIS->has_error = 1;
+  }
+  ROGUE_END_TRY(THIS)
+
+  return !THIS->has_error;
 }
 
