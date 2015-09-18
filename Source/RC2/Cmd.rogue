@@ -3,6 +3,7 @@ $include "Scope.rogue"
 class CmdType
   ENUMERATE
     STATEMENT_LIST
+    DECLARE_GLOBAL
     LOG
     LOG_VALUE
     LITERAL_INTEGER
@@ -51,6 +52,14 @@ class CmdStatementList
       forEach (statement in statements)
         statement.write( writer )
       endForEach
+endClass
+
+class CmdDeclareGlobal : Cmd
+  PROPERTIES
+    info : GlobalVar
+
+  METHODS
+    method init( t, info )
 endClass
 
 class CmdLiteralInteger : Cmd

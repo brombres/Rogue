@@ -27,6 +27,7 @@ class Tokenizer
 
     method configure_keywords
       keywords[ "log" ] = TokenType.KEYWORD_LOG
+      keywords[ "global" ] = TokenType.KEYWORD_GLOBAL
 
     method add( t:Token )
       t.filepath = filepath
@@ -166,8 +167,8 @@ class Tokenizer
 
       local type = -1
       which (ch)
-        case '+'
-          type = TokenType.SYMBOL_PLUS
+        case '+': type = TokenType.SYMBOL_PLUS
+        case ':': type = TokenType.SYMBOL_COLON
       endWhich
 
       if (type != -1)

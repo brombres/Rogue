@@ -1,3 +1,4 @@
+$include "GlobalVar.rogue"
 $include "Type.rogue"
 $include "ETCWriter.rogue"
 
@@ -9,6 +10,11 @@ class Program [singleton]
     type_Byte      : Type
     type_Logical   : Type
 
+    type_list      = Type[]
+    type_lookup    = Table<<String,Type>>()
+
+    global_list    = GlobalVar[]
+    global_lookup  = Table<<String,GlobalVar>>()
     immediate_commands = CmdStatementList()
 
   METHODS
@@ -18,6 +24,16 @@ class Program [singleton]
       type_Character = Type( Token.default_t, "Character", Attribute.IS_PRIMITIVE );
       type_Byte      = Type( Token.default_t, "Byte",      Attribute.IS_PRIMITIVE );
       type_Logical   = Type( Token.default_t, "Logical",   Attribute.IS_PRIMITIVE );
+
+    method acquire_type( t:Token, name:String, attributes=0:Integer )->Type
+      local type = type_lookup[ name ]
+      if (type) return type
+
+      type = Type( t, name, attributes )
+      type_lookup[name] = type
+      type_list.add( type )
+
+      return type
 
     method generate_etc->String
       local writer = ETCWriter()

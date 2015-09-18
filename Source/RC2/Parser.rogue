@@ -31,26 +31,49 @@ class Parser
     method must_consume_end_cmds
       if (not consume_end_cmds) must_consume( TokenType.EOL )
 
+    method next_is_statement->Logical
+      return (peek.type >= TokenType.STATEMENT_LEVEL_TOKENS)
+
     method parse_elements
       while (not consume(TokenType.EOI))
+        parse_multi_line_commands( Program.immediate_commands )
+      endWhile
+
+    method parse_multi_line_commands( list:CmdStatementList )
+      consume_end_cmds
+      while (next_is_statement)
         local cmd = parse_statement
-        Program.immediate_commands.add( cmd )
+        if (cmd) list.add( cmd )
+        must_consume_end_cmds
       endWhile
 
     method parse_statement->Cmd
       local t = peek
 
-      if (consume(TokenType.KEYWORD_LOG))
+      if (consume(TokenType.KEYWORD_GLOBAL))
+        local t2 = peek
+        local name = read_identifier
+
+        must_consume( TokenType.SYMBOL_COLON )
+        local type = parse_type
+
+        local existing = Program.global_lookup[ name ]
+        if (existing)
+          throw t.error( //A global named "$" already exists at line $ of $.// (name,existing.t.line,existing.t.filepath) )
+        endIf
+
+        local global_info = GlobalVar( t, name, type )
+        return CmdDeclareGlobal( t, global_info )
+
+      elseIf (consume(TokenType.KEYWORD_LOG))
         local operand=null : Cmd
         if (not consume_end_cmds)
           operand = parse_expression
-          must_consume_end_cmds
         endIf
         return CmdLog( t, operand )
       endIf
 
       local expression = parse_expression
-      must_consume_end_cmds
       return expression
 
     method parse_expression->Cmd
@@ -83,8 +106,18 @@ class Parser
 
       throw t.error( "Unexpected $." (t.describe) )
 
+    method parse_type->Type
+      local t = peek
+      local name = read_identifier
+      return Program.acquire_type( t, name )
+
     method peek->Token
       return reader.peek
+
+    method read_identifier->String
+      local t = peek
+      must_consume( TokenType.IDENTIFIER )
+      return t->String
 
 endClass
 

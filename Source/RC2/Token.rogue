@@ -45,6 +45,9 @@ class Token
         case TokenType.IDENTIFIER
           return "identifier"
 
+        case TokenType.KEYWORD_GLOBAL
+          return "global"
+
         case TokenType.KEYWORD_LOG
           return "log"
 
@@ -53,6 +56,9 @@ class Token
 
         case TokenType.LITERAL_STRING
           return "literal string"
+
+        case TokenType.SYMBOL_COLON
+          return ":"
 
         case TokenType.SYMBOL_PLUS
           return "+"

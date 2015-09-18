@@ -284,7 +284,7 @@ void RogueCmd_execute( void* THIS )
       break;
 
     case ROGUE_CMD_LOG_REAL:
-      printf( "%lf\n", RogueCmd_execute_real_op(((RogueCmdUnaryOp*)THIS)->operand) );
+      printf( "%.4lf\n", RogueCmd_execute_real_op(((RogueCmdUnaryOp*)THIS)->operand) );
       break;
 
     case ROGUE_CMD_LOG_STRING:
