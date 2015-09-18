@@ -26,6 +26,13 @@ RogueCmdBinaryOp* RogueCmdBinaryOp_create( RogueVM* vm, RogueCmdType cmd_type, R
   return cmd;
 }
 
+RogueCmdList* RogueCmdList_create( RogueVM* vm, RogueInteger initial_capacity )
+{
+  RogueCmdList* list = RogueCmd_create( vm, ROGUE_CMD_LIST, sizeof(RogueCmdList) );
+  list->statements = RogueVMList_create( vm, initial_capacity, RogueVMTraceCmd );
+  return list;
+}
+
 RogueCmdLiteralInteger* RogueCmdLiteralInteger_create( RogueVM* vm, RogueInteger value )
 {
   RogueCmdLiteralInteger* cmd = RogueCmd_create( vm, ROGUE_CMD_LITERAL_INTEGER, sizeof(RogueCmdLiteralInteger) );
@@ -69,6 +76,43 @@ void RogueCmd_print( void* THIS, RogueStringBuilder* builder )
   }
 }
 
+RogueType* RogueCmd_require_common_binary_op_type( void* THIS )
+{
+  RogueType* left_type  = RogueCmd_require_type( ((RogueCmdBinaryOp*)THIS)->left );
+  RogueType* right_type = RogueCmd_require_type( ((RogueCmdBinaryOp*)THIS)->right );
+
+  if (left_type != right_type)
+  {
+    RogueVM* vm = ((RogueCmd*)THIS)->vm;
+    RogueStringBuilder_print_c_string( &vm->error_message_builder, "Mismatched operand types for command type " );
+    RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
+    ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
+  }
+
+  return left_type;
+}
+
+RogueType* RogueCmd_require_type( void* THIS )
+{
+  RogueType* type = RogueCmd_type( THIS );
+
+  if ( !type )
+  {
+    RogueVM* vm = ((RogueCmd*)THIS)->vm;
+    RogueStringBuilder_print_c_string( &vm->error_message_builder, "Value expected for command type " );
+    RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
+    ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
+  }
+
+  return type;
+}
+
+void* RogueCmd_require_value( void* THIS )
+{
+  RogueCmd_require_type( THIS );
+  return THIS;
+}
+
 void  RogueCmd_throw_error( RogueCmd* THIS, const char* message )
 {
   ROGUE_THROW( THIS->vm, message );
@@ -103,13 +147,6 @@ void RogueCmd_trace( void* THIS )
   }
 }
 
-RogueCmdList* RogueCmdList_create( RogueVM* vm, RogueInteger initial_capacity )
-{
-  RogueCmdList* list = RogueCmd_create( vm, ROGUE_CMD_LIST, sizeof(RogueCmdList) );
-  list->statements = RogueVMList_create( vm, initial_capacity, RogueVMTraceCmd );
-  return list;
-}
-
 RogueType* RogueCmd_type( void* THIS )
 {
   RogueVM* vm = ((RogueCmd*)THIS)->vm;
@@ -133,7 +170,7 @@ RogueType* RogueCmd_type( void* THIS )
 
 void* RogueCmd_resolve( void* THIS )
 {
-  printf("resolve\n");
+  RogueVM* vm = ((RogueCmd*)THIS)->vm;
   for (;;)
   {
     switch (((RogueCmd*)THIS)->cmd_type)
@@ -151,19 +188,79 @@ void* RogueCmd_resolve( void* THIS )
         return THIS;
       }
 
+      case ROGUE_CMD_LOG_VALUE:
+      {
+        RogueCmdUnaryOp* op = THIS;
+        op->operand = RogueCmd_require_value( RogueCmd_resolve(op->operand) );
+
+        RogueType* operand_type = RogueCmd_type( op->operand );
+        if (operand_type == vm->type_String)
+        {
+          ((RogueCmd*)THIS)->cmd_type = ROGUE_CMD_LOG_STRING;
+        }
+        else
+        {
+          RogueCmd_refine_for_common_type( THIS, operand_type,
+              ROGUE_CMD_LOG_REAL, ROGUE_CMD_LOG_INTEGER, 1 );
+        }
+        return THIS;
+      }
+
+      case ROGUE_CMD_LITERAL_INTEGER:
+      case ROGUE_CMD_LITERAL_REAL:
+      case ROGUE_CMD_LITERAL_STRING:
+        return THIS;
+
+      case ROGUE_CMD_ADD:
+      {
+        RogueType* operand_type;
+        RogueCmdBinaryOp* op = THIS;
+        op->left  = RogueCmd_require_value( RogueCmd_resolve(op->left) );
+        op->right = RogueCmd_require_value( RogueCmd_resolve(op->right) );
+
+        operand_type = RogueCmd_require_common_binary_op_type( op );
+
+        RogueCmd_refine_for_common_type( THIS, operand_type,
+            ROGUE_CMD_ADD_REAL, ROGUE_CMD_ADD_INTEGER, 1 );
+        return THIS;
+      }
+
       default:
       {
-        RogueVM* vm = ((RogueCmd*)THIS)->vm;
         RogueStringBuilder_print_c_string( &vm->error_message_builder,
             "[INTERNAL] RogueCmd_resolve() not defined for Cmd type " );
         RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
-        ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
+        ROGUE_THROW( vm, "." );
       }
     }
     break;
   }
 
   return THIS;
+}
+
+RogueLogical RogueCmd_refine_for_common_type( void* THIS, RogueType* type,
+       RogueCmdType for_real, RogueCmdType for_integer, RogueLogical must_resolve )
+{
+  RogueVM* vm = ((RogueCmd*)THIS)->vm;
+
+  if (type == ((RogueCmd*)THIS)->vm->type_Real)         ((RogueCmd*)THIS)->cmd_type = for_real;
+  else if (type == ((RogueCmd*)THIS)->vm->type_Integer) ((RogueCmd*)THIS)->cmd_type = for_integer;
+  else if (must_resolve)
+  {
+    RogueStringBuilder_print_c_string( &vm->error_message_builder, "Invalid operand type " );
+    if (type)
+    {
+      RogueStringBuilder_print_c_string( &vm->error_message_builder, type->name );
+      RogueStringBuilder_print_character( &vm->error_message_builder, ' ' );
+    }
+    RogueStringBuilder_print_c_string( &vm->error_message_builder, "for command " );
+    RogueStringBuilder_print_integer( &vm->error_message_builder, ((RogueCmd*)THIS)->cmd_type );
+    ROGUE_THROW( ((RogueCmd*)THIS)->vm, "." );
+  }
+  else return 0;
+
+  return 1;
 }
 
 void RogueCmd_execute( void* THIS )
@@ -216,9 +313,14 @@ RogueInteger RogueCmd_execute_integer_op( void* THIS )
     case ROGUE_CMD_LITERAL_REAL:
       return (RogueInteger)(((RogueCmdLiteralReal*)THIS)->value);
 
-    case ROGUE_CMD_ADD:
+    case ROGUE_CMD_ADD_INTEGER:
       return RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->left ) +
              RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->right );
+
+    case ROGUE_CMD_ADD_REAL:
+      return (RogueInteger)
+             RogueCmd_execute_real_op( ((RogueCmdBinaryOp*)THIS)->left ) +
+             RogueCmd_execute_real_op( ((RogueCmdBinaryOp*)THIS)->right );
 
     default:
     {
@@ -239,9 +341,13 @@ RogueReal RogueCmd_execute_real_op( void* THIS )
       return ((RogueCmdLiteralReal*)THIS)->value;
 
     case ROGUE_CMD_LITERAL_REAL:
-      return ((RogueCmdLiteralInteger*)THIS)->value;
+      return ((RogueCmdLiteralReal*)THIS)->value;
 
-    case ROGUE_CMD_ADD:
+    case ROGUE_CMD_ADD_INTEGER:
+      return RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->left ) +
+             RogueCmd_execute_integer_op( ((RogueCmdBinaryOp*)THIS)->right );
+
+    case ROGUE_CMD_ADD_REAL:
       return RogueCmd_execute_real_op( ((RogueCmdBinaryOp*)THIS)->left ) +
              RogueCmd_execute_real_op( ((RogueCmdBinaryOp*)THIS)->right );
 

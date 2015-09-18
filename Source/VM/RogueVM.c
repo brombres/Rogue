@@ -192,8 +192,8 @@ RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath )
 
   ROGUE_TRY(THIS)
   {
-    RogueETCReader* reader = RogueETCReader_create_with_file( THIS, ROGUE_STRING(THIS,"../RC2/Test.etc") );
-    RogueETCReader_load( reader );
+    RogueETCLoader* reader = RogueETCLoader_create_with_file( THIS, ROGUE_STRING(THIS,"../RC2/Test.etc") );
+    RogueETCLoader_load( reader );
   }
   ROGUE_CATCH(THIS)
   {

@@ -111,7 +111,7 @@ typedef enum   RogueIntrinsicFnType   RogueIntrinsicFnType;
 typedef struct RogueList              RogueList;
 typedef struct RogueObject            RogueObject;
 typedef struct RogueParsePosition     RogueParsePosition;
-typedef struct RogueETCReader         RogueETCReader;
+typedef struct RogueETCLoader         RogueETCLoader;
 typedef struct RogueType              RogueType;
 typedef struct RogueString            RogueString;
 typedef struct RogueStringBuilder     RogueStringBuilder;
@@ -157,7 +157,7 @@ typedef struct RogueVMTableReader     RogueVMTableReader;
 #include "RogueObject.h"
 #include "RogueString.h"
 #include "RogueType.h"
-#include "RogueETCReader.h"
+#include "RogueETCLoader.h"
 #include "RogueCmd.h"
 #include "RogueVM.h"
 #include "RogueVMObject.h"

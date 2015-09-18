@@ -85,10 +85,15 @@ RogueCmdLiteralString*  RogueCmdLiteralString_create( RogueVM* vm, RogueString* 
 RogueCmdUnaryOp*        RogueCmdUnaryOp_create( RogueVM* vm, RogueCmdType cmd_type, RogueCmd* operand );
 void                    RogueCmd_print( void* THIS, RogueStringBuilder* builder );
 void                    RogueCmd_throw_error( RogueCmd* THIS, const char* message );
+RogueType*              RogueCmd_require_common_binary_op_type( void* THIS );
+RogueType*              RogueCmd_require_type( void* THIS );
+void*                   RogueCmd_require_value( void* THIS );
 void                    RogueCmd_trace( void* THIS );
 RogueType*              RogueCmd_type( void* THIS );
 
 void*        RogueCmd_resolve( void* THIS );
+RogueLogical RogueCmd_refine_for_common_type( void* THIS, RogueType* type,
+               RogueCmdType for_real, RogueCmdType for_integer, RogueLogical must_resolve );
 
 void         RogueCmd_execute( void* THIS );
 RogueInteger RogueCmd_execute_integer_op( void* THIS );
