@@ -1,24 +1,12 @@
 class ETCWriter
   PROPERTIES
-    buffer = StringBuilder(1024)
-    identifiers = Table<<String,Integer>>()
-    types       = Table<<String,Integer>>()
+    buffer  = StringBuilder(1024)
+    strings = Table<<String,Integer>>()
+    types   = Table<<String,Integer>>()
 
   METHODS
     method write_byte( value:Integer )->this
       buffer.print( (value & 255)->Character )
-      return this
-
-    method write_identifier( identifier:String )->this
-      local entry = identifiers.find( identifier )
-      if (entry)
-        write_integer_x( entry.value )
-      else
-        local index = identifiers.count
-        identifiers[ identifier ] = index
-        write_integer_x( index )
-        write_string( identifier )
-      endIf
       return this
 
     method write_integer( value:Integer )->this
@@ -73,10 +61,18 @@ class ETCWriter
       return this
 
     method write_string( value:String )->this
-      write_integer_x( value.count )
-      forEach (ch in value)
-        write_integer_x( ch )
-      endForEach
+      local entry = strings.find( value )
+      if (entry)
+        write_integer_x( entry.value )
+      else
+        local index = strings.count
+        strings[ value ] = index
+        write_integer_x( index )
+        write_integer_x( value.count )
+        forEach (ch in value)
+          write_integer_x( ch )
+        endForEach
+      endIf
       return this
 
     method write_type( type:Type )->this

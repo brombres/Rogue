@@ -52,6 +52,7 @@ RogueString* RogueVM_consolidate_c_string( RogueVM* THIS, const char* utf8 );
 RogueType*   RogueVM_create_type( RogueVM* THIS, RogueCmd* origin, const char* name, RogueInteger object_size );
 
 RogueString* RogueVM_error_string( RogueVM* THIS );
+RogueType*   RogueVM_find_type( RogueVM* THIS, const char* name );
 void         RogueVM_log_error( RogueVM* THIS );
 
 RogueLogical RogueVM_load_file( RogueVM* THIS, const char* filepath );

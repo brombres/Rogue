@@ -181,6 +181,11 @@ RogueString* RogueVM_error_string( RogueVM* THIS )
   return result;
 }
 
+RogueType* RogueVM_find_type( RogueVM* THIS, const char* name )
+{
+  return RogueVMTable_get( THIS->type_lookup, name );
+}
+
 void RogueVM_log_error( RogueVM* THIS )
 {
   RogueString_log( RogueVM_error_string(THIS) );

@@ -12,12 +12,15 @@
 //-----------------------------------------------------------------------------
 struct RogueETCLoader
 {
-  RogueAllocation    allocation;
-  RogueVM*           vm;
-  RogueString*       filepath;
-  RogueInteger       position;
-  RogueInteger       count;
-  RogueVMArray*      data;
+  RogueAllocation allocation;
+  RogueVM*        vm;
+  RogueString*    filepath;
+  RogueInteger    position;
+  RogueInteger    count;
+  RogueVMArray*   data;
+
+  RogueVMList*    type_list;
+  RogueVMList*    strings;
 };
 
 RogueETCLoader* RogueETCLoader_create_with_file( RogueVM* vm, RogueString* filepath );

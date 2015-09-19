@@ -66,7 +66,7 @@ class CmdDeclareGlobal : Cmd
 
     method write( writer:ETCWriter )
       writer.write_integer_x( CmdType.DECLARE_GLOBAL )
-      writer.write_identifier( info.name )
+      writer.write_string( info.name )
       writer.write_type( info.type )
 endClass
 
@@ -112,10 +112,7 @@ class CmdLiteralString : Cmd
 
     method write( writer:ETCWriter )
       writer.write_integer_x( CmdType.LITERAL_STRING )
-      writer.write_integer_x( value.count )
-      forEach (ch in value)
-        writer.write_integer_x( ch )
-      endForEach
+      writer.write_string( value )
 endClass
 
 class CmdLog : Cmd

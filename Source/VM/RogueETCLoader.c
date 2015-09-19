@@ -48,6 +48,9 @@ void RogueETCLoader_load( RogueETCLoader* THIS )
 
   vm->is_resolved = 0;
 
+  THIS->type_list = RogueVMList_create( vm, 50, RogueVMTraceType );
+  THIS->strings = RogueVMList_create( vm, 100, 0 );
+
   RogueETCLoader_read_byte(THIS);  // 'E'
   RogueETCLoader_read_byte(THIS);  // 'T'
   RogueETCLoader_read_byte(THIS);  // 'C'
@@ -158,16 +161,34 @@ RogueReal RogueETCLoader_read_real( RogueETCLoader* THIS )
 
 RogueString* RogueETCLoader_read_string( RogueETCLoader* THIS )
 {
-  RogueInteger i;
-  RogueInteger count = RogueETCLoader_read_integer_x( THIS );
-  RogueString* value = RogueString_create( THIS->vm, count );
-  RogueCharacter* dest = value->characters - 1;
-  for (i=0; i<count; ++i)
+  RogueInteger index = RogueETCLoader_read_integer_x( THIS );
+  if (index >= 0 && index < THIS->strings->count)
   {
-    *(++dest) = (RogueCharacter) RogueETCLoader_read_integer_x( THIS );
+    // A string with this index has already been defined
+    return THIS->strings->array->objects[ index ];
   }
+  else if (index == THIS->strings->count)
+  {
+    // First occurrence of this string index; definition follows
+    RogueInteger i;
+    RogueInteger count = RogueETCLoader_read_integer_x( THIS );
+    RogueString* value = RogueString_create( THIS->vm, count );
+    RogueCharacter* dest = value->characters - 1;
 
-  return RogueVM_consolidate_string( THIS->vm, RogueString_update_hash_code(value) );
+    for (i=0; i<count; ++i)
+    {
+      *(++dest) = (RogueCharacter) RogueETCLoader_read_integer_x( THIS );
+    }
+
+    value = RogueVM_consolidate_string( THIS->vm, RogueString_update_hash_code(value) );
+    RogueVMList_add( THIS->strings, value );
+
+    return value;
+  }
+  else
+  {
+    ROGUE_THROW( THIS->vm, "Literal string index out of bounds." );
+  }
 }
 
 RogueCmdList*  RogueETCLoader_load_statement_list( RogueETCLoader* THIS )
