@@ -188,6 +188,8 @@ void* RogueCmd_resolve( void* THIS )
         return THIS;
       }
 
+      //case ROGUE_CMD_DECLARE_GLOBAL: return THIS;
+
       case ROGUE_CMD_LOG_VALUE:
       {
         RogueCmdUnaryOp* op = THIS;

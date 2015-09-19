@@ -60,6 +60,14 @@ class CmdDeclareGlobal : Cmd
 
   METHODS
     method init( t, info )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method write( writer:ETCWriter )
+      writer.write_integer_x( CmdType.DECLARE_GLOBAL )
+      writer.write_identifier( info.name )
+      writer.write_type( info.type )
 endClass
 
 class CmdLiteralInteger : Cmd

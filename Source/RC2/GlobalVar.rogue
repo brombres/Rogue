@@ -1,8 +1,8 @@
 class GlobalVar
   PROPERTIES
-    t     : Token
-    name  : String
-    type  : Type
+    t          : Token
+    name       : String
+    type       : Type
 
   METHODS
     method init( t, name, type )

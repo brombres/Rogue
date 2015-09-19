@@ -63,6 +63,9 @@ class Parser
         endIf
 
         local global_info = GlobalVar( t, name, type )
+        Program.global_lookup[ name ] = global_info
+        Program.global_list.add( global_info )
+
         return CmdDeclareGlobal( t, global_info )
 
       elseIf (consume(TokenType.KEYWORD_LOG))
