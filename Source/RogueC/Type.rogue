@@ -14,8 +14,6 @@ class Type
     base_types = Type[]
     flat_base_types = Type[]
 
-    generic_type : Type
-
     is_array     : Logical
     is_list      : Logical
     is_optional  : Logical
@@ -122,7 +120,6 @@ class Type
       endForEach
 
     method compile_type->Type
-      if (generic_type) return generic_type
       return this
 
     method create_default_value( _t:Token )->Cmd
@@ -132,7 +129,6 @@ class Type
       return CmdLiteralInteger( _t, 0 )
 
     method declare_settings( writer:CPPWriter )
-      if (is_generic) return
       forEach (s in settings_list)
         if (s.type_context is this)
           writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
@@ -206,9 +202,6 @@ class Type
 
     method is_functional->Logical
       return (attributes.flags & Attribute.is_functional)
-
-    method is_generic->Logical
-      return generic_type
 
     method is_immutable->Logical
       return (attributes.flags & Attribute.is_immutable)
@@ -581,7 +574,7 @@ class Type
       endForEach
 
     method omit_output->Logical
-      return is_native or generic_type or (is_optional and element_type.is_reference)
+      return is_native or (is_optional and element_type.is_reference)
 
     method resolve->Type
       if (resolved) return this
@@ -590,8 +583,6 @@ class Type
       organize
 
       if (element_type) element_type.organize
-
-      if (generic_type) generic_type.organize
 
       forEach (s in settings_list) s.type.organize
       forEach (p in property_list)
@@ -846,22 +837,16 @@ class Type
       writer.println
 
     method print_routine_prototypes( writer:CPPWriter )
-      if (is_generic) return
-
       forEach (m in routine_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
 
     method print_routine_definitions( writer:CPPWriter )
-      if (is_generic) return
-
       forEach (m in routine_list)
         if (m.type_context is this) m.print_definition( writer )
       endForEach
 
     method print_method_prototypes( writer:CPPWriter )
-      if (is_generic) return
-
       forEach (m in method_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
@@ -899,7 +884,7 @@ class Type
       endForEach
 
     method print_dynamic_method_table_entries( at_index:Integer, writer:CPPWriter )->Integer
-      if (is_generic or not is_reference) return at_index
+      if (not is_reference) return at_index
 
       dynamic_method_table_index = at_index
 
@@ -917,8 +902,6 @@ class Type
       return at_index
 
     method print_method_definitions( writer:CPPWriter )
-      if (is_generic) return
-
       forEach (m in method_list)
         if (m.type_context is this) m.print_definition( writer )
       endForEach

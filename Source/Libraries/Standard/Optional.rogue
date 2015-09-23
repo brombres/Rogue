@@ -1,2 +1,2 @@
-compound Optional<<$DataType:Object>>( value:$DataType, exists:Logical )
+compound Optional<<$DataType>>( value:$DataType, exists:Logical )
 endCompound

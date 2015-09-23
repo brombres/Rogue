@@ -453,7 +453,7 @@ writer.println( "// " + type )
       # RogueProgram constructor
       local type_count = 0
       forEach (type in type_list)
-        if (not (type.generic_type or type.is_array)) ++type_count
+        if (not type.is_array) ++type_count
       endForEach
       writer.print( "RogueProgram::RogueProgram() : RogueProgramCore(" ).print( type_count ).println( ")" )
       writer.println  "{"

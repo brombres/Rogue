@@ -2361,7 +2361,7 @@ class CmdCallRoutine : CmdCall
         forEach (arg in args)
           if (i > 0) writer.print( ", " )
           local param_type = compile_target.parameters[i].type
-          if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+          if (param_type.is_aspect)
             writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
             arg.write_cpp( writer )
             writer.print( "))" )
@@ -2394,7 +2394,7 @@ class CmdCallAspectMethod : CmdCall
       forEach (arg in args)
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+        if (param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
@@ -2445,7 +2445,7 @@ class CmdCallDynamicMethod : CmdCallMethod
         forEach (arg in args)
           writer.print( ", " )
           local param_type = compile_target.parameters[i].type
-          if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+          if (param_type.is_aspect)
             writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
             arg.write_cpp( writer )
             writer.print( ")" )
@@ -2482,7 +2482,7 @@ class CmdCallStaticMethod : CmdCallMethod
       forEach (arg in args)
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+        if (param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
           arg.write_cpp( writer )
           writer.print( ")" )
@@ -2528,7 +2528,7 @@ class CmdCallNativeRoutine : CmdCall
       forEach (arg in args)
         if (i > 0) writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+        if (param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
@@ -2556,7 +2556,7 @@ class CmdCallNativeMethod : CmdCall
       forEach (arg in args)
         writer.print( ", " )
         local param_type = compile_target.parameters[i].type
-        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+        if (param_type.is_aspect)
           writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
@@ -4143,12 +4143,6 @@ class CmdAs : CmdTypeOperator
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       target_type.organize
-
-      # Generic methods returning non-generic values prevent this optimization
-      #local operand_type = operand.require_type
-      #if (operand_type is target_type and not operand_type.is_generic)
-        #return operand
-      #endIf
 
       return this
 endClass

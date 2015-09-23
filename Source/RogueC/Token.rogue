@@ -46,9 +46,6 @@ class Token
 
     method to->Type
       return null
-
-    method generic_type->Type
-      return null
 endClass
 
 class EOLToken : Token
@@ -87,9 +84,6 @@ class TypeIdentifierToken : Token
 
     method to->Type
       return nominal_type
-
-    method generic_type->Type
-      return target_type
 endClass
 
 class LiteralCharacterToken : Token

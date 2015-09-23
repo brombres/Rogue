@@ -1,7 +1,7 @@
 class GenericList
 endClass
 
-class List<<$DataType:Object>> : GenericList
+class List<<$DataType>> : GenericList
   PROPERTIES
     data  : Array<<$DataType>>
     count : Integer

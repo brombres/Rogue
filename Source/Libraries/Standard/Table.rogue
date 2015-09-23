@@ -1,4 +1,4 @@
-class Table<<$KeyType:Object,$ValueType:Object>>
+class Table<<$KeyType,$ValueType>>
   PROPERTIES
     bin_mask : Integer
     bins     : TableEntry<<$KeyType,$ValueType>>[]
@@ -132,7 +132,7 @@ class Table<<$KeyType:Object,$ValueType:Object>>
 
 endClass
 
-class TableEntry<<$KeyType:Object,$ValueType:Object>>
+class TableEntry<<$KeyType,$ValueType>>
   PROPERTIES
     key        : $KeyType
     value      : $ValueType

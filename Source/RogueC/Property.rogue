@@ -7,8 +7,6 @@ class Property
     attributes    : Integer
     initial_value : Cmd
 
-    generic_type  : Type
-
     cpp_name      : String
 
   METHODS
@@ -19,7 +17,6 @@ class Property
       result.type = type
       result.attributes = attributes
       if (initial_value) result.initial_value = initial_value.clone
-      result.generic_type = generic_type
       result.cpp_name = cpp_name
       return result
 

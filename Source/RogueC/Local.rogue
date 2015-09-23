@@ -7,7 +7,6 @@ class Local
     initial_value : Cmd
       # Also serves as default_value for parameters
 
-    generic_type  : Type
     _cpp_name     : String
 
   METHODS
@@ -18,7 +17,6 @@ class Local
       result.type = type
       result.index = index
       if (initial_value) result.initial_value = initial_value.clone( clone_args )
-      result.generic_type = generic_type
       result._cpp_name = _cpp_name
       return result
 
