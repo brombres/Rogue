@@ -1,0 +1,257 @@
+class TokenType
+  SETTINGS
+    lookup                       : Table<<String,TokenType>>
+
+    # Directives
+    directive_define             : TokenType
+    directive_include            : TokenType
+    directive_if                 : TokenType
+    directive_elseIf             : TokenType
+    directive_else               : TokenType
+    directive_endIf              : TokenType
+
+    placeholder_id               : TokenType
+
+    # Structure
+    keyword_aspect               : TokenType
+    keyword_case                 : TokenType
+    keyword_catch                : TokenType
+    keyword_class                : TokenType
+    keyword_compound             : TokenType
+    keyword_DEFINITIONS          : TokenType
+    keyword_else                 : TokenType
+    keyword_elseIf               : TokenType
+    keyword_endAspect            : TokenType
+    keyword_endClass             : TokenType
+    keyword_endCompound          : TokenType
+    keyword_endContingent        : TokenType
+    keyword_endForEach           : TokenType
+    keyword_endFunction          : TokenType
+    keyword_endIf                : TokenType
+    keyword_endLoop              : TokenType
+    keyword_endPrimitive         : TokenType
+    keyword_endTry               : TokenType
+    keyword_endWhich             : TokenType
+    keyword_endWhile             : TokenType
+    keyword_ENUMERATE            : TokenType
+    keyword_method               : TokenType
+    keyword_METHODS              : TokenType
+    keyword_others               : TokenType
+    keyword_primitive            : TokenType
+    keyword_PROPERTIES           : TokenType
+    keyword_routine              : TokenType
+    keyword_ROUTINES             : TokenType
+    keyword_satisfied            : TokenType
+    keyword_SETTINGS             : TokenType
+    keyword_unsatisfied          : TokenType
+    keyword_with                 : TokenType
+
+    symbol_close_brace           : TokenType
+    symbol_close_bracket         : TokenType
+    symbol_close_comment         : TokenType
+    symbol_close_paren           : TokenType
+    symbol_close_specialize      : TokenType
+
+    # General
+    eol                          : TokenType
+
+    # Statements
+    keyword_await                : TokenType
+    keyword_contingent           : TokenType
+    keyword_escapeContingent     : TokenType
+    keyword_escapeForEach        : TokenType
+    keyword_escapeIf             : TokenType
+    keyword_escapeLoop           : TokenType
+    keyword_escapeTry            : TokenType
+    keyword_escapeWhich          : TokenType
+    keyword_escapeWhile          : TokenType
+    keyword_forEach              : TokenType
+    keyword_function             : TokenType
+    keyword_if                   : TokenType
+    keyword_in                   : TokenType
+    keyword_inline               : TokenType
+    keyword_is                   : TokenType
+    keyword_isNot                : TokenType
+    keyword_local                : TokenType
+    keyword_loop                 : TokenType
+    keyword_native               : TokenType
+    keyword_necessary            : TokenType
+    keyword_nextIteration        : TokenType
+    keyword_noAction             : TokenType
+    keyword_inlineNative         : TokenType
+    keyword_null                 : TokenType
+    keyword_of                   : TokenType
+    keyword_return               : TokenType
+    keyword_step                 : TokenType
+    keyword_sufficient           : TokenType
+    keyword_throw                : TokenType
+    keyword_trace                : TokenType
+    keyword_try                  : TokenType
+    keyword_which                : TokenType
+    keyword_while                : TokenType
+    keyword_yield                : TokenType
+
+    # Expressions
+    identifier                   : TokenType
+    type_identifier              : TokenType   # Contains complete type e.g. "Table<<String,Integer>>[]"
+    literal_character            : TokenType
+    literal_integer              : TokenType
+    literal_long                 : TokenType
+    literal_real                 : TokenType
+    literal_string               : TokenType
+
+    keyword_and                  : TokenType
+    keyword_as                   : TokenType
+    keyword_false                : TokenType
+    keyword_instanceOf           : TokenType
+    keyword_meta                 : TokenType
+    keyword_not                  : TokenType
+    keyword_notInstanceOf        : TokenType
+    keyword_or                   : TokenType
+    keyword_pi                   : TokenType
+    keyword_prior                : TokenType
+    keyword_this                 : TokenType
+    keyword_true                 : TokenType
+    keyword_xor                  : TokenType
+
+    symbol_ampersand             : TokenType
+    symbol_ampersand_equals      : TokenType
+    symbol_arrow                 : TokenType
+    symbol_at                    : TokenType
+    symbol_backslash             : TokenType
+    symbol_caret                 : TokenType
+    symbol_caret_equals          : TokenType
+    symbol_colon                 : TokenType
+    symbol_colon_colon           : TokenType
+    symbol_comma                 : TokenType
+    symbol_compare               : TokenType
+    symbol_dot                   : TokenType
+    symbol_dot_equals            : TokenType
+    symbol_downToGreaterThan     : TokenType
+    symbol_empty_braces          : TokenType
+    symbol_empty_brackets        : TokenType
+    symbol_eq                    : TokenType
+    symbol_equals                : TokenType
+    symbol_exclamation_point     : TokenType
+    symbol_fat_arrow             : TokenType
+    symbol_ge                    : TokenType
+    symbol_gt                    : TokenType
+    symbol_le                    : TokenType
+    symbol_lt                    : TokenType
+    symbol_minus                 : TokenType
+    symbol_minus_equals          : TokenType
+    symbol_minus_minus           : TokenType
+    symbol_ne                    : TokenType
+    symbol_open_brace            : TokenType
+    symbol_open_bracket          : TokenType
+    symbol_open_paren            : TokenType
+    symbol_open_specialize       : TokenType
+    symbol_percent               : TokenType
+    symbol_percent_equals        : TokenType
+    symbol_plus                  : TokenType
+    symbol_plus_equals           : TokenType
+    symbol_plus_plus             : TokenType
+    symbol_question_mark         : TokenType
+    symbol_semicolon             : TokenType
+    symbol_shift_left            : TokenType
+    symbol_shift_right           : TokenType
+    symbol_shift_right_x         : TokenType
+    symbol_slash                 : TokenType
+    symbol_slash_equals          : TokenType
+    symbol_tilde                 : TokenType
+    symbol_tilde_equals          : TokenType
+    symbol_times                 : TokenType
+    symbol_times_equals          : TokenType
+    symbol_upTo                  : TokenType
+    symbol_upToLessThan          : TokenType
+    symbol_vertical_bar          : TokenType
+    symbol_vertical_bar_equals   : TokenType
+    symbol_double_vertical_bar   : TokenType
+
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( name )
+
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return Token( this ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
+      return LiteralCharacterToken( this, value ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
+      return LiteralIntegerToken( this, value ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:Real )->Token
+      return LiteralRealToken( this, value ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      return LiteralStringToken( this, value ).set_location( filepath, line, column )
+
+    method create_token( existing:Token, value:String )->Token
+      return create_token( existing.filepath, existing.line, existing.column, value )
+
+    method create_token( existing:Token, original_type:Type, target_type:Type )->Token
+      return TypeIdentifierToken( this, original_type, target_type ).set_location( existing )
+
+    method is_directive->Logical
+      return false
+
+    method is_op_with_assign->Logical
+      return false
+
+    method is_structure->Logical
+      return false
+
+    method quoted_name->String
+      return "'$'" (name)
+
+    method to->String
+      return name
+
+    method to_String( t:Token )->String
+      return name
+endClass
+
+class EOLTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return EOLToken( this, "" ).set_location( filepath, line, column )
+
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      return EOLToken( this, value ).set_location( filepath, line, column )
+
+    method is_structure->Logical
+      return false
+endClass
+
+class IdentifierTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+      return IdentifierToken( this, value ).set_location( filepath, line, column )
+endClass
+
+class StructureTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return Token( this ).set_location( filepath, line, column )
+
+    method is_structure->Logical
+      return true
+endClass
+
+class DirectiveTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return Token( this ).set_location( filepath, line, column )
+
+    method is_directive->Logical
+      return true
+endClass
+
+class OpWithAssignTokenType : TokenType
+  METHODS
+    method is_op_with_assign->Logical
+      return true
+endClass

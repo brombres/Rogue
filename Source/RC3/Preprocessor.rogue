@@ -1,0 +1,180 @@
+class Preprocessor
+  SETTINGS
+    definitions = Table<<String,Token[]>>()
+
+  PROPERTIES
+    reader : PreprocessorTokenReader
+    tokens : Token[]
+
+  METHODS
+    method process( tokens )->Token[]
+      reader = PreprocessorTokenReader( tokens )
+      tokens = Token[]( (tokens.count * 1.1)->Integer )
+      process( true, 0, false )
+
+      return tokens
+
+    # -------------------------------------------------------------------------
+
+    method consume( type:TokenType )->Logical
+      if (reader.peek.type isNot type) return false
+      reader.read
+      return true
+
+    method process( keep_tokens:Logical, depth:Integer, stop_on_eol:Logical )
+      ++depth
+      while (reader.has_another)
+        local t = reader.read
+
+#       which (t.type)
+#         case Token.symbol_open_directive
+#           local t2 = reader.read
+#           which (t2.type)
+
+        if (t.is_directive)
+
+          if (t.type is TokenType.directive_define)
+            local defined_word = reader.read_identifier
+            local defined_tokens = Token[]()
+            while (reader.has_another)
+              local def_t = reader.read
+              if (def_t.type is TokenType.eol) escapeWhile
+              defined_tokens.add( def_t )
+            endWhile
+            definitions[defined_word] = defined_tokens
+            nextIteration
+
+          elseIf (t.type is TokenType.directive_include)
+            local filepath_t = reader.read
+            if (filepath_t.type isNot TokenType.literal_string)
+              throw reader.error( "Filepath expected." )
+            endIf
+            RogueC.include( t, filepath_t->String )
+            nextIteration
+
+          elseIf (t.type is TokenType.directive_elseIf)
+            if (depth == 1) throw t.error( "Syntax error - $elseIf does not match any previous $if." )
+            reader.push( t )
+            return
+
+          elseIf (t.type is TokenType.directive_else)
+            if (depth == 1) throw t.error( "Syntax error - $else does not match any previous $if." )
+            reader.push( t )
+            return
+
+          elseIf (t.type is TokenType.directive_endIf)
+            if (depth == 1) throw t.error( "Syntax error - $endIf does not match any previous $if." )
+            reader.push( t )
+            return
+
+          elseIf (t.type is TokenType.directive_if)
+            local found_true = parse_logical_expression
+            local single_line = not reader.next_is( TokenType.eol )
+
+            if (found_true)
+              process( keep_tokens, depth, single_line )
+            else
+              process( false, depth, single_line )
+            endIf
+
+            while (reader.peek.type is TokenType.directive_elseIf)
+              reader.read
+              local value = parse_logical_expression
+
+              if (found_true)
+                process( false, depth, single_line )
+              else
+                found_true = value
+                if (value) process( keep_tokens, depth, single_line )
+                else       process( false, depth, single_line )
+              endIf
+            endWhile
+
+            if (reader.peek.type is TokenType.directive_else)
+              reader.read
+              if (found_true) process( false,       depth, single_line )
+              else            process( keep_tokens, depth, single_line )
+            endIf
+
+            if (not single_line) must_consume( TokenType.directive_endIf )
+            nextIteration
+
+          endIf
+        endIf
+
+        if (keep_tokens) tokens.add( t )
+        if (stop_on_eol and t.type is TokenType.eol) return
+
+      endWhile
+
+    method must_consume( type:TokenType )
+      local message = "Expected '$'." (type.name)
+      if (not reader.has_another) throw RogueError( message ) 
+      local t = reader.read
+      if (t.type isNot type) throw t.error( message )
+
+    method parse_logical_expression->Logical
+      return parse_logical_or
+
+    method parse_logical_or->Logical
+      return parse_logical_or( parse_logical_and )
+
+    method parse_logical_or( lhs:Logical )->Logical
+      if (consume(TokenType.keyword_or)) return parse_logical_or( parse_logical_and or lhs )
+      return lhs
+
+    method parse_logical_and->Logical
+      return parse_logical_and( parse_logical_term )
+
+    method parse_logical_and( lhs:Logical )->Logical
+      if (consume(TokenType.keyword_and)) return parse_logical_and( parse_logical_term and lhs )
+      return lhs
+
+    method parse_logical_term->Logical
+      loop
+        local t = reader.peek
+        if (consume(TokenType.keyword_not))
+          return (not parse_logical_term)
+        endIf
+
+        if (consume(TokenType.symbol_open_paren))
+          local result = parse_logical_expression
+          must_consume(TokenType.symbol_close_paren)
+          return result
+        endIf
+
+        if (t.type is TokenType.literal_string)
+          return RogueC.compile_targets[reader.read->String]
+        endIf
+
+        #{
+        if (t.type is TokenType.identifier)
+          which (t->String)
+            case "defined"
+              reader.read
+              must_consume( TokenType.symbol_open_paren )
+              local id = read_identifier
+              must_consume( TokenType.symbol_close_paren )
+              return Keywords.definitions.contains( id )
+
+            others
+              reader.read
+              local def = Keywords.definitions[ t->String ]
+              if (def is null) return false
+              reader.push( def )
+              nextIteration
+          endWhich
+        endIf
+        }#
+
+        if (consume(TokenType.keyword_true))  return true
+        if (consume(TokenType.keyword_false)) return false
+        throw reader.peek.error( "Syntax error in directive: '$'." (reader.peek) )
+      endLoop
+
+    method read_identifier->String
+      local t = reader.peek
+      if (t.type isNot TokenType.identifier) throw t.error( "Identifier expected instead of '$'." (t) )
+      return reader.read->String
+endClass
+

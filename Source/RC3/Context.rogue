@@ -1,0 +1,9 @@
+class Context
+  PROPERTIES
+    this_type   : Type
+    this_method : Method
+
+  METHODS
+    method init( this_type, this_method )
+endClass
+

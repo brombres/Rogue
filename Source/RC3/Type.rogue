@@ -1,0 +1,935 @@
+class Type
+  PROPERTIES
+    t            : Token
+    name         : String
+    attributes   = Attributes()
+    index        = -1
+
+    defined      : Logical
+    organized    : Logical
+    resolved     : Logical
+    visiting     : Logical
+
+    base_class : Type
+    base_types = Type[]
+    flat_base_types = Type[]
+
+    generic_type : Type
+
+    is_array     : Logical
+    is_list      : Logical
+    is_optional  : Logical
+    element_type : Type
+
+    simplify_name : Logical
+      # RogueInteger instead of RoguePrimitiveInteger, etc. - used for classes that are predefined
+      # in the infrastructure and that developers will often use directly.
+
+    definition_list   = String[]
+    definition_lookup = Table<<String,Cmd>>()
+    prev_enum_cmd    : Cmd
+    next_enum_offset = 0
+
+    settings_list   = Property[]
+    settings_lookup = Table<<String,Property>>() : Table<<String,Property>>
+
+    property_list   = Property[]
+    property_lookup = Table<<String,Property>>() : Table<<String,Property>>
+
+    routine_list                = Method[]                   : Method[]
+    routine_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
+    routine_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
+
+    method_list                = Method[]                   : Method[]
+    method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
+    method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
+
+    cpp_name       : String
+    cpp_class_name : String
+    cpp_type_name  : String
+    dynamic_method_table_index : Integer
+
+  METHODS
+    method init( t, name )
+
+    method add_method( m_t:Token, m_name:String )->Method
+      local m = Method( m_t, this, m_name )
+      method_list.add( m )
+      local list = method_lookup_by_name[ m_name ]
+      if (not list)
+        list = Method[]
+        method_lookup_by_name[ m_name ] = list
+      endIf
+      list.add( m )
+      return m
+
+    method add_routine( m_t:Token, m_name:String )->Method
+      local m = Method( m_t, this, m_name )
+      m.attributes.add( Attribute.is_routine )
+      routine_list.add( m )
+      local list = routine_lookup_by_name[ m_name ]
+      if (not list)
+        list = Method[]
+        routine_lookup_by_name[ m_name ] = list
+      endIf
+      list.add( m )
+      return m
+
+    method add_setting( s_t:Token, s_name:String )->Property
+      local s = Property( s_t, this, s_name )
+      settings_list.add( s )
+      settings_lookup[s_name] = s
+      return s
+
+    method add_property( p_t:Token, p_name:String, p_type=null:Type, initial_value=null:Cmd )->Property
+      local p = Property( p_t, this, p_name )
+      p.type = p_type
+      p.initial_value = initial_value
+      property_list.add( p )
+      property_lookup[p_name] = p
+      return p
+
+    method assign_cpp_name
+      cpp_name = Program.validate_cpp_name( name )
+
+      if (is_array or this is Program.type_NativeArray)
+        cpp_class_name = "RogueArray"
+        cpp_name = "Array"
+
+      elseIf (this.is_primitive or this.simplify_name)
+        cpp_class_name = "Rogue" + cpp_name
+
+      elseIf (is_list)
+        cpp_class_name = "Rogue" + cpp_name
+
+      elseIf (is_optional and element_type.is_primitive)
+        cpp_name = Program.validate_cpp_name( "Optional" + element_type.name )
+        cpp_class_name = "Rogue" + cpp_name
+        attributes.add( Attribute.is_native )
+
+      else
+        cpp_class_name = "RogueClass" + cpp_name
+      endIf
+
+      cpp_type_name = "RogueType" + cpp_name
+
+      forEach (s in settings_list)
+        s.cpp_name = Program.validate_cpp_name( s.name )
+      endForEach
+
+      forEach (p in property_list)
+        p.cpp_name = Program.validate_cpp_name( p.name )
+      endForEach
+
+    method compile_type->Type
+      if (generic_type) return generic_type
+      return this
+
+    method create_default_value( _t:Token )->Cmd
+      if (this.is_reference) return CmdLiteralNull( _t )
+      if (this.is_compound) return CmdCreateCompound( _t, this, null )
+      if (this is Program.type_Logical) return CmdLiteralLogical( _t, false )
+      return CmdLiteralInteger( _t, 0 )
+
+    method declare_settings( writer:CPPWriter )
+      if (is_generic) return
+      forEach (s in settings_list)
+        if (s.type_context is this)
+          writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
+          if (s.type.is_reference)                writer.println( " = nullptr;" )
+          elseIf (s.type is Program.type_Logical) writer.println( " = false;" )
+          else                                    writer.println( " = 0;" )
+        endIf
+      endForEach
+
+    method extends_object->Logical
+      return instance_of( Program.type_Object )
+
+    method find_method( signature:String )->Method
+      local m = method_lookup_by_signature[signature]
+      if (m) return m
+
+      return find_routine( signature )
+
+    method find_routine( signature:String )->Method
+      local m = routine_lookup_by_signature[signature]
+      if (m) return m
+
+      return null
+
+    method find_property( p_name:String )->Property
+      if (p_name[0] == '@') p_name = p_name.rightmost(-1)
+      return property_lookup[p_name]
+
+    method find_setting( s_name:String )->Property
+      if (s_name[0] == '@') s_name = s_name.rightmost(-1)
+      return settings_lookup[s_name]
+
+    method has_method_named( m_name:String )->Logical
+      local list = method_lookup_by_name[m_name]
+      return (list and list.count)
+
+    method has_routine_named( r_name:String )->Logical
+      local list = routine_lookup_by_name[r_name]
+      return (list and list.count)
+
+    method instance_of( ancestor_type:Type )->Logical
+      if (this is ancestor_type) return true
+      if (this is Program.type_null and ancestor_type.is_reference) return true
+
+      forEach (base_type in base_types)
+        if (base_type.instance_of(ancestor_type)) return true
+      endForEach
+
+      return false
+
+    method is_compatible_with( other:Type )->Logical
+      if (this is other) return true
+      if (this.is_primitive and other.is_primitive)
+        if (this is Program.type_Logical xor other is Program.type_Logical) return false 
+        return true
+      endIf
+      if (other.is_optional and other.element_type is this) return true
+      return (this.instance_of(other))
+
+    method is_direct->Logical
+      return not is_reference
+
+    method is_aspect->Logical
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_aspect
+
+    method is_class->Logical
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_class
+
+    method is_compound->Logical
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_compound
+
+    method is_functional->Logical
+      return (attributes.flags & Attribute.is_functional)
+
+    method is_generic->Logical
+      return generic_type
+
+    method is_immutable->Logical
+      return (attributes.flags & Attribute.is_immutable)
+
+    method is_native->Logical
+      return (attributes.flags & Attribute.is_native)
+
+    method is_primitive->Logical
+      return (attributes.flags & Attribute.type_mask) == Attribute.is_primitive
+
+    method is_reference->Logical
+      which (attributes.flags & Attribute.type_mask)
+        case Attribute.is_class, Attribute.is_aspect
+          return true
+        others
+          return false
+      endWhich
+
+    method is_singleton->Logical
+      return (attributes.flags & Attribute.is_singleton)
+
+    method organize->Type
+      if (organized) return this
+      organized = true
+
+      index = Program.type_list.count
+      Program.type_list.add( this )
+
+      if (not defined)
+        defined = true
+        local template = Program.find_template( name )
+        if (template)
+          template.instantiate( this )
+        else
+          throw t.error( "Reference to undefined type '$'." (name) )
+        endIf
+      endIf
+
+      forEach (base_type in base_types)
+        base_type.organize
+
+        if (is_aspect)
+          if (not base_type.is_aspect)
+            throw t.error( "Aspects can only extend other aspects." )
+          endIf
+        endIf
+
+        if (base_type.instance_of(this))
+          throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
+              (this,base_type,base_type,this) )
+        endIf
+      endForEach
+
+      if (is_class)
+        forEach (base_type in base_types)
+          if (base_type.is_class)
+            if (base_class and base_class isNot base_type)
+              throw t.error( "Class $ can only have one base class ($ and $ are both specified as base classes)." (name,base_class,base_type) )
+            else
+              base_class = base_type
+            endIf
+          endIf
+        endForEach
+        
+        if (not base_class and not is_functional and this isNot Program.type_Object)
+          Program.type_Object.organize
+          base_class = Program.type_Object; base_types.insert( base_class )
+        endIf
+      endIf
+
+      # Collect flat list base types while removing duplicates
+      if (base_class) base_class.collect_base_types( flat_base_types )
+      forEach (base_type in base_types)
+        base_type.collect_base_types( flat_base_types )
+      endForEach
+
+      # Inherit definitions
+      forEach (base_type in base_types)
+        inherit_definitions( base_type )
+      endForEach
+
+      # Inherit properties
+      local full_property_list = Property[]
+      property_lookup.clear
+      inherit_properties( full_property_list, property_lookup )
+      property_list = full_property_list
+
+      # Create type_name() method
+      local m_type_name = add_method( t, "type_name" )
+      m_type_name.return_type = Program.type_String
+      m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
+
+      # Organize routines and methods and create signatures
+      forEach (r in routine_list)
+        r.organize
+      endForEach
+
+      forEach (m in method_list)
+        m.organize
+      endForEach
+
+      # Inherit routines and methods
+      local full_routine_list = Method[]
+      routine_lookup_by_signature.clear
+      inherit_routines( full_routine_list, routine_lookup_by_signature )
+      routine_list = full_routine_list
+      routine_lookup_by_name.clear
+      forEach (r in routine_list)
+        local list = routine_lookup_by_name[r.name]
+        if (not list)
+          list = Method[]
+          routine_lookup_by_name[r.name] = list
+        endIf
+        list.add( r )
+      endForEach
+
+      local full_method_list = Method[]
+      method_lookup_by_signature.clear
+      inherit_methods( full_method_list, method_lookup_by_signature )
+      method_list = full_method_list
+      method_lookup_by_name.clear
+      forEach (m in method_list)
+        local list = method_lookup_by_name[m.name]
+        if (not list)
+          list = Method[]
+          method_lookup_by_name[m.name] = list
+        endIf
+        list.add( m )
+      endForEach
+
+      # Create or locate init_class() to initialize settings
+      if (settings_list.count and not is_native)
+        local m = find_routine( "init_class()" )
+        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
+
+        # Insert setting initializations
+        local i = settings_list.count - 1
+        while (i >= 0)
+          local s = settings_list[i]
+          if (s.initial_value)
+            m.statements.insert( CmdWriteSetting(s.t, s, s.initial_value.clone) )
+          endIf
+          --i
+        endWhile
+      endIf
+
+      # Create or find init_object() method to initialize properties
+      if (is_class and not is_native)
+        local m = find_method( "init_object()" )
+        local prior_m = m
+        if (not m or m.type_context isNot this)
+          m = add_method( t, "init_object" ).organize
+          if (prior_m)
+            prior_m.attributes.add( Attribute.is_dynamic )
+            prior_m.attributes.add( Attribute.is_overridden )
+            m.attributes.add( Attribute.is_dynamic )
+            method_list.remove( m )
+            method_list[ method_list.locate( prior_m )! ] = m
+          endIf
+        endIf
+        m.return_type = this
+        m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
+
+        # Insert property initializations
+        local i = property_list.count - 1
+        while (i >= 0)
+          local p = property_list[i]
+          if (p.initial_value)
+            m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.clone) )
+          endIf
+          --i
+        endWhile
+      endIf
+
+      if (this isNot Program.type_NativeArray)
+        is_array = this.instance_of( Program.type_NativeArray )
+        if (is_array)
+          local cur_type = this
+          while (not cur_type.name.begins_with("Array<<"))
+            cur_type = cur_type.base_class
+            if (cur_type is null) throw t.error( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>." )
+          endWhile
+
+          local element_type_name = cur_type.name.after_first("<<").before_last(">>")
+          element_type = Program.get_type_reference( t, element_type_name ).organize
+        endIf
+      endIf
+
+      return this
+
+    method collect_base_types( list:Type[] )
+      if (list.contains(this)) return
+      list.add( this )
+      forEach (base_type in base_types)
+        base_type.collect_base_types( list )
+      endForEach
+
+    method has_references->Logical
+      forEach (p in property_list)
+        if (p.type.is_reference) return true
+        if (p.type.is_compound and p.type.has_references) return true
+      endForEach
+      return false
+
+    method inherit_definitions( from_type:Type )
+      forEach (def_name in from_type.definition_list)
+        if (not definition_lookup.contains(def_name))
+          definition_list.add( def_name )
+          definition_lookup[ def_name ] = from_type.definition_lookup[ def_name ]
+        endIf
+      endForEach
+
+      forEach (base_type in from_type.base_types)
+        inherit_definitions( base_type )
+      endForEach
+
+    method inherit_properties( list:Property[], lookup:Table<<String,Property>> )
+      forEach (base_type in base_types)
+        forEach (base_p in base_type.property_list)
+          inherit_property( base_p, list, lookup )
+        endForEach
+      endForEach
+
+      forEach (p in property_list)
+        inherit_property( p, list, lookup )
+      endForEach
+
+    method inherit_property( p:Property, list:Property[], lookup:Table<<String,Property>> )
+      local existing_p = lookup[ p.name ]
+      if (existing_p)
+        local i = list.locate( existing_p )!
+
+        if (p.type_context is existing_p.type_context)
+          throw p.t.error( //A property named "$" already exists.// (p.name) )
+        else
+          if (p.type is existing_p.type)
+            if (p.initial_value)
+              if (existing_p.initial_value)
+                if (p.type.instance_of(existing_p.type))
+                  # Use the new declaration with its updated initial value
+                  if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
+                  list[i] = p
+                  lookup[p.name] = p
+                else
+                  throw p.t.error( //Conflicting initial values are given for property "$" in unrelated types $ and $.// ...
+                      (p.name,p.type_context,existing_p.type_context) )
+                endIf
+              else
+                # Use newer property with its existing value instead of old property without a value
+                if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
+                list[i] = p
+                lookup[p.name] = p
+              endIf
+
+              # Else either the original property is the one with the initial value or neither of them
+              # has an initial value.  In either case leave the original property definition as the one
+              # in the list.
+            endIf
+          else
+            throw p.t.error( //Conflicting types given for property "$" - $:$ in $ and $:$ in $.// ...
+              (p.name,p.name,p.type,p.type_context,p.name,existing_p.type,existing_p.type_context) )
+          endIf
+        endIf
+
+      else
+        if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
+        list.add( p )
+        lookup[p.name] = p
+      endIf
+
+    method inherit_methods( list:Method[], lookup:Table<<String,Method>> )
+      forEach (base_type in base_types)
+        forEach (base_m in base_type.method_list)
+          inherit_method( base_m, list, lookup )
+        endForEach
+      endForEach
+
+      forEach (m in method_list)
+        inherit_method( m, list, lookup )
+      endForEach
+
+      index_and_move_inline_to_end( list )
+
+    method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
+      local existing_m = lookup[ m.signature ]
+
+      if (existing_m)
+        local i = list.locate( existing_m )!
+
+        if (not existing_m.is_incorporated)
+          if (m.type_context is existing_m.type_context)
+            throw m.t.error( //Type $ already defines method $.// (m.type_context,m.signature) )
+          else
+            if (m.return_type isNot existing_m.return_type)
+              if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
+                throw m.t.error( "In $::$ the overridden return type ($) is not compatible with the prior definition return type ($)." (m.type_context.name, m.signature,m.return_type,existing_m.return_type) )
+              endIf
+            endIf
+          endIf
+        endIf
+
+        if (m.type_context.is_aspect) m = m.incorporate( this )
+
+        if (not existing_m.type_context.is_aspect)
+          existing_m.attributes.add( Attribute.is_dynamic )
+          existing_m.attributes.add( Attribute.is_overridden )
+          m.attributes.add( Attribute.is_dynamic )
+        endIf
+
+        m.overridden_method = existing_m
+        list[i] = m
+        lookup[m.signature] = m
+
+      else
+        if (m.type_context.is_aspect) m = m.incorporate( this )
+
+        list.add( m )
+        lookup[m.signature] = m
+      endIf
+
+    method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
+      forEach (base_type in base_types)
+        forEach (base_m in base_type.routine_list)
+          inherit_routine( base_m, list, lookup )
+        endForEach
+      endForEach
+
+      forEach (m in routine_list)
+        inherit_routine( m, list, lookup )
+      endForEach
+
+      index_and_move_inline_to_end( list )
+
+    method inherit_routine( m:Method, list:Method[], lookup:Table<<String,Method>> )
+      local existing_m = lookup[ m.signature ]
+
+      if (existing_m)
+        local i = list.locate( existing_m )!
+
+        # Aspect routines are not incorporated
+        if (m.type_context.is_aspect) return
+
+        # New method replaces old method in lookup
+        list[i] = m
+        lookup[m.signature] = m
+
+      else
+        # Aspect routines are not incorporated
+        if (m.type_context.is_aspect) return
+
+        list.add( m )
+        lookup[m.signature] = m
+      endIf
+
+    method index_and_move_inline_to_end( list:Method[] )
+      local i = list.count - 1
+      while (i >= 0)
+        local m = list[i]
+        if (m.is_inline)
+          list.remove( m )
+          list.add( m )
+        endIf
+        --i
+      endWhile
+
+      i = 0
+      forEach (m in list)
+        m.index = i
+        ++i
+      endForEach
+
+    method omit_output->Logical
+      return is_native or generic_type or (is_optional and element_type.is_reference)
+
+    method resolve->Type
+      if (resolved) return this
+      resolved = true
+
+      organize
+
+      if (element_type) element_type.organize
+
+      if (generic_type) generic_type.organize
+
+      forEach (s in settings_list) s.type.organize
+      forEach (p in property_list)
+        p.type.organize
+      endForEach
+
+      forEach (r in routine_list)
+        r.resolve
+      endForEach
+
+      forEach (m in method_list)
+        m.resolve
+      endForEach
+
+      return this
+
+    method print_data_definition( writer:CPPWriter )
+      if (omit_output) return
+
+      writer.print( "struct " ).print( cpp_class_name )
+      local is_error = false
+      if (is_class)
+        if (instance_of(Program.type_Error))
+          is_error = true
+          writer.print( " : " ).print_type_name( base_class )
+        else
+          writer.print( " : RogueObject" )
+        endIf
+      endIf
+      writer.println.println( "{" )
+      writer.indent += 2
+
+      # Settings
+      if (settings_list.count)
+        writer.println "// SETTINGS"
+        forEach (s in settings_list)
+          writer.print( "static " ).print( s.type ).print(" ").print( s.cpp_name ).println(";")
+        endForEach
+        writer.println
+      endIf
+
+      writer.println "// PROPERTIES"
+      forEach (p in property_list)
+        if (not is_error or p.type_context is this)
+          writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+        endIf
+      endForEach
+      writer.println
+
+      if (is_compound)
+        if (property_list.count)
+          # Default Constructor
+          writer.print( this ).print( "() : " )
+          local first = true
+          forEach (p in property_list)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( p.cpp_name ).print("(").print_default_value(p.type).print(")")
+          endForEach
+          writer.println( " {}" )
+          writer.println
+
+          if (is_optional)
+            # Value Constructor, exists->true
+            writer.print( this ).print( "( " ).print( property_list.first.cpp_name )
+            writer.print( " value ) : value(value), exists(true) {}" )
+          else
+            # Standard Constructor
+            writer.print( this ).print( "( " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.type ).print(" ").print( p.cpp_name )
+            endForEach
+            writer.print( " ) : " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
+            endForEach
+            writer.println( " {}" )
+            writer.println
+          endIf
+        endIf
+
+        # Default operator== and operator!= 
+        writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
+        if (is_optional)
+          writer.print( "  if (exists)" )
+          writer.print( "  {" )
+          writer.print( "    if (other.exists) return value == other.value;" )
+          writer.print( "    else              return false;" )
+          writer.print( "  }" )
+          writer.print( "  else" )
+          writer.print( "  {" )
+          writer.print( "    if (other.exists) return false;" )
+          writer.print( "    else              return true;" )
+          writer.print( "  }" )
+        else
+          forEach (p in property_list)
+            writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
+          endForEach
+          writer.println( "  return true;" )
+        endIf
+        writer.println( "}" )
+        writer.println
+
+        writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
+        writer.println( "  return !(*this == other);" )
+        writer.println( "}" )
+        writer.println
+
+        # trace() method
+        if (has_references)
+          writer.println(   "void trace()" )
+          writer.println( "{" )
+          writer.indent += 2
+          forEach (p in property_list)
+            if (p.type.is_reference)
+              writer.print("ROGUE_TRACE( " ).print( p.cpp_name ).println( " );" )
+            elseIf (p.type.has_references)
+              # Compound
+              writer.print( p.cpp_name ).println( ".trace();" )
+            endIf
+          endForEach
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
+
+        # check()
+        if (is_optional)
+          writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
+          writer.println( "{" )
+          writer.println( "  if ( !exists ) return false;" )
+          writer.println( "  *checked = value;" )
+          writer.println( "  return true;" )
+          writer.println( "}" )
+          writer.println
+        endIf
+
+      endIf
+
+      writer.indent -= 2
+      writer.println( "};" )
+
+    method print_type_definition( writer:CPPWriter )
+      if (omit_output) return
+
+      writer.print( "struct " ).print( cpp_type_name ).println( " : RogueType" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      # configure()
+      writer.println( "void configure()" )
+      writer.println( "{" )
+      writer.indent += 2;
+
+      writer.print( "object_size = (int) sizeof( " ).print(cpp_class_name).println(" );")
+
+      if (base_types.count)
+        writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
+        writer.println( "base_types = new RogueType*[ base_type_count ];" )
+        forEach (i of base_types)
+          writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
+          writer.print( base_types[i].compile_type.cpp_name ).println( ";" )
+        endForEach
+      endIf
+
+      writer.print( "methods = Rogue_dynamic_method_table + " )
+      writer.print( dynamic_method_table_index ).println( ";" )
+
+      #{
+      if (settings_list.count)
+        local initialized_settings = false
+        forEach (s in settings_list)
+          if (s.initial_value)
+          endIf
+        endForEach
+        if (initialized_settings) writer.println
+      endIf
+      }#
+
+      writer.indent -= 2;
+      writer.println( "}" )
+      writer.println()
+
+      # create_object()
+      local m_init_object = find_method( "init_object()" )
+      if (m_init_object and m_init_object.statements.count > 1)
+        local type_Object = Program.type_Object
+        writer.print( type_Object ).print( " init_object( " ).print( type_Object ).println( " THIS )" )
+        writer.println( "{" )
+        writer.print( "  return (" ).print(type_Object).print(") ").print( m_init_object.cpp_name )
+        writer.print( "( (" ).print(this).println( ") THIS );" );
+        writer.println( "}" )
+        writer.println
+      endIf
+
+      # name()
+      writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )
+      writer.println
+
+      # singleton()
+      if (is_singleton)
+        writer.print( this ).println( " singleton()" )
+        writer.println( "{" )
+        writer.indent += 2
+        writer.println( "if ( !_singleton )" )
+        writer.println( "{" )
+        writer.println( "  _singleton = create_object();" )
+        writer.println( "  init_object( _singleton );" )
+
+        local m_init = find_method( "init()" )
+        if (m_init)
+          writer.print( "  " ).print( m_init.cpp_name )
+          writer.print( "( (" ).print( this ).println( ") _singleton );" )
+        endIf
+
+        writer.println( "}" )
+
+        writer.print( "return (" ).print( this ).println( ") _singleton;" )
+        writer.indent -= 2
+        writer.println( "}" )
+        writer.println
+      endIf
+
+      # trace()
+      if (is_class and has_references)
+        writer.println(   "void trace( RogueObject* THIS )" )
+        writer.println( "{" )
+        forEach (p in property_list)
+          if (p.type.is_reference)
+            writer.print( "  ROGUE_TRACE( ((")
+            writer.print(this)  # cast RogueObject* ref to actual type
+            writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
+          elseIf (p.type.has_references)
+            # Compound
+            writer.print( "  ((")
+            writer.print(this)  # cast RogueObject* ref to actual type
+            writer.print(")THIS)->" ).print( p.cpp_name ).println( ".trace();" )
+          endIf
+        endForEach
+        writer.println( "}" )
+      endIf
+
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+    method print_routine_prototypes( writer:CPPWriter )
+      if (is_generic) return
+
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method print_routine_definitions( writer:CPPWriter )
+      if (is_generic) return
+
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
+    method print_method_prototypes( writer:CPPWriter )
+      if (is_generic) return
+
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
+      local buffer = StringBuilder()
+      forEach (m in method_list)
+        if (not m.is_inline and m.is_dynamic)
+          buffer.clear
+          if (m.return_type)
+            buffer.print( m.return_type.compile_type.cpp_class_name )
+            if (m.return_type.is_reference) buffer.print('*')
+          else
+            buffer.print( "void" )
+          endIf
+          buffer.print( "(*)(" )
+          buffer.print( m.type_context.compile_type.cpp_class_name ).print("*")
+          forEach (i of m.parameters)
+            buffer.print(',')
+            local param_type = m.parameters[i].type.compile_type
+            buffer.print( param_type.cpp_class_name )
+            if (param_type.is_reference) buffer.print('*')
+          endForEach
+          buffer.print( ")" )
+          local sig = buffer->String
+          local mapping = lookup[sig]
+          if (mapping)
+            m.cpp_typedef = mapping.cpp_typedef
+          else
+            m.cpp_typedef = "ROGUEM" + list.count
+            lookup[sig] = m
+            list.add( sig )
+          endIf
+        endIf
+      endForEach
+
+    method print_dynamic_method_table_entries( at_index:Integer, writer:CPPWriter )->Integer
+      if (is_generic or not is_reference) return at_index
+
+      dynamic_method_table_index = at_index
+
+      forEach (m in method_list)
+        if (not m.is_inline)
+          if (m.is_dynamic)
+            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).println( "," )
+          else
+            writer.println( "NULL," )
+          endIf
+          ++at_index
+        endIf
+      endForEach
+
+      return at_index
+
+    method print_method_definitions( writer:CPPWriter )
+      if (is_generic) return
+
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
+    method print_type_configuration( writer:CPPWriter )
+      if (omit_output) return
+      writer.print( "  type_" ).print( cpp_name ).print( " = Rogue_types[" ).print( index )
+      writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_class_name ).print( "\", sizeof(Class" )
+      writer.print( cpp_class_name ).println( ") );" )
+
+    method to->String
+      return name
+
+endClass

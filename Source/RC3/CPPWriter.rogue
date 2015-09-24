@@ -1,0 +1,176 @@
+class CPPWriter
+  PROPERTIES
+    filepath : String
+    buffer   = StringBuilder()
+    indent   = 0
+    needs_indent = true
+
+    temp_buffer = StringBuilder()
+
+  METHODS
+    method init( filepath )
+
+    method close
+      File(filepath).save( buffer->String )
+
+    method print_indent
+      if (needs_indent)
+        needs_indent = false
+        forEach (1..indent) buffer.print(' ')
+      endIf
+
+    method print( value:Integer )->CPPWriter
+      print_indent
+      buffer.print( value )
+      return this
+
+    method print( value:Real )->CPPWriter
+      print_indent
+
+      which (value)
+        case pi
+          buffer.print( "Rogue_program.pi" )
+
+        case 2*pi
+          buffer.print( "(2*Rogue_program.pi)" )
+
+        others
+          local decimal_digits = 16
+          temp_buffer.clear.print( value, decimal_digits )
+          while (temp_buffer.characters.last == '0') temp_buffer.characters.remove_last; --decimal_digits
+          if (decimal_digits == 0) decimal_digits = 1
+
+          buffer.print( value, decimal_digits )
+      endWhich
+      return this
+
+    method print( value:String )->CPPWriter
+      print_indent
+      buffer.print( value )
+      return this
+
+    method println->CPPWriter
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Integer )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Real )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:String )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method print( type:Type )->CPPWriter
+      if (type and type.is_optional and type.element_type.is_reference)
+        return print( type.element_type )
+      else
+        print_type_name( type )
+        if (type and type.compile_type.is_reference) buffer.print("*")
+        return this
+      endIf
+
+    method print_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      return print( "(" ).print( to_type ).print( ")" )
+      return this
+
+    method print_open_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      print( "(" )
+      return print_cast( from_type, to_type )
+
+    method print_close_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      print( ")" )
+      return this
+
+    method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
+      if (from_type is to_type)
+        cmd.write_cpp( this )
+      else
+        print( "(" )
+        print_cast( from_type, to_type )
+        cmd.write_cpp( this )
+        print( ")" )
+      endIf
+      return this
+
+    method print_access_operator( type:Type )->CPPWriter
+      if (type.is_reference) return print( "->" )
+      else                   return print( "." )
+
+    method print_type_name( type:Type )->CPPWriter
+      print_indent
+      if (type) buffer.print( type.compile_type.cpp_class_name )
+      else       buffer.print( "void" )
+      return this
+
+    method print_type_info( type:Type )->CPPWriter
+      type = type.compile_type
+      print_indent
+      buffer.print( "Rogue_program.type_" ).print( type.cpp_name )
+      return this
+
+    method print_default_value( type:Type )->CPPWriter
+      type = type.compile_type
+      if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
+        buffer.print( "0" )
+      else
+        print( type ).print( "()" )
+      endIf
+      return this
+
+    method print( ch:Character, in_string=false:Logical )->CPPWriter
+      if (ch < 0x80)
+        if (ch >= 32 and ch <= 126)
+          which (ch)
+            case '"'
+              if (in_string) print( "\\\"" )
+              else           print( "\"" )
+            case '\''
+              if (in_string) print( "'" )
+              else           print( "\\'" )
+            case '\\'
+              print( "\\\\" )
+            others
+              print( ""+ch )
+          endWhich
+        else
+          which (ch)
+            case 10
+              print "\\n"
+            others
+              print "\\"
+              print( "" + (ch->Integer / 64)->Integer )
+              print( "" + ((ch->Integer & 63) / 8)->Integer )
+              print( "" + (ch & 7) )
+          endWhich
+        endIf
+      endIf
+      return this
+
+    method print_string_utf8( st:String )->CPPWriter
+      if (st is null)
+        print( "0" )
+        return this
+      endIf
+
+      print( "\"" )
+      forEach (ch in st) print( ch, true )
+      print( "\"" )
+
+      return this
+endClass
+

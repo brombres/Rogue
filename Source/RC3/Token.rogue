@@ -1,0 +1,153 @@
+class Token
+  PROPERTIES
+    type     : TokenType
+    filepath : String
+    line     : Integer
+    column   : Integer
+
+  METHODS
+    method init( type )
+
+    method clone->Token
+      throw RogueError( "clone() not implemented for type $." (type_name) )
+
+    method error( message:String )->RogueError
+      return RogueError( message, filepath, line, column )
+
+    method is_directive->Logical
+      return type.is_directive
+
+    method is_structure->Logical
+      return type.is_structure
+
+    method quoted_name->String
+      return "'$'" (this->String)
+
+    method set_location( filepath, line, column )->Token
+      return this
+
+    method set_location( existing:Token )->Token
+      filepath = existing.filepath
+      line     = existing.line
+      column   = existing.column
+      return this
+
+    method to->Character
+      return 0
+
+    method to->Integer
+      return 0
+
+    method to->Real
+      return 0
+
+    method to->String
+      return type.to_String(this)
+
+    method to->Type
+      return null
+
+    method generic_type->Type
+      return null
+endClass
+
+class EOLToken : Token
+  PROPERTIES
+    comment : String
+
+  METHODS
+    method init( type, comment )
+
+    method to->String
+      if (comment.count) return //EOL  # $// (comment)
+      return "EOL"
+endClass
+
+class IdentifierToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( type, value )
+
+    method to->String
+      return ""+value
+endClass
+
+class TypeIdentifierToken : Token
+  PROPERTIES
+    nominal_type : Type
+    target_type   : Type
+
+  METHODS
+    method init( type, nominal_type, target_type )
+
+    method to->String
+      return nominal_type.name
+
+    method to->Type
+      return nominal_type
+
+    method generic_type->Type
+      return target_type
+endClass
+
+class LiteralCharacterToken : Token
+  PROPERTIES
+    value : Character
+
+  METHODS
+    method init( type, value )
+
+    method to->Character
+      return value
+
+    method to->String
+      return ""+value
+endClass
+
+class LiteralIntegerToken : Token
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( type, value )
+
+    method to->Integer
+      return value
+
+    method to->Real
+      return value->Real
+
+    method to->String
+      return ""+value
+endClass
+
+class LiteralRealToken : Token
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( type, value )
+
+    method to->Integer
+      return value->Integer
+
+    method to->Real
+      return value
+
+    method to->String
+      return ""+value
+endClass
+
+class LiteralStringToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( type, value )
+
+    method to->String
+      return value
+endClass
+

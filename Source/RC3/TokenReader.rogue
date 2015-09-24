@@ -1,0 +1,158 @@
+class TokenReader
+  PROPERTIES
+    tokens   : Token[]
+    position : Integer
+    count    : Integer
+
+  METHODS
+    method init( tokens )
+      count = tokens.count
+
+    method error( message:String )->Error
+      if (has_another) return peek.error( message )
+      if (count) return tokens.last.error( message )
+      return RogueError( message )
+
+    method has_another->Logical
+      return (position < count)
+
+    method next_is( type:TokenType )->Logical
+      if (position == count) return false
+      return tokens[position].type is type
+
+    method next_is_statement_token->Logical
+      if (position == count) return false
+      if (tokens[position].type.is_structure) return false
+      return true
+
+    method peek->Token
+      if (position == count) return tokens.last
+      return tokens[position]
+
+    method peek( num_ahead:Integer )->Token
+      if (position + num_ahead >= count) return tokens.last
+      return tokens[ position + num_ahead ]
+
+    method read->Token
+      ++position
+      return tokens[ position - 1 ]
+
+      #{
+    method source_string( i1:Integer, i2:Integer )->String
+      local buffer = StringBuilder()
+      local i = i1
+      while (i <= i2)
+        local lhs_is_letter = (buffer.count and buffer.last.is_letter)
+        local token_as_string = tokens[i].to_source_string
+        local rhs_is_letter = token_as_string.count and token_as_string[0].is_letter
+        if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
+        buffer.print( tokens[i].to_source_string )
+        ++i
+      endWhile
+      return buffer.to_String
+      }#
+endClass
+
+
+class PreprocessorTokenReader
+  # Expands tokens based on Preprocessor.definitions
+  PROPERTIES
+    tokens   : Token[]
+    queue    = Token[]  # stored in reverse order
+    position : Integer
+    count    : Integer
+
+  METHODS
+    method init( tokens )
+      count = tokens.count
+
+    method error( message:String )->Error
+      if (has_another) return peek.error( message )
+      if (count) return tokens.last.error( message )
+      return RogueError( message )
+
+    method expand_definition( t:Token )
+      local entry = Preprocessor.definitions.find( t->String )
+      if (entry)
+        if (entry.value)
+          local def_tokens = entry.value
+          entry.value = null   # temporarily null to prevent infinite recursion
+          forEach (def_t in def_tokens)
+            if (t.type is TokenType.identifier) expand_definition( def_t )
+            else                                queue.add( t )
+          endForEach
+          entry.value = def_tokens
+          return
+        else
+          throw t.error( //Recursive definition for "$".// (t->String) )
+        endIf
+      else
+        queue.add( t )
+      endIf
+
+    method has_another->Logical
+      peek
+      return queue.count
+
+    method next_is( type:TokenType )->Logical
+      if (position == count and queue.count == 0) return false
+      return (peek.type is type)
+
+    method peek->Token
+      if (queue.count) return queue.last
+      return peek(0)
+
+    method peek( num_ahead:Integer )->Token
+      if (position + num_ahead >= count + queue.count) return tokens.last
+
+      while (queue.count <= num_ahead)
+        local t = tokens[position]
+        ++position
+
+        # Possible definition expansion
+        if (t.type is TokenType.identifier)
+          expand_definition( t )
+        else
+          queue.add( t )
+        endIf
+      endWhile
+
+      return queue[ (queue.count - num_ahead) - 1 ]
+
+    method push( t:Token )
+      queue.add( t )
+
+    method push( _tokens:Token[] )
+      local i = _tokens.count
+      while (i > 0)
+        --i
+        queue.add( _tokens[i] )
+      endWhile
+
+    method read->Token
+      peek
+      if (queue.count == 0) throw error( "Unexpected end of input." )
+      return queue.remove_last
+
+    method read_identifier->String
+      if (not next_is(TokenType.identifier))
+        throw error( "Identifier expected, found $." (peek.quoted_name) )
+      endIf
+      return read->String
+
+      #{
+    method source_string( i1:Integer, i2:Integer )->String
+      local buffer = StringBuilder()
+      local i = i1
+      while (i <= i2)
+        local lhs_is_letter = (buffer.count and buffer.last.is_letter)
+        local token_as_string = tokens[i].to_source_string
+        local rhs_is_letter = token_as_string.count and token_as_string[0].is_letter
+        if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
+        buffer.print( tokens[i].to_source_string )
+        ++i
+      endWhile
+      return buffer.to_String
+      }#
+endClass
+

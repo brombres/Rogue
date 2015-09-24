@@ -1,0 +1,4613 @@
+class Cmd
+  PROPERTIES
+    t : Token
+
+  METHODS
+    method access_name->String
+      return null
+
+    method access_cpp_name->String
+      return null
+
+    method call_prior( scope:Scope )->Cmd
+      throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
+
+    method cast_to( target_type:Type )->Cmd
+      local this_type = type
+      if (this_type is target_type) return this
+
+      #if (this_type.is_primitive)
+      #throw t.error( "TODO: Cmd::cast_to() primitive->...." )
+      #else
+      # this is a reference type
+      if (this_type.instance_of(target_type))
+        return CmdCastToType( t, this, target_type )
+      else
+        this_type.organize
+        local m_name = "to_" + target_type.name
+        if (this_type.has_method_named(m_name))
+          return CmdAccess( t, this, m_name )
+        endIf
+
+        if (this_type.is_primitive and target_type.is_primitive)
+          if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
+            return CmdCastToType( t, this, target_type )
+          endIf
+        endIf
+
+        if (target_type is Program.type_Logical) return CmdLogicalize(t,this)
+
+        if (target_type.is_optional)
+          if (this_type is target_type.element_type)
+            return CmdCreateOptionalValue( t, target_type, this )
+          elseIf (this_type is Program.type_null)
+            return CmdCreateOptionalValue( t, target_type, null )
+          endIf
+        endIf
+
+        throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
+      endIf
+      #endIf
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
+
+    method clone( other:Cmd, clone_args=null:CloneArgs )->Cmd
+      if (other) return other.clone( clone_args )
+      return null
+
+    method clone( args:CmdArgs, clone_args=null:CloneArgs )->CmdArgs
+      if (args) return args.clone( clone_args )
+      return null
+
+    method clone( statements:CmdStatementList, clone_args=null:CloneArgs )->CmdStatementList
+      if (statements) return statements.clone( clone_args )
+      return null
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      return this
+
+    method compile_type->Type
+      return type.compile_type
+
+    method exit_scope( scope:Scope )
+
+    method find_operation_result_type( left_type:Type, right_type:Type )->Type
+      local result = find_common_type( left_type, right_type )
+      if (not result) return left_type
+
+      if (result is Program.type_Byte or result is Program.type_Character) return Program.type_Integer
+      return result
+
+    method find_common_type( left_type:Type, right_type:Type )->Type
+      if (left_type is null)  return right_type
+      if (right_type is null) return left_type
+
+      if (left_type is right_type) return left_type
+
+      if (left_type.is_primitive)
+        if (right_type.is_primitive)
+          if (left_type is Program.type_Real or right_type is Program.type_Real) return Program.type_Real
+          if (left_type is Program.type_Float or right_type is Program.type_Float) return Program.type_Float
+          if (left_type is Program.type_Long or right_type is Program.type_Long) return Program.type_Long
+          if (left_type is Program.type_Integer or right_type is Program.type_Integer) return Program.type_Integer
+          if (left_type is Program.type_Character or right_type is Program.type_Character) return Program.type_Character
+        endIf
+      endIf
+
+      if (left_type.instance_of(right_type)) return right_type
+      if (right_type.instance_of(left_type)) return left_type
+
+      return null
+
+    method must_find_common_type( left_type:Type, right_type:Type )->Type
+      local common_type = find_common_type( left_type, right_type )
+      if (common_type) return common_type
+      throw t.error( "Types $ and $ are incompatible." (left_type,right_type) )
+
+    method implicit_type->Type
+      return null
+
+    method is_literal->Logical
+      return false
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      throw t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
+
+    method require_type_context
+      if (type) throw t.error( //Type name expected, e.g. "$.".// (type) )
+      else       throw t.error( //Type name expected.// )
+
+    method require_integer->Cmd
+      local _type = type
+      if (_type is null or _type isNot Program.type_Integer)
+        throw t.error( "Integer value expected." )
+      endIf
+      return this
+
+    method require_logical( scope:Scope )->Cmd
+      if (require_type isNot Program.type_Logical)
+        return CmdLogicalize( t, this ).resolve( scope )
+      endIf
+      return this
+
+    method require_type->Type
+      local result = type
+      if (result is null) throw t.error( "Value expected; this statement or expression does not result in a value." )
+      return result
+
+    method require_value->Cmd
+      require_type
+      return this
+
+    method requires_semicolon->Logical
+      return true
+
+    method resolve( scope:Scope )->Cmd
+      throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
+      return this
+
+    method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
+      throw t.error( "Invalid assignment." )
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      throw t.error( "Invalid target for increment/decrement." )
+
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+      throw t.error( "Invalid assignment." )
+
+    method type->Type
+      throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
+
+endClass
+
+#------------------------------------------------------------------------------
+# StatementList
+#------------------------------------------------------------------------------
+class CmdStatementList : Cmd[]
+  METHODS
+    method init
+      prior.init
+
+    method init( initial_capacity:Integer)
+      prior.init( initial_capacity )
+
+    method init( statement:Cmd )
+      init
+      if (statement) add( statement )
+
+    method init( statement1:Cmd, statement2:Cmd )
+      init
+      if (statement1) add( statement1 )
+      if (statement2) add( statement2 )
+
+      #{
+    method has_side_effects->Logical
+      forEach (cmd in this)
+        if (cmd.has_side_effects) return true
+      endForEach
+      return false
+      }#
+
+    method clone( clone_args:CloneArgs )->CmdStatementList
+      local result = CmdStatementList( count )
+      forEach (cmd in this)
+        cmd = cmd.clone( clone_args )
+        if (cmd ) result.add( cmd )
+      endForEach
+      return result
+
+      #{
+    method dispatch( v:Visitor ) [propagated]
+      v.visit( this )
+
+    method print( buffer:StringBuilder )
+      Analyzer.context.push_local_scope
+      forEach (statement in this)
+        buffer.print( "      " )
+        buffer.print( statement.type_name )
+        buffer.print( " " )
+        statement.print( buffer )
+        buffer.println
+      endForEach
+      Analyzer.context.pop_local_scope
+      }#
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      forEach (statement in this)
+        statement.write_cpp( writer, true )
+        if (statement.requires_semicolon) writer.println ";"
+      endForEach
+
+    method resolve( scope:Scope )
+      forEach (i of this)
+        this[i] = this[i].resolve( scope )
+      endForEach
+
+      forEach (statement in this) statement.exit_scope( scope )
+endClass
+
+
+#------------------------------------------------------------------------------
+# Args
+#------------------------------------------------------------------------------
+class CmdArgs : Cmd[]
+  METHODS
+    method init
+      prior.init
+
+    method init( initial_capacity:Integer)
+      prior.init( initial_capacity )
+
+    method init( arg:Cmd )
+      init
+      add( arg )
+
+    method init( arg1:Cmd, arg2:Cmd )
+      init
+      add( arg1 ).add( arg2 )
+
+    method clone( clone_args=null:CloneArgs )->CmdArgs
+      local result = CmdArgs( count )
+      forEach (cmd in this) result.add( cmd.clone(clone_args) )
+      return result
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local first = true
+      forEach (arg in this)
+        if (first) first = false
+        else       writer.print(",")
+        arg.write_cpp( writer )
+      endForEach
+
+    method resolve( scope:Scope )
+      forEach (i of this)
+        local arg = this[i].resolve( scope )
+        this[i] = arg
+        arg.require_type.organize
+      endForEach
+endClass
+
+
+#------------------------------------------------------------------------------
+# Statements
+#------------------------------------------------------------------------------
+class CmdStatement : Cmd
+endClass
+
+class CmdNoAction : Cmd
+endClass
+
+class CmdLocalDeclaration : CmdStatement
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        local new_value = local_info.initial_value
+        if (new_value) new_value = new_value.clone( clone_args )
+        return task_args.replace_write_local( t, local_info, new_value )
+      else
+        return CmdLocalDeclaration( t, local_info )
+      endIf
+
+    method exit_scope( scope:Scope )
+      scope.pop_local
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
+      if (local_info.initial_value)
+        writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
+        local_info.initial_value.write_cpp( writer )
+        writer.print( ")" )
+      else
+        writer.print_default_value( local_info.type )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      scope.push_local( local_info )
+
+      if (local_info.initial_value)
+        local_info.initial_value = local_info.initial_value.resolve( scope )
+        local initial_value_type = local_info.initial_value.require_type
+        if (local_info.type is null) local_info.type = initial_value_type
+      endIf
+
+      if (local_info.type is null)
+        throw t.error( "Cannot determine type of local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Integer)." (local_info.name,local_info.name) )
+      endIf
+
+      if (local_info.initial_value)
+        local_info.initial_value = local_info.initial_value.cast_to( local_info.type ).resolve( scope )
+      endIf
+
+      local_info.type.organize
+
+      return this
+endClass
+
+
+class CmdReturn : CmdStatement
+  PROPERTIES
+    value : Cmd
+
+  METHODS
+    method init( t, value=null )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        return task_args.create_return( t, clone(value,clone_args) )
+      else
+        return CmdReturn( t, clone(value,clone_args) )
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value)
+        writer.print( "return (" ).print( value.type ).print( ")(" )
+        value.write_cpp( writer )
+        writer.print( ")" )
+      else
+        writer.print "return"
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      if (value)
+        if (not scope.this_method.return_type)
+          throw t.error( "$ is not declared as returning a value." (scope.this_method.signature) )
+        endIf
+        value = value.resolve( scope ).cast_to( scope.this_method.return_type ).resolve( scope )
+      endIf
+      return this
+
+    method type->Type
+      return value.type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Control Structures
+#------------------------------------------------------------------------------
+class CmdControlStructure : CmdStatement
+  ENUMERATE
+    type_block
+    type_contingent
+    type_if
+    type_else_if  # A nested if/else that was originally an elseIf
+    type_try
+    type_which
+
+    type_first_loop
+    type_loop
+    type_while
+    type_forEach
+
+  PROPERTIES
+    statements       : CmdStatementList
+    control_type     : Integer
+    contains_yield   : Logical
+    escape_label     : String
+    upkeep_label     : String
+    task_escape_section : CmdTaskControlSection
+    task_upkeep_section : CmdTaskControlSection
+    cloned_command      : CmdControlStructure
+      # Allows escape and nextIteration commands to update their target
+
+  METHODS
+    method init( t )
+      statements = CmdStatementList()
+
+    method requires_semicolon->Logical
+      return false
+
+    method set_control_logic( control_structure:CmdControlStructure )->Cmd
+      control_type   = control_structure.control_type
+      contains_yield = control_structure.contains_yield
+      escape_label   = control_structure.escape_label
+      upkeep_label   = control_structure.upkeep_label
+      return this
+
+endClass
+
+
+class CmdBlock : CmdControlStructure
+  PROPERTIES
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, control_type=CmdControlStructure.type_block )
+      statements = CmdStatementList()
+
+    method init( t, statements, control_type=CmdControlStructure.type_block )
+
+    method init( cmd:Cmd )
+      t = cmd.t
+      statements = CmdStatementList( cmd )
+      control_type = CmdControlStructure.type_block
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args and this.contains_yield)
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        return null
+      else
+        local result = CmdBlock( t, null )
+        result.set_control_logic( this )
+        cloned_command = result
+        result.statements = statements.clone( clone_args )
+        return result
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+      if (escape_label) writer.print( escape_label ).println( ":;" )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->CmdBlock
+      scope.control_stack.add( this )
+
+      statements.resolve( scope )
+
+      scope.control_stack.remove_last
+      return this
+endClass
+
+
+class CmdIf : CmdControlStructure
+  PROPERTIES
+    condition           : Cmd
+    else_statements     : CmdStatementList
+
+  METHODS
+    method init( t, condition=null, control_type=CmdControlStructure.type_if )
+      statements = CmdStatementList()
+
+    method init( t, condition, statements, control_type=CmdControlStructure.type_if )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args and this.contains_yield)
+        local next_section = task_args.create_section
+        local end_section = task_args.create_section
+        task_escape_section = end_section
+        task_args.add_conditional_jump( CmdLogicalNot(t,condition.clone(clone_args)), next_section )
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        task_args.add_jump( t, end_section )
+        task_args.begin_section( next_section )
+
+        if (else_statements)
+          forEach (statement in else_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+
+        task_args.add_jump( t, end_section )
+        task_args.begin_section( end_section )
+        if (end_section.ip < task_args.cmd_task_control.sections.count)
+          # We're somewhere in the middle; jump to the end
+          task_args.jump_to_new_section( t )
+        endIf
+        return null
+
+      else
+        local result = CmdIf( t, condition.clone(clone_args), control_type )
+        result.set_control_logic( this )
+        cloned_command = result
+        result.statements = statements.clone( clone_args )
+
+        result.else_statements = clone( else_statements, clone_args )
+
+        return result
+
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      condition = condition.resolve( scope )
+      condition = condition.require_logical( scope )
+
+      scope.control_stack.add( this )
+      statements.resolve( scope )
+      if (else_statements) else_statements.resolve( scope )
+
+      scope.control_stack.remove_last
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "if (" )
+      condition.write_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (else_statements)
+        if (else_statements.count == 1 and else_statements.first instanceOf CmdIf)
+          # Write the else/if in the "else if" style.
+          writer.print( "else " )
+          else_statements.write_cpp( writer )
+        else
+          # General 'else' block.
+          writer.println( "else" )
+          writer.println( "{" )
+          writer.indent += 2
+          else_statements.write_cpp( writer )
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
+      endIf
+
+      if (escape_label) writer.print( escape_label ).println( ":;" )
+
+endClass
+
+
+class CmdWhich : CmdControlStructure
+  PROPERTIES
+    expression   : Cmd
+    cases        : CmdWhichCase[]
+    case_others  : CmdWhichCase
+
+  METHODS
+    method init( t, expression, cases=CmdWhichCase[], case_others=null, control_type=CmdControlStructure.type_which )
+
+    method clone( clone_args:CloneArgs )->CmdWhich
+      local result = CmdWhich( t, expression.clone(clone_args), null )
+      result.set_control_logic( this )
+      cloned_command = result
+
+      local cloned_cases = CmdWhichCase[]( cases.count )
+      forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
+      result.cases = cloned_cases
+
+      if (case_others) result.case_others = case_others.clone( clone_args )
+      return result
+
+    method add_case( case_t:Token )->CmdWhichCase
+      local result = CmdWhichCase( case_t )
+      cases.add( result )
+      return result
+
+    method add_case_others( case_t:Token )->CmdWhichCase
+      local result = CmdWhichCase( case_t )
+      case_others = result
+      return result
+
+    method resolve( scope:Scope )->Cmd
+      local result = CmdBlock( t, CmdControlStructure.type_which )
+      result.set_control_logic( this )
+      expression = expression.resolve( scope )
+
+      local var_name       : String
+      local expression_var : Local
+      if (expression instanceOf CmdReadLocal)
+        expression_var = (expression as CmdReadLocal).local_info
+        var_name = expression_var.name
+      else
+        var_name = Program.create_unique_id
+        expression_var = scope.this_method.add_local( t, var_name, expression.require_type, expression )
+        result.statements.add( CmdLocalDeclaration(t,expression_var) )
+      endIf
+
+      if (cases.count)
+        local cmd_if = CmdIf( expression.t, cases.first.as_conditional(var_name), cases.first.statements )
+        local cur_if = cmd_if
+        forEach (i of cases)
+          if (i > 0)
+            local c = cases[i]
+            local cmd_else_if = CmdIf( c.t, c.as_conditional(var_name), CmdControlStructure.type_else_if )
+            cmd_else_if.statements = c.statements
+
+            cur_if.else_statements = CmdStatementList( cmd_else_if )
+            cur_if = cmd_else_if
+          endIf
+        endForEach
+        if (case_others)
+          cur_if.else_statements = case_others.statements
+        endIf
+        result.statements.add( cmd_if )
+
+      elseIf (case_others)
+        # 'others' statements always happen
+        forEach (cmd in case_others.statements) result.statements.add(cmd)
+      endIf
+
+      return result.resolve( scope )
+endClass
+
+class CmdWhichCase : Cmd
+  PROPERTIES
+    conditions : CmdArgs
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, conditions=CmdArgs(), statements=CmdStatementList() )
+
+    method clone( clone_args:CloneArgs )->CmdWhichCase
+      return CmdWhichCase( t, conditions.clone(clone_args), statements.clone(clone_args) )
+
+    method as_conditional( expression_var_name:String )->Cmd
+      local cmd : Cmd
+      forEach (condition in conditions)
+        if (cmd)
+          cmd = CmdLogicalOr( t, cmd, CmdCompareEQ(t,CmdAccess(t,expression_var_name),condition) )
+        else
+          cmd = CmdCompareEQ( t, CmdAccess(t,expression_var_name), condition )
+        endIf
+      endForEach
+      return cmd
+
+endClass
+
+
+class CmdContingent : CmdControlStructure
+  PROPERTIES
+    satisfied_statements   : CmdStatementList
+    unsatisfied_statements : CmdStatementList
+
+    satisfied_label        : String
+    unsatisfied_label      : String
+
+    satisfied_section   : CmdTaskControlSection
+    unsatisfied_section : CmdTaskControlSection
+
+  METHODS
+    method init( t, statements=CmdStatementList() )
+      control_type = CmdControlStructure.type_contingent
+
+    method clone( clone_args:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args and this.contains_yield)
+        satisfied_section = task_args.create_section
+        unsatisfied_section = task_args.create_section
+        local end_section = task_args.create_section
+        task_escape_section = end_section
+
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+        task_args.add_jump( t, satisfied_section )
+
+        task_args.begin_section( satisfied_section )
+        if (satisfied_statements)
+          forEach (statement in satisfied_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+        task_args.add_jump( t, end_section )
+
+        task_args.begin_section( unsatisfied_section )
+        if (unsatisfied_statements)
+          forEach (statement in unsatisfied_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+        task_args.add_jump( t, end_section )
+
+        task_args.begin_section( end_section )
+        if (end_section.ip < task_args.cmd_task_control.sections.count)
+          # We're somewhere in the middle; jump to the end
+          task_args.jump_to_new_section( t )
+        endIf
+        return null
+
+      else
+        local result = CmdContingent( t, null )
+        result.set_control_logic( this )
+        cloned_command = result
+
+        result.statements = statements.clone( clone_args )
+        result.satisfied_statements = clone( satisfied_statements, clone_args )
+        result.unsatisfied_statements = clone( unsatisfied_statements, clone_args )
+
+        return result
+      endIf
+
+    method resolve( scope:Scope )->CmdContingent
+      scope.control_stack.add( this )
+
+      if (not escape_label) escape_label = Program.create_unique_id
+
+      statements.resolve( scope )
+      if (satisfied_statements)   satisfied_statements.resolve( scope )
+      if (unsatisfied_statements) unsatisfied_statements.resolve( scope )
+
+      scope.control_stack.remove_last
+      return this
+
+    method set_control_logic( original:CmdControlStructure )->Cmd
+      prior.set_control_logic( original )
+      satisfied_label   = (original as CmdContingent).satisfied_label
+      unsatisfied_label = (original as CmdContingent).unsatisfied_label
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "{" )
+      writer.indent += 2
+      writer.println( "{" )
+      writer.indent += 2
+
+      statements.write_cpp( writer )
+
+      if (satisfied_label)   writer.print( satisfied_label ).println( ":;" )
+      if (satisfied_statements) satisfied_statements.write_cpp( writer )
+      writer.print( "goto " ).print( escape_label ).println( ";" )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (unsatisfied_label)      writer.print( unsatisfied_label ).println( ":;" )
+      if (unsatisfied_statements) unsatisfied_statements.write_cpp( writer )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      writer.print( escape_label ).println( ":;" )
+
+endClass
+
+
+#------------------------------------------------------------------------------
+# Loops
+#------------------------------------------------------------------------------
+class CmdGenericLoop : CmdControlStructure
+  PROPERTIES
+    control_statements : CmdStatementList
+    condition          : Cmd
+    upkeep             : CmdStatementList
+
+  METHODS
+    method init( t, control_type, condition, statements=CmdStatementList(), upkeep=null, control_statements=null )
+
+    method init( t, control_type, condition, statements=CmdStatementList(), upkeep_cmd:Cmd, control_statements=null )
+      if (upkeep_cmd)
+        upkeep = CmdStatementList(1)
+        upkeep.add( upkeep_cmd )
+      endIf
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args and this.contains_yield)
+        # Control variable initialization
+        if (control_statements)
+          forEach (statement in control_statements)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+
+        # Termination Test
+        local condition_section = task_args.jump_to_new_section(t)
+        local after_section = task_args.create_section
+        task_escape_section = after_section
+        task_upkeep_section = task_args.create_section
+        if (condition)
+          task_args.add_conditional_jump( CmdLogicalNot(t,clone(condition,clone_args)), after_section )
+        endIf
+
+        # Main Body
+        forEach (statement in statements)
+          task_args.add( statement.clone(task_args) )
+        endForEach
+
+        task_args.add_jump( t, task_upkeep_section )
+        task_args.begin_section( task_upkeep_section )
+
+        # Upkeep
+        if (upkeep)
+          forEach (statement in upkeep)
+            task_args.add( statement.clone(task_args) )
+          endForEach
+        endIf
+
+        # Jump back to Termination Test
+        task_args.add_jump( t, condition_section )
+
+        task_args.begin_section( after_section )
+        if (after_section.ip < task_args.cmd_task_control.sections.count)
+          # We're somewhere in the middle; jump to the end
+          task_args.jump_to_new_section( t )
+        endIf
+
+        return null
+
+      else
+        local result = CmdGenericLoop( t, control_type, clone(condition,clone_args), null )
+        result.set_control_logic( this )
+        cloned_command = result
+
+        result.statements = statements.clone( clone_args )
+        result.upkeep = clone( upkeep, clone_args )
+
+        result.control_statements = clone( control_statements, clone_args )
+        return result
+      endIf
+
+    method add_control_var( v:Local )
+      if (not control_statements) control_statements = CmdStatementList()
+      control_statements.add( CmdLocalDeclaration(v.t,v) )
+
+    method add_upkeep( cmd:Cmd )
+      if (not upkeep) upkeep = CmdStatementList()
+      upkeep.add( cmd )
+
+    method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+      if (control_statements)
+        forEach (i of control_statements)
+          control_statements[i] = control_statements[i].resolve( scope )
+        endForEach
+      endIf
+
+      if (condition) condition = condition.resolve( scope ).require_logical( scope )
+      statements.resolve( scope )
+
+      if (upkeep) upkeep.resolve( scope )
+
+      if (control_statements)
+        forEach (statement in control_statements) statement.exit_scope( scope )
+      endIf
+
+      scope.control_stack.remove_last
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (control_statements)
+        writer.println( "{" )
+        writer.indent += 2
+
+        if (control_statements)
+          forEach (statement in control_statements)
+            statement.write_cpp( writer )
+            writer.println( ";" )
+          endForEach
+        endIf
+
+      endIf
+
+      if (upkeep or not condition)
+        writer.print( "for (;" )
+        if (condition) condition.write_cpp( writer )
+        writer.print( ";" )
+        local first = true
+        if (upkeep)
+          forEach (statement in upkeep)
+            if (first) first = false
+            else       writer.print( "," )
+            statement.write_cpp( writer )
+          endForEach
+        endIf
+        writer.println( ")" )
+      else
+        writer.print( "while (" )
+        condition.write_cpp( writer )
+        writer.println( ")" )
+      endIf
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (control_statements)
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
+
+      if (escape_label)
+        writer.print( escape_label ).println( ":;" )
+      endIf
+
+endClass
+
+class CmdForEach : CmdControlStructure
+  PROPERTIES
+    control_var_name : String
+    index_var_name   : String
+    collection       : Cmd
+    step_cmd         : Cmd
+
+  METHODS
+    method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
+      control_type = CmdControlStructure.type_forEach
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local result = CmdForEach( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), null )
+      result.set_control_logic( this )
+      cloned_command = result
+
+      result.statements = statements.clone(clone_args)
+      return result
+
+    method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
+      collection = collection.resolve( scope )
+      local collection_type = collection.require_type.organize
+
+      local has_count = (collection_type.find_property("count") or collection_type.find_method("count()"))
+      local m_at  = collection_type.find_method("at(Integer)")
+      local m_get = collection_type.find_method("get(Integer)")
+      local has_get = m_get or m_at
+
+      local step_size = 1
+      if (step_cmd)
+        step_cmd = step_cmd.resolve( scope )
+        local literal_integer_cmd = step_cmd as CmdLiteralInteger
+        if (literal_integer_cmd)
+          step_size = literal_integer_cmd.value
+        else
+          throw step_cmd.t.error( "Literal integer value expected." )
+        endIf
+      endIf
+
+      if (has_count and has_get)
+        if (m_at) m_get = m_at  # prefer at(Integer) over get(Integer)
+
+        collection = collection.resolve( scope )
+        local collection_var = scope.this_method.add_local( t, Program.create_unique_id, collection.require_type, collection )
+
+        if (not index_var_name) index_var_name = Program.create_unique_id
+        local index_var = scope.this_method.add_local( t, index_var_name, Program.type_Integer )
+        local last_cmd : Cmd
+        if (step_size >= 0)
+          index_var.initial_value = CmdLiteralInteger( t, 0 )
+          last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
+        else
+          index_var.initial_value = CmdSubtract( t, CmdAccess(t,CmdReadLocal(t,collection_var), "count"), CmdLiteralInteger(t,1) )
+          last_cmd = CmdLiteralInteger( t, 0 )
+        endIf
+
+        local control_var : Local
+        if (control_var_name)
+          control_var = scope.this_method.add_local( t, control_var_name )
+          control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, CmdArgs(CmdReadLocal(t,index_var)) )
+          statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
+        endIf
+
+        local modifier : Cmd
+        if (step_size >= -1 and step_size <= 1)
+          modifier = CmdAdjustLocal(t,index_var,step_size)
+        elseIf (step_size >= 0)
+          modifier = CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInteger(t,step_size))
+        else
+          modifier = CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInteger(t,-step_size))
+        endIf
+
+        local condition : Cmd
+        if (step_size >= 0) condition = CmdCompareLT( t, CmdReadLocal(t,index_var), last_cmd )
+        else                condition = CmdCompareGE( t, CmdReadLocal(t,index_var), last_cmd )
+
+        local result = CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements )
+        result.set_control_logic( this )
+        result.add_control_var( collection_var )
+        result.add_control_var( index_var )
+        result.add_upkeep( modifier )
+
+        scope.control_stack.remove_last
+        return result.resolve( scope )
+
+      else
+        # commandBlock
+        #   local reader = expression
+        #   local index  = 0
+        #   while (reader.has_another)
+        #     local control_var = reader.read
+        #     statements
+        #     ++index
+        #   endWhile
+        local has_another = (collection_type.find_property("has_another") or collection_type.find_method("has_another()"))
+        local m_read  = collection_type.find_method("read()")
+        if (not has_another or not m_read)
+          throw collection.t.error( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at) or a reader (.has_another, .read)." )
+        endIf
+        if (not m_read.return_type) throw collection.t.error( "Object's read() method does not return a value." )
+        if (step_cmd)
+          throw step_cmd.t.error( "Cannot specify a step size for a reader - only for an indexed collection." )
+        endIf
+
+        local reader_var = scope.this_method.add_local( t, Program.create_unique_id, collection_type, collection  )
+        local index_var : Local
+        if (index_var_name)
+          index_var = scope.this_method.add_local( t, index_var_name, Program.type_Integer, CmdLiteralInteger(t,0) )
+        endIf
+
+        if (control_var_name)
+          local control_var = scope.this_method.add_local( t, control_var_name, m_read.return_type,
+            CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+          statements.insert( CmdLocalDeclaration(collection.t,control_var) )
+        else
+          statements.insert( CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+        endIf
+
+        local rt = reader_var.t
+        local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(rt,CmdReadLocal(rt,reader_var),"has_another"), statements )
+        cmd_loop.set_control_logic( this )
+        cmd_loop.add_control_var( reader_var )
+        if (index_var)
+          cmd_loop.add_control_var( index_var )
+          cmd_loop.add_upkeep( CmdAdjustLocal(t,index_var,1) )
+        endIf
+
+        scope.control_stack.remove_last
+        return cmd_loop.resolve( scope )
+
+      endIf
+      return this
+endClass
+
+
+class CmdTry : CmdControlStructure
+  PROPERTIES
+    catches : CmdCatch[]
+
+  METHODS
+    method init( t, statements=CmdStatementList(), catches=CmdCatch[] )
+      control_type = type_try
+
+    method clone( clone_args:CloneArgs )->CmdTry
+      local result = CmdTry( t, null, null )
+      result.set_control_logic( this )
+      cloned_command = result
+
+      result.statements = statements.clone( clone_args )
+
+      local new_catches = CmdCatch[]
+      forEach (c in catches) new_catches.add( c.clone(clone_args) )
+      result.catches = new_catches
+
+      return result
+
+    method add_catch( catch_t:Token )->CmdCatch
+      local c = CmdCatch( catch_t )
+      catches.add( c )
+      return c
+
+    method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
+      statements.resolve( scope )
+      forEach (c in catches) c.resolve( scope )
+
+      if (contains_yield)
+        throw t.error( "try/catch blocks cannot contain 'yield' statements." )
+      endIf
+
+      scope.control_stack.remove_last
+
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println "try"
+      writer.println "{"
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println "}"
+      forEach (c in catches)
+        c.write_cpp( writer )
+      endForEach
+
+      if (escape_label)
+        writer.print( escape_label ).println( ":;" )
+      endIf
+endClass
+
+class CmdCatch : Cmd
+  PROPERTIES
+    error_var  : Local
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, error_var=null, statements=CmdStatementList() )
+
+    method clone( clone_args:CloneArgs )->CmdCatch
+      return CmdCatch( t, error_var, statements.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      error_var.type.organize
+      if (not error_var.type.instance_of(Program.type_Error))
+        throw t.error( "Caught value must be instanceOf class Error." )
+      endIf
+
+      scope.push_local( error_var )
+      statements.resolve( scope )
+      scope.pop_local
+
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.cpp_name ).println( " )" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+endClass
+
+class CmdThrow : Cmd
+  PROPERTIES
+    expression : Cmd
+
+  METHODS
+    method init( t, expression )
+
+    method clone( clone_args:CloneArgs )->CmdThrow
+      return CmdThrow( t, expression.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      expression = expression.resolve( scope )
+      local expression_type = expression.require_type
+      expression_type.organize
+      if (not expression_type.instance_of(Program.type_Error))
+        throw expression.t.error( "Thrown value must be instanceOf class Error." )
+      endIf
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "throw " )
+      expression.write_cpp( writer )
+endClass
+
+
+#------------------------------------------------------------------------------
+# escape and nextIteration
+#------------------------------------------------------------------------------
+class CmdEscape : Cmd
+  PROPERTIES
+    control_type : Integer
+    target_cmd   : CmdControlStructure
+
+  METHODS
+    method init( t, control_type, target_cmd=null )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      if (target_cmd.task_escape_section)
+        local task_args = (clone_args as TaskArgs)
+        return task_args.create_escape( t, target_cmd.task_escape_section ) 
+      else
+        local new_target = target_cmd
+        while (new_target.cloned_command) new_target = new_target.cloned_command
+        return CmdEscape( t, control_type, new_target )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type == control_type)
+          while (cmd.cloned_command) cmd = cmd.cloned_command
+          if (not cmd.escape_label) cmd.escape_label = Program.create_unique_id
+          target_cmd = cmd
+          return this
+        endIf
+      endWhile
+
+      throw t.error( "No enclosing structure to escape." )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print "goto " + target_cmd.escape_label
+
+endClass
+
+
+class CmdNextIteration : Cmd
+  PROPERTIES
+    target_cmd   : CmdControlStructure
+
+  METHODS
+    method init( t, target_cmd=null )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      if (target_cmd.task_upkeep_section)
+        local task_args = (clone_args as TaskArgs)
+        return task_args.create_escape( t, target_cmd.task_upkeep_section ) 
+      else
+        local new_target = target_cmd
+        while (new_target.cloned_command) new_target = new_target.cloned_command
+        return CmdNextIteration( t, new_target )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type >= CmdControlStructure.type_first_loop)
+          while (cmd.cloned_command) cmd = cmd.cloned_command
+          if (not cmd.upkeep_label) cmd.upkeep_label = Program.create_unique_id
+          target_cmd = cmd
+          return this
+        endIf
+      endWhile
+
+      throw t.error( "No enclosing loop for 'nextIteration' to affect." )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print "continue"
+
+endClass
+
+
+class CmdNecessary : Cmd
+  PROPERTIES
+    target_cmd   : CmdContingent
+    condition    : Cmd
+
+  METHODS
+    method init( t, condition, target_cmd=null )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      if (target_cmd.unsatisfied_section)
+        local task_args = (clone_args as TaskArgs)
+        local cmd_jump = task_args.create_escape( t, target_cmd.unsatisfied_section ) 
+        if (condition)
+          return CmdIf( t, CmdLogicalNot(t,condition.clone(task_args)), CmdStatementList(cmd_jump) )
+        else
+          return cmd_jump
+        endIf
+      else
+        local new_target = target_cmd : CmdControlStructure
+        while (new_target.cloned_command) new_target = new_target.cloned_command
+        return CmdNecessary( t, clone(condition,clone_args), new_target as CmdContingent )
+      endIf
+
+
+    method resolve( scope:Scope )->Cmd
+      if (condition) condition = condition.resolve( scope )
+
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type == CmdControlStructure.type_contingent)
+          while (cmd.cloned_command) cmd = cmd.cloned_command
+          local cmd_contingent = cmd as CmdContingent
+          if (not cmd_contingent.unsatisfied_label) cmd_contingent.unsatisfied_label = Program.create_unique_id
+          target_cmd = cmd_contingent
+          return this
+        endIf
+      endWhile
+
+      throw t.error( "No enclosing contingent." )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "if ( !(" )
+      condition.write_cpp( writer )
+      writer.print( ") ) goto " ).print( target_cmd.unsatisfied_label )
+endClass
+
+
+class CmdSufficient : Cmd
+  PROPERTIES
+    target_cmd   : CmdContingent
+    condition    : Cmd
+
+  METHODS
+    method init( t, condition, target_cmd=null )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      if (target_cmd.satisfied_section)
+        local task_args = (clone_args as TaskArgs)
+        local cmd_jump = task_args.create_escape( t, target_cmd.satisfied_section ) 
+        if (condition)
+          return CmdIf( t, condition.clone(task_args), CmdStatementList(cmd_jump) )
+        else
+          return cmd_jump
+        endIf
+      else
+        local new_target = target_cmd : CmdControlStructure
+        while (new_target.cloned_command) new_target = new_target.cloned_command
+        return CmdSufficient( t, clone(condition,clone_args), new_target as CmdContingent )
+      endIf
+
+
+    method resolve( scope:Scope )->Cmd
+      if (condition) condition = condition.resolve( scope )
+
+      local i = scope.control_stack.count
+      while (i > 0)
+        --i
+        local cmd = scope.control_stack[i]
+        if (cmd.control_type == CmdControlStructure.type_contingent)
+          while (cmd.cloned_command) cmd = cmd.cloned_command
+          local cmd_contingent = cmd as CmdContingent
+          if (not cmd_contingent.satisfied_label) cmd_contingent.satisfied_label = Program.create_unique_id
+          target_cmd = cmd_contingent
+          return this
+        endIf
+      endWhile
+
+      throw t.error( "No enclosing contingent." )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "if (" )
+      condition.write_cpp( writer )
+      writer.print( ") goto " ).print( target_cmd.satisfied_label )
+endClass
+
+#------------------------------------------------------------------------------
+# Literals
+#------------------------------------------------------------------------------
+class CmdLiteral : Cmd
+  METHODS
+    method implicit_type->Type
+      return type
+
+    method is_literal->Logical
+      return true
+endClass
+
+class CmdLiteralNull : CmdLiteral
+  METHODS
+    method init( t )
+
+    method cast_to( target_type:Type )->Cmd
+      if (target_type.is_optional)
+        return CmdCreateOptionalValue( t, target_type )
+      else
+        return prior.cast_to( target_type )
+      endIf
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralNull( t )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "NULL" )
+
+    method resolve( scope:Scope )->this
+      return this
+
+    method type->Type
+      return Program.type_null
+endClass
+
+class CmdDefaultValue : CmdLiteral
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method init( t, of_type )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdDefaultValue( t, of_type )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      local default_value = of_type.create_default_value( t )
+      if (of_type.is_reference)
+        return CmdCastToType( t, default_value, of_type )
+      else
+        return default_value
+      endIf
+
+    method type->Type
+      return of_type
+endClass
+
+class CmdLiteralReal : CmdLiteral
+  PROPERTIES
+    value : Real
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralReal( t, value )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( value )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Real
+endClass
+
+
+class CmdLiteralInteger : CmdLiteral
+  PROPERTIES
+    value : Integer
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralInteger( t, value )
+
+    method cast_to( target_type:Type )->Cmd
+      if (target_type is Program.type_Real)
+        return CmdLiteralReal( t, value )
+      else
+        return prior.cast_to( target_type )
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( value )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Integer
+endClass
+
+
+class CmdLiteralCharacter : CmdLiteral
+  PROPERTIES
+    value : Character
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralCharacter( t, value )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "(RogueCharacter)" )
+      if (value >= 32 and value <= 126)
+        which (value)
+          case 10:   writer.print( "'\\n'" )
+          case '\\': writer.print( "'\\\\'" )
+          case '\'': writer.print( "'\\''" )
+          others
+            writer.print( "'" )
+            writer.print( value )
+            writer.print( "'" )
+        endWhich
+      else
+        writer.print( value->Integer )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Character
+endClass
+
+
+class CmdLiteralLogical : CmdLiteral
+  PROPERTIES
+    value : Logical
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralLogical( t, value )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value) writer.print "true"
+      else       writer.print "false"
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+
+class CmdLiteralString : CmdLiteral
+  PROPERTIES
+    value : String
+    index : Integer
+
+  METHODS
+    method init( t, value, index=0 )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralString( t, value, index )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value)
+        writer.print( "Rogue_program.literal_strings[" ).print( index ).print( "]" )
+      else
+        writer.print( "0" );
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      Program.type_String.resolve
+      if (value)
+        if (not Program.literal_string_lookup.contains(value))
+          index = Program.literal_string_list.count
+          Program.literal_string_lookup[value] = index
+          Program.literal_string_list.add( value )
+        else
+          index = Program.literal_string_lookup[value]
+        endIf
+      endIf
+      return this
+
+    method type->Type
+      return Program.type_String
+endClass
+
+class CmdFormattedString : Cmd
+  PROPERTIES
+    format : String
+    args   : CmdArgs
+
+  METHODS
+    method init( t, format, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdFormattedString( t, format, args.clone(clone_args) )
+
+    method implicit_type->Type
+      return Program.type_String
+
+    method resolve( scope:Scope )->Cmd
+      local cmd = CmdAccess( t, "StringBuilder", CmdArgs() )
+      local fmt = format
+      forEach (arg in args)
+        arg = arg.resolve(scope).require_value
+        local i = fmt.locate( '$' )
+        if (not i) throw t.error( "More arguments than format markers ('$') in formatted string." )
+        if (i! > 0)
+          cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i!))) )
+          fmt = fmt.substring(i!+1)
+        else
+          fmt = fmt.substring(1)
+        endIf
+        cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
+      endForEach
+      if (fmt.count)
+        if (fmt.locate('$'))
+          throw t.error( "More format markers ('$') than arguments in formatted string." )
+        endIf
+        cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
+      endIf
+
+      return cmd.resolve( scope ).cast_to( Program.type_String ).resolve( scope )
+
+    method type->Type
+      return Program.type_String
+endClass
+
+
+#------------------------------------------------------------------------------
+# Access
+#------------------------------------------------------------------------------
+class CmdAccess : Cmd
+  PROPERTIES
+    context   : Cmd
+    name      : String
+    args      : CmdArgs
+    #debug : Logical
+
+  METHODS
+    method init( t, name )
+
+    method init( t, name, args )
+
+    method init( t, context, name )
+
+    method init( t, context, name, args )
+
+    method init( t, context, name, arg:Cmd )
+      args = CmdArgs()
+      args.add( arg )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
+
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args) return inline_args.inline_access( result )
+      return result
+
+    method implicit_type->Type
+      return Program.find_type( name )
+
+    method resolve( scope:Scope )->Cmd
+      if (args) args.resolve( scope )
+
+      if (context is null)
+        local v = scope.find_local( name )
+        if (v)
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+          return CmdReadLocal(t,v).resolve(scope)
+        endIf
+
+        local new_type = Program.find_type( name )
+        if (new_type)
+          # new TypeName(...)
+          new_type.organize
+
+          if (args is null)
+            if (name.ends_with(']'))
+              # Turn DataType[] -> DataType[]()
+              args = CmdArgs()
+            else
+              return CmdReadSingleton( t, new_type )
+            endIf
+          endIf
+
+          if (new_type.is_array)
+            return CmdCreateArray( t, new_type, args ).resolve( scope )
+          endIf
+
+          if (new_type.is_compound)
+            local cmd_call = scope.resolve_call( new_type, CmdAccess(t,"create",args), true )
+            if (cmd_call notInstanceOf CmdCallRoutine) trace; throw t.error( "[INTERNAL]" )
+            local r = (cmd_call as CmdCallRoutine)
+            if (r.method_info.is_generated)
+              # Calling the core compound creation routine
+              return CmdCreateCompound( t, new_type, r.args ).resolve( scope )
+            else
+              return cmd_call
+            endIf
+          endIf
+
+          local cmd_create = CmdCreateObject( t, new_type )
+          local cmd_new = cmd_create : Cmd
+
+          local must_find = args.count or new_type.is_native
+          local cmd_call : Cmd
+          if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), false, true )
+          if (not cmd_call)
+            cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), false )
+            if (not cmd_call and must_find)
+              # Not found, trigger errors
+              if (not new_type.is_native) cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args), true, true )
+              cmd_call = scope.resolve_call( new_type, CmdAccess(t,CmdAccess(t,new_type.name),"create",args), true )
+            endIf
+          endIf
+
+          if (cmd_call) cmd_new = cmd_call
+
+          return cmd_new.resolve(scope)
+
+        else
+          if (name.ends_with('?'))
+            return CmdLogicalize( t, CmdAccess(t,context,name.leftmost(-1),args) ).resolve( scope )
+          endIf
+        endIf
+
+        # ---- No call context ----
+        local result = scope.resolve_call( scope.this_type, this, false )
+        if (result)
+          check_for_recursive_getter( scope )
+          return result
+        endIf
+
+        local p = scope.this_type.find_setting( name )
+        if (p)
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+          else       return CmdReadSetting( t, p )
+        endIf
+
+        p = scope.this_type.find_property( name )
+        if (p)
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+
+          if (scope.this_method.is_routine)
+            throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          endIf
+          context = CmdThisContext( t, scope.this_type )
+          return CmdReadProperty( t, context, p )
+        endIf
+
+        if (not args)
+          local def = scope.this_type.definition_lookup[ name ]
+          if (def) return def.clone
+        endIf
+
+        return scope.resolve_call( scope.this_type, this, true )
+
+      else
+        context = context.resolve( scope )
+      endIf
+
+      local context_type = context.require_type
+      context_type.organize
+
+      if (context_type.is_optional)
+        which (name)
+          case "exists"
+            if (args and args.count) throw t.error( "Optional value existence check takes no arguments." )
+            return CmdLogicalizeOptionalValue( t, context )
+
+          case "value"
+            if (args and args.count) throw t.error( "Optional value retrieval takes no arguments." )
+            return CmdGetOptionalValue( t, context )
+
+          others
+            throw t.error( "'exists' and 'value' are the only valid properties of an optional type." )
+        endWhich
+      endIf
+
+      local result = scope.resolve_call( context_type, this, false )
+      if (result) return result
+
+      local p = context_type.find_setting( name )
+      if (p)
+        if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+        context.require_type_context
+        return CmdReadSetting( t, p).resolve(scope)
+      endIf
+
+      p = context_type.find_property( name )
+      if (p)
+        if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+        return CmdReadProperty( t, context, p )
+      endIf
+
+      if (not args)
+        local def = context_type.definition_lookup[ name ]
+        if (def) return def.clone
+      endIf
+
+      return scope.resolve_call( context_type, this, true )
+
+
+    method check_for_recursive_getter( scope:Scope )
+      local this_type = scope.this_type
+      if (name != scope.this_method.name) return
+      if (args and args.count > 0)  return
+      if (not (this_type.find_property(name) or this_type.find_setting(name))) return
+
+      throw t.error( "Recursive call to getter " + name + "() - write @" + name + " instead." )
+
+    method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
+      if (args) throw t.error( "The result of a call cannot assigned to." )
+
+      if (context is null)
+        if (name[0] != '@')
+          local setter_name = "set_" + name
+          local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
+          if (setter)
+            if (scope.this_method.name == setter_name)
+              throw t.error( "Recursive call to setter set_" + name + "() - write \"@" + name + " = ...\" instead." )
+            endIf
+            return setter
+          endIf
+        endIf
+
+        local v = scope.find_local( name )
+        if (v) return CmdWriteLocal(t,v,new_value).resolve(scope)
+
+        local p = scope.this_method.type_context.find_setting( name )
+        if (p) return CmdWriteSetting( t, p, new_value )
+
+        if (scope.this_method.is_routine)
+          p = scope.this_method.type_context.find_property( name )
+          if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        endIf
+
+        context = CmdThisContext( t, scope.this_type )
+      else
+        context = context.resolve( scope )
+      endIf
+
+      local context_type = context.require_type
+      context_type.organize
+
+      if (name[0] != '@')
+        local setter_name = "set_" + name
+        local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), false )
+        if (setter) return setter
+      endIf
+
+      local p = context_type.find_setting( name )
+      if (p)
+        context.require_type_context
+        return CmdWriteSetting( t, p, new_value ).resolve(scope)
+      endIf
+
+      p = context_type.find_property( name )
+      if (p) 
+        if (scope.this_method.is_routine)
+          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        else
+          return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
+        endIf
+      endIf
+
+      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+      if (args is null)
+        local v = scope.find_local( name )
+        if (v)
+          if (args) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+          return CmdLocalOpWithAssign(t,v,op,new_value).resolve(scope)
+        endIf
+      endIf
+
+      local context_type : Type
+
+      if (context)
+        context = context.resolve( scope )
+        context_type = context.require_type
+      else
+        context_type = scope.this_type
+      endIf
+
+      local p = context_type.find_setting( name )
+      if (p)
+        if (context) context.require_type_context
+        return CmdOpAssignSetting( t, p, op, new_value ).resolve(scope)
+      endIf
+
+      p = context_type.find_property( name )
+      if (p)
+        if (not context) context = CmdThisContext( t, context_type )
+        if (scope.this_method.is_routine)
+          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        endIf
+        return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
+      endIf
+
+      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+
+    method type->Type
+      local err = t.error( "[INTERNAL] '$' $::type() is not defined." (name,type_name) )
+      #println err.stack_trace
+      throw err
+endClass
+
+
+class CmdElementAccess : Cmd
+  PROPERTIES
+    context   : Cmd
+    index : Cmd
+
+  METHODS
+    method init( t, context, index )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdElementAccess( t, context.clone(clone_args), index.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve( scope )
+
+      local context_type = context.require_type
+      context_type.organize
+      if (context_type.is_array)
+        return CmdReadArrayElement( t, context, index ).resolve( scope )
+      else
+        local args = CmdArgs()
+        args.add( index )
+        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true )
+      endIf
+
+    method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
+      context = context.resolve( scope )
+
+      local context_type = context.require_type
+      context_type.organize
+      if (context_type.is_array)
+        return CmdWriteArrayElement( t, context, index, new_value ).resolve( scope )
+      else
+        local args = CmdArgs()
+        args.add( index ).add( new_value )
+        local result = scope.resolve_call( context_type, CmdAccess(t,context,"set",args), true )
+        return result
+      endIf
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return clone.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInteger(t,delta)) )
+
+endClass
+
+
+#------------------------------------------------------------------------------
+# Object Creation
+#------------------------------------------------------------------------------
+class CmdCreateObject : Cmd
+  PROPERTIES
+    of_type       : Type
+
+  METHODS
+    method init( t, of_type )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateObject( t, of_type )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
+
+      if (of_type.is_compound)
+        writer.print_type_name( of_type )
+      else
+        writer.print_type_info(of_type).print( "->create_and_init_object()")
+      endIf
+
+      if (not is_statement) writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      return this
+
+    method type->Type
+      return of_type
+endClass
+
+
+class CmdCreateCompound : Cmd
+  PROPERTIES
+    of_type : Type
+    args    : CmdArgs
+
+  METHODS
+    method init( t, of_type, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateCompound( t, of_type, args.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( of_type ).print( "(" )
+      if (args.count)
+        writer.print( " " )
+        local first = true
+        forEach (arg in args)
+          if (first) first = false
+          else       writer.print( ", " )
+          arg.write_cpp( writer )
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      if (args is null) args = CmdArgs()
+      while (args.count < of_type.property_list.count)
+        args.add( of_type.property_list[args.count].type.create_default_value(t) )
+      endWhile
+      args.resolve( scope )
+      return this
+
+    method type->Type
+      return of_type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Assign
+#------------------------------------------------------------------------------
+class CmdAssign : Cmd
+  PROPERTIES
+    target    : Cmd
+    new_value : Cmd
+
+  METHODS
+    method init( t, target, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdAssign( t, target.clone(clone_args), new_value.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      #println StackTrace()
+      prior.write_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      return target.resolve_assignment( scope, new_value )
+endClass
+
+#------------------------------------------------------------------------------
+# Read/Write
+#------------------------------------------------------------------------------
+
+class CmdThisContext : Cmd
+  PROPERTIES
+    this_type : Type
+
+  METHODS
+    method init( t, this_type )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args) return inline_args.inline_this
+
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        return task_args.cmd_read_context(t)
+      else
+        return CmdThisContext( t, this_type )
+      endIf
+
+    method implicit_type->Type
+      return this_type
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print "THIS"
+
+    method require_type_context
+      noAction
+
+    method resolve( scope:Scope )->Cmd
+      this_type.organize
+      return this
+
+    method type->Type
+      return this_type
+endClass
+
+class CmdLiteralThis : CmdThisContext
+  PROPERTIES
+    this_type : Type
+
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args) return inline_args.inline_this
+
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        return task_args.cmd_read_context(t)
+      else
+        return CmdLiteralThis( t, this_type )
+      endIf
+
+    method require_type_context
+      throw t.error( //Type name expected.// )
+
+    method resolve( scope:Scope )->Cmd
+      this_type.organize
+      if (scope.this_method.is_routine)
+        throw t.error( "Invalid reference to 'this' object - routines have no object context." )
+      endIf
+      return this
+endClass
+
+
+class CmdReadSingleton : Cmd
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method init( t, of_type )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadSingleton( t, of_type )
+
+    method access_name->String
+      return of_type.name
+
+    method access_cpp_name->String
+      return of_type.cpp_name
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not of_type.is_singleton)
+        throw t.error( "$ is not a singleton." (of_type.name) )
+      endIf
+      writer.print( "((" ).print( of_type.cpp_class_name )
+      if (of_type.is_reference) writer.print( "*" )
+      writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
+
+    method require_type_context
+      noAction
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      return this
+
+    method type->Type
+      return of_type
+endClass
+
+
+class CmdReadLocal : Cmd
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args)
+        return inline_args.inline_read_local( this )
+      else
+        local task_args = (clone_args as TaskArgs)
+        if (task_args)
+          return task_args.cmd_read(t,local_info)
+        endIf
+      endIf
+
+      return CmdReadLocal( t, local_info )
+
+    method access_name->String
+      return local_info.name
+
+    method access_cpp_name->String
+      return local_info.cpp_name
+
+    method resolve( scope:Scope )->Cmd
+      #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
+      local_info.type.organize
+      return this
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
+
+    method type->Type
+      return local_info.type
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( local_info.type.compile_type, local_info.type )
+      writer.print( local_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( local_info.type.compile_type, local_info.type )
+
+endClass
+
+
+class CmdWriteLocal : Cmd
+  PROPERTIES
+    local_info : Local
+    new_value  : Cmd
+
+  METHODS
+    method init( t, local_info, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local inline_args = (clone_args as InlineArgs)
+      if (inline_args)
+        return inline_args.inline_write_local( this )
+      else
+        local task_args = (clone_args as TaskArgs)
+        if (task_args)
+          return task_args.cmd_write( t,local_info, new_value.clone(clone_args) )
+        endIf
+      endIf
+      return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( local_info.cpp_name ).print(" = ")
+      writer.print( "((" ).print( local_info.type ).print( ")" )
+      new_value.write_cpp( writer )
+      writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      local_info.type.organize
+      new_value = new_value.resolve(scope)
+      new_value = new_value.cast_to( local_info.type ).resolve( scope )
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+
+class CmdReadSetting : Cmd
+  PROPERTIES
+    setting_info : Property
+
+  METHODS
+    method init( t, setting_info )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadSetting( t, setting_info )
+
+    method access_name->String
+      return setting_info.name
+
+    method access_cpp_name->String
+      return setting_info.cpp_name
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( setting_info.type.compile_type, setting_info.type )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( setting_info.type.compile_type, setting_info.type )
+
+    method resolve( scope:Scope )->Cmd
+      setting_info.type_context.resolve
+      return this
+
+    method type->Type
+      return setting_info.type
+endClass
+
+
+class CmdWriteSetting : Cmd
+  PROPERTIES
+    setting_info  : Property
+    new_value     : Cmd
+
+  METHODS
+    method init( t, setting_info, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteSetting( t, setting_info, new_value.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name ).print(" = ")
+
+      if (setting_info.type.compile_type is new_value.compile_type)
+        new_value.write_cpp( writer )
+      else
+        writer.print( "((" ).print( setting_info.type ).print( ")" )
+        new_value.write_cpp( writer )
+        writer.print( ")" )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      new_value = new_value.resolve(scope).cast_to( setting_info.type ).resolve( scope )
+      return this
+
+    method type->Type
+      return setting_info.type
+endClass
+
+class CmdReadProperty : Cmd
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+
+  METHODS
+    method init( t, context, property_info )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadProperty( t, context.clone(clone_args), property_info )
+
+    method access_name->String
+      return property_info.name
+
+    method access_cpp_name->String
+      return property_info.cpp_name
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( property_info.type.compile_type, property_info.type )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( property_info.type.compile_type, property_info.type )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve( scope ).require_value
+      return this
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
+
+    method type->Type
+      return property_info.type
+endClass
+
+
+class CmdWriteProperty : Cmd
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+    new_value     : Cmd
+
+  METHODS
+    method init( t, context, property_info, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteProperty( t, context.clone(clone_args), property_info, new_value.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name ).print(" = ")
+
+      if (property_info.type.compile_type is new_value.compile_type)
+        new_value.write_cpp( writer )
+      else
+        writer.print( "((" ).print( property_info.type ).print( ")" )
+        new_value.write_cpp( writer )
+        writer.print( ")" )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve(scope).require_value
+      new_value = new_value.resolve(scope).require_value.cast_to( property_info.type ).resolve( scope )
+      return this
+
+    method type->Type
+      return property_info.type
+endClass
+
+#------------------------------------------------------------------------------
+# Method Calls
+#------------------------------------------------------------------------------
+class CmdCall : Cmd
+  PROPERTIES
+    context     : Cmd
+    method_info : Method
+    args        : CmdArgs
+
+  METHODS
+    method init( t, context, method_info, args )
+
+    method resolve( scope:Scope )->Cmd
+      if (context) context = context.resolve(scope).require_value
+      args.resolve( scope )
+      return this
+
+    method type->Type
+      return method_info.return_type
+endClass
+
+
+class CmdCallRoutine : CmdCall
+  METHODS
+    method init( t, method_info, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallRoutine( t, method_info, args.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+
+      writer.print( compile_target.cpp_name )
+      writer.print( "(" )
+      if (args.count)
+        writer.print( " " )
+        local i = 0
+        forEach (arg in args)
+          if (i > 0) writer.print( ", " )
+          local param_type = compile_target.parameters[i].type
+          if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+            arg.write_cpp( writer )
+            writer.print( "))" )
+          else
+            arg.write_cpp( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endClass
+
+class CmdCallAspectMethod : CmdCall
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallAspectMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      writer.print( "(" )
+      writer.print( Program.type_Object )
+      writer.print( ")" )
+      context.write_cpp( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          arg.write_cpp( writer )
+          writer.print( "))" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endClass
+
+
+class CmdCallMethod : CmdCall
+  METHODS
+    method call_prior( scope:Scope )->Cmd
+      if (method_info.is_initializer and method_info.type_context isNot scope.this_type)
+        # Calling a prior initializer with a different signature that was hidden by
+        # an extended class initializer.
+        return CmdCallStaticMethod( t, context, method_info, args )
+      endIf
+
+      if (not method_info.overridden_method)
+        throw t.error( "$ is not an override - no prior version of it exists." (method_info.signature) )
+      endIf
+
+      return CmdCallStaticMethod( t, context, method_info.overridden_method, args )
+endClass
+
+class CmdCallDynamicMethod : CmdCallMethod
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      if (compile_target.is_overridden)
+        writer.print( "call_" ).print( compile_target.cpp_typedef )
+        writer.print( "( " )
+        writer.print( compile_target.index ).print( ", " )
+        writer.print( "(" )
+        writer.print( compile_target.type_context )
+        writer.print( ")(" )
+        context.write_cpp( writer )
+        writer.print( ")" )
+        local i = 0
+        forEach (arg in args)
+          writer.print( ", " )
+          local param_type = compile_target.parameters[i].type
+          if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+            arg.write_cpp( writer )
+            writer.print( ")" )
+          else
+            arg.write_cpp( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " )" )
+
+      else
+        CmdCallStaticMethod( t, context, method_info, args ).write_cpp( writer, is_statement )
+      endIf
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endClass
+
+
+class CmdCallStaticMethod : CmdCallMethod
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallStaticMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      if (not context) context = CmdThisContext(t,method_info.type_context)
+      return prior.resolve( scope )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      writer.print_cast( context.type, compile_target.type_context, context )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+          arg.write_cpp( writer )
+          writer.print( ")" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endClass
+
+
+class CmdCallPriorMethod : Cmd
+  PROPERTIES
+    name : String
+    args : CmdArgs
+
+  METHODS
+    method init( t, name, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallPriorMethod( t, name, args.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      return CmdAccess( t, name, args ).resolve( scope ).call_prior( scope )
+endClass
+
+
+class CmdCallNativeRoutine : CmdCall
+  METHODS
+    method init( t, method_info, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallNativeRoutine( t, method_info, args.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      local i = 0
+      forEach (arg in args)
+        if (i > 0) writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          arg.write_cpp( writer )
+          writer.print( "))" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endClass
+
+class CmdCallNativeMethod : CmdCall
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      context.write_cpp( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if ((method_info.generic_method and method_info.parameters[i].generic_type) or param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          arg.write_cpp( writer )
+          writer.print( "))" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endClass
+
+class CmdCallInlineNative : CmdCall
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local st = method_info.native_code
+
+      local dollar = st.locate('$')
+      while (dollar)
+        writer.print( st.substring(0,dollar!-1) )
+        st = st.substring( dollar!+1 )
+        
+        local best_match : Local
+        forEach (p in method_info.parameters)
+          if (st.begins_with(p.name))
+            if (best_match is null or p.name.count > best_match.name.count) best_match = p
+          endIf
+        endForEach
+
+        if (best_match)
+          args[ best_match.index ].write_cpp( writer )
+          st = st.substring( best_match.name.count )
+        else
+          if (st.begins_with("this"))
+            print_this( writer )
+            st = st.substring( 4 )
+          endIf
+        endIf
+
+        dollar = st.locate('$')
+      endWhile
+
+      writer.print( st )
+
+    method print_this( writer:CPPWriter )
+      throw t.error( "Illegal use of '$this' in routine." )
+
+    method to->String
+      return method_info.signature
+endClass
+
+class CmdCallInlineNativeRoutine : CmdCallInlineNative
+  METHODS
+    method init( t, method_info, args )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallInlineNativeRoutine( t, method_info, args.clone(clone_args) )
+
+    method type->Type
+      return method_info.return_type
+endClass
+
+class CmdCallInlineNativeMethod : CmdCallInlineNative
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCallInlineNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+
+    method print_this( writer:CPPWriter )
+      context.write_cpp( writer )
+
+    method type->Type
+      return method_info.return_type
+endClass
+
+#------------------------------------------------------------------------------
+# Miscellaneous Expressions
+#------------------------------------------------------------------------------
+class CmdRange : Cmd
+  PROPERTIES
+    first : Cmd
+    last  : Cmd
+    step_size  : Cmd
+
+  METHODS
+    method init( t, first, last, step_size=null )
+endClass
+
+class CmdRangeUpTo : CmdRange
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeUpTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
+endClass
+
+
+#------------------------------------------------------------------------------
+# Unary Operators
+#------------------------------------------------------------------------------
+class CmdUnary : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method cpp_prefix_symbol->String
+      return prefix_symbol
+
+    method cpp_suffix_symbol->String
+      return suffix_symbol
+
+    method prefix_symbol->String
+      return ""
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( cpp_prefix_symbol ).print( "(" )
+      operand.write_cpp( writer )
+      writer.print( ")" ).print( cpp_suffix_symbol )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_value
+      if (operand.is_literal) return resolve_for_literal_operand( scope )
+      else                    return resolve_for_operand_type( scope, operand.require_type )
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      return this
+
+    method resolve_for_operand_type( scope:Scope, operand_type:Type )->Cmd
+      return this
+
+    method suffix_symbol->String
+      return ""
+
+    method type->Type
+      return operand.type
+endClass
+
+class CmdLogicalize : CmdUnary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalize( t, operand.clone(clone_args) )
+
+    method cpp_prefix_symbol->String
+      return "!!"
+
+    method cpp_suffix_symbol->String
+      return ""
+
+    method prefix_symbol->String
+      return ""
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      if (operand.require_type.is_optional)
+        return CmdLogicalizeOptionalValue( t, operand )
+      else
+        return this
+      endIf
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_value
+      return this
+
+    method suffix_symbol->String
+      return "?"
+
+    method type->Type
+      return Program.type_Logical
+
+endClass
+
+class CmdLogicalNot : CmdUnary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalNot( t, operand.clone(clone_args) )
+
+    method cpp_prefix_symbol->String
+      return "!"
+
+    method prefix_symbol->String
+      return "not "
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_logical( scope )
+      if (operand.is_literal) return resolve_for_literal_operand( scope )
+      else                    return resolve_for_operand_type( scope, operand.require_type )
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralReal)
+        return CmdLiteralLogical( t, not (operand as CmdLiteralReal).value )
+      elseIf (operand instanceOf CmdLiteralInteger)
+        return CmdLiteralLogical( t, not (operand as CmdLiteralInteger).value )
+      endIf
+      return this
+
+    method type->Type
+      return Program.type_Logical
+
+endClass
+
+
+class CmdNegate : CmdUnary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdNegate( t, operand.clone(clone_args) )
+
+    method implicit_type->Type
+      return operand.implicit_type
+
+    method prefix_symbol->String
+      return "(-"
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralReal)
+        return CmdLiteralReal( t, -(operand as CmdLiteralReal).value )
+      elseIf (operand instanceOf CmdLiteralInteger)
+        return CmdLiteralInteger( t, -(operand as CmdLiteralInteger).value )
+      endIf
+      return this
+
+    method suffix_symbol->String
+      return ")"
+endClass
+
+
+#------------------------------------------------------------------------------
+# Binary Operators
+#------------------------------------------------------------------------------
+class CmdBinary : Cmd
+  PROPERTIES
+    left   : Cmd
+    right  : Cmd
+
+  METHODS
+    method init( t, left, right )
+
+    method cpp_symbol->String
+      return symbol
+
+    method fn_name->String
+      throw t.error( "[INTERNAL] $::fn_name() is not defined." (type_name) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (requires_parens) writer.print( "(" )
+      left.write_cpp( writer )
+      writer.print( " " ).print( cpp_symbol ).print( " " )
+      right.write_cpp( writer )
+      if (requires_parens) writer.print( ")" )
+
+    method requires_parens->Logical
+      return true
+
+    method resolve( scope:Scope )->Cmd
+      left = left.resolve( scope )
+      right = right.resolve( scope )
+      local left_type = left.require_type
+      local right_type = right.require_type
+      return resolve_for_types( scope, left_type, right_type )
+
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      local operator_method_call = resolve_operator_method( scope, left_type, right_type )
+      if (operator_method_call) return operator_method_call
+
+      local common_type = must_find_common_type( left_type, right_type )
+      left = left.cast_to( common_type )
+      right = right.cast_to( common_type )
+      if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
+      return resolve_for_common_type( scope, common_type )
+
+    method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
+      return this
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.has_method_named(fn_name))
+        return CmdAccess( t, left, fn_name, CmdArgs(right) ).resolve( scope )
+      elseIf (left_type.has_routine_named(fn_name))
+        return CmdAccess( t, CmdAccess(t,left_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
+      elseIf (right_type.has_routine_named(fn_name))
+        return CmdAccess( t, CmdAccess(t,right_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
+      else
+        return null
+      endIf
+
+    method symbol->String
+      throw t.error( "[INTERNAL] $::symbol() is not defined." (type_name) )
+
+    method type->Type
+      return find_operation_result_type( left.require_type, right.require_type )
+endClass
+
+class CmdAdd : CmdBinary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdAdd( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value + (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value + (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method fn_name->String
+      return "operator+"
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type isNot Program.type_String and right_type is Program.type_String)
+        # non-string + string -> ("" + non-string) + string
+        left = CmdAdd( t, CmdLiteralString(t,""), left ).resolve( scope )
+        left_type = left.require_type
+      endIf
+      return prior.resolve_operator_method( scope, left_type, right_type )
+
+    method symbol->String
+      return "+"
+endClass
+
+
+class CmdSubtract : CmdBinary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdSubtract( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value - (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value - (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method fn_name->String
+      return "operator-"
+
+    method symbol->String
+      return "-"
+endClass
+
+class CmdMultiply : CmdBinary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdMultiply( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value * (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value * (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method fn_name->String
+      return "operator*"
+
+    method symbol->String
+      return "*"
+endClass
+
+
+class CmdDivide : CmdBinary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdDivide( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value / (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value / (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method fn_name->String
+      return "operator/"
+
+    method symbol->String
+      return "/"
+endClass
+
+
+class CmdMod : CmdBinary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdMod( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value % (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value % (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( Program.program_name ).print( ".mod( " )
+      left.write_cpp( writer )
+      writer.print( ", " )
+      right.write_cpp( writer )
+      writer.print( " )" )
+
+    method fn_name->String
+      return "operator%"
+
+    method symbol->String
+      return "%"
+endClass
+
+
+class CmdPower : CmdBinary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdPower( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralReal( t, (left as CmdLiteralReal).value ^ (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value ^ (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( left.type ).print( ") pow((double)")
+      left.write_cpp( writer )
+      writer.print( ", (double)" )
+      right.write_cpp( writer )
+      writer.print( "))" )
+
+    method fn_name->String
+      return "operator^"
+
+    method symbol->String
+      return "^"
+endClass
+
+
+class CmdBinaryLogical : CmdBinary
+  METHODS
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      throw t.error( "[INTERNAL] $::combine_literal_operands(Logical,Logical) is not defined." (type_name) )
+
+    method resolve( scope:Scope )->Cmd
+      left = left.resolve( scope ).require_logical( scope )
+      right = right.resolve( scope ).require_logical( scope )
+      if (left.is_literal and right.is_literal)
+        return CmdLiteralLogical(
+            t,
+            combine_literal_operands(
+                (left as CmdLiteralLogical).value,
+                (right as CmdLiteralLogical).value
+              )
+          )
+      endIf
+      return this
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      return null
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdLogicalAnd : CmdBinaryLogical
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalAnd( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      return (a and b)
+
+    method cpp_symbol->String
+      return "&&"
+
+    method symbol->String
+      return "and"
+endClass
+
+
+class CmdLogicalOr : CmdBinaryLogical
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalOr( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      return (a or b)
+
+    method cpp_symbol->String
+      return "||"
+
+    method symbol->String
+      return "or"
+endClass
+
+
+
+class CmdLogicalXor : CmdBinaryLogical
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalXor( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( a:Logical, b:Logical )->Logical
+      return (a xor b)
+
+    method cpp_symbol->String
+      return "^"
+
+    method symbol->String
+      return "xor"
+endClass
+
+
+#------------------------------------------------------------------------------
+# Comparison Operators
+#------------------------------------------------------------------------------
+class CmdComparison : CmdBinary
+  PROPERTIES
+    resolved : Logical
+
+  METHODS
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      resolved = true
+
+      if (left_type.is_compound or right_type.is_compound)
+        local result = resolve_for_reference( scope, left_type, right_type, false )
+        if (result) return result
+
+        if (left_type is right_type) return this
+        throw t.error( "Incompatible types for comparison: $ and $." (left_type,right_type) )
+
+      elseIf (left_type.is_reference or right_type.is_reference)
+        return resolve_for_reference( scope, left_type, right_type, true )
+
+      endIf
+
+      local common_type = must_find_common_type( left_type, right_type )
+      left = left.cast_to( common_type )
+      right = right.cast_to( common_type )
+      if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
+
+      return this
+
+    method requires_parens->Logical
+      return false
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      throw t.error( "[INTERNAL] $::resolve_for_reference() is undefined." )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdCompareEQ : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareEQ( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value == (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value == (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method requires_parens->Logical
+      return false
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator==",CmdArgs(left)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator!=",CmdArgs(left)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      if (not force_error) return null
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), true )
+
+    method symbol->String
+      return "=="
+endClass
+
+class CmdCompareNE : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareNE( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value != (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value != (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,0) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator==",CmdArgs(right)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator!=",CmdArgs(left)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator==",CmdArgs(left)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      if (not force_error) return null
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator!=",CmdArgs(right)), true )
+
+    method symbol->String
+      return "!="
+endClass
+
+class CmdCompareLT : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareLT( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value < (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value < (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>",CmdArgs(left)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<=",CmdArgs(left)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      if (not force_error) return null
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), true )
+
+    method symbol->String
+      return "<"
+endClass
+
+class CmdCompareLE : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareLE( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value <= (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value <= (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>=",CmdArgs(left)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<",CmdArgs(left)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      if (not force_error) return null
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), true )
+
+    method symbol->String
+      return "<="
+endClass
+
+class CmdCompareGT : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareGT( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value > (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value > (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInteger(t,1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<=",CmdArgs(right)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<",CmdArgs(left)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>=",CmdArgs(left)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      if (not force_error) return null
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator>",CmdArgs(right)), true )
+
+    method symbol->String
+      return ">"
+endClass
+
+class CmdCompareGE : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareGE( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Real)
+        return CmdLiteralLogical( t, (left as CmdLiteralReal).value >= (right as CmdLiteralReal).value )
+      elseIf (common_type is Program.type_Integer)
+        return CmdLiteralLogical( t, (left as CmdLiteralInteger).value >= (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
+      local cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<>",CmdArgs(right)), false )
+      if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInteger(t,-1) ).resolve( scope )
+
+      cmd = scope.resolve_call( left_type, CmdAccess(t,left,"operator<",CmdArgs(right)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator<=",CmdArgs(left)), false )
+      if (cmd) return cmd
+
+      cmd = scope.resolve_call( right_type, CmdAccess(t,right,"operator>",CmdArgs(left)), false )
+      if (cmd) return CmdLogicalNot( t, cmd )
+
+      if (not force_error) return null
+
+      # Force error
+      return scope.resolve_call( left_type, CmdAccess(t,left,"operator>=",CmdArgs(right)), true )
+
+    method symbol->String
+      return ">="
+endClass
+
+class CmdCompareIs : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareIs( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method cpp_symbol->String
+      return "=="
+
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.is_reference and right_type.is_reference)
+        return this
+
+      elseIf (left_type.is_primitive and right_type.is_primitive)
+        return CmdCompareEQ( t, left, right ).resolve( scope )
+
+      elseIf (left_type.is_compound and right_type.is_compound)
+        throw t.error( "[INTERNAL] TODO: 'is' for compounds." )
+
+      else
+        throw t.error( "Cannot use 'is' between mixed type categories $ and $." (left_type,right_type) )
+
+      endIf
+
+    method symbol->String
+      return "is"
+endClass
+
+class CmdCompareIsNot : CmdComparison
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareIsNot( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method cpp_symbol->String
+      return "!="
+
+    method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      if (left_type.is_reference and right_type.is_reference)
+        return this
+
+      elseIf (left_type.is_primitive and right_type.is_primitive)
+        return CmdCompareEQ( t, left, right ).resolve( scope )
+
+      elseIf (left_type.is_compound and right_type.is_compound)
+        throw t.error( "[INTERNAL] TODO: 'is' for compounds." )
+
+      else
+        throw t.error( "Cannot use 'isNot' between mixed type categories $ and $." (left_type,right_type) )
+
+      endIf
+
+    method symbol->String
+      return "isNot"
+endClass
+
+#------------------------------------------------------------------------------
+# Bitwise
+#------------------------------------------------------------------------------
+class CmdBitwiseOp : CmdBinary
+  METHODS
+    method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
+      if (common_type is Program.type_Byte or common_type is Program.type_Character)
+        left  = left.cast_to( Program.type_Integer ).resolve( scope )
+        right = right.cast_to( Program.type_Integer ).resolve( scope )
+
+        # TODO: allow Integer & Logical
+        #elseIf (common_type isNot Program.type_Integer)
+        #throw t.error( "'$' requires integer operands." (symbol) )
+      endIf
+
+      return this
+
+    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
+      return null
+endClass
+
+class CmdBitwiseAnd : CmdBitwiseOp
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseAnd( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value & (right as CmdLiteralInteger).value )
+      elseIf (common_type is Program.type_Logical)
+        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value and (right as CmdLiteralLogical).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "&"
+endClass
+
+class CmdBitwiseOr : CmdBitwiseOp
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseOr( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value | (right as CmdLiteralInteger).value )
+      elseIf (common_type is Program.type_Logical)
+        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value or (right as CmdLiteralLogical).value )
+      else
+        return this
+      endIf
+
+    method symbol->String
+      return "|"
+endClass
+
+class CmdBitwiseXor : CmdBitwiseOp
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseXor( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value ~ (right as CmdLiteralInteger).value )
+      elseIf (common_type is Program.type_Logical)
+        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value xor (right as CmdLiteralLogical).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return "^"
+
+    method symbol->String
+      return "~"
+endClass
+
+class CmdBitwiseShiftLeft : CmdBitwiseOp
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftLeft( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value :<<: (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return "<<"
+
+    method symbol->String
+      return ":<<:"
+endClass
+
+class CmdBitwiseShiftRight : CmdBitwiseOp
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftRight( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value :<<: (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return ">>>"
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "Rogue_program.shift_right( " )
+      left.write_cpp( writer )
+      writer.print( ", " )
+      right.write_cpp( writer )
+      writer.print( " )" )
+
+    method symbol->String
+      return ":>>:"
+endClass
+
+class CmdBitwiseShiftRightX : CmdBitwiseOp
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftRightX( t, left.clone(clone_args), right.clone(clone_args) )
+
+    method combine_literal_operands( common_type:Type )->Cmd
+      if (common_type is Program.type_Integer)
+        return CmdLiteralInteger( t, (left as CmdLiteralInteger).value :<<: (right as CmdLiteralInteger).value )
+      else
+        return this
+      endIf
+
+    method cpp_symbol->String
+      return ">>"
+
+    method symbol->String
+      return ":>>>:"
+endClass
+
+
+class CmdBitwiseNot : CmdUnary
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseNot( t, operand.clone(clone_args) )
+
+    method cpp_prefix_symbol->String
+      return "~"
+
+    method prefix_symbol->String
+      return "!"
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralInteger)
+        return CmdLiteralInteger( t, !(operand as CmdLiteralInteger).value )
+      endIf
+      return this
+
+    method type->Type
+      return operand.type
+endClass
+
+#------------------------------------------------------------------------------
+# Modify
+#------------------------------------------------------------------------------
+class CmdAdjust : Cmd
+  PROPERTIES
+    operand : Cmd
+    delta   : Integer
+
+  METHODS
+    method init( t, operand, delta )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      return operand.resolve_modify( scope, delta )
+endClass
+
+class CmdAdjustLocal : Cmd
+  PROPERTIES
+    local_info : Local
+    delta      : Integer
+
+  METHODS
+    method init( t, local_info, delta )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
+      else
+        return CmdAdjustLocal( t, local_info, delta )
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      writer.print( local_info.cpp_name )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+
+class CmdAdjustProperty : Cmd
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+    delta         : Integer
+
+  METHODS
+    method init( t, context, property_info, delta )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      #{
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.cmd_read(t,local_info)), delta )
+      else
+      endIf
+      }#
+      return CmdAdjustProperty( t, context.clone(clone_args), property_info, delta )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name )
+
+    method resolve( scope:Scope )->Cmd
+      context = context.resolve( scope )
+      return this
+
+    method type->Type
+      return null
+endClass
+
+
+#------------------------------------------------------------------------------
+# OpWithAssign
+#------------------------------------------------------------------------------
+class CmdOpWithAssign : Cmd
+  PROPERTIES
+    target    : Cmd
+    op        : TokenType
+    new_value : Cmd
+
+  METHODS
+    method init( t, target, op, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdOpWithAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
+      
+    method resolve( scope:Scope )->Cmd
+      return target.resolve_modify_and_assign( scope, op, new_value )
+endClass
+
+class CmdResolvedOpWithAssign : Cmd
+  PROPERTIES
+    op         : TokenType
+    new_value  : Cmd
+
+  METHODS
+    method cpp_symbol->String
+      return symbol
+
+    method symbol->String
+      if (op is TokenType.symbol_tilde_equals) return "^="
+      return op->String
+
+endClass
+
+class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
+  PROPERTIES
+    local_info : Local
+
+  METHODS
+    method init( t, local_info, op, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        return CmdOpWithAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.clone(task_args) )
+      else
+        return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
+      endIf
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
+      new_value.write_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      if (local_info.type.is_reference)
+        local m_name = "operator" + op->String
+        if (local_info.type.method_lookup_by_name[m_name])
+          return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
+        else
+          m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          if (local_info.type.method_lookup_by_name[m_name])
+            return CmdWriteLocal( t, local_info,
+            CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ) ).resolve( scope )
+          else
+            local arg_type = new_value.type.name
+            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (local_info.type,m_name,arg_type,m_name,arg_type) )
+          endIf
+        endIf
+      endIf
+
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdWriteLocal( t, local_info, CmdPower(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          # Mod has be be expanded because Rogue uses a special mod function
+          if (RogueC.target == "C++")
+            return CmdWriteLocal( t, local_info, CmdMod(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access) throw new_value.t.error( "Property or method name expected." )
+          if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = CmdReadLocal( t, local_info )
+          return CmdWriteLocal( t, local_info, access ).resolve( scope )
+      endWhich
+
+      new_value = new_value.resolve( scope ).cast_to( local_info.type ).resolve( scope )
+      return this
+
+    method type->Type
+      return local_info.type
+endClass
+
+
+class CmdOpAssignSetting : CmdResolvedOpWithAssign
+  PROPERTIES
+    setting_info : Property
+
+  METHODS
+    method init( t, setting_info, op, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdOpAssignSetting( t, setting_info, op, new_value.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      new_value.write_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      if (setting_info.type.is_reference)
+        local m_name = "operator" + op->String
+        if (setting_info.type.method_lookup_by_name[m_name])
+          return CmdAccess( t, CmdReadSetting(t,setting_info), m_name, new_value ).resolve( scope )
+        else
+          m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          if (setting_info.type.method_lookup_by_name[m_name])
+            return CmdWriteSetting( t, setting_info,
+              CmdAccess(t, CmdReadSetting(t,setting_info), m_name, new_value) ).resolve( scope )
+          else
+            local arg_type = new_value.type.name
+            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (setting_info.type,m_name,arg_type,m_name,arg_type) )
+          endIf
+        endIf
+      endIf
+
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdWriteSetting( t, setting_info, CmdPower(t,CmdReadSetting(t,setting_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          # Mod has be be expanded because Rogue uses a special mod function
+          if (RogueC.target == "C++")
+            return CmdWriteSetting( t, setting_info, CmdMod(t,CmdReadSetting(t,setting_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access) throw new_value.t.error( "Property or method name expected." )
+          if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = CmdReadSetting( t, setting_info )
+          return CmdWriteSetting( t, setting_info, access ).resolve( scope )
+      endWhich
+
+      new_value = new_value.resolve(scope).cast_to( setting_info.type ).resolve( scope )
+      return this
+
+    method type->Type
+      return setting_info.type
+endClass
+
+class CmdOpAssignProperty : CmdResolvedOpWithAssign
+  PROPERTIES
+    context       : Cmd
+    property_info : Property
+
+  METHODS
+    method init( t, context, property_info, op, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdOpAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      new_value.write_cpp( writer )
+
+    method resolve( scope:Scope )->Cmd
+      if (property_info.type.is_reference)
+        local m_name = "operator" + op->String
+        if (property_info.type.method_lookup_by_name[m_name])
+          return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )
+        else
+          m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          if (property_info.type.method_lookup_by_name[m_name])
+            return CmdWriteProperty( t, context, property_info,
+              CmdAccess(t, CmdReadProperty(t,clone(context),property_info), m_name, new_value) ).resolve( scope )
+          else
+            local arg_type = new_value.type.name
+            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (property_info.type,m_name,arg_type,m_name,arg_type) )
+          endIf
+        endIf
+      endIf
+
+      which (op)
+        case TokenType.symbol_caret_equals
+          if (RogueC.target == "C++")
+            return CmdWriteProperty( t, context, property_info, CmdPower(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_percent_equals
+          # Mod has be be expanded because Rogue uses a special mod function
+          if (RogueC.target == "C++")
+            return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
+          endIf
+
+        case TokenType.symbol_dot_equals
+          local access = new_value as CmdAccess
+          if (not access) throw new_value.t.error( "Property or method name expected." )
+          if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
+          access.context = CmdReadProperty( t, clone(context), property_info )
+          return CmdWriteProperty( t, context, property_info, access ).resolve( scope )
+      endWhich
+
+      context = context.resolve(scope).require_value
+      new_value = new_value.resolve(scope).cast_to( property_info.type ).resolve( scope )
+      return this
+
+    method type->Type
+      return property_info.type
+endClass
+
+#------------------------------------------------------------------------------
+# Arrays
+#------------------------------------------------------------------------------
+class CmdCreateArray : Cmd
+  PROPERTIES
+    array_type   : Type
+    count_cmd    : Cmd
+
+  METHODS
+    method init( t, array_type, args:CmdArgs )
+      if (args is null or args.count != 1)
+        throw t.error( "Array count expected." )
+      endIf
+      count_cmd = args.first
+
+    method init( t, array_type, count_cmd )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateArray( t, array_type, count_cmd.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "RogueArray::create( " )
+      count_cmd.write_cpp( writer )
+      writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
+      if (array_type.element_type.is_reference) writer.print( ", true" )
+      writer.print( " )" )
+
+    method resolve( scope:Scope )->Cmd
+      array_type.organize
+      count_cmd = count_cmd.resolve(scope).require_integer
+      return this
+
+    method type->Type
+      return array_type
+endClass
+
+class CmdReadArrayElement : Cmd
+  PROPERTIES
+    context    : Cmd
+    array_type : Type
+    index      : Cmd
+
+  METHODS
+    method init( t, context, index )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadArrayElement( t, context.clone(clone_args), index.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local element_type = array_type.element_type
+      if (not is_statement) writer.print_open_cast( element_type.compile_type, element_type )
+      if (element_type.is_reference)
+        writer.print( "((" )
+        writer.print( element_type )
+        writer.print( ")(" )
+        context.write_cpp( writer )
+        writer.print( "->objects[" )
+        index.write_cpp( writer )
+        writer.print( "]))" )
+
+      elseIf (element_type.is_primitive)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        which (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+          others
+            throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
+        endWhich
+        index.write_cpp( writer )
+        writer.print( "]" )
+
+      else
+        # Compound
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_cpp( writer )
+        writer.print( "->bytes))[" )
+        index.write_cpp( writer )
+        writer.print( "]" )
+
+      endIf
+      if (not is_statement) writer.print_close_cast( element_type.compile_type, element_type )
+
+
+    method resolve( scope:Scope )->Cmd
+      if (array_type) return this
+
+      context = context.resolve(scope)
+      array_type = context.require_type
+      index = index.resolve(scope).require_integer
+      return this
+
+    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+      return CmdWriteArrayElement( t, context, index.clone, CmdAdd(t,this,CmdLiteralInteger(t,delta)) ).resolve( scope )
+
+    method type->Type
+      return array_type.element_type
+endClass
+
+class CmdReadArrayCount : Cmd
+  PROPERTIES
+    context      : Cmd
+    array_type   : Type
+
+  METHODS
+    method init( t, context )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdReadArrayCount( t, context.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      context.write_cpp( writer )
+      writer.print( "->count" )
+        
+    method resolve( scope:Scope )->Cmd
+      if (array_type) return this
+
+      context = context.resolve(scope)
+      array_type = context.require_type
+      return this
+
+    method type->Type
+      return Program.type_Integer
+endClass
+
+class CmdWriteArrayElement : Cmd
+  PROPERTIES
+    context    : Cmd
+    array_type : Type
+    index      : Cmd
+    new_value  : Cmd
+
+  METHODS
+    method init( t, context, index, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteArrayElement( t, context.clone(clone_args), index.clone(clone_args), new_value.clone(clone_args) )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local element_type = array_type.element_type
+      if (element_type.is_primitive)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        which (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+        endWhich
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
+      elseIf (element_type.is_reference)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        writer.print( "objects[" )
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
+      else
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_cpp( writer )
+        writer.print( "->bytes))[" )
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      if (array_type) return this
+
+      context = context.resolve(scope)
+      array_type = context.require_type
+      index = index.resolve(scope).require_integer
+      new_value = new_value.resolve( scope ).require_value.cast_to( array_type.element_type ).resolve( scope )
+      return this
+
+    method type->Type
+      return array_type.element_type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Type Checks and Conversions
+#------------------------------------------------------------------------------
+class CmdTypeOperator : Cmd
+  PROPERTIES
+    operand     : Cmd
+    target_type : Type
+
+  METHODS
+    method init( t, operand, target_type )
+
+    method type->Type
+      return target_type
+endClass
+
+
+class CmdCastToType : CmdTypeOperator
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCastToType( t, operand.clone(clone_args), target_type )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type ).print( ")(" )
+      operand.write_cpp( writer )
+      writer.print( "))" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      target_type.organize
+      if (operand.require_type is target_type) return operand
+      return this
+endClass
+
+class CmdConvertToType : CmdTypeOperator
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdConvertToType( t, operand.clone(clone_args), target_type )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      local operand_type = operand.require_type
+      target_type.organize
+      if (operand_type is target_type) return operand
+
+      if (operand_type.is_primitive and target_type.is_primitive)
+        return CmdConvertToPrimitiveType( t, operand, target_type ).resolve( scope )
+      else
+        return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
+      endIf
+endClass
+
+
+class CmdConvertToPrimitiveType : CmdConvertToType
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdConvertToPrimitiveType( t, operand.clone(clone_args), target_type )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type.cpp_class_name ).print( ")(" )
+      operand.write_cpp( writer )
+      writer.print( "))" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve(scope).require_value
+      return this
+endClass
+
+class CmdAs : CmdTypeOperator
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdAs( t, operand.clone(clone_args), target_type )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type ).print( ")(RogueObject::as(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")))" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      target_type.organize
+
+      # Generic methods returning non-generic values prevent this optimization
+      #local operand_type = operand.require_type
+      #if (operand_type is target_type and not operand_type.is_generic)
+        #return operand
+      #endIf
+
+      return this
+endClass
+
+class CmdInstanceOf : CmdTypeOperator
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdInstanceOf( t, operand.clone(clone_args), target_type )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "RogueObject::instance_of(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")" )
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope )
+      target_type.organize
+
+      return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+
+#------------------------------------------------------------------------------
+# Collections
+#------------------------------------------------------------------------------
+class CmdCreateList : Cmd
+  PROPERTIES
+    args      : CmdArgs
+    list_type : Type
+
+  METHODS
+    method init( t, args=CmdArgs(), list_type=null )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateList( t, clone(args,clone_args), list_type )
+
+    method resolve( scope:Scope )->Cmd
+      args.resolve( scope )
+      if (not list_type and args.count)
+        local common_type = args.first.type
+        forEach (arg in args)
+          common_type = find_common_type( common_type, arg.type )
+        endForEach
+        list_type = Program.get_type_reference( t, common_type + "[]" )
+        list_type.organize
+      endIf
+
+      if (list_type)
+        local element_type = list_type.element_type
+        forEach (index of args)
+          args[index] = args[index].resolve( scope ).cast_to( element_type ).resolve( scope )
+        endForEach
+      endIf
+
+      if (not list_type) throw t.error( "TODO: [] -> Property[]" )
+
+      local initial_capacity = 10
+      if (args.count) initial_capacity = args.count
+
+      local cmd : Cmd
+      cmd = CmdAccess( t, list_type.name, CmdArgs(CmdLiteralInteger(t,initial_capacity)) )
+      forEach (arg in args)
+        cmd = CmdAccess( t, cmd, "add", CmdArgs(arg) )
+      endForEach
+      return cmd.resolve( scope )
+
+endClass
+
+
+#------------------------------------------------------------------------------
+# Task-Related
+#------------------------------------------------------------------------------
+class CmdAwait : Cmd
+  PROPERTIES
+    expression     : Cmd
+    statement_list : CmdStatementList
+    result_var     : Local
+
+  METHODS
+    method init( t, expression, statement_list, result_var=null )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        throw t.error( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." )
+      else
+        return CmdAwait( t, expression.clone(task_args), statement_list.clone(task_args), result_var )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      if (not scope.this_method.is_task_conversion)
+        throw t.error( "The 'await' command can only be used in [task] methods." )
+      endIf
+
+      expression = expression.resolve( scope )
+      local task_type = expression.require_type
+      local p_result = task_type.find_property( "result" )
+      if (result_var)
+        if (p_result)
+          # Fix up local 'result' type to match task result type
+          result_var.type = p_result.type
+        else
+          throw expression.t.error( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - remove the call to start()." )
+        endIf
+      endIf
+
+      local task_var = scope.this_method.add_local( t, Program.create_unique_id )
+      task_var.initial_value = expression
+      statement_list.add( CmdLocalDeclaration(t, task_var) )
+        
+      statement_list.add( CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update")) )
+
+      if (result_var)
+        statement_list.add( CmdWriteLocal(t, result_var, CmdReadProperty(t,CmdReadLocal(t,task_var),p_result)) )
+      endIf
+
+      statement_list.resolve( scope )
+      return CmdBlock( t, statement_list ).resolve( scope )
+endClass
+
+class CmdYield : Cmd
+  METHODS
+    method init( t )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      local task_args = (clone_args as TaskArgs)
+      if (task_args)
+        task_args.add_yield( t )
+        return null
+      else
+        return CmdYield( t )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      if (not scope.this_method.is_task_conversion)
+        throw t.error( "The 'yield' statement can only be used in [task] methods." )
+      endIf
+
+      forEach (control_structure in scope.control_stack)
+        control_structure.contains_yield = true
+      endForEach
+
+      return this
+endClass
+
+class CmdTaskControlSection
+  PROPERTIES
+    ip : Integer
+    statements = CmdStatementList()
+
+  METHODS
+    method init( ip )
+endClass
+
+class CmdTaskControl : Cmd
+  PROPERTIES
+    sections = CmdTaskControlSection[]
+    current_section : CmdTaskControlSection
+
+  METHODS
+    method init( t )
+      current_section = CmdTaskControlSection(1)
+      sections.add( current_section )
+
+    method add( cmd:Cmd )->CmdTaskControl
+      current_section.statements.add( cmd )
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "switch (++THIS->ip)" )
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (section in sections)
+        writer.print( "case " ).print( section.ip ).println( ":" )
+        writer.indent += 2
+        section.statements.write_cpp( writer )
+        writer.indent -= 2
+      endForEach
+      writer.println( "default:" )
+      writer.println( "  THIS->ip = -1;" )
+      writer.println( "  return false;" )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      forEach (section in sections)
+        section.statements.resolve( scope )
+      endForEach
+      return this
+endClass
+
+
+#------------------------------------------------------------------------------
+# Callbacks
+#------------------------------------------------------------------------------
+class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_type:Type ) : Cmd
+  METHODS
+    method clone( clone_args:CloneArgs )->CmdCreateCallback
+      return CmdCreateCallback( t, context.clone(clone_args), name, signature, return_type )
+
+    method resolve( scope:Scope )->Cmd
+      if (name == "to" and return_type) name = "to_" + return_type.name
+
+      context = context.resolve( scope )
+      local context_type = context.require_type
+      context_type.organize
+
+      local m = context_type.find_method( name + signature )
+      if (not m)
+        local methods = context_type.method_lookup_by_name[ name ]
+        if (not methods) methods = context_type.routine_lookup_by_name[ name ]
+        if (not methods)        throw t.error( "No such method or routine '$' exists in type $." (name,context_type.name) )
+        if (methods.count != 1) throw t.error( "Multiple candidates match ambiguous reference to '$'; add qualifiying parameter types." (name) )
+        m = methods.first
+      endIf
+
+      local parameter_types : Type[]
+      if (m.parameters.count)
+        parameter_types = Type[]
+        forEach (p in m.parameters) parameter_types.add( p.type )
+      endIf
+
+      local callback_type_name = context_type.name + "::" + name + Program.get_callback_type_signature(parameter_types)
+      local callback_type = Program.get_type_reference( t, callback_type_name )
+
+      if (not callback_type.defined)
+        callback_type.defined = true
+        callback_type.attributes.add( Attribute.is_class )
+
+        local base_type = Program.get_callback_type_reference( t, parameter_types, m.return_type )
+        callback_type.base_types.add( base_type )
+
+        local m_call = callback_type.add_method( t, "call" )
+        local args = CmdArgs()
+        if (parameter_types)
+          forEach (i of parameter_types)
+            local param_name = "param" + (i+1)
+            m_call.add_parameter( t, param_name, parameter_types[i] )
+            args.add( CmdAccess(t,param_name) )
+          endForEach
+        endIf
+
+        local cmd : Cmd
+        if (m.is_routine)
+          callback_type.attributes.add( Attribute.is_singleton )
+          cmd = CmdAccess( t, CmdAccess(t,context_type.name), name, args )
+        else
+          callback_type.add_property( t, "context", context_type )
+          local m_init = callback_type.add_method( t, "init" )
+          m_init.add_parameter( t, "context" )
+          cmd = CmdAccess( t, CmdAccess(t,"context"), name, args )
+        endIf
+
+        if (m.return_type)
+          m_call.return_type = m.return_type
+          cmd = CmdReturn( t, cmd )
+        endIf
+
+        m_call.statements.add( cmd )
+      endIf
+
+      if (m.is_routine)
+        return CmdReadSingleton( t, callback_type ).resolve( scope )
+      else
+        return CmdAccess( t, callback_type_name, CmdArgs(context) ).resolve( scope )
+      endIf
+
+endClass
+
+
+class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:FnArg[], statements:CmdStatementList ) : Cmd
+  METHODS
+    method clone( clone_args:CloneArgs )->CmdCreateFunction
+      local args2 : FnArg[]
+      if (with_args)
+        args2 = FnArg[]
+        forEach (arg in with_args)
+          args2.add( FnArg( arg.name, arg.value.clone(clone_args) ).set_type( arg.type ) )
+        endForEach
+      endIf
+      return CmdCreateFunction( t, parameters, return_type, args2, statements.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      local parameter_types : Type[]
+      if (parameters and parameters.count)
+        parameter_types = Type[]
+        forEach (param in parameters) parameter_types.add( param.type )
+      endIf
+
+      local fn_name = "Function_" + Program.next_unique_integer
+      local fn_type = Program.get_type_reference( t, fn_name )
+
+      fn_type.defined = true
+      fn_type.attributes.add( Attribute.is_class )
+
+      local base_type = Program.get_callback_type_reference( t, parameter_types, return_type )
+      fn_type.base_types.add( base_type )
+
+      local m_call = fn_type.add_method( t, "call" )
+      if (parameters)
+        forEach (param in parameters)
+          m_call.add_parameter( t, param.name, param.type )
+        endForEach
+      endIf
+
+      m_call.return_type = return_type
+      m_call.statements = statements
+
+      if (with_args)
+        local m_init = fn_type.add_method( t, "init" )
+        local create_args = CmdArgs()
+        forEach (fn_arg in with_args)
+          local arg = fn_arg.value.resolve( scope ).require_value
+          create_args.add( arg )
+          fn_type.add_property( fn_arg.value.t, fn_arg.name, arg.type )
+          m_init.add_parameter( fn_arg.value.t, fn_arg.name )  # auto-initializing
+        endForEach
+
+        return CmdAccess( t, fn_name, create_args ).resolve( scope )
+
+      else
+        fn_type.attributes.add( Attribute.is_singleton )
+        return CmdReadSingleton( t, fn_type ).resolve( scope )
+      endIf
+
+
+endClass
+
+#------------------------------------------------------------------------------
+# Optional
+#------------------------------------------------------------------------------
+class CmdCreateOptionalValue : Cmd
+  PROPERTIES
+    of_type : Type
+    value   : Cmd
+
+  METHODS
+    method init( t, of_type, value=null )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateOptionalValue( t, of_type, clone(value,clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      if (value) value = value.resolve( scope )
+      return this
+
+    method type->Type
+      return of_type
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (of_type.element_type.is_reference)
+        # Reference types don't need an intermediate type to signify null
+        if (value)
+          value.write_cpp( writer )
+        else
+          writer.print "NULL"
+        endIf
+      else
+        # Non-reference types are kept in Optional<<DataType>> wrappers
+        writer.print( of_type )
+        if (value)
+          writer.print( "( " )
+          value.write_cpp( writer )
+          writer.print( " )" )
+        else
+          writer.print( "()" )
+        endIf
+      endIf
+
+endClass
+
+
+class CmdLogicalizeOptionalValue : Cmd
+  PROPERTIES
+    value    : Cmd
+    positive : Logical
+      # positive:true  returns "true" if exists and "false" if not.
+      # positive:false returns the opposite
+
+  METHODS
+    method init( t, value, positive=true )
+
+    method access_name->String
+      return value.access_name
+
+    method access_cpp_name->String
+      return value.access_cpp_name
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalizeOptionalValue( t, value.clone(clone_args) )
+
+    method resolve( scope:Scope )->this
+      value = value.resolve( scope ).require_value
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value.compile_type.element_type.is_reference)
+        writer.print( "!!" )
+        value.write_cpp( writer )
+      else
+        value.write_cpp( writer )
+        writer.print( ".exists" )
+      endIf
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdGetOptionalValue : Cmd
+  PROPERTIES
+    value    : Cmd
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdGetOptionalValue( t, value.clone(clone_args) )
+
+    method resolve( scope:Scope )->this
+      value = value.resolve( scope )
+      if (not value.require_type.is_optional)
+        throw t.error( "The optional value retriever ('!') can only be used on optional values." )
+      endIf
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      value.write_cpp( writer )
+      if (not value.compile_type.element_type.is_reference)
+        writer.print( ".value" )
+      endIf
+
+    method type->Type
+      return value.type.element_type
+endClass
+
+
+#------------------------------------------------------------------------------
+# Miscellaneous
+#------------------------------------------------------------------------------
+class CmdTrace : Cmd
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args:CloneArgs )->CmdTrace
+      return CmdTrace( t, value )
+
+    method resolve( scope:Scope )->Cmd
+      return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(CmdLiteralString(t,value)) ).resolve( scope )
+endClass
+

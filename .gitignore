@@ -13,3 +13,6 @@ Samples/**/*.h
 Samples/**/*.cpp
 namegenerator
 Source/VM/Build
+Source/RC3/rc3.cpp
+Source/RC3/rc3.h
+Source/RC3/rc3
