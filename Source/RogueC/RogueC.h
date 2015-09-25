@@ -5069,7 +5069,7 @@ RogueLogical RogueTokenizer__next_is_hex_digit( RogueClassTokenizer* THIS );
 RogueCharacter RogueTokenizer__read_character( RogueClassTokenizer* THIS );
 RogueCharacter RogueTokenizer__read_hex_value( RogueClassTokenizer* THIS, RogueInteger digits_0 );
 RogueString* RogueTokenizer__read_identifier( RogueClassTokenizer* THIS );
-RogueLogical RogueTokenizer__tokenize_alternate_string( RogueClassTokenizer* THIS );
+RogueLogical RogueTokenizer__tokenize_alternate_string( RogueClassTokenizer* THIS, RogueCharacter terminator_0 );
 RogueLogical RogueTokenizer__tokenize_another( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__tokenize_comment( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__tokenize_integer_in_base( RogueClassTokenizer* THIS, RogueInteger base_0 );

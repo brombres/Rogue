@@ -331,7 +331,7 @@ class Tokenizer
 
       elseIf (ch == '/')
         if (consume('/'))
-          tokenize_alternate_string
+          tokenize_alternate_string( '/' )
           return null
         elseIf (consume('='))
           return TokenType.symbol_slash_equals
@@ -494,20 +494,20 @@ class Tokenizer
 
       return buffer->String
 
-    method tokenize_alternate_string->Logical
+    method tokenize_alternate_string( terminator:Character )->Logical
       buffer.clear
 
       while (reader.has_another)
         if (reader.has_another)
           local ch = reader.peek
-          if (ch == '/')
+          if (ch == terminator)
             reader.read
             ch = reader.peek
-            if (ch == '/')
+            if (ch == terminator)
               reader.read
-              return add_new_string_or_character_token_from_buffer('/')
+              return add_new_string_or_character_token_from_buffer(0)
             else
-              buffer.print( '/' )
+              buffer.print( terminator )
             endIf
           else
             buffer.print( read_character )
@@ -538,7 +538,13 @@ class Tokenizer
         return true
 
       elseIf (ch == '\'')
-        return tokenize_string( '\'' )
+        if (reader.peek(1) == '\'')
+          reader.read
+          reader.read
+          return tokenize_alternate_string( '\'' )
+        else
+          return tokenize_string( '\'' )
+        endIf
 
       elseIf (ch == '"')
         return tokenize_string( '"' )

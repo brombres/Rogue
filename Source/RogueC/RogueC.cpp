@@ -31131,7 +31131,7 @@ RogueClassTokenType* Rogue_Tokenizer__get_symbol_token_type( RogueClassTokenizer
   {
     if (((RogueTokenizer__consume( THIS, (RogueCharacter)'/' ))))
     {
-      RogueTokenizer__tokenize_alternate_string( THIS );
+      RogueTokenizer__tokenize_alternate_string( THIS, (RogueCharacter)'/' );
       return (RogueClassTokenType*)(((RogueClassTokenType*)(NULL)));
     }
     else if (((RogueTokenizer__consume( THIS, (RogueCharacter)'=' ))))
@@ -31451,26 +31451,26 @@ RogueString* RogueTokenizer__read_identifier( RogueClassTokenizer* THIS )
   return (RogueString*)(((RogueStringBuilder__to_String( THIS->buffer ))));
 }
 
-RogueLogical RogueTokenizer__tokenize_alternate_string( RogueClassTokenizer* THIS )
+RogueLogical RogueTokenizer__tokenize_alternate_string( RogueClassTokenizer* THIS, RogueCharacter terminator_0 )
 {
   RogueStringBuilder__clear( THIS->buffer );
   while (((RogueParseReader__has_another( THIS->reader ))))
   {
     if (((RogueParseReader__has_another( THIS->reader ))))
     {
-      RogueCharacter ch_0 = (((RogueParseReader__peek( THIS->reader ))));
-      if (ch_0 == (RogueCharacter)'/')
+      RogueCharacter ch_1 = (((RogueParseReader__peek( THIS->reader ))));
+      if (ch_1 == terminator_0)
       {
         RogueParseReader__read( THIS->reader );
-        ch_0 = ((RogueCharacter)((RogueParseReader__peek( THIS->reader ))));
-        if (ch_0 == (RogueCharacter)'/')
+        ch_1 = ((RogueCharacter)((RogueParseReader__peek( THIS->reader ))));
+        if (ch_1 == terminator_0)
         {
           RogueParseReader__read( THIS->reader );
-          return (RogueLogical)(((RogueTokenizer__add_new_string_or_character_token_from_buffer( THIS, (RogueCharacter)'/' ))));
+          return (RogueLogical)(((RogueTokenizer__add_new_string_or_character_token_from_buffer( THIS, ((RogueCharacter)(0)) ))));
         }
         else
         {
-          RogueStringBuilder__print( THIS->buffer, (RogueCharacter)'/' );
+          RogueStringBuilder__print( THIS->buffer, terminator_0 );
         }
       }
       else
@@ -31514,7 +31514,16 @@ RogueLogical RogueTokenizer__tokenize_another( RogueClassTokenizer* THIS )
   }
   else if (ch_0 == (RogueCharacter)'\'')
   {
-    return (RogueLogical)(((RogueTokenizer__tokenize_string( THIS, (RogueCharacter)'\'' ))));
+    if (((RogueParseReader__peek( THIS->reader, 1 ))) == (RogueCharacter)'\'')
+    {
+      RogueParseReader__read( THIS->reader );
+      RogueParseReader__read( THIS->reader );
+      return (RogueLogical)(((RogueTokenizer__tokenize_alternate_string( THIS, (RogueCharacter)'\'' ))));
+    }
+    else
+    {
+      return (RogueLogical)(((RogueTokenizer__tokenize_string( THIS, (RogueCharacter)'\'' ))));
+    }
   }
   else if (ch_0 == (RogueCharacter)'"')
   {
