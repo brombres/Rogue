@@ -84,7 +84,7 @@ class PreprocessorTokenReader
           entry.value = def_tokens
           return
         else
-          throw t.error( //Recursive definition for "$".// (t->String) )
+          throw t.error( ''Recursive definition for "$".'' (t->String) )
         endIf
       else
         queue.add( t )

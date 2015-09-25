@@ -330,10 +330,7 @@ class Tokenizer
         endIf
 
       elseIf (ch == '/')
-        if (consume('/'))
-          tokenize_alternate_string( '/' )
-          return null
-        elseIf (consume('='))
+        if (consume('='))
           return TokenType.symbol_slash_equals
         else
           return TokenType.symbol_slash

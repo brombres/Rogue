@@ -134,7 +134,7 @@ class RogueC [singleton]
       endIf
 
       if (not file.exists)
-        local mesg = //No such file "$".// (filepath)
+        local mesg = ''No such file "$".'' (filepath)
         if (t) throw t.error( mesg )
         else    throw RogueError( mesg )
       endIf
@@ -143,7 +143,7 @@ class RogueC [singleton]
         local path2 = "$/$.rogue" (filepath,file.filename)
         local file2 = File( path2 )
         if (not file2.exists or file2.is_folder)
-          local mesg = //Can not find "$" to include.// (path2)
+          local mesg = ''Can not find "$" to include.'' (path2)
           if (t) throw t.error( mesg )
           else    throw RogueError( mesg )
         else
@@ -175,7 +175,7 @@ class RogueC [singleton]
         if (arg.begins_with("--"))
           # Option
           if (arg == "--output")
-            if (value.count == 0) throw RogueError( //Output filepath expected after "--output="// )
+            if (value.count == 0) throw RogueError( ''Output filepath expected after "--output="'' )
             output_filepath = value
 
           elseIf (arg == "--execute")

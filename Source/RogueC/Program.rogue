@@ -297,7 +297,7 @@ class Program [requisite singleton]
       writer.println( "//=============================================================================" )
       writer.println( "// Code generated from Rogue source" )
       writer.println( "//=============================================================================" )
-      writer.println //#include <cmath>//
+      writer.println "#include <cmath>"
       writer.println
 
       # RogueType forward declarations
@@ -367,8 +367,8 @@ class Program [requisite singleton]
 
       local base_filename = filepath
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
-      writer.println //#include <stdio.h>//
-      writer.println //#include "$.h"// (base_filename)
+      writer.println "#include <stdio.h>"
+      writer.println ''#include "$.h"'' (base_filename)
       writer.println
 
       # Embed Rogue.cpp
@@ -425,7 +425,7 @@ class Program [requisite singleton]
       writer.indent += 2
       local table_index = 0
       forEach (type in type_list)
-writer.println( "// " + type )
+        writer.println( "// " + type )
         if (not type.omit_output)
           table_index = type.print_dynamic_method_table_entries( table_index, writer )
         endIf

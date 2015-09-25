@@ -432,10 +432,10 @@ class Parser
             if (p.type is null) 
               println p.initial_value.type_name
               throw p.initial_value.t.error( 
-                //Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" // (name) )
+                ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" '' (name) )
             endIf
           else
-            throw p.t.error( //An initial value or $ type (for example, ": Object") must be specified.// (name) )
+            throw p.t.error( ''An initial value or $ type (for example, ": Object") must be specified.'' (name) )
           endIf
         endForEach
       endIf

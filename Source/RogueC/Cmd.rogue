@@ -115,8 +115,8 @@ class Cmd
       throw t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
 
     method require_type_context
-      if (type) throw t.error( //Type name expected, e.g. "$.".// (type) )
-      else       throw t.error( //Type name expected.// )
+      if (type) throw t.error( ''Type name expected, e.g. "$.".'' (type) )
+      else       throw t.error( ''Type name expected.'' )
 
     method require_integer->Cmd
       local _type = type
@@ -1821,7 +1821,7 @@ class CmdAccess : Cmd
         endIf
       endIf
 
-      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       if (args is null)
@@ -1856,7 +1856,7 @@ class CmdAccess : Cmd
         return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
       endIf
 
-      throw t.error( //No such method or variable "$" exists in the current scope.// (name) )
+      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
     method type->Type
       local err = t.error( "[INTERNAL] '$' $::type() is not defined." (name,type_name) )
@@ -2059,7 +2059,7 @@ class CmdLiteralThis : CmdThisContext
       endIf
 
     method require_type_context
-      throw t.error( //Type name expected.// )
+      throw t.error( "Type name expected." )
 
     method resolve( scope:Scope )->Cmd
       this_type.organize

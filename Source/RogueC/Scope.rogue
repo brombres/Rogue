@@ -21,7 +21,7 @@ class Scope
     method push_local( v:Local, validate_name=true:Logical )
       if (validate_name)
         local existing = find_local( v.name )
-        if (existing) throw v.t.error( //A local variable named "$" already exists.// (v.name) ) 
+        if (existing) throw v.t.error( ''A local variable named "$" already exists.'' (v.name) ) 
       endIf
       local_list.add( v )
 
@@ -298,7 +298,7 @@ class CandidateMethods
 
         if (available.count == 0)
           if (not error_on_fail) return false
-          throw access.t.error( //No such method or variable "$" exists in current scope of type $.// (access.name,type_context) )
+          throw access.t.error( ''No such method or variable "$" exists in current scope of type $.'' (access.name,type_context) )
 
         elseIf (require_compatible)
           if (not error_on_fail) return false
@@ -317,9 +317,9 @@ class CandidateMethods
 
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( //Multiple methods match ambiguous call to $:\n\n// (call_sig) )
+            buffer.print( "Multiple methods match ambiguous call to $:\n\n" (call_sig) )
           else
-            buffer.print( //Call to $ has arguments that are incompatible with the best candidate:\n\n// (call_sig) )
+            buffer.print( "Call to $ has arguments that are incompatible with the best candidate:\n\n" (call_sig) )
           endIf
           forEach (m in available)
             buffer.print("  ").print(m.type_context.name).print("::").println(m.signature)

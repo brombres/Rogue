@@ -435,7 +435,7 @@ class Type
         local i = list.locate( existing_p )!
 
         if (p.type_context is existing_p.type_context)
-          throw p.t.error( //A property named "$" already exists.// (p.name) )
+          throw p.t.error( ''A property named "$" already exists.'' (p.name) )
         else
           if (p.type is existing_p.type)
             if (p.initial_value)
@@ -446,7 +446,7 @@ class Type
                   list[i] = p
                   lookup[p.name] = p
                 else
-                  throw p.t.error( //Conflicting initial values are given for property "$" in unrelated types $ and $.// ...
+                  throw p.t.error( ''Conflicting initial values are given for property "$" in unrelated types $ and $.'' ...
                       (p.name,p.type_context,existing_p.type_context) )
                 endIf
               else
@@ -461,7 +461,7 @@ class Type
               # in the list.
             endIf
           else
-            throw p.t.error( //Conflicting types given for property "$" - $:$ in $ and $:$ in $.// ...
+            throw p.t.error( ''Conflicting types given for property "$" - $:$ in $ and $:$ in $.'' ...
               (p.name,p.name,p.type,p.type_context,p.name,existing_p.type,existing_p.type_context) )
           endIf
         endIf
@@ -493,7 +493,7 @@ class Type
 
         if (not existing_m.is_incorporated)
           if (m.type_context is existing_m.type_context)
-            throw m.t.error( //Type $ already defines method $.// (m.type_context,m.signature) )
+            throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
           else
             if (m.return_type isNot existing_m.return_type)
               if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))

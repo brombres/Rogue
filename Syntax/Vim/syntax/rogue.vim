@@ -17,125 +17,125 @@ if !exists("main_syntax")
 endif
 
 " keyword definitions
-syn keyword bardClassDecl   class endClass aspect endAspect compound endCompound enumeration endEnumeration
-syn keyword bardClassDecl   delegate endDelegate function endFunction primitive endPrimitive
-syn keyword bardClassDecl   with endWith
-syn keyword bardClassDecl   augment endAugment framework endFramework
-syn keyword bardMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
-syn keyword bardMember      PROPERTIES METHODS ROUTINES
-syn match   bardError       "\<for\(\s\|(\)"
-syn keyword bardConditional  if elseIf else endIf
-syn keyword bardConditional  which whichIs case caseNext others endWhich endWhichIs
-syn keyword bardConditional  contingent endContingent satisfied unsatisfied
-syn keyword bardConditional  try catch endTry
-syn keyword bardConditional  block endBlock
-syn keyword bardLoop         await
-syn keyword bardLoop         while endWhile forEach endForEach in of step
-syn keyword bardLoop         loop endLoop
-syn keyword bardBranch       escapeForEach escapeWhile escapeLoop
-syn keyword bardBranch       escapeTry
-syn keyword bardBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
-syn keyword bardBranch       nextIteration
-syn keyword bardBoolean      true false
-syn keyword bardConstant     null void gt lt eq infinity NaN
-syn keyword bardTypedef      this prior
-syn keyword bardStatement    return necessary sufficient noAction
-syn keyword bardStatement    yield yieldAndWait yieldWhile withTimeout
-syn keyword bardSpecial      insertUnderlying
-syn keyword bardType         Integer Byte Character Real Logical null String
-syn keyword bardStorageClass overlaying underlying
-syn keyword bardScopeDecl    readOnly writeOnly public private limited const local 
-syn keyword bardScopeDecl    deferred singleton managed
-syn keyword bardStorageClass native inline inlineNative requisite abstract final propagated functional dynamicAccess
-syn keyword bardStorageClass marshalling omit
-syn keyword bardExceptions   throw try catch finally
-syn keyword bardPreProc      useFramework
-"syn match  bardgPreProc      "^\[.*]"
-syn region  bardPreProc      start="\$\[" end="[\n\]]"
-syn match   bardNumber       "\<\d\+\(\.\d\+\)\=\>"
-syn match   bardNumber       "\<0b[01]\+\(\.[01]\+\)\=\>"
-syn match   bardNumber       "\<0x\x\+\(\.\x\+\)\=\>"
+syn keyword rogueClassDecl   class endClass aspect endAspect compound endCompound enumeration endEnumeration
+syn keyword rogueClassDecl   delegate endDelegate function endFunction primitive endPrimitive
+syn keyword rogueClassDecl   with endWith
+syn keyword rogueClassDecl   augment endAugment framework endFramework
+syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
+syn keyword rogueMember      PROPERTIES METHODS ROUTINES
+syn match   rogueError       "\<for\(\s\|(\)"
+syn keyword rogueConditional  if elseIf else endIf
+syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
+syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
+syn keyword rogueConditional  try catch endTry
+syn keyword rogueConditional  block endBlock
+syn keyword rogueLoop         await
+syn keyword rogueLoop         while endWhile forEach endForEach in of step
+syn keyword rogueLoop         loop endLoop
+syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
+syn keyword rogueBranch       escapeTry
+syn keyword rogueBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
+syn keyword rogueBranch       nextIteration
+syn keyword rogueBoolean      true false
+syn keyword rogueConstant     null void gt lt eq infinity NaN
+syn keyword rogueTypedef      this prior
+syn keyword rogueStatement    return necessary sufficient noAction
+syn keyword rogueStatement    yield yieldAndWait yieldWhile withTimeout
+syn keyword rogueSpecial      insertUnderlying
+syn keyword rogueType         Integer Byte Character Real Logical null String
+syn keyword rogueStorageClass overlaying underlying
+syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local 
+syn keyword rogueScopeDecl    deferred singleton managed
+syn keyword rogueStorageClass native inline inlineNative requisite abstract final propagated functional dynamicAccess
+syn keyword rogueStorageClass marshalling omit
+syn keyword rogueExceptions   throw try catch finally
+syn keyword roguePreProc      useFramework
+"syn match  roguegPreProc      "^\[.*]"
+syn region  roguePreProc      start="\$\[" end="[\n\]]"
+syn match   rogueNumber       "\<\d\+\(\.\d\+\)\=\>"
+syn match   rogueNumber       "\<0b[01]\+\(\.[01]\+\)\=\>"
+syn match   rogueNumber       "\<0x\x\+\(\.\x\+\)\=\>"
 
-"syn match   bardIdentifier  "\h\w*"
-"syn match   bardUserLabelRef  ".\k\+"
+"syn match   rogueIdentifier  "\h\w*"
+"syn match   rogueUserLabelRef  ".\k\+"
 
-syn keyword bardStatement    require ensure assert
-syn keyword bardOperator     and or xor not
-syn keyword bardOperator     instanceOf is isNot notInstanceOf duplicate
-"syn match   bardOperator     "\.\.\<"
-"syn match   bardOperator     "\.\.\>"
-"syn match   bardOperator     "\.\."
-"syn keyword bardOperator     == != <= >= 
-"syn keyword bardOperator     + - * / = ^ %
-"syn match   bardOperator    "+"
-"syn match   bardOperator    "-"
-"syn match   bardOperator    "\*"
-"syn match   bardOperator    "/"
-"syn match   bardOperator    "="
-"syn match   bardOperator    "^"
-"syn match   bardOperator    "%"
-"syn match   bardType    ":"
-"syn match   bardType    ";"
-"syn match   bardOperator     "<[^<]"me=e-1
-"syn match   bardOperator     ">[^>]"me=e-1
+syn keyword rogueStatement    require ensure assert
+syn keyword rogueOperator     and or xor not
+syn keyword rogueOperator     instanceOf is isNot notInstanceOf duplicate
+"syn match   rogueOperator     "\.\.\<"
+"syn match   rogueOperator     "\.\.\>"
+"syn match   rogueOperator     "\.\."
+"syn keyword rogueOperator     == != <= >= 
+"syn keyword rogueOperator     + - * / = ^ %
+"syn match   rogueOperator    "+"
+"syn match   rogueOperator    "-"
+"syn match   rogueOperator    "\*"
+"syn match   rogueOperator    "/"
+"syn match   rogueOperator    "="
+"syn match   rogueOperator    "^"
+"syn match   rogueOperator    "%"
+"syn match   rogueType    ":"
+"syn match   rogueType    ";"
+"syn match   rogueOperator     "<[^<]"me=e-1
+"syn match   rogueOperator     ">[^>]"me=e-1
 
-syn keyword bardFuncDef  method routine task
+syn keyword rogueFuncDef  method routine task
 
-syn match   bardLineComment  "#.*" 
-syn region  bardLineComment  start="#{" end="}#"
-syn region  bardString       start=+"+ skip=+\\\\\|\\"+ end=+"+
-syn region  bardString       start=+\/\/+ skip=+\\\/+ end=+\/\/+
-syn match   bardString       "'.'"
-syn match   bardString       "'\\.'"
+syn match   rogueLineComment  "#.*" 
+syn region  rogueLineComment  start="#{" end="}#"
+syn region  rogueString       start=+"+ skip=+\\\\\|\\"+ end=+"+
+syn region  rogueString       start=+''+ end=+''+
+syn match   rogueString       "'.'"
+syn match   rogueString       "'\\.'"
 
-hi def link bardIdentifier  Identifier
-hi def link bardFuncDef        Function
-hi def link bardMember      Special
-hi def link bardVarArg         Function
-hi def link bardBraces      Function
-hi def link bardBranch      Conditional
-hi def link bardUserLabelRef    bardUserLabel
-hi def link bardLabel      Label
-hi def link bardUserLabel    Label
-hi def link bardConditional    Conditional
-hi def link bardLoop      Repeat
-hi def link bardExceptions    Exception
-hi def link bardStorageClass    StorageClass
-hi def link bardMethodDecl    bardStorageClass
-hi def link bardClassDecl    bardStorageClass
-hi def link bardScopeDecl    bardStorageClass
-hi def link bardBoolean    Boolean
-hi def link bardSpecial    Special
-hi def link bardSpecialError    Error
-hi def link bardSpecialCharError  Error
-hi def link bardString      String
-hi def link bardCharacter    Character
-hi def link bardSpecialChar    SpecialChar
-hi def link bardNumber      Number
-hi def link bardError      Error
-hi def link bardStringError    Error
-hi def link bardStatement    Statement
-"hi def link bardOperator    Operator
-hi def link bardComment    Comment
-hi def link bardDocComment    Comment
-hi def link bardLineComment    Comment
-hi def link bardConstant    Constant
-hi def link bardTypedef    Typedef
-hi def link bardTodo      Todo
-hi def link bardPreProc                PreProc
+hi def link rogueIdentifier  Identifier
+hi def link rogueFuncDef        Function
+hi def link rogueMember      Special
+hi def link rogueVarArg         Function
+hi def link rogueBraces      Function
+hi def link rogueBranch      Conditional
+hi def link rogueUserLabelRef    rogueUserLabel
+hi def link rogueLabel      Label
+hi def link rogueUserLabel    Label
+hi def link rogueConditional    Conditional
+hi def link rogueLoop      Repeat
+hi def link rogueExceptions    Exception
+hi def link rogueStorageClass    StorageClass
+hi def link rogueMethodDecl    rogueStorageClass
+hi def link rogueClassDecl    rogueStorageClass
+hi def link rogueScopeDecl    rogueStorageClass
+hi def link rogueBoolean    Boolean
+hi def link rogueSpecial    Special
+hi def link rogueSpecialError    Error
+hi def link rogueSpecialCharError  Error
+hi def link rogueString      String
+hi def link rogueCharacter    Character
+hi def link rogueSpecialChar    SpecialChar
+hi def link rogueNumber      Number
+hi def link rogueError      Error
+hi def link rogueStringError    Error
+hi def link rogueStatement    Statement
+"hi def link rogueOperator    Operator
+hi def link rogueComment    Comment
+hi def link rogueDocComment    Comment
+hi def link rogueLineComment    Comment
+hi def link rogueConstant    Constant
+hi def link rogueTypedef    Typedef
+hi def link rogueTodo      Todo
+hi def link roguePreProc                PreProc
 
-hi def link bardCommentTitle    SpecialComment
-hi def link bardDocTags    Special
-hi def link bardDocParam    Function
-hi def link bardDocSeeTagParam    Function
-hi def link bardCommentStar    bardComment
+hi def link rogueCommentTitle    SpecialComment
+hi def link rogueDocTags    Special
+hi def link rogueDocParam    Function
+hi def link rogueDocSeeTagParam    Function
+hi def link rogueCommentStar    rogueComment
 
-hi def link bardType      Type
-hi def link bardExternal    Include
+hi def link rogueType      Type
+hi def link rogueExternal    Include
 
 hi def link htmlComment    Special
 hi def link htmlCommentPart    Special
-hi def link bardSpaceError    Error
+hi def link rogueSpaceError    Error
 
 let b:current_syntax = "rogue"
 

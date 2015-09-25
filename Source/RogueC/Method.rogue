@@ -185,12 +185,12 @@ class Method
               param.name = new_name
               param.type = property.type
             else
-              throw param.t.error( //A property named "$" already exists.// (param.name) )
+              throw param.t.error( ''A property named "$" already exists.'' (param.name) )
             endIf
           endIf
         endIf
 
-        if (not param.type) throw param.t.error( //No type declared for parameter "$".// (param.name) )
+        if (not param.type) throw param.t.error( ''No type declared for parameter "$".'' (param.name) )
       endForEach
 
       assign_signature
