@@ -1686,7 +1686,6 @@ RogueInteger RogueReal__low_bits( RogueReal THIS )
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st )
 {
   int len = strlen( st );
-  RogueCharacter* dest = (buffer->characters->data->characters - 1) + buffer->characters->count;
 
   if (buffer->indent > 0)
   {
@@ -1700,6 +1699,7 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
 
     int copy_count = 0;
     RogueStringBuilder__reserve( buffer, len + possible_indents*buffer->indent );
+    RogueCharacter* dest = (buffer->characters->data->characters - 1) + buffer->characters->count;
     src = st - 1;
     count = len;
     while (--count >= 0)
@@ -1725,6 +1725,7 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
   }
   else
   {
+    RogueCharacter* dest = (buffer->characters->data->characters - 1) + buffer->characters->count;
     buffer->characters->count += len;
 
     const char* src = st - 1;

@@ -63,6 +63,11 @@ libraries:
 test:
 	roguec Test.rogue --execute
 
+x2:
+	make remake
+	sleep 1
+	make remake
+
 x3:
 	make remake
 	sleep 1
