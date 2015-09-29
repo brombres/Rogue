@@ -193,7 +193,7 @@ class Parser
         reader.position = starting_position
         local full_name = parse_possible_type
         if (full_name.contains('$'))
-          throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers '<<' .. '>>' to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (name,name) )
+          throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (name,name) )
         endIf
 
         name = full_name

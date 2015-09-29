@@ -104,10 +104,12 @@ class String [native functional]
       $if ("C++") inlineNative '$this->hash_code'
 
     method indented( spaces:Integer )->String
-      local lines = split2( '\n' )
+      local lines = split( '\n' )
       local builder = StringBuilder( count + lines.count*2 )
       forEach (line in lines)
-        if (line.count) builder.print( "  " ).print( line )
+        if (builder.count) builder.println
+        if (spaces> 0)      builder.print( " ".times(spaces) ).print( line )
+        elseIf (spaces < 0) builder.print( line.rightmost(spaces) )
       endForEach
       return builder->String
 
@@ -189,7 +191,7 @@ class String [native functional]
       if (n < 0) return substring( -n, this_count-1 )
       else       return substring( this_count-n, this_count-1 )
 
-    method split2( separator:Character )->String[]
+    method split( separator:Character )->String[]
       local result = String[]
 
       local i1 = 0
@@ -204,7 +206,7 @@ class String [native functional]
 
       return result
 
-    method split2( separator:String )->String[]
+    method split( separator:String )->String[]
       local result = String[]
       local separator_count = separator.count
 
@@ -225,6 +227,15 @@ class String [native functional]
 
     method substring( i1:Integer, i2:Integer )->String
       $if ("C++") inlineNative '$this->substring($i1,$i2)'
+
+    method times( n:Integer )->String
+      if (n <= 0) return ""
+      if (n == 1) return this
+
+      local builder = StringBuilder( count * n )
+      forEach (1..n) builder.print( this )
+
+      return builder->String
 
     method to->Integer
       inlineNative "($this->to_integer())"
@@ -270,7 +281,7 @@ class String [native functional]
       # Existing newlines characters will cause a new line to begin
       # immediately.  Spaces immediately following existing newline 
       # characters are preserved.
-      return word_wrapped( width, StringBuilder() )->String.split2('\n')
+      return word_wrapped( width, StringBuilder() )->String.split('\n')
 
     method word_wrapped( width:Integer, buffer:StringBuilder )->StringBuilder
       # Prints a word-wrapped version of this string to the given
@@ -297,7 +308,9 @@ class String [native functional]
           endIf
         endIf
 
-        if (needs_newline) buffer.println
+        if (needs_newline)
+          buffer.println
+        endIf
         forEach (i in i1..(i2-1)) buffer.print( this[i] )
         needs_newline = true
 
@@ -319,13 +332,14 @@ class String [native functional]
       return buffer
 
   ROUTINES
-    routine joined( lines:String[] )->String
+    routine joined( lines:String[], separator="\n":String )->String
       # Kludge until augments work for List<<String>>
       local total_count = 0
       forEach (line in lines) total_count += line.count
 
       local builder = StringBuilder( total_count )
       forEach (line in lines)
+        if (builder.count) builder.print( separator )
         builder.print( line )
       endForEach
 
