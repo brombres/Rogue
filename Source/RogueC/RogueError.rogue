@@ -9,16 +9,17 @@ class RogueError : Error
 
     method to->String
       local builder = StringBuilder()
+      local m = String.joined( message.word_wrapped(68) )
       if (filepath)
         builder.println( "===============================================================================" )
         builder.print( "ERROR in \"" ).print( File.filename(filepath) )
         builder.print( "  line " ).print( line ).print( ", column " ).println( column )
-        builder.print( "  " ).println( message )
+        builder.print( "  " ).println( m )
         builder.println( "===============================================================================" )
       else
         builder.println( "===============================================================================" )
         builder.print( "ERROR" )
-        builder.print( "  " ).println( message )
+        builder.print( "  " ).println( m )
         builder.println( "===============================================================================" )
       endIf
       return builder->String

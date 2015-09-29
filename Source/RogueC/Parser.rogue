@@ -91,6 +91,10 @@ class Parser
         parse_class_template
         return true
 
+      elseIf (t.type is TokenType.keyword_augment)
+        parse_augment
+        return true
+
       endIf
 
       return false
@@ -178,6 +182,25 @@ class Parser
 
       trace end_type
       throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
+
+    method parse_augment
+      local t = reader.read  # 'augment'
+
+      local starting_position = reader.position
+      local name = read_identifier
+
+      if (next_is(TokenType.symbol_open_specialize))
+        reader.position = starting_position
+        local full_name = parse_possible_type
+        if (full_name.contains('$'))
+          throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers '<<' .. '>>' to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (name,name) )
+        endIf
+
+        name = full_name
+      endIf
+
+      println name
+
 
     method parse_attributes( attributes:Attributes )
       if (not consume(TokenType.symbol_open_bracket)) return

@@ -78,12 +78,14 @@ class Tokenizer
 
       # Structure Tokens
       TokenType.eol                   = define( EOLTokenType("end of line") )
+      TokenType.keyword_augment       = define( StructureTokenType("augment") )
       TokenType.keyword_case          = define( StructureTokenType("case") )
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
       TokenType.keyword_class         = define( StructureTokenType("class") )
       TokenType.keyword_DEFINITIONS   = define( StructureTokenType("DEFINITIONS") )
       TokenType.keyword_else          = define( StructureTokenType("else") )
       TokenType.keyword_elseIf        = define( StructureTokenType("elseIf") )
+      TokenType.keyword_endAugment    = define( StructureTokenType("endAugment") )
       TokenType.keyword_endClass      = define( StructureTokenType("endClass") )
       TokenType.keyword_endContingent = define( StructureTokenType("endContingent") )
       TokenType.keyword_endForEach    = define( StructureTokenType("endForEach") )

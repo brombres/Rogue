@@ -103,6 +103,14 @@ class String [native functional]
     method hash_code->Integer
       $if ("C++") inlineNative '$this->hash_code'
 
+    method indented( spaces:Integer )->String
+      local lines = split2( '\n' )
+      local builder = StringBuilder( count + lines.count*2 )
+      forEach (line in lines)
+        if (line.count) builder.print( "  " ).print( line )
+      endForEach
+      return builder->String
+
     method last->Character
       return this[ count-1 ]
 
@@ -256,4 +264,71 @@ class String [native functional]
         else                         result.print( ch )
       endForEach
       return result->String
+
+    method word_wrapped( width:Integer )->String[]
+      # Returns a word-wrapped version of this string as a list of lines.
+      # Existing newlines characters will cause a new line to begin
+      # immediately.  Spaces immediately following existing newline 
+      # characters are preserved.
+      return word_wrapped( width, StringBuilder() )->String.split2('\n')
+
+    method word_wrapped( width:Integer, buffer:StringBuilder )->StringBuilder
+      # Prints a word-wrapped version of this string to the given
+      # StringBuilder.  Existing newlines characters will cause a new line to 
+      # begin immediately.  Spaces immediately following existing newline 
+      # characters are preserved.
+      local i1, i2 : Integer
+      local len = count
+
+      if (len == 0) return buffer
+
+      local needs_newline = false
+      while (i2 < len)
+
+        # find last space or first \n
+        while ((i2-i1) < width and i2 < len and this[i2] != '\n') i2++
+
+        if ((i2-i1) == width)
+          if (i2 >= len)
+            i2 = len
+          else
+            while (this[i2]!=' ' and this[i2]!='\n' and i2>i1) i2--
+            if (i2 == i1) i2 = i1 + width
+          endIf
+        endIf
+
+        if (needs_newline) buffer.println
+        forEach (i in i1..(i2-1)) buffer.print( this[i] )
+        needs_newline = true
+
+        if (i2 == len)
+          return buffer
+        else
+          which (this[i2])
+            case ' ':
+              while (i2<len and this[i2]==' ') i2++
+              if (i2<len and this[i2]=='\n') i2++
+
+            case '\n':
+              i2++
+          endWhich
+          i1 = i2
+        endIf
+      endWhile
+
+      return buffer
+
+  ROUTINES
+    routine joined( lines:String[] )->String
+      # Kludge until augments work for List<<String>>
+      local total_count = 0
+      forEach (line in lines) total_count += line.count
+
+      local builder = StringBuilder( total_count )
+      forEach (line in lines)
+        builder.print( line )
+      endForEach
+
+      return builder->String
+
 endClass
