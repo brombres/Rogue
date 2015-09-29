@@ -1,0 +1,5 @@
+class Augment
+  PROPERTIES
+    t    : Token
+    type : Type
+endClass

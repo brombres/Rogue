@@ -13,23 +13,18 @@ class TokenType
     placeholder_id               : TokenType
 
     # Structure
-    keyword_aspect               : TokenType
     keyword_case                 : TokenType
     keyword_catch                : TokenType
     keyword_class                : TokenType
-    keyword_compound             : TokenType
     keyword_DEFINITIONS          : TokenType
     keyword_else                 : TokenType
     keyword_elseIf               : TokenType
-    keyword_endAspect            : TokenType
     keyword_endClass             : TokenType
-    keyword_endCompound          : TokenType
     keyword_endContingent        : TokenType
     keyword_endForEach           : TokenType
     keyword_endFunction          : TokenType
     keyword_endIf                : TokenType
     keyword_endLoop              : TokenType
-    keyword_endPrimitive         : TokenType
     keyword_endTry               : TokenType
     keyword_endWhich             : TokenType
     keyword_endWhile             : TokenType
@@ -37,7 +32,6 @@ class TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
     keyword_others               : TokenType
-    keyword_primitive            : TokenType
     keyword_PROPERTIES           : TokenType
     keyword_routine              : TokenType
     keyword_ROUTINES             : TokenType

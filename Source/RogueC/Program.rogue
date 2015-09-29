@@ -1,3 +1,5 @@
+$include "Augment.rogue"
+
 class Program [requisite singleton]
   PROPERTIES
     code_prefix  = "Rogue"
