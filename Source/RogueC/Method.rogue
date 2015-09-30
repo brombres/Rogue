@@ -32,31 +32,28 @@ class Method
   METHODS
     method init( t, type_context, name )
 
-    method init( other:Method )
-      t = other.t
-      type_context = other.type_context
-      name = other.name
-
-      signature = other.signature
-      attributes = other.attributes.clone
-      return_type = other.return_type
-      task_result_type = other.task_result_type
-
-      locals = Local[]
-      forEach (v in other.locals) locals.add( v.clone )
-      parameters = Local[]
-      forEach (i of other.parameters) parameters.add( other.locals[i] )
-
-      min_args = other.min_args
-      statements = other.statements.clone( null as CloneArgs )
-      native_code = other.native_code
-      index = other.index
-
-      cpp_name = other.cpp_name
-      cpp_typedef = other.cpp_typedef
-
     method clone->Method
-      return Method( this )
+      local result = Method( t, type_context, name )
+
+      result.signature = signature
+      result.attributes = attributes.clone
+      result.return_type = return_type
+      result.task_result_type = task_result_type
+
+      result.locals = Local[]
+      forEach (v in locals) result.locals.add( v.clone )
+      result.parameters = Local[]
+      forEach (i of parameters) result.parameters.add( locals[i] )
+
+      result.min_args = min_args
+      result.statements = statements.clone( null as CloneArgs )
+      result.native_code = native_code
+      result.index = index
+
+      result.cpp_name = cpp_name
+      result.cpp_typedef = cpp_typedef
+
+      return result
 
     method incorporate( into_type:Type )->Method
       local m = clone.set_type_context( into_type ).set_incorporated

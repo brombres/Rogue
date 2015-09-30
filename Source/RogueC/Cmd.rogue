@@ -4605,3 +4605,22 @@ class CmdTrace : Cmd
       return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(CmdLiteralString(t,value)) ).resolve( scope )
 endClass
 
+class CmdLabel : Cmd
+  PROPERTIES
+    name       : String
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, name, statements=CmdStatementList() )
+
+    method clone( clone_args:CloneArgs )->CmdLabel
+      return CmdLabel( t, name, statements.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      statements.resolve( scope )
+      return this
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      statements.write_cpp( writer, is_statement )
+endClass
+

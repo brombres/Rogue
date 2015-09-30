@@ -4,12 +4,12 @@ class Test
       display
 
     method display
+      <<insert>>
       println "Alpha"
+      <<append>>
 endClass
 
 
 augment Test
   METHODS
-    method display
-      println "Beta"
 endAugment
