@@ -1,0 +1,15 @@
+class Test
+  METHODS
+    method init
+      display
+
+    method display
+      println "Alpha"
+endClass
+
+
+augment Test
+  METHODS
+    method display
+      println "Beta"
+endAugment
