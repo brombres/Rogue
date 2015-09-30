@@ -24,6 +24,7 @@ class Attribute
     is_requisite        = 32768
     is_task             = 65536
     is_task_conversion  = 131072
+    is_augment          = 262144
 endClass
 
 

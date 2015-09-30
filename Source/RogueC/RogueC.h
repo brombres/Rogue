@@ -4822,6 +4822,7 @@ RogueClassLocal* RogueMethod__add_parameter( RogueClassMethod* THIS, RogueClassT
 void RogueMethod__assign_cpp_name( RogueClassMethod* THIS );
 void RogueMethod__assign_signature( RogueClassMethod* THIS );
 RogueClassMethod* RogueMethod__compile_target( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_augment( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_dynamic( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_generated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_incorporated( RogueClassMethod* THIS );

@@ -874,6 +874,13 @@ augment Method
 
 
   METHODS
+    method assign_cpp_name
+      if (cpp_name) return
+      local buffer = StringBuilder()
+      buffer.print( type_context.name ).print( "__" )
+      buffer.print( name )
+      cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
+
     method print_prototype( writer:CPPWriter )
       if (omit_output) return
       print_signature( writer )

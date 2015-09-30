@@ -88,11 +88,6 @@ class Parser
     method parse_element->Logical
       consume_eols
 
-      if (consume(TokenType.begin_augment_tokens))
-        parsing_augment = true
-        consume_eols
-      endIf
-
       local t = peek
 
       if (t.type is TokenType.keyword_class)
@@ -331,6 +326,11 @@ class Parser
     method parse_section->Logical
       consume_eols
 
+      if (consume(TokenType.begin_augment_tokens))
+        parsing_augment = true
+        consume_eols
+      endIf
+
       if (consume(TokenType.keyword_ENUMERATE))
         while (parse_definitions(true)) noAction
         return true
@@ -514,6 +514,7 @@ class Parser
       endIf
 
       parse_attributes( this_method.attributes )
+      if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
 
       consume_eols
       if (consume(TokenType.keyword_inlineNative))

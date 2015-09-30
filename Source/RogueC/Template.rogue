@@ -34,7 +34,7 @@ class Template
         augmented_tokens = Token[]( t_count )
         augmented_tokens.add( tokens )
         augmented_tokens.remove_last  # will be an EOL
-        #augmented_tokens.add( Token(TokenType.begin_augment_tokens) )
+        augmented_tokens.add( Token(TokenType.begin_augment_tokens) )
         forEach (aug in augments)
           forEach (base_type in aug.base_types)
             type.base_types.add( base_type )

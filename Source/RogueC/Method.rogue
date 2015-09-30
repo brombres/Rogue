@@ -57,28 +57,6 @@ class Method
 
     method clone->Method
       return Method( this )
-      #{
-      local result = Method( t, type_context, name )
-
-      result.signature = signature
-      result.cpp_name = cpp_name
-      result.cpp_typedef = cpp_typedef
-      result.attributes = attributes.clone
-      result.return_type = return_type
-      result.task_result_type = task_result_type
-
-      result.locals = Local[]
-      forEach (v in locals) result.locals.add( v.clone )
-      result.parameters = Local[]
-      forEach (i of parameters) result.parameters.add( locals[i] )
-
-      result.min_args = min_args
-      result.statements = statements.clone( null as CloneArgs )
-      result.native_code = native_code
-      result.index = index
-
-      return result
-      }#
 
     method incorporate( into_type:Type )->Method
       local m = clone.set_type_context( into_type ).set_incorporated
@@ -94,8 +72,8 @@ class Method
       incorporating_classes.add( into_type )
 
       m.signature = null
-      m.cpp_name = null
       m.assign_signature
+      m.cpp_name = null
 
       return m
 
@@ -115,13 +93,6 @@ class Method
       parameters.add( p )
       return p
 
-    method assign_cpp_name
-      if (cpp_name) return
-      local buffer = StringBuilder()
-      buffer.print( type_context.name ).print( "__" )
-      buffer.print( name )
-      cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
-
     method assign_signature
       if (signature) return
       local buffer = StringBuilder()
@@ -138,6 +109,9 @@ class Method
 
     method compile_target->Method
       return this
+
+    method is_augment->Logical
+      return (attributes.flags & Attribute.is_augment)
 
     method is_dynamic->Logical
       return (attributes.flags & Attribute.is_dynamic)
@@ -220,6 +194,7 @@ class Method
 
       if (add_to_lookup)
         # Add method to type's lookup table.
+
         if (is_routine)
           local existing_m = type_context.routine_lookup_by_signature[signature]
           if (existing_m and existing_m.type_context is type_context)

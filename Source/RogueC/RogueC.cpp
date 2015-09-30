@@ -7232,6 +7232,7 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   NULL,
+  NULL,
   // Cmd
   NULL,
   (void*) (ROGUEM2) RogueObject__to_String,
@@ -13607,7 +13608,7 @@ struct RogueTypeCmd : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 509;
+    methods = Rogue_dynamic_method_table + 510;
   }
 
   const char* name() { return "Cmd"; }
@@ -13626,7 +13627,7 @@ struct RogueTypeCmdReturn : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdStatement;
-    methods = Rogue_dynamic_method_table + 541;
+    methods = Rogue_dynamic_method_table + 542;
   }
 
   const char* name() { return "CmdReturn"; }
@@ -13646,7 +13647,7 @@ struct RogueTypeCmdStatement : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 574;
+    methods = Rogue_dynamic_method_table + 575;
   }
 
   const char* name() { return "CmdStatement"; }
@@ -13665,7 +13666,7 @@ struct RogueTypeCmdStatementList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdList;
-    methods = Rogue_dynamic_method_table + 606;
+    methods = Rogue_dynamic_method_table + 607;
   }
 
   const char* name() { return "CmdStatementList"; }
@@ -13684,7 +13685,7 @@ struct RogueTypeCmdList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 630;
+    methods = Rogue_dynamic_method_table + 631;
   }
 
   const char* name() { return "Cmd[]"; }
@@ -13703,7 +13704,7 @@ struct RogueTypeTokenType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 649;
+    methods = Rogue_dynamic_method_table + 650;
   }
 
   const char* name() { return "TokenType"; }
@@ -13722,7 +13723,7 @@ struct RogueTypeMethodList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 666;
+    methods = Rogue_dynamic_method_table + 667;
   }
 
   const char* name() { return "Method[]"; }
@@ -13741,7 +13742,7 @@ struct RogueTypeCPPWriter : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 685;
+    methods = Rogue_dynamic_method_table + 686;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -13764,7 +13765,7 @@ struct RogueTypeCharacterReader : RogueType
   void configure()
   {
     object_size = (int) sizeof( RogueClassCharacterReader );
-    methods = Rogue_dynamic_method_table + 710;
+    methods = Rogue_dynamic_method_table + 711;
   }
 
   const char* name() { return "Reader<<Character>>"; }
@@ -13779,7 +13780,7 @@ struct RogueTypeString_MethodTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 714;
+    methods = Rogue_dynamic_method_table + 715;
   }
 
   const char* name() { return "Table<<String,Method>>"; }
@@ -13799,7 +13800,7 @@ struct RogueTypeLocalList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 732;
+    methods = Rogue_dynamic_method_table + 733;
   }
 
   const char* name() { return "Local[]"; }
@@ -13818,7 +13819,7 @@ struct RogueTypeLocal : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 751;
+    methods = Rogue_dynamic_method_table + 752;
   }
 
   const char* name() { return "Local"; }
@@ -13841,7 +13842,7 @@ struct RogueTypeTaskManager : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 758;
+    methods = Rogue_dynamic_method_table + 759;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -13876,7 +13877,7 @@ struct RogueTypeTask : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 766;
+    methods = Rogue_dynamic_method_table + 767;
   }
 
   const char* name() { return "Task"; }
@@ -13891,7 +13892,7 @@ struct RogueTypeTaskList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 772;
+    methods = Rogue_dynamic_method_table + 773;
   }
 
   const char* name() { return "Task[]"; }
@@ -13910,7 +13911,7 @@ struct RogueTypeTaskManager__await_all__task137 : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Task;
-    methods = Rogue_dynamic_method_table + 791;
+    methods = Rogue_dynamic_method_table + 792;
   }
 
   const char* name() { return "TaskManager__await_all__task137"; }
@@ -13932,7 +13933,7 @@ struct RogueTypeSystemEventQueue : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 799;
+    methods = Rogue_dynamic_method_table + 800;
   }
 
   const char* name() { return "SystemEventQueue"; }
@@ -13947,7 +13948,7 @@ struct RogueTypeEventManager : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 803;
+    methods = Rogue_dynamic_method_table + 804;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -13977,7 +13978,7 @@ struct RogueTypeRandom : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 809;
+    methods = Rogue_dynamic_method_table + 810;
   }
 
   const char* name() { return "Random"; }
@@ -14003,7 +14004,7 @@ struct RogueTypeCharacterListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 823;
+    methods = Rogue_dynamic_method_table + 824;
   }
 
   const char* name() { return "ListOps<<Character>>"; }
@@ -14018,7 +14019,7 @@ struct RogueTypeString_LogicalTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 827;
+    methods = Rogue_dynamic_method_table + 828;
   }
 
   const char* name() { return "TableEntry<<String,Logical>>[]"; }
@@ -14037,7 +14038,7 @@ struct RogueTypeString_LogicalTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 846;
+    methods = Rogue_dynamic_method_table + 847;
   }
 
   const char* name() { return "TableEntry<<String,Logical>>"; }
@@ -14057,7 +14058,7 @@ struct RogueTypeByteList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 851;
+    methods = Rogue_dynamic_method_table + 852;
   }
 
   const char* name() { return "Byte[]"; }
@@ -14076,7 +14077,7 @@ struct RogueTypeTokenReader : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 870;
+    methods = Rogue_dynamic_method_table + 871;
   }
 
   const char* name() { return "TokenReader"; }
@@ -14095,7 +14096,7 @@ struct RogueTypePropertyList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 882;
+    methods = Rogue_dynamic_method_table + 883;
   }
 
   const char* name() { return "Property[]"; }
@@ -14114,7 +14115,7 @@ struct RogueTypeProperty : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 901;
+    methods = Rogue_dynamic_method_table + 902;
   }
 
   const char* name() { return "Property"; }
@@ -14138,7 +14139,7 @@ struct RogueTypeTokenizer : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 908;
+    methods = Rogue_dynamic_method_table + 909;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -14167,7 +14168,7 @@ struct RogueTypeParseReader : RogueType
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
     base_types[1] = (RogueType*) Rogue_program.type_CharacterReader;
-    methods = Rogue_dynamic_method_table + 941;
+    methods = Rogue_dynamic_method_table + 942;
   }
 
   const char* name() { return "ParseReader"; }
@@ -14186,7 +14187,7 @@ struct RogueTypePreprocessor : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 960;
+    methods = Rogue_dynamic_method_table + 961;
   }
 
   const char* name() { return "Preprocessor"; }
@@ -14206,7 +14207,7 @@ struct RogueTypeString_TokenTypeTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 975;
+    methods = Rogue_dynamic_method_table + 976;
   }
 
   const char* name() { return "Table<<String,TokenType>>"; }
@@ -14226,7 +14227,7 @@ struct RogueTypeLiteralCharacterToken : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Token;
-    methods = Rogue_dynamic_method_table + 993;
+    methods = Rogue_dynamic_method_table + 994;
   }
 
   const char* name() { return "LiteralCharacterToken"; }
@@ -14246,7 +14247,7 @@ struct RogueTypeLiteralIntegerToken : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Token;
-    methods = Rogue_dynamic_method_table + 1010;
+    methods = Rogue_dynamic_method_table + 1011;
   }
 
   const char* name() { return "LiteralIntegerToken"; }
@@ -14266,7 +14267,7 @@ struct RogueTypeLiteralRealToken : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Token;
-    methods = Rogue_dynamic_method_table + 1027;
+    methods = Rogue_dynamic_method_table + 1028;
   }
 
   const char* name() { return "LiteralRealToken"; }
@@ -14286,7 +14287,7 @@ struct RogueTypeLiteralStringToken : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Token;
-    methods = Rogue_dynamic_method_table + 1044;
+    methods = Rogue_dynamic_method_table + 1045;
   }
 
   const char* name() { return "LiteralStringToken"; }
@@ -14307,7 +14308,7 @@ struct RogueTypeTypeIdentifierToken : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Token;
-    methods = Rogue_dynamic_method_table + 1061;
+    methods = Rogue_dynamic_method_table + 1062;
   }
 
   const char* name() { return "TypeIdentifierToken"; }
@@ -14329,7 +14330,7 @@ struct RogueTypeTypeParameter : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 1078;
+    methods = Rogue_dynamic_method_table + 1079;
   }
 
   const char* name() { return "TypeParameter"; }
@@ -14349,7 +14350,7 @@ struct RogueTypeAugment : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 1083;
+    methods = Rogue_dynamic_method_table + 1084;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -14376,7 +14377,7 @@ struct RogueTypeAugmentList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 1088;
+    methods = Rogue_dynamic_method_table + 1089;
   }
 
   const char* name() { return "Augment[]"; }
@@ -14395,7 +14396,7 @@ struct RogueTypeCmdLiteralInteger : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 1107;
+    methods = Rogue_dynamic_method_table + 1108;
   }
 
   const char* name() { return "CmdLiteralInteger"; }
@@ -14414,7 +14415,7 @@ struct RogueTypeCmdLiteral : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1140;
+    methods = Rogue_dynamic_method_table + 1141;
   }
 
   const char* name() { return "CmdLiteral"; }
@@ -14433,7 +14434,7 @@ struct RogueTypeCloneArgs : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 1172;
+    methods = Rogue_dynamic_method_table + 1173;
   }
 
   const char* name() { return "CloneArgs"; }
@@ -14448,7 +14449,7 @@ struct RogueTypeCmdArgs : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdList;
-    methods = Rogue_dynamic_method_table + 1176;
+    methods = Rogue_dynamic_method_table + 1177;
   }
 
   const char* name() { return "CmdArgs"; }
@@ -14467,7 +14468,7 @@ struct RogueTypeCmdAdd : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 1200;
+    methods = Rogue_dynamic_method_table + 1201;
   }
 
   const char* name() { return "CmdAdd"; }
@@ -14488,7 +14489,7 @@ struct RogueTypeCmdBinary : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1240;
+    methods = Rogue_dynamic_method_table + 1241;
   }
 
   const char* name() { return "CmdBinary"; }
@@ -14509,7 +14510,7 @@ struct RogueTypeString_CmdTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 1280;
+    methods = Rogue_dynamic_method_table + 1281;
   }
 
   const char* name() { return "Table<<String,Cmd>>"; }
@@ -14529,7 +14530,7 @@ struct RogueTypeCmdIf : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 1298;
+    methods = Rogue_dynamic_method_table + 1299;
   }
 
   const char* name() { return "CmdIf"; }
@@ -14556,7 +14557,7 @@ struct RogueTypeCmdControlStructure : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdStatement;
-    methods = Rogue_dynamic_method_table + 1334;
+    methods = Rogue_dynamic_method_table + 1335;
   }
 
   const char* name() { return "CmdControlStructure"; }
@@ -14581,7 +14582,7 @@ struct RogueTypeCmdWhich : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 1368;
+    methods = Rogue_dynamic_method_table + 1369;
   }
 
   const char* name() { return "CmdWhich"; }
@@ -14609,7 +14610,7 @@ struct RogueTypeCmdContingent : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 1405;
+    methods = Rogue_dynamic_method_table + 1406;
   }
 
   const char* name() { return "CmdContingent"; }
@@ -14640,7 +14641,7 @@ struct RogueTypeCmdGenericLoop : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 1440;
+    methods = Rogue_dynamic_method_table + 1441;
   }
 
   const char* name() { return "CmdGenericLoop"; }
@@ -14668,7 +14669,7 @@ struct RogueTypeCmdTry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 1478;
+    methods = Rogue_dynamic_method_table + 1479;
   }
 
   const char* name() { return "CmdTry"; }
@@ -14694,7 +14695,7 @@ struct RogueTypeCmdAwait : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1514;
+    methods = Rogue_dynamic_method_table + 1515;
   }
 
   const char* name() { return "CmdAwait"; }
@@ -14716,7 +14717,7 @@ struct RogueTypeCmdYield : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1547;
+    methods = Rogue_dynamic_method_table + 1548;
   }
 
   const char* name() { return "CmdYield"; }
@@ -14735,7 +14736,7 @@ struct RogueTypeCmdThrow : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1580;
+    methods = Rogue_dynamic_method_table + 1581;
   }
 
   const char* name() { return "CmdThrow"; }
@@ -14755,7 +14756,7 @@ struct RogueTypeCmdTrace : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1613;
+    methods = Rogue_dynamic_method_table + 1614;
   }
 
   const char* name() { return "CmdTrace"; }
@@ -14775,7 +14776,7 @@ struct RogueTypeCmdEscape : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1646;
+    methods = Rogue_dynamic_method_table + 1647;
   }
 
   const char* name() { return "CmdEscape"; }
@@ -14795,7 +14796,7 @@ struct RogueTypeCmdNextIteration : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1679;
+    methods = Rogue_dynamic_method_table + 1680;
   }
 
   const char* name() { return "CmdNextIteration"; }
@@ -14815,7 +14816,7 @@ struct RogueTypeCmdNecessary : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1712;
+    methods = Rogue_dynamic_method_table + 1713;
   }
 
   const char* name() { return "CmdNecessary"; }
@@ -14836,7 +14837,7 @@ struct RogueTypeCmdSufficient : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1745;
+    methods = Rogue_dynamic_method_table + 1746;
   }
 
   const char* name() { return "CmdSufficient"; }
@@ -14857,7 +14858,7 @@ struct RogueTypeCmdAdjust : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1778;
+    methods = Rogue_dynamic_method_table + 1779;
   }
 
   const char* name() { return "CmdAdjust"; }
@@ -14877,7 +14878,7 @@ struct RogueTypeCmdAssign : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1811;
+    methods = Rogue_dynamic_method_table + 1812;
   }
 
   const char* name() { return "CmdAssign"; }
@@ -14898,7 +14899,7 @@ struct RogueTypeCmdOpWithAssign : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1844;
+    methods = Rogue_dynamic_method_table + 1845;
   }
 
   const char* name() { return "CmdOpWithAssign"; }
@@ -14920,7 +14921,7 @@ struct RogueTypeCmdAccess : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1877;
+    methods = Rogue_dynamic_method_table + 1878;
   }
 
   const char* name() { return "CmdAccess"; }
@@ -14942,7 +14943,7 @@ struct RogueTypeCmdWhichCaseList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 1915;
+    methods = Rogue_dynamic_method_table + 1916;
   }
 
   const char* name() { return "CmdWhichCase[]"; }
@@ -14961,7 +14962,7 @@ struct RogueTypeCmdWhichCase : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1934;
+    methods = Rogue_dynamic_method_table + 1935;
   }
 
   const char* name() { return "CmdWhichCase"; }
@@ -14982,7 +14983,7 @@ struct RogueTypeCmdCatchList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 1968;
+    methods = Rogue_dynamic_method_table + 1969;
   }
 
   const char* name() { return "CmdCatch[]"; }
@@ -15001,7 +15002,7 @@ struct RogueTypeCmdCatch : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 1987;
+    methods = Rogue_dynamic_method_table + 1988;
   }
 
   const char* name() { return "CmdCatch"; }
@@ -15022,7 +15023,7 @@ struct RogueTypeCmdLocalDeclaration : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdStatement;
-    methods = Rogue_dynamic_method_table + 2020;
+    methods = Rogue_dynamic_method_table + 2021;
   }
 
   const char* name() { return "CmdLocalDeclaration"; }
@@ -15042,7 +15043,7 @@ struct RogueTypeCmdAdjustLocal : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 2053;
+    methods = Rogue_dynamic_method_table + 2054;
   }
 
   const char* name() { return "CmdAdjustLocal"; }
@@ -15062,7 +15063,7 @@ struct RogueTypeCmdReadLocal : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 2086;
+    methods = Rogue_dynamic_method_table + 2087;
   }
 
   const char* name() { return "CmdReadLocal"; }
@@ -15082,7 +15083,7 @@ struct RogueTypeCmdCompareLE : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2119;
+    methods = Rogue_dynamic_method_table + 2120;
   }
 
   const char* name() { return "CmdCompareLE"; }
@@ -15103,7 +15104,7 @@ struct RogueTypeCmdComparison : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 2160;
+    methods = Rogue_dynamic_method_table + 2161;
   }
 
   const char* name() { return "CmdComparison"; }
@@ -15124,7 +15125,7 @@ struct RogueTypeCmdRange : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 2201;
+    methods = Rogue_dynamic_method_table + 2202;
   }
 
   const char* name() { return "CmdRange"; }
@@ -15146,7 +15147,7 @@ struct RogueTypeCmdLocalOpWithAssign : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdResolvedOpWithAssign;
-    methods = Rogue_dynamic_method_table + 2234;
+    methods = Rogue_dynamic_method_table + 2235;
   }
 
   const char* name() { return "CmdLocalOpWithAssign"; }
@@ -15168,7 +15169,7 @@ struct RogueTypeCmdResolvedOpWithAssign : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 2269;
+    methods = Rogue_dynamic_method_table + 2270;
   }
 
   const char* name() { return "CmdResolvedOpWithAssign"; }
@@ -15189,7 +15190,7 @@ struct RogueTypeCmdForEach : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 2303;
+    methods = Rogue_dynamic_method_table + 2304;
   }
 
   const char* name() { return "CmdForEach"; }
@@ -15218,7 +15219,7 @@ struct RogueTypeCmdRangeUpTo : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdRange;
-    methods = Rogue_dynamic_method_table + 2338;
+    methods = Rogue_dynamic_method_table + 2339;
   }
 
   const char* name() { return "CmdRangeUpTo"; }
@@ -15240,7 +15241,7 @@ struct RogueTypeCmdLogicalXor : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinaryLogical;
-    methods = Rogue_dynamic_method_table + 2371;
+    methods = Rogue_dynamic_method_table + 2372;
   }
 
   const char* name() { return "CmdLogicalXor"; }
@@ -15261,7 +15262,7 @@ struct RogueTypeCmdBinaryLogical : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 2412;
+    methods = Rogue_dynamic_method_table + 2413;
   }
 
   const char* name() { return "CmdBinaryLogical"; }
@@ -15282,7 +15283,7 @@ struct RogueTypeCmdLogicalOr : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinaryLogical;
-    methods = Rogue_dynamic_method_table + 2453;
+    methods = Rogue_dynamic_method_table + 2454;
   }
 
   const char* name() { return "CmdLogicalOr"; }
@@ -15303,7 +15304,7 @@ struct RogueTypeCmdLogicalAnd : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinaryLogical;
-    methods = Rogue_dynamic_method_table + 2494;
+    methods = Rogue_dynamic_method_table + 2495;
   }
 
   const char* name() { return "CmdLogicalAnd"; }
@@ -15324,7 +15325,7 @@ struct RogueTypeCmdCompareEQ : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2535;
+    methods = Rogue_dynamic_method_table + 2536;
   }
 
   const char* name() { return "CmdCompareEQ"; }
@@ -15345,7 +15346,7 @@ struct RogueTypeCmdCompareIs : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2576;
+    methods = Rogue_dynamic_method_table + 2577;
   }
 
   const char* name() { return "CmdCompareIs"; }
@@ -15366,7 +15367,7 @@ struct RogueTypeCmdCompareNE : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2617;
+    methods = Rogue_dynamic_method_table + 2618;
   }
 
   const char* name() { return "CmdCompareNE"; }
@@ -15387,7 +15388,7 @@ struct RogueTypeCmdCompareIsNot : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2658;
+    methods = Rogue_dynamic_method_table + 2659;
   }
 
   const char* name() { return "CmdCompareIsNot"; }
@@ -15408,7 +15409,7 @@ struct RogueTypeCmdCompareLT : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2699;
+    methods = Rogue_dynamic_method_table + 2700;
   }
 
   const char* name() { return "CmdCompareLT"; }
@@ -15429,7 +15430,7 @@ struct RogueTypeCmdCompareGT : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2740;
+    methods = Rogue_dynamic_method_table + 2741;
   }
 
   const char* name() { return "CmdCompareGT"; }
@@ -15450,7 +15451,7 @@ struct RogueTypeCmdCompareGE : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdComparison;
-    methods = Rogue_dynamic_method_table + 2781;
+    methods = Rogue_dynamic_method_table + 2782;
   }
 
   const char* name() { return "CmdCompareGE"; }
@@ -15471,7 +15472,7 @@ struct RogueTypeCmdInstanceOf : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdTypeOperator;
-    methods = Rogue_dynamic_method_table + 2822;
+    methods = Rogue_dynamic_method_table + 2823;
   }
 
   const char* name() { return "CmdInstanceOf"; }
@@ -15492,7 +15493,7 @@ struct RogueTypeCmdTypeOperator : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 2855;
+    methods = Rogue_dynamic_method_table + 2856;
   }
 
   const char* name() { return "CmdTypeOperator"; }
@@ -15513,7 +15514,7 @@ struct RogueTypeCmdLogicalNot : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdUnary;
-    methods = Rogue_dynamic_method_table + 2888;
+    methods = Rogue_dynamic_method_table + 2889;
   }
 
   const char* name() { return "CmdLogicalNot"; }
@@ -15533,7 +15534,7 @@ struct RogueTypeCmdUnary : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 2927;
+    methods = Rogue_dynamic_method_table + 2928;
   }
 
   const char* name() { return "CmdUnary"; }
@@ -15553,7 +15554,7 @@ struct RogueTypeCmdBitwiseXor : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBitwiseOp;
-    methods = Rogue_dynamic_method_table + 2966;
+    methods = Rogue_dynamic_method_table + 2967;
   }
 
   const char* name() { return "CmdBitwiseXor"; }
@@ -15574,7 +15575,7 @@ struct RogueTypeCmdBitwiseOp : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 3006;
+    methods = Rogue_dynamic_method_table + 3007;
   }
 
   const char* name() { return "CmdBitwiseOp"; }
@@ -15595,7 +15596,7 @@ struct RogueTypeCmdBitwiseOr : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBitwiseOp;
-    methods = Rogue_dynamic_method_table + 3046;
+    methods = Rogue_dynamic_method_table + 3047;
   }
 
   const char* name() { return "CmdBitwiseOr"; }
@@ -15616,7 +15617,7 @@ struct RogueTypeCmdBitwiseAnd : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBitwiseOp;
-    methods = Rogue_dynamic_method_table + 3086;
+    methods = Rogue_dynamic_method_table + 3087;
   }
 
   const char* name() { return "CmdBitwiseAnd"; }
@@ -15637,7 +15638,7 @@ struct RogueTypeCmdBitwiseShiftLeft : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBitwiseOp;
-    methods = Rogue_dynamic_method_table + 3126;
+    methods = Rogue_dynamic_method_table + 3127;
   }
 
   const char* name() { return "CmdBitwiseShiftLeft"; }
@@ -15658,7 +15659,7 @@ struct RogueTypeCmdBitwiseShiftRight : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBitwiseOp;
-    methods = Rogue_dynamic_method_table + 3166;
+    methods = Rogue_dynamic_method_table + 3167;
   }
 
   const char* name() { return "CmdBitwiseShiftRight"; }
@@ -15679,7 +15680,7 @@ struct RogueTypeCmdBitwiseShiftRightX : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBitwiseOp;
-    methods = Rogue_dynamic_method_table + 3206;
+    methods = Rogue_dynamic_method_table + 3207;
   }
 
   const char* name() { return "CmdBitwiseShiftRightX"; }
@@ -15700,7 +15701,7 @@ struct RogueTypeCmdSubtract : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 3246;
+    methods = Rogue_dynamic_method_table + 3247;
   }
 
   const char* name() { return "CmdSubtract"; }
@@ -15721,7 +15722,7 @@ struct RogueTypeCmdMultiply : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 3286;
+    methods = Rogue_dynamic_method_table + 3287;
   }
 
   const char* name() { return "CmdMultiply"; }
@@ -15742,7 +15743,7 @@ struct RogueTypeCmdDivide : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 3326;
+    methods = Rogue_dynamic_method_table + 3327;
   }
 
   const char* name() { return "CmdDivide"; }
@@ -15763,7 +15764,7 @@ struct RogueTypeCmdMod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 3366;
+    methods = Rogue_dynamic_method_table + 3367;
   }
 
   const char* name() { return "CmdMod"; }
@@ -15784,7 +15785,7 @@ struct RogueTypeCmdPower : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdBinary;
-    methods = Rogue_dynamic_method_table + 3406;
+    methods = Rogue_dynamic_method_table + 3407;
   }
 
   const char* name() { return "CmdPower"; }
@@ -15805,7 +15806,7 @@ struct RogueTypeCmdNegate : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdUnary;
-    methods = Rogue_dynamic_method_table + 3446;
+    methods = Rogue_dynamic_method_table + 3447;
   }
 
   const char* name() { return "CmdNegate"; }
@@ -15825,7 +15826,7 @@ struct RogueTypeCmdBitwiseNot : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdUnary;
-    methods = Rogue_dynamic_method_table + 3485;
+    methods = Rogue_dynamic_method_table + 3486;
   }
 
   const char* name() { return "CmdBitwiseNot"; }
@@ -15845,7 +15846,7 @@ struct RogueTypeCmdLogicalize : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdUnary;
-    methods = Rogue_dynamic_method_table + 3524;
+    methods = Rogue_dynamic_method_table + 3525;
   }
 
   const char* name() { return "CmdLogicalize"; }
@@ -15865,7 +15866,7 @@ struct RogueTypeCmdGetOptionalValue : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 3563;
+    methods = Rogue_dynamic_method_table + 3564;
   }
 
   const char* name() { return "CmdGetOptionalValue"; }
@@ -15885,7 +15886,7 @@ struct RogueTypeCmdElementAccess : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 3596;
+    methods = Rogue_dynamic_method_table + 3597;
   }
 
   const char* name() { return "CmdElementAccess"; }
@@ -15906,7 +15907,7 @@ struct RogueTypeCmdConvertToType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdTypeOperator;
-    methods = Rogue_dynamic_method_table + 3629;
+    methods = Rogue_dynamic_method_table + 3630;
   }
 
   const char* name() { return "CmdConvertToType"; }
@@ -15927,7 +15928,7 @@ struct RogueTypeCmdCreateCallback : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 3662;
+    methods = Rogue_dynamic_method_table + 3663;
   }
 
   const char* name() { return "CmdCreateCallback"; }
@@ -15950,7 +15951,7 @@ struct RogueTypeCmdAs : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdTypeOperator;
-    methods = Rogue_dynamic_method_table + 3695;
+    methods = Rogue_dynamic_method_table + 3696;
   }
 
   const char* name() { return "CmdAs"; }
@@ -15971,7 +15972,7 @@ struct RogueTypeCmdDefaultValue : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 3728;
+    methods = Rogue_dynamic_method_table + 3729;
   }
 
   const char* name() { return "CmdDefaultValue"; }
@@ -15991,7 +15992,7 @@ struct RogueTypeCmdFormattedString : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 3761;
+    methods = Rogue_dynamic_method_table + 3762;
   }
 
   const char* name() { return "CmdFormattedString"; }
@@ -16012,7 +16013,7 @@ struct RogueTypeCmdLiteralString : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 3794;
+    methods = Rogue_dynamic_method_table + 3795;
   }
 
   const char* name() { return "CmdLiteralString"; }
@@ -16032,7 +16033,7 @@ struct RogueTypeCmdLiteralNull : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 3827;
+    methods = Rogue_dynamic_method_table + 3828;
   }
 
   const char* name() { return "CmdLiteralNull"; }
@@ -16051,7 +16052,7 @@ struct RogueTypeCmdLiteralReal : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 3860;
+    methods = Rogue_dynamic_method_table + 3861;
   }
 
   const char* name() { return "CmdLiteralReal"; }
@@ -16070,7 +16071,7 @@ struct RogueTypeCmdLiteralCharacter : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 3893;
+    methods = Rogue_dynamic_method_table + 3894;
   }
 
   const char* name() { return "CmdLiteralCharacter"; }
@@ -16089,7 +16090,7 @@ struct RogueTypeCmdLiteralThis : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdThisContext;
-    methods = Rogue_dynamic_method_table + 3926;
+    methods = Rogue_dynamic_method_table + 3927;
   }
 
   const char* name() { return "CmdLiteralThis"; }
@@ -16109,7 +16110,7 @@ struct RogueTypeCmdThisContext : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 3959;
+    methods = Rogue_dynamic_method_table + 3960;
   }
 
   const char* name() { return "CmdThisContext"; }
@@ -16129,7 +16130,7 @@ struct RogueTypeCmdLiteralLogical : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdLiteral;
-    methods = Rogue_dynamic_method_table + 3992;
+    methods = Rogue_dynamic_method_table + 3993;
   }
 
   const char* name() { return "CmdLiteralLogical"; }
@@ -16148,7 +16149,7 @@ struct RogueTypeCmdCreateList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4025;
+    methods = Rogue_dynamic_method_table + 4026;
   }
 
   const char* name() { return "CmdCreateList"; }
@@ -16169,7 +16170,7 @@ struct RogueTypeCmdCallPriorMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4058;
+    methods = Rogue_dynamic_method_table + 4059;
   }
 
   const char* name() { return "CmdCallPriorMethod"; }
@@ -16190,7 +16191,7 @@ struct RogueTypeFnParamList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4091;
+    methods = Rogue_dynamic_method_table + 4092;
   }
 
   const char* name() { return "FnParam[]"; }
@@ -16209,7 +16210,7 @@ struct RogueTypeFnParam : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4110;
+    methods = Rogue_dynamic_method_table + 4111;
   }
 
   const char* name() { return "FnParam"; }
@@ -16229,7 +16230,7 @@ struct RogueTypeFnArgList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4115;
+    methods = Rogue_dynamic_method_table + 4116;
   }
 
   const char* name() { return "FnArg[]"; }
@@ -16248,7 +16249,7 @@ struct RogueTypeFnArg : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4134;
+    methods = Rogue_dynamic_method_table + 4135;
   }
 
   const char* name() { return "FnArg"; }
@@ -16269,7 +16270,7 @@ struct RogueTypeCmdCreateFunction : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4140;
+    methods = Rogue_dynamic_method_table + 4141;
   }
 
   const char* name() { return "CmdCreateFunction"; }
@@ -16292,7 +16293,7 @@ struct RogueTypeTokenListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4173;
+    methods = Rogue_dynamic_method_table + 4174;
   }
 
   const char* name() { return "ListOps<<Token>>"; }
@@ -16307,7 +16308,7 @@ struct RogueTypeTemplateListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4177;
+    methods = Rogue_dynamic_method_table + 4178;
   }
 
   const char* name() { return "ListOps<<Template>>"; }
@@ -16322,7 +16323,7 @@ struct RogueTypeTypeParameterList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4181;
+    methods = Rogue_dynamic_method_table + 4182;
   }
 
   const char* name() { return "TypeParameter[]"; }
@@ -16341,7 +16342,7 @@ struct RogueTypeString_TypeSpecializerTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4200;
+    methods = Rogue_dynamic_method_table + 4201;
   }
 
   const char* name() { return "Table<<String,TypeSpecializer>>"; }
@@ -16361,7 +16362,7 @@ struct RogueTypeTypeSpecializer : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4218;
+    methods = Rogue_dynamic_method_table + 4219;
   }
 
   const char* name() { return "TypeSpecializer"; }
@@ -16381,7 +16382,7 @@ struct RogueTypeString_TemplateTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4223;
+    methods = Rogue_dynamic_method_table + 4224;
   }
 
   const char* name() { return "TableEntry<<String,Template>>[]"; }
@@ -16400,7 +16401,7 @@ struct RogueTypeString_TemplateTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4242;
+    methods = Rogue_dynamic_method_table + 4243;
   }
 
   const char* name() { return "TableEntry<<String,Template>>"; }
@@ -16421,7 +16422,7 @@ struct RogueTypeString_AugmentListTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4247;
+    methods = Rogue_dynamic_method_table + 4248;
   }
 
   const char* name() { return "TableEntry<<String,Augment[]>>[]"; }
@@ -16440,7 +16441,7 @@ struct RogueTypeString_AugmentListTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4266;
+    methods = Rogue_dynamic_method_table + 4267;
   }
 
   const char* name() { return "TableEntry<<String,Augment[]>>"; }
@@ -16461,7 +16462,7 @@ struct RogueTypeString_PropertyTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4271;
+    methods = Rogue_dynamic_method_table + 4272;
   }
 
   const char* name() { return "Table<<String,Property>>"; }
@@ -16481,7 +16482,7 @@ struct RogueTypeString_MethodListTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4289;
+    methods = Rogue_dynamic_method_table + 4290;
   }
 
   const char* name() { return "Table<<String,Method[]>>"; }
@@ -16501,7 +16502,7 @@ struct RogueTypeCmdCreateCompound : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4307;
+    methods = Rogue_dynamic_method_table + 4308;
   }
 
   const char* name() { return "CmdCreateCompound"; }
@@ -16522,7 +16523,7 @@ struct RogueTypeCmdWriteSetting : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4340;
+    methods = Rogue_dynamic_method_table + 4341;
   }
 
   const char* name() { return "CmdWriteSetting"; }
@@ -16543,7 +16544,7 @@ struct RogueTypeMethodListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4373;
+    methods = Rogue_dynamic_method_table + 4374;
   }
 
   const char* name() { return "ListOps<<Method>>"; }
@@ -16558,7 +16559,7 @@ struct RogueTypeCmdWriteProperty : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4377;
+    methods = Rogue_dynamic_method_table + 4378;
   }
 
   const char* name() { return "CmdWriteProperty"; }
@@ -16580,7 +16581,7 @@ struct RogueTypeTypeListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4410;
+    methods = Rogue_dynamic_method_table + 4411;
   }
 
   const char* name() { return "ListOps<<Type>>"; }
@@ -16595,7 +16596,7 @@ struct RogueTypePropertyListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4414;
+    methods = Rogue_dynamic_method_table + 4415;
   }
 
   const char* name() { return "ListOps<<Property>>"; }
@@ -16610,7 +16611,7 @@ struct RogueTypeString_TypeTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4418;
+    methods = Rogue_dynamic_method_table + 4419;
   }
 
   const char* name() { return "TableEntry<<String,Type>>[]"; }
@@ -16629,7 +16630,7 @@ struct RogueTypeString_TypeTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4437;
+    methods = Rogue_dynamic_method_table + 4438;
   }
 
   const char* name() { return "TableEntry<<String,Type>>"; }
@@ -16650,7 +16651,7 @@ struct RogueTypeString_IntegerTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4442;
+    methods = Rogue_dynamic_method_table + 4443;
   }
 
   const char* name() { return "TableEntry<<String,Integer>>[]"; }
@@ -16669,7 +16670,7 @@ struct RogueTypeString_IntegerTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4461;
+    methods = Rogue_dynamic_method_table + 4462;
   }
 
   const char* name() { return "TableEntry<<String,Integer>>"; }
@@ -16689,7 +16690,7 @@ struct RogueTypeScope : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4466;
+    methods = Rogue_dynamic_method_table + 4467;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -16716,7 +16717,7 @@ struct RogueTypeCmdControlStructureList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4476;
+    methods = Rogue_dynamic_method_table + 4477;
   }
 
   const char* name() { return "CmdControlStructure[]"; }
@@ -16735,7 +16736,7 @@ struct RogueTypeTaskArgs : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CloneArgs;
-    methods = Rogue_dynamic_method_table + 4495;
+    methods = Rogue_dynamic_method_table + 4496;
   }
 
   const char* name() { return "TaskArgs"; }
@@ -16760,7 +16761,7 @@ struct RogueTypeCmdTaskControl : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4518;
+    methods = Rogue_dynamic_method_table + 4519;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -16786,7 +16787,7 @@ struct RogueTypeCmdTaskControlSection : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4552;
+    methods = Rogue_dynamic_method_table + 4553;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -16810,7 +16811,7 @@ struct RogueTypeCmdCastToType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdTypeOperator;
-    methods = Rogue_dynamic_method_table + 4557;
+    methods = Rogue_dynamic_method_table + 4558;
   }
 
   const char* name() { return "CmdCastToType"; }
@@ -16831,7 +16832,7 @@ struct RogueTypeCmdCreateOptionalValue : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4590;
+    methods = Rogue_dynamic_method_table + 4591;
   }
 
   const char* name() { return "CmdCreateOptionalValue"; }
@@ -16852,7 +16853,7 @@ struct RogueTypeCmdListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4623;
+    methods = Rogue_dynamic_method_table + 4624;
   }
 
   const char* name() { return "ListOps<<Cmd>>"; }
@@ -16867,7 +16868,7 @@ struct RogueTypeString_MethodTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4627;
+    methods = Rogue_dynamic_method_table + 4628;
   }
 
   const char* name() { return "TableEntry<<String,Method>>[]"; }
@@ -16886,7 +16887,7 @@ struct RogueTypeString_MethodTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4646;
+    methods = Rogue_dynamic_method_table + 4647;
   }
 
   const char* name() { return "TableEntry<<String,Method>>"; }
@@ -16907,7 +16908,7 @@ struct RogueTypeLocalListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4651;
+    methods = Rogue_dynamic_method_table + 4652;
   }
 
   const char* name() { return "ListOps<<Local>>"; }
@@ -16922,7 +16923,7 @@ struct RogueTypeTaskListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4655;
+    methods = Rogue_dynamic_method_table + 4656;
   }
 
   const char* name() { return "ListOps<<Task>>"; }
@@ -16937,7 +16938,7 @@ struct RogueTypeTime : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4659;
+    methods = Rogue_dynamic_method_table + 4660;
   }
 
   const char* name() { return "Time"; }
@@ -16952,7 +16953,7 @@ struct RogueTypeString_LogicalTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4663;
+    methods = Rogue_dynamic_method_table + 4664;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Logical>>>>"; }
@@ -16967,7 +16968,7 @@ struct RogueTypeByteListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4667;
+    methods = Rogue_dynamic_method_table + 4668;
   }
 
   const char* name() { return "ListOps<<Byte>>"; }
@@ -16982,7 +16983,7 @@ struct RogueTypeDirectiveTokenType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_TokenType;
-    methods = Rogue_dynamic_method_table + 4671;
+    methods = Rogue_dynamic_method_table + 4672;
   }
 
   const char* name() { return "DirectiveTokenType"; }
@@ -17001,7 +17002,7 @@ struct RogueTypeEOLTokenType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_TokenType;
-    methods = Rogue_dynamic_method_table + 4688;
+    methods = Rogue_dynamic_method_table + 4689;
   }
 
   const char* name() { return "EOLTokenType"; }
@@ -17020,7 +17021,7 @@ struct RogueTypeStructureTokenType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_TokenType;
-    methods = Rogue_dynamic_method_table + 4705;
+    methods = Rogue_dynamic_method_table + 4706;
   }
 
   const char* name() { return "StructureTokenType"; }
@@ -17039,7 +17040,7 @@ struct RogueTypeOpWithAssignTokenType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_TokenType;
-    methods = Rogue_dynamic_method_table + 4722;
+    methods = Rogue_dynamic_method_table + 4723;
   }
 
   const char* name() { return "OpWithAssignTokenType"; }
@@ -17058,7 +17059,7 @@ struct RogueTypeEOLToken : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Token;
-    methods = Rogue_dynamic_method_table + 4739;
+    methods = Rogue_dynamic_method_table + 4740;
   }
 
   const char* name() { return "EOLToken"; }
@@ -17079,7 +17080,7 @@ struct RogueTypeString_TokenListTable : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4756;
+    methods = Rogue_dynamic_method_table + 4757;
   }
 
   const char* name() { return "Table<<String,Token[]>>"; }
@@ -17099,7 +17100,7 @@ struct RogueTypePreprocessorTokenReader : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4774;
+    methods = Rogue_dynamic_method_table + 4775;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -17124,7 +17125,7 @@ struct RogueTypeString_TokenTypeTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4789;
+    methods = Rogue_dynamic_method_table + 4790;
   }
 
   const char* name() { return "TableEntry<<String,TokenType>>[]"; }
@@ -17143,7 +17144,7 @@ struct RogueTypeString_TokenTypeTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4808;
+    methods = Rogue_dynamic_method_table + 4809;
   }
 
   const char* name() { return "TableEntry<<String,TokenType>>"; }
@@ -17164,7 +17165,7 @@ struct RogueTypeAugmentListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4813;
+    methods = Rogue_dynamic_method_table + 4814;
   }
 
   const char* name() { return "ListOps<<Augment>>"; }
@@ -17179,7 +17180,7 @@ struct RogueTypeString_CmdTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4817;
+    methods = Rogue_dynamic_method_table + 4818;
   }
 
   const char* name() { return "TableEntry<<String,Cmd>>[]"; }
@@ -17198,7 +17199,7 @@ struct RogueTypeString_CmdTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 4836;
+    methods = Rogue_dynamic_method_table + 4837;
   }
 
   const char* name() { return "TableEntry<<String,Cmd>>"; }
@@ -17219,7 +17220,7 @@ struct RogueTypeCmdTaskControlSectionList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 4841;
+    methods = Rogue_dynamic_method_table + 4842;
   }
 
   const char* name() { return "CmdTaskControlSection[]"; }
@@ -17238,7 +17239,7 @@ struct RogueTypeCmdBlock : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdControlStructure;
-    methods = Rogue_dynamic_method_table + 4860;
+    methods = Rogue_dynamic_method_table + 4861;
   }
 
   const char* name() { return "CmdBlock"; }
@@ -17263,7 +17264,7 @@ struct RogueTypeCmdReadProperty : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4897;
+    methods = Rogue_dynamic_method_table + 4898;
   }
 
   const char* name() { return "CmdReadProperty"; }
@@ -17284,7 +17285,7 @@ struct RogueTypeCmdWriteLocal : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4930;
+    methods = Rogue_dynamic_method_table + 4931;
   }
 
   const char* name() { return "CmdWriteLocal"; }
@@ -17305,7 +17306,7 @@ struct RogueTypeInlineArgs : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CloneArgs;
-    methods = Rogue_dynamic_method_table + 4963;
+    methods = Rogue_dynamic_method_table + 4964;
   }
 
   const char* name() { return "InlineArgs"; }
@@ -17326,7 +17327,7 @@ struct RogueTypeCmdReadSingleton : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 4973;
+    methods = Rogue_dynamic_method_table + 4974;
   }
 
   const char* name() { return "CmdReadSingleton"; }
@@ -17346,7 +17347,7 @@ struct RogueTypeCmdCreateArray : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5006;
+    methods = Rogue_dynamic_method_table + 5007;
   }
 
   const char* name() { return "CmdCreateArray"; }
@@ -17367,7 +17368,7 @@ struct RogueTypeCmdCallRoutine : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCall;
-    methods = Rogue_dynamic_method_table + 5040;
+    methods = Rogue_dynamic_method_table + 5041;
   }
 
   const char* name() { return "CmdCallRoutine"; }
@@ -17389,7 +17390,7 @@ struct RogueTypeCmdCall : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5074;
+    methods = Rogue_dynamic_method_table + 5075;
   }
 
   const char* name() { return "CmdCall"; }
@@ -17411,7 +17412,7 @@ struct RogueTypeCmdCreateObject : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5107;
+    methods = Rogue_dynamic_method_table + 5108;
   }
 
   const char* name() { return "CmdCreateObject"; }
@@ -17431,7 +17432,7 @@ struct RogueTypeCmdReadSetting : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5140;
+    methods = Rogue_dynamic_method_table + 5141;
   }
 
   const char* name() { return "CmdReadSetting"; }
@@ -17451,7 +17452,7 @@ struct RogueTypeCmdLogicalizeOptionalValue : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5173;
+    methods = Rogue_dynamic_method_table + 5174;
   }
 
   const char* name() { return "CmdLogicalizeOptionalValue"; }
@@ -17471,7 +17472,7 @@ struct RogueTypeCmdOpAssignSetting : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdResolvedOpWithAssign;
-    methods = Rogue_dynamic_method_table + 5206;
+    methods = Rogue_dynamic_method_table + 5207;
   }
 
   const char* name() { return "CmdOpAssignSetting"; }
@@ -17493,7 +17494,7 @@ struct RogueTypeCmdOpAssignProperty : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdResolvedOpWithAssign;
-    methods = Rogue_dynamic_method_table + 5241;
+    methods = Rogue_dynamic_method_table + 5242;
   }
 
   const char* name() { return "CmdOpAssignProperty"; }
@@ -17516,7 +17517,7 @@ struct RogueTypeCmdWhichCaseListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5276;
+    methods = Rogue_dynamic_method_table + 5277;
   }
 
   const char* name() { return "ListOps<<CmdWhichCase>>"; }
@@ -17531,7 +17532,7 @@ struct RogueTypeCmdCatchListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5280;
+    methods = Rogue_dynamic_method_table + 5281;
   }
 
   const char* name() { return "ListOps<<CmdCatch>>"; }
@@ -17546,7 +17547,7 @@ struct RogueTypeCmdReadArrayElement : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5284;
+    methods = Rogue_dynamic_method_table + 5285;
   }
 
   const char* name() { return "CmdReadArrayElement"; }
@@ -17568,7 +17569,7 @@ struct RogueTypeCmdWriteArrayElement : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5317;
+    methods = Rogue_dynamic_method_table + 5318;
   }
 
   const char* name() { return "CmdWriteArrayElement"; }
@@ -17591,7 +17592,7 @@ struct RogueTypeCmdConvertToPrimitiveType : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdConvertToType;
-    methods = Rogue_dynamic_method_table + 5350;
+    methods = Rogue_dynamic_method_table + 5351;
   }
 
   const char* name() { return "CmdConvertToPrimitiveType"; }
@@ -17612,7 +17613,7 @@ struct RogueTypeFnParamListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5383;
+    methods = Rogue_dynamic_method_table + 5384;
   }
 
   const char* name() { return "ListOps<<FnParam>>"; }
@@ -17627,7 +17628,7 @@ struct RogueTypeFnArgListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5387;
+    methods = Rogue_dynamic_method_table + 5388;
   }
 
   const char* name() { return "ListOps<<FnArg>>"; }
@@ -17642,7 +17643,7 @@ struct RogueTypeTypeParameterListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5391;
+    methods = Rogue_dynamic_method_table + 5392;
   }
 
   const char* name() { return "ListOps<<TypeParameter>>"; }
@@ -17657,7 +17658,7 @@ struct RogueTypeString_TypeSpecializerTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 5395;
+    methods = Rogue_dynamic_method_table + 5396;
   }
 
   const char* name() { return "TableEntry<<String,TypeSpecializer>>[]"; }
@@ -17676,7 +17677,7 @@ struct RogueTypeString_TypeSpecializerTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5414;
+    methods = Rogue_dynamic_method_table + 5415;
   }
 
   const char* name() { return "TableEntry<<String,TypeSpecializer>>"; }
@@ -17697,7 +17698,7 @@ struct RogueTypeString_TemplateTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5419;
+    methods = Rogue_dynamic_method_table + 5420;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Template>>>>"; }
@@ -17712,7 +17713,7 @@ struct RogueTypeString_AugmentListTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5423;
+    methods = Rogue_dynamic_method_table + 5424;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Augment[]>>>>"; }
@@ -17727,7 +17728,7 @@ struct RogueTypeString_PropertyTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 5427;
+    methods = Rogue_dynamic_method_table + 5428;
   }
 
   const char* name() { return "TableEntry<<String,Property>>[]"; }
@@ -17746,7 +17747,7 @@ struct RogueTypeString_PropertyTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5446;
+    methods = Rogue_dynamic_method_table + 5447;
   }
 
   const char* name() { return "TableEntry<<String,Property>>"; }
@@ -17767,7 +17768,7 @@ struct RogueTypeString_MethodListTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 5451;
+    methods = Rogue_dynamic_method_table + 5452;
   }
 
   const char* name() { return "TableEntry<<String,Method[]>>[]"; }
@@ -17786,7 +17787,7 @@ struct RogueTypeString_MethodListTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5470;
+    methods = Rogue_dynamic_method_table + 5471;
   }
 
   const char* name() { return "TableEntry<<String,Method[]>>"; }
@@ -17807,7 +17808,7 @@ struct RogueTypeString_TypeTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5475;
+    methods = Rogue_dynamic_method_table + 5476;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Type>>>>"; }
@@ -17822,7 +17823,7 @@ struct RogueTypeString_IntegerTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5479;
+    methods = Rogue_dynamic_method_table + 5480;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Integer>>>>"; }
@@ -17837,7 +17838,7 @@ struct RogueTypeCmdCallInlineNativeRoutine : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCallInlineNative;
-    methods = Rogue_dynamic_method_table + 5483;
+    methods = Rogue_dynamic_method_table + 5484;
   }
 
   const char* name() { return "CmdCallInlineNativeRoutine"; }
@@ -17859,7 +17860,7 @@ struct RogueTypeCmdCallInlineNative : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCall;
-    methods = Rogue_dynamic_method_table + 5518;
+    methods = Rogue_dynamic_method_table + 5519;
   }
 
   const char* name() { return "CmdCallInlineNative"; }
@@ -17881,7 +17882,7 @@ struct RogueTypeCmdCallNativeRoutine : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCall;
-    methods = Rogue_dynamic_method_table + 5552;
+    methods = Rogue_dynamic_method_table + 5553;
   }
 
   const char* name() { return "CmdCallNativeRoutine"; }
@@ -17903,7 +17904,7 @@ struct RogueTypeCmdReadArrayCount : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5586;
+    methods = Rogue_dynamic_method_table + 5587;
   }
 
   const char* name() { return "CmdReadArrayCount"; }
@@ -17924,7 +17925,7 @@ struct RogueTypeCmdCallInlineNativeMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCallInlineNative;
-    methods = Rogue_dynamic_method_table + 5619;
+    methods = Rogue_dynamic_method_table + 5620;
   }
 
   const char* name() { return "CmdCallInlineNativeMethod"; }
@@ -17946,7 +17947,7 @@ struct RogueTypeCmdCallNativeMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCall;
-    methods = Rogue_dynamic_method_table + 5653;
+    methods = Rogue_dynamic_method_table + 5654;
   }
 
   const char* name() { return "CmdCallNativeMethod"; }
@@ -17968,7 +17969,7 @@ struct RogueTypeCmdCallAspectMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCall;
-    methods = Rogue_dynamic_method_table + 5686;
+    methods = Rogue_dynamic_method_table + 5687;
   }
 
   const char* name() { return "CmdCallAspectMethod"; }
@@ -17990,7 +17991,7 @@ struct RogueTypeCmdCallDynamicMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCallMethod;
-    methods = Rogue_dynamic_method_table + 5719;
+    methods = Rogue_dynamic_method_table + 5720;
   }
 
   const char* name() { return "CmdCallDynamicMethod"; }
@@ -18012,7 +18013,7 @@ struct RogueTypeCmdCallMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCall;
-    methods = Rogue_dynamic_method_table + 5752;
+    methods = Rogue_dynamic_method_table + 5753;
   }
 
   const char* name() { return "CmdCallMethod"; }
@@ -18034,7 +18035,7 @@ struct RogueTypeCandidateMethods : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5785;
+    methods = Rogue_dynamic_method_table + 5786;
   }
 
   RogueObject* init_object( RogueObject* THIS )
@@ -18061,7 +18062,7 @@ struct RogueTypeCmdControlStructureListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5796;
+    methods = Rogue_dynamic_method_table + 5797;
   }
 
   const char* name() { return "ListOps<<CmdControlStructure>>"; }
@@ -18076,7 +18077,7 @@ struct RogueTypeString_MethodTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5800;
+    methods = Rogue_dynamic_method_table + 5801;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Method>>>>"; }
@@ -18091,7 +18092,7 @@ struct RogueTypeString_TokenListTableEntryList : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_GenericList;
-    methods = Rogue_dynamic_method_table + 5804;
+    methods = Rogue_dynamic_method_table + 5805;
   }
 
   const char* name() { return "TableEntry<<String,Token[]>>[]"; }
@@ -18110,7 +18111,7 @@ struct RogueTypeString_TokenListTableEntry : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5823;
+    methods = Rogue_dynamic_method_table + 5824;
   }
 
   const char* name() { return "TableEntry<<String,Token[]>>"; }
@@ -18131,7 +18132,7 @@ struct RogueTypeString_TokenTypeTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5828;
+    methods = Rogue_dynamic_method_table + 5829;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,TokenType>>>>"; }
@@ -18146,7 +18147,7 @@ struct RogueTypeString_CmdTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5832;
+    methods = Rogue_dynamic_method_table + 5833;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Cmd>>>>"; }
@@ -18161,7 +18162,7 @@ struct RogueTypeCmdTaskControlSectionListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5836;
+    methods = Rogue_dynamic_method_table + 5837;
   }
 
   const char* name() { return "ListOps<<CmdTaskControlSection>>"; }
@@ -18176,7 +18177,7 @@ struct RogueTypeCmdAdjustProperty : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Cmd;
-    methods = Rogue_dynamic_method_table + 5840;
+    methods = Rogue_dynamic_method_table + 5841;
   }
 
   const char* name() { return "CmdAdjustProperty"; }
@@ -18197,7 +18198,7 @@ struct RogueTypeString_TypeSpecializerTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5873;
+    methods = Rogue_dynamic_method_table + 5874;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,TypeSpecializer>>>>"; }
@@ -18212,7 +18213,7 @@ struct RogueTypeString_PropertyTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5877;
+    methods = Rogue_dynamic_method_table + 5878;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Property>>>>"; }
@@ -18227,7 +18228,7 @@ struct RogueTypeString_MethodListTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5881;
+    methods = Rogue_dynamic_method_table + 5882;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Method[]>>>>"; }
@@ -18242,7 +18243,7 @@ struct RogueTypeCmdCallStaticMethod : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_CmdCallMethod;
-    methods = Rogue_dynamic_method_table + 5885;
+    methods = Rogue_dynamic_method_table + 5886;
   }
 
   const char* name() { return "CmdCallStaticMethod"; }
@@ -18264,7 +18265,7 @@ struct RogueTypeString_TokenListTableEntryListOps : RogueType
     base_type_count = 1;
     base_types = new RogueType*[ base_type_count ];
     base_types[0] = (RogueType*) Rogue_program.type_Object;
-    methods = Rogue_dynamic_method_table + 5918;
+    methods = Rogue_dynamic_method_table + 5919;
   }
 
   const char* name() { return "ListOps<<TableEntry<<String,Token[]>>>>"; }
@@ -22649,11 +22650,6 @@ void RogueParser__parse_elements( RogueClassParser* THIS )
 RogueLogical RogueParser__parse_element( RogueClassParser* THIS )
 {
   RogueParser__consume_eols( THIS );
-  if (((RogueParser__consume( THIS, RogueClassTokenType::begin_augment_tokens ))))
-  {
-    THIS->parsing_augment = true;
-    RogueParser__consume_eols( THIS );
-  }
   RogueClassToken* t_0 = (((RogueParser__peek( THIS ))));
   if (t_0->_type == RogueClassTokenType::keyword_class)
   {
@@ -22947,6 +22943,11 @@ void RogueParser__parse_type_def( RogueClassParser* THIS, RogueClassType* _auto_
 RogueLogical RogueParser__parse_section( RogueClassParser* THIS )
 {
   RogueParser__consume_eols( THIS );
+  if (((RogueParser__consume( THIS, RogueClassTokenType::begin_augment_tokens ))))
+  {
+    THIS->parsing_augment = true;
+    RogueParser__consume_eols( THIS );
+  }
   if (((RogueParser__consume( THIS, RogueClassTokenType::keyword_ENUMERATE ))))
   {
     while (((RogueParser__parse_definitions( THIS, true ))))
@@ -23195,6 +23196,10 @@ RogueLogical RogueParser__parse_method( RogueClassParser* THIS, RogueLogical as_
     }
   }
   RogueParser__parse_attributes( THIS, THIS->this_method->attributes );
+  if (THIS->parsing_augment)
+  {
+    RogueAttributes__add( THIS->this_method->attributes, 262144 );
+  }
   RogueParser__consume_eols( THIS );
   if (((RogueParser__consume( THIS, RogueClassTokenType::keyword_inlineNative ))))
   {
@@ -25227,6 +25232,7 @@ void RogueTemplate__instantiate( RogueClassTemplate* THIS, RogueClassType* type_
     augmented_tokens_1 = ((RogueTokenList*)((RogueTokenList__init( ((RogueTokenList*)Rogue_program.type_TokenList->create_and_init_object()), t_count_3 ))));
     RogueTokenList__add( augmented_tokens_1, THIS->tokens );
     RogueTokenList__remove_last( augmented_tokens_1 );
+    RogueTokenList__add( augmented_tokens_1, ((RogueToken__init( ((RogueClassToken*)Rogue_program.type_Token->create_and_init_object()), RogueClassTokenType::begin_augment_tokens ))) );
     {
       RogueAugmentList* _auto_385_7 = (augments_2);
       RogueInteger _auto_386_8 = (0);
@@ -27996,6 +28002,11 @@ void RogueMethod__assign_signature( RogueClassMethod* THIS )
 RogueClassMethod* RogueMethod__compile_target( RogueClassMethod* THIS )
 {
   return (RogueClassMethod*)(THIS);
+}
+
+RogueLogical RogueMethod__is_augment( RogueClassMethod* THIS )
+{
+  return (RogueLogical)(!!((THIS->attributes->flags & 262144)));
 }
 
 RogueLogical RogueMethod__is_dynamic( RogueClassMethod* THIS )
@@ -47877,7 +47888,7 @@ void RogueProgram::configure()
   literal_strings[180] = (RogueString*) RogueString::create( "TokenType" )->retain(); 
   literal_strings[181] = (RogueString*) RogueString::create( " expected, found " )->retain(); 
   literal_strings[182] = (RogueString*) RogueString::create( "Syntax error - unexpected " )->retain(); 
-  literal_strings[183] = (RogueString*) RogueString::create( "Parser::parse_template_tokens():191 end_type" )->retain(); 
+  literal_strings[183] = (RogueString*) RogueString::create( "Parser::parse_template_tokens():186 end_type" )->retain(); 
   literal_strings[184] = (RogueString*) RogueString::create( " expected, found end of file." )->retain(); 
   literal_strings[185] = (RogueString*) RogueString::create( "<<String>> to restrict the augment to that type." )->retain(); 
   literal_strings[186] = (RogueString*) RogueString::create( "' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as " )->retain(); 
@@ -47917,7 +47928,7 @@ void RogueProgram::configure()
   literal_strings[220] = (RogueString*) RogueString::create( "Use forEach-in with a literal range instead of forEach-of." )->retain(); 
   literal_strings[221] = (RogueString*) RogueString::create( "Syntax error in forEach - keyword 'in' or 'of' expected." )->retain(); 
   literal_strings[222] = (RogueString*) RogueString::create( "Invalid syntax in forEach." )->retain(); 
-  literal_strings[223] = (RogueString*) RogueString::create( "Parser::parse_for_each():1277 " )->retain(); 
+  literal_strings[223] = (RogueString*) RogueString::create( "Parser::parse_for_each():1278 " )->retain(); 
   literal_strings[224] = (RogueString*) RogueString::create( "[INTERNAL ERROR]" )->retain(); 
   literal_strings[225] = (RogueString*) RogueString::create( "@" )->retain(); 
   literal_strings[226] = (RogueString*) RogueString::create( "Identifier expected, found " )->retain(); 
