@@ -74,10 +74,11 @@ class Tokenizer
       TokenType.directive_else    = define( DirectiveTokenType("$else") )
       TokenType.directive_endIf   = define( DirectiveTokenType("$endIf") )
 
-      TokenType.placeholder_id    = define( TokenType("$id") )
+      TokenType.placeholder_id       = define( TokenType("$id") )
 
       # Structure Tokens
       TokenType.eol                   = define( EOLTokenType("end of line") )
+      TokenType.begin_augment_tokens  = define( StructureTokenType("end of line") )
       TokenType.keyword_augment       = define( StructureTokenType("augment") )
       TokenType.keyword_case          = define( StructureTokenType("case") )
       TokenType.keyword_catch         = define( StructureTokenType("catch") )

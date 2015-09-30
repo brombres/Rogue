@@ -1,5 +1,10 @@
 class Augment
   PROPERTIES
-    t    : Token
-    type : Type
+    t          : Token
+    name       : String
+    base_types = Type[]
+    tokens     = Token[]
+
+  METHODS
+    method init( t, name )
 endClass

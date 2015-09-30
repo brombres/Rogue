@@ -1,3 +1,6 @@
+#------------------------------------------------------------------------------
+# CPPWriter
+#------------------------------------------------------------------------------
 class CPPWriter
   PROPERTIES
     filepath : String
@@ -174,3 +177,768 @@ class CPPWriter
       return this
 endClass
 
+
+#------------------------------------------------------------------------------
+# Program
+#------------------------------------------------------------------------------
+augment Program
+  METHODS
+    method write_cpp( filepath:String )
+      forEach (type in type_list) type.assign_cpp_name
+      type_NativeArray.cpp_class_name = "RogueArray"
+
+      forEach (type in type_list)
+        forEach (r in type.routine_list) r.assign_cpp_name
+        forEach (m in type.method_list)  m.assign_cpp_name
+      endForEach
+
+      # .H header -------------------------------------------------------------
+      println "Writing $.h..." (filepath)
+      local writer = CPPWriter( filepath + ".h" )
+
+      # Embed Rogue.h 
+      writer.println( "//=============================================================================" )
+      writer.println( "// Embedded copy of Rogue.h" )
+      writer.println( "//=============================================================================" )
+      forEach (ch in FileReader(RogueC.libraries_folder+"CPP/Rogue.h")) writer.buffer.print( ch )
+
+      writer.println( "//=============================================================================" )
+      writer.println( "// Code generated from Rogue source" )
+      writer.println( "//=============================================================================" )
+      writer.println "#include <cmath>"
+      writer.println
+
+      # RogueType forward declarations
+      forEach (type in type_list)
+        if (not type.omit_output)
+          writer.print( "struct " ).print( type.cpp_type_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
+      # RogueObject forward declarations
+      forEach (type in type_list)
+        if (not type.omit_output)
+          writer.print( "struct " ).print( type.cpp_class_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
+      # Compound definitions
+      forEach (type in type_list)
+        if (type.is_compound and not type.omit_output)
+          type.print_data_definition( writer )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
+      # Class definitions
+      forEach (type in type_list)
+        if (not type.is_compound and not type.omit_output)
+          type.print_data_definition( writer )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
+      # RogueProgram object
+      writer.println( "struct RogueProgram : RogueProgramCore" )
+      writer.println( "{" )
+      forEach (type in type_list)
+        if (not type.omit_output)
+          writer.print( "  " ).print( type.cpp_type_name ).print( "* type_" );
+          writer.print( type.cpp_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+      writer.println( "  RogueProgram();" )
+      writer.println( "  ~RogueProgram();" )
+      writer.println( "  void configure();" )
+      writer.println( "  void launch( int argc, char* argv[] );" )
+      writer.println( "  void finish_tasks();" )
+      writer.println( "};" )
+      writer.println
+
+      # method prototypes
+      forEach (type in type_list) type.print_method_prototypes( writer )
+      writer.println
+
+      writer.println( "extern RogueProgram Rogue_program;" );
+      writer.println
+
+      writer.close
+
+      # .CPP implementation ---------------------------------------------------
+      println "Writing $.cpp..." (filepath)
+      writer = CPPWriter( filepath + ".cpp" )
+
+      local base_filename = filepath
+      if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
+      writer.println "#include <stdio.h>"
+      writer.println ''#include "$.h"'' (base_filename)
+      writer.println
+
+      # Embed Rogue.cpp
+      writer.println( "//=============================================================================" )
+      writer.println( "// Embedded copy of Rogue.cpp" )
+      writer.println( "//=============================================================================" )
+      forEach (ch in FileReader(RogueC.libraries_folder+"CPP/Rogue.cpp")) writer.buffer.print( ch )
+
+      writer.println( "//=============================================================================" )
+      writer.println( "// Code generated from Rogue source" )
+      writer.println( "//=============================================================================" )
+
+      # typedef each unique method signature
+      local native_method_signature_list   = String[]
+      local native_method_signature_lookup = Table<<String,Method>>()
+      forEach (type in type_list)
+        type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
+      endForEach
+
+      forEach (sig in native_method_signature_list)
+        writer.print( "typedef " ).print( sig.before_first("(*)") ).print( "(*" )
+        writer.print( native_method_signature_lookup[sig].cpp_typedef ).print(")")
+        writer.print( sig.after_first("(*)") ).println( ";" )
+      endForEach
+      writer.println
+
+      # write dynamic dipatch methods
+      forEach (sig in native_method_signature_list)
+        local m = native_method_signature_lookup[sig]  # one of the methods using this signature
+        writer.print( m.return_type ).print( " call_" ).print( m.cpp_typedef )
+        writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+        forEach (i of m.parameters)
+          local p = m.parameters[i]
+          writer.print( ", " ).print(p.type.compile_type).print( " p" ).print( i )
+        endForEach
+        writer.println( " )" )
+        writer.println( "{" )
+        writer.print( "  " )
+        if (m.return_type) writer.print( "return " )
+        writer.print( "((" ).print( m.cpp_typedef )
+        writer.print( ")(THIS->type->methods[i]))( THIS" )
+        forEach (i of m.parameters)
+          writer.print( ", p" ).print( i )
+        endForEach
+        writer.println( " );" )
+        writer.println( "}" )
+        writer.println
+      endForEach
+      writer.println
+
+      # dynamic method table
+      writer.println( "void* Rogue_dynamic_method_table[] =" )
+      writer.println( "{" )
+      writer.indent += 2
+      local table_index = 0
+      forEach (type in type_list)
+        writer.println( "// " + type )
+        if (not type.omit_output)
+          table_index = type.print_dynamic_method_table_entries( table_index, writer )
+        endIf
+      endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # XType definitions
+      forEach (type in type_list)
+        type.print_type_definition( writer )
+      endForEach
+      writer.println
+
+      forEach (type in type_list) type.print_routine_prototypes( writer )
+      writer.println
+
+      forEach (type in type_list) type.print_routine_definitions( writer )
+      writer.println
+
+      forEach (type in type_list) type.print_method_definitions( writer )
+      writer.println
+
+      # RogueProgram constructor
+      local type_count = 0
+      forEach (type in type_list)
+        if (not type.is_array) ++type_count
+      endForEach
+      writer.print( "RogueProgram::RogueProgram() : RogueProgramCore(" ).print( type_count ).println( ")" )
+      writer.println  "{"
+      writer.println  "}"
+      writer.println
+
+      # RogueProgram destructor
+      writer.println( "RogueProgram::~RogueProgram()" )
+      writer.println  "{"
+      writer.println  "}"
+      writer.println
+
+      # configure() method
+      writer.println( "void RogueProgram::configure()" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      # Create types
+      forEach (type in type_list)
+        if (not type.omit_output)
+          writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_type_name).println("();")
+        endIf
+      endForEach
+      writer.println
+
+      # Assign native type indices
+      forEach (type in type_list)
+        if (type.is_native or not type.omit_output)
+          writer.print("type_").print(type.cpp_name).print("->index = ").print( type.index ).println( ";" )
+        endIf
+      endForEach
+      writer.println
+
+      # Configure types
+      forEach (type in type_list)
+        if (not type.omit_output)
+          writer.print("type_").print(type.cpp_name).println("->configure();" )
+        endIf
+      endForEach
+      writer.println
+
+      writer.print(   "literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
+      writer.println( "literal_strings = new RogueString*[literal_string_count];" )
+      forEach (i of Program.literal_string_list)
+        writer.print(   "literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
+        writer.print_string_utf8( Program.literal_string_list[i] )
+        writer.println( " )->retain(); " )
+      endForEach
+      writer.println
+
+      # End of configure()
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+      # launch()
+      writer.println( "void RogueProgram::launch( int argc, char* argv[] )" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      # Call all init_class() methods
+      forEach (type in type_list)
+        if (not type.omit_output)
+          local m = type.find_routine( "init_class()" )
+          if (m and m.type_context is type)
+            writer.print( m.cpp_name ).println( "();" )
+          endIf
+        endIf
+      endForEach
+      writer.println
+
+      # Copy command line args to System class
+      writer.println( "RogueClassSystem::executable_filepath = RogueString::create( argv[0] );" );
+      writer.println( "for (int i=1; i<argc; ++i)" )
+      writer.println( "{" )
+      writer.println( "  RogueStringList__add( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "}" )
+      writer.println
+
+      # Create main object
+      local main_class_type = "Rogue_program.type_" + main_class.cpp_name
+      if (main_class.is_singleton)
+        writer.print( "Rogue_program.main_object = " ).print( main_class_type ).println( "->singleton();" )
+
+      else
+        writer.print( "Rogue_program.main_object = " ).print( main_class_type ).println( "->create_and_init_object();" )
+
+        # Call init() on main object
+        local m = main_class.find_method( "init()" )
+        if (m)
+          writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
+        endIf
+      endIf
+
+      writer.println( "Rogue_program.collect_garbage();" )
+
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+      # finish_tasks() method
+      writer.println( @|void RogueProgram::finish_tasks()
+                       |{
+                       |  while (RogueTaskManager__update(Rogue_program.type_TaskManager->singleton()))
+                       |  {
+                       |    Rogue_program.collect_garbage();
+                       |  }
+                       |}
+                     )
+
+
+      writer.println "RogueProgram Rogue_program;"
+      writer.println
+
+      # Setting (static) declarations 
+      forEach (type in type_list) type.declare_settings( writer )
+
+      # Optional main()
+      if (RogueC.generate_main)
+        writer.println
+        writer.println( @|int main( int argc, char* argv[] )
+                         |{
+                         |  Rogue_program.configure();
+                         |  Rogue_program.launch( argc, argv );
+                         |  Rogue_program.finish_tasks();
+                         |  return 0;
+                         |}
+        )
+      endIf
+
+      writer.close
+endAugment
+
+
+#------------------------------------------------------------------------------
+# Type
+#------------------------------------------------------------------------------
+augment Type
+  PROPERTIES
+    cpp_name       : String
+    cpp_class_name : String
+    cpp_type_name  : String
+
+  METHODS
+    method assign_cpp_name
+      cpp_name = Program.validate_cpp_name( name )
+
+      if (is_array or this is Program.type_NativeArray)
+        cpp_class_name = "RogueArray"
+        cpp_name = "Array"
+
+      elseIf (this.is_primitive or this.simplify_name)
+        cpp_class_name = "Rogue" + cpp_name
+
+      elseIf (is_list)
+        cpp_class_name = "Rogue" + cpp_name
+
+      elseIf (is_optional and element_type.is_primitive)
+        cpp_name = Program.validate_cpp_name( "Optional" + element_type.name )
+        cpp_class_name = "Rogue" + cpp_name
+        attributes.add( Attribute.is_native )
+
+      else
+        cpp_class_name = "RogueClass" + cpp_name
+      endIf
+
+      cpp_type_name = "RogueType" + cpp_name
+
+      forEach (s in settings_list)
+        s.cpp_name = Program.validate_cpp_name( s.name )
+      endForEach
+
+      forEach (p in property_list)
+        p.cpp_name = Program.validate_cpp_name( p.name )
+      endForEach
+
+    method declare_settings( writer:CPPWriter )
+      forEach (s in settings_list)
+        if (s.type_context is this)
+          writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
+          if (s.type.is_reference)                writer.println( " = nullptr;" )
+          elseIf (s.type is Program.type_Logical) writer.println( " = false;" )
+          else                                    writer.println( " = 0;" )
+        endIf
+      endForEach
+
+    method print_data_definition( writer:CPPWriter )
+      if (omit_output) return
+
+      writer.print( "struct " ).print( cpp_class_name )
+      local is_error = false
+      if (is_class)
+        if (instance_of(Program.type_Error))
+          is_error = true
+          writer.print( " : " ).print_type_name( base_class )
+        else
+          writer.print( " : RogueObject" )
+        endIf
+      endIf
+      writer.println.println( "{" )
+      writer.indent += 2
+
+      # Settings
+      if (settings_list.count)
+        writer.println "// SETTINGS"
+        forEach (s in settings_list)
+          writer.print( "static " ).print( s.type ).print(" ").print( s.cpp_name ).println(";")
+        endForEach
+        writer.println
+      endIf
+
+      writer.println "// PROPERTIES"
+      forEach (p in property_list)
+        if (not is_error or p.type_context is this)
+          writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+        endIf
+      endForEach
+      writer.println
+
+      if (is_compound)
+        if (property_list.count)
+          # Default Constructor
+          writer.print( this ).print( "() : " )
+          local first = true
+          forEach (p in property_list)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( p.cpp_name ).print("(").print_default_value(p.type).print(")")
+          endForEach
+          writer.println( " {}" )
+          writer.println
+
+          if (is_optional)
+            # Value Constructor, exists->true
+            writer.print( this ).print( "( " ).print( property_list.first.cpp_name )
+            writer.print( " value ) : value(value), exists(true) {}" )
+          else
+            # Standard Constructor
+            writer.print( this ).print( "( " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.type ).print(" ").print( p.cpp_name )
+            endForEach
+            writer.print( " ) : " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
+            endForEach
+            writer.println( " {}" )
+            writer.println
+          endIf
+        endIf
+
+        # Default operator== and operator!= 
+        writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
+        if (is_optional)
+          writer.print( "  if (exists)" )
+          writer.print( "  {" )
+          writer.print( "    if (other.exists) return value == other.value;" )
+          writer.print( "    else              return false;" )
+          writer.print( "  }" )
+          writer.print( "  else" )
+          writer.print( "  {" )
+          writer.print( "    if (other.exists) return false;" )
+          writer.print( "    else              return true;" )
+          writer.print( "  }" )
+        else
+          forEach (p in property_list)
+            writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
+          endForEach
+          writer.println( "  return true;" )
+        endIf
+        writer.println( "}" )
+        writer.println
+
+        writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
+        writer.println( "  return !(*this == other);" )
+        writer.println( "}" )
+        writer.println
+
+        # trace() method
+        if (has_references)
+          writer.println(   "void trace()" )
+          writer.println( "{" )
+          writer.indent += 2
+          forEach (p in property_list)
+            if (p.type.is_reference)
+              writer.print("ROGUE_TRACE( " ).print( p.cpp_name ).println( " );" )
+            elseIf (p.type.has_references)
+              # Compound
+              writer.print( p.cpp_name ).println( ".trace();" )
+            endIf
+          endForEach
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
+
+        # check()
+        if (is_optional)
+          writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
+          writer.println( "{" )
+          writer.println( "  if ( !exists ) return false;" )
+          writer.println( "  *checked = value;" )
+          writer.println( "  return true;" )
+          writer.println( "}" )
+          writer.println
+        endIf
+
+      endIf
+
+      writer.indent -= 2
+      writer.println( "};" )
+
+    method print_type_definition( writer:CPPWriter )
+      if (omit_output) return
+
+      writer.print( "struct " ).print( cpp_type_name ).println( " : RogueType" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      # configure()
+      writer.println( "void configure()" )
+      writer.println( "{" )
+      writer.indent += 2;
+
+      writer.print( "object_size = (int) sizeof( " ).print(cpp_class_name).println(" );")
+
+      if (base_types.count)
+        writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
+        writer.println( "base_types = new RogueType*[ base_type_count ];" )
+        forEach (i of base_types)
+          writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
+          writer.print( base_types[i].compile_type.cpp_name ).println( ";" )
+        endForEach
+      endIf
+
+      writer.print( "methods = Rogue_dynamic_method_table + " )
+      writer.print( dynamic_method_table_index ).println( ";" )
+
+      #{
+      if (settings_list.count)
+        local initialized_settings = false
+        forEach (s in settings_list)
+          if (s.initial_value)
+          endIf
+        endForEach
+        if (initialized_settings) writer.println
+      endIf
+      }#
+
+      writer.indent -= 2;
+      writer.println( "}" )
+      writer.println()
+
+      # create_object()
+      local m_init_object = find_method( "init_object()" )
+      if (m_init_object and m_init_object.statements.count > 1)
+        local type_Object = Program.type_Object
+        writer.print( type_Object ).print( " init_object( " ).print( type_Object ).println( " THIS )" )
+        writer.println( "{" )
+        writer.print( "  return (" ).print(type_Object).print(") ").print( m_init_object.cpp_name )
+        writer.print( "( (" ).print(this).println( ") THIS );" );
+        writer.println( "}" )
+        writer.println
+      endIf
+
+      # name()
+      writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )
+      writer.println
+
+      # singleton()
+      if (is_singleton)
+        writer.print( this ).println( " singleton()" )
+        writer.println( "{" )
+        writer.indent += 2
+        writer.println( "if ( !_singleton )" )
+        writer.println( "{" )
+        writer.println( "  _singleton = create_object();" )
+        writer.println( "  init_object( _singleton );" )
+
+        local m_init = find_method( "init()" )
+        if (m_init)
+          writer.print( "  " ).print( m_init.cpp_name )
+          writer.print( "( (" ).print( this ).println( ") _singleton );" )
+        endIf
+
+        writer.println( "}" )
+
+        writer.print( "return (" ).print( this ).println( ") _singleton;" )
+        writer.indent -= 2
+        writer.println( "}" )
+        writer.println
+      endIf
+
+      # trace()
+      if (is_class and has_references)
+        writer.println(   "void trace( RogueObject* THIS )" )
+        writer.println( "{" )
+        forEach (p in property_list)
+          if (p.type.is_reference)
+            writer.print( "  ROGUE_TRACE( ((")
+            writer.print(this)  # cast RogueObject* ref to actual type
+            writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
+          elseIf (p.type.has_references)
+            # Compound
+            writer.print( "  ((")
+            writer.print(this)  # cast RogueObject* ref to actual type
+            writer.print(")THIS)->" ).print( p.cpp_name ).println( ".trace();" )
+          endIf
+        endForEach
+        writer.println( "}" )
+      endIf
+
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+    method print_routine_prototypes( writer:CPPWriter )
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method print_routine_definitions( writer:CPPWriter )
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
+    method print_method_prototypes( writer:CPPWriter )
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
+      local buffer = StringBuilder()
+      forEach (m in method_list)
+        if (not m.is_inline and m.is_dynamic)
+          buffer.clear
+          if (m.return_type)
+            buffer.print( m.return_type.compile_type.cpp_class_name )
+            if (m.return_type.is_reference) buffer.print('*')
+          else
+            buffer.print( "void" )
+          endIf
+          buffer.print( "(*)(" )
+          buffer.print( m.type_context.compile_type.cpp_class_name ).print("*")
+          forEach (i of m.parameters)
+            buffer.print(',')
+            local param_type = m.parameters[i].type.compile_type
+            buffer.print( param_type.cpp_class_name )
+            if (param_type.is_reference) buffer.print('*')
+          endForEach
+          buffer.print( ")" )
+          local sig = buffer->String
+          local mapping = lookup[sig]
+          if (mapping)
+            m.cpp_typedef = mapping.cpp_typedef
+          else
+            m.cpp_typedef = "ROGUEM" + list.count
+            lookup[sig] = m
+            list.add( sig )
+          endIf
+        endIf
+      endForEach
+
+    method print_dynamic_method_table_entries( at_index:Integer, writer:CPPWriter )->Integer
+      if (not is_reference) return at_index
+
+      dynamic_method_table_index = at_index
+
+      forEach (m in method_list)
+        if (not m.is_inline)
+          if (m.is_dynamic)
+            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).println( "," )
+          else
+            writer.println( "NULL," )
+          endIf
+          ++at_index
+        endIf
+      endForEach
+
+      return at_index
+
+    method print_method_definitions( writer:CPPWriter )
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
+    method print_type_configuration( writer:CPPWriter )
+      if (omit_output) return
+      writer.print( "  type_" ).print( cpp_name ).print( " = Rogue_types[" ).print( index )
+      writer.print( "].init( " ).print( index ).print( ", \"" ).print( cpp_class_name ).print( "\", sizeof(Class" )
+      writer.print( cpp_class_name ).println( ") );" )
+
+endAugment
+
+
+#------------------------------------------------------------------------------
+# Method
+#------------------------------------------------------------------------------
+augment Method
+  PROPERTIES
+    cpp_name     : String
+    cpp_typedef  : String
+
+
+  METHODS
+    method print_prototype( writer:CPPWriter )
+      if (omit_output) return
+      print_signature( writer )
+      writer.println( ";" )
+
+    method print_signature( writer:CPPWriter )
+      writer.print( return_type ).print(" ").print( cpp_name )
+      writer.print( "(" )
+      local first = true
+      if (not is_routine)
+        first = false
+        writer.print( " " )
+        if (type_context.is_aspect)
+          writer.print( Program.type_Object )
+        else
+          writer.print( type_context )
+        endIf
+        writer.print( " THIS" )
+      endIf
+      if (parameters.count)
+        forEach (param in parameters)
+          if (first) writer.print( " " ); first = false
+          else       writer.print( ", " )
+          writer.print( param.type ).print( " " ).print( param.cpp_name )
+        endForEach
+      endIf
+      if (not first) writer.print( " " )
+      writer.print( ")" )
+
+    method print_definition( writer:CPPWriter )
+      if (omit_output) return
+
+      print_signature( writer )
+      writer.println
+      writer.println "{"
+      writer.indent += 2
+      if (type_context.is_aspect)
+        writer.println( "switch (THIS->type->index)" );
+        writer.println "{"
+        writer.indent += 2
+        if (incorporating_classes)
+          forEach (ic in incorporating_classes)
+            writer.print("case ").print(ic.index).println(":")
+            if (return_type) writer.print( "  return " )
+            else              writer.print( "  " )
+            local m = ic.find_method(signature).compile_target
+            writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
+            forEach (param in parameters)
+              writer.print( ", " ).print( param.cpp_name )
+            endForEach
+            writer.println( " );" )
+          endForEach
+        endIf
+        if (return_type)
+          writer.println( "default:" )
+          writer.print( "  return " ).print_default_value( return_type ).println( ";" )
+        endIf
+        writer.indent -= 2
+        writer.println "}"
+      else
+        statements.write_cpp( writer )
+      endIf
+
+      writer.indent -= 2
+      writer.println "}"
+      writer.println
+
+endAugment

@@ -25,22 +25,41 @@ class Template
 
       type.attributes.add( attributes )
 
-      if (type.name.ends_with(']'))
-        instantiate_list( type )
-      elseIf (type.name.ends_with('?'))
-        instantiate_optional( type )
-      elseIf (type_parameters)
-        instantiate_parameterized_type( type )
-      else
-        instantiate_standard_type( type )
+      local augmented_tokens = tokens
+      local augments = Program.augment_lookup[ type.name ]
+      if (augments)
+        local t_count = tokens.count
+        forEach (aug in augments) t_count += aug.tokens.count
+
+        augmented_tokens = Token[]( t_count )
+        augmented_tokens.add( tokens )
+        augmented_tokens.remove_last  # will be an EOL
+        #augmented_tokens.add( Token(TokenType.begin_augment_tokens) )
+        forEach (aug in augments)
+          forEach (base_type in aug.base_types)
+            type.base_types.add( base_type )
+          endForEach
+          augmented_tokens.add( aug.tokens )
+        endForEach
+        augmented_tokens.add( tokens.last )  # add the EOL back in
       endIf
 
-    method instantiate_list( type:Type )
+      if (type.name.ends_with(']'))
+        instantiate_list( type, augmented_tokens )
+      elseIf (type.name.ends_with('?'))
+        instantiate_optional( type, augmented_tokens )
+      elseIf (type_parameters)
+        instantiate_parameterized_type( type, augmented_tokens )
+      else
+        instantiate_standard_type( type, augmented_tokens )
+      endIf
+
+    method instantiate_list( type:Type, augmented_tokens:Token[] )
       type.is_list = true
       type.element_type = Program.get_type_reference( t, type.name.leftmost(-2) ).organize
 
-      local instance_tokens = Token[]( tokens.count )
-      forEach (template_t in tokens)
+      local instance_tokens = Token[]( augmented_tokens.count )
+      forEach (template_t in augmented_tokens)
         if (template_t.type is TokenType.placeholder_id)
           if (template_t->String == "$DataType")
             instance_tokens.add( TokenType.identifier.create_token(template_t,type.element_type.name) )
@@ -54,12 +73,12 @@ class Template
 
       Parser(instance_tokens).parse_type_def( type )
 
-    method instantiate_optional( type:Type )
+    method instantiate_optional( type:Type, augmented_tokens:Token[] )
       type.is_optional = true
       type.element_type = Program.get_type_reference( t, type.name.leftmost(-1) ).organize
 
-      local instance_tokens = Token[]( tokens.count )
-      forEach (template_t in tokens)
+      local instance_tokens = Token[]( augmented_tokens.count )
+      forEach (template_t in augmented_tokens)
         if (template_t.type is TokenType.placeholder_id)
           if (template_t->String == "$DataType")
             instance_tokens.add( TokenType.identifier.create_token(template_t,type.element_type.name) )
@@ -73,8 +92,8 @@ class Template
 
       Parser(instance_tokens).parse_type_def( type )
 
-    method instantiate_parameterized_type( type:Type )
-      local instance_tokens = tokens
+    method instantiate_parameterized_type( type:Type, augmented_tokens:Token[] )
+      local instance_tokens = augmented_tokens
 
       local type_specializers = Table<<String,TypeSpecializer>>()
 
@@ -108,8 +127,8 @@ class Template
       endIf
 
       # Create specialized instance tokens
-      instance_tokens = Token[]( tokens.count * 2 )
-      forEach (template_t in tokens)
+      instance_tokens = Token[]( augmented_tokens.count * 2 )
+      forEach (template_t in augmented_tokens)
         if (template_t.type is TokenType.placeholder_id)
           local specializer = type_specializers[ template_t->String ]
           if (specializer)
@@ -127,12 +146,12 @@ class Template
 
       Parser(instance_tokens).parse_type_def( type )
 
-    method instantiate_standard_type( type:Type )
+    method instantiate_standard_type( type:Type, augmented_tokens:Token[] )
       if (type.name.contains('<'))
         throw t.error( "Type parameters given for non-template type." )
       endIf
 
-      Parser(tokens).parse_type_def( type )
+      Parser(augmented_tokens).parse_type_def( type )
 
 endClass
 

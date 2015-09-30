@@ -11,6 +11,7 @@ class TokenType
     directive_endIf              : TokenType
 
     placeholder_id               : TokenType
+    begin_augment_tokens         : TokenType
 
     # Structure
     keyword_augment              : TokenType

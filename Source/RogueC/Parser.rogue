@@ -11,6 +11,8 @@ class Parser
 
     cur_statement_list : CmdStatementList
 
+    parsing_augment : Logical
+
   METHODS
     method init( filepath:String )
       init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
@@ -85,6 +87,12 @@ class Parser
 
     method parse_element->Logical
       consume_eols
+
+      if (consume(TokenType.begin_augment_tokens))
+        parsing_augment = true
+        consume_eols
+      endIf
+
       local t = peek
 
       if (t.type is TokenType.keyword_class)
@@ -186,20 +194,38 @@ class Parser
     method parse_augment
       local t = reader.read  # 'augment'
 
-      local starting_position = reader.position
-      local name = read_identifier
-
-      if (next_is(TokenType.symbol_open_specialize))
-        reader.position = starting_position
-        local full_name = parse_possible_type
-        if (full_name.contains('$'))
-          throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (name,name) )
-        endIf
-
-        name = full_name
+      local name = parse_possible_type
+      if (name.contains('$'))
+        local base_name = name.before_first( '<' )
+        throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (base_name,base_name) )
       endIf
 
-      println name
+      local aug = Augment( t, name )
+      local augments = Program.augment_lookup[ name ]
+      if (not augments)
+        augments = Augment[]
+        Program.augment_lookup[ name ] = augments
+      endIf
+      augments.add( aug )
+
+      if (consume(TokenType.symbol_semicolon)) return
+
+      if (consume(TokenType.symbol_colon))
+        aug.base_types.add( parse_type )
+        consume_eols
+        while (consume(TokenType.symbol_comma))
+          consume_eols
+          aug.base_types.add( parse_type )
+          consume_eols
+        endWhile
+      endIf
+      consume_eols
+
+      while (reader.has_another and not next_is(TokenType.keyword_endAugment))
+        aug.tokens.add( reader.read )
+      endWhile
+
+      must_consume( TokenType.keyword_endAugment )
 
 
     method parse_attributes( attributes:Attributes )
