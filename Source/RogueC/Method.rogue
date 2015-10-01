@@ -30,9 +30,8 @@ class Method
     index     : Integer
 
     label_list   : CmdLabel[]
+    label_lookup : Table<<String,CmdLabel>>
     cur_label    : CmdLabel
-    using_default_insert_label : Logical
-    using_default_append_label : Logical
 
   METHODS
     method init( t, type_context, name )
@@ -57,12 +56,12 @@ class Method
 
       if (label_list)
         result.label_list = CmdLabel[]( label_list.count )
+        result.label_lookup = Table<<String,CmdLabel>>()
         forEach (label in label_list)
           label = label.clone( null as CloneArgs )
           result.label_list.add( label )
+          result.label_lookup[ label.name ] = label
         endForEach
-        result.using_default_insert_label = using_default_insert_label
-        result.using_default_append_label = using_default_append_label
       endIf
 
       result.cpp_name = cpp_name
@@ -122,30 +121,29 @@ class Method
     method compile_target->Method
       return this
 
-    method define_label( label_t:Token, label_name:String )->CmdLabel
-      if (not label_list) label_list = CmdLabel[]
-
-      cur_label = CmdLabel( label_t, label_name )
-
-      #{
-      forEach (label in label_list)
-        if (label.name == name)
-          if (name == "insert" and using_default_insert_label)
-            using_default_insert_label = false
-            label_list.remove
-            if (label is label_list.first)
-
-      cur_label = label_lookup[ label_name ]
-      if (cur_label)
-        if (allow_duplicates) return cur_label
-        throw label_t.error( "The label <<$>> is already defined." (label_name) )
+    method begin_label( label_t:Token, label_name:String, consolidate_duplicates:Logical )->CmdLabel
+      if (not label_list)
+        label_list = CmdLabel[]
+        label_lookup = Table<<String,CmdLabel>>()
       endIf
 
+      if (consolidate_duplicates)
+        cur_label = label_lookup[ label_name ]
+        if (cur_label) return cur_label
+
+      else
+        if (label_name == "insert" and label_lookup.contains(label_name))
+          throw label_t.error( "All methods implicitly define the label <<insert>> at the beginning of the method.  No duplicates are allowed." )
+        elseIf (label_name == "append" and label_lookup.contains(label_name))
+          throw label_lookup[label_name].t.error( "All methods implicitly define the label <<append>> at the end of the method.  No duplicates are allowed." )
+        endIf
+
+      endIf
+
+      cur_label = CmdLabel( label_t, label_name )
+      label_lookup[ label_name ] = cur_label
       label_list.add( cur_label )
-
-      }#
       return cur_label
-
       #{
     method find_label( label_name:String )->CmdLabel
       if (not label_lookup) return null

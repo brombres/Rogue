@@ -545,12 +545,11 @@ class Parser
 
       else
         if (parsing_augment)
-          this_method.define_label( peek, "insert" )
           parse_augment_statements
         else
-          this_method.define_label( peek, "insert" )
+          this_method.statements.add( this_method.begin_label(peek,"insert",false) )
           parse_multi_line_statements( this_method.statements )
-          this_method.define_label( peek, "append" )
+          this_method.statements.add( this_method.begin_label(peek,"append",false) )
         endIf
       endIf
       return true
@@ -582,7 +581,9 @@ class Parser
 
     method parse_augment_statements
       local prev_statement_list = cur_statement_list
-      cur_statement_list = this_method.statements
+
+      local cur_label = this_method.begin_label( peek, "insert", true )
+      cur_statement_list = cur_label.statements
 
       consume_end_commands
       while (next_is_statement)
@@ -590,17 +591,20 @@ class Parser
         local t = peek
 
         if (consume(TokenType.symbol_open_specialize))
-          this_method.statements.add( this_method.define_label(t,read_identifier) )
+          cur_label = this_method.begin_label( t, read_identifier, true )
+          cur_statement_list = cur_label.statements
           must_consume( TokenType.symbol_close_specialize )
           consume_end_commands
           nextIteration
         endIf
 
-        parse_statement( this_method.statements, true )
+        parse_statement( cur_label.statements, true )
 
         while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) noAction
         consume_end_commands
       endWhile
+
+      this_method.begin_label( peek, "append", true )
 
       cur_statement_list = prev_statement_list
 
@@ -773,7 +777,7 @@ class Parser
         if (parsing_augment)
           throw t.error( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." )
         else
-          statements.add( this_method.define_label(t,read_identifier) )
+          statements.add( this_method.begin_label(t,read_identifier,false) )
         endIf
         must_consume( TokenType.symbol_close_specialize )
         return

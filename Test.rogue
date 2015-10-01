@@ -4,7 +4,9 @@ class Test : Base, Alpha
       display
 
     method display
-      println "Test"
+      println "Snip"
+      <<snap>>
+      println "Snur"
 
 endClass
 
@@ -23,5 +25,12 @@ endClass
 augment Test
   METHODS
     method display
-      println "Augment"
+      <<append>>
+      println "Append"
+
+      <<insert>>
+      println "Insert"
+
+      <<snap>>
+      println "Snap"
 endAugment

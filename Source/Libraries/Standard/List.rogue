@@ -68,6 +68,28 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
+    method insert( other:$DataType[], before_index=0:Integer )->this
+      if (before_index < 0) before_index = 0
+      if (other.count == 0) return this
+
+      if (before_index >= count)
+        return add( other )
+      else
+        # Create dummy spots at the end to size the array and update the count
+        reserve( other.count )
+
+        # Shift everything over
+        data.set( before_index+other.count, data, before_index, count-1 )
+        count += other.count
+
+        # Copy in the new values
+        forEach (value in other.data)
+          data[ before_index ] = value
+          ++before_index
+        endForEach
+      endIf
+      return this
+
     method last->$DataType
       return this.data[ count - 1 ]
 

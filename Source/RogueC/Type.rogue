@@ -394,8 +394,27 @@ class Type
             method_lookup_by_name[ m.name ][i2.value] = m
           endIf
 
-          println "TODO: incorporate method augment ***********************"
+          forEach (method_label in m.label_list)
+            local aug_label = m_aug.label_lookup[ method_label.name ]
+            if (aug_label) method_label.statements.add( aug_label.statements )
+          endForEach
+
         else
+          # No existing method matching augment method.  Right now all the augment
+          # statements are packed into its labels.  Copy all of the <<insert>> statements
+          # followed by all of the <<append>> statements into the body of the method.
+          # Give the new method its own insert/append labels for any other augments
+          # that may be applied after.
+          local insert_label = m_aug.label_lookup[ "insert" ]
+          local append_label = m_aug.label_lookup[ "append" ]
+          m_aug.label_lookup.clear
+          m_aug.label_list.clear
+
+          m_aug.statements.add( m_aug.begin_label(m_aug.t,"insert",false) )
+          m_aug.statements.add( insert_label.statements )
+          m_aug.statements.add( append_label.statements )
+          m_aug.statements.add( m_aug.begin_label(m_aug.t,"append",false) )
+
           method_list.add( m_aug )
           method_lookup_by_signature[ m_aug.signature ] = m_aug
           local lookup_list = method_lookup_by_name[ m_aug.name ]
