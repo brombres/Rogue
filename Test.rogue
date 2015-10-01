@@ -1,15 +1,27 @@
-class Test
+class Test : Base, Alpha
   METHODS
     method init
       display
 
     method display
-      <<insert>>
-      println "Alpha"
-      <<append>>
+      println "Test"
+
 endClass
 
+class Base
+  METHODS
+    method display
+      println "Base"
+endClass
+
+class Alpha [aspect]
+  METHODS
+    method display
+      println "Alpha"
+endClass
 
 augment Test
   METHODS
+    method display
+      println "Augment"
 endAugment

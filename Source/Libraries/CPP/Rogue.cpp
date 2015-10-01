@@ -1561,10 +1561,11 @@ RogueCharacter RogueFileReader__read( RogueFileReader* reader )
   // Ugly duplication of peek() code for speed - otherwise there are a few too many checks
   if ( !reader || reader->position == reader->count ) return 0;
 
-  if (reader->buffer_position == reader->buffer_count)
+  while (reader->buffer_position == reader->buffer_count)
   {
     reader->buffer_count = (int) fread( reader->buffer, 1, sizeof(reader->buffer), reader->fp );
     reader->buffer_position = 0;
+    if ( !reader->buffer_count ) printf( "[INTERNAL] file reader buffer count unchanged after fill." );
   }
 
   unsigned char result = reader->buffer[ reader->buffer_position++ ];
@@ -1744,7 +1745,7 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value )
 {
   char st[80];
-  sprintf( st, "%d", value );
+  sprintf( st, "%d", value );//
   return RogueStringBuilder__print( buffer, st );
 }
 

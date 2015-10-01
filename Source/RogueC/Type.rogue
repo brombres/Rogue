@@ -44,31 +44,46 @@ class Type
 
     dynamic_method_table_index : Integer
 
+    method_augments = Method[]
+    routine_augments = Method[]
+
   METHODS
     method init( t, name )
 
-    method add_method( m_t:Token, m_name:String )->Method
+    method add_method( m_t:Token, m_name:String, is_augment=false:Logical )->Method
       local m = Method( m_t, this, m_name )
-      method_list.add( m )
-      local list = method_lookup_by_name[ m_name ]
-      if (not list)
-        list = Method[]
-        method_lookup_by_name[ m_name ] = list
+
+      if (is_augment)
+        method_augments.add( m )
+      else
+        method_list.add( m )
+        local list = method_lookup_by_name[ m_name ]
+        if (not list)
+          list = Method[]
+          method_lookup_by_name[ m_name ] = list
+        endIf
+        list.add( m )
       endIf
-      list.add( m )
+
       return m
 
-    method add_routine( m_t:Token, m_name:String )->Method
-      local m = Method( m_t, this, m_name )
-      m.attributes.add( Attribute.is_routine )
-      routine_list.add( m )
-      local list = routine_lookup_by_name[ m_name ]
-      if (not list)
-        list = Method[]
-        routine_lookup_by_name[ m_name ] = list
+    method add_routine( r_t:Token, r_name:String, is_augment=false:Logical )->Method
+      local r = Method( r_t, this, r_name )
+      r.attributes.add( Attribute.is_routine )
+
+      if (is_augment)
+        routine_augments.add( r )
+      else
+        routine_list.add( r )
+        local list = routine_lookup_by_name[ r_name ]
+        if (not list)
+          list = Method[]
+          routine_lookup_by_name[ r_name ] = list
+        endIf
+        list.add( r )
       endIf
-      list.add( m )
-      return m
+
+      return r
 
     method add_setting( s_t:Token, s_name:String )->Property
       local s = Property( s_t, this, s_name )
@@ -344,6 +359,53 @@ class Type
           element_type = Program.get_type_reference( t, element_type_name ).organize
         endIf
       endIf
+
+      # Apply routine and method augments
+      forEach (r_aug in routine_augments)
+        r_aug.organize( false )
+        local r = find_routine( r_aug.signature )
+        if (r)
+          println "TODO: incorporate routine augment"
+        else
+          routine_list.add( r_aug )
+          routine_lookup_by_signature[ r_aug.signature ] = r_aug
+          local lookup_list = routine_lookup_by_name[ r_aug.name ]
+          if (not lookup_list)
+            lookup_list = Method[]
+            routine_lookup_by_name[ r_aug.name ] = lookup_list
+          endIf
+          lookup_list.add( r_aug )
+        endIf
+      endForEach
+
+      forEach (m_aug in method_augments)
+        m_aug.organize( false )
+        local m = find_method( m_aug.signature )
+        if (m)
+          if (m.type_context isNot this)
+            # Generate a new class-local copy of the inherited method before
+            # augmenting it.
+            local i1 = method_list.locate( m )
+            local i2 = method_lookup_by_name[ m.name ].locate( m )
+            m = m.clone
+            m.type_context = this
+            method_list[i1.value] = m
+            method_lookup_by_signature[ m.signature ] = m
+            method_lookup_by_name[ m.name ][i2.value] = m
+          endIf
+
+          println "TODO: incorporate method augment ***********************"
+        else
+          method_list.add( m_aug )
+          method_lookup_by_signature[ m_aug.signature ] = m_aug
+          local lookup_list = method_lookup_by_name[ m_aug.name ]
+          if (not lookup_list)
+            lookup_list = Method[]
+            method_lookup_by_name[ m_aug.name ] = lookup_list
+          endIf
+          lookup_list.add( m_aug )
+        endIf
+      endForEach
 
       return this
 
