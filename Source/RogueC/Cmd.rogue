@@ -4609,6 +4609,7 @@ class CmdLabel : Cmd
   PROPERTIES
     name       : String
     statements : CmdStatementList
+    is_referenced : Logical
 
   METHODS
     method init( t, name, statements=CmdStatementList() )

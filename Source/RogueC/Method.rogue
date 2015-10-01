@@ -29,8 +29,8 @@ class Method
     resolved  : Logical
     index     : Integer
 
-    label_list   : CmdLabel[]
-    label_lookup : Table<<String,CmdLabel>>
+    label_list   = CmdLabel[]
+    label_lookup = Table<<String,CmdLabel>>()
     cur_label    : CmdLabel
 
   METHODS
@@ -39,6 +39,7 @@ class Method
     method clone->Method
       local result = Method( t, type_context, name )
 
+      <<initialize_result>>
       result.signature = signature
       result.attributes = attributes.clone
       result.return_type = return_type
@@ -49,25 +50,22 @@ class Method
       result.parameters = Local[]
       forEach (i of parameters) result.parameters.add( locals[i] )
 
-      if (label_list)
-        # Label list and lookup will be filled in by the CmdLabel nodes being
-        # cloned.
-        result.label_list = CmdLabel[]( label_list.count )
-        result.label_lookup = Table<<String,CmdLabel>>()
-      endIf
+      # Label list and lookup will be filled in by the CmdLabel nodes being
+      # cloned.
+      result.label_list = CmdLabel[]( label_list.count )
+      result.label_lookup = Table<<String,CmdLabel>>()
 
       result.min_args = min_args
       result.statements = statements.clone( CloneMethodArgs(result) )
       result.native_code = native_code
       result.index = index
 
-      result.cpp_name = cpp_name
-      result.cpp_typedef = cpp_typedef
-
       return result
 
     method incorporate( into_type:Type )->Method
       local m = clone.set_type_context( into_type ).set_incorporated
+
+      <<initialize_m>>
       if (aspect_statements)
         # If aspect_statements is non-null then the aspect method was already resolved
         # prior to the clone() above and we need to copy the statements.
@@ -81,7 +79,6 @@ class Method
 
       m.signature = null
       m.assign_signature
-      m.cpp_name = null
 
       return m
 
@@ -119,11 +116,6 @@ class Method
       return this
 
     method begin_label( label_t:Token, label_name:String, consolidate_duplicates:Logical )->CmdLabel
-      if (not label_list)
-        label_list = CmdLabel[]
-        label_lookup = Table<<String,CmdLabel>>()
-      endIf
-
       if (consolidate_duplicates)
         cur_label = label_lookup[ label_name ]
         if (cur_label) return cur_label

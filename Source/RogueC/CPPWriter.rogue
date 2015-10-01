@@ -872,14 +872,22 @@ augment Method
     cpp_name     : String
     cpp_typedef  : String
 
-
   METHODS
+    method clone->Method
+      <<initialize_result>>
+      result.cpp_name = cpp_name
+      result.cpp_typedef = cpp_typedef
+
     method assign_cpp_name
       if (cpp_name) return
       local buffer = StringBuilder()
       buffer.print( type_context.name ).print( "__" )
       buffer.print( name )
       cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
+
+    method incorporate( into_type:Type )->Method
+      <<initialize_m>>
+      m.cpp_name = null
 
     method print_prototype( writer:CPPWriter )
       if (omit_output) return

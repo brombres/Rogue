@@ -582,6 +582,9 @@ class Parser
     method parse_augment_statements
       local prev_statement_list = cur_statement_list
 
+      this_method.begin_label( peek, "insert", true )
+      this_method.begin_label( peek, "append", true )
+
       local cur_label = this_method.begin_label( peek, "insert", true )
       cur_statement_list = cur_label.statements
 
@@ -603,8 +606,6 @@ class Parser
         while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) noAction
         consume_end_commands
       endWhile
-
-      this_method.begin_label( peek, "append", true )
 
       cur_statement_list = prev_statement_list
 

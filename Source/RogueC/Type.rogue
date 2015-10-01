@@ -396,7 +396,16 @@ class Type
 
           forEach (method_label in m.label_list)
             local aug_label = m_aug.label_lookup[ method_label.name ]
-            if (aug_label) method_label.statements.add( aug_label.statements )
+            if (aug_label)
+              method_label.statements.add( aug_label.statements )
+              aug_label.is_referenced = true
+            endIf
+          endForEach
+
+          forEach (label in m_aug.label_list)
+            if (not label.is_referenced)
+              throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+            endIf
           endForEach
 
         else
@@ -405,6 +414,11 @@ class Type
           # followed by all of the <<append>> statements into the body of the method.
           # Give the new method its own insert/append labels for any other augments
           # that may be applied after.
+          if (m_aug.label_list.count > 2)
+            # More than the default <<insert>> and <<append>> labels
+            local label = m_aug.label_list[2]
+            throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+          endIf
           local insert_label = m_aug.label_lookup[ "insert" ]
           local append_label = m_aug.label_lookup[ "append" ]
           m_aug.label_lookup.clear

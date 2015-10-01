@@ -1,38 +1,17 @@
-class Test : Base, Alpha
+class Test
   METHODS
     method init
       display
 
     method display
-      prior.display
-      println "Snip"
-      <<snap>>
-      println "Snur"
-
-endClass
-
-class Base
-  METHODS
-    method display
-      println "Base"
-endClass
-
-class Alpha [aspect]
-  METHODS
-    method display
-      <<snap>>
-      println "Alpha"
+      <<again>>
+      println "Display"
+      <<again>>
 endClass
 
 augment Test
   METHODS
     method display
-      <<append>>
-      println "Append"
-
-      <<insert>>
-      println "Insert"
-
-      <<snap>>
-      println "Snap"
+      <<again>>
+      println "Again"
 endAugment
