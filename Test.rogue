@@ -4,6 +4,7 @@ class Test : Base, Alpha
       display
 
     method display
+      prior.display
       println "Snip"
       <<snap>>
       println "Snur"
@@ -19,6 +20,7 @@ endClass
 class Alpha [aspect]
   METHODS
     method display
+      <<snap>>
       println "Alpha"
 endClass
 

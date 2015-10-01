@@ -548,6 +548,9 @@ class Type
         endIf
 
         m.overridden_method = existing_m
+        while (m.overridden_method and m.type_context is m.overridden_method.type_context)
+          m.overridden_method = m.overridden_method.overridden_method
+        endWhile
         list[i] = m
         lookup[m.signature] = m
 

@@ -4614,7 +4614,9 @@ class CmdLabel : Cmd
     method init( t, name, statements=CmdStatementList() )
 
     method clone( clone_args:CloneArgs )->CmdLabel
-      return CmdLabel( t, name, statements.clone(clone_args) )
+      local result = CmdLabel( t, name, statements.clone(clone_args) )
+      if (clone_args) clone_args.register_label( result )
+      return result
 
     method resolve( scope:Scope )->Cmd
       statements.resolve( scope )

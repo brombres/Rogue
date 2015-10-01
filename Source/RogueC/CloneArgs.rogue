@@ -1,6 +1,21 @@
 class CloneArgs
+  METHODS
+    method register_label( label:CmdLabel )->CmdLabel
+      return label
 endClass
 
+class CloneMethodArgs : CloneArgs
+  PROPERTIES
+    cloned_method : Method  
+
+  METHODS
+    method init( cloned_method )
+
+    method register_label( label:CmdLabel )->CmdLabel
+      cloned_method.label_list.add( label )
+      cloned_method.label_lookup[ label.name ] = label
+      return label
+endClass
 
 class InlineArgs : CloneArgs
   PROPERTIES

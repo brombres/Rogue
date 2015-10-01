@@ -1726,6 +1726,8 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
   }
   else
   {
+    RogueStringBuilder__reserve( buffer, len );
+
     RogueCharacter* dest = (buffer->characters->data->characters - 1) + buffer->characters->count;
     buffer->characters->count += len;
 

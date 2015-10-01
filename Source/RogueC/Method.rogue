@@ -49,20 +49,17 @@ class Method
       result.parameters = Local[]
       forEach (i of parameters) result.parameters.add( locals[i] )
 
-      result.min_args = min_args
-      result.statements = statements.clone( null as CloneArgs )
-      result.native_code = native_code
-      result.index = index
-
       if (label_list)
+        # Label list and lookup will be filled in by the CmdLabel nodes being
+        # cloned.
         result.label_list = CmdLabel[]( label_list.count )
         result.label_lookup = Table<<String,CmdLabel>>()
-        forEach (label in label_list)
-          label = label.clone( null as CloneArgs )
-          result.label_list.add( label )
-          result.label_lookup[ label.name ] = label
-        endForEach
       endIf
+
+      result.min_args = min_args
+      result.statements = statements.clone( CloneMethodArgs(result) )
+      result.native_code = native_code
+      result.index = index
 
       result.cpp_name = cpp_name
       result.cpp_typedef = cpp_typedef
