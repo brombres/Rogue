@@ -961,6 +961,7 @@ endAugment
 #------------------------------------------------------------------------------
 # Cmd
 #------------------------------------------------------------------------------
+#{
 augment Cmd
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
@@ -1998,3 +1999,4 @@ augment CmdLabel
       statements.write_cpp( writer, is_statement )
 endAugment
 
+}#
