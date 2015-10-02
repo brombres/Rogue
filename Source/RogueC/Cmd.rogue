@@ -1754,6 +1754,10 @@ class CmdAssign : Cmd
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      #println StackTrace()
+      prior.write_cpp( writer )
 endClass
 
 #------------------------------------------------------------------------------

@@ -967,7 +967,7 @@ augment Cmd
       throw t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
 endAugment
 
-augment CmdStatementList : Cmd[]
+augment CmdStatementList
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       forEach (statement in this)
@@ -977,8 +977,7 @@ augment CmdStatementList : Cmd[]
 endAugment
 
 
-#{
-augment CmdArgs : Cmd[]
+augment CmdArgs
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local first = true
@@ -989,7 +988,7 @@ augment CmdArgs : Cmd[]
       endForEach
 endAugment
 
-augment CmdLocalDeclaration : CmdStatement
+augment CmdLocalDeclaration
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
@@ -1003,7 +1002,7 @@ augment CmdLocalDeclaration : CmdStatement
 endAugment
 
 
-augment CmdReturn : CmdStatement
+augment CmdReturn
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value)
@@ -1016,7 +1015,7 @@ augment CmdReturn : CmdStatement
 endAugment
 
 
-augment CmdBlock : CmdControlStructure
+augment CmdBlock
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println( "{" )
@@ -1028,7 +1027,7 @@ augment CmdBlock : CmdControlStructure
 endAugment
 
 
-augment CmdIf : CmdControlStructure
+augment CmdIf
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if (" )
@@ -1061,7 +1060,7 @@ augment CmdIf : CmdControlStructure
 endAugment
 
 
-augment CmdContingent : CmdControlStructure
+augment CmdContingent
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println( "{" )
@@ -1088,7 +1087,7 @@ augment CmdContingent : CmdControlStructure
 endAugment
 
 
-augment CmdGenericLoop : CmdControlStructure
+augment CmdGenericLoop
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (control_statements)
@@ -1140,7 +1139,7 @@ augment CmdGenericLoop : CmdControlStructure
 endAugment
 
 
-augment CmdTry : CmdControlStructure
+augment CmdTry
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println "try"
@@ -1158,7 +1157,7 @@ augment CmdTry : CmdControlStructure
       endIf
 endAugment
 
-augment CmdCatch : Cmd
+augment CmdCatch
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.cpp_name ).println( " )" )
@@ -1169,14 +1168,14 @@ augment CmdCatch : Cmd
       writer.println( "}" )
 endAugment
 
-augment CmdThrow : Cmd
+augment CmdThrow
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "throw " )
       expression.write_cpp( writer )
 endAugment
 
-augment CmdEscape : Cmd
+augment CmdEscape
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "goto " + target_cmd.escape_label
@@ -1184,7 +1183,7 @@ augment CmdEscape : Cmd
 endAugment
 
 
-augment CmdNextIteration : Cmd
+augment CmdNextIteration
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "continue"
@@ -1192,7 +1191,7 @@ augment CmdNextIteration : Cmd
 endAugment
 
 
-augment CmdNecessary : Cmd
+augment CmdNecessary
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if ( !(" )
@@ -1201,7 +1200,7 @@ augment CmdNecessary : Cmd
 endAugment
 
 
-augment CmdSufficient : Cmd
+augment CmdSufficient
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if (" )
@@ -1209,27 +1208,27 @@ augment CmdSufficient : Cmd
       writer.print( ") goto " ).print( target_cmd.satisfied_label )
 endAugment
 
-augment CmdLiteralNull : CmdLiteral
+augment CmdLiteralNull
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "NULL" )
 endAugment
 
-augment CmdLiteralReal : CmdLiteral
+augment CmdLiteralReal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value )
 endAugment
 
 
-augment CmdLiteralInteger : CmdLiteral
+augment CmdLiteralInteger
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value )
 endAugment
 
 
-augment CmdLiteralCharacter : CmdLiteral
+augment CmdLiteralCharacter
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "(RogueCharacter)" )
@@ -1249,7 +1248,7 @@ augment CmdLiteralCharacter : CmdLiteral
 endAugment
 
 
-augment CmdLiteralLogical : CmdLiteral
+augment CmdLiteralLogical
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value) writer.print "true"
@@ -1257,7 +1256,7 @@ augment CmdLiteralLogical : CmdLiteral
 endAugment
 
 
-augment CmdLiteralString : CmdLiteral
+augment CmdLiteralString
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value)
@@ -1268,7 +1267,7 @@ augment CmdLiteralString : CmdLiteral
 endAugment
 
 
-augment CmdCreateObject : Cmd
+augment CmdCreateObject
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
@@ -1283,7 +1282,7 @@ augment CmdCreateObject : Cmd
 endAugment
 
 
-augment CmdCreateCompound : Cmd
+augment CmdCreateCompound
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( of_type ).print( "(" )
@@ -1301,20 +1300,17 @@ augment CmdCreateCompound : Cmd
 endAugment
 
 
-augment CmdAssign : Cmd
+augment CmdAssign
   METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      #println StackTrace()
-      prior.write_cpp( writer )
 endAugment
 
-augment CmdThisContext : Cmd
+augment CmdThisContext
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "THIS"
 endAugment
 
-augment CmdReadSingleton : Cmd
+augment CmdReadSingleton
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not of_type.is_singleton)
@@ -1325,7 +1321,7 @@ augment CmdReadSingleton : Cmd
       writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
 endAugment
 
-augment CmdReadLocal : Cmd
+augment CmdReadLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( local_info.type.compile_type, local_info.type )
@@ -1334,7 +1330,7 @@ augment CmdReadLocal : Cmd
 
 endAugment
 
-augment CmdWriteLocal : Cmd
+augment CmdWriteLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.cpp_name ).print(" = ")
@@ -1343,7 +1339,7 @@ augment CmdWriteLocal : Cmd
       writer.print( ")" )
 endAugment
 
-augment CmdReadSetting : Cmd
+augment CmdReadSetting
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( setting_info.type.compile_type, setting_info.type )
@@ -1353,7 +1349,7 @@ augment CmdReadSetting : Cmd
 endAugment
 
 
-augment CmdWriteSetting : Cmd
+augment CmdWriteSetting
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print_type_name( setting_info.type_context ).print( "::" )
@@ -1368,7 +1364,7 @@ augment CmdWriteSetting : Cmd
       endIf
 endAugment
 
-augment CmdReadProperty : Cmd
+augment CmdReadProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( property_info.type.compile_type, property_info.type )
@@ -1378,7 +1374,7 @@ augment CmdReadProperty : Cmd
       if (not is_statement) writer.print_close_cast( property_info.type.compile_type, property_info.type )
 endAugment
 
-augment CmdWriteProperty : Cmd
+augment CmdWriteProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )
@@ -1394,7 +1390,7 @@ augment CmdWriteProperty : Cmd
       endIf
 endAugment
 
-augment CmdCallRoutine : CmdCall
+augment CmdCallRoutine
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
@@ -1423,7 +1419,7 @@ augment CmdCallRoutine : CmdCall
       if (not is_statement) writer.print( ")" )  # end of return type cast
 endAugment
 
-augment CmdCallAspectMethod : CmdCall
+augment CmdCallAspectMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
@@ -1452,7 +1448,7 @@ augment CmdCallAspectMethod : CmdCall
 endAugment
 
 
-augment CmdCallDynamicMethod : CmdCallMethod
+augment CmdCallDynamicMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
@@ -1488,7 +1484,7 @@ augment CmdCallDynamicMethod : CmdCallMethod
 endAugment
 
 
-augment CmdCallStaticMethod : CmdCallMethod
+augment CmdCallStaticMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
@@ -1514,7 +1510,7 @@ augment CmdCallStaticMethod : CmdCallMethod
 endAugment
 
 
-augment CmdCallNativeRoutine : CmdCall
+augment CmdCallNativeRoutine
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
@@ -1538,7 +1534,7 @@ augment CmdCallNativeRoutine : CmdCall
       if (not is_statement) writer.print( ")" )  # end of return type cast
 endAugment
 
-augment CmdCallNativeMethod : CmdCall
+augment CmdCallNativeMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local compile_target = method_info.compile_target
@@ -1563,7 +1559,7 @@ augment CmdCallNativeMethod : CmdCall
       if (not is_statement) writer.print( ")" )  # end of return type cast
 endAugment
 
-augment CmdCallInlineNative : CmdCall
+augment CmdCallInlineNative
   METHODS
     method print_this( writer:CPPWriter )
       throw t.error( "Illegal use of '$this' in routine." )
@@ -1600,14 +1596,14 @@ augment CmdCallInlineNative : CmdCall
 endAugment
 
 
-augment CmdCallInlineNativeMethod : CmdCallInlineNative
+augment CmdCallInlineNativeMethod
   METHODS
     method print_this( writer:CPPWriter )
       context.write_cpp( writer )
 endAugment
 
 
-augment CmdUnary : Cmd
+augment CmdUnary
   METHODS
     method cpp_prefix_symbol->String
       return prefix_symbol
@@ -1621,7 +1617,7 @@ augment CmdUnary : Cmd
       writer.print( ")" ).print( cpp_suffix_symbol )
 endAugment
 
-augment CmdLogicalize : CmdUnary
+augment CmdLogicalize
   METHODS
     method cpp_prefix_symbol->String
       return "!!"
@@ -1630,14 +1626,14 @@ augment CmdLogicalize : CmdUnary
       return ""
 endAugment
 
-augment CmdLogicalNot : CmdUnary
+augment CmdLogicalNot
   METHODS
     method cpp_prefix_symbol->String
       return "!"
 endAugment
 
 
-augment CmdBinary : Cmd
+augment CmdBinary
   METHODS
     method cpp_symbol->String
       return symbol
@@ -1650,7 +1646,7 @@ augment CmdBinary : Cmd
       if (requires_parens) writer.print( ")" )
 endAugment
 
-augment CmdMod : CmdBinary
+augment CmdMod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( Program.program_name ).print( ".mod( " )
@@ -1661,7 +1657,7 @@ augment CmdMod : CmdBinary
 endAugment
 
 
-augment CmdPower : CmdBinary
+augment CmdPower
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( left.type ).print( ") pow((double)")
@@ -1672,51 +1668,51 @@ augment CmdPower : CmdBinary
 endAugment
 
 
-augment CmdLogicalAnd : CmdBinaryLogical
+augment CmdLogicalAnd
   METHODS
     method cpp_symbol->String
       return "&&"
 endAugment
 
 
-augment CmdLogicalOr : CmdBinaryLogical
+augment CmdLogicalOr
   METHODS
     method cpp_symbol->String
       return "||"
 endAugment
 
 
-augment CmdLogicalXor : CmdBinaryLogical
+augment CmdLogicalXor
   METHODS
     method cpp_symbol->String
       return "^"
 endAugment
 
-augment CmdCompareIs : CmdComparison
+augment CmdCompareIs
   METHODS
     method cpp_symbol->String
       return "=="
 endAugment
 
-augment CmdCompareIsNot : CmdComparison
+augment CmdCompareIsNot
   METHODS
     method cpp_symbol->String
       return "!="
 endAugment
 
-augment CmdBitwiseXor : CmdBitwiseOp
+augment CmdBitwiseXor
   METHODS
     method cpp_symbol->String
       return "^"
 endAugment
 
-augment CmdBitwiseShiftLeft : CmdBitwiseOp
+augment CmdBitwiseShiftLeft
   METHODS
     method cpp_symbol->String
       return "<<"
 endAugment
 
-augment CmdBitwiseShiftRight : CmdBitwiseOp
+augment CmdBitwiseShiftRight
   METHODS
     method cpp_symbol->String
       return ">>>"
@@ -1729,20 +1725,20 @@ augment CmdBitwiseShiftRight : CmdBitwiseOp
       writer.print( " )" )
 endAugment
 
-augment CmdBitwiseShiftRightX : CmdBitwiseOp
+augment CmdBitwiseShiftRightX
   METHODS
     method cpp_symbol->String
       return ">>"
 endAugment
 
 
-augment CmdBitwiseNot : CmdUnary
+augment CmdBitwiseNot
   METHODS
     method cpp_prefix_symbol->String
       return "~"
 endAugment
 
-augment CmdAdjustLocal : Cmd
+augment CmdAdjustLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )
@@ -1751,7 +1747,7 @@ augment CmdAdjustLocal : Cmd
 endAugment
 
 
-augment CmdAdjustProperty : Cmd
+augment CmdAdjustProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )
@@ -1762,13 +1758,13 @@ augment CmdAdjustProperty : Cmd
 endAugment
 
 
-augment CmdResolvedOpWithAssign : Cmd
+augment CmdResolvedOpWithAssign
   METHODS
     method cpp_symbol->String
       return symbol
 endAugment
 
-augment CmdLocalOpWithAssign : CmdResolvedOpWithAssign
+augment CmdLocalOpWithAssign
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
@@ -1776,7 +1772,7 @@ augment CmdLocalOpWithAssign : CmdResolvedOpWithAssign
 endAugment
 
 
-augment CmdOpAssignSetting : CmdResolvedOpWithAssign
+augment CmdOpAssignSetting
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print_type_name( setting_info.type_context ).print( "::" )
@@ -1784,7 +1780,7 @@ augment CmdOpAssignSetting : CmdResolvedOpWithAssign
       new_value.write_cpp( writer )
 endAugment
 
-augment CmdOpAssignProperty : CmdResolvedOpWithAssign
+augment CmdOpAssignProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )
@@ -1793,7 +1789,7 @@ augment CmdOpAssignProperty : CmdResolvedOpWithAssign
       new_value.write_cpp( writer )
 endAugment
 
-augment CmdCreateArray : Cmd
+augment CmdCreateArray
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "RogueArray::create( " )
@@ -1803,7 +1799,7 @@ augment CmdCreateArray : Cmd
       writer.print( " )" )
 endAugment
 
-augment CmdReadArrayElement : Cmd
+augment CmdReadArrayElement
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local element_type = array_type.element_type
@@ -1846,14 +1842,14 @@ augment CmdReadArrayElement : Cmd
       if (not is_statement) writer.print_close_cast( element_type.compile_type, element_type )
 endAugment
 
-augment CmdReadArrayCount : Cmd
+augment CmdReadArrayCount
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )
       writer.print( "->count" )
 endAugment
 
-augment CmdWriteArrayElement : Cmd
+augment CmdWriteArrayElement
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local element_type = array_type.element_type
@@ -1892,7 +1888,7 @@ augment CmdWriteArrayElement : Cmd
       endIf
 endAugment
 
-augment CmdCastToType : CmdTypeOperator
+augment CmdCastToType
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( target_type ).print( ")(" )
@@ -1900,7 +1896,7 @@ augment CmdCastToType : CmdTypeOperator
       writer.print( "))" )
 endAugment
 
-augment CmdConvertToPrimitiveType : CmdConvertToType
+augment CmdConvertToPrimitiveType
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( target_type.cpp_class_name ).print( ")(" )
@@ -1908,7 +1904,7 @@ augment CmdConvertToPrimitiveType : CmdConvertToType
       writer.print( "))" )
 endAugment
 
-augment CmdAs : CmdTypeOperator
+augment CmdAs
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "((" ).print( target_type ).print( ")(RogueObject::as(" )
@@ -1918,7 +1914,7 @@ augment CmdAs : CmdTypeOperator
       writer.print( ")))" )
 endAugment
 
-augment CmdInstanceOf : CmdTypeOperator
+augment CmdInstanceOf
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "RogueObject::instance_of(" )
@@ -1929,7 +1925,7 @@ augment CmdInstanceOf : CmdTypeOperator
 endAugment
 
 
-augment CmdTaskControl : Cmd
+augment CmdTaskControl
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.println( "switch (++THIS->ip)" )
@@ -1949,7 +1945,7 @@ augment CmdTaskControl : Cmd
 endAugment
 
 
-augment CmdCreateOptionalValue : Cmd
+augment CmdCreateOptionalValue
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (of_type.element_type.is_reference)
@@ -1974,7 +1970,7 @@ augment CmdCreateOptionalValue : Cmd
 endAugment
 
 
-augment CmdLogicalizeOptionalValue : Cmd
+augment CmdLogicalizeOptionalValue
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value.compile_type.element_type.is_reference)
@@ -1986,7 +1982,7 @@ augment CmdLogicalizeOptionalValue : Cmd
       endIf
 endAugment
 
-augment CmdGetOptionalValue : Cmd
+augment CmdGetOptionalValue
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       value.write_cpp( writer )
@@ -1996,10 +1992,9 @@ augment CmdGetOptionalValue : Cmd
 endAugment
 
 
-augment CmdLabel : Cmd
+augment CmdLabel
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       statements.write_cpp( writer, is_statement )
 endAugment
 
-}#
