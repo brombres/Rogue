@@ -78,31 +78,15 @@ class RogueC [singleton]
 
         Program.resolve
 
-        if (output_filepath is null)
-          output_filepath = File.filename(first_filepath)
-          if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
-        else
-          if (File.is_folder(output_filepath))
-            output_filepath = File.path(output_filepath) + "/RogueProgram"
-          elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
-            output_filepath = output_filepath.leftmost(-4)
-          endIf
-        endIf
-
-        Program.write_cpp( output_filepath )
-
-        if (execute_args)
-          local exe = output_filepath.to_lowercase
-          local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
-          println cmd
-          println
-          System.run( cmd )
-        endIf
+        write_output
 
       catch (err:Error)
         println err
         System.exit(1)
       endTry
+
+    method write_output
+      <<target_specific_code>>
 
     method include( filepath:String )
       if (not first_filepath) first_filepath = filepath

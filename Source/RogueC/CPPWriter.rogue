@@ -179,10 +179,117 @@ endClass
 
 
 #------------------------------------------------------------------------------
+# RogueC
+#------------------------------------------------------------------------------
+augment RogueC
+  METHODS
+    method write_output
+      <<target_specific_code>>
+      if (output_filepath is null)
+        output_filepath = File.filename(first_filepath)
+        if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
+      else
+        if (File.is_folder(output_filepath))
+          output_filepath = File.path(output_filepath) + "/RogueProgram"
+        elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
+          output_filepath = output_filepath.leftmost(-4)
+        endIf
+      endIf
+
+      Program.write_cpp( output_filepath )
+
+      if (execute_args)
+        local exe = output_filepath.to_lowercase
+        local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
+        println cmd
+        println
+        System.run( cmd )
+      endIf
+
+endAugment
+
+
+#------------------------------------------------------------------------------
 # Program
 #------------------------------------------------------------------------------
 augment Program
   METHODS
+    method validate_cpp_name( name:String )->String
+      local begins_with_code_prefix = false
+      if (name.begins_with(code_prefix))
+        begins_with_code_prefix = true
+        name = name.substring( code_prefix.count )
+      endIf
+
+      # Convert "_*type" to "__*type"
+      local all_underscores = true
+      if (name.ends_with("type"))
+        forEach (i in 0..(name.count-5))
+          if (name[i] != '_') all_underscores = false; escapeForEach
+        endForEach
+        name = "_" + name
+      endIf
+
+      # Type? -> OptionalType
+      local i1 = name.locate('?')
+      while (i1?)
+        name = "Optional" + name.leftmost(i1.value) + name.substring(i1.value+1)
+        i1 = name.locate('?')
+      endWhile
+
+      i1 = name.locate("<<")
+      while (i1?)
+        local i2 = name.locate_last(">>")
+        if (not i2?) escapeWhile
+
+        local before = name.substring(0,i1.value-1)
+        local after  = name.substring(i2.value+2)
+        local middle = name.substring(i1.value+2,i2.value-1)
+
+        #name = "$_of_$$" (before,middle,after)
+
+        name = "$$$" (validate_cpp_name(middle),before,after)
+        # Example:
+        #   Table<<String,Integer>>[] -> StringIntegerTable[]
+
+        i1 = name.locate("<<")
+      endWhile
+
+      #   StringIntegerTable[] -> StringIntegerTableList
+      i1 = name.locate("[]")
+      while (i1?)
+        name = name.substring(0,i1.value-1) + "List" + name.substring(i1.value+2)
+        i1 = name.locate("[]")
+      endWhile
+
+      string_buffer.clear
+      if (begins_with_code_prefix) string_buffer.print( Program.code_prefix )
+      forEach (ch in name)
+        if (ch.is_alphanumeric)
+          string_buffer.print( ch )
+        else
+          which (ch)
+            case '!': string_buffer.print( "NOT" )
+            case '%': string_buffer.print( "MOD" )
+            case '&': string_buffer.print( "AND" )
+            case '*': string_buffer.print( "TIMES" )
+            case '+': string_buffer.print( "PLUS" )
+            case '-': string_buffer.print( "MINUS" )
+            case '.': string_buffer.print( "DOT" )
+            case '/': string_buffer.print( "SLASH" )
+            case '<': string_buffer.print( "LESSTHAN" )
+            case '=': string_buffer.print( "EQUALS" )
+            case '>': string_buffer.print( "GREATERTHAN" )
+            case '^': string_buffer.print( "POWER" )
+            case '|': string_buffer.print( "OR" )
+            case '~': string_buffer.print( "XOR" )
+            others:   string_buffer.print( '_' )
+          endWhich
+        endIf
+      endForEach
+
+      return string_buffer->String
+
     method write_cpp( filepath:String )
       forEach (type in type_list) type.assign_cpp_name
       type_NativeArray.cpp_class_name = "RogueArray"
@@ -333,7 +440,6 @@ augment Program
       writer.indent += 2
       local table_index = 0
       forEach (type in type_list)
-        writer.println( "// " + type )
         if (not type.omit_output)
           table_index = type.print_dynamic_method_table_entries( table_index, writer )
         endIf
@@ -840,7 +946,9 @@ augment Type
       forEach (m in method_list)
         if (not m.is_inline)
           if (m.is_dynamic)
-            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).println( "," )
+            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).print( "," )
+            writer.print( " // " ).print( name )
+            writer.println
           else
             writer.println( "NULL," )
           endIf
@@ -959,9 +1067,39 @@ augment Method
 endAugment
 
 #------------------------------------------------------------------------------
+# Property
+#------------------------------------------------------------------------------
+augment Property
+  PROPERTIES
+    cpp_name      : String
+
+  METHODS
+    method clone->Property
+      <<init_result>>
+      result.cpp_name = cpp_name
+endAugment
+
+#------------------------------------------------------------------------------
+# Local
+#------------------------------------------------------------------------------
+augment Local
+  PROPERTIES
+    _cpp_name     : String
+
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Local
+      <<init_result>>
+      result._cpp_name = _cpp_name
+
+    method cpp_name->String
+      if (not _cpp_name) _cpp_name = Program.validate_cpp_name( name + "_" + index );
+      return _cpp_name
+
+endAugment
+
+#------------------------------------------------------------------------------
 # Cmd
 #------------------------------------------------------------------------------
-#{
 augment Cmd
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
@@ -976,7 +1114,6 @@ augment CmdStatementList
         if (statement.requires_semicolon) writer.println ";"
       endForEach
 endAugment
-
 
 augment CmdArgs
   METHODS
@@ -1999,4 +2136,3 @@ augment CmdLabel
       statements.write_cpp( writer, is_statement )
 endAugment
 
-}#

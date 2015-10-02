@@ -221,7 +221,7 @@ class Method
 
       assign_signature
 
-      if (add_to_lookup)
+      if (add_to_lookup and not is_augment)
         # Add method to type's lookup table.
 
         if (is_routine)
@@ -276,6 +276,30 @@ class Method
         if (statements.count) return_t = statements.last.t
         statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
       endIf
+
+    method convert_augment_to_standalone
+      # Turn this augment method into a standalone method containing the
+      # <<insert>> and <<append>> label contents.  Throw an error if there are
+      # any other labels defined to avoid silently dropping that code.
+      if (label_list.count > 2)
+        # More than the default <<insert>> and <<append>> labels
+        local label = label_list[2]
+        throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+      endIf
+
+      attributes.flags &= !Attribute.is_augment
+
+      local insert_label = label_lookup[ "insert" ]
+      local append_label = label_lookup[ "append" ]
+      label_lookup.clear
+      label_list.clear
+
+      # Insert the label content.  Give the method its own <<insert>>
+      # and <<append>> labels for any successive augments.
+      statements.add( begin_label(t,"insert",false) )
+      statements.add( insert_label.statements )
+      statements.add( append_label.statements )
+      statements.add( begin_label(t,"append",false) )
 
     method convert_to_task
       # Create the class that will store the converted method

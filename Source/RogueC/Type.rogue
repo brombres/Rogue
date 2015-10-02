@@ -44,26 +44,19 @@ class Type
 
     dynamic_method_table_index : Integer
 
-    method_augments = Method[]
-    routine_augments = Method[]
-
   METHODS
     method init( t, name )
 
     method add_method( m_t:Token, m_name:String, is_augment=false:Logical )->Method
       local m = Method( m_t, this, m_name )
 
-      if (is_augment)
-        method_augments.add( m )
-      else
-        method_list.add( m )
-        local list = method_lookup_by_name[ m_name ]
-        if (not list)
-          list = Method[]
-          method_lookup_by_name[ m_name ] = list
-        endIf
-        list.add( m )
+      method_list.add( m )
+      local list = method_lookup_by_name[ m_name ]
+      if (not list)
+        list = Method[]
+        method_lookup_by_name[ m_name ] = list
       endIf
+      list.add( m )
 
       return m
 
@@ -71,17 +64,13 @@ class Type
       local r = Method( r_t, this, r_name )
       r.attributes.add( Attribute.is_routine )
 
-      if (is_augment)
-        routine_augments.add( r )
-      else
-        routine_list.add( r )
-        local list = routine_lookup_by_name[ r_name ]
-        if (not list)
-          list = Method[]
-          routine_lookup_by_name[ r_name ] = list
-        endIf
-        list.add( r )
+      routine_list.add( r )
+      local list = routine_lookup_by_name[ r_name ]
+      if (not list)
+        list = Method[]
+        routine_lookup_by_name[ r_name ] = list
       endIf
+      list.add( r )
 
       return r
 
@@ -243,6 +232,7 @@ class Type
       endIf
 
       # Collect flat list base types while removing duplicates
+      flat_base_types.clear
       if (base_class) base_class.collect_base_types( flat_base_types )
       forEach (base_type in base_types)
         base_type.collect_base_types( flat_base_types )
@@ -361,6 +351,7 @@ class Type
       endIf
 
       # Apply routine and method augments
+      #{
       forEach (r_aug in routine_augments)
         r_aug.organize( false )
         local r = find_routine( r_aug.signature )
@@ -382,52 +373,42 @@ class Type
         m_aug.organize( false )
         local m = find_method( m_aug.signature )
         if (m)
-          if (m.type_context isNot this)
-            # Generate a new class-local copy of the inherited method before
+          if (m.type_context is this)
+            # Apply augment to existing method
+            forEach (method_label in m.label_list)
+              local aug_label = m_aug.label_lookup[ method_label.name ]
+              if (aug_label)
+                method_label.statements.add( aug_label.statements )
+                aug_label.is_referenced = true
+              endIf
+            endForEach
+
+            forEach (label in m_aug.label_list)
+              if (not label.is_referenced)
+                throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+              endIf
+            endForEach
+
+          else
+            # Override the base class method with this augment method
             # augmenting it.
-            local i1 = method_list.locate( m )
-            local i2 = method_lookup_by_name[ m.name ].locate( m )
-            m = m.clone
-            m.type_context = this
-            method_list[i1.value] = m
-            method_lookup_by_signature[ m.signature ] = m
-            method_lookup_by_name[ m.name ][i2.value] = m
+            local i1 = method_list.locate( m )!
+            local i2 = method_lookup_by_name[ m.name ].locate( m )!
+            method_list[ i1 ] = m_aug
+            method_lookup_by_name[ m.name ][ i2 ] = m_aug
+
+            promote_augment_method_to_standard_method( m_aug )
+
           endIf
 
-          forEach (method_label in m.label_list)
-            local aug_label = m_aug.label_lookup[ method_label.name ]
-            if (aug_label)
-              method_label.statements.add( aug_label.statements )
-              aug_label.is_referenced = true
-            endIf
-          endForEach
-
-          forEach (label in m_aug.label_list)
-            if (not label.is_referenced)
-              throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
-            endIf
-          endForEach
-
         else
+println "adding new method for $::$" (m_aug.type_context,m_aug.signature)
           # No existing method matching augment method.  Right now all the augment
           # statements are packed into its labels.  Copy all of the <<insert>> statements
           # followed by all of the <<append>> statements into the body of the method.
           # Give the new method its own insert/append labels for any other augments
           # that may be applied after.
-          if (m_aug.label_list.count > 2)
-            # More than the default <<insert>> and <<append>> labels
-            local label = m_aug.label_list[2]
-            throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
-          endIf
-          local insert_label = m_aug.label_lookup[ "insert" ]
-          local append_label = m_aug.label_lookup[ "append" ]
-          m_aug.label_lookup.clear
-          m_aug.label_list.clear
-
-          m_aug.statements.add( m_aug.begin_label(m_aug.t,"insert",false) )
-          m_aug.statements.add( insert_label.statements )
-          m_aug.statements.add( append_label.statements )
-          m_aug.statements.add( m_aug.begin_label(m_aug.t,"append",false) )
+          promote_augment_method_to_standard_method( m_aug )
 
           method_list.add( m_aug )
           method_lookup_by_signature[ m_aug.signature ] = m_aug
@@ -437,8 +418,14 @@ class Type
             method_lookup_by_name[ m_aug.name ] = lookup_list
           endIf
           lookup_list.add( m_aug )
+
+          m_aug.organize( true )
         endIf
       endForEach
+      }#
+
+      index_and_move_inline_to_end( routine_list )
+      index_and_move_inline_to_end( method_list )
 
       return this
 
@@ -533,8 +520,6 @@ class Type
         inherit_method( m, list, lookup )
       endForEach
 
-      index_and_move_inline_to_end( list )
-
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
@@ -543,7 +528,12 @@ class Type
 
         if (not existing_m.is_incorporated)
           if (m.type_context is existing_m.type_context)
-            throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
+            if (m.is_augment)
+              apply_augment_labels( m, existing_m )
+              return
+            else
+              throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
+            endIf
           else
             if (m.return_type isNot existing_m.return_type)
               if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
@@ -554,6 +544,7 @@ class Type
         endIf
 
         if (m.type_context.is_aspect) m = m.incorporate( this )
+        elseIf (m.is_augment)         m.convert_augment_to_standalone
 
         if (not existing_m.type_context.is_aspect)
           existing_m.attributes.add( Attribute.is_dynamic )
@@ -569,7 +560,9 @@ class Type
         lookup[m.signature] = m
 
       else
+        # No existing method
         if (m.type_context.is_aspect) m = m.incorporate( this )
+        elseIf (m.is_augment)         m.convert_augment_to_standalone
 
         list.add( m )
         lookup[m.signature] = m
@@ -586,16 +579,25 @@ class Type
         inherit_routine( m, list, lookup )
       endForEach
 
-      index_and_move_inline_to_end( list )
-
     method inherit_routine( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
       if (existing_m)
+        if (m.type_context is existing_m.type_context)
+          if (m.is_augment)
+            apply_augment_labels( m, existing_m )
+            return
+          else
+            throw m.t.error( "Type $ already defines routine $." (m.type_context,m.signature) )
+          endIf
+        endIf
+
         local i = list.locate( existing_m )!
 
         # Aspect routines are not incorporated
         if (m.type_context.is_aspect) return
+
+        if (m.is_augment)             m.convert_augment_to_standalone
 
         # New method replaces old method in lookup
         list[i] = m
@@ -605,9 +607,27 @@ class Type
         # Aspect routines are not incorporated
         if (m.type_context.is_aspect) return
 
+        if (m.is_augment)             m.convert_augment_to_standalone
+
         list.add( m )
         lookup[m.signature] = m
       endIf
+
+    method apply_augment_labels( aug_m:Method, existing_m:Method )
+      # Apply augment to existing method
+      forEach (method_label in existing_m.label_list)
+        local aug_label = aug_m.label_lookup[ method_label.name ]
+        if (aug_label)
+          method_label.statements.add( aug_label.statements )
+          aug_label.is_referenced = true
+        endIf
+      endForEach
+
+      forEach (label in aug_m.label_list)
+        if (not label.is_referenced)
+          throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+        endIf
+      endForEach
 
     method index_and_move_inline_to_end( list:Method[] )
       local i = list.count - 1

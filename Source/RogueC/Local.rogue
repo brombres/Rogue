@@ -7,21 +7,17 @@ class Local
     initial_value : Cmd
       # Also serves as default_value for parameters
 
-    _cpp_name     : String
-
   METHODS
     method init( t, name )
 
     method clone( clone_args=null:CloneArgs )->Local
       local result = Local( t, name )
+
+      <<init_result>>
       result.type = type
       result.index = index
       if (initial_value) result.initial_value = initial_value.clone( clone_args )
-      result._cpp_name = _cpp_name
-      return result
 
-    method cpp_name->String
-      if (not _cpp_name) _cpp_name = Program.validate_cpp_name( name + "_" + index );
-      return _cpp_name
+      return result
 
 endClass

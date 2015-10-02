@@ -12,7 +12,7 @@ endClass
 augment Test
   METHODS
     method display
-      <<again>>
+      <<append>>
       println "Again"
 endAugment
 

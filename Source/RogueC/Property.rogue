@@ -7,17 +7,16 @@ class Property
     attributes    : Integer
     initial_value : Cmd
 
-    cpp_name      : String
-
   METHODS
     method init( t, type_context, name )
 
     method clone->Property
       local result = Property( t, type_context, name )
+
+      <<init_result>>
       result.type = type
       result.attributes = attributes
       if (initial_value) result.initial_value = initial_value.clone
-      result.cpp_name = cpp_name
       return result
 
     method set_type_context( @type_context )->Property
