@@ -957,3 +957,1049 @@ augment Method
       writer.println
 
 endAugment
+
+#------------------------------------------------------------------------------
+# Cmd
+#------------------------------------------------------------------------------
+augment Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      throw t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
+endAugment
+
+augment CmdStatementList : Cmd[]
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      forEach (statement in this)
+        statement.write_cpp( writer, true )
+        if (statement.requires_semicolon) writer.println ";"
+      endForEach
+endAugment
+
+
+#{
+augment CmdArgs : Cmd[]
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local first = true
+      forEach (arg in this)
+        if (first) first = false
+        else       writer.print(",")
+        arg.write_cpp( writer )
+      endForEach
+endAugment
+
+augment CmdLocalDeclaration : CmdStatement
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
+      if (local_info.initial_value)
+        writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
+        local_info.initial_value.write_cpp( writer )
+        writer.print( ")" )
+      else
+        writer.print_default_value( local_info.type )
+      endIf
+endAugment
+
+
+augment CmdReturn : CmdStatement
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value)
+        writer.print( "return (" ).print( value.type ).print( ")(" )
+        value.write_cpp( writer )
+        writer.print( ")" )
+      else
+        writer.print "return"
+      endIf
+endAugment
+
+
+augment CmdBlock : CmdControlStructure
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+      if (escape_label) writer.print( escape_label ).println( ":;" )
+endAugment
+
+
+augment CmdIf : CmdControlStructure
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "if (" )
+      condition.write_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (else_statements)
+        if (else_statements.count == 1 and else_statements.first instanceOf CmdIf)
+          # Write the else/if in the "else if" style.
+          writer.print( "else " )
+          else_statements.write_cpp( writer )
+        else
+          # General 'else' block.
+          writer.println( "else" )
+          writer.println( "{" )
+          writer.indent += 2
+          else_statements.write_cpp( writer )
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
+      endIf
+
+      if (escape_label) writer.print( escape_label ).println( ":;" )
+
+endAugment
+
+
+augment CmdContingent : CmdControlStructure
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "{" )
+      writer.indent += 2
+      writer.println( "{" )
+      writer.indent += 2
+
+      statements.write_cpp( writer )
+
+      if (satisfied_label)   writer.print( satisfied_label ).println( ":;" )
+      if (satisfied_statements) satisfied_statements.write_cpp( writer )
+      writer.print( "goto " ).print( escape_label ).println( ";" )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (unsatisfied_label)      writer.print( unsatisfied_label ).println( ":;" )
+      if (unsatisfied_statements) unsatisfied_statements.write_cpp( writer )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      writer.print( escape_label ).println( ":;" )
+endAugment
+
+
+augment CmdGenericLoop : CmdControlStructure
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (control_statements)
+        writer.println( "{" )
+        writer.indent += 2
+
+        if (control_statements)
+          forEach (statement in control_statements)
+            statement.write_cpp( writer )
+            writer.println( ";" )
+          endForEach
+        endIf
+
+      endIf
+
+      if (upkeep or not condition)
+        writer.print( "for (;" )
+        if (condition) condition.write_cpp( writer )
+        writer.print( ";" )
+        local first = true
+        if (upkeep)
+          forEach (statement in upkeep)
+            if (first) first = false
+            else       writer.print( "," )
+            statement.write_cpp( writer )
+          endForEach
+        endIf
+        writer.println( ")" )
+      else
+        writer.print( "while (" )
+        condition.write_cpp( writer )
+        writer.println( ")" )
+      endIf
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (control_statements)
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
+
+      if (escape_label)
+        writer.print( escape_label ).println( ":;" )
+      endIf
+
+endAugment
+
+
+augment CmdTry : CmdControlStructure
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println "try"
+      writer.println "{"
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println "}"
+      forEach (c in catches)
+        c.write_cpp( writer )
+      endForEach
+
+      if (escape_label)
+        writer.print( escape_label ).println( ":;" )
+      endIf
+endAugment
+
+augment CmdCatch : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.cpp_name ).println( " )" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_cpp( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+endAugment
+
+augment CmdThrow : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "throw " )
+      expression.write_cpp( writer )
+endAugment
+
+augment CmdEscape : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print "goto " + target_cmd.escape_label
+
+endAugment
+
+
+augment CmdNextIteration : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print "continue"
+
+endAugment
+
+
+augment CmdNecessary : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "if ( !(" )
+      condition.write_cpp( writer )
+      writer.print( ") ) goto " ).print( target_cmd.unsatisfied_label )
+endAugment
+
+
+augment CmdSufficient : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "if (" )
+      condition.write_cpp( writer )
+      writer.print( ") goto " ).print( target_cmd.satisfied_label )
+endAugment
+
+augment CmdLiteralNull : CmdLiteral
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "NULL" )
+endAugment
+
+augment CmdLiteralReal : CmdLiteral
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( value )
+endAugment
+
+
+augment CmdLiteralInteger : CmdLiteral
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( value )
+endAugment
+
+
+augment CmdLiteralCharacter : CmdLiteral
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "(RogueCharacter)" )
+      if (value >= 32 and value <= 126)
+        which (value)
+          case 10:   writer.print( "'\\n'" )
+          case '\\': writer.print( "'\\\\'" )
+          case '\'': writer.print( "'\\''" )
+          others
+            writer.print( "'" )
+            writer.print( value )
+            writer.print( "'" )
+        endWhich
+      else
+        writer.print( value->Integer )
+      endIf
+endAugment
+
+
+augment CmdLiteralLogical : CmdLiteral
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value) writer.print "true"
+      else       writer.print "false"
+endAugment
+
+
+augment CmdLiteralString : CmdLiteral
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value)
+        writer.print( "Rogue_program.literal_strings[" ).print( index ).print( "]" )
+      else
+        writer.print( "0" );
+      endIf
+endAugment
+
+
+augment CmdCreateObject : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
+
+      if (of_type.is_compound)
+        writer.print_type_name( of_type )
+      else
+        writer.print_type_info(of_type).print( "->create_and_init_object()")
+      endIf
+
+      if (not is_statement) writer.print( ")" )
+endAugment
+
+
+augment CmdCreateCompound : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( of_type ).print( "(" )
+      if (args.count)
+        writer.print( " " )
+        local first = true
+        forEach (arg in args)
+          if (first) first = false
+          else       writer.print( ", " )
+          arg.write_cpp( writer )
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+endAugment
+
+
+augment CmdAssign : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      #println StackTrace()
+      prior.write_cpp( writer )
+endAugment
+
+augment CmdThisContext : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print "THIS"
+endAugment
+
+augment CmdReadSingleton : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not of_type.is_singleton)
+        throw t.error( "$ is not a singleton." (of_type.name) )
+      endIf
+      writer.print( "((" ).print( of_type.cpp_class_name )
+      if (of_type.is_reference) writer.print( "*" )
+      writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
+endAugment
+
+augment CmdReadLocal : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( local_info.type.compile_type, local_info.type )
+      writer.print( local_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( local_info.type.compile_type, local_info.type )
+
+endAugment
+
+augment CmdWriteLocal : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( local_info.cpp_name ).print(" = ")
+      writer.print( "((" ).print( local_info.type ).print( ")" )
+      new_value.write_cpp( writer )
+      writer.print( ")" )
+endAugment
+
+augment CmdReadSetting : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( setting_info.type.compile_type, setting_info.type )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( setting_info.type.compile_type, setting_info.type )
+endAugment
+
+
+augment CmdWriteSetting : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name ).print(" = ")
+
+      if (setting_info.type.compile_type is new_value.compile_type)
+        new_value.write_cpp( writer )
+      else
+        writer.print( "((" ).print( setting_info.type ).print( ")" )
+        new_value.write_cpp( writer )
+        writer.print( ")" )
+      endIf
+endAugment
+
+augment CmdReadProperty : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( property_info.type.compile_type, property_info.type )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( property_info.type.compile_type, property_info.type )
+endAugment
+
+augment CmdWriteProperty : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name ).print(" = ")
+
+      if (property_info.type.compile_type is new_value.compile_type)
+        new_value.write_cpp( writer )
+      else
+        writer.print( "((" ).print( property_info.type ).print( ")" )
+        new_value.write_cpp( writer )
+        writer.print( ")" )
+      endIf
+endAugment
+
+augment CmdCallRoutine : CmdCall
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+
+      writer.print( compile_target.cpp_name )
+      writer.print( "(" )
+      if (args.count)
+        writer.print( " " )
+        local i = 0
+        forEach (arg in args)
+          if (i > 0) writer.print( ", " )
+          local param_type = compile_target.parameters[i].type
+          if (param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+            arg.write_cpp( writer )
+            writer.print( "))" )
+          else
+            arg.write_cpp( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+augment CmdCallAspectMethod : CmdCall
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      writer.print( "(" )
+      writer.print( Program.type_Object )
+      writer.print( ")" )
+      context.write_cpp( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          arg.write_cpp( writer )
+          writer.print( "))" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+
+augment CmdCallDynamicMethod : CmdCallMethod
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      if (compile_target.is_overridden)
+        writer.print( "call_" ).print( compile_target.cpp_typedef )
+        writer.print( "( " )
+        writer.print( compile_target.index ).print( ", " )
+        writer.print( "(" )
+        writer.print( compile_target.type_context )
+        writer.print( ")(" )
+        context.write_cpp( writer )
+        writer.print( ")" )
+        local i = 0
+        forEach (arg in args)
+          writer.print( ", " )
+          local param_type = compile_target.parameters[i].type
+          if (param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+            arg.write_cpp( writer )
+            writer.print( ")" )
+          else
+            arg.write_cpp( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " )" )
+
+      else
+        CmdCallStaticMethod( t, context, method_info, args ).write_cpp( writer, is_statement )
+      endIf
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+
+augment CmdCallStaticMethod : CmdCallMethod
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      writer.print_cast( context.type, compile_target.type_context, context )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+          arg.write_cpp( writer )
+          writer.print( ")" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+
+augment CmdCallNativeRoutine : CmdCall
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      local i = 0
+      forEach (arg in args)
+        if (i > 0) writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          arg.write_cpp( writer )
+          writer.print( "))" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+augment CmdCallNativeMethod : CmdCall
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local compile_target = method_info.compile_target
+      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      writer.print( compile_target.cpp_name )
+      writer.print( "( " )
+      context.write_cpp( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = compile_target.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          arg.write_cpp( writer )
+          writer.print( "))" )
+        else
+          arg.write_cpp( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+augment CmdCallInlineNative : CmdCall
+  METHODS
+    method print_this( writer:CPPWriter )
+      throw t.error( "Illegal use of '$this' in routine." )
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local st = method_info.native_code
+
+      local dollar = st.locate('$')
+      while (dollar)
+        writer.print( st.substring(0,dollar!-1) )
+        st = st.substring( dollar!+1 )
+        
+        local best_match : Local
+        forEach (p in method_info.parameters)
+          if (st.begins_with(p.name))
+            if (best_match is null or p.name.count > best_match.name.count) best_match = p
+          endIf
+        endForEach
+
+        if (best_match)
+          args[ best_match.index ].write_cpp( writer )
+          st = st.substring( best_match.name.count )
+        else
+          if (st.begins_with("this"))
+            print_this( writer )
+            st = st.substring( 4 )
+          endIf
+        endIf
+
+        dollar = st.locate('$')
+      endWhile
+
+      writer.print( st )
+endAugment
+
+
+augment CmdCallInlineNativeMethod : CmdCallInlineNative
+  METHODS
+    method print_this( writer:CPPWriter )
+      context.write_cpp( writer )
+endAugment
+
+
+augment CmdUnary : Cmd
+  METHODS
+    method cpp_prefix_symbol->String
+      return prefix_symbol
+
+    method cpp_suffix_symbol->String
+      return suffix_symbol
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( cpp_prefix_symbol ).print( "(" )
+      operand.write_cpp( writer )
+      writer.print( ")" ).print( cpp_suffix_symbol )
+endAugment
+
+augment CmdLogicalize : CmdUnary
+  METHODS
+    method cpp_prefix_symbol->String
+      return "!!"
+
+    method cpp_suffix_symbol->String
+      return ""
+endAugment
+
+augment CmdLogicalNot : CmdUnary
+  METHODS
+    method cpp_prefix_symbol->String
+      return "!"
+endAugment
+
+
+augment CmdBinary : Cmd
+  METHODS
+    method cpp_symbol->String
+      return symbol
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (requires_parens) writer.print( "(" )
+      left.write_cpp( writer )
+      writer.print( " " ).print( cpp_symbol ).print( " " )
+      right.write_cpp( writer )
+      if (requires_parens) writer.print( ")" )
+endAugment
+
+augment CmdMod : CmdBinary
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( Program.program_name ).print( ".mod( " )
+      left.write_cpp( writer )
+      writer.print( ", " )
+      right.write_cpp( writer )
+      writer.print( " )" )
+endAugment
+
+
+augment CmdPower : CmdBinary
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( left.type ).print( ") pow((double)")
+      left.write_cpp( writer )
+      writer.print( ", (double)" )
+      right.write_cpp( writer )
+      writer.print( "))" )
+endAugment
+
+
+augment CmdLogicalAnd : CmdBinaryLogical
+  METHODS
+    method cpp_symbol->String
+      return "&&"
+endAugment
+
+
+augment CmdLogicalOr : CmdBinaryLogical
+  METHODS
+    method cpp_symbol->String
+      return "||"
+endAugment
+
+
+augment CmdLogicalXor : CmdBinaryLogical
+  METHODS
+    method cpp_symbol->String
+      return "^"
+endAugment
+
+augment CmdCompareIs : CmdComparison
+  METHODS
+    method cpp_symbol->String
+      return "=="
+endAugment
+
+augment CmdCompareIsNot : CmdComparison
+  METHODS
+    method cpp_symbol->String
+      return "!="
+endAugment
+
+augment CmdBitwiseXor : CmdBitwiseOp
+  METHODS
+    method cpp_symbol->String
+      return "^"
+endAugment
+
+augment CmdBitwiseShiftLeft : CmdBitwiseOp
+  METHODS
+    method cpp_symbol->String
+      return "<<"
+endAugment
+
+augment CmdBitwiseShiftRight : CmdBitwiseOp
+  METHODS
+    method cpp_symbol->String
+      return ">>>"
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "Rogue_program.shift_right( " )
+      left.write_cpp( writer )
+      writer.print( ", " )
+      right.write_cpp( writer )
+      writer.print( " )" )
+endAugment
+
+augment CmdBitwiseShiftRightX : CmdBitwiseOp
+  METHODS
+    method cpp_symbol->String
+      return ">>"
+endAugment
+
+
+augment CmdBitwiseNot : CmdUnary
+  METHODS
+    method cpp_prefix_symbol->String
+      return "~"
+endAugment
+
+augment CmdAdjustLocal : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      writer.print( local_info.cpp_name )
+endAugment
+
+
+augment CmdAdjustProperty : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name )
+endAugment
+
+
+augment CmdResolvedOpWithAssign : Cmd
+  METHODS
+    method cpp_symbol->String
+      return symbol
+endAugment
+
+augment CmdLocalOpWithAssign : CmdResolvedOpWithAssign
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
+      new_value.write_cpp( writer )
+endAugment
+
+
+augment CmdOpAssignSetting : CmdResolvedOpWithAssign
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print_type_name( setting_info.type_context ).print( "::" )
+      writer.print( setting_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      new_value.write_cpp( writer )
+endAugment
+
+augment CmdOpAssignProperty : CmdResolvedOpWithAssign
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      context.write_cpp( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      new_value.write_cpp( writer )
+endAugment
+
+augment CmdCreateArray : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "RogueArray::create( " )
+      count_cmd.write_cpp( writer )
+      writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
+      if (array_type.element_type.is_reference) writer.print( ", true" )
+      writer.print( " )" )
+endAugment
+
+augment CmdReadArrayElement : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local element_type = array_type.element_type
+      if (not is_statement) writer.print_open_cast( element_type.compile_type, element_type )
+      if (element_type.is_reference)
+        writer.print( "((" )
+        writer.print( element_type )
+        writer.print( ")(" )
+        context.write_cpp( writer )
+        writer.print( "->objects[" )
+        index.write_cpp( writer )
+        writer.print( "]))" )
+
+      elseIf (element_type.is_primitive)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        which (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+          others
+            throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
+        endWhich
+        index.write_cpp( writer )
+        writer.print( "]" )
+
+      else
+        # Compound
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_cpp( writer )
+        writer.print( "->bytes))[" )
+        index.write_cpp( writer )
+        writer.print( "]" )
+
+      endIf
+      if (not is_statement) writer.print_close_cast( element_type.compile_type, element_type )
+endAugment
+
+augment CmdReadArrayCount : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      context.write_cpp( writer )
+      writer.print( "->count" )
+endAugment
+
+augment CmdWriteArrayElement : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local element_type = array_type.element_type
+      if (element_type.is_primitive)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        which (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+        endWhich
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
+      elseIf (element_type.is_reference)
+        context.write_cpp( writer )
+        writer.print( "->" )
+        writer.print( "objects[" )
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
+      else
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_cpp( writer )
+        writer.print( "->bytes))[" )
+        index.write_cpp( writer )
+        writer.print( "] = " )
+        new_value.write_cpp( writer )
+
+      endIf
+endAugment
+
+augment CmdCastToType : CmdTypeOperator
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type ).print( ")(" )
+      operand.write_cpp( writer )
+      writer.print( "))" )
+endAugment
+
+augment CmdConvertToPrimitiveType : CmdConvertToType
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type.cpp_class_name ).print( ")(" )
+      operand.write_cpp( writer )
+      writer.print( "))" )
+endAugment
+
+augment CmdAs : CmdTypeOperator
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type ).print( ")(RogueObject::as(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")))" )
+endAugment
+
+augment CmdInstanceOf : CmdTypeOperator
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "RogueObject::instance_of(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")" )
+endAugment
+
+
+augment CmdTaskControl : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "switch (++THIS->ip)" )
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (section in sections)
+        writer.print( "case " ).print( section.ip ).println( ":" )
+        writer.indent += 2
+        section.statements.write_cpp( writer )
+        writer.indent -= 2
+      endForEach
+      writer.println( "default:" )
+      writer.println( "  THIS->ip = -1;" )
+      writer.println( "  return false;" )
+      writer.indent -= 2
+      writer.println( "}" )
+endAugment
+
+
+augment CmdCreateOptionalValue : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (of_type.element_type.is_reference)
+        # Reference types don't need an intermediate type to signify null
+        if (value)
+          value.write_cpp( writer )
+        else
+          writer.print "NULL"
+        endIf
+      else
+        # Non-reference types are kept in Optional<<DataType>> wrappers
+        writer.print( of_type )
+        if (value)
+          writer.print( "( " )
+          value.write_cpp( writer )
+          writer.print( " )" )
+        else
+          writer.print( "()" )
+        endIf
+      endIf
+
+endAugment
+
+
+augment CmdLogicalizeOptionalValue : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value.compile_type.element_type.is_reference)
+        writer.print( "!!" )
+        value.write_cpp( writer )
+      else
+        value.write_cpp( writer )
+        writer.print( ".exists" )
+      endIf
+endAugment
+
+augment CmdGetOptionalValue : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      value.write_cpp( writer )
+      if (not value.compile_type.element_type.is_reference)
+        writer.print( ".value" )
+      endIf
+endAugment
+
+
+augment CmdLabel : Cmd
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      statements.write_cpp( writer, is_statement )
+endAugment
+
+}#
