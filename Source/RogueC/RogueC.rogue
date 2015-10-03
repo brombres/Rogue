@@ -17,6 +17,7 @@ $include "TokenType.rogue"
 $include "Tokenizer.rogue"
 $include "Type.rogue"
 
+RogueC.launch
 
 class RogueC [singleton]
   PROPERTIES
@@ -35,7 +36,7 @@ class RogueC [singleton]
     execute_args    : String
 
   METHODS
-    method init
+    method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
       if (File.exists(libs))
         libraries_folder = libs

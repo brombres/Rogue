@@ -1,18 +1,2 @@
-class Test
-  METHODS
-    method init
-      display
-
-    method display
-      <<again>>
-      println "Display"
-      <<again>>
-endClass
-
-augment Test
-  METHODS
-    method display
-      <<append>>
-      println "Again"
-endAugment
-
+println "Hello World!"
+println 3+4

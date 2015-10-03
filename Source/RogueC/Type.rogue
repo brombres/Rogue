@@ -47,20 +47,21 @@ class Type
   METHODS
     method init( t, name )
 
-    method add_method( m_t:Token, m_name:String, is_augment=false:Logical )->Method
-      local m = Method( m_t, this, m_name )
+    method add_method( m_t:Token, m_name:String )->Method
+      return add_method( Method(m_t, this, m_name) )
 
+    method add_method( m:Method )->Method
       method_list.add( m )
-      local list = method_lookup_by_name[ m_name ]
+      local list = method_lookup_by_name[ m.name ]
       if (not list)
         list = Method[]
-        method_lookup_by_name[ m_name ] = list
+        method_lookup_by_name[ m.name ] = list
       endIf
       list.add( m )
 
       return m
 
-    method add_routine( r_t:Token, r_name:String, is_augment=false:Logical )->Method
+    method add_routine( r_t:Token, r_name:String )->Method
       local r = Method( r_t, this, r_name )
       r.attributes.add( Attribute.is_routine )
 

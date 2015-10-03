@@ -547,20 +547,8 @@ augment Program
       writer.println( "}" )
       writer.println
 
-      # Create main object
-      local main_class_type = "Rogue_program.type_" + main_class.cpp_name
-      if (main_class.is_singleton)
-        writer.print( "Rogue_program.main_object = " ).print( main_class_type ).println( "->singleton();" )
-
-      else
-        writer.print( "Rogue_program.main_object = " ).print( main_class_type ).println( "->create_and_init_object();" )
-
-        # Call init() on main object
-        local m = main_class.find_method( "init()" )
-        if (m)
-          writer.print(m.cpp_name).print("( (").print(main_class.cpp_class_name).println("*)Rogue_program.main_object );")
-        endIf
-      endIf
+      # Call Global::on_launch()
+      writer.println "RogueGlobal__on_launch( Rogue_program.type_Global->singleton() );"
 
       writer.println( "Rogue_program.collect_garbage();" )
 

@@ -87,6 +87,7 @@ class Parser
 
     method parse_element->Logical
       consume_eols
+      if (not reader.has_another) return false
 
       local t = peek
 
@@ -96,6 +97,16 @@ class Parser
 
       elseIf (t.type is TokenType.keyword_augment)
         parse_augment
+        return true
+
+      else
+        this_type = Program.get_type_reference( peek, "Global" )
+        if (not Program.m_on_launch)
+          Program.m_on_launch = Method( peek, this_type, "on_launch" )
+          Program.m_on_launch.statements.add( Program.m_on_launch.begin_label(peek,"insert",false) )
+        endIf
+        this_method = Program.m_on_launch
+        parse_multi_line_statements( this_method.statements ) 
         return true
 
       endIf
@@ -109,13 +120,6 @@ class Parser
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       which (template.element_type)
-        case Attribute.is_class
-          if (not Program.implicit_main_class_t or 
-              (Program.implicit_main_class_t.filepath != Program.first_filepath and t.filepath == Program.first_filepath))
-            Program.implicit_main_class_t    = t
-            Program.implicit_main_class_name = name
-          endIf
-
         case Attribute.is_compound
           template.attributes.add( Attribute.is_functional )
       endWhich
@@ -472,8 +476,8 @@ class Parser
           name = "to_" + return_type.name
       endWhich
 
-      if (as_routine) this_method = this_type.add_routine( t, name, parsing_augment )
-      else            this_method = this_type.add_method( t, name, parsing_augment )
+      if (as_routine) this_method = this_type.add_routine( t, name )
+      else            this_method = this_type.add_method( t, name )
 
       this_method.return_type = return_type
 

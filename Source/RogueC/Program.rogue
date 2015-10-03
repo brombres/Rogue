@@ -13,11 +13,7 @@ class Program [requisite singleton]
     augment_lookup = Table<<String,Augment[]>>()
 
     first_filepath           = ""
-    explicit_main_class_t    : Token
-    explicit_main_class_name : String
-    implicit_main_class_t    : Token
-    implicit_main_class_name : String
-    main_class               : Type
+    m_on_launch              : Method
 
     type_list       = Type[]                 : Type[]
     type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
@@ -162,13 +158,9 @@ class Program [requisite singleton]
       return type
 
     method resolve
-      if (explicit_main_class_t)
-        main_class = get_type_reference( explicit_main_class_t, explicit_main_class_name )
-      elseIf (implicit_main_class_t)
-        main_class = get_type_reference( implicit_main_class_t, implicit_main_class_name )
-      else
-        throw RogueError( "No candidates for main class." )
-      endIf
+      if (m_on_launch) type_Global.add_method( m_on_launch )
+      else             m_on_launch = type_Global.add_method( type_Global.t, "on_launch" )
+      m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
 
       type_null.resolve
       type_Real.resolve
@@ -185,10 +177,6 @@ class Program [requisite singleton]
       type_NativeArray.resolve
       type_GenericList.resolve
       type_String.resolve
-
-      main_class.resolve
-      local m = main_class.find_method( "init()" )
-      if (m) m.resolve
 
       # Reference and resolve all requisite type templates
       forEach (templ in template_list)
