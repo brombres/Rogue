@@ -351,80 +351,6 @@ class Type
         endIf
       endIf
 
-      # Apply routine and method augments
-      #{
-      forEach (r_aug in routine_augments)
-        r_aug.organize( false )
-        local r = find_routine( r_aug.signature )
-        if (r)
-          println "TODO: incorporate routine augment"
-        else
-          routine_list.add( r_aug )
-          routine_lookup_by_signature[ r_aug.signature ] = r_aug
-          local lookup_list = routine_lookup_by_name[ r_aug.name ]
-          if (not lookup_list)
-            lookup_list = Method[]
-            routine_lookup_by_name[ r_aug.name ] = lookup_list
-          endIf
-          lookup_list.add( r_aug )
-        endIf
-      endForEach
-
-      forEach (m_aug in method_augments)
-        m_aug.organize( false )
-        local m = find_method( m_aug.signature )
-        if (m)
-          if (m.type_context is this)
-            # Apply augment to existing method
-            forEach (method_label in m.label_list)
-              local aug_label = m_aug.label_lookup[ method_label.name ]
-              if (aug_label)
-                method_label.statements.add( aug_label.statements )
-                aug_label.is_referenced = true
-              endIf
-            endForEach
-
-            forEach (label in m_aug.label_list)
-              if (not label.is_referenced)
-                throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
-              endIf
-            endForEach
-
-          else
-            # Override the base class method with this augment method
-            # augmenting it.
-            local i1 = method_list.locate( m )!
-            local i2 = method_lookup_by_name[ m.name ].locate( m )!
-            method_list[ i1 ] = m_aug
-            method_lookup_by_name[ m.name ][ i2 ] = m_aug
-
-            promote_augment_method_to_standard_method( m_aug )
-
-          endIf
-
-        else
-println "adding new method for $::$" (m_aug.type_context,m_aug.signature)
-          # No existing method matching augment method.  Right now all the augment
-          # statements are packed into its labels.  Copy all of the <<insert>> statements
-          # followed by all of the <<append>> statements into the body of the method.
-          # Give the new method its own insert/append labels for any other augments
-          # that may be applied after.
-          promote_augment_method_to_standard_method( m_aug )
-
-          method_list.add( m_aug )
-          method_lookup_by_signature[ m_aug.signature ] = m_aug
-          local lookup_list = method_lookup_by_name[ m_aug.name ]
-          if (not lookup_list)
-            lookup_list = Method[]
-            method_lookup_by_name[ m_aug.name ] = lookup_list
-          endIf
-          lookup_list.add( m_aug )
-
-          m_aug.organize( true )
-        endIf
-      endForEach
-      }#
-
       index_and_move_inline_to_end( routine_list )
       index_and_move_inline_to_end( method_list )
 
@@ -544,7 +470,7 @@ println "adding new method for $::$" (m_aug.type_context,m_aug.signature)
           endIf
         endIf
 
-        if (m.type_context.is_aspect) m = m.incorporate( this )
+        if (m.type_context.is_aspect) return   # aspect default methods don't replace existing methods
         elseIf (m.is_augment)         m.convert_augment_to_standalone
 
         if (not existing_m.type_context.is_aspect)

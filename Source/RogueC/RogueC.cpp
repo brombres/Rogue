@@ -25439,7 +25439,7 @@ void RogueType__inherit_method( RogueClassType* THIS, RogueClassMethod* m_0, Rog
     }
     if (((RogueType__is_aspect( m_0->type_context ))))
     {
-      m_0 = ((RogueClassMethod*)((RogueMethod__incorporate( m_0, THIS ))));
+      return;
     }
     else if (((RogueMethod__is_augment( m_0 ))))
     {
@@ -28541,10 +28541,6 @@ RogueString* RogueCharacterReader__type_name( RogueObject* THIS )
 {
   switch (THIS->type->index)
   {
-    case 45:
-      return RogueFileReader__type_name( (RogueFileReader*)THIS );
-    case 153:
-      return RogueParseReader__type_name( (RogueClassParseReader*)THIS );
     default:
       return 0;
   }
