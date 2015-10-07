@@ -1,2 +1,87 @@
-local st = ''Hello World!''
-println st
+#println StringBuilder().print_real(3.1)
+#println 0x8000000000000000
+#local n = 0x8000000 : Long
+#n = n:<<:4
+#println n
+
+augment StringBuilder
+  METHODS
+    method print_real( value:Real )->StringBuilder
+      local original_value = value
+
+      if (value < 0)
+        print( '-' )
+        value = -value
+      endIf
+
+      # Display power of 10 exponent for numbers >= 1E16 or <= 1E-16
+      if (value >= 1000000000000000.0 or value < 0.00000000000000001)
+        local pow10 : Integer
+        if (value > 1000000000000000.0)
+          pow10 = 1
+          while (value >= 10.0)
+            value /= 10.0
+            ++pow10
+          endWhile
+        else
+          pow10 = -1
+          while (value < 1)
+            value *= 10.0
+            --pow10
+          endWhile
+        endIf
+
+        local digit = Math.floor( value ) -> Integer
+        print( value )
+        value -= Math.floor(value)
+        if (value)
+          print( '.' )
+          forEach (1..16)
+            value *= 10
+            digit = Math.floor( value ) -> Integer
+            print digit
+            value -= digit
+            if (not value) escapeForEach
+          endForEach
+        endIf
+        print( 'E' ).print( pow10 )
+        return this
+      endIf
+
+      # Standard output
+      local whole = Math.floor( value )->Long
+      local whole_st = whole->String + "."
+      value -= whole
+
+      local at_least_one_decimal_digit = false
+      while (value < 0.1)
+        value *= 10.0
+        whole_st += '0'
+        at_least_one_decimal_digit = true
+      endWhile
+
+      print( whole_st )
+
+      # get the next 18 digits
+      local decimal_st = Math.floor( value * 1000000000000000000.0 )->Long->String
+
+      # Find the fewest number of digits that will parse back to the correct number
+      local digits = 1
+      if (at_least_one_decimal_digit) digits = 0
+      while (digits < 18)
+        if ((whole_st + decimal_st.leftmost(digits))->Real == original_value) escapeWhile
+        ++digits
+      endWhile
+
+      print( decimal_st.leftmost(digits) )
+
+      return this
+
+endAugment 
+
+
+
+
+
+
+

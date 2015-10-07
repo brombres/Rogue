@@ -23,11 +23,12 @@ class Float [primitive]
 endClass
 
 class Long [primitive]
-#{
   METHODS
     method hash_code->Integer
       return this
-}#
+
+    method to->String
+      return StringBuilder().print( this )->String
 endClass
 
 class Integer [primitive]
