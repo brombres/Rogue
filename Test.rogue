@@ -1,27 +1,2 @@
-Test()
-
-class Base
-  METHODS
-    #{
-    method display
-      println "Base"
-      }#
-endClass
-
-class Aspect [aspect]
-  METHODS
-    method display
-      println "Aspect"
-endClass
-
-class Test : Base, Aspect
-  METHODS
-    method init
-      display
-endClass
-
-augment Test
-  METHODS
-    method display
-      println "Augment"
-endAugment
+local st = ''Hello World!''
+println st

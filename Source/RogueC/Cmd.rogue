@@ -3845,6 +3845,9 @@ class CmdLabel : Cmd
       if (clone_args) clone_args.register_label( result )
       return result
 
+    method requires_semicolon->Logical
+      return false
+
     method resolve( scope:Scope )->Cmd
       statements.resolve( scope )
       return this

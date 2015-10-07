@@ -82,11 +82,11 @@ class Type
       return s
 
     method add_property( p_t:Token, p_name:String, p_type=null:Type, initial_value=null:Cmd )->Property
-      local p = Property( p_t, this, p_name )
-      p.type = p_type
-      p.initial_value = initial_value
+      return add_property( Property(p_t, this, p_name, p_type, initial_value) )
+
+    method add_property( p:Property )->Property
       property_list.add( p )
-      property_lookup[p_name] = p
+      property_lookup[p.name] = p
       return p
 
     method compile_type->Type

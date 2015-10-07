@@ -8,7 +8,7 @@ class Property
     initial_value : Cmd
 
   METHODS
-    method init( t, type_context, name )
+    method init( t, type_context, name, type=null, initial_value=null )
 
     method clone->Property
       local result = Property( t, type_context, name )
