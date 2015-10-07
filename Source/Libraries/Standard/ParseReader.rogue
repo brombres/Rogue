@@ -88,6 +88,9 @@ class ParseReader : Reader<<Character>>
     method has_another->Logical
       return (position < count)
 
+    method has_another( n:Integer )->Logical
+      return (position+n <= count)
+
     method peek->Character
       if (position == count) return 0->Character
       return data[position]

@@ -1232,6 +1232,33 @@ class CmdLiteralReal : CmdLiteral
 endClass
 
 
+class CmdLiteralLong : CmdLiteral
+  PROPERTIES
+    value : Long
+
+  METHODS
+    method init( t, value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralLong( t, value )
+
+    method cast_to( target_type:Type )->Cmd
+      if (target_type is Program.type_Real)
+        return CmdLiteralReal( t, value )
+      elseIf (target_type is Program.type_Integer)
+        return CmdLiteralInteger( t, value )
+      else
+        return prior.cast_to( target_type )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return Program.type_Long
+endClass
+
+
 class CmdLiteralInteger : CmdLiteral
   PROPERTIES
     value : Integer
@@ -1563,7 +1590,9 @@ class CmdAccess : Cmd
         endIf
 
         local v = scope.find_local( name )
-        if (v) return CmdWriteLocal(t,v,new_value).resolve(scope)
+        if (v)
+          return CmdWriteLocal(t,v,new_value).resolve(scope)
+        endIf
 
         local p = scope.this_method.type_context.find_setting( name )
         if (p) return CmdWriteSetting( t, p, new_value )
@@ -1640,7 +1669,7 @@ class CmdAccess : Cmd
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
     method type->Type
-      local err = t.error( "[INTERNAL] '$' $::type() is not defined." (name,type_name) )
+      local err = t.error( "[INTERNAL] $::type() is not defined (access name '$')." (type_name,name) )
       #println err.stack_trace
       throw err
 endClass
@@ -2292,8 +2321,8 @@ class CmdBinary : Cmd
       if (operator_method_call) return operator_method_call
 
       local common_type = must_find_common_type( left_type, right_type )
-      left = left.cast_to( common_type )
-      right = right.cast_to( common_type )
+      left = left.cast_to( common_type ).resolve( scope )
+      right = right.cast_to( common_type ).resolve( scope )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
       return resolve_for_common_type( scope, common_type )
 
@@ -2854,16 +2883,19 @@ endClass
 class CmdBitwiseOp : CmdBinary
   METHODS
     method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
-      if (common_type is Program.type_Byte or common_type is Program.type_Character)
+      if (common_type is Program.type_Byte or common_type is Program.type_Character or common_type is Program.type_Integer)
         left  = left.cast_to( Program.type_Integer ).resolve( scope )
         right = right.cast_to( Program.type_Integer ).resolve( scope )
-
-        # TODO: allow Integer & Logical
-        #elseIf (common_type isNot Program.type_Integer)
-        #throw t.error( "'$' requires integer operands." (symbol) )
+        return this
       endIf
 
-      return this
+      if (common_type is Program.type_Long)
+        left  = left.cast_to( Program.type_Long ).resolve( scope )
+        right = right.cast_to( Program.type_Long ).resolve( scope )
+        return this
+      endIf
+
+      throw t.error( "The '$' operator cannot be applied to type $." (symbol,common_type) )
 
     method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
       return null

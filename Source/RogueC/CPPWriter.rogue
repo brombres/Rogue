@@ -22,6 +22,11 @@ class CPPWriter
         forEach (1..indent) buffer.print(' ')
       endIf
 
+    method print( value:Long )->CPPWriter
+      print_indent
+      buffer.print( value )
+      return this
+
     method print( value:Integer )->CPPWriter
       print_indent
       buffer.print( value )
@@ -53,6 +58,12 @@ class CPPWriter
       return this
 
     method println->CPPWriter
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Long )->CPPWriter
+      print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
@@ -1350,6 +1361,12 @@ augment CmdLiteralReal
       writer.print( value )
 endAugment
 
+
+augment CmdLiteralLong
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( value )
+endAugment
 
 augment CmdLiteralInteger
   METHODS

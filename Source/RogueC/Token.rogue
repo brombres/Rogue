@@ -38,6 +38,9 @@ class Token
     method to->Integer
       return 0
 
+    method to->Long
+      return this->Integer
+
     method to->Real
       return 0
 
@@ -95,6 +98,26 @@ class LiteralCharacterToken : Token
 
     method to->Character
       return value
+
+    method to->String
+      return ""+value
+endClass
+
+class LiteralLongToken : Token
+  PROPERTIES
+    value : Long
+
+  METHODS
+    method init( type, value )
+
+    method to->Integer
+      return value->Integer
+
+    method to->Long
+      return value
+
+    method to->Real
+      return value->Real
 
     method to->String
       return ""+value

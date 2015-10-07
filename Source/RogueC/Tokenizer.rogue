@@ -49,6 +49,10 @@ class Tokenizer
       tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
       return true
 
+    method add_new_token( type:TokenType, value:Long )->Logical
+      tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
+      return true
+
     method add_new_token( type:TokenType, value:Integer )->Logical
       tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
       return true
@@ -619,23 +623,31 @@ class Tokenizer
       reader.read  # '0'
       reader.read  # [b,c,x] = [2,8,16]
 
-      local bits_per_value = 1
-      while (2^bits_per_value < base) ++bits_per_value
+      #{
+      local count = 0
+      local digit = reader.peek.to_number
+      while (reader.has_another(count+1) and digit != -1 and digit < base)
+        ++count
+        digit = reader.peek( count ).to_number
+      endWhile
+
+      if (base == 2 and count > 32
+      }#
 
       local count = 0
       local n = 0
-      local digit = reader.peek.to_number
+      local digit = reader.peek.to_number( base )
       while (reader.has_another and digit != -1)
         if (digit >= base) throw error( "Digit out of range for base " + base + "." )
         ++count
         n = n * base + digit
         reader.read
-        digit = reader.peek.to_number
+        digit = reader.peek.to_number( base )
       endWhile
 
       if (count == 0) throw error( "One or more digits expected." )
 
-      if (bits_per_value * count > 32) throw error( "Number too large for base " + base + "." )
+      #if (bits_per_value * count > 32) throw error( "Number too large for base " + base + "." )
 
       return add_new_token( TokenType.literal_integer, n )
 
@@ -643,52 +655,63 @@ class Tokenizer
       local is_negative = consume('-')
       local is_Real = false
 
-      local n  = tokenize_Integer
+      local long_n = tokenize_Integer
 
-      if (reader.peek == '.')
-        local ch = reader.peek(1)
-        if (ch >= '0' and ch <= '9')
-          reader.read
+      local ch = reader.peek
+      if ((ch=='.' and reader.peek(1).is_number(10)) or ch=='e' or ch=='E')
+        # We have a real number
+        local n = long_n->Real
+
+        if (reader.peek == '.')
+          ch = reader.peek(1)
+          if (ch >= '0' and ch <= '9')
+            reader.read
+            is_Real = true
+            local start_pos = reader.position
+            local fraction = tokenize_Integer
+            n += fraction / 10^(reader.position - start_pos)
+          elseIf (ch == '.')
+            # Start of range
+            if (is_negative) n = -n
+            return add_new_token( TokenType.literal_integer, n->Integer )
+          elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_')
+            # E.g. 5.hash_code is (5).hash_code, not 5.0hashcode
+            return add_new_token( TokenType.literal_integer, n->Integer )
+          else
+            if (is_negative) n = -n
+            return add_new_token( TokenType.literal_real, n )
+          endIf
+        endIf
+
+        if (consume('E') or consume('e'))
           is_Real = true
-          local start_pos = reader.position
-          local fraction = tokenize_Integer
-          n += fraction / 10^(reader.position - start_pos)
-        elseIf (ch == '.')
-          # Start of range
-          if (is_negative) n = -n
-          return add_new_token( TokenType.literal_integer, n->Integer )
-        elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_')
-          # E.g. 5.hash_code is (5).hash_code, not 5.0hashcode
-          return add_new_token( TokenType.literal_integer, n->Integer )
+          local negative_exponent = consume('-')
+          if (not negative_exponent) consume('+')
+          local power = tokenize_Integer
+          if (negative_exponent) n /= power
+          else                   n *= power
+        endIf
+
+        if (is_negative) n = -n;
+        return add_new_token( TokenType.literal_real, n )
+
+      else
+        # Integer or Long
+        if (is_negative) long_n = -long_n;
+
+        if (long_n == long_n->Integer)
+          return add_new_token( TokenType.literal_integer, long_n->Integer )
         else
-          if (is_negative) n = -n
-          return add_new_token( TokenType.literal_real, n )
+          return add_new_token( TokenType.literal_long, long_n->Long )
         endIf
       endIf
 
-      if (consume('E') or consume('e'))
-        is_Real = true
-        local negative_exponent = consume('-')
-        if (not negative_exponent) consume('+')
-        local power = tokenize_Integer
-        if (negative_exponent) n /= power
-        else                   n *= power
-      endIf
-
-      if (is_negative) n = -n;
-
-      if (is_Real)
-        return add_new_token( TokenType.literal_real, n )
-      else
-        return add_new_token( TokenType.literal_integer, n->Integer )
-      endIf
-
     method tokenize_Integer->Real
-      local n = 0.0
+      local n = 0 : Integer
       local ch = reader.peek
       while (ch >= '0' and ch <= '9')
         local intval = reader.read->Integer - '0'
-        n = n * 10.0 + intval
+        n = n * 10 + intval
         ch = reader.peek
       endWhile
       return n

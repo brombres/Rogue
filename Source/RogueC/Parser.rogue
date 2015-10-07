@@ -1791,6 +1791,10 @@ class Parser
         local value = t->Integer
         return CmdLiteralInteger( t, value )
 
+      elseIf (consume(TokenType.literal_long))
+        local value = t->Long
+        return CmdLiteralLong( t, value )
+
       elseIf (consume(TokenType.literal_character))
         local value = t->Character
         return CmdLiteralCharacter( t, value->Character )

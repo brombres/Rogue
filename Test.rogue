@@ -1,8 +1,11 @@
 #println StringBuilder().print_real(3.1)
 #println 0x8000000000000000
-#local n = 0x8000000 : Long
-#n = n:<<:4
-#println n
+local n = 1 : Long
+forEach (1..63)
+  println n
+  n = n :<<: 1
+endForEach
+println n
 
 augment StringBuilder
   METHODS

@@ -177,6 +177,9 @@ class TokenType
     method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
       return LiteralCharacterToken( this, value ).set_location( filepath, line, column )
 
+    method create_token( filepath:String, line:Integer, column:Integer, value:Long )->Token
+      return LiteralLongToken( this, value ).set_location( filepath, line, column )
+
     method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
       return LiteralIntegerToken( this, value ).set_location( filepath, line, column )
 
