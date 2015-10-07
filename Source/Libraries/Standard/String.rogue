@@ -170,6 +170,9 @@ class String [native functional]
     method operator+( value:String )->String
       $if ("C++") inlineNative '$this->plus($value)'
 
+    method reader->StringReader
+      return StringReader( this )
+
     method reversed->String
       local buffer = StringBuilder(count)
       forEach (ch in this step -1)

@@ -237,6 +237,7 @@ augment Program
         i1 = name.locate('?')
       endWhile
 
+      # Type<<Specialization>> -> SpecializationType
       i1 = name.locate("<<")
       while (i1?)
         local i2 = name.locate_last(">>")
@@ -246,11 +247,14 @@ augment Program
         local after  = name.substring(i2.value+2)
         local middle = name.substring(i1.value+2,i2.value-1)
 
-        #name = "$_of_$$" (before,middle,after)
-
         name = "$$$" (validate_cpp_name(middle),before,after)
         # Example:
         #   Table<<String,Integer>>[] -> StringIntegerTable[]
+
+        if (Program.find_type(name))
+          # Preferred name already exists; revert to "Type_of_Specialization"
+          name = "$_of_$$" (before,middle,after)
+        endIf
 
         i1 = name.locate("<<")
       endWhile

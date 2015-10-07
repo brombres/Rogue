@@ -7,6 +7,27 @@ class Reader<<$DataType>> [aspect]
     method read->$DataType
 endClass
 
+class StringReader : Reader<<Character>>
+  PROPERTIES
+    position : Integer
+    count    : Integer
+    string   : String
+
+  METHODS
+    method init( string )
+      if (string) count = string.count
+
+    method has_another->Logical
+      return (position < count)
+
+    method peek->Character
+      if (position == count) return 0
+      return string[ position ]
+
+    method read->Character
+      ++position
+      return string[ position - 1 ]
+endClass
 
 class LineReader : Reader<<String>>
   PROPERTIES
@@ -20,6 +41,9 @@ class LineReader : Reader<<String>>
 
     method init( file:File )
       init( file.reader )
+
+    method init( string:String )
+      init( string.reader )
 
     method has_another->Logical
       return next
