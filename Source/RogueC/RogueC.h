@@ -5451,6 +5451,7 @@ RogueClassCmd* RogueCmdAccess__resolve( RogueClassCmdAccess* THIS, RogueClassSco
 RogueClassCmd* RogueCmdAccess__resolve_assignment( RogueClassCmdAccess* THIS, RogueClassScope* scope_0, RogueClassCmd* new_value_1 );
 RogueClassCmd* RogueCmdAccess__resolve_modify_and_assign( RogueClassCmdAccess* THIS, RogueClassScope* scope_0, RogueClassTokenType* op_1, RogueClassCmd* new_value_2 );
 RogueClassType* Rogue_CmdAccess__type( RogueClassCmdAccess* THIS );
+void RogueCmdAccess__write_cpp( RogueClassCmdAccess* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdAccess* RogueCmdAccess__init_object( RogueClassCmdAccess* THIS );
 RogueClassCmdAccess* RogueCmdAccess__init( RogueClassCmdAccess* THIS, RogueClassToken* _auto_234_0, RogueString* _auto_235_1 );
 RogueClassCmdAccess* RogueCmdAccess__init( RogueClassCmdAccess* THIS, RogueClassToken* _auto_236_0, RogueString* _auto_237_1, RogueClassCmdArgs* _auto_238_2 );
@@ -5913,7 +5914,7 @@ RogueLogical RogueTokenizer__tokenize_another( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__tokenize_comment( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__tokenize_integer_in_base( RogueClassTokenizer* THIS, RogueInteger base_0 );
 RogueLogical RogueTokenizer__tokenize_number( RogueClassTokenizer* THIS );
-RogueReal RogueTokenizer__tokenize_Integer( RogueClassTokenizer* THIS );
+RogueLong RogueTokenizer__tokenize_Integer( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__tokenize_string( RogueClassTokenizer* THIS, RogueCharacter terminator_0 );
 RogueLogical RogueTokenizer__tokenize_verbatim_string( RogueClassTokenizer* THIS );
 RogueClassTokenizer* RogueTokenizer__init_object( RogueClassTokenizer* THIS );

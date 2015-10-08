@@ -1413,6 +1413,11 @@ augment CmdLiteralString
       endIf
 endAugment
 
+augment CmdAccess
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      throw t.error( "[INTERNAL] $::write_cpp() is not defined (access name $)." (type_name,name) )
+endAugment
 
 augment CmdCreateObject
   METHODS

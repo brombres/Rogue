@@ -655,7 +655,7 @@ class Tokenizer
       local is_negative = consume('-')
       local is_Real = false
 
-      local long_n = tokenize_Integer
+      local long_n = tokenize_Integer->Long
 
       local ch = reader.peek
       if ((ch=='.' and reader.peek(1).is_number(10)) or ch=='e' or ch=='E')
@@ -702,12 +702,12 @@ class Tokenizer
         if (long_n == long_n->Integer)
           return add_new_token( TokenType.literal_integer, long_n->Integer )
         else
-          return add_new_token( TokenType.literal_long, long_n->Long )
+          return add_new_token( TokenType.literal_long, long_n )
         endIf
       endIf
 
-    method tokenize_Integer->Real
-      local n = 0 : Integer
+    method tokenize_Integer->Long
+      local n = 0 : Long
       local ch = reader.peek
       while (ch >= '0' and ch <= '9')
         local intval = reader.read->Integer - '0'

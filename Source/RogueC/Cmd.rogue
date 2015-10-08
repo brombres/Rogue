@@ -2314,7 +2314,8 @@ class CmdBinary : Cmd
       right = right.resolve( scope )
       local left_type = left.require_type
       local right_type = right.require_type
-      return resolve_for_types( scope, left_type, right_type )
+      local result = resolve_for_types( scope, left_type, right_type )
+      return result
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       local operator_method_call = resolve_operator_method( scope, left_type, right_type )
@@ -2576,8 +2577,8 @@ class CmdComparison : CmdBinary
       endIf
 
       local common_type = must_find_common_type( left_type, right_type )
-      left = left.cast_to( common_type )
-      right = right.cast_to( common_type )
+      left = left.cast_to( common_type ).resolve( scope )
+      right = right.cast_to( common_type ).resolve( scope )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
 
       return this
