@@ -1365,7 +1365,7 @@ endAugment
 augment CmdLiteralLong
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( value )
+      writer.print( value ).print( "LL" )
 endAugment
 
 augment CmdLiteralInteger

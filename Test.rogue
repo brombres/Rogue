@@ -1,5 +1,4 @@
-local x = 5 : Long
-if (x == x->Integer) println "true"
+println 5234567890
 
 #println StringBuilder().print_real(3.1)
 #println 0x8000000000000000
