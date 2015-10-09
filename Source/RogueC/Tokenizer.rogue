@@ -653,23 +653,24 @@ class Tokenizer
 
     method tokenize_number->Logical
       local is_negative = consume('-')
-      local is_Real = false
 
-      local long_n = tokenize_Integer->Long
+      local i = 0
+      while (reader.has_another(i+1) and reader.peek(i).is_number()) ++i
+      local ch = reader.peek(i)
+      local is_real = ((ch == '.' and reader.peek(i+1).is_number) or ch == 'e' or ch == 'E')
 
-      local ch = reader.peek
-      if ((ch=='.' and reader.peek(1).is_number(10)) or ch=='e' or ch=='E')
+      if (is_real)
         # We have a real number
-        local n = long_n->Real
+        local n = scan_real
+        ch = reader.peek
 
-        if (reader.peek == '.')
+        if (ch == '.')
           ch = reader.peek(1)
           if (ch >= '0' and ch <= '9')
             reader.read
-            is_Real = true
             local start_pos = reader.position
-            local fraction = tokenize_Integer
-            n += fraction / 10^(reader.position - start_pos)
+            local fraction = scan_real
+            n += fraction / 10.0^(reader.position - start_pos)
           elseIf (ch == '.')
             # Start of range
             if (is_negative) n = -n
@@ -684,12 +685,11 @@ class Tokenizer
         endIf
 
         if (consume('E') or consume('e'))
-          is_Real = true
           local negative_exponent = consume('-')
           if (not negative_exponent) consume('+')
-          local power = tokenize_Integer
-          if (negative_exponent) n /= power
-          else                   n *= power
+          local power = scan_real
+          if (negative_exponent) n /= 10.0^power
+          else                   n *= 10.0^power
         endIf
 
         if (is_negative) n = -n;
@@ -697,16 +697,27 @@ class Tokenizer
 
       else
         # Integer or Long
-        if (is_negative) long_n = -long_n;
+        local n = scan_long
+        if (is_negative) n = -n;
 
-        if (long_n == long_n->Integer)
-          return add_new_token( TokenType.literal_integer, long_n->Integer )
+        if (n == n->Integer)
+          return add_new_token( TokenType.literal_integer, n->Integer )
         else
-          return add_new_token( TokenType.literal_long, long_n )
+          return add_new_token( TokenType.literal_long, n )
         endIf
       endIf
 
-    method tokenize_Integer->Long
+    method scan_real->Real
+      local n = 0.0
+      local ch = reader.peek
+      while (ch >= '0' and ch <= '9')
+        local intval = reader.read->Integer - '0'
+        n = n * 10 + intval
+        ch = reader.peek
+      endWhile
+      return n
+
+    method scan_long->Long
       local n = 0 : Long
       local ch = reader.peek
       while (ch >= '0' and ch <= '9')

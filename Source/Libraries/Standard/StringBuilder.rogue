@@ -56,7 +56,107 @@ class StringBuilder
       if (value) return print( value->String )
       return print( "null" )
 
-    method print( value:Real, decimal_places=4:Integer )->this [native]
+    method print( value:Real )->StringBuilder
+      local original_value = value
+
+      if (value < 0)
+        print( '-' )
+        value = -value
+      endIf
+
+      if (value == 0)
+        print( "0.0" )
+        return this
+      endIf
+
+      # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
+      if (value >= 1000000000000000.0)
+        local pow10 = 0
+        while (value >= 10.0)
+          value /= 10.0
+          ++pow10
+        endWhile
+
+        return print( value ).print( 'e' ).print( pow10->Integer )
+      endIf
+
+      if (value < 0.00001)
+        local pow10 = 0
+        while (value < 0.1)
+          value *= 10.0
+          --pow10
+        endWhile
+
+        return print( value ).print( 'e' ).print( pow10->Integer )
+      endIf
+
+      # Standard output
+      local bytes = Byte[]
+      forEach (decimal_count in 1..18)
+        encode_as_bytes( value, bytes, decimal_count )
+        round_off_bytes( bytes )
+        if (scan_bytes(bytes) == value) escapeForEach 
+      endForEach
+
+      forEach (digit in bytes)
+        if (digit == '.') print( '.' )
+        else              print( ('0'+digit)->Character )
+      endForEach
+
+      return this
+
+    method encode_as_bytes( value:Real, bytes:Byte[], decimal_count:Integer )
+      bytes.clear
+
+      local whole = Math.floor( value )->Long
+      value -= whole
+
+      while (whole >= 10)
+        bytes.insert( whole % 10 )
+        whole /= 10
+      endWhile
+      bytes.insert( whole )
+
+      bytes.add( '.' )
+
+      forEach (2..decimal_count)
+        value *= 10
+        local digit = Math.floor(value)->Integer
+        bytes.add( digit )
+        value -= digit
+      endForEach
+
+    method round_off_bytes( bytes:Byte[] )
+      if (bytes.remove_last >= 5)
+        local i = bytes.count - 1
+        while (i >= 0)
+          if (bytes[i] != '.')
+            ++bytes[i]
+            if (bytes[i] == 10) bytes[i] = 0
+            else                return
+          endIf
+          --i
+        endWhile
+        bytes.insert( 1 )
+      endIf
+
+    method scan_bytes( bytes:Byte[] )->Real
+      local whole = 0.0
+      local decimal = 0.0
+      local decimal_count = 0
+      local scanning_whole = true
+      forEach (digit in bytes)
+        if (scanning_whole)
+          if (digit == '.') scanning_whole = false
+          else              whole = whole * 10 + digit
+        else
+          decimal = decimal * 10 + digit
+          ++decimal_count
+        endIf
+      endForEach
+      return whole + decimal / 10.0^decimal_count
+
+    method print( value:Real, decimal_places:Integer )->this [native]
 
     method print( value:String )->this
       if (value)

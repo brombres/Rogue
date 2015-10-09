@@ -43,13 +43,9 @@ class CPPWriter
           buffer.print( "(2*Rogue_program.pi)" )
 
         others
-          local decimal_digits = 16
-          temp_buffer.clear.print( value, decimal_digits )
-          while (temp_buffer.characters.last == '0') temp_buffer.characters.remove_last; --decimal_digits
-          if (decimal_digits == 0) decimal_digits = 1
-
-          buffer.print( value, decimal_digits )
+          buffer.print( value )
       endWhich
+
       return this
 
     method print( value:String )->CPPWriter
@@ -1801,9 +1797,15 @@ endAugment
 augment CmdMod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local this_type = type
+      local is_real = type is Program.type_Real
       writer.print( Program.program_name ).print( ".mod( " )
+      if (is_real) writer.print( "(double)" )
+      else         writer.print( "(int)" )
       left.write_cpp( writer )
       writer.print( ", " )
+      if (is_real) writer.print( "(double)" )
+      else         writer.print( "(int)" )
       right.write_cpp( writer )
       writer.print( " )" )
 endAugment
