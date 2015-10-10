@@ -61,7 +61,7 @@ libraries:
 	@echo
 
 test:
-	roguec Test.rogue --execute
+	roguec Test.rogue --cull --execute
 
 x2:
 	make remake

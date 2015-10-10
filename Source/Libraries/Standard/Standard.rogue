@@ -21,9 +21,14 @@ $include "Task.rogue"
 $include "Time.rogue"
 $include "XY.rogue"
 
-#$requisite StringBuilder
-#$requisite StringBuilder.init
-#$requisite StringBuilder.clear()
-#$requisite StringBuilder.clear(Integer)
-#$requisite StringBuilder.clear(Bag<<Long>>,Real)
+$requisite Random
+$requisite Byte[]
+$requisite Character[]
+$requisite String[]
+$requisite Task[]
 
+#$requisite Table<<String,Type>>
+#$requisite Table<<String,Method>>
+#$requisite Table<<String,Integer>>
+#$requisite Table<<String,Token[]>>.init()
+#$requisite Table<<String,Logical>>

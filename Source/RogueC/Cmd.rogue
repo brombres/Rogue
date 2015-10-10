@@ -218,7 +218,9 @@ class CmdStatementList : Cmd[]
       forEach (statement in this) statement.exit_scope( scope )
 
     method trace_used_code
-      forEach (statement in this) statement.trace_used_code
+      forEach (statement in this)
+        statement.trace_used_code
+      endForEach
 endClass
 
 
@@ -262,12 +264,6 @@ endClass
 # Statements
 #------------------------------------------------------------------------------
 class CmdStatement : Cmd
-  METHODS
-    method trace_used_code
-      noAction
-endClass
-
-class CmdNoAction : Cmd
   METHODS
     method trace_used_code
       noAction
@@ -1549,7 +1545,9 @@ class CmdAccess : Cmd
             endIf
           endIf
 
-          if (cmd_call) cmd_new = cmd_call
+          if (cmd_call)
+            cmd_new = cmd_call
+          endIf
 
           return cmd_new.resolve(scope)
 
@@ -2024,6 +2022,7 @@ class CmdWriteLocal : Cmd
 
     method trace_used_code
       local_info.type.trace_used_code
+      new_value.trace_used_code
 
     method type->Type
       return local_info.type
@@ -2074,6 +2073,7 @@ class CmdWriteSetting : Cmd
     method trace_used_code
       setting_info.type_context.trace_used_code
       setting_info.type.trace_used_code
+      new_value.trace_used_code
 
     method type->Type
       return setting_info.type
@@ -2101,6 +2101,7 @@ class CmdReadProperty : Cmd
       return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
     method trace_used_code
+      context.trace_used_code
       property_info.type_context.trace_used_code
       property_info.type.trace_used_code
 
@@ -2127,8 +2128,10 @@ class CmdWriteProperty : Cmd
       return this
 
     method trace_used_code
+      if (context) context.trace_used_code
       property_info.type_context.trace_used_code
       property_info.type.trace_used_code
+      new_value.trace_used_code
 
     method type->Type
       return property_info.type

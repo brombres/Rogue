@@ -1,5 +1,7 @@
 $include "Augment.rogue"
 
+class RequisiteItem( t:Token, type:Type, signature=null:String );
+
 class Program [requisite singleton]
   PROPERTIES
     code_prefix  = "Rogue"
@@ -11,9 +13,12 @@ class Program [requisite singleton]
     template_lookup = Table<<String,Template>>() : Table<<String,Template>>
 
     augment_lookup = Table<<String,Augment[]>>()
+    requisite_list = RequisiteItem[]
 
     first_filepath           = ""
     m_on_launch              : Method
+
+    methods_by_signature = Table<<String,Method[]>>()
 
     type_list       = Type[]                 : Type[]
     type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
@@ -186,6 +191,17 @@ class Program [requisite singleton]
       endIf
       }#
 
+      # Go through requisite directives, resolving and marking as requisite each named type
+      # and method
+      forEach (req in requisite_list)
+        req.type.resolve
+        req.type.attributes.add( Attribute.is_requisite )
+        if (req.signature)
+          local m = req.type.find_method( req.signature )
+          if (m) m.attributes.add( Attribute.is_requisite )
+          else     throw req.t.error( "No such method or routine $ in type $." (req.signature,req.type.name) )
+        endIf
+      endForEach
 
       # Reference and resolve all requisite type templates
       forEach (templ in template_list)
@@ -200,14 +216,24 @@ class Program [requisite singleton]
         ++i
       endWhile
 
-      # trace used code
+      trace_used_code
+
+    method trace_used_code
+      local cull_unused_code = RogueC.cull_unused_code
       forEach (type in type_list)
-        #if (type.is_requisite)
+        if (not cull_unused_code or type.is_requisite)
           type.trace_used_code
           forEach (r in type.routine_list) r.trace_used_code
           forEach (m in type.method_list)  m.trace_used_code
-        #endIf
+        endIf
       endForEach
+
+      #{
+      while (trace_compatible_calls) noAction
+    method trace_compatible_calls->Logical
+      # When we have "s = Circle() : Shape; println s.area()", only Shape.area()
+      # is initially visible through code tracing.
+      }#
 
 endClass
 

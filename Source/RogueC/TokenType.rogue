@@ -251,6 +251,18 @@ class DirectiveTokenType : TokenType
       return true
 endClass
 
+class StructuralDirectiveTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Integer, column:Integer )->Token
+      return Token( this ).set_location( filepath, line, column )
+
+    method is_directive->Logical
+      return true
+
+    method is_structure->Logical
+      return true
+endClass
+
 class OpWithAssignTokenType : TokenType
   METHODS
     method is_op_with_assign->Logical

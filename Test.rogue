@@ -1,1 +1,5 @@
 println "Hello World"
+
+local table = Table<<String,Integer>>()
+println table
+

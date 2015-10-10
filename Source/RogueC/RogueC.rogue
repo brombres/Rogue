@@ -33,7 +33,9 @@ class RogueC [singleton]
     output_filepath : String
     target = "C++"
 
-    execute_args    : String
+    cull_unused_code = true: Logical
+
+    execute_args     : String
 
   METHODS
     method launch
@@ -170,6 +172,10 @@ class RogueC [singleton]
           elseIf (arg == "--main")
             if (value.count) throw RogueError( "Unexpected value for '--main' option." )
             generate_main = true
+
+          elseIf (arg == "--cull")
+            if (value.count) throw RogueError( "Unexpected value for '--cull' option." )
+            cull_unused_code = true
 
           else
             throw RogueError( "Unknown option '$'." (arg) )

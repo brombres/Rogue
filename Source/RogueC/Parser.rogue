@@ -124,8 +124,8 @@ class Parser
               buffer.print( ')' )
             endIf
             signature = buffer->String
-println "SIGNATURE: " + signature
           endIf
+          Program.requisite_list.add( RequisiteItem(t,type,signature) )
           consume_eols
         endWhile
         return true

@@ -22,8 +22,9 @@ class Method
     aspect_statements     : CmdStatementList
     incorporating_classes : Type[]
 
-    overridden_method : Method
-    native_code       : String
+    overridden_method  : Method
+    overriding_methods = Method[]
+    native_code        : String
 
     organized : Logical
     resolved  : Logical
@@ -227,7 +228,14 @@ class Method
       assign_signature
 
       if (add_to_lookup and not is_augment)
-        # Add method to type's lookup table.
+        # Add method to lookup tables.
+
+        local list = Program.methods_by_signature[ signature ]
+        if (not list)
+          list = Method[]
+          Program.methods_by_signature[ signature ] = list
+        endIf
+        list.add( this )
 
         if (is_routine)
           local existing_m = type_context.routine_lookup_by_signature[signature]
@@ -402,5 +410,20 @@ class Method
       if (return_type) return_type.trace_used_code
 
       statements.trace_used_code
+
+      forEach (overriding_m in overriding_methods)
+        overriding_m.trace_used_code
+      endForEach
+
+      #{
+      local list = Program.methods_by_signature[ signature ]
+      if (list)
+        forEach (compatible_m in list)
+          if (compatible_m isNot this and not compatible_m.is_used)
+            if (type_context.instance_of(
+          endIf
+        endForEach
+      endIf
+      }#
 endClass
 

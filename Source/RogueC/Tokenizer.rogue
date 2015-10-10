@@ -77,7 +77,7 @@ class Tokenizer
       TokenType.directive_elseIf    = define( DirectiveTokenType("$elseIf") )
       TokenType.directive_else      = define( DirectiveTokenType("$else") )
       TokenType.directive_endIf     = define( DirectiveTokenType("$endIf") )
-      TokenType.directive_requisite = define( DirectiveTokenType("$requisite") )
+      TokenType.directive_requisite = define( StructuralDirectiveTokenType("$requisite") )
 
       TokenType.placeholder_id       = define( TokenType("$id") )
 
