@@ -129,10 +129,10 @@ RogueCharacter RogueSystemMessageQueue::read_character()
   return   (result << 8) | read_byte();
 }
 
-RogueFloat RogueSystemMessageQueue::read_float()
+RogueReal32 RogueSystemMessageQueue::read_float()
 {
   RogueInteger n = read_integer();
-  return *((RogueFloat*)&n);
+  return *((RogueReal32*)&n);
 }
 
 RogueInteger RogueSystemMessageQueue::read_int_x()
@@ -896,7 +896,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   memset( types, 0, sizeof(RogueType*) );
 
   type_Real      = new RogueRealType();
-  type_Float     = new RogueFloatType();
+  type_Real32     = new RogueReal32Type();
   type_Long      = new RogueLongType();
   type_Integer   = new RogueIntegerType();
   type_Character = new RogueCharacterType();
@@ -904,7 +904,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   type_Logical   = new RogueLogicalType();
 
   type_OptionalReal      = new RogueOptionalRealType();
-  type_OptionalFloat     = new RogueOptionalFloatType();
+  type_OptionalReal32     = new RogueOptionalReal32Type();
   type_OptionalLong      = new RogueOptionalLongType();
   type_OptionalInteger   = new RogueOptionalIntegerType();
   type_OptionalCharacter = new RogueOptionalCharacterType();
