@@ -60,10 +60,12 @@ class TaskManager [requisite singleton]
       endWhile
 
     method dispatch_events
+      #{
       SystemEventQueue.begin_reading
       while (SystemEventQueue.has_another)
         println SystemEventQueue.read_string
       endWhile
+      }#
 
     method update->Logical
       EventManager.dispatch_events

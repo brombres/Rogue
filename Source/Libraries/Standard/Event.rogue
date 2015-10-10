@@ -21,6 +21,7 @@ class EventManager [singleton]
 endClass
 
 
+#{
 class SystemEventQueue
   ROUTINES
     routine begin_reading
@@ -47,3 +48,4 @@ class SystemEventQueue
     routine read_string->String
       inlineNative "Rogue_program.event_queue.read_string()"
 endClass
+}#

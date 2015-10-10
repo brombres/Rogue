@@ -202,52 +202,6 @@ struct RogueSystemList
 
 
 //-----------------------------------------------------------------------------
-//  RogueSystemMessageQueue
-//-----------------------------------------------------------------------------
-struct RogueSystemMessageQueue
-{
-  RogueSystemList<RogueByte>* write_list;
-  RogueSystemList<RogueByte>* read_list;
-  int read_position;
-  int remaining_bytes_in_current;
-  int message_size_location;
-
-  RogueSystemMessageQueue();
-  ~RogueSystemMessageQueue();
-
-  RogueSystemMessageQueue* begin_message( const char* message_type );
-  void                     begin_reading();
-  bool                     has_another();
-
-  RogueByte                read_byte();
-  RogueCharacter           read_character();
-  RogueReal32               read_float();
-  RogueInteger             read_int_x();
-  RogueInteger             read_integer();
-  RogueLogical             read_logical();
-  RogueLong                read_long();
-  RogueReal                read_real();
-  int                      read_string( char* buffer, int buffer_size );
-  char*                    read_new_c_string();
-  RogueString*             read_string();
-
-  RogueSystemMessageQueue* write_byte( int value );
-  RogueSystemMessageQueue* write_character( int value );
-  RogueSystemMessageQueue* write_float( float value);
-  RogueSystemMessageQueue* write_int_x( int value );
-  RogueSystemMessageQueue* write_integer( int value );
-  RogueSystemMessageQueue* write_logical( bool value );
-  RogueSystemMessageQueue* write_long( RogueLong value );
-  RogueSystemMessageQueue* write_real( double value );
-  RogueSystemMessageQueue* write_string( const char* value );
-  RogueSystemMessageQueue* write_string( RogueCharacter* value, int count );
-
-  // INTERNAL USE
-  void update_message_size();
-};
-
-
-//-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 struct RogueObject;
@@ -751,8 +705,6 @@ struct RogueArray : RogueObject
 
 struct RogueProgramCore
 {
-  RogueSystemMessageQueue event_queue;
-
   RogueObject*  objects;
   RogueObject*  main_object;
   RogueString** literal_strings;
@@ -1031,7 +983,6 @@ struct RogueTypeTaskManager;
 struct RogueTypeTask;
 struct RogueTypeTaskList;
 struct RogueTypeTaskManager__await_all__task128;
-struct RogueTypeSystemEventQueue;
 struct RogueTypeEventManager;
 struct RogueTypeRandom;
 struct RogueTypeCharacterListOps;
@@ -1303,7 +1254,6 @@ struct RogueClassTaskManager;
 struct RogueClassTask;
 struct RogueTaskList;
 struct RogueClassTaskManager__await_all__task128;
-struct RogueClassSystemEventQueue;
 struct RogueClassEventManager;
 struct RogueClassRandom;
 struct RogueClassCharacterListOps;
@@ -2110,12 +2060,6 @@ struct RogueClassTaskManager__await_all__task128 : RogueObject
   RogueClassError* error_5;
   RogueClassTaskManager* context;
   RogueInteger ip;
-
-};
-
-struct RogueClassSystemEventQueue : RogueObject
-{
-  // PROPERTIES
 
 };
 
@@ -4210,7 +4154,6 @@ struct RogueProgram : RogueProgramCore
   RogueTypeTask* type_Task;
   RogueTypeTaskList* type_TaskList;
   RogueTypeTaskManager__await_all__task128* type_TaskManager__await_all__task128;
-  RogueTypeSystemEventQueue* type_SystemEventQueue;
   RogueTypeEventManager* type_EventManager;
   RogueTypeRandom* type_Random;
   RogueTypeCharacterListOps* type_CharacterListOps;
@@ -5094,8 +5037,6 @@ RogueLogical RogueTaskManager__await_all__task128__update( RogueClassTaskManager
 RogueClassTaskManager__await_all__task128* RogueTaskManager__await_all__task128__init_object( RogueClassTaskManager__await_all__task128* THIS );
 RogueClassTaskManager__await_all__task128* RogueTaskManager__await_all__task128__init( RogueClassTaskManager__await_all__task128* THIS, RogueClassTaskManager* _auto_130_0, RogueTaskList* _auto_131_1 );
 RogueLogical RogueTaskManager__await_all__task128__execute( RogueClassTaskManager__await_all__task128* THIS );
-RogueString* RogueSystemEventQueue__type_name( RogueClassSystemEventQueue* THIS );
-RogueClassSystemEventQueue* RogueSystemEventQueue__init_object( RogueClassSystemEventQueue* THIS );
 RogueString* RogueEventManager__type_name( RogueClassEventManager* THIS );
 RogueInteger RogueEventManager__create_event_id( RogueClassEventManager* THIS );
 void RogueEventManager__dispatch_events( RogueClassEventManager* THIS );

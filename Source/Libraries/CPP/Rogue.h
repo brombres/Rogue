@@ -199,52 +199,6 @@ struct RogueSystemList
 
 
 //-----------------------------------------------------------------------------
-//  RogueSystemMessageQueue
-//-----------------------------------------------------------------------------
-struct RogueSystemMessageQueue
-{
-  RogueSystemList<RogueByte>* write_list;
-  RogueSystemList<RogueByte>* read_list;
-  int read_position;
-  int remaining_bytes_in_current;
-  int message_size_location;
-
-  RogueSystemMessageQueue();
-  ~RogueSystemMessageQueue();
-
-  RogueSystemMessageQueue* begin_message( const char* message_type );
-  void                     begin_reading();
-  bool                     has_another();
-
-  RogueByte                read_byte();
-  RogueCharacter           read_character();
-  RogueReal32               read_float();
-  RogueInteger             read_int_x();
-  RogueInteger             read_integer();
-  RogueLogical             read_logical();
-  RogueLong                read_long();
-  RogueReal                read_real();
-  int                      read_string( char* buffer, int buffer_size );
-  char*                    read_new_c_string();
-  RogueString*             read_string();
-
-  RogueSystemMessageQueue* write_byte( int value );
-  RogueSystemMessageQueue* write_character( int value );
-  RogueSystemMessageQueue* write_float( float value);
-  RogueSystemMessageQueue* write_int_x( int value );
-  RogueSystemMessageQueue* write_integer( int value );
-  RogueSystemMessageQueue* write_logical( bool value );
-  RogueSystemMessageQueue* write_long( RogueLong value );
-  RogueSystemMessageQueue* write_real( double value );
-  RogueSystemMessageQueue* write_string( const char* value );
-  RogueSystemMessageQueue* write_string( RogueCharacter* value, int count );
-
-  // INTERNAL USE
-  void update_message_size();
-};
-
-
-//-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 struct RogueObject;
@@ -748,8 +702,6 @@ struct RogueArray : RogueObject
 
 struct RogueProgramCore
 {
-  RogueSystemMessageQueue event_queue;
-
   RogueObject*  objects;
   RogueObject*  main_object;
   RogueString** literal_strings;
