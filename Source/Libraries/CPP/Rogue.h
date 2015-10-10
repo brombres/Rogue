@@ -22,7 +22,7 @@
 
 #if defined(_WIN32)
   typedef double           RogueReal;
-  typedef float            RogueReal32;
+  typedef float            RogueFloat;
   typedef __int64          RogueLong;
   typedef __int32          RogueInteger;
   typedef unsigned __int16 RogueCharacter;
@@ -30,7 +30,7 @@
   typedef bool             RogueLogical;
 #else
   typedef double           RogueReal;
-  typedef float            RogueReal32;
+  typedef float            RogueFloat;
   typedef int64_t          RogueLong;
   typedef int32_t          RogueInteger;
   typedef uint16_t         RogueCharacter;
@@ -238,10 +238,10 @@ struct RogueRealType : RogueType
   const char* name() { return "Real"; }
 };
 
-struct RogueReal32Type : RogueType
+struct RogueFloatType : RogueType
 {
-  void configure() { object_size = sizeof(RogueReal32); }
-  const char* name() { return "Real32"; }
+  void configure() { object_size = sizeof(RogueFloat); }
+  const char* name() { return "Float"; }
 };
 
 struct RogueLongType : RogueType
@@ -315,15 +315,15 @@ struct RogueOptionalReal
 };
 
 
-struct RogueOptionalReal32
+struct RogueOptionalFloat
 {
-  RogueReal32 value;
+  RogueFloat value;
   RogueLogical exists;
 
-  RogueOptionalReal32() : value(0), exists(false) { }
-  RogueOptionalReal32( RogueReal32 value ) : value(value), exists(true) { }
+  RogueOptionalFloat() : value(0), exists(false) { }
+  RogueOptionalFloat( RogueFloat value ) : value(value), exists(true) { }
 
-  bool check( RogueReal32* checked )
+  bool check( RogueFloat* checked )
   {
     if ( !exists ) return false;
     *checked = value;
@@ -331,7 +331,7 @@ struct RogueOptionalReal32
   }
 
 
-  bool operator==( const RogueOptionalReal32& other ) const
+  bool operator==( const RogueOptionalFloat& other ) const
   {
     if (exists)
     {
@@ -345,7 +345,7 @@ struct RogueOptionalReal32
     }
   }
 
-  bool operator!=( const RogueOptionalReal32& other ) const
+  bool operator!=( const RogueOptionalFloat& other ) const
   {
     return !(*this == other);
   }
@@ -543,10 +543,10 @@ struct RogueOptionalRealType : RogueType
   const char* name() { return "Real?"; }
 };
 
-struct RogueOptionalReal32Type : RogueType
+struct RogueOptionalFloatType : RogueType
 {
-  void configure() { object_size = sizeof(RogueOptionalReal32); }
-  const char* name() { return "Real32?"; }
+  void configure() { object_size = sizeof(RogueOptionalFloat); }
+  const char* name() { return "Float?"; }
 };
 
 struct RogueOptionalLongType : RogueType
@@ -686,7 +686,7 @@ struct RogueArray : RogueObject
     RogueCharacter characters[];
     RogueInteger   integers[];
     RogueLong      longs[];
-    RogueReal32     floats[];
+    RogueFloat     floats[];
     RogueReal      reals[];
   };
 
@@ -712,7 +712,7 @@ struct RogueProgramCore
   int           next_type_index;
 
   RogueRealType*      type_Real;
-  RogueReal32Type*     type_Real32;
+  RogueFloatType*     type_Float;
   RogueLongType*      type_Long;
   RogueIntegerType*   type_Integer;
   RogueCharacterType* type_Character;
@@ -720,7 +720,7 @@ struct RogueProgramCore
   RogueLogicalType*   type_Logical;
 
   RogueOptionalRealType*      type_OptionalReal;
-  RogueOptionalReal32Type*     type_OptionalReal32;
+  RogueOptionalFloatType*     type_OptionalFloat;
   RogueOptionalLongType*      type_OptionalLong;
   RogueOptionalIntegerType*   type_OptionalInteger;
   RogueOptionalCharacterType* type_OptionalCharacter;

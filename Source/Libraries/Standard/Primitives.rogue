@@ -14,7 +14,7 @@ class Real [primitive]
       return "" + this
 endClass
 
-class Real32 [primitive]
+class Float [primitive]
 #{
   METHODS
     method hash_code->Integer

@@ -623,7 +623,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   memset( types, 0, sizeof(RogueType*) );
 
   type_Real      = new RogueRealType();
-  type_Real32     = new RogueReal32Type();
+  type_Float     = new RogueFloatType();
   type_Long      = new RogueLongType();
   type_Integer   = new RogueIntegerType();
   type_Character = new RogueCharacterType();
@@ -631,7 +631,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   type_Logical   = new RogueLogicalType();
 
   type_OptionalReal      = new RogueOptionalRealType();
-  type_OptionalReal32     = new RogueOptionalReal32Type();
+  type_OptionalFloat     = new RogueOptionalFloatType();
   type_OptionalLong      = new RogueOptionalLongType();
   type_OptionalInteger   = new RogueOptionalIntegerType();
   type_OptionalCharacter = new RogueOptionalCharacterType();
@@ -13323,7 +13323,7 @@ struct RogueTypeProgram : RogueType
     ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_lookup );
     ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_null );
     ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_Real );
-    ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_Real32 );
+    ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_Float );
     ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_Long );
     ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_Integer );
     ROGUE_TRACE( ((RogueClassProgram*)THIS)->type_Character );
@@ -21544,7 +21544,7 @@ RogueString* RogueByte__type_name( RogueByte THIS )
   return (RogueString*)(Rogue_program.literal_strings[11]);
 }
 
-RogueString* RogueReal32__type_name( RogueReal32 THIS )
+RogueString* RogueFloat__type_name( RogueFloat THIS )
 {
   return (RogueString*)(Rogue_program.literal_strings[7]);
 }
@@ -22108,7 +22108,7 @@ void RogueProgram__configure( RogueClassProgram* THIS )
 {
   THIS->type_null = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[4], 32 )));
   THIS->type_Real = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[6], 33 )));
-  THIS->type_Real32 = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[7], 33 )));
+  THIS->type_Float = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[7], 33 )));
   THIS->type_Long = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[8], 33 )));
   THIS->type_Integer = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[9], 33 )));
   THIS->type_Character = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[10], 33 )));
@@ -22284,7 +22284,7 @@ void RogueProgram__resolve( RogueClassProgram* THIS )
   RogueAttributes__add( THIS->m_on_launch->attributes, 32768 );
   RogueType__resolve( THIS->type_null );
   RogueType__resolve( THIS->type_Real );
-  RogueType__resolve( THIS->type_Real32 );
+  RogueType__resolve( THIS->type_Float );
   RogueType__resolve( THIS->type_Long );
   RogueType__resolve( THIS->type_Integer );
   RogueType__resolve( THIS->type_Character );
@@ -26898,9 +26898,9 @@ RogueClassType* Rogue_Cmd__find_common_type( RogueClassCmd* THIS, RogueClassType
       {
         return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real);
       }
-      if ((left_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real32 || right_type_1 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real32))
+      if ((left_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Float || right_type_1 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Float))
       {
-        return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real32);
+        return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Float);
       }
       if ((left_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Long || right_type_1 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Long))
       {
@@ -49477,7 +49477,7 @@ void RogueCmdReadArrayElement__write_cpp( RogueClassCmdReadArrayElement* THIS, R
       {
         RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[988] );
       }
-      else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)element_type_2), ((RogueObject*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real32)) ))))
+      else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)element_type_2), ((RogueObject*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Float)) ))))
       {
         RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[989] );
       }
@@ -49584,7 +49584,7 @@ void RogueCmdWriteArrayElement__write_cpp( RogueClassCmdWriteArrayElement* THIS,
       {
         RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[988] );
       }
-      else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)element_type_2), ((RogueObject*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real32)) ))))
+      else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)element_type_2), ((RogueObject*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Float)) ))))
       {
         RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[989] );
       }
@@ -50452,7 +50452,7 @@ void RogueProgram::configure()
   type_Array->index = 9;
   type_Array->index = 10;
   type_Byte->index = 11;
-  type_Real32->index = 12;
+  type_Float->index = 12;
   type_Logical->index = 13;
   type_Long->index = 14;
   type_OptionalInteger->index = 15;
@@ -51037,7 +51037,7 @@ void RogueProgram::configure()
   literal_strings[4] = (RogueString*) RogueString::create( "null" )->retain(); 
   literal_strings[5] = (RogueString*) RogueString::create( "String" )->retain(); 
   literal_strings[6] = (RogueString*) RogueString::create( "Real" )->retain(); 
-  literal_strings[7] = (RogueString*) RogueString::create( "Real32" )->retain(); 
+  literal_strings[7] = (RogueString*) RogueString::create( "Float" )->retain(); 
   literal_strings[8] = (RogueString*) RogueString::create( "Long" )->retain(); 
   literal_strings[9] = (RogueString*) RogueString::create( "Integer" )->retain(); 
   literal_strings[10] = (RogueString*) RogueString::create( "Character" )->retain(); 

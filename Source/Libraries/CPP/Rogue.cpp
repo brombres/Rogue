@@ -617,7 +617,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   memset( types, 0, sizeof(RogueType*) );
 
   type_Real      = new RogueRealType();
-  type_Real32     = new RogueReal32Type();
+  type_Float     = new RogueFloatType();
   type_Long      = new RogueLongType();
   type_Integer   = new RogueIntegerType();
   type_Character = new RogueCharacterType();
@@ -625,7 +625,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   type_Logical   = new RogueLogicalType();
 
   type_OptionalReal      = new RogueOptionalRealType();
-  type_OptionalReal32     = new RogueOptionalReal32Type();
+  type_OptionalFloat     = new RogueOptionalFloatType();
   type_OptionalLong      = new RogueOptionalLongType();
   type_OptionalInteger   = new RogueOptionalIntegerType();
   type_OptionalCharacter = new RogueOptionalCharacterType();

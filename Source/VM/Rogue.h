@@ -41,7 +41,7 @@
 
 #if defined(ROGUE_PLATFORM_WINDOWS)
   typedef double           RogueReal;
-  typedef float            RogueReal32;
+  typedef float            RogueFloat;
   typedef __int64          RogueLong;
   typedef __int32          RogueInteger;
   typedef unsigned __int16 RogueCharacter;
@@ -49,7 +49,7 @@
   typedef RogueInteger     RogueLogical;
 #else
   typedef double           RogueReal;
-  typedef float            RogueReal32;
+  typedef float            RogueFloat;
   typedef int64_t          RogueLong;
   typedef int32_t          RogueInteger;
   typedef uint16_t         RogueCharacter;

@@ -41,7 +41,7 @@ class StringBuilder [requisite]
       characters.add( value )
       return this
 
-    method print( value:Real32 )->this
+    method print( value:Float )->this
       inline this.print( value->Real )
 
     method print( value:Integer )->this [native]
@@ -185,7 +185,7 @@ class StringBuilder [requisite]
     method println( value:Character )->this
       return print( value ).print( '\n' )
 
-    method println( value:Real32 )->this
+    method println( value:Float )->this
       inline this.println( value->Real )
 
     method println( value:Integer )->this
