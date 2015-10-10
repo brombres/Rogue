@@ -71,12 +71,13 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
-      TokenType.directive_define  = define( DirectiveTokenType("$define") )
-      TokenType.directive_include = define( DirectiveTokenType("$include") )
-      TokenType.directive_if      = define( DirectiveTokenType("$if") )
-      TokenType.directive_elseIf  = define( DirectiveTokenType("$elseIf") )
-      TokenType.directive_else    = define( DirectiveTokenType("$else") )
-      TokenType.directive_endIf   = define( DirectiveTokenType("$endIf") )
+      TokenType.directive_define    = define( DirectiveTokenType("$define") )
+      TokenType.directive_include   = define( DirectiveTokenType("$include") )
+      TokenType.directive_if        = define( DirectiveTokenType("$if") )
+      TokenType.directive_elseIf    = define( DirectiveTokenType("$elseIf") )
+      TokenType.directive_else      = define( DirectiveTokenType("$else") )
+      TokenType.directive_endIf     = define( DirectiveTokenType("$endIf") )
+      TokenType.directive_requisite = define( DirectiveTokenType("$requisite") )
 
       TokenType.placeholder_id       = define( TokenType("$id") )
 
@@ -264,12 +265,13 @@ class Tokenizer
       elseIf (ch == '$' )
         local id = read_identifier
         which (id)
-          case "define":   add_new_token( TokenType.directive_define )
-          case "include":  add_new_token( TokenType.directive_include )
-          case "if":       add_new_token( TokenType.directive_if )
-          case "elseIf":   add_new_token( TokenType.directive_elseIf )
-          case "else":     add_new_token( TokenType.directive_else )
-          case "endIf":    add_new_token( TokenType.directive_endIf )
+          case "define":    add_new_token( TokenType.directive_define )
+          case "include":   add_new_token( TokenType.directive_include )
+          case "if":        add_new_token( TokenType.directive_if )
+          case "elseIf":    add_new_token( TokenType.directive_elseIf )
+          case "else":      add_new_token( TokenType.directive_else )
+          case "endIf":     add_new_token( TokenType.directive_endIf )
+          case "requisite": add_new_token( TokenType.directive_requisite )
           others
             add_new_token( TokenType.placeholder_id, "$" + id )
         endWhich

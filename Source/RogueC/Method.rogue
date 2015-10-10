@@ -29,6 +29,8 @@ class Method
     resolved  : Logical
     index     : Integer
 
+    is_used   : Logical
+
     label_list   = CmdLabel[]
     label_lookup = Table<<String,CmdLabel>>()
     cur_label    : CmdLabel
@@ -163,6 +165,9 @@ class Method
     method is_overridden->Logical
       return (attributes.flags & Attribute.is_overridden)
 
+    method is_requisite->Logical
+      return (attributes.flags & Attribute.is_requisite)
+
     method is_routine->Logical
       return (attributes.flags & Attribute.is_routine)
 
@@ -173,7 +178,7 @@ class Method
       return (attributes.flags & Attribute.is_task_conversion)
 
     method omit_output->Logical
-      return is_native or is_inline or (is_generated and name=="create" and type_context.is_compound)
+      return is_native or is_inline or not is_used or (is_generated and name=="create" and type_context.is_compound)
 
     method organize( add_to_lookup=true:Logical )->Method
       if (organized) return this
@@ -386,5 +391,16 @@ class Method
 
     method to->String
       return signature
+
+    method trace_used_code
+      if (is_used) return   # Already traced
+      is_used = true
+
+      type_context.trace_used_code
+
+      forEach (param in parameters) param.type.trace_used_code
+      if (return_type) return_type.trace_used_code
+
+      statements.trace_used_code
 endClass
 

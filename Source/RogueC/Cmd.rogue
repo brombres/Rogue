@@ -150,6 +150,9 @@ class Cmd
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
 
+    method trace_used_code
+      throw t.error( "[INTERNAL] $::trace_used_code() is not defined." (type_name) )
+
     method type->Type
       throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
 
@@ -213,6 +216,9 @@ class CmdStatementList : Cmd[]
       endForEach
 
       forEach (statement in this) statement.exit_scope( scope )
+
+    method trace_used_code
+      forEach (statement in this) statement.trace_used_code
 endClass
 
 
@@ -246,6 +252,9 @@ class CmdArgs : Cmd[]
         this[i] = arg
         arg.require_type.organize
       endForEach
+
+    method trace_used_code
+      forEach (arg in this) arg.trace_used_code
 endClass
 
 
@@ -253,9 +262,15 @@ endClass
 # Statements
 #------------------------------------------------------------------------------
 class CmdStatement : Cmd
+  METHODS
+    method trace_used_code
+      noAction
 endClass
 
 class CmdNoAction : Cmd
+  METHODS
+    method trace_used_code
+      noAction
 endClass
 
 class CmdLocalDeclaration : CmdStatement
@@ -298,6 +313,10 @@ class CmdLocalDeclaration : CmdStatement
       local_info.type.organize
 
       return this
+
+    method trace_used_code
+      local_info.type.trace_used_code
+      if (local_info.initial_value) local_info.initial_value.trace_used_code
 endClass
 
 
@@ -324,6 +343,9 @@ class CmdReturn : CmdStatement
         value = value.resolve( scope ).cast_to( scope.this_method.return_type ).resolve( scope )
       endIf
       return this
+
+    method trace_used_code
+      if (value) value.trace_used_code
 
     method type->Type
       return value.type
@@ -415,6 +437,9 @@ class CmdBlock : CmdControlStructure
 
       scope.control_stack.remove_last
       return this
+
+    method trace_used_code
+      statements.trace_used_code
 endClass
 
 
@@ -479,6 +504,10 @@ class CmdIf : CmdControlStructure
       scope.control_stack.remove_last
       return this
 
+    method trace_used_code
+      condition.trace_used_code
+      statements.trace_used_code
+      if (else_statements) else_statements.trace_used_code
 endClass
 
 
@@ -553,6 +582,11 @@ class CmdWhich : CmdControlStructure
       endIf
 
       return result.resolve( scope )
+
+    method trace_used_code
+      expression.trace_used_code
+      forEach (c in cases) c.trace_used_code
+      if (case_others) case_others.trace_used_code
 endClass
 
 class CmdWhichCase : Cmd
@@ -577,6 +611,9 @@ class CmdWhichCase : Cmd
       endForEach
       return cmd
 
+    method trace_used_code
+      forEach (condition in conditions) condition.trace_used_code
+      statements.trace_used_code
 endClass
 
 
@@ -661,6 +698,10 @@ class CmdContingent : CmdControlStructure
       unsatisfied_label = (original as CmdContingent).unsatisfied_label
       return this
 
+    method trace_used_code
+      statements.trace_used_code
+      if (satisfied_statements)   satisfied_statements.trace_used_code
+      if (unsatisfied_statements) unsatisfied_statements.trace_used_code
 endClass
 
 
@@ -766,6 +807,12 @@ class CmdGenericLoop : CmdControlStructure
 
       scope.control_stack.remove_last
       return this
+
+    method trace_used_code
+      statements.trace_used_code
+      if (control_statements) control_statements.trace_used_code
+      if (condition) condition.trace_used_code
+      if (upkeep) upkeep.trace_used_code
 
 endClass
 
@@ -903,6 +950,11 @@ class CmdForEach : CmdControlStructure
 
       endIf
       return this
+
+    method trace_used_code
+      statements.trace_used_code
+      collection.trace_used_code
+      if (step_cmd) step_cmd.trace_used_code
 endClass
 
 
@@ -946,6 +998,9 @@ class CmdTry : CmdControlStructure
 
       return this
 
+    method trace_used_code
+      statements.trace_used_code
+      forEach (c in catches) c.trace_used_code
 endClass
 
 class CmdCatch : Cmd
@@ -971,6 +1026,8 @@ class CmdCatch : Cmd
 
       return this
 
+    method trace_used_code
+      statements.trace_used_code
 endClass
 
 class CmdThrow : Cmd
@@ -992,6 +1049,8 @@ class CmdThrow : Cmd
       endIf
       return this
 
+    method trace_used_code
+      expression.trace_used_code
 endClass
 
 
@@ -1031,6 +1090,8 @@ class CmdEscape : Cmd
 
       throw t.error( "No enclosing structure to escape." )
 
+    method trace_used_code
+      noAction
 endClass
 
 
@@ -1066,6 +1127,8 @@ class CmdNextIteration : Cmd
 
       throw t.error( "No enclosing loop for 'nextIteration' to affect." )
 
+    method trace_used_code
+      noAction
 endClass
 
 
@@ -1111,6 +1174,8 @@ class CmdNecessary : Cmd
 
       throw t.error( "No enclosing contingent." )
 
+    method trace_used_code
+      if (condition) condition.trace_used_code
 endClass
 
 
@@ -1156,6 +1221,8 @@ class CmdSufficient : Cmd
 
       throw t.error( "No enclosing contingent." )
 
+    method trace_used_code
+      if (condition) condition.trace_used_code
 endClass
 
 #------------------------------------------------------------------------------
@@ -1168,6 +1235,9 @@ class CmdLiteral : Cmd
 
     method is_literal->Logical
       return true
+
+    method trace_used_code
+      noAction
 endClass
 
 class CmdLiteralNull : CmdLiteral
@@ -1736,6 +1806,9 @@ class CmdCreateObject : Cmd
       of_type.organize
       return this
 
+    method trace_used_code
+      of_type.trace_used_code
+
     method type->Type
       return of_type
 endClass
@@ -1760,6 +1833,10 @@ class CmdCreateCompound : Cmd
       endWhile
       args.resolve( scope )
       return this
+
+    method trace_used_code
+      of_type.trace_used_code
+      forEach (arg in args) arg.trace_used_code
 
     method type->Type
       return of_type
@@ -1816,6 +1893,9 @@ class CmdThisContext : Cmd
       this_type.organize
       return this
 
+    method trace_used_code
+      noAction
+
     method type->Type
       return this_type
 endClass
@@ -1868,6 +1948,9 @@ class CmdReadSingleton : Cmd
       of_type.organize
       return this
 
+    method trace_used_code
+      of_type.trace_used_code
+
     method type->Type
       return of_type
 endClass
@@ -1895,6 +1978,9 @@ class CmdReadLocal : Cmd
 
     method access_name->String
       return local_info.name
+
+    method trace_used_code
+      local_info.type.trace_used_code
 
     method resolve( scope:Scope )->Cmd
       #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
@@ -1936,6 +2022,9 @@ class CmdWriteLocal : Cmd
       new_value = new_value.cast_to( local_info.type ).resolve( scope )
       return this
 
+    method trace_used_code
+      local_info.type.trace_used_code
+
     method type->Type
       return local_info.type
 endClass
@@ -1958,6 +2047,10 @@ class CmdReadSetting : Cmd
       setting_info.type_context.resolve
       return this
 
+    method trace_used_code
+      setting_info.type_context.trace_used_code
+      setting_info.type.trace_used_code
+
     method type->Type
       return setting_info.type
 endClass
@@ -1977,6 +2070,10 @@ class CmdWriteSetting : Cmd
     method resolve( scope:Scope )->Cmd
       new_value = new_value.resolve(scope).cast_to( setting_info.type ).resolve( scope )
       return this
+
+    method trace_used_code
+      setting_info.type_context.trace_used_code
+      setting_info.type.trace_used_code
 
     method type->Type
       return setting_info.type
@@ -2003,6 +2100,10 @@ class CmdReadProperty : Cmd
     method resolve_modify( scope:Scope, delta:Integer )->Cmd
       return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
+    method trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+
     method type->Type
       return property_info.type
 endClass
@@ -2025,6 +2126,10 @@ class CmdWriteProperty : Cmd
       new_value = new_value.resolve(scope).require_value.cast_to( property_info.type ).resolve( scope )
       return this
 
+    method trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+
     method type->Type
       return property_info.type
 endClass
@@ -2045,6 +2150,11 @@ class CmdCall : Cmd
       if (context) context = context.resolve(scope).require_value
       args.resolve( scope )
       return this
+
+    method trace_used_code
+      if (context) context.trace_used_code
+      method_info.trace_used_code
+      forEach (arg in args) arg.trace_used_code
 
     method type->Type
       return method_info.return_type
@@ -2173,6 +2283,11 @@ class CmdRange : Cmd
 
   METHODS
     method init( t, first, last, step_size=null )
+
+    method trace_used_code
+      first.trace_used_code
+      last.trace_used_code
+      if (step_size) step_size.trace_used_code
 endClass
 
 class CmdRangeUpTo : CmdRange
@@ -2208,6 +2323,9 @@ class CmdUnary : Cmd
 
     method suffix_symbol->String
       return ""
+
+    method trace_used_code
+      operand.trace_used_code
 
     method type->Type
       return operand.type
@@ -2343,6 +2461,10 @@ class CmdBinary : Cmd
 
     method symbol->String
       throw t.error( "[INTERNAL] $::symbol() is not defined." (type_name) )
+
+    method trace_used_code
+      left.trace_used_code
+      right.trace_used_code
 
     method type->Type
       return find_operation_result_type( left.require_type, right.require_type )
@@ -3060,6 +3182,9 @@ class CmdAdjustLocal : Cmd
 
     method type->Type
       return local_info.type
+
+    method trace_used_code
+      local_info.type.trace_used_code
 endClass
 
 
@@ -3088,6 +3213,11 @@ class CmdAdjustProperty : Cmd
 
     method type->Type
       return null
+
+    method trace_used_code
+      context.trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
 endClass
 
 
@@ -3178,6 +3308,10 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
       new_value = new_value.resolve( scope ).cast_to( local_info.type ).resolve( scope )
       return this
 
+    method trace_used_code
+      local_info.type.trace_used_code
+      new_value.trace_used_code
+
     method type->Type
       return local_info.type
 endClass
@@ -3232,6 +3366,11 @@ class CmdOpAssignSetting : CmdResolvedOpWithAssign
 
       new_value = new_value.resolve(scope).cast_to( setting_info.type ).resolve( scope )
       return this
+
+    method trace_used_code
+      setting_info.type_context.trace_used_code
+      setting_info.type.trace_used_code
+      new_value.trace_used_code
 
     method type->Type
       return setting_info.type
@@ -3289,6 +3428,11 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
       new_value = new_value.resolve(scope).cast_to( property_info.type ).resolve( scope )
       return this
 
+    method trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+      new_value.trace_used_code
+
     method type->Type
       return property_info.type
 endClass
@@ -3318,6 +3462,10 @@ class CmdCreateArray : Cmd
       count_cmd = count_cmd.resolve(scope).require_integer
       return this
 
+    method trace_used_code
+      array_type.trace_used_code
+      count_cmd.trace_used_code
+
     method type->Type
       return array_type
 endClass
@@ -3345,6 +3493,11 @@ class CmdReadArrayElement : Cmd
     method resolve_modify( scope:Scope, delta:Integer )->Cmd
       return CmdWriteArrayElement( t, context, index.clone, CmdAdd(t,this,CmdLiteralInteger(t,delta)) ).resolve( scope )
 
+    method trace_used_code
+      context.trace_used_code
+      array_type.trace_used_code
+      index.trace_used_code
+
     method type->Type
       return array_type.element_type
 endClass
@@ -3366,6 +3519,10 @@ class CmdReadArrayCount : Cmd
       context = context.resolve(scope)
       array_type = context.require_type
       return this
+
+    method trace_used_code
+      context.trace_used_code
+      array_type.trace_used_code
 
     method type->Type
       return Program.type_Integer
@@ -3393,6 +3550,12 @@ class CmdWriteArrayElement : Cmd
       new_value = new_value.resolve( scope ).require_value.cast_to( array_type.element_type ).resolve( scope )
       return this
 
+    method trace_used_code
+      context.trace_used_code
+      array_type.trace_used_code
+      new_value.trace_used_code
+      index.trace_used_code
+
     method type->Type
       return array_type.element_type
 endClass
@@ -3408,6 +3571,10 @@ class CmdTypeOperator : Cmd
 
   METHODS
     method init( t, operand, target_type )
+
+    method trace_used_code
+      operand.trace_used_code
+      target_type.trace_used_code
 
     method type->Type
       return target_type
@@ -3637,6 +3804,9 @@ class CmdTaskControl : Cmd
         section.statements.resolve( scope )
       endForEach
       return this
+
+    method trace_used_code
+      forEach (section in sections) section.statements.trace_used_code
 endClass
 
 
@@ -3795,6 +3965,10 @@ class CmdCreateOptionalValue : Cmd
       if (value) value = value.resolve( scope )
       return this
 
+    method trace_used_code
+      of_type.trace_used_code
+      if (value) value.trace_used_code
+
     method type->Type
       return of_type
 
@@ -3821,6 +3995,9 @@ class CmdLogicalizeOptionalValue : Cmd
       value = value.resolve( scope ).require_value
       return this
 
+    method trace_used_code
+      value.trace_used_code
+
     method type->Type
       return Program.type_Logical
 endClass
@@ -3842,6 +4019,9 @@ class CmdGetOptionalValue : Cmd
       endIf
       return this
 
+    method trace_used_code
+      value.trace_used_code
+
     method type->Type
       return value.type.element_type
 endClass
@@ -3862,6 +4042,9 @@ class CmdTrace : Cmd
 
     method resolve( scope:Scope )->Cmd
       return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(CmdLiteralString(t,value)) ).resolve( scope )
+
+    method trace_used_code
+      noAction
 endClass
 
 class CmdLabel : Cmd
@@ -3884,6 +4067,9 @@ class CmdLabel : Cmd
     method resolve( scope:Scope )->Cmd
       statements.resolve( scope )
       return this
+
+    method trace_used_code
+      statements.trace_used_code
 
 endClass
 

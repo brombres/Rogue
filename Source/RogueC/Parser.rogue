@@ -99,6 +99,37 @@ class Parser
         parse_augment
         return true
 
+      elseIf (t.type is TokenType.directive_requisite)
+        read
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          consume_eols
+          local type = parse_type
+          local signature : String
+          if (consume(TokenType.symbol_dot))
+            local buffer = StringBuilder()
+            buffer.print( read_identifier )  # method name
+            if (consume(TokenType.symbol_open_paren))
+              buffer.print( '(' )
+              if (not consume(TokenType.symbol_close_paren))
+                local first_param = true
+                while (first_param or consume(TokenType.symbol_comma))
+                  if (first_param) first_param = false
+                  else             buffer.print( ',' )
+                  buffer.print( parse_possible_type )
+                endWhile
+                must_consume( TokenType.symbol_close_paren )
+              endIf
+              buffer.print( ')' )
+            endIf
+            signature = buffer->String
+println "SIGNATURE: " + signature
+          endIf
+          consume_eols
+        endWhile
+        return true
+
       else
         this_type = Program.get_type_reference( peek, "Global" )
         if (not Program.m_on_launch)

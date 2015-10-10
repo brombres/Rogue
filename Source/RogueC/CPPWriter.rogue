@@ -908,7 +908,7 @@ augment Type
     method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
       local buffer = StringBuilder()
       forEach (m in method_list)
-        if (not m.is_inline and m.is_dynamic)
+        if (not m.is_inline and m.is_dynamic and m.is_used)
           buffer.clear
           if (m.return_type)
             buffer.print( m.return_type.compile_type.cpp_class_name )
@@ -943,7 +943,7 @@ augment Type
       dynamic_method_table_index = at_index
 
       forEach (m in method_list)
-        if (not m.is_inline)
+        if (not m.is_inline and m.is_used)
           if (m.is_dynamic)
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).print( "," )
             writer.print( " // " ).print( name )

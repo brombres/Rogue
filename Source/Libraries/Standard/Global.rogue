@@ -1,4 +1,4 @@
-class Global [singleton]
+class Global [requisite singleton]
   PROPERTIES
     global_output_buffer = StringBuilder()
     standard_output      = Console

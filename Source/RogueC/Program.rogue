@@ -161,6 +161,7 @@ class Program [requisite singleton]
       if (m_on_launch) type_Global.add_method( m_on_launch )
       else             m_on_launch = type_Global.add_method( type_Global.t, "on_launch" )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
+      m_on_launch.attributes.add( Attribute.is_requisite )
 
       type_null.resolve
       type_Real.resolve
@@ -178,6 +179,14 @@ class Program [requisite singleton]
       type_GenericList.resolve
       type_String.resolve
 
+      #{
+      local type_CharacterList = find_type( "Character[]" )
+      if (type_CharacterList)
+        #type_CharacterList
+      endIf
+      }#
+
+
       # Reference and resolve all requisite type templates
       forEach (templ in template_list)
         if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
@@ -190,6 +199,15 @@ class Program [requisite singleton]
         type_list[i].resolve
         ++i
       endWhile
+
+      # trace used code
+      forEach (type in type_list)
+        #if (type.is_requisite)
+          type.trace_used_code
+          forEach (r in type.routine_list) r.trace_used_code
+          forEach (m in type.method_list)  m.trace_used_code
+        #endIf
+      endForEach
 
 endClass
 

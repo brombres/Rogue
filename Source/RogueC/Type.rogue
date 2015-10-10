@@ -8,7 +8,6 @@ class Type
     defined      : Logical
     organized    : Logical
     resolved     : Logical
-    visiting     : Logical
 
     base_class : Type
     base_types = Type[]
@@ -18,6 +17,8 @@ class Type
     is_list      : Logical
     is_optional  : Logical
     element_type : Type
+
+    is_used      : Logical
 
     simplify_name : Logical
       # RogueInteger instead of RoguePrimitiveInteger, etc. - used for classes that are predefined
@@ -180,6 +181,9 @@ class Type
           return false
       endWhich
 
+    method is_requisite->Logical
+      return (attributes.flags & Attribute.is_requisite)
+
     method is_singleton->Logical
       return (attributes.flags & Attribute.is_singleton)
 
@@ -297,6 +301,7 @@ class Type
       if (settings_list.count and not is_native)
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
+        m.attributes.add( Attribute.is_requisite )
 
         # Insert setting initializations
         local i = settings_list.count - 1
@@ -315,6 +320,7 @@ class Type
         local prior_m = m
         if (not m or m.type_context isNot this)
           m = add_method( t, "init_object" ).organize
+          m.attributes.add( Attribute.is_requisite )
           if (prior_m)
             prior_m.attributes.add( Attribute.is_dynamic )
             prior_m.attributes.add( Attribute.is_overridden )
@@ -574,7 +580,7 @@ class Type
       endForEach
 
     method omit_output->Logical
-      return is_native or (is_optional and element_type.is_reference)
+      return is_native or not is_used or (is_optional and element_type.is_reference)
 
     method resolve->Type
       if (resolved) return this
@@ -601,5 +607,29 @@ class Type
 
     method to->String
       return name
+
+    method trace_used_code
+      if (is_used) return   # Already traced
+      is_used = true
+
+      forEach (base_type in base_types)
+        base_type.trace_used_code
+      endForEach
+
+      forEach (s in settings_list)
+        s.type.trace_used_code
+      endForEach
+
+      forEach (p in property_list)
+        p.type.trace_used_code
+      endForEach
+
+      forEach (r in routine_list)
+        if (r.is_requisite) r.trace_used_code
+      endForEach
+
+      forEach (m in method_list)
+        if (m.is_requisite) m.trace_used_code
+      endForEach
 
 endClass

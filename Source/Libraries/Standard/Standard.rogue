@@ -20,3 +20,10 @@ $include "Table.rogue"
 $include "Task.rogue"
 $include "Time.rogue"
 $include "XY.rogue"
+
+#$requisite StringBuilder
+#$requisite StringBuilder.init
+#$requisite StringBuilder.clear()
+#$requisite StringBuilder.clear(Integer)
+#$requisite StringBuilder.clear(Bag<<Int64>>,Real)
+

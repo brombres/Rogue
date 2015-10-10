@@ -1,11 +1,11 @@
-class StringBuilder
+class StringBuilder [requisite]
   PROPERTIES
     characters   : Character[]
     indent       : Integer
     at_newline   = true
 
   METHODS
-    method init
+    method init [requisite]
       init( 40 )
 
     method init( initial_capacity:Integer )
@@ -18,7 +18,7 @@ class StringBuilder
     method capacity->Integer
       inline this.characters.capacity
 
-    method clear->this
+    method clear->this [requisite]
       characters.clear
       at_newline = true
       return this
@@ -206,7 +206,7 @@ class StringBuilder
     method println( value:String )->this
       return print( value ).print( '\n' )
 
-    method reserve( additional_count:Integer )->this
+    method reserve( additional_count:Integer )->this [requisite]
       characters.reserve( additional_count )
       return this
 
