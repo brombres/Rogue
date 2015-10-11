@@ -1399,6 +1399,9 @@ class CmdLiteralString : CmdLiteral
 
     method resolve( scope:Scope )->Cmd
       Program.type_String.resolve
+      return this
+
+    method trace_used_code
       if (value)
         if (not Program.literal_string_lookup.contains(value))
           index = Program.literal_string_list.count
@@ -1408,7 +1411,6 @@ class CmdLiteralString : CmdLiteral
           index = Program.literal_string_lookup[value]
         endIf
       endIf
-      return this
 
     method type->Type
       return Program.type_String

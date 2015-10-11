@@ -948,7 +948,7 @@ augment Type
           if (m.is_dynamic and m.is_used)
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).print( "," )
           else
-            writer.println( "NULL," )
+            writer.print( "NULL," )
           endIf
           if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
           writer.println

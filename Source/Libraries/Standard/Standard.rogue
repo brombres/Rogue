@@ -21,14 +21,7 @@ $include "Task.rogue"
 $include "Time.rogue"
 $include "XY.rogue"
 
-$requisite Random
-$requisite Byte[]
-$requisite Character[]
-$requisite String[]
-$requisite Task[]
+# Ensure String[] exists so that command line arguments may be set by native code.
+$requisite String[].add(String)
+$requisite TaskManager.update()
 
-#$requisite Table<<String,Type>>
-#$requisite Table<<String,Method>>
-#$requisite Table<<String,Integer>>
-#$requisite Table<<String,Token[]>>.init()
-#$requisite Table<<String,Logical>>

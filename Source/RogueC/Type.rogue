@@ -621,6 +621,10 @@ class Type
       if (is_used) return   # Already traced
       is_used = true
 
+      if (is_singleton)
+        local m = find_method( "init()" )
+        if (m) m.attributes.add( Attribute.is_requisite )
+      endIf
 
       if (element_type) element_type.trace_used_code
 

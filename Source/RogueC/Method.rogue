@@ -410,20 +410,5 @@ class Method
       if (return_type) return_type.trace_used_code
 
       statements.trace_used_code
-
-      forEach (overriding_m in overriding_methods)
-        overriding_m.trace_used_code
-      endForEach
-
-      #{
-      local list = Program.methods_by_signature[ signature ]
-      if (list)
-        forEach (compatible_m in list)
-          if (compatible_m isNot this and not compatible_m.is_used)
-            if (type_context.instance_of(
-          endIf
-        endForEach
-      endIf
-      }#
 endClass
 

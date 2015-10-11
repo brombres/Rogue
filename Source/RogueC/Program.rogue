@@ -219,21 +219,34 @@ class Program [requisite singleton]
       trace_used_code
 
     method trace_used_code
-      local cull_unused_code = RogueC.cull_unused_code
       forEach (type in type_list)
-        if (not cull_unused_code or type.is_requisite)
-          type.trace_used_code
-          forEach (r in type.routine_list) r.trace_used_code
-          forEach (m in type.method_list)  m.trace_used_code
-        endIf
+        if (type.is_requisite) type.trace_used_code
       endForEach
 
-      #{
-      while (trace_compatible_calls) noAction
-    method trace_compatible_calls->Logical
+      trace_overridden_methods
+
+    method trace_overridden_methods
       # When we have "s = Circle() : Shape; println s.area()", only Shape.area()
-      # is initially visible through code tracing.
-      }#
+      # is initially visible through code tracing.  We track all of the overrides for
+      # a method but we don't want to trace them unless the type context is in use.
+      # We can't figure it all out in a single pass so we'll keep making passes until
+      # there are no more changes.
+      local traced_new_methods = true
+      while (traced_new_methods)
+        traced_new_methods =  false
+
+        forEach (type in type_list)
+          forEach (m in type.method_list)
+            forEach (overriding_m in m.overriding_methods)
+              if (not overriding_m.is_used and overriding_m.type_context.is_used)
+                traced_new_methods = true
+                overriding_m.trace_used_code
+              endIf
+            endForEach
+          endForEach
+        endForEach
+
+      endWhile
 
 endClass
 
