@@ -1647,6 +1647,7 @@ struct RogueClassMethod : RogueObject
   RogueLogical resolved;
   RogueInteger index;
   RogueLogical is_used;
+  RogueLogical called_dynamically;
   RogueCmdLabelList* label_list;
   RogueClassString_CmdLabelTable* label_lookup;
   RogueClassCmdLabel* cur_label;
@@ -5844,6 +5845,7 @@ void RogueCmdCallAspectMethod__write_cpp( RogueClassCmdCallAspectMethod* THIS, R
 RogueClassCmdCallAspectMethod* RogueCmdCallAspectMethod__init_object( RogueClassCmdCallAspectMethod* THIS );
 RogueString* RogueCmdCallDynamicMethod__type_name( RogueClassCmdCallDynamicMethod* THIS );
 RogueClassCmd* RogueCmdCallDynamicMethod__clone( RogueClassCmdCallDynamicMethod* THIS, RogueClassCloneArgs* clone_args_0 );
+void RogueCmdCallDynamicMethod__trace_used_code( RogueClassCmdCallDynamicMethod* THIS );
 void RogueCmdCallDynamicMethod__write_cpp( RogueClassCmdCallDynamicMethod* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdCallDynamicMethod* RogueCmdCallDynamicMethod__init_object( RogueClassCmdCallDynamicMethod* THIS );
 RogueString* RogueCmdCallMethod__type_name( RogueClassCmdCallMethod* THIS );

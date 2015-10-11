@@ -2309,274 +2309,95 @@ typedef RogueClassCmdCallAspectMethod*(*ROGUEM775)(RogueClassCmdCallAspectMethod
 typedef RogueString*(*ROGUEM776)(RogueClassCmdCallDynamicMethod*);
 typedef RogueClassCmd*(*ROGUEM777)(RogueClassCmdCallMethod*,RogueClassScope*);
 typedef RogueClassCmd*(*ROGUEM778)(RogueClassCmdCallDynamicMethod*,RogueClassCloneArgs*);
-typedef void(*ROGUEM779)(RogueClassCmdCallDynamicMethod*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdCallDynamicMethod*(*ROGUEM780)(RogueClassCmdCallDynamicMethod*);
-typedef RogueString*(*ROGUEM781)(RogueClassCmdCallMethod*);
-typedef RogueClassCmdCallMethod*(*ROGUEM782)(RogueClassCmdCallMethod*);
-typedef RogueString*(*ROGUEM783)(RogueClassCandidateMethods*);
-typedef RogueString*(*ROGUEM784)(RogueCmdTaskControlSectionList*);
-typedef RogueCmdTaskControlSectionList*(*ROGUEM785)(RogueCmdTaskControlSectionList*);
-typedef RogueString*(*ROGUEM786)(RogueClassCmdBlock*);
-typedef RogueClassCmd*(*ROGUEM787)(RogueClassCmdBlock*,RogueClassCloneArgs*);
-typedef RogueLogical(*ROGUEM788)(RogueClassCmdBlock*);
-typedef RogueClassCmdBlock*(*ROGUEM789)(RogueClassCmdBlock*,RogueClassScope*);
-typedef void(*ROGUEM790)(RogueClassCmdBlock*);
-typedef void(*ROGUEM791)(RogueClassCmdBlock*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdBlock*(*ROGUEM792)(RogueClassCmdBlock*);
-typedef RogueString*(*ROGUEM793)(RogueTableEntry_of_String_CmdList*);
-typedef RogueTableEntry_of_String_CmdList*(*ROGUEM794)(RogueTableEntry_of_String_CmdList*);
-typedef RogueString*(*ROGUEM795)(RogueClassString_CmdTableEntry*);
-typedef RogueString*(*ROGUEM796)(RogueTableEntry_of_String_PropertyList*);
-typedef RogueTableEntry_of_String_PropertyList*(*ROGUEM797)(RogueTableEntry_of_String_PropertyList*);
-typedef RogueString*(*ROGUEM798)(RogueClassString_PropertyTableEntry*);
-typedef RogueString*(*ROGUEM799)(RogueClassDirectiveTokenType*);
-typedef RogueClassToken*(*ROGUEM800)(RogueClassDirectiveTokenType*,RogueString*,RogueInteger,RogueInteger);
-typedef RogueLogical(*ROGUEM801)(RogueClassDirectiveTokenType*);
-typedef RogueClassDirectiveTokenType*(*ROGUEM802)(RogueClassDirectiveTokenType*);
-typedef RogueString*(*ROGUEM803)(RogueClassStructuralDirectiveTokenType*);
-typedef RogueClassToken*(*ROGUEM804)(RogueClassStructuralDirectiveTokenType*,RogueString*,RogueInteger,RogueInteger);
-typedef RogueLogical(*ROGUEM805)(RogueClassStructuralDirectiveTokenType*);
-typedef RogueClassStructuralDirectiveTokenType*(*ROGUEM806)(RogueClassStructuralDirectiveTokenType*);
-typedef RogueString*(*ROGUEM807)(RogueClassEOLTokenType*);
-typedef RogueClassToken*(*ROGUEM808)(RogueClassEOLTokenType*,RogueString*,RogueInteger,RogueInteger);
-typedef RogueClassToken*(*ROGUEM809)(RogueClassEOLTokenType*,RogueString*,RogueInteger,RogueInteger,RogueString*);
-typedef RogueLogical(*ROGUEM810)(RogueClassEOLTokenType*);
-typedef RogueClassEOLTokenType*(*ROGUEM811)(RogueClassEOLTokenType*);
-typedef RogueString*(*ROGUEM812)(RogueClassStructureTokenType*);
-typedef RogueClassToken*(*ROGUEM813)(RogueClassStructureTokenType*,RogueString*,RogueInteger,RogueInteger);
-typedef RogueLogical(*ROGUEM814)(RogueClassStructureTokenType*);
-typedef RogueClassStructureTokenType*(*ROGUEM815)(RogueClassStructureTokenType*);
-typedef RogueString*(*ROGUEM816)(RogueClassOpWithAssignTokenType*);
-typedef RogueLogical(*ROGUEM817)(RogueClassOpWithAssignTokenType*);
-typedef RogueClassOpWithAssignTokenType*(*ROGUEM818)(RogueClassOpWithAssignTokenType*);
-typedef RogueString*(*ROGUEM819)(RogueClassEOLToken*);
-typedef RogueClassEOLToken*(*ROGUEM820)(RogueClassEOLToken*);
-typedef RogueString*(*ROGUEM821)(RogueClassString_TokenListTable*);
-typedef RogueString*(*ROGUEM822)(RogueClassPreprocessorTokenReader*);
-typedef RogueString*(*ROGUEM823)(RogueClassCmdReadArrayElement*);
-typedef RogueClassCmd*(*ROGUEM824)(RogueClassCmdReadArrayElement*,RogueClassCloneArgs*);
-typedef RogueClassCmd*(*ROGUEM825)(RogueClassCmdReadArrayElement*,RogueClassScope*);
-typedef RogueClassCmd*(*ROGUEM826)(RogueClassCmdReadArrayElement*,RogueClassScope*,RogueInteger);
-typedef void(*ROGUEM827)(RogueClassCmdReadArrayElement*);
-typedef RogueClassType*(*ROGUEM828)(RogueClassCmdReadArrayElement*);
-typedef void(*ROGUEM829)(RogueClassCmdReadArrayElement*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdReadArrayElement*(*ROGUEM830)(RogueClassCmdReadArrayElement*);
-typedef RogueString*(*ROGUEM831)(RogueClassCmdWriteArrayElement*);
-typedef RogueClassCmd*(*ROGUEM832)(RogueClassCmdWriteArrayElement*,RogueClassCloneArgs*);
-typedef RogueClassCmd*(*ROGUEM833)(RogueClassCmdWriteArrayElement*,RogueClassScope*);
-typedef void(*ROGUEM834)(RogueClassCmdWriteArrayElement*);
-typedef RogueClassType*(*ROGUEM835)(RogueClassCmdWriteArrayElement*);
-typedef void(*ROGUEM836)(RogueClassCmdWriteArrayElement*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdWriteArrayElement*(*ROGUEM837)(RogueClassCmdWriteArrayElement*);
-typedef RogueString*(*ROGUEM838)(RogueClassCmdConvertToPrimitiveType*);
-typedef RogueClassCmd*(*ROGUEM839)(RogueClassCmdConvertToPrimitiveType*,RogueClassCloneArgs*);
-typedef RogueClassCmd*(*ROGUEM840)(RogueClassCmdConvertToPrimitiveType*,RogueClassScope*);
-typedef void(*ROGUEM841)(RogueClassCmdConvertToPrimitiveType*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdConvertToPrimitiveType*(*ROGUEM842)(RogueClassCmdConvertToPrimitiveType*);
-typedef RogueString*(*ROGUEM843)(RogueClassCmdAdjustProperty*);
-typedef RogueClassCmd*(*ROGUEM844)(RogueClassCmdAdjustProperty*,RogueClassCloneArgs*);
-typedef RogueClassCmd*(*ROGUEM845)(RogueClassCmdAdjustProperty*,RogueClassScope*);
-typedef void(*ROGUEM846)(RogueClassCmdAdjustProperty*);
-typedef RogueClassType*(*ROGUEM847)(RogueClassCmdAdjustProperty*);
-typedef void(*ROGUEM848)(RogueClassCmdAdjustProperty*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdAdjustProperty*(*ROGUEM849)(RogueClassCmdAdjustProperty*);
-typedef RogueString*(*ROGUEM850)(RogueClassCmdCallStaticMethod*);
-typedef RogueClassCmd*(*ROGUEM851)(RogueClassCmdCallStaticMethod*,RogueClassCloneArgs*);
-typedef RogueClassCmd*(*ROGUEM852)(RogueClassCmdCallStaticMethod*,RogueClassScope*);
-typedef void(*ROGUEM853)(RogueClassCmdCallStaticMethod*,RogueClassCPPWriter*,RogueLogical);
-typedef RogueClassCmdCallStaticMethod*(*ROGUEM854)(RogueClassCmdCallStaticMethod*);
-typedef RogueString*(*ROGUEM855)(RogueTableEntry_of_String_TokenListList*);
-typedef RogueTableEntry_of_String_TokenListList*(*ROGUEM856)(RogueTableEntry_of_String_TokenListList*);
-typedef RogueString*(*ROGUEM857)(RogueClassString_TokenListTableEntry*);
-
-RogueString* call_ROGUEM0( int i, RogueCharacterList* THIS )
-{
-  return ((ROGUEM0)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCharacterList* call_ROGUEM1( int i, RogueCharacterList* THIS )
-{
-  return ((ROGUEM1)(THIS->type->methods[i]))( THIS );
-}
+typedef void(*ROGUEM779)(RogueClassCmdCallDynamicMethod*);
+typedef void(*ROGUEM780)(RogueClassCmdCallDynamicMethod*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdCallDynamicMethod*(*ROGUEM781)(RogueClassCmdCallDynamicMethod*);
+typedef RogueString*(*ROGUEM782)(RogueClassCmdCallMethod*);
+typedef RogueClassCmdCallMethod*(*ROGUEM783)(RogueClassCmdCallMethod*);
+typedef RogueString*(*ROGUEM784)(RogueClassCandidateMethods*);
+typedef RogueString*(*ROGUEM785)(RogueCmdTaskControlSectionList*);
+typedef RogueCmdTaskControlSectionList*(*ROGUEM786)(RogueCmdTaskControlSectionList*);
+typedef RogueString*(*ROGUEM787)(RogueClassCmdBlock*);
+typedef RogueClassCmd*(*ROGUEM788)(RogueClassCmdBlock*,RogueClassCloneArgs*);
+typedef RogueLogical(*ROGUEM789)(RogueClassCmdBlock*);
+typedef RogueClassCmdBlock*(*ROGUEM790)(RogueClassCmdBlock*,RogueClassScope*);
+typedef void(*ROGUEM791)(RogueClassCmdBlock*);
+typedef void(*ROGUEM792)(RogueClassCmdBlock*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdBlock*(*ROGUEM793)(RogueClassCmdBlock*);
+typedef RogueString*(*ROGUEM794)(RogueTableEntry_of_String_CmdList*);
+typedef RogueTableEntry_of_String_CmdList*(*ROGUEM795)(RogueTableEntry_of_String_CmdList*);
+typedef RogueString*(*ROGUEM796)(RogueClassString_CmdTableEntry*);
+typedef RogueString*(*ROGUEM797)(RogueTableEntry_of_String_PropertyList*);
+typedef RogueTableEntry_of_String_PropertyList*(*ROGUEM798)(RogueTableEntry_of_String_PropertyList*);
+typedef RogueString*(*ROGUEM799)(RogueClassString_PropertyTableEntry*);
+typedef RogueString*(*ROGUEM800)(RogueClassDirectiveTokenType*);
+typedef RogueClassToken*(*ROGUEM801)(RogueClassDirectiveTokenType*,RogueString*,RogueInteger,RogueInteger);
+typedef RogueLogical(*ROGUEM802)(RogueClassDirectiveTokenType*);
+typedef RogueClassDirectiveTokenType*(*ROGUEM803)(RogueClassDirectiveTokenType*);
+typedef RogueString*(*ROGUEM804)(RogueClassStructuralDirectiveTokenType*);
+typedef RogueClassToken*(*ROGUEM805)(RogueClassStructuralDirectiveTokenType*,RogueString*,RogueInteger,RogueInteger);
+typedef RogueLogical(*ROGUEM806)(RogueClassStructuralDirectiveTokenType*);
+typedef RogueClassStructuralDirectiveTokenType*(*ROGUEM807)(RogueClassStructuralDirectiveTokenType*);
+typedef RogueString*(*ROGUEM808)(RogueClassEOLTokenType*);
+typedef RogueClassToken*(*ROGUEM809)(RogueClassEOLTokenType*,RogueString*,RogueInteger,RogueInteger);
+typedef RogueClassToken*(*ROGUEM810)(RogueClassEOLTokenType*,RogueString*,RogueInteger,RogueInteger,RogueString*);
+typedef RogueLogical(*ROGUEM811)(RogueClassEOLTokenType*);
+typedef RogueClassEOLTokenType*(*ROGUEM812)(RogueClassEOLTokenType*);
+typedef RogueString*(*ROGUEM813)(RogueClassStructureTokenType*);
+typedef RogueClassToken*(*ROGUEM814)(RogueClassStructureTokenType*,RogueString*,RogueInteger,RogueInteger);
+typedef RogueLogical(*ROGUEM815)(RogueClassStructureTokenType*);
+typedef RogueClassStructureTokenType*(*ROGUEM816)(RogueClassStructureTokenType*);
+typedef RogueString*(*ROGUEM817)(RogueClassOpWithAssignTokenType*);
+typedef RogueLogical(*ROGUEM818)(RogueClassOpWithAssignTokenType*);
+typedef RogueClassOpWithAssignTokenType*(*ROGUEM819)(RogueClassOpWithAssignTokenType*);
+typedef RogueString*(*ROGUEM820)(RogueClassEOLToken*);
+typedef RogueClassEOLToken*(*ROGUEM821)(RogueClassEOLToken*);
+typedef RogueString*(*ROGUEM822)(RogueClassString_TokenListTable*);
+typedef RogueString*(*ROGUEM823)(RogueClassPreprocessorTokenReader*);
+typedef RogueString*(*ROGUEM824)(RogueClassCmdReadArrayElement*);
+typedef RogueClassCmd*(*ROGUEM825)(RogueClassCmdReadArrayElement*,RogueClassCloneArgs*);
+typedef RogueClassCmd*(*ROGUEM826)(RogueClassCmdReadArrayElement*,RogueClassScope*);
+typedef RogueClassCmd*(*ROGUEM827)(RogueClassCmdReadArrayElement*,RogueClassScope*,RogueInteger);
+typedef void(*ROGUEM828)(RogueClassCmdReadArrayElement*);
+typedef RogueClassType*(*ROGUEM829)(RogueClassCmdReadArrayElement*);
+typedef void(*ROGUEM830)(RogueClassCmdReadArrayElement*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdReadArrayElement*(*ROGUEM831)(RogueClassCmdReadArrayElement*);
+typedef RogueString*(*ROGUEM832)(RogueClassCmdWriteArrayElement*);
+typedef RogueClassCmd*(*ROGUEM833)(RogueClassCmdWriteArrayElement*,RogueClassCloneArgs*);
+typedef RogueClassCmd*(*ROGUEM834)(RogueClassCmdWriteArrayElement*,RogueClassScope*);
+typedef void(*ROGUEM835)(RogueClassCmdWriteArrayElement*);
+typedef RogueClassType*(*ROGUEM836)(RogueClassCmdWriteArrayElement*);
+typedef void(*ROGUEM837)(RogueClassCmdWriteArrayElement*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdWriteArrayElement*(*ROGUEM838)(RogueClassCmdWriteArrayElement*);
+typedef RogueString*(*ROGUEM839)(RogueClassCmdConvertToPrimitiveType*);
+typedef RogueClassCmd*(*ROGUEM840)(RogueClassCmdConvertToPrimitiveType*,RogueClassCloneArgs*);
+typedef RogueClassCmd*(*ROGUEM841)(RogueClassCmdConvertToPrimitiveType*,RogueClassScope*);
+typedef void(*ROGUEM842)(RogueClassCmdConvertToPrimitiveType*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdConvertToPrimitiveType*(*ROGUEM843)(RogueClassCmdConvertToPrimitiveType*);
+typedef RogueString*(*ROGUEM844)(RogueClassCmdAdjustProperty*);
+typedef RogueClassCmd*(*ROGUEM845)(RogueClassCmdAdjustProperty*,RogueClassCloneArgs*);
+typedef RogueClassCmd*(*ROGUEM846)(RogueClassCmdAdjustProperty*,RogueClassScope*);
+typedef void(*ROGUEM847)(RogueClassCmdAdjustProperty*);
+typedef RogueClassType*(*ROGUEM848)(RogueClassCmdAdjustProperty*);
+typedef void(*ROGUEM849)(RogueClassCmdAdjustProperty*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdAdjustProperty*(*ROGUEM850)(RogueClassCmdAdjustProperty*);
+typedef RogueString*(*ROGUEM851)(RogueClassCmdCallStaticMethod*);
+typedef RogueClassCmd*(*ROGUEM852)(RogueClassCmdCallStaticMethod*,RogueClassCloneArgs*);
+typedef RogueClassCmd*(*ROGUEM853)(RogueClassCmdCallStaticMethod*,RogueClassScope*);
+typedef void(*ROGUEM854)(RogueClassCmdCallStaticMethod*,RogueClassCPPWriter*,RogueLogical);
+typedef RogueClassCmdCallStaticMethod*(*ROGUEM855)(RogueClassCmdCallStaticMethod*);
+typedef RogueString*(*ROGUEM856)(RogueTableEntry_of_String_TokenListList*);
+typedef RogueTableEntry_of_String_TokenListList*(*ROGUEM857)(RogueTableEntry_of_String_TokenListList*);
+typedef RogueString*(*ROGUEM858)(RogueClassString_TokenListTableEntry*);
 
 RogueString* call_ROGUEM2( int i, RogueObject* THIS )
 {
   return ((ROGUEM2)(THIS->type->methods[i]))( THIS );
 }
 
-RogueString* call_ROGUEM3( int i, RogueClassGenericList* THIS )
-{
-  return ((ROGUEM3)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassGenericList* call_ROGUEM4( int i, RogueClassGenericList* THIS )
-{
-  return ((ROGUEM4)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM5( int i, RogueStringBuilder* THIS )
-{
-  return ((ROGUEM5)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM6( int i, RogueStringList* THIS )
-{
-  return ((ROGUEM6)(THIS->type->methods[i]))( THIS );
-}
-
-RogueStringList* call_ROGUEM7( int i, RogueStringList* THIS )
-{
-  return ((ROGUEM7)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM8( int i, RogueArray* THIS )
-{
-  return ((ROGUEM8)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM9( int i, RogueClassGlobal* THIS )
-{
-  return ((ROGUEM9)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM10( int i, RogueClassConsole* THIS )
-{
-  return ((ROGUEM10)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM11( int i, RogueClassRogueC* THIS )
-{
-  return ((ROGUEM11)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM12( int i, RogueClassError* THIS )
-{
-  return ((ROGUEM12)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassError* call_ROGUEM13( int i, RogueClassError* THIS )
-{
-  return ((ROGUEM13)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM14( int i, RogueClassStringListOps* THIS )
-{
-  return ((ROGUEM14)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM15( int i, RogueClassTaskManager* THIS )
-{
-  return ((ROGUEM15)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM16( int i, RogueClassTask* THIS )
-{
-  return ((ROGUEM16)(THIS->type->methods[i]))( THIS );
-}
-
 RogueLogical call_ROGUEM17( int i, RogueClassTask* THIS )
 {
   return ((ROGUEM17)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassTask* call_ROGUEM18( int i, RogueClassTask* THIS )
-{
-  return ((ROGUEM18)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM19( int i, RogueTaskList* THIS )
-{
-  return ((ROGUEM19)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTaskList* call_ROGUEM20( int i, RogueTaskList* THIS )
-{
-  return ((ROGUEM20)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM21( int i, RogueClassEventManager* THIS )
-{
-  return ((ROGUEM21)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM22( int i, RogueClassProgram* THIS )
-{
-  return ((ROGUEM22)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM23( int i, RogueTemplateList* THIS )
-{
-  return ((ROGUEM23)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTemplateList* call_ROGUEM24( int i, RogueTemplateList* THIS )
-{
-  return ((ROGUEM24)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM25( int i, RogueClassTemplate* THIS )
-{
-  return ((ROGUEM25)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM26( int i, RogueClassString_TemplateTable* THIS )
-{
-  return ((ROGUEM26)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM27( int i, RogueClassString_AugmentListTable* THIS )
-{
-  return ((ROGUEM27)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM28( int i, RogueRequisiteItemList* THIS )
-{
-  return ((ROGUEM28)(THIS->type->methods[i]))( THIS );
-}
-
-RogueRequisiteItemList* call_ROGUEM29( int i, RogueRequisiteItemList* THIS )
-{
-  return ((ROGUEM29)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM30( int i, RogueClassRequisiteItem* THIS )
-{
-  return ((ROGUEM30)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM31( int i, RogueClassMethod* THIS )
-{
-  return ((ROGUEM31)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM32( int i, RogueClassString_MethodListTable* THIS )
-{
-  return ((ROGUEM32)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM33( int i, RogueTypeList* THIS )
-{
-  return ((ROGUEM33)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTypeList* call_ROGUEM34( int i, RogueTypeList* THIS )
-{
-  return ((ROGUEM34)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM35( int i, RogueClassType* THIS )
-{
-  return ((ROGUEM35)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM36( int i, RogueClassString_TypeTable* THIS )
-{
-  return ((ROGUEM36)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM37( int i, RogueClassString_IntegerTable* THIS )
-{
-  return ((ROGUEM37)(THIS->type->methods[i]))( THIS );
 }
 
 RogueString* call_ROGUEM38( int i, RogueClassToken* THIS )
@@ -2607,16 +2428,6 @@ RogueReal call_ROGUEM42( int i, RogueClassToken* THIS )
 RogueClassType* call_ROGUEM43( int i, RogueClassToken* THIS )
 {
   return ((ROGUEM43)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassToken* call_ROGUEM44( int i, RogueClassToken* THIS )
-{
-  return ((ROGUEM44)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM45( int i, RogueClassAttributes* THIS )
-{
-  return ((ROGUEM45)(THIS->type->methods[i]))( THIS );
 }
 
 RogueString* call_ROGUEM46( int i, RogueClassCmd* THIS )
@@ -2679,94 +2490,9 @@ void call_ROGUEM57( int i, RogueClassCmd* THIS, RogueClassCPPWriter* p0, RogueLo
   ((ROGUEM57)(THIS->type->methods[i]))( THIS, p0, p1 );
 }
 
-RogueClassCmd* call_ROGUEM58( int i, RogueClassCmd* THIS )
-{
-  return ((ROGUEM58)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM59( int i, RogueClassCmdReturn* THIS )
-{
-  return ((ROGUEM59)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM60( int i, RogueClassCmdReturn* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM60)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM61( int i, RogueClassCmdReturn* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM61)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM62( int i, RogueClassCmdReturn* THIS )
-{
-  ((ROGUEM62)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM63( int i, RogueClassCmdReturn* THIS )
-{
-  return ((ROGUEM63)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM64( int i, RogueClassCmdReturn* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM64)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReturn* call_ROGUEM65( int i, RogueClassCmdReturn* THIS )
-{
-  return ((ROGUEM65)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM66( int i, RogueClassCmdStatement* THIS )
-{
-  return ((ROGUEM66)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM67( int i, RogueClassCmdStatement* THIS )
-{
-  ((ROGUEM67)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdStatement* call_ROGUEM68( int i, RogueClassCmdStatement* THIS )
-{
-  return ((ROGUEM68)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM69( int i, RogueCmdList* THIS )
-{
-  return ((ROGUEM69)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM70( int i, RogueClassCmdStatementList* THIS )
-{
-  return ((ROGUEM70)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdStatementList* call_ROGUEM71( int i, RogueClassCmdStatementList* THIS )
-{
-  return ((ROGUEM71)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdStatementList* call_ROGUEM72( int i, RogueClassCmdStatementList* THIS, RogueInteger p0 )
-{
-  return ((ROGUEM72)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueCmdList* call_ROGUEM73( int i, RogueCmdList* THIS )
-{
-  return ((ROGUEM73)(THIS->type->methods[i]))( THIS );
-}
-
 RogueCmdList* call_ROGUEM74( int i, RogueCmdList* THIS, RogueInteger p0 )
 {
   return ((ROGUEM74)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueString* call_ROGUEM75( int i, RogueClassTokenType* THIS )
-{
-  return ((ROGUEM75)(THIS->type->methods[i]))( THIS );
 }
 
 RogueClassToken* call_ROGUEM76( int i, RogueClassTokenType* THIS, RogueString* p0, RogueInteger p1, RogueInteger p2 )
@@ -2784,469 +2510,9 @@ RogueLogical call_ROGUEM78( int i, RogueClassTokenType* THIS )
   return ((ROGUEM78)(THIS->type->methods[i]))( THIS );
 }
 
-RogueClassTokenType* call_ROGUEM79( int i, RogueClassTokenType* THIS )
-{
-  return ((ROGUEM79)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM80( int i, RogueClassCmdLabel* THIS )
-{
-  return ((ROGUEM80)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdLabel* call_ROGUEM81( int i, RogueClassCmdLabel* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM81)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueLogical call_ROGUEM82( int i, RogueClassCmdLabel* THIS )
-{
-  return ((ROGUEM82)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM83( int i, RogueClassCmdLabel* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM83)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM84( int i, RogueClassCmdLabel* THIS )
-{
-  ((ROGUEM84)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM85( int i, RogueClassCmdLabel* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM85)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLabel* call_ROGUEM86( int i, RogueClassCmdLabel* THIS )
-{
-  return ((ROGUEM86)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM87( int i, RogueClassRogueError* THIS )
-{
-  return ((ROGUEM87)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassRogueError* call_ROGUEM88( int i, RogueClassRogueError* THIS )
-{
-  return ((ROGUEM88)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM89( int i, RogueMethodList* THIS )
-{
-  return ((ROGUEM89)(THIS->type->methods[i]))( THIS );
-}
-
-RogueMethodList* call_ROGUEM90( int i, RogueMethodList* THIS )
-{
-  return ((ROGUEM90)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM91( int i, RogueClassCPPWriter* THIS )
-{
-  return ((ROGUEM91)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM92( int i, RogueFileReader* THIS )
-{
-  return ((ROGUEM92)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM93( int i, RogueFileReader* THIS )
-{
-  return ((ROGUEM93)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCharacter call_ROGUEM94( int i, RogueFileReader* THIS )
-{
-  return ((ROGUEM94)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM95( int i, RogueClassString_MethodTable* THIS )
-{
-  return ((ROGUEM95)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM96( int i, RogueLocalList* THIS )
-{
-  return ((ROGUEM96)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLocalList* call_ROGUEM97( int i, RogueLocalList* THIS )
-{
-  return ((ROGUEM97)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM98( int i, RogueClassLocal* THIS )
-{
-  return ((ROGUEM98)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM99( int i, RogueByteList* THIS )
-{
-  return ((ROGUEM99)(THIS->type->methods[i]))( THIS );
-}
-
-RogueByteList* call_ROGUEM100( int i, RogueByteList* THIS )
-{
-  return ((ROGUEM100)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM101( int i, RogueClassMath* THIS )
-{
-  return ((ROGUEM101)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM102( int i, RogueClassSystem* THIS )
-{
-  return ((ROGUEM102)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM103( int i, RogueClassString_LogicalTable* THIS )
-{
-  return ((ROGUEM103)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM104( int i, RogueClassFile* THIS )
-{
-  return ((ROGUEM104)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM105( int i, RogueClassParser* THIS )
-{
-  return ((ROGUEM105)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM106( int i, RogueTokenList* THIS )
-{
-  return ((ROGUEM106)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTokenList* call_ROGUEM107( int i, RogueTokenList* THIS )
-{
-  return ((ROGUEM107)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM108( int i, RogueTypeParameterList* THIS )
-{
-  return ((ROGUEM108)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTypeParameterList* call_ROGUEM109( int i, RogueTypeParameterList* THIS )
-{
-  return ((ROGUEM109)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM110( int i, RogueClassTypeParameter* THIS )
-{
-  return ((ROGUEM110)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM111( int i, RogueAugmentList* THIS )
-{
-  return ((ROGUEM111)(THIS->type->methods[i]))( THIS );
-}
-
-RogueAugmentList* call_ROGUEM112( int i, RogueAugmentList* THIS )
-{
-  return ((ROGUEM112)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM113( int i, RogueClassAugment* THIS )
-{
-  return ((ROGUEM113)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM114( int i, RogueClassString_TokenTypeTable* THIS )
-{
-  return ((ROGUEM114)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM115( int i, RogueClassLiteralCharacterToken* THIS )
-{
-  return ((ROGUEM115)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCharacter call_ROGUEM116( int i, RogueClassLiteralCharacterToken* THIS )
-{
-  return ((ROGUEM116)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassLiteralCharacterToken* call_ROGUEM117( int i, RogueClassLiteralCharacterToken* THIS )
-{
-  return ((ROGUEM117)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM118( int i, RogueClassLiteralLongToken* THIS )
-{
-  return ((ROGUEM118)(THIS->type->methods[i]))( THIS );
-}
-
-RogueInteger call_ROGUEM119( int i, RogueClassLiteralLongToken* THIS )
-{
-  return ((ROGUEM119)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLong call_ROGUEM120( int i, RogueClassLiteralLongToken* THIS )
-{
-  return ((ROGUEM120)(THIS->type->methods[i]))( THIS );
-}
-
-RogueReal call_ROGUEM121( int i, RogueClassLiteralLongToken* THIS )
-{
-  return ((ROGUEM121)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassLiteralLongToken* call_ROGUEM122( int i, RogueClassLiteralLongToken* THIS )
-{
-  return ((ROGUEM122)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM123( int i, RogueClassLiteralIntegerToken* THIS )
-{
-  return ((ROGUEM123)(THIS->type->methods[i]))( THIS );
-}
-
-RogueInteger call_ROGUEM124( int i, RogueClassLiteralIntegerToken* THIS )
-{
-  return ((ROGUEM124)(THIS->type->methods[i]))( THIS );
-}
-
-RogueReal call_ROGUEM125( int i, RogueClassLiteralIntegerToken* THIS )
-{
-  return ((ROGUEM125)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassLiteralIntegerToken* call_ROGUEM126( int i, RogueClassLiteralIntegerToken* THIS )
-{
-  return ((ROGUEM126)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM127( int i, RogueClassLiteralRealToken* THIS )
-{
-  return ((ROGUEM127)(THIS->type->methods[i]))( THIS );
-}
-
-RogueInteger call_ROGUEM128( int i, RogueClassLiteralRealToken* THIS )
-{
-  return ((ROGUEM128)(THIS->type->methods[i]))( THIS );
-}
-
-RogueReal call_ROGUEM129( int i, RogueClassLiteralRealToken* THIS )
-{
-  return ((ROGUEM129)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassLiteralRealToken* call_ROGUEM130( int i, RogueClassLiteralRealToken* THIS )
-{
-  return ((ROGUEM130)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM131( int i, RogueClassLiteralStringToken* THIS )
-{
-  return ((ROGUEM131)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassLiteralStringToken* call_ROGUEM132( int i, RogueClassLiteralStringToken* THIS )
-{
-  return ((ROGUEM132)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM133( int i, RogueClassString_TypeSpecializerTable* THIS )
-{
-  return ((ROGUEM133)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM134( int i, RogueClassTypeSpecializer* THIS )
-{
-  return ((ROGUEM134)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM135( int i, RogueTableEntry_of_String_TemplateList* THIS )
-{
-  return ((ROGUEM135)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_TemplateList* call_ROGUEM136( int i, RogueTableEntry_of_String_TemplateList* THIS )
-{
-  return ((ROGUEM136)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM137( int i, RogueClassString_TemplateTableEntry* THIS )
-{
-  return ((ROGUEM137)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM138( int i, RogueTableEntry_of_String_AugmentListList* THIS )
-{
-  return ((ROGUEM138)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_AugmentListList* call_ROGUEM139( int i, RogueTableEntry_of_String_AugmentListList* THIS )
-{
-  return ((ROGUEM139)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM140( int i, RogueClassString_AugmentListTableEntry* THIS )
-{
-  return ((ROGUEM140)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM141( int i, RogueCmdLabelList* THIS )
-{
-  return ((ROGUEM141)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCmdLabelList* call_ROGUEM142( int i, RogueCmdLabelList* THIS )
-{
-  return ((ROGUEM142)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM143( int i, RogueClassString_CmdLabelTable* THIS )
-{
-  return ((ROGUEM143)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM144( int i, RogueClassCloneArgs* THIS )
-{
-  return ((ROGUEM144)(THIS->type->methods[i]))( THIS );
-}
-
 RogueClassCmdLabel* call_ROGUEM145( int i, RogueClassCloneArgs* THIS, RogueClassCmdLabel* p0 )
 {
   return ((ROGUEM145)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCloneArgs* call_ROGUEM146( int i, RogueClassCloneArgs* THIS )
-{
-  return ((ROGUEM146)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM147( int i, RogueClassCloneMethodArgs* THIS )
-{
-  return ((ROGUEM147)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdLabel* call_ROGUEM148( int i, RogueClassCloneMethodArgs* THIS, RogueClassCmdLabel* p0 )
-{
-  return ((ROGUEM148)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCloneMethodArgs* call_ROGUEM149( int i, RogueClassCloneMethodArgs* THIS )
-{
-  return ((ROGUEM149)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM150( int i, RogueClassProperty* THIS )
-{
-  return ((ROGUEM150)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM151( int i, RogueClassCmdAccess* THIS )
-{
-  return ((ROGUEM151)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM152( int i, RogueClassCmdAccess* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM152)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM153( int i, RogueClassCmdAccess* THIS )
-{
-  return ((ROGUEM153)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM154( int i, RogueClassCmdAccess* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM154)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM155( int i, RogueClassCmdAccess* THIS, RogueClassScope* p0, RogueClassCmd* p1 )
-{
-  return ((ROGUEM155)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmd* call_ROGUEM156( int i, RogueClassCmdAccess* THIS, RogueClassScope* p0, RogueClassTokenType* p1, RogueClassCmd* p2 )
-{
-  return ((ROGUEM156)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-void call_ROGUEM157( int i, RogueClassCmdAccess* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM157)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdAccess* call_ROGUEM158( int i, RogueClassCmdAccess* THIS )
-{
-  return ((ROGUEM158)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM159( int i, RogueClassCmdArgs* THIS )
-{
-  return ((ROGUEM159)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdArgs* call_ROGUEM160( int i, RogueClassCmdArgs* THIS )
-{
-  return ((ROGUEM160)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdArgs* call_ROGUEM161( int i, RogueClassCmdArgs* THIS, RogueInteger p0 )
-{
-  return ((ROGUEM161)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueString* call_ROGUEM162( int i, RogueClassCmdAssign* THIS )
-{
-  return ((ROGUEM162)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM163( int i, RogueClassCmdAssign* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM163)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM164( int i, RogueClassCmdAssign* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM164)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdAssign* call_ROGUEM165( int i, RogueClassCmdAssign* THIS )
-{
-  return ((ROGUEM165)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM166( int i, RogueClassScope* THIS )
-{
-  return ((ROGUEM166)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM167( int i, RogueCmdControlStructureList* THIS )
-{
-  return ((ROGUEM167)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCmdControlStructureList* call_ROGUEM168( int i, RogueCmdControlStructureList* THIS )
-{
-  return ((ROGUEM168)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM169( int i, RogueClassCmdControlStructure* THIS )
-{
-  return ((ROGUEM169)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM170( int i, RogueClassCmdControlStructure* THIS )
-{
-  return ((ROGUEM170)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdControlStructure* call_ROGUEM171( int i, RogueClassCmdControlStructure* THIS )
-{
-  return ((ROGUEM171)(THIS->type->methods[i]))( THIS );
 }
 
 RogueClassCmd* call_ROGUEM172( int i, RogueClassCmdControlStructure* THIS, RogueClassCmdControlStructure* p0 )
@@ -3254,209 +2520,14 @@ RogueClassCmd* call_ROGUEM172( int i, RogueClassCmdControlStructure* THIS, Rogue
   return ((ROGUEM172)(THIS->type->methods[i]))( THIS, p0 );
 }
 
-RogueString* call_ROGUEM173( int i, RogueClassCmdLiteralThis* THIS )
-{
-  return ((ROGUEM173)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM174( int i, RogueClassCmdLiteralThis* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM174)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM175( int i, RogueClassCmdThisContext* THIS )
-{
-  return ((ROGUEM175)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM176( int i, RogueClassCmdLiteralThis* THIS )
-{
-  ((ROGUEM176)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM177( int i, RogueClassCmdLiteralThis* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM177)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM178( int i, RogueClassCmdThisContext* THIS )
-{
-  ((ROGUEM178)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM179( int i, RogueClassCmdThisContext* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM179)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralThis* call_ROGUEM180( int i, RogueClassCmdLiteralThis* THIS )
-{
-  return ((ROGUEM180)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM181( int i, RogueClassCmdThisContext* THIS )
-{
-  return ((ROGUEM181)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM182( int i, RogueClassCmdThisContext* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM182)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM183( int i, RogueClassCmdThisContext* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM183)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdThisContext* call_ROGUEM184( int i, RogueClassCmdThisContext* THIS )
-{
-  return ((ROGUEM184)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM185( int i, RogueClassCmdGenericLoop* THIS )
-{
-  return ((ROGUEM185)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM186( int i, RogueClassCmdGenericLoop* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM186)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM187( int i, RogueClassCmdGenericLoop* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM187)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM188( int i, RogueClassCmdGenericLoop* THIS )
-{
-  ((ROGUEM188)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM189( int i, RogueClassCmdGenericLoop* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM189)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdGenericLoop* call_ROGUEM190( int i, RogueClassCmdGenericLoop* THIS )
-{
-  return ((ROGUEM190)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM191( int i, RogueClassCmdLiteralInteger* THIS )
-{
-  return ((ROGUEM191)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM192( int i, RogueClassCmdLiteralInteger* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM192)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM193( int i, RogueClassCmdLiteralInteger* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM193)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM194( int i, RogueClassCmdLiteral* THIS )
-{
-  return ((ROGUEM194)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM195( int i, RogueClassCmdLiteral* THIS )
-{
-  return ((ROGUEM195)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM196( int i, RogueClassCmdLiteralInteger* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM196)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM197( int i, RogueClassCmdLiteral* THIS )
-{
-  ((ROGUEM197)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM198( int i, RogueClassCmdLiteralInteger* THIS )
-{
-  return ((ROGUEM198)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM199( int i, RogueClassCmdLiteralInteger* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM199)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralInteger* call_ROGUEM200( int i, RogueClassCmdLiteralInteger* THIS )
-{
-  return ((ROGUEM200)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM201( int i, RogueClassCmdLiteral* THIS )
-{
-  return ((ROGUEM201)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdLiteral* call_ROGUEM202( int i, RogueClassCmdLiteral* THIS )
-{
-  return ((ROGUEM202)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM203( int i, RogueClassCmdCompareNE* THIS )
-{
-  return ((ROGUEM203)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM204( int i, RogueClassCmdCompareNE* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM204)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM205( int i, RogueClassCmdCompareNE* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM205)(THIS->type->methods[i]))( THIS, p0 );
-}
-
 RogueClassCmd* call_ROGUEM206( int i, RogueClassCmdBinary* THIS, RogueClassScope* p0 )
 {
   return ((ROGUEM206)(THIS->type->methods[i]))( THIS, p0 );
 }
 
-void call_ROGUEM207( int i, RogueClassCmdBinary* THIS )
-{
-  ((ROGUEM207)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM208( int i, RogueClassCmdComparison* THIS )
-{
-  return ((ROGUEM208)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM209( int i, RogueClassCmdBinary* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM209)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCompareNE* call_ROGUEM210( int i, RogueClassCmdCompareNE* THIS )
-{
-  return ((ROGUEM210)(THIS->type->methods[i]))( THIS );
-}
-
 RogueString* call_ROGUEM211( int i, RogueClassCmdBinary* THIS )
 {
   return ((ROGUEM211)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM212( int i, RogueClassCmdComparison* THIS )
-{
-  return ((ROGUEM212)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM213( int i, RogueClassCmdComparison* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2 )
-{
-  return ((ROGUEM213)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
 }
 
 RogueClassCmd* call_ROGUEM214( int i, RogueClassCmdBinary* THIS, RogueClassScope* p0, RogueClassType* p1 )
@@ -3469,21 +2540,6 @@ RogueClassCmd* call_ROGUEM215( int i, RogueClassCmdBinary* THIS, RogueClassScope
   return ((ROGUEM215)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
 }
 
-RogueClassCmd* call_ROGUEM216( int i, RogueClassCmdCompareNE* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
-{
-  return ((ROGUEM216)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueString* call_ROGUEM217( int i, RogueClassCmdComparison* THIS )
-{
-  return ((ROGUEM217)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdComparison* call_ROGUEM218( int i, RogueClassCmdComparison* THIS )
-{
-  return ((ROGUEM218)(THIS->type->methods[i]))( THIS );
-}
-
 RogueClassCmd* call_ROGUEM219( int i, RogueClassCmdComparison* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
 {
   return ((ROGUEM219)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
@@ -3494,424 +2550,9 @@ RogueClassType* call_ROGUEM220( int i, RogueClassCmdBinary* THIS )
   return ((ROGUEM220)(THIS->type->methods[i]))( THIS );
 }
 
-RogueClassCmdBinary* call_ROGUEM221( int i, RogueClassCmdBinary* THIS )
-{
-  return ((ROGUEM221)(THIS->type->methods[i]))( THIS );
-}
-
 RogueLogical call_ROGUEM222( int i, RogueClassCmdBinary* THIS )
 {
   return ((ROGUEM222)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM223( int i, RogueClassTaskArgs* THIS )
-{
-  return ((ROGUEM223)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassTaskArgs* call_ROGUEM224( int i, RogueClassTaskArgs* THIS )
-{
-  return ((ROGUEM224)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM225( int i, RogueClassCmdTaskControl* THIS )
-{
-  return ((ROGUEM225)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM226( int i, RogueClassCmdTaskControl* THIS )
-{
-  return ((ROGUEM226)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM227( int i, RogueClassCmdTaskControl* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM227)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM228( int i, RogueClassCmdTaskControl* THIS )
-{
-  ((ROGUEM228)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM229( int i, RogueClassCmdTaskControl* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM229)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdTaskControl* call_ROGUEM230( int i, RogueClassCmdTaskControl* THIS )
-{
-  return ((ROGUEM230)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM231( int i, RogueClassCmdTaskControlSection* THIS )
-{
-  return ((ROGUEM231)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM232( int i, RogueTableEntry_of_String_MethodListList* THIS )
-{
-  return ((ROGUEM232)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_MethodListList* call_ROGUEM233( int i, RogueTableEntry_of_String_MethodListList* THIS )
-{
-  return ((ROGUEM233)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM234( int i, RogueClassString_MethodListTableEntry* THIS )
-{
-  return ((ROGUEM234)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM235( int i, RogueClassTypeListOps* THIS )
-{
-  return ((ROGUEM235)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM236( int i, RogueClassString_CmdTable* THIS )
-{
-  return ((ROGUEM236)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM237( int i, RoguePropertyList* THIS )
-{
-  return ((ROGUEM237)(THIS->type->methods[i]))( THIS );
-}
-
-RoguePropertyList* call_ROGUEM238( int i, RoguePropertyList* THIS )
-{
-  return ((ROGUEM238)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM239( int i, RogueClassString_PropertyTable* THIS )
-{
-  return ((ROGUEM239)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM240( int i, RogueClassCmdLiteralNull* THIS )
-{
-  return ((ROGUEM240)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM241( int i, RogueClassCmdLiteralNull* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM241)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM242( int i, RogueClassCmdLiteralNull* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM242)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdLiteralNull* call_ROGUEM243( int i, RogueClassCmdLiteralNull* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM243)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM244( int i, RogueClassCmdLiteralNull* THIS )
-{
-  return ((ROGUEM244)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM245( int i, RogueClassCmdLiteralNull* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM245)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralNull* call_ROGUEM246( int i, RogueClassCmdLiteralNull* THIS )
-{
-  return ((ROGUEM246)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM247( int i, RogueClassCmdCreateCompound* THIS )
-{
-  return ((ROGUEM247)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM248( int i, RogueClassCmdCreateCompound* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM248)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM249( int i, RogueClassCmdCreateCompound* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM249)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM250( int i, RogueClassCmdCreateCompound* THIS )
-{
-  ((ROGUEM250)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM251( int i, RogueClassCmdCreateCompound* THIS )
-{
-  return ((ROGUEM251)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM252( int i, RogueClassCmdCreateCompound* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM252)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCreateCompound* call_ROGUEM253( int i, RogueClassCmdCreateCompound* THIS )
-{
-  return ((ROGUEM253)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM254( int i, RogueClassCmdLiteralLogical* THIS )
-{
-  return ((ROGUEM254)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM255( int i, RogueClassCmdLiteralLogical* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM255)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM256( int i, RogueClassCmdLiteralLogical* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM256)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM257( int i, RogueClassCmdLiteralLogical* THIS )
-{
-  return ((ROGUEM257)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM258( int i, RogueClassCmdLiteralLogical* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM258)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralLogical* call_ROGUEM259( int i, RogueClassCmdLiteralLogical* THIS )
-{
-  return ((ROGUEM259)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM260( int i, RogueClassCmdLiteralString* THIS )
-{
-  return ((ROGUEM260)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM261( int i, RogueClassCmdLiteralString* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM261)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM262( int i, RogueClassCmdLiteralString* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM262)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM263( int i, RogueClassCmdLiteralString* THIS )
-{
-  ((ROGUEM263)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM264( int i, RogueClassCmdLiteralString* THIS )
-{
-  return ((ROGUEM264)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM265( int i, RogueClassCmdLiteralString* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM265)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralString* call_ROGUEM266( int i, RogueClassCmdLiteralString* THIS )
-{
-  return ((ROGUEM266)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM267( int i, RogueClassCmdWriteSetting* THIS )
-{
-  return ((ROGUEM267)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM268( int i, RogueClassCmdWriteSetting* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM268)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM269( int i, RogueClassCmdWriteSetting* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM269)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM270( int i, RogueClassCmdWriteSetting* THIS )
-{
-  ((ROGUEM270)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM271( int i, RogueClassCmdWriteSetting* THIS )
-{
-  return ((ROGUEM271)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM272( int i, RogueClassCmdWriteSetting* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM272)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdWriteSetting* call_ROGUEM273( int i, RogueClassCmdWriteSetting* THIS )
-{
-  return ((ROGUEM273)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM274( int i, RogueClassMethodListOps* THIS )
-{
-  return ((ROGUEM274)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM275( int i, RogueClassCmdWriteProperty* THIS )
-{
-  return ((ROGUEM275)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM276( int i, RogueClassCmdWriteProperty* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM276)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM277( int i, RogueClassCmdWriteProperty* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM277)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM278( int i, RogueClassCmdWriteProperty* THIS )
-{
-  ((ROGUEM278)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM279( int i, RogueClassCmdWriteProperty* THIS )
-{
-  return ((ROGUEM279)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM280( int i, RogueClassCmdWriteProperty* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM280)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdWriteProperty* call_ROGUEM281( int i, RogueClassCmdWriteProperty* THIS )
-{
-  return ((ROGUEM281)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM282( int i, RogueClassPropertyListOps* THIS )
-{
-  return ((ROGUEM282)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM283( int i, RogueTableEntry_of_String_TypeList* THIS )
-{
-  return ((ROGUEM283)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_TypeList* call_ROGUEM284( int i, RogueTableEntry_of_String_TypeList* THIS )
-{
-  return ((ROGUEM284)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM285( int i, RogueClassString_TypeTableEntry* THIS )
-{
-  return ((ROGUEM285)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM286( int i, RogueTableEntry_of_String_IntegerList* THIS )
-{
-  return ((ROGUEM286)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_IntegerList* call_ROGUEM287( int i, RogueTableEntry_of_String_IntegerList* THIS )
-{
-  return ((ROGUEM287)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM288( int i, RogueClassString_IntegerTableEntry* THIS )
-{
-  return ((ROGUEM288)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM289( int i, RogueClassCmdCastToType* THIS )
-{
-  return ((ROGUEM289)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM290( int i, RogueClassCmdCastToType* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM290)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM291( int i, RogueClassCmdCastToType* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM291)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM292( int i, RogueClassCmdTypeOperator* THIS )
-{
-  ((ROGUEM292)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM293( int i, RogueClassCmdTypeOperator* THIS )
-{
-  return ((ROGUEM293)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM294( int i, RogueClassCmdCastToType* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM294)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCastToType* call_ROGUEM295( int i, RogueClassCmdCastToType* THIS )
-{
-  return ((ROGUEM295)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM296( int i, RogueClassCmdTypeOperator* THIS )
-{
-  return ((ROGUEM296)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdTypeOperator* call_ROGUEM297( int i, RogueClassCmdTypeOperator* THIS )
-{
-  return ((ROGUEM297)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM298( int i, RogueClassCmdLogicalize* THIS )
-{
-  return ((ROGUEM298)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM299( int i, RogueClassCmdLogicalize* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM299)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM300( int i, RogueClassCmdLogicalize* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM300)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM301( int i, RogueClassCmdUnary* THIS )
-{
-  ((ROGUEM301)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM302( int i, RogueClassCmdLogicalize* THIS )
-{
-  return ((ROGUEM302)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM303( int i, RogueClassCmdUnary* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM303)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLogicalize* call_ROGUEM304( int i, RogueClassCmdLogicalize* THIS )
-{
-  return ((ROGUEM304)(THIS->type->methods[i]))( THIS );
 }
 
 RogueString* call_ROGUEM305( int i, RogueClassCmdUnary* THIS )
@@ -3924,854 +2565,9 @@ RogueClassCmd* call_ROGUEM306( int i, RogueClassCmdUnary* THIS, RogueClassScope*
   return ((ROGUEM306)(THIS->type->methods[i]))( THIS, p0 );
 }
 
-RogueClassType* call_ROGUEM307( int i, RogueClassCmdUnary* THIS )
-{
-  return ((ROGUEM307)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdUnary* call_ROGUEM308( int i, RogueClassCmdUnary* THIS )
-{
-  return ((ROGUEM308)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM309( int i, RogueClassCmdCreateOptionalValue* THIS )
-{
-  return ((ROGUEM309)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM310( int i, RogueClassCmdCreateOptionalValue* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM310)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM311( int i, RogueClassCmdCreateOptionalValue* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM311)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM312( int i, RogueClassCmdCreateOptionalValue* THIS )
-{
-  ((ROGUEM312)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM313( int i, RogueClassCmdCreateOptionalValue* THIS )
-{
-  return ((ROGUEM313)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM314( int i, RogueClassCmdCreateOptionalValue* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM314)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCreateOptionalValue* call_ROGUEM315( int i, RogueClassCmdCreateOptionalValue* THIS )
-{
-  return ((ROGUEM315)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM316( int i, RogueTableEntry_of_String_MethodList* THIS )
-{
-  return ((ROGUEM316)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_MethodList* call_ROGUEM317( int i, RogueTableEntry_of_String_MethodList* THIS )
-{
-  return ((ROGUEM317)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM318( int i, RogueClassString_MethodTableEntry* THIS )
-{
-  return ((ROGUEM318)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM319( int i, RogueTableEntry_of_String_LogicalList* THIS )
-{
-  return ((ROGUEM319)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_LogicalList* call_ROGUEM320( int i, RogueTableEntry_of_String_LogicalList* THIS )
-{
-  return ((ROGUEM320)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM321( int i, RogueClassString_LogicalTableEntry* THIS )
-{
-  return ((ROGUEM321)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM322( int i, RogueClassTokenReader* THIS )
-{
-  return ((ROGUEM322)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM323( int i, RogueClassTokenizer* THIS )
-{
-  return ((ROGUEM323)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM324( int i, RogueClassParseReader* THIS )
-{
-  return ((ROGUEM324)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM325( int i, RogueClassParseReader* THIS )
-{
-  return ((ROGUEM325)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCharacter call_ROGUEM326( int i, RogueClassParseReader* THIS )
-{
-  return ((ROGUEM326)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM327( int i, RogueClassPreprocessor* THIS )
-{
-  return ((ROGUEM327)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM328( int i, RogueClassCmdAdd* THIS )
-{
-  return ((ROGUEM328)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM329( int i, RogueClassCmdAdd* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM329)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM330( int i, RogueClassCmdAdd* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM330)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdAdd* call_ROGUEM331( int i, RogueClassCmdAdd* THIS )
-{
-  return ((ROGUEM331)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM332( int i, RogueClassCmdAdd* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2 )
-{
-  return ((ROGUEM332)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueString* call_ROGUEM333( int i, RogueClassCmdIf* THIS )
-{
-  return ((ROGUEM333)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM334( int i, RogueClassCmdIf* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM334)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM335( int i, RogueClassCmdIf* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM335)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM336( int i, RogueClassCmdIf* THIS )
-{
-  ((ROGUEM336)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM337( int i, RogueClassCmdIf* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM337)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdIf* call_ROGUEM338( int i, RogueClassCmdIf* THIS )
-{
-  return ((ROGUEM338)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM339( int i, RogueClassCmdWhich* THIS )
-{
-  return ((ROGUEM339)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdWhich* call_ROGUEM340( int i, RogueClassCmdWhich* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM340)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM341( int i, RogueClassCmdWhich* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM341)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM342( int i, RogueClassCmdWhich* THIS )
-{
-  ((ROGUEM342)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdWhich* call_ROGUEM343( int i, RogueClassCmdWhich* THIS )
-{
-  return ((ROGUEM343)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM344( int i, RogueClassCmdContingent* THIS )
-{
-  return ((ROGUEM344)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM345( int i, RogueClassCmdContingent* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM345)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdContingent* call_ROGUEM346( int i, RogueClassCmdContingent* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM346)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM347( int i, RogueClassCmdContingent* THIS )
-{
-  ((ROGUEM347)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM348( int i, RogueClassCmdContingent* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM348)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdContingent* call_ROGUEM349( int i, RogueClassCmdContingent* THIS )
-{
-  return ((ROGUEM349)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM350( int i, RogueClassCmdContingent* THIS, RogueClassCmdControlStructure* p0 )
-{
-  return ((ROGUEM350)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueString* call_ROGUEM351( int i, RogueClassCmdTry* THIS )
-{
-  return ((ROGUEM351)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdTry* call_ROGUEM352( int i, RogueClassCmdTry* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM352)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM353( int i, RogueClassCmdTry* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM353)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM354( int i, RogueClassCmdTry* THIS )
-{
-  ((ROGUEM354)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM355( int i, RogueClassCmdTry* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM355)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdTry* call_ROGUEM356( int i, RogueClassCmdTry* THIS )
-{
-  return ((ROGUEM356)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM357( int i, RogueClassCmdAwait* THIS )
-{
-  return ((ROGUEM357)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM358( int i, RogueClassCmdAwait* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM358)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM359( int i, RogueClassCmdAwait* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM359)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdAwait* call_ROGUEM360( int i, RogueClassCmdAwait* THIS )
-{
-  return ((ROGUEM360)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM361( int i, RogueClassCmdYield* THIS )
-{
-  return ((ROGUEM361)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM362( int i, RogueClassCmdYield* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM362)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM363( int i, RogueClassCmdYield* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM363)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdYield* call_ROGUEM364( int i, RogueClassCmdYield* THIS )
-{
-  return ((ROGUEM364)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM365( int i, RogueClassCmdThrow* THIS )
-{
-  return ((ROGUEM365)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdThrow* call_ROGUEM366( int i, RogueClassCmdThrow* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM366)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM367( int i, RogueClassCmdThrow* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM367)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM368( int i, RogueClassCmdThrow* THIS )
-{
-  ((ROGUEM368)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM369( int i, RogueClassCmdThrow* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM369)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdThrow* call_ROGUEM370( int i, RogueClassCmdThrow* THIS )
-{
-  return ((ROGUEM370)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM371( int i, RogueClassCmdTrace* THIS )
-{
-  return ((ROGUEM371)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdTrace* call_ROGUEM372( int i, RogueClassCmdTrace* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM372)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM373( int i, RogueClassCmdTrace* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM373)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM374( int i, RogueClassCmdTrace* THIS )
-{
-  ((ROGUEM374)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdTrace* call_ROGUEM375( int i, RogueClassCmdTrace* THIS )
-{
-  return ((ROGUEM375)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM376( int i, RogueClassCmdEscape* THIS )
-{
-  return ((ROGUEM376)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM377( int i, RogueClassCmdEscape* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM377)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM378( int i, RogueClassCmdEscape* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM378)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM379( int i, RogueClassCmdEscape* THIS )
-{
-  ((ROGUEM379)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM380( int i, RogueClassCmdEscape* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM380)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdEscape* call_ROGUEM381( int i, RogueClassCmdEscape* THIS )
-{
-  return ((ROGUEM381)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM382( int i, RogueClassCmdNextIteration* THIS )
-{
-  return ((ROGUEM382)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM383( int i, RogueClassCmdNextIteration* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM383)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM384( int i, RogueClassCmdNextIteration* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM384)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM385( int i, RogueClassCmdNextIteration* THIS )
-{
-  ((ROGUEM385)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM386( int i, RogueClassCmdNextIteration* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM386)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdNextIteration* call_ROGUEM387( int i, RogueClassCmdNextIteration* THIS )
-{
-  return ((ROGUEM387)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM388( int i, RogueClassCmdNecessary* THIS )
-{
-  return ((ROGUEM388)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM389( int i, RogueClassCmdNecessary* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM389)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM390( int i, RogueClassCmdNecessary* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM390)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM391( int i, RogueClassCmdNecessary* THIS )
-{
-  ((ROGUEM391)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM392( int i, RogueClassCmdNecessary* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM392)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdNecessary* call_ROGUEM393( int i, RogueClassCmdNecessary* THIS )
-{
-  return ((ROGUEM393)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM394( int i, RogueClassCmdSufficient* THIS )
-{
-  return ((ROGUEM394)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM395( int i, RogueClassCmdSufficient* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM395)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM396( int i, RogueClassCmdSufficient* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM396)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM397( int i, RogueClassCmdSufficient* THIS )
-{
-  ((ROGUEM397)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM398( int i, RogueClassCmdSufficient* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM398)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdSufficient* call_ROGUEM399( int i, RogueClassCmdSufficient* THIS )
-{
-  return ((ROGUEM399)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM400( int i, RogueClassCmdAdjust* THIS )
-{
-  return ((ROGUEM400)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM401( int i, RogueClassCmdAdjust* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM401)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdAdjust* call_ROGUEM402( int i, RogueClassCmdAdjust* THIS )
-{
-  return ((ROGUEM402)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM403( int i, RogueClassCmdOpWithAssign* THIS )
-{
-  return ((ROGUEM403)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM404( int i, RogueClassCmdOpWithAssign* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM404)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM405( int i, RogueClassCmdOpWithAssign* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM405)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdOpWithAssign* call_ROGUEM406( int i, RogueClassCmdOpWithAssign* THIS )
-{
-  return ((ROGUEM406)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM407( int i, RogueCmdWhichCaseList* THIS )
-{
-  return ((ROGUEM407)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCmdWhichCaseList* call_ROGUEM408( int i, RogueCmdWhichCaseList* THIS )
-{
-  return ((ROGUEM408)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM409( int i, RogueClassCmdWhichCase* THIS )
-{
-  return ((ROGUEM409)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdWhichCase* call_ROGUEM410( int i, RogueClassCmdWhichCase* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM410)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM411( int i, RogueClassCmdWhichCase* THIS )
-{
-  ((ROGUEM411)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdWhichCase* call_ROGUEM412( int i, RogueClassCmdWhichCase* THIS )
-{
-  return ((ROGUEM412)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM413( int i, RogueCmdCatchList* THIS )
-{
-  return ((ROGUEM413)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCmdCatchList* call_ROGUEM414( int i, RogueCmdCatchList* THIS )
-{
-  return ((ROGUEM414)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM415( int i, RogueClassCmdCatch* THIS )
-{
-  return ((ROGUEM415)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdCatch* call_ROGUEM416( int i, RogueClassCmdCatch* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM416)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM417( int i, RogueClassCmdCatch* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM417)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM418( int i, RogueClassCmdCatch* THIS )
-{
-  ((ROGUEM418)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM419( int i, RogueClassCmdCatch* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM419)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCatch* call_ROGUEM420( int i, RogueClassCmdCatch* THIS )
-{
-  return ((ROGUEM420)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM421( int i, RogueClassCmdLocalDeclaration* THIS )
-{
-  return ((ROGUEM421)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM422( int i, RogueClassCmdLocalDeclaration* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM422)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM423( int i, RogueClassCmdLocalDeclaration* THIS, RogueClassScope* p0 )
-{
-  ((ROGUEM423)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM424( int i, RogueClassCmdLocalDeclaration* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM424)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM425( int i, RogueClassCmdLocalDeclaration* THIS )
-{
-  ((ROGUEM425)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM426( int i, RogueClassCmdLocalDeclaration* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM426)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLocalDeclaration* call_ROGUEM427( int i, RogueClassCmdLocalDeclaration* THIS )
-{
-  return ((ROGUEM427)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM428( int i, RogueClassCmdAdjustLocal* THIS )
-{
-  return ((ROGUEM428)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM429( int i, RogueClassCmdAdjustLocal* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM429)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM430( int i, RogueClassCmdAdjustLocal* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM430)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM431( int i, RogueClassCmdAdjustLocal* THIS )
-{
-  ((ROGUEM431)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM432( int i, RogueClassCmdAdjustLocal* THIS )
-{
-  return ((ROGUEM432)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM433( int i, RogueClassCmdAdjustLocal* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM433)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdAdjustLocal* call_ROGUEM434( int i, RogueClassCmdAdjustLocal* THIS )
-{
-  return ((ROGUEM434)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM435( int i, RogueClassCmdReadLocal* THIS )
-{
-  return ((ROGUEM435)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM436( int i, RogueClassCmdReadLocal* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM436)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM437( int i, RogueClassCmdReadLocal* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM437)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM438( int i, RogueClassCmdReadLocal* THIS, RogueClassScope* p0, RogueInteger p1 )
-{
-  return ((ROGUEM438)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-void call_ROGUEM439( int i, RogueClassCmdReadLocal* THIS )
-{
-  ((ROGUEM439)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM440( int i, RogueClassCmdReadLocal* THIS )
-{
-  return ((ROGUEM440)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM441( int i, RogueClassCmdReadLocal* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM441)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReadLocal* call_ROGUEM442( int i, RogueClassCmdReadLocal* THIS )
-{
-  return ((ROGUEM442)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM443( int i, RogueClassCmdCompareLE* THIS )
-{
-  return ((ROGUEM443)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM444( int i, RogueClassCmdCompareLE* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM444)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM445( int i, RogueClassCmdCompareLE* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM445)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareLE* call_ROGUEM446( int i, RogueClassCmdCompareLE* THIS )
-{
-  return ((ROGUEM446)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM447( int i, RogueClassCmdCompareLE* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
-{
-  return ((ROGUEM447)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueString* call_ROGUEM448( int i, RogueClassCmdRange* THIS )
-{
-  return ((ROGUEM448)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM449( int i, RogueClassCmdRange* THIS )
-{
-  ((ROGUEM449)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdRange* call_ROGUEM450( int i, RogueClassCmdRange* THIS )
-{
-  return ((ROGUEM450)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM451( int i, RogueClassCmdLocalOpWithAssign* THIS )
-{
-  return ((ROGUEM451)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM452( int i, RogueClassCmdLocalOpWithAssign* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM452)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM453( int i, RogueClassCmdLocalOpWithAssign* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM453)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM454( int i, RogueClassCmdLocalOpWithAssign* THIS )
-{
-  ((ROGUEM454)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM455( int i, RogueClassCmdLocalOpWithAssign* THIS )
-{
-  return ((ROGUEM455)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM456( int i, RogueClassCmdLocalOpWithAssign* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM456)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLocalOpWithAssign* call_ROGUEM457( int i, RogueClassCmdLocalOpWithAssign* THIS )
-{
-  return ((ROGUEM457)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM458( int i, RogueClassCmdResolvedOpWithAssign* THIS )
-{
-  return ((ROGUEM458)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdResolvedOpWithAssign* call_ROGUEM459( int i, RogueClassCmdResolvedOpWithAssign* THIS )
-{
-  return ((ROGUEM459)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM460( int i, RogueClassCmdForEach* THIS )
-{
-  return ((ROGUEM460)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM461( int i, RogueClassCmdForEach* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM461)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM462( int i, RogueClassCmdForEach* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM462)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM463( int i, RogueClassCmdForEach* THIS )
-{
-  ((ROGUEM463)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdForEach* call_ROGUEM464( int i, RogueClassCmdForEach* THIS )
-{
-  return ((ROGUEM464)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM465( int i, RogueClassCmdRangeUpTo* THIS )
-{
-  return ((ROGUEM465)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM466( int i, RogueClassCmdRangeUpTo* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM466)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdRangeUpTo* call_ROGUEM467( int i, RogueClassCmdRangeUpTo* THIS )
-{
-  return ((ROGUEM467)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM468( int i, RogueClassCmdLogicalXor* THIS )
-{
-  return ((ROGUEM468)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM469( int i, RogueClassCmdLogicalXor* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM469)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM470( int i, RogueClassCmdBinaryLogical* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM470)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM471( int i, RogueClassCmdBinaryLogical* THIS )
-{
-  return ((ROGUEM471)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdLogicalXor* call_ROGUEM472( int i, RogueClassCmdLogicalXor* THIS )
-{
-  return ((ROGUEM472)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM473( int i, RogueClassCmdBinaryLogical* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2 )
-{
-  return ((ROGUEM473)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueLogical call_ROGUEM474( int i, RogueClassCmdLogicalXor* THIS, RogueLogical p0, RogueLogical p1 )
-{
-  return ((ROGUEM474)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
 RogueString* call_ROGUEM475( int i, RogueClassCmdBinaryLogical* THIS )
 {
   return ((ROGUEM475)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdBinaryLogical* call_ROGUEM476( int i, RogueClassCmdBinaryLogical* THIS )
-{
-  return ((ROGUEM476)(THIS->type->methods[i]))( THIS );
 }
 
 RogueLogical call_ROGUEM477( int i, RogueClassCmdBinaryLogical* THIS, RogueLogical p0, RogueLogical p1 )
@@ -4779,1904 +2575,9 @@ RogueLogical call_ROGUEM477( int i, RogueClassCmdBinaryLogical* THIS, RogueLogic
   return ((ROGUEM477)(THIS->type->methods[i]))( THIS, p0, p1 );
 }
 
-RogueString* call_ROGUEM478( int i, RogueClassCmdLogicalOr* THIS )
-{
-  return ((ROGUEM478)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM479( int i, RogueClassCmdLogicalOr* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM479)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdLogicalOr* call_ROGUEM480( int i, RogueClassCmdLogicalOr* THIS )
-{
-  return ((ROGUEM480)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM481( int i, RogueClassCmdLogicalOr* THIS, RogueLogical p0, RogueLogical p1 )
-{
-  return ((ROGUEM481)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueString* call_ROGUEM482( int i, RogueClassCmdLogicalAnd* THIS )
-{
-  return ((ROGUEM482)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM483( int i, RogueClassCmdLogicalAnd* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM483)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdLogicalAnd* call_ROGUEM484( int i, RogueClassCmdLogicalAnd* THIS )
-{
-  return ((ROGUEM484)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM485( int i, RogueClassCmdLogicalAnd* THIS, RogueLogical p0, RogueLogical p1 )
-{
-  return ((ROGUEM485)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueString* call_ROGUEM486( int i, RogueClassCmdCompareEQ* THIS )
-{
-  return ((ROGUEM486)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM487( int i, RogueClassCmdCompareEQ* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM487)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM488( int i, RogueClassCmdCompareEQ* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM488)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareEQ* call_ROGUEM489( int i, RogueClassCmdCompareEQ* THIS )
-{
-  return ((ROGUEM489)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM490( int i, RogueClassCmdCompareEQ* THIS )
-{
-  return ((ROGUEM490)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM491( int i, RogueClassCmdCompareEQ* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
-{
-  return ((ROGUEM491)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueString* call_ROGUEM492( int i, RogueClassCmdCompareIs* THIS )
-{
-  return ((ROGUEM492)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM493( int i, RogueClassCmdCompareIs* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM493)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareIs* call_ROGUEM494( int i, RogueClassCmdCompareIs* THIS )
-{
-  return ((ROGUEM494)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM495( int i, RogueClassCmdCompareIs* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2 )
-{
-  return ((ROGUEM495)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueString* call_ROGUEM496( int i, RogueClassCmdCompareIsNot* THIS )
-{
-  return ((ROGUEM496)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM497( int i, RogueClassCmdCompareIsNot* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM497)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareIsNot* call_ROGUEM498( int i, RogueClassCmdCompareIsNot* THIS )
-{
-  return ((ROGUEM498)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM499( int i, RogueClassCmdCompareIsNot* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2 )
-{
-  return ((ROGUEM499)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueString* call_ROGUEM500( int i, RogueClassCmdCompareLT* THIS )
-{
-  return ((ROGUEM500)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM501( int i, RogueClassCmdCompareLT* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM501)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM502( int i, RogueClassCmdCompareLT* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM502)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareLT* call_ROGUEM503( int i, RogueClassCmdCompareLT* THIS )
-{
-  return ((ROGUEM503)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM504( int i, RogueClassCmdCompareLT* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
-{
-  return ((ROGUEM504)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueString* call_ROGUEM505( int i, RogueClassCmdCompareGT* THIS )
-{
-  return ((ROGUEM505)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM506( int i, RogueClassCmdCompareGT* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM506)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM507( int i, RogueClassCmdCompareGT* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM507)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareGT* call_ROGUEM508( int i, RogueClassCmdCompareGT* THIS )
-{
-  return ((ROGUEM508)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM509( int i, RogueClassCmdCompareGT* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
-{
-  return ((ROGUEM509)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueString* call_ROGUEM510( int i, RogueClassCmdCompareGE* THIS )
-{
-  return ((ROGUEM510)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM511( int i, RogueClassCmdCompareGE* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM511)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM512( int i, RogueClassCmdCompareGE* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM512)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCompareGE* call_ROGUEM513( int i, RogueClassCmdCompareGE* THIS )
-{
-  return ((ROGUEM513)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM514( int i, RogueClassCmdCompareGE* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2, RogueLogical p3 )
-{
-  return ((ROGUEM514)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueString* call_ROGUEM515( int i, RogueClassCmdInstanceOf* THIS )
-{
-  return ((ROGUEM515)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM516( int i, RogueClassCmdInstanceOf* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM516)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM517( int i, RogueClassCmdInstanceOf* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM517)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM518( int i, RogueClassCmdInstanceOf* THIS )
-{
-  return ((ROGUEM518)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM519( int i, RogueClassCmdInstanceOf* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM519)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdInstanceOf* call_ROGUEM520( int i, RogueClassCmdInstanceOf* THIS )
-{
-  return ((ROGUEM520)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM521( int i, RogueClassCmdLogicalNot* THIS )
-{
-  return ((ROGUEM521)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM522( int i, RogueClassCmdLogicalNot* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM522)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM523( int i, RogueClassCmdLogicalNot* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM523)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM524( int i, RogueClassCmdLogicalNot* THIS )
-{
-  return ((ROGUEM524)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdLogicalNot* call_ROGUEM525( int i, RogueClassCmdLogicalNot* THIS )
-{
-  return ((ROGUEM525)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM526( int i, RogueClassCmdBitwiseXor* THIS )
-{
-  return ((ROGUEM526)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM527( int i, RogueClassCmdBitwiseXor* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM527)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM528( int i, RogueClassCmdBitwiseXor* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM528)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdBitwiseXor* call_ROGUEM529( int i, RogueClassCmdBitwiseXor* THIS )
-{
-  return ((ROGUEM529)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM530( int i, RogueClassCmdBitwiseOp* THIS, RogueClassScope* p0, RogueClassType* p1 )
-{
-  return ((ROGUEM530)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmd* call_ROGUEM531( int i, RogueClassCmdBitwiseOp* THIS, RogueClassScope* p0, RogueClassType* p1, RogueClassType* p2 )
-{
-  return ((ROGUEM531)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueString* call_ROGUEM532( int i, RogueClassCmdBitwiseOp* THIS )
-{
-  return ((ROGUEM532)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdBitwiseOp* call_ROGUEM533( int i, RogueClassCmdBitwiseOp* THIS )
-{
-  return ((ROGUEM533)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM534( int i, RogueClassCmdBitwiseOr* THIS )
-{
-  return ((ROGUEM534)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM535( int i, RogueClassCmdBitwiseOr* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM535)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM536( int i, RogueClassCmdBitwiseOr* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM536)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdBitwiseOr* call_ROGUEM537( int i, RogueClassCmdBitwiseOr* THIS )
-{
-  return ((ROGUEM537)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM538( int i, RogueClassCmdBitwiseAnd* THIS )
-{
-  return ((ROGUEM538)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM539( int i, RogueClassCmdBitwiseAnd* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM539)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM540( int i, RogueClassCmdBitwiseAnd* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM540)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdBitwiseAnd* call_ROGUEM541( int i, RogueClassCmdBitwiseAnd* THIS )
-{
-  return ((ROGUEM541)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM542( int i, RogueClassCmdBitwiseShiftLeft* THIS )
-{
-  return ((ROGUEM542)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM543( int i, RogueClassCmdBitwiseShiftLeft* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM543)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM544( int i, RogueClassCmdBitwiseShiftLeft* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM544)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdBitwiseShiftLeft* call_ROGUEM545( int i, RogueClassCmdBitwiseShiftLeft* THIS )
-{
-  return ((ROGUEM545)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM546( int i, RogueClassCmdBitwiseShiftRight* THIS )
-{
-  return ((ROGUEM546)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM547( int i, RogueClassCmdBitwiseShiftRight* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM547)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM548( int i, RogueClassCmdBitwiseShiftRight* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM548)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM549( int i, RogueClassCmdBitwiseShiftRight* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM549)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdBitwiseShiftRight* call_ROGUEM550( int i, RogueClassCmdBitwiseShiftRight* THIS )
-{
-  return ((ROGUEM550)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM551( int i, RogueClassCmdBitwiseShiftRightX* THIS )
-{
-  return ((ROGUEM551)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM552( int i, RogueClassCmdBitwiseShiftRightX* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM552)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM553( int i, RogueClassCmdBitwiseShiftRightX* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM553)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdBitwiseShiftRightX* call_ROGUEM554( int i, RogueClassCmdBitwiseShiftRightX* THIS )
-{
-  return ((ROGUEM554)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM555( int i, RogueClassCmdSubtract* THIS )
-{
-  return ((ROGUEM555)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM556( int i, RogueClassCmdSubtract* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM556)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM557( int i, RogueClassCmdSubtract* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM557)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdSubtract* call_ROGUEM558( int i, RogueClassCmdSubtract* THIS )
-{
-  return ((ROGUEM558)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM559( int i, RogueClassCmdMultiply* THIS )
-{
-  return ((ROGUEM559)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM560( int i, RogueClassCmdMultiply* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM560)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM561( int i, RogueClassCmdMultiply* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM561)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdMultiply* call_ROGUEM562( int i, RogueClassCmdMultiply* THIS )
-{
-  return ((ROGUEM562)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM563( int i, RogueClassCmdDivide* THIS )
-{
-  return ((ROGUEM563)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM564( int i, RogueClassCmdDivide* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM564)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM565( int i, RogueClassCmdDivide* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM565)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdDivide* call_ROGUEM566( int i, RogueClassCmdDivide* THIS )
-{
-  return ((ROGUEM566)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM567( int i, RogueClassCmdMod* THIS )
-{
-  return ((ROGUEM567)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM568( int i, RogueClassCmdMod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM568)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM569( int i, RogueClassCmdMod* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM569)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM570( int i, RogueClassCmdMod* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM570)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdMod* call_ROGUEM571( int i, RogueClassCmdMod* THIS )
-{
-  return ((ROGUEM571)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM572( int i, RogueClassCmdPower* THIS )
-{
-  return ((ROGUEM572)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM573( int i, RogueClassCmdPower* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM573)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM574( int i, RogueClassCmdPower* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM574)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM575( int i, RogueClassCmdPower* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM575)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdPower* call_ROGUEM576( int i, RogueClassCmdPower* THIS )
-{
-  return ((ROGUEM576)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM577( int i, RogueClassCmdNegate* THIS )
-{
-  return ((ROGUEM577)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM578( int i, RogueClassCmdNegate* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM578)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM579( int i, RogueClassCmdNegate* THIS )
-{
-  return ((ROGUEM579)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdNegate* call_ROGUEM580( int i, RogueClassCmdNegate* THIS )
-{
-  return ((ROGUEM580)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM581( int i, RogueClassCmdNegate* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM581)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueString* call_ROGUEM582( int i, RogueClassCmdBitwiseNot* THIS )
-{
-  return ((ROGUEM582)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM583( int i, RogueClassCmdBitwiseNot* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM583)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM584( int i, RogueClassCmdBitwiseNot* THIS )
-{
-  return ((ROGUEM584)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdBitwiseNot* call_ROGUEM585( int i, RogueClassCmdBitwiseNot* THIS )
-{
-  return ((ROGUEM585)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM586( int i, RogueClassCmdBitwiseNot* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM586)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueString* call_ROGUEM587( int i, RogueClassCmdGetOptionalValue* THIS )
-{
-  return ((ROGUEM587)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM588( int i, RogueClassCmdGetOptionalValue* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM588)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdGetOptionalValue* call_ROGUEM589( int i, RogueClassCmdGetOptionalValue* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM589)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM590( int i, RogueClassCmdGetOptionalValue* THIS )
-{
-  ((ROGUEM590)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM591( int i, RogueClassCmdGetOptionalValue* THIS )
-{
-  return ((ROGUEM591)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM592( int i, RogueClassCmdGetOptionalValue* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM592)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdGetOptionalValue* call_ROGUEM593( int i, RogueClassCmdGetOptionalValue* THIS )
-{
-  return ((ROGUEM593)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM594( int i, RogueClassCmdElementAccess* THIS )
-{
-  return ((ROGUEM594)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM595( int i, RogueClassCmdElementAccess* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM595)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM596( int i, RogueClassCmdElementAccess* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM596)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM597( int i, RogueClassCmdElementAccess* THIS, RogueClassScope* p0, RogueClassCmd* p1 )
-{
-  return ((ROGUEM597)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmd* call_ROGUEM598( int i, RogueClassCmdElementAccess* THIS, RogueClassScope* p0, RogueInteger p1 )
-{
-  return ((ROGUEM598)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdElementAccess* call_ROGUEM599( int i, RogueClassCmdElementAccess* THIS )
-{
-  return ((ROGUEM599)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM600( int i, RogueClassCmdConvertToType* THIS )
-{
-  return ((ROGUEM600)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM601( int i, RogueClassCmdConvertToType* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM601)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM602( int i, RogueClassCmdConvertToType* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM602)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdConvertToType* call_ROGUEM603( int i, RogueClassCmdConvertToType* THIS )
-{
-  return ((ROGUEM603)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM604( int i, RogueClassCmdCreateCallback* THIS )
-{
-  return ((ROGUEM604)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdCreateCallback* call_ROGUEM605( int i, RogueClassCmdCreateCallback* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM605)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM606( int i, RogueClassCmdCreateCallback* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM606)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCreateCallback* call_ROGUEM607( int i, RogueClassCmdCreateCallback* THIS )
-{
-  return ((ROGUEM607)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM608( int i, RogueClassCmdAs* THIS )
-{
-  return ((ROGUEM608)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM609( int i, RogueClassCmdAs* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM609)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM610( int i, RogueClassCmdAs* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM610)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM611( int i, RogueClassCmdAs* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM611)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdAs* call_ROGUEM612( int i, RogueClassCmdAs* THIS )
-{
-  return ((ROGUEM612)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM613( int i, RogueClassCmdDefaultValue* THIS )
-{
-  return ((ROGUEM613)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM614( int i, RogueClassCmdDefaultValue* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM614)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM615( int i, RogueClassCmdDefaultValue* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM615)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM616( int i, RogueClassCmdDefaultValue* THIS )
-{
-  return ((ROGUEM616)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdDefaultValue* call_ROGUEM617( int i, RogueClassCmdDefaultValue* THIS )
-{
-  return ((ROGUEM617)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM618( int i, RogueClassCmdFormattedString* THIS )
-{
-  return ((ROGUEM618)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM619( int i, RogueClassCmdFormattedString* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM619)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM620( int i, RogueClassCmdFormattedString* THIS )
-{
-  return ((ROGUEM620)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM621( int i, RogueClassCmdFormattedString* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM621)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdFormattedString* call_ROGUEM622( int i, RogueClassCmdFormattedString* THIS )
-{
-  return ((ROGUEM622)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM623( int i, RogueClassCmdLiteralReal* THIS )
-{
-  return ((ROGUEM623)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM624( int i, RogueClassCmdLiteralReal* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM624)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM625( int i, RogueClassCmdLiteralReal* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM625)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM626( int i, RogueClassCmdLiteralReal* THIS )
-{
-  return ((ROGUEM626)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM627( int i, RogueClassCmdLiteralReal* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM627)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralReal* call_ROGUEM628( int i, RogueClassCmdLiteralReal* THIS )
-{
-  return ((ROGUEM628)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM629( int i, RogueClassCmdLiteralLong* THIS )
-{
-  return ((ROGUEM629)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM630( int i, RogueClassCmdLiteralLong* THIS, RogueClassType* p0 )
-{
-  return ((ROGUEM630)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM631( int i, RogueClassCmdLiteralLong* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM631)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM632( int i, RogueClassCmdLiteralLong* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM632)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM633( int i, RogueClassCmdLiteralLong* THIS )
-{
-  return ((ROGUEM633)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM634( int i, RogueClassCmdLiteralLong* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM634)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralLong* call_ROGUEM635( int i, RogueClassCmdLiteralLong* THIS )
-{
-  return ((ROGUEM635)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM636( int i, RogueClassCmdLiteralCharacter* THIS )
-{
-  return ((ROGUEM636)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM637( int i, RogueClassCmdLiteralCharacter* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM637)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM638( int i, RogueClassCmdLiteralCharacter* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM638)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM639( int i, RogueClassCmdLiteralCharacter* THIS )
-{
-  return ((ROGUEM639)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM640( int i, RogueClassCmdLiteralCharacter* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM640)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLiteralCharacter* call_ROGUEM641( int i, RogueClassCmdLiteralCharacter* THIS )
-{
-  return ((ROGUEM641)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM642( int i, RogueClassCmdCreateList* THIS )
-{
-  return ((ROGUEM642)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM643( int i, RogueClassCmdCreateList* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM643)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM644( int i, RogueClassCmdCreateList* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM644)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCreateList* call_ROGUEM645( int i, RogueClassCmdCreateList* THIS )
-{
-  return ((ROGUEM645)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM646( int i, RogueClassCmdCallPriorMethod* THIS )
-{
-  return ((ROGUEM646)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM647( int i, RogueClassCmdCallPriorMethod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM647)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM648( int i, RogueClassCmdCallPriorMethod* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM648)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCallPriorMethod* call_ROGUEM649( int i, RogueClassCmdCallPriorMethod* THIS )
-{
-  return ((ROGUEM649)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM650( int i, RogueFnParamList* THIS )
-{
-  return ((ROGUEM650)(THIS->type->methods[i]))( THIS );
-}
-
-RogueFnParamList* call_ROGUEM651( int i, RogueFnParamList* THIS )
-{
-  return ((ROGUEM651)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM652( int i, RogueClassFnParam* THIS )
-{
-  return ((ROGUEM652)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM653( int i, RogueFnArgList* THIS )
-{
-  return ((ROGUEM653)(THIS->type->methods[i]))( THIS );
-}
-
-RogueFnArgList* call_ROGUEM654( int i, RogueFnArgList* THIS )
-{
-  return ((ROGUEM654)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM655( int i, RogueClassFnArg* THIS )
-{
-  return ((ROGUEM655)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM656( int i, RogueClassCmdCreateFunction* THIS )
-{
-  return ((ROGUEM656)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdCreateFunction* call_ROGUEM657( int i, RogueClassCmdCreateFunction* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM657)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM658( int i, RogueClassCmdCreateFunction* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM658)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCreateFunction* call_ROGUEM659( int i, RogueClassCmdCreateFunction* THIS )
-{
-  return ((ROGUEM659)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM660( int i, RogueTableEntry_of_String_TokenTypeList* THIS )
-{
-  return ((ROGUEM660)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_TokenTypeList* call_ROGUEM661( int i, RogueTableEntry_of_String_TokenTypeList* THIS )
-{
-  return ((ROGUEM661)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM662( int i, RogueClassString_TokenTypeTableEntry* THIS )
-{
-  return ((ROGUEM662)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM663( int i, RogueTableEntry_of_String_TypeSpecializerList* THIS )
-{
-  return ((ROGUEM663)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_TypeSpecializerList* call_ROGUEM664( int i, RogueTableEntry_of_String_TypeSpecializerList* THIS )
-{
-  return ((ROGUEM664)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM665( int i, RogueClassString_TypeSpecializerTableEntry* THIS )
-{
-  return ((ROGUEM665)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM666( int i, RogueTableEntry_of_String_CmdLabelList* THIS )
-{
-  return ((ROGUEM666)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_CmdLabelList* call_ROGUEM667( int i, RogueTableEntry_of_String_CmdLabelList* THIS )
-{
-  return ((ROGUEM667)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM668( int i, RogueClassString_CmdLabelTableEntry* THIS )
-{
-  return ((ROGUEM668)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM669( int i, RogueClassInlineArgs* THIS )
-{
-  return ((ROGUEM669)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassInlineArgs* call_ROGUEM670( int i, RogueClassInlineArgs* THIS )
-{
-  return ((ROGUEM670)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM671( int i, RogueClassCmdReadSingleton* THIS )
-{
-  return ((ROGUEM671)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM672( int i, RogueClassCmdReadSingleton* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM672)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM673( int i, RogueClassCmdReadSingleton* THIS )
-{
-  ((ROGUEM673)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM674( int i, RogueClassCmdReadSingleton* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM674)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM675( int i, RogueClassCmdReadSingleton* THIS )
-{
-  return ((ROGUEM675)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM676( int i, RogueClassCmdReadSingleton* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM676)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReadSingleton* call_ROGUEM677( int i, RogueClassCmdReadSingleton* THIS )
-{
-  return ((ROGUEM677)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM678( int i, RogueClassCmdCreateArray* THIS )
-{
-  return ((ROGUEM678)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM679( int i, RogueClassCmdCreateArray* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM679)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM680( int i, RogueClassCmdCreateArray* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM680)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM681( int i, RogueClassCmdCreateArray* THIS )
-{
-  ((ROGUEM681)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM682( int i, RogueClassCmdCreateArray* THIS )
-{
-  return ((ROGUEM682)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM683( int i, RogueClassCmdCreateArray* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM683)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCreateArray* call_ROGUEM684( int i, RogueClassCmdCreateArray* THIS )
-{
-  return ((ROGUEM684)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM685( int i, RogueClassCmdCallRoutine* THIS )
-{
-  return ((ROGUEM685)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM686( int i, RogueClassCmdCallRoutine* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM686)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM687( int i, RogueClassCmdCall* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM687)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM688( int i, RogueClassCmdCall* THIS )
-{
-  ((ROGUEM688)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM689( int i, RogueClassCmdCall* THIS )
-{
-  return ((ROGUEM689)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM690( int i, RogueClassCmdCallRoutine* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM690)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallRoutine* call_ROGUEM691( int i, RogueClassCmdCallRoutine* THIS )
-{
-  return ((ROGUEM691)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM692( int i, RogueClassCmdCall* THIS )
-{
-  return ((ROGUEM692)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdCall* call_ROGUEM693( int i, RogueClassCmdCall* THIS )
-{
-  return ((ROGUEM693)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM694( int i, RogueClassCmdCreateObject* THIS )
-{
-  return ((ROGUEM694)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM695( int i, RogueClassCmdCreateObject* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM695)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM696( int i, RogueClassCmdCreateObject* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM696)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM697( int i, RogueClassCmdCreateObject* THIS )
-{
-  ((ROGUEM697)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM698( int i, RogueClassCmdCreateObject* THIS )
-{
-  return ((ROGUEM698)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM699( int i, RogueClassCmdCreateObject* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM699)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCreateObject* call_ROGUEM700( int i, RogueClassCmdCreateObject* THIS )
-{
-  return ((ROGUEM700)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM701( int i, RogueClassCmdReadSetting* THIS )
-{
-  return ((ROGUEM701)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM702( int i, RogueClassCmdReadSetting* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM702)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM703( int i, RogueClassCmdReadSetting* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM703)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM704( int i, RogueClassCmdReadSetting* THIS )
-{
-  ((ROGUEM704)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM705( int i, RogueClassCmdReadSetting* THIS )
-{
-  return ((ROGUEM705)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM706( int i, RogueClassCmdReadSetting* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM706)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReadSetting* call_ROGUEM707( int i, RogueClassCmdReadSetting* THIS )
-{
-  return ((ROGUEM707)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM708( int i, RogueClassCmdReadProperty* THIS )
-{
-  return ((ROGUEM708)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM709( int i, RogueClassCmdReadProperty* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM709)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM710( int i, RogueClassCmdReadProperty* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM710)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM711( int i, RogueClassCmdReadProperty* THIS, RogueClassScope* p0, RogueInteger p1 )
-{
-  return ((ROGUEM711)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-void call_ROGUEM712( int i, RogueClassCmdReadProperty* THIS )
-{
-  ((ROGUEM712)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM713( int i, RogueClassCmdReadProperty* THIS )
-{
-  return ((ROGUEM713)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM714( int i, RogueClassCmdReadProperty* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM714)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReadProperty* call_ROGUEM715( int i, RogueClassCmdReadProperty* THIS )
-{
-  return ((ROGUEM715)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM716( int i, RogueClassCmdLogicalizeOptionalValue* THIS )
-{
-  return ((ROGUEM716)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM717( int i, RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM717)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdLogicalizeOptionalValue* call_ROGUEM718( int i, RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM718)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM719( int i, RogueClassCmdLogicalizeOptionalValue* THIS )
-{
-  ((ROGUEM719)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM720( int i, RogueClassCmdLogicalizeOptionalValue* THIS )
-{
-  return ((ROGUEM720)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM721( int i, RogueClassCmdLogicalizeOptionalValue* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM721)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdLogicalizeOptionalValue* call_ROGUEM722( int i, RogueClassCmdLogicalizeOptionalValue* THIS )
-{
-  return ((ROGUEM722)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM723( int i, RogueClassCmdWriteLocal* THIS )
-{
-  return ((ROGUEM723)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM724( int i, RogueClassCmdWriteLocal* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM724)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM725( int i, RogueClassCmdWriteLocal* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM725)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM726( int i, RogueClassCmdWriteLocal* THIS )
-{
-  ((ROGUEM726)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM727( int i, RogueClassCmdWriteLocal* THIS )
-{
-  return ((ROGUEM727)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM728( int i, RogueClassCmdWriteLocal* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM728)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdWriteLocal* call_ROGUEM729( int i, RogueClassCmdWriteLocal* THIS )
-{
-  return ((ROGUEM729)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM730( int i, RogueClassCmdOpAssignSetting* THIS )
-{
-  return ((ROGUEM730)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM731( int i, RogueClassCmdOpAssignSetting* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM731)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM732( int i, RogueClassCmdOpAssignSetting* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM732)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM733( int i, RogueClassCmdOpAssignSetting* THIS )
-{
-  ((ROGUEM733)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM734( int i, RogueClassCmdOpAssignSetting* THIS )
-{
-  return ((ROGUEM734)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM735( int i, RogueClassCmdOpAssignSetting* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM735)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdOpAssignSetting* call_ROGUEM736( int i, RogueClassCmdOpAssignSetting* THIS )
-{
-  return ((ROGUEM736)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM737( int i, RogueClassCmdOpAssignProperty* THIS )
-{
-  return ((ROGUEM737)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM738( int i, RogueClassCmdOpAssignProperty* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM738)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM739( int i, RogueClassCmdOpAssignProperty* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM739)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM740( int i, RogueClassCmdOpAssignProperty* THIS )
-{
-  ((ROGUEM740)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM741( int i, RogueClassCmdOpAssignProperty* THIS )
-{
-  return ((ROGUEM741)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM742( int i, RogueClassCmdOpAssignProperty* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM742)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdOpAssignProperty* call_ROGUEM743( int i, RogueClassCmdOpAssignProperty* THIS )
-{
-  return ((ROGUEM743)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM744( int i, RogueClassCmdCallInlineNative* THIS )
-{
-  return ((ROGUEM744)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM745( int i, RogueClassCmdCallInlineNativeRoutine* THIS )
-{
-  return ((ROGUEM745)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM746( int i, RogueClassCmdCallInlineNativeRoutine* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM746)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM747( int i, RogueClassCmdCallInlineNativeRoutine* THIS )
-{
-  return ((ROGUEM747)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM748( int i, RogueClassCmdCallInlineNative* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM748)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallInlineNativeRoutine* call_ROGUEM749( int i, RogueClassCmdCallInlineNativeRoutine* THIS )
-{
-  return ((ROGUEM749)(THIS->type->methods[i]))( THIS );
-}
-
 void call_ROGUEM750( int i, RogueClassCmdCallInlineNative* THIS, RogueClassCPPWriter* p0 )
 {
   ((ROGUEM750)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmdCallInlineNative* call_ROGUEM751( int i, RogueClassCmdCallInlineNative* THIS )
-{
-  return ((ROGUEM751)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM752( int i, RogueClassCmdCallNativeRoutine* THIS )
-{
-  return ((ROGUEM752)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM753( int i, RogueClassCmdCallNativeRoutine* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM753)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM754( int i, RogueClassCmdCallNativeRoutine* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM754)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallNativeRoutine* call_ROGUEM755( int i, RogueClassCmdCallNativeRoutine* THIS )
-{
-  return ((ROGUEM755)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM756( int i, RogueClassCmdReadArrayCount* THIS )
-{
-  return ((ROGUEM756)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM757( int i, RogueClassCmdReadArrayCount* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM757)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM758( int i, RogueClassCmdReadArrayCount* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM758)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM759( int i, RogueClassCmdReadArrayCount* THIS )
-{
-  ((ROGUEM759)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM760( int i, RogueClassCmdReadArrayCount* THIS )
-{
-  return ((ROGUEM760)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM761( int i, RogueClassCmdReadArrayCount* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM761)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReadArrayCount* call_ROGUEM762( int i, RogueClassCmdReadArrayCount* THIS )
-{
-  return ((ROGUEM762)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM763( int i, RogueClassCmdCallInlineNativeMethod* THIS )
-{
-  return ((ROGUEM763)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM764( int i, RogueClassCmdCallInlineNativeMethod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM764)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassType* call_ROGUEM765( int i, RogueClassCmdCallInlineNativeMethod* THIS )
-{
-  return ((ROGUEM765)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdCallInlineNativeMethod* call_ROGUEM766( int i, RogueClassCmdCallInlineNativeMethod* THIS )
-{
-  return ((ROGUEM766)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM767( int i, RogueClassCmdCallInlineNativeMethod* THIS, RogueClassCPPWriter* p0 )
-{
-  ((ROGUEM767)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueString* call_ROGUEM768( int i, RogueClassCmdCallNativeMethod* THIS )
-{
-  return ((ROGUEM768)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM769( int i, RogueClassCmdCallNativeMethod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM769)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM770( int i, RogueClassCmdCallNativeMethod* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM770)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallNativeMethod* call_ROGUEM771( int i, RogueClassCmdCallNativeMethod* THIS )
-{
-  return ((ROGUEM771)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM772( int i, RogueClassCmdCallAspectMethod* THIS )
-{
-  return ((ROGUEM772)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM773( int i, RogueClassCmdCallAspectMethod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM773)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM774( int i, RogueClassCmdCallAspectMethod* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM774)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallAspectMethod* call_ROGUEM775( int i, RogueClassCmdCallAspectMethod* THIS )
-{
-  return ((ROGUEM775)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM776( int i, RogueClassCmdCallDynamicMethod* THIS )
-{
-  return ((ROGUEM776)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM777( int i, RogueClassCmdCallMethod* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM777)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM778( int i, RogueClassCmdCallDynamicMethod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM778)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM779( int i, RogueClassCmdCallDynamicMethod* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM779)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallDynamicMethod* call_ROGUEM780( int i, RogueClassCmdCallDynamicMethod* THIS )
-{
-  return ((ROGUEM780)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM781( int i, RogueClassCmdCallMethod* THIS )
-{
-  return ((ROGUEM781)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdCallMethod* call_ROGUEM782( int i, RogueClassCmdCallMethod* THIS )
-{
-  return ((ROGUEM782)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM783( int i, RogueClassCandidateMethods* THIS )
-{
-  return ((ROGUEM783)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM784( int i, RogueCmdTaskControlSectionList* THIS )
-{
-  return ((ROGUEM784)(THIS->type->methods[i]))( THIS );
-}
-
-RogueCmdTaskControlSectionList* call_ROGUEM785( int i, RogueCmdTaskControlSectionList* THIS )
-{
-  return ((ROGUEM785)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM786( int i, RogueClassCmdBlock* THIS )
-{
-  return ((ROGUEM786)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM787( int i, RogueClassCmdBlock* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM787)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueLogical call_ROGUEM788( int i, RogueClassCmdBlock* THIS )
-{
-  return ((ROGUEM788)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmdBlock* call_ROGUEM789( int i, RogueClassCmdBlock* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM789)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM790( int i, RogueClassCmdBlock* THIS )
-{
-  ((ROGUEM790)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM791( int i, RogueClassCmdBlock* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM791)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdBlock* call_ROGUEM792( int i, RogueClassCmdBlock* THIS )
-{
-  return ((ROGUEM792)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM793( int i, RogueTableEntry_of_String_CmdList* THIS )
-{
-  return ((ROGUEM793)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_CmdList* call_ROGUEM794( int i, RogueTableEntry_of_String_CmdList* THIS )
-{
-  return ((ROGUEM794)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM795( int i, RogueClassString_CmdTableEntry* THIS )
-{
-  return ((ROGUEM795)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM796( int i, RogueTableEntry_of_String_PropertyList* THIS )
-{
-  return ((ROGUEM796)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_PropertyList* call_ROGUEM797( int i, RogueTableEntry_of_String_PropertyList* THIS )
-{
-  return ((ROGUEM797)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM798( int i, RogueClassString_PropertyTableEntry* THIS )
-{
-  return ((ROGUEM798)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM799( int i, RogueClassDirectiveTokenType* THIS )
-{
-  return ((ROGUEM799)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassToken* call_ROGUEM800( int i, RogueClassDirectiveTokenType* THIS, RogueString* p0, RogueInteger p1, RogueInteger p2 )
-{
-  return ((ROGUEM800)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueLogical call_ROGUEM801( int i, RogueClassDirectiveTokenType* THIS )
-{
-  return ((ROGUEM801)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassDirectiveTokenType* call_ROGUEM802( int i, RogueClassDirectiveTokenType* THIS )
-{
-  return ((ROGUEM802)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM803( int i, RogueClassStructuralDirectiveTokenType* THIS )
-{
-  return ((ROGUEM803)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassToken* call_ROGUEM804( int i, RogueClassStructuralDirectiveTokenType* THIS, RogueString* p0, RogueInteger p1, RogueInteger p2 )
-{
-  return ((ROGUEM804)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueLogical call_ROGUEM805( int i, RogueClassStructuralDirectiveTokenType* THIS )
-{
-  return ((ROGUEM805)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassStructuralDirectiveTokenType* call_ROGUEM806( int i, RogueClassStructuralDirectiveTokenType* THIS )
-{
-  return ((ROGUEM806)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM807( int i, RogueClassEOLTokenType* THIS )
-{
-  return ((ROGUEM807)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassToken* call_ROGUEM808( int i, RogueClassEOLTokenType* THIS, RogueString* p0, RogueInteger p1, RogueInteger p2 )
-{
-  return ((ROGUEM808)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueClassToken* call_ROGUEM809( int i, RogueClassEOLTokenType* THIS, RogueString* p0, RogueInteger p1, RogueInteger p2, RogueString* p3 )
-{
-  return ((ROGUEM809)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
-}
-
-RogueLogical call_ROGUEM810( int i, RogueClassEOLTokenType* THIS )
-{
-  return ((ROGUEM810)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassEOLTokenType* call_ROGUEM811( int i, RogueClassEOLTokenType* THIS )
-{
-  return ((ROGUEM811)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM812( int i, RogueClassStructureTokenType* THIS )
-{
-  return ((ROGUEM812)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassToken* call_ROGUEM813( int i, RogueClassStructureTokenType* THIS, RogueString* p0, RogueInteger p1, RogueInteger p2 )
-{
-  return ((ROGUEM813)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
-}
-
-RogueLogical call_ROGUEM814( int i, RogueClassStructureTokenType* THIS )
-{
-  return ((ROGUEM814)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassStructureTokenType* call_ROGUEM815( int i, RogueClassStructureTokenType* THIS )
-{
-  return ((ROGUEM815)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM816( int i, RogueClassOpWithAssignTokenType* THIS )
-{
-  return ((ROGUEM816)(THIS->type->methods[i]))( THIS );
-}
-
-RogueLogical call_ROGUEM817( int i, RogueClassOpWithAssignTokenType* THIS )
-{
-  return ((ROGUEM817)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassOpWithAssignTokenType* call_ROGUEM818( int i, RogueClassOpWithAssignTokenType* THIS )
-{
-  return ((ROGUEM818)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM819( int i, RogueClassEOLToken* THIS )
-{
-  return ((ROGUEM819)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassEOLToken* call_ROGUEM820( int i, RogueClassEOLToken* THIS )
-{
-  return ((ROGUEM820)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM821( int i, RogueClassString_TokenListTable* THIS )
-{
-  return ((ROGUEM821)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM822( int i, RogueClassPreprocessorTokenReader* THIS )
-{
-  return ((ROGUEM822)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM823( int i, RogueClassCmdReadArrayElement* THIS )
-{
-  return ((ROGUEM823)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM824( int i, RogueClassCmdReadArrayElement* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM824)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM825( int i, RogueClassCmdReadArrayElement* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM825)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM826( int i, RogueClassCmdReadArrayElement* THIS, RogueClassScope* p0, RogueInteger p1 )
-{
-  return ((ROGUEM826)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-void call_ROGUEM827( int i, RogueClassCmdReadArrayElement* THIS )
-{
-  ((ROGUEM827)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM828( int i, RogueClassCmdReadArrayElement* THIS )
-{
-  return ((ROGUEM828)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM829( int i, RogueClassCmdReadArrayElement* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM829)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdReadArrayElement* call_ROGUEM830( int i, RogueClassCmdReadArrayElement* THIS )
-{
-  return ((ROGUEM830)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM831( int i, RogueClassCmdWriteArrayElement* THIS )
-{
-  return ((ROGUEM831)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM832( int i, RogueClassCmdWriteArrayElement* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM832)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM833( int i, RogueClassCmdWriteArrayElement* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM833)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM834( int i, RogueClassCmdWriteArrayElement* THIS )
-{
-  ((ROGUEM834)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM835( int i, RogueClassCmdWriteArrayElement* THIS )
-{
-  return ((ROGUEM835)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM836( int i, RogueClassCmdWriteArrayElement* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM836)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdWriteArrayElement* call_ROGUEM837( int i, RogueClassCmdWriteArrayElement* THIS )
-{
-  return ((ROGUEM837)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM838( int i, RogueClassCmdConvertToPrimitiveType* THIS )
-{
-  return ((ROGUEM838)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM839( int i, RogueClassCmdConvertToPrimitiveType* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM839)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM840( int i, RogueClassCmdConvertToPrimitiveType* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM840)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM841( int i, RogueClassCmdConvertToPrimitiveType* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM841)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdConvertToPrimitiveType* call_ROGUEM842( int i, RogueClassCmdConvertToPrimitiveType* THIS )
-{
-  return ((ROGUEM842)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM843( int i, RogueClassCmdAdjustProperty* THIS )
-{
-  return ((ROGUEM843)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM844( int i, RogueClassCmdAdjustProperty* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM844)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM845( int i, RogueClassCmdAdjustProperty* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM845)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM846( int i, RogueClassCmdAdjustProperty* THIS )
-{
-  ((ROGUEM846)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassType* call_ROGUEM847( int i, RogueClassCmdAdjustProperty* THIS )
-{
-  return ((ROGUEM847)(THIS->type->methods[i]))( THIS );
-}
-
-void call_ROGUEM848( int i, RogueClassCmdAdjustProperty* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM848)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdAdjustProperty* call_ROGUEM849( int i, RogueClassCmdAdjustProperty* THIS )
-{
-  return ((ROGUEM849)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM850( int i, RogueClassCmdCallStaticMethod* THIS )
-{
-  return ((ROGUEM850)(THIS->type->methods[i]))( THIS );
-}
-
-RogueClassCmd* call_ROGUEM851( int i, RogueClassCmdCallStaticMethod* THIS, RogueClassCloneArgs* p0 )
-{
-  return ((ROGUEM851)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-RogueClassCmd* call_ROGUEM852( int i, RogueClassCmdCallStaticMethod* THIS, RogueClassScope* p0 )
-{
-  return ((ROGUEM852)(THIS->type->methods[i]))( THIS, p0 );
-}
-
-void call_ROGUEM853( int i, RogueClassCmdCallStaticMethod* THIS, RogueClassCPPWriter* p0, RogueLogical p1 )
-{
-  ((ROGUEM853)(THIS->type->methods[i]))( THIS, p0, p1 );
-}
-
-RogueClassCmdCallStaticMethod* call_ROGUEM854( int i, RogueClassCmdCallStaticMethod* THIS )
-{
-  return ((ROGUEM854)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM855( int i, RogueTableEntry_of_String_TokenListList* THIS )
-{
-  return ((ROGUEM855)(THIS->type->methods[i]))( THIS );
-}
-
-RogueTableEntry_of_String_TokenListList* call_ROGUEM856( int i, RogueTableEntry_of_String_TokenListList* THIS )
-{
-  return ((ROGUEM856)(THIS->type->methods[i]))( THIS );
-}
-
-RogueString* call_ROGUEM857( int i, RogueClassString_TokenListTableEntry* THIS )
-{
-  return ((ROGUEM857)(THIS->type->methods[i]))( THIS );
 }
 
 
@@ -10956,13 +6857,13 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
   (void*) (ROGUEM55) RogueCmd__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
-  (void*) (ROGUEM688) RogueCmdCall__trace_used_code,
+  (void*) (ROGUEM779) RogueCmdCallDynamicMethod__trace_used_code,
   (void*) (ROGUEM689) Rogue_CmdCall__type,
-  (void*) (ROGUEM779) RogueCmdCallDynamicMethod__write_cpp,
-  (void*) (ROGUEM780) RogueCmdCallDynamicMethod__init_object,
+  (void*) (ROGUEM780) RogueCmdCallDynamicMethod__write_cpp,
+  (void*) (ROGUEM781) RogueCmdCallDynamicMethod__init_object,
   NULL, // CmdCallMethod
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM781) RogueCmdCallMethod__type_name,
+  (void*) (ROGUEM782) RogueCmdCallMethod__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM777) RogueCmdCallMethod__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
@@ -10991,21 +6892,21 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM688) RogueCmdCall__trace_used_code,
   (void*) (ROGUEM689) Rogue_CmdCall__type,
   (void*) (ROGUEM57) RogueCmd__write_cpp,
-  (void*) (ROGUEM782) RogueCmdCallMethod__init_object,
+  (void*) (ROGUEM783) RogueCmdCallMethod__init_object,
   NULL, // CandidateMethods
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM783) RogueCandidateMethods__type_name,
+  (void*) (ROGUEM784) RogueCandidateMethods__type_name,
   NULL, // CmdTaskControlSection[]
-  (void*) (ROGUEM784) RogueCmdTaskControlSectionList__to_String,
-  (void*) (ROGUEM784) RogueCmdTaskControlSectionList__type_name,
-  (void*) (ROGUEM785) RogueCmdTaskControlSectionList__init_object,
+  (void*) (ROGUEM785) RogueCmdTaskControlSectionList__to_String,
+  (void*) (ROGUEM785) RogueCmdTaskControlSectionList__type_name,
+  (void*) (ROGUEM786) RogueCmdTaskControlSectionList__init_object,
   NULL, // CmdBlock
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM786) RogueCmdBlock__type_name,
+  (void*) (ROGUEM787) RogueCmdBlock__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM47) RogueCmd__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
-  (void*) (ROGUEM787) RogueCmdBlock__clone,
+  (void*) (ROGUEM788) RogueCmdBlock__clone,
   NULL,
   NULL,
   NULL,
@@ -11022,86 +6923,86 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   NULL,
-  (void*) (ROGUEM788) RogueCmdBlock__requires_semicolon,
-  (void*) (ROGUEM789) RogueCmdBlock__resolve,
+  (void*) (ROGUEM789) RogueCmdBlock__requires_semicolon,
+  (void*) (ROGUEM790) RogueCmdBlock__resolve,
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
   (void*) (ROGUEM55) RogueCmd__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
-  (void*) (ROGUEM790) RogueCmdBlock__trace_used_code,
+  (void*) (ROGUEM791) RogueCmdBlock__trace_used_code,
   (void*) (ROGUEM51) Rogue_Cmd__type,
-  (void*) (ROGUEM791) RogueCmdBlock__write_cpp,
-  (void*) (ROGUEM792) RogueCmdBlock__init_object,
+  (void*) (ROGUEM792) RogueCmdBlock__write_cpp,
+  (void*) (ROGUEM793) RogueCmdBlock__init_object,
   (void*) (ROGUEM172) RogueCmdControlStructure__set_control_logic,
   NULL, // TableEntry<<String,Cmd>>[]
-  (void*) (ROGUEM793) RogueString_CmdTableEntryList__to_String,
-  (void*) (ROGUEM793) RogueString_CmdTableEntryList__type_name,
-  (void*) (ROGUEM794) RogueString_CmdTableEntryList__init_object,
+  (void*) (ROGUEM794) RogueString_CmdTableEntryList__to_String,
+  (void*) (ROGUEM794) RogueString_CmdTableEntryList__type_name,
+  (void*) (ROGUEM795) RogueString_CmdTableEntryList__init_object,
   NULL, // TableEntry<<String,Cmd>>
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM795) RogueString_CmdTableEntry__type_name,
+  (void*) (ROGUEM796) RogueString_CmdTableEntry__type_name,
   NULL, // TableEntry<<String,Property>>[]
-  (void*) (ROGUEM796) RogueString_PropertyTableEntryList__to_String,
-  (void*) (ROGUEM796) RogueString_PropertyTableEntryList__type_name,
-  (void*) (ROGUEM797) RogueString_PropertyTableEntryList__init_object,
+  (void*) (ROGUEM797) RogueString_PropertyTableEntryList__to_String,
+  (void*) (ROGUEM797) RogueString_PropertyTableEntryList__type_name,
+  (void*) (ROGUEM798) RogueString_PropertyTableEntryList__init_object,
   NULL, // TableEntry<<String,Property>>
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM798) RogueString_PropertyTableEntry__type_name,
+  (void*) (ROGUEM799) RogueString_PropertyTableEntry__type_name,
   NULL, // DirectiveTokenType
   (void*) (ROGUEM75) RogueTokenType__to_String,
-  (void*) (ROGUEM799) RogueDirectiveTokenType__type_name,
+  (void*) (ROGUEM800) RogueDirectiveTokenType__type_name,
   NULL,
-  (void*) (ROGUEM800) RogueDirectiveTokenType__create_token,
+  (void*) (ROGUEM801) RogueDirectiveTokenType__create_token,
   NULL,
   NULL,
   NULL,
   NULL,
   (void*) (ROGUEM77) RogueTokenType__create_token,
   NULL,
-  (void*) (ROGUEM801) RogueDirectiveTokenType__is_directive,
+  (void*) (ROGUEM802) RogueDirectiveTokenType__is_directive,
   (void*) (ROGUEM78) RogueTokenType__is_op_with_assign,
   (void*) (ROGUEM78) RogueTokenType__is_structure,
   NULL,
   NULL,
-  (void*) (ROGUEM802) RogueDirectiveTokenType__init_object,
+  (void*) (ROGUEM803) RogueDirectiveTokenType__init_object,
   NULL, // StructuralDirectiveTokenType
   (void*) (ROGUEM75) RogueTokenType__to_String,
-  (void*) (ROGUEM803) RogueStructuralDirectiveTokenType__type_name,
+  (void*) (ROGUEM804) RogueStructuralDirectiveTokenType__type_name,
   NULL,
-  (void*) (ROGUEM804) RogueStructuralDirectiveTokenType__create_token,
+  (void*) (ROGUEM805) RogueStructuralDirectiveTokenType__create_token,
   NULL,
   NULL,
   NULL,
   NULL,
   (void*) (ROGUEM77) RogueTokenType__create_token,
   NULL,
-  (void*) (ROGUEM805) RogueStructuralDirectiveTokenType__is_directive,
+  (void*) (ROGUEM806) RogueStructuralDirectiveTokenType__is_directive,
   (void*) (ROGUEM78) RogueTokenType__is_op_with_assign,
-  (void*) (ROGUEM805) RogueStructuralDirectiveTokenType__is_structure,
+  (void*) (ROGUEM806) RogueStructuralDirectiveTokenType__is_structure,
   NULL,
   NULL,
-  (void*) (ROGUEM806) RogueStructuralDirectiveTokenType__init_object,
+  (void*) (ROGUEM807) RogueStructuralDirectiveTokenType__init_object,
   NULL, // EOLTokenType
   (void*) (ROGUEM75) RogueTokenType__to_String,
-  (void*) (ROGUEM807) RogueEOLTokenType__type_name,
-  NULL,
-  (void*) (ROGUEM808) RogueEOLTokenType__create_token,
-  NULL,
-  NULL,
-  NULL,
+  (void*) (ROGUEM808) RogueEOLTokenType__type_name,
   NULL,
   (void*) (ROGUEM809) RogueEOLTokenType__create_token,
   NULL,
+  NULL,
+  NULL,
+  NULL,
+  (void*) (ROGUEM810) RogueEOLTokenType__create_token,
+  NULL,
   (void*) (ROGUEM78) RogueTokenType__is_directive,
   (void*) (ROGUEM78) RogueTokenType__is_op_with_assign,
-  (void*) (ROGUEM810) RogueEOLTokenType__is_structure,
+  (void*) (ROGUEM811) RogueEOLTokenType__is_structure,
   NULL,
   NULL,
-  (void*) (ROGUEM811) RogueEOLTokenType__init_object,
+  (void*) (ROGUEM812) RogueEOLTokenType__init_object,
   NULL, // StructureTokenType
   (void*) (ROGUEM75) RogueTokenType__to_String,
-  (void*) (ROGUEM812) RogueStructureTokenType__type_name,
+  (void*) (ROGUEM813) RogueStructureTokenType__type_name,
   NULL,
-  (void*) (ROGUEM813) RogueStructureTokenType__create_token,
+  (void*) (ROGUEM814) RogueStructureTokenType__create_token,
   NULL,
   NULL,
   NULL,
@@ -11110,13 +7011,13 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   (void*) (ROGUEM78) RogueTokenType__is_directive,
   (void*) (ROGUEM78) RogueTokenType__is_op_with_assign,
-  (void*) (ROGUEM814) RogueStructureTokenType__is_structure,
+  (void*) (ROGUEM815) RogueStructureTokenType__is_structure,
   NULL,
   NULL,
-  (void*) (ROGUEM815) RogueStructureTokenType__init_object,
+  (void*) (ROGUEM816) RogueStructureTokenType__init_object,
   NULL, // OpWithAssignTokenType
   (void*) (ROGUEM75) RogueTokenType__to_String,
-  (void*) (ROGUEM816) RogueOpWithAssignTokenType__type_name,
+  (void*) (ROGUEM817) RogueOpWithAssignTokenType__type_name,
   NULL,
   (void*) (ROGUEM76) RogueTokenType__create_token,
   NULL,
@@ -11126,14 +7027,14 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM77) RogueTokenType__create_token,
   NULL,
   (void*) (ROGUEM78) RogueTokenType__is_directive,
-  (void*) (ROGUEM817) RogueOpWithAssignTokenType__is_op_with_assign,
+  (void*) (ROGUEM818) RogueOpWithAssignTokenType__is_op_with_assign,
   (void*) (ROGUEM78) RogueTokenType__is_structure,
   NULL,
   NULL,
-  (void*) (ROGUEM818) RogueOpWithAssignTokenType__init_object,
+  (void*) (ROGUEM819) RogueOpWithAssignTokenType__init_object,
   NULL, // EOLToken
-  (void*) (ROGUEM819) RogueEOLToken__to_String,
-  (void*) (ROGUEM819) RogueEOLToken__type_name,
+  (void*) (ROGUEM820) RogueEOLToken__to_String,
+  (void*) (ROGUEM820) RogueEOLToken__type_name,
   NULL,
   NULL,
   NULL,
@@ -11145,20 +7046,20 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM41) RogueToken__to_Long,
   (void*) (ROGUEM42) RogueToken__to_Real,
   (void*) (ROGUEM43) RogueToken__to_Type,
-  (void*) (ROGUEM820) RogueEOLToken__init_object,
+  (void*) (ROGUEM821) RogueEOLToken__init_object,
   NULL, // Table<<String,Token[]>>
-  (void*) (ROGUEM821) RogueString_TokenListTable__to_String,
-  (void*) (ROGUEM821) RogueString_TokenListTable__type_name,
+  (void*) (ROGUEM822) RogueString_TokenListTable__to_String,
+  (void*) (ROGUEM822) RogueString_TokenListTable__type_name,
   NULL, // PreprocessorTokenReader
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM822) RoguePreprocessorTokenReader__type_name,
+  (void*) (ROGUEM823) RoguePreprocessorTokenReader__type_name,
   NULL, // CmdReadArrayElement
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM823) RogueCmdReadArrayElement__type_name,
+  (void*) (ROGUEM824) RogueCmdReadArrayElement__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM47) RogueCmd__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
-  (void*) (ROGUEM824) RogueCmdReadArrayElement__clone,
+  (void*) (ROGUEM825) RogueCmdReadArrayElement__clone,
   NULL,
   NULL,
   NULL,
@@ -11176,21 +7077,21 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   (void*) (ROGUEM52) RogueCmd__requires_semicolon,
-  (void*) (ROGUEM825) RogueCmdReadArrayElement__resolve,
+  (void*) (ROGUEM826) RogueCmdReadArrayElement__resolve,
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
-  (void*) (ROGUEM826) RogueCmdReadArrayElement__resolve_modify,
+  (void*) (ROGUEM827) RogueCmdReadArrayElement__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
-  (void*) (ROGUEM827) RogueCmdReadArrayElement__trace_used_code,
-  (void*) (ROGUEM828) Rogue_CmdReadArrayElement__type,
-  (void*) (ROGUEM829) RogueCmdReadArrayElement__write_cpp,
-  (void*) (ROGUEM830) RogueCmdReadArrayElement__init_object,
+  (void*) (ROGUEM828) RogueCmdReadArrayElement__trace_used_code,
+  (void*) (ROGUEM829) Rogue_CmdReadArrayElement__type,
+  (void*) (ROGUEM830) RogueCmdReadArrayElement__write_cpp,
+  (void*) (ROGUEM831) RogueCmdReadArrayElement__init_object,
   NULL, // CmdWriteArrayElement
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM831) RogueCmdWriteArrayElement__type_name,
+  (void*) (ROGUEM832) RogueCmdWriteArrayElement__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM47) RogueCmd__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
-  (void*) (ROGUEM832) RogueCmdWriteArrayElement__clone,
+  (void*) (ROGUEM833) RogueCmdWriteArrayElement__clone,
   NULL,
   NULL,
   NULL,
@@ -11208,21 +7109,21 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   (void*) (ROGUEM52) RogueCmd__requires_semicolon,
-  (void*) (ROGUEM833) RogueCmdWriteArrayElement__resolve,
+  (void*) (ROGUEM834) RogueCmdWriteArrayElement__resolve,
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
   (void*) (ROGUEM55) RogueCmd__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
-  (void*) (ROGUEM834) RogueCmdWriteArrayElement__trace_used_code,
-  (void*) (ROGUEM835) Rogue_CmdWriteArrayElement__type,
-  (void*) (ROGUEM836) RogueCmdWriteArrayElement__write_cpp,
-  (void*) (ROGUEM837) RogueCmdWriteArrayElement__init_object,
+  (void*) (ROGUEM835) RogueCmdWriteArrayElement__trace_used_code,
+  (void*) (ROGUEM836) Rogue_CmdWriteArrayElement__type,
+  (void*) (ROGUEM837) RogueCmdWriteArrayElement__write_cpp,
+  (void*) (ROGUEM838) RogueCmdWriteArrayElement__init_object,
   NULL, // CmdConvertToPrimitiveType
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM838) RogueCmdConvertToPrimitiveType__type_name,
+  (void*) (ROGUEM839) RogueCmdConvertToPrimitiveType__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM47) RogueCmd__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
-  (void*) (ROGUEM839) RogueCmdConvertToPrimitiveType__clone,
+  (void*) (ROGUEM840) RogueCmdConvertToPrimitiveType__clone,
   NULL,
   NULL,
   NULL,
@@ -11240,21 +7141,21 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   (void*) (ROGUEM52) RogueCmd__requires_semicolon,
-  (void*) (ROGUEM840) RogueCmdConvertToPrimitiveType__resolve,
+  (void*) (ROGUEM841) RogueCmdConvertToPrimitiveType__resolve,
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
   (void*) (ROGUEM55) RogueCmd__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
   (void*) (ROGUEM292) RogueCmdTypeOperator__trace_used_code,
   (void*) (ROGUEM293) Rogue_CmdTypeOperator__type,
-  (void*) (ROGUEM841) RogueCmdConvertToPrimitiveType__write_cpp,
-  (void*) (ROGUEM842) RogueCmdConvertToPrimitiveType__init_object,
+  (void*) (ROGUEM842) RogueCmdConvertToPrimitiveType__write_cpp,
+  (void*) (ROGUEM843) RogueCmdConvertToPrimitiveType__init_object,
   NULL, // CmdAdjustProperty
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM843) RogueCmdAdjustProperty__type_name,
+  (void*) (ROGUEM844) RogueCmdAdjustProperty__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM47) RogueCmd__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
-  (void*) (ROGUEM844) RogueCmdAdjustProperty__clone,
+  (void*) (ROGUEM845) RogueCmdAdjustProperty__clone,
   NULL,
   NULL,
   NULL,
@@ -11272,21 +7173,21 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   (void*) (ROGUEM52) RogueCmd__requires_semicolon,
-  (void*) (ROGUEM845) RogueCmdAdjustProperty__resolve,
+  (void*) (ROGUEM846) RogueCmdAdjustProperty__resolve,
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
   (void*) (ROGUEM55) RogueCmd__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
-  (void*) (ROGUEM846) RogueCmdAdjustProperty__trace_used_code,
-  (void*) (ROGUEM847) Rogue_CmdAdjustProperty__type,
-  (void*) (ROGUEM848) RogueCmdAdjustProperty__write_cpp,
-  (void*) (ROGUEM849) RogueCmdAdjustProperty__init_object,
+  (void*) (ROGUEM847) RogueCmdAdjustProperty__trace_used_code,
+  (void*) (ROGUEM848) Rogue_CmdAdjustProperty__type,
+  (void*) (ROGUEM849) RogueCmdAdjustProperty__write_cpp,
+  (void*) (ROGUEM850) RogueCmdAdjustProperty__init_object,
   NULL, // CmdCallStaticMethod
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM850) RogueCmdCallStaticMethod__type_name,
+  (void*) (ROGUEM851) RogueCmdCallStaticMethod__type_name,
   (void*) (ROGUEM46) RogueCmd__access_name,
   (void*) (ROGUEM777) RogueCmdCallMethod__call_prior,
   (void*) (ROGUEM48) RogueCmd__cast_to,
-  (void*) (ROGUEM851) RogueCmdCallStaticMethod__clone,
+  (void*) (ROGUEM852) RogueCmdCallStaticMethod__clone,
   NULL,
   NULL,
   NULL,
@@ -11304,21 +7205,21 @@ void* Rogue_dynamic_method_table[] =
   NULL,
   NULL,
   (void*) (ROGUEM52) RogueCmd__requires_semicolon,
-  (void*) (ROGUEM852) RogueCmdCallStaticMethod__resolve,
+  (void*) (ROGUEM853) RogueCmdCallStaticMethod__resolve,
   (void*) (ROGUEM54) RogueCmd__resolve_assignment,
   (void*) (ROGUEM55) RogueCmd__resolve_modify,
   (void*) (ROGUEM56) RogueCmd__resolve_modify_and_assign,
   (void*) (ROGUEM688) RogueCmdCall__trace_used_code,
   (void*) (ROGUEM689) Rogue_CmdCall__type,
-  (void*) (ROGUEM853) RogueCmdCallStaticMethod__write_cpp,
-  (void*) (ROGUEM854) RogueCmdCallStaticMethod__init_object,
+  (void*) (ROGUEM854) RogueCmdCallStaticMethod__write_cpp,
+  (void*) (ROGUEM855) RogueCmdCallStaticMethod__init_object,
   NULL, // TableEntry<<String,Token[]>>[]
-  (void*) (ROGUEM855) RogueString_TokenListTableEntryList__to_String,
-  (void*) (ROGUEM855) RogueString_TokenListTableEntryList__type_name,
-  (void*) (ROGUEM856) RogueString_TokenListTableEntryList__init_object,
+  (void*) (ROGUEM856) RogueString_TokenListTableEntryList__to_String,
+  (void*) (ROGUEM856) RogueString_TokenListTableEntryList__type_name,
+  (void*) (ROGUEM857) RogueString_TokenListTableEntryList__init_object,
   NULL, // TableEntry<<String,Token[]>>
   (void*) (ROGUEM2) RogueObject__to_String,
-  (void*) (ROGUEM857) RogueString_TokenListTableEntry__type_name,
+  (void*) (ROGUEM858) RogueString_TokenListTableEntry__type_name,
 
 };
 
@@ -18587,37 +14488,40 @@ void RogueProgram__write_cpp( RogueClassProgram* THIS, RogueString* filepath_0 )
     {
       RogueString* sig_52 = (((RogueString*)(_auto_134_50->data->objects[_auto_135_51])));
       RogueClassMethod* m_5 = (((RogueString_MethodTable__get( native_method_signature_lookup_4, sig_52 ))));
-      RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, m_5->_return_type ))), Rogue_program.literal_strings[442] ))), m_5->cpp_typedef );
-      RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[443] ))), m_5->type_context ))), Rogue_program.literal_strings[429] );
+      if (m_5->called_dynamically)
       {
-        RogueLocalList* _auto_139_53 = (m_5->parameters);
-        RogueInteger i_54 = (0);
-        for (;i_54 < _auto_139_53->count;++i_54)
+        RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, m_5->_return_type ))), Rogue_program.literal_strings[442] ))), m_5->cpp_typedef );
+        RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[443] ))), m_5->type_context ))), Rogue_program.literal_strings[429] );
         {
-          RogueClassLocal* p_6 = (((RogueClassLocal*)(m_5->parameters->data->objects[i_54])));
-          RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[390] ))), ((Rogue_Type__compile_type( p_6->_type ))) ))), Rogue_program.literal_strings[444] ))), i_54 );
+          RogueLocalList* _auto_139_53 = (m_5->parameters);
+          RogueInteger i_54 = (0);
+          for (;i_54 < _auto_139_53->count;++i_54)
+          {
+            RogueClassLocal* p_6 = (((RogueClassLocal*)(m_5->parameters->data->objects[i_54])));
+            RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[390] ))), ((Rogue_Type__compile_type( p_6->_type ))) ))), Rogue_program.literal_strings[444] ))), i_54 );
+          }
         }
-      }
-      RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[445] );
-      RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[166] );
-      RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[422] );
-      if (!!(m_5->_return_type))
-      {
-        RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[446] );
-      }
-      RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[447] ))), m_5->cpp_typedef );
-      RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[448] );
-      {
-        RogueLocalList* _auto_140_55 = (m_5->parameters);
-        RogueInteger i_56 = (0);
-        for (;i_56 < _auto_140_55->count;++i_56)
+        RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[445] );
+        RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[166] );
+        RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[422] );
+        if (!!(m_5->_return_type))
         {
-          RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[449] ))), i_56 );
+          RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[446] );
         }
+        RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[447] ))), m_5->cpp_typedef );
+        RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[448] );
+        {
+          RogueLocalList* _auto_140_55 = (m_5->parameters);
+          RogueInteger i_56 = (0);
+          for (;i_56 < _auto_140_55->count;++i_56)
+          {
+            RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[449] ))), i_56 );
+          }
+        }
+        RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[414] );
+        RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[87] );
+        RogueCPPWriter__println( writer_1 );
       }
-      RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[414] );
-      RogueCPPWriter__println( writer_1, Rogue_program.literal_strings[87] );
-      RogueCPPWriter__println( writer_1 );
     }
   }
   RogueCPPWriter__println( writer_1 );
@@ -21835,6 +17739,10 @@ void RogueType__determine_cpp_method_typedefs( RogueClassType* THIS, RogueString
         if (!!(mapping_5))
         {
           m_8->cpp_typedef = mapping_5->cpp_typedef;
+          if ((!(mapping_5->called_dynamically) && m_8->called_dynamically))
+          {
+            RogueString_MethodTable__set( lookup_1, sig_4, m_8 );
+          }
         }
         else
         {
@@ -38596,6 +34504,15 @@ RogueString* RogueCmdCallDynamicMethod__type_name( RogueClassCmdCallDynamicMetho
 RogueClassCmd* RogueCmdCallDynamicMethod__clone( RogueClassCmdCallDynamicMethod* THIS, RogueClassCloneArgs* clone_args_0 )
 {
   return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdCall__init( ((RogueClassCmdCall*)((RogueClassCmdCallDynamicMethod*)Rogue_program.type_CmdCallDynamicMethod->create_and_init_object())), THIS->t, ((RogueCmd__clone( ((RogueClassCmd*)THIS), THIS->context, clone_args_0 ))), THIS->method_info, ((RogueCmdArgs__clone( THIS->args, clone_args_0 ))) ))))));
+}
+
+void RogueCmdCallDynamicMethod__trace_used_code( RogueClassCmdCallDynamicMethod* THIS )
+{
+  RogueCmdCall__trace_used_code( ((RogueClassCmdCall*)THIS) );
+  if (((RogueMethod__is_overridden( THIS->method_info ))))
+  {
+    THIS->method_info->called_dynamically = true;
+  }
 }
 
 void RogueCmdCallDynamicMethod__write_cpp( RogueClassCmdCallDynamicMethod* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 )

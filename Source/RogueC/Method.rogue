@@ -30,7 +30,8 @@ class Method
     resolved  : Logical
     index     : Integer
 
-    is_used   : Logical
+    is_used            : Logical
+    called_dynamically : Logical
 
     label_list   = CmdLabel[]
     label_lookup = Table<<String,CmdLabel>>()

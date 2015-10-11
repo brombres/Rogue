@@ -426,24 +426,26 @@ augment Program
       # write dynamic dipatch methods
       forEach (sig in native_method_signature_list)
         local m = native_method_signature_lookup[sig]  # one of the methods using this signature
-        writer.print( m.return_type ).print( " call_" ).print( m.cpp_typedef )
-        writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
-        forEach (i of m.parameters)
-          local p = m.parameters[i]
-          writer.print( ", " ).print(p.type.compile_type).print( " p" ).print( i )
-        endForEach
-        writer.println( " )" )
-        writer.println( "{" )
-        writer.print( "  " )
-        if (m.return_type) writer.print( "return " )
-        writer.print( "((" ).print( m.cpp_typedef )
-        writer.print( ")(THIS->type->methods[i]))( THIS" )
-        forEach (i of m.parameters)
-          writer.print( ", p" ).print( i )
-        endForEach
-        writer.println( " );" )
-        writer.println( "}" )
-        writer.println
+        if (m.called_dynamically)
+          writer.print( m.return_type ).print( " call_" ).print( m.cpp_typedef )
+          writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+          forEach (i of m.parameters)
+            local p = m.parameters[i]
+            writer.print( ", " ).print(p.type.compile_type).print( " p" ).print( i )
+          endForEach
+          writer.println( " )" )
+          writer.println( "{" )
+          writer.print( "  " )
+          if (m.return_type) writer.print( "return " )
+          writer.print( "((" ).print( m.cpp_typedef )
+          writer.print( ")(THIS->type->methods[i]))( THIS" )
+          forEach (i of m.parameters)
+            writer.print( ", p" ).print( i )
+          endForEach
+          writer.println( " );" )
+          writer.println( "}" )
+          writer.println
+        endIf
       endForEach
       writer.println
 
@@ -931,6 +933,10 @@ augment Type
           local mapping = lookup[sig]
           if (mapping)
             m.cpp_typedef = mapping.cpp_typedef
+            if (not mapping.called_dynamically and m.called_dynamically)
+              #list[ list.locate(mapping)! ] = m
+              lookup[ sig ] = m
+            endIf
           else
             m.cpp_typedef = "ROGUEM" + list.count
             lookup[sig] = m
@@ -957,6 +963,7 @@ augment Type
 
         if (not m.is_inline)
           if (m.is_dynamic and m.is_used)
+            # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
           else
             writer.print( "NULL," ) #.print( " // " ).print( m.signature )

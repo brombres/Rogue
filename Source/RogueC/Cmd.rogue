@@ -2204,6 +2204,9 @@ class CmdCallDynamicMethod : CmdCallMethod
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
+    method trace_used_code
+      prior.trace_used_code
+      if (method_info.is_overridden) method_info.called_dynamically = true
 endClass
 
 
