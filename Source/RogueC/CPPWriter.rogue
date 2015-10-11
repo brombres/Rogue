@@ -411,7 +411,9 @@ augment Program
       local native_method_signature_list   = String[]
       local native_method_signature_lookup = Table<<String,Method>>()
       forEach (type in type_list)
-        type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
+        if (type.is_used)
+          type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
+        endIf
       endForEach
 
       forEach (sig in native_method_signature_list)
@@ -942,11 +944,20 @@ augment Type
 
       dynamic_method_table_index = at_index
 
+      local i2 = method_list.count - 1
+      while (i2 > 0)
+        local m = method_list[ i2 ]
+        if (not m.is_inline and m.is_dynamic and m.is_used) escapeWhile
+        --i2
+      endWhile
+
       local print_type_name = true
-      forEach (m in method_list)
+      forEach (i in 0..i2)
+        local m = method_list[i]
+
         if (not m.is_inline)
           if (m.is_dynamic and m.is_used)
-            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.compile_target.cpp_name ).print( "," )
+            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
           else
             writer.print( "NULL," ) #.print( " // " ).print( m.signature )
           endIf
@@ -1042,7 +1053,7 @@ augment Method
             writer.print("case ").print(ic.index).println(":")
             if (return_type) writer.print( "  return " )
             else              writer.print( "  " )
-            local m = ic.find_method(signature).compile_target
+            local m = ic.find_method(signature)
             writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
             forEach (param in parameters)
               writer.print( ", " ).print( param.cpp_name )
@@ -1542,19 +1553,18 @@ endAugment
 augment CmdCallRoutine
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local compile_target = method_info.compile_target
-      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
 
-      writer.print( compile_target.cpp_name )
+      writer.print( method_info.cpp_name )
       writer.print( "(" )
       if (args.count)
         writer.print( " " )
         local i = 0
         forEach (arg in args)
           if (i > 0) writer.print( ", " )
-          local param_type = compile_target.parameters[i].type
+          local param_type = method_info.parameters[i].type
           if (param_type.is_aspect)
-            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+            writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
             arg.write_cpp( writer )
             writer.print( "))" )
           else
@@ -1571,9 +1581,8 @@ endAugment
 augment CmdCallAspectMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local compile_target = method_info.compile_target
-      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
-      writer.print( compile_target.cpp_name )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.cpp_name )
       writer.print( "( " )
       writer.print( "(" )
       writer.print( Program.type_Object )
@@ -1582,9 +1591,9 @@ augment CmdCallAspectMethod
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        local param_type = compile_target.parameters[i].type
+        local param_type = method_info.parameters[i].type
         if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
         else
@@ -1600,23 +1609,22 @@ endAugment
 augment CmdCallDynamicMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local compile_target = method_info.compile_target
-      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
-      if (compile_target.is_overridden)
-        writer.print( "call_" ).print( compile_target.cpp_typedef )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      if (method_info.is_overridden)
+        writer.print( "call_" ).print( method_info.cpp_typedef )
         writer.print( "( " )
-        writer.print( compile_target.index ).print( ", " )
+        writer.print( method_info.index ).print( ", " )
         writer.print( "(" )
-        writer.print( compile_target.type_context )
+        writer.print( method_info.type_context )
         writer.print( ")(" )
         context.write_cpp( writer )
         writer.print( ")" )
         local i = 0
         forEach (arg in args)
           writer.print( ", " )
-          local param_type = compile_target.parameters[i].type
+          local param_type = method_info.parameters[i].type
           if (param_type.is_aspect)
-            writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+            writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type)
             arg.write_cpp( writer )
             writer.print( ")" )
           else
@@ -1636,17 +1644,16 @@ endAugment
 augment CmdCallStaticMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local compile_target = method_info.compile_target
-      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
-      writer.print( compile_target.cpp_name )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.cpp_name )
       writer.print( "( " )
-      writer.print_cast( context.type, compile_target.type_context, context )
+      writer.print_cast( context.type, method_info.type_context, context )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        local param_type = compile_target.parameters[i].type
+        local param_type = method_info.parameters[i].type
         if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type)
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type)
           arg.write_cpp( writer )
           writer.print( ")" )
         else
@@ -1662,16 +1669,15 @@ endAugment
 augment CmdCallNativeRoutine
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local compile_target = method_info.compile_target
-      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
-      writer.print( compile_target.cpp_name )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.cpp_name )
       writer.print( "( " )
       local i = 0
       forEach (arg in args)
         if (i > 0) writer.print( ", " )
-        local param_type = compile_target.parameters[i].type
+        local param_type = method_info.parameters[i].type
         if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
         else
@@ -1686,17 +1692,16 @@ endAugment
 augment CmdCallNativeMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local compile_target = method_info.compile_target
-      if (not is_statement) writer.print("(").print_cast( compile_target.return_type, method_info.return_type )
-      writer.print( compile_target.cpp_name )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.cpp_name )
       writer.print( "( " )
       context.write_cpp( writer )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        local param_type = compile_target.parameters[i].type
+        local param_type = method_info.parameters[i].type
         if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,compile_target.parameters[i].type).print("(")
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
           arg.write_cpp( writer )
           writer.print( "))" )
         else

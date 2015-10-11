@@ -115,9 +115,6 @@ class Method
       buffer.print ")"
       signature = buffer->String
 
-    method compile_target->Method
-      return this
-
     method begin_label( label_t:Token, label_name:String, consolidate_duplicates:Logical )->CmdLabel
       if (consolidate_duplicates)
         cur_label = label_lookup[ label_name ]
