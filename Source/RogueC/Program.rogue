@@ -225,6 +225,10 @@ class Program [requisite singleton]
 
       trace_overridden_methods
 
+      forEach (type in type_list)
+        type.cull_unused_methods
+      endForEach
+
     method trace_overridden_methods
       # When we have "s = Circle() : Shape; println s.area()", only Shape.area()
       # is initially visible through code tracing.  We track all of the overrides for

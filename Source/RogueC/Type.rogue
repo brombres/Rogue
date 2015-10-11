@@ -8,6 +8,7 @@ class Type
     defined      : Logical
     organized    : Logical
     resolved     : Logical
+    culled       : Logical
 
     base_class : Type
     base_types = Type[]
@@ -367,6 +368,29 @@ class Type
       list.add( this )
       forEach (base_type in base_types)
         base_type.collect_base_types( list )
+      endForEach
+
+    method cull_unused_methods
+      if (culled) return
+      culled = true
+
+      forEach (base_type in base_types) base_type.cull_unused_methods
+
+      local list = method_list
+
+      local i = list.count - 1
+      while (i >= 0)
+        local m = list[i]
+        if (m.is_inline or not m.is_used)
+          list.remove( m )
+        endIf
+        --i
+      endWhile
+
+      i = 0
+      forEach (m in list)
+        m.index = i
+        ++i
       endForEach
 
     method has_references->Logical
