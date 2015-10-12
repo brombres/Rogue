@@ -7,7 +7,7 @@ all: roguec
 
 remake: touch_roguec roguec
 
-roguec: bootstrap_roguec /usr/local/bin /usr/local/bin/roguec libraries Source/RogueC/RogueC.cpp Programs/RogueC/roguec
+roguec: bootstrap_roguec /usr/local/bin /usr/local/bin/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/roguec
 
 touch_roguec:
 	touch Source/RogueC/RogueC.rogue
@@ -18,23 +18,24 @@ bootstrap_roguec:
 	  echo -------------------------------------------------------------------------------; \
 	  echo Compiling Programs/RogueC/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo g++ -Wall $(ROGUEC_FLAGS) Source/RogueC/RogueC.cpp -o Programs/RogueC/roguec; \
+	  echo g++ -Wall $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	  mkdir -p Programs/RogueC; \
-	  g++ $(ROGUEC_FLAGS) Source/RogueC/RogueC.cpp -o Programs/RogueC/roguec; \
+	  g++ $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	fi;
 
-Source/RogueC/RogueC.cpp: $(ROGUEC_SRC)
+Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp..."
 	@echo -------------------------------------------------------------------------------
-	cd Source/RogueC && roguec RogueC.rogue --main --output=RogueC
+	cd Source/RogueC && mkdir -p Build
+	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC
 
-Programs/RogueC/roguec: Source/RogueC/RogueC.cpp
+Programs/RogueC/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	g++ $(ROGUEC_FLAGS) Source/RogueC/RogueC.cpp -o Programs/RogueC/roguec
+	g++ $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 libraries:
 	@mkdir -p Programs/RogueC
