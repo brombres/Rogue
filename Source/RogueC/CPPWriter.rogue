@@ -1216,6 +1216,43 @@ augment CmdIf
 endAugment
 
 
+augment CmdSwitch
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "switch (" )
+      expression.write_cpp( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      forEach (c in cases)
+        forEach (condition in c.conditions)
+          writer.print( "case " )
+          condition.write_cpp( writer )
+          writer.println( ":" )
+        endForEach
+        writer.println "{"
+        writer.indent += 2
+        c.statements.write_cpp( writer )
+        writer.println "break;"
+        writer.indent -= 2
+        writer.println "}"
+      endForEach
+
+      if (case_others)
+        writer.println "default:"
+        writer.println "{"
+        writer.indent += 2
+        case_others.statements.write_cpp( writer )
+        writer.indent -= 2
+        writer.println "}"
+      endIf
+
+      writer.indent -= 2
+      writer.println( "}" )
+endAugment
+
+
 augment CmdContingent
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
@@ -2100,9 +2137,7 @@ augment CmdTaskControl
       writer.indent += 2
       forEach (section in sections)
         writer.print( "case " ).print( section.ip ).println( ":" )
-        writer.indent += 2
         section.statements.write_cpp( writer )
-        writer.indent -= 2
       endForEach
       writer.println( "default:" )
       writer.println( "  THIS->ip = -1;" )

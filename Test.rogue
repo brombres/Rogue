@@ -1,5 +1,18 @@
-println "Hello World"
+class Test
+  METHODS
+    method init
+      async_test.start
 
-local table = Table<<String,Integer>>()
-println table
+    method async_test [task]
+      forEach (n in 1..10)
+        print n
+        which (n)
+          case 1: println "st"
+          case 2: println "nd"
+          case 3: println "rd"
+          others: println "th"
+        endWhich
+      endForEach
+endClass
 
+Test()

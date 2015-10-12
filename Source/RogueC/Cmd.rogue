@@ -539,6 +539,49 @@ class CmdWhich : CmdControlStructure
       return result
 
     method resolve( scope:Scope )->Cmd
+
+      # Need to resolve all the cases and statements before deciding whether
+      # to convert this to an if/elseIf block or a Switch.  We'll do Switch
+      # if all the cases are literal values and if no case contains a 'yield'.
+      scope.control_stack.add( this )
+
+      expression = expression.resolve( scope )
+
+      local all_literal_cases = true
+
+      local expression_type = expression.require_type
+      if (expression_type isNot Program.type_Integer)
+        if (expression_type is Program.type_Byte or expression_type is Program.type_Character)
+          expression = expression.cast_to( Program.type_Integer ).resolve( scope )
+        else
+          all_literal_cases = false  # prevent conversion to C 'switch'
+        endIf
+      endIf
+
+      forEach (c in cases)
+        c.conditions.resolve( scope )
+        if (all_literal_cases)
+          forEach (condition in c.conditions)
+            if (not condition.is_literal or condition instanceOf CmdLiteralString)
+              all_literal_cases = false
+              escapeForEach
+            endIf
+          endForEach
+        endIf
+        c.statements.resolve( scope )
+      endForEach
+      if (case_others)
+        case_others.conditions.resolve( scope )
+        case_others.statements.resolve( scope )
+      endIf
+
+      scope.control_stack.remove_last()
+
+      # Convert to switch?
+      if (all_literal_cases and not this.contains_yield)
+        return CmdSwitch( t, expression, cases, case_others ).set_control_logic( this )
+      endIf
+
       local result = CmdBlock( t, CmdControlStructure.type_which )
       result.set_control_logic( this )
       expression = expression.resolve( scope )
@@ -578,6 +621,45 @@ class CmdWhich : CmdControlStructure
       endIf
 
       return result.resolve( scope )
+endClass
+
+
+class CmdSwitch : CmdControlStructure
+  PROPERTIES
+    expression   : Cmd
+    cases        : CmdWhichCase[]
+    case_others  : CmdWhichCase
+
+  METHODS
+    method init( t, expression, cases=CmdWhichCase[], case_others=null, control_type=CmdControlStructure.type_which )
+
+    method clone( clone_args:CloneArgs )->CmdSwitch
+      local result = CmdSwitch( t, expression.clone(clone_args), null )
+      result.set_control_logic( this )
+      cloned_command = result
+
+      local cloned_cases = CmdWhichCase[]( cases.count )
+      forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
+      result.cases = cloned_cases
+
+      if (case_others) result.case_others = case_others.clone( clone_args )
+      return result
+
+    method resolve( scope:Scope )->Cmd
+      scope.control_stack.add( this )
+
+      expression = expression.resolve( scope )
+      forEach (c in cases)
+        c.conditions.resolve( scope )
+        c.statements.resolve( scope )
+      endForEach
+      if (case_others)
+        case_others.conditions.resolve( scope )
+        case_others.statements.resolve( scope )
+      endIf
+
+      scope.control_stack.remove_last()
+      return this
 
     method trace_used_code
       expression.trace_used_code
