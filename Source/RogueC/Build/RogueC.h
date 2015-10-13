@@ -3387,6 +3387,7 @@ struct RogueClassCmdNativeCode : RogueObject
   // PROPERTIES
   RogueClassToken* t;
   RogueString* code;
+  RogueClassMethod* this_method;
 
 };
 
@@ -4160,6 +4161,7 @@ RogueInteger RogueCharacterList__capacity( RogueCharacterList* THIS );
 RogueCharacterList* RogueCharacterList__clear( RogueCharacterList* THIS );
 RogueCharacterList* RogueCharacterList__reserve( RogueCharacterList* THIS, RogueInteger additional_count_0 );
 RogueLogical RogueCharacter__is_alphanumeric( RogueCharacter THIS );
+RogueLogical RogueCharacter__is_identifier( RogueCharacter THIS );
 RogueLogical RogueCharacter__is_letter( RogueCharacter THIS );
 RogueLogical RogueCharacter__is_number( RogueCharacter THIS, RogueInteger base_0 );
 RogueString* RogueCharacter__to_String( RogueCharacter THIS );
@@ -6032,7 +6034,7 @@ void RogueCmdAdjustProperty__trace_used_code( RogueClassCmdAdjustProperty* THIS 
 RogueClassType* Rogue_CmdAdjustProperty__type( RogueClassCmdAdjustProperty* THIS );
 void RogueCmdAdjustProperty__write_cpp( RogueClassCmdAdjustProperty* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdAdjustProperty* RogueCmdAdjustProperty__init_object( RogueClassCmdAdjustProperty* THIS );
-RogueClassCmdAdjustProperty* RogueCmdAdjustProperty__init( RogueClassCmdAdjustProperty* THIS, RogueClassToken* _auto_1143_0, RogueClassCmd* _auto_1144_1, RogueClassProperty* _auto_1145_2, RogueInteger _auto_1146_3 );
+RogueClassCmdAdjustProperty* RogueCmdAdjustProperty__init( RogueClassCmdAdjustProperty* THIS, RogueClassToken* _auto_1146_0, RogueClassCmd* _auto_1147_1, RogueClassProperty* _auto_1148_2, RogueInteger _auto_1149_3 );
 RogueString* RogueCmdCallStaticMethod__type_name( RogueClassCmdCallStaticMethod* THIS );
 RogueClassCmd* RogueCmdCallStaticMethod__clone( RogueClassCmdCallStaticMethod* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdCallStaticMethod__resolve( RogueClassCmdCallStaticMethod* THIS, RogueClassScope* scope_0 );

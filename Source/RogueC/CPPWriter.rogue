@@ -2215,6 +2215,40 @@ augment CmdNativeCode
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       forEach (line in LineReader(code))
-        writer.println line
+        # Replace $this and other local names ($x, $count, etc) with native
+        # variable reads.
+        local marker = line.locate( '$' )
+        while (marker)
+          local i1 = marker.value
+          if (i1 > 0) writer.print line.leftmost( i1 )
+          local i2 = i1+2
+          while (i2 < line.count and line[i2].is_identifier) ++i2
+
+          local id = line.substring( i1+1, i2-1 )
+          line = line.substring( i2 )
+
+          if (id == "$")
+            writer.print "$"
+          elseIf (id == "this")
+            writer.print "THIS"
+          else
+            local found = false
+            forEach (param in this_method.parameters)
+              if (param.name == id)
+                found = true
+                writer.print( param.cpp_name )
+                escapeForEach
+              endIf
+            endForEach
+            if (not found)
+              writer.print( '$' ).print( id )
+            endIf
+          endIf
+
+          marker = line.locate( '$' )
+        endWhile
+        if (line.count) writer.println line
+        else            writer.println
       endForEach
 endAugment
+

@@ -1,15 +1,14 @@
 class Test
   METHODS
     method init
+      forEach (x in 1..3) println x
       test_routine(3)
-      forEach (line in LineReader("now\nis\nthe\ntime"))
-        println line
-      endForEach
 
   ROUTINES
-    routine test_routine( x:Integer )
+    routine test_routine( xyz0:Integer )
       native @|printf( "Hello World!\n" );
-              |printf( "%d\n", 4 );
+              |printf( "%d\n", $xyz0 );
 endClass
 
 Test()
+

@@ -77,6 +77,9 @@ class String [native functional]
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
+    method from( i1:Integer )->String
+      return substring( i1 )
+
     method from_first( ch:Character )->String
       local i = locate( ch )
       if (not i) return ""

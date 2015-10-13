@@ -4165,7 +4165,8 @@ endClass
 
 class CmdNativeCode : Cmd
   PROPERTIES
-    code : String
+    code        : String
+    this_method : Method
 
   METHODS
     method init( t, code )
@@ -4177,6 +4178,7 @@ class CmdNativeCode : Cmd
       return false
 
     method resolve( scope:Scope )->Cmd
+      this_method = scope.this_method
       return this
 
     method trace_used_code
