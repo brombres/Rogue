@@ -641,7 +641,6 @@ struct RogueString : RogueObject
   static void         print( RogueString* st );
   static void         print( RogueCharacter* characters, int count );
 
-  RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
   RogueOptionalInteger locate( RogueCharacter ch, RogueOptionalInteger optional_i1 );
   RogueOptionalInteger locate( RogueString* other, RogueOptionalInteger optional_i1 );
@@ -4144,6 +4143,7 @@ RogueString* RogueString__from( RogueString* THIS, RogueInteger i1_0, RogueInteg
 RogueString* RogueString__from_first( RogueString* THIS, RogueCharacter ch_0 );
 RogueCharacter RogueString__last( RogueString* THIS );
 RogueString* RogueString__leftmost( RogueString* THIS, RogueInteger n_0 );
+RogueInteger RogueString__operatorLESSTHANGREATERTHAN( RogueString* THIS, RogueString* other_0 );
 RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueObject* value_0 );
 RogueClassStringReader* RogueString__reader( RogueString* THIS );
 RogueString* RogueString__replace( RogueString* THIS, RogueCharacter existing_ch_0, RogueCharacter replacement_ch_1 );

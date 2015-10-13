@@ -195,38 +195,6 @@ RogueString* RogueString::create( RogueCharacterList* characters )
 }
 
 
-
-RogueInteger RogueString::compare_to( RogueString* other )
-{
-  if (this == other) return 0;
-
-  RogueInteger other_count = other->count;
-  RogueInteger limit = count;
-
-  int result;
-  if (limit == other_count)
-  {
-    // Strings are same length
-    result = memcmp( characters, other->characters, limit * sizeof(RogueCharacter) );
-    if (result == 0) return 0;
-  }
-  else
-  {
-    // Strings differ in length.  Compare the part that matches first.
-    if (limit > other_count) limit = other_count;
-    result = memcmp( characters, other->characters, limit * sizeof(RogueCharacter) );
-    if (result == 0)
-    {
-      // Equal so far - the shorter string comes before the longer one.
-      if (limit == other_count) return 1;
-      return -1;
-    }
-  }
-  if (result < 0) return -1;
-  else            return 1;
-}
-
-
 RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_index )
 {
   RogueInteger other_count = substring->count;
@@ -12549,6 +12517,36 @@ RogueString* RogueString__leftmost( RogueString* THIS, RogueInteger n_0 )
   }
 }
 
+RogueInteger RogueString__operatorLESSTHANGREATERTHAN( RogueString* THIS, RogueString* other_0 )
+{
+  if (THIS == other_0) return 0;
+
+  RogueInteger other_count = other_0->count;
+  RogueInteger limit = THIS->count;
+
+  int result;
+  if (limit == other_count)
+  {
+    // Strings are same length
+    result = memcmp( THIS->characters, other_0->characters, limit * sizeof(RogueCharacter) );
+    if (result == 0) return 0;
+  }
+  else
+  {
+    // Strings differ in length.  Compare the part that matches first.
+    if (limit > other_count) limit = other_count;
+    result = memcmp( THIS->characters, other_0->characters, limit * sizeof(RogueCharacter) );
+    if (result == 0)
+    {
+      // Equal so far - the shorter string comes before the longer one.
+      if (limit == other_count) return 1;
+      return -1;
+    }
+  }
+  if (result < 0) return -1;
+  else            return 1;
+}
+
 RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueObject* value_0 )
 {
   if (!!(value_0))
@@ -13288,7 +13286,7 @@ RogueOptionalInteger RogueStringList__locate( RogueStringList* THIS, RogueString
     RogueInteger i_2 = (0);
     for (;i_2 < _auto_43_1->count;++i_2)
     {
-      if (value_0->compare_to(((RogueString*)(THIS->data->objects[i_2]))) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( value_0, ((RogueString*)(THIS->data->objects[i_2])) ))) == 0)
       {
         return (RogueOptionalInteger)(RogueOptionalInteger( i_2 ));
       }
@@ -13536,7 +13534,7 @@ void RogueRogueC__launch( RogueClassRogueC* THIS )
 
 void RogueRogueC__write_output( RogueClassRogueC* THIS )
 {
-  if (THIS->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+  if (((RogueString__operatorLESSTHANGREATERTHAN( THIS->target, Rogue_program.literal_strings[1] ))) == 0)
   {
     RogueRogueC__write_cpp( THIS );
     return;
@@ -13652,7 +13650,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
       arg_3 = ((RogueString*)((RogueString__before_first( arg_3, (RogueCharacter)'=' ))));
       if (((RogueString__begins_with( arg_3, Rogue_program.literal_strings[3] ))))
       {
-        if (arg_3->compare_to(Rogue_program.literal_strings[4]) == 0)
+        if (((RogueString__operatorLESSTHANGREATERTHAN( arg_3, Rogue_program.literal_strings[4] ))) == 0)
         {
           if (value_0->count == 0)
           {
@@ -13660,12 +13658,12 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           THIS->output_filepath = value_0;
         }
-        else if (arg_3->compare_to(Rogue_program.literal_strings[6]) == 0)
+        else if (((RogueString__operatorLESSTHANGREATERTHAN( arg_3, Rogue_program.literal_strings[6] ))) == 0)
         {
           THIS->generate_main = true;
           THIS->execute_args = value_0;
         }
-        else if (arg_3->compare_to(Rogue_program.literal_strings[7]) == 0)
+        else if (((RogueString__operatorLESSTHANGREATERTHAN( arg_3, Rogue_program.literal_strings[7] ))) == 0)
         {
           if (!!(value_0->count))
           {
@@ -13673,7 +13671,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           THIS->generate_main = true;
         }
-        else if (arg_3->compare_to(Rogue_program.literal_strings[9]) == 0)
+        else if (((RogueString__operatorLESSTHANGREATERTHAN( arg_3, Rogue_program.literal_strings[9] ))) == 0)
         {
           if (!(!!(value_0->count)))
           {
@@ -15073,7 +15071,7 @@ void RogueTemplate__instantiate_list( RogueClassTemplate* THIS, RogueClassType* 
       RogueClassToken* template_t_5 = (((RogueClassToken*)(_auto_251_3->data->objects[_auto_252_4])));
       if (template_t_5->_type == RogueClassTokenType::placeholder_id)
       {
-        if ((call_ROGUEM40( 1, (RogueClassToken*)(template_t_5) ))->compare_to(Rogue_program.literal_strings[271]) == 0)
+        if (((RogueString__operatorLESSTHANGREATERTHAN( (call_ROGUEM40( 1, (RogueClassToken*)(template_t_5) )), Rogue_program.literal_strings[271] ))) == 0)
         {
           RogueTokenList__add( instance_tokens_2, ((RogueTokenType__create_token( RogueClassTokenType::identifier, template_t_5, type_0->_element_type->name ))) );
         }
@@ -15104,7 +15102,7 @@ void RogueTemplate__instantiate_optional( RogueClassTemplate* THIS, RogueClassTy
       RogueClassToken* template_t_5 = (((RogueClassToken*)(_auto_253_3->data->objects[_auto_254_4])));
       if (template_t_5->_type == RogueClassTokenType::placeholder_id)
       {
-        if ((call_ROGUEM40( 1, (RogueClassToken*)(template_t_5) ))->compare_to(Rogue_program.literal_strings[271]) == 0)
+        if (((RogueString__operatorLESSTHANGREATERTHAN( (call_ROGUEM40( 1, (RogueClassToken*)(template_t_5) )), Rogue_program.literal_strings[271] ))) == 0)
         {
           RogueTokenList__add( instance_tokens_2, ((RogueTokenType__create_token( RogueClassTokenType::identifier, template_t_5, type_0->_element_type->name ))) );
         }
@@ -15242,7 +15240,7 @@ RogueClassString_TemplateTableEntry* RogueString_TemplateTable__find( RogueClass
   RogueClassString_TemplateTableEntry* entry_2 = (((RogueClassString_TemplateTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_TemplateTableEntry*)(entry_2);
     }
@@ -15272,7 +15270,7 @@ void RogueString_TemplateTable__set( RogueClassString_TemplateTable* THIS, Rogue
   RogueClassString_TemplateTableEntry* entry_4 = (((RogueClassString_TemplateTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -15346,7 +15344,7 @@ RogueClassString_AugmentListTableEntry* RogueString_AugmentListTable__find( Rogu
   RogueClassString_AugmentListTableEntry* entry_2 = (((RogueClassString_AugmentListTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_AugmentListTableEntry*)(entry_2);
     }
@@ -15376,7 +15374,7 @@ void RogueString_AugmentListTable__set( RogueClassString_AugmentListTable* THIS,
   RogueClassString_AugmentListTableEntry* entry_4 = (((RogueClassString_AugmentListTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -15652,11 +15650,11 @@ RogueClassCmdLabel* RogueMethod__begin_label( RogueClassMethod* THIS, RogueClass
       return (RogueClassCmdLabel*)(THIS->cur_label);
     }
   }
-  else if ((label_name_1->compare_to(Rogue_program.literal_strings[245]) == 0 && ((RogueString_CmdLabelTable__contains( THIS->label_lookup, label_name_1 )))))
+  else if ((((RogueString__operatorLESSTHANGREATERTHAN( label_name_1, Rogue_program.literal_strings[245] ))) == 0 && ((RogueString_CmdLabelTable__contains( THIS->label_lookup, label_name_1 )))))
   {
     throw ((RogueToken__error( label_t_0, Rogue_program.literal_strings[246] )));
   }
-  else if ((label_name_1->compare_to(Rogue_program.literal_strings[247]) == 0 && ((RogueString_CmdLabelTable__contains( THIS->label_lookup, label_name_1 )))))
+  else if ((((RogueString__operatorLESSTHANGREATERTHAN( label_name_1, Rogue_program.literal_strings[247] ))) == 0 && ((RogueString_CmdLabelTable__contains( THIS->label_lookup, label_name_1 )))))
   {
     throw ((RogueToken__error( ((RogueString_CmdLabelTable__get( THIS->label_lookup, label_name_1 )))->t, Rogue_program.literal_strings[248] )));
   }
@@ -15728,7 +15726,7 @@ RogueLogical RogueMethod__is_task_conversion( RogueClassMethod* THIS )
 
 RogueLogical RogueMethod__omit_output( RogueClassMethod* THIS )
 {
-  return (RogueLogical)((((((RogueMethod__is_native( THIS ))) || ((RogueMethod__is_inline( THIS )))) || !(THIS->is_used)) || ((((RogueMethod__is_generated( THIS ))) && THIS->name->compare_to(Rogue_program.literal_strings[272]) == 0) && ((RogueType__is_compound( THIS->type_context ))))));
+  return (RogueLogical)((((((RogueMethod__is_native( THIS ))) || ((RogueMethod__is_inline( THIS )))) || !(THIS->is_used)) || ((((RogueMethod__is_generated( THIS ))) && ((RogueString__operatorLESSTHANGREATERTHAN( THIS->name, Rogue_program.literal_strings[272] ))) == 0) && ((RogueType__is_compound( THIS->type_context ))))));
 }
 
 RogueClassMethod* RogueMethod__organize( RogueClassMethod* THIS, RogueLogical add_to_lookup_0 )
@@ -15738,7 +15736,7 @@ RogueClassMethod* RogueMethod__organize( RogueClassMethod* THIS, RogueLogical ad
     return (RogueClassMethod*)(THIS);
   }
   THIS->organized = true;
-  if (THIS->name->compare_to(Rogue_program.literal_strings[273]) == 0)
+  if (((RogueString__operatorLESSTHANGREATERTHAN( THIS->name, Rogue_program.literal_strings[273] ))) == 0)
   {
     if (((RogueType__is_compound( THIS->type_context ))))
     {
@@ -16235,7 +16233,7 @@ RogueClassString_MethodListTableEntry* RogueString_MethodListTable__find( RogueC
   RogueClassString_MethodListTableEntry* entry_2 = (((RogueClassString_MethodListTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_MethodListTableEntry*)(entry_2);
     }
@@ -16265,7 +16263,7 @@ void RogueString_MethodListTable__set( RogueClassString_MethodListTable* THIS, R
   RogueClassString_MethodListTableEntry* entry_4 = (((RogueClassString_MethodListTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -18055,7 +18053,7 @@ RogueClassString_TypeTableEntry* RogueString_TypeTable__find( RogueClassString_T
   RogueClassString_TypeTableEntry* entry_2 = (((RogueClassString_TypeTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_TypeTableEntry*)(entry_2);
     }
@@ -18085,7 +18083,7 @@ void RogueString_TypeTable__set( RogueClassString_TypeTable* THIS, RogueString* 
   RogueClassString_TypeTableEntry* entry_4 = (((RogueClassString_TypeTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -18164,7 +18162,7 @@ RogueClassString_IntegerTableEntry* RogueString_IntegerTable__find( RogueClassSt
   RogueClassString_IntegerTableEntry* entry_2 = (((RogueClassString_IntegerTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_IntegerTableEntry*)(entry_2);
     }
@@ -18194,7 +18192,7 @@ void RogueString_IntegerTable__set( RogueClassString_IntegerTable* THIS, RogueSt
   RogueClassString_IntegerTableEntry* entry_4 = (((RogueClassString_IntegerTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -19674,7 +19672,7 @@ RogueClassString_MethodTableEntry* RogueString_MethodTable__find( RogueClassStri
   RogueClassString_MethodTableEntry* entry_2 = (((RogueClassString_MethodTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_MethodTableEntry*)(entry_2);
     }
@@ -19704,7 +19702,7 @@ void RogueString_MethodTable__set( RogueClassString_MethodTable* THIS, RogueStri
   RogueClassString_MethodTableEntry* entry_4 = (((RogueClassString_MethodTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -20086,7 +20084,7 @@ RogueClassString_LogicalTableEntry* RogueString_LogicalTable__find( RogueClassSt
   RogueClassString_LogicalTableEntry* entry_2 = (((RogueClassString_LogicalTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_LogicalTableEntry*)(entry_2);
     }
@@ -20116,7 +20114,7 @@ void RogueString_LogicalTable__set( RogueClassString_LogicalTable* THIS, RogueSt
   RogueClassString_LogicalTableEntry* entry_4 = (((RogueClassString_LogicalTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -20220,7 +20218,7 @@ RogueLogical RogueParser__consume( RogueClassParser* THIS, RogueString* identifi
   {
     return (RogueLogical)(false);
   }
-  if ((call_ROGUEM40( 1, (RogueClassToken*)(t_1) ))->compare_to(identifier_0) != 0)
+  if (((RogueString__operatorLESSTHANGREATERTHAN( (call_ROGUEM40( 1, (RogueClassToken*)(t_1) )), identifier_0 ))) != 0)
   {
     return (RogueLogical)(false);
   }
@@ -20863,11 +20861,11 @@ RogueLogical RogueParser__parse_method( RogueClassParser* THIS, RogueLogical as_
   RogueString* name_2 = (((RogueParser__read_identifier( THIS, false ))));
   RogueClassType* return_type_3 = 0;
   {
-    if (name_2->compare_to(Rogue_program.literal_strings[284]) == 0)
+    if (((RogueString__operatorLESSTHANGREATERTHAN( name_2, Rogue_program.literal_strings[284] ))) == 0)
     {
       name_2 = ((RogueString*)name_2->plus((call_ROGUEM40( 1, (RogueClassToken*)(((RogueTokenReader__read( THIS->reader )))) ))));
     }
-    else if (name_2->compare_to(Rogue_program.literal_strings[285]) == 0)
+    else if (((RogueString__operatorLESSTHANGREATERTHAN( name_2, Rogue_program.literal_strings[285] ))) == 0)
     {
       RogueParser__must_consume( THIS, RogueClassTokenType::symbol_arrow, ((RogueString*)(NULL)) );
       return_type_3 = ((RogueClassType*)((Rogue_Parser__parse_type( THIS ))));
@@ -21461,7 +21459,7 @@ RogueString* Rogue_Parser__parse_possible_type( RogueClassParser* THIS )
   {
     name_1 = ((RogueString*)name_1->plus(((RogueParser__parse_specialization_string( THIS )))));
   }
-  else if (name_1->compare_to(Rogue_program.literal_strings[226]) == 0)
+  else if (((RogueString__operatorLESSTHANGREATERTHAN( name_1, Rogue_program.literal_strings[226] ))) == 0)
   {
     RogueTypeList* parameter_types_2 = 0;
     RogueClassType* return_type_3 = 0;
@@ -21635,7 +21633,7 @@ RogueClassCmd* RogueParser__parse_for_each( RogueClassParser* THIS )
     else
     {
       RogueString* index_var_name_4 = 0;
-      if (access_3->name->compare_to(Rogue_program.literal_strings[233]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( access_3->name, Rogue_program.literal_strings[233] ))) == 0)
       {
         throw ((RogueToken__error( access_3->t, Rogue_program.literal_strings[234] )));
       }
@@ -22202,7 +22200,7 @@ RogueClassCmd* RogueParser__parse_access( RogueClassParser* THIS, RogueClassToke
     t_0 = ((RogueClassToken*)((RogueParser__peek( THIS ))));
     RogueString* id_3 = (((RogueParser__read_identifier( THIS, false ))));
     {
-      if (id_3->compare_to(Rogue_program.literal_strings[223]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( id_3, Rogue_program.literal_strings[223] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdDefaultValue__init( ((RogueClassCmdDefaultValue*)Rogue_program.type_CmdDefaultValue->create_and_init_object()), t_0, context_type_2 ))))));
       }
@@ -22937,7 +22935,7 @@ RogueClassString_TokenTypeTableEntry* RogueString_TokenTypeTable__find( RogueCla
   RogueClassString_TokenTypeTableEntry* entry_2 = (((RogueClassString_TokenTypeTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_TokenTypeTableEntry*)(entry_2);
     }
@@ -22967,7 +22965,7 @@ void RogueString_TokenTypeTable__set( RogueClassString_TokenTypeTable* THIS, Rog
   RogueClassString_TokenTypeTableEntry* entry_4 = (((RogueClassString_TokenTypeTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -23201,7 +23199,7 @@ RogueClassString_TypeSpecializerTableEntry* RogueString_TypeSpecializerTable__fi
   RogueClassString_TypeSpecializerTableEntry* entry_2 = (((RogueClassString_TypeSpecializerTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_TypeSpecializerTableEntry*)(entry_2);
     }
@@ -23231,7 +23229,7 @@ void RogueString_TypeSpecializerTable__set( RogueClassString_TypeSpecializerTabl
   RogueClassString_TypeSpecializerTableEntry* entry_4 = (((RogueClassString_TypeSpecializerTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -23653,7 +23651,7 @@ RogueClassString_CmdLabelTableEntry* RogueString_CmdLabelTable__find( RogueClass
   RogueClassString_CmdLabelTableEntry* entry_2 = (((RogueClassString_CmdLabelTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_CmdLabelTableEntry*)(entry_2);
     }
@@ -23683,7 +23681,7 @@ void RogueString_CmdLabelTable__set( RogueClassString_CmdLabelTable* THIS, Rogue
   RogueClassString_CmdLabelTableEntry* entry_4 = (((RogueClassString_CmdLabelTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -23959,7 +23957,7 @@ RogueClassCmd* RogueCmdAccess__resolve( RogueClassCmdAccess* THIS, RogueClassSco
   {
     {
       RogueString* _auto_815_16 = (THIS->name);
-      if (_auto_815_16->compare_to(Rogue_program.literal_strings[696]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( _auto_815_16, Rogue_program.literal_strings[696] ))) == 0)
       {
         if ((!!(THIS->args) && !!(THIS->args->count)))
         {
@@ -23967,7 +23965,7 @@ RogueClassCmd* RogueCmdAccess__resolve( RogueClassCmdAccess* THIS, RogueClassSco
         }
         return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLogicalizeOptionalValue__init( ((RogueClassCmdLogicalizeOptionalValue*)Rogue_program.type_CmdLogicalizeOptionalValue->create_and_init_object()), THIS->t, THIS->context, true ))))));
       }
-      else if (_auto_815_16->compare_to(Rogue_program.literal_strings[698]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( _auto_815_16, Rogue_program.literal_strings[698] ))) == 0)
       {
         if ((!!(THIS->args) && !!(THIS->args->count)))
         {
@@ -24030,7 +24028,7 @@ RogueClassCmd* RogueCmdAccess__resolve_assignment( RogueClassCmdAccess* THIS, Ro
       RogueClassCmd* setter_3 = (((RogueScope__resolve_call( scope_0, scope_0->_this_type, ((RogueCmdAccess__init( ((RogueClassCmdAccess*)Rogue_program.type_CmdAccess->create_and_init_object()), THIS->t, ((RogueClassCmd*)(NULL)), setter_name_2, ((RogueCmdArgs__init( ((RogueClassCmdArgs*)Rogue_program.type_CmdArgs->create_and_init_object()), new_value_1 ))) ))), false, false ))));
       if (!!(setter_3))
       {
-        if (scope_0->this_method->name->compare_to(setter_name_2) == 0)
+        if (((RogueString__operatorLESSTHANGREATERTHAN( scope_0->this_method->name, setter_name_2 ))) == 0)
         {
           throw ((RogueToken__error( THIS->t, Rogue_program.literal_strings[752]->plus(THIS->name)->plus(Rogue_program.literal_strings[753])->plus(THIS->name)->plus(Rogue_program.literal_strings[754]) )));
         }
@@ -24203,7 +24201,7 @@ RogueClassCmdAccess* RogueCmdAccess__init( RogueClassCmdAccess* THIS, RogueClass
 void RogueCmdAccess__check_for_recursive_getter( RogueClassCmdAccess* THIS, RogueClassScope* scope_0 )
 {
   RogueClassType* this_type_1 = (scope_0->_this_type);
-  if (THIS->name->compare_to(scope_0->this_method->name) != 0)
+  if (((RogueString__operatorLESSTHANGREATERTHAN( THIS->name, scope_0->this_method->name ))) != 0)
   {
     return;
   }
@@ -24328,7 +24326,7 @@ RogueClassLocal* RogueScope__find_local( RogueClassScope* THIS, RogueString* nam
   RogueInteger i_1 = ((THIS->local_list->count - 1));
   while (i_1 >= 0)
   {
-    if (((RogueClassLocal*)(THIS->local_list->data->objects[i_1]))->name->compare_to(name_0) == 0)
+    if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassLocal*)(THIS->local_list->data->objects[i_1]))->name, name_0 ))) == 0)
     {
       return (RogueClassLocal*)(((RogueClassLocal*)(THIS->local_list->data->objects[i_1])));
     }
@@ -24464,7 +24462,7 @@ RogueClassCmd* RogueScope__resolve_call( RogueClassScope* THIS, RogueClassType* 
     {
       {
         RogueString* _auto_846_20 = (m_4->name);
-        if (_auto_846_20->compare_to(Rogue_program.literal_strings[688]) == 0)
+        if (((RogueString__operatorLESSTHANGREATERTHAN( _auto_846_20, Rogue_program.literal_strings[688] ))) == 0)
         {
           if ((!!(args_7) && !!(args_7->count)))
           {
@@ -25925,7 +25923,7 @@ RogueClassString_CmdTableEntry* RogueString_CmdTable__find( RogueClassString_Cmd
   RogueClassString_CmdTableEntry* entry_2 = (((RogueClassString_CmdTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_CmdTableEntry*)(entry_2);
     }
@@ -25955,7 +25953,7 @@ void RogueString_CmdTable__set( RogueClassString_CmdTable* THIS, RogueString* ke
   RogueClassString_CmdTableEntry* entry_4 = (((RogueClassString_CmdTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -26148,7 +26146,7 @@ RogueClassString_PropertyTableEntry* RogueString_PropertyTable__find( RogueClass
   RogueClassString_PropertyTableEntry* entry_2 = (((RogueClassString_PropertyTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_PropertyTableEntry*)(entry_2);
     }
@@ -26178,7 +26176,7 @@ void RogueString_PropertyTable__set( RogueClassString_PropertyTable* THIS, Rogue
   RogueClassString_PropertyTableEntry* entry_4 = (((RogueClassString_PropertyTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;
@@ -27681,31 +27679,31 @@ RogueClassTokenType* Rogue_Tokenizer__get_symbol_token_type( RogueClassTokenizer
   {
     RogueString* id_1 = (((RogueTokenizer__read_identifier( THIS ))));
     {
-      if (id_1->compare_to(Rogue_program.literal_strings[207]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[207] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_define );
       }
-      else if (id_1->compare_to(Rogue_program.literal_strings[208]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[208] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_include );
       }
-      else if (id_1->compare_to(Rogue_program.literal_strings[108]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[108] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_if );
       }
-      else if (id_1->compare_to(Rogue_program.literal_strings[71]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[71] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_elseIf );
       }
-      else if (id_1->compare_to(Rogue_program.literal_strings[70]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[70] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_else );
       }
-      else if (id_1->compare_to(Rogue_program.literal_strings[77]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[77] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_endIf );
       }
-      else if (id_1->compare_to(Rogue_program.literal_strings[209]) == 0)
+      else if (((RogueString__operatorLESSTHANGREATERTHAN( id_1, Rogue_program.literal_strings[209] ))) == 0)
       {
         RogueTokenizer__add_new_token( THIS, RogueClassTokenType::directive_requisite );
       }
@@ -30789,14 +30787,14 @@ RogueClassCmd* RogueCmdLocalOpWithAssign__resolve( RogueClassCmdLocalOpWithAssig
     RogueClassTokenType* _auto_1060_4 = (THIS->op);
     if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)_auto_1060_4), ((RogueObject*)(RogueClassTokenType::symbol_caret_equals)) ))))
     {
-      if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target, Rogue_program.literal_strings[1] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueCmdWriteLocal__resolve( ((RogueCmdWriteLocal__init( ((RogueClassCmdWriteLocal*)Rogue_program.type_CmdWriteLocal->create_and_init_object()), THIS->t, THIS->local_info, ((RogueClassCmd*)(((RogueCmdBinary__init( ((RogueClassCmdBinary*)((RogueClassCmdPower*)Rogue_program.type_CmdPower->create_and_init_object())), THIS->t, ((RogueClassCmd*)(((RogueCmdReadLocal__init( ((RogueClassCmdReadLocal*)Rogue_program.type_CmdReadLocal->create_and_init_object()), THIS->t, THIS->local_info ))))), THIS->new_value ))))) ))), scope_0 ))));
       }
     }
     else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)_auto_1060_4), ((RogueObject*)(RogueClassTokenType::symbol_percent_equals)) ))))
     {
-      if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target, Rogue_program.literal_strings[1] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueCmdWriteLocal__resolve( ((RogueCmdWriteLocal__init( ((RogueClassCmdWriteLocal*)Rogue_program.type_CmdWriteLocal->create_and_init_object()), THIS->t, THIS->local_info, ((RogueClassCmd*)(((RogueCmdBinary__init( ((RogueClassCmdBinary*)((RogueClassCmdMod*)Rogue_program.type_CmdMod->create_and_init_object())), THIS->t, ((RogueClassCmd*)(((RogueCmdReadLocal__init( ((RogueClassCmdReadLocal*)Rogue_program.type_CmdReadLocal->create_and_init_object()), THIS->t, THIS->local_info ))))), THIS->new_value ))))) ))), scope_0 ))));
       }
@@ -32402,7 +32400,7 @@ RogueClassCmdCreateCallback* RogueCmdCreateCallback__clone( RogueClassCmdCreateC
 
 RogueClassCmd* RogueCmdCreateCallback__resolve( RogueClassCmdCreateCallback* THIS, RogueClassScope* scope_0 )
 {
-  if ((THIS->name->compare_to(Rogue_program.literal_strings[285]) == 0 && !!(THIS->_return_type)))
+  if ((((RogueString__operatorLESSTHANGREATERTHAN( THIS->name, Rogue_program.literal_strings[285] ))) == 0 && !!(THIS->_return_type)))
   {
     THIS->name = Rogue_program.literal_strings[286]->plus(THIS->_return_type->name);
   }
@@ -33270,11 +33268,11 @@ void RogueCmdNativeCode__write_cpp( RogueClassCmdNativeCode* THIS, RogueClassCPP
         }
         RogueString* id_5 = (((RogueString__from( line_8, (i1_3 + 1), (i2_4 - 1) ))));
         line_8 = ((RogueString*)((RogueString__from( line_8, i2_4 ))));
-        if (id_5->compare_to(Rogue_program.literal_strings[210]) == 0)
+        if (((RogueString__operatorLESSTHANGREATERTHAN( id_5, Rogue_program.literal_strings[210] ))) == 0)
         {
           RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[210] );
         }
-        else if (id_5->compare_to(Rogue_program.literal_strings[142]) == 0)
+        else if (((RogueString__operatorLESSTHANGREATERTHAN( id_5, Rogue_program.literal_strings[142] ))) == 0)
         {
           RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[763] );
         }
@@ -33287,7 +33285,7 @@ void RogueCmdNativeCode__write_cpp( RogueClassCmdNativeCode* THIS, RogueClassCPP
             for (;_auto_1109_10 < _auto_1108_9->count;++_auto_1109_10)
             {
               RogueClassLocal* param_11 = (((RogueClassLocal*)(_auto_1108_9->data->objects[_auto_1109_10])));
-              if (param_11->name->compare_to(id_5) == 0)
+              if (((RogueString__operatorLESSTHANGREATERTHAN( param_11->name, id_5 ))) == 0)
               {
                 found_6 = ((RogueLogical)true);
                 RogueCPPWriter__print( writer_0, ((RogueLocal__cpp_name( param_11 ))) );
@@ -34308,14 +34306,14 @@ RogueClassCmd* RogueCmdOpAssignSetting__resolve( RogueClassCmdOpAssignSetting* T
     RogueClassTokenType* _auto_1150_4 = (THIS->op);
     if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)_auto_1150_4), ((RogueObject*)(RogueClassTokenType::symbol_caret_equals)) ))))
     {
-      if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target, Rogue_program.literal_strings[1] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueCmdWriteSetting__resolve( ((RogueCmdWriteSetting__init( ((RogueClassCmdWriteSetting*)Rogue_program.type_CmdWriteSetting->create_and_init_object()), THIS->t, THIS->setting_info, ((RogueClassCmd*)(((RogueCmdBinary__init( ((RogueClassCmdBinary*)((RogueClassCmdPower*)Rogue_program.type_CmdPower->create_and_init_object())), THIS->t, ((RogueClassCmd*)(((RogueCmdReadSetting__init( ((RogueClassCmdReadSetting*)Rogue_program.type_CmdReadSetting->create_and_init_object()), THIS->t, THIS->setting_info ))))), THIS->new_value ))))) ))), scope_0 ))));
       }
     }
     else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)_auto_1150_4), ((RogueObject*)(RogueClassTokenType::symbol_percent_equals)) ))))
     {
-      if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target, Rogue_program.literal_strings[1] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueCmdWriteSetting__resolve( ((RogueCmdWriteSetting__init( ((RogueClassCmdWriteSetting*)Rogue_program.type_CmdWriteSetting->create_and_init_object()), THIS->t, THIS->setting_info, ((RogueClassCmd*)(((RogueCmdBinary__init( ((RogueClassCmdBinary*)((RogueClassCmdMod*)Rogue_program.type_CmdMod->create_and_init_object())), THIS->t, ((RogueClassCmd*)(((RogueCmdReadSetting__init( ((RogueClassCmdReadSetting*)Rogue_program.type_CmdReadSetting->create_and_init_object()), THIS->t, THIS->setting_info ))))), THIS->new_value ))))) ))), scope_0 ))));
       }
@@ -34409,14 +34407,14 @@ RogueClassCmd* RogueCmdOpAssignProperty__resolve( RogueClassCmdOpAssignProperty*
     RogueClassTokenType* _auto_1151_4 = (THIS->op);
     if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)_auto_1151_4), ((RogueObject*)(RogueClassTokenType::symbol_caret_equals)) ))))
     {
-      if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target, Rogue_program.literal_strings[1] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueCmdWriteProperty__resolve( ((RogueCmdWriteProperty__init( ((RogueClassCmdWriteProperty*)Rogue_program.type_CmdWriteProperty->create_and_init_object()), THIS->t, THIS->context, THIS->property_info, ((RogueClassCmd*)(((RogueCmdBinary__init( ((RogueClassCmdBinary*)((RogueClassCmdPower*)Rogue_program.type_CmdPower->create_and_init_object())), THIS->t, ((RogueClassCmd*)(((RogueCmdReadProperty__init( ((RogueClassCmdReadProperty*)Rogue_program.type_CmdReadProperty->create_and_init_object()), THIS->t, ((RogueCmd__clone( ((RogueClassCmd*)THIS), THIS->context, ((RogueClassCloneArgs*)(NULL)) ))), THIS->property_info ))))), THIS->new_value ))))) ))), scope_0 ))));
       }
     }
     else if (((RogueObject__operatorEQUALSEQUALS( ((RogueObject*)_auto_1151_4), ((RogueObject*)(RogueClassTokenType::symbol_percent_equals)) ))))
     {
-      if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target->compare_to(Rogue_program.literal_strings[1]) == 0)
+      if (((RogueString__operatorLESSTHANGREATERTHAN( ((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->target, Rogue_program.literal_strings[1] ))) == 0)
       {
         return (RogueClassCmd*)(((RogueCmdWriteProperty__resolve( ((RogueCmdWriteProperty__init( ((RogueClassCmdWriteProperty*)Rogue_program.type_CmdWriteProperty->create_and_init_object()), THIS->t, THIS->context, THIS->property_info, ((RogueClassCmd*)(((RogueCmdBinary__init( ((RogueClassCmdBinary*)((RogueClassCmdMod*)Rogue_program.type_CmdMod->create_and_init_object())), THIS->t, ((RogueClassCmd*)(((RogueCmdReadProperty__init( ((RogueClassCmdReadProperty*)Rogue_program.type_CmdReadProperty->create_and_init_object()), THIS->t, ((RogueCmd__clone( ((RogueClassCmd*)THIS), THIS->context, ((RogueClassCloneArgs*)(NULL)) ))), THIS->property_info ))))), THIS->new_value ))))) ))), scope_0 ))));
       }
@@ -35584,7 +35582,7 @@ RogueClassString_TokenListTableEntry* RogueString_TokenListTable__find( RogueCla
   RogueClassString_TokenListTableEntry* entry_2 = (((RogueClassString_TokenListTableEntry*)(THIS->bins->data->objects[(hash_1 & THIS->bin_mask)])));
   while (!!(entry_2))
   {
-    if ((entry_2->hash == hash_1 && entry_2->key->compare_to(key_0) == 0))
+    if ((entry_2->hash == hash_1 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_2->key, key_0 ))) == 0))
     {
       return (RogueClassString_TokenListTableEntry*)(entry_2);
     }
@@ -35614,7 +35612,7 @@ void RogueString_TokenListTable__set( RogueClassString_TokenListTable* THIS, Rog
   RogueClassString_TokenListTableEntry* entry_4 = (((RogueClassString_TokenListTableEntry*)(THIS->bins->data->objects[index_3])));
   while (!!(entry_4))
   {
-    if ((entry_4->hash == hash_2 && entry_4->key->compare_to(key_0) == 0))
+    if ((entry_4->hash == hash_2 && ((RogueString__operatorLESSTHANGREATERTHAN( entry_4->key, key_0 ))) == 0))
     {
       entry_4->value = value_1;
       return;

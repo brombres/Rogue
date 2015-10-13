@@ -84,7 +84,7 @@ class String [native functional]
       $if ("C++")
         native @|// Clamp i1 and i2
                 |if ($i1 < 0) $i1 = 0;
-                |if ($i2 >= THIS->count) $i2 = THIS->count - 1;
+                |if ($i2 >= $this->count) $i2 = $this->count - 1;
                 |
                 |// Return empty quotes if zero-length
                 |if ($i1 > $i2) return Rogue_program.literal_strings[0]; // empty string
@@ -95,7 +95,7 @@ class String [native functional]
                 |
                 |// Copy character substring while computing hash code.
                 |RogueCharacter* dest = result->characters - 1;
-                |RogueCharacter* src  = (THIS->characters + $i1) - 1;
+                |RogueCharacter* src  = ($this->characters + $i1) - 1;
                 |RogueInteger hash_code = 0;
                 |while (--new_count >= 0)
                 |{
@@ -182,7 +182,34 @@ class String [native functional]
       $if ("C++") inlineNative '$this->plus($value)'
 
     method operator<>( other:String )->Integer
-      $if ("C++") inlineNative '$this->compare_to($other)'
+      $if ("C++")
+        native @|if ($this == $other) return 0;
+                |
+                |RogueInteger other_count = $other->count;
+                |RogueInteger limit = $this->count;
+                |
+                |int result;
+                |if (limit == other_count)
+                |{
+                |  // Strings are same length
+                |  result = memcmp( $this->characters, $other->characters, limit * sizeof(RogueCharacter) );
+                |  if (result == 0) return 0;
+                |}
+                |else
+                |{
+                |  // Strings differ in length.  Compare the part that matches first.
+                |  if (limit > other_count) limit = other_count;
+                |  result = memcmp( $this->characters, $other->characters, limit * sizeof(RogueCharacter) );
+                |  if (result == 0)
+                |  {
+                |    // Equal so far - the shorter string comes before the longer one.
+                |    if (limit == other_count) return 1;
+                |    return -1;
+                |  }
+                |}
+                |if (result < 0) return -1;
+                |else            return 1;
+      $endIf
 
     method operator+( value:Logical )->String
       if (value) return this + "true"

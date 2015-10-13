@@ -189,38 +189,6 @@ RogueString* RogueString::create( RogueCharacterList* characters )
 }
 
 
-
-RogueInteger RogueString::compare_to( RogueString* other )
-{
-  if (this == other) return 0;
-
-  RogueInteger other_count = other->count;
-  RogueInteger limit = count;
-
-  int result;
-  if (limit == other_count)
-  {
-    // Strings are same length
-    result = memcmp( characters, other->characters, limit * sizeof(RogueCharacter) );
-    if (result == 0) return 0;
-  }
-  else
-  {
-    // Strings differ in length.  Compare the part that matches first.
-    if (limit > other_count) limit = other_count;
-    result = memcmp( characters, other->characters, limit * sizeof(RogueCharacter) );
-    if (result == 0)
-    {
-      // Equal so far - the shorter string comes before the longer one.
-      if (limit == other_count) return 1;
-      return -1;
-    }
-  }
-  if (result < 0) return -1;
-  else            return 1;
-}
-
-
 RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_index )
 {
   RogueInteger other_count = substring->count;

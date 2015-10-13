@@ -638,7 +638,6 @@ struct RogueString : RogueObject
   static void         print( RogueString* st );
   static void         print( RogueCharacter* characters, int count );
 
-  RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
   RogueOptionalInteger locate( RogueCharacter ch, RogueOptionalInteger optional_i1 );
   RogueOptionalInteger locate( RogueString* other, RogueOptionalInteger optional_i1 );
