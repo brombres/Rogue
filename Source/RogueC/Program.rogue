@@ -240,14 +240,38 @@ class Program [requisite singleton]
         traced_new_methods =  false
 
         forEach (type in type_list)
-          forEach (m in type.method_list)
-            forEach (overriding_m in m.overriding_methods)
-              if (not overriding_m.is_used and overriding_m.type_context.is_used)
-                traced_new_methods = true
-                overriding_m.trace_used_code
-              endIf
+          #{
+          if (type.is_aspect)
+            # trace aspect types and methods
+            if (type.is_used)
+              forEach (m in type.method_list)
+                if (m.is_used)
+                  forEach (ic in m.incorporating_classes)
+                    if (ic.is_used)
+                      local im = ic.find_method( m.signature )
+                      if (not im.is_used)
+                        traced_new_methods = true
+                        im.trace_used_code
+                      endIf
+                    endIf
+                  endForEach
+                endIf
+              endForEach
+            endIf
+          else
+            }#
+            # Trace overriding methods
+            forEach (m in type.method_list)
+              #if (m.is_used)
+                forEach (overriding_m in m.overriding_methods)
+                  if (not overriding_m.is_used and overriding_m.type_context.is_used)
+                    traced_new_methods = true
+                    overriding_m.trace_used_code
+                  endIf
+                endForEach
+              #endIf
             endForEach
-          endForEach
+            #endIf
         endForEach
 
       endWhile

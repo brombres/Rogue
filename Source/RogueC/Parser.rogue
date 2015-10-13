@@ -2018,6 +2018,13 @@ class Parser
 
         return CmdCreateFunction( t, parameters, return_type, with_args, statements )
 
+      elseIf (consume(TokenType.keyword_native))
+        consume_eols
+        if (not next_is(TokenType.literal_string))
+          throw peek.error( "Literal string expected." )
+        endIf
+        return CmdNativeCode( t, read )
+
       else
         #throw peek.error( "Syntax error: unexpected '$'." (peek) )
         #trace peek.type

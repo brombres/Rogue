@@ -1,11 +1,15 @@
 class Test
   METHODS
     method init
-      println String[]->String.replace(',','|')
-      println String[].add("A")->String.replace(',','|')
-      println String[].add("A").add("B")->String.replace(',','|')
+      test_routine(3)
+      forEach (line in LineReader("now\nis\nthe\ntime"))
+        println line
+      endForEach
 
-      println "A,B,C".split(',').joined("...")
+  ROUTINES
+    routine test_routine( x:Integer )
+      native @|printf( "Hello World!\n" );
+              |printf( "%d\n", 4 );
 endClass
 
 Test()

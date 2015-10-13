@@ -4163,3 +4163,22 @@ class CmdLabel : Cmd
 
 endClass
 
+class CmdNativeCode : Cmd
+  PROPERTIES
+    code : String
+
+  METHODS
+    method init( t, code )
+
+    method clone( clone_args:CloneArgs )->CmdNativeCode
+      return CmdNativeCode( t, code )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method trace_used_code
+
+endClass

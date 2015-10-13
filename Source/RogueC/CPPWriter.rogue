@@ -1064,15 +1064,19 @@ augment Method
         writer.indent += 2
         if (incorporating_classes)
           forEach (ic in incorporating_classes)
-            writer.print("case ").print(ic.index).println(":")
-            if (return_type) writer.print( "  return " )
-            else              writer.print( "  " )
-            local m = ic.find_method(signature)
-            writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
-            forEach (param in parameters)
-              writer.print( ", " ).print( param.cpp_name )
-            endForEach
-            writer.println( " );" )
+            if (ic.is_used)
+              local m = ic.find_method(signature)
+              if (m.is_used)
+                writer.print("case ").print(ic.index).println(":")
+                if (return_type) writer.print( "  return " )
+                else              writer.print( "  " )
+                writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
+                forEach (param in parameters)
+                  writer.print( ", " ).print( param.cpp_name )
+                endForEach
+                writer.println( " );" )
+              endIf
+            endIf
           endForEach
         endIf
         if (return_type)
@@ -2207,3 +2211,12 @@ augment CmdLabel
       statements.write_cpp( writer, is_statement )
 endAugment
 
+augment CmdNativeCode
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      #{
+      forEach (line in LineReader(code))
+        writer.println line
+      endForEach
+      }#
+endAugment
