@@ -1521,9 +1521,9 @@ class CmdFormattedString : Cmd
         if (not i) throw t.error( "More arguments than format markers ('$') in formatted string." )
         if (i! > 0)
           cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i!))) )
-          fmt = fmt.substring(i!+1)
+          fmt = fmt.from(i!+1)
         else
-          fmt = fmt.substring(1)
+          fmt = fmt.from(1)
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
       endForEach

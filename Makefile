@@ -76,6 +76,10 @@ x3:
 	sleep 1
 	make remake
 
+revert:
+	git checkout Source/RogueC/Build && rm Programs/RogueC/roguec
+	make
+
 clean:
 	rm -rf Programs/RogueC
 	rm -f /usr/local/bin/roguec

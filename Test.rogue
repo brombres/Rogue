@@ -1,14 +1,3 @@
-class Test
-  METHODS
-    method init
-      forEach (x in 1..3) println x
-      test_routine(3)
-
-  ROUTINES
-    routine test_routine( xyz0:Integer )
-      native @|printf( "Hello World!\n" );
-              |printf( "%d\n", $xyz0 );
-endClass
-
-Test()
-
+println "01234567".from(3)
+println "01234567".from(3,4)
+println "01234567".substring(3,4)

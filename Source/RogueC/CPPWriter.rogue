@@ -232,7 +232,7 @@ augment Program
       local begins_with_code_prefix = false
       if (name.begins_with(code_prefix))
         begins_with_code_prefix = true
-        name = name.substring( code_prefix.count )
+        name = name.from( code_prefix.count )
       endIf
 
       # Convert "_*type" to "__*type"
@@ -247,7 +247,7 @@ augment Program
       # Type? -> OptionalType
       local i1 = name.locate('?')
       while (i1?)
-        name = "Optional" + name.leftmost(i1.value) + name.substring(i1.value+1)
+        name = "Optional" + name.leftmost(i1.value) + name.from(i1.value+1)
         i1 = name.locate('?')
       endWhile
 
@@ -257,9 +257,9 @@ augment Program
         local i2 = name.locate_last(">>")
         if (not i2?) escapeWhile
 
-        local before = name.substring(0,i1.value-1)
-        local after  = name.substring(i2.value+2)
-        local middle = name.substring(i1.value+2,i2.value-1)
+        local before = name.from(0,i1.value-1)
+        local after  = name.from(i2.value+2)
+        local middle = name.from(i1.value+2,i2.value-1)
 
         name = "$$$" (validate_cpp_name(middle),before,after)
         # Example:
@@ -276,7 +276,7 @@ augment Program
       #   StringIntegerTable[] -> StringIntegerTableList
       i1 = name.locate("[]")
       while (i1?)
-        name = name.substring(0,i1.value-1) + "List" + name.substring(i1.value+2)
+        name = name.from(0,i1.value-1) + "List" + name.from(i1.value+2)
         i1 = name.locate("[]")
       endWhile
 
@@ -1778,8 +1778,8 @@ augment CmdCallInlineNative
 
       local dollar = st.locate('$')
       while (dollar)
-        writer.print( st.substring(0,dollar!-1) )
-        st = st.substring( dollar!+1 )
+        writer.print( st.from(0,dollar!-1) )
+        st = st.from( dollar!+1 )
         
         local best_match : Local
         forEach (p in method_info.parameters)
@@ -1790,11 +1790,11 @@ augment CmdCallInlineNative
 
         if (best_match)
           args[ best_match.index ].write_cpp( writer )
-          st = st.substring( best_match.name.count )
+          st = st.from( best_match.name.count )
         else
           if (st.begins_with("this"))
             print_this( writer )
-            st = st.substring( 4 )
+            st = st.from( 4 )
           endIf
         endIf
 
@@ -2224,8 +2224,8 @@ augment CmdNativeCode
           local i2 = i1+2
           while (i2 < line.count and line[i2].is_identifier) ++i2
 
-          local id = line.substring( i1+1, i2-1 )
-          line = line.substring( i2 )
+          local id = line.from( i1+1, i2-1 )
+          line = line.from( i2 )
 
           if (id == "$")
             writer.print "$"

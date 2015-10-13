@@ -643,6 +643,8 @@ struct RogueString : RogueObject
 
   RogueInteger compare_to( RogueString* other );
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
+  RogueString* from( RogueInteger i1 );
+  RogueString* from( RogueInteger i1, RogueInteger i2 );
   RogueOptionalInteger locate( RogueCharacter ch, RogueOptionalInteger optional_i1 );
   RogueOptionalInteger locate( RogueString* other, RogueOptionalInteger optional_i1 );
   RogueOptionalInteger locate_last( RogueCharacter ch, RogueOptionalInteger i1 );
@@ -654,8 +656,7 @@ struct RogueString : RogueObject
   RogueString* plus( RogueLong value );
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
-  RogueString* substring( RogueInteger i1 );
-  RogueString* substring( RogueInteger i1, RogueInteger i2 );
+  RogueString* substring( RogueInteger i1, RogueInteger n );
   bool         to_c_string( char* buffer, int buffer_size );
   RogueInteger to_integer();
   RogueReal    to_real();

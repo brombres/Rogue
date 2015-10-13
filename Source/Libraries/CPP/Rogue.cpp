@@ -239,6 +239,39 @@ RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_inde
   return true;
 }
 
+RogueString* RogueString::from( RogueInteger i1 )
+{
+  return from( i1, count-1 );
+}
+
+RogueString* RogueString::from( RogueInteger i1, RogueInteger i2 )
+{
+  // Clamp i1 and i2
+  if (i1 < 0) i1 = 0;
+  if (i2 >= count) i2 = count - 1;
+
+  // Return empty quotes if zero-length
+  if (i1 > i2) return Rogue_program.literal_strings[0]; // empty string
+
+  int new_count = (i2 - i1) + 1;
+
+  RogueString* result = RogueString::create( new_count );
+
+  // Copy character substring while computing hash code.
+  RogueCharacter* dest = result->characters - 1;
+  RogueCharacter* src  = (characters + i1) - 1;
+  int hash_code = 0;
+  while (--new_count >= 0)
+  {
+    RogueCharacter ch = *(++src);
+    *(++dest) = ch;
+    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
+  }
+
+  result->hash_code = hash_code;
+  return result;
+}
+
 RogueOptionalInteger RogueString::locate( RogueCharacter ch, RogueOptionalInteger optional_i1 )
 {
   RogueInteger    limit = count;
@@ -410,6 +443,10 @@ RogueString* RogueString::plus( RogueString* other )
   return result;
 }
 
+RogueString* RogueString::substring( RogueInteger i1, RogueInteger n )
+{
+  return from( i1, i1+(n-1) );
+}
 
 bool RogueString::to_c_string( char* buffer, int buffer_size )
 {
@@ -454,39 +491,6 @@ RogueReal    RogueString::to_real()
   }
 }
 
-
-RogueString* RogueString::substring( RogueInteger i1 )
-{
-  return substring( i1, count-1 );
-}
-
-RogueString* RogueString::substring( RogueInteger i1, RogueInteger i2 )
-{
-  // Clamp i1 and i2
-  if (i1 < 0) i1 = 0;
-  if (i2 >= count) i2 = count - 1;
-
-  // Return empty quotes if zero-length
-  if (i1 > i2) return Rogue_program.literal_strings[0]; // empty string
-
-  int new_count = (i2 - i1) + 1;
-
-  RogueString* result = RogueString::create( new_count );
-
-  // Copy character substring while computing hash code.
-  RogueCharacter* dest = result->characters - 1;
-  RogueCharacter* src  = (characters + i1) - 1;
-  int hash_code = 0;
-  while (--new_count >= 0)
-  {
-    RogueCharacter ch = *(++src);
-    *(++dest) = ch;
-    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
-  }
-
-  result->hash_code = hash_code;
-  return result;
-}
 
 RogueString* RogueString::update_hash_code()
 {
