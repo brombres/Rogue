@@ -24,9 +24,6 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method contains( value:$DataType )->Logical
-      inline ListOps<<$DataType>>.contains( this, value )
-
     method add( value:$DataType )->$DataType[]
       reserve(1)[count] = value
       ++count
@@ -44,6 +41,9 @@ class List<<$DataType>> : GenericList
     method clear->$DataType[]
       count = 0
       return this
+
+    method contains( value:$DataType )->Logical
+      inline this.locate( value )?
 
     method first->$DataType
       inline this.data[0]
@@ -94,10 +94,16 @@ class List<<$DataType>> : GenericList
       return this.data[ count - 1 ]
 
     method locate( value:$DataType )->Integer?
-      inline ListOps<<$DataType>>.locate( this, value )
+      forEach (i of this)
+        if (value == this[i]) return i
+      endForEach
+      return null
 
     method locate_last( value:$DataType )->Integer?
-      inline ListOps<<$DataType>>.locate_last( this, value )
+      forEach (i of this step -1)
+        if (value == this[i]) return i
+      endForEach
+      return null
 
     method random->$DataType
       # Returns an element at random
@@ -159,22 +165,18 @@ class List<<$DataType>> : GenericList
       return buffer
 endClass
 
+augment String[]
+  METHODS
+    method joined( separator="\n":String )->String
+      local total_count = 0
+      forEach (line in this) total_count += line.count
 
-class ListOps<<$DataType>>
-  ROUTINES
-    routine contains( list:$DataType[], value:$DataType )->Logical
-      return locate( list, value )?
-
-    routine locate( list:$DataType[], value:$DataType )->Integer?
-      forEach (i of list)
-        if (value == list[i]) return i
+      local builder = StringBuilder( total_count )
+      forEach (line in this)
+        if (builder.count) builder.print( separator )
+        builder.print( line )
       endForEach
-      return null
 
-    routine locate_last( list:$DataType[], value:$DataType )->Integer?
-      forEach (i of list step -1)
-        if (value == list[i]) return i
-      endForEach
-      return null
-endClass
+      return builder->String
+endAugment
 

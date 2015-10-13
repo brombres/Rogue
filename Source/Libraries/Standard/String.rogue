@@ -173,6 +173,27 @@ class String [native functional]
     method reader->StringReader
       return StringReader( this )
 
+    method replace( existing_ch:Character, replacement_ch:Character )->String
+      contingent
+        forEach (ch in this)
+          necessary (ch != existing_ch)
+        endForEach
+
+      satisfied
+        # No changes required
+        return this
+
+      unsatisfied
+        local result = StringBuilder( count )
+        forEach (ch in this)
+          if (ch == existing_ch) result.print( replacement_ch )
+          else                   result.print( ch )
+        endForEach
+        return result->String
+
+      endContingent
+
+
     method reversed->String
       local buffer = StringBuilder(count)
       forEach (ch in this step -1)
@@ -333,19 +354,5 @@ class String [native functional]
       endWhile
 
       return buffer
-
-  ROUTINES
-    routine joined( lines:String[], separator="\n":String )->String
-      # Kludge until augments work for List<<String>>
-      local total_count = 0
-      forEach (line in lines) total_count += line.count
-
-      local builder = StringBuilder( total_count )
-      forEach (line in lines)
-        if (builder.count) builder.print( separator )
-        builder.print( line )
-      endForEach
-
-      return builder->String
 
 endClass

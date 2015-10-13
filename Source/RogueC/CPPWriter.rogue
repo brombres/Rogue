@@ -190,8 +190,15 @@ endClass
 #------------------------------------------------------------------------------
 augment RogueC
   METHODS
+    method launch
+      <<collect_supported_targets>>
+      supported_targets.add( "C++" )
+
     method write_output
       <<target_specific_code>>
+      if (target == "C++") write_cpp; return
+
+    method write_cpp
       if (output_filepath is null)
         output_filepath = File.filename(first_filepath)
         if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)

@@ -21,16 +21,18 @@ RogueC.launch
 
 class RogueC [singleton]
   PROPERTIES
-    included_files   = String[]
-    prefix_path_list = String[]
+    included_files     = String[]
+    prefix_path_list   = String[]
     prefix_path_lookup = Table<<String,Logical>>()
-    compile_targets = Table<<String,Logical>>() : Table<<String,Logical>>
-    libraries_folder = ""
+    compile_targets    = Table<<String,Logical>>()
+    libraries_folder   = ""
 
     source_files    = String[]
     generate_main   : Logical
     first_filepath  : String
     output_filepath : String
+
+    supported_targets = String[]
     target = "C++"
 
     execute_args     : String
@@ -43,11 +45,14 @@ class RogueC [singleton]
         prefix_path_list.add( libs )
       endIf
 
+      <<collect_supported_targets>>
+
       try
         process_command_line_arguments
 
         if (source_files.count == 0)
-          println @|
+          local usage =
+                  @|
                    |Rogue Compiler v0.0.1
                    |May 12, 2015
                    |
@@ -66,6 +71,10 @@ class RogueC [singleton]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
                    |
+                   |  --target=
+
+          usage += supported_targets->String.replace(',','|') + "\n"
+          println usage
           System.exit( 1 )
         endIf
 
@@ -88,6 +97,7 @@ class RogueC [singleton]
 
     method write_output
       <<target_specific_code>>
+      throw RogueError( ''Compile target "$" is not supported.'' (target) )
 
     method include( filepath:String )
       if (not first_filepath) first_filepath = filepath
@@ -171,6 +181,9 @@ class RogueC [singleton]
             if (value.count) throw RogueError( "Unexpected value for '--main' option." )
             generate_main = true
 
+          elseIf (arg == "--target")
+            if (not value.count) throw RogueError( ''Target name expected after "--target=" (e.g. "C++").'' )
+            target = value
           else
             throw RogueError( "Unknown option '$'." (arg) )
           endIf
