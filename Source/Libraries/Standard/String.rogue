@@ -78,10 +78,35 @@ class String [native functional]
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
     method from( i1:Integer )->String
-      $if ("C++") inlineNative '$this->from($i1)'
+      return from( i1, count-1 )
 
     method from( i1:Integer, i2:Integer )->String
-      $if ("C++") inlineNative '$this->from($i1,$i2)'
+      $if ("C++")
+        native @|// Clamp i1 and i2
+                |if ($i1 < 0) $i1 = 0;
+                |if ($i2 >= THIS->count) $i2 = THIS->count - 1;
+                |
+                |// Return empty quotes if zero-length
+                |if ($i1 > $i2) return Rogue_program.literal_strings[0]; // empty string
+                |
+                |int new_count = ($i2 - $i1) + 1;
+                |
+                |RogueString* result = RogueString::create( new_count );
+                |
+                |// Copy character substring while computing hash code.
+                |RogueCharacter* dest = result->characters - 1;
+                |RogueCharacter* src  = (THIS->characters + $i1) - 1;
+                |RogueInteger hash_code = 0;
+                |while (--new_count >= 0)
+                |{
+                |  RogueCharacter ch = *(++src);
+                |  *(++dest) = ch;
+                |  hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
+                |}
+                |
+                |result->hash_code = hash_code;
+                |return result;
+      $endIf
 
     method from_first( ch:Character )->String
       local i = locate( ch )
@@ -253,7 +278,7 @@ class String [native functional]
       return result
 
     method substring( i1:Integer, n:Integer )->String
-      $if ("C++") inlineNative '$this->substring($i1,$n)'
+      return from( i1, i1+(n-1) )
 
     method times( n:Integer )->String
       if (n <= 0) return ""
