@@ -577,7 +577,6 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   type_Array  = new RogueArrayType();
 
   type_FileReader = new RogueFileReaderType();
-  type_FileWriter = new RogueFileWriterType();
 
   for (int i=0; i<next_type_index; ++i)
   {
@@ -1265,76 +1264,3 @@ RogueFileReader* RogueFileReader__set_position( RogueFileReader* reader, RogueIn
 
   return reader;
 }
-
-
-//-----------------------------------------------------------------------------
-//  FileWriter
-//-----------------------------------------------------------------------------
-void RogueFileWriterType::configure()
-{
-  object_size = (int) sizeof( RogueFileWriter );
-}
-
-void RogueFileWriterType::trace( RogueObject* obj )
-{
-  ROGUE_TRACE( ((RogueFileWriter*)obj)->filepath );
-}
-
-RogueFileWriter* RogueFileWriter__create( RogueString* filepath )
-{
-  RogueFileWriter* writer = (RogueFileWriter*) Rogue_program.type_FileWriter->create_object();
-  RogueFileWriter__open( writer, filepath );
-  return writer;
-}
-
-RogueFileWriter* RogueFileWriter__close( RogueFileWriter* writer )
-{
-  if (writer && writer->fp)
-  {
-    RogueFileWriter__flush( writer );
-    fclose( writer->fp );
-    writer->fp = NULL;
-  }
-  writer->buffer_position = writer->count = 0;
-  return writer;
-}
-
-RogueInteger RogueFileWriter__count( RogueFileWriter* writer )
-{
-  if ( !writer ) return 0;
-  return writer->count;
-}
-
-RogueFileWriter* RogueFileWriter__flush( RogueFileWriter* writer )
-{
-  if ( !writer || !writer->buffer_position || !writer->fp ) return writer;
-
-  fwrite( writer->buffer, 1, writer->buffer_position, writer->fp );
-  writer->buffer_position = 0;
-  return writer;
-}
-
-RogueLogical RogueFileWriter__open( RogueFileWriter* writer, RogueString* filepath )
-{
-  RogueFileWriter__close( writer );
-  writer->filepath = filepath;
-
-  if ( !filepath ) return false;
-
-  char path[ PATH_MAX ];
-  filepath->to_c_string( path, PATH_MAX );
-
-  writer->fp = fopen( path, "wb" );
-  return writer;
-}
-
-RogueFileWriter* RogueFileWriter__write( RogueFileWriter* writer, RogueCharacter ch )
-{
-  if ( !writer || !writer->fp ) return NULL;
-
-  writer->buffer[ writer->buffer_position ] = (unsigned char) ch;
-  if (++writer->buffer_position == sizeof(writer->buffer)) return RogueFileWriter__flush( writer );
-
-  return writer;
-}
-

@@ -53,6 +53,17 @@ class CPPWriter
       buffer.print( value )
       return this
 
+    method print_code( code:String )->CPPWriter
+      forEach (line in LineReader(code))
+        local original_indent = indent
+        if (line.begins_with('#')) indent = 0
+
+        println( line )
+
+        indent = original_indent
+      endForEach
+      return this
+
     method println->CPPWriter
       buffer.print( '\n' )
       needs_indent = true
@@ -690,6 +701,11 @@ augment Type
       endIf
 
       writer.println "// PROPERTIES"
+      if (native_properties)
+        forEach (p in native_properties)
+          writer.print_code( p )
+        endForEach
+      endIf
       forEach (p in property_list)
         if (not is_error or p.type_context is this)
           writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
@@ -2225,24 +2241,31 @@ augment CmdNativeCode
           local i2 = i1+2
           while (i2 < line.count and line[i2].is_identifier) ++i2
 
-          local id = line.from( i1+1, i2-1 )
+          local name = line.from( i1+1, i2-1 )
           line = line.from( i2 )
 
-          if (id == "$")
+          if (name == "$")
             writer.print "$"
-          elseIf (id == "this")
+          elseIf (name == "this")
             writer.print "THIS"
           else
             local found = false
             forEach (param in this_method.parameters)
-              if (param.name == id)
+              if (param.name == name)
                 found = true
                 writer.print( param.cpp_name )
                 escapeForEach
               endIf
             endForEach
             if (not found)
-              writer.print( '$' ).print( id )
+              local p = this_method.type_context.property_lookup[ name ]
+              if (p)
+                found = true
+                writer.print( "THIS->" ).print( p.cpp_name )
+              endIf
+            endIf
+            if (not found)
+              writer.print( '$' ).print( name )
             endIf
           endIf
 

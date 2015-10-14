@@ -1,2 +1,12 @@
-println 4614256656552045848->Integer
-println pi.hash_code
+Test()
+
+class Test
+  METHODS
+    method init
+      local writer = FileWriter( "file.txt" )
+      writer.write( 'A' )
+      writer.write( 'B' )
+      writer.write( 'C' )
+      writer.close
+endClass
+

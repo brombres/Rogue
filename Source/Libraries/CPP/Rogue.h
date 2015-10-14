@@ -42,7 +42,6 @@ struct RogueAllocator;
 struct RogueString;
 struct RogueCharacterList;
 struct RogueFileReaderType;
-struct RogueFileWriterType;
 
 #define ROGUE_TRACE( obj ) \
 { \
@@ -693,7 +692,7 @@ struct RogueArray : RogueObject
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-#define ROGUE_BUILT_IN_TYPE_COUNT 19
+#define ROGUE_BUILT_IN_TYPE_COUNT 18
 
 struct RogueProgramCore
 {
@@ -727,7 +726,6 @@ struct RogueProgramCore
   RogueArrayType*  type_Array;
 
   RogueFileReaderType*  type_FileReader;
-  RogueFileWriterType*  type_FileWriter;
 
   // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
 
@@ -872,32 +870,4 @@ RogueCharacter   RogueFileReader__peek( RogueFileReader* reader );
 RogueInteger     RogueFileReader__position( RogueFileReader* reader );
 RogueCharacter   RogueFileReader__read( RogueFileReader* reader );
 RogueFileReader* RogueFileReader__set_position( RogueFileReader* reader, RogueInteger new_position );
-
-
-//-----------------------------------------------------------------------------
-//  FileWriter
-//-----------------------------------------------------------------------------
-struct RogueFileWriterType : RogueType
-{
-  void configure();
-
-  const char* name() { return "FileWriter"; }
-  void        trace( RogueObject* obj );
-};
-
-struct RogueFileWriter : RogueObject
-{
-  FILE* fp;
-  RogueString*   filepath;
-  unsigned char  buffer[1024];
-  int            buffer_position;
-  int            count;
-};
-
-RogueFileWriter* RogueFileWriter__create( RogueString* filepath );
-RogueFileWriter* RogueFileWriter__close( RogueFileWriter* writer );
-RogueInteger     RogueFileWriter__count( RogueFileWriter* writer );
-RogueFileWriter* RogueFileWriter__flush( RogueFileWriter* writer );
-RogueLogical     RogueFileWriter__open( RogueFileWriter* writer, RogueString* filepath );
-RogueFileWriter* RogueFileWriter__write( RogueFileWriter* writer, RogueCharacter ch );
 

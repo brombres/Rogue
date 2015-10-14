@@ -442,6 +442,18 @@ class Parser
 
     method parse_properties( as_settings=false:Logical )->Logical
       consume_eols
+
+      if (consume(TokenType.keyword_native))
+        # Example: native "FILE* fp;"
+        if (not next_is(TokenType.literal_string))
+          throw peek.error( "Literal string expected." )
+        endIf
+        if (not this_type.native_properties) this_type.native_properties = String[]
+        this_type.native_properties.add( read->String )
+        must_consume_eols
+        return true
+      endIf
+
       if (not next_is(TokenType.identifier)) return false
 
       property_list.clear

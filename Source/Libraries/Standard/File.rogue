@@ -106,19 +106,55 @@ class FileReader : Reader<<Character>> [native]
     method set_position( new_position:Integer )->this [native]
 endClass
 
-class FileWriter [native]
-  ROUTINES
-    routine create( filepath:String )->this [native]
-    
+class FileWriter
+  PROPERTIES
+    filepath        : String
+    buffer_position : Integer
+    count           : Integer
+    native "FILE* fp;"
+    native "unsigned char buffer[1024];"
+
   METHODS
-    method close->FileWriter [native]
+    method init( _filepath:String )
+      open( _filepath )
 
-    method count->Integer [native]
+    method close->FileWriter
+      flush
 
-    method flush->FileWriter [native]
+      native @|if ($this->fp)
+              |{
+              |  fclose( $this->fp );
+              |  $this->fp = 0;
+              |}
 
-    method open( filepath:String )->Logical [native]
+      return this
 
-    method write( ch:Character )->this [native]
+    method flush->FileWriter
+      native @|if ( !$buffer_position || !$this->fp ) return $this;
+              |
+              |fwrite( $this->buffer, 1, $buffer_position, $this->fp );
+
+      buffer_position = 0
+      return this
+
+    method open( filepath )->Logical
+      close
+
+      native @|char path[ PATH_MAX ];
+              |$filepath->to_c_string( path, PATH_MAX );
+              |$this->fp = fopen( path, "wb" );
+              |
+              |return !!$this->fp;
+
+    method write( ch:Character )->this
+      native @|if ( !$this->fp ) return 0;
+              |
+              |$this->buffer[ $buffer_position ] = (unsigned char) $ch;
+
+      ++buffer_position
+      if (buffer_position == 1024) return flush
+
+      return this
 endClass
+
 
