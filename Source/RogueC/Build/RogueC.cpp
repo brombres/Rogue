@@ -922,23 +922,6 @@ void* RogueAllocator::free_permanent( void* data, int size )
 
 RogueAllocator Rogue_allocator;
 
-//-----------------------------------------------------------------------------
-//  Console
-//-----------------------------------------------------------------------------
-RogueString* RogueConsole__input( RogueString* prompt )
-{
-  if (prompt) RogueString::print( prompt );
-
-  char st[4096];
-  fgets( st, 4096, stdin );
-
-  // discard \n
-  int len = strlen( st );
-  if (len) st[--len] = 0;
-
-  return RogueString::create( st, len );
-}
-
 //=============================================================================
 // Code generated from Rogue source
 //=============================================================================

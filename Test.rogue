@@ -5,6 +5,7 @@ Test()
 class Test
   METHODS
     method init
-      println File.size("Test.rogue")
+      local name = Console.input( "Enter your name: ")
+      println "Your name is " + name
 endClass
 

@@ -1,6 +1,16 @@
 class Console [singleton]
   ROUTINES
-    routine input( prompt=null:String )->String [native]
+    routine input( prompt=null:String )->String
+      if (prompt) Global.print( prompt ).flush
+
+      native @|char st[4096];
+              |fgets( st, 4096, stdin );
+              |
+              |// discard \n
+              |int len = strlen( st );
+              |if (len) st[--len] = 0;
+              |
+              |return RogueString::create( st, len );
 
   METHODS
     method print( value:String )
