@@ -15803,20 +15803,23 @@ void RogueMethod__resolve( RogueClassMethod* THIS )
 
 void RogueMethod__convert_augment_to_standalone( RogueClassMethod* THIS )
 {
-  if (THIS->label_list->count > 2)
-  {
-    RogueClassCmdLabel* label_0 = (((RogueClassCmdLabel*)(THIS->label_list->data->objects[2])));
-    throw ((RogueToken__error( label_0->t, ((RogueStringBuilder__to_String( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__init( ((RogueStringBuilder*)Rogue_program.type_StringBuilder->create_and_init_object()) ))), Rogue_program.literal_strings[322] ))), label_0->name ))), Rogue_program.literal_strings[323] ))) ))) )));
-  }
   THIS->attributes->flags &= -262145;
-  RogueClassCmdLabel* insert_label_1 = (((RogueString_CmdLabelTable__get( THIS->label_lookup, Rogue_program.literal_strings[246] ))));
-  RogueClassCmdLabel* append_label_2 = (((RogueString_CmdLabelTable__get( THIS->label_lookup, Rogue_program.literal_strings[248] ))));
-  RogueString_CmdLabelTable__clear( THIS->label_lookup );
-  RogueCmdLabelList__clear( THIS->label_list );
-  RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueClassCmd*)(((RogueMethod__begin_label( THIS, THIS->t, Rogue_program.literal_strings[246], false ))))) );
-  RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueCmdList*)(insert_label_1->statements)) );
-  RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueCmdList*)(append_label_2->statements)) );
-  RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueClassCmd*)(((RogueMethod__begin_label( THIS, THIS->t, Rogue_program.literal_strings[248], false ))))) );
+  if (!(!!(THIS->native_code)))
+  {
+    if (THIS->label_list->count > 2)
+    {
+      RogueClassCmdLabel* label_0 = (((RogueClassCmdLabel*)(THIS->label_list->data->objects[2])));
+      throw ((RogueToken__error( label_0->t, ((RogueStringBuilder__to_String( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__init( ((RogueStringBuilder*)Rogue_program.type_StringBuilder->create_and_init_object()) ))), Rogue_program.literal_strings[322] ))), label_0->name ))), Rogue_program.literal_strings[323] ))) ))) )));
+    }
+    RogueClassCmdLabel* insert_label_1 = (((RogueString_CmdLabelTable__get( THIS->label_lookup, Rogue_program.literal_strings[246] ))));
+    RogueClassCmdLabel* append_label_2 = (((RogueString_CmdLabelTable__get( THIS->label_lookup, Rogue_program.literal_strings[248] ))));
+    RogueString_CmdLabelTable__clear( THIS->label_lookup );
+    RogueCmdLabelList__clear( THIS->label_list );
+    RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueClassCmd*)(((RogueMethod__begin_label( THIS, THIS->t, Rogue_program.literal_strings[246], false ))))) );
+    RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueCmdList*)(insert_label_1->statements)) );
+    RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueCmdList*)(append_label_2->statements)) );
+    RogueCmdList__add( ((RogueCmdList*)THIS->statements), ((RogueClassCmd*)(((RogueMethod__begin_label( THIS, THIS->t, Rogue_program.literal_strings[248], false ))))) );
+  }
 }
 
 void RogueMethod__convert_to_task( RogueClassMethod* THIS )

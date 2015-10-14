@@ -1,5 +1,10 @@
-forEach (n in 0..15)
-  println StringBuilder().print(pi,n)
-endForEach
-println "3.141592653589793"
-println pi
+augment Real
+  METHODS
+    method floor->Real
+      inlineNative "floor($this)"
+endAugment
+
+local x = 3.2
+local y = 3.9
+println x.floor + y.floor
+

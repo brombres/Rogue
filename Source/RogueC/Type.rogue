@@ -527,8 +527,11 @@ class Type
 
       else
         # No existing method
-        if (m.type_context.is_aspect) m = m.incorporate( this )
-        elseIf (m.is_augment)         m.convert_augment_to_standalone
+        if (m.type_context.is_aspect)
+          m = m.incorporate( this )
+        elseIf (m.is_augment)
+          m.convert_augment_to_standalone
+        endIf
 
         list.add( m )
         lookup[m.signature] = m
@@ -563,7 +566,9 @@ class Type
         # Aspect routines are not incorporated
         if (m.type_context.is_aspect) return
 
-        if (m.is_augment)             m.convert_augment_to_standalone
+        if (m.is_augment)
+          m.convert_augment_to_standalone
+        endIf
 
         # New method replaces old method in lookup
         list[i] = m
@@ -573,7 +578,9 @@ class Type
         # Aspect routines are not incorporated
         if (m.type_context.is_aspect) return
 
-        if (m.is_augment)             m.convert_augment_to_standalone
+        if (m.is_augment)
+          m.convert_augment_to_standalone
+        endIf
 
         list.add( m )
         lookup[m.signature] = m
