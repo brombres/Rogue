@@ -1859,14 +1859,12 @@ augment CmdMod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local this_type = type
-      local is_real = type is Program.type_Real
-      writer.print( Program.program_name ).print( ".mod( " )
-      if (is_real) writer.print( "(double)" )
-      else         writer.print( "(int)" )
+      local cast = "(RogueInteger)"
+      if (this_type is Program.type_Real)     cast = "(RogueReal)"
+      elseIf (this_type is Program.type_Long) cast = "(RogueLong)"
+      writer.print( Program.program_name ).print( ".mod( " ).print( cast )
       left.write_cpp( writer )
-      writer.print( ", " )
-      if (is_real) writer.print( "(double)" )
-      else         writer.print( "(int)" )
+      writer.print( ", " ).print( cast )
       right.write_cpp( writer )
       writer.print( " )" )
 endAugment

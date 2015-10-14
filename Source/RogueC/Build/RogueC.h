@@ -654,8 +654,6 @@ struct RogueString : RogueObject
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
   bool         to_c_string( char* buffer, int buffer_size );
-  RogueInteger to_integer();
-  RogueReal    to_real();
   RogueString* update_hash_code();
 };
 
@@ -747,6 +745,7 @@ struct RogueProgramCore
 
   static RogueReal    mod( RogueReal a, RogueReal b );
   static RogueInteger mod( RogueInteger a, RogueInteger b );
+  static RogueLong    mod( RogueLong a, RogueLong b );
   static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 
@@ -921,19 +920,9 @@ struct RogueStringBuilder;
 
 RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value );
+//RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
+//RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
-
-//-----------------------------------------------------------------------------
-//  System
-//-----------------------------------------------------------------------------
-void RogueSystem__exit( int result_code );
-
-//-----------------------------------------------------------------------------
-//  Time
-//-----------------------------------------------------------------------------
-RogueReal RogueTime__current();
 
 //=============================================================================
 // Code generated from Rogue source
@@ -4178,7 +4167,9 @@ RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS, RogueInt
 RogueStringBuilder* RogueStringBuilder__clear( RogueStringBuilder* THIS );
 RogueLogical RogueStringBuilder__needs_indent( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueCharacter value_0 );
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueInteger value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueLogical value_0 );
+RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueLong value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueObject* value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueReal value_0 );
 void RogueStringBuilder__encode_as_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueByteList* bytes_1, RogueInteger decimal_count_2 );

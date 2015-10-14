@@ -428,33 +428,6 @@ bool RogueString::to_c_string( char* buffer, int buffer_size )
   return true;
 }
 
-RogueInteger RogueString::to_integer()
-{
-  char buffer[80];
-  if (to_c_string(buffer,80))
-  {
-    return strtol( buffer, NULL, 10 );
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-RogueReal    RogueString::to_real()
-{
-  char buffer[80];
-  if (to_c_string(buffer,80))
-  {
-    return strtod( buffer, NULL );
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-
 RogueString* RogueString::update_hash_code()
 {
   int code = hash_code;
@@ -711,6 +684,23 @@ RogueInteger RogueProgramCore::mod( RogueInteger a, RogueInteger b )
   if ((a ^ b) < 0)
   {
     RogueInteger r = a % b;
+    return r ? (r+b) : r;
+  }
+  else
+  {
+    return (a % b);
+  }
+}
+
+RogueLong RogueProgramCore::mod( RogueLong a, RogueLong b )
+{
+  if (!a && !b) return 0;
+
+  if (b == 1) return 0;
+
+  if ((a ^ b) < 0)
+  {
+    RogueLong r = a % b;
     return r ? (r+b) : r;
   }
   else
@@ -1432,20 +1422,6 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
   return buffer;
 }
 
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value )
-{
-  char st[80];
-  sprintf( st, "%d", value );//
-  return RogueStringBuilder__print( buffer, st );
-}
-
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value )
-{
-  char st[80];
-  sprintf( st, "%lld", value );
-  return RogueStringBuilder__print( buffer, st );
-}
-
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places )
 {
   char format[80];
@@ -1454,37 +1430,5 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, Rogue
   sprintf( format, "%%.%dlf", decimal_places );
   sprintf( st, format, value );
   return RogueStringBuilder__print( buffer, st );
-}
-
-
-//-----------------------------------------------------------------------------
-//  System
-//-----------------------------------------------------------------------------
-void RogueSystem__exit( int result_code )
-{
-  exit( result_code );
-}
-
-//-----------------------------------------------------------------------------
-//  Time
-//-----------------------------------------------------------------------------
-RogueReal RogueTime__current()
-{
-#if defined(_WIN32)
-  struct __timeb64 time_struct;
-  RogueReal time_seconds;
-  _ftime64_s( &time_struct );
-  time_seconds = (RogueReal) time_struct.time;
-  time_seconds += time_struct.millitm / 1000.0;
-  return time_seconds;
-
-#else
-  struct timeval time_struct;
-  RogueReal time_seconds;
-  gettimeofday( &time_struct, 0 );
-  time_seconds = (RogueReal) time_struct.tv_sec;
-  time_seconds += (time_struct.tv_usec / 1000000.0);
-  return time_seconds;
-#endif
 }
 

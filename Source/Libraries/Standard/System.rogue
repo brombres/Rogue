@@ -5,7 +5,10 @@ class System [requisite]
 
 
   ROUTINES
-    routine exit( result_code:Integer ) [native]
+    routine exit( result_code:Integer )
+      $if ("C++")
+        native "exit( $result_code );"
+      $endIf
 
     routine run( command:String )
       inlineNative
@@ -16,12 +19,3 @@ class System [requisite]
          |}
 endClass
 
-# TEMP BRIDGE
-#class Runtime
-#  ROUTINES
-#    routine command_line_arguments->String[]
-#      return System.command_line_arguments
-#
-#    routine exit( result_code:Integer ) System.exit( result_code )
-#  
-#endClass

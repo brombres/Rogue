@@ -44,13 +44,26 @@ class StringBuilder [requisite]
     method print( value:Float )->this
       inline this.print( value->Real )
 
-    method print( value:Integer )->this [native]
+    method print( value:Integer )->this
+      return print( value->Long )
 
     method print( value:Logical )->this
       if (value) return print( "true" )
       else       return print( "false" )
 
-    method print( value:Long )->this [native]
+    method print( value:Long )->this
+      if (value == (1->Long :<<: 63))
+        return print( "-9223372036854775808" )
+      elseIf (value < 0)
+        print( '-' )
+        return print( -value )
+      elseIf (value >= 10)
+        print( value / 10 )
+        return print( ('0'+(value%10))->Character )
+      else
+        return print( ('0'+value)->Character )
+      endIf
+
 
     method print( value:Object )->this
       if (value) return print( value->String )

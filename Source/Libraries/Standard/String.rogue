@@ -317,10 +317,30 @@ class String [native functional]
       return builder->String
 
     method to->Integer
-      inlineNative "($this->to_integer())"
+      $if ("C++")
+        native @|char buffer[80];
+                |if ($this->to_c_string(buffer,80))
+                |{
+                |  return strtol( buffer, 0, 10 );
+                |}
+                |else
+                |{
+                |  return 0;
+                |}
+      $endIf
 
     method to->Real
-      inlineNative "($this->to_real())"
+      $if ("C++")
+        native @|char buffer[80];
+                |if ($this->to_c_string(buffer,80))
+                |{
+                |  return strtod( buffer, 0 );
+                |}
+                |else
+                |{
+                |  return 0;
+                |}
+      $endIf
 
     method to->String
       return this

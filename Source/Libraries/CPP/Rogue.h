@@ -651,8 +651,6 @@ struct RogueString : RogueObject
   RogueString* plus( RogueReal value );
   RogueString* plus( RogueString* other );
   bool         to_c_string( char* buffer, int buffer_size );
-  RogueInteger to_integer();
-  RogueReal    to_real();
   RogueString* update_hash_code();
 };
 
@@ -744,6 +742,7 @@ struct RogueProgramCore
 
   static RogueReal    mod( RogueReal a, RogueReal b );
   static RogueInteger mod( RogueInteger a, RogueInteger b );
+  static RogueLong    mod( RogueLong a, RogueLong b );
   static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 
@@ -918,17 +917,5 @@ struct RogueStringBuilder;
 
 RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
-
-//-----------------------------------------------------------------------------
-//  System
-//-----------------------------------------------------------------------------
-void RogueSystem__exit( int result_code );
-
-//-----------------------------------------------------------------------------
-//  Time
-//-----------------------------------------------------------------------------
-RogueReal RogueTime__current();
 
