@@ -41,7 +41,6 @@
 struct RogueAllocator;
 struct RogueString;
 struct RogueCharacterList;
-struct RogueFileReaderType;
 
 #define ROGUE_TRACE( obj ) \
 { \
@@ -692,7 +691,7 @@ struct RogueArray : RogueObject
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-#define ROGUE_BUILT_IN_TYPE_COUNT 18
+#define ROGUE_BUILT_IN_TYPE_COUNT 17
 
 struct RogueProgramCore
 {
@@ -724,8 +723,6 @@ struct RogueProgramCore
   RogueObjectType* type_Object;
   RogueStringType* type_String;
   RogueArrayType*  type_Array;
-
-  RogueFileReaderType*  type_FileReader;
 
   // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
 
@@ -838,36 +835,4 @@ RogueLogical RogueFile__is_folder( RogueString* filepath );
 RogueString* RogueFile__load( RogueString* filepath );
 RogueLogical RogueFile__save( RogueString* filepath, RogueString* data );
 RogueInteger RogueFile__size( RogueString* filepath );
-
-//-----------------------------------------------------------------------------
-//  FileReader
-//-----------------------------------------------------------------------------
-struct RogueFileReaderType : RogueType
-{
-  void configure();
-
-  const char* name() { return "FileReader"; }
-  void        trace( RogueObject* obj );
-};
-
-struct RogueFileReader : RogueObject
-{
-  FILE* fp;
-  RogueString*   filepath;
-  unsigned char  buffer[1024];
-  int            buffer_count;
-  int            buffer_position;
-  int            count;
-  int            position;
-};
-
-RogueFileReader* RogueFileReader__create( RogueString* filepath );
-RogueFileReader* RogueFileReader__close( RogueFileReader* reader );
-RogueInteger     RogueFileReader__count( RogueFileReader* reader );
-RogueLogical     RogueFileReader__has_another( RogueFileReader* reader );
-RogueLogical     RogueFileReader__open( RogueFileReader* reader, RogueString* filepath );
-RogueCharacter   RogueFileReader__peek( RogueFileReader* reader );
-RogueInteger     RogueFileReader__position( RogueFileReader* reader );
-RogueCharacter   RogueFileReader__read( RogueFileReader* reader );
-RogueFileReader* RogueFileReader__set_position( RogueFileReader* reader, RogueInteger new_position );
 

@@ -28,7 +28,7 @@ class File
       if (not i?) return ""
       return filepath.from( 0, i!-1 )
 
-    routine reader( filepath:String )->FileReader
+      routine reader( filepath:String )->FileReader
       return FileReader( filepath )
 
     routine save( filepath:String, data:String )->Logical [native]
@@ -81,30 +81,88 @@ class File
       return filepath
 endClass
 
-class FileReader : Reader<<Character>> [native]
-  ROUTINES
-    routine create( filepath:String )->this [native]
-    
+class FileReader : Reader<<Character>>
+  PROPERTIES
+    filepath        : String
+    buffer_count    : Integer
+    buffer_position : Integer
+    count           : Integer
+    position        : Integer
+    native "FILE* fp;"
+    native "unsigned char buffer[1024];"
+
   METHODS
-    method close->FileReader [native]
+    method init( _filepath:String )
+      open( _filepath )
 
-    method count->Integer [native]
+    method close->this
+      native @|if ($this->fp)
+              |{
+              |  fclose( $this->fp );
+              |  $this->fp = 0;
+              |}
 
-    method has_another->Logical [native]
+      position = 0
+      count = 0
+      return this
 
-    method open( filepath:String )->Logical [native]
+    method has_another->Logical
+      return (position < count)
 
-    method peek->Character [native]
+    method open( filepath )->Logical
+      close
 
-    method position->Integer [native]
+      native @|char path[ PATH_MAX ];
+              |$filepath->to_c_string( path, PATH_MAX );
+              |
+              |$this->fp = fopen( path, "rb" );
+              |if ($this->fp)
+              |{
+              |  fseek( $this->fp, 0, SEEK_END );
+              |  $count = (RogueInteger) ftell( $this->fp );
+              |  fseek( $this->fp, 0, SEEK_SET );
+              |}
 
-    method read->Character [native]
+      # Always close after the last byte is read
+      if (count == 0) close
+      
+      return (position < count)
+
+    method peek->Character
+      if (position == count) return 0
+
+      if (buffer_position == buffer_count)
+        native @|$buffer_count = (RogueInteger) fread( $this->buffer, 1, sizeof($this->buffer), $this->fp );
+        buffer_position = 0
+      endIf
+
+      native @|return $this->buffer[ $buffer_position ];
+
+    method read->Character
+      if (position == count) return 0
+
+      local result = peek
+
+      ++position
+      ++buffer_position
+      if (position == count) close
+
+      return result
 
     method remaining->Integer
       return count - position
 
-    method set_position( new_position:Integer )->this [native]
+    method set_position( @position )->this
+      native @|if ($this->fp)
+              |{
+              |  fseek( $this->fp, $position, SEEK_SET );
+              |}
+
+      buffer_position = 0
+      buffer_count = 0
+      return this
 endClass
+
 
 class FileWriter
   PROPERTIES

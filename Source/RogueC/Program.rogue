@@ -40,7 +40,6 @@ class Program [requisite singleton]
     type_Error       : Type
 
     type_StringBuilder : Type
-    type_FileReader    : Type
 
     literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
     literal_string_list   = String[]
@@ -66,12 +65,9 @@ class Program [requisite singleton]
       type_Global        = create_built_in_type( "Global", Attribute.is_class )
       type_Error         = create_built_in_type( "Error", Attribute.is_class )
 
-      type_FileReader    = create_built_in_type( "FileReader", Attribute.is_class | Attribute.is_native )
-
       type_Object.simplify_name = true
       type_String.simplify_name = true
       type_StringBuilder.simplify_name = true
-      type_FileReader.simplify_name = true
 
       type_null.organized = true
       type_null.defined   = true

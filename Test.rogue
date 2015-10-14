@@ -1,12 +1,18 @@
+#println "Hello World"
+
 Test()
 
 class Test
   METHODS
     method init
-      local writer = FileWriter( "file.txt" )
-      writer.write( 'A' )
-      writer.write( 'B' )
-      writer.write( 'C' )
-      writer.close
+      local reader = FileReader( "file.txt" )
+      println reader.position
+      println reader.count
+      println reader.has_another
+      forEach (ch in reader)
+        print ch
+      endForEach
+      reader.close
+      println
 endClass
 
