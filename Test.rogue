@@ -1,10 +1,2 @@
-augment Real
-  METHODS
-    method floor->Real
-      inlineNative "floor($this)"
-endAugment
-
-local x = 3.2
-local y = 3.9
-println x.floor + y.floor
-
+println 4614256656552045848->Integer
+println pi.hash_code

@@ -2,8 +2,7 @@ class Time
   ROUTINES
     routine current->Real
       $if ("C++")
-        native @|
-                |#if defined(_WIN32)
+        native @|#if defined(_WIN32)
                 |  struct __timeb64 time_struct;
                 |  RogueReal time_seconds;
                 |  _ftime64_s( &time_struct );

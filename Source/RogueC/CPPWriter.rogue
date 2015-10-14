@@ -2213,6 +2213,9 @@ augment CmdNativeCode
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       forEach (line in LineReader(code))
+        local original_indent = writer.indent
+        if (line.begins_with('#')) writer.indent = 0
+
         # Replace $this and other local names ($x, $count, etc) with native
         # variable reads.
         local marker = line.locate( '$' )
@@ -2247,6 +2250,8 @@ augment CmdNativeCode
         endWhile
         if (line.count) writer.println line
         else            writer.println
+
+        writer.indent = original_indent
       endForEach
 endAugment
 

@@ -1,14 +1,13 @@
 class Real [primitive]
   ROUTINES
-    routine create( high:Integer, low:Integer )->Real [native]
+    routine create( bits:Long )->Real
+      $if ("C++")
+        native "return *((RogueReal*)&$bits);"
+      $endIf
 
   METHODS
-    method high_bits->Integer [native]
-    method low_bits->Integer  [native]
-    #{
     method hash_code->Integer
-      return this
-      }#
+      return Long(this)->Integer
 
     method to->String
       return "" + this
@@ -16,14 +15,15 @@ class Real [primitive]
 endClass
 
 class Float [primitive]
-#{
-  METHODS
-    method hash_code->Integer
-      return (this->Real).as_high_bits
-}#
 endClass
 
 class Long [primitive]
+  ROUTINES
+    routine create( bit_source:Real )->Long
+      $if ("C++")
+        native "return *((RogueLong*)&$bit_source);"
+      $endIf
+
   METHODS
     method hash_code->Integer
       return this

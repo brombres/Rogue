@@ -904,14 +904,6 @@ RogueFileWriter* RogueFileWriter__flush( RogueFileWriter* writer );
 RogueLogical     RogueFileWriter__open( RogueFileWriter* writer, RogueString* filepath );
 RogueFileWriter* RogueFileWriter__write( RogueFileWriter* writer, RogueCharacter ch );
 
-
-//-----------------------------------------------------------------------------
-//  Real
-//-----------------------------------------------------------------------------
-RogueReal    RogueReal__create( RogueInteger high_bits, RogueInteger low_bits );
-RogueInteger RogueReal__high_bits( RogueReal THIS );
-RogueInteger RogueReal__low_bits( RogueReal THIS );
-
 //=============================================================================
 // Code generated from Rogue source
 //=============================================================================
@@ -4115,6 +4107,7 @@ RogueString* RogueString__before_first( RogueString* THIS, RogueCharacter ch_0 )
 RogueString* RogueString__before_first( RogueString* THIS, RogueString* st_0 );
 RogueString* RogueString__before_last( RogueString* THIS, RogueCharacter ch_0 );
 RogueString* RogueString__before_last( RogueString* THIS, RogueString* st_0 );
+RogueLogical RogueString__begins_with( RogueString* THIS, RogueCharacter ch_0 );
 RogueLogical RogueString__begins_with( RogueString* THIS, RogueString* other_0 );
 RogueLogical RogueString__contains( RogueString* THIS, RogueString* substring_0 );
 RogueLogical RogueString__ends_with( RogueString* THIS, RogueString* other_0 );
