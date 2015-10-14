@@ -1,8 +1,85 @@
 class File
   ROUTINES
-    routine absolute_filepath( filepath:String )->String [native]
+    routine absolute_filepath( filepath:String )->String
+      native @|if ( !$filepath ) return 0;
+              |
+              |char c_filepath[ PATH_MAX ];
+              |$filepath->to_c_string( c_filepath, PATH_MAX );
+              |
+              |#if defined(_WIN32)
+              |{
+              |  char long_name[PATH_MAX+4];
+              |  char full_name[PATH_MAX+4];
+              |
+              |  if (GetLongPathName(c_filepath, long_name, PATH_MAX+4) == 0)
+              |  {
+              |    strcpy_s( long_name, PATH_MAX+4, c_filepath );
+              |  }
+              |
+              |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) == 0)
+              |  {
+              |    // bail with name unchanged 
+              |    return $filepath;
+              |  }
+              |
+              |  return RogueString::create( full_name );
+              |}
+              |#else
+              |
+              |bool is_folder = RogueFile__is_folder( $filepath );
+              |
+              |{
+              |  int original_dir_fd;
+              |  int new_dir_fd;
+              |  char filename[PATH_MAX];
+              |
+              |  // A way to get back to the starting folder when finished.
+              |  original_dir_fd = open( ".", O_RDONLY );  
+              |
+              |  if (is_folder)
+              |  {
+              |    filename[0] = 0;
+              |  }
+              |  else
+              |  {
+              |    // fchdir only works with a path, not a path+filename (c_filepath).
+              |    // Copy out the filename and null terminate the filepath to be just a path.
+              |    int i = (int) strlen( c_filepath ) - 1;
+              |    while (i >= 0 && c_filepath[i] != '/') --i;
+              |    strcpy( filename, c_filepath+i+1 );
+              |    c_filepath[i] = 0;
+              |  }
+              |  new_dir_fd = open( c_filepath, O_RDONLY );
+              |
+              |  if (original_dir_fd >= 0 && new_dir_fd >= 0)
+              |  {
+              |    fchdir( new_dir_fd );
+              |    getcwd( c_filepath, PATH_MAX );
+              |    if ( !is_folder ) 
+              |    {
+              |      strcat( c_filepath, "/" );
+              |      strcat( c_filepath, filename );
+              |    }
+              |    fchdir( original_dir_fd );
+              |  }
+              |  if (original_dir_fd >= 0) close( original_dir_fd );
+              |  if (new_dir_fd >= 0) close( new_dir_fd );
+              |
+              |  return RogueString::create( c_filepath );
+              |}
+              |#endif
 
-    routine exists( filepath:String )->Logical [native]
+    routine exists( filepath:String )->Logical
+      native @|if ( !$filepath ) return false;
+              |
+              |char c_filepath[ PATH_MAX ];
+              |$filepath->to_c_string( c_filepath, PATH_MAX );
+              |
+              |FILE* fp = fopen( c_filepath, "rb" );
+              |if ( !fp ) return false;
+              |
+              |fclose( fp );
+              |return true;
 
     routine filename( filepath:String )->String
       local i = filepath.locate_last( '/' )
@@ -10,7 +87,46 @@ class File
       if (not i?) return filepath
       return filepath.from( i.value+1 )
 
-    routine is_folder( filepath:String )->Logical  [native]
+    routine is_folder( filepath:String )->Logical
+      native @|if ( !$filepath ) return false;
+              |
+              |char c_filepath[ PATH_MAX ];
+              |$filepath->to_c_string( c_filepath, PATH_MAX );
+              |
+              |#if defined(_WIN32)
+              |  char filepath_copy[PATH_MAX];
+              |  strcpy( filepath_copy, c_filepath );
+              |
+              |  int path_len = strlen( c_filepath );
+              |  int i = strlen(filepath_copy)-1;
+              |  while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
+              |
+              |  // Windows allows dir\* to count as a directory; guard against.
+              |  for (i=0; filepath_copy[i]; ++i)
+              |  {
+              |    if (filepath_copy[i] == '*' || filepath_copy[i] == '?') return 0;
+              |  }
+              |
+              |  WIN32_FIND_DATA entry;
+              |  HANDLE dir = FindFirstFile( filepath_copy, &entry );
+              |  if (dir != INVALID_HANDLE_VALUE)
+              |  {
+              |    if (entry.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+              |    {
+              |      FindClose( dir );
+              |      return 1;
+              |    }
+              |  }
+              |  FindClose( dir );
+              |  return 0;
+              |
+              |#else
+              |  DIR* dir = opendir( c_filepath );
+              |  if ( !dir ) return 0;
+              |
+              |  closedir( dir );
+              |  return 1;
+              |#endif
 
     routine load_as_bytes( filepath:String )->Byte[]
       local count = size( filepath )
@@ -20,7 +136,13 @@ class File
       infile.close
       return bytes
 
-    routine load_as_string( filepath:String )->String [native]
+    routine load_as_string( filepath:String )->String
+      local count = size( filepath )
+      local buffer = StringBuilder( count )
+      local infile = reader( filepath )
+      forEach (1..count) buffer.print( infile.read )
+      infile.close
+      return buffer->String
 
     routine path( filepath:String )->String
       local i = filepath.locate_last( '/' )
@@ -28,12 +150,29 @@ class File
       if (not i?) return ""
       return filepath.from( 0, i!-1 )
 
-      routine reader( filepath:String )->FileReader
+    routine reader( filepath:String )->FileReader
       return FileReader( filepath )
 
-    routine save( filepath:String, data:String )->Logical [native]
+    routine save( filepath:String, data:String )->Logical
+      local outfile = writer( filepath )
+      forEach (ch in data) outfile.write( ch )
+      outfile.close
+      return true
 
-    routine size( filepath:String )->Integer [native]
+    routine size( filepath:String )->Integer
+      native @|if ( !$filepath ) return 0;
+              |
+              |char c_filepath[ PATH_MAX ];
+              |$filepath->to_c_string( c_filepath, sizeof(c_filepath) );
+              |
+              |FILE* fp = fopen( c_filepath, "rb" );
+              |if ( !fp ) return 0;
+              |
+              |fseek( fp, 0, SEEK_END );
+              |RogueInteger size = (RogueInteger) ftell( fp );
+              |fclose( fp );
+              |
+              |return size;
 
     routine writer( filepath:String )->FileWriter
       return FileWriter( filepath )

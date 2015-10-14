@@ -826,13 +826,3 @@ struct RogueError : RogueObject
 //-----------------------------------------------------------------------------
 RogueString* RogueConsole__input( RogueString* prompt );
 
-//-----------------------------------------------------------------------------
-//  File
-//-----------------------------------------------------------------------------
-RogueString* RogueFile__absolute_filepath( RogueString* filepath );
-RogueLogical RogueFile__exists( RogueString* filepath );
-RogueLogical RogueFile__is_folder( RogueString* filepath );
-RogueString* RogueFile__load( RogueString* filepath );
-RogueLogical RogueFile__save( RogueString* filepath, RogueString* data );
-RogueInteger RogueFile__size( RogueString* filepath );
-
