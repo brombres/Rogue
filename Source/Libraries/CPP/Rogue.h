@@ -909,13 +909,3 @@ RogueReal    RogueReal__create( RogueInteger high_bits, RogueInteger low_bits );
 RogueInteger RogueReal__high_bits( RogueReal THIS );
 RogueInteger RogueReal__low_bits( RogueReal THIS );
 
-
-//-----------------------------------------------------------------------------
-//  StringBuilder
-//-----------------------------------------------------------------------------
-struct RogueStringBuilder;
-
-RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
-

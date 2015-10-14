@@ -1,2 +1,5 @@
-println StringBuilder().println(pi)
-println 3.141592653589793 == pi
+forEach (n in 0..15)
+  println StringBuilder().print(pi,n)
+endForEach
+println "3.141592653589793"
+println pi

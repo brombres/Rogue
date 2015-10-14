@@ -912,16 +912,6 @@ RogueReal    RogueReal__create( RogueInteger high_bits, RogueInteger low_bits );
 RogueInteger RogueReal__high_bits( RogueReal THIS );
 RogueInteger RogueReal__low_bits( RogueReal THIS );
 
-
-//-----------------------------------------------------------------------------
-//  StringBuilder
-//-----------------------------------------------------------------------------
-struct RogueStringBuilder;
-
-RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
-
 //=============================================================================
 // Code generated from Rogue source
 //=============================================================================
@@ -4173,16 +4163,16 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueLo
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueLong value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueObject* value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueReal value_0 );
-RogueInteger RogueStringBuilder__encode_as_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueInteger decimal_count_1 );
-void RogueStringBuilder__round_off_bytes( RogueStringBuilder* THIS );
-RogueReal RogueStringBuilder__scan_bytes( RogueStringBuilder* THIS );
-void RogueStringBuilder__print_work_bytes( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueString* value_0 );
 void RogueStringBuilder__print_indent( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__print_to_work_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueInteger decimal_places_1 );
+void RogueStringBuilder__print_work_bytes( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS, RogueInteger value_0 );
 RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS, RogueString* value_0 );
 RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* THIS, RogueInteger additional_count_0 );
+void RogueStringBuilder__round_off_work_bytes( RogueStringBuilder* THIS );
+RogueReal RogueStringBuilder__scan_work_bytes( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__init_object( RogueStringBuilder* THIS );
 RogueString* RogueStringList__to_String( RogueStringList* THIS );
 RogueString* RogueStringList__type_name( RogueStringList* THIS );
@@ -4629,6 +4619,8 @@ RogueByteList* RogueByteList__insert( RogueByteList* THIS, RogueByte value_0, Ro
 RogueByteList* RogueByteList__reserve( RogueByteList* THIS, RogueInteger additional_count_0 );
 RogueByte RogueByteList__remove_at( RogueByteList* THIS, RogueInteger index_0 );
 RogueByte RogueByteList__remove_last( RogueByteList* THIS );
+RogueByteList* RogueByteList__reverse( RogueByteList* THIS );
+RogueByteList* RogueByteList__reverse( RogueByteList* THIS, RogueInteger i1_0, RogueInteger i2_1 );
 RogueString* RogueMath__type_name( RogueClassMath* THIS );
 RogueClassMath* RogueMath__init_object( RogueClassMath* THIS );
 RogueString* RogueByteArray__type_name( RogueArray* THIS );

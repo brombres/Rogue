@@ -112,119 +112,24 @@ class StringBuilder [requisite]
 
       # Standard output
       forEach (decimal_count in 1..18)
-        encode_as_bytes( value, decimal_count )
-        round_off_bytes
-        if (scan_bytes == value) escapeForEach 
+        print_to_work_bytes( value, decimal_count )
+        if (scan_work_bytes == value) escapeForEach 
       endForEach
 
       print_work_bytes
 
       return this
 
-    method encode_as_bytes( value:Real, decimal_count:Integer )->Integer
-      work_bytes.clear
-
-      local whole = Math.floor( value )->Long
-      value -= whole
-
-      while (whole >= 10)
-        work_bytes.insert( '0' + (whole % 10) )
-        whole /= 10
-      endWhile
-      work_bytes.insert( '0' + whole )
-
-      local dot_pos = work_bytes.count
-      work_bytes.add( '.' )
-
-      forEach (2..decimal_count)
-        value *= 10
-        local digit = Math.floor(value)->Integer
-        work_bytes.add( '0' + digit )
-        value -= digit
-      endForEach
-
-      return dot_pos
-
-    method remove_last->Character
-      inline characters.remove_last()
-
-    method round_off_bytes
-      if (work_bytes.remove_last >= '5')
-        local i = work_bytes.count - 1
-        while (i >= 0)
-          if (work_bytes[i] != '.')
-            ++work_bytes[i]
-            if (work_bytes[i] == ('9'+1)) work_bytes[i] = '0'
-            else                          return
-          endIf
-          --i
-        endWhile
-        work_bytes.insert( '1' )
+    method print( value:Real, decimal_places:Integer )->this
+      if (value < 0 )
+        print( '-' )
+        value = -value
       endIf
-
-    method scan_bytes->Real
-      local whole = 0.0
-      local decimal = 0.0
-      local decimal_count = 0
-      local scanning_whole = true
-      forEach (digit in work_bytes)
-        if (scanning_whole)
-          if (digit == '.') scanning_whole = false
-          else              whole = whole * 10 + (digit - '0')
-        else
-          decimal = decimal * 10 + (digit - '0')
-          ++decimal_count
-        endIf
-      endForEach
-      return whole + decimal / 10.0^decimal_count
-
-    method print( value:Real, decimal_places:Integer )->this [native]
-
-      #{
-    method print_real( value:Real, decimal_places:Integer )->this
-      work_bytes.clear
-      print_real_to_work_bytes( value, decimal_places )
+      
+      print_to_work_bytes( value, decimal_places )
       print_work_bytes
+
       return this
-      }#
-
-    method print_work_bytes
-      forEach (digit in work_bytes)
-        print( digit->Character )
-      endForEach
-
-      #{
-    method print_real_to_work_bytes( value:Real, decimal_places:Integer )->this
-      if (value < 0)
-        work_bytes.print( '-' )
-        return print_real_to_work_bytes( -value, decimal_places )
-      endIf
-
-      if (value > 10)
-        print_real_to_work_bytes
-
-      while (value >= 10)
-        work_bytes.insert( whole % 10 )
-
-      local whole = Math.floor( value )->Long
-      value -= whole
-
-      while (whole >= 10)
-        work_bytes.insert( whole % 10 )
-        whole /= 10
-      endWhile
-      work_bytes.insert( whole )
-
-      local dot_pos = work_bytes.count
-      work_bytes.print( '.' )
-
-      forEach (2..decimal_count)
-        value *= 10
-        local digit = Math.floor(value)->Integer
-        work_bytes.print( digit )
-        value -= digit
-      endForEach
-      }#
 
     method print( value:String )->this
       if (value)
@@ -243,6 +148,40 @@ class StringBuilder [requisite]
       if (not needs_indent or indent == 0) return
       forEach (i in 1..indent) characters.add( ' ' )
       at_newline = false
+
+    method print_to_work_bytes( value:Real, decimal_places:Integer )->this
+      work_bytes.clear
+      local whole = Math.floor( value )
+      value -= whole
+      while (whole >= 10)
+        work_bytes.add( ('0' + ((whole%10)->Integer))->Character )
+        whole /= 10
+      endWhile
+      work_bytes.add( ('0' + ((whole%10)->Integer))->Character )
+
+      work_bytes.reverse
+
+      if (decimal_places != 0)
+        work_bytes.add( '.' )
+        forEach (1..decimal_places)
+          value *= 10
+          local digit = Math.floor(value)->Integer
+          value -= digit
+          work_bytes.add( ('0' + digit)->Character )
+        endForEach
+      endIf
+
+      if (value >= 0.5)
+        work_bytes.add( '5' )
+        round_off_work_bytes
+      endIf
+
+      return this
+
+    method print_work_bytes
+      forEach (digit in work_bytes)
+        print( digit->Character )
+      endForEach
 
     method println()->this
       return print( '\n' )
@@ -280,6 +219,36 @@ class StringBuilder [requisite]
     method reserve( additional_count:Integer )->this [requisite]
       characters.reserve( additional_count )
       return this
+
+    method round_off_work_bytes
+      if (work_bytes.remove_last >= '5')
+        local i = work_bytes.count - 1
+        while (i >= 0)
+          if (work_bytes[i] != '.')
+            ++work_bytes[i]
+            if (work_bytes[i] == ('9'+1)) work_bytes[i] = '0'
+            else                          return
+          endIf
+          --i
+        endWhile
+        work_bytes.insert( '1' )
+      endIf
+
+    method scan_work_bytes->Real
+      local whole = 0.0
+      local decimal = 0.0
+      local decimal_count = 0
+      local scanning_whole = true
+      forEach (digit in work_bytes)
+        if (scanning_whole)
+          if (digit == '.') scanning_whole = false
+          else              whole = whole * 10 + (digit - '0')
+        else
+          decimal = decimal * 10 + (digit - '0')
+          ++decimal_count
+        endIf
+      endForEach
+      return whole + decimal / 10.0^decimal_count
 
     method set( index:Integer, ch:Character )->this
       characters[index] = ch
