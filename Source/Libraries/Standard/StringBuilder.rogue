@@ -32,6 +32,10 @@ class StringBuilder [requisite]
     method get( index:Integer )->Character
       inline this.characters[ index ]
 
+    method insert( ch:Character )->this
+      characters.insert( ch )
+      return this
+
     method needs_indent->Logical
       return (at_newline and indent > 0)
 
@@ -124,10 +128,10 @@ class StringBuilder [requisite]
       value -= whole
 
       while (whole >= 10)
-        work_bytes.insert( whole % 10 )
+        work_bytes.insert( '0' + (whole % 10) )
         whole /= 10
       endWhile
-      work_bytes.insert( whole )
+      work_bytes.insert( '0' + whole )
 
       local dot_pos = work_bytes.count
       work_bytes.add( '.' )
@@ -135,24 +139,27 @@ class StringBuilder [requisite]
       forEach (2..decimal_count)
         value *= 10
         local digit = Math.floor(value)->Integer
-        work_bytes.add( digit )
+        work_bytes.add( '0' + digit )
         value -= digit
       endForEach
 
       return dot_pos
 
+    method remove_last->Character
+      inline characters.remove_last()
+
     method round_off_bytes
-      if (work_bytes.remove_last >= 5)
+      if (work_bytes.remove_last >= '5')
         local i = work_bytes.count - 1
         while (i >= 0)
           if (work_bytes[i] != '.')
             ++work_bytes[i]
-            if (work_bytes[i] == 10) work_bytes[i] = 0
-            else                     return
+            if (work_bytes[i] == ('9'+1)) work_bytes[i] = '0'
+            else                          return
           endIf
           --i
         endWhile
-        work_bytes.insert( 1 )
+        work_bytes.insert( '1' )
       endIf
 
     method scan_bytes->Real
@@ -163,9 +170,9 @@ class StringBuilder [requisite]
       forEach (digit in work_bytes)
         if (scanning_whole)
           if (digit == '.') scanning_whole = false
-          else              whole = whole * 10 + digit
+          else              whole = whole * 10 + (digit - '0')
         else
-          decimal = decimal * 10 + digit
+          decimal = decimal * 10 + (digit - '0')
           ++decimal_count
         endIf
       endForEach
@@ -183,14 +190,13 @@ class StringBuilder [requisite]
 
     method print_work_bytes
       forEach (digit in work_bytes)
-        if (digit <= 9) print( ('0'+digit)->Character )
-        else            print( digit->Character )
+        print( digit->Character )
       endForEach
 
       #{
     method print_real_to_work_bytes( value:Real, decimal_places:Integer )->this
       if (value < 0)
-        work_bytes.add( '-' )
+        work_bytes.print( '-' )
         return print_real_to_work_bytes( -value, decimal_places )
       endIf
 
@@ -210,12 +216,12 @@ class StringBuilder [requisite]
       work_bytes.insert( whole )
 
       local dot_pos = work_bytes.count
-      work_bytes.add( '.' )
+      work_bytes.print( '.' )
 
       forEach (2..decimal_count)
         value *= 10
         local digit = Math.floor(value)->Integer
-        work_bytes.add( digit )
+        work_bytes.print( digit )
         value -= digit
       endForEach
       }#
@@ -259,7 +265,10 @@ class StringBuilder [requisite]
     method println( value:Long )->this
       return print( value ).print( '\n' )
 
-    method println( value:Real, decimal_places=4:Integer )->this
+    method println( value:Real )->this
+      return print( value ).print( '\n' )
+
+    method println( value:Real, decimal_places:Integer )->this
       return print( value, decimal_places ).print( '\n' )
 
     method println( value:Object )->this
@@ -270,6 +279,10 @@ class StringBuilder [requisite]
 
     method reserve( additional_count:Integer )->this [requisite]
       characters.reserve( additional_count )
+      return this
+
+    method set( index:Integer, ch:Character )->this
+      characters[index] = ch
       return this
 
     method to->String

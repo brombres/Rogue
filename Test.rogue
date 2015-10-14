@@ -1,1 +1,2 @@
-println StringBuilder().print(pi,4)
+println StringBuilder().println(pi)
+println 3.141592653589793 == pi

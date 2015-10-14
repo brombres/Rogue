@@ -150,6 +150,24 @@ class List<<$DataType>> : GenericList
     method remove_last->$DataType
       return remove_at( count - 1 )
 
+    method reverse->this
+      return reverse( 0, count-1 )
+
+    method reverse( i1:Integer, i2:Integer )->this
+      if (i1 < 0) i1 = 0
+      if (i2 >= count) i2 = count - 1
+
+      local _data = data
+      while (i1 < i2)
+        local temp = _data[i1]
+        _data[i1] = _data[i2]
+        _data[i2] = temp
+        ++i1
+        --i2
+      endWhile
+
+      return this
+
     method set( index:Integer, new_value:$DataType )->$DataType[]
       inline this.data[ index ] = new_value
 
