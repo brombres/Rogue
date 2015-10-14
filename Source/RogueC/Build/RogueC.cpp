@@ -1428,22 +1428,6 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const
   return buffer;
 }
 
-/*
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value )
-{
-  char st[80];
-  sprintf( st, "%d", value );//
-  return RogueStringBuilder__print( buffer, st );
-}
-
-RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value )
-{
-  char st[80];
-  sprintf( st, "%lld", value );
-  return RogueStringBuilder__print( buffer, st );
-}
-*/
-
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places )
 {
   char format[80];
@@ -12231,6 +12215,7 @@ struct RogueTypeString_TokenListTableEntry : RogueType
 };
 
 
+void RogueStringBuilder__init_class();
 void RogueTokenType__init_class();
 void RogueSystem__exit( RogueInteger result_code_0 );
 void RogueSystem__init_class();
@@ -12239,6 +12224,11 @@ RogueByteList* RogueFile__load_as_bytes( RogueString* filepath_0 );
 RogueString* RogueFile__path( RogueString* filepath_0 );
 RogueFileReader* RogueFile__reader( RogueString* filepath_0 );
 void RoguePreprocessor__init_class();
+
+void RogueStringBuilder__init_class()
+{
+  RogueStringBuilder::work_bytes = ((RogueByteList__init( ((RogueByteList*)Rogue_program.type_ByteList->create_and_init_object()) )));
+}
 
 void RogueTokenType__init_class()
 {
@@ -13002,121 +12992,127 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueRe
     }
     return (RogueStringBuilder*)(((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( THIS, value_0 ))), (RogueCharacter)'e' ))), pow10_3 ))));
   }
-  RogueByteList* bytes_4 = (((RogueByteList__init( ((RogueByteList*)Rogue_program.type_ByteList->create_and_init_object()) ))));
   {
-    RogueInteger decimal_count_5 = (1);
-    RogueInteger _auto_8_6 = (18);
-    for (;decimal_count_5 <= _auto_8_6;++decimal_count_5)
+    RogueInteger decimal_count_4 = (1);
+    RogueInteger _auto_8_5 = (18);
+    for (;decimal_count_4 <= _auto_8_5;++decimal_count_4)
     {
-      RogueStringBuilder__encode_as_bytes( THIS, value_0, bytes_4, decimal_count_5 );
-      RogueStringBuilder__round_off_bytes( THIS, bytes_4 );
-      if (((RogueStringBuilder__scan_bytes( THIS, bytes_4 ))) == value_0)
+      RogueStringBuilder__encode_as_bytes( THIS, value_0, decimal_count_4 );
+      RogueStringBuilder__round_off_bytes( THIS );
+      if (((RogueStringBuilder__scan_bytes( THIS ))) == value_0)
       {
         goto _auto_175;
       }
     }
   }
   _auto_175:;
-  {
-    RogueByteList* _auto_176_7 = (bytes_4);
-    RogueInteger _auto_177_8 = (0);
-    for (;_auto_177_8 < _auto_176_7->count;++_auto_177_8)
-    {
-      RogueByte digit_9 = (_auto_176_7->data->bytes[_auto_177_8]);
-      if (((RogueCharacter)(digit_9)) == (RogueCharacter)'.')
-      {
-        RogueStringBuilder__print( THIS, (RogueCharacter)'.' );
-      }
-      else
-      {
-        RogueStringBuilder__print( THIS, ((RogueCharacter)(((RogueCharacter)'0' + ((RogueCharacter)(digit_9))))) );
-      }
-    }
-  }
+  RogueStringBuilder__print_work_bytes( THIS );
   return (RogueStringBuilder*)(THIS);
 }
 
-void RogueStringBuilder__encode_as_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueByteList* bytes_1, RogueInteger decimal_count_2 )
+RogueInteger RogueStringBuilder__encode_as_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueInteger decimal_count_1 )
 {
-  RogueByteList__clear( bytes_1 );
-  RogueLong whole_3 = (((RogueLong)(floor((double)value_0))));
-  value_0 -= ((RogueReal)(whole_3));
-  while (whole_3 >= ((RogueLong)10))
+  RogueByteList__clear( RogueStringBuilder::work_bytes );
+  RogueLong whole_2 = (((RogueLong)(floor((double)value_0))));
+  value_0 -= ((RogueReal)(whole_2));
+  while (whole_2 >= ((RogueLong)10))
   {
-    RogueByteList__insert( bytes_1, ((RogueByte)(Rogue_program.mod( (RogueLong)whole_3, (RogueLong)((RogueLong)10) ))), 0 );
-    whole_3 /= ((RogueLong)10);
+    RogueByteList__insert( RogueStringBuilder::work_bytes, ((RogueByte)(Rogue_program.mod( (RogueLong)whole_2, (RogueLong)((RogueLong)10) ))), 0 );
+    whole_2 /= ((RogueLong)10);
   }
-  RogueByteList__insert( bytes_1, ((RogueByte)(whole_3)), 0 );
-  RogueByteList__add( bytes_1, ((RogueByte)((RogueCharacter)'.')) );
+  RogueByteList__insert( RogueStringBuilder::work_bytes, ((RogueByte)(whole_2)), 0 );
+  RogueInteger dot_pos_3 = (RogueStringBuilder::work_bytes->count);
+  RogueByteList__add( RogueStringBuilder::work_bytes, ((RogueByte)((RogueCharacter)'.')) );
   {
     RogueInteger _auto_9_4 = (2);
-    RogueInteger _auto_10_5 = (decimal_count_2);
+    RogueInteger _auto_10_5 = (decimal_count_1);
     for (;_auto_9_4 <= _auto_10_5;++_auto_9_4)
     {
       value_0 *= 10.;
       RogueInteger digit_6 = (((RogueInteger)(floor((double)value_0))));
-      RogueByteList__add( bytes_1, ((RogueByte)(digit_6)) );
+      RogueByteList__add( RogueStringBuilder::work_bytes, ((RogueByte)(digit_6)) );
       value_0 -= ((RogueReal)(digit_6));
     }
   }
+  return (RogueInteger)(dot_pos_3);
 }
 
-void RogueStringBuilder__round_off_bytes( RogueStringBuilder* THIS, RogueByteList* bytes_0 )
+void RogueStringBuilder__round_off_bytes( RogueStringBuilder* THIS )
 {
-  if (((RogueInteger)(((RogueByteList__remove_last( bytes_0 ))))) >= 5)
+  if (((RogueInteger)(((RogueByteList__remove_last( RogueStringBuilder::work_bytes ))))) >= 5)
   {
-    RogueInteger i_1 = ((bytes_0->count - 1));
-    while (i_1 >= 0)
+    RogueInteger i_0 = ((RogueStringBuilder::work_bytes->count - 1));
+    while (i_0 >= 0)
     {
-      if (((RogueCharacter)(bytes_0->data->bytes[i_1])) != (RogueCharacter)'.')
+      if (((RogueCharacter)(RogueStringBuilder::work_bytes->data->bytes[i_0])) != (RogueCharacter)'.')
       {
-        bytes_0->data->bytes[i_1] = ((RogueByte)((((RogueInteger)(bytes_0->data->bytes[i_1])) + 1)));
-        if (((RogueInteger)(bytes_0->data->bytes[i_1])) == 10)
+        RogueStringBuilder::work_bytes->data->bytes[i_0] = ((RogueByte)((((RogueInteger)(RogueStringBuilder::work_bytes->data->bytes[i_0])) + 1)));
+        if (((RogueInteger)(RogueStringBuilder::work_bytes->data->bytes[i_0])) == 10)
         {
-          bytes_0->data->bytes[i_1] = ((RogueByte)(0));
+          RogueStringBuilder::work_bytes->data->bytes[i_0] = ((RogueByte)(0));
         }
         else
         {
           return;
         }
       }
-      --i_1;
+      --i_0;
     }
-    RogueByteList__insert( bytes_0, ((RogueByte)(1)), 0 );
+    RogueByteList__insert( RogueStringBuilder::work_bytes, ((RogueByte)(1)), 0 );
   }
 }
 
-RogueReal RogueStringBuilder__scan_bytes( RogueStringBuilder* THIS, RogueByteList* bytes_0 )
+RogueReal RogueStringBuilder__scan_bytes( RogueStringBuilder* THIS )
 {
-  RogueReal whole_1 = (0.0);
-  RogueReal decimal_2 = (0.0);
-  RogueInteger decimal_count_3 = (0);
-  RogueLogical scanning_whole_4 = (true);
+  RogueReal whole_0 = (0.0);
+  RogueReal decimal_1 = (0.0);
+  RogueInteger decimal_count_2 = (0);
+  RogueLogical scanning_whole_3 = (true);
   {
-    RogueByteList* _auto_178_5 = (bytes_0);
-    RogueInteger _auto_179_6 = (0);
-    for (;_auto_179_6 < _auto_178_5->count;++_auto_179_6)
+    RogueByteList* _auto_176_4 = (RogueStringBuilder::work_bytes);
+    RogueInteger _auto_177_5 = (0);
+    for (;_auto_177_5 < _auto_176_4->count;++_auto_177_5)
     {
-      RogueByte digit_7 = (_auto_178_5->data->bytes[_auto_179_6]);
-      if (scanning_whole_4)
+      RogueByte digit_6 = (_auto_176_4->data->bytes[_auto_177_5]);
+      if (scanning_whole_3)
       {
-        if (((RogueCharacter)(digit_7)) == (RogueCharacter)'.')
+        if (((RogueCharacter)(digit_6)) == (RogueCharacter)'.')
         {
-          scanning_whole_4 = ((RogueLogical)false);
+          scanning_whole_3 = ((RogueLogical)false);
         }
         else
         {
-          whole_1 = ((RogueReal)((whole_1 * 10.) + ((RogueReal)(digit_7))));
+          whole_0 = ((RogueReal)((whole_0 * 10.) + ((RogueReal)(digit_6))));
         }
       }
       else
       {
-        decimal_2 = ((RogueReal)((decimal_2 * 10.) + ((RogueReal)(digit_7))));
-        ++decimal_count_3;
+        decimal_1 = ((RogueReal)((decimal_1 * 10.) + ((RogueReal)(digit_6))));
+        ++decimal_count_2;
       }
     }
   }
-  return (RogueReal)((whole_1 + (decimal_2 / ((RogueReal) pow((double)10., (double)((RogueReal)(decimal_count_3)))))));
+  return (RogueReal)((whole_0 + (decimal_1 / ((RogueReal) pow((double)10., (double)((RogueReal)(decimal_count_2)))))));
+}
+
+void RogueStringBuilder__print_work_bytes( RogueStringBuilder* THIS )
+{
+  {
+    RogueByteList* _auto_178_0 = (RogueStringBuilder::work_bytes);
+    RogueInteger _auto_179_1 = (0);
+    for (;_auto_179_1 < _auto_178_0->count;++_auto_179_1)
+    {
+      RogueByte digit_2 = (_auto_178_0->data->bytes[_auto_179_1]);
+      if (((RogueInteger)(digit_2)) <= 9)
+      {
+        RogueStringBuilder__print( THIS, ((RogueCharacter)(((RogueCharacter)'0' + ((RogueCharacter)(digit_2))))) );
+      }
+      else
+      {
+        RogueStringBuilder__print( THIS, ((RogueCharacter)(digit_2)) );
+      }
+    }
+  }
 }
 
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueString* value_0 )
@@ -20006,11 +20002,6 @@ RogueByte RogueByteList__remove_last( RogueByteList* THIS )
   return (RogueByte)(((RogueByteList__remove_at( THIS, (THIS->count - 1) ))));
 }
 
-RogueString* RogueByteArray__type_name( RogueArray* THIS )
-{
-  return (RogueString*)(Rogue_program.literal_strings[592]);
-}
-
 RogueString* RogueMath__type_name( RogueClassMath* THIS )
 {
   return (RogueString*)(Rogue_program.literal_strings[953]);
@@ -20019,6 +20010,11 @@ RogueString* RogueMath__type_name( RogueClassMath* THIS )
 RogueClassMath* RogueMath__init_object( RogueClassMath* THIS )
 {
   return (RogueClassMath*)(THIS);
+}
+
+RogueString* RogueByteArray__type_name( RogueArray* THIS )
+{
+  return (RogueString*)(Rogue_program.literal_strings[592]);
 }
 
 RogueString* RogueCharacterArray__type_name( RogueArray* THIS )
@@ -36783,8 +36779,8 @@ void RogueProgram::configure()
   type_Local->index = 62;
   type_Array->index = 63;
   type_ByteList->index = 64;
-  type_Array->index = 65;
-  type_Math->index = 66;
+  type_Math->index = 65;
+  type_Array->index = 66;
   type_Array->index = 67;
   type_System->index = 68;
   type_String_LogicalTable->index = 69;
@@ -38243,6 +38239,7 @@ void RogueProgram::configure()
 
 void RogueProgram::launch( int argc, char* argv[] )
 {
+  RogueStringBuilder__init_class();
   RogueTokenType__init_class();
   RogueSystem__init_class();
   RoguePreprocessor__init_class();
@@ -38266,6 +38263,7 @@ void RogueProgram::finish_tasks()
 }
 RogueProgram Rogue_program;
 
+RogueByteList* RogueStringBuilder::work_bytes = nullptr;
 RogueClassString_TokenTypeTable* RogueClassTokenType::lookup = nullptr;
 RogueClassTokenType* RogueClassTokenType::directive_define = nullptr;
 RogueClassTokenType* RogueClassTokenType::directive_include = nullptr;

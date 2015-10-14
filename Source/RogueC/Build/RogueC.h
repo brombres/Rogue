@@ -920,8 +920,6 @@ struct RogueStringBuilder;
 
 RogueStringBuilder* RogueStringBuilder__reserve( RogueStringBuilder* buffer, RogueInteger additional_count );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, const char* st );
-//RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueInteger value );
-//RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueLong value );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* buffer, RogueReal value, RogueInteger decimal_places );
 
 //=============================================================================
@@ -1426,6 +1424,9 @@ struct RogueClassGenericList : RogueObject
 
 struct RogueStringBuilder : RogueObject
 {
+  // SETTINGS
+  static RogueByteList* work_bytes;
+
   // PROPERTIES
   RogueCharacterList* characters;
   RogueInteger indent;
@@ -4172,9 +4173,10 @@ RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueLo
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueLong value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueObject* value_0 );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueReal value_0 );
-void RogueStringBuilder__encode_as_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueByteList* bytes_1, RogueInteger decimal_count_2 );
-void RogueStringBuilder__round_off_bytes( RogueStringBuilder* THIS, RogueByteList* bytes_0 );
-RogueReal RogueStringBuilder__scan_bytes( RogueStringBuilder* THIS, RogueByteList* bytes_0 );
+RogueInteger RogueStringBuilder__encode_as_bytes( RogueStringBuilder* THIS, RogueReal value_0, RogueInteger decimal_count_1 );
+void RogueStringBuilder__round_off_bytes( RogueStringBuilder* THIS );
+RogueReal RogueStringBuilder__scan_bytes( RogueStringBuilder* THIS );
+void RogueStringBuilder__print_work_bytes( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__print( RogueStringBuilder* THIS, RogueString* value_0 );
 void RogueStringBuilder__print_indent( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS );
@@ -4627,9 +4629,9 @@ RogueByteList* RogueByteList__insert( RogueByteList* THIS, RogueByte value_0, Ro
 RogueByteList* RogueByteList__reserve( RogueByteList* THIS, RogueInteger additional_count_0 );
 RogueByte RogueByteList__remove_at( RogueByteList* THIS, RogueInteger index_0 );
 RogueByte RogueByteList__remove_last( RogueByteList* THIS );
-RogueString* RogueByteArray__type_name( RogueArray* THIS );
 RogueString* RogueMath__type_name( RogueClassMath* THIS );
 RogueClassMath* RogueMath__init_object( RogueClassMath* THIS );
+RogueString* RogueByteArray__type_name( RogueArray* THIS );
 RogueString* RogueCharacterArray__type_name( RogueArray* THIS );
 RogueString* RogueSystem__type_name( RogueClassSystem* THIS );
 RogueClassSystem* RogueSystem__init_object( RogueClassSystem* THIS );
