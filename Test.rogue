@@ -3,14 +3,20 @@ println "Hello World"
 local x = 3
 println native("++$x")->Integer
 
-#{
 Test()
 
 class Test
+  PROPERTIES
+    name : String
+    n = 1 : Integer
+
   METHODS
     method init
-      local name = Console.input( "Enter your name: ")
-      println "Your name is " + name
-endClass
+      println "$ + 1 = $" (5,plus1(5))
 
-}#
+    method get_name->String
+      macro name 
+
+    method plus1( value:Integer )->Integer
+      macro native "$value+1"
+endClass

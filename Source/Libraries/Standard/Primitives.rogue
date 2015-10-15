@@ -38,7 +38,7 @@ class Integer [primitive]
       return this
 
     method to->Long
-      $if ("C++") inlineNative "((RogueLong)$this)"
+      $if ("C++") macro native "((RogueLong)$this)"
 
     method to->String
       return "" + this

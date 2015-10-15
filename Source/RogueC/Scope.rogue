@@ -85,11 +85,11 @@ class Scope
             cmd = CmdCallNativeRoutine( t, m, args )
           endIf
 
-        elseIf (m.is_inline)
-          local inline_args = InlineArgs( context, m, args )
+        elseIf (m.is_macro)
+          local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local inline_statement = statement.clone( inline_args )
+            local inline_statement = statement.clone( macro_args )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
@@ -122,11 +122,11 @@ class Scope
             cmd = CmdCallNativeMethod( t, context, m, args )
           endIf
 
-        elseIf (m.is_inline)
-          local inline_args = InlineArgs( context, m, args )
+        elseIf (m.is_macro)
+          local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local inline_statement = statement.clone( inline_args )
+            local inline_statement = statement.clone( macro_args )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 

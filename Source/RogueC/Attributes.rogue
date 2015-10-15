@@ -12,7 +12,7 @@ class Attribute
     is_functional       = 16
 
     is_native           = 32
-    is_inline           = 64
+    is_macro            = 64
     is_initializer      = 128
     is_immutable        = 256
     is_routine          = 512

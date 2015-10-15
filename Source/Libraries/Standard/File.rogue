@@ -184,37 +184,37 @@ class File
     method init( filepath )
 
     method absolute_filepath->String
-      inline File.absolute_filepath( this.filepath )
+      macro File.absolute_filepath( this.filepath )
 
     method exists->Logical
-      inline File.exists( this.filepath )
+      macro File.exists( this.filepath )
 
     method filename->String
       return filename( filepath )
 
     method is_folder->Logical
-      inline File.is_folder( this.filepath )
+      macro File.is_folder( this.filepath )
 
     method load_as_bytes->Byte[]
-      inline File.load_as_bytes( this.filepath )
+      macro File.load_as_bytes( this.filepath )
 
     method load_as_string->String
-      inline File.load_as_string( this.filepath )
+      macro File.load_as_string( this.filepath )
 
     method path->String
-      inline File.path( this.filepath )
+      macro File.path( this.filepath )
 
     method reader->FileReader
-      inline File.reader( this.filepath )
+      macro File.reader( this.filepath )
 
     method save( data:String )->Logical
-      inline File.save( this.filepath, data )
+      macro File.save( this.filepath, data )
 
     method size->Integer
-      inline File.size( this.filepath )
+      macro File.size( this.filepath )
 
     method writer->FileWriter
-      inline File.writer( this.filepath )
+      macro File.writer( this.filepath )
 
     method to->String
       return filepath

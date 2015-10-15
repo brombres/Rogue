@@ -19,7 +19,7 @@ class StringBuilder [requisite]
       return this
 
     method capacity->Integer
-      inline this.characters.capacity
+      macro this.characters.capacity
 
     method clear->this [requisite]
       characters.clear
@@ -27,10 +27,10 @@ class StringBuilder [requisite]
       return this
 
     method count->Integer
-      inline this.characters.count
+      macro this.characters.count
 
     method get( index:Integer )->Character
-      inline this.characters[ index ]
+      macro this.characters[ index ]
 
     method insert( ch:Character )->this
       characters.insert( ch )
@@ -49,7 +49,7 @@ class StringBuilder [requisite]
       return this
 
     method print( value:Float )->this
-      inline this.print( value->Real )
+      macro this.print( value->Real )
 
     method print( value:Integer )->this
       return print( value->Long )
@@ -193,7 +193,7 @@ class StringBuilder [requisite]
       return print( value ).print( '\n' )
 
     method println( value:Float )->this
-      inline this.println( value->Real )
+      macro this.println( value->Real )
 
     method println( value:Integer )->this
       return print( value ).print( '\n' )

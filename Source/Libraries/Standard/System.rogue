@@ -11,7 +11,7 @@ class System [requisite]
       $endIf
 
     routine run( command:String )
-      inlineNative
+      macro native
         @|{
          |  char cmd_buffer[4096];
          |  $command->to_c_string( cmd_buffer, 4096 );

@@ -5,7 +5,7 @@ class Random [singleton]
   ROUTINES
     routine next_state( state:Long )->Long
       # Kludge until Long literals work in compiler
-      $if ("C++") inlineNative "((THIS->state * 0x5DEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
+      $if ("C++") macro native "((THIS->state * 0x5DEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
 
   PROPERTIES
     state : Long

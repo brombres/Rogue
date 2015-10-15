@@ -1567,8 +1567,8 @@ class CmdAccess : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
 
-      local inline_args = (clone_args as InlineArgs)
-      if (inline_args) return inline_args.inline_access( result )
+      local macro_args = (clone_args as MacroArgs)
+      if (macro_args) return macro_args.inline_access( result )
       return result
 
     method implicit_type->Type
@@ -1955,8 +1955,8 @@ class CmdThisContext : Cmd
     method init( t, this_type )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local inline_args = (clone_args as InlineArgs)
-      if (inline_args) return inline_args.inline_this
+      local macro_args = (clone_args as MacroArgs)
+      if (macro_args) return macro_args.inline_this
 
       local task_args = (clone_args as TaskArgs)
       if (task_args)
@@ -1988,8 +1988,8 @@ class CmdLiteralThis : CmdThisContext
 
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
-      local inline_args = (clone_args as InlineArgs)
-      if (inline_args) return inline_args.inline_this
+      local macro_args = (clone_args as MacroArgs)
+      if (macro_args) return macro_args.inline_this
 
       local task_args = (clone_args as TaskArgs)
       if (task_args)
@@ -2046,9 +2046,9 @@ class CmdReadLocal : Cmd
     method init( t, local_info )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local inline_args = (clone_args as InlineArgs)
-      if (inline_args)
-        return inline_args.inline_read_local( this )
+      local macro_args = (clone_args as MacroArgs)
+      if (macro_args)
+        return macro_args.inline_read_local( this )
       else
         local task_args = (clone_args as TaskArgs)
         if (task_args)
@@ -2087,9 +2087,9 @@ class CmdWriteLocal : Cmd
     method init( t, local_info, new_value )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local inline_args = (clone_args as InlineArgs)
-      if (inline_args)
-        return inline_args.inline_write_local( this )
+      local macro_args = (clone_args as MacroArgs)
+      if (macro_args)
+        return macro_args.inline_write_local( this )
       else
         local task_args = (clone_args as TaskArgs)
         if (task_args)

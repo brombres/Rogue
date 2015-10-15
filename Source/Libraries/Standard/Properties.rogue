@@ -17,19 +17,19 @@ class PropertyValue
 
   METHODS
     method add( value:Character )->PropertyValue
-      inline this.add( PropertyValue(value) )
+      macro this.add( PropertyValue(value) )
 
     method add( value:Integer )->PropertyValue
-      inline this.add( PropertyValue(value) )
+      macro this.add( PropertyValue(value) )
 
     method add( value:Logical )->PropertyValue
-      inline this.add( PropertyValue(value) )
+      macro this.add( PropertyValue(value) )
 
     method add( value:Real )->PropertyValue
-      inline this.add( PropertyValue(value) )
+      macro this.add( PropertyValue(value) )
 
     method add( value:String )->PropertyValue
-      inline this.add( PropertyValue(value) )
+      macro this.add( PropertyValue(value) )
 
     method add( value:PropertyValue )->PropertyValue
       return this
@@ -62,19 +62,19 @@ class PropertyValue
       return NullProperty()
 
     method set( index:Integer, value:Character )
-      inline this.set( index, PropertyValue(value) )
+      macro this.set( index, PropertyValue(value) )
 
     method set( index:Integer, value:Integer )
-      inline this.set( index, PropertyValue(value) )
+      macro this.set( index, PropertyValue(value) )
 
     method set( index:Integer, value:Logical )
-      inline this.set( index, PropertyValue(value) )
+      macro this.set( index, PropertyValue(value) )
 
     method set( index:Integer, value:Real )
-      inline this.set( index, PropertyValue(value) )
+      macro this.set( index, PropertyValue(value) )
 
     method set( index:Integer, value:String )
-      inline this.set( index, PropertyValue(value) )
+      macro this.set( index, PropertyValue(value) )
 
 
     method set( index:Integer, value:PropertyValue )

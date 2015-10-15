@@ -17,7 +17,7 @@ class CloneMethodArgs : CloneArgs
       return label
 endClass
 
-class InlineArgs : CloneArgs
+class MacroArgs : CloneArgs
   PROPERTIES
     this_context : Cmd
     method_info  : Method

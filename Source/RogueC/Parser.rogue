@@ -564,31 +564,37 @@ class Parser
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
 
       consume_eols
-      if (consume(TokenType.keyword_inlineNative))
-        # inlineNative "$this.fn($arg)"
-        this_method.attributes.add( Attribute.is_native )
-        local buffer = StringBuilder()
-        local found_native_code = false
-        while (reader.has_another)
-          if (consume(TokenType.keyword_inlineNative) or consume_eols)
-          elseIf (next_is(TokenType.literal_string))
-            found_native_code = true
-            if (buffer.count) buffer.println
-            buffer.print( read->String )
-          else
-            escapeWhile
-          endIf
-        endWhile
-        if (found_native_code) this_method.native_code = buffer->String
-
-      elseIf (next_is(TokenType.keyword_inline))
-        # inline this.fn(arg)
-        # inline ...
-        this_method.attributes.add( Attribute.is_inline )
-        while (consume(TokenType.keyword_inline))
-          parse_single_line_statements( this_method.statements )
-          consume_eols
-        endWhile
+      if (next_is(TokenType.keyword_macro))
+        if (reader.peek(1).type is TokenType.keyword_native)
+          # macro native "$this.fn($arg)"
+          consume( TokenType.keyword_macro )
+          consume( TokenType.keyword_native )
+          this_method.attributes.add( Attribute.is_native )
+          local buffer = StringBuilder()
+          local found_native_code = false
+          while (reader.has_another)
+            if (consume(TokenType.keyword_macro))
+              must_consume( TokenType.keyword_native )
+            elseIf (consume_eols)
+              noAction
+            elseIf (next_is(TokenType.literal_string))
+              found_native_code = true
+              if (buffer.count) buffer.println
+              buffer.print( read->String )
+            else
+              escapeWhile
+            endIf
+          endWhile
+          if (found_native_code) this_method.native_code = buffer->String
+        else
+          # macro this.fn(arg)
+          # macro ...
+          this_method.attributes.add( Attribute.is_macro )
+          while (consume(TokenType.keyword_macro))
+            parse_single_line_statements( this_method.statements )
+            consume_eols
+          endWhile
+        endIf
 
       else
         if (parsing_augment)

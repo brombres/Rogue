@@ -43,13 +43,13 @@ class List<<$DataType>> : GenericList
       return this
 
     method contains( value:$DataType )->Logical
-      inline this.locate( value )?
+      macro this.locate( value )?
 
     method first->$DataType
-      inline this.data[0]
+      macro this.data[0]
 
     method get( index:Integer )->$DataType
-      inline this.data[index]
+      macro this.data[index]
 
     method insert( value:$DataType, before_index=0:Integer )->this
       if (before_index < 0) before_index = 0
@@ -145,7 +145,7 @@ class List<<$DataType>> : GenericList
       return result
 
     method remove_first->$DataType
-      inline this.remove_at(0)
+      macro this.remove_at(0)
 
     method remove_last->$DataType
       return remove_at( count - 1 )
@@ -169,7 +169,7 @@ class List<<$DataType>> : GenericList
       return this
 
     method set( index:Integer, new_value:$DataType )->$DataType[]
-      inline this.data[ index ] = new_value
+      macro this.data[ index ] = new_value
 
     method to->String
       local buffer = "["

@@ -33,6 +33,7 @@ class TokenType
     keyword_endWhich             : TokenType
     keyword_endWhile             : TokenType
     keyword_ENUMERATE            : TokenType
+    keyword_macro                : TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
     keyword_others               : TokenType
@@ -67,7 +68,6 @@ class TokenType
     keyword_function             : TokenType
     keyword_if                   : TokenType
     keyword_in                   : TokenType
-    keyword_inline               : TokenType
     keyword_is                   : TokenType
     keyword_isNot                : TokenType
     keyword_local                : TokenType
@@ -76,7 +76,6 @@ class TokenType
     keyword_necessary            : TokenType
     keyword_nextIteration        : TokenType
     keyword_noAction             : TokenType
-    keyword_inlineNative         : TokenType
     keyword_null                 : TokenType
     keyword_of                   : TokenType
     keyword_return               : TokenType

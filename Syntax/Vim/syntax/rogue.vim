@@ -46,7 +46,7 @@ syn keyword rogueType         Integer Byte Character Real Logical null String
 syn keyword rogueStorageClass overlaying underlying
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local 
 syn keyword rogueScopeDecl    deferred singleton managed
-syn keyword rogueStorageClass native inline inlineNative requisite abstract final propagated functional dynamicAccess
+syn keyword rogueStorageClass native macro requisite abstract final propagated functional dynamicAccess
 syn keyword rogueStorageClass marshalling omit
 syn keyword rogueExceptions   throw try catch finally
 syn keyword roguePreProc      useFramework

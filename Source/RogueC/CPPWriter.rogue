@@ -935,7 +935,7 @@ augment Type
     method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
       local buffer = StringBuilder()
       forEach (m in method_list)
-        if (not m.is_inline and m.is_dynamic and m.is_used)
+        if (not m.is_macro and m.is_dynamic and m.is_used)
           buffer.clear
           if (m.return_type)
             buffer.print( m.return_type.compile_type.cpp_class_name )
@@ -976,7 +976,7 @@ augment Type
       local i2 = method_list.count - 1
       while (i2 > 0)
         local m = method_list[ i2 ]
-        if (not m.is_inline and m.is_dynamic and m.is_used) escapeWhile
+        if (not m.is_macro and m.is_dynamic and m.is_used) escapeWhile
         --i2
       endWhile
 
@@ -984,7 +984,7 @@ augment Type
       forEach (i in 0..i2)
         local m = method_list[i]
 
-        if (not m.is_inline)
+        if (not m.is_macro)
           if (m.is_dynamic and m.is_used)
             # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )

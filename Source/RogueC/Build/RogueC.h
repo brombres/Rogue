@@ -1014,7 +1014,7 @@ struct RogueTypeTableEntry_of_String_TypeSpecializerList;
 struct RogueTypeString_TypeSpecializerTableEntry;
 struct RogueTypeTableEntry_of_String_CmdLabelList;
 struct RogueTypeString_CmdLabelTableEntry;
-struct RogueTypeInlineArgs;
+struct RogueTypeMacroArgs;
 struct RogueTypeCmdReadSingleton;
 struct RogueTypeCmdCreateArray;
 struct RogueTypeCmdCallRoutine;
@@ -1256,7 +1256,7 @@ struct RogueTableEntry_of_String_TypeSpecializerList;
 struct RogueClassString_TypeSpecializerTableEntry;
 struct RogueTableEntry_of_String_CmdLabelList;
 struct RogueClassString_CmdLabelTableEntry;
-struct RogueClassInlineArgs;
+struct RogueClassMacroArgs;
 struct RogueClassCmdReadSingleton;
 struct RogueClassCmdCreateArray;
 struct RogueClassCmdCallRoutine;
@@ -1705,6 +1705,7 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* keyword_endWhich;
   static RogueClassTokenType* keyword_endWhile;
   static RogueClassTokenType* keyword_ENUMERATE;
+  static RogueClassTokenType* keyword_macro;
   static RogueClassTokenType* keyword_method;
   static RogueClassTokenType* keyword_METHODS;
   static RogueClassTokenType* keyword_others;
@@ -1734,7 +1735,6 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* keyword_function;
   static RogueClassTokenType* keyword_if;
   static RogueClassTokenType* keyword_in;
-  static RogueClassTokenType* keyword_inline;
   static RogueClassTokenType* keyword_is;
   static RogueClassTokenType* keyword_isNot;
   static RogueClassTokenType* keyword_local;
@@ -1743,7 +1743,6 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* keyword_necessary;
   static RogueClassTokenType* keyword_nextIteration;
   static RogueClassTokenType* keyword_noAction;
-  static RogueClassTokenType* keyword_inlineNative;
   static RogueClassTokenType* keyword_null;
   static RogueClassTokenType* keyword_of;
   static RogueClassTokenType* keyword_return;
@@ -3365,7 +3364,7 @@ struct RogueClassString_CmdLabelTableEntry : RogueObject
 
 };
 
-struct RogueClassInlineArgs : RogueObject
+struct RogueClassMacroArgs : RogueObject
 {
   // PROPERTIES
   RogueClassCmd* this_context;
@@ -3985,7 +3984,7 @@ struct RogueProgram : RogueProgramCore
   RogueTypeString_TypeSpecializerTableEntry* type_String_TypeSpecializerTableEntry;
   RogueTypeTableEntry_of_String_CmdLabelList* type_TableEntry_of_String_CmdLabelList;
   RogueTypeString_CmdLabelTableEntry* type_String_CmdLabelTableEntry;
-  RogueTypeInlineArgs* type_InlineArgs;
+  RogueTypeMacroArgs* type_MacroArgs;
   RogueTypeCmdReadSingleton* type_CmdReadSingleton;
   RogueTypeCmdCreateArray* type_CmdCreateArray;
   RogueTypeCmdCallRoutine* type_CmdCallRoutine;
@@ -4256,7 +4255,7 @@ RogueLogical RogueMethod__is_dynamic( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_generated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_incorporated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_initializer( RogueClassMethod* THIS );
-RogueLogical RogueMethod__is_inline( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_macro( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_native( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_overridden( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_requisite( RogueClassMethod* THIS );
@@ -5704,13 +5703,13 @@ RogueString* RogueString_CmdLabelTableEntry__type_name( RogueClassString_CmdLabe
 RogueClassString_CmdLabelTableEntry* RogueString_CmdLabelTableEntry__init( RogueClassString_CmdLabelTableEntry* THIS, RogueString* _key_0, RogueClassCmdLabel* _value_1, RogueInteger _hash_2 );
 RogueClassString_CmdLabelTableEntry* RogueString_CmdLabelTableEntry__init_object( RogueClassString_CmdLabelTableEntry* THIS );
 RogueString* RogueString_CmdLabelTableEntryArray__type_name( RogueArray* THIS );
-RogueString* RogueInlineArgs__type_name( RogueClassInlineArgs* THIS );
-RogueClassInlineArgs* RogueInlineArgs__init_object( RogueClassInlineArgs* THIS );
-RogueClassInlineArgs* RogueInlineArgs__init( RogueClassInlineArgs* THIS, RogueClassCmd* _auto_801_0, RogueClassMethod* _auto_802_1, RogueClassCmdArgs* args_2 );
-RogueClassCmd* RogueInlineArgs__inline_this( RogueClassInlineArgs* THIS );
-RogueClassCmd* RogueInlineArgs__inline_access( RogueClassInlineArgs* THIS, RogueClassCmdAccess* access_0 );
-RogueClassCmd* RogueInlineArgs__inline_read_local( RogueClassInlineArgs* THIS, RogueClassCmdReadLocal* read_cmd_0 );
-RogueClassCmd* RogueInlineArgs__inline_write_local( RogueClassInlineArgs* THIS, RogueClassCmdWriteLocal* write_cmd_0 );
+RogueString* RogueMacroArgs__type_name( RogueClassMacroArgs* THIS );
+RogueClassMacroArgs* RogueMacroArgs__init_object( RogueClassMacroArgs* THIS );
+RogueClassMacroArgs* RogueMacroArgs__init( RogueClassMacroArgs* THIS, RogueClassCmd* _auto_801_0, RogueClassMethod* _auto_802_1, RogueClassCmdArgs* args_2 );
+RogueClassCmd* RogueMacroArgs__inline_this( RogueClassMacroArgs* THIS );
+RogueClassCmd* RogueMacroArgs__inline_access( RogueClassMacroArgs* THIS, RogueClassCmdAccess* access_0 );
+RogueClassCmd* RogueMacroArgs__inline_read_local( RogueClassMacroArgs* THIS, RogueClassCmdReadLocal* read_cmd_0 );
+RogueClassCmd* RogueMacroArgs__inline_write_local( RogueClassMacroArgs* THIS, RogueClassCmdWriteLocal* write_cmd_0 );
 RogueString* RogueCmdReadSingleton__type_name( RogueClassCmdReadSingleton* THIS );
 RogueClassCmd* RogueCmdReadSingleton__clone( RogueClassCmdReadSingleton* THIS, RogueClassCloneArgs* clone_args_0 );
 void RogueCmdReadSingleton__require_type_context( RogueClassCmdReadSingleton* THIS );

@@ -155,8 +155,8 @@ class Method
     method is_initializer->Logical
       return (attributes.flags & Attribute.is_initializer)
 
-    method is_inline->Logical
-      return (attributes.flags & Attribute.is_inline)
+    method is_macro->Logical
+      return (attributes.flags & Attribute.is_macro)
 
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)
@@ -177,7 +177,7 @@ class Method
       return (attributes.flags & Attribute.is_task_conversion)
 
     method omit_output->Logical
-      return is_native or is_inline or not is_used or (is_generated and name=="create" and type_context.is_compound)
+      return is_native or is_macro or not is_used or (is_generated and name=="create" and type_context.is_compound)
 
     method organize( add_to_lookup=true:Logical )->Method
       if (organized) return this

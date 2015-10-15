@@ -1,46 +1,46 @@
 class Math
   ROUTINES
     routine acos( n:Real )->Real
-      $if ("C++") inlineNative 'acos((double)$n)'
+      $if ("C++") macro native 'acos((double)$n)'
 
     routine asin( n:Real )->Real
-      $if ("C++") inlineNative 'asin((double)$n)'
+      $if ("C++") macro native 'asin((double)$n)'
 
     routine atan( n:Real )->Real
-      $if ("C++") inlineNative 'atan((double)$n)'
+      $if ("C++") macro native 'atan((double)$n)'
 
     routine atan2( y:Real, x:Real )->Real
-      $if ("C++") inlineNative 'atan2((double)$y,(double)$x)'
+      $if ("C++") macro native 'atan2((double)$y,(double)$x)'
 
     routine ceil( n:Real )->Real
-      $if ("C++") inlineNative 'ceil((double)$n)'
+      $if ("C++") macro native 'ceil((double)$n)'
 
     routine cos( n:Real )->Real
-      $if ("C++") inlineNative 'cos((double)$n)'
+      $if ("C++") macro native 'cos((double)$n)'
 
     routine exp( n:Real )->Real
-      $if ("C++") inlineNative 'exp((double)$n)'
+      $if ("C++") macro native 'exp((double)$n)'
 
     routine floor( n:Real )->Real
-      $if ("C++") inlineNative 'floor((double)$n)'
+      $if ("C++") macro native 'floor((double)$n)'
 
     routine log( n:Real )->Real
-      $if ("C++") inlineNative 'log((double)$n)'
+      $if ("C++") macro native 'log((double)$n)'
 
     routine log2( n:Real )->Real
-      $if ("C++") inlineNative 'log2((double)$n)'
+      $if ("C++") macro native 'log2((double)$n)'
 
     routine log10( n:Real )->Real
-      $if ("C++") inlineNative 'log10((double)$n)'
+      $if ("C++") macro native 'log10((double)$n)'
 
     routine sin( n:Real )->Real
-      $if ("C++") inlineNative 'sin((double)$n)'
+      $if ("C++") macro native 'sin((double)$n)'
 
     routine sqrt( n:Real )->Real
-      $if ("C++") inlineNative 'sqrt((double)$n)'
+      $if ("C++") macro native 'sqrt((double)$n)'
 
     routine tan( n:Real )->Real
-      $if ("C++") inlineNative 'tan((double)$n)'
+      $if ("C++") macro native 'tan((double)$n)'
 endClass
 
 
@@ -51,13 +51,13 @@ class Degrees( value:Real ) [compound]
 
   METHODS
     method cos->Real
-      inline Math.cos( (this.value / 180.0) * pi )
+      macro Math.cos( (this.value / 180.0) * pi )
 
     method sin->Real
-      inline Math.sin( (this.value / 180.0) * pi )
+      macro Math.sin( (this.value / 180.0) * pi )
 
     method tan->Real
-      inline Math.sin( (this.value / 180.0) * pi )
+      macro Math.sin( (this.value / 180.0) * pi )
 
     method to->String
       return "" + value
@@ -70,13 +70,13 @@ class Radians( value:Real ) [compound]
 
   METHODS
     method cos->Real
-      inline Math.cos( this.value )
+      macro Math.cos( this.value )
 
     method sin->Real
-      inline Math.sin( this.value )
+      macro Math.sin( this.value )
 
     method tan->Real
-      inline Math.tan( this.value )
+      macro Math.tan( this.value )
 
     method to->String
       return "" + value
