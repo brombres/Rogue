@@ -333,14 +333,6 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   types = new RogueType*[ type_count ];
   memset( types, 0, sizeof(RogueType*) );
 
-  type_OptionalReal      = new RogueOptionalRealType();
-  type_OptionalFloat     = new RogueOptionalFloatType();
-  type_OptionalLong      = new RogueOptionalLongType();
-  type_OptionalInteger   = new RogueOptionalIntegerType();
-  type_OptionalCharacter = new RogueOptionalCharacterType();
-  type_OptionalByte      = new RogueOptionalByteType();
-  type_OptionalLogical   = new RogueOptionalLogicalType();
-
   type_Object = new RogueObjectType();
   type_String = new RogueStringType();
   type_Array  = new RogueArrayType();

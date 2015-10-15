@@ -49,8 +49,18 @@ class CPPWriter
       return this
 
     method print( value:String )->CPPWriter
-      print_indent
-      buffer.print( value )
+      local needs_newline = false
+      if (value.contains('\n'))
+        forEach (line in LineReader(value))
+          if (needs_newline) println
+          print_indent
+          buffer.print( line )
+          needs_newline = true
+        endForEach
+      else
+        print_indent
+        buffer.print( value )
+      endIf
       return this
 
     method print_code( code:String )->CPPWriter
@@ -649,7 +659,6 @@ augment Type
       elseIf (is_optional and element_type.is_primitive)
         cpp_name = Program.validate_cpp_name( "Optional" + element_type.name )
         cpp_class_name = "Rogue" + cpp_name
-        attributes.add( Attribute.is_native )
 
       else
         cpp_class_name = "RogueClass" + cpp_name
@@ -728,8 +737,8 @@ augment Type
 
           if (is_optional)
             # Value Constructor, exists->true
-            writer.print( this ).print( "( " ).print( property_list.first.cpp_name )
-            writer.print( " value ) : value(value), exists(true) {}" )
+            writer.print( this ).print( "( " ).print( property_list.first.type )
+            writer.println( " value ) : value(value), exists(true) {}" )
           else
             # Standard Constructor
             writer.print( this ).print( "( " )
@@ -755,16 +764,18 @@ augment Type
         writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
         writer.println( "{" )
         if (is_optional)
-          writer.print( "  if (exists)" )
-          writer.print( "  {" )
-          writer.print( "    if (other.exists) return value == other.value;" )
-          writer.print( "    else              return false;" )
-          writer.print( "  }" )
-          writer.print( "  else" )
-          writer.print( "  {" )
-          writer.print( "    if (other.exists) return false;" )
-          writer.print( "    else              return true;" )
-          writer.print( "  }" )
+          writer.indent += 2
+          writer.println @|if (exists)
+                          |{
+                          |  if (other.exists) return value == other.value;
+                          |  else              return false;
+                          |}
+                          |else
+                          |{
+                          |  if (other.exists) return false;
+                          |  else              return true;
+                          |}
+          writer.indent -= 2
         else
           forEach (p in property_list)
             writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
@@ -775,10 +786,10 @@ augment Type
         writer.println
 
         writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
-        writer.println( "{" )
-        writer.println( "  return !(*this == other);" )
-        writer.println( "}" )
-        writer.println
+        writer.println @|{
+                        |  return !(*this == other);
+                        |}
+                        |
 
         # trace() method
         if (has_references)
@@ -800,12 +811,12 @@ augment Type
         # check()
         if (is_optional)
           writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
-          writer.println( "{" )
-          writer.println( "  if ( !exists ) return false;" )
-          writer.println( "  *checked = value;" )
-          writer.println( "  return true;" )
-          writer.println( "}" )
-          writer.println
+          writer.println @|{
+                          |  if ( !exists ) return false;
+                          |  *checked = value;
+                          |  return true;
+                          |}
+                          |
         endIf
 
       endIf

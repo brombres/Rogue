@@ -1,4 +1,11 @@
-println "Hello World!"
+#println "Hello World!"
+
+local x = null : Integer?
+if (x) println "Alpha"
+x = 5
+if (x) println "Beta"
+if (x?) println "Gamma"
+if (x!) println "Delta"
 
 #{
 Test()
