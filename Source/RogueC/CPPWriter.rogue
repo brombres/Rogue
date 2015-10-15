@@ -2228,6 +2228,8 @@ endAugment
 augment CmdNativeCode
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local needs_newline = code.contains('\n') or not result_type
+
       forEach (line in LineReader(code))
         local original_indent = writer.indent
         if (line.begins_with('#')) writer.indent = 0
@@ -2271,8 +2273,13 @@ augment CmdNativeCode
 
           marker = line.locate( '$' )
         endWhile
-        if (line.count) writer.println line
-        else            writer.println
+
+        if (needs_newline)
+          if (line.count) writer.println line
+          else            writer.println
+        elseIf (line.count)
+          writer.print line
+        endIf
 
         writer.indent = original_indent
       endForEach

@@ -12020,8 +12020,7 @@ RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueString* other_
   {
     i1_4 = ((RogueInteger)-1);
   }
-  while (++i1_4
-   < this_limit_3)
+  while (++i1_4 < this_limit_3)
   {
     if (((RogueString__contains_at( THIS, other_0, i1_4 ))))
     {
@@ -12080,8 +12079,7 @@ RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueString* o
   {
     i_4 = ((RogueInteger)this_limit_3);
   }
-  while (--i_4
-   >= 0)
+  while (--i_4 >= 0)
   {
     if (((RogueString__contains_at( THIS, other_0, i_4 ))))
     {
@@ -33182,82 +33180,90 @@ RogueClassType* Rogue_CmdNativeCode__type( RogueClassCmdNativeCode* THIS )
 
 void RogueCmdNativeCode__write_cpp( RogueClassCmdNativeCode* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 )
 {
+  RogueLogical needs_newline_2 = ((((RogueString__contains( THIS->code, ((RogueCharacter__to_String( (RogueCharacter)10 ))) ))) || !(!!(THIS->_result_type))));
   {
-    RogueClassLineReader* _auto_1118_9 = (((RogueLineReader__init( ((RogueClassLineReader*)Rogue_program.type_LineReader->create_and_init_object()), THIS->code ))));
-    while (((RogueLineReader__has_another( _auto_1118_9 ))))
+    RogueClassLineReader* _auto_1118_10 = (((RogueLineReader__init( ((RogueClassLineReader*)Rogue_program.type_LineReader->create_and_init_object()), THIS->code ))));
+    while (((RogueLineReader__has_another( _auto_1118_10 ))))
     {
-      RogueString* line_10 = (((RogueLineReader__read( _auto_1118_9 ))));
-      RogueInteger original_indent_2 = (writer_0->indent);
-      if (((RogueString__begins_with( line_10, (RogueCharacter)'#' ))))
+      RogueString* line_11 = (((RogueLineReader__read( _auto_1118_10 ))));
+      RogueInteger original_indent_3 = (writer_0->indent);
+      if (((RogueString__begins_with( line_11, (RogueCharacter)'#' ))))
       {
         writer_0->indent = 0;
       }
-      RogueOptionalInteger marker_3 = (((RogueString__locate( line_10, (RogueCharacter)'$', RogueOptionalInteger() ))));
-      while (marker_3.exists)
+      RogueOptionalInteger marker_4 = (((RogueString__locate( line_11, (RogueCharacter)'$', RogueOptionalInteger() ))));
+      while (marker_4.exists)
       {
-        RogueInteger i1_4 = (marker_3.value);
-        if (i1_4 > 0)
+        RogueInteger i1_5 = (marker_4.value);
+        if (i1_5 > 0)
         {
-          RogueCPPWriter__print( writer_0, ((RogueString__leftmost( line_10, i1_4 ))) );
+          RogueCPPWriter__print( writer_0, ((RogueString__leftmost( line_11, i1_5 ))) );
         }
-        RogueInteger i2_5 = ((i1_4 + 2));
-        while ((i2_5 < line_10->count && ((RogueCharacter__is_identifier( line_10->characters[i2_5] )))))
+        RogueInteger i2_6 = ((i1_5 + 2));
+        while ((i2_6 < line_11->count && ((RogueCharacter__is_identifier( line_11->characters[i2_6] )))))
         {
-          ++i2_5;
+          ++i2_6;
         }
-        RogueString* name_6 = (((RogueString__from( line_10, (i1_4 + 1), (i2_5 - 1) ))));
-        line_10 = ((RogueString*)((RogueString__from( line_10, i2_5 ))));
-        if (((RogueString__operatorLESSTHANGREATERTHAN( name_6, Rogue_program.literal_strings[208] ))) == 0)
+        RogueString* name_7 = (((RogueString__from( line_11, (i1_5 + 1), (i2_6 - 1) ))));
+        line_11 = ((RogueString*)((RogueString__from( line_11, i2_6 ))));
+        if (((RogueString__operatorLESSTHANGREATERTHAN( name_7, Rogue_program.literal_strings[208] ))) == 0)
         {
           RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[208] );
         }
-        else if (((RogueString__operatorLESSTHANGREATERTHAN( name_6, Rogue_program.literal_strings[139] ))) == 0)
+        else if (((RogueString__operatorLESSTHANGREATERTHAN( name_7, Rogue_program.literal_strings[139] ))) == 0)
         {
           RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[766] );
         }
         else
         {
-          RogueLogical found_7 = (false);
+          RogueLogical found_8 = (false);
           {
-            RogueLocalList* _auto_1119_11 = (THIS->this_method->locals);
-            RogueInteger _auto_1120_12 = (0);
-            for (;_auto_1120_12 < _auto_1119_11->count;++_auto_1120_12)
+            RogueLocalList* _auto_1119_12 = (THIS->this_method->locals);
+            RogueInteger _auto_1120_13 = (0);
+            for (;_auto_1120_13 < _auto_1119_12->count;++_auto_1120_13)
             {
-              RogueClassLocal* v_13 = (((RogueClassLocal*)(_auto_1119_11->data->objects[_auto_1120_12])));
-              if (((RogueString__operatorLESSTHANGREATERTHAN( v_13->name, name_6 ))) == 0)
+              RogueClassLocal* v_14 = (((RogueClassLocal*)(_auto_1119_12->data->objects[_auto_1120_13])));
+              if (((RogueString__operatorLESSTHANGREATERTHAN( v_14->name, name_7 ))) == 0)
               {
-                found_7 = ((RogueLogical)true);
-                RogueCPPWriter__print( writer_0, ((RogueLocal__cpp_name( v_13 ))) );
+                found_8 = ((RogueLogical)true);
+                RogueCPPWriter__print( writer_0, ((RogueLocal__cpp_name( v_14 ))) );
                 goto _auto_1121;
               }
             }
           }
           _auto_1121:;
-          if (!(found_7))
+          if (!(found_8))
           {
-            RogueClassProperty* p_8 = (((RogueString_PropertyTable__get( THIS->this_method->type_context->property_lookup, name_6 ))));
-            if (!!(p_8))
+            RogueClassProperty* p_9 = (((RogueString_PropertyTable__get( THIS->this_method->type_context->property_lookup, name_7 ))));
+            if (!!(p_9))
             {
-              found_7 = ((RogueLogical)true);
-              RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[799] ))), p_8->cpp_name );
+              found_8 = ((RogueLogical)true);
+              RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[799] ))), p_9->cpp_name );
             }
           }
-          if (!(found_7))
+          if (!(found_8))
           {
-            RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, (RogueCharacter)'$', false ))), name_6 );
+            RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, (RogueCharacter)'$', false ))), name_7 );
           }
         }
-        marker_3 = ((RogueOptionalInteger)((RogueString__locate( line_10, (RogueCharacter)'$', RogueOptionalInteger() ))));
+        marker_4 = ((RogueOptionalInteger)((RogueString__locate( line_11, (RogueCharacter)'$', RogueOptionalInteger() ))));
       }
-      if (!!(line_10->count))
+      if (needs_newline_2)
       {
-        RogueCPPWriter__println( writer_0, line_10 );
+        if (!!(line_11->count))
+        {
+          RogueCPPWriter__println( writer_0, line_11 );
+        }
+        else
+        {
+          RogueCPPWriter__println( writer_0 );
+        }
       }
-      else
+      else if (!!(line_11->count))
       {
-        RogueCPPWriter__println( writer_0 );
+        RogueCPPWriter__print( writer_0, line_11 );
       }
-      writer_0->indent = original_indent_2;
+      writer_0->indent = original_indent_3;
     }
   }
 }

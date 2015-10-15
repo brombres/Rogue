@@ -1,22 +1,20 @@
-println "Hello World"
+    Test()
 
-local x = 3
-println native("++$x")->Integer
+    class Test
+      METHODS
+        method init
+          local x = 5
+          print_test( x, x+1 )
+          print_test( x, native("($x + 1)")->Integer )
+          print_test( x, inline_plus_1(x) )
+          print_test( x, inline_native_plus_1(x) )
 
-Test()
+        method print_test( a:Integer, b:Integer )
+          println "$ + 1 is $" (a,b)
 
-class Test
-  PROPERTIES
-    name : String
-    n = 1 : Integer
+        method inline_plus_1( x:Integer )->Integer
+          macro x+1
 
-  METHODS
-    method init
-      println "$ + 1 = $" (5,plus1(5))
-
-    method get_name->String
-      macro name 
-
-    method plus1( value:Integer )->Integer
-      macro native "$value+1"
-endClass
+        method inline_native_plus_1( x:Integer )->Integer
+          macro native "($x + 1)"
+    endClass
