@@ -2250,10 +2250,10 @@ augment CmdNativeCode
             writer.print "THIS"
           else
             local found = false
-            forEach (param in this_method.parameters)
-              if (param.name == name)
+            forEach (v in this_method.locals)
+              if (v.name == name)
                 found = true
-                writer.print( param.cpp_name )
+                writer.print( v.cpp_name )
                 escapeForEach
               endIf
             endForEach

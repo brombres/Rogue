@@ -207,10 +207,8 @@ class String [native functional]
         i1 = -1
       endIf
       
-      ++i1
-      while (i1 < this_limit)
+      while (native("++$i1")->Integer < this_limit)
         if (contains_at(other,i1)) return i1
-        ++i1
       endWhile
 
       return null
@@ -254,10 +252,8 @@ class String [native functional]
         i = this_limit
       endIf
 
-      --i
-      while (i >= 0)
+      while (native("--$i")->Integer >= 0)
         if (contains_at(other,i)) return i
-        --i
       endWhile
 
       return null

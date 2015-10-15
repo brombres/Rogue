@@ -4167,20 +4167,25 @@ class CmdNativeCode : Cmd
   PROPERTIES
     code        : String
     this_method : Method
+    result_type : Type
 
   METHODS
-    method init( t, code )
+    method init( t, code, result_type=null )
 
     method clone( clone_args:CloneArgs )->CmdNativeCode
-      return CmdNativeCode( t, code )
+      return CmdNativeCode( t, code, result_type )
 
     method requires_semicolon->Logical
       return false
 
     method resolve( scope:Scope )->Cmd
       this_method = scope.this_method
+      if (result_type) result_type.organize
       return this
 
     method trace_used_code
+
+    method type->Type
+      return result_type
 
 endClass
