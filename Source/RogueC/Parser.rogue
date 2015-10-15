@@ -566,26 +566,32 @@ class Parser
       consume_eols
       if (next_is(TokenType.keyword_macro))
         if (reader.peek(1).type is TokenType.keyword_native)
-          # macro native "$this.fn($arg)"
+          # macro native [(] "$this.fn($arg)" [)]
+          this_method.attributes.add( Attribute.is_native )
+
           consume( TokenType.keyword_macro )
           consume( TokenType.keyword_native )
-          this_method.attributes.add( Attribute.is_native )
-          local buffer = StringBuilder()
-          local found_native_code = false
-          while (reader.has_another)
-            if (consume(TokenType.keyword_macro))
-              must_consume( TokenType.keyword_native )
-            elseIf (consume_eols)
-              noAction
-            elseIf (next_is(TokenType.literal_string))
-              found_native_code = true
-              if (buffer.count) buffer.println
-              buffer.print( read->String )
-            else
-              escapeWhile
-            endIf
-          endWhile
-          if (found_native_code) this_method.native_code = buffer->String
+
+          local has_parens = consume( TokenType.symbol_open_paren )
+          consume_eols
+
+          if (not next_is(TokenType.literal_string))
+            throw peek.error( "Literal string expected." )
+          endIf
+
+          this_method.native_code = read->String
+
+          if (has_parens)
+            consume_eols
+            must_consume( TokenType.symbol_close_paren )
+          endIf
+
+          if (next_is(TokenType.symbol_arrow))
+            consume( TokenType.symbol_arrow )
+            local type = parse_type
+            throw peek.error( ''Native expression types cannot be specified in macro methods - remove the "->$".'' (type) )
+          endIf
+
         else
           # macro this.fn(arg)
           # macro ...

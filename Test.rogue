@@ -1,20 +1,20 @@
-    Test()
+Test()
 
-    class Test
-      METHODS
-        method init
-          local x = 5
-          print_test( x, x+1 )
-          print_test( x, native("($x + 1)")->Integer )
-          print_test( x, inline_plus_1(x) )
-          print_test( x, inline_native_plus_1(x) )
+class Test
+  METHODS
+    method init
+      local x = 5
+      print_test( x, x+1 )
+      print_test( x, native("($x + 1)")->Integer )
+      print_test( x, inline_plus_1(x) )
+      print_test( x, inline_native_plus_1(x) )
 
-        method print_test( a:Integer, b:Integer )
-          println "$ + 1 is $" (a,b)
+    method print_test( a:Integer, b:Integer )
+      println "$ + 1 is $" (a,b)
 
-        method inline_plus_1( x:Integer )->Integer
-          macro x+1
+    method inline_plus_1( x:Integer )->Integer
+      macro x+1
 
-        method inline_native_plus_1( x:Integer )->Integer
-          macro native "($x + 1)"
-    endClass
+    method inline_native_plus_1( x:Integer )->Integer
+      macro native "($x + 1)"
+endClass
