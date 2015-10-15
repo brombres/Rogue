@@ -61,145 +61,6 @@ struct RogueCharacterList;
 #define ROGUE_PROPERTY(name) p_##name
 
 //-----------------------------------------------------------------------------
-//  RogueSystemList
-//-----------------------------------------------------------------------------
-template <class DataType>
-struct RogueSystemList
-{
-  DataType* data;
-  int count;
-  int capacity;
-
-  RogueSystemList( int capacity=10 ) : count(0)
-  {
-    this->capacity = capacity;
-    data = new DataType[capacity];
-    memset( data, 0, sizeof(DataType)*capacity );
-    count = 0;
-  }
-
-  ~RogueSystemList()
-  {
-    delete data;
-    data = 0;
-    count = 0;
-    capacity = 0;
-  }
-
-  RogueSystemList* add( DataType value )
-  {
-    if (count == capacity) ensure_capacity( capacity ? capacity*2 : 10 );
-    data[count++] = value;
-    return this;
-  }
-
-  RogueSystemList* clear() { count = 0; return this; }
-
-  RogueSystemList* discard( int i1, int i2 )
-  {
-    if (i1 < 0)      i1 = 0;
-    if (i2 >= count) i2 = count - 1;
-
-    if (i1 > i2) return this;
-
-    if (i2 == count-1)
-    {
-      if (i1 == 0) clear();
-      else         count = i1;
-      return this;
-    }
-
-    memmove( data+i1, data+i2+1, (count-(i2+1)) * sizeof(DataType) );
-    count -= (i2-i1) + 1;
-    return this;
-  }
-
-  RogueSystemList* discard_from( int i1 )
-  {
-    return discard( i1, count-1 );
-  }
-
-  inline DataType& operator[]( int index ) { return data[index]; }
-
-  void remove( DataType value )
-  {
-    for (int i=count-1; i>=0; --i)
-    {
-      if (data[i] == value)
-      {
-        remove_at(i);
-        return;
-      }
-    }
-  }
-
-  DataType remove_at( int index )
-  {
-    if (index == count-1)
-    {
-      return data[--count];
-    }
-    else
-    {
-      DataType result = data[index];
-      --count;
-      while (index < count)
-      {
-        data[index] = data[index+1];
-        ++index;
-      }
-      return result;
-    }
-  }
-
-  DataType remove_last()
-  {
-    return data[ --count ];
-  }
-
-  RogueSystemList* reserve( int additional_count )
-  {
-    return ensure_capacity( count + additional_count );
-  }
-
-  RogueSystemList* ensure_capacity( int c )
-  {
-    if (capacity >= c) return this;
-
-    if (capacity > 0)
-    {
-      int double_capacity = (capacity << 1);
-      if (double_capacity > c) c = double_capacity;
-    }
-
-    capacity = c;
-
-    int bytes = sizeof(DataType) * capacity;
-
-    if ( !data )
-    {
-      data = new DataType[capacity];
-      memset( data, 0, sizeof(DataType) * capacity );
-    }
-    else
-    {
-      int old_bytes = sizeof(DataType) * count;
-
-      DataType* new_data = new DataType[capacity];
-      memset( ((char*)new_data) + old_bytes, 0, bytes - old_bytes );
-      memcpy( new_data, data, old_bytes );
-
-      delete data;
-      data = new_data;
-    }
-
-    return this;
-  }
-
-};
-
-
-//-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 struct RogueObject;
@@ -229,52 +90,6 @@ struct RogueType
   virtual RogueObject* singleton();
   virtual void         trace( RogueObject* obj ) {}
 };
-
-//-----------------------------------------------------------------------------
-//  Primitive Types
-//-----------------------------------------------------------------------------
-struct RogueRealType : RogueType
-{
-  void configure() { object_size = sizeof(RogueReal); }
-  const char* name() { return "Real"; }
-};
-
-struct RogueFloatType : RogueType
-{
-  void configure() { object_size = sizeof(RogueFloat); }
-  const char* name() { return "Float"; }
-};
-
-struct RogueLongType : RogueType
-{
-  void configure() { object_size = sizeof(RogueLong); }
-  const char* name() { return "Long"; }
-};
-
-struct RogueIntegerType : RogueType
-{
-  void configure() { object_size = sizeof(RogueInteger); }
-  const char* name() { return "Integer"; }
-};
-
-struct RogueCharacterType : RogueType
-{
-  void configure() { object_size = sizeof(RogueCharacter); }
-  const char* name() { return "Character"; }
-};
-
-struct RogueByteType : RogueType
-{
-  void configure() { object_size = sizeof(RogueByte); }
-  const char* name() { return "Byte"; }
-};
-
-struct RogueLogicalType : RogueType
-{
-  void configure() { object_size = sizeof(RogueLogical); }
-  const char* name() { return "Logical"; }
-};
-
 
 //-----------------------------------------------------------------------------
 //  Optional Primitive Types
@@ -682,7 +497,7 @@ struct RogueArray : RogueObject
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-#define ROGUE_BUILT_IN_TYPE_COUNT 17
+#define ROGUE_BUILT_IN_TYPE_COUNT 10
 
 struct RogueProgramCore
 {
@@ -694,14 +509,6 @@ struct RogueProgramCore
   RogueType**   types;
   int           type_count;
   int           next_type_index;
-
-  RogueRealType*      type_Real;
-  RogueFloatType*     type_Float;
-  RogueLongType*      type_Long;
-  RogueIntegerType*   type_Integer;
-  RogueCharacterType* type_Character;
-  RogueByteType*      type_Byte;
-  RogueLogicalType*   type_Logical;
 
   RogueOptionalRealType*      type_OptionalReal;
   RogueOptionalFloatType*     type_OptionalFloat;
@@ -817,10 +624,16 @@ struct RogueError : RogueObject
 //=============================================================================
 #include <cmath>
 
+struct RogueTypeReal;
+struct RogueTypeLong;
+struct RogueTypeInteger;
 struct RogueTypeCharacterList;
+struct RogueTypeCharacter;
 struct RogueTypeGenericList;
 struct RogueTypeStringBuilder;
+struct RogueTypeLogical;
 struct RogueTypeStringList;
+struct RogueTypeByte;
 struct RogueTypeStringReader;
 struct RogueTypeCharacterReader;
 struct RogueTypeGlobal;
@@ -1302,6 +1115,9 @@ struct RogueTableEntry_of_String_TokenListList;
 struct RogueClassString_TokenListTableEntry;
 
 
+
+
+
 struct RogueCharacterList : RogueObject
 {
   // PROPERTIES
@@ -1309,6 +1125,7 @@ struct RogueCharacterList : RogueObject
   RogueInteger count;
 
 };
+
 
 struct RogueClassGenericList : RogueObject
 {
@@ -1328,6 +1145,7 @@ struct RogueStringBuilder : RogueObject
 
 };
 
+
 struct RogueStringList : RogueObject
 {
   // PROPERTIES
@@ -1335,6 +1153,7 @@ struct RogueStringList : RogueObject
   RogueInteger count;
 
 };
+
 
 struct RogueClassStringReader : RogueObject
 {
@@ -3784,10 +3603,16 @@ struct RogueClassString_TokenListTableEntry : RogueObject
 
 struct RogueProgram : RogueProgramCore
 {
+  RogueTypeReal* type_Real;
+  RogueTypeLong* type_Long;
+  RogueTypeInteger* type_Integer;
   RogueTypeCharacterList* type_CharacterList;
+  RogueTypeCharacter* type_Character;
   RogueTypeGenericList* type_GenericList;
   RogueTypeStringBuilder* type_StringBuilder;
+  RogueTypeLogical* type_Logical;
   RogueTypeStringList* type_StringList;
+  RogueTypeByte* type_Byte;
   RogueTypeStringReader* type_StringReader;
   RogueTypeCharacterReader* type_CharacterReader;
   RogueTypeGlobal* type_Global;

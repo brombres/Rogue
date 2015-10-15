@@ -339,14 +339,6 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   types = new RogueType*[ type_count ];
   memset( types, 0, sizeof(RogueType*) );
 
-  type_Real      = new RogueRealType();
-  type_Float     = new RogueFloatType();
-  type_Long      = new RogueLongType();
-  type_Integer   = new RogueIntegerType();
-  type_Character = new RogueCharacterType();
-  type_Byte      = new RogueByteType();
-  type_Logical   = new RogueLogicalType();
-
   type_OptionalReal      = new RogueOptionalRealType();
   type_OptionalFloat     = new RogueOptionalFloatType();
   type_OptionalLong      = new RogueOptionalLongType();
@@ -6363,6 +6355,39 @@ void* Rogue_dynamic_method_table[] =
 
 };
 
+struct RogueTypeReal : RogueType
+{
+  void configure()
+  {
+    object_size = (int) sizeof( RogueReal );
+  }
+
+  const char* name() { return "Real"; }
+
+};
+
+struct RogueTypeLong : RogueType
+{
+  void configure()
+  {
+    object_size = (int) sizeof( RogueLong );
+  }
+
+  const char* name() { return "Long"; }
+
+};
+
+struct RogueTypeInteger : RogueType
+{
+  void configure()
+  {
+    object_size = (int) sizeof( RogueInteger );
+  }
+
+  const char* name() { return "Integer"; }
+
+};
+
 struct RogueTypeCharacterList : RogueType
 {
   void configure()
@@ -6380,6 +6405,17 @@ struct RogueTypeCharacterList : RogueType
   {
     ROGUE_TRACE( ((RogueCharacterList*)THIS)->data );
   }
+};
+
+struct RogueTypeCharacter : RogueType
+{
+  void configure()
+  {
+    object_size = (int) sizeof( RogueCharacter );
+  }
+
+  const char* name() { return "Character"; }
+
 };
 
 struct RogueTypeGenericList : RogueType
@@ -6421,6 +6457,17 @@ struct RogueTypeStringBuilder : RogueType
   }
 };
 
+struct RogueTypeLogical : RogueType
+{
+  void configure()
+  {
+    object_size = (int) sizeof( RogueLogical );
+  }
+
+  const char* name() { return "Logical"; }
+
+};
+
 struct RogueTypeStringList : RogueType
 {
   void configure()
@@ -6438,6 +6485,17 @@ struct RogueTypeStringList : RogueType
   {
     ROGUE_TRACE( ((RogueStringList*)THIS)->data );
   }
+};
+
+struct RogueTypeByte : RogueType
+{
+  void configure()
+  {
+    object_size = (int) sizeof( RogueByte );
+  }
+
+  const char* name() { return "Byte"; }
+
 };
 
 struct RogueTypeStringReader : RogueType
@@ -13584,13 +13642,13 @@ RogueString* RogueProgram__type_name( RogueClassProgram* THIS )
 void RogueProgram__configure( RogueClassProgram* THIS )
 {
   THIS->type_null = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[2], 32 )));
-  THIS->type_Real = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[23], 33 )));
-  THIS->type_Float = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[24], 33 )));
-  THIS->type_Long = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[25], 33 )));
-  THIS->type_Integer = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[26], 33 )));
-  THIS->type_Character = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[27], 33 )));
-  THIS->type_Byte = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[28], 33 )));
-  THIS->type_Logical = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[29], 33 )));
+  THIS->type_Real = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[23], 1 )));
+  THIS->type_Float = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[24], 1 )));
+  THIS->type_Long = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[25], 1 )));
+  THIS->type_Integer = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[26], 1 )));
+  THIS->type_Character = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[27], 1 )));
+  THIS->type_Byte = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[28], 1 )));
+  THIS->type_Logical = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[29], 1 )));
   THIS->type_Object = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[30], 32 )));
   THIS->type_String = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[31], 48 )));
   THIS->type_StringBuilder = ((Rogue_Program__create_built_in_type( THIS, Rogue_program.literal_strings[32], 0 )));
@@ -14150,7 +14208,7 @@ void RogueProgram__write_cpp( RogueClassProgram* THIS, RogueString* filepath_0 )
     for (;_auto_132_28 < _auto_131_27->count;++_auto_132_28)
     {
       RogueClassType* type_29 = (((RogueClassType*)(_auto_131_27->data->objects[_auto_132_28])));
-      if (!(((RogueType__omit_output( type_29 )))))
+      if ((!(((RogueType__omit_output( type_29 )))) && !(((RogueType__is_primitive( type_29 ))))))
       {
         RogueCPPWriter__println( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_1, Rogue_program.literal_strings[385] ))), type_29->cpp_class_name ))), Rogue_program.literal_strings[176] );
       }
@@ -17169,7 +17227,7 @@ void RogueType__declare_settings( RogueClassType* THIS, RogueClassCPPWriter* wri
 
 void RogueType__print_data_definition( RogueClassType* THIS, RogueClassCPPWriter* writer_0 )
 {
-  if (((RogueType__omit_output( THIS ))))
+  if ((((RogueType__omit_output( THIS ))) || ((RogueType__is_primitive( THIS )))))
   {
     return;
   }
@@ -17404,21 +17462,27 @@ void RogueType__print_type_definition( RogueClassType* THIS, RogueClassCPPWriter
       }
     }
   }
-  RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[465] );
-  RogueCPPWriter__println( ((RogueCPPWriter__print( writer_0, THIS->dynamic_method_table_index ))), Rogue_program.literal_strings[176] );
+  if (!(((RogueType__is_primitive( THIS )))))
+  {
+    RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[465] );
+    RogueCPPWriter__println( ((RogueCPPWriter__print( writer_0, THIS->dynamic_method_table_index ))), Rogue_program.literal_strings[176] );
+  }
   writer_0->indent -= 2;
   RogueCPPWriter__println( writer_0, Rogue_program.literal_strings[92] );
   RogueCPPWriter__println( writer_0 );
-  RogueClassMethod* m_init_object_1 = (((RogueType__find_method( THIS, Rogue_program.literal_strings[331] ))));
-  if ((!!(m_init_object_1) && m_init_object_1->statements->count > 1))
+  if (!(((RogueType__is_primitive( THIS )))))
   {
-    RogueClassType* type_Object_2 = (((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object);
-    RogueCPPWriter__println( ((RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, type_Object_2 ))), Rogue_program.literal_strings[466] ))), type_Object_2 ))), Rogue_program.literal_strings[467] );
-    RogueCPPWriter__println( writer_0, Rogue_program.literal_strings[167] );
-    RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[468] ))), type_Object_2 ))), Rogue_program.literal_strings[455] ))), m_init_object_1->cpp_name );
-    RogueCPPWriter__println( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[469] ))), THIS ))), Rogue_program.literal_strings[470] );
-    RogueCPPWriter__println( writer_0, Rogue_program.literal_strings[92] );
-    RogueCPPWriter__println( writer_0 );
+    RogueClassMethod* m_init_object_1 = (((RogueType__find_method( THIS, Rogue_program.literal_strings[331] ))));
+    if ((!!(m_init_object_1) && m_init_object_1->statements->count > 1))
+    {
+      RogueClassType* type_Object_2 = (((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object);
+      RogueCPPWriter__println( ((RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, type_Object_2 ))), Rogue_program.literal_strings[466] ))), type_Object_2 ))), Rogue_program.literal_strings[467] );
+      RogueCPPWriter__println( writer_0, Rogue_program.literal_strings[167] );
+      RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[468] ))), type_Object_2 ))), Rogue_program.literal_strings[455] ))), m_init_object_1->cpp_name );
+      RogueCPPWriter__println( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[469] ))), THIS ))), Rogue_program.literal_strings[470] );
+      RogueCPPWriter__println( writer_0, Rogue_program.literal_strings[92] );
+      RogueCPPWriter__println( writer_0 );
+    }
   }
   RogueCPPWriter__println( ((RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, Rogue_program.literal_strings[471] ))), THIS->name ))), Rogue_program.literal_strings[472] );
   RogueCPPWriter__println( writer_0 );
@@ -36401,10 +36465,16 @@ RogueProgram::~RogueProgram()
 
 void RogueProgram::configure()
 {
+  type_Real = new RogueTypeReal();
+  type_Long = new RogueTypeLong();
+  type_Integer = new RogueTypeInteger();
   type_CharacterList = new RogueTypeCharacterList();
+  type_Character = new RogueTypeCharacter();
   type_GenericList = new RogueTypeGenericList();
   type_StringBuilder = new RogueTypeStringBuilder();
+  type_Logical = new RogueTypeLogical();
   type_StringList = new RogueTypeStringList();
+  type_Byte = new RogueTypeByte();
   type_StringReader = new RogueTypeStringReader();
   type_CharacterReader = new RogueTypeCharacterReader();
   type_Global = new RogueTypeGlobal();
@@ -36658,7 +36728,6 @@ void RogueProgram::configure()
   type_Array->index = 12;
   type_Array->index = 13;
   type_Byte->index = 14;
-  type_Float->index = 15;
   type_StringReader->index = 16;
   type_CharacterReader->index = 17;
   type_Global->index = 18;
@@ -36930,10 +36999,16 @@ void RogueProgram::configure()
   type_String_TokenListTableEntry->index = 289;
   type_Array->index = 290;
 
+  type_Real->configure();
+  type_Long->configure();
+  type_Integer->configure();
   type_CharacterList->configure();
+  type_Character->configure();
   type_GenericList->configure();
   type_StringBuilder->configure();
+  type_Logical->configure();
   type_StringList->configure();
+  type_Byte->configure();
   type_StringReader->configure();
   type_CharacterReader->configure();
   type_Global->configure();

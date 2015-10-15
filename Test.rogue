@@ -1,3 +1,6 @@
+println "Hello World!"
+
+#{
 Test()
 
 class Test
@@ -18,3 +21,4 @@ class Test
     method inline_native_plus_1( x:Integer )->Integer
       macro native "($x + 1)"
 endClass
+}#

@@ -49,13 +49,13 @@ class Program [requisite singleton]
   METHODS
     method configure
       type_null          = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
-      type_Real          = create_built_in_type( "Real",      Attribute.is_native | Attribute.is_primitive )
-      type_Float         = create_built_in_type( "Float",     Attribute.is_native | Attribute.is_primitive )
-      type_Long          = create_built_in_type( "Long",      Attribute.is_native | Attribute.is_primitive )
-      type_Integer       = create_built_in_type( "Integer",   Attribute.is_native | Attribute.is_primitive )
-      type_Character     = create_built_in_type( "Character", Attribute.is_native | Attribute.is_primitive )
-      type_Byte          = create_built_in_type( "Byte",      Attribute.is_native | Attribute.is_primitive )
-      type_Logical       = create_built_in_type( "Logical",   Attribute.is_native | Attribute.is_primitive )
+      type_Real          = create_built_in_type( "Real",      Attribute.is_primitive )
+      type_Float         = create_built_in_type( "Float",     Attribute.is_primitive )
+      type_Long          = create_built_in_type( "Long",      Attribute.is_primitive )
+      type_Integer       = create_built_in_type( "Integer",   Attribute.is_primitive )
+      type_Character     = create_built_in_type( "Character", Attribute.is_primitive )
+      type_Byte          = create_built_in_type( "Byte",      Attribute.is_primitive )
+      type_Logical       = create_built_in_type( "Logical",   Attribute.is_primitive )
 
       type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
       type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_functional )

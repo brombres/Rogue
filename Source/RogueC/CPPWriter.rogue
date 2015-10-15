@@ -354,7 +354,7 @@ augment Program
 
       # RogueObject forward declarations
       forEach (type in type_list)
-        if (not type.omit_output)
+        if (not type.omit_output and not type.is_primitive)
           writer.print( "struct " ).print( type.cpp_class_name ).println( ";" );
         endIf
       endForEach
@@ -676,7 +676,7 @@ augment Type
       endForEach
 
     method print_data_definition( writer:CPPWriter )
-      if (omit_output) return
+      if (omit_output or is_primitive) return
 
       writer.print( "struct " ).print( cpp_class_name )
       local is_error = false
@@ -836,34 +836,27 @@ augment Type
         endForEach
       endIf
 
-      writer.print( "methods = Rogue_dynamic_method_table + " )
-      writer.print( dynamic_method_table_index ).println( ";" )
-
-      #{
-      if (settings_list.count)
-        local initialized_settings = false
-        forEach (s in settings_list)
-          if (s.initial_value)
-          endIf
-        endForEach
-        if (initialized_settings) writer.println
+      if (not is_primitive)
+        writer.print( "methods = Rogue_dynamic_method_table + " )
+        writer.print( dynamic_method_table_index ).println( ";" )
       endIf
-      }#
 
       writer.indent -= 2;
       writer.println( "}" )
       writer.println()
 
       # create_object()
-      local m_init_object = find_method( "init_object()" )
-      if (m_init_object and m_init_object.statements.count > 1)
-        local type_Object = Program.type_Object
-        writer.print( type_Object ).print( " init_object( " ).print( type_Object ).println( " THIS )" )
-        writer.println( "{" )
-        writer.print( "  return (" ).print(type_Object).print(") ").print( m_init_object.cpp_name )
-        writer.print( "( (" ).print(this).println( ") THIS );" );
-        writer.println( "}" )
-        writer.println
+      if (not is_primitive)
+        local m_init_object = find_method( "init_object()" )
+        if (m_init_object and m_init_object.statements.count > 1)
+          local type_Object = Program.type_Object
+          writer.print( type_Object ).print( " init_object( " ).print( type_Object ).println( " THIS )" )
+          writer.println( "{" )
+          writer.print( "  return (" ).print(type_Object).print(") ").print( m_init_object.cpp_name )
+          writer.print( "( (" ).print(this).println( ") THIS );" );
+          writer.println( "}" )
+          writer.println
+        endIf
       endIf
 
       # name()
