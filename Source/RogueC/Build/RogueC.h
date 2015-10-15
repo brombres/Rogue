@@ -220,9 +220,9 @@ struct RogueProgramCore
 
   void         collect_garbage();
 
-  static RogueReal    mod( RogueReal a, RogueReal b );
-  static RogueInteger mod( RogueInteger a, RogueInteger b );
-  static RogueLong    mod( RogueLong a, RogueLong b );
+  //static RogueReal    mod( RogueReal a, RogueReal b );
+  //static RogueInteger mod( RogueInteger a, RogueInteger b );
+  //static RogueLong    mod( RogueLong a, RogueLong b );
   static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 
@@ -5081,7 +5081,7 @@ RogueString* RogueCmdDivide__symbol( RogueClassCmdDivide* THIS );
 RogueString* RogueCmdMod__type_name( RogueClassCmdMod* THIS );
 RogueClassCmd* RogueCmdMod__clone( RogueClassCmdMod* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdMod__combine_literal_operands( RogueClassCmdMod* THIS, RogueClassType* common_type_0 );
-void RogueCmdMod__write_cpp( RogueClassCmdMod* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmd* RogueCmdMod__resolve( RogueClassCmdMod* THIS, RogueClassScope* scope_0 );
 RogueClassCmdMod* RogueCmdMod__init_object( RogueClassCmdMod* THIS );
 RogueString* RogueCmdMod__fn_name( RogueClassCmdMod* THIS );
 RogueString* RogueCmdMod__symbol( RogueClassCmdMod* THIS );

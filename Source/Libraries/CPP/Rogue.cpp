@@ -427,46 +427,6 @@ void RogueProgramCore::collect_garbage()
   objects = survivors;
 }
 
-RogueReal RogueProgramCore::mod( RogueReal a, RogueReal b )
-{
-  RogueReal q = a / b;
-  return a - floor(q)*b;
-}
-
-RogueInteger RogueProgramCore::mod( RogueInteger a, RogueInteger b )
-{
-  if (!a && !b) return 0;
-
-  if (b == 1) return 0;
-
-  if ((a ^ b) < 0)
-  {
-    RogueInteger r = a % b;
-    return r ? (r+b) : r;
-  }
-  else
-  {
-    return (a % b);
-  }
-}
-
-RogueLong RogueProgramCore::mod( RogueLong a, RogueLong b )
-{
-  if (!a && !b) return 0;
-
-  if (b == 1) return 0;
-
-  if ((a ^ b) < 0)
-  {
-    RogueLong r = a % b;
-    return r ? (r+b) : r;
-  }
-  else
-  {
-    return (a % b);
-  }
-}
-
 RogueInteger RogueProgramCore::shift_right( RogueInteger value, RogueInteger bits )
 {
   if (bits <= 0) return value;

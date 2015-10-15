@@ -217,9 +217,6 @@ struct RogueProgramCore
 
   void         collect_garbage();
 
-  static RogueReal    mod( RogueReal a, RogueReal b );
-  static RogueInteger mod( RogueInteger a, RogueInteger b );
-  static RogueLong    mod( RogueLong a, RogueLong b );
   static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 

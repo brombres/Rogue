@@ -33,6 +33,32 @@ class Math
     routine log10( n:Real )->Real
       $if ("C++") macro native 'log10((double)$n)'
 
+    routine mod( a:Integer, b:Integer )->Integer
+      if ((not a and not b) or b == 1) return 0
+
+      local r = native("$a % $b")->Integer
+      if ((a ~ b) < 0)
+        if (r) return r + b
+        else   return 0
+      else
+        return r
+      endIf
+
+    routine mod( a:Long, b:Long )->Long
+      if ((not a and not b) or b == 1) return 0
+
+      local r = native("$a % $b")->Integer
+      if ((a ~ b) < 0)
+        if (r) return r + b
+        else   return 0
+      else
+        return r
+      endIf
+
+    routine mod( a:Real, b:Real )->Real
+      local q = a / b
+      return a - floor(q)*b
+
     routine sin( n:Real )->Real
       $if ("C++") macro native 'sin((double)$n)'
 

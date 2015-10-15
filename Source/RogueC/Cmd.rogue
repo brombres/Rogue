@@ -2669,6 +2669,15 @@ class CmdMod : CmdBinary
         return this
       endIf
 
+    method resolve( scope:Scope )->Cmd
+      local result = prior.resolve( scope )
+      if (result.is_literal) return result
+
+      local cmd_mod = result as CmdMod
+      if (not cmd_mod) return result
+
+      return CmdAccess( t, CmdAccess(t,"Math"), "mod", CmdArgs(cmd_mod.left,cmd_mod.right) ).resolve( scope )
+
     method fn_name->String
       return "operator%"
 

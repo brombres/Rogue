@@ -1875,6 +1875,7 @@ augment CmdBinary
       if (requires_parens) writer.print( ")" )
 endAugment
 
+#{
 augment CmdMod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
@@ -1888,6 +1889,7 @@ augment CmdMod
       right.write_cpp( writer )
       writer.print( " )" )
 endAugment
+}#
 
 
 augment CmdPower

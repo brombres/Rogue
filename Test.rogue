@@ -1,11 +1,13 @@
-#println "Hello World!"
+println "Hello World!"
 
-local x = null : Integer?
-if (x) println "Alpha"
-x = 5
-if (x) println "Beta"
-if (x?) println "Gamma"
-if (x!) println "Delta"
+local x = 15
+println x % 10
+println( -1 % 10 )
+
+local y = pi
+println y % 1
+
+println y % 0.9
 
 #{
 Test()
