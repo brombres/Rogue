@@ -2568,10 +2568,8 @@ struct RogueClassFileWriter : RogueObject
 {
   // PROPERTIES
   FILE* fp;
-  unsigned char buffer[1024];
   RogueString* filepath;
-  RogueInteger buffer_position;
-  RogueInteger count;
+  RogueByteList* buffer;
 
 };
 

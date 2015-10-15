@@ -8843,11 +8843,17 @@ struct RogueTypeFileWriter : RogueType
     methods = Rogue_dynamic_method_table + 1270;
   }
 
+  RogueObject* init_object( RogueObject* THIS )
+  {
+    return (RogueObject*) RogueFileWriter__init_object( (RogueClassFileWriter*) THIS );
+  }
+
   const char* name() { return "FileWriter"; }
 
   void trace( RogueObject* THIS )
   {
     ROGUE_TRACE( ((RogueClassFileWriter*)THIS)->filepath );
+    ROGUE_TRACE( ((RogueClassFileWriter*)THIS)->buffer );
   }
 };
 
@@ -27177,20 +27183,21 @@ RogueClassFileWriter* RogueFileWriter__init( RogueClassFileWriter* THIS, RogueSt
 RogueClassFileWriter* RogueFileWriter__close( RogueClassFileWriter* THIS )
 {
   RogueFileWriter__flush( THIS );
-  if (THIS->fp)
+  if (!!(THIS->fp))
   {
-    fclose( THIS->fp );
-    THIS->fp = 0;
+    fclose( THIS->fp ); THIS->fp = 0;
   }
   return (RogueClassFileWriter*)(THIS);
 }
 
 RogueClassFileWriter* RogueFileWriter__flush( RogueClassFileWriter* THIS )
 {
-  if ( !THIS->buffer_position || !THIS->fp ) return THIS;
-
-  fwrite( THIS->buffer, 1, THIS->buffer_position, THIS->fp );
-  THIS->buffer_position = 0;
+  if ((THIS->buffer->count == 0 || !(!!(THIS->fp))))
+  {
+    return (RogueClassFileWriter*)(THIS);
+  }
+  fwrite( THIS->buffer->data->bytes, 1, THIS->buffer->count, THIS->fp );
+  RogueByteList__clear( THIS->buffer );
   return (RogueClassFileWriter*)(THIS);
 }
 
@@ -27207,11 +27214,12 @@ RogueLogical RogueFileWriter__open( RogueClassFileWriter* THIS, RogueString* _au
 
 RogueClassFileWriter* RogueFileWriter__write( RogueClassFileWriter* THIS, RogueCharacter ch_0 )
 {
-  if ( !THIS->fp ) return 0;
-
-  THIS->buffer[ THIS->buffer_position ] = (unsigned char) ch_0;
-  ++THIS->buffer_position;
-  if (THIS->buffer_position == 1024)
+  if (!(!!(THIS->fp)))
+  {
+    return (RogueClassFileWriter*)(THIS);
+  }
+  RogueByteList__add( THIS->buffer, ((RogueByte)(ch_0)) );
+  if (THIS->buffer->count == 1024)
   {
     return (RogueClassFileWriter*)(((RogueFileWriter__flush( THIS ))));
   }
@@ -27220,6 +27228,7 @@ RogueClassFileWriter* RogueFileWriter__write( RogueClassFileWriter* THIS, RogueC
 
 RogueClassFileWriter* RogueFileWriter__init_object( RogueClassFileWriter* THIS )
 {
+  THIS->buffer = ((RogueByteList__init( ((RogueByteList*)Rogue_program.type_ByteList->create_and_init_object()), 1024 )));
   return (RogueClassFileWriter*)(THIS);
 }
 

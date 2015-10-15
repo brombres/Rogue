@@ -305,11 +305,9 @@ endClass
 
 class FileWriter
   PROPERTIES
-    filepath        : String
-    buffer_position : Integer
-    count           : Integer
+    filepath : String
+    buffer   = Byte[](1024)
     native "FILE* fp;"
-    native "unsigned char buffer[1024];"
 
   METHODS
     method init( _filepath:String )
@@ -318,21 +316,22 @@ class FileWriter
     method close->FileWriter
       flush
 
-      native @|if ($this->fp)
-              |{
-              |  fclose( $this->fp );
-              |  $this->fp = 0;
-              |}
+      if (fp)
+        native( "fclose( $this->fp ); $this->fp = 0;" )
+      endIf
 
       return this
 
     method flush->FileWriter
-      native @|if ( !$buffer_position || !$this->fp ) return $this;
-              |
-              |fwrite( $this->buffer, 1, $buffer_position, $this->fp );
+      if (buffer.count == 0 or not fp) return this
 
-      buffer_position = 0
+      native @|fwrite( $buffer->data->bytes, 1, $buffer->count, $this->fp );
+
+      buffer.clear
       return this
+
+    method fp->Integer
+      macro native "$this->fp"
 
     method open( filepath )->Logical
       close
@@ -344,14 +343,11 @@ class FileWriter
               |return !!$this->fp;
 
     method write( ch:Character )->this
-      native @|if ( !$this->fp ) return 0;
-              |
-              |$this->buffer[ $buffer_position ] = (unsigned char) $ch;
+      if (not fp) return this
 
-      ++buffer_position
-      if (buffer_position == 1024) return flush
+      buffer.add( ch )
+      if (buffer.count == 1024) return flush
 
       return this
 endClass
-
 
