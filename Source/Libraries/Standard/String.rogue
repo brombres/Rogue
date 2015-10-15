@@ -68,7 +68,23 @@ class String [native functional]
       return locate(substring)?
 
     method contains_at( substring:String, at_index:Integer )->Logical
-      $if ("C++") inlineNative '$this->contains($substring,$at_index)'
+      $if ("C++")
+        native @|RogueInteger other_count = $substring->count;
+                |if ($at_index < 0 || $at_index + other_count > $this->count) return false;
+                |
+                |RogueCharacter* this_data  = $this->characters;
+                |RogueCharacter* other_data = $substring->characters;
+                |
+                |int i = -1;
+                |int i2 = other_count - 1;
+                |while (++i <= i2)
+                |{
+                |  if (this_data[$at_index+i] != other_data[i]) return false;
+                |}
+                |
+                |return true;
+      $endIf
+
 
     method count->Integer
       $if ("C++") inlineNative '$this->count'
@@ -250,10 +266,10 @@ class String [native functional]
       inline this + value->Integer
 
     method operator+( value:Character )->String
-      $if ("C++") inlineNative '$this->plus($value)'
+      return StringBuilder().print( this ).print( value )->String
 
     method operator+( value:Integer )->String
-      $if ("C++") inlineNative '$this->plus($value)'
+      return StringBuilder().print( this ).print( value )->String
 
     method operator<>( other:String )->Integer
       $if ("C++")
@@ -290,17 +306,17 @@ class String [native functional]
       else       return this + "false"
 
     method operator+( value:Long )->String
-      $if ("C++") inlineNative '$this->plus($value)'
+      return StringBuilder().print( this ).print( value )->String
 
     method operator+( value:Object )->String
       if (value) return this + value->String
       else       return this + "null"
 
     method operator+( value:Real )->String
-      $if ("C++") inlineNative '$this->plus($value)'
+      return StringBuilder().print( this ).print( value )->String
 
     method operator+( value:String )->String
-      $if ("C++") inlineNative '$this->plus($value)'
+      return StringBuilder().print( this ).print( value )->String
 
     method reader->StringReader
       return StringReader( this )

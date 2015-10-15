@@ -636,16 +636,8 @@ struct RogueString : RogueObject
   static void         print( RogueString* st );
   static void         print( RogueCharacter* characters, int count );
 
-  RogueLogical contains( RogueString* substring, RogueInteger at_index );
-  RogueString* plus( const char* c_str );
-  RogueString* plus( char ch );
-  RogueString* plus( RogueCharacter ch );
-  RogueString* plus( RogueInteger value );
-  RogueString* plus( RogueLong value );
-  RogueString* plus( RogueReal value );
-  RogueString* plus( RogueString* other );
-  bool         to_c_string( char* buffer, int buffer_size );
-  RogueString* update_hash_code();
+  bool                to_c_string( char* buffer, int buffer_size );
+  RogueString*        update_hash_code();
 };
 
 

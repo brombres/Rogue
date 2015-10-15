@@ -639,14 +639,6 @@ struct RogueString : RogueObject
   static void         print( RogueString* st );
   static void         print( RogueCharacter* characters, int count );
 
-  RogueLogical contains( RogueString* substring, RogueInteger at_index );
-  RogueString* plus( const char* c_str );
-  RogueString* plus( char ch );
-  RogueString* plus( RogueCharacter ch );
-  RogueString* plus( RogueInteger value );
-  RogueString* plus( RogueLong value );
-  RogueString* plus( RogueReal value );
-  RogueString* plus( RogueString* other );
   bool         to_c_string( char* buffer, int buffer_size );
   RogueString* update_hash_code();
 };
@@ -4055,6 +4047,7 @@ RogueString* RogueString__before_last( RogueString* THIS, RogueString* st_0 );
 RogueLogical RogueString__begins_with( RogueString* THIS, RogueCharacter ch_0 );
 RogueLogical RogueString__begins_with( RogueString* THIS, RogueString* other_0 );
 RogueLogical RogueString__contains( RogueString* THIS, RogueString* substring_0 );
+RogueLogical RogueString__contains_at( RogueString* THIS, RogueString* substring_0, RogueInteger at_index_1 );
 RogueLogical RogueString__ends_with( RogueString* THIS, RogueString* other_0 );
 RogueString* RogueString__from( RogueString* THIS, RogueInteger i1_0 );
 RogueString* RogueString__from( RogueString* THIS, RogueInteger i1_0, RogueInteger i2_1 );
@@ -4065,8 +4058,13 @@ RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueCharacter ch_0
 RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueString* other_0, RogueOptionalInteger optional_i1_1 );
 RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInteger starting_index_1 );
 RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueString* other_0, RogueOptionalInteger starting_index_1 );
+RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueCharacter value_0 );
+RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueInteger value_0 );
 RogueInteger RogueString__operatorLESSTHANGREATERTHAN( RogueString* THIS, RogueString* other_0 );
+RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueLong value_0 );
 RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueObject* value_0 );
+RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueReal value_0 );
+RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueString* value_0 );
 RogueClassStringReader* RogueString__reader( RogueString* THIS );
 RogueString* RogueString__replace( RogueString* THIS, RogueCharacter existing_ch_0, RogueCharacter replacement_ch_1 );
 RogueString* RogueString__rightmost( RogueString* THIS, RogueInteger n_0 );

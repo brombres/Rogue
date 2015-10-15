@@ -1,10 +1,4 @@
-println "Hello World".first #locate("lo").value
-
-augment String
-  METHODS
-    method first->Character
-      return this[0]
-endAugment
+println "Hello World"
 
 #{
 Test()
