@@ -1,5 +1,12 @@
-#println "Hello World"
+println "Hello World".first #locate("lo").value
 
+augment String
+  METHODS
+    method first->Character
+      return this[0]
+endAugment
+
+#{
 Test()
 
 class Test
@@ -9,3 +16,4 @@ class Test
       println "Your name is " + name
 endClass
 
+}#

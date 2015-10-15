@@ -640,10 +640,6 @@ struct RogueString : RogueObject
   static void         print( RogueCharacter* characters, int count );
 
   RogueLogical contains( RogueString* substring, RogueInteger at_index );
-  RogueOptionalInteger locate( RogueCharacter ch, RogueOptionalInteger optional_i1 );
-  RogueOptionalInteger locate( RogueString* other, RogueOptionalInteger optional_i1 );
-  RogueOptionalInteger locate_last( RogueCharacter ch, RogueOptionalInteger i1 );
-  RogueOptionalInteger locate_last( RogueString* other, RogueOptionalInteger i1 );
   RogueString* plus( const char* c_str );
   RogueString* plus( char ch );
   RogueString* plus( RogueCharacter ch );
@@ -4065,6 +4061,10 @@ RogueString* RogueString__from( RogueString* THIS, RogueInteger i1_0, RogueInteg
 RogueString* RogueString__from_first( RogueString* THIS, RogueCharacter ch_0 );
 RogueCharacter RogueString__last( RogueString* THIS );
 RogueString* RogueString__leftmost( RogueString* THIS, RogueInteger n_0 );
+RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInteger optional_i1_1 );
+RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueString* other_0, RogueOptionalInteger optional_i1_1 );
+RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInteger starting_index_1 );
+RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueString* other_0, RogueOptionalInteger starting_index_1 );
 RogueInteger RogueString__operatorLESSTHANGREATERTHAN( RogueString* THIS, RogueString* other_0 );
 RogueString* RogueString__operatorPLUS( RogueString* THIS, RogueObject* value_0 );
 RogueClassStringReader* RogueString__reader( RogueString* THIS );

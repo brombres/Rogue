@@ -213,130 +213,6 @@ RogueLogical RogueString::contains( RogueString* substring, RogueInteger at_inde
   return true;
 }
 
-//RogueString* RogueString::from( RogueInteger i1 )
-//{
-//  return from( i1, count-1 );
-//}
-
-//RogueString* RogueString::from( RogueInteger i1, RogueInteger i2 )
-//{
-//  // Clamp i1 and i2
-//  if (i1 < 0) i1 = 0;
-//  if (i2 >= count) i2 = count - 1;
-//
-//  // Return empty quotes if zero-length
-//  if (i1 > i2) return Rogue_program.literal_strings[0]; // empty string
-//
-//  int new_count = (i2 - i1) + 1;
-//
-//  RogueString* result = RogueString::create( new_count );
-//
-//  // Copy character substring while computing hash code.
-//  RogueCharacter* dest = result->characters - 1;
-//  RogueCharacter* src  = (characters + i1) - 1;
-//  int hash_code = 0;
-//  while (--new_count >= 0)
-//  {
-//    RogueCharacter ch = *(++src);
-//    *(++dest) = ch;
-//    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
-//  }
-//
-//  result->hash_code = hash_code;
-//  return result;
-//}
-
-RogueOptionalInteger RogueString::locate( RogueCharacter ch, RogueOptionalInteger optional_i1 )
-{
-  RogueInteger    limit = count;
-  RogueCharacter* data  = characters;
-  RogueInteger    i1 = optional_i1.exists ? (optional_i1.value-1) : -1;
-
-  while (++i1 < limit)
-  {
-    if (data[i1] == ch)
-    {
-      return RogueOptionalInteger(i1);
-    }
-  }
-  return RogueOptionalInteger();
-}
-
-RogueOptionalInteger RogueString::locate( RogueString* other, RogueOptionalInteger optional_i1 )
-{
-  RogueInteger    other_count = other->count;
-  if (other_count == 1) return locate( other->characters[0], optional_i1 );
-
-  RogueInteger    this_limit = (count - other_count) + 1;
-  if (!other_count || this_limit <= 0) return RogueOptionalInteger();
-
-  RogueInteger i1;
-  if (optional_i1.exists)
-  {
-    i1 = optional_i1.value - 1;
-    if (i1 < -1) i1 = -1;
-  }
-  else
-  {
-    i1 = -1;
-  }
-  while (++i1 < this_limit)
-  {
-    if (contains(other,i1)) return RogueOptionalInteger(i1);
-  }
-  return RogueOptionalInteger();
-}
-
-RogueOptionalInteger RogueString::locate_last( RogueCharacter ch, RogueOptionalInteger i1 )
-{
-  RogueInteger    limit = count;
-  RogueCharacter* data  = characters;
-
-  int i;
-  if (i1.exists)
-  {
-    i = i1.value + 1;
-    if (i > limit) i = limit;
-  }
-  else
-  {
-    i = limit;
-  }
-
-  while (--i >= 0)
-  {
-    if (data[i] == ch) return RogueOptionalInteger(i);
-  }
-
-  return RogueOptionalInteger();
-}
-
-RogueOptionalInteger RogueString::locate_last( RogueString* other, RogueOptionalInteger i1 )
-{
-  RogueInteger    other_count = other->count;
-  if (other_count == 1) return locate_last( other->characters[0], i1 );
-
-  RogueInteger    this_limit = (count - other_count) + 1;
-  if (!other_count || this_limit <= 0) return RogueOptionalInteger();
-
-  int i;
-  if (i1.exists)
-  {
-    i = i1.value + 1;
-    if (i > this_limit) i = this_limit;
-  }
-  else
-  {
-    i = this_limit;
-  }
-
-  while (--i >= 0)
-  {
-    if (contains(other,i)) return RogueOptionalInteger(i);
-  }
-  return RogueOptionalInteger();
-}
-
 RogueString* RogueString::plus( const char* c_str )
 {
   int len = strlen( c_str );
@@ -11869,10 +11745,10 @@ RogueLogical RogueFile__exists( RogueString* filepath_0 )
 
 RogueString* RogueFile__filename( RogueString* filepath_0 )
 {
-  RogueOptionalInteger i_1 = ((filepath_0->locate_last((RogueCharacter)'/',RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate_last( filepath_0, (RogueCharacter)'/', RogueOptionalInteger() ))));
   if (!(i_1.exists))
   {
-    i_1 = ((RogueOptionalInteger)(filepath_0->locate_last((RogueCharacter)'\\',RogueOptionalInteger())));
+    i_1 = ((RogueOptionalInteger)((RogueString__locate_last( filepath_0, (RogueCharacter)'\\', RogueOptionalInteger() ))));
   }
   if (!(i_1.exists))
   {
@@ -11943,10 +11819,10 @@ RogueByteList* RogueFile__load_as_bytes( RogueString* filepath_0 )
 
 RogueString* RogueFile__path( RogueString* filepath_0 )
 {
-  RogueOptionalInteger i_1 = ((filepath_0->locate_last((RogueCharacter)'/',RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate_last( filepath_0, (RogueCharacter)'/', RogueOptionalInteger() ))));
   if (!(i_1.exists))
   {
-    i_1 = ((RogueOptionalInteger)(filepath_0->locate_last((RogueCharacter)'\\',RogueOptionalInteger())));
+    i_1 = ((RogueOptionalInteger)((RogueString__locate_last( filepath_0, (RogueCharacter)'\\', RogueOptionalInteger() ))));
   }
   if (!(i_1.exists))
   {
@@ -12011,7 +11887,7 @@ RogueString* RogueInteger__to_String( RogueInteger THIS )
 
 RogueString* RogueString__after_first( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate(ch_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate( THIS, ch_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, (i_1.value + 1) ))));
@@ -12024,7 +11900,7 @@ RogueString* RogueString__after_first( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__after_first( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate(st_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate( THIS, st_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, (i_1.value + st_0->count) ))));
@@ -12037,7 +11913,7 @@ RogueString* RogueString__after_first( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__after_last( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate_last(ch_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate_last( THIS, ch_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, (i_1.value + 1) ))));
@@ -12050,7 +11926,7 @@ RogueString* RogueString__after_last( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__before_first( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate(ch_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate( THIS, ch_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, 0, (i_1.value - 1) ))));
@@ -12063,7 +11939,7 @@ RogueString* RogueString__before_first( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__before_first( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate(st_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate( THIS, st_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, 0, (i_1.value - 1) ))));
@@ -12076,7 +11952,7 @@ RogueString* RogueString__before_first( RogueString* THIS, RogueString* st_0 )
 
 RogueString* RogueString__before_last( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate_last(ch_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate_last( THIS, ch_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, 0, (i_1.value - 1) ))));
@@ -12089,7 +11965,7 @@ RogueString* RogueString__before_last( RogueString* THIS, RogueCharacter ch_0 )
 
 RogueString* RogueString__before_last( RogueString* THIS, RogueString* st_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate_last(st_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate_last( THIS, st_0, RogueOptionalInteger() ))));
   if (i_1.exists)
   {
     return (RogueString*)(((RogueString__from( THIS, 0, (i_1.value - 1) ))));
@@ -12113,7 +11989,7 @@ RogueLogical RogueString__begins_with( RogueString* THIS, RogueString* other_0 )
 
 RogueLogical RogueString__contains( RogueString* THIS, RogueString* substring_0 )
 {
-  return (RogueLogical)((THIS->locate(substring_0,RogueOptionalInteger())).exists);
+  return (RogueLogical)(((RogueString__locate( THIS, substring_0, RogueOptionalInteger() ))).exists);
 }
 
 RogueLogical RogueString__ends_with( RogueString* THIS, RogueString* other_0 )
@@ -12157,7 +12033,7 @@ RogueString* RogueString__from( RogueString* THIS, RogueInteger i1_0, RogueInteg
 
 RogueString* RogueString__from_first( RogueString* THIS, RogueCharacter ch_0 )
 {
-  RogueOptionalInteger i_1 = ((THIS->locate(ch_0,RogueOptionalInteger())));
+  RogueOptionalInteger i_1 = (((RogueString__locate( THIS, ch_0, RogueOptionalInteger() ))));
   if (!(i_1.exists))
   {
     return (RogueString*)(Rogue_program.literal_strings[0]);
@@ -12180,6 +12056,120 @@ RogueString* RogueString__leftmost( RogueString* THIS, RogueInteger n_0 )
   {
     return (RogueString*)(((RogueString__from( THIS, 0, ((THIS->count + n_0) - 1) ))));
   }
+}
+
+RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInteger optional_i1_1 )
+{
+  RogueInteger    limit = THIS->count;
+  RogueCharacter* data  = THIS->characters;
+  RogueInteger    i1 = optional_i1_1.exists ? (optional_i1_1.value-1) : -1;
+
+  while (++i1 < limit)
+  {
+    if (data[i1] == ch_0)
+    {
+      return RogueOptionalInteger(i1);
+    }
+  }
+  return RogueOptionalInteger();
+}
+
+RogueOptionalInteger RogueString__locate( RogueString* THIS, RogueString* other_0, RogueOptionalInteger optional_i1_1 )
+{
+  RogueInteger other_count_2 = (other_0->count);
+  if (other_count_2 == 1)
+  {
+    return (RogueOptionalInteger)(((RogueString__locate( THIS, other_0->characters[0], optional_i1_1 ))));
+  }
+  RogueInteger this_limit_3 = (((THIS->count - other_count_2) + 1));
+  if ((other_count_2 == 0 || this_limit_3 <= 0))
+  {
+    return (RogueOptionalInteger)(RogueOptionalInteger());
+  }
+  RogueInteger i1_4 = 0;
+  if (optional_i1_1.exists)
+  {
+    i1_4 = ((RogueInteger)(optional_i1_1.value - 1));
+    if (i1_4 < -1)
+    {
+      i1_4 = ((RogueInteger)-1);
+    }
+  }
+  else
+  {
+    i1_4 = ((RogueInteger)-1);
+  }
+  ++i1_4;
+  while (i1_4 < this_limit_3)
+  {
+    if (THIS->contains(other_0,i1_4))
+    {
+      return (RogueOptionalInteger)(RogueOptionalInteger( i1_4 ));
+    }
+    ++i1_4;
+  }
+  return (RogueOptionalInteger)(RogueOptionalInteger());
+}
+
+RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInteger starting_index_1 )
+{
+  RogueInteger    limit = THIS->count;
+  RogueCharacter* data  = THIS->characters;
+
+  int i;
+  if (starting_index_1.exists)
+  {
+    i = starting_index_1.value + 1;
+    if (i > limit) i = limit;
+  }
+  else
+  {
+    i = limit;
+  }
+
+  while (--i >= 0)
+  {
+    if (data[i] == ch_0) return RogueOptionalInteger(i);
+  }
+
+  return RogueOptionalInteger();
+}
+
+RogueOptionalInteger RogueString__locate_last( RogueString* THIS, RogueString* other_0, RogueOptionalInteger starting_index_1 )
+{
+  RogueInteger other_count_2 = (other_0->count);
+  if (other_count_2 == 1)
+  {
+    return (RogueOptionalInteger)(((RogueString__locate_last( THIS, other_0->characters[0], starting_index_1 ))));
+  }
+  RogueInteger this_limit_3 = (((THIS->count - other_count_2) + 1));
+  if ((other_count_2 == 0 || this_limit_3 <= 0))
+  {
+    return (RogueOptionalInteger)(RogueOptionalInteger());
+  }
+  RogueInteger i_4 = 0;
+  if (starting_index_1.exists)
+  {
+    i_4 = ((RogueInteger)(starting_index_1.value + 1));
+    if (i_4 > this_limit_3)
+    {
+      i_4 = ((RogueInteger)this_limit_3);
+    }
+  }
+  else
+  {
+    i_4 = ((RogueInteger)this_limit_3);
+  }
+  --i_4;
+  while (i_4 >= 0)
+  {
+    if (THIS->contains(other_0,i_4))
+    {
+      return (RogueOptionalInteger)(RogueOptionalInteger( i_4 ));
+    }
+    --i_4;
+  }
+  return (RogueOptionalInteger)(RogueOptionalInteger());
 }
 
 RogueInteger RogueString__operatorLESSTHANGREATERTHAN( RogueString* THIS, RogueString* other_0 )
@@ -12285,12 +12275,12 @@ RogueStringList* RogueString__split( RogueString* THIS, RogueCharacter separator
 {
   RogueStringList* result_1 = (((RogueStringList__init( ((RogueStringList*)Rogue_program.type_StringList->create_and_init_object()) ))));
   RogueInteger i1_2 = (0);
-  RogueOptionalInteger i2_3 = ((THIS->locate(separator_0,RogueOptionalInteger( i1_2 ))));
+  RogueOptionalInteger i2_3 = (((RogueString__locate( THIS, separator_0, RogueOptionalInteger( i1_2 ) ))));
   while (i2_3.exists)
   {
     RogueStringList__add( result_1, ((RogueString__from( THIS, i1_2, (i2_3.value - 1) ))) );
     i1_2 = ((RogueInteger)(i2_3.value + 1));
-    i2_3 = ((RogueOptionalInteger)(THIS->locate(separator_0,RogueOptionalInteger( i1_2 ))));
+    i2_3 = ((RogueOptionalInteger)((RogueString__locate( THIS, separator_0, RogueOptionalInteger( i1_2 ) ))));
   }
   RogueStringList__add( result_1, ((RogueString__from( THIS, i1_2 ))) );
   return (RogueStringList*)(result_1);
@@ -14000,16 +13990,16 @@ RogueString* RogueProgram__validate_cpp_name( RogueClassProgram* THIS, RogueStri
     _auto_111:;
     name_0 = ((RogueString*)Rogue_program.literal_strings[338]->plus(name_0));
   }
-  RogueOptionalInteger i1_5 = ((name_0->locate((RogueCharacter)'?',RogueOptionalInteger())));
+  RogueOptionalInteger i1_5 = (((RogueString__locate( name_0, (RogueCharacter)'?', RogueOptionalInteger() ))));
   while (i1_5.exists)
   {
     name_0 = ((RogueString*)Rogue_program.literal_strings[268]->plus(((RogueString__leftmost( name_0, i1_5.value ))))->plus(((RogueString__from( name_0, (i1_5.value + 1) )))));
-    i1_5 = ((RogueOptionalInteger)(name_0->locate((RogueCharacter)'?',RogueOptionalInteger())));
+    i1_5 = ((RogueOptionalInteger)((RogueString__locate( name_0, (RogueCharacter)'?', RogueOptionalInteger() ))));
   }
-  i1_5 = ((RogueOptionalInteger)(name_0->locate(Rogue_program.literal_strings[170],RogueOptionalInteger())));
+  i1_5 = ((RogueOptionalInteger)((RogueString__locate( name_0, Rogue_program.literal_strings[170], RogueOptionalInteger() ))));
   while (i1_5.exists)
   {
-    RogueOptionalInteger i2_6 = ((name_0->locate_last(Rogue_program.literal_strings[94],RogueOptionalInteger())));
+    RogueOptionalInteger i2_6 = (((RogueString__locate_last( name_0, Rogue_program.literal_strings[94], RogueOptionalInteger() ))));
     if (!(i2_6.exists))
     {
       goto _auto_112;
@@ -14022,14 +14012,14 @@ RogueString* RogueProgram__validate_cpp_name( RogueClassProgram* THIS, RogueStri
     {
       name_0 = ((RogueString*)((RogueStringBuilder__to_String( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__print( ((RogueStringBuilder__init( ((RogueStringBuilder*)Rogue_program.type_StringBuilder->create_and_init_object()) ))), before_7 ))), Rogue_program.literal_strings[358] ))), middle_9 ))), after_8 ))) ))));
     }
-    i1_5 = ((RogueOptionalInteger)(name_0->locate(Rogue_program.literal_strings[170],RogueOptionalInteger())));
+    i1_5 = ((RogueOptionalInteger)((RogueString__locate( name_0, Rogue_program.literal_strings[170], RogueOptionalInteger() ))));
   }
   _auto_112:;
-  i1_5 = ((RogueOptionalInteger)(name_0->locate(Rogue_program.literal_strings[156],RogueOptionalInteger())));
+  i1_5 = ((RogueOptionalInteger)((RogueString__locate( name_0, Rogue_program.literal_strings[156], RogueOptionalInteger() ))));
   while (i1_5.exists)
   {
     name_0 = ((RogueString*)((RogueString__from( name_0, 0, (i1_5.value - 1) )))->plus(Rogue_program.literal_strings[269])->plus(((RogueString__from( name_0, (i1_5.value + 2) )))));
-    i1_5 = ((RogueOptionalInteger)(name_0->locate(Rogue_program.literal_strings[156],RogueOptionalInteger())));
+    i1_5 = ((RogueOptionalInteger)((RogueString__locate( name_0, Rogue_program.literal_strings[156], RogueOptionalInteger() ))));
   }
   RogueStringBuilder__clear( THIS->string_buffer );
   if (begins_with_code_prefix_1)
@@ -32572,7 +32562,7 @@ RogueClassCmd* RogueCmdFormattedString__resolve( RogueClassCmdFormattedString* T
     {
       RogueClassCmd* arg_6 = (((RogueClassCmd*)(_auto_1082_4->data->objects[_auto_1083_5])));
       arg_6 = ((RogueClassCmd*)((RogueCmd__require_value( (call_ROGUEM49( 23, (RogueClassCmd*)(arg_6), scope_0 )) ))));
-      RogueOptionalInteger i_3 = ((fmt_2->locate((RogueCharacter)'$',RogueOptionalInteger())));
+      RogueOptionalInteger i_3 = (((RogueString__locate( fmt_2, (RogueCharacter)'$', RogueOptionalInteger() ))));
       if (!(i_3.exists))
       {
         throw ((RogueToken__error( THIS->t, Rogue_program.literal_strings[746] )));
@@ -32591,7 +32581,7 @@ RogueClassCmd* RogueCmdFormattedString__resolve( RogueClassCmdFormattedString* T
   }
   if (!!(fmt_2->count))
   {
-    if ((fmt_2->locate((RogueCharacter)'$',RogueOptionalInteger())).exists)
+    if (((RogueString__locate( fmt_2, (RogueCharacter)'$', RogueOptionalInteger() ))).exists)
     {
       throw ((RogueToken__error( THIS->t, Rogue_program.literal_strings[748] )));
     }
@@ -33225,7 +33215,7 @@ void RogueCmdNativeCode__write_cpp( RogueClassCmdNativeCode* THIS, RogueClassCPP
       {
         writer_0->indent = 0;
       }
-      RogueOptionalInteger marker_3 = ((line_10->locate((RogueCharacter)'$',RogueOptionalInteger())));
+      RogueOptionalInteger marker_3 = (((RogueString__locate( line_10, (RogueCharacter)'$', RogueOptionalInteger() ))));
       while (marker_3.exists)
       {
         RogueInteger i1_4 = (marker_3.value);
@@ -33280,7 +33270,7 @@ void RogueCmdNativeCode__write_cpp( RogueClassCmdNativeCode* THIS, RogueClassCPP
             RogueCPPWriter__print( ((RogueCPPWriter__print( writer_0, (RogueCharacter)'$', false ))), name_6 );
           }
         }
-        marker_3 = ((RogueOptionalInteger)(line_10->locate((RogueCharacter)'$',RogueOptionalInteger())));
+        marker_3 = ((RogueOptionalInteger)((RogueString__locate( line_10, (RogueCharacter)'$', RogueOptionalInteger() ))));
       }
       if (!!(line_10->count))
       {
@@ -34497,7 +34487,7 @@ RogueString* RogueCmdCallInlineNative__type_name( RogueClassCmdCallInlineNative*
 void RogueCmdCallInlineNative__write_cpp( RogueClassCmdCallInlineNative* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 )
 {
   RogueString* st_2 = (THIS->method_info->native_code);
-  RogueOptionalInteger dollar_3 = ((st_2->locate((RogueCharacter)'$',RogueOptionalInteger())));
+  RogueOptionalInteger dollar_3 = (((RogueString__locate( st_2, (RogueCharacter)'$', RogueOptionalInteger() ))));
   while (dollar_3.exists)
   {
     RogueCPPWriter__print( writer_0, ((RogueString__from( st_2, 0, (dollar_3.value - 1) ))) );
@@ -34528,7 +34518,7 @@ void RogueCmdCallInlineNative__write_cpp( RogueClassCmdCallInlineNative* THIS, R
       call_ROGUEM758( 32, (RogueClassCmdCallInlineNative*)(THIS), writer_0 );
       st_2 = ((RogueString*)((RogueString__from( st_2, 4 ))));
     }
-    dollar_3 = ((RogueOptionalInteger)(st_2->locate((RogueCharacter)'$',RogueOptionalInteger())));
+    dollar_3 = ((RogueOptionalInteger)((RogueString__locate( st_2, (RogueCharacter)'$', RogueOptionalInteger() ))));
   }
   RogueCPPWriter__print( writer_0, st_2 );
 }
