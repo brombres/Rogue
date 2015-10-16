@@ -63,6 +63,7 @@ class EOLToken : Token
       return "EOL"
 endClass
 
+#{
 class IdentifierToken : Token
   PROPERTIES
     value : String
@@ -73,6 +74,7 @@ class IdentifierToken : Token
     method to->String
       return ""+value
 endClass
+}#
 
 class TypeIdentifierToken : Token
   PROPERTIES

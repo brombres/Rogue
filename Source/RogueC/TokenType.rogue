@@ -36,6 +36,8 @@ class TokenType
     keyword_macro                : TokenType
     keyword_method               : TokenType
     keyword_METHODS              : TokenType
+    keyword_nativeCode           : TokenType
+    keyword_nativeHeader         : TokenType
     keyword_others               : TokenType
     keyword_PROPERTIES           : TokenType
     keyword_routine              : TokenType

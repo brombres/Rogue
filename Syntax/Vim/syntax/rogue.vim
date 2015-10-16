@@ -21,6 +21,7 @@ syn keyword rogueClassDecl   class endClass aspect endAspect compound endCompoun
 syn keyword rogueClassDecl   delegate endDelegate function endFunction primitive endPrimitive
 syn keyword rogueClassDecl   with endWith
 syn keyword rogueClassDecl   augment endAugment framework endFramework
+syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHeader
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
 syn keyword rogueMember      PROPERTIES METHODS ROUTINES
 syn match   rogueError       "\<for\(\s\|(\)"

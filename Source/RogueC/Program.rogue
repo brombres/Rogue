@@ -18,6 +18,9 @@ class Program [requisite singleton]
     first_filepath           = ""
     m_on_launch              : Method
 
+    native_header = String[]
+    native_code   = String[]
+
     methods_by_signature = Table<<String,Method[]>>()
 
     type_list       = Type[]                 : Type[]
