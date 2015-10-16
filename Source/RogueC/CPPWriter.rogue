@@ -35,16 +35,7 @@ class CPPWriter
     method print( value:Real )->CPPWriter
       print_indent
 
-      which (value)
-        case pi
-          buffer.print( "Rogue_program.pi" )
-
-        case 2*pi
-          buffer.print( "(2*Rogue_program.pi)" )
-
-        others
-          buffer.print( value )
-      endWhich
+      buffer.print( value )
 
       return this
 

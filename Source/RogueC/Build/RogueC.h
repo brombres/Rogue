@@ -211,8 +211,6 @@ struct RogueProgramCore
 
   // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
 
-  RogueReal pi;
-
   RogueProgramCore( int type_count );
   ~RogueProgramCore();
 
@@ -283,9 +281,7 @@ struct RogueAllocator
   RogueAllocator();
   ~RogueAllocator();
   void* allocate( int size );
-  void* allocate_permanent( int size );
   void* free( void* data, int size );
-  void* free_permanent( void* data, int size );
 };
 
 extern RogueAllocator Rogue_allocator;

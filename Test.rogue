@@ -1,11 +1,7 @@
 println "Hello World!"
 
-local x = -1
-println x
-println x:>>: 0
-println x:>>: 1
-println x:>>: 2
-println x:>>: 30
+println pi
+println pi == 3.141592653589793
 
 #{
 Test()

@@ -341,14 +341,10 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   {
     types[i]->configure();
   }
-
-  pi = acos(-1);
 }
 
 RogueProgramCore::~RogueProgramCore()
 {
-  //printf( "~RogueProgramCore()\n" );
-
   while (objects)
   {
     RogueObject* next_object = objects->next_object;
@@ -529,51 +525,6 @@ void* RogueAllocator::allocate( int size )
   return pages->allocate( size );
 }
 
-void* RogueAllocator::allocate_permanent( int size )
-{
-  // Allocates arbitrary number of bytes (rounded up to a multiple of 8).
-  // Intended for permanent use throughout the lifetime of the program.  
-  // While such memory can and should be freed with free_permanent() to ensure
-  // that large system allocations are indeed freed, small allocations 
-  // will be recycled as blocks, losing 0..63 bytes in the process and
-  // fragmentation in the long run.
-
-  if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return malloc( size );
-
-  // Round size up to multiple of 8.
-  if (size <= 0) size = 8;
-  else           size = (size + 7) & ~7;
-
-  if ( !pages )
-  {
-    pages = new RogueAllocationPage(NULL);
-  }
-
-  void* result = pages->allocate( size );
-  if (result) return result;
-
-  // Not enough room on allocation page.  Allocate any smaller blocks
-  // we're able to and then move on to a new page.
-  int s = ROGUEMM_SLOT_COUNT - 2;
-  while (s >= 1)
-  {
-    RogueObject* obj = (RogueObject*) pages->allocate( s << ROGUEMM_GRANULARITY_BITS );
-    if (obj)
-    {
-      obj->next_object = free_objects[s];
-      free_objects[s] = obj;
-    }
-    else
-    {
-      --s;
-    }
-  }
-
-  // New page; this will work for sure.
-  pages = new RogueAllocationPage( pages );
-  return pages->allocate( size );
-}
-
 void* RogueAllocator::free( void* data, int size )
 {
   if (data)
@@ -590,35 +541,6 @@ void* RogueAllocator::free( void* data, int size )
       if (slot <= 0) slot = 1;
       obj->next_object = free_objects[slot];
       free_objects[slot] = obj;
-    }
-  }
-
-  // Always returns null, allowing a pointer to be freed and assigned null in
-  // a single step.
-  return NULL;
-}
-
-void* RogueAllocator::free_permanent( void* data, int size )
-{
-  if (data)
-  {
-    if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
-    {
-      ::free( data );
-    }
-    else
-    {
-      // Return object to small allocation pool if it's big enough.  Some
-      // or all bytes may be lost until the end of the program when the
-      // RogueAllocator frees its memory.
-      RogueObject* obj = (RogueObject*) data;
-      int slot = size >> ROGUEMM_GRANULARITY_BITS;
-      if (slot)
-      {
-        obj->next_object = free_objects[slot];
-        free_objects[slot] = obj;
-      }
-      // else memory is < 64 bytes and is unavailable.
     }
   }
 
