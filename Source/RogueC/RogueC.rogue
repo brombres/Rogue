@@ -102,7 +102,7 @@ class RogueC [singleton]
     method include( filepath:String )
       if (not first_filepath) first_filepath = filepath
       include( null, filepath )
-
+      
     method include( t:Token, filepath:String )
       # Preemptively (immediately) parses the given file.
       local file = File(filepath)
@@ -162,6 +162,54 @@ class RogueC [singleton]
 
       #println "Parsing " + filepath
       Parser( filepath ).parse_elements
+
+    method include_native( t:Token, filepath:String, native_type:String )
+      local file = File(filepath)
+
+      if (not file.exists)
+        forEach (prefix in prefix_path_list)
+          local prefixed_filepath = prefix + filepath
+          local prefixed_file = File( prefixed_filepath )
+          if (prefixed_file.exists)
+            filepath = prefixed_filepath
+            file = prefixed_file
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (not file.exists)
+        local mesg = ''No such file "$".'' (filepath)
+        if (t) throw t.error( mesg )
+        else   throw RogueError( mesg )
+      endIf
+
+      if (file.is_folder)
+        local mesg = ''Cannot target folder "$" for a native include.'' (file.filepath)
+        if (t) throw t.error( mesg )
+        else   throw RogueError( mesg )
+      endIf
+
+      filepath = file.absolute_filepath
+      if (included_files.contains(filepath)) return
+
+      included_files.add( filepath )
+
+      local prefix = filepath.before_last('/') + "/"
+      if (not prefix_path_lookup.contains(prefix))
+        prefix_path_lookup[prefix] = true
+        prefix_path_list.add( prefix )
+      endIf
+
+      if (native_type == "header")
+        forEach (line in LineReader(file))
+          Program.native_header.add( line )
+        endForEach
+      else
+        forEach (line in LineReader(file))
+          Program.native_code.add( line )
+        endForEach
+      endIf
 
     method process_command_line_arguments
       forEach (arg in System.command_line_arguments)

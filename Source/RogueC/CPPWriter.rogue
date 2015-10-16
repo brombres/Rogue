@@ -338,14 +338,6 @@ augment Program
         writer.println( line )
       endForEach
 
-      writer.println( "//=============================================================================" )
-      writer.println( "// Embedded copy of Rogue.h" )
-      writer.println( "//=============================================================================" )
-      forEach (ch in FileReader(RogueC.libraries_folder+"CPP/Rogue.h")) writer.buffer.print( ch )
-
-      writer.println( "//=============================================================================" )
-      writer.println( "// Code generated from Rogue source" )
-      writer.println( "//=============================================================================" )
       writer.println "#include <cmath>"
       writer.println
 
@@ -424,15 +416,6 @@ augment Program
       forEach (line in native_code)
         writer.println( line )
       endForEach
-
-      writer.println( "//=============================================================================" )
-      writer.println( "// Embedded copy of Rogue.cpp" )
-      writer.println( "//=============================================================================" )
-      forEach (ch in FileReader(RogueC.libraries_folder+"CPP/Rogue.cpp")) writer.buffer.print( ch )
-
-      writer.println( "//=============================================================================" )
-      writer.println( "// Code generated from Rogue source" )
-      writer.println( "//=============================================================================" )
 
       # typedef each unique method signature
       local native_method_signature_list   = String[]
