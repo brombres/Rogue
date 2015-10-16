@@ -1947,7 +1947,10 @@ augment CmdBitwiseShiftLeft
       return "<<"
 endAugment
 
+#{
 augment CmdBitwiseShiftRight
+  PROPERTIES
+
   METHODS
     method cpp_symbol->String
       return ">>>"
@@ -1959,6 +1962,7 @@ augment CmdBitwiseShiftRight
       right.write_cpp( writer )
       writer.print( " )" )
 endAugment
+}#
 
 augment CmdBitwiseShiftRightX
   METHODS

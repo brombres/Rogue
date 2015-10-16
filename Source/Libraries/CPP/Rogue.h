@@ -216,8 +216,6 @@ struct RogueProgramCore
   RogueObject* allocate_object( RogueType* type, int size );
 
   void         collect_garbage();
-
-  static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 
 

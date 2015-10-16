@@ -427,14 +427,6 @@ void RogueProgramCore::collect_garbage()
   objects = survivors;
 }
 
-RogueInteger RogueProgramCore::shift_right( RogueInteger value, RogueInteger bits )
-{
-  if (bits <= 0) return value;
-  value >>= 1;
-  if (--bits) return (value & 0x7fffFFFF) >> bits;
-  else        return value;
-}
-
 //-----------------------------------------------------------------------------
 //  RogueAllocationPage
 //-----------------------------------------------------------------------------

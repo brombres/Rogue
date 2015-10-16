@@ -59,6 +59,13 @@ class Math
       local q = a / b
       return a - floor(q)*b
 
+    routine shift_right( value:Integer, bits:Integer )->Integer
+      if (bits <= 0) return value
+
+      --bits
+      if (bits) return ((value :>>>: 1) & 0x7fffFFFF) :>>>: bits
+      else      return (value :>>>: 1) & 0x7fffFFFF
+
     routine sin( n:Real )->Real
       $if ("C++") macro native 'sin((double)$n)'
 

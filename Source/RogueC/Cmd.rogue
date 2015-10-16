@@ -3205,6 +3205,13 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
         return this
       endIf
 
+    method resolve( scope:Scope )->Cmd
+      local result = prior.resolve( scope )
+      local cmd_shift = result as CmdBitwiseShiftRight
+      if (not cmd_shift) return result
+
+      return CmdAccess( t, CmdAccess(t,"Math"), "shift_right", CmdArgs(cmd_shift.left,cmd_shift.right) ).resolve( scope )
+
     method symbol->String
       return ":>>:"
 endClass

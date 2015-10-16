@@ -219,11 +219,6 @@ struct RogueProgramCore
   RogueObject* allocate_object( RogueType* type, int size );
 
   void         collect_garbage();
-
-  //static RogueReal    mod( RogueReal a, RogueReal b );
-  //static RogueInteger mod( RogueInteger a, RogueInteger b );
-  //static RogueLong    mod( RogueLong a, RogueLong b );
-  static RogueInteger shift_right( RogueInteger value, RogueInteger bits );
 };
 
 
@@ -5050,10 +5045,9 @@ RogueString* RogueCmdBitwiseShiftLeft__cpp_symbol( RogueClassCmdBitwiseShiftLeft
 RogueString* RogueCmdBitwiseShiftRight__type_name( RogueClassCmdBitwiseShiftRight* THIS );
 RogueClassCmd* RogueCmdBitwiseShiftRight__clone( RogueClassCmdBitwiseShiftRight* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdBitwiseShiftRight__combine_literal_operands( RogueClassCmdBitwiseShiftRight* THIS, RogueClassType* common_type_0 );
-void RogueCmdBitwiseShiftRight__write_cpp( RogueClassCmdBitwiseShiftRight* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmd* RogueCmdBitwiseShiftRight__resolve( RogueClassCmdBitwiseShiftRight* THIS, RogueClassScope* scope_0 );
 RogueClassCmdBitwiseShiftRight* RogueCmdBitwiseShiftRight__init_object( RogueClassCmdBitwiseShiftRight* THIS );
 RogueString* RogueCmdBitwiseShiftRight__symbol( RogueClassCmdBitwiseShiftRight* THIS );
-RogueString* RogueCmdBitwiseShiftRight__cpp_symbol( RogueClassCmdBitwiseShiftRight* THIS );
 RogueString* RogueCmdBitwiseShiftRightX__type_name( RogueClassCmdBitwiseShiftRightX* THIS );
 RogueClassCmd* RogueCmdBitwiseShiftRightX__clone( RogueClassCmdBitwiseShiftRightX* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdBitwiseShiftRightX__combine_literal_operands( RogueClassCmdBitwiseShiftRightX* THIS, RogueClassType* common_type_0 );

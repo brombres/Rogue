@@ -1,13 +1,11 @@
 println "Hello World!"
 
-local x = 15
-println x % 10
-println( -1 % 10 )
-
-local y = pi
-println y % 1
-
-println y % 0.9
+local x = -1
+println x
+println x:>>: 0
+println x:>>: 1
+println x:>>: 2
+println x:>>: 30
 
 #{
 Test()
