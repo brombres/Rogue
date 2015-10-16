@@ -130,7 +130,7 @@ class Parser
         endWhile
         return true
 
-      else
+      elseIf (next_is_statement)
         this_type = Program.get_type_reference( peek, "Global" )
         if (not Program.m_on_launch)
           Program.m_on_launch = Method( peek, this_type, "on_launch" )

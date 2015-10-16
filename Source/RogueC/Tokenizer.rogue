@@ -536,11 +536,9 @@ class Tokenizer
         local keyword_type = TokenType.lookup[id]
         if (keyword_type)
           if (keyword_type is TokenType.keyword_nativeCode)
-            add_new_token( keyword_type, null as String )
-            return scan_native_code( tokens.last )
+            return scan_native_code
           elseIf (keyword_type is TokenType.keyword_nativeHeader)
-            add_new_token( keyword_type, null as String )
-            return scan_native_header( tokens.last )
+            return scan_native_header
           else
             return add_new_token( keyword_type )
           endIf
@@ -741,7 +739,7 @@ class Tokenizer
       endWhile
       return n
 
-    method scan_native_code( t:Token )->Logical
+    method scan_native_code->Logical
       local buffer = StringBuilder()
       reader.consume_spaces
       if (reader.consume('\n'))
@@ -751,7 +749,7 @@ class Tokenizer
           if (reader.column == 1 and reader.consume_id("endNativeCode")) found_end = true; escapeWhile
           buffer.print( reader.read )
         endWhile
-        if (not found_end) throw t.error( "'endNativeCode' expected before EOF." )
+        if (not found_end) throw error( "'endNativeCode' expected before EOF." )
       else
         # Single line native code to EOL
         while (reader.has_another)
@@ -760,11 +758,13 @@ class Tokenizer
         endWhile
       endIf
 
-      (t as LiteralStringToken).value = buffer->String
+      forEach (line in LineReader(buffer->String))
+        Program.native_code.add( line )
+      endForEach
 
       return true
 
-    method scan_native_header( t:Token )->Logical
+    method scan_native_header->Logical
       local buffer = StringBuilder()
       reader.consume_spaces
       if (reader.consume('\n'))
@@ -774,7 +774,7 @@ class Tokenizer
           if (reader.column == 1 and reader.consume_id("endNativeHeader")) found_end = true; escapeWhile
           buffer.print( reader.read )
         endWhile
-        if (not found_end) throw t.error( "'endNativeHeader' expected before EOF." )
+        if (not found_end) throw error( "'endNativeHeader' expected before EOF." )
       else
         # Single line native code to EOL
         while (reader.has_another)
@@ -783,7 +783,9 @@ class Tokenizer
         endWhile
       endIf
 
-      (t as LiteralStringToken).value = buffer->String
+      forEach (line in LineReader(buffer->String))
+        Program.native_header.add( line )
+      endForEach
 
       return true
 

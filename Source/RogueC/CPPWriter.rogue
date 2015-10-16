@@ -333,7 +333,11 @@ augment Program
       println "Writing $.h..." (filepath)
       local writer = CPPWriter( filepath + ".h" )
 
-      # Embed Rogue.h 
+      # Embed nativeHeader
+      forEach (line in native_header)
+        writer.println( line )
+      endForEach
+
       writer.println( "//=============================================================================" )
       writer.println( "// Embedded copy of Rogue.h" )
       writer.println( "//=============================================================================" )
@@ -416,7 +420,11 @@ augment Program
       writer.println ''#include "$.h"'' (base_filename)
       writer.println
 
-      # Embed Rogue.cpp
+      # Embed nativeCode
+      forEach (line in native_code)
+        writer.println( line )
+      endForEach
+
       writer.println( "//=============================================================================" )
       writer.println( "// Embedded copy of Rogue.cpp" )
       writer.println( "//=============================================================================" )
