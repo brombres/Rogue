@@ -389,7 +389,7 @@ augment Program
       writer.println( "  ~RogueProgram();" )
       writer.println( "  void configure();" )
       writer.println( "  void launch( int argc, char* argv[] );" )
-      writer.println( "  void finish_tasks();" )
+      writer.println( "  //void finish_tasks();" )
       writer.println( "};" )
       writer.println
 
@@ -568,7 +568,7 @@ augment Program
       writer.println( "RogueClassSystem::executable_filepath = RogueString::create( argv[0] );" );
       writer.println( "for (int i=1; i<argc; ++i)" )
       writer.println( "{" )
-      writer.println( "  RogueStringList__add( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "  RogueStringList__add__String( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
       writer.println( "}" )
       writer.println
 
@@ -582,6 +582,7 @@ augment Program
       writer.println
 
       # finish_tasks() method
+      #{
       writer.println( @|void RogueProgram::finish_tasks()
                        |{
                        |  while (RogueTaskManager__update(Rogue_program.type_TaskManager->singleton()))
@@ -590,6 +591,7 @@ augment Program
                        |  }
                        |}
                      )
+      }#
 
 
       writer.println "RogueProgram Rogue_program;"
@@ -605,7 +607,7 @@ augment Program
                          |{
                          |  Rogue_program.configure();
                          |  Rogue_program.launch( argc, argv );
-                         |  Rogue_program.finish_tasks();
+                         |  //Rogue_program.finish_tasks();
                          |  return 0;
                          |}
         )
@@ -1018,6 +1020,13 @@ augment Method
       local buffer = StringBuilder()
       buffer.print( type_context.name ).print( "__" )
       buffer.print( name )
+      if (parameters.count)
+        buffer.print "_"
+        forEach (param in parameters)
+          buffer.print "_"
+          buffer.print( param.type.cpp_name )
+        endForEach
+      endIf
       cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
 
     method incorporate( into_type:Type )->Method

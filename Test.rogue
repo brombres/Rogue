@@ -1,15 +1,15 @@
 println "Hello World!"
+println Beta().a
 
-println pi
-println pi == 3.141592653589793
+class Alpha
+  PROPERTIES
+    a : Integer
+endClass
 
-nativeHeader
-  /* Native Header */
-endNativeHeader
-
-nativeCode
-  /* Native Code */
-endNativeCode
+class Beta : Alpha
+  PROPERTIES
+    b : Integer
+endClass
 
 #{
 Test()

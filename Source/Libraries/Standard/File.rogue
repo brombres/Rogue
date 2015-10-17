@@ -26,7 +26,7 @@ class File
               |}
               |#else
               |
-              |bool is_folder = RogueFile__is_folder( $filepath );
+              |bool is_folder = RogueFile__is_folder__String( $filepath );
               |
               |{
               |  int original_dir_fd;
