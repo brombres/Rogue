@@ -83,7 +83,6 @@ struct RogueType
   virtual RogueObject* init_object( RogueObject* obj ) { return obj; }
   RogueLogical instance_of( RogueType* ancestor_type );
 
-  virtual const char*  name() = 0;
   virtual RogueObject* singleton();
   virtual void         trace( RogueObject* obj ) {}
 };
@@ -95,7 +94,6 @@ struct RogueObjectType : RogueType
 {
   void configure();
   RogueObject* create_object();
-  const char* name();
 };
 
 struct RogueObject
@@ -130,8 +128,6 @@ struct RogueObject
 struct RogueStringType : RogueType
 {
   void configure();
-
-  const char* name() { return "String"; }
 };
 
 struct RogueString : RogueObject
@@ -157,8 +153,6 @@ struct RogueString : RogueObject
 struct RogueArrayType : RogueType
 {
   void configure();
-
-  const char* name() { return "Array"; }
 
   void trace( RogueObject* obj );
 };

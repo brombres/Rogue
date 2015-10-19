@@ -119,9 +119,6 @@ RogueObject* RogueObjectType::create_object()
   return (RogueObject*) Rogue_program.allocate_object( this, sizeof(RogueObject) );
 }
 
-const char* RogueObjectType::name() { return "Object"; }
-
-
 RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
 {
   if (object && object->type->instance_of(specialized_type)) return object;

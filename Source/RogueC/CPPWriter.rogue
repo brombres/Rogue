@@ -521,6 +521,7 @@ augment Program
       writer.println( "};" )
       writer.println
 
+      # Rogue Type definitions
 
       # XType definitions
       forEach (type in type_list)
@@ -911,10 +912,6 @@ augment Type
           writer.println
         endIf
       endIf
-
-      # name()
-      writer.print( "const char* name() { return \"" ).print( name ).println( "\"; }" )
-      writer.println
 
       # singleton()
       if (is_singleton)
