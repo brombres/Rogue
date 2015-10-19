@@ -475,19 +475,52 @@ augment Program
       writer.println
 
       # Base class count table
-      writer.print(   "int Rogue_base_class_count_lookup[" ).print( type_list.count ).println( "] =" )
-      writer.println( "{" )
-      writer.indent += 2
-      local needs_comma = false
+      local info = Integer[]
       forEach (type in type_list)
-        #print( "$ $" (type.index,type.name) )
-        #if (type.should_cull) print "  // CULL"
-        #println
+        type.collect_type_info( info )
       endForEach
-      writer.println
+
+      writer.print(   "int Rogue_type_info_table[" ).print( info.count ).println( "] =" )
+      writer.println "{"
+      writer.indent += 2
+      writer.println "// dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
+
+      local first = true
+      local items = 0
+      forEach (n in info)
+        if (first) first = false
+        else       writer.print ','
+
+        ++items
+        if (items == 25) writer.println; items = 0
+
+        writer.print n
+      endForEach
+
+      if (items > 0) writer.println
       writer.indent -= 2
       writer.println( "};" )
       writer.println
+
+
+      # Object size table
+      writer.print(   "int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
+      writer.println "{"
+      writer.indent += 2
+
+      first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        writer.print( "(int) sizeof(" ).print( type.cpp_class_name ).print( ")" )
+      endForEach
+
+      if (items > 0) writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
 
       # XType definitions
       forEach (type in type_list)
@@ -822,6 +855,16 @@ augment Type
 
       writer.indent -= 2
       writer.println( "};" )
+
+    method collect_type_info( info:Integer[] )
+      if (is_primitive)
+        info.add( 0 )
+      else
+        info.add( dynamic_method_table_index )
+      endIf
+
+      info.add( base_types.count )
+      forEach (base_type in base_types) info.add( base_type.index )
 
     method print_type_definition( writer:CPPWriter )
       if (omit_output) return
