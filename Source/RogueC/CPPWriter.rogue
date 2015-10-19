@@ -521,12 +521,15 @@ augment Program
       writer.println( "};" )
       writer.println
 
-      # Rogue Type definitions
-
       # XType definitions
       forEach (type in type_list)
         type.print_type_definition( writer )
       endForEach
+      writer.println
+
+      # Types
+      writer.print( "int Rogue_type_count = " ).print( type_list.count ).println( ";" )
+      writer.print( "RogueType Rogue_types[" ).print( type_list.count ).println( "];" )
       writer.println
 
       forEach (type in type_list) type.print_routine_prototypes( writer )
@@ -558,6 +561,8 @@ augment Program
       writer.println( "void RogueProgram::configure()" )
       writer.println( "{" )
       writer.indent += 2
+
+      writer.println "Rogue_configure_types();"
 
       # Create types
       forEach (type in type_list)

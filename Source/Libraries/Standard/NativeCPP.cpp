@@ -57,18 +57,23 @@
 #  define PATH_MAX 4096
 #endif
 
+
+bool Rogue_program_configured = false;
+
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 RogueType::RogueType() : base_type_count(0), base_types(0), index(-1), object_size(0), _singleton(0)
 {
+  /*
   if (Rogue_program.next_type_index == Rogue_program.type_count)
   {
     printf( "INTERNAL ERROR: Not enough type slots.\n" );
     exit( 1 );
   }
+  */
 
-  Rogue_program.types[ Rogue_program.next_type_index++ ] = this;
+  if (Rogue_program_configured) Rogue_program.types[ Rogue_program.next_type_index++ ] = this;
 }
 
 RogueType::~RogueType()
@@ -325,7 +330,7 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
 //-----------------------------------------------------------------------------
 RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_index(0)
 {
-  type_count += ROGUE_BUILT_IN_TYPE_COUNT;
+  type_count += ROGUE_BUILT_IN_TYPE_COUNT + 1000;
   this->type_count = type_count;
   types = new RogueType*[ type_count ];
   memset( types, 0, sizeof(RogueType*) );
@@ -338,6 +343,8 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   {
     types[i]->configure();
   }
+
+Rogue_program_configured = true;
 }
 
 RogueProgramCore::~RogueProgramCore()
@@ -547,4 +554,36 @@ void* RogueAllocator::free( void* data, int size )
 }
 
 RogueAllocator Rogue_allocator;
+
+void Rogue_configure_types()
+{
+  int i;
+  int* type_info = Rogue_type_info_table - 1;
+
+  printf( "%d types\n", Rogue_type_count );
+  for (i=0; i<Rogue_type_count; ++i)
+  {
+    int j;
+    RogueType* type = &Rogue_types[i];
+
+    type->_singleton = 0;
+
+    type->index = i;
+    type->object_size = Rogue_object_size_table[i];
+    type->methods = Rogue_dynamic_method_table + *(++type_info);
+    type->base_type_count = *(++type_info);
+    if (type->base_type_count)
+    {
+      type->base_types = new RogueType*[ type->base_type_count ];
+      for (j=0; j<type->base_type_count; ++j)
+      {
+        type->base_types[j] = &Rogue_types[ *(++type_info) ];
+      } 
+    }
+    else
+    {
+      type->base_types = 0;
+    }
+  }
+}
 

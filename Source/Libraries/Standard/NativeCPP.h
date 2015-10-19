@@ -76,7 +76,7 @@ struct RogueType
   RogueType();
   virtual ~RogueType();
 
-  virtual void         configure() = 0;
+  virtual void         configure() {}
   RogueObject*         create_and_init_object() { return init_object( create_object() ); }
   virtual RogueObject* create_object();
 
@@ -276,6 +276,11 @@ struct RogueAllocator
 };
 
 extern RogueAllocator Rogue_allocator;
+extern RogueType      Rogue_types[];
+extern int            Rogue_type_info_table[];
+extern int            Rogue_object_size_table[];
+extern void*          Rogue_dynamic_method_table[];
+extern int            Rogue_type_count;
 
 //=============================================================================
 //  Various Native Methods
