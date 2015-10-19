@@ -1,4 +1,8 @@
 println "Hello World!"
+Testing("hi")
+
+class Testing(a:String) [compound]
+endClass
 
 #{
 Test()

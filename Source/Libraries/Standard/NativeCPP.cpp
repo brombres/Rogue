@@ -107,7 +107,10 @@ RogueLogical RogueType::instance_of( RogueType* ancestor_type )
 
 RogueObject* RogueType::singleton()
 {
-  if ( !_singleton ) _singleton = create_object();
+  if ( !_singleton )
+  {
+    _singleton = Rogue_program.allocate_object( this, object_size );
+  }
   return _singleton;
 }
 
@@ -117,11 +120,6 @@ RogueObject* RogueType::singleton()
 void RogueObjectType::configure()
 {
   object_size = (int) sizeof( RogueObject );
-}
-
-RogueObject* RogueObjectType::create_object()
-{
-  return (RogueObject*) Rogue_program.allocate_object( this, sizeof(RogueObject) );
 }
 
 RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
@@ -135,6 +133,28 @@ RogueLogical RogueObject::instance_of( RogueObject* object, RogueType* ancestor_
   return (!object || object->type->instance_of(ancestor_type));
 }
 
+void RogueObject_trace( void* obj )
+{
+  if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
+  ((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
+}
+
+void RogueArray_trace( void* obj )
+{
+  RogueArray* array = (RogueArray*) obj;
+
+  if ( !array || array->object_size < 0 ) return;
+  array->object_size = ~array->object_size;
+
+  if ( !array->is_reference_array ) return;
+
+  int count = array->count;
+  RogueObject** cur = array->objects + count;
+  while (--count >= 0)
+  {
+    ROGUE_TRACE( *(--cur) );
+  }
+}
 
 //-----------------------------------------------------------------------------
 //  RogueString

@@ -459,6 +459,33 @@ augment Program
       endForEach
       writer.println
 
+      # Trace Functions
+      forEach (type in type_list)
+        if (type.has_references)
+          writer.print(   "void " ).print( type.cpp_class_name ).println( "_trace( void* obj )" )
+          writer.println( "{" )
+          writer.indent += 2
+          writer.println( "void* link;" )
+          forEach (p in type.property_list)
+            if (p.type.is_reference and not p.type.is_functional and not p.type.is_array)
+              writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
+              writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
+            elseIf (p.type.is_functional or p.type.has_references or p.type.is_array)
+              # Compound
+              local trace_class_name = "RogueObject"
+              if (p.type.is_array)           trace_class_name = "RogueArray"
+              elseIf (p.type.has_references) trace_class_name = p.type.cpp_class_name
+              writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
+              writer.print( ")) " ).print( trace_class_name ).println( "_trace( link );" )
+            endIf
+          endForEach
+          writer.indent -= 2
+          writer.println( "}" )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
       # dynamic method table
       writer.println( "void* Rogue_dynamic_method_table[] =" )
       writer.println( "{" )

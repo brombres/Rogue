@@ -57,10 +57,13 @@ struct RogueCharacterList;
 
 #define ROGUE_PROPERTY(name) p_##name
 
+struct RogueObject;
+
+typedef void (*RogueTraceFn)( void* obj );
+
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-struct RogueObject;
 
 struct RogueType
 {
@@ -73,12 +76,14 @@ struct RogueType
   RogueObject* _singleton;
   void**       methods;
 
+  RogueTraceFn trace_fn;
+
   RogueType();
   virtual ~RogueType();
 
-  virtual void         configure() {}
-  RogueObject*         create_and_init_object() { return init_object( create_object() ); }
-  virtual RogueObject* create_object();
+  virtual void configure() {}
+  RogueObject* create_and_init_object() { return init_object( create_object() ); }
+  RogueObject* create_object();
 
   virtual RogueObject* init_object( RogueObject* obj ) { return obj; }
   RogueLogical instance_of( RogueType* ancestor_type );
@@ -93,7 +98,6 @@ struct RogueType
 struct RogueObjectType : RogueType
 {
   void configure();
-  RogueObject* create_object();
 };
 
 struct RogueObject
@@ -121,6 +125,8 @@ struct RogueObject
   static RogueLogical instance_of( RogueObject* object, RogueType* ancestor_type );
 };
 
+void RogueObject_trace( void* obj );
+void RogueArray_trace( void* obj );
 
 //-----------------------------------------------------------------------------
 //  RogueString
