@@ -99,7 +99,7 @@ class CPPWriter
         return print( type.element_type )
       else
         print_type_name( type )
-        if (type and type.compile_type.is_reference) buffer.print("*")
+        if (type and type.is_reference) buffer.print("*")
         return this
       endIf
 
@@ -135,18 +135,16 @@ class CPPWriter
 
     method print_type_name( type:Type )->CPPWriter
       print_indent
-      if (type) buffer.print( type.compile_type.cpp_class_name )
+      if (type) buffer.print( type.cpp_class_name )
       else       buffer.print( "void" )
       return this
 
     method print_type_info( type:Type )->CPPWriter
-      type = type.compile_type
       print_indent
       buffer.print( "Rogue_program.type_" ).print( type.cpp_name )
       return this
 
     method print_default_value( type:Type )->CPPWriter
-      type = type.compile_type
       if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
         buffer.print( "0" )
       else
@@ -321,7 +319,9 @@ augment Program
       return string_buffer->String
 
     method write_cpp( filepath:String )
-      forEach (type in type_list) type.assign_cpp_name
+      forEach (type in type_list)
+        type.assign_cpp_name
+      endForEach
       type_NativeArray.cpp_class_name = "RogueArray"
 
       forEach (type in type_list)
@@ -441,7 +441,7 @@ augment Program
           writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
           forEach (i of m.parameters)
             local p = m.parameters[i]
-            writer.print( ", " ).print(p.type.compile_type).print( " p" ).print( i )
+            writer.print( ", " ).print(p.type).print( " p" ).print( i )
           endForEach
           writer.println( " )" )
           writer.println( "{" )
@@ -842,7 +842,7 @@ augment Type
         writer.println( "base_types = new RogueType*[ base_type_count ];" )
         forEach (i of base_types)
           writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
-          writer.print( base_types[i].compile_type.cpp_name ).println( ";" )
+          writer.print( base_types[i].cpp_name ).println( ";" )
         endForEach
       endIf
 
@@ -941,16 +941,16 @@ augment Type
         if (not m.is_macro and m.is_dynamic and m.is_used)
           buffer.clear
           if (m.return_type)
-            buffer.print( m.return_type.compile_type.cpp_class_name )
+            buffer.print( m.return_type.cpp_class_name )
             if (m.return_type.is_reference) buffer.print('*')
           else
             buffer.print( "void" )
           endIf
           buffer.print( "(*)(" )
-          buffer.print( m.type_context.compile_type.cpp_class_name ).print("*")
+          buffer.print( m.type_context.cpp_class_name ).print("*")
           forEach (i of m.parameters)
             buffer.print(',')
-            local param_type = m.parameters[i].type.compile_type
+            local param_type = m.parameters[i].type
             buffer.print( param_type.cpp_class_name )
             if (param_type.is_reference) buffer.print('*')
           endForEach
@@ -1565,9 +1565,7 @@ endAugment
 augment CmdReadLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print_open_cast( local_info.type.compile_type, local_info.type )
       writer.print( local_info.cpp_name )
-      if (not is_statement) writer.print_close_cast( local_info.type.compile_type, local_info.type )
 
 endAugment
 
@@ -1583,10 +1581,10 @@ endAugment
 augment CmdReadSetting
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print_open_cast( setting_info.type.compile_type, setting_info.type )
+      if (not is_statement) writer.print_open_cast( setting_info.type, setting_info.type )
       writer.print_type_name( setting_info.type_context ).print( "::" )
       writer.print( setting_info.cpp_name )
-      if (not is_statement) writer.print_close_cast( setting_info.type.compile_type, setting_info.type )
+      if (not is_statement) writer.print_close_cast( setting_info.type, setting_info.type )
 endAugment
 
 
@@ -1596,7 +1594,7 @@ augment CmdWriteSetting
       writer.print_type_name( setting_info.type_context ).print( "::" )
       writer.print( setting_info.cpp_name ).print(" = ")
 
-      if (setting_info.type.compile_type is new_value.compile_type)
+      if (setting_info.type is new_value.type)
         new_value.write_cpp( writer )
       else
         writer.print( "((" ).print( setting_info.type ).print( ")" )
@@ -1608,11 +1606,11 @@ endAugment
 augment CmdReadProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print_open_cast( property_info.type.compile_type, property_info.type )
+      if (not is_statement) writer.print_open_cast( property_info.type, property_info.type )
       context.write_cpp( writer )
       writer.print_access_operator( context.type )  # -> or .
       writer.print( property_info.cpp_name )
-      if (not is_statement) writer.print_close_cast( property_info.type.compile_type, property_info.type )
+      if (not is_statement) writer.print_close_cast( property_info.type, property_info.type )
 endAugment
 
 augment CmdWriteProperty
@@ -1622,7 +1620,7 @@ augment CmdWriteProperty
       writer.print_access_operator( context.type )  # -> or .
       writer.print( property_info.cpp_name ).print(" = ")
 
-      if (property_info.type.compile_type is new_value.compile_type)
+      if (property_info.type is new_value.type)
         new_value.write_cpp( writer )
       else
         writer.print( "((" ).print( property_info.type ).print( ")" )
@@ -1885,7 +1883,6 @@ endAugment
 augment CmdMod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local this_type = type
       local cast = "(RogueInteger)"
       if (this_type is Program.type_Real)     cast = "(RogueReal)"
       elseIf (this_type is Program.type_Long) cast = "(RogueLong)"
@@ -2048,7 +2045,7 @@ augment CmdReadArrayElement
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       local element_type = array_type.element_type
-      if (not is_statement) writer.print_open_cast( element_type.compile_type, element_type )
+      if (not is_statement) writer.print_open_cast( element_type, element_type )
       if (element_type.is_reference)
         writer.print( "((" )
         writer.print( element_type )
@@ -2084,7 +2081,7 @@ augment CmdReadArrayElement
         writer.print( "]" )
 
       endIf
-      if (not is_statement) writer.print_close_cast( element_type.compile_type, element_type )
+      if (not is_statement) writer.print_close_cast( element_type, element_type )
 endAugment
 
 augment CmdReadArrayCount
@@ -2216,7 +2213,7 @@ endAugment
 augment CmdLogicalizeOptionalValue
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (value.compile_type.element_type.is_reference)
+      if (value.type.element_type.is_reference)
         writer.print( "!!" )
         value.write_cpp( writer )
       else
@@ -2229,7 +2226,7 @@ augment CmdGetOptionalValue
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       value.write_cpp( writer )
-      if (not value.compile_type.element_type.is_reference)
+      if (not value.type.element_type.is_reference)
         writer.print( ".value" )
       endIf
 endAugment
