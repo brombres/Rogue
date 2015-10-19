@@ -48,6 +48,15 @@ class List<<$DataType>> : GenericList
     method first->$DataType
       macro this.data[0]
 
+    method discard_from( index:Integer )
+      local zero_value : $DataType
+      local c = count
+      while (c > index)
+        --c
+        data[c] = zero_value
+      endWhile
+      count = c
+
     method get( index:Integer )->$DataType
       macro this.data[index]
 

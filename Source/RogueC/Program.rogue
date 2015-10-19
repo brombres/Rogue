@@ -212,9 +212,9 @@ class Program [requisite singleton]
         ++i
       endWhile
 
-      trace_used_code
+      cull_unused_code
 
-    method trace_used_code
+    method cull_unused_code
       forEach (type in type_list)
         if (type.is_requisite) type.trace_used_code
       endForEach
@@ -224,6 +224,22 @@ class Program [requisite singleton]
       forEach (type in type_list)
         type.cull_unused_methods
       endForEach
+
+      #{
+      local write_i = 0
+      forEach (read_i in 0..(type_list.count-1))
+        local type = type_list[ read_i ]
+        ++read_i
+        if (not type.should_cull)
+          type_list[ write_i ] = type
+          type.index = write_i
+          ++write_i
+        endIf
+      endForEach
+println "+discard"
+      type_list.discard_from( write_i )
+println "-discard"
+}#
 
     method trace_overridden_methods
       # When we have "s = Circle() : Shape; println s.area()", only Shape.area()

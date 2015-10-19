@@ -647,6 +647,9 @@ class Type
 
       return this
 
+    method should_cull->Logical
+      return not is_used or (is_optional and element_type.is_reference)
+
     method to->String
       return name
 

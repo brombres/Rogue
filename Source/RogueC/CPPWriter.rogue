@@ -474,6 +474,21 @@ augment Program
       writer.println( "};" )
       writer.println
 
+      # Base class count table
+      writer.print(   "int Rogue_base_class_count_lookup[" ).print( type_list.count ).println( "] =" )
+      writer.println( "{" )
+      writer.indent += 2
+      local needs_comma = false
+      forEach (type in type_list)
+        #print( "$ $" (type.index,type.name) )
+        #if (type.should_cull) print "  // CULL"
+        #println
+      endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
       # XType definitions
       forEach (type in type_list)
         type.print_type_definition( writer )
