@@ -2,8 +2,14 @@ println "Hello World!"
 Testing("hi")
 
 local x = Testing[]
+x.add( Testing("A") )
+println x
+
+local y = [3,4,5]
+println y
 
 class Testing(a:String) [compound]
+  METHODS
 endClass
 
 #{

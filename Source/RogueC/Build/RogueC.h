@@ -3641,7 +3641,6 @@ RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__init__Integer( RogueStringBuilder* THIS, RogueInteger initial_capacity_0 );
 RogueStringBuilder* RogueStringBuilder__clear( RogueStringBuilder* THIS );
 RogueLogical RogueStringBuilder__needs_indent( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__print__Byte( RogueStringBuilder* THIS, RogueByte value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Character( RogueStringBuilder* THIS, RogueCharacter value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Integer( RogueStringBuilder* THIS, RogueInteger value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Logical( RogueStringBuilder* THIS, RogueLogical value_0 );
@@ -3672,6 +3671,7 @@ RogueStringList* RogueStringList__reserve__Integer( RogueStringList* THIS, Rogue
 RogueString* RogueStringList__joined__String( RogueStringList* THIS, RogueString* separator_0 );
 RogueString* RogueStringArray__type_name( RogueArray* THIS );
 RogueString* RogueNativeArray__type_name( RogueArray* THIS );
+RogueString* RogueByte__to_String( RogueByte THIS );
 RogueString* RogueStringReader__type_name( RogueClassStringReader* THIS );
 RogueLogical RogueStringReader__has_another( RogueClassStringReader* THIS );
 RogueCharacter RogueStringReader__read( RogueClassStringReader* THIS );

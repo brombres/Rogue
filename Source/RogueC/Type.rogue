@@ -335,6 +335,7 @@ class Type
         m.return_type = this
         m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
+
         # Insert property initializations
         local i = property_list.count - 1
         while (i >= 0)
@@ -344,6 +345,15 @@ class Type
           endIf
           --i
         endWhile
+      endIf
+
+      # Add a default to->String to compounds
+      if (is_compound or is_primitive)
+        local m = find_method( "to_String()" )
+        if (not m) m = add_method( t, "to_String" ).organize
+        m.return_type = Program.type_String
+
+        m.statements.add( CmdReturn(t,CmdLiteralString(t,name)) )
       endIf
 
       if (this isNot Program.type_NativeArray)

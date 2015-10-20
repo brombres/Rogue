@@ -187,9 +187,8 @@ class List<<$DataType>> : GenericList
       forEach (value in this)
         if (first) first = false
         else       buffer.print( ',' )
-        buffer.print( value )
-        #if (value is null) buffer.print( "null" )
-        #else               buffer.print( value->String )
+        if (value is null) buffer.print( "null" )
+        else               buffer.print( value->String )
       endForEach
       buffer.print( ']' )
       return buffer
