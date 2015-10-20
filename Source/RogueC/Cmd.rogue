@@ -3067,7 +3067,7 @@ class CmdCompareIs : CmdComparison
         throw t.error( "[INTERNAL] TODO: 'is' for compounds." )
 
       else
-        throw t.error( "Cannot use 'is' between mixed type categories $ and $." (left_type,right_type) )
+        return CmdLiteralLogical( t, false )
 
       endIf
 

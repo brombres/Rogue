@@ -460,24 +460,44 @@ augment Program
       writer.println
 
       # Trace Functions
+writer.println "/*"
       forEach (type in type_list)
         if (type.has_references)
           writer.print(   "void " ).print( type.cpp_class_name ).println( "_trace( void* obj )" )
           writer.println( "{" )
           writer.indent += 2
           writer.println( "void* link;" )
+          if (not type.is_compound)
+            writer.println  "if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;"
+            writer.println  "((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;"
+            writer.println
+          endIf
+
           forEach (p in type.property_list)
+
             if (p.type.is_reference and not p.type.is_functional and not p.type.is_array)
               writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
               writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
-            elseIf (p.type.is_functional or p.type.has_references or p.type.is_array)
-              # Compound
-              local trace_class_name = "RogueObject"
-              if (p.type.is_array)           trace_class_name = "RogueArray"
-              elseIf (p.type.has_references) trace_class_name = p.type.cpp_class_name
+
+            elseIf (p.type.is_array)
+              local trace_class_name = "RogueArray"
+              if (p.type.element_type.is_compound or p.type.element_type.is_functional)
+                trace_class_name = p.type.cpp_class_name
+              elseIf (not p.type.element_type.is_reference)
+                trace_class_name = "RogueObject"
+              endIf
               writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
               writer.print( ")) " ).print( trace_class_name ).println( "_trace( link );" )
+
+            elseIf (p.type.is_functional or p.type.has_references)
+              # Compound
+              local trace_class_name = "RogueObject"
+              if (p.type.has_references) trace_class_name = p.type.cpp_class_name
+              writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
+              writer.print( ")) " ).print( trace_class_name ).println( "_trace( link );" )
+
             endIf
+
           endForEach
           writer.indent -= 2
           writer.println( "}" )
@@ -485,6 +505,7 @@ augment Program
         endIf
       endForEach
       writer.println
+writer.println "*/"
 
       # dynamic method table
       writer.println( "void* Rogue_dynamic_method_table[] =" )

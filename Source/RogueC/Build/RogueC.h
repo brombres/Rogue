@@ -3641,6 +3641,7 @@ RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__init__Integer( RogueStringBuilder* THIS, RogueInteger initial_capacity_0 );
 RogueStringBuilder* RogueStringBuilder__clear( RogueStringBuilder* THIS );
 RogueLogical RogueStringBuilder__needs_indent( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__print__Byte( RogueStringBuilder* THIS, RogueByte value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Character( RogueStringBuilder* THIS, RogueCharacter value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Integer( RogueStringBuilder* THIS, RogueInteger value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Logical( RogueStringBuilder* THIS, RogueLogical value_0 );

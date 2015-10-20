@@ -1,6 +1,8 @@
 println "Hello World!"
 Testing("hi")
 
+local x = Testing[]
+
 class Testing(a:String) [compound]
 endClass
 
