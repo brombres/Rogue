@@ -32,8 +32,8 @@ class Type
 
     native_properties : String[]
 
-    settings_list   = Property[]
-    settings_lookup = Table<<String,Property>>() : Table<<String,Property>>
+    global_list   = Property[]
+    global_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
@@ -79,10 +79,10 @@ class Type
 
       return r
 
-    method add_setting( s_t:Token, s_name:String )->Property
+    method add_global( s_t:Token, s_name:String )->Property
       local s = Property( s_t, this, s_name )
-      settings_list.add( s )
-      settings_lookup[s_name] = s
+      global_list.add( s )
+      global_lookup[s_name] = s
       return s
 
     method add_property( p_t:Token, p_name:String, p_type=null:Type, initial_value=null:Cmd )->Property
@@ -121,9 +121,9 @@ class Type
       if (p_name[0] == '@') p_name = p_name.rightmost(-1)
       return property_lookup[p_name]
 
-    method find_setting( s_name:String )->Property
+    method find_global( s_name:String )->Property
       if (s_name[0] == '@') s_name = s_name.rightmost(-1)
-      return settings_lookup[s_name]
+      return global_lookup[s_name]
 
     method has_method_named( m_name:String )->Logical
       local list = method_lookup_by_name[m_name]
@@ -300,18 +300,18 @@ class Type
         list.add( m )
       endForEach
 
-      # Create or locate init_class() to initialize settings
-      if (settings_list.count and not is_native)
+      # Create or locate init_class() to initialize globals
+      if (global_list.count and not is_native)
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
         m.attributes.add( Attribute.is_requisite )
 
-        # Insert setting initializations
-        local i = settings_list.count - 1
+        # Insert global initializations
+        local i = global_list.count - 1
         while (i >= 0)
-          local s = settings_list[i]
+          local s = global_list[i]
           if (s.initial_value)
-            m.statements.insert( CmdWriteSetting(s.t, s, s.initial_value.clone) )
+            m.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.clone) )
           endIf
           --i
         endWhile
@@ -405,7 +405,7 @@ class Type
         ++i
       endForEach
 
-      #method has_settings_references
+      #method has_global_references
 
     method has_object_references->Logical
       # Returns true when:
@@ -653,7 +653,7 @@ class Type
 
       if (element_type) element_type.organize
 
-      forEach (s in settings_list) s.type.organize
+      forEach (s in global_list) s.type.organize
       forEach (p in property_list)
         p.type.organize
       endForEach
@@ -689,7 +689,7 @@ class Type
         base_type.trace_used_code
       endForEach
 
-      forEach (s in settings_list)
+      forEach (s in global_list)
         s.type.trace_used_code
       endForEach
 

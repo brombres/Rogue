@@ -440,7 +440,7 @@ class Parser
 
       return true
 
-    method parse_properties( as_settings=false:Logical )->Logical
+    method parse_properties( as_globals=false:Logical )->Logical
       consume_eols
 
       if (consume(TokenType.keyword_native))
@@ -466,7 +466,7 @@ class Parser
         consume_eols
         local t = must_read(TokenType.identifier)
         local p : Property
-        if (as_settings) p = this_type.add_setting( t, t->String )
+        if (as_globals) p = this_type.add_global( t, t->String )
         else             p = this_type.add_property( t, t->String )
         property_list.add( p )
         if (consume(TokenType.symbol_equals))
@@ -483,7 +483,7 @@ class Parser
       else
         forEach (p in property_list)
           local name = "property"
-          if (as_settings) name = "setting"
+          if (as_globals) name = "global"
           if (p.initial_value)
             p.type = p.initial_value.implicit_type
             if (p.type is null) 

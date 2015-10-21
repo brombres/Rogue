@@ -737,8 +737,8 @@ writer.println "*/"
       writer.println "RogueProgram Rogue_program;"
       writer.println
 
-      # Setting (static) declarations 
-      forEach (type in type_list) type.declare_settings( writer )
+      # Global (static) declarations 
+      forEach (type in type_list) type.declare_globals( writer )
 
       # Optional main()
       if (RogueC.generate_main)
@@ -819,7 +819,7 @@ augment Type
 
       cpp_type_name = "RogueType" + cpp_name
 
-      forEach (s in settings_list)
+      forEach (s in global_list)
         s.cpp_name = Program.validate_cpp_name( s.name )
       endForEach
 
@@ -827,8 +827,8 @@ augment Type
         p.cpp_name = Program.validate_cpp_name( p.name )
       endForEach
 
-    method declare_settings( writer:CPPWriter )
-      forEach (s in settings_list)
+    method declare_globals( writer:CPPWriter )
+      forEach (s in global_list)
         if (s.type_context is this)
           writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
           if (s.type.is_reference)                writer.println( " = nullptr;" )
@@ -853,10 +853,10 @@ augment Type
       writer.println.println( "{" )
       writer.indent += 2
 
-      # Settings
-      if (settings_list.count)
-        writer.println "// SETTINGS"
-        forEach (s in settings_list)
+      # Globals
+      if (global_list.count)
+        writer.println "// GLOBALS"
+        forEach (s in global_list)
           writer.print( "static " ).print( s.type ).print(" ").print( s.cpp_name ).println(";")
         endForEach
         writer.println
@@ -1738,26 +1738,26 @@ augment CmdWriteLocal
       writer.print( ")" )
 endAugment
 
-augment CmdReadSetting
+augment CmdReadGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print_open_cast( setting_info.type, setting_info.type )
-      writer.print_type_name( setting_info.type_context ).print( "::" )
-      writer.print( setting_info.cpp_name )
-      if (not is_statement) writer.print_close_cast( setting_info.type, setting_info.type )
+      if (not is_statement) writer.print_open_cast( global_info.type, global_info.type )
+      writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( global_info.cpp_name )
+      if (not is_statement) writer.print_close_cast( global_info.type, global_info.type )
 endAugment
 
 
-augment CmdWriteSetting
+augment CmdWriteGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print_type_name( setting_info.type_context ).print( "::" )
-      writer.print( setting_info.cpp_name ).print(" = ")
+      writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( global_info.cpp_name ).print(" = ")
 
-      if (setting_info.type is new_value.type)
+      if (global_info.type is new_value.type)
         new_value.write_cpp( writer )
       else
-        writer.print( "((" ).print( setting_info.type ).print( ")" )
+        writer.print( "((" ).print( global_info.type ).print( ")" )
         new_value.write_cpp( writer )
         writer.print( ")" )
       endIf
@@ -2174,11 +2174,11 @@ augment CmdLocalOpWithAssign
 endAugment
 
 
-augment CmdOpAssignSetting
+augment CmdOpAssignGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print_type_name( setting_info.type_context ).print( "::" )
-      writer.print( setting_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
+      writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( global_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
       new_value.write_cpp( writer )
 endAugment
 

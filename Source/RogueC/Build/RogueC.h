@@ -408,7 +408,7 @@ struct RogueTypeCmdLiteralNull;
 struct RogueTypeCmdCreateCompound;
 struct RogueTypeCmdLiteralLogical;
 struct RogueTypeCmdLiteralString;
-struct RogueTypeCmdWriteSetting;
+struct RogueTypeCmdWriteGlobal;
 struct RogueTypeCmdWriteProperty;
 struct RogueTypeTableEntry_of_String_TypeList;
 struct RogueTypeString_TypeTableEntry;
@@ -513,11 +513,11 @@ struct RogueTypeCmdCreateArray;
 struct RogueTypeCmdCallRoutine;
 struct RogueTypeCmdCall;
 struct RogueTypeCmdCreateObject;
-struct RogueTypeCmdReadSetting;
+struct RogueTypeCmdReadGlobal;
 struct RogueTypeCmdReadProperty;
 struct RogueTypeCmdLogicalizeOptionalValue;
 struct RogueTypeCmdWriteLocal;
-struct RogueTypeCmdOpAssignSetting;
+struct RogueTypeCmdOpAssignGlobal;
 struct RogueTypeCmdOpAssignProperty;
 struct RogueTypeCmdCallInlineNativeRoutine;
 struct RogueTypeCmdCallInlineNative;
@@ -651,7 +651,7 @@ struct RogueClassCmdLiteralNull;
 struct RogueClassCmdCreateCompound;
 struct RogueClassCmdLiteralLogical;
 struct RogueClassCmdLiteralString;
-struct RogueClassCmdWriteSetting;
+struct RogueClassCmdWriteGlobal;
 struct RogueClassCmdWriteProperty;
 struct RogueTableEntry_of_String_TypeList;
 struct RogueClassString_TypeTableEntry;
@@ -756,11 +756,11 @@ struct RogueClassCmdCreateArray;
 struct RogueClassCmdCallRoutine;
 struct RogueClassCmdCall;
 struct RogueClassCmdCreateObject;
-struct RogueClassCmdReadSetting;
+struct RogueClassCmdReadGlobal;
 struct RogueClassCmdReadProperty;
 struct RogueClassCmdLogicalizeOptionalValue;
 struct RogueClassCmdWriteLocal;
-struct RogueClassCmdOpAssignSetting;
+struct RogueClassCmdOpAssignGlobal;
 struct RogueClassCmdOpAssignProperty;
 struct RogueClassCmdCallInlineNativeRoutine;
 struct RogueClassCmdCallInlineNative;
@@ -853,7 +853,7 @@ struct RogueClassGenericList : RogueObject
 
 struct RogueStringBuilder : RogueObject
 {
-  // SETTINGS
+  // GLOBALS
   static RogueByteList* work_bytes;
 
   // PROPERTIES
@@ -1093,8 +1093,8 @@ struct RogueClassType : RogueObject
   RogueClassCmd* prev_enum_cmd;
   RogueInteger next_enum_offset;
   RogueStringList* native_properties;
-  RoguePropertyList* settings_list;
-  RogueClassString_PropertyTable* settings_lookup;
+  RoguePropertyList* global_list;
+  RogueClassString_PropertyTable* global_lookup;
   RoguePropertyList* property_list;
   RogueClassString_PropertyTable* property_lookup;
   RogueMethodList* routine_list;
@@ -1186,7 +1186,7 @@ struct RogueCmdList : RogueObject
 
 struct RogueClassTokenType : RogueObject
 {
-  // SETTINGS
+  // GLOBALS
   static RogueClassString_TokenTypeTable* lookup;
   static RogueClassTokenType* directive_define;
   static RogueClassTokenType* directive_include;
@@ -1459,7 +1459,7 @@ struct RogueClassMath : RogueObject
 
 struct RogueClassSystem : RogueObject
 {
-  // SETTINGS
+  // GLOBALS
   static RogueStringList* command_line_arguments;
   static RogueString* executable_filepath;
 
@@ -1962,11 +1962,11 @@ struct RogueClassCmdLiteralString : RogueObject
 
 };
 
-struct RogueClassCmdWriteSetting : RogueObject
+struct RogueClassCmdWriteGlobal : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
-  RogueClassProperty* setting_info;
+  RogueClassProperty* global_info;
   RogueClassCmd* new_value;
 
 };
@@ -2152,7 +2152,7 @@ struct RogueClassParseReader : RogueObject
 
 struct RogueClassPreprocessor : RogueObject
 {
-  // SETTINGS
+  // GLOBALS
   static RogueClassString_TokenListTable* definitions;
 
   // PROPERTIES
@@ -2960,11 +2960,11 @@ struct RogueClassCmdCreateObject : RogueObject
 
 };
 
-struct RogueClassCmdReadSetting : RogueObject
+struct RogueClassCmdReadGlobal : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
-  RogueClassProperty* setting_info;
+  RogueClassProperty* global_info;
 
 };
 
@@ -2995,13 +2995,13 @@ struct RogueClassCmdWriteLocal : RogueObject
 
 };
 
-struct RogueClassCmdOpAssignSetting : RogueObject
+struct RogueClassCmdOpAssignGlobal : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
   RogueClassTokenType* op;
   RogueClassCmd* new_value;
-  RogueClassProperty* setting_info;
+  RogueClassProperty* global_info;
 
 };
 
@@ -3434,7 +3434,7 @@ struct RogueProgram : RogueProgramCore
   RogueTypeCmdCreateCompound* type_CmdCreateCompound;
   RogueTypeCmdLiteralLogical* type_CmdLiteralLogical;
   RogueTypeCmdLiteralString* type_CmdLiteralString;
-  RogueTypeCmdWriteSetting* type_CmdWriteSetting;
+  RogueTypeCmdWriteGlobal* type_CmdWriteGlobal;
   RogueTypeCmdWriteProperty* type_CmdWriteProperty;
   RogueTypeTableEntry_of_String_TypeList* type_TableEntry_of_String_TypeList;
   RogueTypeString_TypeTableEntry* type_String_TypeTableEntry;
@@ -3539,11 +3539,11 @@ struct RogueProgram : RogueProgramCore
   RogueTypeCmdCallRoutine* type_CmdCallRoutine;
   RogueTypeCmdCall* type_CmdCall;
   RogueTypeCmdCreateObject* type_CmdCreateObject;
-  RogueTypeCmdReadSetting* type_CmdReadSetting;
+  RogueTypeCmdReadGlobal* type_CmdReadGlobal;
   RogueTypeCmdReadProperty* type_CmdReadProperty;
   RogueTypeCmdLogicalizeOptionalValue* type_CmdLogicalizeOptionalValue;
   RogueTypeCmdWriteLocal* type_CmdWriteLocal;
-  RogueTypeCmdOpAssignSetting* type_CmdOpAssignSetting;
+  RogueTypeCmdOpAssignGlobal* type_CmdOpAssignGlobal;
   RogueTypeCmdOpAssignProperty* type_CmdOpAssignProperty;
   RogueTypeCmdCallInlineNativeRoutine* type_CmdCallInlineNativeRoutine;
   RogueTypeCmdCallInlineNative* type_CmdCallInlineNative;
@@ -3835,14 +3835,14 @@ RogueClassType* RogueType__init__Token_String( RogueClassType* THIS, RogueClassT
 RogueClassMethod* RogueType__add_method__Token_String( RogueClassType* THIS, RogueClassToken* m_t_0, RogueString* m_name_1 );
 RogueClassMethod* RogueType__add_method__Method( RogueClassType* THIS, RogueClassMethod* m_0 );
 RogueClassMethod* RogueType__add_routine__Token_String( RogueClassType* THIS, RogueClassToken* r_t_0, RogueString* r_name_1 );
-RogueClassProperty* RogueType__add_setting__Token_String( RogueClassType* THIS, RogueClassToken* s_t_0, RogueString* s_name_1 );
+RogueClassProperty* RogueType__add_global__Token_String( RogueClassType* THIS, RogueClassToken* s_t_0, RogueString* s_name_1 );
 RogueClassProperty* RogueType__add_property__Token_String_Type_Cmd( RogueClassType* THIS, RogueClassToken* p_t_0, RogueString* p_name_1, RogueClassType* p_type_2, RogueClassCmd* initial_value_3 );
 RogueClassProperty* RogueType__add_property__Property( RogueClassType* THIS, RogueClassProperty* p_0 );
 RogueClassCmd* RogueType__create_default_value__Token( RogueClassType* THIS, RogueClassToken* _t_0 );
 RogueClassMethod* RogueType__find_method__String( RogueClassType* THIS, RogueString* signature_0 );
 RogueClassMethod* RogueType__find_routine__String( RogueClassType* THIS, RogueString* signature_0 );
 RogueClassProperty* RogueType__find_property__String( RogueClassType* THIS, RogueString* p_name_0 );
-RogueClassProperty* RogueType__find_setting__String( RogueClassType* THIS, RogueString* s_name_0 );
+RogueClassProperty* RogueType__find_global__String( RogueClassType* THIS, RogueString* s_name_0 );
 RogueLogical RogueType__has_method_named__String( RogueClassType* THIS, RogueString* m_name_0 );
 RogueLogical RogueType__has_routine_named__String( RogueClassType* THIS, RogueString* r_name_0 );
 RogueLogical RogueType__instance_of__Type( RogueClassType* THIS, RogueClassType* ancestor_type_0 );
@@ -3875,7 +3875,7 @@ RogueClassType* RogueType__resolve( RogueClassType* THIS );
 RogueLogical RogueType__should_cull( RogueClassType* THIS );
 void RogueType__trace_used_code( RogueClassType* THIS );
 void RogueType__assign_cpp_name( RogueClassType* THIS );
-void RogueType__declare_settings__CPPWriter( RogueClassType* THIS, RogueClassCPPWriter* writer_0 );
+void RogueType__declare_globals__CPPWriter( RogueClassType* THIS, RogueClassCPPWriter* writer_0 );
 void RogueType__print_data_definition__CPPWriter( RogueClassType* THIS, RogueClassCPPWriter* writer_0 );
 void RogueType__collect_type_info__IntegerList( RogueClassType* THIS, RogueIntegerList* info_0 );
 void RogueType__print_type_definition__CPPWriter( RogueClassType* THIS, RogueClassCPPWriter* writer_0 );
@@ -4177,7 +4177,7 @@ void RogueParser__ensure_unspecialized_element_type__Token_Attributes( RogueClas
 void RogueParser__parse_type_def__Type( RogueClassParser* THIS, RogueClassType* _auto_227_0 );
 RogueLogical RogueParser__parse_section( RogueClassParser* THIS );
 RogueLogical RogueParser__parse_definitions__Logical( RogueClassParser* THIS, RogueLogical enumerate_0 );
-RogueLogical RogueParser__parse_properties__Logical( RogueClassParser* THIS, RogueLogical as_settings_0 );
+RogueLogical RogueParser__parse_properties__Logical( RogueClassParser* THIS, RogueLogical as_globals_0 );
 RogueLogical RogueParser__parse_method__Logical( RogueClassParser* THIS, RogueLogical as_routine_0 );
 void RogueParser__parse_single_or_multi_line_statements__CmdStatementList_TokenType( RogueClassParser* THIS, RogueClassCmdStatementList* statements_0, RogueClassTokenType* end_type_1 );
 void RogueParser__parse_multi_line_statements__CmdStatementList( RogueClassParser* THIS, RogueClassCmdStatementList* statements_0 );
@@ -4584,14 +4584,14 @@ RogueClassType* Rogue_CmdLiteralString__type( RogueClassCmdLiteralString* THIS )
 void RogueCmdLiteralString__write_cpp__CPPWriter_Logical( RogueClassCmdLiteralString* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdLiteralString* RogueCmdLiteralString__init_object( RogueClassCmdLiteralString* THIS );
 RogueClassCmdLiteralString* RogueCmdLiteralString__init__Token_String_Integer( RogueClassCmdLiteralString* THIS, RogueClassToken* _auto_409_0, RogueString* _auto_410_1, RogueInteger _auto_411_2 );
-RogueString* RogueCmdWriteSetting__type_name( RogueClassCmdWriteSetting* THIS );
-RogueClassCmd* RogueCmdWriteSetting__clone__CloneArgs( RogueClassCmdWriteSetting* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdWriteSetting__resolve__Scope( RogueClassCmdWriteSetting* THIS, RogueClassScope* scope_0 );
-void RogueCmdWriteSetting__trace_used_code( RogueClassCmdWriteSetting* THIS );
-RogueClassType* Rogue_CmdWriteSetting__type( RogueClassCmdWriteSetting* THIS );
-void RogueCmdWriteSetting__write_cpp__CPPWriter_Logical( RogueClassCmdWriteSetting* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdWriteSetting* RogueCmdWriteSetting__init_object( RogueClassCmdWriteSetting* THIS );
-RogueClassCmdWriteSetting* RogueCmdWriteSetting__init__Token_Property_Cmd( RogueClassCmdWriteSetting* THIS, RogueClassToken* _auto_420_0, RogueClassProperty* _auto_421_1, RogueClassCmd* _auto_422_2 );
+RogueString* RogueCmdWriteGlobal__type_name( RogueClassCmdWriteGlobal* THIS );
+RogueClassCmd* RogueCmdWriteGlobal__clone__CloneArgs( RogueClassCmdWriteGlobal* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassCmd* RogueCmdWriteGlobal__resolve__Scope( RogueClassCmdWriteGlobal* THIS, RogueClassScope* scope_0 );
+void RogueCmdWriteGlobal__trace_used_code( RogueClassCmdWriteGlobal* THIS );
+RogueClassType* Rogue_CmdWriteGlobal__type( RogueClassCmdWriteGlobal* THIS );
+void RogueCmdWriteGlobal__write_cpp__CPPWriter_Logical( RogueClassCmdWriteGlobal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmdWriteGlobal* RogueCmdWriteGlobal__init_object( RogueClassCmdWriteGlobal* THIS );
+RogueClassCmdWriteGlobal* RogueCmdWriteGlobal__init__Token_Property_Cmd( RogueClassCmdWriteGlobal* THIS, RogueClassToken* _auto_420_0, RogueClassProperty* _auto_421_1, RogueClassCmd* _auto_422_2 );
 RogueString* RogueCmdWriteProperty__type_name( RogueClassCmdWriteProperty* THIS );
 RogueClassCmd* RogueCmdWriteProperty__clone__CloneArgs( RogueClassCmdWriteProperty* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdWriteProperty__resolve__Scope( RogueClassCmdWriteProperty* THIS, RogueClassScope* scope_0 );
@@ -5303,14 +5303,14 @@ RogueClassType* Rogue_CmdCreateObject__type( RogueClassCmdCreateObject* THIS );
 void RogueCmdCreateObject__write_cpp__CPPWriter_Logical( RogueClassCmdCreateObject* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdCreateObject* RogueCmdCreateObject__init_object( RogueClassCmdCreateObject* THIS );
 RogueClassCmdCreateObject* RogueCmdCreateObject__init__Token_Type( RogueClassCmdCreateObject* THIS, RogueClassToken* _auto_862_0, RogueClassType* _auto_863_1 );
-RogueString* RogueCmdReadSetting__type_name( RogueClassCmdReadSetting* THIS );
-RogueClassCmd* RogueCmdReadSetting__clone__CloneArgs( RogueClassCmdReadSetting* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdReadSetting__resolve__Scope( RogueClassCmdReadSetting* THIS, RogueClassScope* scope_0 );
-void RogueCmdReadSetting__trace_used_code( RogueClassCmdReadSetting* THIS );
-RogueClassType* Rogue_CmdReadSetting__type( RogueClassCmdReadSetting* THIS );
-void RogueCmdReadSetting__write_cpp__CPPWriter_Logical( RogueClassCmdReadSetting* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdReadSetting* RogueCmdReadSetting__init_object( RogueClassCmdReadSetting* THIS );
-RogueClassCmdReadSetting* RogueCmdReadSetting__init__Token_Property( RogueClassCmdReadSetting* THIS, RogueClassToken* _auto_864_0, RogueClassProperty* _auto_865_1 );
+RogueString* RogueCmdReadGlobal__type_name( RogueClassCmdReadGlobal* THIS );
+RogueClassCmd* RogueCmdReadGlobal__clone__CloneArgs( RogueClassCmdReadGlobal* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassCmd* RogueCmdReadGlobal__resolve__Scope( RogueClassCmdReadGlobal* THIS, RogueClassScope* scope_0 );
+void RogueCmdReadGlobal__trace_used_code( RogueClassCmdReadGlobal* THIS );
+RogueClassType* Rogue_CmdReadGlobal__type( RogueClassCmdReadGlobal* THIS );
+void RogueCmdReadGlobal__write_cpp__CPPWriter_Logical( RogueClassCmdReadGlobal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmdReadGlobal* RogueCmdReadGlobal__init_object( RogueClassCmdReadGlobal* THIS );
+RogueClassCmdReadGlobal* RogueCmdReadGlobal__init__Token_Property( RogueClassCmdReadGlobal* THIS, RogueClassToken* _auto_864_0, RogueClassProperty* _auto_865_1 );
 RogueString* RogueCmdReadProperty__type_name( RogueClassCmdReadProperty* THIS );
 RogueClassCmd* RogueCmdReadProperty__clone__CloneArgs( RogueClassCmdReadProperty* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdReadProperty__resolve__Scope( RogueClassCmdReadProperty* THIS, RogueClassScope* scope_0 );
@@ -5336,14 +5336,14 @@ RogueClassType* Rogue_CmdWriteLocal__type( RogueClassCmdWriteLocal* THIS );
 void RogueCmdWriteLocal__write_cpp__CPPWriter_Logical( RogueClassCmdWriteLocal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdWriteLocal* RogueCmdWriteLocal__init_object( RogueClassCmdWriteLocal* THIS );
 RogueClassCmdWriteLocal* RogueCmdWriteLocal__init__Token_Local_Cmd( RogueClassCmdWriteLocal* THIS, RogueClassToken* _auto_873_0, RogueClassLocal* _auto_874_1, RogueClassCmd* _auto_875_2 );
-RogueString* RogueCmdOpAssignSetting__type_name( RogueClassCmdOpAssignSetting* THIS );
-RogueClassCmd* RogueCmdOpAssignSetting__clone__CloneArgs( RogueClassCmdOpAssignSetting* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdOpAssignSetting__resolve__Scope( RogueClassCmdOpAssignSetting* THIS, RogueClassScope* scope_0 );
-void RogueCmdOpAssignSetting__trace_used_code( RogueClassCmdOpAssignSetting* THIS );
-RogueClassType* Rogue_CmdOpAssignSetting__type( RogueClassCmdOpAssignSetting* THIS );
-void RogueCmdOpAssignSetting__write_cpp__CPPWriter_Logical( RogueClassCmdOpAssignSetting* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdOpAssignSetting* RogueCmdOpAssignSetting__init_object( RogueClassCmdOpAssignSetting* THIS );
-RogueClassCmdOpAssignSetting* RogueCmdOpAssignSetting__init__Token_Property_TokenType_Cmd( RogueClassCmdOpAssignSetting* THIS, RogueClassToken* _auto_876_0, RogueClassProperty* _auto_877_1, RogueClassTokenType* _auto_878_2, RogueClassCmd* _auto_879_3 );
+RogueString* RogueCmdOpAssignGlobal__type_name( RogueClassCmdOpAssignGlobal* THIS );
+RogueClassCmd* RogueCmdOpAssignGlobal__clone__CloneArgs( RogueClassCmdOpAssignGlobal* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassCmd* RogueCmdOpAssignGlobal__resolve__Scope( RogueClassCmdOpAssignGlobal* THIS, RogueClassScope* scope_0 );
+void RogueCmdOpAssignGlobal__trace_used_code( RogueClassCmdOpAssignGlobal* THIS );
+RogueClassType* Rogue_CmdOpAssignGlobal__type( RogueClassCmdOpAssignGlobal* THIS );
+void RogueCmdOpAssignGlobal__write_cpp__CPPWriter_Logical( RogueClassCmdOpAssignGlobal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmdOpAssignGlobal* RogueCmdOpAssignGlobal__init_object( RogueClassCmdOpAssignGlobal* THIS );
+RogueClassCmdOpAssignGlobal* RogueCmdOpAssignGlobal__init__Token_Property_TokenType_Cmd( RogueClassCmdOpAssignGlobal* THIS, RogueClassToken* _auto_876_0, RogueClassProperty* _auto_877_1, RogueClassTokenType* _auto_878_2, RogueClassCmd* _auto_879_3 );
 RogueString* RogueCmdOpAssignProperty__type_name( RogueClassCmdOpAssignProperty* THIS );
 RogueClassCmd* RogueCmdOpAssignProperty__clone__CloneArgs( RogueClassCmdOpAssignProperty* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdOpAssignProperty__resolve__Scope( RogueClassCmdOpAssignProperty* THIS, RogueClassScope* scope_0 );
