@@ -406,11 +406,15 @@ class Type
       endForEach
 
     method has_references->Logical
+      # Note: arrays of references will return 'false', but arrays 
+      # of compounds containing references will return 'true'
+
       forEach (p in property_list)
         if (p.type.is_reference) return true
         if (p.type.is_compound and p.type.has_references) return true
       endForEach
-      return false
+
+      return (is_array and element_type.has_references)
 
     method inherit_definitions( from_type:Type )
       forEach (def_name in from_type.definition_list)

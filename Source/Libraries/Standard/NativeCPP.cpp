@@ -139,6 +139,12 @@ void RogueObject_trace( void* obj )
   ((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
 }
 
+void RogueString_trace( void* obj )
+{
+  if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
+  ((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
+}
+
 void RogueArray_trace( void* obj )
 {
   RogueArray* array = (RogueArray*) obj;

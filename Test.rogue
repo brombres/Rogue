@@ -12,6 +12,14 @@ class Testing(a:String) [compound]
   METHODS
 endClass
 
+local st = @|A
+            |B
+
+println st.count
+forEach (ch in st)
+  println ch->Integer
+endForEach
+
 #{
 Test()
 

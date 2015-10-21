@@ -126,6 +126,7 @@ struct RogueObject
 };
 
 void RogueObject_trace( void* obj );
+void RogueString_trace( void* obj );
 void RogueArray_trace( void* obj );
 
 //-----------------------------------------------------------------------------

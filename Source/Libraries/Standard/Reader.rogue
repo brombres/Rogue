@@ -34,6 +34,7 @@ class LineReader : Reader<<String>>
     source : Reader<<Character>>
     next   : String
     buffer = StringBuilder()
+    prev   : Character
 
   METHODS
     method init( source )
@@ -52,12 +53,22 @@ class LineReader : Reader<<String>>
       return next
 
     method prepare_next->String
-      if (not source.has_another) return null
+      if (not source.has_another)
+        if (prev == '\n')
+          # if the last line ended with '\n', count it as one more line
+          prev = 0
+          return ""
+        else
+          return null
+        endIf
+      endIf
+
+      prev = 0
 
       buffer.clear
       while (source.has_another)
         local ch = source.read
-        if (ch == '\n') return buffer->String
+        if (ch == '\n') prev = '\n'; return buffer->String
         buffer.print( ch )
       endWhile
 

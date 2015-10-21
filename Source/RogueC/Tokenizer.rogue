@@ -813,9 +813,8 @@ class Tokenizer
       reader.read
       reader.read
       while (reader.has_another)
-        local ch = reader.peek
+        local ch = reader.read
         if (ch == 10)
-          reader.read
           consume_spaces
           if (consume('|'))
             buffer.print( ch )
@@ -824,7 +823,7 @@ class Tokenizer
             return add_new_token( TokenType.eol )
           endIf
         else
-          buffer.print( reader.read )
+          buffer.print( ch )
         endIf
       endWhile
 
