@@ -23,7 +23,7 @@ syn keyword rogueClassDecl   with endWith
 syn keyword rogueClassDecl   augment endAugment framework endFramework
 syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHeader
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
-syn keyword rogueMember      PROPERTIES METHODS ROUTINES
+syn keyword rogueMember      PROPERTIES METHODS ROUTINES GLOBAL GLOBALS
 syn match   rogueError       "\<for\(\s\|(\)"
 syn keyword rogueConditional  if elseIf else endIf
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs

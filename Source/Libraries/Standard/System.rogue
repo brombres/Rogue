@@ -1,8 +1,7 @@
 class System [requisite]
-  SETTINGS
+  GLOBALS
     command_line_arguments = String[]
     executable_filepath    : String
-
 
   ROUTINES
     routine exit( result_code:Integer )

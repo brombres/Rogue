@@ -23739,7 +23739,7 @@ RogueLogical RogueParser__parse_section( RogueClassParser* THIS )
     }
     return (RogueLogical)(true);
   }
-  if (((RogueParser__consume__TokenType( THIS, RogueClassTokenType::keyword_SETTINGS ))))
+  if (((RogueParser__consume__TokenType( THIS, RogueClassTokenType::keyword_GLOBALS ))))
   {
     while (((RogueParser__parse_properties__Logical( THIS, true ))))
     {
@@ -30755,17 +30755,17 @@ void RogueTokenizer__configure_token_types( RogueClassTokenizer* THIS )
   RogueClassTokenType::keyword_endWhich = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[81] ))) )));
   RogueClassTokenType::keyword_endWhile = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[82] ))) )));
   RogueClassTokenType::keyword_ENUMERATE = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[83] ))) )));
-  RogueClassTokenType::keyword_macro = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[84] ))) )));
-  RogueClassTokenType::keyword_method = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[85] ))) )));
-  RogueClassTokenType::keyword_METHODS = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[86] ))) )));
-  RogueClassTokenType::keyword_nativeCode = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[87] ))) )));
-  RogueClassTokenType::keyword_nativeHeader = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[88] ))) )));
-  RogueClassTokenType::keyword_others = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[89] ))) )));
-  RogueClassTokenType::keyword_PROPERTIES = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[90] ))) )));
-  RogueClassTokenType::keyword_routine = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[91] ))) )));
-  RogueClassTokenType::keyword_ROUTINES = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[92] ))) )));
-  RogueClassTokenType::keyword_satisfied = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[93] ))) )));
-  RogueClassTokenType::keyword_SETTINGS = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[94] ))) )));
+  RogueClassTokenType::keyword_GLOBALS = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[84] ))) )));
+  RogueClassTokenType::keyword_macro = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[85] ))) )));
+  RogueClassTokenType::keyword_method = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[86] ))) )));
+  RogueClassTokenType::keyword_METHODS = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[87] ))) )));
+  RogueClassTokenType::keyword_nativeCode = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[88] ))) )));
+  RogueClassTokenType::keyword_nativeHeader = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[89] ))) )));
+  RogueClassTokenType::keyword_others = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[90] ))) )));
+  RogueClassTokenType::keyword_PROPERTIES = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[91] ))) )));
+  RogueClassTokenType::keyword_routine = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[92] ))) )));
+  RogueClassTokenType::keyword_ROUTINES = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[93] ))) )));
+  RogueClassTokenType::keyword_satisfied = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[94] ))) )));
   RogueClassTokenType::keyword_unsatisfied = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[95] ))) )));
   RogueClassTokenType::keyword_with = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[96] ))) )));
   RogueClassTokenType::symbol_close_brace = ((RogueTokenizer__define__TokenType( THIS, ((RogueTokenType__init__String( ((RogueClassTokenType*)((RogueClassStructureTokenType*)Rogue_program.type_StructureTokenType->create_and_init_object())), Rogue_program.literal_strings[97] ))) )));
@@ -40806,17 +40806,17 @@ void RogueProgram::configure()
   literal_strings[81] = (RogueString*) RogueString::create( "endWhich" )->retain(); 
   literal_strings[82] = (RogueString*) RogueString::create( "endWhile" )->retain(); 
   literal_strings[83] = (RogueString*) RogueString::create( "ENUMERATE" )->retain(); 
-  literal_strings[84] = (RogueString*) RogueString::create( "macro" )->retain(); 
-  literal_strings[85] = (RogueString*) RogueString::create( "method" )->retain(); 
-  literal_strings[86] = (RogueString*) RogueString::create( "METHODS" )->retain(); 
-  literal_strings[87] = (RogueString*) RogueString::create( "nativeCode" )->retain(); 
-  literal_strings[88] = (RogueString*) RogueString::create( "nativeHeader" )->retain(); 
-  literal_strings[89] = (RogueString*) RogueString::create( "others" )->retain(); 
-  literal_strings[90] = (RogueString*) RogueString::create( "PROPERTIES" )->retain(); 
-  literal_strings[91] = (RogueString*) RogueString::create( "routine" )->retain(); 
-  literal_strings[92] = (RogueString*) RogueString::create( "ROUTINES" )->retain(); 
-  literal_strings[93] = (RogueString*) RogueString::create( "satisfied" )->retain(); 
-  literal_strings[94] = (RogueString*) RogueString::create( "SETTINGS" )->retain(); 
+  literal_strings[84] = (RogueString*) RogueString::create( "GLOBALS" )->retain(); 
+  literal_strings[85] = (RogueString*) RogueString::create( "macro" )->retain(); 
+  literal_strings[86] = (RogueString*) RogueString::create( "method" )->retain(); 
+  literal_strings[87] = (RogueString*) RogueString::create( "METHODS" )->retain(); 
+  literal_strings[88] = (RogueString*) RogueString::create( "nativeCode" )->retain(); 
+  literal_strings[89] = (RogueString*) RogueString::create( "nativeHeader" )->retain(); 
+  literal_strings[90] = (RogueString*) RogueString::create( "others" )->retain(); 
+  literal_strings[91] = (RogueString*) RogueString::create( "PROPERTIES" )->retain(); 
+  literal_strings[92] = (RogueString*) RogueString::create( "routine" )->retain(); 
+  literal_strings[93] = (RogueString*) RogueString::create( "ROUTINES" )->retain(); 
+  literal_strings[94] = (RogueString*) RogueString::create( "satisfied" )->retain(); 
   literal_strings[95] = (RogueString*) RogueString::create( "unsatisfied" )->retain(); 
   literal_strings[96] = (RogueString*) RogueString::create( "with" )->retain(); 
   literal_strings[97] = (RogueString*) RogueString::create( "}" )->retain(); 
@@ -40974,7 +40974,7 @@ void RogueProgram::configure()
   literal_strings[249] = (RogueString*) RogueString::create( "Use forEach-in with a literal range instead of forEach-of." )->retain(); 
   literal_strings[250] = (RogueString*) RogueString::create( "Syntax error in forEach - keyword 'in' or 'of' expected." )->retain(); 
   literal_strings[251] = (RogueString*) RogueString::create( "Invalid syntax in forEach." )->retain(); 
-  literal_strings[252] = (RogueString*) RogueString::create( "Parser::parse_for_each():1383 " )->retain(); 
+  literal_strings[252] = (RogueString*) RogueString::create( "Parser::parse_for_each():1384 " )->retain(); 
   literal_strings[253] = (RogueString*) RogueString::create( "[INTERNAL ERROR]" )->retain(); 
   literal_strings[254] = (RogueString*) RogueString::create( "()" )->retain(); 
   literal_strings[255] = (RogueString*) RogueString::create( " " )->retain(); 
@@ -41786,6 +41786,7 @@ RogueClassTokenType* RogueClassTokenType::keyword_endTry = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_endWhich = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_endWhile = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_ENUMERATE = nullptr;
+RogueClassTokenType* RogueClassTokenType::keyword_GLOBALS = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_macro = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_method = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_METHODS = nullptr;
@@ -41796,7 +41797,6 @@ RogueClassTokenType* RogueClassTokenType::keyword_PROPERTIES = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_routine = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_ROUTINES = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_satisfied = nullptr;
-RogueClassTokenType* RogueClassTokenType::keyword_SETTINGS = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_unsatisfied = nullptr;
 RogueClassTokenType* RogueClassTokenType::keyword_with = nullptr;
 RogueClassTokenType* RogueClassTokenType::symbol_close_brace = nullptr;

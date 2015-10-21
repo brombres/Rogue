@@ -1,5 +1,5 @@
 class TokenType
-  SETTINGS
+  GLOBALS 
     lookup                        : Table<<String,TokenType>>
 
     # Directives
@@ -35,6 +35,7 @@ class TokenType
     keyword_endWhich              : TokenType
     keyword_endWhile              : TokenType
     keyword_ENUMERATE             : TokenType
+    keyword_GLOBALS               : TokenType
     keyword_macro                 : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType
@@ -45,7 +46,6 @@ class TokenType
     keyword_routine               : TokenType
     keyword_ROUTINES              : TokenType
     keyword_satisfied             : TokenType
-    keyword_SETTINGS              : TokenType
     keyword_unsatisfied           : TokenType
     keyword_with                  : TokenType
 

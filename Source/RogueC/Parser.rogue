@@ -376,7 +376,7 @@ class Parser
         return true
       endIf
 
-      if (consume(TokenType.keyword_SETTINGS))
+      if (consume(TokenType.keyword_GLOBALS))
         while (parse_properties(true)) noAction
         return true
       endIf
@@ -501,6 +501,7 @@ class Parser
 
     method parse_method( as_routine=false:Logical )->Logical
       consume_eols
+
       if (as_routine)
         if (not next_is(TokenType.keyword_routine)) return false
       else

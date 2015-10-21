@@ -1217,6 +1217,7 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* keyword_endWhich;
   static RogueClassTokenType* keyword_endWhile;
   static RogueClassTokenType* keyword_ENUMERATE;
+  static RogueClassTokenType* keyword_GLOBALS;
   static RogueClassTokenType* keyword_macro;
   static RogueClassTokenType* keyword_method;
   static RogueClassTokenType* keyword_METHODS;
@@ -1227,7 +1228,6 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* keyword_routine;
   static RogueClassTokenType* keyword_ROUTINES;
   static RogueClassTokenType* keyword_satisfied;
-  static RogueClassTokenType* keyword_SETTINGS;
   static RogueClassTokenType* keyword_unsatisfied;
   static RogueClassTokenType* keyword_with;
   static RogueClassTokenType* symbol_close_brace;

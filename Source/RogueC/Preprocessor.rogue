@@ -1,5 +1,5 @@
 class Preprocessor
-  SETTINGS
+  GLOBALS
     definitions = Table<<String,Token[]>>()
 
   PROPERTIES
