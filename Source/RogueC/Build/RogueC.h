@@ -3859,7 +3859,8 @@ RogueLogical RogueType__is_singleton( RogueClassType* THIS );
 RogueClassType* RogueType__organize( RogueClassType* THIS );
 void RogueType__collect_base_types__TypeList( RogueClassType* THIS, RogueTypeList* list_0 );
 void RogueType__cull_unused_methods( RogueClassType* THIS );
-RogueLogical RogueType__has_references( RogueClassType* THIS );
+RogueLogical RogueType__has_object_references( RogueClassType* THIS );
+RogueLogical RogueType__is_reference_array( RogueClassType* THIS );
 void RogueType__inherit_definitions__Type( RogueClassType* THIS, RogueClassType* from_type_0 );
 void RogueType__inherit_properties__PropertyList_String_PropertyTable( RogueClassType* THIS, RoguePropertyList* list_0, RogueClassString_PropertyTable* lookup_1 );
 void RogueType__inherit_property__Property_PropertyList_String_PropertyTable( RogueClassType* THIS, RogueClassProperty* p_0, RoguePropertyList* list_1, RogueClassString_PropertyTable* lookup_2 );
@@ -5550,4 +5551,6 @@ RogueClassString_TokenListTableEntry* RogueString_TokenListTableEntry__init_obje
 RogueString* RogueString_TokenListTableEntryArray__type_name( RogueArray* THIS );
 
 extern RogueProgram Rogue_program;
+
+void Rogue_trace();
 

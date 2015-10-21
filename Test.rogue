@@ -1,4 +1,6 @@
 println "Hello World!"
+
+#{
 Testing("hi")
 
 local x = Testing[]
@@ -19,6 +21,7 @@ println st.count
 forEach (ch in st)
   println ch->Integer
 endForEach
+}#
 
 #{
 Test()

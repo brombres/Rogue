@@ -400,6 +400,10 @@ augment Program
       writer.println( "extern RogueProgram Rogue_program;" );
       writer.println
 
+      # Trace routine prototype
+      writer.println( "void Rogue_trace();" )
+      writer.println
+
       writer.close
 
       # .CPP implementation ---------------------------------------------------
@@ -462,7 +466,7 @@ augment Program
       # Trace Prototypes
 writer.println "/*"
       forEach (type in type_list)
-        if (type.has_references)
+        if (type.has_object_references and not type.is_reference_array)
 
           local trace_name = type.cpp_name
           if (type.is_array and type.element_type.is_compound)
@@ -475,7 +479,7 @@ writer.println "/*"
 
       # Trace Functions
       forEach (type in type_list)
-        if (type.has_references)
+        if (type.has_object_references and not type.is_reference_array)
 
           local trace_name = type.cpp_name
           if (type.is_array and type.element_type.is_compound)
@@ -491,8 +495,8 @@ writer.println "/*"
             print_property_trace_code( type, writer )
 
           elseIf (type.is_array)
-            # We know this is not a reference array (type.has_references returns false in that case)
-            # but rather an array of compounds containing references.
+            # We know this is not a reference array and so it must be an array of
+            # compounds containing references.
             writer.println @|RogueArray* array = (RogueArray*) obj;
                             |int count;
 
@@ -528,7 +532,18 @@ writer.println "/*"
         endIf
       endForEach
       writer.println
-      writer.println "*/"
+
+      # Trace routine
+      writer.println( "void Rogue_trace()" )
+      writer.println( "{" )
+      writer.indent += 2
+
+
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+writer.println "*/"
 
       # dynamic method table
       writer.println( "void* Rogue_dynamic_method_table[] =" )
@@ -742,7 +757,7 @@ writer.println "/*"
 
     method print_property_trace_code( type:Type, writer:CPPWriter )
       forEach (p in type.property_list)
-        if (p.type.is_reference or p.type.has_references)
+        if (p.type.is_reference or p.type.has_object_references)
 
           if (p.type.is_reference and not p.type.is_functional and not p.type.is_array)
             writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
@@ -930,14 +945,14 @@ augment Type
                         |
 
         # trace() method
-        if (has_references)
+        if (has_object_references and not is_reference_array)
           writer.println(   "void trace()" )
           writer.println( "{" )
           writer.indent += 2
           forEach (p in property_list)
             if (p.type.is_reference)
               writer.print("ROGUE_TRACE( " ).print( p.cpp_name ).println( " );" )
-            elseIf (p.type.has_references)
+            elseIf (p.type.has_object_references)
               # Compound
               writer.print( p.cpp_name ).println( ".trace();" )
             endIf
@@ -1043,7 +1058,7 @@ augment Type
       endIf
 
       # trace()
-      if (is_class and has_references)
+      if (is_class and has_object_references and not is_reference_array)
         writer.println(   "void trace( RogueObject* THIS )" )
         writer.println( "{" )
         forEach (p in property_list)
@@ -1051,7 +1066,7 @@ augment Type
             writer.print( "  ROGUE_TRACE( ((")
             writer.print(this)  # cast RogueObject* ref to actual type
             writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
-          elseIf (p.type.has_references)
+          elseIf (p.type.has_object_references)
             # Compound
             writer.print( "  ((")
             writer.print(this)  # cast RogueObject* ref to actual type
