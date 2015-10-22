@@ -283,11 +283,12 @@ struct RogueAllocator
 };
 
 extern RogueAllocator Rogue_allocator;
+extern int            Rogue_type_count;
 extern RogueType      Rogue_types[];
 extern int            Rogue_type_info_table[];
 extern int            Rogue_object_size_table[];
 extern void*          Rogue_dynamic_method_table[];
-extern int            Rogue_type_count;
+extern RogueTraceFn   Rogue_trace_fn_table[];
 
 //=============================================================================
 //  Various Native Methods

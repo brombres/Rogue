@@ -464,7 +464,7 @@ augment Program
       writer.println
 
       # Trace Prototypes
-writer.println "/*"
+      #writer.println "/*"
       forEach (type in type_list)
         if (type.has_object_references and not type.is_reference_array)
 
@@ -476,6 +476,7 @@ writer.println "/*"
           writer.print(   "void Rogue" ).print( trace_name ).println( "_trace( void* obj );" )
         endIf
       endForEach
+      writer.println
 
       # Trace Functions
       forEach (type in type_list)
@@ -531,6 +532,35 @@ writer.println "/*"
 
         endIf
       endForEach
+      writer.println
+
+      # Trace Fn Table
+      writer.println "RogueTraceFn Rogue_trace_fn_table[] ="
+      writer.println "{"
+      writer.indent += 2
+      local first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        if (type.has_object_references)
+          if (type.is_reference_array)
+            writer.print "RogueArray_trace"
+          else
+            local trace_name = type.cpp_name
+            if (type.is_array and type.element_type.is_compound)
+              trace_name = Program.validate_cpp_name( type.name )
+            endIf
+
+            writer.print(   "Rogue" ).print( trace_name ).print( "_trace" )
+          endIf
+        else
+          writer.print "RogueObject_trace"
+        endIf
+      endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
       writer.println
 
       # Trace routine
@@ -591,7 +621,7 @@ writer.println "/*"
       writer.println "}"
       writer.println
 
-writer.println "*/"
+      #writer.println "*/"
 
       # dynamic method table
       writer.println( "void* Rogue_dynamic_method_table[] =" )
@@ -619,7 +649,7 @@ writer.println "*/"
       writer.indent += 2
       writer.println "// dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
 
-      local first = true
+      first = true
       local items = 0
       forEach (n in info)
         if (first) first = false

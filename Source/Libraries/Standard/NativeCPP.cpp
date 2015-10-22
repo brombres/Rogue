@@ -586,7 +586,6 @@ void Rogue_configure_types()
   int i;
   int* type_info = Rogue_type_info_table - 1;
 
-  printf( "%d types\n", Rogue_type_count );
   for (i=0; i<Rogue_type_count; ++i)
   {
     int j;
@@ -610,6 +609,7 @@ void Rogue_configure_types()
     {
       type->base_types = 0;
     }
+    type->trace_fn = Rogue_trace_fn_table[i];
   }
 }
 
