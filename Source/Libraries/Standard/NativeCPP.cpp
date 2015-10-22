@@ -147,6 +147,8 @@ void RogueString_trace( void* obj )
 
 void RogueArray_trace( void* obj )
 {
+  int count;
+  RogueObject** src;
   RogueArray* array = (RogueArray*) obj;
 
   if ( !array || array->object_size < 0 ) return;
@@ -154,11 +156,16 @@ void RogueArray_trace( void* obj )
 
   if ( !array->is_reference_array ) return;
 
-  int count = array->count;
-  RogueObject** cur = array->objects + count;
+  count = array->count;
+  src = array->objects + count;
   while (--count >= 0)
   {
-    ROGUE_TRACE( *(--cur) );
+    RogueObject* cur = *(--src);
+    if (cur && cur->object_size >= 0)
+    {
+      cur->object_size = ~cur->object_size;
+      //cur->type->trace_fn( cur );
+    }
   }
 }
 
@@ -283,19 +290,6 @@ void RogueArrayType::configure()
   object_size = (int) sizeof( RogueArray );
 }
 
-void RogueArrayType::trace( RogueObject* obj )
-{
-  RogueArray* array = (RogueArray*) obj;
-  if ( !array->is_reference_array ) return;
-
-  int count = array->count;
-  RogueObject** cur = array->objects + count;
-  while (--count >= 0)
-  {
-    ROGUE_TRACE( *(--cur) );
-  }
-}
-
 RogueArray* RogueArray::create( int count, int element_size, bool is_reference_array )
 {
   if (count < 0) count = 0;
@@ -407,14 +401,7 @@ RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
 
 void RogueProgramCore::collect_garbage()
 {
-  ROGUE_TRACE( main_object );
-
-  // Trace singletons
-  for (int i=type_count-1; i>=0; --i)
-  {
-    RogueType* type = types[i];
-    if (type) ROGUE_TRACE( type->_singleton );
-  }
+  //Rogue_trace();
 
   // Trace through all as-yet unreferenced objects that are manually retained.
   RogueObject* cur = objects;
@@ -422,7 +409,8 @@ void RogueProgramCore::collect_garbage()
   {
     if (cur->object_size >= 0 && cur->reference_count > 0)
     {
-      ROGUE_TRACE( cur );
+      cur->object_size = ~cur->object_size;
+      //cur->type->trace_fn( cur );
     }
     cur = cur->next_object;
   }

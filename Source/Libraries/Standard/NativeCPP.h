@@ -42,16 +42,6 @@ struct RogueAllocator;
 struct RogueString;
 struct RogueCharacterList;
 
-#define ROGUE_TRACE( obj ) \
-{ \
-  RogueObject* _trace_obj = (RogueObject*)(obj); \
-  if (_trace_obj && _trace_obj->object_size >= 0) \
-  { \
-    _trace_obj->object_size = ~_trace_obj->object_size; \
-    _trace_obj->type->trace( _trace_obj ); \
-  } \
-}
-
 #define ROGUE_SINGLETON(name) (Rogue_program.type_##name->singleton())
   //THIS->standard_output = ((RogueConsole*)Rogue_program.type_Console->singleton());
 
@@ -89,7 +79,6 @@ struct RogueType
   RogueLogical instance_of( RogueType* ancestor_type );
 
   virtual RogueObject* singleton();
-  virtual void         trace( RogueObject* obj ) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -160,8 +149,6 @@ struct RogueString : RogueObject
 struct RogueArrayType : RogueType
 {
   void configure();
-
-  void trace( RogueObject* obj );
 };
 
 struct RogueArray : RogueObject
@@ -195,7 +182,6 @@ struct RogueArray : RogueObject
 struct RogueProgramCore
 {
   RogueObject*  objects;
-  RogueObject*  main_object;
   RogueString** literal_strings;
   int           literal_string_count;
 
