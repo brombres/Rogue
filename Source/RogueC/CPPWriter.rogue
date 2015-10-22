@@ -534,13 +534,61 @@ writer.println "/*"
       writer.println
 
       # Trace routine
-      writer.println( "void Rogue_trace()" )
-      writer.println( "{" )
+      writer.println "void Rogue_trace()"
+      writer.println "{"
       writer.indent += 2
+
+      writer.println "void* link;"
+      writer.println "int i;"
+      writer.println
+      writer.println "// Trace GLOBALS"
+      forEach (type in type_list)
+        if (type.has_global_references)
+          forEach (g in type.global_list)
+            if (g.type.is_reference or g.type.has_object_references)
+
+              if (g.type.is_reference and not g.type.is_functional and not g.type.is_array)
+                writer.print( "if ((link=" ).print( type.cpp_class_name ).print( "::" ).print( g.cpp_name )
+                writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
+
+              else
+                local trace_class_name = "Object"
+                if (g.type.is_array)
+                  if (g.type.element_type.is_compound)
+                    trace_class_name = Program.validate_cpp_name( g.type.name )
+                  elseIf (g.type.element_type.is_reference)
+                    trace_class_name = "Array"
+                  endIf
+
+                else
+                  trace_class_name = Program.validate_cpp_name(g.type.cpp_name)
+                endIf
+
+                writer.print( "if ((link=" ).print( type.cpp_class_name ).print( "::" ).print( g.cpp_name )
+                writer.print( ")) Rogue" ).print( trace_class_name ).println( "_trace( link );" )
+
+              endIf
+            endIf
+          endForEach
+        endIf
+
+      endForEach
+
+      writer.println
+
+      writer.println @|// Trace singletons
+                      |for (i=Rogue_type_count; --i>=0; )
+                      |{
+                      |  RogueType* type = &Rogue_types[i];
+                      |  if (type->_singleton)
+                      |  {
+                      |    type->trace_fn( type->_singleton );
+                      |  }
+                      |}
 
 
       writer.indent -= 2
-      writer.println( "}" )
+      writer.println "}"
       writer.println
 
 writer.println "*/"

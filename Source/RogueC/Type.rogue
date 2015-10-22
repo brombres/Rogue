@@ -405,7 +405,13 @@ class Type
         ++i
       endForEach
 
-      #method has_global_references
+    method has_global_references->Logical
+      forEach (g in global_list)
+        if (g.type.is_reference) return true
+        if (g.type.is_compound and g.type.has_object_references) return true
+      endForEach
+
+      return false
 
     method has_object_references->Logical
       # Returns true when:
