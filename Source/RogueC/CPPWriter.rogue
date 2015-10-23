@@ -474,15 +474,21 @@ augment Program
       writer.println
 
       # Global declarations
+      #{
       writer.println "// GLOBALS"
+      writer.print "/* "
       forEach (type in type_list)
         forEach (g in type.global_list)
-          writer.print( g.type ).print( " Rogue" )
-          writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name ).print( " = " )
-          writer.print_default_value( g.type ).println( ";" )
+          #writer.print( g.type ).print( " Rogue" )
+          #writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
+          #writer.print( " = " ).print_default_value( g.type )
+          #writer.print( " = " ).print( g.type )
+          #writer.println( ";" )
         endForEach
       endForEach
+      writer.print "*/ "
       writer.println
+      }#
 
       # Trace Prototypes
       #writer.println "/*"
@@ -794,14 +800,6 @@ augment Program
       writer.println( "{" )
       writer.indent += 2
 
-      # Copy command line args to System class
-      writer.println( "RogueClassSystem::executable_filepath = RogueString::create( argv[0] );" );
-      writer.println( "for (int i=1; i<argc; ++i)" )
-      writer.println( "{" )
-      writer.println( "  RogueStringList__add__String( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
-      writer.println( "}" )
-      writer.println
-
       # Call all init_class() methods
       forEach (type in type_list)
         if (not type.omit_output)
@@ -811,6 +809,14 @@ augment Program
           endIf
         endIf
       endForEach
+      writer.println
+
+      # Copy command line args to System class
+      writer.println( "RogueClassSystem::executable_filepath = RogueString::create( argv[0] );" );
+      writer.println( "for (int i=1; i<argc; ++i)" )
+      writer.println( "{" )
+      writer.println( "  RogueStringList__add__String( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "}" )
       writer.println
 
       # Call Global::on_launch()
