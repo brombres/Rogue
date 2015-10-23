@@ -40559,7 +40559,7 @@ void RogueProgram::configure()
   literal_strings[542] = (RogueString*) RogueString::create( "RogueSystem_executable_filepath = RogueString::create( argv[0] );" )->retain(); 
   literal_strings[543] = (RogueString*) RogueString::create( "for (int i=1; i<argc; ++i)" )->retain(); 
   literal_strings[544] = (RogueString*) RogueString::create( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );" )->retain(); 
-  literal_strings[545] = (RogueString*) RogueString::create( "RogueGlobal__on_launch( Rogue_program.type_Global->singleton() );" )->retain(); 
+  literal_strings[545] = (RogueString*) RogueString::create( "RogueGlobal__on_launch( (RogueClassGlobal*) (Rogue_program.type_Global->singleton()) );" )->retain(); 
   literal_strings[546] = (RogueString*) RogueString::create( "Rogue_program.collect_garbage();" )->retain(); 
   literal_strings[547] = (RogueString*) RogueString::create( "RogueProgram Rogue_program;" )->retain(); 
   literal_strings[548] = (RogueString*) RogueString::create( "int main( int argc, char* argv[] )\n{\n  Rogue_program.configure();\n  Rogue_program.launch( argc, argv );\n  //Rogue_program.finish_tasks();\n  return 0;\n}" )->retain(); 
@@ -41039,7 +41039,7 @@ void RogueProgram::launch( int argc, char* argv[] )
     RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );
   }
 
-  RogueGlobal__on_launch( Rogue_program.type_Global->singleton() );
+  RogueGlobal__on_launch( (RogueClassGlobal*) (Rogue_program.type_Global->singleton()) );
   Rogue_program.collect_garbage();
 }
 

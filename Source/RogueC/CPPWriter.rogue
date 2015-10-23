@@ -390,8 +390,11 @@ augment Program
       writer.println( "{" )
       forEach (type in type_list)
         if (not type.omit_output)
+          # TODO
           writer.print( "  " ).print( type.cpp_type_name ).print( "* type_" );
           writer.print( type.cpp_name ).println( ";" );
+          #writer.print( "  RogueType* type_" );
+          #writer.print( type.cpp_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -754,6 +757,8 @@ augment Program
       forEach (type in type_list)
         if (not type.omit_output)
           writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_type_name).println("();")
+          #writer.print("type_").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
+          # TODO
         endIf
       endForEach
       writer.println
@@ -814,7 +819,7 @@ augment Program
       writer.println
 
       # Call Global.on_launch()
-      writer.println "RogueGlobal__on_launch( Rogue_program.type_Global->singleton() );"
+      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (Rogue_program.type_Global->singleton()) );"
 
       writer.println( "Rogue_program.collect_garbage();" )
 
@@ -1835,7 +1840,6 @@ augment CmdReadGlobal
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( global_info.type, global_info.type )
 
-      #writer.print_type_name( global_info.type_context ).print( "::" )
       writer.print( "Rogue" ).print( global_info.type_context.cpp_name ).print( "_" )
 
       writer.print( global_info.cpp_name )
@@ -1846,7 +1850,6 @@ endAugment
 augment CmdWriteGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      #writer.print_type_name( global_info.type_context ).print( "::" )
       writer.print( "Rogue" ).print( global_info.type_context.cpp_name ).print( "_" )
 
       writer.print( global_info.cpp_name ).print(" = ")
