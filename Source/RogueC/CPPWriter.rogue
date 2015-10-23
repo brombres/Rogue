@@ -474,24 +474,18 @@ augment Program
       writer.println
 
       # Global declarations
-      #{
       writer.println "// GLOBALS"
-      writer.print "/* "
       forEach (type in type_list)
         forEach (g in type.global_list)
-          #writer.print( g.type ).print( " Rogue" )
-          #writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
-          #writer.print( " = " ).print_default_value( g.type )
-          #writer.print( " = " ).print( g.type )
-          #writer.println( ";" )
+          writer.print( g.type ).print( " Rogue" )
+          writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
+          writer.print( " = " ).print_default_value( g.type )
+          writer.println( ";" )
         endForEach
       endForEach
-      writer.print "*/ "
       writer.println
-      }#
 
       # Trace Prototypes
-      #writer.println "/*"
       forEach (type in type_list)
         if (type.has_object_references and not type.is_reference_array)
 
@@ -605,7 +599,7 @@ augment Program
             if (g.type.is_reference or g.type.has_object_references)
 
               if (g.type.is_reference and not g.type.is_functional and not g.type.is_array)
-                writer.print( "if ((link=" ).print( type.cpp_class_name ).print( "::" ).print( g.cpp_name )
+                writer.print( "if ((link=Rogue" ).print( type.cpp_name ).print( "_" ).print( g.cpp_name )
                 writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
 
               else
@@ -621,7 +615,7 @@ augment Program
                   trace_class_name = Program.validate_cpp_name(g.type.cpp_name)
                 endIf
 
-                writer.print( "if ((link=" ).print( type.cpp_class_name ).print( "::" ).print( g.cpp_name )
+                writer.print( "if ((link=Rogue" ).print( type.cpp_name ).print( "_" ).print( g.cpp_name )
                 writer.print( ")) Rogue" ).print( trace_class_name ).println( "_trace( link );" )
 
               endIf
@@ -812,14 +806,14 @@ augment Program
       writer.println
 
       # Copy command line args to System class
-      writer.println( "RogueClassSystem::executable_filepath = RogueString::create( argv[0] );" );
+      writer.println( "RogueSystem_executable_filepath = RogueString::create( argv[0] );" );
       writer.println( "for (int i=1; i<argc; ++i)" )
       writer.println( "{" )
-      writer.println( "  RogueStringList__add__String( RogueClassSystem::command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );" )
       writer.println( "}" )
       writer.println
 
-      # Call Global::on_launch()
+      # Call Global.on_launch()
       writer.println "RogueGlobal__on_launch( Rogue_program.type_Global->singleton() );"
 
       writer.println( "Rogue_program.collect_garbage();" )
@@ -843,9 +837,6 @@ augment Program
 
       writer.println "RogueProgram Rogue_program;"
       writer.println
-
-      # Global (static) declarations 
-      forEach (type in type_list) type.declare_globals( writer )
 
       # Optional main()
       if (RogueC.generate_main)
@@ -932,16 +923,6 @@ augment Type
 
       forEach (p in property_list)
         p.cpp_name = Program.validate_cpp_name( p.name )
-      endForEach
-
-    method declare_globals( writer:CPPWriter )
-      forEach (s in global_list)
-        if (s.type_context is this)
-          writer.print( s.type ).print(" ").print_type_name( s.type_context ).print( "::" ).print( s.cpp_name );
-          if (s.type.is_reference)                writer.println( " = nullptr;" )
-          elseIf (s.type is Program.type_Logical) writer.println( " = false;" )
-          else                                    writer.println( " = 0;" )
-        endIf
       endForEach
 
     method print_data_definition( writer:CPPWriter )
@@ -1853,7 +1834,10 @@ augment CmdReadGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( global_info.type, global_info.type )
-      writer.print_type_name( global_info.type_context ).print( "::" )
+
+      #writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( "Rogue" ).print( global_info.type_context.cpp_name ).print( "_" )
+
       writer.print( global_info.cpp_name )
       if (not is_statement) writer.print_close_cast( global_info.type, global_info.type )
 endAugment
@@ -1862,7 +1846,9 @@ endAugment
 augment CmdWriteGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print_type_name( global_info.type_context ).print( "::" )
+      #writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( "Rogue" ).print( global_info.type_context.cpp_name ).print( "_" )
+
       writer.print( global_info.cpp_name ).print(" = ")
 
       if (global_info.type is new_value.type)
@@ -2288,7 +2274,9 @@ endAugment
 augment CmdOpAssignGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print_type_name( global_info.type_context ).print( "::" )
+      #writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( "Rogue" ).print( global_info.type_context.cpp_name ).print( "_" )
+
       writer.print( global_info.cpp_name ).print(" ").print(cpp_symbol).print(" ")
       new_value.write_cpp( writer )
 endAugment

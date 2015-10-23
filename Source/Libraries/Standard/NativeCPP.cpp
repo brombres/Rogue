@@ -601,7 +601,6 @@ void Rogue_configure_types()
   }
 }
 
-/*
 RogueObject* Rogue_create_object( RogueType* of_type )
 {
   return Rogue_program.allocate_object( of_type, of_type->object_size );
@@ -612,4 +611,3 @@ RogueObject* Rogue_create_and_init_object( RogueType* of_type )
   return of_type->init_object( Rogue_create_object(of_type) );
 }
 
-*/
