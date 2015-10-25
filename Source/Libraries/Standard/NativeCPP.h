@@ -74,7 +74,6 @@ struct RogueType
   RogueType();
   virtual ~RogueType();
 
-  virtual void configure() {}
   RogueObject* create_and_init_object() { return init_object( create_object() ); }
   RogueObject* create_object();
 
@@ -89,7 +88,6 @@ struct RogueType
 //-----------------------------------------------------------------------------
 struct RogueObjectType : RogueType
 {
-  void configure();
 };
 
 struct RogueObject
@@ -126,7 +124,6 @@ void RogueArray_trace( void* obj );
 //-----------------------------------------------------------------------------
 struct RogueStringType : RogueType
 {
-  void configure();
 };
 
 struct RogueString : RogueObject
@@ -151,7 +148,6 @@ struct RogueString : RogueObject
 //-----------------------------------------------------------------------------
 struct RogueArrayType : RogueType
 {
-  void configure();
 };
 
 struct RogueArray : RogueObject

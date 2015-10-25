@@ -795,23 +795,6 @@ augment Program
       endForEach
       writer.println
 
-      # Assign native type indices
-      forEach (type in type_list)
-        if (type.is_native or not type.omit_output)
-          writer.print("type_").print(type.cpp_name).print("->index = ").print( type.index ).println( ";" )
-        endIf
-      endForEach
-      writer.println
-
-
-      # Configure types
-      forEach (type in type_list)
-        if (not type.omit_output)
-          writer.print("type_").print(type.cpp_name).println("->configure();" )
-        endIf
-      endForEach
-      writer.println
-
       writer.print(   "literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
       writer.println( "literal_strings = new RogueString*[literal_string_count];" )
       forEach (i of Program.literal_string_list)

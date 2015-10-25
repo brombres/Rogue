@@ -131,11 +131,6 @@ RogueObject* RogueType::singleton()
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
-void RogueObjectType::configure()
-{
-  object_size = (int) sizeof( RogueObject );
-}
-
 RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
 {
   if (object && object->type->instance_of(specialized_type)) return object;
@@ -186,11 +181,6 @@ void RogueArray_trace( void* obj )
 //-----------------------------------------------------------------------------
 //  RogueString
 //-----------------------------------------------------------------------------
-void RogueStringType::configure()
-{
-  object_size = (int) sizeof( RogueString );
-}
-
 RogueString* RogueString::create( int count )
 {
   if (count < 0) count = 0;
@@ -299,11 +289,6 @@ void RogueString::print( RogueCharacter* characters, int count )
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
-void RogueArrayType::configure()
-{
-  object_size = (int) sizeof( RogueArray );
-}
-
 RogueArray* RogueArray::create( int count, int element_size, bool is_reference_array )
 {
   if (count < 0) count = 0;
@@ -373,12 +358,7 @@ RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_
   type_String = new RogueStringType();
   type_Array  = new RogueArrayType();
 
-  for (int i=0; i<next_type_index; ++i)
-  {
-    types[i]->configure();
-  }
-
-Rogue_program_configured = true;
+  Rogue_program_configured = true;
 }
 
 RogueProgramCore::~RogueProgramCore()
