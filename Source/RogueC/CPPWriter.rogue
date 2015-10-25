@@ -341,14 +341,6 @@ augment Program
       writer.println "#include <cmath>"
       writer.println
 
-      # RogueType forward declarations
-      forEach (type in type_list)
-        if (not type.omit_output)
-          writer.print( "struct " ).print( type.cpp_type_name ).println( ";" );
-        endIf
-      endForEach
-      writer.println
-
       # RogueObject forward declarations
       forEach (type in type_list)
         if (not type.omit_output and not type.is_primitive)
@@ -755,12 +747,6 @@ augment Program
       writer.println( "};" )
       writer.println
 
-      # XType definitions
-      forEach (type in type_list)
-        type.print_type_definition( writer )
-      endForEach
-      writer.println
-
       # Types
       writer.print( "int Rogue_type_count = " ).print( type_list.count ).println( ";" )
       writer.print( "RogueType Rogue_types[" ).print( type_list.count ).println( "];" )
@@ -1127,42 +1113,6 @@ augment Type
 
       info.add( base_types.count )
       forEach (base_type in base_types) info.add( base_type.index )
-
-    method print_type_definition( writer:CPPWriter )
-      if (omit_output) return
-
-      writer.print( "struct " ).print( cpp_type_name ).println( " : RogueType" )
-      writer.println( "{" )
-      writer.indent += 2
-
-      # configure()
-      writer.println( "void configure()" )
-      writer.println( "{" )
-      writer.indent += 2;
-
-      writer.print( "object_size = (int) sizeof( " ).print(cpp_class_name).println(" );")
-
-      if (base_types.count)
-        writer.print( "base_type_count = " ).print( base_types.count ).println( ";" )
-        writer.println( "base_types = new RogueType*[ base_type_count ];" )
-        forEach (i of base_types)
-          writer.print( "base_types[" ).print( i ).print( "] = (RogueType*) Rogue_program.type_" )
-          writer.print( base_types[i].cpp_name ).println( ";" )
-        endForEach
-      endIf
-
-      if (not is_primitive)
-        writer.print( "methods = Rogue_dynamic_method_table + " )
-        writer.print( dynamic_method_table_index ).println( ";" )
-      endIf
-
-      writer.indent -= 2;
-      writer.println( "}" )
-      writer.println()
-
-      writer.indent -= 2
-      writer.println( "};" )
-      writer.println
 
     method print_routine_prototypes( writer:CPPWriter )
       forEach (m in routine_list)
