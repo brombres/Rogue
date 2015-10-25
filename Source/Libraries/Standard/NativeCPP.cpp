@@ -94,7 +94,8 @@ RogueObject* RogueType::create_object()
 RogueObject* RogueType::init_object( RogueObject* obj )
 {
   RogueInitObjectFn fn;
-  if ((fn = init_object_fn)) return fn( obj );
+  //if ((fn = init_object_fn)) return fn( obj );
+  if ((fn = Rogue_init_object_fn_table[index])) return fn( obj );
   else return obj;
 }
 

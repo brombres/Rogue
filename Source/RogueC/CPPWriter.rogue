@@ -568,7 +568,7 @@ augment Program
         else       writer.println ","
 
         local m = type.find_method( "init_object()" )
-        if (m and not type.omit_output and m.is_used)
+        if (m and not type.omit_output and m.is_used and m.statements.count > 1)
           writer.print "(RogueInitObjectFn) "
           writer.print m.cpp_name
         else
@@ -1137,7 +1137,8 @@ augment Type
       writer.println( "}" )
       writer.println()
 
-      # create_object()
+      # init_object()
+      #{
       if (not is_primitive)
         local m_init_object = find_method( "init_object()" )
         if (m_init_object and m_init_object.statements.count > 1)
@@ -1150,6 +1151,7 @@ augment Type
           writer.println
         endIf
       endIf
+      }#
 
       # singleton()
       if (is_singleton)
