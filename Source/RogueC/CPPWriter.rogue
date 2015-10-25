@@ -1160,51 +1160,6 @@ augment Type
       writer.println( "}" )
       writer.println()
 
-      # singleton()
-      if (is_singleton)
-        writer.print( this ).println( " singleton()" )
-        writer.println( "{" )
-        writer.indent += 2
-        writer.println( "if ( !_singleton )" )
-        writer.println( "{" )
-        writer.println( "  _singleton = create_object();" )
-        writer.println( "  init_object( _singleton );" )
-
-        local m_init = find_method( "init()" )
-        if (m_init)
-          writer.print( "  " ).print( m_init.cpp_name )
-          writer.print( "( (" ).print( this ).println( ") _singleton );" )
-        endIf
-
-        writer.println( "}" )
-
-        writer.print( "return (" ).print( this ).println( ") _singleton;" )
-        writer.indent -= 2
-        writer.println( "}" )
-        writer.println
-      endIf
-
-      #{
-      # trace()
-      if (is_class and has_object_references and not is_reference_array)
-        writer.println(   "void trace( RogueObject* THIS )" )
-        writer.println( "{" )
-        forEach (p in property_list)
-          if (p.type.is_reference)
-            writer.print( "  ROGUE_TRACE( ((")
-            writer.print(this)  # cast RogueObject* ref to actual type
-            writer.print(")THIS)->" ).print( p.cpp_name ).println( " );" )
-          elseIf (p.type.has_object_references)
-            # Compound
-            writer.print( "  ((")
-            writer.print(this)  # cast RogueObject* ref to actual type
-            writer.print(")THIS)->" ).print( p.cpp_name ).println( ".trace();" )
-          endIf
-        endForEach
-        writer.println( "}" )
-      endIf
-      }#
-
       writer.indent -= 2
       writer.println( "};" )
       writer.println
