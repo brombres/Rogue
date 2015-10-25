@@ -50,6 +50,7 @@ struct RogueCharacterList;
 struct RogueObject;
 
 typedef void (*RogueTraceFn)( void* obj );
+typedef RogueObject* (*RogueInitFn)( void* obj );
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -67,6 +68,7 @@ struct RogueType
   void**       methods;
 
   RogueTraceFn trace_fn;
+  RogueInitFn  init_fn;
 
   RogueType();
   virtual ~RogueType();
@@ -274,6 +276,7 @@ extern RogueType      Rogue_types[];
 extern int            Rogue_type_info_table[];
 extern int            Rogue_object_size_table[];
 extern void*          Rogue_dynamic_method_table[];
+extern RogueInitFn    Rogue_init_fn_table[];
 extern RogueTraceFn   Rogue_trace_fn_table[];
 
 //=============================================================================

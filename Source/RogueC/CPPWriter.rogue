@@ -558,11 +558,35 @@ augment Program
       endForEach
       writer.println
 
+      # Init Fn Table
+      writer.println "RogueInitFn Rogue_init_fn_table[] ="
+      writer.println "{"
+      writer.indent += 2
+      local first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        writer.print "(RogueInitFn) "
+
+        local m = type.find_method( "init()" )
+        if (m and not type.omit_output and m.is_used)
+          writer.print m.cpp_name
+        else
+          writer.print 0
+        endIf
+      endForEach
+      writer.println
+
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
       # Trace Fn Table
       writer.println "RogueTraceFn Rogue_trace_fn_table[] ="
       writer.println "{"
       writer.indent += 2
-      local first = true
+      first = true
       forEach (type in type_list)
         if (first) first = false
         else       writer.println ","
