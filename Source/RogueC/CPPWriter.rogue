@@ -391,10 +391,10 @@ augment Program
       forEach (type in type_list)
         if (not type.omit_output)
           # TODO
-          writer.print( "  " ).print( type.cpp_type_name ).print( "* type_" );
-          writer.print( type.cpp_name ).println( ";" );
-          #writer.print( "  RogueType* type_" );
+          #writer.print( "  " ).print( type.cpp_type_name ).print( "* type_" );
           #writer.print( type.cpp_name ).println( ";" );
+          writer.print( "  RogueType* type_" );
+          writer.print( type.cpp_name ).println( ";" );
         endIf
       endForEach
       writer.println
@@ -802,8 +802,8 @@ augment Program
       # Create types
       forEach (type in type_list)
         if (not type.omit_output)
-          writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_type_name).println("();")
-          #writer.print("type_").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
+          #writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_type_name).println("();")
+          writer.print("type_").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
           # TODO
         endIf
       endForEach
