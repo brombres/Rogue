@@ -50,7 +50,7 @@ struct RogueCharacterList;
 struct RogueObject;
 
 typedef void (*RogueTraceFn)( void* obj );
-typedef RogueObject* (*RogueInitFn)( void* obj );
+typedef RogueObject* (*RogueInitObjectFn)( void* obj );
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -67,8 +67,8 @@ struct RogueType
   RogueObject* _singleton;
   void**       methods;
 
-  RogueTraceFn trace_fn;
-  RogueInitFn  init_fn;
+  RogueTraceFn      trace_fn;
+  RogueInitObjectFn init_object_fn;
 
   RogueType();
   virtual ~RogueType();
@@ -77,7 +77,7 @@ struct RogueType
   RogueObject* create_and_init_object() { return init_object( create_object() ); }
   RogueObject* create_object();
 
-  virtual RogueObject* init_object( RogueObject* obj ) { return obj; }
+  virtual RogueObject* init_object( RogueObject* obj );
   RogueLogical instance_of( RogueType* ancestor_type );
 
   virtual RogueObject* singleton();
@@ -270,14 +270,14 @@ struct RogueAllocator
   void* free( void* data, int size );
 };
 
-extern RogueAllocator Rogue_allocator;
-extern int            Rogue_type_count;
-extern RogueType      Rogue_types[];
-extern int            Rogue_type_info_table[];
-extern int            Rogue_object_size_table[];
-extern void*          Rogue_dynamic_method_table[];
-extern RogueInitFn    Rogue_init_fn_table[];
-extern RogueTraceFn   Rogue_trace_fn_table[];
+extern RogueAllocator    Rogue_allocator;
+extern int               Rogue_type_count;
+extern RogueType         Rogue_types[];
+extern int               Rogue_type_info_table[];
+extern int               Rogue_object_size_table[];
+extern void*             Rogue_dynamic_method_table[];
+extern RogueInitObjectFn Rogue_init_object_fn_table[];
+extern RogueTraceFn      Rogue_trace_fn_table[];
 
 //=============================================================================
 //  Various Native Methods

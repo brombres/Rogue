@@ -91,6 +91,13 @@ RogueObject* RogueType::create_object()
   return Rogue_program.allocate_object( this, object_size );
 }
 
+RogueObject* RogueType::init_object( RogueObject* obj )
+{
+  RogueInitObjectFn fn;
+  if ((fn = init_object_fn)) return fn( obj );
+  else return obj;
+}
+
 RogueLogical RogueType::instance_of( RogueType* ancestor_type )
 {
   if (this == ancestor_type) return true;
@@ -598,6 +605,7 @@ void Rogue_configure_types()
       type->base_types = 0;
     }
     type->trace_fn = Rogue_trace_fn_table[i];
+    type->init_object_fn = Rogue_init_object_fn_table[i];
   }
 }
 
