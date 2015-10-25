@@ -51,6 +51,7 @@ struct RogueObject;
 
 typedef void (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitObjectFn)( void* obj );
+typedef RogueObject* (*RogueInitFn)( void* obj );
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -69,6 +70,7 @@ struct RogueType
 
   RogueTraceFn      trace_fn;
   RogueInitObjectFn init_object_fn;
+  RogueInitFn       init_fn;
 
   RogueType();
   virtual ~RogueType();
@@ -77,7 +79,7 @@ struct RogueType
   RogueObject* create_and_init_object() { return init_object( create_object() ); }
   RogueObject* create_object();
 
-  virtual RogueObject* init_object( RogueObject* obj );
+  RogueObject* init_object( RogueObject* obj );
   RogueLogical instance_of( RogueType* ancestor_type );
 
   virtual RogueObject* singleton();
@@ -277,6 +279,7 @@ extern int               Rogue_type_info_table[];
 extern int               Rogue_object_size_table[];
 extern void*             Rogue_dynamic_method_table[];
 extern RogueInitObjectFn Rogue_init_object_fn_table[];
+extern RogueInitFn       Rogue_init_fn_table[];
 extern RogueTraceFn      Rogue_trace_fn_table[];
 
 //=============================================================================
