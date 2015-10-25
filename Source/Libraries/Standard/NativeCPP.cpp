@@ -93,7 +93,7 @@ RogueObject* RogueType::create_object()
 
 RogueObject* RogueType::init_object( RogueObject* obj )
 {
-  RogueInitObjectFn fn;
+  RogueInitFn fn;
   //if ((fn = init_object_fn)) return fn( obj );
   if ((fn = Rogue_init_object_fn_table[index])) return fn( obj );
   else return obj;
@@ -117,7 +117,10 @@ RogueObject* RogueType::singleton()
 {
   if ( !_singleton )
   {
+    RogueInitFn fn;
     _singleton = Rogue_program.allocate_object( this, object_size );
+    //if ((fn = Rogue_init_object_fn_table[index])) return fn( obj );
+    //if ((fn = Rogue_init_fn_table[index])) return fn( obj );
   }
   return _singleton;
 }

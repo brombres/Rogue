@@ -559,7 +559,7 @@ augment Program
       writer.println
 
       # Init Object Fn Table
-      writer.println "RogueInitObjectFn Rogue_init_object_fn_table[] ="
+      writer.println "RogueInitFn Rogue_init_object_fn_table[] ="
       writer.println "{"
       writer.indent += 2
       local first = true
@@ -569,7 +569,7 @@ augment Program
 
         local m = type.find_method( "init_object()" )
         if (m and not type.omit_output and m.is_used and m.statements.count > 1)
-          writer.print "(RogueInitObjectFn) "
+          writer.print "(RogueInitFn) "
           writer.print m.cpp_name
         else
           writer.print 0
