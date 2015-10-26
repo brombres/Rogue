@@ -763,7 +763,7 @@ augment Program
       forEach (type in type_list)
         if (not type.is_array) ++type_count
       endForEach
-      writer.print( "RogueProgram::RogueProgram() : RogueProgramCore(" ).print( type_count ).println( ")" )
+      writer.print( "RogueProgram::RogueProgram()" )
       writer.println  "{"
       writer.println  "}"
       writer.println

@@ -336,7 +336,7 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL)
+RogueProgramCore::RogueProgramCore() : objects(NULL)
 {
 }
 
@@ -365,7 +365,7 @@ RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
 
 void RogueProgramCore::collect_garbage()
 {
-  //Rogue_trace();
+  Rogue_trace();
 
   // Trace through all as-yet unreferenced objects that are manually retained.
   RogueObject* cur = objects;
@@ -374,7 +374,7 @@ void RogueProgramCore::collect_garbage()
     if (cur->object_size >= 0 && cur->reference_count > 0)
     {
       cur->object_size = ~cur->object_size;
-      //cur->type->trace_fn( cur );
+      cur->type->trace_fn( cur );
     }
     cur = cur->next_object;
   }
@@ -566,13 +566,14 @@ void Rogue_configure_types()
   }
 }
 
-RogueObject* Rogue_create_object( RogueType* of_type )
+RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size )
 {
-  return Rogue_program.allocate_object( of_type, of_type->object_size );
+  if ( !size ) size = of_type->object_size;
+  return Rogue_program.allocate_object( of_type, size );
 }
 
-RogueObject* Rogue_create_and_init_object( RogueType* of_type )
+RogueObject* Rogue_create_and_init_object( RogueType* of_type, RogueInteger size )
 {
-  return of_type->init_object( Rogue_create_object(of_type) );
+  return of_type->init_object( Rogue_create_object(of_type,size) );
 }
 

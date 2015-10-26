@@ -339,7 +339,7 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL)
+RogueProgramCore::RogueProgramCore() : objects(NULL)
 {
 }
 
@@ -368,7 +368,7 @@ RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
 
 void RogueProgramCore::collect_garbage()
 {
-  //Rogue_trace();
+  Rogue_trace();
 
   // Trace through all as-yet unreferenced objects that are manually retained.
   RogueObject* cur = objects;
@@ -377,7 +377,7 @@ void RogueProgramCore::collect_garbage()
     if (cur->object_size >= 0 && cur->reference_count > 0)
     {
       cur->object_size = ~cur->object_size;
-      //cur->type->trace_fn( cur );
+      cur->type->trace_fn( cur );
     }
     cur = cur->next_object;
   }
@@ -569,14 +569,15 @@ void Rogue_configure_types()
   }
 }
 
-RogueObject* Rogue_create_object( RogueType* of_type )
+RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size )
 {
-  return Rogue_program.allocate_object( of_type, of_type->object_size );
+  if ( !size ) size = of_type->object_size;
+  return Rogue_program.allocate_object( of_type, size );
 }
 
-RogueObject* Rogue_create_and_init_object( RogueType* of_type )
+RogueObject* Rogue_create_and_init_object( RogueType* of_type, RogueInteger size )
 {
-  return of_type->init_object( Rogue_create_object(of_type) );
+  return of_type->init_object( Rogue_create_object(of_type,size) );
 }
 
 
@@ -13800,7 +13801,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
       }
     }
   }
-  RogueCPPWriter__println__String( ((RogueCPPWriter__print__Integer( ((RogueCPPWriter__print__String( writer_1, Rogue_program.literal_strings[511] ))), type_count_17 ))), Rogue_program.literal_strings[100] );
+  RogueCPPWriter__print__String( writer_1, Rogue_program.literal_strings[511] );
   RogueCPPWriter__println__String( writer_1, Rogue_program.literal_strings[174] );
   RogueCPPWriter__println__String( writer_1, Rogue_program.literal_strings[97] );
   RogueCPPWriter__println( writer_1 );
@@ -36220,8 +36221,7 @@ RogueString* RogueString_TokenListTableEntryArray__type_name( RogueArray* THIS )
 }
 
 
-RogueProgram::RogueProgram() : RogueProgramCore(248)
-{
+RogueProgram::RogueProgram(){
 }
 
 RogueProgram::~RogueProgram()
@@ -36994,7 +36994,7 @@ void RogueProgram::configure()
   literal_strings[508] = (RogueString*) RogueString::create( ")THIS" )->retain(); 
   literal_strings[509] = (RogueString*) RogueString::create( "default:" )->retain(); 
   literal_strings[510] = (RogueString*) RogueString::create( "::write_cpp() is not defined." )->retain(); 
-  literal_strings[511] = (RogueString*) RogueString::create( "RogueProgram::RogueProgram() : RogueProgramCore(" )->retain(); 
+  literal_strings[511] = (RogueString*) RogueString::create( "RogueProgram::RogueProgram()" )->retain(); 
   literal_strings[512] = (RogueString*) RogueString::create( "RogueProgram::~RogueProgram()" )->retain(); 
   literal_strings[513] = (RogueString*) RogueString::create( "void RogueProgram::configure()" )->retain(); 
   literal_strings[514] = (RogueString*) RogueString::create( "Rogue_configure_types();" )->retain(); 

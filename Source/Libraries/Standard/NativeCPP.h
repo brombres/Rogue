@@ -186,7 +186,7 @@ struct RogueProgramCore
 
   // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
 
-  RogueProgramCore( int type_count );
+  RogueProgramCore();
   ~RogueProgramCore();
 
   RogueObject* allocate_object( RogueType* type, int size );
@@ -229,6 +229,13 @@ struct RogueProgramCore
 #  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
 #endif
 
+//-----------------------------------------------------------------------------
+//  RogueError
+//-----------------------------------------------------------------------------
+struct RogueError : RogueObject
+{
+};
+
 
 struct RogueAllocationPage
 {
@@ -269,14 +276,6 @@ extern RogueInitFn       Rogue_init_object_fn_table[];
 extern RogueInitFn       Rogue_init_fn_table[];
 extern RogueTraceFn      Rogue_trace_fn_table[];
 
-//=============================================================================
-//  Various Native Methods
-//=============================================================================
-
-//-----------------------------------------------------------------------------
-//  RogueError
-//-----------------------------------------------------------------------------
-struct RogueError : RogueObject
-{
-};
+RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size );
+RogueObject* Rogue_create_and_init_object( RogueType* of_type, RogueInteger size );
 
