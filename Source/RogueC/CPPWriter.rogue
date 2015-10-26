@@ -749,6 +749,10 @@ augment Program
       writer.print( "RogueType Rogue_types[" ).print( type_list.count ).println( "];" )
       writer.println
 
+      writer.print( "int Rogue_literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
+      writer.print( "RogueString* Rogue_literal_strings[" ).print( Program.literal_string_list.count ).println( "];" );
+
+
       forEach (type in type_list) type.print_routine_prototypes( writer )
       writer.println
 
@@ -791,10 +795,8 @@ augment Program
       endForEach
       writer.println
 
-      writer.print(   "literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
-      writer.println( "literal_strings = new RogueString*[literal_string_count];" )
       forEach (i of Program.literal_string_list)
-        writer.print(   "literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
+        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
         writer.print_string_utf8( Program.literal_string_list[i] )
         writer.println( " )->retain(); " )
       endForEach
@@ -832,7 +834,7 @@ augment Program
       # Call Global.on_launch()
       writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (Rogue_program.type_Global->singleton()) );"
 
-      writer.println( "Rogue_program.collect_garbage();" )
+      writer.println( "Rogue_collect_garbage();" )
 
       writer.indent -= 2
       writer.println( "}" )
@@ -1669,7 +1671,7 @@ augment CmdLiteralString
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (value)
-        writer.print( "Rogue_program.literal_strings[" ).print( index ).print( "]" )
+        writer.print( "Rogue_literal_strings[" ).print( index ).print( "]" )
       else
         writer.print( "0" );
       endIf

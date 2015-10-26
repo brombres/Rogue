@@ -176,21 +176,12 @@ struct RogueArray : RogueObject
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-#define ROGUE_BUILT_IN_TYPE_COUNT 3
-
 struct RogueProgramCore
 {
-  RogueString** literal_strings;
-  int           literal_string_count;
-
-  // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
-
   RogueProgramCore();
   ~RogueProgramCore();
 
   RogueObject* allocate_object( RogueType* type, int size );
-
-  void         collect_garbage();
 };
 
 
@@ -236,6 +227,9 @@ struct RogueError : RogueObject
 };
 
 
+//-----------------------------------------------------------------------------
+//  RogueAllocationPage
+//-----------------------------------------------------------------------------
 struct RogueAllocationPage
 {
   // Backs small 0..256-byte allocations.
@@ -279,7 +273,10 @@ extern void*             Rogue_dynamic_method_table[];
 extern RogueInitFn       Rogue_init_object_fn_table[];
 extern RogueInitFn       Rogue_init_fn_table[];
 extern RogueTraceFn      Rogue_trace_fn_table[];
+extern int               Rogue_literal_string_count;
+extern RogueString*      Rogue_literal_strings[];
 
+void         Rogue_collect_garbage();
 RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size );
 RogueObject* Rogue_create_and_init_object( RogueType* of_type, RogueInteger size );
 

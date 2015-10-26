@@ -103,7 +103,7 @@ class String [native functional]
                 |if ($i2 >= $this->count) $i2 = $this->count - 1;
                 |
                 |// Return empty quotes if zero-length
-                |if ($i1 > $i2) return Rogue_program.literal_strings[0]; // empty string
+                |if ($i1 > $i2) return Rogue_literal_strings[0]; // empty string
                 |
                 |int new_count = ($i2 - $i1) + 1;
                 |

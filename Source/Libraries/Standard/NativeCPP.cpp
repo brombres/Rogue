@@ -354,12 +354,6 @@ RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
   return RogueAllocator_allocate_object( &Rogue_allocator, type, size );
 }
 
-void RogueProgramCore::collect_garbage()
-{
-  Rogue_trace();
-
-  RogueAllocator_collect_garbage( &Rogue_allocator );
-}
 
 //-----------------------------------------------------------------------------
 //  RogueAllocationPage
@@ -586,6 +580,12 @@ void Rogue_configure_types()
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
   }
+}
+
+void Rogue_collect_garbage()
+{
+  Rogue_trace();
+  RogueAllocator_collect_garbage( &Rogue_allocator );
 }
 
 RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size )
