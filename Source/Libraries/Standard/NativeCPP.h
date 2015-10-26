@@ -180,7 +180,6 @@ struct RogueArray : RogueObject
 
 struct RogueProgramCore
 {
-  RogueObject*  objects;
   RogueString** literal_strings;
   int           literal_string_count;
 
@@ -258,13 +257,18 @@ struct RogueAllocationPage
 struct RogueAllocator
 {
   RogueAllocationPage* pages;
-  RogueObject*           free_objects[ROGUEMM_SLOT_COUNT];
+  RogueObject*         objects;
+  RogueObject*         available_objects[ROGUEMM_SLOT_COUNT];
 
   RogueAllocator();
   ~RogueAllocator();
   void* allocate( int size );
   void* free( void* data, int size );
 };
+
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size );
+void         RogueAllocator_free_objects( RogueAllocator* THIS );
+void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
 extern RogueAllocator    Rogue_allocator;
 extern int               Rogue_type_count;

@@ -60,6 +60,10 @@
 #  define PATH_MAX 4096
 #endif
 
+//-----------------------------------------------------------------------------
+//  GLOBALS
+//-----------------------------------------------------------------------------
+RogueAllocator Rogue_allocator;
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -339,73 +343,25 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-RogueProgramCore::RogueProgramCore() : objects(NULL)
+RogueProgramCore::RogueProgramCore()
 {
 }
 
 RogueProgramCore::~RogueProgramCore()
 {
-  while (objects)
-  {
-    RogueObject* next_object = objects->next_object;
-    Rogue_allocator.free( objects, objects->object_size );
-    objects = next_object;
-  }
+  RogueAllocator_free_objects( &Rogue_allocator );
 }
 
 RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
 {
-  RogueObject* obj = (RogueObject*) Rogue_allocator.allocate( size );
-  memset( obj, 0, size );
-
-  obj->next_object = objects;
-  objects = obj;
-  obj->type = type;
-  obj->object_size = size;
-
-  return obj;
+  return RogueAllocator_allocate_object( &Rogue_allocator, type, size );
 }
 
 void RogueProgramCore::collect_garbage()
 {
   Rogue_trace();
 
-  // Trace through all as-yet unreferenced objects that are manually retained.
-  RogueObject* cur = objects;
-  while (cur)
-  {
-    if (cur->object_size >= 0 && cur->reference_count > 0)
-    {
-      cur->object_size = ~cur->object_size;
-      cur->type->trace_fn( cur );
-    }
-    cur = cur->next_object;
-  }
-
-  cur = objects;
-  objects = NULL;
-  RogueObject* survivors = NULL;  // local var for speed
-
-  while (cur)
-  {
-    RogueObject* next_object = cur->next_object;
-    if (cur->object_size < 0)
-    {
-      // Discovered automatically during tracing.
-      //printf( "Referenced %s\n", cur->type->name() );
-      cur->object_size = ~cur->object_size;
-      cur->next_object = survivors;
-      survivors = cur;
-    }
-    else
-    {
-      //printf( "Unreferenced %s\n", cur->type->name() );
-      Rogue_allocator.free( cur, cur->object_size );
-    }
-    cur = next_object;
-  }
-
-  objects = survivors;
+  RogueAllocator_collect_garbage( &Rogue_allocator );
 }
 
 //-----------------------------------------------------------------------------
@@ -440,11 +396,11 @@ void* RogueAllocationPage::allocate( int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
-RogueAllocator::RogueAllocator() : pages(NULL)
+RogueAllocator::RogueAllocator() : pages(NULL), objects(NULL)
 {
   for (int i=0; i<ROGUEMM_SLOT_COUNT; ++i)
   {
-    free_objects[i] = NULL;
+    available_objects[i] = NULL;
   }
 }
 
@@ -466,12 +422,12 @@ void* RogueAllocator::allocate( int size )
   else           size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
-  RogueObject* obj = free_objects[slot];
+  RogueObject* obj = available_objects[slot];
   
   if (obj)
   {
     //printf( "found free object\n");
-    free_objects[slot] = obj->next_object;
+    available_objects[slot] = obj->next_object;
     return obj;
   }
 
@@ -496,8 +452,8 @@ void* RogueAllocator::allocate( int size )
     if (obj)
     {
       //printf( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
-      obj->next_object = free_objects[s];
-      free_objects[s] = obj;
+      obj->next_object = available_objects[s];
+      available_objects[s] = obj;
     }
     else
     {
@@ -524,8 +480,8 @@ void* RogueAllocator::free( void* data, int size )
       RogueObject* obj = (RogueObject*) data;
       int slot = (size + ROGUEMM_GRANULARITY_MASK) >> ROGUEMM_GRANULARITY_BITS;
       if (slot <= 0) slot = 1;
-      obj->next_object = free_objects[slot];
-      free_objects[slot] = obj;
+      obj->next_object = available_objects[slot];
+      available_objects[slot] = obj;
     }
   }
 
@@ -534,7 +490,73 @@ void* RogueAllocator::free( void* data, int size )
   return NULL;
 }
 
-RogueAllocator Rogue_allocator;
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
+{
+  RogueObject* obj = (RogueObject*) THIS->allocate( size );
+  memset( obj, 0, size );
+
+  obj->next_object = THIS->objects;
+  THIS->objects = obj;
+  obj->type = of_type;
+  obj->object_size = size;
+
+  return obj;
+}
+
+void RogueAllocator_free_objects( RogueAllocator* THIS )
+{
+  RogueObject* objects = THIS->objects;
+  while (objects)
+  {
+    RogueObject* next_object = objects->next_object;
+    THIS->free( objects, objects->object_size );
+    objects = next_object;
+  }
+
+  THIS->objects = 0;
+}
+
+void RogueAllocator_collect_garbage( RogueAllocator* THIS )
+{
+  // Global program objects have already been traced through.
+
+  // Trace through all as-yet unreferenced objects that are manually retained.
+  RogueObject* cur = THIS->objects;
+  while (cur)
+  {
+    if (cur->object_size >= 0 && cur->reference_count > 0)
+    {
+      cur->object_size = ~cur->object_size;
+      cur->type->trace_fn( cur );
+    }
+    cur = cur->next_object;
+  }
+
+  cur = THIS->objects;
+  THIS->objects = NULL;
+  RogueObject* survivors = NULL;  // local var for speed
+
+  while (cur)
+  {
+    RogueObject* next_object = cur->next_object;
+    if (cur->object_size < 0)
+    {
+      // Discovered automatically during tracing.
+      //printf( "Referenced %s\n", cur->type->name() );
+      cur->object_size = ~cur->object_size;
+      cur->next_object = survivors;
+      survivors = cur;
+    }
+    else
+    {
+      //printf( "Unreferenced %s\n", cur->type->name() );
+      THIS->free( cur, cur->object_size );
+    }
+    cur = next_object;
+  }
+
+  THIS->objects = survivors;
+}
 
 void Rogue_configure_types()
 {
