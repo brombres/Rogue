@@ -109,6 +109,12 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
   else                                return obj;
 }
 
+RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type )
+{
+  if (RogueObject_instance_of(THIS,specialized_type)) return THIS;
+  return 0;
+}
+
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type )
 {
   RogueType* this_type;
@@ -128,16 +134,21 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
   return false;
 }
 
+void* RogueObject_retain( RogueObject* THIS )
+{
+  ++THIS->reference_count;
+  return THIS;
+}
+
+void* RogueObject_release( RogueObject* THIS )
+{
+  --THIS->reference_count;
+  return THIS;
+}
 
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
-RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
-{
-  if (RogueObject_instance_of(object,specialized_type)) return object;
-  return NULL;
-}
-
 void RogueObject_trace( void* obj )
 {
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
@@ -375,7 +386,7 @@ void* RogueAllocationPage::allocate( int size )
   if (size > 0) size = (size + 7) & ~7;
   else          size = 8;
 
-  if (size > remaining) return NULL;
+  if (size > remaining) return 0;
 
   //printf( "Allocating %d bytes from page.\n", size );
   void* result = cursor;
@@ -390,11 +401,11 @@ void* RogueAllocationPage::allocate( int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
-RogueAllocator::RogueAllocator() : pages(NULL), objects(NULL)
+RogueAllocator::RogueAllocator() : pages(0), objects(0)
 {
   for (int i=0; i<ROGUEMM_SLOT_COUNT; ++i)
   {
-    available_objects[i] = NULL;
+    available_objects[i] = 0;
   }
 }
 
@@ -430,7 +441,7 @@ void* RogueAllocator::allocate( int size )
   // Try allocating a new object from the current page.
   if ( !pages )
   {
-    pages = new RogueAllocationPage(NULL);
+    pages = new RogueAllocationPage(0);
   }
 
   obj = (RogueObject*) pages->allocate( size );
@@ -481,7 +492,7 @@ void* RogueAllocator::free( void* data, int size )
 
   // Always returns null, allowing a pointer to be freed and assigned null in
   // a single step.
-  return NULL;
+  return 0;
 }
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
@@ -527,8 +538,8 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
 
   cur = THIS->objects;
-  THIS->objects = NULL;
-  RogueObject* survivors = NULL;  // local var for speed
+  THIS->objects = 0;
+  RogueObject* survivors = 0;  // local var for speed
 
   while (cur)
   {
@@ -14928,7 +14939,7 @@ RogueClassMethod* RogueMethod__incorporate__Type( RogueClassMethod* THIS, RogueC
   m_1->cpp_name = ((RogueString*)(NULL));
   if (!!(THIS->aspect_statements))
   {
-    m_1->statements = ((RogueCmdStatementList__clone__CloneArgs( THIS->aspect_statements, ((RogueClassCloneArgs*)(RogueObject::as(NULL,RogueTypeCloneArgs))) )));
+    m_1->statements = ((RogueCmdStatementList__clone__CloneArgs( THIS->aspect_statements, ((RogueClassCloneArgs*)(RogueObject_as(NULL,RogueTypeCloneArgs))) )));
   }
   if (THIS->incorporating_classes == NULL)
   {
@@ -17979,7 +17990,7 @@ RogueString* RogueCmdReturn__type_name( RogueClassCmdReturn* THIS )
 
 RogueClassCmd* RogueCmdReturn__clone__CloneArgs( RogueClassCmdReturn* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_1))
   {
     return (RogueClassCmd*)(((RogueTaskArgs__create_return__Token_Cmd( task_args_1, THIS->t, ((RogueCmd__clone__Cmd_CloneArgs( ((RogueClassCmd*)THIS), THIS->value, clone_args_0 ))) ))));
@@ -20372,7 +20383,7 @@ RogueLogical RogueParser__parse_definitions__Logical( RogueClassParser* THIS, Ro
     if (RogueObject_instance_of(value_3,RogueTypeCmdLiteralInteger))
     {
       THIS->_this_type->prev_enum_cmd = ((RogueClassCmd*)(NULL));
-      THIS->_this_type->next_enum_offset = (((RogueClassCmdLiteralInteger*)(RogueObject::as(value_3,RogueTypeCmdLiteralInteger)))->value + 1);
+      THIS->_this_type->next_enum_offset = (((RogueClassCmdLiteralInteger*)(RogueObject_as(value_3,RogueTypeCmdLiteralInteger)))->value + 1);
     }
     else
     {
@@ -20901,7 +20912,7 @@ void RogueParser__parse_statement__CmdStatementList_Logical( RogueClassParser* T
   }
   if (!(((RogueParser__next_is_end_command( THIS )))))
   {
-    RogueClassCmdAccess* access_9 = (((RogueClassCmdAccess*)(RogueObject::as(expression_5,RogueTypeCmdAccess))));
+    RogueClassCmdAccess* access_9 = (((RogueClassCmdAccess*)(RogueObject_as(expression_5,RogueTypeCmdAccess))));
     if ((!!(access_9) && access_9->args == NULL))
     {
       RogueClassCmdArgs* args_10 = (((RogueCmdArgs__init( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)) ))));
@@ -21263,7 +21274,7 @@ RogueClassCmd* RogueParser__parse_for_each( RogueClassParser* THIS )
   RogueClassToken* t_0 = (((RogueParser__read( THIS ))));
   RogueLogical has_parens_1 = (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_open_paren ))));
   RogueClassCmd* expr_2 = (((RogueParser__parse_expression( THIS ))));
-  RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject::as(expr_2,RogueTypeCmdAccess))));
+  RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject_as(expr_2,RogueTypeCmdAccess))));
   if (!!(access_3))
   {
     if ((!!(access_3->context) || !!(access_3->args)))
@@ -21284,7 +21295,7 @@ RogueClassCmd* RogueParser__parse_for_each( RogueClassParser* THIS )
       if (((RogueParser__consume__TokenType( THIS, RogueTokenType_keyword_in ))))
       {
         RogueClassCmd* collection_5 = (((RogueParser__parse_expression( THIS ))));
-        RogueClassCmdRange* range_6 = (((RogueClassCmdRange*)(RogueObject::as(collection_5,RogueTypeCmdRange))));
+        RogueClassCmdRange* range_6 = (((RogueClassCmdRange*)(RogueObject_as(collection_5,RogueTypeCmdRange))));
         if (!!(range_6))
         {
           if (!!(index_var_name_4))
@@ -21339,7 +21350,7 @@ RogueClassCmd* RogueParser__parse_for_each( RogueClassParser* THIS )
           throw ((RogueToken__error__String( t_0, Rogue_literal_strings[248] )));
         }
         RogueClassCmd* collection_14 = (((RogueParser__parse_expression( THIS ))));
-        RogueClassCmdRange* range_15 = (((RogueClassCmdRange*)(RogueObject::as(collection_14,RogueTypeCmdRange))));
+        RogueClassCmdRange* range_15 = (((RogueClassCmdRange*)(RogueObject_as(collection_14,RogueTypeCmdRange))));
         if (!!(range_15))
         {
           throw ((RogueToken__error__String( t_0, Rogue_literal_strings[249] )));
@@ -21368,7 +21379,7 @@ RogueClassCmd* RogueParser__parse_for_each( RogueClassParser* THIS )
   }
   else
   {
-    RogueClassCmdRange* range_18 = (((RogueClassCmdRange*)(RogueObject::as(expr_2,RogueTypeCmdRange))));
+    RogueClassCmdRange* range_18 = (((RogueClassCmdRange*)(RogueObject_as(expr_2,RogueTypeCmdRange))));
     if (!!(range_18))
     {
       RogueClassLocal* control_var_19 = (((RogueMethod__add_local__Token_String_Type_Cmd( THIS->this_method, t_0, ((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) ))), ((RogueClassType*)(NULL)), ((RogueClassCmd*)(NULL)) ))));
@@ -23540,7 +23551,7 @@ RogueString* RogueCmdAccess__type_name( RogueClassCmdAccess* THIS )
 RogueClassCmd* RogueCmdAccess__clone__CloneArgs( RogueClassCmdAccess* THIS, RogueClassCloneArgs* clone_args_0 )
 {
   RogueClassCmdAccess* result_1 = (((RogueCmdAccess__init__Token_Cmd_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), THIS->t, ((RogueCmd__clone__Cmd_CloneArgs( ((RogueClassCmd*)THIS), THIS->context, clone_args_0 ))), THIS->name, ((RogueCmd__clone__CmdArgs_CloneArgs( ((RogueClassCmd*)THIS), THIS->args, clone_args_0 ))) ))));
-  RogueClassMacroArgs* macro_args_2 = (((RogueClassMacroArgs*)(RogueObject::as(clone_args_0,RogueTypeMacroArgs))));
+  RogueClassMacroArgs* macro_args_2 = (((RogueClassMacroArgs*)(RogueObject_as(clone_args_0,RogueTypeMacroArgs))));
   if (!!(macro_args_2))
   {
     return (RogueClassCmd*)(((RogueMacroArgs__inline_access__CmdAccess( macro_args_2, result_1 ))));
@@ -23596,7 +23607,7 @@ RogueClassCmd* RogueCmdAccess__resolve__Scope( RogueClassCmdAccess* THIS, RogueC
         {
           RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), Rogue_literal_strings[704] );
         }
-        RogueClassCmdCallRoutine* r_4 = (((RogueClassCmdCallRoutine*)(RogueObject::as(cmd_call_3,RogueTypeCmdCallRoutine))));
+        RogueClassCmdCallRoutine* r_4 = (((RogueClassCmdCallRoutine*)(RogueObject_as(cmd_call_3,RogueTypeCmdCallRoutine))));
         if (((RogueMethod__is_generated( r_4->method_info ))))
         {
           return (RogueClassCmd*)(((RogueCmdCreateCompound__resolve__Scope( ((RogueCmdCreateCompound__init__Token_Type_CmdArgs( ((RogueClassCmdCreateCompound*)ROGUE_CREATE_OBJECT(CmdCreateCompound)), THIS->t, new_type_2, r_4->args ))), scope_0 ))));
@@ -24612,12 +24623,12 @@ RogueString* RogueCmdLiteralThis__type_name( RogueClassCmdLiteralThis* THIS )
 
 RogueClassCmd* RogueCmdLiteralThis__clone__CloneArgs( RogueClassCmdLiteralThis* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject::as(clone_args_0,RogueTypeMacroArgs))));
+  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject_as(clone_args_0,RogueTypeMacroArgs))));
   if (!!(macro_args_1))
   {
     return (RogueClassCmd*)(((RogueMacroArgs__inline_this( macro_args_1 ))));
   }
-  RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_2))
   {
     return (RogueClassCmd*)(((RogueTaskArgs__cmd_read_context__Token( task_args_2, THIS->t ))));
@@ -24655,12 +24666,12 @@ RogueString* RogueCmdThisContext__type_name( RogueClassCmdThisContext* THIS )
 
 RogueClassCmd* RogueCmdThisContext__clone__CloneArgs( RogueClassCmdThisContext* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject::as(clone_args_0,RogueTypeMacroArgs))));
+  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject_as(clone_args_0,RogueTypeMacroArgs))));
   if (!!(macro_args_1))
   {
     return (RogueClassCmd*)(((RogueMacroArgs__inline_this( macro_args_1 ))));
   }
-  RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_2))
   {
     return (RogueClassCmd*)(((RogueTaskArgs__cmd_read_context__Token( task_args_2, THIS->t ))));
@@ -24724,7 +24735,7 @@ RogueString* RogueCmdGenericLoop__type_name( RogueClassCmdGenericLoop* THIS )
 
 RogueClassCmd* RogueCmdGenericLoop__clone__CloneArgs( RogueClassCmdGenericLoop* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if ((!!(task_args_1) && THIS->contains_yield))
   {
     if (!!(THIS->control_statements))
@@ -25040,11 +25051,11 @@ RogueClassCmd* RogueCmdCompareNE__combine_literal_operands__Type( RogueClassCmdC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value != ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value != ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value != ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value != ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
   }
   else
   {
@@ -28207,7 +28218,7 @@ RogueLogical RogueTokenizer__tokenize_comment( RogueClassTokenizer* THIS )
   }
   if ((!!(THIS->tokens->count) && ((RogueTokenList__last( THIS->tokens )))->_type == RogueTokenType_eol))
   {
-    ((RogueClassEOLToken*)(RogueObject::as(((RogueTokenList__last( THIS->tokens ))),RogueTypeEOLToken)))->comment = ((RogueString__operatorPLUS__String( ((RogueClassEOLToken*)(RogueObject::as(((RogueTokenList__last( THIS->tokens ))),RogueTypeEOLToken)))->comment, ((RogueStringBuilder__to_String( THIS->buffer ))) )));
+    ((RogueClassEOLToken*)(RogueObject_as(((RogueTokenList__last( THIS->tokens ))),RogueTypeEOLToken)))->comment = ((RogueString__operatorPLUS__String( ((RogueClassEOLToken*)(RogueObject_as(((RogueTokenList__last( THIS->tokens ))),RogueTypeEOLToken)))->comment, ((RogueStringBuilder__to_String( THIS->buffer ))) )));
   }
   return (RogueLogical)(true);
 }
@@ -28964,11 +28975,11 @@ RogueClassCmd* RogueCmdAdd__combine_literal_operands__Type( RogueClassCmdAdd* TH
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value + ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value + ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value + ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value + ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -29008,7 +29019,7 @@ RogueString* RogueCmdIf__type_name( RogueClassCmdIf* THIS )
 
 RogueClassCmd* RogueCmdIf__clone__CloneArgs( RogueClassCmdIf* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if ((!!(task_args_1) && THIS->contains_yield))
   {
     RogueClassCmdTaskControlSection* next_section_2 = (((RogueTaskArgs__create_section( task_args_1 ))));
@@ -29226,7 +29237,7 @@ RogueClassCmd* RogueCmdWhich__resolve__Scope( RogueClassCmdWhich* THIS, RogueCla
   RogueClassLocal* expression_var_5 = 0;
   if (RogueObject_instance_of(THIS->expression,RogueTypeCmdReadLocal))
   {
-    expression_var_5 = ((RogueClassLocal*)((RogueClassCmdReadLocal*)(RogueObject::as(THIS->expression,RogueTypeCmdReadLocal)))->local_info);
+    expression_var_5 = ((RogueClassLocal*)((RogueClassCmdReadLocal*)(RogueObject_as(THIS->expression,RogueTypeCmdReadLocal)))->local_info);
     var_name_4 = ((RogueString*)expression_var_5->name);
   }
   else
@@ -29311,7 +29322,7 @@ RogueString* RogueCmdContingent__type_name( RogueClassCmdContingent* THIS )
 
 RogueClassCmd* RogueCmdContingent__clone__CloneArgs( RogueClassCmdContingent* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if ((!!(task_args_1) && THIS->contains_yield))
   {
     THIS->satisfied_section = ((RogueTaskArgs__create_section( task_args_1 )));
@@ -29447,8 +29458,8 @@ RogueClassCmdContingent* RogueCmdContingent__init_object( RogueClassCmdContingen
 RogueClassCmd* RogueCmdContingent__set_control_logic__CmdControlStructure( RogueClassCmdContingent* THIS, RogueClassCmdControlStructure* original_0 )
 {
   RogueCmdControlStructure__set_control_logic__CmdControlStructure( ((RogueClassCmdControlStructure*)THIS), original_0 );
-  THIS->satisfied_label = ((RogueClassCmdContingent*)(RogueObject::as(original_0,RogueTypeCmdContingent)))->satisfied_label;
-  THIS->unsatisfied_label = ((RogueClassCmdContingent*)(RogueObject::as(original_0,RogueTypeCmdContingent)))->unsatisfied_label;
+  THIS->satisfied_label = ((RogueClassCmdContingent*)(RogueObject_as(original_0,RogueTypeCmdContingent)))->satisfied_label;
+  THIS->unsatisfied_label = ((RogueClassCmdContingent*)(RogueObject_as(original_0,RogueTypeCmdContingent)))->unsatisfied_label;
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -29571,7 +29582,7 @@ RogueString* RogueCmdAwait__type_name( RogueClassCmdAwait* THIS )
 
 RogueClassCmd* RogueCmdAwait__clone__CloneArgs( RogueClassCmdAwait* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_1))
   {
     throw ((RogueToken__error__String( THIS->t, Rogue_literal_strings[684] )));
@@ -29635,7 +29646,7 @@ RogueString* RogueCmdYield__type_name( RogueClassCmdYield* THIS )
 
 RogueClassCmd* RogueCmdYield__clone__CloneArgs( RogueClassCmdYield* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_1))
   {
     RogueTaskArgs__add_yield__Token( task_args_1, THIS->t );
@@ -29761,7 +29772,7 @@ RogueClassCmd* RogueCmdEscape__clone__CloneArgs( RogueClassCmdEscape* THIS, Rogu
 {
   if (!!(THIS->target_cmd->task_escape_section))
   {
-    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
     return (RogueClassCmd*)(((RogueTaskArgs__create_escape__Token_CmdTaskControlSection( task_args_1, THIS->t, THIS->target_cmd->task_escape_section ))));
   }
   else
@@ -29830,7 +29841,7 @@ RogueClassCmd* RogueCmdNextIteration__clone__CloneArgs( RogueClassCmdNextIterati
 {
   if (!!(THIS->target_cmd->task_upkeep_section))
   {
-    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
     return (RogueClassCmd*)(((RogueTaskArgs__create_escape__Token_CmdTaskControlSection( task_args_1, THIS->t, THIS->target_cmd->task_upkeep_section ))));
   }
   else
@@ -29898,7 +29909,7 @@ RogueClassCmd* RogueCmdNecessary__clone__CloneArgs( RogueClassCmdNecessary* THIS
 {
   if (!!(THIS->target_cmd->unsatisfied_section))
   {
-    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
     RogueClassCmd* cmd_jump_2 = (((RogueTaskArgs__create_escape__Token_CmdTaskControlSection( task_args_1, THIS->t, THIS->target_cmd->unsatisfied_section ))));
     if (!!(THIS->condition))
     {
@@ -29916,7 +29927,7 @@ RogueClassCmd* RogueCmdNecessary__clone__CloneArgs( RogueClassCmdNecessary* THIS
     {
       new_target_3 = ((RogueClassCmdControlStructure*)new_target_3->cloned_command);
     }
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdNecessary__init__Token_Cmd_CmdContingent( ((RogueClassCmdNecessary*)ROGUE_CREATE_OBJECT(CmdNecessary)), THIS->t, ((RogueCmd__clone__Cmd_CloneArgs( ((RogueClassCmd*)THIS), THIS->condition, clone_args_0 ))), ((RogueClassCmdContingent*)(RogueObject::as(new_target_3,RogueTypeCmdContingent))) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdNecessary__init__Token_Cmd_CmdContingent( ((RogueClassCmdNecessary*)ROGUE_CREATE_OBJECT(CmdNecessary)), THIS->t, ((RogueCmd__clone__Cmd_CloneArgs( ((RogueClassCmd*)THIS), THIS->condition, clone_args_0 ))), ((RogueClassCmdContingent*)(RogueObject_as(new_target_3,RogueTypeCmdContingent))) ))))));
   }
 }
 
@@ -29937,7 +29948,7 @@ RogueClassCmd* RogueCmdNecessary__resolve__Scope( RogueClassCmdNecessary* THIS, 
       {
         cmd_2 = ((RogueClassCmdControlStructure*)cmd_2->cloned_command);
       }
-      RogueClassCmdContingent* cmd_contingent_3 = (((RogueClassCmdContingent*)(RogueObject::as(cmd_2,RogueTypeCmdContingent))));
+      RogueClassCmdContingent* cmd_contingent_3 = (((RogueClassCmdContingent*)(RogueObject_as(cmd_2,RogueTypeCmdContingent))));
       if (!(!!(cmd_contingent_3->unsatisfied_label)))
       {
         cmd_contingent_3->unsatisfied_label = ((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) )));
@@ -29986,7 +29997,7 @@ RogueClassCmd* RogueCmdSufficient__clone__CloneArgs( RogueClassCmdSufficient* TH
 {
   if (!!(THIS->target_cmd->satisfied_section))
   {
-    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+    RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
     RogueClassCmd* cmd_jump_2 = (((RogueTaskArgs__create_escape__Token_CmdTaskControlSection( task_args_1, THIS->t, THIS->target_cmd->satisfied_section ))));
     if (!!(THIS->condition))
     {
@@ -30004,7 +30015,7 @@ RogueClassCmd* RogueCmdSufficient__clone__CloneArgs( RogueClassCmdSufficient* TH
     {
       new_target_3 = ((RogueClassCmdControlStructure*)new_target_3->cloned_command);
     }
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdSufficient__init__Token_Cmd_CmdContingent( ((RogueClassCmdSufficient*)ROGUE_CREATE_OBJECT(CmdSufficient)), THIS->t, ((RogueCmd__clone__Cmd_CloneArgs( ((RogueClassCmd*)THIS), THIS->condition, clone_args_0 ))), ((RogueClassCmdContingent*)(RogueObject::as(new_target_3,RogueTypeCmdContingent))) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdSufficient__init__Token_Cmd_CmdContingent( ((RogueClassCmdSufficient*)ROGUE_CREATE_OBJECT(CmdSufficient)), THIS->t, ((RogueCmd__clone__Cmd_CloneArgs( ((RogueClassCmd*)THIS), THIS->condition, clone_args_0 ))), ((RogueClassCmdContingent*)(RogueObject_as(new_target_3,RogueTypeCmdContingent))) ))))));
   }
 }
 
@@ -30025,7 +30036,7 @@ RogueClassCmd* RogueCmdSufficient__resolve__Scope( RogueClassCmdSufficient* THIS
       {
         cmd_2 = ((RogueClassCmdControlStructure*)cmd_2->cloned_command);
       }
-      RogueClassCmdContingent* cmd_contingent_3 = (((RogueClassCmdContingent*)(RogueObject::as(cmd_2,RogueTypeCmdContingent))));
+      RogueClassCmdContingent* cmd_contingent_3 = (((RogueClassCmdContingent*)(RogueObject_as(cmd_2,RogueTypeCmdContingent))));
       if (!(!!(cmd_contingent_3->satisfied_label)))
       {
         cmd_contingent_3->satisfied_label = ((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) )));
@@ -30419,7 +30430,7 @@ RogueString* RogueCmdLocalDeclaration__type_name( RogueClassCmdLocalDeclaration*
 
 RogueClassCmd* RogueCmdLocalDeclaration__clone__CloneArgs( RogueClassCmdLocalDeclaration* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_1))
   {
     RogueClassCmd* new_value_2 = (THIS->local_info->initial_value);
@@ -30507,7 +30518,7 @@ RogueString* RogueCmdAdjustLocal__type_name( RogueClassCmdAdjustLocal* THIS )
 
 RogueClassCmd* RogueCmdAdjustLocal__clone__CloneArgs( RogueClassCmdAdjustLocal* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_1))
   {
     return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAdjust__init__Token_Cmd_Integer( ((RogueClassCmdAdjust*)ROGUE_CREATE_OBJECT(CmdAdjust)), THIS->t, ((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), THIS->t, ((RogueTaskArgs__cmd_read_this__Token( task_args_1, THIS->t ))), ((RogueTaskArgs__convert_local_name__Local( task_args_1, THIS->local_info ))) ))))), THIS->delta ))))));
@@ -30566,14 +30577,14 @@ RogueString* RogueCmdReadLocal__type_name( RogueClassCmdReadLocal* THIS )
 
 RogueClassCmd* RogueCmdReadLocal__clone__CloneArgs( RogueClassCmdReadLocal* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject::as(clone_args_0,RogueTypeMacroArgs))));
+  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject_as(clone_args_0,RogueTypeMacroArgs))));
   if (!!(macro_args_1))
   {
     return (RogueClassCmd*)(((RogueMacroArgs__inline_read_local__CmdReadLocal( macro_args_1, THIS ))));
   }
   else
   {
-    RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+    RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
     if (!!(task_args_2))
     {
       return (RogueClassCmd*)(((RogueTaskArgs__cmd_read__Token_Local( task_args_2, THIS->t, THIS->local_info ))));
@@ -30634,11 +30645,11 @@ RogueClassCmd* RogueCmdCompareLE__combine_literal_operands__Type( RogueClassCmdC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value <= ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value <= ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value <= ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value <= ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
   }
   else
   {
@@ -30726,7 +30737,7 @@ RogueString* RogueCmdLocalOpWithAssign__type_name( RogueClassCmdLocalOpWithAssig
 
 RogueClassCmd* RogueCmdLocalOpWithAssign__clone__CloneArgs( RogueClassCmdLocalOpWithAssign* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if (!!(task_args_1))
   {
     return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdOpWithAssign__init__Token_Cmd_TokenType_Cmd( ((RogueClassCmdOpWithAssign*)ROGUE_CREATE_OBJECT(CmdOpWithAssign)), THIS->t, ((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), THIS->t, ((RogueClassCmd*)(((RogueCmdThisContext__init__Token_Type( ((RogueClassCmdThisContext*)ROGUE_CREATE_OBJECT(CmdThisContext)), THIS->t, task_args_1->_task_type ))))), ((RogueStringBuilder__to_String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__init( ((RogueStringBuilder*)ROGUE_CREATE_OBJECT(StringBuilder)) ))), THIS->local_info->name ))), Rogue_literal_strings[354] ))), ((RogueInteger__to_String( THIS->local_info->index ))) ))) ))) ))))), THIS->op, (call_ROGUEM44( 5, (RogueClassCmd*)(THIS->new_value), ((RogueClassCloneArgs*)(task_args_1)) )) ))))));
@@ -30778,7 +30789,7 @@ RogueClassCmd* RogueCmdLocalOpWithAssign__resolve__Scope( RogueClassCmdLocalOpWi
     }
     else if (((RogueObject__operatorEQUALSEQUALS__Object( ((RogueObject*)_auto_1101_4), ((RogueObject*)(RogueTokenType_symbol_dot_equals)) ))))
     {
-      RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject::as(THIS->new_value,RogueTypeCmdAccess))));
+      RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject_as(THIS->new_value,RogueTypeCmdAccess))));
       if (!(!!(access_3)))
       {
         throw ((RogueToken__error__String( THIS->new_value->t, Rogue_literal_strings[737] )));
@@ -30877,7 +30888,7 @@ RogueClassCmd* RogueCmdForEach__resolve__Scope( RogueClassCmdForEach* THIS, Rogu
   if (!!(THIS->step_cmd))
   {
     THIS->step_cmd = (call_ROGUEM42( 22, (RogueClassCmd*)(THIS->step_cmd), scope_0 ));
-    RogueClassCmdLiteralInteger* literal_integer_cmd_7 = (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->step_cmd,RogueTypeCmdLiteralInteger))));
+    RogueClassCmdLiteralInteger* literal_integer_cmd_7 = (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->step_cmd,RogueTypeCmdLiteralInteger))));
     if (!!(literal_integer_cmd_7))
     {
       step_size_6 = ((RogueInteger)literal_integer_cmd_7->value);
@@ -31077,7 +31088,7 @@ RogueClassCmd* RogueCmdBinaryLogical__resolve__Scope( RogueClassCmdBinaryLogical
   THIS->right = ((RogueCmd__require_logical__Scope( (call_ROGUEM42( 22, (RogueClassCmd*)(THIS->right), scope_0 )), scope_0 )));
   if (((call_ROGUEM47( 15, (RogueClassCmd*)(THIS->left) )) && (call_ROGUEM47( 15, (RogueClassCmd*)(THIS->right) ))))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (call_ROGUEM473( 38, (RogueClassCmdBinaryLogical*)(THIS), ((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralLogical)))->value, ((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralLogical)))->value )) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (call_ROGUEM473( 38, (RogueClassCmdBinaryLogical*)(THIS), ((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralLogical)))->value, ((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralLogical)))->value )) ))))));
   }
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
@@ -31176,11 +31187,11 @@ RogueClassCmd* RogueCmdCompareEQ__combine_literal_operands__Type( RogueClassCmdC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value == ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value == ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value == ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value == ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
   }
   else
   {
@@ -31341,11 +31352,11 @@ RogueClassCmd* RogueCmdCompareLT__combine_literal_operands__Type( RogueClassCmdC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value < ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value < ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value < ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value < ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
   }
   else
   {
@@ -31411,11 +31422,11 @@ RogueClassCmd* RogueCmdCompareGT__combine_literal_operands__Type( RogueClassCmdC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value > ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value > ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value > ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value > ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
   }
   else
   {
@@ -31481,11 +31492,11 @@ RogueClassCmd* RogueCmdCompareGE__combine_literal_operands__Type( RogueClassCmdC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value >= ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value >= ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value >= ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value >= ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value ))))));
   }
   else
   {
@@ -31615,11 +31626,11 @@ RogueClassCmd* RogueCmdLogicalNot__resolve_for_literal_operand__Scope( RogueClas
 {
   if (RogueObject_instance_of(THIS->operand,RogueTypeCmdLiteralReal))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, !(!!(((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->operand,RogueTypeCmdLiteralReal)))->value)) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, !(!!(((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->operand,RogueTypeCmdLiteralReal)))->value)) ))))));
   }
   else if (RogueObject_instance_of(THIS->operand,RogueTypeCmdLiteralInteger))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, !(!!(((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->operand,RogueTypeCmdLiteralInteger)))->value)) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, !(!!(((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->operand,RogueTypeCmdLiteralInteger)))->value)) ))))));
   }
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
@@ -31643,11 +31654,11 @@ RogueClassCmd* RogueCmdBitwiseXor__combine_literal_operands__Type( RogueClassCmd
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value ^ ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value ^ ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralLogical)))->value ^ ((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralLogical)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralLogical)))->value ^ ((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralLogical)))->value) ))))));
   }
   else
   {
@@ -31716,11 +31727,11 @@ RogueClassCmd* RogueCmdBitwiseOr__combine_literal_operands__Type( RogueClassCmdB
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value | ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value | ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralLogical)))->value || ((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralLogical)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralLogical)))->value || ((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralLogical)))->value) ))))));
   }
   else
   {
@@ -31752,11 +31763,11 @@ RogueClassCmd* RogueCmdBitwiseAnd__combine_literal_operands__Type( RogueClassCmd
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value & ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value & ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralLogical)))->value && ((RogueClassCmdLiteralLogical*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralLogical)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralLogical__init__Token_Logical( ((RogueClassCmdLiteralLogical*)ROGUE_CREATE_OBJECT(CmdLiteralLogical)), THIS->t, (((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralLogical)))->value && ((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralLogical)))->value) ))))));
   }
   else
   {
@@ -31788,7 +31799,7 @@ RogueClassCmd* RogueCmdBitwiseShiftLeft__combine_literal_operands__Type( RogueCl
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value << ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value << ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -31825,7 +31836,7 @@ RogueClassCmd* RogueCmdBitwiseShiftRight__combine_literal_operands__Type( RogueC
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value << ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value << ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -31836,7 +31847,7 @@ RogueClassCmd* RogueCmdBitwiseShiftRight__combine_literal_operands__Type( RogueC
 RogueClassCmd* RogueCmdBitwiseShiftRight__resolve__Scope( RogueClassCmdBitwiseShiftRight* THIS, RogueClassScope* scope_0 )
 {
   RogueClassCmd* result_1 = ((RogueCmdBinary__resolve__Scope( ((RogueClassCmdBinary*)THIS), scope_0 )));
-  RogueClassCmdBitwiseShiftRight* cmd_shift_2 = (((RogueClassCmdBitwiseShiftRight*)(RogueObject::as(result_1,RogueTypeCmdBitwiseShiftRight))));
+  RogueClassCmdBitwiseShiftRight* cmd_shift_2 = (((RogueClassCmdBitwiseShiftRight*)(RogueObject_as(result_1,RogueTypeCmdBitwiseShiftRight))));
   if (!(!!(cmd_shift_2)))
   {
     return (RogueClassCmd*)(result_1);
@@ -31868,7 +31879,7 @@ RogueClassCmd* RogueCmdBitwiseShiftRightX__combine_literal_operands__Type( Rogue
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value << ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value << ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -31905,11 +31916,11 @@ RogueClassCmd* RogueCmdSubtract__combine_literal_operands__Type( RogueClassCmdSu
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value - ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value - ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value - ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value - ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -31946,11 +31957,11 @@ RogueClassCmd* RogueCmdMultiply__combine_literal_operands__Type( RogueClassCmdMu
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value * ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value * ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value * ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value * ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -31987,11 +31998,11 @@ RogueClassCmd* RogueCmdDivide__combine_literal_operands__Type( RogueClassCmdDivi
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value / ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value / ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value / ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value / ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   else
   {
@@ -32028,11 +32039,11 @@ RogueClassCmd* RogueCmdMod__combine_literal_operands__Type( RogueClassCmdMod* TH
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (RogueMath__mod__Real_Real( ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value, ((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value )) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (RogueMath__mod__Real_Real( ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value, ((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value )) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (RogueMath__mod__Integer_Integer( ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value, ((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value )) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (RogueMath__mod__Integer_Integer( ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value, ((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value )) ))))));
   }
   else
   {
@@ -32047,7 +32058,7 @@ RogueClassCmd* RogueCmdMod__resolve__Scope( RogueClassCmdMod* THIS, RogueClassSc
   {
     return (RogueClassCmd*)(result_1);
   }
-  RogueClassCmdMod* cmd_mod_2 = (((RogueClassCmdMod*)(RogueObject::as(result_1,RogueTypeCmdMod))));
+  RogueClassCmdMod* cmd_mod_2 = (((RogueClassCmdMod*)(RogueObject_as(result_1,RogueTypeCmdMod))));
   if (!(!!(cmd_mod_2)))
   {
     return (RogueClassCmd*)(result_1);
@@ -32084,11 +32095,11 @@ RogueClassCmd* RogueCmdPower__combine_literal_operands__Type( RogueClassCmdPower
 {
   if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, ((RogueReal) pow((double)((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralReal)))->value, (double)((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralReal)))->value)) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, ((RogueReal) pow((double)((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralReal)))->value, (double)((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralReal)))->value)) ))))));
   }
   else if (common_type_0 == ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Integer)
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, ((RogueInteger) pow((double)((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->left,RogueTypeCmdLiteralInteger)))->value, (double)((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->right,RogueTypeCmdLiteralInteger)))->value)) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, ((RogueInteger) pow((double)((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->left,RogueTypeCmdLiteralInteger)))->value, (double)((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->right,RogueTypeCmdLiteralInteger)))->value)) ))))));
   }
   else
   {
@@ -32149,11 +32160,11 @@ RogueClassCmd* RogueCmdNegate__resolve_for_literal_operand__Scope( RogueClassCmd
 {
   if (RogueObject_instance_of(THIS->operand,RogueTypeCmdLiteralReal))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (-(((RogueClassCmdLiteralReal*)(RogueObject::as(THIS->operand,RogueTypeCmdLiteralReal)))->value)) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralReal__init__Token_Real( ((RogueClassCmdLiteralReal*)ROGUE_CREATE_OBJECT(CmdLiteralReal)), THIS->t, (-(((RogueClassCmdLiteralReal*)(RogueObject_as(THIS->operand,RogueTypeCmdLiteralReal)))->value)) ))))));
   }
   else if (RogueObject_instance_of(THIS->operand,RogueTypeCmdLiteralInteger))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (-(((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->operand,RogueTypeCmdLiteralInteger)))->value)) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, (-(((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->operand,RogueTypeCmdLiteralInteger)))->value)) ))))));
   }
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
@@ -32192,7 +32203,7 @@ RogueClassCmd* RogueCmdBitwiseNot__resolve_for_literal_operand__Scope( RogueClas
 {
   if (RogueObject_instance_of(THIS->operand,RogueTypeCmdLiteralInteger))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, ~(((RogueClassCmdLiteralInteger*)(RogueObject::as(THIS->operand,RogueTypeCmdLiteralInteger)))->value) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdLiteralInteger__init__Token_Integer( ((RogueClassCmdLiteralInteger*)ROGUE_CREATE_OBJECT(CmdLiteralInteger)), THIS->t, ~(((RogueClassCmdLiteralInteger*)(RogueObject_as(THIS->operand,RogueTypeCmdLiteralInteger)))->value) ))))));
   }
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
@@ -33735,7 +33746,7 @@ RogueClassCmd* RogueMacroArgs__inline_access__CmdAccess( RogueClassMacroArgs* TH
   RogueClassCmd* dup_2 = ((call_ROGUEM44( 5, (RogueClassCmd*)(arg_1), ((RogueClassCloneArgs*)(NULL)) )));
   if (!!(access_0->args))
   {
-    RogueClassCmdAccess* new_access_3 = (((RogueClassCmdAccess*)(RogueObject::as(dup_2,RogueTypeCmdAccess))));
+    RogueClassCmdAccess* new_access_3 = (((RogueClassCmdAccess*)(RogueObject_as(dup_2,RogueTypeCmdAccess))));
     if (!!(new_access_3))
     {
       if (!!(new_access_3->args))
@@ -34241,14 +34252,14 @@ RogueString* RogueCmdWriteLocal__type_name( RogueClassCmdWriteLocal* THIS )
 
 RogueClassCmd* RogueCmdWriteLocal__clone__CloneArgs( RogueClassCmdWriteLocal* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject::as(clone_args_0,RogueTypeMacroArgs))));
+  RogueClassMacroArgs* macro_args_1 = (((RogueClassMacroArgs*)(RogueObject_as(clone_args_0,RogueTypeMacroArgs))));
   if (!!(macro_args_1))
   {
     return (RogueClassCmd*)(((RogueMacroArgs__inline_write_local__CmdWriteLocal( macro_args_1, THIS ))));
   }
   else
   {
-    RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+    RogueClassTaskArgs* task_args_2 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
     if (!!(task_args_2))
     {
       return (RogueClassCmd*)(((RogueTaskArgs__cmd_write__Token_Local_Cmd( task_args_2, THIS->t, THIS->local_info, (call_ROGUEM44( 5, (RogueClassCmd*)(THIS->new_value), clone_args_0 )) ))));
@@ -34348,7 +34359,7 @@ RogueClassCmd* RogueCmdOpAssignGlobal__resolve__Scope( RogueClassCmdOpAssignGlob
     }
     else if (((RogueObject__operatorEQUALSEQUALS__Object( ((RogueObject*)_auto_1190_4), ((RogueObject*)(RogueTokenType_symbol_dot_equals)) ))))
     {
-      RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject::as(THIS->new_value,RogueTypeCmdAccess))));
+      RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject_as(THIS->new_value,RogueTypeCmdAccess))));
       if (!(!!(access_3)))
       {
         throw ((RogueToken__error__String( THIS->new_value->t, Rogue_literal_strings[737] )));
@@ -34449,7 +34460,7 @@ RogueClassCmd* RogueCmdOpAssignProperty__resolve__Scope( RogueClassCmdOpAssignPr
     }
     else if (((RogueObject__operatorEQUALSEQUALS__Object( ((RogueObject*)_auto_1191_4), ((RogueObject*)(RogueTokenType_symbol_dot_equals)) ))))
     {
-      RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject::as(THIS->new_value,RogueTypeCmdAccess))));
+      RogueClassCmdAccess* access_3 = (((RogueClassCmdAccess*)(RogueObject_as(THIS->new_value,RogueTypeCmdAccess))));
       if (!(!!(access_3)))
       {
         throw ((RogueToken__error__String( THIS->new_value->t, Rogue_literal_strings[737] )));
@@ -35152,7 +35163,7 @@ RogueString* RogueCmdBlock__type_name( RogueClassCmdBlock* THIS )
 
 RogueClassCmd* RogueCmdBlock__clone__CloneArgs( RogueClassCmdBlock* THIS, RogueClassCloneArgs* clone_args_0 )
 {
-  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject::as(clone_args_0,RogueTypeTaskArgs))));
+  RogueClassTaskArgs* task_args_1 = (((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs))));
   if ((!!(task_args_1) && THIS->contains_yield))
   {
     {
@@ -36751,994 +36762,994 @@ void RogueProgram::configure()
   RogueTypeTableEntry_of_String_TokenListList = &Rogue_types[ 279 ];
   RogueTypeString_TokenListTableEntry = &Rogue_types[ 280 ];
 
-  Rogue_literal_strings[0] = (RogueString*) RogueString::create( "" )->retain(); 
-  Rogue_literal_strings[1] = (RogueString*) RogueString::create( "C++" )->retain(); 
-  Rogue_literal_strings[2] = (RogueString*) RogueString::create( "null" )->retain(); 
-  Rogue_literal_strings[3] = (RogueString*) RogueString::create( "/Libraries/" )->retain(); 
-  Rogue_literal_strings[4] = (RogueString*) RogueString::create( "--" )->retain(); 
-  Rogue_literal_strings[5] = (RogueString*) RogueString::create( "--output" )->retain(); 
-  Rogue_literal_strings[6] = (RogueString*) RogueString::create( "Output filepath expected after \"--output=\"" )->retain(); 
-  Rogue_literal_strings[7] = (RogueString*) RogueString::create( "--execute" )->retain(); 
-  Rogue_literal_strings[8] = (RogueString*) RogueString::create( "--main" )->retain(); 
-  Rogue_literal_strings[9] = (RogueString*) RogueString::create( "Unexpected value for '--main' option." )->retain(); 
-  Rogue_literal_strings[10] = (RogueString*) RogueString::create( "--target" )->retain(); 
-  Rogue_literal_strings[11] = (RogueString*) RogueString::create( "Target name expected after \"--target=\" (e.g. \"C++\")." )->retain(); 
-  Rogue_literal_strings[12] = (RogueString*) RogueString::create( "Unknown option '" )->retain(); 
-  Rogue_literal_strings[13] = (RogueString*) RogueString::create( "'." )->retain(); 
-  Rogue_literal_strings[14] = (RogueString*) RogueString::create( "\nRogue Compiler v0.0.1\nMay 12, 2015\n\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the .cpp output file.\n\n  --execute[=\"args\"]\n    Use g++ to compile and run the .cpp output of the compiled .rogue program.\n    Automatically enables the --main option.\n\n  --output=destpath/[file]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --target=" )->retain(); 
-  Rogue_literal_strings[15] = (RogueString*) RogueString::create( "\n" )->retain(); 
-  Rogue_literal_strings[16] = (RogueString*) RogueString::create( "Rogue" )->retain(); 
-  Rogue_literal_strings[17] = (RogueString*) RogueString::create( "Rogue_program" )->retain(); 
-  Rogue_literal_strings[18] = (RogueString*) RogueString::create( "Internal" )->retain(); 
-  Rogue_literal_strings[19] = (RogueString*) RogueString::create( "[Built-in Type]" )->retain(); 
-  Rogue_literal_strings[20] = (RogueString*) RogueString::create( "Real" )->retain(); 
-  Rogue_literal_strings[21] = (RogueString*) RogueString::create( "Float" )->retain(); 
-  Rogue_literal_strings[22] = (RogueString*) RogueString::create( "Long" )->retain(); 
-  Rogue_literal_strings[23] = (RogueString*) RogueString::create( "Integer" )->retain(); 
-  Rogue_literal_strings[24] = (RogueString*) RogueString::create( "Character" )->retain(); 
-  Rogue_literal_strings[25] = (RogueString*) RogueString::create( "Byte" )->retain(); 
-  Rogue_literal_strings[26] = (RogueString*) RogueString::create( "Logical" )->retain(); 
-  Rogue_literal_strings[27] = (RogueString*) RogueString::create( "Object" )->retain(); 
-  Rogue_literal_strings[28] = (RogueString*) RogueString::create( "String" )->retain(); 
-  Rogue_literal_strings[29] = (RogueString*) RogueString::create( "StringBuilder" )->retain(); 
-  Rogue_literal_strings[30] = (RogueString*) RogueString::create( "NativeArray" )->retain(); 
-  Rogue_literal_strings[31] = (RogueString*) RogueString::create( "GenericList" )->retain(); 
-  Rogue_literal_strings[32] = (RogueString*) RogueString::create( "Global" )->retain(); 
-  Rogue_literal_strings[33] = (RogueString*) RogueString::create( "Error" )->retain(); 
-  Rogue_literal_strings[34] = (RogueString*) RogueString::create( ".rogue" )->retain(); 
-  Rogue_literal_strings[35] = (RogueString*) RogueString::create( "No such file \"" )->retain(); 
-  Rogue_literal_strings[36] = (RogueString*) RogueString::create( "\"." )->retain(); 
-  Rogue_literal_strings[37] = (RogueString*) RogueString::create( "/" )->retain(); 
-  Rogue_literal_strings[38] = (RogueString*) RogueString::create( "Can not find \"" )->retain(); 
-  Rogue_literal_strings[39] = (RogueString*) RogueString::create( "\" to include." )->retain(); 
-  Rogue_literal_strings[40] = (RogueString*) RogueString::create( "Recursive definition for \"" )->retain(); 
-  Rogue_literal_strings[41] = (RogueString*) RogueString::create( "Unexpected end of input." )->retain(); 
-  Rogue_literal_strings[42] = (RogueString*) RogueString::create( "Identifier expected, found " )->retain(); 
-  Rogue_literal_strings[43] = (RogueString*) RogueString::create( "'" )->retain(); 
-  Rogue_literal_strings[44] = (RogueString*) RogueString::create( "." )->retain(); 
-  Rogue_literal_strings[45] = (RogueString*) RogueString::create( "Filepath expected." )->retain(); 
-  Rogue_literal_strings[46] = (RogueString*) RogueString::create( "Cannot target folder \"" )->retain(); 
-  Rogue_literal_strings[47] = (RogueString*) RogueString::create( "\" for a native include." )->retain(); 
-  Rogue_literal_strings[48] = (RogueString*) RogueString::create( "header" )->retain(); 
-  Rogue_literal_strings[49] = (RogueString*) RogueString::create( "code" )->retain(); 
-  Rogue_literal_strings[50] = (RogueString*) RogueString::create( "Syntax error - $elseIf does not match any previous $if." )->retain(); 
-  Rogue_literal_strings[51] = (RogueString*) RogueString::create( "Syntax error - $else does not match any previous $if." )->retain(); 
-  Rogue_literal_strings[52] = (RogueString*) RogueString::create( "Syntax error - $endIf does not match any previous $if." )->retain(); 
-  Rogue_literal_strings[53] = (RogueString*) RogueString::create( "Expected '" )->retain(); 
-  Rogue_literal_strings[54] = (RogueString*) RogueString::create( "Syntax error in directive: '" )->retain(); 
-  Rogue_literal_strings[55] = (RogueString*) RogueString::create( "$define" )->retain(); 
-  Rogue_literal_strings[56] = (RogueString*) RogueString::create( "$include" )->retain(); 
-  Rogue_literal_strings[57] = (RogueString*) RogueString::create( "$includeNativeCode" )->retain(); 
-  Rogue_literal_strings[58] = (RogueString*) RogueString::create( "$includeNativeHeader" )->retain(); 
-  Rogue_literal_strings[59] = (RogueString*) RogueString::create( "$if" )->retain(); 
-  Rogue_literal_strings[60] = (RogueString*) RogueString::create( "$elseIf" )->retain(); 
-  Rogue_literal_strings[61] = (RogueString*) RogueString::create( "$else" )->retain(); 
-  Rogue_literal_strings[62] = (RogueString*) RogueString::create( "$endIf" )->retain(); 
-  Rogue_literal_strings[63] = (RogueString*) RogueString::create( "$requisite" )->retain(); 
-  Rogue_literal_strings[64] = (RogueString*) RogueString::create( "$id" )->retain(); 
-  Rogue_literal_strings[65] = (RogueString*) RogueString::create( "end of line" )->retain(); 
-  Rogue_literal_strings[66] = (RogueString*) RogueString::create( "augment" )->retain(); 
-  Rogue_literal_strings[67] = (RogueString*) RogueString::create( "case" )->retain(); 
-  Rogue_literal_strings[68] = (RogueString*) RogueString::create( "catch" )->retain(); 
-  Rogue_literal_strings[69] = (RogueString*) RogueString::create( "class" )->retain(); 
-  Rogue_literal_strings[70] = (RogueString*) RogueString::create( "DEFINITIONS" )->retain(); 
-  Rogue_literal_strings[71] = (RogueString*) RogueString::create( "else" )->retain(); 
-  Rogue_literal_strings[72] = (RogueString*) RogueString::create( "elseIf" )->retain(); 
-  Rogue_literal_strings[73] = (RogueString*) RogueString::create( "endAugment" )->retain(); 
-  Rogue_literal_strings[74] = (RogueString*) RogueString::create( "endClass" )->retain(); 
-  Rogue_literal_strings[75] = (RogueString*) RogueString::create( "endContingent" )->retain(); 
-  Rogue_literal_strings[76] = (RogueString*) RogueString::create( "endForEach" )->retain(); 
-  Rogue_literal_strings[77] = (RogueString*) RogueString::create( "endFunction" )->retain(); 
-  Rogue_literal_strings[78] = (RogueString*) RogueString::create( "endIf" )->retain(); 
-  Rogue_literal_strings[79] = (RogueString*) RogueString::create( "endLoop" )->retain(); 
-  Rogue_literal_strings[80] = (RogueString*) RogueString::create( "endTry" )->retain(); 
-  Rogue_literal_strings[81] = (RogueString*) RogueString::create( "endWhich" )->retain(); 
-  Rogue_literal_strings[82] = (RogueString*) RogueString::create( "endWhile" )->retain(); 
-  Rogue_literal_strings[83] = (RogueString*) RogueString::create( "ENUMERATE" )->retain(); 
-  Rogue_literal_strings[84] = (RogueString*) RogueString::create( "GLOBALS" )->retain(); 
-  Rogue_literal_strings[85] = (RogueString*) RogueString::create( "macro" )->retain(); 
-  Rogue_literal_strings[86] = (RogueString*) RogueString::create( "method" )->retain(); 
-  Rogue_literal_strings[87] = (RogueString*) RogueString::create( "METHODS" )->retain(); 
-  Rogue_literal_strings[88] = (RogueString*) RogueString::create( "nativeCode" )->retain(); 
-  Rogue_literal_strings[89] = (RogueString*) RogueString::create( "nativeHeader" )->retain(); 
-  Rogue_literal_strings[90] = (RogueString*) RogueString::create( "others" )->retain(); 
-  Rogue_literal_strings[91] = (RogueString*) RogueString::create( "PROPERTIES" )->retain(); 
-  Rogue_literal_strings[92] = (RogueString*) RogueString::create( "routine" )->retain(); 
-  Rogue_literal_strings[93] = (RogueString*) RogueString::create( "ROUTINES" )->retain(); 
-  Rogue_literal_strings[94] = (RogueString*) RogueString::create( "satisfied" )->retain(); 
-  Rogue_literal_strings[95] = (RogueString*) RogueString::create( "unsatisfied" )->retain(); 
-  Rogue_literal_strings[96] = (RogueString*) RogueString::create( "with" )->retain(); 
-  Rogue_literal_strings[97] = (RogueString*) RogueString::create( "}" )->retain(); 
-  Rogue_literal_strings[98] = (RogueString*) RogueString::create( "]" )->retain(); 
-  Rogue_literal_strings[99] = (RogueString*) RogueString::create( "}#" )->retain(); 
-  Rogue_literal_strings[100] = (RogueString*) RogueString::create( ")" )->retain(); 
-  Rogue_literal_strings[101] = (RogueString*) RogueString::create( ">>" )->retain(); 
-  Rogue_literal_strings[102] = (RogueString*) RogueString::create( "await" )->retain(); 
-  Rogue_literal_strings[103] = (RogueString*) RogueString::create( "contingent" )->retain(); 
-  Rogue_literal_strings[104] = (RogueString*) RogueString::create( "escapeContingent" )->retain(); 
-  Rogue_literal_strings[105] = (RogueString*) RogueString::create( "escapeForEach" )->retain(); 
-  Rogue_literal_strings[106] = (RogueString*) RogueString::create( "escapeIf" )->retain(); 
-  Rogue_literal_strings[107] = (RogueString*) RogueString::create( "escapeLoop" )->retain(); 
-  Rogue_literal_strings[108] = (RogueString*) RogueString::create( "escapeTry" )->retain(); 
-  Rogue_literal_strings[109] = (RogueString*) RogueString::create( "escapeWhich" )->retain(); 
-  Rogue_literal_strings[110] = (RogueString*) RogueString::create( "escapeWhile" )->retain(); 
-  Rogue_literal_strings[111] = (RogueString*) RogueString::create( "forEach" )->retain(); 
-  Rogue_literal_strings[112] = (RogueString*) RogueString::create( "function" )->retain(); 
-  Rogue_literal_strings[113] = (RogueString*) RogueString::create( "if" )->retain(); 
-  Rogue_literal_strings[114] = (RogueString*) RogueString::create( "in" )->retain(); 
-  Rogue_literal_strings[115] = (RogueString*) RogueString::create( "is" )->retain(); 
-  Rogue_literal_strings[116] = (RogueString*) RogueString::create( "isNot" )->retain(); 
-  Rogue_literal_strings[117] = (RogueString*) RogueString::create( "local" )->retain(); 
-  Rogue_literal_strings[118] = (RogueString*) RogueString::create( "loop" )->retain(); 
-  Rogue_literal_strings[119] = (RogueString*) RogueString::create( "native" )->retain(); 
-  Rogue_literal_strings[120] = (RogueString*) RogueString::create( "necessary" )->retain(); 
-  Rogue_literal_strings[121] = (RogueString*) RogueString::create( "nextIteration" )->retain(); 
-  Rogue_literal_strings[122] = (RogueString*) RogueString::create( "noAction" )->retain(); 
-  Rogue_literal_strings[123] = (RogueString*) RogueString::create( "of" )->retain(); 
-  Rogue_literal_strings[124] = (RogueString*) RogueString::create( "return" )->retain(); 
-  Rogue_literal_strings[125] = (RogueString*) RogueString::create( "step" )->retain(); 
-  Rogue_literal_strings[126] = (RogueString*) RogueString::create( "sufficient" )->retain(); 
-  Rogue_literal_strings[127] = (RogueString*) RogueString::create( "throw" )->retain(); 
-  Rogue_literal_strings[128] = (RogueString*) RogueString::create( "trace" )->retain(); 
-  Rogue_literal_strings[129] = (RogueString*) RogueString::create( "try" )->retain(); 
-  Rogue_literal_strings[130] = (RogueString*) RogueString::create( "which" )->retain(); 
-  Rogue_literal_strings[131] = (RogueString*) RogueString::create( "while" )->retain(); 
-  Rogue_literal_strings[132] = (RogueString*) RogueString::create( "yield" )->retain(); 
-  Rogue_literal_strings[133] = (RogueString*) RogueString::create( "identifier" )->retain(); 
-  Rogue_literal_strings[134] = (RogueString*) RogueString::create( "type identifier" )->retain(); 
-  Rogue_literal_strings[135] = (RogueString*) RogueString::create( "and" )->retain(); 
-  Rogue_literal_strings[136] = (RogueString*) RogueString::create( "as" )->retain(); 
-  Rogue_literal_strings[137] = (RogueString*) RogueString::create( "false" )->retain(); 
-  Rogue_literal_strings[138] = (RogueString*) RogueString::create( "instanceOf" )->retain(); 
-  Rogue_literal_strings[139] = (RogueString*) RogueString::create( "meta" )->retain(); 
-  Rogue_literal_strings[140] = (RogueString*) RogueString::create( "not" )->retain(); 
-  Rogue_literal_strings[141] = (RogueString*) RogueString::create( "notInstanceOf" )->retain(); 
-  Rogue_literal_strings[142] = (RogueString*) RogueString::create( "or" )->retain(); 
-  Rogue_literal_strings[143] = (RogueString*) RogueString::create( "pi" )->retain(); 
-  Rogue_literal_strings[144] = (RogueString*) RogueString::create( "prior" )->retain(); 
-  Rogue_literal_strings[145] = (RogueString*) RogueString::create( "this" )->retain(); 
-  Rogue_literal_strings[146] = (RogueString*) RogueString::create( "true" )->retain(); 
-  Rogue_literal_strings[147] = (RogueString*) RogueString::create( "xor" )->retain(); 
-  Rogue_literal_strings[148] = (RogueString*) RogueString::create( "&" )->retain(); 
-  Rogue_literal_strings[149] = (RogueString*) RogueString::create( "&=" )->retain(); 
-  Rogue_literal_strings[150] = (RogueString*) RogueString::create( "->" )->retain(); 
-  Rogue_literal_strings[151] = (RogueString*) RogueString::create( "@" )->retain(); 
-  Rogue_literal_strings[152] = (RogueString*) RogueString::create( "\\" )->retain(); 
-  Rogue_literal_strings[153] = (RogueString*) RogueString::create( "^" )->retain(); 
-  Rogue_literal_strings[154] = (RogueString*) RogueString::create( "^=" )->retain(); 
-  Rogue_literal_strings[155] = (RogueString*) RogueString::create( ":" )->retain(); 
-  Rogue_literal_strings[156] = (RogueString*) RogueString::create( "::" )->retain(); 
-  Rogue_literal_strings[157] = (RogueString*) RogueString::create( "," )->retain(); 
-  Rogue_literal_strings[158] = (RogueString*) RogueString::create( "<>" )->retain(); 
-  Rogue_literal_strings[159] = (RogueString*) RogueString::create( ".=" )->retain(); 
-  Rogue_literal_strings[160] = (RogueString*) RogueString::create( "..>" )->retain(); 
-  Rogue_literal_strings[161] = (RogueString*) RogueString::create( "{}" )->retain(); 
-  Rogue_literal_strings[162] = (RogueString*) RogueString::create( "[]" )->retain(); 
-  Rogue_literal_strings[163] = (RogueString*) RogueString::create( "==" )->retain(); 
-  Rogue_literal_strings[164] = (RogueString*) RogueString::create( "=" )->retain(); 
-  Rogue_literal_strings[165] = (RogueString*) RogueString::create( "!" )->retain(); 
-  Rogue_literal_strings[166] = (RogueString*) RogueString::create( "=>" )->retain(); 
-  Rogue_literal_strings[167] = (RogueString*) RogueString::create( ">=" )->retain(); 
-  Rogue_literal_strings[168] = (RogueString*) RogueString::create( ">" )->retain(); 
-  Rogue_literal_strings[169] = (RogueString*) RogueString::create( "<=" )->retain(); 
-  Rogue_literal_strings[170] = (RogueString*) RogueString::create( "<" )->retain(); 
-  Rogue_literal_strings[171] = (RogueString*) RogueString::create( "-" )->retain(); 
-  Rogue_literal_strings[172] = (RogueString*) RogueString::create( "-=" )->retain(); 
-  Rogue_literal_strings[173] = (RogueString*) RogueString::create( "!=" )->retain(); 
-  Rogue_literal_strings[174] = (RogueString*) RogueString::create( "{" )->retain(); 
-  Rogue_literal_strings[175] = (RogueString*) RogueString::create( "[" )->retain(); 
-  Rogue_literal_strings[176] = (RogueString*) RogueString::create( "(" )->retain(); 
-  Rogue_literal_strings[177] = (RogueString*) RogueString::create( "<<" )->retain(); 
-  Rogue_literal_strings[178] = (RogueString*) RogueString::create( "%" )->retain(); 
-  Rogue_literal_strings[179] = (RogueString*) RogueString::create( "%=" )->retain(); 
-  Rogue_literal_strings[180] = (RogueString*) RogueString::create( "+" )->retain(); 
-  Rogue_literal_strings[181] = (RogueString*) RogueString::create( "+=" )->retain(); 
-  Rogue_literal_strings[182] = (RogueString*) RogueString::create( "++" )->retain(); 
-  Rogue_literal_strings[183] = (RogueString*) RogueString::create( "?" )->retain(); 
-  Rogue_literal_strings[184] = (RogueString*) RogueString::create( ";" )->retain(); 
-  Rogue_literal_strings[185] = (RogueString*) RogueString::create( ":<<:" )->retain(); 
-  Rogue_literal_strings[186] = (RogueString*) RogueString::create( ":>>:" )->retain(); 
-  Rogue_literal_strings[187] = (RogueString*) RogueString::create( ":>>>:" )->retain(); 
-  Rogue_literal_strings[188] = (RogueString*) RogueString::create( "/=" )->retain(); 
-  Rogue_literal_strings[189] = (RogueString*) RogueString::create( "~" )->retain(); 
-  Rogue_literal_strings[190] = (RogueString*) RogueString::create( "~=" )->retain(); 
-  Rogue_literal_strings[191] = (RogueString*) RogueString::create( "*" )->retain(); 
-  Rogue_literal_strings[192] = (RogueString*) RogueString::create( "*=" )->retain(); 
-  Rogue_literal_strings[193] = (RogueString*) RogueString::create( ".." )->retain(); 
-  Rogue_literal_strings[194] = (RogueString*) RogueString::create( "..<" )->retain(); 
-  Rogue_literal_strings[195] = (RogueString*) RogueString::create( "|" )->retain(); 
-  Rogue_literal_strings[196] = (RogueString*) RogueString::create( "|=" )->retain(); 
-  Rogue_literal_strings[197] = (RogueString*) RogueString::create( "||" )->retain(); 
-  Rogue_literal_strings[198] = (RogueString*) RogueString::create( "Identifier expected." )->retain(); 
-  Rogue_literal_strings[199] = (RogueString*) RogueString::create( "endNativeCode" )->retain(); 
-  Rogue_literal_strings[200] = (RogueString*) RogueString::create( "'endNativeCode' expected before EOF." )->retain(); 
-  Rogue_literal_strings[201] = (RogueString*) RogueString::create( "endNativeHeader" )->retain(); 
-  Rogue_literal_strings[202] = (RogueString*) RogueString::create( "'endNativeHeader' expected before EOF." )->retain(); 
-  Rogue_literal_strings[203] = (RogueString*) RogueString::create( "Character expected." )->retain(); 
-  Rogue_literal_strings[204] = (RogueString*) RogueString::create( "Character expected; found end of line." )->retain(); 
-  Rogue_literal_strings[205] = (RogueString*) RogueString::create( "Escaped character expected; found end of input." )->retain(); 
-  Rogue_literal_strings[206] = (RogueString*) RogueString::create( "-9223372036854775808" )->retain(); 
-  Rogue_literal_strings[207] = (RogueString*) RogueString::create( "-digit hex value expected; found end of file." )->retain(); 
-  Rogue_literal_strings[208] = (RogueString*) RogueString::create( "Invalid hex digit " )->retain(); 
-  Rogue_literal_strings[209] = (RogueString*) RogueString::create( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\" )->retain(); 
-  Rogue_literal_strings[210] = (RogueString*) RogueString::create( "uXXXX \\" )->retain(); 
-  Rogue_literal_strings[211] = (RogueString*) RogueString::create( "xXX." )->retain(); 
-  Rogue_literal_strings[212] = (RogueString*) RogueString::create( "End of file reached while looking for end of string." )->retain(); 
-  Rogue_literal_strings[213] = (RogueString*) RogueString::create( "End of input reached while looking for end of string." )->retain(); 
-  Rogue_literal_strings[214] = (RogueString*) RogueString::create( "Digit out of range for base " )->retain(); 
-  Rogue_literal_strings[215] = (RogueString*) RogueString::create( "One or more digits expected." )->retain(); 
-  Rogue_literal_strings[216] = (RogueString*) RogueString::create( "End of File reached while looking for end of verbatim string." )->retain(); 
-  Rogue_literal_strings[217] = (RogueString*) RogueString::create( "define" )->retain(); 
-  Rogue_literal_strings[218] = (RogueString*) RogueString::create( "include" )->retain(); 
-  Rogue_literal_strings[219] = (RogueString*) RogueString::create( "includeNativeCode" )->retain(); 
-  Rogue_literal_strings[220] = (RogueString*) RogueString::create( "includeNativeHeader" )->retain(); 
-  Rogue_literal_strings[221] = (RogueString*) RogueString::create( "requisite" )->retain(); 
-  Rogue_literal_strings[222] = (RogueString*) RogueString::create( "$" )->retain(); 
-  Rogue_literal_strings[223] = (RogueString*) RogueString::create( "Use 'and' instead of '&&'." )->retain(); 
-  Rogue_literal_strings[224] = (RogueString*) RogueString::create( "End of line expected after '...'." )->retain(); 
-  Rogue_literal_strings[225] = (RogueString*) RogueString::create( "<<:" )->retain(); 
-  Rogue_literal_strings[226] = (RogueString*) RogueString::create( ">>:" )->retain(); 
-  Rogue_literal_strings[227] = (RogueString*) RogueString::create( ">>>:" )->retain(); 
-  Rogue_literal_strings[228] = (RogueString*) RogueString::create( "Use 'or' instead of '||'." )->retain(); 
-  Rogue_literal_strings[229] = (RogueString*) RogueString::create( "Unexpected input '" )->retain(); 
-  Rogue_literal_strings[230] = (RogueString*) RogueString::create( "EOL" )->retain(); 
-  Rogue_literal_strings[231] = (RogueString*) RogueString::create( "(Unicode " )->retain(); 
-  Rogue_literal_strings[232] = (RogueString*) RogueString::create( "Syntax error - unexpected input " )->retain(); 
-  Rogue_literal_strings[233] = (RogueString*) RogueString::create( " expected, found " )->retain(); 
-  Rogue_literal_strings[234] = (RogueString*) RogueString::create( "Unable to determine type for metadata access." )->retain(); 
-  Rogue_literal_strings[235] = (RogueString*) RogueString::create( "default_value" )->retain(); 
-  Rogue_literal_strings[236] = (RogueString*) RogueString::create( "'default_value' expected after 'meta.'." )->retain(); 
-  Rogue_literal_strings[237] = (RogueString*) RogueString::create( "Closing '>>' expected before end of line." )->retain(); 
-  Rogue_literal_strings[238] = (RogueString*) RogueString::create( "Callback" )->retain(); 
-  Rogue_literal_strings[239] = (RogueString*) RogueString::create( "call" )->retain(); 
-  Rogue_literal_strings[240] = (RogueString*) RogueString::create( "param" )->retain(); 
-  Rogue_literal_strings[241] = (RogueString*) RogueString::create( "Value expected, found empty parentheses ()." )->retain(); 
-  Rogue_literal_strings[242] = (RogueString*) RogueString::create( "PropertyList" )->retain(); 
-  Rogue_literal_strings[243] = (RogueString*) RogueString::create( "_auto_" )->retain(); 
-  Rogue_literal_strings[244] = (RogueString*) RogueString::create( "Single identifier expected for control variable name." )->retain(); 
-  Rogue_literal_strings[245] = (RogueString*) RogueString::create( "at" )->retain(); 
-  Rogue_literal_strings[246] = (RogueString*) RogueString::create( "Missing element name before 'at'." )->retain(); 
-  Rogue_literal_strings[247] = (RogueString*) RogueString::create( "Cannot use 'at' with a range." )->retain(); 
-  Rogue_literal_strings[248] = (RogueString*) RogueString::create( "Cannot use 'at' with forEach-of." )->retain(); 
-  Rogue_literal_strings[249] = (RogueString*) RogueString::create( "Use forEach-in with a literal range instead of forEach-of." )->retain(); 
-  Rogue_literal_strings[250] = (RogueString*) RogueString::create( "Syntax error in forEach - keyword 'in' or 'of' expected." )->retain(); 
-  Rogue_literal_strings[251] = (RogueString*) RogueString::create( "Invalid syntax in forEach." )->retain(); 
-  Rogue_literal_strings[252] = (RogueString*) RogueString::create( "Parser::parse_for_each():1384 " )->retain(); 
-  Rogue_literal_strings[253] = (RogueString*) RogueString::create( "[INTERNAL ERROR]" )->retain(); 
-  Rogue_literal_strings[254] = (RogueString*) RogueString::create( "()" )->retain(); 
-  Rogue_literal_strings[255] = (RogueString*) RogueString::create( " " )->retain(); 
-  Rogue_literal_strings[256] = (RogueString*) RogueString::create( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." )->retain(); 
-  Rogue_literal_strings[257] = (RogueString*) RogueString::create( "insert" )->retain(); 
-  Rogue_literal_strings[258] = (RogueString*) RogueString::create( "All methods implicitly define the label <<insert>> at the beginning of the method.  No duplicates are allowed." )->retain(); 
-  Rogue_literal_strings[259] = (RogueString*) RogueString::create( "append" )->retain(); 
-  Rogue_literal_strings[260] = (RogueString*) RogueString::create( "All methods implicitly define the label <<append>> at the end of the method.  No duplicates are allowed." )->retain(); 
-  Rogue_literal_strings[261] = (RogueString*) RogueString::create( "Literal string expected." )->retain(); 
-  Rogue_literal_strings[262] = (RogueString*) RogueString::create( "Syntax error: unexpected '" )->retain(); 
-  Rogue_literal_strings[263] = (RogueString*) RogueString::create( "aspect" )->retain(); 
-  Rogue_literal_strings[264] = (RogueString*) RogueString::create( "A class cannot be both '" )->retain(); 
-  Rogue_literal_strings[265] = (RogueString*) RogueString::create( "' and '" )->retain(); 
-  Rogue_literal_strings[266] = (RogueString*) RogueString::create( "primitive" )->retain(); 
-  Rogue_literal_strings[267] = (RogueString*) RogueString::create( "compound" )->retain(); 
-  Rogue_literal_strings[268] = (RogueString*) RogueString::create( "functional" )->retain(); 
-  Rogue_literal_strings[269] = (RogueString*) RogueString::create( "immutable" )->retain(); 
-  Rogue_literal_strings[270] = (RogueString*) RogueString::create( "singleton" )->retain(); 
-  Rogue_literal_strings[271] = (RogueString*) RogueString::create( "task" )->retain(); 
-  Rogue_literal_strings[272] = (RogueString*) RogueString::create( "Invalid attribute: " )->retain(); 
-  Rogue_literal_strings[273] = (RogueString*) RogueString::create( "Parser::parse_template_tokens():221 end_type" )->retain(); 
-  Rogue_literal_strings[274] = (RogueString*) RogueString::create( " expected, found end of file." )->retain(); 
-  Rogue_literal_strings[275] = (RogueString*) RogueString::create( "Illegal placeholder type in augment.  Write '" )->retain(); 
-  Rogue_literal_strings[276] = (RogueString*) RogueString::create( "' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as " )->retain(); 
-  Rogue_literal_strings[277] = (RogueString*) RogueString::create( "<<String>> to restrict the augment to that type." )->retain(); 
-  Rogue_literal_strings[278] = (RogueString*) RogueString::create( "on_launch" )->retain(); 
-  Rogue_literal_strings[279] = (RogueString*) RogueString::create( "Syntax error - unexpected " )->retain(); 
-  Rogue_literal_strings[280] = (RogueString*) RogueString::create( "Standard" )->retain(); 
-  Rogue_literal_strings[281] = (RogueString*) RogueString::create( "Optional" )->retain(); 
-  Rogue_literal_strings[282] = (RogueString*) RogueString::create( "List" )->retain(); 
-  Rogue_literal_strings[283] = (RogueString*) RogueString::create( "$DataType" )->retain(); 
-  Rogue_literal_strings[284] = (RogueString*) RogueString::create( "create" )->retain(); 
-  Rogue_literal_strings[285] = (RogueString*) RogueString::create( "init" )->retain(); 
-  Rogue_literal_strings[286] = (RogueString*) RogueString::create( "Definition expected." )->retain(); 
-  Rogue_literal_strings[287] = (RogueString*) RogueString::create( "[INTERNAL] " )->retain(); 
-  Rogue_literal_strings[288] = (RogueString*) RogueString::create( "Cmd" )->retain(); 
-  Rogue_literal_strings[289] = (RogueString*) RogueString::create( "::clone() is not implemented." )->retain(); 
-  Rogue_literal_strings[290] = (RogueString*) RogueString::create( "property" )->retain(); 
-  Rogue_literal_strings[291] = (RogueString*) RogueString::create( "global" )->retain(); 
-  Rogue_literal_strings[292] = (RogueString*) RogueString::create( "Cannot determine " )->retain(); 
-  Rogue_literal_strings[293] = (RogueString*) RogueString::create( " type from initial value; append an explicit type declaration such as \": Object\" " )->retain(); 
-  Rogue_literal_strings[294] = (RogueString*) RogueString::create( "An initial value or " )->retain(); 
-  Rogue_literal_strings[295] = (RogueString*) RogueString::create( " type (for example, \": Object\") must be specified." )->retain(); 
-  Rogue_literal_strings[296] = (RogueString*) RogueString::create( "operator" )->retain(); 
-  Rogue_literal_strings[297] = (RogueString*) RogueString::create( "to" )->retain(); 
-  Rogue_literal_strings[298] = (RogueString*) RogueString::create( "to_" )->retain(); 
-  Rogue_literal_strings[299] = (RogueString*) RogueString::create( "Native expression types cannot be specified in macro methods - remove the \"->" )->retain(); 
-  Rogue_literal_strings[300] = (RogueString*) RogueString::create( "Reference to " )->retain(); 
-  Rogue_literal_strings[301] = (RogueString*) RogueString::create( " is missing required type parameters (" )->retain(); 
-  Rogue_literal_strings[302] = (RogueString*) RogueString::create( "<<...>>)." )->retain(); 
-  Rogue_literal_strings[303] = (RogueString*) RogueString::create( "Too many type specializers given." )->retain(); 
-  Rogue_literal_strings[304] = (RogueString*) RogueString::create( "Insufficient number of type parameters in " )->retain(); 
-  Rogue_literal_strings[305] = (RogueString*) RogueString::create( "; " )->retain(); 
-  Rogue_literal_strings[306] = (RogueString*) RogueString::create( " given, " )->retain(); 
-  Rogue_literal_strings[307] = (RogueString*) RogueString::create( " expected." )->retain(); 
-  Rogue_literal_strings[308] = (RogueString*) RogueString::create( "Type parameters given for non-template type." )->retain(); 
-  Rogue_literal_strings[309] = (RogueString*) RogueString::create( "Reference to undefined type '" )->retain(); 
-  Rogue_literal_strings[310] = (RogueString*) RogueString::create( "Aspects can only extend other aspects." )->retain(); 
-  Rogue_literal_strings[311] = (RogueString*) RogueString::create( "Cyclic inheritance attempted - " )->retain(); 
-  Rogue_literal_strings[312] = (RogueString*) RogueString::create( " cannot extend " )->retain(); 
-  Rogue_literal_strings[313] = (RogueString*) RogueString::create( " because " )->retain(); 
-  Rogue_literal_strings[314] = (RogueString*) RogueString::create( " already extends " )->retain(); 
-  Rogue_literal_strings[315] = (RogueString*) RogueString::create( "Class " )->retain(); 
-  Rogue_literal_strings[316] = (RogueString*) RogueString::create( " can only have one base class (" )->retain(); 
-  Rogue_literal_strings[317] = (RogueString*) RogueString::create( " and " )->retain(); 
-  Rogue_literal_strings[318] = (RogueString*) RogueString::create( " are both specified as base classes)." )->retain(); 
-  Rogue_literal_strings[319] = (RogueString*) RogueString::create( "A property named \"" )->retain(); 
-  Rogue_literal_strings[320] = (RogueString*) RogueString::create( "\" already exists." )->retain(); 
-  Rogue_literal_strings[321] = (RogueString*) RogueString::create( "Conflicting initial values are given for property \"" )->retain(); 
-  Rogue_literal_strings[322] = (RogueString*) RogueString::create( "\" in unrelated types " )->retain(); 
-  Rogue_literal_strings[323] = (RogueString*) RogueString::create( "Conflicting types given for property \"" )->retain(); 
-  Rogue_literal_strings[324] = (RogueString*) RogueString::create( "\" - " )->retain(); 
-  Rogue_literal_strings[325] = (RogueString*) RogueString::create( " in " )->retain(); 
-  Rogue_literal_strings[326] = (RogueString*) RogueString::create( "type_name" )->retain(); 
-  Rogue_literal_strings[327] = (RogueString*) RogueString::create( "Compounds cannot have initializers.  Use create(...) routines instead." )->retain(); 
-  Rogue_literal_strings[328] = (RogueString*) RogueString::create( "TaskWithResult<<" )->retain(); 
-  Rogue_literal_strings[329] = (RogueString*) RogueString::create( "Task" )->retain(); 
-  Rogue_literal_strings[330] = (RogueString*) RogueString::create( "No type declared for parameter \"" )->retain(); 
-  Rogue_literal_strings[331] = (RogueString*) RogueString::create( "A routine with the signature " )->retain(); 
-  Rogue_literal_strings[332] = (RogueString*) RogueString::create( " is already defined." )->retain(); 
-  Rogue_literal_strings[333] = (RogueString*) RogueString::create( "A method with the signature " )->retain(); 
-  Rogue_literal_strings[334] = (RogueString*) RogueString::create( "No corresponding label <<" )->retain(); 
-  Rogue_literal_strings[335] = (RogueString*) RogueString::create( ">> in augmented code." )->retain(); 
-  Rogue_literal_strings[336] = (RogueString*) RogueString::create( "Type " )->retain(); 
-  Rogue_literal_strings[337] = (RogueString*) RogueString::create( " already defines routine " )->retain(); 
-  Rogue_literal_strings[338] = (RogueString*) RogueString::create( " already defines method " )->retain(); 
-  Rogue_literal_strings[339] = (RogueString*) RogueString::create( "In " )->retain(); 
-  Rogue_literal_strings[340] = (RogueString*) RogueString::create( " the overridden return type (" )->retain(); 
-  Rogue_literal_strings[341] = (RogueString*) RogueString::create( ") is not compatible with the prior definition return type (" )->retain(); 
-  Rogue_literal_strings[342] = (RogueString*) RogueString::create( ")." )->retain(); 
-  Rogue_literal_strings[343] = (RogueString*) RogueString::create( "init_class()" )->retain(); 
-  Rogue_literal_strings[344] = (RogueString*) RogueString::create( "init_class" )->retain(); 
-  Rogue_literal_strings[345] = (RogueString*) RogueString::create( "init_object()" )->retain(); 
-  Rogue_literal_strings[346] = (RogueString*) RogueString::create( "init_object" )->retain(); 
-  Rogue_literal_strings[347] = (RogueString*) RogueString::create( "to_String()" )->retain(); 
-  Rogue_literal_strings[348] = (RogueString*) RogueString::create( "to_String" )->retain(); 
-  Rogue_literal_strings[349] = (RogueString*) RogueString::create( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>." )->retain(); 
-  Rogue_literal_strings[350] = (RogueString*) RogueString::create( "Array<<" )->retain(); 
-  Rogue_literal_strings[351] = (RogueString*) RogueString::create( "__" )->retain(); 
-  Rogue_literal_strings[352] = (RogueString*) RogueString::create( "__task" )->retain(); 
-  Rogue_literal_strings[353] = (RogueString*) RogueString::create( "context" )->retain(); 
-  Rogue_literal_strings[354] = (RogueString*) RogueString::create( "_" )->retain(); 
-  Rogue_literal_strings[355] = (RogueString*) RogueString::create( "update" )->retain(); 
-  Rogue_literal_strings[356] = (RogueString*) RogueString::create( "execute" )->retain(); 
-  Rogue_literal_strings[357] = (RogueString*) RogueString::create( "ip" )->retain(); 
-  Rogue_literal_strings[358] = (RogueString*) RogueString::create( "__task_resolver" )->retain(); 
-  Rogue_literal_strings[359] = (RogueString*) RogueString::create( "result" )->retain(); 
-  Rogue_literal_strings[360] = (RogueString*) RogueString::create( "A local variable named \"" )->retain(); 
-  Rogue_literal_strings[361] = (RogueString*) RogueString::create( "::resolve() is not defined." )->retain(); 
-  Rogue_literal_strings[362] = (RogueString*) RogueString::create( "locals left on scope stack" )->retain(); 
-  Rogue_literal_strings[363] = (RogueString*) RogueString::create( "control stucture left on scope stack" )->retain(); 
-  Rogue_literal_strings[364] = (RogueString*) RogueString::create( " is not declared as returning a value." )->retain(); 
-  Rogue_literal_strings[365] = (RogueString*) RogueString::create( "::type() is not defined." )->retain(); 
-  Rogue_literal_strings[366] = (RogueString*) RogueString::create( " cannot be cast to required type " )->retain(); 
-  Rogue_literal_strings[367] = (RogueString*) RogueString::create( "No such method or routine " )->retain(); 
-  Rogue_literal_strings[368] = (RogueString*) RogueString::create( " in type " )->retain(); 
-  Rogue_literal_strings[369] = (RogueString*) RogueString::create( "init()" )->retain(); 
-  Rogue_literal_strings[370] = (RogueString*) RogueString::create( "::trace_used_code() is not defined." )->retain(); 
-  Rogue_literal_strings[371] = (RogueString*) RogueString::create( "/RogueProgram" )->retain(); 
-  Rogue_literal_strings[372] = (RogueString*) RogueString::create( ".cpp" )->retain(); 
-  Rogue_literal_strings[373] = (RogueString*) RogueString::create( "type" )->retain(); 
-  Rogue_literal_strings[374] = (RogueString*) RogueString::create( "_of_" )->retain(); 
-  Rogue_literal_strings[375] = (RogueString*) RogueString::create( "NOT" )->retain(); 
-  Rogue_literal_strings[376] = (RogueString*) RogueString::create( "MOD" )->retain(); 
-  Rogue_literal_strings[377] = (RogueString*) RogueString::create( "AND" )->retain(); 
-  Rogue_literal_strings[378] = (RogueString*) RogueString::create( "TIMES" )->retain(); 
-  Rogue_literal_strings[379] = (RogueString*) RogueString::create( "PLUS" )->retain(); 
-  Rogue_literal_strings[380] = (RogueString*) RogueString::create( "MINUS" )->retain(); 
-  Rogue_literal_strings[381] = (RogueString*) RogueString::create( "DOT" )->retain(); 
-  Rogue_literal_strings[382] = (RogueString*) RogueString::create( "SLASH" )->retain(); 
-  Rogue_literal_strings[383] = (RogueString*) RogueString::create( "LESSTHAN" )->retain(); 
-  Rogue_literal_strings[384] = (RogueString*) RogueString::create( "EQUALS" )->retain(); 
-  Rogue_literal_strings[385] = (RogueString*) RogueString::create( "GREATERTHAN" )->retain(); 
-  Rogue_literal_strings[386] = (RogueString*) RogueString::create( "POWER" )->retain(); 
-  Rogue_literal_strings[387] = (RogueString*) RogueString::create( "OR" )->retain(); 
-  Rogue_literal_strings[388] = (RogueString*) RogueString::create( "XOR" )->retain(); 
-  Rogue_literal_strings[389] = (RogueString*) RogueString::create( "RogueArray" )->retain(); 
-  Rogue_literal_strings[390] = (RogueString*) RogueString::create( "Array" )->retain(); 
-  Rogue_literal_strings[391] = (RogueString*) RogueString::create( "RogueClass" )->retain(); 
-  Rogue_literal_strings[392] = (RogueString*) RogueString::create( "RogueType" )->retain(); 
-  Rogue_literal_strings[393] = (RogueString*) RogueString::create( "Writing " )->retain(); 
-  Rogue_literal_strings[394] = (RogueString*) RogueString::create( ".h..." )->retain(); 
-  Rogue_literal_strings[395] = (RogueString*) RogueString::create( ".h" )->retain(); 
-  Rogue_literal_strings[396] = (RogueString*) RogueString::create( "#include <cmath>" )->retain(); 
-  Rogue_literal_strings[397] = (RogueString*) RogueString::create( "struct " )->retain(); 
-  Rogue_literal_strings[398] = (RogueString*) RogueString::create( " : " )->retain(); 
-  Rogue_literal_strings[399] = (RogueString*) RogueString::create( "void" )->retain(); 
-  Rogue_literal_strings[400] = (RogueString*) RogueString::create( " : RogueObject" )->retain(); 
-  Rogue_literal_strings[401] = (RogueString*) RogueString::create( "// GLOBALS" )->retain(); 
-  Rogue_literal_strings[402] = (RogueString*) RogueString::create( "static " )->retain(); 
-  Rogue_literal_strings[403] = (RogueString*) RogueString::create( "// PROPERTIES" )->retain(); 
-  Rogue_literal_strings[404] = (RogueString*) RogueString::create( "() : " )->retain(); 
-  Rogue_literal_strings[405] = (RogueString*) RogueString::create( ", " )->retain(); 
-  Rogue_literal_strings[406] = (RogueString*) RogueString::create( "0" )->retain(); 
-  Rogue_literal_strings[407] = (RogueString*) RogueString::create( " {}" )->retain(); 
-  Rogue_literal_strings[408] = (RogueString*) RogueString::create( "( " )->retain(); 
-  Rogue_literal_strings[409] = (RogueString*) RogueString::create( " value ) : value(value), exists(true) {}" )->retain(); 
-  Rogue_literal_strings[410] = (RogueString*) RogueString::create( " ) : " )->retain(); 
-  Rogue_literal_strings[411] = (RogueString*) RogueString::create( "bool operator==( const " )->retain(); 
-  Rogue_literal_strings[412] = (RogueString*) RogueString::create( " &other ) const" )->retain(); 
-  Rogue_literal_strings[413] = (RogueString*) RogueString::create( "if (exists)\n{\n  if (other.exists) return value == other.value;\n  else              return false;\n}\nelse\n{\n  if (other.exists) return false;\n  else              return true;\n}" )->retain(); 
-  Rogue_literal_strings[414] = (RogueString*) RogueString::create( "  if (" )->retain(); 
-  Rogue_literal_strings[415] = (RogueString*) RogueString::create( " != other." )->retain(); 
-  Rogue_literal_strings[416] = (RogueString*) RogueString::create( ") return false;" )->retain(); 
-  Rogue_literal_strings[417] = (RogueString*) RogueString::create( "  return true;" )->retain(); 
-  Rogue_literal_strings[418] = (RogueString*) RogueString::create( "bool operator!=( const " )->retain(); 
-  Rogue_literal_strings[419] = (RogueString*) RogueString::create( "{\n  return !(*this == other);\n}\n" )->retain(); 
-  Rogue_literal_strings[420] = (RogueString*) RogueString::create( "bool check( " )->retain(); 
-  Rogue_literal_strings[421] = (RogueString*) RogueString::create( "* checked )" )->retain(); 
-  Rogue_literal_strings[422] = (RogueString*) RogueString::create( "{\n  if ( !exists ) return false;\n  *checked = value;\n  return true;\n}\n" )->retain(); 
-  Rogue_literal_strings[423] = (RogueString*) RogueString::create( "};" )->retain(); 
-  Rogue_literal_strings[424] = (RogueString*) RogueString::create( "extern " )->retain(); 
-  Rogue_literal_strings[425] = (RogueString*) RogueString::create( " Rogue" )->retain(); 
-  Rogue_literal_strings[426] = (RogueString*) RogueString::create( "struct RogueProgram : RogueProgramCore" )->retain(); 
-  Rogue_literal_strings[427] = (RogueString*) RogueString::create( "  RogueProgram();" )->retain(); 
-  Rogue_literal_strings[428] = (RogueString*) RogueString::create( "  ~RogueProgram();" )->retain(); 
-  Rogue_literal_strings[429] = (RogueString*) RogueString::create( "  void configure();" )->retain(); 
-  Rogue_literal_strings[430] = (RogueString*) RogueString::create( "  void launch( int argc, char* argv[] );" )->retain(); 
-  Rogue_literal_strings[431] = (RogueString*) RogueString::create( "  //void finish_tasks();" )->retain(); 
-  Rogue_literal_strings[432] = (RogueString*) RogueString::create( "extern RogueType* RogueType" )->retain(); 
-  Rogue_literal_strings[433] = (RogueString*) RogueString::create( " THIS" )->retain(); 
-  Rogue_literal_strings[434] = (RogueString*) RogueString::create( "extern RogueProgram Rogue_program;" )->retain(); 
-  Rogue_literal_strings[435] = (RogueString*) RogueString::create( "void Rogue_trace();" )->retain(); 
-  Rogue_literal_strings[436] = (RogueString*) RogueString::create( ".cpp..." )->retain(); 
-  Rogue_literal_strings[437] = (RogueString*) RogueString::create( "#include <stdio.h>" )->retain(); 
-  Rogue_literal_strings[438] = (RogueString*) RogueString::create( "#include \"" )->retain(); 
-  Rogue_literal_strings[439] = (RogueString*) RogueString::create( ".h\"" )->retain(); 
-  Rogue_literal_strings[440] = (RogueString*) RogueString::create( "(*)(" )->retain(); 
-  Rogue_literal_strings[441] = (RogueString*) RogueString::create( "ROGUEM" )->retain(); 
-  Rogue_literal_strings[442] = (RogueString*) RogueString::create( "typedef " )->retain(); 
-  Rogue_literal_strings[443] = (RogueString*) RogueString::create( "(*)" )->retain(); 
-  Rogue_literal_strings[444] = (RogueString*) RogueString::create( "(*" )->retain(); 
-  Rogue_literal_strings[445] = (RogueString*) RogueString::create( " call_" )->retain(); 
-  Rogue_literal_strings[446] = (RogueString*) RogueString::create( "( int i, " )->retain(); 
-  Rogue_literal_strings[447] = (RogueString*) RogueString::create( " p" )->retain(); 
-  Rogue_literal_strings[448] = (RogueString*) RogueString::create( " )" )->retain(); 
-  Rogue_literal_strings[449] = (RogueString*) RogueString::create( "  " )->retain(); 
-  Rogue_literal_strings[450] = (RogueString*) RogueString::create( "return " )->retain(); 
-  Rogue_literal_strings[451] = (RogueString*) RogueString::create( "((" )->retain(); 
-  Rogue_literal_strings[452] = (RogueString*) RogueString::create( ")(THIS->type->methods[i]))( THIS" )->retain(); 
-  Rogue_literal_strings[453] = (RogueString*) RogueString::create( ", p" )->retain(); 
-  Rogue_literal_strings[454] = (RogueString*) RogueString::create( " );" )->retain(); 
-  Rogue_literal_strings[455] = (RogueString*) RogueString::create( " = " )->retain(); 
-  Rogue_literal_strings[456] = (RogueString*) RogueString::create( "void Rogue" )->retain(); 
-  Rogue_literal_strings[457] = (RogueString*) RogueString::create( "_trace( void* obj );" )->retain(); 
-  Rogue_literal_strings[458] = (RogueString*) RogueString::create( "_trace( void* obj )" )->retain(); 
-  Rogue_literal_strings[459] = (RogueString*) RogueString::create( "void* link;" )->retain(); 
-  Rogue_literal_strings[460] = (RogueString*) RogueString::create( "if ((link=((" )->retain(); 
-  Rogue_literal_strings[461] = (RogueString*) RogueString::create( "*)obj)->" )->retain(); 
-  Rogue_literal_strings[462] = (RogueString*) RogueString::create( ")) ((RogueObject*)link)->type->trace_fn( link );" )->retain(); 
-  Rogue_literal_strings[463] = (RogueString*) RogueString::create( ")) Rogue" )->retain(); 
-  Rogue_literal_strings[464] = (RogueString*) RogueString::create( "_trace( link );" )->retain(); 
-  Rogue_literal_strings[465] = (RogueString*) RogueString::create( "RogueArray* array = (RogueArray*) obj;\nint count;" )->retain(); 
-  Rogue_literal_strings[466] = (RogueString*) RogueString::create( "* cur;" )->retain(); 
-  Rogue_literal_strings[467] = (RogueString*) RogueString::create( "\nif ( !array || array->object_size < 0 ) return;\narray->object_size = ~array->object_size;\n\ncount = array->count;" )->retain(); 
-  Rogue_literal_strings[468] = (RogueString*) RogueString::create( "cur = ((" )->retain(); 
-  Rogue_literal_strings[469] = (RogueString*) RogueString::create( "*)(array->bytes)) - 1;" )->retain(); 
-  Rogue_literal_strings[470] = (RogueString*) RogueString::create( "while (--count >= 0)" )->retain(); 
-  Rogue_literal_strings[471] = (RogueString*) RogueString::create( "  Rogue" )->retain(); 
-  Rogue_literal_strings[472] = (RogueString*) RogueString::create( "_trace( ++cur );" )->retain(); 
-  Rogue_literal_strings[473] = (RogueString*) RogueString::create( "void* link;\n\nif ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;\n((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;\n" )->retain(); 
-  Rogue_literal_strings[474] = (RogueString*) RogueString::create( "RogueInitFn Rogue_init_object_fn_table[] =" )->retain(); 
-  Rogue_literal_strings[475] = (RogueString*) RogueString::create( "(RogueInitFn) " )->retain(); 
-  Rogue_literal_strings[476] = (RogueString*) RogueString::create( "RogueInitFn Rogue_init_fn_table[] =" )->retain(); 
-  Rogue_literal_strings[477] = (RogueString*) RogueString::create( "RogueTraceFn Rogue_trace_fn_table[] =" )->retain(); 
-  Rogue_literal_strings[478] = (RogueString*) RogueString::create( "RogueArray_trace" )->retain(); 
-  Rogue_literal_strings[479] = (RogueString*) RogueString::create( "_trace" )->retain(); 
-  Rogue_literal_strings[480] = (RogueString*) RogueString::create( "RogueObject_trace" )->retain(); 
-  Rogue_literal_strings[481] = (RogueString*) RogueString::create( "void Rogue_trace()" )->retain(); 
-  Rogue_literal_strings[482] = (RogueString*) RogueString::create( "int i;" )->retain(); 
-  Rogue_literal_strings[483] = (RogueString*) RogueString::create( "// Trace GLOBALS" )->retain(); 
-  Rogue_literal_strings[484] = (RogueString*) RogueString::create( "if ((link=Rogue" )->retain(); 
-  Rogue_literal_strings[485] = (RogueString*) RogueString::create( "// Trace singletons\nfor (i=Rogue_type_count; --i>=0; )\n{\n  RogueType* type = &Rogue_types[i];\n  if (type->_singleton)\n  {\n    type->trace_fn( type->_singleton );\n  }\n}" )->retain(); 
-  Rogue_literal_strings[486] = (RogueString*) RogueString::create( "void* Rogue_dynamic_method_table[] =" )->retain(); 
-  Rogue_literal_strings[487] = (RogueString*) RogueString::create( "(void*) (" )->retain(); 
-  Rogue_literal_strings[488] = (RogueString*) RogueString::create( ") " )->retain(); 
-  Rogue_literal_strings[489] = (RogueString*) RogueString::create( "NULL," )->retain(); 
-  Rogue_literal_strings[490] = (RogueString*) RogueString::create( " // " )->retain(); 
-  Rogue_literal_strings[491] = (RogueString*) RogueString::create( "int Rogue_type_info_table[" )->retain(); 
-  Rogue_literal_strings[492] = (RogueString*) RogueString::create( "] =" )->retain(); 
-  Rogue_literal_strings[493] = (RogueString*) RogueString::create( "// dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..." )->retain(); 
-  Rogue_literal_strings[494] = (RogueString*) RogueString::create( "\\\"" )->retain(); 
-  Rogue_literal_strings[495] = (RogueString*) RogueString::create( "\"" )->retain(); 
-  Rogue_literal_strings[496] = (RogueString*) RogueString::create( "\\'" )->retain(); 
-  Rogue_literal_strings[497] = (RogueString*) RogueString::create( "\\\\" )->retain(); 
-  Rogue_literal_strings[498] = (RogueString*) RogueString::create( "\\n" )->retain(); 
-  Rogue_literal_strings[499] = (RogueString*) RogueString::create( "int Rogue_object_size_table[" )->retain(); 
-  Rogue_literal_strings[500] = (RogueString*) RogueString::create( "(int) sizeof(" )->retain(); 
-  Rogue_literal_strings[501] = (RogueString*) RogueString::create( "int Rogue_type_count = " )->retain(); 
-  Rogue_literal_strings[502] = (RogueString*) RogueString::create( "RogueType Rogue_types[" )->retain(); 
-  Rogue_literal_strings[503] = (RogueString*) RogueString::create( "];" )->retain(); 
-  Rogue_literal_strings[504] = (RogueString*) RogueString::create( "RogueType* RogueType" )->retain(); 
-  Rogue_literal_strings[505] = (RogueString*) RogueString::create( "int Rogue_literal_string_count = " )->retain(); 
-  Rogue_literal_strings[506] = (RogueString*) RogueString::create( "RogueString* Rogue_literal_strings[" )->retain(); 
-  Rogue_literal_strings[507] = (RogueString*) RogueString::create( "switch (THIS->type->index)" )->retain(); 
-  Rogue_literal_strings[508] = (RogueString*) RogueString::create( "case " )->retain(); 
-  Rogue_literal_strings[509] = (RogueString*) RogueString::create( "  return " )->retain(); 
-  Rogue_literal_strings[510] = (RogueString*) RogueString::create( "( (" )->retain(); 
-  Rogue_literal_strings[511] = (RogueString*) RogueString::create( ")THIS" )->retain(); 
-  Rogue_literal_strings[512] = (RogueString*) RogueString::create( "default:" )->retain(); 
-  Rogue_literal_strings[513] = (RogueString*) RogueString::create( "::write_cpp() is not defined." )->retain(); 
-  Rogue_literal_strings[514] = (RogueString*) RogueString::create( "RogueProgram::RogueProgram()" )->retain(); 
-  Rogue_literal_strings[515] = (RogueString*) RogueString::create( "RogueProgram::~RogueProgram()" )->retain(); 
-  Rogue_literal_strings[516] = (RogueString*) RogueString::create( "void RogueProgram::configure()" )->retain(); 
-  Rogue_literal_strings[517] = (RogueString*) RogueString::create( "Rogue_configure_types();" )->retain(); 
-  Rogue_literal_strings[518] = (RogueString*) RogueString::create( " = &Rogue_types[ " )->retain(); 
-  Rogue_literal_strings[519] = (RogueString*) RogueString::create( " ];" )->retain(); 
-  Rogue_literal_strings[520] = (RogueString*) RogueString::create( "Rogue_literal_strings[" )->retain(); 
-  Rogue_literal_strings[521] = (RogueString*) RogueString::create( "] = (RogueString*) RogueString::create( " )->retain(); 
-  Rogue_literal_strings[522] = (RogueString*) RogueString::create( " )->retain(); " )->retain(); 
-  Rogue_literal_strings[523] = (RogueString*) RogueString::create( "void RogueProgram::launch( int argc, char* argv[] )" )->retain(); 
-  Rogue_literal_strings[524] = (RogueString*) RogueString::create( "();" )->retain(); 
-  Rogue_literal_strings[525] = (RogueString*) RogueString::create( "RogueSystem_executable_filepath = RogueString::create( argv[0] );" )->retain(); 
-  Rogue_literal_strings[526] = (RogueString*) RogueString::create( "for (int i=1; i<argc; ++i)" )->retain(); 
-  Rogue_literal_strings[527] = (RogueString*) RogueString::create( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );" )->retain(); 
-  Rogue_literal_strings[528] = (RogueString*) RogueString::create( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueTypeGlobal->singleton()) );" )->retain(); 
-  Rogue_literal_strings[529] = (RogueString*) RogueString::create( "Rogue_collect_garbage();" )->retain(); 
-  Rogue_literal_strings[530] = (RogueString*) RogueString::create( "RogueProgram Rogue_program;" )->retain(); 
-  Rogue_literal_strings[531] = (RogueString*) RogueString::create( "int main( int argc, char* argv[] )\n{\n  Rogue_program.configure();\n  Rogue_program.launch( argc, argv );\n  //Rogue_program.finish_tasks();\n  return 0;\n}" )->retain(); 
-  Rogue_literal_strings[532] = (RogueString*) RogueString::create( "g++ " )->retain(); 
-  Rogue_literal_strings[533] = (RogueString*) RogueString::create( ".cpp -o " )->retain(); 
-  Rogue_literal_strings[534] = (RogueString*) RogueString::create( " && ./" )->retain(); 
-  Rogue_literal_strings[535] = (RogueString*) RogueString::create( "Compile target \"" )->retain(); 
-  Rogue_literal_strings[536] = (RogueString*) RogueString::create( "\" is not supported." )->retain(); 
-  Rogue_literal_strings[537] = (RogueString*) RogueString::create( "StringReader" )->retain(); 
-  Rogue_literal_strings[538] = (RogueString*) RogueString::create( "Console" )->retain(); 
-  Rogue_literal_strings[539] = (RogueString*) RogueString::create( "RogueC" )->retain(); 
-  Rogue_literal_strings[540] = (RogueString*) RogueString::create( "Program" )->retain(); 
-  Rogue_literal_strings[541] = (RogueString*) RogueString::create( "Template" )->retain(); 
-  Rogue_literal_strings[542] = (RogueString*) RogueString::create( "Table<<String,Template>>" )->retain(); 
-  Rogue_literal_strings[543] = (RogueString*) RogueString::create( "Table<<String,Augment[]>>" )->retain(); 
-  Rogue_literal_strings[544] = (RogueString*) RogueString::create( "RequisiteItem" )->retain(); 
-  Rogue_literal_strings[545] = (RogueString*) RogueString::create( "Method" )->retain(); 
-  Rogue_literal_strings[546] = (RogueString*) RogueString::create( "Table<<String,Method[]>>" )->retain(); 
-  Rogue_literal_strings[547] = (RogueString*) RogueString::create( "Type" )->retain(); 
-  Rogue_literal_strings[548] = (RogueString*) RogueString::create( "Table<<String,Type>>" )->retain(); 
-  Rogue_literal_strings[549] = (RogueString*) RogueString::create( "Table<<String,Integer>>" )->retain(); 
-  Rogue_literal_strings[550] = (RogueString*) RogueString::create( "Token" )->retain(); 
-  Rogue_literal_strings[551] = (RogueString*) RogueString::create( "Attributes" )->retain(); 
-  Rogue_literal_strings[552] = (RogueString*) RogueString::create( "TokenType" )->retain(); 
-  Rogue_literal_strings[553] = (RogueString*) RogueString::create( "CPPWriter" )->retain(); 
-  Rogue_literal_strings[554] = (RogueString*) RogueString::create( "Property" )->retain(); 
-  Rogue_literal_strings[555] = (RogueString*) RogueString::create( "Table<<String,Method>>" )->retain(); 
-  Rogue_literal_strings[556] = (RogueString*) RogueString::create( "Local" )->retain(); 
-  Rogue_literal_strings[557] = (RogueString*) RogueString::create( "Math" )->retain(); 
-  Rogue_literal_strings[558] = (RogueString*) RogueString::create( "System" )->retain(); 
-  Rogue_literal_strings[559] = (RogueString*) RogueString::create( "Table<<String,Logical>>" )->retain(); 
-  Rogue_literal_strings[560] = (RogueString*) RogueString::create( "File" )->retain(); 
-  Rogue_literal_strings[561] = (RogueString*) RogueString::create( "Parser" )->retain(); 
-  Rogue_literal_strings[562] = (RogueString*) RogueString::create( "LineReader" )->retain(); 
-  Rogue_literal_strings[563] = (RogueString*) RogueString::create( "TypeParameter" )->retain(); 
-  Rogue_literal_strings[564] = (RogueString*) RogueString::create( "Augment" )->retain(); 
-  Rogue_literal_strings[565] = (RogueString*) RogueString::create( "Table<<String,TokenType>>" )->retain(); 
-  Rogue_literal_strings[566] = (RogueString*) RogueString::create( "Table<<String,TypeSpecializer>>" )->retain(); 
-  Rogue_literal_strings[567] = (RogueString*) RogueString::create( "TypeSpecializer" )->retain(); 
-  Rogue_literal_strings[568] = (RogueString*) RogueString::create( "TableEntry<<String,Template>>" )->retain(); 
-  Rogue_literal_strings[569] = (RogueString*) RogueString::create( "TableEntry<<String,Augment[]>>" )->retain(); 
-  Rogue_literal_strings[570] = (RogueString*) RogueString::create( "Table<<String,CmdLabel>>" )->retain(); 
-  Rogue_literal_strings[571] = (RogueString*) RogueString::create( "CloneArgs" )->retain(); 
-  Rogue_literal_strings[572] = (RogueString*) RogueString::create( "Scope" )->retain(); 
-  Rogue_literal_strings[573] = (RogueString*) RogueString::create( "CmdTaskControlSection" )->retain(); 
-  Rogue_literal_strings[574] = (RogueString*) RogueString::create( "TableEntry<<String,Method[]>>" )->retain(); 
-  Rogue_literal_strings[575] = (RogueString*) RogueString::create( "Table<<String,Cmd>>" )->retain(); 
-  Rogue_literal_strings[576] = (RogueString*) RogueString::create( "Table<<String,Property>>" )->retain(); 
-  Rogue_literal_strings[577] = (RogueString*) RogueString::create( "TableEntry<<String,Type>>" )->retain(); 
-  Rogue_literal_strings[578] = (RogueString*) RogueString::create( "TableEntry<<String,Integer>>" )->retain(); 
-  Rogue_literal_strings[579] = (RogueString*) RogueString::create( "TableEntry<<String,Method>>" )->retain(); 
-  Rogue_literal_strings[580] = (RogueString*) RogueString::create( "TableEntry<<String,Logical>>" )->retain(); 
-  Rogue_literal_strings[581] = (RogueString*) RogueString::create( "FileReader" )->retain(); 
-  Rogue_literal_strings[582] = (RogueString*) RogueString::create( "FileWriter" )->retain(); 
-  Rogue_literal_strings[583] = (RogueString*) RogueString::create( "TokenReader" )->retain(); 
-  Rogue_literal_strings[584] = (RogueString*) RogueString::create( "Tokenizer" )->retain(); 
-  Rogue_literal_strings[585] = (RogueString*) RogueString::create( "ParseReader" )->retain(); 
-  Rogue_literal_strings[586] = (RogueString*) RogueString::create( "Preprocessor" )->retain(); 
-  Rogue_literal_strings[587] = (RogueString*) RogueString::create( "FnParam" )->retain(); 
-  Rogue_literal_strings[588] = (RogueString*) RogueString::create( "FnArg" )->retain(); 
-  Rogue_literal_strings[589] = (RogueString*) RogueString::create( "TableEntry<<String,TokenType>>" )->retain(); 
-  Rogue_literal_strings[590] = (RogueString*) RogueString::create( "TableEntry<<String,TypeSpecializer>>" )->retain(); 
-  Rogue_literal_strings[591] = (RogueString*) RogueString::create( "TableEntry<<String,CmdLabel>>" )->retain(); 
-  Rogue_literal_strings[592] = (RogueString*) RogueString::create( "TableEntry<<String,Cmd>>" )->retain(); 
-  Rogue_literal_strings[593] = (RogueString*) RogueString::create( "TableEntry<<String,Property>>" )->retain(); 
-  Rogue_literal_strings[594] = (RogueString*) RogueString::create( "Table<<String,Token[]>>" )->retain(); 
-  Rogue_literal_strings[595] = (RogueString*) RogueString::create( "PreprocessorTokenReader" )->retain(); 
-  Rogue_literal_strings[596] = (RogueString*) RogueString::create( "TableEntry<<String,Token[]>>" )->retain(); 
-  Rogue_literal_strings[597] = (RogueString*) RogueString::create( "Array<<String>>" )->retain(); 
-  Rogue_literal_strings[598] = (RogueString*) RogueString::create( "Array<<Type>>" )->retain(); 
-  Rogue_literal_strings[599] = (RogueString*) RogueString::create( "Array<<RequisiteItem>>" )->retain(); 
-  Rogue_literal_strings[600] = (RogueString*) RogueString::create( "Array<<Template>>" )->retain(); 
-  Rogue_literal_strings[601] = (RogueString*) RogueString::create( "Array<<Method>>" )->retain(); 
-  Rogue_literal_strings[602] = (RogueString*) RogueString::create( "Array<<Property>>" )->retain(); 
-  Rogue_literal_strings[603] = (RogueString*) RogueString::create( "Array<<Local>>" )->retain(); 
-  Rogue_literal_strings[604] = (RogueString*) RogueString::create( "Array<<Integer>>" )->retain(); 
-  Rogue_literal_strings[605] = (RogueString*) RogueString::create( "Array<<Byte>>" )->retain(); 
-  Rogue_literal_strings[606] = (RogueString*) RogueString::create( "Array<<Character>>" )->retain(); 
-  Rogue_literal_strings[607] = (RogueString*) RogueString::create( "Array<<Augment>>" )->retain(); 
-  Rogue_literal_strings[608] = (RogueString*) RogueString::create( "Array<<Token>>" )->retain(); 
-  Rogue_literal_strings[609] = (RogueString*) RogueString::create( "Array<<TypeParameter>>" )->retain(); 
-  Rogue_literal_strings[610] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Template>>>>" )->retain(); 
-  Rogue_literal_strings[611] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Augment[]>>>>" )->retain(); 
-  Rogue_literal_strings[612] = (RogueString*) RogueString::create( "Array<<CmdLabel>>" )->retain(); 
-  Rogue_literal_strings[613] = (RogueString*) RogueString::create( "Array<<Cmd>>" )->retain(); 
-  Rogue_literal_strings[614] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Method[]>>>>" )->retain(); 
-  Rogue_literal_strings[615] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Type>>>>" )->retain(); 
-  Rogue_literal_strings[616] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Integer>>>>" )->retain(); 
-  Rogue_literal_strings[617] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Method>>>>" )->retain(); 
-  Rogue_literal_strings[618] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Logical>>>>" )->retain(); 
-  Rogue_literal_strings[619] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,TokenType>>>>" )->retain(); 
-  Rogue_literal_strings[620] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,TypeSpecializer>>>>" )->retain(); 
-  Rogue_literal_strings[621] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,CmdLabel>>>>" )->retain(); 
-  Rogue_literal_strings[622] = (RogueString*) RogueString::create( "Array<<CmdControlStructure>>" )->retain(); 
-  Rogue_literal_strings[623] = (RogueString*) RogueString::create( "Array<<CmdTaskControlSection>>" )->retain(); 
-  Rogue_literal_strings[624] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Cmd>>>>" )->retain(); 
-  Rogue_literal_strings[625] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Property>>>>" )->retain(); 
-  Rogue_literal_strings[626] = (RogueString*) RogueString::create( "Array<<CmdWhichCase>>" )->retain(); 
-  Rogue_literal_strings[627] = (RogueString*) RogueString::create( "Array<<CmdCatch>>" )->retain(); 
-  Rogue_literal_strings[628] = (RogueString*) RogueString::create( "Array<<FnParam>>" )->retain(); 
-  Rogue_literal_strings[629] = (RogueString*) RogueString::create( "Array<<FnArg>>" )->retain(); 
-  Rogue_literal_strings[630] = (RogueString*) RogueString::create( "Array<<TableEntry<<String,Token[]>>>>" )->retain(); 
-  Rogue_literal_strings[631] = (RogueString*) RogueString::create( "===============================================================================" )->retain(); 
-  Rogue_literal_strings[632] = (RogueString*) RogueString::create( "ERROR in \"" )->retain(); 
-  Rogue_literal_strings[633] = (RogueString*) RogueString::create( "  line " )->retain(); 
-  Rogue_literal_strings[634] = (RogueString*) RogueString::create( ", column " )->retain(); 
-  Rogue_literal_strings[635] = (RogueString*) RogueString::create( "ERROR" )->retain(); 
-  Rogue_literal_strings[636] = (RogueString*) RogueString::create( "RogueError" )->retain(); 
-  Rogue_literal_strings[637] = (RogueString*) RogueString::create( "0.0" )->retain(); 
-  Rogue_literal_strings[638] = (RogueString*) RogueString::create( "EOL  # " )->retain(); 
-  Rogue_literal_strings[639] = (RogueString*) RogueString::create( "LiteralCharacterToken" )->retain(); 
-  Rogue_literal_strings[640] = (RogueString*) RogueString::create( "LiteralLongToken" )->retain(); 
-  Rogue_literal_strings[641] = (RogueString*) RogueString::create( "LiteralIntegerToken" )->retain(); 
-  Rogue_literal_strings[642] = (RogueString*) RogueString::create( "LiteralRealToken" )->retain(); 
-  Rogue_literal_strings[643] = (RogueString*) RogueString::create( "LiteralStringToken" )->retain(); 
-  Rogue_literal_strings[644] = (RogueString*) RogueString::create( "EOLToken" )->retain(); 
-  Rogue_literal_strings[645] = (RogueString*) RogueString::create( "CmdStatement" )->retain(); 
-  Rogue_literal_strings[646] = (RogueString*) RogueString::create( "CmdLabel" )->retain(); 
-  Rogue_literal_strings[647] = (RogueString*) RogueString::create( "CmdAccess" )->retain(); 
-  Rogue_literal_strings[648] = (RogueString*) RogueString::create( "CmdAssign" )->retain(); 
-  Rogue_literal_strings[649] = (RogueString*) RogueString::create( "CmdThisContext" )->retain(); 
-  Rogue_literal_strings[650] = (RogueString*) RogueString::create( "CmdLiteral" )->retain(); 
-  Rogue_literal_strings[651] = (RogueString*) RogueString::create( "CmdBinary" )->retain(); 
-  Rogue_literal_strings[652] = (RogueString*) RogueString::create( "CmdTaskControl" )->retain(); 
-  Rogue_literal_strings[653] = (RogueString*) RogueString::create( "CmdCreateCompound" )->retain(); 
-  Rogue_literal_strings[654] = (RogueString*) RogueString::create( "CmdWriteGlobal" )->retain(); 
-  Rogue_literal_strings[655] = (RogueString*) RogueString::create( "CmdWriteProperty" )->retain(); 
-  Rogue_literal_strings[656] = (RogueString*) RogueString::create( "CmdTypeOperator" )->retain(); 
-  Rogue_literal_strings[657] = (RogueString*) RogueString::create( "CmdUnary" )->retain(); 
-  Rogue_literal_strings[658] = (RogueString*) RogueString::create( "CmdCreateOptionalValue" )->retain(); 
-  Rogue_literal_strings[659] = (RogueString*) RogueString::create( "CmdAwait" )->retain(); 
-  Rogue_literal_strings[660] = (RogueString*) RogueString::create( "CmdYield" )->retain(); 
-  Rogue_literal_strings[661] = (RogueString*) RogueString::create( "CmdThrow" )->retain(); 
-  Rogue_literal_strings[662] = (RogueString*) RogueString::create( "CmdTrace" )->retain(); 
-  Rogue_literal_strings[663] = (RogueString*) RogueString::create( "CmdEscape" )->retain(); 
-  Rogue_literal_strings[664] = (RogueString*) RogueString::create( "CmdNextIteration" )->retain(); 
-  Rogue_literal_strings[665] = (RogueString*) RogueString::create( "CmdNecessary" )->retain(); 
-  Rogue_literal_strings[666] = (RogueString*) RogueString::create( "CmdSufficient" )->retain(); 
-  Rogue_literal_strings[667] = (RogueString*) RogueString::create( "CmdAdjust" )->retain(); 
-  Rogue_literal_strings[668] = (RogueString*) RogueString::create( "CmdOpWithAssign" )->retain(); 
-  Rogue_literal_strings[669] = (RogueString*) RogueString::create( "CmdWhichCase" )->retain(); 
-  Rogue_literal_strings[670] = (RogueString*) RogueString::create( "CmdCatch" )->retain(); 
-  Rogue_literal_strings[671] = (RogueString*) RogueString::create( "CmdAdjustLocal" )->retain(); 
-  Rogue_literal_strings[672] = (RogueString*) RogueString::create( "CmdReadLocal" )->retain(); 
-  Rogue_literal_strings[673] = (RogueString*) RogueString::create( "CmdRange" )->retain(); 
-  Rogue_literal_strings[674] = (RogueString*) RogueString::create( "CmdResolvedOpWithAssign" )->retain(); 
-  Rogue_literal_strings[675] = (RogueString*) RogueString::create( "CmdGetOptionalValue" )->retain(); 
-  Rogue_literal_strings[676] = (RogueString*) RogueString::create( "CmdElementAccess" )->retain(); 
-  Rogue_literal_strings[677] = (RogueString*) RogueString::create( "CmdCreateCallback" )->retain(); 
-  Rogue_literal_strings[678] = (RogueString*) RogueString::create( "CmdFormattedString" )->retain(); 
-  Rogue_literal_strings[679] = (RogueString*) RogueString::create( "CmdCreateList" )->retain(); 
-  Rogue_literal_strings[680] = (RogueString*) RogueString::create( "CmdCallPriorMethod" )->retain(); 
-  Rogue_literal_strings[681] = (RogueString*) RogueString::create( "CmdCreateFunction" )->retain(); 
-  Rogue_literal_strings[682] = (RogueString*) RogueString::create( "CmdNativeCode" )->retain(); 
-  Rogue_literal_strings[683] = (RogueString*) RogueString::create( "Illegal arguments on inline code." )->retain(); 
-  Rogue_literal_strings[684] = (RogueString*) RogueString::create( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." )->retain(); 
-  Rogue_literal_strings[685] = (RogueString*) RogueString::create( "Value expected; this statement or expression does not result in a value." )->retain(); 
-  Rogue_literal_strings[686] = (RogueString*) RogueString::create( "Array count expected." )->retain(); 
-  Rogue_literal_strings[687] = (RogueString*) RogueString::create( "Integer value expected." )->retain(); 
-  Rogue_literal_strings[688] = (RogueString*) RogueString::create( "No such method or variable \"" )->retain(); 
-  Rogue_literal_strings[689] = (RogueString*) RogueString::create( "\" exists in current scope of type " )->retain(); 
-  Rogue_literal_strings[690] = (RogueString*) RogueString::create( "Multiple methods match ambiguous call to " )->retain(); 
-  Rogue_literal_strings[691] = (RogueString*) RogueString::create( ":\n\n" )->retain(); 
-  Rogue_literal_strings[692] = (RogueString*) RogueString::create( "Call to " )->retain(); 
-  Rogue_literal_strings[693] = (RogueString*) RogueString::create( " has arguments that are incompatible with the best candidate:\n\n" )->retain(); 
-  Rogue_literal_strings[694] = (RogueString*) RogueString::create( "to_Object" )->retain(); 
-  Rogue_literal_strings[695] = (RogueString*) RogueString::create( "Cannot call a method from a routine without an object context (obj." )->retain(); 
-  Rogue_literal_strings[696] = (RogueString*) RogueString::create( "()(...))." )->retain(); 
-  Rogue_literal_strings[697] = (RogueString*) RogueString::create( "Type name expected, e.g. \"" )->retain(); 
-  Rogue_literal_strings[698] = (RogueString*) RogueString::create( ".\"." )->retain(); 
-  Rogue_literal_strings[699] = (RogueString*) RogueString::create( "Type name expected." )->retain(); 
-  Rogue_literal_strings[700] = (RogueString*) RogueString::create( "TODO: multi-line inline statements" )->retain(); 
-  Rogue_literal_strings[701] = (RogueString*) RogueString::create( "count" )->retain(); 
-  Rogue_literal_strings[702] = (RogueString*) RogueString::create( "Invalid arguments to array count." )->retain(); 
-  Rogue_literal_strings[703] = (RogueString*) RogueString::create( "Scope::resolve_call():136 " )->retain(); 
-  Rogue_literal_strings[704] = (RogueString*) RogueString::create( "CmdAccess::resolve():1607 ;throwt.error([INTERNAL])" )->retain(); 
-  Rogue_literal_strings[705] = (RogueString*) RogueString::create( "Recursive call to getter " )->retain(); 
-  Rogue_literal_strings[706] = (RogueString*) RogueString::create( "() - write @" )->retain(); 
-  Rogue_literal_strings[707] = (RogueString*) RogueString::create( " instead." )->retain(); 
-  Rogue_literal_strings[708] = (RogueString*) RogueString::create( "Cannot access object properties from routines - routines have no 'this' object context." )->retain(); 
-  Rogue_literal_strings[709] = (RogueString*) RogueString::create( "exists" )->retain(); 
-  Rogue_literal_strings[710] = (RogueString*) RogueString::create( "Optional value existence check takes no arguments." )->retain(); 
-  Rogue_literal_strings[711] = (RogueString*) RogueString::create( "value" )->retain(); 
-  Rogue_literal_strings[712] = (RogueString*) RogueString::create( "Optional value retrieval takes no arguments." )->retain(); 
-  Rogue_literal_strings[713] = (RogueString*) RogueString::create( "'exists' and 'value' are the only valid properties of an optional type." )->retain(); 
-  Rogue_literal_strings[714] = (RogueString*) RogueString::create( "Invalid assignment." )->retain(); 
-  Rogue_literal_strings[715] = (RogueString*) RogueString::create( "::fn_name() is not defined." )->retain(); 
-  Rogue_literal_strings[716] = (RogueString*) RogueString::create( "Types " )->retain(); 
-  Rogue_literal_strings[717] = (RogueString*) RogueString::create( " are incompatible." )->retain(); 
-  Rogue_literal_strings[718] = (RogueString*) RogueString::create( "Caught value must be instanceOf class Error." )->retain(); 
-  Rogue_literal_strings[719] = (RogueString*) RogueString::create( "try/catch blocks cannot contain 'yield' statements." )->retain(); 
-  Rogue_literal_strings[720] = (RogueString*) RogueString::create( "The 'await' command can only be used in [task] methods." )->retain(); 
-  Rogue_literal_strings[721] = (RogueString*) RogueString::create( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - remove the call to start()." )->retain(); 
-  Rogue_literal_strings[722] = (RogueString*) RogueString::create( "The 'yield' statement can only be used in [task] methods." )->retain(); 
-  Rogue_literal_strings[723] = (RogueString*) RogueString::create( "Thrown value must be instanceOf class Error." )->retain(); 
-  Rogue_literal_strings[724] = (RogueString*) RogueString::create( "println" )->retain(); 
-  Rogue_literal_strings[725] = (RogueString*) RogueString::create( "No enclosing structure to escape." )->retain(); 
-  Rogue_literal_strings[726] = (RogueString*) RogueString::create( "No enclosing loop for 'nextIteration' to affect." )->retain(); 
-  Rogue_literal_strings[727] = (RogueString*) RogueString::create( "No enclosing contingent." )->retain(); 
-  Rogue_literal_strings[728] = (RogueString*) RogueString::create( "Invalid target for increment/decrement." )->retain(); 
-  Rogue_literal_strings[729] = (RogueString*) RogueString::create( "Cannot determine type of local variable - either assign an initial value (local " )->retain(); 
-  Rogue_literal_strings[730] = (RogueString*) RogueString::create( " = ...) or assign a type (local " )->retain(); 
-  Rogue_literal_strings[731] = (RogueString*) RogueString::create( " : Integer)." )->retain(); 
-  Rogue_literal_strings[732] = (RogueString*) RogueString::create( "No suitable operator method found; type " )->retain(); 
-  Rogue_literal_strings[733] = (RogueString*) RogueString::create( " implements neither " )->retain(); 
-  Rogue_literal_strings[734] = (RogueString*) RogueString::create( "()(" )->retain(); 
-  Rogue_literal_strings[735] = (RogueString*) RogueString::create( ") nor " )->retain(); 
-  Rogue_literal_strings[736] = (RogueString*) RogueString::create( "=(" )->retain(); 
-  Rogue_literal_strings[737] = (RogueString*) RogueString::create( "Property or method name expected." )->retain(); 
-  Rogue_literal_strings[738] = (RogueString*) RogueString::create( "Property or method name expected - '.=' cannot be used with a chain of references." )->retain(); 
-  Rogue_literal_strings[739] = (RogueString*) RogueString::create( "count()" )->retain(); 
-  Rogue_literal_strings[740] = (RogueString*) RogueString::create( "at(Integer)" )->retain(); 
-  Rogue_literal_strings[741] = (RogueString*) RogueString::create( "get(Integer)" )->retain(); 
-  Rogue_literal_strings[742] = (RogueString*) RogueString::create( "Literal integer value expected." )->retain(); 
-  Rogue_literal_strings[743] = (RogueString*) RogueString::create( "has_another" )->retain(); 
-  Rogue_literal_strings[744] = (RogueString*) RogueString::create( "has_another()" )->retain(); 
-  Rogue_literal_strings[745] = (RogueString*) RogueString::create( "read()" )->retain(); 
-  Rogue_literal_strings[746] = (RogueString*) RogueString::create( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at) or a reader (.has_another, .read)." )->retain(); 
-  Rogue_literal_strings[747] = (RogueString*) RogueString::create( "Object's read() method does not return a value." )->retain(); 
-  Rogue_literal_strings[748] = (RogueString*) RogueString::create( "Cannot specify a step size for a reader - only for an indexed collection." )->retain(); 
-  Rogue_literal_strings[749] = (RogueString*) RogueString::create( "read" )->retain(); 
-  Rogue_literal_strings[750] = (RogueString*) RogueString::create( "The optional value retriever ('!') can only be used on optional values." )->retain(); 
-  Rogue_literal_strings[751] = (RogueString*) RogueString::create( "get" )->retain(); 
-  Rogue_literal_strings[752] = (RogueString*) RogueString::create( "No such method or routine '" )->retain(); 
-  Rogue_literal_strings[753] = (RogueString*) RogueString::create( "' exists in type " )->retain(); 
-  Rogue_literal_strings[754] = (RogueString*) RogueString::create( "Multiple candidates match ambiguous reference to '" )->retain(); 
-  Rogue_literal_strings[755] = (RogueString*) RogueString::create( "'; add qualifiying parameter types." )->retain(); 
-  Rogue_literal_strings[756] = (RogueString*) RogueString::create( "More arguments than format markers ('$') in formatted string." )->retain(); 
-  Rogue_literal_strings[757] = (RogueString*) RogueString::create( "print" )->retain(); 
-  Rogue_literal_strings[758] = (RogueString*) RogueString::create( "More format markers ('$') than arguments in formatted string." )->retain(); 
-  Rogue_literal_strings[759] = (RogueString*) RogueString::create( "TODO: [] -> Property[]" )->retain(); 
-  Rogue_literal_strings[760] = (RogueString*) RogueString::create( "add" )->retain(); 
-  Rogue_literal_strings[761] = (RogueString*) RogueString::create( "Illegal target - 'prior' can only be used to call overridden methods." )->retain(); 
-  Rogue_literal_strings[762] = (RogueString*) RogueString::create( "Function_" )->retain(); 
-  Rogue_literal_strings[763] = (RogueString*) RogueString::create( "The result of a call cannot assigned to." )->retain(); 
-  Rogue_literal_strings[764] = (RogueString*) RogueString::create( "set_" )->retain(); 
-  Rogue_literal_strings[765] = (RogueString*) RogueString::create( "Recursive call to setter set_" )->retain(); 
-  Rogue_literal_strings[766] = (RogueString*) RogueString::create( "() - write \"@" )->retain(); 
-  Rogue_literal_strings[767] = (RogueString*) RogueString::create( " = ...\" instead." )->retain(); 
-  Rogue_literal_strings[768] = (RogueString*) RogueString::create( "\" exists in the current scope." )->retain(); 
-  Rogue_literal_strings[769] = (RogueString*) RogueString::create( "set" )->retain(); 
-  Rogue_literal_strings[770] = (RogueString*) RogueString::create( "Local variable '" )->retain(); 
-  Rogue_literal_strings[771] = (RogueString*) RogueString::create( "' cannot be called like a method." )->retain(); 
-  Rogue_literal_strings[772] = (RogueString*) RogueString::create( "::type() is not defined (access name '" )->retain(); 
-  Rogue_literal_strings[773] = (RogueString*) RogueString::create( "')." )->retain(); 
-  Rogue_literal_strings[774] = (RogueString*) RogueString::create( "return (" )->retain(); 
-  Rogue_literal_strings[775] = (RogueString*) RogueString::create( ")(" )->retain(); 
-  Rogue_literal_strings[776] = (RogueString*) RogueString::create( "::write_cpp() is not defined (access name " )->retain(); 
-  Rogue_literal_strings[777] = (RogueString*) RogueString::create( "THIS" )->retain(); 
-  Rogue_literal_strings[778] = (RogueString*) RogueString::create( "for (;" )->retain(); 
-  Rogue_literal_strings[779] = (RogueString*) RogueString::create( "while (" )->retain(); 
-  Rogue_literal_strings[780] = (RogueString*) RogueString::create( ":;" )->retain(); 
-  Rogue_literal_strings[781] = (RogueString*) RogueString::create( "::symbol() is not defined." )->retain(); 
-  Rogue_literal_strings[782] = (RogueString*) RogueString::create( "switch (++THIS->ip)" )->retain(); 
-  Rogue_literal_strings[783] = (RogueString*) RogueString::create( "  THIS->ip = -1;" )->retain(); 
-  Rogue_literal_strings[784] = (RogueString*) RogueString::create( "  return false;" )->retain(); 
-  Rogue_literal_strings[785] = (RogueString*) RogueString::create( "NULL" )->retain(); 
-  Rogue_literal_strings[786] = (RogueString*) RogueString::create( "))" )->retain(); 
-  Rogue_literal_strings[787] = (RogueString*) RogueString::create( "if (" )->retain(); 
-  Rogue_literal_strings[788] = (RogueString*) RogueString::create( "else " )->retain(); 
-  Rogue_literal_strings[789] = (RogueString*) RogueString::create( "goto " )->retain(); 
-  Rogue_literal_strings[790] = (RogueString*) RogueString::create( "catch ( " )->retain(); 
-  Rogue_literal_strings[791] = (RogueString*) RogueString::create( "throw " )->retain(); 
-  Rogue_literal_strings[792] = (RogueString*) RogueString::create( "continue" )->retain(); 
-  Rogue_literal_strings[793] = (RogueString*) RogueString::create( "if ( !(" )->retain(); 
-  Rogue_literal_strings[794] = (RogueString*) RogueString::create( ") ) goto " )->retain(); 
-  Rogue_literal_strings[795] = (RogueString*) RogueString::create( ") goto " )->retain(); 
-  Rogue_literal_strings[796] = (RogueString*) RogueString::create( "RogueObject_instance_of(" )->retain(); 
-  Rogue_literal_strings[797] = (RogueString*) RogueString::create( ".value" )->retain(); 
-  Rogue_literal_strings[798] = (RogueString*) RogueString::create( ")(RogueObject::as(" )->retain(); 
-  Rogue_literal_strings[799] = (RogueString*) RogueString::create( ")))" )->retain(); 
-  Rogue_literal_strings[800] = (RogueString*) RogueString::create( "LL" )->retain(); 
-  Rogue_literal_strings[801] = (RogueString*) RogueString::create( "(RogueCharacter)" )->retain(); 
-  Rogue_literal_strings[802] = (RogueString*) RogueString::create( "'\\n'" )->retain(); 
-  Rogue_literal_strings[803] = (RogueString*) RogueString::create( "'\\\\'" )->retain(); 
-  Rogue_literal_strings[804] = (RogueString*) RogueString::create( "'\\''" )->retain(); 
-  Rogue_literal_strings[805] = (RogueString*) RogueString::create( "THIS->" )->retain(); 
-  Rogue_literal_strings[806] = (RogueString*) RogueString::create( " is not a singleton." )->retain(); 
-  Rogue_literal_strings[807] = (RogueString*) RogueString::create( ")ROGUE_SINGLETON(" )->retain(); 
-  Rogue_literal_strings[808] = (RogueString*) RogueString::create( "RogueArray::create( " )->retain(); 
-  Rogue_literal_strings[809] = (RogueString*) RogueString::create( ", sizeof(" )->retain(); 
-  Rogue_literal_strings[810] = (RogueString*) RogueString::create( ", true" )->retain(); 
-  Rogue_literal_strings[811] = (RogueString*) RogueString::create( "ROGUE_CREATE_OBJECT(" )->retain(); 
-  Rogue_literal_strings[812] = (RogueString*) RogueString::create( "!!" )->retain(); 
-  Rogue_literal_strings[813] = (RogueString*) RogueString::create( ".exists" )->retain(); 
-  Rogue_literal_strings[814] = (RogueString*) RogueString::create( "Illegal use of '$this' in routine." )->retain(); 
-  Rogue_literal_strings[815] = (RogueString*) RogueString::create( "->count" )->retain(); 
-  Rogue_literal_strings[816] = (RogueString*) RogueString::create( "call_" )->retain(); 
-  Rogue_literal_strings[817] = (RogueString*) RogueString::create( "switch (" )->retain(); 
-  Rogue_literal_strings[818] = (RogueString*) RogueString::create( "break;" )->retain(); 
-  Rogue_literal_strings[819] = (RogueString*) RogueString::create( "->objects[" )->retain(); 
-  Rogue_literal_strings[820] = (RogueString*) RogueString::create( "]))" )->retain(); 
-  Rogue_literal_strings[821] = (RogueString*) RogueString::create( "reals[" )->retain(); 
-  Rogue_literal_strings[822] = (RogueString*) RogueString::create( "floats[" )->retain(); 
-  Rogue_literal_strings[823] = (RogueString*) RogueString::create( "longs[" )->retain(); 
-  Rogue_literal_strings[824] = (RogueString*) RogueString::create( "integers[" )->retain(); 
-  Rogue_literal_strings[825] = (RogueString*) RogueString::create( "characters[" )->retain(); 
-  Rogue_literal_strings[826] = (RogueString*) RogueString::create( "bytes[" )->retain(); 
-  Rogue_literal_strings[827] = (RogueString*) RogueString::create( "logical[" )->retain(); 
-  Rogue_literal_strings[828] = (RogueString*) RogueString::create( "[INTERNAL] Unhandled type in CmdReadArrayElement." )->retain(); 
-  Rogue_literal_strings[829] = (RogueString*) RogueString::create( "*)(" )->retain(); 
-  Rogue_literal_strings[830] = (RogueString*) RogueString::create( "->bytes))[" )->retain(); 
-  Rogue_literal_strings[831] = (RogueString*) RogueString::create( "] = " )->retain(); 
-  Rogue_literal_strings[832] = (RogueString*) RogueString::create( "objects[" )->retain(); 
-  Rogue_literal_strings[833] = (RogueString*) RogueString::create( " is not an override - no prior version of it exists." )->retain(); 
-  Rogue_literal_strings[834] = (RogueString*) RogueString::create( "CmdReturn" )->retain(); 
-  Rogue_literal_strings[835] = (RogueString*) RogueString::create( "CmdControlStructure" )->retain(); 
-  Rogue_literal_strings[836] = (RogueString*) RogueString::create( "CmdLocalDeclaration" )->retain(); 
-  Rogue_literal_strings[837] = (RogueString*) RogueString::create( "DirectiveTokenType" )->retain(); 
-  Rogue_literal_strings[838] = (RogueString*) RogueString::create( "StructuralDirectiveTokenType" )->retain(); 
-  Rogue_literal_strings[839] = (RogueString*) RogueString::create( "EOLTokenType" )->retain(); 
-  Rogue_literal_strings[840] = (RogueString*) RogueString::create( "StructureTokenType" )->retain(); 
-  Rogue_literal_strings[841] = (RogueString*) RogueString::create( "OpWithAssignTokenType" )->retain(); 
-  Rogue_literal_strings[842] = (RogueString*) RogueString::create( "CloneMethodArgs" )->retain(); 
-  Rogue_literal_strings[843] = (RogueString*) RogueString::create( "TaskArgs" )->retain(); 
-  Rogue_literal_strings[844] = (RogueString*) RogueString::create( "MacroArgs" )->retain(); 
-  Rogue_literal_strings[845] = (RogueString*) RogueString::create( "CmdGenericLoop" )->retain(); 
-  Rogue_literal_strings[846] = (RogueString*) RogueString::create( "CmdIf" )->retain(); 
-  Rogue_literal_strings[847] = (RogueString*) RogueString::create( "CmdWhich" )->retain(); 
-  Rogue_literal_strings[848] = (RogueString*) RogueString::create( "CmdContingent" )->retain(); 
-  Rogue_literal_strings[849] = (RogueString*) RogueString::create( "CmdTry" )->retain(); 
-  Rogue_literal_strings[850] = (RogueString*) RogueString::create( "CmdForEach" )->retain(); 
-  Rogue_literal_strings[851] = (RogueString*) RogueString::create( "CmdBlock" )->retain(); 
-  Rogue_literal_strings[852] = (RogueString*) RogueString::create( "CmdSwitch" )->retain(); 
-  Rogue_literal_strings[853] = (RogueString*) RogueString::create( "CmdLiteralThis" )->retain(); 
-  Rogue_literal_strings[854] = (RogueString*) RogueString::create( "Invalid reference to 'this' object - routines have no object context." )->retain(); 
-  Rogue_literal_strings[855] = (RogueString*) RogueString::create( "CmdLiteralInteger" )->retain(); 
-  Rogue_literal_strings[856] = (RogueString*) RogueString::create( "CmdLiteralNull" )->retain(); 
-  Rogue_literal_strings[857] = (RogueString*) RogueString::create( "CmdLiteralLogical" )->retain(); 
-  Rogue_literal_strings[858] = (RogueString*) RogueString::create( "CmdLiteralString" )->retain(); 
-  Rogue_literal_strings[859] = (RogueString*) RogueString::create( "CmdDefaultValue" )->retain(); 
-  Rogue_literal_strings[860] = (RogueString*) RogueString::create( "CmdLiteralReal" )->retain(); 
-  Rogue_literal_strings[861] = (RogueString*) RogueString::create( "CmdLiteralLong" )->retain(); 
-  Rogue_literal_strings[862] = (RogueString*) RogueString::create( "CmdLiteralCharacter" )->retain(); 
-  Rogue_literal_strings[863] = (RogueString*) RogueString::create( "CmdBinaryLogical" )->retain(); 
-  Rogue_literal_strings[864] = (RogueString*) RogueString::create( "::combine_literal_operands(Logical,Logical) is not defined." )->retain(); 
-  Rogue_literal_strings[865] = (RogueString*) RogueString::create( "shift_right" )->retain(); 
-  Rogue_literal_strings[866] = (RogueString*) RogueString::create( "mod" )->retain(); 
-  Rogue_literal_strings[867] = (RogueString*) RogueString::create( ") pow((double)" )->retain(); 
-  Rogue_literal_strings[868] = (RogueString*) RogueString::create( ", (double)" )->retain(); 
-  Rogue_literal_strings[869] = (RogueString*) RogueString::create( "operator+" )->retain(); 
-  Rogue_literal_strings[870] = (RogueString*) RogueString::create( "operator-" )->retain(); 
-  Rogue_literal_strings[871] = (RogueString*) RogueString::create( "operator*" )->retain(); 
-  Rogue_literal_strings[872] = (RogueString*) RogueString::create( "operator/" )->retain(); 
-  Rogue_literal_strings[873] = (RogueString*) RogueString::create( "operator%" )->retain(); 
-  Rogue_literal_strings[874] = (RogueString*) RogueString::create( "operator^" )->retain(); 
-  Rogue_literal_strings[875] = (RogueString*) RogueString::create( "The '" )->retain(); 
-  Rogue_literal_strings[876] = (RogueString*) RogueString::create( "' operator cannot be applied to type " )->retain(); 
-  Rogue_literal_strings[877] = (RogueString*) RogueString::create( "&&" )->retain(); 
-  Rogue_literal_strings[878] = (RogueString*) RogueString::create( "CmdComparison" )->retain(); 
-  Rogue_literal_strings[879] = (RogueString*) RogueString::create( "CmdAdd" )->retain(); 
-  Rogue_literal_strings[880] = (RogueString*) RogueString::create( "CmdBitwiseOp" )->retain(); 
-  Rogue_literal_strings[881] = (RogueString*) RogueString::create( "CmdSubtract" )->retain(); 
-  Rogue_literal_strings[882] = (RogueString*) RogueString::create( "CmdMultiply" )->retain(); 
-  Rogue_literal_strings[883] = (RogueString*) RogueString::create( "CmdDivide" )->retain(); 
-  Rogue_literal_strings[884] = (RogueString*) RogueString::create( "CmdMod" )->retain(); 
-  Rogue_literal_strings[885] = (RogueString*) RogueString::create( "CmdPower" )->retain(); 
-  Rogue_literal_strings[886] = (RogueString*) RogueString::create( "[INTERNAL] $::resolve_for_reference() is undefined." )->retain(); 
-  Rogue_literal_strings[887] = (RogueString*) RogueString::create( "Incompatible types for comparison: " )->retain(); 
-  Rogue_literal_strings[888] = (RogueString*) RogueString::create( "CmdCastToType" )->retain(); 
-  Rogue_literal_strings[889] = (RogueString*) RogueString::create( "CmdInstanceOf" )->retain(); 
-  Rogue_literal_strings[890] = (RogueString*) RogueString::create( "CmdConvertToType" )->retain(); 
-  Rogue_literal_strings[891] = (RogueString*) RogueString::create( "CmdAs" )->retain(); 
-  Rogue_literal_strings[892] = (RogueString*) RogueString::create( "CmdLogicalize" )->retain(); 
-  Rogue_literal_strings[893] = (RogueString*) RogueString::create( "CmdLogicalNot" )->retain(); 
-  Rogue_literal_strings[894] = (RogueString*) RogueString::create( "CmdNegate" )->retain(); 
-  Rogue_literal_strings[895] = (RogueString*) RogueString::create( "CmdBitwiseNot" )->retain(); 
-  Rogue_literal_strings[896] = (RogueString*) RogueString::create( "not " )->retain(); 
-  Rogue_literal_strings[897] = (RogueString*) RogueString::create( "(-" )->retain(); 
-  Rogue_literal_strings[898] = (RogueString*) RogueString::create( "[INTERNAL] TODO: 'is' for compounds." )->retain(); 
-  Rogue_literal_strings[899] = (RogueString*) RogueString::create( "Cannot use 'isNot' between mixed type categories " )->retain(); 
-  Rogue_literal_strings[900] = (RogueString*) RogueString::create( "CmdRangeUpTo" )->retain(); 
-  Rogue_literal_strings[901] = (RogueString*) RogueString::create( "CmdLocalOpWithAssign" )->retain(); 
-  Rogue_literal_strings[902] = (RogueString*) RogueString::create( "CmdOpAssignGlobal" )->retain(); 
-  Rogue_literal_strings[903] = (RogueString*) RogueString::create( "CmdOpAssignProperty" )->retain(); 
-  Rogue_literal_strings[904] = (RogueString*) RogueString::create( "CmdLogicalXor" )->retain(); 
-  Rogue_literal_strings[905] = (RogueString*) RogueString::create( "CmdLogicalOr" )->retain(); 
-  Rogue_literal_strings[906] = (RogueString*) RogueString::create( "CmdLogicalAnd" )->retain(); 
-  Rogue_literal_strings[907] = (RogueString*) RogueString::create( "operator!=" )->retain(); 
-  Rogue_literal_strings[908] = (RogueString*) RogueString::create( "operator<>" )->retain(); 
-  Rogue_literal_strings[909] = (RogueString*) RogueString::create( "operator==" )->retain(); 
-  Rogue_literal_strings[910] = (RogueString*) RogueString::create( "operator<=" )->retain(); 
-  Rogue_literal_strings[911] = (RogueString*) RogueString::create( "operator>" )->retain(); 
-  Rogue_literal_strings[912] = (RogueString*) RogueString::create( "operator>=" )->retain(); 
-  Rogue_literal_strings[913] = (RogueString*) RogueString::create( "operator<" )->retain(); 
-  Rogue_literal_strings[914] = (RogueString*) RogueString::create( "CmdBitwiseXor" )->retain(); 
-  Rogue_literal_strings[915] = (RogueString*) RogueString::create( "CmdBitwiseOr" )->retain(); 
-  Rogue_literal_strings[916] = (RogueString*) RogueString::create( "CmdBitwiseAnd" )->retain(); 
-  Rogue_literal_strings[917] = (RogueString*) RogueString::create( "CmdBitwiseShiftLeft" )->retain(); 
-  Rogue_literal_strings[918] = (RogueString*) RogueString::create( "CmdBitwiseShiftRight" )->retain(); 
-  Rogue_literal_strings[919] = (RogueString*) RogueString::create( "CmdBitwiseShiftRightX" )->retain(); 
-  Rogue_literal_strings[920] = (RogueString*) RogueString::create( "CmdConvertToPrimitiveType" )->retain(); 
-  Rogue_literal_strings[921] = (RogueString*) RogueString::create( "Character[]" )->retain(); 
-  Rogue_literal_strings[922] = (RogueString*) RogueString::create( "String[]" )->retain(); 
-  Rogue_literal_strings[923] = (RogueString*) RogueString::create( "Template[]" )->retain(); 
-  Rogue_literal_strings[924] = (RogueString*) RogueString::create( "RequisiteItem[]" )->retain(); 
-  Rogue_literal_strings[925] = (RogueString*) RogueString::create( "Type[]" )->retain(); 
-  Rogue_literal_strings[926] = (RogueString*) RogueString::create( "Cmd[]" )->retain(); 
-  Rogue_literal_strings[927] = (RogueString*) RogueString::create( "Method[]" )->retain(); 
-  Rogue_literal_strings[928] = (RogueString*) RogueString::create( "Property[]" )->retain(); 
-  Rogue_literal_strings[929] = (RogueString*) RogueString::create( "Local[]" )->retain(); 
-  Rogue_literal_strings[930] = (RogueString*) RogueString::create( "Integer[]" )->retain(); 
-  Rogue_literal_strings[931] = (RogueString*) RogueString::create( "Byte[]" )->retain(); 
-  Rogue_literal_strings[932] = (RogueString*) RogueString::create( "Token[]" )->retain(); 
-  Rogue_literal_strings[933] = (RogueString*) RogueString::create( "TypeParameter[]" )->retain(); 
-  Rogue_literal_strings[934] = (RogueString*) RogueString::create( "Augment[]" )->retain(); 
-  Rogue_literal_strings[935] = (RogueString*) RogueString::create( "TableEntry<<String,Template>>[]" )->retain(); 
-  Rogue_literal_strings[936] = (RogueString*) RogueString::create( "TableEntry<<String,Augment[]>>[]" )->retain(); 
-  Rogue_literal_strings[937] = (RogueString*) RogueString::create( "CmdLabel[]" )->retain(); 
-  Rogue_literal_strings[938] = (RogueString*) RogueString::create( "CmdControlStructure[]" )->retain(); 
-  Rogue_literal_strings[939] = (RogueString*) RogueString::create( "TableEntry<<String,Method[]>>[]" )->retain(); 
-  Rogue_literal_strings[940] = (RogueString*) RogueString::create( "TableEntry<<String,Type>>[]" )->retain(); 
-  Rogue_literal_strings[941] = (RogueString*) RogueString::create( "TableEntry<<String,Integer>>[]" )->retain(); 
-  Rogue_literal_strings[942] = (RogueString*) RogueString::create( "TableEntry<<String,Method>>[]" )->retain(); 
-  Rogue_literal_strings[943] = (RogueString*) RogueString::create( "TableEntry<<String,Logical>>[]" )->retain(); 
-  Rogue_literal_strings[944] = (RogueString*) RogueString::create( "CmdWhichCase[]" )->retain(); 
-  Rogue_literal_strings[945] = (RogueString*) RogueString::create( "CmdCatch[]" )->retain(); 
-  Rogue_literal_strings[946] = (RogueString*) RogueString::create( "FnParam[]" )->retain(); 
-  Rogue_literal_strings[947] = (RogueString*) RogueString::create( "FnArg[]" )->retain(); 
-  Rogue_literal_strings[948] = (RogueString*) RogueString::create( "TableEntry<<String,TokenType>>[]" )->retain(); 
-  Rogue_literal_strings[949] = (RogueString*) RogueString::create( "TableEntry<<String,TypeSpecializer>>[]" )->retain(); 
-  Rogue_literal_strings[950] = (RogueString*) RogueString::create( "TableEntry<<String,CmdLabel>>[]" )->retain(); 
-  Rogue_literal_strings[951] = (RogueString*) RogueString::create( "CmdTaskControlSection[]" )->retain(); 
-  Rogue_literal_strings[952] = (RogueString*) RogueString::create( "TableEntry<<String,Cmd>>[]" )->retain(); 
-  Rogue_literal_strings[953] = (RogueString*) RogueString::create( "TableEntry<<String,Property>>[]" )->retain(); 
-  Rogue_literal_strings[954] = (RogueString*) RogueString::create( "TableEntry<<String,Token[]>>[]" )->retain(); 
-  Rogue_literal_strings[955] = (RogueString*) RogueString::create( "CandidateMethods" )->retain(); 
-  Rogue_literal_strings[956] = (RogueString*) RogueString::create( "CmdReadSingleton" )->retain(); 
-  Rogue_literal_strings[957] = (RogueString*) RogueString::create( "CmdCreateArray" )->retain(); 
-  Rogue_literal_strings[958] = (RogueString*) RogueString::create( "CmdCall" )->retain(); 
-  Rogue_literal_strings[959] = (RogueString*) RogueString::create( "CmdCreateObject" )->retain(); 
-  Rogue_literal_strings[960] = (RogueString*) RogueString::create( "CmdReadGlobal" )->retain(); 
-  Rogue_literal_strings[961] = (RogueString*) RogueString::create( "CmdReadProperty" )->retain(); 
-  Rogue_literal_strings[962] = (RogueString*) RogueString::create( "CmdLogicalizeOptionalValue" )->retain(); 
-  Rogue_literal_strings[963] = (RogueString*) RogueString::create( "CmdWriteLocal" )->retain(); 
-  Rogue_literal_strings[964] = (RogueString*) RogueString::create( "CmdReadArrayCount" )->retain(); 
-  Rogue_literal_strings[965] = (RogueString*) RogueString::create( "CmdReadArrayElement" )->retain(); 
-  Rogue_literal_strings[966] = (RogueString*) RogueString::create( "CmdWriteArrayElement" )->retain(); 
-  Rogue_literal_strings[967] = (RogueString*) RogueString::create( "CmdAdjustProperty" )->retain(); 
-  Rogue_literal_strings[968] = (RogueString*) RogueString::create( "CmdStatementList" )->retain(); 
-  Rogue_literal_strings[969] = (RogueString*) RogueString::create( "CmdArgs" )->retain(); 
-  Rogue_literal_strings[970] = (RogueString*) RogueString::create( "CmdCompareNE" )->retain(); 
-  Rogue_literal_strings[971] = (RogueString*) RogueString::create( "CmdCompareLE" )->retain(); 
-  Rogue_literal_strings[972] = (RogueString*) RogueString::create( "CmdCompareEQ" )->retain(); 
-  Rogue_literal_strings[973] = (RogueString*) RogueString::create( "CmdCompareIs" )->retain(); 
-  Rogue_literal_strings[974] = (RogueString*) RogueString::create( "CmdCompareIsNot" )->retain(); 
-  Rogue_literal_strings[975] = (RogueString*) RogueString::create( "CmdCompareLT" )->retain(); 
-  Rogue_literal_strings[976] = (RogueString*) RogueString::create( "CmdCompareGT" )->retain(); 
-  Rogue_literal_strings[977] = (RogueString*) RogueString::create( "CmdCompareGE" )->retain(); 
-  Rogue_literal_strings[978] = (RogueString*) RogueString::create( "CmdCallRoutine" )->retain(); 
-  Rogue_literal_strings[979] = (RogueString*) RogueString::create( "CmdCallInlineNative" )->retain(); 
-  Rogue_literal_strings[980] = (RogueString*) RogueString::create( "CmdCallNativeRoutine" )->retain(); 
-  Rogue_literal_strings[981] = (RogueString*) RogueString::create( "CmdCallNativeMethod" )->retain(); 
-  Rogue_literal_strings[982] = (RogueString*) RogueString::create( "CmdCallAspectMethod" )->retain(); 
-  Rogue_literal_strings[983] = (RogueString*) RogueString::create( "CmdCallMethod" )->retain(); 
-  Rogue_literal_strings[984] = (RogueString*) RogueString::create( "CmdCallInlineNativeRoutine" )->retain(); 
-  Rogue_literal_strings[985] = (RogueString*) RogueString::create( "CmdCallInlineNativeMethod" )->retain(); 
-  Rogue_literal_strings[986] = (RogueString*) RogueString::create( "CmdCallDynamicMethod" )->retain(); 
-  Rogue_literal_strings[987] = (RogueString*) RogueString::create( "CmdCallStaticMethod" )->retain(); 
+  Rogue_literal_strings[0] = (RogueString*) RogueObject_retain( RogueString::create( "" ) ); 
+  Rogue_literal_strings[1] = (RogueString*) RogueObject_retain( RogueString::create( "C++" ) ); 
+  Rogue_literal_strings[2] = (RogueString*) RogueObject_retain( RogueString::create( "null" ) ); 
+  Rogue_literal_strings[3] = (RogueString*) RogueObject_retain( RogueString::create( "/Libraries/" ) ); 
+  Rogue_literal_strings[4] = (RogueString*) RogueObject_retain( RogueString::create( "--" ) ); 
+  Rogue_literal_strings[5] = (RogueString*) RogueObject_retain( RogueString::create( "--output" ) ); 
+  Rogue_literal_strings[6] = (RogueString*) RogueObject_retain( RogueString::create( "Output filepath expected after \"--output=\"" ) ); 
+  Rogue_literal_strings[7] = (RogueString*) RogueObject_retain( RogueString::create( "--execute" ) ); 
+  Rogue_literal_strings[8] = (RogueString*) RogueObject_retain( RogueString::create( "--main" ) ); 
+  Rogue_literal_strings[9] = (RogueString*) RogueObject_retain( RogueString::create( "Unexpected value for '--main' option." ) ); 
+  Rogue_literal_strings[10] = (RogueString*) RogueObject_retain( RogueString::create( "--target" ) ); 
+  Rogue_literal_strings[11] = (RogueString*) RogueObject_retain( RogueString::create( "Target name expected after \"--target=\" (e.g. \"C++\")." ) ); 
+  Rogue_literal_strings[12] = (RogueString*) RogueObject_retain( RogueString::create( "Unknown option '" ) ); 
+  Rogue_literal_strings[13] = (RogueString*) RogueObject_retain( RogueString::create( "'." ) ); 
+  Rogue_literal_strings[14] = (RogueString*) RogueObject_retain( RogueString::create( "\nRogue Compiler v0.0.1\nMay 12, 2015\n\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the .cpp output file.\n\n  --execute[=\"args\"]\n    Use g++ to compile and run the .cpp output of the compiled .rogue program.\n    Automatically enables the --main option.\n\n  --output=destpath/[file]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --target=" ) ); 
+  Rogue_literal_strings[15] = (RogueString*) RogueObject_retain( RogueString::create( "\n" ) ); 
+  Rogue_literal_strings[16] = (RogueString*) RogueObject_retain( RogueString::create( "Rogue" ) ); 
+  Rogue_literal_strings[17] = (RogueString*) RogueObject_retain( RogueString::create( "Rogue_program" ) ); 
+  Rogue_literal_strings[18] = (RogueString*) RogueObject_retain( RogueString::create( "Internal" ) ); 
+  Rogue_literal_strings[19] = (RogueString*) RogueObject_retain( RogueString::create( "[Built-in Type]" ) ); 
+  Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString::create( "Real" ) ); 
+  Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString::create( "Float" ) ); 
+  Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString::create( "Long" ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString::create( "Integer" ) ); 
+  Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString::create( "Character" ) ); 
+  Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString::create( "Byte" ) ); 
+  Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString::create( "Logical" ) ); 
+  Rogue_literal_strings[27] = (RogueString*) RogueObject_retain( RogueString::create( "Object" ) ); 
+  Rogue_literal_strings[28] = (RogueString*) RogueObject_retain( RogueString::create( "String" ) ); 
+  Rogue_literal_strings[29] = (RogueString*) RogueObject_retain( RogueString::create( "StringBuilder" ) ); 
+  Rogue_literal_strings[30] = (RogueString*) RogueObject_retain( RogueString::create( "NativeArray" ) ); 
+  Rogue_literal_strings[31] = (RogueString*) RogueObject_retain( RogueString::create( "GenericList" ) ); 
+  Rogue_literal_strings[32] = (RogueString*) RogueObject_retain( RogueString::create( "Global" ) ); 
+  Rogue_literal_strings[33] = (RogueString*) RogueObject_retain( RogueString::create( "Error" ) ); 
+  Rogue_literal_strings[34] = (RogueString*) RogueObject_retain( RogueString::create( ".rogue" ) ); 
+  Rogue_literal_strings[35] = (RogueString*) RogueObject_retain( RogueString::create( "No such file \"" ) ); 
+  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString::create( "\"." ) ); 
+  Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString::create( "/" ) ); 
+  Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString::create( "Can not find \"" ) ); 
+  Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString::create( "\" to include." ) ); 
+  Rogue_literal_strings[40] = (RogueString*) RogueObject_retain( RogueString::create( "Recursive definition for \"" ) ); 
+  Rogue_literal_strings[41] = (RogueString*) RogueObject_retain( RogueString::create( "Unexpected end of input." ) ); 
+  Rogue_literal_strings[42] = (RogueString*) RogueObject_retain( RogueString::create( "Identifier expected, found " ) ); 
+  Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString::create( "'" ) ); 
+  Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString::create( "." ) ); 
+  Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString::create( "Filepath expected." ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot target folder \"" ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString::create( "\" for a native include." ) ); 
+  Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString::create( "header" ) ); 
+  Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString::create( "code" ) ); 
+  Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error - $elseIf does not match any previous $if." ) ); 
+  Rogue_literal_strings[51] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error - $else does not match any previous $if." ) ); 
+  Rogue_literal_strings[52] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error - $endIf does not match any previous $if." ) ); 
+  Rogue_literal_strings[53] = (RogueString*) RogueObject_retain( RogueString::create( "Expected '" ) ); 
+  Rogue_literal_strings[54] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error in directive: '" ) ); 
+  Rogue_literal_strings[55] = (RogueString*) RogueObject_retain( RogueString::create( "$define" ) ); 
+  Rogue_literal_strings[56] = (RogueString*) RogueObject_retain( RogueString::create( "$include" ) ); 
+  Rogue_literal_strings[57] = (RogueString*) RogueObject_retain( RogueString::create( "$includeNativeCode" ) ); 
+  Rogue_literal_strings[58] = (RogueString*) RogueObject_retain( RogueString::create( "$includeNativeHeader" ) ); 
+  Rogue_literal_strings[59] = (RogueString*) RogueObject_retain( RogueString::create( "$if" ) ); 
+  Rogue_literal_strings[60] = (RogueString*) RogueObject_retain( RogueString::create( "$elseIf" ) ); 
+  Rogue_literal_strings[61] = (RogueString*) RogueObject_retain( RogueString::create( "$else" ) ); 
+  Rogue_literal_strings[62] = (RogueString*) RogueObject_retain( RogueString::create( "$endIf" ) ); 
+  Rogue_literal_strings[63] = (RogueString*) RogueObject_retain( RogueString::create( "$requisite" ) ); 
+  Rogue_literal_strings[64] = (RogueString*) RogueObject_retain( RogueString::create( "$id" ) ); 
+  Rogue_literal_strings[65] = (RogueString*) RogueObject_retain( RogueString::create( "end of line" ) ); 
+  Rogue_literal_strings[66] = (RogueString*) RogueObject_retain( RogueString::create( "augment" ) ); 
+  Rogue_literal_strings[67] = (RogueString*) RogueObject_retain( RogueString::create( "case" ) ); 
+  Rogue_literal_strings[68] = (RogueString*) RogueObject_retain( RogueString::create( "catch" ) ); 
+  Rogue_literal_strings[69] = (RogueString*) RogueObject_retain( RogueString::create( "class" ) ); 
+  Rogue_literal_strings[70] = (RogueString*) RogueObject_retain( RogueString::create( "DEFINITIONS" ) ); 
+  Rogue_literal_strings[71] = (RogueString*) RogueObject_retain( RogueString::create( "else" ) ); 
+  Rogue_literal_strings[72] = (RogueString*) RogueObject_retain( RogueString::create( "elseIf" ) ); 
+  Rogue_literal_strings[73] = (RogueString*) RogueObject_retain( RogueString::create( "endAugment" ) ); 
+  Rogue_literal_strings[74] = (RogueString*) RogueObject_retain( RogueString::create( "endClass" ) ); 
+  Rogue_literal_strings[75] = (RogueString*) RogueObject_retain( RogueString::create( "endContingent" ) ); 
+  Rogue_literal_strings[76] = (RogueString*) RogueObject_retain( RogueString::create( "endForEach" ) ); 
+  Rogue_literal_strings[77] = (RogueString*) RogueObject_retain( RogueString::create( "endFunction" ) ); 
+  Rogue_literal_strings[78] = (RogueString*) RogueObject_retain( RogueString::create( "endIf" ) ); 
+  Rogue_literal_strings[79] = (RogueString*) RogueObject_retain( RogueString::create( "endLoop" ) ); 
+  Rogue_literal_strings[80] = (RogueString*) RogueObject_retain( RogueString::create( "endTry" ) ); 
+  Rogue_literal_strings[81] = (RogueString*) RogueObject_retain( RogueString::create( "endWhich" ) ); 
+  Rogue_literal_strings[82] = (RogueString*) RogueObject_retain( RogueString::create( "endWhile" ) ); 
+  Rogue_literal_strings[83] = (RogueString*) RogueObject_retain( RogueString::create( "ENUMERATE" ) ); 
+  Rogue_literal_strings[84] = (RogueString*) RogueObject_retain( RogueString::create( "GLOBALS" ) ); 
+  Rogue_literal_strings[85] = (RogueString*) RogueObject_retain( RogueString::create( "macro" ) ); 
+  Rogue_literal_strings[86] = (RogueString*) RogueObject_retain( RogueString::create( "method" ) ); 
+  Rogue_literal_strings[87] = (RogueString*) RogueObject_retain( RogueString::create( "METHODS" ) ); 
+  Rogue_literal_strings[88] = (RogueString*) RogueObject_retain( RogueString::create( "nativeCode" ) ); 
+  Rogue_literal_strings[89] = (RogueString*) RogueObject_retain( RogueString::create( "nativeHeader" ) ); 
+  Rogue_literal_strings[90] = (RogueString*) RogueObject_retain( RogueString::create( "others" ) ); 
+  Rogue_literal_strings[91] = (RogueString*) RogueObject_retain( RogueString::create( "PROPERTIES" ) ); 
+  Rogue_literal_strings[92] = (RogueString*) RogueObject_retain( RogueString::create( "routine" ) ); 
+  Rogue_literal_strings[93] = (RogueString*) RogueObject_retain( RogueString::create( "ROUTINES" ) ); 
+  Rogue_literal_strings[94] = (RogueString*) RogueObject_retain( RogueString::create( "satisfied" ) ); 
+  Rogue_literal_strings[95] = (RogueString*) RogueObject_retain( RogueString::create( "unsatisfied" ) ); 
+  Rogue_literal_strings[96] = (RogueString*) RogueObject_retain( RogueString::create( "with" ) ); 
+  Rogue_literal_strings[97] = (RogueString*) RogueObject_retain( RogueString::create( "}" ) ); 
+  Rogue_literal_strings[98] = (RogueString*) RogueObject_retain( RogueString::create( "]" ) ); 
+  Rogue_literal_strings[99] = (RogueString*) RogueObject_retain( RogueString::create( "}#" ) ); 
+  Rogue_literal_strings[100] = (RogueString*) RogueObject_retain( RogueString::create( ")" ) ); 
+  Rogue_literal_strings[101] = (RogueString*) RogueObject_retain( RogueString::create( ">>" ) ); 
+  Rogue_literal_strings[102] = (RogueString*) RogueObject_retain( RogueString::create( "await" ) ); 
+  Rogue_literal_strings[103] = (RogueString*) RogueObject_retain( RogueString::create( "contingent" ) ); 
+  Rogue_literal_strings[104] = (RogueString*) RogueObject_retain( RogueString::create( "escapeContingent" ) ); 
+  Rogue_literal_strings[105] = (RogueString*) RogueObject_retain( RogueString::create( "escapeForEach" ) ); 
+  Rogue_literal_strings[106] = (RogueString*) RogueObject_retain( RogueString::create( "escapeIf" ) ); 
+  Rogue_literal_strings[107] = (RogueString*) RogueObject_retain( RogueString::create( "escapeLoop" ) ); 
+  Rogue_literal_strings[108] = (RogueString*) RogueObject_retain( RogueString::create( "escapeTry" ) ); 
+  Rogue_literal_strings[109] = (RogueString*) RogueObject_retain( RogueString::create( "escapeWhich" ) ); 
+  Rogue_literal_strings[110] = (RogueString*) RogueObject_retain( RogueString::create( "escapeWhile" ) ); 
+  Rogue_literal_strings[111] = (RogueString*) RogueObject_retain( RogueString::create( "forEach" ) ); 
+  Rogue_literal_strings[112] = (RogueString*) RogueObject_retain( RogueString::create( "function" ) ); 
+  Rogue_literal_strings[113] = (RogueString*) RogueObject_retain( RogueString::create( "if" ) ); 
+  Rogue_literal_strings[114] = (RogueString*) RogueObject_retain( RogueString::create( "in" ) ); 
+  Rogue_literal_strings[115] = (RogueString*) RogueObject_retain( RogueString::create( "is" ) ); 
+  Rogue_literal_strings[116] = (RogueString*) RogueObject_retain( RogueString::create( "isNot" ) ); 
+  Rogue_literal_strings[117] = (RogueString*) RogueObject_retain( RogueString::create( "local" ) ); 
+  Rogue_literal_strings[118] = (RogueString*) RogueObject_retain( RogueString::create( "loop" ) ); 
+  Rogue_literal_strings[119] = (RogueString*) RogueObject_retain( RogueString::create( "native" ) ); 
+  Rogue_literal_strings[120] = (RogueString*) RogueObject_retain( RogueString::create( "necessary" ) ); 
+  Rogue_literal_strings[121] = (RogueString*) RogueObject_retain( RogueString::create( "nextIteration" ) ); 
+  Rogue_literal_strings[122] = (RogueString*) RogueObject_retain( RogueString::create( "noAction" ) ); 
+  Rogue_literal_strings[123] = (RogueString*) RogueObject_retain( RogueString::create( "of" ) ); 
+  Rogue_literal_strings[124] = (RogueString*) RogueObject_retain( RogueString::create( "return" ) ); 
+  Rogue_literal_strings[125] = (RogueString*) RogueObject_retain( RogueString::create( "step" ) ); 
+  Rogue_literal_strings[126] = (RogueString*) RogueObject_retain( RogueString::create( "sufficient" ) ); 
+  Rogue_literal_strings[127] = (RogueString*) RogueObject_retain( RogueString::create( "throw" ) ); 
+  Rogue_literal_strings[128] = (RogueString*) RogueObject_retain( RogueString::create( "trace" ) ); 
+  Rogue_literal_strings[129] = (RogueString*) RogueObject_retain( RogueString::create( "try" ) ); 
+  Rogue_literal_strings[130] = (RogueString*) RogueObject_retain( RogueString::create( "which" ) ); 
+  Rogue_literal_strings[131] = (RogueString*) RogueObject_retain( RogueString::create( "while" ) ); 
+  Rogue_literal_strings[132] = (RogueString*) RogueObject_retain( RogueString::create( "yield" ) ); 
+  Rogue_literal_strings[133] = (RogueString*) RogueObject_retain( RogueString::create( "identifier" ) ); 
+  Rogue_literal_strings[134] = (RogueString*) RogueObject_retain( RogueString::create( "type identifier" ) ); 
+  Rogue_literal_strings[135] = (RogueString*) RogueObject_retain( RogueString::create( "and" ) ); 
+  Rogue_literal_strings[136] = (RogueString*) RogueObject_retain( RogueString::create( "as" ) ); 
+  Rogue_literal_strings[137] = (RogueString*) RogueObject_retain( RogueString::create( "false" ) ); 
+  Rogue_literal_strings[138] = (RogueString*) RogueObject_retain( RogueString::create( "instanceOf" ) ); 
+  Rogue_literal_strings[139] = (RogueString*) RogueObject_retain( RogueString::create( "meta" ) ); 
+  Rogue_literal_strings[140] = (RogueString*) RogueObject_retain( RogueString::create( "not" ) ); 
+  Rogue_literal_strings[141] = (RogueString*) RogueObject_retain( RogueString::create( "notInstanceOf" ) ); 
+  Rogue_literal_strings[142] = (RogueString*) RogueObject_retain( RogueString::create( "or" ) ); 
+  Rogue_literal_strings[143] = (RogueString*) RogueObject_retain( RogueString::create( "pi" ) ); 
+  Rogue_literal_strings[144] = (RogueString*) RogueObject_retain( RogueString::create( "prior" ) ); 
+  Rogue_literal_strings[145] = (RogueString*) RogueObject_retain( RogueString::create( "this" ) ); 
+  Rogue_literal_strings[146] = (RogueString*) RogueObject_retain( RogueString::create( "true" ) ); 
+  Rogue_literal_strings[147] = (RogueString*) RogueObject_retain( RogueString::create( "xor" ) ); 
+  Rogue_literal_strings[148] = (RogueString*) RogueObject_retain( RogueString::create( "&" ) ); 
+  Rogue_literal_strings[149] = (RogueString*) RogueObject_retain( RogueString::create( "&=" ) ); 
+  Rogue_literal_strings[150] = (RogueString*) RogueObject_retain( RogueString::create( "->" ) ); 
+  Rogue_literal_strings[151] = (RogueString*) RogueObject_retain( RogueString::create( "@" ) ); 
+  Rogue_literal_strings[152] = (RogueString*) RogueObject_retain( RogueString::create( "\\" ) ); 
+  Rogue_literal_strings[153] = (RogueString*) RogueObject_retain( RogueString::create( "^" ) ); 
+  Rogue_literal_strings[154] = (RogueString*) RogueObject_retain( RogueString::create( "^=" ) ); 
+  Rogue_literal_strings[155] = (RogueString*) RogueObject_retain( RogueString::create( ":" ) ); 
+  Rogue_literal_strings[156] = (RogueString*) RogueObject_retain( RogueString::create( "::" ) ); 
+  Rogue_literal_strings[157] = (RogueString*) RogueObject_retain( RogueString::create( "," ) ); 
+  Rogue_literal_strings[158] = (RogueString*) RogueObject_retain( RogueString::create( "<>" ) ); 
+  Rogue_literal_strings[159] = (RogueString*) RogueObject_retain( RogueString::create( ".=" ) ); 
+  Rogue_literal_strings[160] = (RogueString*) RogueObject_retain( RogueString::create( "..>" ) ); 
+  Rogue_literal_strings[161] = (RogueString*) RogueObject_retain( RogueString::create( "{}" ) ); 
+  Rogue_literal_strings[162] = (RogueString*) RogueObject_retain( RogueString::create( "[]" ) ); 
+  Rogue_literal_strings[163] = (RogueString*) RogueObject_retain( RogueString::create( "==" ) ); 
+  Rogue_literal_strings[164] = (RogueString*) RogueObject_retain( RogueString::create( "=" ) ); 
+  Rogue_literal_strings[165] = (RogueString*) RogueObject_retain( RogueString::create( "!" ) ); 
+  Rogue_literal_strings[166] = (RogueString*) RogueObject_retain( RogueString::create( "=>" ) ); 
+  Rogue_literal_strings[167] = (RogueString*) RogueObject_retain( RogueString::create( ">=" ) ); 
+  Rogue_literal_strings[168] = (RogueString*) RogueObject_retain( RogueString::create( ">" ) ); 
+  Rogue_literal_strings[169] = (RogueString*) RogueObject_retain( RogueString::create( "<=" ) ); 
+  Rogue_literal_strings[170] = (RogueString*) RogueObject_retain( RogueString::create( "<" ) ); 
+  Rogue_literal_strings[171] = (RogueString*) RogueObject_retain( RogueString::create( "-" ) ); 
+  Rogue_literal_strings[172] = (RogueString*) RogueObject_retain( RogueString::create( "-=" ) ); 
+  Rogue_literal_strings[173] = (RogueString*) RogueObject_retain( RogueString::create( "!=" ) ); 
+  Rogue_literal_strings[174] = (RogueString*) RogueObject_retain( RogueString::create( "{" ) ); 
+  Rogue_literal_strings[175] = (RogueString*) RogueObject_retain( RogueString::create( "[" ) ); 
+  Rogue_literal_strings[176] = (RogueString*) RogueObject_retain( RogueString::create( "(" ) ); 
+  Rogue_literal_strings[177] = (RogueString*) RogueObject_retain( RogueString::create( "<<" ) ); 
+  Rogue_literal_strings[178] = (RogueString*) RogueObject_retain( RogueString::create( "%" ) ); 
+  Rogue_literal_strings[179] = (RogueString*) RogueObject_retain( RogueString::create( "%=" ) ); 
+  Rogue_literal_strings[180] = (RogueString*) RogueObject_retain( RogueString::create( "+" ) ); 
+  Rogue_literal_strings[181] = (RogueString*) RogueObject_retain( RogueString::create( "+=" ) ); 
+  Rogue_literal_strings[182] = (RogueString*) RogueObject_retain( RogueString::create( "++" ) ); 
+  Rogue_literal_strings[183] = (RogueString*) RogueObject_retain( RogueString::create( "?" ) ); 
+  Rogue_literal_strings[184] = (RogueString*) RogueObject_retain( RogueString::create( ";" ) ); 
+  Rogue_literal_strings[185] = (RogueString*) RogueObject_retain( RogueString::create( ":<<:" ) ); 
+  Rogue_literal_strings[186] = (RogueString*) RogueObject_retain( RogueString::create( ":>>:" ) ); 
+  Rogue_literal_strings[187] = (RogueString*) RogueObject_retain( RogueString::create( ":>>>:" ) ); 
+  Rogue_literal_strings[188] = (RogueString*) RogueObject_retain( RogueString::create( "/=" ) ); 
+  Rogue_literal_strings[189] = (RogueString*) RogueObject_retain( RogueString::create( "~" ) ); 
+  Rogue_literal_strings[190] = (RogueString*) RogueObject_retain( RogueString::create( "~=" ) ); 
+  Rogue_literal_strings[191] = (RogueString*) RogueObject_retain( RogueString::create( "*" ) ); 
+  Rogue_literal_strings[192] = (RogueString*) RogueObject_retain( RogueString::create( "*=" ) ); 
+  Rogue_literal_strings[193] = (RogueString*) RogueObject_retain( RogueString::create( ".." ) ); 
+  Rogue_literal_strings[194] = (RogueString*) RogueObject_retain( RogueString::create( "..<" ) ); 
+  Rogue_literal_strings[195] = (RogueString*) RogueObject_retain( RogueString::create( "|" ) ); 
+  Rogue_literal_strings[196] = (RogueString*) RogueObject_retain( RogueString::create( "|=" ) ); 
+  Rogue_literal_strings[197] = (RogueString*) RogueObject_retain( RogueString::create( "||" ) ); 
+  Rogue_literal_strings[198] = (RogueString*) RogueObject_retain( RogueString::create( "Identifier expected." ) ); 
+  Rogue_literal_strings[199] = (RogueString*) RogueObject_retain( RogueString::create( "endNativeCode" ) ); 
+  Rogue_literal_strings[200] = (RogueString*) RogueObject_retain( RogueString::create( "'endNativeCode' expected before EOF." ) ); 
+  Rogue_literal_strings[201] = (RogueString*) RogueObject_retain( RogueString::create( "endNativeHeader" ) ); 
+  Rogue_literal_strings[202] = (RogueString*) RogueObject_retain( RogueString::create( "'endNativeHeader' expected before EOF." ) ); 
+  Rogue_literal_strings[203] = (RogueString*) RogueObject_retain( RogueString::create( "Character expected." ) ); 
+  Rogue_literal_strings[204] = (RogueString*) RogueObject_retain( RogueString::create( "Character expected; found end of line." ) ); 
+  Rogue_literal_strings[205] = (RogueString*) RogueObject_retain( RogueString::create( "Escaped character expected; found end of input." ) ); 
+  Rogue_literal_strings[206] = (RogueString*) RogueObject_retain( RogueString::create( "-9223372036854775808" ) ); 
+  Rogue_literal_strings[207] = (RogueString*) RogueObject_retain( RogueString::create( "-digit hex value expected; found end of file." ) ); 
+  Rogue_literal_strings[208] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid hex digit " ) ); 
+  Rogue_literal_strings[209] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\" ) ); 
+  Rogue_literal_strings[210] = (RogueString*) RogueObject_retain( RogueString::create( "uXXXX \\" ) ); 
+  Rogue_literal_strings[211] = (RogueString*) RogueObject_retain( RogueString::create( "xXX." ) ); 
+  Rogue_literal_strings[212] = (RogueString*) RogueObject_retain( RogueString::create( "End of file reached while looking for end of string." ) ); 
+  Rogue_literal_strings[213] = (RogueString*) RogueObject_retain( RogueString::create( "End of input reached while looking for end of string." ) ); 
+  Rogue_literal_strings[214] = (RogueString*) RogueObject_retain( RogueString::create( "Digit out of range for base " ) ); 
+  Rogue_literal_strings[215] = (RogueString*) RogueObject_retain( RogueString::create( "One or more digits expected." ) ); 
+  Rogue_literal_strings[216] = (RogueString*) RogueObject_retain( RogueString::create( "End of File reached while looking for end of verbatim string." ) ); 
+  Rogue_literal_strings[217] = (RogueString*) RogueObject_retain( RogueString::create( "define" ) ); 
+  Rogue_literal_strings[218] = (RogueString*) RogueObject_retain( RogueString::create( "include" ) ); 
+  Rogue_literal_strings[219] = (RogueString*) RogueObject_retain( RogueString::create( "includeNativeCode" ) ); 
+  Rogue_literal_strings[220] = (RogueString*) RogueObject_retain( RogueString::create( "includeNativeHeader" ) ); 
+  Rogue_literal_strings[221] = (RogueString*) RogueObject_retain( RogueString::create( "requisite" ) ); 
+  Rogue_literal_strings[222] = (RogueString*) RogueObject_retain( RogueString::create( "$" ) ); 
+  Rogue_literal_strings[223] = (RogueString*) RogueObject_retain( RogueString::create( "Use 'and' instead of '&&'." ) ); 
+  Rogue_literal_strings[224] = (RogueString*) RogueObject_retain( RogueString::create( "End of line expected after '...'." ) ); 
+  Rogue_literal_strings[225] = (RogueString*) RogueObject_retain( RogueString::create( "<<:" ) ); 
+  Rogue_literal_strings[226] = (RogueString*) RogueObject_retain( RogueString::create( ">>:" ) ); 
+  Rogue_literal_strings[227] = (RogueString*) RogueObject_retain( RogueString::create( ">>>:" ) ); 
+  Rogue_literal_strings[228] = (RogueString*) RogueObject_retain( RogueString::create( "Use 'or' instead of '||'." ) ); 
+  Rogue_literal_strings[229] = (RogueString*) RogueObject_retain( RogueString::create( "Unexpected input '" ) ); 
+  Rogue_literal_strings[230] = (RogueString*) RogueObject_retain( RogueString::create( "EOL" ) ); 
+  Rogue_literal_strings[231] = (RogueString*) RogueObject_retain( RogueString::create( "(Unicode " ) ); 
+  Rogue_literal_strings[232] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error - unexpected input " ) ); 
+  Rogue_literal_strings[233] = (RogueString*) RogueObject_retain( RogueString::create( " expected, found " ) ); 
+  Rogue_literal_strings[234] = (RogueString*) RogueObject_retain( RogueString::create( "Unable to determine type for metadata access." ) ); 
+  Rogue_literal_strings[235] = (RogueString*) RogueObject_retain( RogueString::create( "default_value" ) ); 
+  Rogue_literal_strings[236] = (RogueString*) RogueObject_retain( RogueString::create( "'default_value' expected after 'meta.'." ) ); 
+  Rogue_literal_strings[237] = (RogueString*) RogueObject_retain( RogueString::create( "Closing '>>' expected before end of line." ) ); 
+  Rogue_literal_strings[238] = (RogueString*) RogueObject_retain( RogueString::create( "Callback" ) ); 
+  Rogue_literal_strings[239] = (RogueString*) RogueObject_retain( RogueString::create( "call" ) ); 
+  Rogue_literal_strings[240] = (RogueString*) RogueObject_retain( RogueString::create( "param" ) ); 
+  Rogue_literal_strings[241] = (RogueString*) RogueObject_retain( RogueString::create( "Value expected, found empty parentheses ()." ) ); 
+  Rogue_literal_strings[242] = (RogueString*) RogueObject_retain( RogueString::create( "PropertyList" ) ); 
+  Rogue_literal_strings[243] = (RogueString*) RogueObject_retain( RogueString::create( "_auto_" ) ); 
+  Rogue_literal_strings[244] = (RogueString*) RogueObject_retain( RogueString::create( "Single identifier expected for control variable name." ) ); 
+  Rogue_literal_strings[245] = (RogueString*) RogueObject_retain( RogueString::create( "at" ) ); 
+  Rogue_literal_strings[246] = (RogueString*) RogueObject_retain( RogueString::create( "Missing element name before 'at'." ) ); 
+  Rogue_literal_strings[247] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot use 'at' with a range." ) ); 
+  Rogue_literal_strings[248] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot use 'at' with forEach-of." ) ); 
+  Rogue_literal_strings[249] = (RogueString*) RogueObject_retain( RogueString::create( "Use forEach-in with a literal range instead of forEach-of." ) ); 
+  Rogue_literal_strings[250] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error in forEach - keyword 'in' or 'of' expected." ) ); 
+  Rogue_literal_strings[251] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid syntax in forEach." ) ); 
+  Rogue_literal_strings[252] = (RogueString*) RogueObject_retain( RogueString::create( "Parser::parse_for_each():1384 " ) ); 
+  Rogue_literal_strings[253] = (RogueString*) RogueObject_retain( RogueString::create( "[INTERNAL ERROR]" ) ); 
+  Rogue_literal_strings[254] = (RogueString*) RogueObject_retain( RogueString::create( "()" ) ); 
+  Rogue_literal_strings[255] = (RogueString*) RogueObject_retain( RogueString::create( " " ) ); 
+  Rogue_literal_strings[256] = (RogueString*) RogueObject_retain( RogueString::create( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." ) ); 
+  Rogue_literal_strings[257] = (RogueString*) RogueObject_retain( RogueString::create( "insert" ) ); 
+  Rogue_literal_strings[258] = (RogueString*) RogueObject_retain( RogueString::create( "All methods implicitly define the label <<insert>> at the beginning of the method.  No duplicates are allowed." ) ); 
+  Rogue_literal_strings[259] = (RogueString*) RogueObject_retain( RogueString::create( "append" ) ); 
+  Rogue_literal_strings[260] = (RogueString*) RogueObject_retain( RogueString::create( "All methods implicitly define the label <<append>> at the end of the method.  No duplicates are allowed." ) ); 
+  Rogue_literal_strings[261] = (RogueString*) RogueObject_retain( RogueString::create( "Literal string expected." ) ); 
+  Rogue_literal_strings[262] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error: unexpected '" ) ); 
+  Rogue_literal_strings[263] = (RogueString*) RogueObject_retain( RogueString::create( "aspect" ) ); 
+  Rogue_literal_strings[264] = (RogueString*) RogueObject_retain( RogueString::create( "A class cannot be both '" ) ); 
+  Rogue_literal_strings[265] = (RogueString*) RogueObject_retain( RogueString::create( "' and '" ) ); 
+  Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString::create( "primitive" ) ); 
+  Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString::create( "compound" ) ); 
+  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString::create( "functional" ) ); 
+  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString::create( "immutable" ) ); 
+  Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString::create( "singleton" ) ); 
+  Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString::create( "task" ) ); 
+  Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid attribute: " ) ); 
+  Rogue_literal_strings[273] = (RogueString*) RogueObject_retain( RogueString::create( "Parser::parse_template_tokens():221 end_type" ) ); 
+  Rogue_literal_strings[274] = (RogueString*) RogueObject_retain( RogueString::create( " expected, found end of file." ) ); 
+  Rogue_literal_strings[275] = (RogueString*) RogueObject_retain( RogueString::create( "Illegal placeholder type in augment.  Write '" ) ); 
+  Rogue_literal_strings[276] = (RogueString*) RogueObject_retain( RogueString::create( "' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as " ) ); 
+  Rogue_literal_strings[277] = (RogueString*) RogueObject_retain( RogueString::create( "<<String>> to restrict the augment to that type." ) ); 
+  Rogue_literal_strings[278] = (RogueString*) RogueObject_retain( RogueString::create( "on_launch" ) ); 
+  Rogue_literal_strings[279] = (RogueString*) RogueObject_retain( RogueString::create( "Syntax error - unexpected " ) ); 
+  Rogue_literal_strings[280] = (RogueString*) RogueObject_retain( RogueString::create( "Standard" ) ); 
+  Rogue_literal_strings[281] = (RogueString*) RogueObject_retain( RogueString::create( "Optional" ) ); 
+  Rogue_literal_strings[282] = (RogueString*) RogueObject_retain( RogueString::create( "List" ) ); 
+  Rogue_literal_strings[283] = (RogueString*) RogueObject_retain( RogueString::create( "$DataType" ) ); 
+  Rogue_literal_strings[284] = (RogueString*) RogueObject_retain( RogueString::create( "create" ) ); 
+  Rogue_literal_strings[285] = (RogueString*) RogueObject_retain( RogueString::create( "init" ) ); 
+  Rogue_literal_strings[286] = (RogueString*) RogueObject_retain( RogueString::create( "Definition expected." ) ); 
+  Rogue_literal_strings[287] = (RogueString*) RogueObject_retain( RogueString::create( "[INTERNAL] " ) ); 
+  Rogue_literal_strings[288] = (RogueString*) RogueObject_retain( RogueString::create( "Cmd" ) ); 
+  Rogue_literal_strings[289] = (RogueString*) RogueObject_retain( RogueString::create( "::clone() is not implemented." ) ); 
+  Rogue_literal_strings[290] = (RogueString*) RogueObject_retain( RogueString::create( "property" ) ); 
+  Rogue_literal_strings[291] = (RogueString*) RogueObject_retain( RogueString::create( "global" ) ); 
+  Rogue_literal_strings[292] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot determine " ) ); 
+  Rogue_literal_strings[293] = (RogueString*) RogueObject_retain( RogueString::create( " type from initial value; append an explicit type declaration such as \": Object\" " ) ); 
+  Rogue_literal_strings[294] = (RogueString*) RogueObject_retain( RogueString::create( "An initial value or " ) ); 
+  Rogue_literal_strings[295] = (RogueString*) RogueObject_retain( RogueString::create( " type (for example, \": Object\") must be specified." ) ); 
+  Rogue_literal_strings[296] = (RogueString*) RogueObject_retain( RogueString::create( "operator" ) ); 
+  Rogue_literal_strings[297] = (RogueString*) RogueObject_retain( RogueString::create( "to" ) ); 
+  Rogue_literal_strings[298] = (RogueString*) RogueObject_retain( RogueString::create( "to_" ) ); 
+  Rogue_literal_strings[299] = (RogueString*) RogueObject_retain( RogueString::create( "Native expression types cannot be specified in macro methods - remove the \"->" ) ); 
+  Rogue_literal_strings[300] = (RogueString*) RogueObject_retain( RogueString::create( "Reference to " ) ); 
+  Rogue_literal_strings[301] = (RogueString*) RogueObject_retain( RogueString::create( " is missing required type parameters (" ) ); 
+  Rogue_literal_strings[302] = (RogueString*) RogueObject_retain( RogueString::create( "<<...>>)." ) ); 
+  Rogue_literal_strings[303] = (RogueString*) RogueObject_retain( RogueString::create( "Too many type specializers given." ) ); 
+  Rogue_literal_strings[304] = (RogueString*) RogueObject_retain( RogueString::create( "Insufficient number of type parameters in " ) ); 
+  Rogue_literal_strings[305] = (RogueString*) RogueObject_retain( RogueString::create( "; " ) ); 
+  Rogue_literal_strings[306] = (RogueString*) RogueObject_retain( RogueString::create( " given, " ) ); 
+  Rogue_literal_strings[307] = (RogueString*) RogueObject_retain( RogueString::create( " expected." ) ); 
+  Rogue_literal_strings[308] = (RogueString*) RogueObject_retain( RogueString::create( "Type parameters given for non-template type." ) ); 
+  Rogue_literal_strings[309] = (RogueString*) RogueObject_retain( RogueString::create( "Reference to undefined type '" ) ); 
+  Rogue_literal_strings[310] = (RogueString*) RogueObject_retain( RogueString::create( "Aspects can only extend other aspects." ) ); 
+  Rogue_literal_strings[311] = (RogueString*) RogueObject_retain( RogueString::create( "Cyclic inheritance attempted - " ) ); 
+  Rogue_literal_strings[312] = (RogueString*) RogueObject_retain( RogueString::create( " cannot extend " ) ); 
+  Rogue_literal_strings[313] = (RogueString*) RogueObject_retain( RogueString::create( " because " ) ); 
+  Rogue_literal_strings[314] = (RogueString*) RogueObject_retain( RogueString::create( " already extends " ) ); 
+  Rogue_literal_strings[315] = (RogueString*) RogueObject_retain( RogueString::create( "Class " ) ); 
+  Rogue_literal_strings[316] = (RogueString*) RogueObject_retain( RogueString::create( " can only have one base class (" ) ); 
+  Rogue_literal_strings[317] = (RogueString*) RogueObject_retain( RogueString::create( " and " ) ); 
+  Rogue_literal_strings[318] = (RogueString*) RogueObject_retain( RogueString::create( " are both specified as base classes)." ) ); 
+  Rogue_literal_strings[319] = (RogueString*) RogueObject_retain( RogueString::create( "A property named \"" ) ); 
+  Rogue_literal_strings[320] = (RogueString*) RogueObject_retain( RogueString::create( "\" already exists." ) ); 
+  Rogue_literal_strings[321] = (RogueString*) RogueObject_retain( RogueString::create( "Conflicting initial values are given for property \"" ) ); 
+  Rogue_literal_strings[322] = (RogueString*) RogueObject_retain( RogueString::create( "\" in unrelated types " ) ); 
+  Rogue_literal_strings[323] = (RogueString*) RogueObject_retain( RogueString::create( "Conflicting types given for property \"" ) ); 
+  Rogue_literal_strings[324] = (RogueString*) RogueObject_retain( RogueString::create( "\" - " ) ); 
+  Rogue_literal_strings[325] = (RogueString*) RogueObject_retain( RogueString::create( " in " ) ); 
+  Rogue_literal_strings[326] = (RogueString*) RogueObject_retain( RogueString::create( "type_name" ) ); 
+  Rogue_literal_strings[327] = (RogueString*) RogueObject_retain( RogueString::create( "Compounds cannot have initializers.  Use create(...) routines instead." ) ); 
+  Rogue_literal_strings[328] = (RogueString*) RogueObject_retain( RogueString::create( "TaskWithResult<<" ) ); 
+  Rogue_literal_strings[329] = (RogueString*) RogueObject_retain( RogueString::create( "Task" ) ); 
+  Rogue_literal_strings[330] = (RogueString*) RogueObject_retain( RogueString::create( "No type declared for parameter \"" ) ); 
+  Rogue_literal_strings[331] = (RogueString*) RogueObject_retain( RogueString::create( "A routine with the signature " ) ); 
+  Rogue_literal_strings[332] = (RogueString*) RogueObject_retain( RogueString::create( " is already defined." ) ); 
+  Rogue_literal_strings[333] = (RogueString*) RogueObject_retain( RogueString::create( "A method with the signature " ) ); 
+  Rogue_literal_strings[334] = (RogueString*) RogueObject_retain( RogueString::create( "No corresponding label <<" ) ); 
+  Rogue_literal_strings[335] = (RogueString*) RogueObject_retain( RogueString::create( ">> in augmented code." ) ); 
+  Rogue_literal_strings[336] = (RogueString*) RogueObject_retain( RogueString::create( "Type " ) ); 
+  Rogue_literal_strings[337] = (RogueString*) RogueObject_retain( RogueString::create( " already defines routine " ) ); 
+  Rogue_literal_strings[338] = (RogueString*) RogueObject_retain( RogueString::create( " already defines method " ) ); 
+  Rogue_literal_strings[339] = (RogueString*) RogueObject_retain( RogueString::create( "In " ) ); 
+  Rogue_literal_strings[340] = (RogueString*) RogueObject_retain( RogueString::create( " the overridden return type (" ) ); 
+  Rogue_literal_strings[341] = (RogueString*) RogueObject_retain( RogueString::create( ") is not compatible with the prior definition return type (" ) ); 
+  Rogue_literal_strings[342] = (RogueString*) RogueObject_retain( RogueString::create( ")." ) ); 
+  Rogue_literal_strings[343] = (RogueString*) RogueObject_retain( RogueString::create( "init_class()" ) ); 
+  Rogue_literal_strings[344] = (RogueString*) RogueObject_retain( RogueString::create( "init_class" ) ); 
+  Rogue_literal_strings[345] = (RogueString*) RogueObject_retain( RogueString::create( "init_object()" ) ); 
+  Rogue_literal_strings[346] = (RogueString*) RogueObject_retain( RogueString::create( "init_object" ) ); 
+  Rogue_literal_strings[347] = (RogueString*) RogueObject_retain( RogueString::create( "to_String()" ) ); 
+  Rogue_literal_strings[348] = (RogueString*) RogueObject_retain( RogueString::create( "to_String" ) ); 
+  Rogue_literal_strings[349] = (RogueString*) RogueObject_retain( RogueString::create( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>." ) ); 
+  Rogue_literal_strings[350] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<" ) ); 
+  Rogue_literal_strings[351] = (RogueString*) RogueObject_retain( RogueString::create( "__" ) ); 
+  Rogue_literal_strings[352] = (RogueString*) RogueObject_retain( RogueString::create( "__task" ) ); 
+  Rogue_literal_strings[353] = (RogueString*) RogueObject_retain( RogueString::create( "context" ) ); 
+  Rogue_literal_strings[354] = (RogueString*) RogueObject_retain( RogueString::create( "_" ) ); 
+  Rogue_literal_strings[355] = (RogueString*) RogueObject_retain( RogueString::create( "update" ) ); 
+  Rogue_literal_strings[356] = (RogueString*) RogueObject_retain( RogueString::create( "execute" ) ); 
+  Rogue_literal_strings[357] = (RogueString*) RogueObject_retain( RogueString::create( "ip" ) ); 
+  Rogue_literal_strings[358] = (RogueString*) RogueObject_retain( RogueString::create( "__task_resolver" ) ); 
+  Rogue_literal_strings[359] = (RogueString*) RogueObject_retain( RogueString::create( "result" ) ); 
+  Rogue_literal_strings[360] = (RogueString*) RogueObject_retain( RogueString::create( "A local variable named \"" ) ); 
+  Rogue_literal_strings[361] = (RogueString*) RogueObject_retain( RogueString::create( "::resolve() is not defined." ) ); 
+  Rogue_literal_strings[362] = (RogueString*) RogueObject_retain( RogueString::create( "locals left on scope stack" ) ); 
+  Rogue_literal_strings[363] = (RogueString*) RogueObject_retain( RogueString::create( "control stucture left on scope stack" ) ); 
+  Rogue_literal_strings[364] = (RogueString*) RogueObject_retain( RogueString::create( " is not declared as returning a value." ) ); 
+  Rogue_literal_strings[365] = (RogueString*) RogueObject_retain( RogueString::create( "::type() is not defined." ) ); 
+  Rogue_literal_strings[366] = (RogueString*) RogueObject_retain( RogueString::create( " cannot be cast to required type " ) ); 
+  Rogue_literal_strings[367] = (RogueString*) RogueObject_retain( RogueString::create( "No such method or routine " ) ); 
+  Rogue_literal_strings[368] = (RogueString*) RogueObject_retain( RogueString::create( " in type " ) ); 
+  Rogue_literal_strings[369] = (RogueString*) RogueObject_retain( RogueString::create( "init()" ) ); 
+  Rogue_literal_strings[370] = (RogueString*) RogueObject_retain( RogueString::create( "::trace_used_code() is not defined." ) ); 
+  Rogue_literal_strings[371] = (RogueString*) RogueObject_retain( RogueString::create( "/RogueProgram" ) ); 
+  Rogue_literal_strings[372] = (RogueString*) RogueObject_retain( RogueString::create( ".cpp" ) ); 
+  Rogue_literal_strings[373] = (RogueString*) RogueObject_retain( RogueString::create( "type" ) ); 
+  Rogue_literal_strings[374] = (RogueString*) RogueObject_retain( RogueString::create( "_of_" ) ); 
+  Rogue_literal_strings[375] = (RogueString*) RogueObject_retain( RogueString::create( "NOT" ) ); 
+  Rogue_literal_strings[376] = (RogueString*) RogueObject_retain( RogueString::create( "MOD" ) ); 
+  Rogue_literal_strings[377] = (RogueString*) RogueObject_retain( RogueString::create( "AND" ) ); 
+  Rogue_literal_strings[378] = (RogueString*) RogueObject_retain( RogueString::create( "TIMES" ) ); 
+  Rogue_literal_strings[379] = (RogueString*) RogueObject_retain( RogueString::create( "PLUS" ) ); 
+  Rogue_literal_strings[380] = (RogueString*) RogueObject_retain( RogueString::create( "MINUS" ) ); 
+  Rogue_literal_strings[381] = (RogueString*) RogueObject_retain( RogueString::create( "DOT" ) ); 
+  Rogue_literal_strings[382] = (RogueString*) RogueObject_retain( RogueString::create( "SLASH" ) ); 
+  Rogue_literal_strings[383] = (RogueString*) RogueObject_retain( RogueString::create( "LESSTHAN" ) ); 
+  Rogue_literal_strings[384] = (RogueString*) RogueObject_retain( RogueString::create( "EQUALS" ) ); 
+  Rogue_literal_strings[385] = (RogueString*) RogueObject_retain( RogueString::create( "GREATERTHAN" ) ); 
+  Rogue_literal_strings[386] = (RogueString*) RogueObject_retain( RogueString::create( "POWER" ) ); 
+  Rogue_literal_strings[387] = (RogueString*) RogueObject_retain( RogueString::create( "OR" ) ); 
+  Rogue_literal_strings[388] = (RogueString*) RogueObject_retain( RogueString::create( "XOR" ) ); 
+  Rogue_literal_strings[389] = (RogueString*) RogueObject_retain( RogueString::create( "RogueArray" ) ); 
+  Rogue_literal_strings[390] = (RogueString*) RogueObject_retain( RogueString::create( "Array" ) ); 
+  Rogue_literal_strings[391] = (RogueString*) RogueObject_retain( RogueString::create( "RogueClass" ) ); 
+  Rogue_literal_strings[392] = (RogueString*) RogueObject_retain( RogueString::create( "RogueType" ) ); 
+  Rogue_literal_strings[393] = (RogueString*) RogueObject_retain( RogueString::create( "Writing " ) ); 
+  Rogue_literal_strings[394] = (RogueString*) RogueObject_retain( RogueString::create( ".h..." ) ); 
+  Rogue_literal_strings[395] = (RogueString*) RogueObject_retain( RogueString::create( ".h" ) ); 
+  Rogue_literal_strings[396] = (RogueString*) RogueObject_retain( RogueString::create( "#include <cmath>" ) ); 
+  Rogue_literal_strings[397] = (RogueString*) RogueObject_retain( RogueString::create( "struct " ) ); 
+  Rogue_literal_strings[398] = (RogueString*) RogueObject_retain( RogueString::create( " : " ) ); 
+  Rogue_literal_strings[399] = (RogueString*) RogueObject_retain( RogueString::create( "void" ) ); 
+  Rogue_literal_strings[400] = (RogueString*) RogueObject_retain( RogueString::create( " : RogueObject" ) ); 
+  Rogue_literal_strings[401] = (RogueString*) RogueObject_retain( RogueString::create( "// GLOBALS" ) ); 
+  Rogue_literal_strings[402] = (RogueString*) RogueObject_retain( RogueString::create( "static " ) ); 
+  Rogue_literal_strings[403] = (RogueString*) RogueObject_retain( RogueString::create( "// PROPERTIES" ) ); 
+  Rogue_literal_strings[404] = (RogueString*) RogueObject_retain( RogueString::create( "() : " ) ); 
+  Rogue_literal_strings[405] = (RogueString*) RogueObject_retain( RogueString::create( ", " ) ); 
+  Rogue_literal_strings[406] = (RogueString*) RogueObject_retain( RogueString::create( "0" ) ); 
+  Rogue_literal_strings[407] = (RogueString*) RogueObject_retain( RogueString::create( " {}" ) ); 
+  Rogue_literal_strings[408] = (RogueString*) RogueObject_retain( RogueString::create( "( " ) ); 
+  Rogue_literal_strings[409] = (RogueString*) RogueObject_retain( RogueString::create( " value ) : value(value), exists(true) {}" ) ); 
+  Rogue_literal_strings[410] = (RogueString*) RogueObject_retain( RogueString::create( " ) : " ) ); 
+  Rogue_literal_strings[411] = (RogueString*) RogueObject_retain( RogueString::create( "bool operator==( const " ) ); 
+  Rogue_literal_strings[412] = (RogueString*) RogueObject_retain( RogueString::create( " &other ) const" ) ); 
+  Rogue_literal_strings[413] = (RogueString*) RogueObject_retain( RogueString::create( "if (exists)\n{\n  if (other.exists) return value == other.value;\n  else              return false;\n}\nelse\n{\n  if (other.exists) return false;\n  else              return true;\n}" ) ); 
+  Rogue_literal_strings[414] = (RogueString*) RogueObject_retain( RogueString::create( "  if (" ) ); 
+  Rogue_literal_strings[415] = (RogueString*) RogueObject_retain( RogueString::create( " != other." ) ); 
+  Rogue_literal_strings[416] = (RogueString*) RogueObject_retain( RogueString::create( ") return false;" ) ); 
+  Rogue_literal_strings[417] = (RogueString*) RogueObject_retain( RogueString::create( "  return true;" ) ); 
+  Rogue_literal_strings[418] = (RogueString*) RogueObject_retain( RogueString::create( "bool operator!=( const " ) ); 
+  Rogue_literal_strings[419] = (RogueString*) RogueObject_retain( RogueString::create( "{\n  return !(*this == other);\n}\n" ) ); 
+  Rogue_literal_strings[420] = (RogueString*) RogueObject_retain( RogueString::create( "bool check( " ) ); 
+  Rogue_literal_strings[421] = (RogueString*) RogueObject_retain( RogueString::create( "* checked )" ) ); 
+  Rogue_literal_strings[422] = (RogueString*) RogueObject_retain( RogueString::create( "{\n  if ( !exists ) return false;\n  *checked = value;\n  return true;\n}\n" ) ); 
+  Rogue_literal_strings[423] = (RogueString*) RogueObject_retain( RogueString::create( "};" ) ); 
+  Rogue_literal_strings[424] = (RogueString*) RogueObject_retain( RogueString::create( "extern " ) ); 
+  Rogue_literal_strings[425] = (RogueString*) RogueObject_retain( RogueString::create( " Rogue" ) ); 
+  Rogue_literal_strings[426] = (RogueString*) RogueObject_retain( RogueString::create( "struct RogueProgram : RogueProgramCore" ) ); 
+  Rogue_literal_strings[427] = (RogueString*) RogueObject_retain( RogueString::create( "  RogueProgram();" ) ); 
+  Rogue_literal_strings[428] = (RogueString*) RogueObject_retain( RogueString::create( "  ~RogueProgram();" ) ); 
+  Rogue_literal_strings[429] = (RogueString*) RogueObject_retain( RogueString::create( "  void configure();" ) ); 
+  Rogue_literal_strings[430] = (RogueString*) RogueObject_retain( RogueString::create( "  void launch( int argc, char* argv[] );" ) ); 
+  Rogue_literal_strings[431] = (RogueString*) RogueObject_retain( RogueString::create( "  //void finish_tasks();" ) ); 
+  Rogue_literal_strings[432] = (RogueString*) RogueObject_retain( RogueString::create( "extern RogueType* RogueType" ) ); 
+  Rogue_literal_strings[433] = (RogueString*) RogueObject_retain( RogueString::create( " THIS" ) ); 
+  Rogue_literal_strings[434] = (RogueString*) RogueObject_retain( RogueString::create( "extern RogueProgram Rogue_program;" ) ); 
+  Rogue_literal_strings[435] = (RogueString*) RogueObject_retain( RogueString::create( "void Rogue_trace();" ) ); 
+  Rogue_literal_strings[436] = (RogueString*) RogueObject_retain( RogueString::create( ".cpp..." ) ); 
+  Rogue_literal_strings[437] = (RogueString*) RogueObject_retain( RogueString::create( "#include <stdio.h>" ) ); 
+  Rogue_literal_strings[438] = (RogueString*) RogueObject_retain( RogueString::create( "#include \"" ) ); 
+  Rogue_literal_strings[439] = (RogueString*) RogueObject_retain( RogueString::create( ".h\"" ) ); 
+  Rogue_literal_strings[440] = (RogueString*) RogueObject_retain( RogueString::create( "(*)(" ) ); 
+  Rogue_literal_strings[441] = (RogueString*) RogueObject_retain( RogueString::create( "ROGUEM" ) ); 
+  Rogue_literal_strings[442] = (RogueString*) RogueObject_retain( RogueString::create( "typedef " ) ); 
+  Rogue_literal_strings[443] = (RogueString*) RogueObject_retain( RogueString::create( "(*)" ) ); 
+  Rogue_literal_strings[444] = (RogueString*) RogueObject_retain( RogueString::create( "(*" ) ); 
+  Rogue_literal_strings[445] = (RogueString*) RogueObject_retain( RogueString::create( " call_" ) ); 
+  Rogue_literal_strings[446] = (RogueString*) RogueObject_retain( RogueString::create( "( int i, " ) ); 
+  Rogue_literal_strings[447] = (RogueString*) RogueObject_retain( RogueString::create( " p" ) ); 
+  Rogue_literal_strings[448] = (RogueString*) RogueObject_retain( RogueString::create( " )" ) ); 
+  Rogue_literal_strings[449] = (RogueString*) RogueObject_retain( RogueString::create( "  " ) ); 
+  Rogue_literal_strings[450] = (RogueString*) RogueObject_retain( RogueString::create( "return " ) ); 
+  Rogue_literal_strings[451] = (RogueString*) RogueObject_retain( RogueString::create( "((" ) ); 
+  Rogue_literal_strings[452] = (RogueString*) RogueObject_retain( RogueString::create( ")(THIS->type->methods[i]))( THIS" ) ); 
+  Rogue_literal_strings[453] = (RogueString*) RogueObject_retain( RogueString::create( ", p" ) ); 
+  Rogue_literal_strings[454] = (RogueString*) RogueObject_retain( RogueString::create( " );" ) ); 
+  Rogue_literal_strings[455] = (RogueString*) RogueObject_retain( RogueString::create( " = " ) ); 
+  Rogue_literal_strings[456] = (RogueString*) RogueObject_retain( RogueString::create( "void Rogue" ) ); 
+  Rogue_literal_strings[457] = (RogueString*) RogueObject_retain( RogueString::create( "_trace( void* obj );" ) ); 
+  Rogue_literal_strings[458] = (RogueString*) RogueObject_retain( RogueString::create( "_trace( void* obj )" ) ); 
+  Rogue_literal_strings[459] = (RogueString*) RogueObject_retain( RogueString::create( "void* link;" ) ); 
+  Rogue_literal_strings[460] = (RogueString*) RogueObject_retain( RogueString::create( "if ((link=((" ) ); 
+  Rogue_literal_strings[461] = (RogueString*) RogueObject_retain( RogueString::create( "*)obj)->" ) ); 
+  Rogue_literal_strings[462] = (RogueString*) RogueObject_retain( RogueString::create( ")) ((RogueObject*)link)->type->trace_fn( link );" ) ); 
+  Rogue_literal_strings[463] = (RogueString*) RogueObject_retain( RogueString::create( ")) Rogue" ) ); 
+  Rogue_literal_strings[464] = (RogueString*) RogueObject_retain( RogueString::create( "_trace( link );" ) ); 
+  Rogue_literal_strings[465] = (RogueString*) RogueObject_retain( RogueString::create( "RogueArray* array = (RogueArray*) obj;\nint count;" ) ); 
+  Rogue_literal_strings[466] = (RogueString*) RogueObject_retain( RogueString::create( "* cur;" ) ); 
+  Rogue_literal_strings[467] = (RogueString*) RogueObject_retain( RogueString::create( "\nif ( !array || array->object_size < 0 ) return;\narray->object_size = ~array->object_size;\n\ncount = array->count;" ) ); 
+  Rogue_literal_strings[468] = (RogueString*) RogueObject_retain( RogueString::create( "cur = ((" ) ); 
+  Rogue_literal_strings[469] = (RogueString*) RogueObject_retain( RogueString::create( "*)(array->bytes)) - 1;" ) ); 
+  Rogue_literal_strings[470] = (RogueString*) RogueObject_retain( RogueString::create( "while (--count >= 0)" ) ); 
+  Rogue_literal_strings[471] = (RogueString*) RogueObject_retain( RogueString::create( "  Rogue" ) ); 
+  Rogue_literal_strings[472] = (RogueString*) RogueObject_retain( RogueString::create( "_trace( ++cur );" ) ); 
+  Rogue_literal_strings[473] = (RogueString*) RogueObject_retain( RogueString::create( "void* link;\n\nif ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;\n((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;\n" ) ); 
+  Rogue_literal_strings[474] = (RogueString*) RogueObject_retain( RogueString::create( "RogueInitFn Rogue_init_object_fn_table[] =" ) ); 
+  Rogue_literal_strings[475] = (RogueString*) RogueObject_retain( RogueString::create( "(RogueInitFn) " ) ); 
+  Rogue_literal_strings[476] = (RogueString*) RogueObject_retain( RogueString::create( "RogueInitFn Rogue_init_fn_table[] =" ) ); 
+  Rogue_literal_strings[477] = (RogueString*) RogueObject_retain( RogueString::create( "RogueTraceFn Rogue_trace_fn_table[] =" ) ); 
+  Rogue_literal_strings[478] = (RogueString*) RogueObject_retain( RogueString::create( "RogueArray_trace" ) ); 
+  Rogue_literal_strings[479] = (RogueString*) RogueObject_retain( RogueString::create( "_trace" ) ); 
+  Rogue_literal_strings[480] = (RogueString*) RogueObject_retain( RogueString::create( "RogueObject_trace" ) ); 
+  Rogue_literal_strings[481] = (RogueString*) RogueObject_retain( RogueString::create( "void Rogue_trace()" ) ); 
+  Rogue_literal_strings[482] = (RogueString*) RogueObject_retain( RogueString::create( "int i;" ) ); 
+  Rogue_literal_strings[483] = (RogueString*) RogueObject_retain( RogueString::create( "// Trace GLOBALS" ) ); 
+  Rogue_literal_strings[484] = (RogueString*) RogueObject_retain( RogueString::create( "if ((link=Rogue" ) ); 
+  Rogue_literal_strings[485] = (RogueString*) RogueObject_retain( RogueString::create( "// Trace singletons\nfor (i=Rogue_type_count; --i>=0; )\n{\n  RogueType* type = &Rogue_types[i];\n  if (type->_singleton)\n  {\n    type->trace_fn( type->_singleton );\n  }\n}" ) ); 
+  Rogue_literal_strings[486] = (RogueString*) RogueObject_retain( RogueString::create( "void* Rogue_dynamic_method_table[] =" ) ); 
+  Rogue_literal_strings[487] = (RogueString*) RogueObject_retain( RogueString::create( "(void*) (" ) ); 
+  Rogue_literal_strings[488] = (RogueString*) RogueObject_retain( RogueString::create( ") " ) ); 
+  Rogue_literal_strings[489] = (RogueString*) RogueObject_retain( RogueString::create( "NULL," ) ); 
+  Rogue_literal_strings[490] = (RogueString*) RogueObject_retain( RogueString::create( " // " ) ); 
+  Rogue_literal_strings[491] = (RogueString*) RogueObject_retain( RogueString::create( "int Rogue_type_info_table[" ) ); 
+  Rogue_literal_strings[492] = (RogueString*) RogueObject_retain( RogueString::create( "] =" ) ); 
+  Rogue_literal_strings[493] = (RogueString*) RogueObject_retain( RogueString::create( "// dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..." ) ); 
+  Rogue_literal_strings[494] = (RogueString*) RogueObject_retain( RogueString::create( "\\\"" ) ); 
+  Rogue_literal_strings[495] = (RogueString*) RogueObject_retain( RogueString::create( "\"" ) ); 
+  Rogue_literal_strings[496] = (RogueString*) RogueObject_retain( RogueString::create( "\\'" ) ); 
+  Rogue_literal_strings[497] = (RogueString*) RogueObject_retain( RogueString::create( "\\\\" ) ); 
+  Rogue_literal_strings[498] = (RogueString*) RogueObject_retain( RogueString::create( "\\n" ) ); 
+  Rogue_literal_strings[499] = (RogueString*) RogueObject_retain( RogueString::create( "int Rogue_object_size_table[" ) ); 
+  Rogue_literal_strings[500] = (RogueString*) RogueObject_retain( RogueString::create( "(int) sizeof(" ) ); 
+  Rogue_literal_strings[501] = (RogueString*) RogueObject_retain( RogueString::create( "int Rogue_type_count = " ) ); 
+  Rogue_literal_strings[502] = (RogueString*) RogueObject_retain( RogueString::create( "RogueType Rogue_types[" ) ); 
+  Rogue_literal_strings[503] = (RogueString*) RogueObject_retain( RogueString::create( "];" ) ); 
+  Rogue_literal_strings[504] = (RogueString*) RogueObject_retain( RogueString::create( "RogueType* RogueType" ) ); 
+  Rogue_literal_strings[505] = (RogueString*) RogueObject_retain( RogueString::create( "int Rogue_literal_string_count = " ) ); 
+  Rogue_literal_strings[506] = (RogueString*) RogueObject_retain( RogueString::create( "RogueString* Rogue_literal_strings[" ) ); 
+  Rogue_literal_strings[507] = (RogueString*) RogueObject_retain( RogueString::create( "switch (THIS->type->index)" ) ); 
+  Rogue_literal_strings[508] = (RogueString*) RogueObject_retain( RogueString::create( "case " ) ); 
+  Rogue_literal_strings[509] = (RogueString*) RogueObject_retain( RogueString::create( "  return " ) ); 
+  Rogue_literal_strings[510] = (RogueString*) RogueObject_retain( RogueString::create( "( (" ) ); 
+  Rogue_literal_strings[511] = (RogueString*) RogueObject_retain( RogueString::create( ")THIS" ) ); 
+  Rogue_literal_strings[512] = (RogueString*) RogueObject_retain( RogueString::create( "default:" ) ); 
+  Rogue_literal_strings[513] = (RogueString*) RogueObject_retain( RogueString::create( "::write_cpp() is not defined." ) ); 
+  Rogue_literal_strings[514] = (RogueString*) RogueObject_retain( RogueString::create( "RogueProgram::RogueProgram()" ) ); 
+  Rogue_literal_strings[515] = (RogueString*) RogueObject_retain( RogueString::create( "RogueProgram::~RogueProgram()" ) ); 
+  Rogue_literal_strings[516] = (RogueString*) RogueObject_retain( RogueString::create( "void RogueProgram::configure()" ) ); 
+  Rogue_literal_strings[517] = (RogueString*) RogueObject_retain( RogueString::create( "Rogue_configure_types();" ) ); 
+  Rogue_literal_strings[518] = (RogueString*) RogueObject_retain( RogueString::create( " = &Rogue_types[ " ) ); 
+  Rogue_literal_strings[519] = (RogueString*) RogueObject_retain( RogueString::create( " ];" ) ); 
+  Rogue_literal_strings[520] = (RogueString*) RogueObject_retain( RogueString::create( "Rogue_literal_strings[" ) ); 
+  Rogue_literal_strings[521] = (RogueString*) RogueObject_retain( RogueString::create( "] = (RogueString*) RogueObject_retain( RogueString::create( " ) ); 
+  Rogue_literal_strings[522] = (RogueString*) RogueObject_retain( RogueString::create( " ) ); " ) ); 
+  Rogue_literal_strings[523] = (RogueString*) RogueObject_retain( RogueString::create( "void RogueProgram::launch( int argc, char* argv[] )" ) ); 
+  Rogue_literal_strings[524] = (RogueString*) RogueObject_retain( RogueString::create( "();" ) ); 
+  Rogue_literal_strings[525] = (RogueString*) RogueObject_retain( RogueString::create( "RogueSystem_executable_filepath = RogueString::create( argv[0] );" ) ); 
+  Rogue_literal_strings[526] = (RogueString*) RogueObject_retain( RogueString::create( "for (int i=1; i<argc; ++i)" ) ); 
+  Rogue_literal_strings[527] = (RogueString*) RogueObject_retain( RogueString::create( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );" ) ); 
+  Rogue_literal_strings[528] = (RogueString*) RogueObject_retain( RogueString::create( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueTypeGlobal->singleton()) );" ) ); 
+  Rogue_literal_strings[529] = (RogueString*) RogueObject_retain( RogueString::create( "Rogue_collect_garbage();" ) ); 
+  Rogue_literal_strings[530] = (RogueString*) RogueObject_retain( RogueString::create( "RogueProgram Rogue_program;" ) ); 
+  Rogue_literal_strings[531] = (RogueString*) RogueObject_retain( RogueString::create( "int main( int argc, char* argv[] )\n{\n  Rogue_program.configure();\n  Rogue_program.launch( argc, argv );\n  //Rogue_program.finish_tasks();\n  return 0;\n}" ) ); 
+  Rogue_literal_strings[532] = (RogueString*) RogueObject_retain( RogueString::create( "g++ " ) ); 
+  Rogue_literal_strings[533] = (RogueString*) RogueObject_retain( RogueString::create( ".cpp -o " ) ); 
+  Rogue_literal_strings[534] = (RogueString*) RogueObject_retain( RogueString::create( " && ./" ) ); 
+  Rogue_literal_strings[535] = (RogueString*) RogueObject_retain( RogueString::create( "Compile target \"" ) ); 
+  Rogue_literal_strings[536] = (RogueString*) RogueObject_retain( RogueString::create( "\" is not supported." ) ); 
+  Rogue_literal_strings[537] = (RogueString*) RogueObject_retain( RogueString::create( "StringReader" ) ); 
+  Rogue_literal_strings[538] = (RogueString*) RogueObject_retain( RogueString::create( "Console" ) ); 
+  Rogue_literal_strings[539] = (RogueString*) RogueObject_retain( RogueString::create( "RogueC" ) ); 
+  Rogue_literal_strings[540] = (RogueString*) RogueObject_retain( RogueString::create( "Program" ) ); 
+  Rogue_literal_strings[541] = (RogueString*) RogueObject_retain( RogueString::create( "Template" ) ); 
+  Rogue_literal_strings[542] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Template>>" ) ); 
+  Rogue_literal_strings[543] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Augment[]>>" ) ); 
+  Rogue_literal_strings[544] = (RogueString*) RogueObject_retain( RogueString::create( "RequisiteItem" ) ); 
+  Rogue_literal_strings[545] = (RogueString*) RogueObject_retain( RogueString::create( "Method" ) ); 
+  Rogue_literal_strings[546] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Method[]>>" ) ); 
+  Rogue_literal_strings[547] = (RogueString*) RogueObject_retain( RogueString::create( "Type" ) ); 
+  Rogue_literal_strings[548] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Type>>" ) ); 
+  Rogue_literal_strings[549] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Integer>>" ) ); 
+  Rogue_literal_strings[550] = (RogueString*) RogueObject_retain( RogueString::create( "Token" ) ); 
+  Rogue_literal_strings[551] = (RogueString*) RogueObject_retain( RogueString::create( "Attributes" ) ); 
+  Rogue_literal_strings[552] = (RogueString*) RogueObject_retain( RogueString::create( "TokenType" ) ); 
+  Rogue_literal_strings[553] = (RogueString*) RogueObject_retain( RogueString::create( "CPPWriter" ) ); 
+  Rogue_literal_strings[554] = (RogueString*) RogueObject_retain( RogueString::create( "Property" ) ); 
+  Rogue_literal_strings[555] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Method>>" ) ); 
+  Rogue_literal_strings[556] = (RogueString*) RogueObject_retain( RogueString::create( "Local" ) ); 
+  Rogue_literal_strings[557] = (RogueString*) RogueObject_retain( RogueString::create( "Math" ) ); 
+  Rogue_literal_strings[558] = (RogueString*) RogueObject_retain( RogueString::create( "System" ) ); 
+  Rogue_literal_strings[559] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Logical>>" ) ); 
+  Rogue_literal_strings[560] = (RogueString*) RogueObject_retain( RogueString::create( "File" ) ); 
+  Rogue_literal_strings[561] = (RogueString*) RogueObject_retain( RogueString::create( "Parser" ) ); 
+  Rogue_literal_strings[562] = (RogueString*) RogueObject_retain( RogueString::create( "LineReader" ) ); 
+  Rogue_literal_strings[563] = (RogueString*) RogueObject_retain( RogueString::create( "TypeParameter" ) ); 
+  Rogue_literal_strings[564] = (RogueString*) RogueObject_retain( RogueString::create( "Augment" ) ); 
+  Rogue_literal_strings[565] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,TokenType>>" ) ); 
+  Rogue_literal_strings[566] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,TypeSpecializer>>" ) ); 
+  Rogue_literal_strings[567] = (RogueString*) RogueObject_retain( RogueString::create( "TypeSpecializer" ) ); 
+  Rogue_literal_strings[568] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Template>>" ) ); 
+  Rogue_literal_strings[569] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Augment[]>>" ) ); 
+  Rogue_literal_strings[570] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,CmdLabel>>" ) ); 
+  Rogue_literal_strings[571] = (RogueString*) RogueObject_retain( RogueString::create( "CloneArgs" ) ); 
+  Rogue_literal_strings[572] = (RogueString*) RogueObject_retain( RogueString::create( "Scope" ) ); 
+  Rogue_literal_strings[573] = (RogueString*) RogueObject_retain( RogueString::create( "CmdTaskControlSection" ) ); 
+  Rogue_literal_strings[574] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Method[]>>" ) ); 
+  Rogue_literal_strings[575] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Cmd>>" ) ); 
+  Rogue_literal_strings[576] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Property>>" ) ); 
+  Rogue_literal_strings[577] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Type>>" ) ); 
+  Rogue_literal_strings[578] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Integer>>" ) ); 
+  Rogue_literal_strings[579] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Method>>" ) ); 
+  Rogue_literal_strings[580] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Logical>>" ) ); 
+  Rogue_literal_strings[581] = (RogueString*) RogueObject_retain( RogueString::create( "FileReader" ) ); 
+  Rogue_literal_strings[582] = (RogueString*) RogueObject_retain( RogueString::create( "FileWriter" ) ); 
+  Rogue_literal_strings[583] = (RogueString*) RogueObject_retain( RogueString::create( "TokenReader" ) ); 
+  Rogue_literal_strings[584] = (RogueString*) RogueObject_retain( RogueString::create( "Tokenizer" ) ); 
+  Rogue_literal_strings[585] = (RogueString*) RogueObject_retain( RogueString::create( "ParseReader" ) ); 
+  Rogue_literal_strings[586] = (RogueString*) RogueObject_retain( RogueString::create( "Preprocessor" ) ); 
+  Rogue_literal_strings[587] = (RogueString*) RogueObject_retain( RogueString::create( "FnParam" ) ); 
+  Rogue_literal_strings[588] = (RogueString*) RogueObject_retain( RogueString::create( "FnArg" ) ); 
+  Rogue_literal_strings[589] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,TokenType>>" ) ); 
+  Rogue_literal_strings[590] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,TypeSpecializer>>" ) ); 
+  Rogue_literal_strings[591] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,CmdLabel>>" ) ); 
+  Rogue_literal_strings[592] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Cmd>>" ) ); 
+  Rogue_literal_strings[593] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Property>>" ) ); 
+  Rogue_literal_strings[594] = (RogueString*) RogueObject_retain( RogueString::create( "Table<<String,Token[]>>" ) ); 
+  Rogue_literal_strings[595] = (RogueString*) RogueObject_retain( RogueString::create( "PreprocessorTokenReader" ) ); 
+  Rogue_literal_strings[596] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Token[]>>" ) ); 
+  Rogue_literal_strings[597] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<String>>" ) ); 
+  Rogue_literal_strings[598] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Type>>" ) ); 
+  Rogue_literal_strings[599] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<RequisiteItem>>" ) ); 
+  Rogue_literal_strings[600] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Template>>" ) ); 
+  Rogue_literal_strings[601] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Method>>" ) ); 
+  Rogue_literal_strings[602] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Property>>" ) ); 
+  Rogue_literal_strings[603] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Local>>" ) ); 
+  Rogue_literal_strings[604] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Integer>>" ) ); 
+  Rogue_literal_strings[605] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Byte>>" ) ); 
+  Rogue_literal_strings[606] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Character>>" ) ); 
+  Rogue_literal_strings[607] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Augment>>" ) ); 
+  Rogue_literal_strings[608] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Token>>" ) ); 
+  Rogue_literal_strings[609] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TypeParameter>>" ) ); 
+  Rogue_literal_strings[610] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Template>>>>" ) ); 
+  Rogue_literal_strings[611] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Augment[]>>>>" ) ); 
+  Rogue_literal_strings[612] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<CmdLabel>>" ) ); 
+  Rogue_literal_strings[613] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<Cmd>>" ) ); 
+  Rogue_literal_strings[614] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Method[]>>>>" ) ); 
+  Rogue_literal_strings[615] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Type>>>>" ) ); 
+  Rogue_literal_strings[616] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Integer>>>>" ) ); 
+  Rogue_literal_strings[617] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Method>>>>" ) ); 
+  Rogue_literal_strings[618] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Logical>>>>" ) ); 
+  Rogue_literal_strings[619] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,TokenType>>>>" ) ); 
+  Rogue_literal_strings[620] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,TypeSpecializer>>>>" ) ); 
+  Rogue_literal_strings[621] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,CmdLabel>>>>" ) ); 
+  Rogue_literal_strings[622] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<CmdControlStructure>>" ) ); 
+  Rogue_literal_strings[623] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<CmdTaskControlSection>>" ) ); 
+  Rogue_literal_strings[624] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Cmd>>>>" ) ); 
+  Rogue_literal_strings[625] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Property>>>>" ) ); 
+  Rogue_literal_strings[626] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<CmdWhichCase>>" ) ); 
+  Rogue_literal_strings[627] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<CmdCatch>>" ) ); 
+  Rogue_literal_strings[628] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<FnParam>>" ) ); 
+  Rogue_literal_strings[629] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<FnArg>>" ) ); 
+  Rogue_literal_strings[630] = (RogueString*) RogueObject_retain( RogueString::create( "Array<<TableEntry<<String,Token[]>>>>" ) ); 
+  Rogue_literal_strings[631] = (RogueString*) RogueObject_retain( RogueString::create( "===============================================================================" ) ); 
+  Rogue_literal_strings[632] = (RogueString*) RogueObject_retain( RogueString::create( "ERROR in \"" ) ); 
+  Rogue_literal_strings[633] = (RogueString*) RogueObject_retain( RogueString::create( "  line " ) ); 
+  Rogue_literal_strings[634] = (RogueString*) RogueObject_retain( RogueString::create( ", column " ) ); 
+  Rogue_literal_strings[635] = (RogueString*) RogueObject_retain( RogueString::create( "ERROR" ) ); 
+  Rogue_literal_strings[636] = (RogueString*) RogueObject_retain( RogueString::create( "RogueError" ) ); 
+  Rogue_literal_strings[637] = (RogueString*) RogueObject_retain( RogueString::create( "0.0" ) ); 
+  Rogue_literal_strings[638] = (RogueString*) RogueObject_retain( RogueString::create( "EOL  # " ) ); 
+  Rogue_literal_strings[639] = (RogueString*) RogueObject_retain( RogueString::create( "LiteralCharacterToken" ) ); 
+  Rogue_literal_strings[640] = (RogueString*) RogueObject_retain( RogueString::create( "LiteralLongToken" ) ); 
+  Rogue_literal_strings[641] = (RogueString*) RogueObject_retain( RogueString::create( "LiteralIntegerToken" ) ); 
+  Rogue_literal_strings[642] = (RogueString*) RogueObject_retain( RogueString::create( "LiteralRealToken" ) ); 
+  Rogue_literal_strings[643] = (RogueString*) RogueObject_retain( RogueString::create( "LiteralStringToken" ) ); 
+  Rogue_literal_strings[644] = (RogueString*) RogueObject_retain( RogueString::create( "EOLToken" ) ); 
+  Rogue_literal_strings[645] = (RogueString*) RogueObject_retain( RogueString::create( "CmdStatement" ) ); 
+  Rogue_literal_strings[646] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLabel" ) ); 
+  Rogue_literal_strings[647] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAccess" ) ); 
+  Rogue_literal_strings[648] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAssign" ) ); 
+  Rogue_literal_strings[649] = (RogueString*) RogueObject_retain( RogueString::create( "CmdThisContext" ) ); 
+  Rogue_literal_strings[650] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteral" ) ); 
+  Rogue_literal_strings[651] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBinary" ) ); 
+  Rogue_literal_strings[652] = (RogueString*) RogueObject_retain( RogueString::create( "CmdTaskControl" ) ); 
+  Rogue_literal_strings[653] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateCompound" ) ); 
+  Rogue_literal_strings[654] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWriteGlobal" ) ); 
+  Rogue_literal_strings[655] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWriteProperty" ) ); 
+  Rogue_literal_strings[656] = (RogueString*) RogueObject_retain( RogueString::create( "CmdTypeOperator" ) ); 
+  Rogue_literal_strings[657] = (RogueString*) RogueObject_retain( RogueString::create( "CmdUnary" ) ); 
+  Rogue_literal_strings[658] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateOptionalValue" ) ); 
+  Rogue_literal_strings[659] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAwait" ) ); 
+  Rogue_literal_strings[660] = (RogueString*) RogueObject_retain( RogueString::create( "CmdYield" ) ); 
+  Rogue_literal_strings[661] = (RogueString*) RogueObject_retain( RogueString::create( "CmdThrow" ) ); 
+  Rogue_literal_strings[662] = (RogueString*) RogueObject_retain( RogueString::create( "CmdTrace" ) ); 
+  Rogue_literal_strings[663] = (RogueString*) RogueObject_retain( RogueString::create( "CmdEscape" ) ); 
+  Rogue_literal_strings[664] = (RogueString*) RogueObject_retain( RogueString::create( "CmdNextIteration" ) ); 
+  Rogue_literal_strings[665] = (RogueString*) RogueObject_retain( RogueString::create( "CmdNecessary" ) ); 
+  Rogue_literal_strings[666] = (RogueString*) RogueObject_retain( RogueString::create( "CmdSufficient" ) ); 
+  Rogue_literal_strings[667] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAdjust" ) ); 
+  Rogue_literal_strings[668] = (RogueString*) RogueObject_retain( RogueString::create( "CmdOpWithAssign" ) ); 
+  Rogue_literal_strings[669] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWhichCase" ) ); 
+  Rogue_literal_strings[670] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCatch" ) ); 
+  Rogue_literal_strings[671] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAdjustLocal" ) ); 
+  Rogue_literal_strings[672] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReadLocal" ) ); 
+  Rogue_literal_strings[673] = (RogueString*) RogueObject_retain( RogueString::create( "CmdRange" ) ); 
+  Rogue_literal_strings[674] = (RogueString*) RogueObject_retain( RogueString::create( "CmdResolvedOpWithAssign" ) ); 
+  Rogue_literal_strings[675] = (RogueString*) RogueObject_retain( RogueString::create( "CmdGetOptionalValue" ) ); 
+  Rogue_literal_strings[676] = (RogueString*) RogueObject_retain( RogueString::create( "CmdElementAccess" ) ); 
+  Rogue_literal_strings[677] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateCallback" ) ); 
+  Rogue_literal_strings[678] = (RogueString*) RogueObject_retain( RogueString::create( "CmdFormattedString" ) ); 
+  Rogue_literal_strings[679] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateList" ) ); 
+  Rogue_literal_strings[680] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallPriorMethod" ) ); 
+  Rogue_literal_strings[681] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateFunction" ) ); 
+  Rogue_literal_strings[682] = (RogueString*) RogueObject_retain( RogueString::create( "CmdNativeCode" ) ); 
+  Rogue_literal_strings[683] = (RogueString*) RogueObject_retain( RogueString::create( "Illegal arguments on inline code." ) ); 
+  Rogue_literal_strings[684] = (RogueString*) RogueObject_retain( RogueString::create( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." ) ); 
+  Rogue_literal_strings[685] = (RogueString*) RogueObject_retain( RogueString::create( "Value expected; this statement or expression does not result in a value." ) ); 
+  Rogue_literal_strings[686] = (RogueString*) RogueObject_retain( RogueString::create( "Array count expected." ) ); 
+  Rogue_literal_strings[687] = (RogueString*) RogueObject_retain( RogueString::create( "Integer value expected." ) ); 
+  Rogue_literal_strings[688] = (RogueString*) RogueObject_retain( RogueString::create( "No such method or variable \"" ) ); 
+  Rogue_literal_strings[689] = (RogueString*) RogueObject_retain( RogueString::create( "\" exists in current scope of type " ) ); 
+  Rogue_literal_strings[690] = (RogueString*) RogueObject_retain( RogueString::create( "Multiple methods match ambiguous call to " ) ); 
+  Rogue_literal_strings[691] = (RogueString*) RogueObject_retain( RogueString::create( ":\n\n" ) ); 
+  Rogue_literal_strings[692] = (RogueString*) RogueObject_retain( RogueString::create( "Call to " ) ); 
+  Rogue_literal_strings[693] = (RogueString*) RogueObject_retain( RogueString::create( " has arguments that are incompatible with the best candidate:\n\n" ) ); 
+  Rogue_literal_strings[694] = (RogueString*) RogueObject_retain( RogueString::create( "to_Object" ) ); 
+  Rogue_literal_strings[695] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot call a method from a routine without an object context (obj." ) ); 
+  Rogue_literal_strings[696] = (RogueString*) RogueObject_retain( RogueString::create( "()(...))." ) ); 
+  Rogue_literal_strings[697] = (RogueString*) RogueObject_retain( RogueString::create( "Type name expected, e.g. \"" ) ); 
+  Rogue_literal_strings[698] = (RogueString*) RogueObject_retain( RogueString::create( ".\"." ) ); 
+  Rogue_literal_strings[699] = (RogueString*) RogueObject_retain( RogueString::create( "Type name expected." ) ); 
+  Rogue_literal_strings[700] = (RogueString*) RogueObject_retain( RogueString::create( "TODO: multi-line inline statements" ) ); 
+  Rogue_literal_strings[701] = (RogueString*) RogueObject_retain( RogueString::create( "count" ) ); 
+  Rogue_literal_strings[702] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid arguments to array count." ) ); 
+  Rogue_literal_strings[703] = (RogueString*) RogueObject_retain( RogueString::create( "Scope::resolve_call():136 " ) ); 
+  Rogue_literal_strings[704] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAccess::resolve():1607 ;throwt.error([INTERNAL])" ) ); 
+  Rogue_literal_strings[705] = (RogueString*) RogueObject_retain( RogueString::create( "Recursive call to getter " ) ); 
+  Rogue_literal_strings[706] = (RogueString*) RogueObject_retain( RogueString::create( "() - write @" ) ); 
+  Rogue_literal_strings[707] = (RogueString*) RogueObject_retain( RogueString::create( " instead." ) ); 
+  Rogue_literal_strings[708] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot access object properties from routines - routines have no 'this' object context." ) ); 
+  Rogue_literal_strings[709] = (RogueString*) RogueObject_retain( RogueString::create( "exists" ) ); 
+  Rogue_literal_strings[710] = (RogueString*) RogueObject_retain( RogueString::create( "Optional value existence check takes no arguments." ) ); 
+  Rogue_literal_strings[711] = (RogueString*) RogueObject_retain( RogueString::create( "value" ) ); 
+  Rogue_literal_strings[712] = (RogueString*) RogueObject_retain( RogueString::create( "Optional value retrieval takes no arguments." ) ); 
+  Rogue_literal_strings[713] = (RogueString*) RogueObject_retain( RogueString::create( "'exists' and 'value' are the only valid properties of an optional type." ) ); 
+  Rogue_literal_strings[714] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid assignment." ) ); 
+  Rogue_literal_strings[715] = (RogueString*) RogueObject_retain( RogueString::create( "::fn_name() is not defined." ) ); 
+  Rogue_literal_strings[716] = (RogueString*) RogueObject_retain( RogueString::create( "Types " ) ); 
+  Rogue_literal_strings[717] = (RogueString*) RogueObject_retain( RogueString::create( " are incompatible." ) ); 
+  Rogue_literal_strings[718] = (RogueString*) RogueObject_retain( RogueString::create( "Caught value must be instanceOf class Error." ) ); 
+  Rogue_literal_strings[719] = (RogueString*) RogueObject_retain( RogueString::create( "try/catch blocks cannot contain 'yield' statements." ) ); 
+  Rogue_literal_strings[720] = (RogueString*) RogueObject_retain( RogueString::create( "The 'await' command can only be used in [task] methods." ) ); 
+  Rogue_literal_strings[721] = (RogueString*) RogueObject_retain( RogueString::create( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - remove the call to start()." ) ); 
+  Rogue_literal_strings[722] = (RogueString*) RogueObject_retain( RogueString::create( "The 'yield' statement can only be used in [task] methods." ) ); 
+  Rogue_literal_strings[723] = (RogueString*) RogueObject_retain( RogueString::create( "Thrown value must be instanceOf class Error." ) ); 
+  Rogue_literal_strings[724] = (RogueString*) RogueObject_retain( RogueString::create( "println" ) ); 
+  Rogue_literal_strings[725] = (RogueString*) RogueObject_retain( RogueString::create( "No enclosing structure to escape." ) ); 
+  Rogue_literal_strings[726] = (RogueString*) RogueObject_retain( RogueString::create( "No enclosing loop for 'nextIteration' to affect." ) ); 
+  Rogue_literal_strings[727] = (RogueString*) RogueObject_retain( RogueString::create( "No enclosing contingent." ) ); 
+  Rogue_literal_strings[728] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid target for increment/decrement." ) ); 
+  Rogue_literal_strings[729] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot determine type of local variable - either assign an initial value (local " ) ); 
+  Rogue_literal_strings[730] = (RogueString*) RogueObject_retain( RogueString::create( " = ...) or assign a type (local " ) ); 
+  Rogue_literal_strings[731] = (RogueString*) RogueObject_retain( RogueString::create( " : Integer)." ) ); 
+  Rogue_literal_strings[732] = (RogueString*) RogueObject_retain( RogueString::create( "No suitable operator method found; type " ) ); 
+  Rogue_literal_strings[733] = (RogueString*) RogueObject_retain( RogueString::create( " implements neither " ) ); 
+  Rogue_literal_strings[734] = (RogueString*) RogueObject_retain( RogueString::create( "()(" ) ); 
+  Rogue_literal_strings[735] = (RogueString*) RogueObject_retain( RogueString::create( ") nor " ) ); 
+  Rogue_literal_strings[736] = (RogueString*) RogueObject_retain( RogueString::create( "=(" ) ); 
+  Rogue_literal_strings[737] = (RogueString*) RogueObject_retain( RogueString::create( "Property or method name expected." ) ); 
+  Rogue_literal_strings[738] = (RogueString*) RogueObject_retain( RogueString::create( "Property or method name expected - '.=' cannot be used with a chain of references." ) ); 
+  Rogue_literal_strings[739] = (RogueString*) RogueObject_retain( RogueString::create( "count()" ) ); 
+  Rogue_literal_strings[740] = (RogueString*) RogueObject_retain( RogueString::create( "at(Integer)" ) ); 
+  Rogue_literal_strings[741] = (RogueString*) RogueObject_retain( RogueString::create( "get(Integer)" ) ); 
+  Rogue_literal_strings[742] = (RogueString*) RogueObject_retain( RogueString::create( "Literal integer value expected." ) ); 
+  Rogue_literal_strings[743] = (RogueString*) RogueObject_retain( RogueString::create( "has_another" ) ); 
+  Rogue_literal_strings[744] = (RogueString*) RogueObject_retain( RogueString::create( "has_another()" ) ); 
+  Rogue_literal_strings[745] = (RogueString*) RogueObject_retain( RogueString::create( "read()" ) ); 
+  Rogue_literal_strings[746] = (RogueString*) RogueObject_retain( RogueString::create( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at) or a reader (.has_another, .read)." ) ); 
+  Rogue_literal_strings[747] = (RogueString*) RogueObject_retain( RogueString::create( "Object's read() method does not return a value." ) ); 
+  Rogue_literal_strings[748] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot specify a step size for a reader - only for an indexed collection." ) ); 
+  Rogue_literal_strings[749] = (RogueString*) RogueObject_retain( RogueString::create( "read" ) ); 
+  Rogue_literal_strings[750] = (RogueString*) RogueObject_retain( RogueString::create( "The optional value retriever ('!') can only be used on optional values." ) ); 
+  Rogue_literal_strings[751] = (RogueString*) RogueObject_retain( RogueString::create( "get" ) ); 
+  Rogue_literal_strings[752] = (RogueString*) RogueObject_retain( RogueString::create( "No such method or routine '" ) ); 
+  Rogue_literal_strings[753] = (RogueString*) RogueObject_retain( RogueString::create( "' exists in type " ) ); 
+  Rogue_literal_strings[754] = (RogueString*) RogueObject_retain( RogueString::create( "Multiple candidates match ambiguous reference to '" ) ); 
+  Rogue_literal_strings[755] = (RogueString*) RogueObject_retain( RogueString::create( "'; add qualifiying parameter types." ) ); 
+  Rogue_literal_strings[756] = (RogueString*) RogueObject_retain( RogueString::create( "More arguments than format markers ('$') in formatted string." ) ); 
+  Rogue_literal_strings[757] = (RogueString*) RogueObject_retain( RogueString::create( "print" ) ); 
+  Rogue_literal_strings[758] = (RogueString*) RogueObject_retain( RogueString::create( "More format markers ('$') than arguments in formatted string." ) ); 
+  Rogue_literal_strings[759] = (RogueString*) RogueObject_retain( RogueString::create( "TODO: [] -> Property[]" ) ); 
+  Rogue_literal_strings[760] = (RogueString*) RogueObject_retain( RogueString::create( "add" ) ); 
+  Rogue_literal_strings[761] = (RogueString*) RogueObject_retain( RogueString::create( "Illegal target - 'prior' can only be used to call overridden methods." ) ); 
+  Rogue_literal_strings[762] = (RogueString*) RogueObject_retain( RogueString::create( "Function_" ) ); 
+  Rogue_literal_strings[763] = (RogueString*) RogueObject_retain( RogueString::create( "The result of a call cannot assigned to." ) ); 
+  Rogue_literal_strings[764] = (RogueString*) RogueObject_retain( RogueString::create( "set_" ) ); 
+  Rogue_literal_strings[765] = (RogueString*) RogueObject_retain( RogueString::create( "Recursive call to setter set_" ) ); 
+  Rogue_literal_strings[766] = (RogueString*) RogueObject_retain( RogueString::create( "() - write \"@" ) ); 
+  Rogue_literal_strings[767] = (RogueString*) RogueObject_retain( RogueString::create( " = ...\" instead." ) ); 
+  Rogue_literal_strings[768] = (RogueString*) RogueObject_retain( RogueString::create( "\" exists in the current scope." ) ); 
+  Rogue_literal_strings[769] = (RogueString*) RogueObject_retain( RogueString::create( "set" ) ); 
+  Rogue_literal_strings[770] = (RogueString*) RogueObject_retain( RogueString::create( "Local variable '" ) ); 
+  Rogue_literal_strings[771] = (RogueString*) RogueObject_retain( RogueString::create( "' cannot be called like a method." ) ); 
+  Rogue_literal_strings[772] = (RogueString*) RogueObject_retain( RogueString::create( "::type() is not defined (access name '" ) ); 
+  Rogue_literal_strings[773] = (RogueString*) RogueObject_retain( RogueString::create( "')." ) ); 
+  Rogue_literal_strings[774] = (RogueString*) RogueObject_retain( RogueString::create( "return (" ) ); 
+  Rogue_literal_strings[775] = (RogueString*) RogueObject_retain( RogueString::create( ")(" ) ); 
+  Rogue_literal_strings[776] = (RogueString*) RogueObject_retain( RogueString::create( "::write_cpp() is not defined (access name " ) ); 
+  Rogue_literal_strings[777] = (RogueString*) RogueObject_retain( RogueString::create( "THIS" ) ); 
+  Rogue_literal_strings[778] = (RogueString*) RogueObject_retain( RogueString::create( "for (;" ) ); 
+  Rogue_literal_strings[779] = (RogueString*) RogueObject_retain( RogueString::create( "while (" ) ); 
+  Rogue_literal_strings[780] = (RogueString*) RogueObject_retain( RogueString::create( ":;" ) ); 
+  Rogue_literal_strings[781] = (RogueString*) RogueObject_retain( RogueString::create( "::symbol() is not defined." ) ); 
+  Rogue_literal_strings[782] = (RogueString*) RogueObject_retain( RogueString::create( "switch (++THIS->ip)" ) ); 
+  Rogue_literal_strings[783] = (RogueString*) RogueObject_retain( RogueString::create( "  THIS->ip = -1;" ) ); 
+  Rogue_literal_strings[784] = (RogueString*) RogueObject_retain( RogueString::create( "  return false;" ) ); 
+  Rogue_literal_strings[785] = (RogueString*) RogueObject_retain( RogueString::create( "NULL" ) ); 
+  Rogue_literal_strings[786] = (RogueString*) RogueObject_retain( RogueString::create( "))" ) ); 
+  Rogue_literal_strings[787] = (RogueString*) RogueObject_retain( RogueString::create( "if (" ) ); 
+  Rogue_literal_strings[788] = (RogueString*) RogueObject_retain( RogueString::create( "else " ) ); 
+  Rogue_literal_strings[789] = (RogueString*) RogueObject_retain( RogueString::create( "goto " ) ); 
+  Rogue_literal_strings[790] = (RogueString*) RogueObject_retain( RogueString::create( "catch ( " ) ); 
+  Rogue_literal_strings[791] = (RogueString*) RogueObject_retain( RogueString::create( "throw " ) ); 
+  Rogue_literal_strings[792] = (RogueString*) RogueObject_retain( RogueString::create( "continue" ) ); 
+  Rogue_literal_strings[793] = (RogueString*) RogueObject_retain( RogueString::create( "if ( !(" ) ); 
+  Rogue_literal_strings[794] = (RogueString*) RogueObject_retain( RogueString::create( ") ) goto " ) ); 
+  Rogue_literal_strings[795] = (RogueString*) RogueObject_retain( RogueString::create( ") goto " ) ); 
+  Rogue_literal_strings[796] = (RogueString*) RogueObject_retain( RogueString::create( "RogueObject_instance_of(" ) ); 
+  Rogue_literal_strings[797] = (RogueString*) RogueObject_retain( RogueString::create( ".value" ) ); 
+  Rogue_literal_strings[798] = (RogueString*) RogueObject_retain( RogueString::create( ")(RogueObject_as(" ) ); 
+  Rogue_literal_strings[799] = (RogueString*) RogueObject_retain( RogueString::create( ")))" ) ); 
+  Rogue_literal_strings[800] = (RogueString*) RogueObject_retain( RogueString::create( "LL" ) ); 
+  Rogue_literal_strings[801] = (RogueString*) RogueObject_retain( RogueString::create( "(RogueCharacter)" ) ); 
+  Rogue_literal_strings[802] = (RogueString*) RogueObject_retain( RogueString::create( "'\\n'" ) ); 
+  Rogue_literal_strings[803] = (RogueString*) RogueObject_retain( RogueString::create( "'\\\\'" ) ); 
+  Rogue_literal_strings[804] = (RogueString*) RogueObject_retain( RogueString::create( "'\\''" ) ); 
+  Rogue_literal_strings[805] = (RogueString*) RogueObject_retain( RogueString::create( "THIS->" ) ); 
+  Rogue_literal_strings[806] = (RogueString*) RogueObject_retain( RogueString::create( " is not a singleton." ) ); 
+  Rogue_literal_strings[807] = (RogueString*) RogueObject_retain( RogueString::create( ")ROGUE_SINGLETON(" ) ); 
+  Rogue_literal_strings[808] = (RogueString*) RogueObject_retain( RogueString::create( "RogueArray::create( " ) ); 
+  Rogue_literal_strings[809] = (RogueString*) RogueObject_retain( RogueString::create( ", sizeof(" ) ); 
+  Rogue_literal_strings[810] = (RogueString*) RogueObject_retain( RogueString::create( ", true" ) ); 
+  Rogue_literal_strings[811] = (RogueString*) RogueObject_retain( RogueString::create( "ROGUE_CREATE_OBJECT(" ) ); 
+  Rogue_literal_strings[812] = (RogueString*) RogueObject_retain( RogueString::create( "!!" ) ); 
+  Rogue_literal_strings[813] = (RogueString*) RogueObject_retain( RogueString::create( ".exists" ) ); 
+  Rogue_literal_strings[814] = (RogueString*) RogueObject_retain( RogueString::create( "Illegal use of '$this' in routine." ) ); 
+  Rogue_literal_strings[815] = (RogueString*) RogueObject_retain( RogueString::create( "->count" ) ); 
+  Rogue_literal_strings[816] = (RogueString*) RogueObject_retain( RogueString::create( "call_" ) ); 
+  Rogue_literal_strings[817] = (RogueString*) RogueObject_retain( RogueString::create( "switch (" ) ); 
+  Rogue_literal_strings[818] = (RogueString*) RogueObject_retain( RogueString::create( "break;" ) ); 
+  Rogue_literal_strings[819] = (RogueString*) RogueObject_retain( RogueString::create( "->objects[" ) ); 
+  Rogue_literal_strings[820] = (RogueString*) RogueObject_retain( RogueString::create( "]))" ) ); 
+  Rogue_literal_strings[821] = (RogueString*) RogueObject_retain( RogueString::create( "reals[" ) ); 
+  Rogue_literal_strings[822] = (RogueString*) RogueObject_retain( RogueString::create( "floats[" ) ); 
+  Rogue_literal_strings[823] = (RogueString*) RogueObject_retain( RogueString::create( "longs[" ) ); 
+  Rogue_literal_strings[824] = (RogueString*) RogueObject_retain( RogueString::create( "integers[" ) ); 
+  Rogue_literal_strings[825] = (RogueString*) RogueObject_retain( RogueString::create( "characters[" ) ); 
+  Rogue_literal_strings[826] = (RogueString*) RogueObject_retain( RogueString::create( "bytes[" ) ); 
+  Rogue_literal_strings[827] = (RogueString*) RogueObject_retain( RogueString::create( "logical[" ) ); 
+  Rogue_literal_strings[828] = (RogueString*) RogueObject_retain( RogueString::create( "[INTERNAL] Unhandled type in CmdReadArrayElement." ) ); 
+  Rogue_literal_strings[829] = (RogueString*) RogueObject_retain( RogueString::create( "*)(" ) ); 
+  Rogue_literal_strings[830] = (RogueString*) RogueObject_retain( RogueString::create( "->bytes))[" ) ); 
+  Rogue_literal_strings[831] = (RogueString*) RogueObject_retain( RogueString::create( "] = " ) ); 
+  Rogue_literal_strings[832] = (RogueString*) RogueObject_retain( RogueString::create( "objects[" ) ); 
+  Rogue_literal_strings[833] = (RogueString*) RogueObject_retain( RogueString::create( " is not an override - no prior version of it exists." ) ); 
+  Rogue_literal_strings[834] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReturn" ) ); 
+  Rogue_literal_strings[835] = (RogueString*) RogueObject_retain( RogueString::create( "CmdControlStructure" ) ); 
+  Rogue_literal_strings[836] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLocalDeclaration" ) ); 
+  Rogue_literal_strings[837] = (RogueString*) RogueObject_retain( RogueString::create( "DirectiveTokenType" ) ); 
+  Rogue_literal_strings[838] = (RogueString*) RogueObject_retain( RogueString::create( "StructuralDirectiveTokenType" ) ); 
+  Rogue_literal_strings[839] = (RogueString*) RogueObject_retain( RogueString::create( "EOLTokenType" ) ); 
+  Rogue_literal_strings[840] = (RogueString*) RogueObject_retain( RogueString::create( "StructureTokenType" ) ); 
+  Rogue_literal_strings[841] = (RogueString*) RogueObject_retain( RogueString::create( "OpWithAssignTokenType" ) ); 
+  Rogue_literal_strings[842] = (RogueString*) RogueObject_retain( RogueString::create( "CloneMethodArgs" ) ); 
+  Rogue_literal_strings[843] = (RogueString*) RogueObject_retain( RogueString::create( "TaskArgs" ) ); 
+  Rogue_literal_strings[844] = (RogueString*) RogueObject_retain( RogueString::create( "MacroArgs" ) ); 
+  Rogue_literal_strings[845] = (RogueString*) RogueObject_retain( RogueString::create( "CmdGenericLoop" ) ); 
+  Rogue_literal_strings[846] = (RogueString*) RogueObject_retain( RogueString::create( "CmdIf" ) ); 
+  Rogue_literal_strings[847] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWhich" ) ); 
+  Rogue_literal_strings[848] = (RogueString*) RogueObject_retain( RogueString::create( "CmdContingent" ) ); 
+  Rogue_literal_strings[849] = (RogueString*) RogueObject_retain( RogueString::create( "CmdTry" ) ); 
+  Rogue_literal_strings[850] = (RogueString*) RogueObject_retain( RogueString::create( "CmdForEach" ) ); 
+  Rogue_literal_strings[851] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBlock" ) ); 
+  Rogue_literal_strings[852] = (RogueString*) RogueObject_retain( RogueString::create( "CmdSwitch" ) ); 
+  Rogue_literal_strings[853] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralThis" ) ); 
+  Rogue_literal_strings[854] = (RogueString*) RogueObject_retain( RogueString::create( "Invalid reference to 'this' object - routines have no object context." ) ); 
+  Rogue_literal_strings[855] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralInteger" ) ); 
+  Rogue_literal_strings[856] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralNull" ) ); 
+  Rogue_literal_strings[857] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralLogical" ) ); 
+  Rogue_literal_strings[858] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralString" ) ); 
+  Rogue_literal_strings[859] = (RogueString*) RogueObject_retain( RogueString::create( "CmdDefaultValue" ) ); 
+  Rogue_literal_strings[860] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralReal" ) ); 
+  Rogue_literal_strings[861] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralLong" ) ); 
+  Rogue_literal_strings[862] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLiteralCharacter" ) ); 
+  Rogue_literal_strings[863] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBinaryLogical" ) ); 
+  Rogue_literal_strings[864] = (RogueString*) RogueObject_retain( RogueString::create( "::combine_literal_operands(Logical,Logical) is not defined." ) ); 
+  Rogue_literal_strings[865] = (RogueString*) RogueObject_retain( RogueString::create( "shift_right" ) ); 
+  Rogue_literal_strings[866] = (RogueString*) RogueObject_retain( RogueString::create( "mod" ) ); 
+  Rogue_literal_strings[867] = (RogueString*) RogueObject_retain( RogueString::create( ") pow((double)" ) ); 
+  Rogue_literal_strings[868] = (RogueString*) RogueObject_retain( RogueString::create( ", (double)" ) ); 
+  Rogue_literal_strings[869] = (RogueString*) RogueObject_retain( RogueString::create( "operator+" ) ); 
+  Rogue_literal_strings[870] = (RogueString*) RogueObject_retain( RogueString::create( "operator-" ) ); 
+  Rogue_literal_strings[871] = (RogueString*) RogueObject_retain( RogueString::create( "operator*" ) ); 
+  Rogue_literal_strings[872] = (RogueString*) RogueObject_retain( RogueString::create( "operator/" ) ); 
+  Rogue_literal_strings[873] = (RogueString*) RogueObject_retain( RogueString::create( "operator%" ) ); 
+  Rogue_literal_strings[874] = (RogueString*) RogueObject_retain( RogueString::create( "operator^" ) ); 
+  Rogue_literal_strings[875] = (RogueString*) RogueObject_retain( RogueString::create( "The '" ) ); 
+  Rogue_literal_strings[876] = (RogueString*) RogueObject_retain( RogueString::create( "' operator cannot be applied to type " ) ); 
+  Rogue_literal_strings[877] = (RogueString*) RogueObject_retain( RogueString::create( "&&" ) ); 
+  Rogue_literal_strings[878] = (RogueString*) RogueObject_retain( RogueString::create( "CmdComparison" ) ); 
+  Rogue_literal_strings[879] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAdd" ) ); 
+  Rogue_literal_strings[880] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseOp" ) ); 
+  Rogue_literal_strings[881] = (RogueString*) RogueObject_retain( RogueString::create( "CmdSubtract" ) ); 
+  Rogue_literal_strings[882] = (RogueString*) RogueObject_retain( RogueString::create( "CmdMultiply" ) ); 
+  Rogue_literal_strings[883] = (RogueString*) RogueObject_retain( RogueString::create( "CmdDivide" ) ); 
+  Rogue_literal_strings[884] = (RogueString*) RogueObject_retain( RogueString::create( "CmdMod" ) ); 
+  Rogue_literal_strings[885] = (RogueString*) RogueObject_retain( RogueString::create( "CmdPower" ) ); 
+  Rogue_literal_strings[886] = (RogueString*) RogueObject_retain( RogueString::create( "[INTERNAL] $::resolve_for_reference() is undefined." ) ); 
+  Rogue_literal_strings[887] = (RogueString*) RogueObject_retain( RogueString::create( "Incompatible types for comparison: " ) ); 
+  Rogue_literal_strings[888] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCastToType" ) ); 
+  Rogue_literal_strings[889] = (RogueString*) RogueObject_retain( RogueString::create( "CmdInstanceOf" ) ); 
+  Rogue_literal_strings[890] = (RogueString*) RogueObject_retain( RogueString::create( "CmdConvertToType" ) ); 
+  Rogue_literal_strings[891] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAs" ) ); 
+  Rogue_literal_strings[892] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLogicalize" ) ); 
+  Rogue_literal_strings[893] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLogicalNot" ) ); 
+  Rogue_literal_strings[894] = (RogueString*) RogueObject_retain( RogueString::create( "CmdNegate" ) ); 
+  Rogue_literal_strings[895] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseNot" ) ); 
+  Rogue_literal_strings[896] = (RogueString*) RogueObject_retain( RogueString::create( "not " ) ); 
+  Rogue_literal_strings[897] = (RogueString*) RogueObject_retain( RogueString::create( "(-" ) ); 
+  Rogue_literal_strings[898] = (RogueString*) RogueObject_retain( RogueString::create( "[INTERNAL] TODO: 'is' for compounds." ) ); 
+  Rogue_literal_strings[899] = (RogueString*) RogueObject_retain( RogueString::create( "Cannot use 'isNot' between mixed type categories " ) ); 
+  Rogue_literal_strings[900] = (RogueString*) RogueObject_retain( RogueString::create( "CmdRangeUpTo" ) ); 
+  Rogue_literal_strings[901] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLocalOpWithAssign" ) ); 
+  Rogue_literal_strings[902] = (RogueString*) RogueObject_retain( RogueString::create( "CmdOpAssignGlobal" ) ); 
+  Rogue_literal_strings[903] = (RogueString*) RogueObject_retain( RogueString::create( "CmdOpAssignProperty" ) ); 
+  Rogue_literal_strings[904] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLogicalXor" ) ); 
+  Rogue_literal_strings[905] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLogicalOr" ) ); 
+  Rogue_literal_strings[906] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLogicalAnd" ) ); 
+  Rogue_literal_strings[907] = (RogueString*) RogueObject_retain( RogueString::create( "operator!=" ) ); 
+  Rogue_literal_strings[908] = (RogueString*) RogueObject_retain( RogueString::create( "operator<>" ) ); 
+  Rogue_literal_strings[909] = (RogueString*) RogueObject_retain( RogueString::create( "operator==" ) ); 
+  Rogue_literal_strings[910] = (RogueString*) RogueObject_retain( RogueString::create( "operator<=" ) ); 
+  Rogue_literal_strings[911] = (RogueString*) RogueObject_retain( RogueString::create( "operator>" ) ); 
+  Rogue_literal_strings[912] = (RogueString*) RogueObject_retain( RogueString::create( "operator>=" ) ); 
+  Rogue_literal_strings[913] = (RogueString*) RogueObject_retain( RogueString::create( "operator<" ) ); 
+  Rogue_literal_strings[914] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseXor" ) ); 
+  Rogue_literal_strings[915] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseOr" ) ); 
+  Rogue_literal_strings[916] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseAnd" ) ); 
+  Rogue_literal_strings[917] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseShiftLeft" ) ); 
+  Rogue_literal_strings[918] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseShiftRight" ) ); 
+  Rogue_literal_strings[919] = (RogueString*) RogueObject_retain( RogueString::create( "CmdBitwiseShiftRightX" ) ); 
+  Rogue_literal_strings[920] = (RogueString*) RogueObject_retain( RogueString::create( "CmdConvertToPrimitiveType" ) ); 
+  Rogue_literal_strings[921] = (RogueString*) RogueObject_retain( RogueString::create( "Character[]" ) ); 
+  Rogue_literal_strings[922] = (RogueString*) RogueObject_retain( RogueString::create( "String[]" ) ); 
+  Rogue_literal_strings[923] = (RogueString*) RogueObject_retain( RogueString::create( "Template[]" ) ); 
+  Rogue_literal_strings[924] = (RogueString*) RogueObject_retain( RogueString::create( "RequisiteItem[]" ) ); 
+  Rogue_literal_strings[925] = (RogueString*) RogueObject_retain( RogueString::create( "Type[]" ) ); 
+  Rogue_literal_strings[926] = (RogueString*) RogueObject_retain( RogueString::create( "Cmd[]" ) ); 
+  Rogue_literal_strings[927] = (RogueString*) RogueObject_retain( RogueString::create( "Method[]" ) ); 
+  Rogue_literal_strings[928] = (RogueString*) RogueObject_retain( RogueString::create( "Property[]" ) ); 
+  Rogue_literal_strings[929] = (RogueString*) RogueObject_retain( RogueString::create( "Local[]" ) ); 
+  Rogue_literal_strings[930] = (RogueString*) RogueObject_retain( RogueString::create( "Integer[]" ) ); 
+  Rogue_literal_strings[931] = (RogueString*) RogueObject_retain( RogueString::create( "Byte[]" ) ); 
+  Rogue_literal_strings[932] = (RogueString*) RogueObject_retain( RogueString::create( "Token[]" ) ); 
+  Rogue_literal_strings[933] = (RogueString*) RogueObject_retain( RogueString::create( "TypeParameter[]" ) ); 
+  Rogue_literal_strings[934] = (RogueString*) RogueObject_retain( RogueString::create( "Augment[]" ) ); 
+  Rogue_literal_strings[935] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Template>>[]" ) ); 
+  Rogue_literal_strings[936] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Augment[]>>[]" ) ); 
+  Rogue_literal_strings[937] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLabel[]" ) ); 
+  Rogue_literal_strings[938] = (RogueString*) RogueObject_retain( RogueString::create( "CmdControlStructure[]" ) ); 
+  Rogue_literal_strings[939] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Method[]>>[]" ) ); 
+  Rogue_literal_strings[940] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Type>>[]" ) ); 
+  Rogue_literal_strings[941] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Integer>>[]" ) ); 
+  Rogue_literal_strings[942] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Method>>[]" ) ); 
+  Rogue_literal_strings[943] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Logical>>[]" ) ); 
+  Rogue_literal_strings[944] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWhichCase[]" ) ); 
+  Rogue_literal_strings[945] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCatch[]" ) ); 
+  Rogue_literal_strings[946] = (RogueString*) RogueObject_retain( RogueString::create( "FnParam[]" ) ); 
+  Rogue_literal_strings[947] = (RogueString*) RogueObject_retain( RogueString::create( "FnArg[]" ) ); 
+  Rogue_literal_strings[948] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,TokenType>>[]" ) ); 
+  Rogue_literal_strings[949] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,TypeSpecializer>>[]" ) ); 
+  Rogue_literal_strings[950] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,CmdLabel>>[]" ) ); 
+  Rogue_literal_strings[951] = (RogueString*) RogueObject_retain( RogueString::create( "CmdTaskControlSection[]" ) ); 
+  Rogue_literal_strings[952] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Cmd>>[]" ) ); 
+  Rogue_literal_strings[953] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Property>>[]" ) ); 
+  Rogue_literal_strings[954] = (RogueString*) RogueObject_retain( RogueString::create( "TableEntry<<String,Token[]>>[]" ) ); 
+  Rogue_literal_strings[955] = (RogueString*) RogueObject_retain( RogueString::create( "CandidateMethods" ) ); 
+  Rogue_literal_strings[956] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReadSingleton" ) ); 
+  Rogue_literal_strings[957] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateArray" ) ); 
+  Rogue_literal_strings[958] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCall" ) ); 
+  Rogue_literal_strings[959] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCreateObject" ) ); 
+  Rogue_literal_strings[960] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReadGlobal" ) ); 
+  Rogue_literal_strings[961] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReadProperty" ) ); 
+  Rogue_literal_strings[962] = (RogueString*) RogueObject_retain( RogueString::create( "CmdLogicalizeOptionalValue" ) ); 
+  Rogue_literal_strings[963] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWriteLocal" ) ); 
+  Rogue_literal_strings[964] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReadArrayCount" ) ); 
+  Rogue_literal_strings[965] = (RogueString*) RogueObject_retain( RogueString::create( "CmdReadArrayElement" ) ); 
+  Rogue_literal_strings[966] = (RogueString*) RogueObject_retain( RogueString::create( "CmdWriteArrayElement" ) ); 
+  Rogue_literal_strings[967] = (RogueString*) RogueObject_retain( RogueString::create( "CmdAdjustProperty" ) ); 
+  Rogue_literal_strings[968] = (RogueString*) RogueObject_retain( RogueString::create( "CmdStatementList" ) ); 
+  Rogue_literal_strings[969] = (RogueString*) RogueObject_retain( RogueString::create( "CmdArgs" ) ); 
+  Rogue_literal_strings[970] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareNE" ) ); 
+  Rogue_literal_strings[971] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareLE" ) ); 
+  Rogue_literal_strings[972] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareEQ" ) ); 
+  Rogue_literal_strings[973] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareIs" ) ); 
+  Rogue_literal_strings[974] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareIsNot" ) ); 
+  Rogue_literal_strings[975] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareLT" ) ); 
+  Rogue_literal_strings[976] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareGT" ) ); 
+  Rogue_literal_strings[977] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCompareGE" ) ); 
+  Rogue_literal_strings[978] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallRoutine" ) ); 
+  Rogue_literal_strings[979] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallInlineNative" ) ); 
+  Rogue_literal_strings[980] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallNativeRoutine" ) ); 
+  Rogue_literal_strings[981] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallNativeMethod" ) ); 
+  Rogue_literal_strings[982] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallAspectMethod" ) ); 
+  Rogue_literal_strings[983] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallMethod" ) ); 
+  Rogue_literal_strings[984] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallInlineNativeRoutine" ) ); 
+  Rogue_literal_strings[985] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallInlineNativeMethod" ) ); 
+  Rogue_literal_strings[986] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallDynamicMethod" ) ); 
+  Rogue_literal_strings[987] = (RogueString*) RogueObject_retain( RogueString::create( "CmdCallStaticMethod" ) ); 
 
 }
 

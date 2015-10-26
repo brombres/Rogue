@@ -106,6 +106,12 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
   else                                return obj;
 }
 
+RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type )
+{
+  if (RogueObject_instance_of(THIS,specialized_type)) return THIS;
+  return 0;
+}
+
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type )
 {
   RogueType* this_type;
@@ -125,16 +131,21 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
   return false;
 }
 
+void* RogueObject_retain( RogueObject* THIS )
+{
+  ++THIS->reference_count;
+  return THIS;
+}
+
+void* RogueObject_release( RogueObject* THIS )
+{
+  --THIS->reference_count;
+  return THIS;
+}
 
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
-RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
-{
-  if (RogueObject_instance_of(object,specialized_type)) return object;
-  return NULL;
-}
-
 void RogueObject_trace( void* obj )
 {
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
@@ -372,7 +383,7 @@ void* RogueAllocationPage::allocate( int size )
   if (size > 0) size = (size + 7) & ~7;
   else          size = 8;
 
-  if (size > remaining) return NULL;
+  if (size > remaining) return 0;
 
   //printf( "Allocating %d bytes from page.\n", size );
   void* result = cursor;
@@ -387,11 +398,11 @@ void* RogueAllocationPage::allocate( int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
-RogueAllocator::RogueAllocator() : pages(NULL), objects(NULL)
+RogueAllocator::RogueAllocator() : pages(0), objects(0)
 {
   for (int i=0; i<ROGUEMM_SLOT_COUNT; ++i)
   {
-    available_objects[i] = NULL;
+    available_objects[i] = 0;
   }
 }
 
@@ -427,7 +438,7 @@ void* RogueAllocator::allocate( int size )
   // Try allocating a new object from the current page.
   if ( !pages )
   {
-    pages = new RogueAllocationPage(NULL);
+    pages = new RogueAllocationPage(0);
   }
 
   obj = (RogueObject*) pages->allocate( size );
@@ -478,7 +489,7 @@ void* RogueAllocator::free( void* data, int size )
 
   // Always returns null, allowing a pointer to be freed and assigned null in
   // a single step.
-  return NULL;
+  return 0;
 }
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
@@ -524,8 +535,8 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
 
   cur = THIS->objects;
-  THIS->objects = NULL;
-  RogueObject* survivors = NULL;  // local var for speed
+  THIS->objects = 0;
+  RogueObject* survivors = 0;  // local var for speed
 
   while (cur)
   {

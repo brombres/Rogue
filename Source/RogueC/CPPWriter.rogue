@@ -807,9 +807,9 @@ augment Program
       writer.println
 
       forEach (i of Program.literal_string_list)
-        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueString::create( ")
+        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString::create( ")
         writer.print_string_utf8( Program.literal_string_list[i] )
-        writer.println( " )->retain(); " )
+        writer.println( " ) ); " )
       endForEach
       writer.println
 
@@ -2337,7 +2337,7 @@ endAugment
 augment CmdAs
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "((" ).print( target_type ).print( ")(RogueObject::as(" )
+      writer.print( "((" ).print( target_type ).print( ")(RogueObject_as(" )
       operand.write_cpp( writer )
       writer.print( "," )
       writer.print_type_info( target_type )
