@@ -1688,11 +1688,8 @@ augment CmdCreateObject
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
 
-      if (of_type.is_compound)
-        writer.print_type_name( of_type )
-      else
-        writer.print_type_info(of_type).print( "->create_and_init_object()")
-      endIf
+      writer.print("RogueType_create_object(Rogue_program.type_").print(type.cpp_name).print(",0)")
+      #writer.print_type_info(of_type).print( "->create_and_init_object()")
 
       if (not is_statement) writer.print( ")" )
 endAugment

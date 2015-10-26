@@ -79,19 +79,6 @@ RogueType::~RogueType()
   }
 }
 
-RogueObject* RogueType::create_object()
-{
-  return Rogue_program.allocate_object( this, object_size );
-}
-
-RogueObject* RogueType::init_object( RogueObject* obj )
-{
-  RogueInitFn fn;
-  //if ((fn = init_object_fn)) return fn( obj );
-  if ((fn = Rogue_init_object_fn_table[index])) return fn( obj );
-  else return obj;
-}
-
 RogueLogical RogueType::instance_of( RogueType* ancestor_type )
 {
   if (this == ancestor_type) return true;
@@ -120,6 +107,19 @@ RogueObject* RogueType::singleton()
   }
   return _singleton;
 }
+
+RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
+{
+  RogueObject* obj;
+  RogueInitFn  fn;
+
+  if ( !size ) size = THIS->object_size;
+  obj = Rogue_program.allocate_object( THIS, size );
+
+  if ((fn = THIS->init_object_fn)) return fn( obj );
+  else                                return obj;
+}
+
 
 //-----------------------------------------------------------------------------
 //  RogueObject
@@ -559,6 +559,7 @@ void Rogue_configure_types()
     int j;
     RogueType* type = &Rogue_types[i];
 
+    type->allocator  = &Rogue_allocator;
     type->_singleton = 0;
 
     type->index = i;
@@ -586,16 +587,5 @@ void Rogue_collect_garbage()
 {
   Rogue_trace();
   RogueAllocator_collect_garbage( &Rogue_allocator );
-}
-
-RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size )
-{
-  if ( !size ) size = of_type->object_size;
-  return Rogue_program.allocate_object( of_type, size );
-}
-
-RogueObject* Rogue_create_and_init_object( RogueType* of_type, RogueInteger size )
-{
-  return of_type->init_object( Rogue_create_object(of_type,size) );
 }
 

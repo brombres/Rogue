@@ -67,6 +67,8 @@ struct RogueType
   RogueObject* _singleton;
   void**       methods;
 
+  RogueAllocator*   allocator;
+
   RogueTraceFn      trace_fn;
   RogueInitFn       init_object_fn;
   RogueInitFn       init_fn;
@@ -74,14 +76,12 @@ struct RogueType
   RogueType();
   virtual ~RogueType();
 
-  RogueObject* create_and_init_object() { return init_object( create_object() ); }
-  RogueObject* create_object();
-
-  RogueObject* init_object( RogueObject* obj );
   RogueLogical instance_of( RogueType* ancestor_type );
 
   virtual RogueObject* singleton();
 };
+
+RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );
 
 //-----------------------------------------------------------------------------
 //  RogueObject
@@ -277,6 +277,5 @@ extern int               Rogue_literal_string_count;
 extern RogueString*      Rogue_literal_strings[];
 
 void         Rogue_collect_garbage();
-RogueObject* Rogue_create_object( RogueType* of_type, RogueInteger size );
-RogueObject* Rogue_create_and_init_object( RogueType* of_type, RogueInteger size );
+
 
