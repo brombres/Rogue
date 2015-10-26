@@ -106,9 +106,30 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
   obj = Rogue_program.allocate_object( THIS, size );
 
   if ((fn = THIS->init_object_fn)) return fn( obj );
-  else                                return obj;
+  else                             return obj;
 }
 
+RogueObject* RogueType_singleton( RogueType* THIS )
+{
+  RogueInitFn fn;
+
+  if (THIS->_singleton) return THIS->_singleton;
+
+  // NOTE: _singleton must be assigned before calling init_object()
+  // so we can't just call RogueType_create_object().
+  THIS->_singleton = Rogue_program.allocate_object( THIS, THIS->object_size );
+
+  if ((fn = THIS->init_object_fn)) THIS->_singleton = fn( THIS->_singleton );
+
+  if ((fn = THIS->init_fn)) return fn( THIS->_singleton );
+  else                      return THIS->_singleton;
+
+  return THIS->_singleton;
+}
+
+//-----------------------------------------------------------------------------
+//  RogueObject
+//-----------------------------------------------------------------------------
 RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type )
 {
   if (RogueObject_instance_of(THIS,specialized_type)) return THIS;
@@ -146,9 +167,6 @@ void* RogueObject_release( RogueObject* THIS )
   return THIS;
 }
 
-//-----------------------------------------------------------------------------
-//  RogueObject
-//-----------------------------------------------------------------------------
 void RogueObject_trace( void* obj )
 {
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;

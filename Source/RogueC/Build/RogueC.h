@@ -43,10 +43,10 @@ struct RogueString;
 struct RogueCharacterList;
 
 #define ROGUE_CREATE_OBJECT(name) RogueType_create_object(RogueType##name,0)
-  //e.g. (RogueType_create_object(RogueStringBuilder,0))
+  //e.g. RogueType_create_object(RogueStringBuilder,0)
 
-#define ROGUE_SINGLETON(name) (RogueType##name->singleton())
-  //e.g. (RogueTypeConsole->singleton());
+#define ROGUE_SINGLETON(name) RogueType_singleton(RogueType##name)
+  //e.g. RogueType_singleton( RogueTypeConsole )
 
 #define ROGUE_PROPERTY(name) p_##name
 
@@ -83,6 +83,7 @@ struct RogueType
 };
 
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );
+RogueObject* RogueType_singleton( RogueType* THIS );
 
 //-----------------------------------------------------------------------------
 //  RogueObject
@@ -108,9 +109,6 @@ struct RogueObject
   // A positive reference_count ensures that this object will never be
   // collected.  A zero reference_count means this object is kept as long as
   // it is visible to the memory manager.
-
-  RogueObject* retain()  { ++reference_count; return this; }
-  void         release() { --reference_count; }
 };
 
 RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
