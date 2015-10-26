@@ -13,7 +13,7 @@ class System [requisite]
       macro native
         @|{
          |  char cmd_buffer[4096];
-         |  $command->to_c_string( cmd_buffer, 4096 );
+         |  RogueString_to_c_string( $command, cmd_buffer, 4096 );
          |  system( cmd_buffer );
          |}
 endClass

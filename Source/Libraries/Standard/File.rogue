@@ -4,7 +4,7 @@ class File
       native @|if ( !$filepath ) return 0;
               |
               |char c_filepath[ PATH_MAX ];
-              |$filepath->to_c_string( c_filepath, PATH_MAX );
+              |RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
               |
               |#if defined(_WIN32)
               |{
@@ -22,7 +22,7 @@ class File
               |    return $filepath;
               |  }
               |
-              |  return RogueString::create( full_name );
+              |  return RogueString_create( full_name );
               |}
               |#else
               |
@@ -65,7 +65,7 @@ class File
               |  if (original_dir_fd >= 0) close( original_dir_fd );
               |  if (new_dir_fd >= 0) close( new_dir_fd );
               |
-              |  return RogueString::create( c_filepath );
+              |  return RogueString_create( c_filepath );
               |}
               |#endif
 
@@ -73,7 +73,7 @@ class File
       native @|if ( !$filepath ) return false;
               |
               |char c_filepath[ PATH_MAX ];
-              |$filepath->to_c_string( c_filepath, PATH_MAX );
+              |RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
               |
               |FILE* fp = fopen( c_filepath, "rb" );
               |if ( !fp ) return false;
@@ -91,7 +91,7 @@ class File
       native @|if ( !$filepath ) return false;
               |
               |char c_filepath[ PATH_MAX ];
-              |$filepath->to_c_string( c_filepath, PATH_MAX );
+              |RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
               |
               |#if defined(_WIN32)
               |  char filepath_copy[PATH_MAX];
@@ -163,7 +163,7 @@ class File
       native @|if ( !$filepath ) return 0;
               |
               |char c_filepath[ PATH_MAX ];
-              |$filepath->to_c_string( c_filepath, sizeof(c_filepath) );
+              |RogueString_to_c_string( $filepath, c_filepath, sizeof(c_filepath) );
               |
               |FILE* fp = fopen( c_filepath, "rb" );
               |if ( !fp ) return 0;
@@ -253,7 +253,7 @@ class FileReader : Reader<<Character>>
       close
 
       native @|char path[ PATH_MAX ];
-              |$filepath->to_c_string( path, PATH_MAX );
+              |RogueString_to_c_string( $filepath, path, PATH_MAX );
               |
               |$this->fp = fopen( path, "rb" );
               |if ($this->fp)
@@ -338,7 +338,7 @@ class FileWriter
       close
 
       native @|char path[ PATH_MAX ];
-              |$filepath->to_c_string( path, PATH_MAX );
+              |RogueString_to_c_string( $filepath, path, PATH_MAX );
               |$this->fp = fopen( path, "wb" );
               |
               |return !!$this->fp;

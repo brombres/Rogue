@@ -128,15 +128,6 @@ struct RogueString : RogueObject
   RogueInteger   count;
   RogueInteger   hash_code;
   RogueCharacter characters[];
-
-  static RogueString* create( int count );
-  static RogueString* create( const char* c_string, int count=-1 );
-  static RogueString* create( RogueCharacterList* characters );
-  static void         print( RogueString* st );
-  static void         print( RogueCharacter* characters, int count );
-
-  bool                to_c_string( char* buffer, int buffer_size );
-  RogueString*        update_hash_code();
 };
 
 RogueString* RogueString_create( int count );

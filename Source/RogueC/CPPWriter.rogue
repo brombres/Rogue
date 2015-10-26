@@ -807,8 +807,9 @@ augment Program
       writer.println
 
       forEach (i of Program.literal_string_list)
-        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString::create( ")
+        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create( ")
         writer.print_string_utf8( Program.literal_string_list[i] )
+        writer.print( ", " ).print( Program.literal_string_list[i].count )
         writer.println( " ) ); " )
       endForEach
       writer.println
@@ -835,10 +836,10 @@ augment Program
       writer.println
 
       # Copy command line args to System class
-      writer.println( "RogueSystem_executable_filepath = RogueString::create( argv[0] );" );
+      writer.println( "RogueSystem_executable_filepath = RogueString_create( argv[0], -1 );" );
       writer.println( "for (int i=1; i<argc; ++i)" )
       writer.println( "{" )
-      writer.println( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );" )
+      writer.println( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString_create( argv[i], -1 ) );" )
       writer.println( "}" )
       writer.println
 

@@ -10,7 +10,7 @@ class Console [singleton]
               |int len = strlen( st );
               |if (len) st[--len] = 0;
               |
-              |return RogueString::create( st, len );
+              |return RogueString_create( st, len );
 
   METHODS
     method print( value:String )
@@ -20,9 +20,9 @@ class Console [singleton]
       native_print( value )
 
     method native_print( value:String )
-      $if ("C++") macro native 'RogueString::print( $value )'
+      $if ("C++") macro native 'RogueString_print( $value )'
 
     method native_print( value:StringBuilder )
-      $if ("C++") macro native 'RogueString::print( $value->characters->data->characters, $value->characters->count )'
+      $if ("C++") macro native 'RogueString_print( $value->characters->data->characters, $value->characters->count )'
 endClass
 
