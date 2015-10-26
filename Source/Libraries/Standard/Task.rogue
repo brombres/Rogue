@@ -29,7 +29,7 @@ endClass
 #------------------------------------------------------------------------------
 # TaskManager
 #------------------------------------------------------------------------------
-class TaskManager [requisite singleton]
+class TaskManager [singleton]
   PROPERTIES
     active_list = Task[]
     update_list = Task[]

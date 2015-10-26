@@ -43,7 +43,7 @@ struct RogueString;
 struct RogueCharacterList;
 
 #define ROGUE_SINGLETON(name) (Rogue_program.type_##name->singleton())
-  //THIS->standard_output = ((RogueConsole*)Rogue_program.type_Console->singleton());
+  //e.g. (Rogue_program.type_Console->singleton());
 
 #define ROGUE_PROPERTY(name) p_##name
 
@@ -183,14 +183,6 @@ struct RogueProgramCore
   RogueObject*  objects;
   RogueString** literal_strings;
   int           literal_string_count;
-
-  RogueType**   types;
-  int           type_count;
-  int           next_type_index;
-
-  RogueObjectType* type_Object;
-  RogueStringType* type_String;
-  RogueArrayType*  type_Array;
 
   // NOTE: increment ROGUE_BUILT_IN_TYPE_COUNT when adding new built-in types
 

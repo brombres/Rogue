@@ -58,22 +58,11 @@
 #endif
 
 
-bool Rogue_program_configured = false;
-
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 RogueType::RogueType() : base_type_count(0), base_types(0), index(-1), object_size(0), _singleton(0)
 {
-  /*
-  if (Rogue_program.next_type_index == Rogue_program.type_count)
-  {
-    printf( "INTERNAL ERROR: Not enough type slots.\n" );
-    exit( 1 );
-  }
-  */
-
-  if (Rogue_program_configured) Rogue_program.types[ Rogue_program.next_type_index++ ] = this;
 }
 
 RogueType::~RogueType()
@@ -347,18 +336,8 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
 //-----------------------------------------------------------------------------
 //  RogueProgramCore
 //-----------------------------------------------------------------------------
-RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL), next_type_index(0)
+RogueProgramCore::RogueProgramCore( int type_count ) : objects(NULL)
 {
-  type_count += ROGUE_BUILT_IN_TYPE_COUNT + 1000;
-  this->type_count = type_count;
-  types = new RogueType*[ type_count ];
-  memset( types, 0, sizeof(RogueType*) );
-
-  type_Object = new RogueObjectType();
-  type_String = new RogueStringType();
-  type_Array  = new RogueArrayType();
-
-  Rogue_program_configured = true;
 }
 
 RogueProgramCore::~RogueProgramCore()
@@ -368,15 +347,6 @@ RogueProgramCore::~RogueProgramCore()
     RogueObject* next_object = objects->next_object;
     Rogue_allocator.free( objects, objects->object_size );
     objects = next_object;
-  }
-
-  for (int i=0; i<type_count; ++i)
-  {
-    if (types[i])
-    {
-      delete types[i];
-      types[i] = 0;
-    }
   }
 }
 

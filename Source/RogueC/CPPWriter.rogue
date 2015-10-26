@@ -381,10 +381,7 @@ augment Program
       writer.println( "struct RogueProgram : RogueProgramCore" )
       writer.println( "{" )
       forEach (type in type_list)
-        if (not type.omit_output)
-          # TODO
-          #writer.print( "  " ).print( type.cpp_type_name ).print( "* type_" );
-          #writer.print( type.cpp_name ).println( ";" );
+        if (not type.omit_output or (type.is_native and not type.is_array))
           writer.print( "  RogueType* type_" );
           writer.print( type.cpp_name ).println( ";" );
         endIf
@@ -787,8 +784,7 @@ augment Program
 
       # Create types
       forEach (type in type_list)
-        if (not type.omit_output)
-          #writer.print("type_").print(type.cpp_name).print(" = new ").print(type.cpp_type_name).println("();")
+        if (not type.omit_output or (type.is_native and not type.is_array))
           writer.print("type_").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
           # TODO
         endIf
