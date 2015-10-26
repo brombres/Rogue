@@ -68,20 +68,6 @@ RogueAllocator Rogue_allocator;
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-RogueType::RogueType() : base_type_count(0), base_types(0), index(-1), object_size(0), _singleton(0)
-{
-}
-
-RogueType::~RogueType()
-{
-  if (base_types)
-  {
-    delete base_types;
-    base_types = 0;
-    base_type_count = 0;
-  }
-}
-
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
 {
   RogueObject* obj;
@@ -92,6 +78,18 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
 
   if ((fn = THIS->init_object_fn)) return fn( obj );
   else                             return obj;
+}
+
+RogueType* RogueType_retire( RogueType* THIS )
+{
+  if (THIS->base_types)
+  {
+    delete THIS->base_types;
+    THIS->base_types = 0;
+    THIS->base_type_count = 0;
+  }
+
+  return THIS;
 }
 
 RogueObject* RogueType_singleton( RogueType* THIS )
@@ -363,7 +361,14 @@ RogueProgramCore::RogueProgramCore()
 
 RogueProgramCore::~RogueProgramCore()
 {
+  int i;
+
   RogueAllocator_free_objects( &Rogue_allocator );
+
+  for (i=0; i<Rogue_type_count; ++i)
+  {
+    RogueType_retire( &Rogue_types[i] );
+  }
 }
 
 RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
@@ -576,8 +581,9 @@ void Rogue_configure_types()
     int j;
     RogueType* type = &Rogue_types[i];
 
+    memset( type, 0, sizeof(RogueType) );
+
     type->allocator  = &Rogue_allocator;
-    type->_singleton = 0;
 
     type->index = i;
     type->object_size = Rogue_object_size_table[i];
@@ -590,10 +596,6 @@ void Rogue_configure_types()
       {
         type->base_types[j] = &Rogue_types[ *(++type_info) ];
       } 
-    }
-    else
-    {
-      type->base_types = 0;
     }
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];

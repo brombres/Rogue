@@ -75,12 +75,10 @@ struct RogueType
   RogueTraceFn      trace_fn;
   RogueInitFn       init_object_fn;
   RogueInitFn       init_fn;
-
-  RogueType();
-  virtual ~RogueType();
 };
 
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );
+RogueType*   RogueType_retire( RogueType* THIS );
 RogueObject* RogueType_singleton( RogueType* THIS );
 
 //-----------------------------------------------------------------------------
