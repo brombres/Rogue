@@ -180,7 +180,7 @@ RogueString* RogueString::create( int count )
 
   int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
 
-  RogueString* st = (RogueString*) Rogue_program.allocate_object( Rogue_program.type_String, total_size );
+  RogueString* st = (RogueString*) Rogue_program.allocate_object( RogueTypeString, total_size );
   st->count = count;
   st->hash_code = 0;
 
@@ -288,7 +288,7 @@ RogueArray* RogueArray::create( int count, int element_size, bool is_reference_a
   int data_size  = count * element_size;
   int total_size = sizeof(RogueArray) + data_size;
 
-  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( Rogue_program.type_Array, total_size );
+  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( RogueTypeArray, total_size );
 
   memset( array->bytes, 0, data_size );
   array->count = count;

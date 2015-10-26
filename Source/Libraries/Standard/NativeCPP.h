@@ -42,8 +42,8 @@ struct RogueAllocator;
 struct RogueString;
 struct RogueCharacterList;
 
-#define ROGUE_SINGLETON(name) (Rogue_program.type_##name->singleton())
-  //e.g. (Rogue_program.type_Console->singleton());
+#define ROGUE_SINGLETON(name) (RogueType##name->singleton())
+  //e.g. (RogueTypeConsole->singleton());
 
 #define ROGUE_PROPERTY(name) p_##name
 

@@ -141,7 +141,7 @@ class CPPWriter
 
     method print_type_info( type:Type )->CPPWriter
       print_indent
-      buffer.print( "Rogue_program.type_" ).print( type.cpp_name )
+      buffer.print( "RogueType" ).print( type.cpp_name )
       return this
 
     method print_default_value( type:Type )->CPPWriter
@@ -380,19 +380,21 @@ augment Program
       # RogueProgram object
       writer.println( "struct RogueProgram : RogueProgramCore" )
       writer.println( "{" )
-      forEach (type in type_list)
-        if (not type.omit_output or (type.is_native and not type.is_array))
-          writer.print( "  RogueType* type_" );
-          writer.print( type.cpp_name ).println( ";" );
-        endIf
-      endForEach
-      writer.println
       writer.println( "  RogueProgram();" )
       writer.println( "  ~RogueProgram();" )
       writer.println( "  void configure();" )
       writer.println( "  void launch( int argc, char* argv[] );" )
       writer.println( "  //void finish_tasks();" )
       writer.println( "};" )
+      writer.println
+
+      # RogueType_X externs.
+      forEach (type in type_list)
+        if (not type.omit_output or (type.is_native and not type.is_array))
+          writer.print( "extern RogueType* RogueType" );
+          writer.print( type.cpp_name ).println( ";" );
+        endIf
+      endForEach
       writer.println
 
       # method prototypes
@@ -749,6 +751,15 @@ augment Program
       writer.print( "RogueType Rogue_types[" ).print( type_list.count ).println( "];" )
       writer.println
 
+      # RogueType_X declarations.
+      forEach (type in type_list)
+        if (not type.omit_output or (type.is_native and not type.is_array))
+          writer.print( "RogueType* RogueType" );
+          writer.print( type.cpp_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
       writer.print( "int Rogue_literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
       writer.print( "RogueString* Rogue_literal_strings[" ).print( Program.literal_string_list.count ).println( "];" );
 
@@ -789,7 +800,7 @@ augment Program
       # Create types
       forEach (type in type_list)
         if (not type.omit_output or (type.is_native and not type.is_array))
-          writer.print("type_").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
+          writer.print("RogueType").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
           # TODO
         endIf
       endForEach
@@ -832,7 +843,7 @@ augment Program
       writer.println
 
       # Call Global.on_launch()
-      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (Rogue_program.type_Global->singleton()) );"
+      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueTypeGlobal->singleton()) );"
 
       writer.println( "Rogue_collect_garbage();" )
 
@@ -1688,7 +1699,7 @@ augment CmdCreateObject
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
 
-      writer.print("RogueType_create_object(Rogue_program.type_").print(type.cpp_name).print(",0)")
+      writer.print("RogueType_create_object(RogueType").print(type.cpp_name).print(",0)")
       #writer.print_type_info(of_type).print( "->create_and_init_object()")
 
       if (not is_statement) writer.print( ")" )
