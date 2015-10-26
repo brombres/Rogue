@@ -78,8 +78,6 @@ struct RogueType
 
   RogueType();
   virtual ~RogueType();
-
-  virtual RogueObject* singleton();
 };
 
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );

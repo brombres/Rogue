@@ -82,21 +82,6 @@ RogueType::~RogueType()
   }
 }
 
-RogueObject* RogueType::singleton()
-{
-  if ( !_singleton )
-  {
-    RogueInitFn fn;
-    _singleton = Rogue_program.allocate_object( this, object_size );
-
-    if ((fn = Rogue_init_object_fn_table[index])) _singleton = fn( _singleton );
-
-    if ((fn = Rogue_init_fn_table[index])) return fn( _singleton );
-    else                                   return _singleton;
-  }
-  return _singleton;
-}
-
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
 {
   RogueObject* obj;
@@ -37308,7 +37293,7 @@ void RogueProgram::configure()
   Rogue_literal_strings[525] = (RogueString*) RogueObject_retain( RogueString::create( "RogueSystem_executable_filepath = RogueString::create( argv[0] );" ) ); 
   Rogue_literal_strings[526] = (RogueString*) RogueObject_retain( RogueString::create( "for (int i=1; i<argc; ++i)" ) ); 
   Rogue_literal_strings[527] = (RogueString*) RogueObject_retain( RogueString::create( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );" ) ); 
-  Rogue_literal_strings[528] = (RogueString*) RogueObject_retain( RogueString::create( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueTypeGlobal->singleton()) );" ) ); 
+  Rogue_literal_strings[528] = (RogueString*) RogueObject_retain( RogueString::create( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );" ) ); 
   Rogue_literal_strings[529] = (RogueString*) RogueObject_retain( RogueString::create( "Rogue_collect_garbage();" ) ); 
   Rogue_literal_strings[530] = (RogueString*) RogueObject_retain( RogueString::create( "RogueProgram Rogue_program;" ) ); 
   Rogue_literal_strings[531] = (RogueString*) RogueObject_retain( RogueString::create( "int main( int argc, char* argv[] )\n{\n  Rogue_program.configure();\n  Rogue_program.launch( argc, argv );\n  //Rogue_program.finish_tasks();\n  return 0;\n}" ) ); 
@@ -37784,7 +37769,7 @@ void RogueProgram::launch( int argc, char* argv[] )
     RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString::create( argv[i] ) );
   }
 
-  RogueGlobal__on_launch( (RogueClassGlobal*) (RogueTypeGlobal->singleton()) );
+  RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );
   Rogue_collect_garbage();
 }
 

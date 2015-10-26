@@ -843,7 +843,7 @@ augment Program
       writer.println
 
       # Call Global.on_launch()
-      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueTypeGlobal->singleton()) );"
+      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );"
 
       writer.println( "Rogue_collect_garbage();" )
 
