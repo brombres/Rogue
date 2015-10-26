@@ -291,6 +291,112 @@ void RogueString::print( RogueCharacter* characters, int count )
   }
 }
 
+
+
+RogueString* RogueString_create( int count )
+{
+  if (count < 0) count = 0;
+
+  int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
+
+  RogueString* st = (RogueString*) Rogue_program.allocate_object( RogueTypeString, total_size );
+  st->count = count;
+  st->hash_code = 0;
+
+  return st;
+}
+
+RogueString* RogueString_create( const char* c_string, int count )
+{
+  if (count == -1) count = strlen( c_string );
+
+  RogueString* st = RogueString_create( count );
+
+  // Copy 8-bit chars to 16-bit data while computing hash code.
+  RogueCharacter* dest = st->characters - 1;
+  const unsigned char* src = (const unsigned char*) (c_string - 1);
+  int hash_code = 0;
+  while (--count >= 0)
+  {
+    int ch = *(++src);
+    *(++dest) = (RogueCharacter) ch;
+    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
+  }
+
+  st->hash_code = hash_code;
+
+  return st;
+}
+
+RogueString* RogueString_create( RogueCharacterList* characters )
+{
+  if ( !characters ) return RogueString_create(0);
+
+  int count = characters->count;
+  RogueString* result = RogueString_create( characters->count );
+  memcpy( result->characters, characters->data->characters, count*sizeof(RogueCharacter) );
+  return RogueString_update_hash_code( result );
+}
+
+void RogueString_print( RogueString* st )
+{
+  if (st)
+  {
+    RogueString_print( st->characters, st->count );
+  }
+  else
+  {
+    printf( "null" );
+  }
+}
+
+void RogueString_print( RogueCharacter* characters, int count )
+{
+  if (characters)
+  {
+    RogueCharacter* src = characters - 1;
+    while (--count >= 0)
+    {
+      int ch = *(++src);
+      putchar( ch );
+    }
+  }
+  else
+  {
+    printf( "null" );
+  }
+}
+
+bool RogueString_to_c_string( RogueString* THIS, char* buffer, int buffer_size )
+{
+  if (THIS->count + 1 > buffer_size) return false;
+
+  RogueCharacter* src = THIS->characters - 1;
+  char* dest = buffer - 1;
+  int n = THIS->count;
+
+  while (--n >= 0)
+  {
+    *(++dest) = (char) (*(++src));
+  }
+  *(++dest) = 0;
+
+  return true;
+}
+
+RogueString* RogueString_update_hash_code( RogueString* THIS )
+{
+  int code = 0;
+  int len = THIS->count;
+  RogueCharacter* src = THIS->characters - 1;
+  while (--len >= 0)
+  {
+    code = ((code<<3) - code) + *(++src);
+  }
+  THIS->hash_code = code;
+  return THIS;
+}
+
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------

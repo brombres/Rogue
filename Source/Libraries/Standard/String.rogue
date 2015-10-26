@@ -405,7 +405,7 @@ class String [native functional]
     method to->Integer
       $if ("C++")
         native @|char buffer[80];
-                |if ($this->to_c_string(buffer,80))
+                |if (RogueString_to_c_string($this,buffer,80))
                 |{
                 |  return strtol( buffer, 0, 10 );
                 |}
@@ -418,7 +418,7 @@ class String [native functional]
     method to->Real
       $if ("C++")
         native @|char buffer[80];
-                |if ($this->to_c_string(buffer,80))
+                |if (RogueString_to_c_string($this,buffer,80))
                 |{
                 |  return strtod( buffer, 0 );
                 |}
