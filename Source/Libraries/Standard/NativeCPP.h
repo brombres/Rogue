@@ -42,6 +42,9 @@ struct RogueAllocator;
 struct RogueString;
 struct RogueCharacterList;
 
+#define ROGUE_CREATE_OBJECT(name) RogueType_create_object(RogueType##name,0)
+  //e.g. (RogueType_create_object(RogueStringBuilder,0))
+
 #define ROGUE_SINGLETON(name) (RogueType##name->singleton())
   //e.g. (RogueTypeConsole->singleton());
 
@@ -75,8 +78,6 @@ struct RogueType
 
   RogueType();
   virtual ~RogueType();
-
-  RogueLogical instance_of( RogueType* ancestor_type );
 
   virtual RogueObject* singleton();
 };
@@ -112,8 +113,9 @@ struct RogueObject
   void         release() { --reference_count; }
 
   static RogueObject* as( RogueObject* object, RogueType* specialized_type );
-  static RogueLogical instance_of( RogueObject* object, RogueType* ancestor_type );
 };
+
+RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
 
 void RogueObject_trace( void* obj );
 void RogueString_trace( void* obj );

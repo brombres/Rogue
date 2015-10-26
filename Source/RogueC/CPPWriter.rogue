@@ -1699,8 +1699,8 @@ augment CmdCreateObject
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
 
-      writer.print("RogueType_create_object(RogueType").print(type.cpp_name).print(",0)")
-      #writer.print_type_info(of_type).print( "->create_and_init_object()")
+      #writer.print("RogueType_create_object(RogueType").print(type.cpp_name).print(",0)")
+      writer.print("ROGUE_CREATE_OBJECT(").print(type.cpp_name).print(")")
 
       if (not is_statement) writer.print( ")" )
 endAugment
@@ -2347,7 +2347,7 @@ endAugment
 augment CmdInstanceOf
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "RogueObject::instance_of(" )
+      writer.print( "RogueObject_instance_of(" )
       operand.write_cpp( writer )
       writer.print( "," )
       writer.print_type_info( target_type )

@@ -79,20 +79,6 @@ RogueType::~RogueType()
   }
 }
 
-RogueLogical RogueType::instance_of( RogueType* ancestor_type )
-{
-  if (this == ancestor_type) return true;
-
-  int count = base_type_count;
-  RogueType** base_type_ptr = base_types - 1;
-  while (--count >= 0)
-  {
-    if (ancestor_type == *(++base_type_ptr)) return true;
-  }
-
-  return false;
-}
-
 RogueObject* RogueType::singleton()
 {
   if ( !_singleton )
@@ -120,19 +106,33 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
   else                                return obj;
 }
 
+RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type )
+{
+  RogueType* this_type;
+
+  if ( !THIS ) return true;
+
+  this_type = THIS->type;
+  if (this_type == ancestor_type) return true;
+
+  int count = this_type->base_type_count;
+  RogueType** base_type_ptr = this_type->base_types - 1;
+  while (--count >= 0)
+  {
+    if (ancestor_type == *(++base_type_ptr)) return true;
+  }
+
+  return false;
+}
+
 
 //-----------------------------------------------------------------------------
 //  RogueObject
 //-----------------------------------------------------------------------------
 RogueObject* RogueObject::as( RogueObject* object, RogueType* specialized_type )
 {
-  if (object && object->type->instance_of(specialized_type)) return object;
+  if (RogueObject_instance_of(object,specialized_type)) return object;
   return NULL;
-}
-
-RogueLogical RogueObject::instance_of( RogueObject* object, RogueType* ancestor_type )
-{
-  return (!object || object->type->instance_of(ancestor_type));
 }
 
 void RogueObject_trace( void* obj )
