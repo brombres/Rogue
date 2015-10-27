@@ -61,11 +61,6 @@
 #endif
 
 //-----------------------------------------------------------------------------
-//  GLOBALS
-//-----------------------------------------------------------------------------
-RogueAllocator Rogue_allocator = {};  // initialize to zero
-
-//-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
 RogueArray* RogueType_create_array( int count, int element_size, bool is_reference_array )
@@ -367,7 +362,10 @@ RogueProgramCore::~RogueProgramCore()
 {
   int i;
 
-  RogueAllocator_free_objects( &Rogue_allocator );
+  for (i=0; i<Rogue_allocator_count; ++i)
+  {
+    RogueAllocator_free_objects( &Rogue_allocators[i] );
+  }
 
   for (i=0; i<Rogue_type_count; ++i)
   {
@@ -595,8 +593,6 @@ void Rogue_configure_types()
 
     memset( type, 0, sizeof(RogueType) );
 
-    type->allocator  = &Rogue_allocator;
-
     type->index = i;
     type->object_size = Rogue_object_size_table[i];
     type->allocator = &Rogue_allocators[ *(++type_info) ];
@@ -617,8 +613,14 @@ void Rogue_configure_types()
 
 void Rogue_collect_garbage()
 {
+  int i;
+
   Rogue_trace();
-  RogueAllocator_collect_garbage( &Rogue_allocator );
+
+  for (i=0; i<Rogue_allocator_count; ++i)
+  {
+    RogueAllocator_collect_garbage( &Rogue_allocators[i] );
+  }
 }
 
 
