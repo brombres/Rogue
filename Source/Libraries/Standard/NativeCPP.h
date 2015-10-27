@@ -119,10 +119,6 @@ void RogueArray_trace( void* obj );
 //-----------------------------------------------------------------------------
 //  RogueString
 //-----------------------------------------------------------------------------
-struct RogueStringType : RogueType
-{
-};
-
 struct RogueString : RogueObject
 {
   RogueInteger   count;
@@ -130,14 +126,15 @@ struct RogueString : RogueObject
   RogueCharacter characters[];
 };
 
-RogueString* RogueString_create( int count );
-RogueString* RogueString_create( const char* c_string, int count=-1 );
-RogueString* RogueString_create( RogueCharacterList* characters );
-void         RogueString_print( RogueString* st );
-void         RogueString_print( RogueCharacter* characters, int count );
+RogueString* RogueString_create_with_count( int count );
+RogueString* RogueString_create_with_c_string( const char* c_string, int count );
+RogueString* RogueString_create_with_characters( RogueCharacterList* characters );
+void         RogueString_print_string( RogueString* st );
+void         RogueString_print_characters( RogueCharacter* characters, int count );
 
 bool         RogueString_to_c_string( RogueString* THIS, char* buffer, int buffer_size );
 RogueString* RogueString_update_hash_code( RogueString* THIS );
+
 
 //-----------------------------------------------------------------------------
 //  RogueArray

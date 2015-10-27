@@ -186,7 +186,7 @@ void RogueArray_trace( void* obj )
 //-----------------------------------------------------------------------------
 //  RogueString
 //-----------------------------------------------------------------------------
-RogueString* RogueString_create( int count )
+RogueString* RogueString_create_with_count( int count )
 {
   if (count < 0) count = 0;
 
@@ -199,11 +199,11 @@ RogueString* RogueString_create( int count )
   return st;
 }
 
-RogueString* RogueString_create( const char* c_string, int count )
+RogueString* RogueString_create_with_c_string( const char* c_string, int count )
 {
   if (count == -1) count = strlen( c_string );
 
-  RogueString* st = RogueString_create( count );
+  RogueString* st = RogueString_create_with_count( count );
 
   // Copy 8-bit chars to 16-bit data while computing hash code.
   RogueCharacter* dest = st->characters - 1;
@@ -221,21 +221,21 @@ RogueString* RogueString_create( const char* c_string, int count )
   return st;
 }
 
-RogueString* RogueString_create( RogueCharacterList* characters )
+RogueString* RogueString_create_with_characters( RogueCharacterList* characters )
 {
-  if ( !characters ) return RogueString_create(0);
+  if ( !characters ) return RogueString_create_with_count(0);
 
   int count = characters->count;
-  RogueString* result = RogueString_create( characters->count );
+  RogueString* result = RogueString_create_with_count( characters->count );
   memcpy( result->characters, characters->data->characters, count*sizeof(RogueCharacter) );
   return RogueString_update_hash_code( result );
 }
 
-void RogueString_print( RogueString* st )
+void RogueString_print_string( RogueString* st )
 {
   if (st)
   {
-    RogueString_print( st->characters, st->count );
+    RogueString_print_characters( st->characters, st->count );
   }
   else
   {
@@ -243,7 +243,7 @@ void RogueString_print( RogueString* st )
   }
 }
 
-void RogueString_print( RogueCharacter* characters, int count )
+void RogueString_print_characters( RogueCharacter* characters, int count )
 {
   if (characters)
   {
