@@ -71,7 +71,7 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
   int data_size  = count * element_size;
   int total_size = sizeof(RogueArray) + data_size;
 
-  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( RogueTypeArray, total_size );
+  RogueArray* array = (RogueArray*) RogueAllocator_allocate_object( RogueTypeArray->allocator, RogueTypeArray, total_size );
 
   memset( array->bytes, 0, data_size );
   array->count = count;
@@ -87,7 +87,7 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
   RogueInitFn  fn;
 
   if ( !size ) size = THIS->object_size;
-  obj = Rogue_program.allocate_object( THIS, size );
+  obj = RogueAllocator_allocate_object( THIS->allocator, THIS, size );
 
   if ((fn = THIS->init_object_fn)) return fn( obj );
   else                             return obj;
@@ -113,7 +113,7 @@ RogueObject* RogueType_singleton( RogueType* THIS )
 
   // NOTE: _singleton must be assigned before calling init_object()
   // so we can't just call RogueType_create_object().
-  THIS->_singleton = Rogue_program.allocate_object( THIS, THIS->object_size );
+  THIS->_singleton = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
 
   if ((fn = THIS->init_object_fn)) THIS->_singleton = fn( THIS->_singleton );
 
@@ -208,7 +208,7 @@ RogueString* RogueString_create_with_count( int count )
 
   int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
 
-  RogueString* st = (RogueString*) Rogue_program.allocate_object( RogueTypeString, total_size );
+  RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
   st->count = count;
   st->hash_code = 0;
 
