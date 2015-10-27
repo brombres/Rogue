@@ -60,7 +60,7 @@
 //-----------------------------------------------------------------------------
 //  GLOBALS
 //-----------------------------------------------------------------------------
-RogueAllocator Rogue_allocator;
+RogueAllocator Rogue_allocator = {};  // initialize to zero
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -411,25 +411,27 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
-RogueAllocator::RogueAllocator() : pages(0), objects(0)
+RogueAllocator* RogueAllocator_create()
 {
-  for (int i=0; i<ROGUEMM_SLOT_COUNT; ++i)
-  {
-    available_objects[i] = 0;
-  }
+  RogueAllocator* result = (RogueAllocator*) malloc( sizeof(RogueAllocator) );
+
+  memset( result, 0, sizeof(RogueAllocator) );
+
+  return result;
 }
 
-RogueAllocator::~RogueAllocator()
+RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
 {
-  while (pages)
+  while (THIS->pages)
   {
-    RogueAllocationPage* next_page = pages->next_page;
-    RogueAllocationPage_delete( pages );
-    pages = next_page;
+    RogueAllocationPage* next_page = THIS->pages->next_page;
+    RogueAllocationPage_delete( THIS->pages );
+    THIS->pages = next_page;
   }
+  return 0;
 }
 
-void* RogueAllocator::allocate( int size )
+void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return malloc( size );
 
@@ -437,24 +439,24 @@ void* RogueAllocator::allocate( int size )
   else           size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
-  RogueObject* obj = available_objects[slot];
+  RogueObject* obj = THIS->available_objects[slot];
   
   if (obj)
   {
     //printf( "found free object\n");
-    available_objects[slot] = obj->next_object;
+    THIS->available_objects[slot] = obj->next_object;
     return obj;
   }
 
   // No free objects for requested size.
 
   // Try allocating a new object from the current page.
-  if ( !pages )
+  if ( !THIS->pages )
   {
-    pages = RogueAllocationPage_create(0);
+    THIS->pages = RogueAllocationPage_create(0);
   }
 
-  obj = (RogueObject*) RogueAllocationPage_allocate( pages, size );
+  obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, size );
   if (obj) return obj;
 
 
@@ -463,12 +465,12 @@ void* RogueAllocator::allocate( int size )
   int s = slot - 1;
   while (s >= 1)
   {
-    obj = (RogueObject*) RogueAllocationPage_allocate( pages, s << ROGUEMM_GRANULARITY_BITS );
+    obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, s << ROGUEMM_GRANULARITY_BITS );
     if (obj)
     {
       //printf( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
-      obj->next_object = available_objects[s];
-      available_objects[s] = obj;
+      obj->next_object = THIS->available_objects[s];
+      THIS->available_objects[s] = obj;
     }
     else
     {
@@ -477,37 +479,13 @@ void* RogueAllocator::allocate( int size )
   }
 
   // New page; this will work for sure.
-  pages = RogueAllocationPage_create( pages );
-  return RogueAllocationPage_allocate( pages, size );
-}
-
-void* RogueAllocator::free( void* data, int size )
-{
-  if (data)
-  {
-    if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
-    {
-      ::free( data );
-    }
-    else
-    {
-      // Return object to small allocation pool
-      RogueObject* obj = (RogueObject*) data;
-      int slot = (size + ROGUEMM_GRANULARITY_MASK) >> ROGUEMM_GRANULARITY_BITS;
-      if (slot <= 0) slot = 1;
-      obj->next_object = available_objects[slot];
-      available_objects[slot] = obj;
-    }
-  }
-
-  // Always returns null, allowing a pointer to be freed and assigned null in
-  // a single step.
-  return 0;
+  THIS->pages = RogueAllocationPage_create( THIS->pages );
+  return RogueAllocationPage_allocate( THIS->pages, size );
 }
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
 {
-  RogueObject* obj = (RogueObject*) THIS->allocate( size );
+  RogueObject* obj = (RogueObject*) RogueAllocator_allocate( THIS, size );
   memset( obj, 0, size );
 
   obj->next_object = THIS->objects;
@@ -518,13 +496,38 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   return obj;
 }
 
+void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
+{
+  if (data)
+  {
+    if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
+    {
+      free( data );
+    }
+    else
+    {
+      // Return object to small allocation pool
+      RogueObject* obj = (RogueObject*) data;
+      int slot = (size + ROGUEMM_GRANULARITY_MASK) >> ROGUEMM_GRANULARITY_BITS;
+      if (slot <= 0) slot = 1;
+      obj->next_object = THIS->available_objects[slot];
+      THIS->available_objects[slot] = obj;
+    }
+  }
+
+  // Always returns null, allowing a pointer to be freed and assigned null in
+  // a single step.
+  return 0;
+}
+
+
 void RogueAllocator_free_objects( RogueAllocator* THIS )
 {
   RogueObject* objects = THIS->objects;
   while (objects)
   {
     RogueObject* next_object = objects->next_object;
-    THIS->free( objects, objects->object_size );
+    RogueAllocator_free( THIS, objects, objects->object_size );
     objects = next_object;
   }
 
@@ -565,7 +568,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     else
     {
       //printf( "Unreferenced %s\n", cur->type->name() );
-      THIS->free( cur, cur->object_size );
+      RogueAllocator_free( THIS, cur, cur->object_size );
     }
     cur = next_object;
   }

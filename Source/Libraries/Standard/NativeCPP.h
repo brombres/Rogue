@@ -240,14 +240,14 @@ struct RogueAllocator
   RogueAllocationPage* pages;
   RogueObject*         objects;
   RogueObject*         available_objects[ROGUEMM_SLOT_COUNT];
-
-  RogueAllocator();
-  ~RogueAllocator();
-  void* allocate( int size );
-  void* free( void* data, int size );
 };
 
+RogueAllocator* RogueAllocator_create();
+RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS );
+
+void*        RogueAllocator_allocate( int size );
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size );
+void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
