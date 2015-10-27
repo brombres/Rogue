@@ -312,6 +312,7 @@ RogueString* RogueString_update_hash_code( RogueString* THIS )
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
+/*
 RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 )
 {
   if ( !other || i1 >= count ) return this;
@@ -349,6 +350,93 @@ RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger ot
   }
 
   return this;
+}
+
+RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 )
+{
+  int element_size;
+
+  if ( !other || i1 >= THIS->count ) return THIS;
+  if (THIS->is_reference_array ^ other->is_reference_array) return THIS;
+
+  if (other_i2 == -1) other_i2 = other->count - 1;
+
+  if (i1 < 0)
+  {
+    other_i1 -= i1;
+    i1 = 0;
+  }
+
+  if (other_i1 < 0) other_i1 = 0;
+  if (other_i2 >= other->count) other_i2 = other->count - 1;
+  if (other_i1 > other_i2) return THIS;
+
+  element_size = THIS->element_size;
+  RogueByte* src = other->bytes + other_i1 * element_size;
+  int other_bytes = ((other_i2 - other_i1) + 1) * element_size;
+
+  RogueByte* dest = THIS->bytes + (i1 * element_size);
+  int allowable_bytes = (THIS->count - i1) * element_size;
+
+  if (other_bytes > allowable_bytes) other_bytes = allowable_bytes;
+
+  if (src >= dest + other_bytes || (src + other_bytes) < dest)
+  {
+    // Copy region does not overlap
+    memcpy( dest, src, other_bytes );
+  }
+  else
+  {
+    // Copy region overlaps
+    memmove( dest, src, other_bytes );
+  }
+
+  return THIS;
+}
+*/
+
+RogueArray* RogueArray_set_count( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger copy_count )
+{
+  int element_size;
+  int other_i2;
+
+  if ( !other || i1 >= THIS->count ) return THIS;
+  if (THIS->is_reference_array ^ other->is_reference_array) return THIS;
+
+  if (copy_count == -1) other_i2 = other->count - 1;
+  else                  other_i2 = (other_i1 + copy_count) - 1;
+
+  if (i1 < 0)
+  {
+    other_i1 -= i1;
+    i1 = 0;
+  }
+
+  if (other_i1 < 0) other_i1 = 0;
+  if (other_i2 >= other->count) other_i2 = other->count - 1;
+  if (other_i1 > other_i2) return THIS;
+
+  element_size = THIS->element_size;
+  RogueByte* src = other->bytes + other_i1 * element_size;
+  int other_bytes = ((other_i2 - other_i1) + 1) * element_size;
+
+  RogueByte* dest = THIS->bytes + (i1 * element_size);
+  int allowable_bytes = (THIS->count - i1) * element_size;
+
+  if (other_bytes > allowable_bytes) other_bytes = allowable_bytes;
+
+  if (src >= dest + other_bytes || (src + other_bytes) < dest)
+  {
+    // Copy region does not overlap
+    memcpy( dest, src, other_bytes );
+  }
+  else
+  {
+    // Copy region overlaps
+    memmove( dest, src, other_bytes );
+  }
+
+  return THIS;
 }
 
 //-----------------------------------------------------------------------------
@@ -11879,7 +11967,7 @@ RogueCharacterList* RogueCharacterList__reserve__Integer( RogueCharacterList* TH
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueCharacter) ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCharacterList*)(THIS);
@@ -12397,7 +12485,7 @@ RogueStringList* RogueStringList__reserve__Integer( RogueStringList* THIS, Rogue
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueString*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueStringList*)(THIS);
@@ -14324,7 +14412,7 @@ RogueTemplateList* RogueTemplateList__reserve__Integer( RogueTemplateList* THIS,
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTemplate*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTemplateList*)(THIS);
@@ -14859,7 +14947,7 @@ RogueRequisiteItemList* RogueRequisiteItemList__reserve__Integer( RogueRequisite
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassRequisiteItem*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueRequisiteItemList*)(THIS);
@@ -15789,7 +15877,7 @@ RogueTypeList* RogueTypeList__insert__Type_Integer( RogueTypeList* THIS, RogueCl
   else
   {
     RogueTypeList__add__Type( THIS, ((RogueClassType*)(THIS->data->objects[0])) );
-    THIS->data->set((before_index_1 + 1),((RogueArray*)(THIS->data)),before_index_1,(THIS->count - 2));
+    RogueArray_set_count(THIS->data,(before_index_1 + 1),((RogueArray*)(THIS->data)),before_index_1,(THIS->count - before_index_1));
     THIS->data->objects[before_index_1] = value_0;
   }
   return (RogueTypeList*)(THIS);
@@ -15826,7 +15914,7 @@ RogueTypeList* RogueTypeList__reserve__Integer( RogueTypeList* THIS, RogueIntege
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassType*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTypeList*)(THIS);
@@ -18273,7 +18361,7 @@ RogueCmdList* RogueCmdList__insert__Cmd_Integer( RogueCmdList* THIS, RogueClassC
   else
   {
     RogueCmdList__add__Cmd( THIS, ((RogueClassCmd*)(THIS->data->objects[0])) );
-    THIS->data->set((before_index_1 + 1),((RogueArray*)(THIS->data)),before_index_1,(THIS->count - 2));
+    RogueArray_set_count(THIS->data,(before_index_1 + 1),((RogueArray*)(THIS->data)),before_index_1,(THIS->count - before_index_1));
     THIS->data->objects[before_index_1] = value_0;
   }
   return (RogueCmdList*)(THIS);
@@ -18299,7 +18387,7 @@ RogueCmdList* RogueCmdList__reserve__Integer( RogueCmdList* THIS, RogueInteger a
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmd*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCmdList*)(THIS);
@@ -18611,7 +18699,7 @@ RogueMethodList* RogueMethodList__reserve__Integer( RogueMethodList* THIS, Rogue
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassMethod*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueMethodList*)(THIS);
@@ -18634,7 +18722,7 @@ RogueClassMethod* RogueMethodList__remove__Method( RogueMethodList* THIS, RogueC
 RogueClassMethod* RogueMethodList__remove_at__Integer( RogueMethodList* THIS, RogueInteger index_0 )
 {
   RogueClassMethod* result_1 = (((RogueClassMethod*)(THIS->data->objects[index_0])));
-  THIS->data->set(index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
+  RogueArray_set_count(THIS->data,index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
   RogueClassMethod* zero_value_2 = 0;
   THIS->data->objects[THIS->count] = zero_value_2;
   --THIS->count;
@@ -19073,7 +19161,7 @@ RoguePropertyList* RoguePropertyList__reserve__Integer( RoguePropertyList* THIS,
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassProperty*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RoguePropertyList*)(THIS);
@@ -19337,7 +19425,7 @@ RogueLocalList* RogueLocalList__reserve__Integer( RogueLocalList* THIS, RogueInt
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassLocal*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueLocalList*)(THIS);
@@ -19346,7 +19434,7 @@ RogueLocalList* RogueLocalList__reserve__Integer( RogueLocalList* THIS, RogueInt
 RogueClassLocal* RogueLocalList__remove_at__Integer( RogueLocalList* THIS, RogueInteger index_0 )
 {
   RogueClassLocal* result_1 = (((RogueClassLocal*)(THIS->data->objects[index_0])));
-  THIS->data->set(index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
+  RogueArray_set_count(THIS->data,index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
   RogueClassLocal* zero_value_2 = 0;
   THIS->data->objects[THIS->count] = zero_value_2;
   --THIS->count;
@@ -19488,7 +19576,7 @@ RogueIntegerList* RogueIntegerList__reserve__Integer( RogueIntegerList* THIS, Ro
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueInteger) ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueIntegerList*)(THIS);
@@ -19589,7 +19677,7 @@ RogueByteList* RogueByteList__insert__Byte_Integer( RogueByteList* THIS, RogueBy
   else
   {
     RogueByteList__add__Byte( THIS, THIS->data->bytes[0] );
-    THIS->data->set((before_index_1 + 1),((RogueArray*)(THIS->data)),before_index_1,(THIS->count - 2));
+    RogueArray_set_count(THIS->data,(before_index_1 + 1),((RogueArray*)(THIS->data)),before_index_1,(THIS->count - before_index_1));
     THIS->data->bytes[before_index_1] = value_0;
   }
   return (RogueByteList*)(THIS);
@@ -19610,7 +19698,7 @@ RogueByteList* RogueByteList__reserve__Integer( RogueByteList* THIS, RogueIntege
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueByte) ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueByteList*)(THIS);
@@ -19619,7 +19707,7 @@ RogueByteList* RogueByteList__reserve__Integer( RogueByteList* THIS, RogueIntege
 RogueByte RogueByteList__remove_at__Integer( RogueByteList* THIS, RogueInteger index_0 )
 {
   RogueByte result_1 = (THIS->data->bytes[index_0]);
-  THIS->data->set(index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
+  RogueArray_set_count(THIS->data,index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
   RogueByte zero_value_2 = 0;
   THIS->data->bytes[THIS->count] = zero_value_2;
   --THIS->count;
@@ -22349,7 +22437,7 @@ RogueTokenList* RogueTokenList__reserve__Integer( RogueTokenList* THIS, RogueInt
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassToken*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTokenList*)(THIS);
@@ -22358,7 +22446,7 @@ RogueTokenList* RogueTokenList__reserve__Integer( RogueTokenList* THIS, RogueInt
 RogueClassToken* RogueTokenList__remove_at__Integer( RogueTokenList* THIS, RogueInteger index_0 )
 {
   RogueClassToken* result_1 = (((RogueClassToken*)(THIS->data->objects[index_0])));
-  THIS->data->set(index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
+  RogueArray_set_count(THIS->data,index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
   RogueClassToken* zero_value_2 = 0;
   THIS->data->objects[THIS->count] = zero_value_2;
   --THIS->count;
@@ -22527,7 +22615,7 @@ RogueTypeParameterList* RogueTypeParameterList__reserve__Integer( RogueTypeParam
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTypeParameter*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTypeParameterList*)(THIS);
@@ -22636,7 +22724,7 @@ RogueAugmentList* RogueAugmentList__reserve__Integer( RogueAugmentList* THIS, Ro
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassAugment*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueAugmentList*)(THIS);
@@ -23144,7 +23232,7 @@ RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__rese
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TemplateTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_TemplateList*)(THIS);
@@ -23261,7 +23349,7 @@ RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_AugmentListTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_AugmentListList*)(THIS);
@@ -23382,7 +23470,7 @@ RogueCmdLabelList* RogueCmdLabelList__reserve__Integer( RogueCmdLabelList* THIS,
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdLabel*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCmdLabelList*)(THIS);
@@ -24576,7 +24664,7 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__reserve__Integer( Ro
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdControlStructure*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCmdControlStructureList*)(THIS);
@@ -24585,7 +24673,7 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__reserve__Integer( Ro
 RogueClassCmdControlStructure* RogueCmdControlStructureList__remove_at__Integer( RogueCmdControlStructureList* THIS, RogueInteger index_0 )
 {
   RogueClassCmdControlStructure* result_1 = (((RogueClassCmdControlStructure*)(THIS->data->objects[index_0])));
-  THIS->data->set(index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
+  RogueArray_set_count(THIS->data,index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
   RogueClassCmdControlStructure* zero_value_2 = 0;
   THIS->data->objects[THIS->count] = zero_value_2;
   --THIS->count;
@@ -25616,7 +25704,7 @@ RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodListTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_MethodListList*)(THIS);
@@ -26321,7 +26409,7 @@ RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__reserve__Int
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_TypeList*)(THIS);
@@ -26438,7 +26526,7 @@ RogueTableEntry_of_String_IntegerList* RogueString_IntegerTableEntryList__reserv
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_IntegerTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_IntegerList*)(THIS);
@@ -26829,7 +26917,7 @@ RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__reserve_
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_MethodList*)(THIS);
@@ -26946,7 +27034,7 @@ RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__reserv
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_LogicalTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_LogicalList*)(THIS);
@@ -30220,7 +30308,7 @@ RogueCmdWhichCaseList* RogueCmdWhichCaseList__reserve__Integer( RogueCmdWhichCas
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdWhichCase*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCmdWhichCaseList*)(THIS);
@@ -30371,7 +30459,7 @@ RogueCmdCatchList* RogueCmdCatchList__reserve__Integer( RogueCmdCatchList* THIS,
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdCatch*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCmdCatchList*)(THIS);
@@ -32977,7 +33065,7 @@ RogueFnParamList* RogueFnParamList__reserve__Integer( RogueFnParamList* THIS, Ro
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassFnParam*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueFnParamList*)(THIS);
@@ -33085,7 +33173,7 @@ RogueFnArgList* RogueFnArgList__reserve__Integer( RogueFnArgList* THIS, RogueInt
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassFnArg*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueFnArgList*)(THIS);
@@ -33440,7 +33528,7 @@ RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__re
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenTypeTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_TokenTypeList*)(THIS);
@@ -33557,7 +33645,7 @@ RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableE
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeSpecializerTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_TypeSpecializerList*)(THIS);
@@ -33674,7 +33762,7 @@ RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__rese
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdLabelTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_CmdLabelList*)(THIS);
@@ -35155,7 +35243,7 @@ RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__reserve__Integer
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdTaskControlSection*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueCmdTaskControlSectionList*)(THIS);
@@ -35337,7 +35425,7 @@ RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__reserve__Integ
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_CmdList*)(THIS);
@@ -35454,7 +35542,7 @@ RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__rese
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_PropertyTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_PropertyList*)(THIS);
@@ -36477,7 +36565,7 @@ RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__re
       required_capacity_1 = ((RogueInteger)x2_2);
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenListTableEntry*), true ));
-    new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
+    RogueArray_set_count(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
   return (RogueTableEntry_of_String_TokenListList*)(THIS);
