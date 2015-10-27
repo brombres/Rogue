@@ -375,35 +375,36 @@ RogueProgramCore::~RogueProgramCore()
   }
 }
 
-RogueObject* RogueProgramCore::allocate_object( RogueType* type, int size )
-{
-  return RogueAllocator_allocate_object( &Rogue_allocator, type, size );
-}
-
-
 //-----------------------------------------------------------------------------
 //  RogueAllocationPage
 //-----------------------------------------------------------------------------
-RogueAllocationPage::RogueAllocationPage( RogueAllocationPage* next_page )
-  : next_page(next_page)
+RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page )
 {
-  cursor = data;
-  remaining = ROGUEMM_PAGE_SIZE;
-  //printf( "New page\n");
+  RogueAllocationPage* result = (RogueAllocationPage*) malloc( sizeof(RogueAllocationPage) );
+  result->next_page = next_page;
+  result->cursor = result->data;
+  result->remaining = ROGUEMM_PAGE_SIZE;
+  return result;
 }
 
-void* RogueAllocationPage::allocate( int size )
+RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS )
+{
+  if (THIS) free( THIS );
+  return 0;
+};
+
+void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 {
   // Round size up to multiple of 8.
   if (size > 0) size = (size + 7) & ~7;
   else          size = 8;
 
-  if (size > remaining) return 0;
+  if (size > THIS->remaining) return 0;
 
   //printf( "Allocating %d bytes from page.\n", size );
-  void* result = cursor;
-  cursor += size;
-  remaining -= size;
+  void* result = THIS->cursor;
+  THIS->cursor += size;
+  THIS->remaining -= size;
 
   //printf( "%d / %d\n", ROGUEMM_PAGE_SIZE - remaining, ROGUEMM_PAGE_SIZE );
   return result;
@@ -426,7 +427,7 @@ RogueAllocator::~RogueAllocator()
   while (pages)
   {
     RogueAllocationPage* next_page = pages->next_page;
-    delete pages;
+    RogueAllocationPage_delete( pages );
     pages = next_page;
   }
 }
@@ -453,10 +454,10 @@ void* RogueAllocator::allocate( int size )
   // Try allocating a new object from the current page.
   if ( !pages )
   {
-    pages = new RogueAllocationPage(0);
+    pages = RogueAllocationPage_create(0);
   }
 
-  obj = (RogueObject*) pages->allocate( size );
+  obj = (RogueObject*) RogueAllocationPage_allocate( pages, size );
   if (obj) return obj;
 
 
@@ -465,7 +466,7 @@ void* RogueAllocator::allocate( int size )
   int s = slot - 1;
   while (s >= 1)
   {
-    obj = (RogueObject*) pages->allocate( s << ROGUEMM_GRANULARITY_BITS );
+    obj = (RogueObject*) RogueAllocationPage_allocate( pages, s << ROGUEMM_GRANULARITY_BITS );
     if (obj)
     {
       //printf( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
@@ -479,8 +480,8 @@ void* RogueAllocator::allocate( int size )
   }
 
   // New page; this will work for sure.
-  pages = new RogueAllocationPage( pages );
-  return pages->allocate( size );
+  pages = RogueAllocationPage_create( pages );
+  return RogueAllocationPage_allocate( pages, size );
 }
 
 void* RogueAllocator::free( void* data, int size )

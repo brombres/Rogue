@@ -169,8 +169,6 @@ struct RogueProgramCore
 {
   RogueProgramCore();
   ~RogueProgramCore();
-
-  RogueObject* allocate_object( RogueType* type, int size );
 };
 
 
@@ -228,11 +226,11 @@ struct RogueAllocationPage
   int        remaining;
 
   RogueByte  data[ ROGUEMM_PAGE_SIZE ];
-
-  RogueAllocationPage( RogueAllocationPage* next_page );
-
-  void* allocate( int size );
 };
+
+RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page );
+RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS );
+void*                RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size );
 
 //-----------------------------------------------------------------------------
 //  RogueAllocator
