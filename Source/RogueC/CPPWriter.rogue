@@ -2223,7 +2223,7 @@ endAugment
 augment CmdCreateArray
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "RogueArray::create( " )
+      writer.print( "RogueType_create_array( " )
       count_cmd.write_cpp( writer )
       writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
       if (array_type.element_type.is_reference) writer.print( ", true" )

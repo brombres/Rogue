@@ -68,6 +68,22 @@ RogueAllocator Rogue_allocator;
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
+RogueArray* RogueType_create_array( int count, int element_size, bool is_reference_array )
+{
+  if (count < 0) count = 0;
+  int data_size  = count * element_size;
+  int total_size = sizeof(RogueArray) + data_size;
+
+  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( RogueTypeArray, total_size );
+
+  memset( array->bytes, 0, data_size );
+  array->count = count;
+  array->element_size = element_size;
+  array->is_reference_array = is_reference_array;
+
+  return array;
+}
+
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
 {
   RogueObject* obj;
@@ -296,22 +312,6 @@ RogueString* RogueString_update_hash_code( RogueString* THIS )
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
-RogueArray* RogueArray::create( int count, int element_size, bool is_reference_array )
-{
-  if (count < 0) count = 0;
-  int data_size  = count * element_size;
-  int total_size = sizeof(RogueArray) + data_size;
-
-  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( RogueTypeArray, total_size );
-
-  memset( array->bytes, 0, data_size );
-  array->count = count;
-  array->element_size = element_size;
-  array->is_reference_array = is_reference_array;
-
-  return array;
-}
-
 RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 )
 {
   if ( !other || i1 >= count ) return this;
@@ -11838,7 +11838,7 @@ RogueCharacterList* RogueCharacterList__init_object( RogueCharacterList* THIS )
 
 RogueCharacterList* RogueCharacterList__init__Integer( RogueCharacterList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueCharacter) );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueCharacter) );
   return (RogueCharacterList*)(THIS);
 }
 
@@ -11869,7 +11869,7 @@ RogueCharacterList* RogueCharacterList__reserve__Integer( RogueCharacterList* TH
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueCharacter) );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueCharacter) );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -11878,7 +11878,7 @@ RogueCharacterList* RogueCharacterList__reserve__Integer( RogueCharacterList* TH
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueCharacter) ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueCharacter) ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -12340,7 +12340,7 @@ RogueStringList* RogueStringList__init( RogueStringList* THIS )
 
 RogueStringList* RogueStringList__init__Integer( RogueStringList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueString*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueString*), true );
   return (RogueStringList*)(THIS);
 }
 
@@ -12387,7 +12387,7 @@ RogueStringList* RogueStringList__reserve__Integer( RogueStringList* THIS, Rogue
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueString*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueString*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -12396,7 +12396,7 @@ RogueStringList* RogueStringList__reserve__Integer( RogueStringList* THIS, Rogue
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueString*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueString*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -14289,7 +14289,7 @@ RogueTemplateList* RogueTemplateList__init( RogueTemplateList* THIS )
 
 RogueTemplateList* RogueTemplateList__init__Integer( RogueTemplateList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassTemplate*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTemplate*), true );
   return (RogueTemplateList*)(THIS);
 }
 
@@ -14314,7 +14314,7 @@ RogueTemplateList* RogueTemplateList__reserve__Integer( RogueTemplateList* THIS,
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassTemplate*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassTemplate*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -14323,7 +14323,7 @@ RogueTemplateList* RogueTemplateList__reserve__Integer( RogueTemplateList* THIS,
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassTemplate*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTemplate*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -14824,7 +14824,7 @@ RogueRequisiteItemList* RogueRequisiteItemList__init( RogueRequisiteItemList* TH
 
 RogueRequisiteItemList* RogueRequisiteItemList__init__Integer( RogueRequisiteItemList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassRequisiteItem*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassRequisiteItem*), true );
   return (RogueRequisiteItemList*)(THIS);
 }
 
@@ -14849,7 +14849,7 @@ RogueRequisiteItemList* RogueRequisiteItemList__reserve__Integer( RogueRequisite
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassRequisiteItem*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassRequisiteItem*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -14858,7 +14858,7 @@ RogueRequisiteItemList* RogueRequisiteItemList__reserve__Integer( RogueRequisite
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassRequisiteItem*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassRequisiteItem*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -15738,7 +15738,7 @@ RogueTypeList* RogueTypeList__init( RogueTypeList* THIS )
 
 RogueTypeList* RogueTypeList__init__Integer( RogueTypeList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassType*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassType*), true );
   return (RogueTypeList*)(THIS);
 }
 
@@ -15816,7 +15816,7 @@ RogueTypeList* RogueTypeList__reserve__Integer( RogueTypeList* THIS, RogueIntege
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassType*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassType*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -15825,7 +15825,7 @@ RogueTypeList* RogueTypeList__reserve__Integer( RogueTypeList* THIS, RogueIntege
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassType*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassType*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -18225,7 +18225,7 @@ RogueCmdList* RogueCmdList__init( RogueCmdList* THIS )
 
 RogueCmdList* RogueCmdList__init__Integer( RogueCmdList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassCmd*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmd*), true );
   return (RogueCmdList*)(THIS);
 }
 
@@ -18289,7 +18289,7 @@ RogueCmdList* RogueCmdList__reserve__Integer( RogueCmdList* THIS, RogueInteger a
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassCmd*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmd*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -18298,7 +18298,7 @@ RogueCmdList* RogueCmdList__reserve__Integer( RogueCmdList* THIS, RogueInteger a
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassCmd*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmd*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -18539,7 +18539,7 @@ RogueMethodList* RogueMethodList__init( RogueMethodList* THIS )
 
 RogueMethodList* RogueMethodList__init__Integer( RogueMethodList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassMethod*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassMethod*), true );
   return (RogueMethodList*)(THIS);
 }
 
@@ -18601,7 +18601,7 @@ RogueMethodList* RogueMethodList__reserve__Integer( RogueMethodList* THIS, Rogue
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassMethod*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassMethod*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -18610,7 +18610,7 @@ RogueMethodList* RogueMethodList__reserve__Integer( RogueMethodList* THIS, Rogue
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassMethod*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassMethod*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -19016,7 +19016,7 @@ RoguePropertyList* RoguePropertyList__init( RoguePropertyList* THIS )
 
 RoguePropertyList* RoguePropertyList__init__Integer( RoguePropertyList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassProperty*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassProperty*), true );
   return (RoguePropertyList*)(THIS);
 }
 
@@ -19063,7 +19063,7 @@ RoguePropertyList* RoguePropertyList__reserve__Integer( RoguePropertyList* THIS,
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassProperty*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassProperty*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -19072,7 +19072,7 @@ RoguePropertyList* RoguePropertyList__reserve__Integer( RoguePropertyList* THIS,
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassProperty*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassProperty*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -19296,7 +19296,7 @@ RogueLocalList* RogueLocalList__init( RogueLocalList* THIS )
 
 RogueLocalList* RogueLocalList__init__Integer( RogueLocalList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassLocal*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassLocal*), true );
   return (RogueLocalList*)(THIS);
 }
 
@@ -19327,7 +19327,7 @@ RogueLocalList* RogueLocalList__reserve__Integer( RogueLocalList* THIS, RogueInt
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassLocal*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassLocal*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -19336,7 +19336,7 @@ RogueLocalList* RogueLocalList__reserve__Integer( RogueLocalList* THIS, RogueInt
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassLocal*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassLocal*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -19453,7 +19453,7 @@ RogueIntegerList* RogueIntegerList__init( RogueIntegerList* THIS )
 
 RogueIntegerList* RogueIntegerList__init__Integer( RogueIntegerList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueInteger) );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueInteger) );
   return (RogueIntegerList*)(THIS);
 }
 
@@ -19478,7 +19478,7 @@ RogueIntegerList* RogueIntegerList__reserve__Integer( RogueIntegerList* THIS, Ro
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueInteger) );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueInteger) );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -19487,7 +19487,7 @@ RogueIntegerList* RogueIntegerList__reserve__Integer( RogueIntegerList* THIS, Ro
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueInteger) ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueInteger) ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -19550,7 +19550,7 @@ RogueByteList* RogueByteList__init( RogueByteList* THIS )
 
 RogueByteList* RogueByteList__init__Integer( RogueByteList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueByte) );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueByte) );
   return (RogueByteList*)(THIS);
 }
 
@@ -19600,7 +19600,7 @@ RogueByteList* RogueByteList__reserve__Integer( RogueByteList* THIS, RogueIntege
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueByte) );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueByte) );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -19609,7 +19609,7 @@ RogueByteList* RogueByteList__reserve__Integer( RogueByteList* THIS, RogueIntege
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueByte) ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueByte) ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -22294,7 +22294,7 @@ RogueTokenList* RogueTokenList__init( RogueTokenList* THIS )
 
 RogueTokenList* RogueTokenList__init__Integer( RogueTokenList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassToken*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassToken*), true );
   return (RogueTokenList*)(THIS);
 }
 
@@ -22339,7 +22339,7 @@ RogueTokenList* RogueTokenList__reserve__Integer( RogueTokenList* THIS, RogueInt
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassToken*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassToken*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -22348,7 +22348,7 @@ RogueTokenList* RogueTokenList__reserve__Integer( RogueTokenList* THIS, RogueInt
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassToken*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassToken*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -22492,7 +22492,7 @@ RogueTypeParameterList* RogueTypeParameterList__init( RogueTypeParameterList* TH
 
 RogueTypeParameterList* RogueTypeParameterList__init__Integer( RogueTypeParameterList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassTypeParameter*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTypeParameter*), true );
   return (RogueTypeParameterList*)(THIS);
 }
 
@@ -22517,7 +22517,7 @@ RogueTypeParameterList* RogueTypeParameterList__reserve__Integer( RogueTypeParam
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassTypeParameter*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassTypeParameter*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -22526,7 +22526,7 @@ RogueTypeParameterList* RogueTypeParameterList__reserve__Integer( RogueTypeParam
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassTypeParameter*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTypeParameter*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -22601,7 +22601,7 @@ RogueAugmentList* RogueAugmentList__init( RogueAugmentList* THIS )
 
 RogueAugmentList* RogueAugmentList__init__Integer( RogueAugmentList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassAugment*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassAugment*), true );
   return (RogueAugmentList*)(THIS);
 }
 
@@ -22626,7 +22626,7 @@ RogueAugmentList* RogueAugmentList__reserve__Integer( RogueAugmentList* THIS, Ro
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassAugment*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassAugment*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -22635,7 +22635,7 @@ RogueAugmentList* RogueAugmentList__reserve__Integer( RogueAugmentList* THIS, Ro
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassAugment*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassAugment*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -23101,7 +23101,7 @@ RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__init
 
 RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__init__Integer_String_TemplateTableEntry( RogueTableEntry_of_String_TemplateList* THIS, RogueInteger initial_capacity_0, RogueClassString_TemplateTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_TemplateTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TemplateTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_285_3 = (initial_capacity_0);
@@ -23134,7 +23134,7 @@ RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__rese
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_TemplateTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TemplateTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -23143,7 +23143,7 @@ RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__rese
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_TemplateTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TemplateTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -23218,7 +23218,7 @@ RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList
 
 RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList__init__Integer_String_AugmentListTableEntry( RogueTableEntry_of_String_AugmentListList* THIS, RogueInteger initial_capacity_0, RogueClassString_AugmentListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_AugmentListTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_AugmentListTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_289_3 = (initial_capacity_0);
@@ -23251,7 +23251,7 @@ RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_AugmentListTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_AugmentListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -23260,7 +23260,7 @@ RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_AugmentListTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_AugmentListTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -23341,7 +23341,7 @@ RogueCmdLabelList* RogueCmdLabelList__init( RogueCmdLabelList* THIS )
 
 RogueCmdLabelList* RogueCmdLabelList__init__Integer( RogueCmdLabelList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassCmdLabel*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdLabel*), true );
   return (RogueCmdLabelList*)(THIS);
 }
 
@@ -23372,7 +23372,7 @@ RogueCmdLabelList* RogueCmdLabelList__reserve__Integer( RogueCmdLabelList* THIS,
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassCmdLabel*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdLabel*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -23381,7 +23381,7 @@ RogueCmdLabelList* RogueCmdLabelList__reserve__Integer( RogueCmdLabelList* THIS,
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassCmdLabel*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdLabel*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -24541,7 +24541,7 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__init( RogueCmdContro
 
 RogueCmdControlStructureList* RogueCmdControlStructureList__init__Integer( RogueCmdControlStructureList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassCmdControlStructure*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdControlStructure*), true );
   return (RogueCmdControlStructureList*)(THIS);
 }
 
@@ -24566,7 +24566,7 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__reserve__Integer( Ro
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassCmdControlStructure*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdControlStructure*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -24575,7 +24575,7 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__reserve__Integer( Ro
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassCmdControlStructure*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdControlStructure*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -25573,7 +25573,7 @@ RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__
 
 RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__init__Integer_String_MethodListTableEntry( RogueTableEntry_of_String_MethodListList* THIS, RogueInteger initial_capacity_0, RogueClassString_MethodListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_MethodListTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_MethodListTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_382_3 = (initial_capacity_0);
@@ -25606,7 +25606,7 @@ RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_MethodListTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_MethodListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -25615,7 +25615,7 @@ RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_MethodListTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodListTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -26278,7 +26278,7 @@ RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__init_object(
 
 RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__init__Integer_String_TypeTableEntry( RogueTableEntry_of_String_TypeList* THIS, RogueInteger initial_capacity_0, RogueClassString_TypeTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_TypeTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TypeTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_518_3 = (initial_capacity_0);
@@ -26311,7 +26311,7 @@ RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__reserve__Int
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_TypeTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TypeTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -26320,7 +26320,7 @@ RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__reserve__Int
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_TypeTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -26395,7 +26395,7 @@ RogueTableEntry_of_String_IntegerList* RogueString_IntegerTableEntryList__init_o
 
 RogueTableEntry_of_String_IntegerList* RogueString_IntegerTableEntryList__init__Integer_String_IntegerTableEntry( RogueTableEntry_of_String_IntegerList* THIS, RogueInteger initial_capacity_0, RogueClassString_IntegerTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_IntegerTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_IntegerTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_522_3 = (initial_capacity_0);
@@ -26428,7 +26428,7 @@ RogueTableEntry_of_String_IntegerList* RogueString_IntegerTableEntryList__reserv
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_IntegerTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_IntegerTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -26437,7 +26437,7 @@ RogueTableEntry_of_String_IntegerList* RogueString_IntegerTableEntryList__reserv
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_IntegerTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_IntegerTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -26786,7 +26786,7 @@ RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__init_obj
 
 RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__init__Integer_String_MethodTableEntry( RogueTableEntry_of_String_MethodList* THIS, RogueInteger initial_capacity_0, RogueClassString_MethodTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_MethodTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_MethodTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_581_3 = (initial_capacity_0);
@@ -26819,7 +26819,7 @@ RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__reserve_
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_MethodTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_MethodTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -26828,7 +26828,7 @@ RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__reserve_
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_MethodTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -26903,7 +26903,7 @@ RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__init_o
 
 RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__init__Integer_String_LogicalTableEntry( RogueTableEntry_of_String_LogicalList* THIS, RogueInteger initial_capacity_0, RogueClassString_LogicalTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_LogicalTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_LogicalTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_615_3 = (initial_capacity_0);
@@ -26936,7 +26936,7 @@ RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__reserv
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_LogicalTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_LogicalTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -26945,7 +26945,7 @@ RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__reserv
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_LogicalTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_LogicalTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -30185,7 +30185,7 @@ RogueCmdWhichCaseList* RogueCmdWhichCaseList__init( RogueCmdWhichCaseList* THIS 
 
 RogueCmdWhichCaseList* RogueCmdWhichCaseList__init__Integer( RogueCmdWhichCaseList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassCmdWhichCase*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdWhichCase*), true );
   return (RogueCmdWhichCaseList*)(THIS);
 }
 
@@ -30210,7 +30210,7 @@ RogueCmdWhichCaseList* RogueCmdWhichCaseList__reserve__Integer( RogueCmdWhichCas
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassCmdWhichCase*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdWhichCase*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -30219,7 +30219,7 @@ RogueCmdWhichCaseList* RogueCmdWhichCaseList__reserve__Integer( RogueCmdWhichCas
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassCmdWhichCase*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdWhichCase*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -30336,7 +30336,7 @@ RogueCmdCatchList* RogueCmdCatchList__init( RogueCmdCatchList* THIS )
 
 RogueCmdCatchList* RogueCmdCatchList__init__Integer( RogueCmdCatchList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassCmdCatch*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdCatch*), true );
   return (RogueCmdCatchList*)(THIS);
 }
 
@@ -30361,7 +30361,7 @@ RogueCmdCatchList* RogueCmdCatchList__reserve__Integer( RogueCmdCatchList* THIS,
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassCmdCatch*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdCatch*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -30370,7 +30370,7 @@ RogueCmdCatchList* RogueCmdCatchList__reserve__Integer( RogueCmdCatchList* THIS,
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassCmdCatch*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdCatch*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -32942,7 +32942,7 @@ RogueFnParamList* RogueFnParamList__init( RogueFnParamList* THIS )
 
 RogueFnParamList* RogueFnParamList__init__Integer( RogueFnParamList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassFnParam*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassFnParam*), true );
   return (RogueFnParamList*)(THIS);
 }
 
@@ -32967,7 +32967,7 @@ RogueFnParamList* RogueFnParamList__reserve__Integer( RogueFnParamList* THIS, Ro
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassFnParam*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassFnParam*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -32976,7 +32976,7 @@ RogueFnParamList* RogueFnParamList__reserve__Integer( RogueFnParamList* THIS, Ro
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassFnParam*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassFnParam*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -33050,7 +33050,7 @@ RogueFnArgList* RogueFnArgList__init( RogueFnArgList* THIS )
 
 RogueFnArgList* RogueFnArgList__init__Integer( RogueFnArgList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassFnArg*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassFnArg*), true );
   return (RogueFnArgList*)(THIS);
 }
 
@@ -33075,7 +33075,7 @@ RogueFnArgList* RogueFnArgList__reserve__Integer( RogueFnArgList* THIS, RogueInt
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassFnArg*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassFnArg*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -33084,7 +33084,7 @@ RogueFnArgList* RogueFnArgList__reserve__Integer( RogueFnArgList* THIS, RogueInt
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassFnArg*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassFnArg*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -33397,7 +33397,7 @@ RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__in
 
 RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__init__Integer_String_TokenTypeTableEntry( RogueTableEntry_of_String_TokenTypeList* THIS, RogueInteger initial_capacity_0, RogueClassString_TokenTypeTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_TokenTypeTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TokenTypeTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_792_3 = (initial_capacity_0);
@@ -33430,7 +33430,7 @@ RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__re
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_TokenTypeTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TokenTypeTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -33439,7 +33439,7 @@ RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__re
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_TokenTypeTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenTypeTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -33514,7 +33514,7 @@ RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableE
 
 RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableEntryList__init__Integer_String_TypeSpecializerTableEntry( RogueTableEntry_of_String_TypeSpecializerList* THIS, RogueInteger initial_capacity_0, RogueClassString_TypeSpecializerTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_796_3 = (initial_capacity_0);
@@ -33547,7 +33547,7 @@ RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableE
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -33556,7 +33556,7 @@ RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableE
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_TypeSpecializerTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeSpecializerTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -33631,7 +33631,7 @@ RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__init
 
 RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__init__Integer_String_CmdLabelTableEntry( RogueTableEntry_of_String_CmdLabelList* THIS, RogueInteger initial_capacity_0, RogueClassString_CmdLabelTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_CmdLabelTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_CmdLabelTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_830_3 = (initial_capacity_0);
@@ -33664,7 +33664,7 @@ RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__rese
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_CmdLabelTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_CmdLabelTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -33673,7 +33673,7 @@ RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__rese
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_CmdLabelTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdLabelTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -35120,7 +35120,7 @@ RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__init( RogueCmdTa
 
 RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__init__Integer( RogueCmdTaskControlSectionList* THIS, RogueInteger initial_capacity_0 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassCmdTaskControlSection*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdTaskControlSection*), true );
   return (RogueCmdTaskControlSectionList*)(THIS);
 }
 
@@ -35145,7 +35145,7 @@ RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__reserve__Integer
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassCmdTaskControlSection*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdTaskControlSection*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -35154,7 +35154,7 @@ RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__reserve__Integer
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassCmdTaskControlSection*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdTaskControlSection*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -35294,7 +35294,7 @@ RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__init_object( R
 
 RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__init__Integer_String_CmdTableEntry( RogueTableEntry_of_String_CmdList* THIS, RogueInteger initial_capacity_0, RogueClassString_CmdTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_CmdTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_CmdTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_968_3 = (initial_capacity_0);
@@ -35327,7 +35327,7 @@ RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__reserve__Integ
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_CmdTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_CmdTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -35336,7 +35336,7 @@ RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__reserve__Integ
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_CmdTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -35411,7 +35411,7 @@ RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__init
 
 RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__init__Integer_String_PropertyTableEntry( RogueTableEntry_of_String_PropertyList* THIS, RogueInteger initial_capacity_0, RogueClassString_PropertyTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_PropertyTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_PropertyTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_972_3 = (initial_capacity_0);
@@ -35444,7 +35444,7 @@ RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__rese
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_PropertyTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_PropertyTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -35453,7 +35453,7 @@ RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__rese
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_PropertyTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_PropertyTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -36434,7 +36434,7 @@ RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__in
 
 RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__init__Integer_String_TokenListTableEntry( RogueTableEntry_of_String_TokenListList* THIS, RogueInteger initial_capacity_0, RogueClassString_TokenListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueArray::create( initial_capacity_0, sizeof(RogueClassString_TokenListTableEntry*), true );
+  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TokenListTableEntry*), true );
   {
     RogueInteger i_2 = (1);
     RogueInteger _auto_1237_3 = (initial_capacity_0);
@@ -36467,7 +36467,7 @@ RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__re
   RogueInteger required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueArray::create( 10, sizeof(RogueClassString_TokenListTableEntry*), true );
+    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TokenListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
@@ -36476,7 +36476,7 @@ RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__re
     {
       required_capacity_1 = ((RogueInteger)x2_2);
     }
-    RogueArray* new_data_3 = (RogueArray::create( required_capacity_1, sizeof(RogueClassString_TokenListTableEntry*), true ));
+    RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenListTableEntry*), true ));
     new_data_3->set(0,((RogueArray*)(THIS->data)),0,-1);
     THIS->data = new_data_3;
   }
@@ -37575,7 +37575,7 @@ void RogueProgram::configure()
   Rogue_literal_strings[805] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "THIS->", 6 ) ); 
   Rogue_literal_strings[806] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( " is not a singleton.", 20 ) ); 
   Rogue_literal_strings[807] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ")ROGUE_SINGLETON(", 17 ) ); 
-  Rogue_literal_strings[808] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "RogueArray::create( ", 20 ) ); 
+  Rogue_literal_strings[808] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "RogueType_create_array( ", 24 ) ); 
   Rogue_literal_strings[809] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ", sizeof(", 9 ) ); 
   Rogue_literal_strings[810] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ", true", 6 ) ); 
   Rogue_literal_strings[811] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "ROGUE_CREATE_OBJECT(", 20 ) ); 

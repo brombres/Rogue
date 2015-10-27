@@ -65,6 +65,22 @@ RogueAllocator Rogue_allocator;
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
+RogueArray* RogueType_create_array( int count, int element_size, bool is_reference_array )
+{
+  if (count < 0) count = 0;
+  int data_size  = count * element_size;
+  int total_size = sizeof(RogueArray) + data_size;
+
+  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( RogueTypeArray, total_size );
+
+  memset( array->bytes, 0, data_size );
+  array->count = count;
+  array->element_size = element_size;
+  array->is_reference_array = is_reference_array;
+
+  return array;
+}
+
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
 {
   RogueObject* obj;
@@ -293,22 +309,6 @@ RogueString* RogueString_update_hash_code( RogueString* THIS )
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
-RogueArray* RogueArray::create( int count, int element_size, bool is_reference_array )
-{
-  if (count < 0) count = 0;
-  int data_size  = count * element_size;
-  int total_size = sizeof(RogueArray) + data_size;
-
-  RogueArray* array = (RogueArray*) Rogue_program.allocate_object( RogueTypeArray, total_size );
-
-  memset( array->bytes, 0, data_size );
-  array->count = count;
-  array->element_size = element_size;
-  array->is_reference_array = is_reference_array;
-
-  return array;
-}
-
 RogueArray* RogueArray::set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 )
 {
   if ( !other || i1 >= count ) return this;

@@ -39,8 +39,9 @@
 #endif
 
 struct RogueAllocator;
-struct RogueString;
+struct RogueArray;
 struct RogueCharacterList;
+struct RogueString;
 
 #define ROGUE_CREATE_OBJECT(name) RogueType_create_object(RogueType##name,0)
   //e.g. RogueType_create_object(RogueStringBuilder,0)
@@ -77,6 +78,7 @@ struct RogueType
   RogueInitFn       init_fn;
 };
 
+RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );
 RogueType*   RogueType_retire( RogueType* THIS );
 RogueObject* RogueType_singleton( RogueType* THIS );
@@ -139,10 +141,6 @@ RogueString* RogueString_update_hash_code( RogueString* THIS );
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
-struct RogueArrayType : RogueType
-{
-};
-
 struct RogueArray : RogueObject
 {
   int  count;
@@ -160,8 +158,6 @@ struct RogueArray : RogueObject
     RogueFloat     floats[];
     RogueReal      reals[];
   };
-
-  static RogueArray* create( int count, int element_size, bool is_reference_array=false );
 
   RogueArray* set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 );
 };
