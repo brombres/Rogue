@@ -140,6 +140,16 @@ class Parser
         parse_multi_line_statements( this_method.statements ) 
         return true
 
+      elseIf (next_is(TokenType.keyword_method))
+        this_type = Program.get_type_reference( peek, "Global" )
+        while (parse_method) noAction
+        return true
+
+      elseIf (next_is(TokenType.keyword_routine))
+        this_type = Program.get_type_reference( peek, "Global" )
+        while (parse_method(true)) noAction
+        return true
+
       endIf
 
       return false

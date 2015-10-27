@@ -51,12 +51,13 @@ class Scope
       local t = access.t
 
       local context = access.context
-      if (context)
-        if (m.is_routine and context instanceOf CmdLiteralThis)
-          throw t.error( "Cannot call a method from a routine without an object context (obj.$()(...))." (m.name) )
+      if (not context)
+        if (this_method.is_routine and not m.is_routine)
+          # Calling a singleton method from a routine
+          context = CmdReadSingleton( t, type_context )
+        else
+          context = CmdThisContext( t, type_context )
         endIf
-      else
-        context = CmdThisContext( t, type_context )
       endIf
 
       local args = access.args

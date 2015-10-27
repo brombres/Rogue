@@ -1,2 +1,4 @@
-println "Hello World!"
+test
 
+routine test
+  println "Hello World!"
