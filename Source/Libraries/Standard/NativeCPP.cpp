@@ -581,6 +581,10 @@ void Rogue_configure_types()
   int i;
   int* type_info = Rogue_type_info_table - 1;
 
+  // Initialize allocators
+  memset( Rogue_allocators, 0, sizeof(RogueAllocator)*Rogue_allocator_count );
+
+  // Initialize types
   for (i=0; i<Rogue_type_count; ++i)
   {
     int j;
@@ -592,6 +596,7 @@ void Rogue_configure_types()
 
     type->index = i;
     type->object_size = Rogue_object_size_table[i];
+    type->allocator = &Rogue_allocators[ *(++type_info) ];
     type->methods = Rogue_dynamic_method_table + *(++type_info);
     type->base_type_count = *(++type_info);
     if (type->base_type_count)

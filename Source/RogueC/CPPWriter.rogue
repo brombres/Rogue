@@ -1,239 +1,4 @@
 #------------------------------------------------------------------------------
-# CPPWriter
-#------------------------------------------------------------------------------
-class CPPWriter
-  PROPERTIES
-    filepath : String
-    buffer   = StringBuilder()
-    indent   = 0
-    needs_indent = true
-
-    temp_buffer = StringBuilder()
-
-  METHODS
-    method init( filepath )
-
-    method close
-      File(filepath).save( buffer->String )
-
-    method print_indent
-      if (needs_indent)
-        needs_indent = false
-        forEach (1..indent) buffer.print(' ')
-      endIf
-
-    method print( value:Long )->CPPWriter
-      print_indent
-      buffer.print( value )
-      return this
-
-    method print( value:Integer )->CPPWriter
-      print_indent
-      buffer.print( value )
-      return this
-
-    method print( value:Real )->CPPWriter
-      print_indent
-
-      buffer.print( value )
-
-      return this
-
-    method print( value:String )->CPPWriter
-      local needs_newline = false
-      if (value.contains('\n'))
-        forEach (line in LineReader(value))
-          if (needs_newline) println
-          print_indent
-          buffer.print( line )
-          needs_newline = true
-        endForEach
-      else
-        print_indent
-        buffer.print( value )
-      endIf
-      return this
-
-    method print_code( code:String )->CPPWriter
-      forEach (line in LineReader(code))
-        local original_indent = indent
-        if (line.begins_with('#')) indent = 0
-
-        println( line )
-
-        indent = original_indent
-      endForEach
-      return this
-
-    method println->CPPWriter
-      buffer.print( '\n' )
-      needs_indent = true
-      return this
-
-    method println( value:Long )->CPPWriter
-      print( value )
-      buffer.print( '\n' )
-      needs_indent = true
-      return this
-
-    method println( value:Integer )->CPPWriter
-      print( value )
-      buffer.print( '\n' )
-      needs_indent = true
-      return this
-
-    method println( value:Real )->CPPWriter
-      print( value )
-      buffer.print( '\n' )
-      needs_indent = true
-      return this
-
-    method println( value:String )->CPPWriter
-      print( value )
-      buffer.print( '\n' )
-      needs_indent = true
-      return this
-
-    method print( type:Type )->CPPWriter
-      if (type and type.is_optional and type.element_type.is_reference)
-        return print( type.element_type )
-      else
-        print_type_name( type )
-        if (type and type.is_reference) buffer.print("*")
-        return this
-      endIf
-
-    method print_cast( from_type:Type, to_type:Type )->CPPWriter
-      if (from_type is to_type) return this
-      return print( "(" ).print( to_type ).print( ")" )
-      return this
-
-    method print_open_cast( from_type:Type, to_type:Type )->CPPWriter
-      if (from_type is to_type) return this
-      print( "(" )
-      return print_cast( from_type, to_type )
-
-    method print_close_cast( from_type:Type, to_type:Type )->CPPWriter
-      if (from_type is to_type) return this
-      print( ")" )
-      return this
-
-    method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
-      if (from_type is to_type)
-        cmd.write_cpp( this )
-      else
-        print( "(" )
-        print_cast( from_type, to_type )
-        cmd.write_cpp( this )
-        print( ")" )
-      endIf
-      return this
-
-    method print_access_operator( type:Type )->CPPWriter
-      if (type.is_reference) return print( "->" )
-      else                   return print( "." )
-
-    method print_type_name( type:Type )->CPPWriter
-      print_indent
-      if (type) buffer.print( type.cpp_class_name )
-      else       buffer.print( "void" )
-      return this
-
-    method print_type_info( type:Type )->CPPWriter
-      print_indent
-      buffer.print( "RogueType" ).print( type.cpp_name )
-      return this
-
-    method print_default_value( type:Type )->CPPWriter
-      if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
-        buffer.print( "0" )
-      else
-        print( type ).print( "()" )
-      endIf
-      return this
-
-    method print( ch:Character, in_string=false:Logical )->CPPWriter
-      if (ch < 0x80)
-        if (ch >= 32 and ch <= 126)
-          which (ch)
-            case '"'
-              if (in_string) print( "\\\"" )
-              else           print( "\"" )
-            case '\''
-              if (in_string) print( "'" )
-              else           print( "\\'" )
-            case '\\'
-              print( "\\\\" )
-            others
-              print( ""+ch )
-          endWhich
-        else
-          which (ch)
-            case 10
-              print "\\n"
-            others
-              print "\\"
-              print( "" + (ch->Integer / 64)->Integer )
-              print( "" + ((ch->Integer & 63) / 8)->Integer )
-              print( "" + (ch & 7) )
-          endWhich
-        endIf
-      endIf
-      return this
-
-    method print_string_utf8( st:String )->CPPWriter
-      if (st is null)
-        print( "0" )
-        return this
-      endIf
-
-      print( "\"" )
-      forEach (ch in st) print( ch, true )
-      print( "\"" )
-
-      return this
-endClass
-
-
-#------------------------------------------------------------------------------
-# RogueC
-#------------------------------------------------------------------------------
-augment RogueC
-  METHODS
-    method launch
-      <<collect_supported_targets>>
-      supported_targets.add( "C++" )
-
-    method write_output
-      <<target_specific_code>>
-      if (target == "C++") write_cpp; return
-
-    method write_cpp
-      if (output_filepath is null)
-        output_filepath = File.filename(first_filepath)
-        if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
-      else
-        if (File.is_folder(output_filepath))
-          output_filepath = File.path(output_filepath) + "/RogueProgram"
-        elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
-          output_filepath = output_filepath.leftmost(-4)
-        endIf
-      endIf
-
-      Program.write_cpp( output_filepath )
-
-      if (execute_args)
-        local exe = output_filepath.to_lowercase
-        local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
-        println cmd
-        println
-        System.run( cmd )
-      endIf
-
-endAugment
-
-
-#------------------------------------------------------------------------------
 # Program
 #------------------------------------------------------------------------------
 augment Program
@@ -699,7 +464,7 @@ augment Program
       writer.println( "};" )
       writer.println
 
-      # Base class count table
+      # Base class info table
       local info = Integer[]
       forEach (type in type_list)
         type.collect_type_info( info )
@@ -708,7 +473,7 @@ augment Program
       writer.print(   "int Rogue_type_info_table[" ).print( info.count ).println( "] =" )
       writer.println "{"
       writer.indent += 2
-      writer.println "// dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
+      writer.println "// allocator_index, dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
 
       first = true
       local items = 0
@@ -744,6 +509,11 @@ augment Program
       if (items > 0) writer.println
       writer.indent -= 2
       writer.println( "};" )
+      writer.println
+
+      # Allocators
+      writer.print( "int Rogue_allocator_count = " ).print( 1 ).println( ";" )
+      writer.print( "RogueAllocator Rogue_allocators[" ).print( 1 ).println( "];" )
       writer.println
 
       # Types
@@ -911,6 +681,241 @@ augment Program
         endIf
 
       endForEach
+endAugment
+
+
+#------------------------------------------------------------------------------
+# CPPWriter
+#------------------------------------------------------------------------------
+class CPPWriter
+  PROPERTIES
+    filepath : String
+    buffer   = StringBuilder()
+    indent   = 0
+    needs_indent = true
+
+    temp_buffer = StringBuilder()
+
+  METHODS
+    method init( filepath )
+
+    method close
+      File(filepath).save( buffer->String )
+
+    method print_indent
+      if (needs_indent)
+        needs_indent = false
+        forEach (1..indent) buffer.print(' ')
+      endIf
+
+    method print( value:Long )->CPPWriter
+      print_indent
+      buffer.print( value )
+      return this
+
+    method print( value:Integer )->CPPWriter
+      print_indent
+      buffer.print( value )
+      return this
+
+    method print( value:Real )->CPPWriter
+      print_indent
+
+      buffer.print( value )
+
+      return this
+
+    method print( value:String )->CPPWriter
+      local needs_newline = false
+      if (value.contains('\n'))
+        forEach (line in LineReader(value))
+          if (needs_newline) println
+          print_indent
+          buffer.print( line )
+          needs_newline = true
+        endForEach
+      else
+        print_indent
+        buffer.print( value )
+      endIf
+      return this
+
+    method print_code( code:String )->CPPWriter
+      forEach (line in LineReader(code))
+        local original_indent = indent
+        if (line.begins_with('#')) indent = 0
+
+        println( line )
+
+        indent = original_indent
+      endForEach
+      return this
+
+    method println->CPPWriter
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Long )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Integer )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Real )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:String )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method print( type:Type )->CPPWriter
+      if (type and type.is_optional and type.element_type.is_reference)
+        return print( type.element_type )
+      else
+        print_type_name( type )
+        if (type and type.is_reference) buffer.print("*")
+        return this
+      endIf
+
+    method print_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      return print( "(" ).print( to_type ).print( ")" )
+      return this
+
+    method print_open_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      print( "(" )
+      return print_cast( from_type, to_type )
+
+    method print_close_cast( from_type:Type, to_type:Type )->CPPWriter
+      if (from_type is to_type) return this
+      print( ")" )
+      return this
+
+    method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->CPPWriter
+      if (from_type is to_type)
+        cmd.write_cpp( this )
+      else
+        print( "(" )
+        print_cast( from_type, to_type )
+        cmd.write_cpp( this )
+        print( ")" )
+      endIf
+      return this
+
+    method print_access_operator( type:Type )->CPPWriter
+      if (type.is_reference) return print( "->" )
+      else                   return print( "." )
+
+    method print_type_name( type:Type )->CPPWriter
+      print_indent
+      if (type) buffer.print( type.cpp_class_name )
+      else       buffer.print( "void" )
+      return this
+
+    method print_type_info( type:Type )->CPPWriter
+      print_indent
+      buffer.print( "RogueType" ).print( type.cpp_name )
+      return this
+
+    method print_default_value( type:Type )->CPPWriter
+      if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
+        buffer.print( "0" )
+      else
+        print( type ).print( "()" )
+      endIf
+      return this
+
+    method print( ch:Character, in_string=false:Logical )->CPPWriter
+      if (ch < 0x80)
+        if (ch >= 32 and ch <= 126)
+          which (ch)
+            case '"'
+              if (in_string) print( "\\\"" )
+              else           print( "\"" )
+            case '\''
+              if (in_string) print( "'" )
+              else           print( "\\'" )
+            case '\\'
+              print( "\\\\" )
+            others
+              print( ""+ch )
+          endWhich
+        else
+          which (ch)
+            case 10
+              print "\\n"
+            others
+              print "\\"
+              print( "" + (ch->Integer / 64)->Integer )
+              print( "" + ((ch->Integer & 63) / 8)->Integer )
+              print( "" + (ch & 7) )
+          endWhich
+        endIf
+      endIf
+      return this
+
+    method print_string_utf8( st:String )->CPPWriter
+      if (st is null)
+        print( "0" )
+        return this
+      endIf
+
+      print( "\"" )
+      forEach (ch in st) print( ch, true )
+      print( "\"" )
+
+      return this
+endClass
+
+
+#------------------------------------------------------------------------------
+# RogueC
+#------------------------------------------------------------------------------
+augment RogueC
+  METHODS
+    method launch
+      <<collect_supported_targets>>
+      supported_targets.add( "C++" )
+
+    method write_output
+      <<target_specific_code>>
+      if (target == "C++") write_cpp; return
+
+    method write_cpp
+      if (output_filepath is null)
+        output_filepath = File.filename(first_filepath)
+        if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
+      else
+        if (File.is_folder(output_filepath))
+          output_filepath = File.path(output_filepath) + "/RogueProgram"
+        elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
+          output_filepath = output_filepath.leftmost(-4)
+        endIf
+      endIf
+
+      Program.write_cpp( output_filepath )
+
+      if (execute_args)
+        local exe = output_filepath.to_lowercase
+        local cmd = "g++ $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
+        println cmd
+        println
+        System.run( cmd )
+      endIf
+
 endAugment
 
 
@@ -1098,6 +1103,8 @@ augment Type
       writer.println( "};" )
 
     method collect_type_info( info:Integer[] )
+      info.add( 0 )  # allocator 0
+
       if (is_primitive)
         info.add( 0 )
       else

@@ -252,6 +252,8 @@ void         RogueAllocator_free_objects( RogueAllocator* THIS );
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
 extern RogueAllocator    Rogue_allocator;
+extern int               Rogue_allocator_count;
+extern RogueAllocator    Rogue_allocators[];
 extern int               Rogue_type_count;
 extern RogueType         Rogue_types[];
 extern int               Rogue_type_info_table[];
