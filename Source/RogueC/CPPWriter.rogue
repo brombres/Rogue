@@ -142,17 +142,6 @@ augment Program
       endForEach
       writer.println
 
-      # RogueProgram object
-      writer.println( "struct RogueProgram : RogueProgramCore" )
-      writer.println( "{" )
-      writer.println( "  RogueProgram();" )
-      writer.println( "  ~RogueProgram();" )
-      writer.println( "  void configure();" )
-      writer.println( "  void launch( int argc, char* argv[] );" )
-      writer.println( "  //void finish_tasks();" )
-      writer.println( "};" )
-      writer.println
-
       # RogueType_X externs.
       forEach (type in type_list)
         if (not type.omit_output or (type.is_native and not type.is_array))
@@ -164,9 +153,6 @@ augment Program
 
       # method prototypes
       forEach (type in type_list) type.print_method_prototypes( writer )
-      writer.println
-
-      writer.println( "extern RogueProgram Rogue_program;" );
       writer.println
 
       # Trace routine prototype
@@ -543,24 +529,8 @@ augment Program
       forEach (type in type_list) type.print_method_definitions( writer )
       writer.println
 
-      # RogueProgram constructor
-      local type_count = 0
-      forEach (type in type_list)
-        if (not type.is_array) ++type_count
-      endForEach
-      writer.print( "RogueProgram::RogueProgram()" )
-      writer.println  "{"
-      writer.println  "}"
-      writer.println
-
-      # RogueProgram destructor
-      writer.println( "RogueProgram::~RogueProgram()" )
-      writer.println  "{"
-      writer.println  "}"
-      writer.println
-
       # configure() method
-      writer.println( "void RogueProgram::configure()" )
+      writer.println( "void Rogue_configure()" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -590,7 +560,7 @@ augment Program
       writer.println
 
       # launch()
-      writer.println( "void RogueProgram::launch( int argc, char* argv[] )" )
+      writer.println( "void Rogue_launch( int argc, char* argv[] )" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -634,18 +604,14 @@ augment Program
                      )
       }#
 
-
-      writer.println "RogueProgram Rogue_program;"
-      writer.println
-
       # Optional main()
       if (RogueC.generate_main)
         writer.println
         writer.println( @|int main( int argc, char* argv[] )
                          |{
-                         |  Rogue_program.configure();
-                         |  Rogue_program.launch( argc, argv );
-                         |  //Rogue_program.finish_tasks();
+                         |  Rogue_configure();
+                         |  Rogue_launch( argc, argv );
+                         |  Rogue_quit();
                          |  return 0;
                          |}
         )

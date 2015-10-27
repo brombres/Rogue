@@ -349,28 +349,6 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other
 }
 
 //-----------------------------------------------------------------------------
-//  RogueProgramCore
-//-----------------------------------------------------------------------------
-RogueProgramCore::RogueProgramCore()
-{
-}
-
-RogueProgramCore::~RogueProgramCore()
-{
-  int i;
-
-  for (i=0; i<Rogue_allocator_count; ++i)
-  {
-    RogueAllocator_free_objects( &Rogue_allocators[i] );
-  }
-
-  for (i=0; i<Rogue_type_count; ++i)
-  {
-    RogueType_retire( &Rogue_types[i] );
-  }
-}
-
-//-----------------------------------------------------------------------------
 //  RogueAllocationPage
 //-----------------------------------------------------------------------------
 RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page )
@@ -617,6 +595,21 @@ void Rogue_collect_garbage()
   for (i=0; i<Rogue_allocator_count; ++i)
   {
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
+  }
+}
+
+void Rogue_quit()
+{
+  int i;
+
+  for (i=0; i<Rogue_allocator_count; ++i)
+  {
+    RogueAllocator_free_objects( &Rogue_allocators[i] );
+  }
+
+  for (i=0; i<Rogue_type_count; ++i)
+  {
+    RogueType_retire( &Rogue_types[i] );
   }
 }
 

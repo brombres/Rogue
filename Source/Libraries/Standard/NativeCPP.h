@@ -162,15 +162,6 @@ struct RogueArray : RogueObject
 
 RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger copy_count );
 
-//-----------------------------------------------------------------------------
-//  RogueProgramCore
-//-----------------------------------------------------------------------------
-struct RogueProgramCore
-{
-  RogueProgramCore();
-  ~RogueProgramCore();
-};
-
 
 //-----------------------------------------------------------------------------
 //  RogueAllocator
@@ -264,6 +255,8 @@ extern RogueTraceFn      Rogue_trace_fn_table[];
 extern int               Rogue_literal_string_count;
 extern RogueString*      Rogue_literal_strings[];
 
-void         Rogue_collect_garbage();
-
+void Rogue_configure();
+void Rogue_collect_garbage();
+void Rogue_launch( int argc, char* argv[] );
+void Rogue_quit();
 
