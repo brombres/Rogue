@@ -158,12 +158,9 @@ struct RogueArray : RogueObject
     RogueFloat     floats[];
     RogueReal      reals[];
   };
-
-  //RogueArray* set( RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 );
 };
 
-//RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger other_i2 );
-RogueArray* RogueArray_set_count( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger copy_count );
+RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger copy_count );
 
 //-----------------------------------------------------------------------------
 //  RogueProgramCore

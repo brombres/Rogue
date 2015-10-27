@@ -70,7 +70,7 @@ class List<<$DataType>> : GenericList
         add( first )
 
         # Shift everything over
-        data.set_count( before_index+1, data, before_index, (count-before_index) )
+        data.set( before_index+1, data, before_index, (count-before_index) )
 
         # Copy in the new value
         data[ before_index ] = value
@@ -88,7 +88,7 @@ class List<<$DataType>> : GenericList
         reserve( other.count )
 
         # Shift everything over
-        data.set_count( before_index+other.count, data, before_index, (count-before_index)+1 )
+        data.set( before_index+other.count, data, before_index, (count-before_index)+1 )
         count += other.count
 
         # Copy in the new values
@@ -130,7 +130,7 @@ class List<<$DataType>> : GenericList
         local x2 = capacity + capacity
         if (required_capacity < x2) required_capacity = x2 
         local new_data = Array<<$DataType>>( required_capacity )
-        new_data.set_count( 0, data )
+        new_data.set( 0, data )
         data = new_data
       endIf
 
@@ -147,7 +147,7 @@ class List<<$DataType>> : GenericList
 
     method remove_at( index:Integer )->$DataType
       local result = this[ index ]
-      data.set_count( index, data, index+1 )
+      data.set( index, data, index+1 )
       local zero_value : $DataType
       data[count] = zero_value
       --count
