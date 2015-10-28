@@ -9,12 +9,18 @@ class Real [primitive]
     method hash_code->Integer
       return Long(this)->Integer
 
+    method to->Object
+      return Boxed<<Real>>(this)
+
     method to->String
       return "" + this
 
 endClass
 
 class Float [primitive]
+  METHODS
+    method to->Object
+      return Boxed<<Float>>(this)
 endClass
 
 class Long [primitive]
@@ -28,6 +34,9 @@ class Long [primitive]
     method hash_code->Integer
       return this
 
+    method to->Object
+      return Boxed<<Long>>(this)
+
     method to->String
       return StringBuilder().print( this )->String
 endClass
@@ -39,6 +48,9 @@ class Integer [primitive]
 
     method to->Long
       $if ("C++") macro native "((RogueLong)$this)"
+
+    method to->Object
+      return Boxed<<Integer>>(this)
 
     method to->String
       return "" + this
@@ -67,6 +79,9 @@ class Character [primitive]
     method is_number( base=10:Integer )->Logical
       return to_number(base) != -1
 
+    method to->Object
+      return Boxed<<Character>>(this)
+
     method to->String
       return "" + this
 
@@ -82,6 +97,9 @@ class Byte [primitive]
     method hash_code->Integer
       return this->Integer
 
+    method to->Object
+      return Boxed<<Byte>>(this)
+
     method to->String
       return "" + this
 endClass
@@ -92,7 +110,23 @@ class Logical [primitive]
       if (this) return 1
       else      return 0
 
+    method to->Object
+      return Boxed<<Logical>>(this)
+
     method to->String
       return "" + this
+endClass
+
+class BoxedValueDefaults [aspect]
+  METHODS
+    method to->String
+      println "HERE"
+      return value->String
+endClass
+
+class Boxed<<$DataType>>( value:$DataType ) : BoxedValueDefaults
+  METHODS
+    method to->$DataType
+      return value
 endClass
 

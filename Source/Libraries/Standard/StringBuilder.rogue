@@ -14,6 +14,13 @@ class StringBuilder [requisite]
     method init( initial_capacity:Integer )
       characters = Character[]( initial_capacity )
 
+    method init( initial_content:String )
+      if (initial_content is null) initial_content = "null"
+      local initial_capacity = initial_content.count
+      if (initial_capacity < 40) initial_capacity = 40
+      init( initial_capacity )
+      print( initial_content )
+
     method add_indent( spaces:Integer )->this
       indent += spaces
       return this

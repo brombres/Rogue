@@ -2,3 +2,6 @@ test
 
 routine test
   println "Hello World!"
+  println 5->Object
+  local n = 5->Object
+  println n->String

@@ -415,6 +415,9 @@ class String [native functional]
                 |}
       $endIf
 
+    method to->Object
+      return Boxed<<String>>(this)
+
     method to->Real
       $if ("C++")
         native @|char buffer[80];
@@ -517,3 +520,4 @@ class String [native functional]
       return buffer
 
 endClass
+

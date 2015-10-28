@@ -1,4 +1,142 @@
 test
 
 routine test
-  println "Hello World"
+  println CmdAddInteger(CmdLiteralInteger(3),CmdAddInteger(CmdLiteralInteger(4),CmdLiteralInteger(5))).execute_integer
+  println CmdLiteralString("Testing").execute_object
+
+class Cmd
+  PROPERTIES
+  METHODS
+    method execute->Integer
+      return 0
+
+    method execute_real->Real
+      return execute_integer
+
+    method execute_float->Float
+      return execute_real->Float
+
+    method execute_long->Long
+      return execute_integer
+
+    method execute_integer->Integer
+      return 0
+
+    method execute_character->Character
+      return execute_integer->Character
+
+    method execute_byte->Byte
+      return execute_integer->Byte
+
+    method execute_logical->Logical
+      return execute_integer?
+
+    method execute_object->Object
+      return null
+endClass
+
+
+class CmdBinary : Cmd
+  PROPERTIES
+    left, right : Cmd
+
+  METHODS
+    method init( left, right )
+endClass
+
+
+class CmdBinaryInteger : CmdBinary
+  METHODS
+    method execute->Integer
+      execute_integer
+      return 0
+endClass
+
+
+class CmdAddInteger : CmdBinaryInteger
+  METHODS
+    method execute_integer->Integer
+      return left.execute_integer + right.execute_integer
+endClass
+
+#------------------------------------------------------------------------------
+# Literals
+#------------------------------------------------------------------------------
+class CmdLiteral : Cmd
+endClass
+
+class CmdLiteralReal( value:Real ) : CmdLiteral
+  METHODS
+    method execute_real->Real
+      return value
+
+    method execute_long->Long
+      return value->Long
+
+    method execute_integer->Integer
+      return value->Integer
+endClass
+
+class CmdLiteralFloat( value:Float ) : CmdLiteral
+  METHODS
+    method execute_real->Real
+      return value
+
+    method execute_float->Float
+      return value
+
+    method execute_integer->Integer
+      return value->Integer
+endClass
+
+class CmdLiteralLong( value:Long ) : CmdLiteral
+  METHODS
+    method execute_real->Real
+      return value
+
+    method execute_long->Long
+      return value
+
+    method execute_integer->Integer
+      return value->Integer
+endClass
+
+class CmdLiteralInteger( value:Integer ) : CmdLiteral
+  METHODS
+    method execute_integer->Integer
+      return value
+endClass
+
+class CmdLiteralCharacter( value:Character ) : CmdLiteral
+  METHODS
+    method execute_integer->Integer
+      return value
+
+    method execute_character->Character
+      return value
+endClass
+
+class CmdLiteralByte( value:Byte ) : CmdLiteral
+  METHODS
+    method execute_integer->Integer
+      return value
+
+    method execute_byte->Byte
+      return byte
+endClass
+
+class CmdLiteralLogical( value:Logical ) : CmdLiteral
+  METHODS
+    method execute_integer->Integer
+      if (value) return 1
+      else       return 0
+
+    method execute_logical->Logical
+      return value
+endClass
+
+class CmdLiteralString( value:String ) : CmdLiteral
+  METHODS
+    method execute_object->Object
+      return value->Object
+endClass
