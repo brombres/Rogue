@@ -25,6 +25,7 @@ class Attribute
     is_task             = 65536
     is_task_conversion  = 131072
     is_augment          = 262144
+    is_abstract         = 524288
 endClass
 
 

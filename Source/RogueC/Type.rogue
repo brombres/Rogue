@@ -530,12 +530,14 @@ class Type
         endIf
 
         if (m.type_context.is_aspect)
-          # aspect default methods don't replace existing methods
-          # But we'll still mark it as being overridden by this method
           m.overriding_methods.add( existing_m )
-          return
+          if (m.is_abstract) return
+
+          m = m.incorporate( this )
+
         elseIf (m.is_augment)
           m.convert_augment_to_standalone
+
         endIf
 
         if (not existing_m.type_context.is_aspect)

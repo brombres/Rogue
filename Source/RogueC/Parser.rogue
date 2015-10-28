@@ -277,6 +277,8 @@ class Parser
           attributes.add( Attribute.is_native )
 
         # TODO: remove this compiler source code bridge code eventually
+        elseIf (consume("abstract"))
+          attributes.add( Attribute.is_abstract )
         elseIf (consume("aspect"))
           ensure_unspecialized_element_type( t, attributes )
           attributes.add( Attribute.is_aspect )

@@ -1,0 +1,12 @@
+class BoxedValueDefaults [aspect]
+  METHODS
+    method to->String
+      return value->String
+endClass
+
+class Boxed<<$DataType>>( value:$DataType ) : BoxedValueDefaults
+  METHODS
+    method to->$DataType
+      return value
+endClass
+

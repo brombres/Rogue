@@ -117,16 +117,3 @@ class Logical [primitive]
       return "" + this
 endClass
 
-class BoxedValueDefaults [aspect]
-  METHODS
-    method to->String
-      println "HERE"
-      return value->String
-endClass
-
-class Boxed<<$DataType>>( value:$DataType ) : BoxedValueDefaults
-  METHODS
-    method to->$DataType
-      return value
-endClass
-

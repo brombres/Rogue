@@ -3619,6 +3619,7 @@ RogueClassLocal* RogueMethod__add_local__Token_String_Type_Cmd( RogueClassMethod
 RogueClassLocal* RogueMethod__add_parameter__Token_String_Type( RogueClassMethod* THIS, RogueClassToken* p_t_0, RogueString* p_name_1, RogueClassType* p_type_2 );
 void RogueMethod__assign_signature( RogueClassMethod* THIS );
 RogueClassCmdLabel* RogueMethod__begin_label__Token_String_Logical( RogueClassMethod* THIS, RogueClassToken* label_t_0, RogueString* label_name_1, RogueLogical consolidate_duplicates_2 );
+RogueLogical RogueMethod__is_abstract( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_augment( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_dynamic( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_generated( RogueClassMethod* THIS );

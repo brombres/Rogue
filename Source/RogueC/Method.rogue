@@ -140,6 +140,9 @@ class Method
       return label_lookup[ label_name ]
       }#
 
+    method is_abstract->Logical
+      return (attributes.flags & Attribute.is_abstract)
+
     method is_augment->Logical
       return (attributes.flags & Attribute.is_augment)
 

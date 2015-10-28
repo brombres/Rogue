@@ -1,4 +1,5 @@
 $include "Array.rogue"
+$include "Boxed.rogue"
 $include "Console.rogue"
 $include "Error.rogue"
 $include "Event.rogue"
