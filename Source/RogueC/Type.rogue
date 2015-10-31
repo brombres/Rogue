@@ -548,6 +548,14 @@ class Type
 
         m.overridden_method = existing_m
         while (m.overridden_method and m.type_context is m.overridden_method.type_context)
+          # Make sure that the overridden method is in a different type context - if it's
+          # not then we're replacing an aspect method and need to dig down further to get
+          # the actual overridden method.
+          if (m.overridden_method.overridden_method)
+            # Remove the aspect method from the list of overriding methods since it won't 
+            # be reachable or resolved otherwise.
+            m.overridden_method.overridden_method.overriding_methods.remove( m.overridden_method )
+          endIf
           m.overridden_method = m.overridden_method.overridden_method
         endWhile
         if (m.overridden_method)
@@ -685,6 +693,8 @@ class Type
     method trace_used_code
       if (is_used) return   # Already traced
       is_used = true
+
+      if (not resolved) throw t.error( name + " is not resolved" )
 
       if (is_singleton)
         local m = find_method( "init()" )

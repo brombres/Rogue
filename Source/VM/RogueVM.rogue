@@ -2,7 +2,7 @@ test
 
 routine test
   println CmdAddInteger(CmdLiteralInteger(3),CmdAddInteger(CmdLiteralInteger(4),CmdLiteralInteger(5))).execute_integer
-  println CmdLiteralString("Testing").execute_object
+  println CmdLiteralString("Testing").execute_string
 
 class Cmd
   PROPERTIES
@@ -33,6 +33,9 @@ class Cmd
 
     method execute_object->Object
       return null
+
+    method execute_string->String
+      return execute_long->String
 endClass
 
 
@@ -75,6 +78,9 @@ class CmdLiteralReal( value:Real ) : CmdLiteral
 
     method execute_integer->Integer
       return value->Integer
+
+    method execute_string->String
+      return value->String
 endClass
 
 class CmdLiteralFloat( value:Float ) : CmdLiteral
@@ -87,6 +93,9 @@ class CmdLiteralFloat( value:Float ) : CmdLiteral
 
     method execute_integer->Integer
       return value->Integer
+
+    method execute_string->String
+      return value->String
 endClass
 
 class CmdLiteralLong( value:Long ) : CmdLiteral
@@ -114,6 +123,9 @@ class CmdLiteralCharacter( value:Character ) : CmdLiteral
 
     method execute_character->Character
       return value
+
+    method execute_string->String
+      return value->String
 endClass
 
 class CmdLiteralByte( value:Byte ) : CmdLiteral
@@ -133,10 +145,16 @@ class CmdLiteralLogical( value:Logical ) : CmdLiteral
 
     method execute_logical->Logical
       return value
+
+    method execute_string->String
+      return value->String
 endClass
 
 class CmdLiteralString( value:String ) : CmdLiteral
   METHODS
     method execute_object->Object
       return value->Object
+
+    method execute_string->String
+      return value
 endClass

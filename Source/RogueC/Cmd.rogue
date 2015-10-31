@@ -1820,6 +1820,9 @@ class CmdAccess : Cmd
 
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
+    method trace_used_code
+      throw t.error( ''[INTERNAL] $::trace_used_code() ("$") is not defined.'' (type_name,name) )
+
     method type->Type
       local err = t.error( "[INTERNAL] $::type() is not defined (access name '$')." (type_name,name) )
       #println err.stack_trace

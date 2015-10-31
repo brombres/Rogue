@@ -412,5 +412,8 @@ class Method
       if (return_type) return_type.trace_used_code
 
       statements.trace_used_code
+
+    method address->Long
+      macro native "(RogueLong)(intptr_t)$this"
 endClass
 
