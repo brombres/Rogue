@@ -1,7 +1,17 @@
 test
 
 routine test
-  println "Hello World!"
-  println 5->Object
-  local n = 5->Object
-  println n->String
+  try
+    try
+      println "Alpha"
+      throw Error("Boom")
+      println "Beta"
+    catch (err:Error)
+      println err.message + "!"
+      throw err
+    endTry
+  catch (err:Error)
+    println err.message + "!!"
+  endTry
+  throw Error( "Again!" )
+

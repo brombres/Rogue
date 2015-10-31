@@ -12,6 +12,14 @@
 //=============================================================================
 
 #if defined(_WIN32)
+#  define ROGUE_PLATFORM_WINDOWS 1
+#elif defined(__APPLE__)
+#  define ROGUE_PLATFORM_MAC 1
+#else
+#  define ROGUE_PLATFORM_GENERIC 1
+#endif
+
+#if defined(ROGUE_PLATFORM_WINDOWS)
 #  include <windows.h>
 #else
 #  include <cstdint>
@@ -20,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(_WIN32)
+#if defined(ROGUE_PLATFORM_WINDOWS)
   typedef double           RogueReal;
   typedef float            RogueFloat;
   typedef __int64          RogueLong;
@@ -51,10 +59,65 @@ struct RogueString;
 
 #define ROGUE_PROPERTY(name) p_##name
 
+
+//-----------------------------------------------------------------------------
+//  Error Handling
+//-----------------------------------------------------------------------------
+#include <setjmp.h>
+#if defined(ROGUE_PLATFORM_MAC)
+  // _setjmp/_longjmp on Mac are equivalent to setjmp/longjmp on other Unix
+  // systems.  The non-underscore versions are much slower as they save and
+  // restore the signal state as well as registers.
+  #define ROGUE_SETJMP  _setjmp
+  #define ROGUE_LONGJMP _longjmp
+#else
+  #define ROGUE_SETJMP  setjmp
+  #define ROGUE_LONGJMP longjmp
+#endif
+
+#define ROGUE_TRY \
+  { \
+    RogueErrorHandler local_error_handler; \
+    local_error_handler.previous_jump_buffer = Rogue_error_handler; \
+    Rogue_error_handler = &local_error_handler; \
+    if ( !ROGUE_SETJMP(local_error_handler.info) ) \
+    {
+
+#define ROGUE_CATCH(local_error_object,local_error_type) \
+      Rogue_error_handler = local_error_handler.previous_jump_buffer; \
+    } \
+    else \
+    { \
+      local_error_type local_error_object = (local_error_type) Rogue_error_object; \
+      Rogue_error_handler = local_error_handler.previous_jump_buffer;
+
+#define ROGUE_END_TRY \
+    } \
+  }
+
+#define ROGUE_THROW(_error_object) \
+  Rogue_error_object = _error_object; \
+  ROGUE_LONGJMP( Rogue_error_handler->info, 1 )
+
+typedef struct RogueErrorHandler
+{
+  jmp_buf                   info;
+  struct RogueErrorHandler* previous_jump_buffer;
+} RogueErrorHandler;
+
+
+//-----------------------------------------------------------------------------
+//  Forward References
+//-----------------------------------------------------------------------------
 struct RogueObject;
 
+
+//-----------------------------------------------------------------------------
+//  Callback Definitions
+//-----------------------------------------------------------------------------
 typedef void (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitFn)( void* obj );
+
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -242,18 +305,20 @@ void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
-extern int               Rogue_allocator_count;
-extern RogueAllocator    Rogue_allocators[];
-extern int               Rogue_type_count;
-extern RogueType         Rogue_types[];
-extern int               Rogue_type_info_table[];
-extern int               Rogue_object_size_table[];
-extern void*             Rogue_dynamic_method_table[];
-extern RogueInitFn       Rogue_init_object_fn_table[];
-extern RogueInitFn       Rogue_init_fn_table[];
-extern RogueTraceFn      Rogue_trace_fn_table[];
-extern int               Rogue_literal_string_count;
-extern RogueString*      Rogue_literal_strings[];
+extern int                Rogue_allocator_count;
+extern RogueAllocator     Rogue_allocators[];
+extern int                Rogue_type_count;
+extern RogueType          Rogue_types[];
+extern int                Rogue_type_info_table[];
+extern int                Rogue_object_size_table[];
+extern void*              Rogue_dynamic_method_table[];
+extern RogueInitFn        Rogue_init_object_fn_table[];
+extern RogueInitFn        Rogue_init_fn_table[];
+extern RogueTraceFn       Rogue_trace_fn_table[];
+extern int                Rogue_literal_string_count;
+extern RogueString*       Rogue_literal_strings[];
+extern RogueErrorHandler* Rogue_error_handler;
+extern RogueObject*       Rogue_error_object;
 
 void Rogue_configure();
 void Rogue_collect_garbage();

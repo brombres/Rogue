@@ -21,7 +21,7 @@
 #include <time.h>
 #include <inttypes.h>
 
-#if !defined(_WIN32)
+#if !defined(ROGUE_PLATFORM_WINDOWS)
 #  include <sys/time.h>
 #  include <unistd.h>
 #  include <signal.h>
@@ -56,6 +56,13 @@
 #ifndef PATH_MAX
 #  define PATH_MAX 4096
 #endif
+
+//-----------------------------------------------------------------------------
+//  GLOBALS
+//-----------------------------------------------------------------------------
+RogueErrorHandler* Rogue_error_handler = 0;
+RogueObject*       Rogue_error_object  = 0;
+
 
 //-----------------------------------------------------------------------------
 //  RogueType
