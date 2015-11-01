@@ -267,6 +267,11 @@ class Program [requisite singleton]
               # Trace overriding methods
               forEach (m in type.method_list)
                 if (m.is_used)
+                  if (m.overridden_method and not m.overridden_method.is_used)
+                    traced_new_methods = true
+                    m.overridden_method.trace_used_code
+                  endIf
+
                   forEach (overriding_m in m.overriding_methods)
                     if (not overriding_m.is_used and overriding_m.type_context.is_used)
                       traced_new_methods = true

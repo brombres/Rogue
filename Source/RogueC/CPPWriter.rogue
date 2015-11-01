@@ -1160,7 +1160,7 @@ augment Type
             # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
           else
-            writer.print( "NULL," ) #.print( " // " ).print( m.signature )
+            writer.print( "0," ) #.print( " // " ).print(m.type_context.name).print(".").print( m.signature )
           endIf
           if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
           writer.println

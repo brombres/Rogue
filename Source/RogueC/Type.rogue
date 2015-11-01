@@ -694,8 +694,6 @@ class Type
       if (is_used) return   # Already traced
       is_used = true
 
-      if (not resolved) throw t.error( name + " is not resolved" )
-
       if (is_singleton)
         local m = find_method( "init()" )
         if (m) m.attributes.add( Attribute.is_requisite )

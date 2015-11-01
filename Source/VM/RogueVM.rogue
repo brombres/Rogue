@@ -1,8 +1,7 @@
 test
 
 routine test
-  println CmdAddInteger(CmdLiteralInteger(3),CmdAddInteger(CmdLiteralInteger(4),CmdLiteralInteger(5))).execute_integer
-  println CmdLiteralString("Testing").execute_string
+  CmdLog( CmdAddInteger(CmdLiteralInteger(3),CmdAddInteger(CmdLiteralInteger(4),CmdLiteralInteger(5))) ).execute
 
 class Cmd
   PROPERTIES
@@ -158,3 +157,11 @@ class CmdLiteralString( value:String ) : CmdLiteral
     method execute_string->String
       return value
 endClass
+
+class CmdLog( value:Cmd ) : Cmd
+  METHODS
+    method execute->Integer
+      println value.execute_string
+      return 0
+endClass
+
