@@ -874,7 +874,11 @@ augment RogueC
         if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
       else
         if (File.is_folder(output_filepath))
-          output_filepath = File.path(output_filepath) + "/RogueProgram"
+          output_filepath += "/"
+          local filename = File.filename( first_filepath )
+          if (filename.to_lowercase.ends_with(".rogue")) output_filepath += filename.leftmost(-6)
+          else                                           output_filepath += "RogueProgram"
+
         elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
           output_filepath = output_filepath.leftmost(-4)
         endIf

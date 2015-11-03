@@ -5884,121 +5884,121 @@ void Rogue_trace()
 
 void* Rogue_dynamic_method_table[] =
 {
-  0, // Object.operator==(Object) // Character[]
+  0, // Character[]
   (void*) (ROGUEM1) RogueCharacterList__to_String,
   (void*) (ROGUEM1) RogueCharacterList__type_name,
   (void*) (ROGUEM2) RogueCharacterList__init_object,
-  0, // Object.operator==(Object) // GenericList
+  0, // GenericList
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM3) RogueGenericList__type_name,
   (void*) (ROGUEM4) RogueGenericList__init_object,
-  0, // Object.operator==(Object) // StringBuilder
+  0, // StringBuilder
   (void*) (ROGUEM5) RogueStringBuilder__to_String,
   (void*) (ROGUEM5) RogueStringBuilder__type_name,
-  0, // Object.operator==(Object) // String[]
+  0, // String[]
   (void*) (ROGUEM6) RogueStringList__to_String,
   (void*) (ROGUEM6) RogueStringList__type_name,
   (void*) (ROGUEM7) RogueStringList__init_object,
-  0, // Object.operator==(Object) // StringReader
+  0, // StringReader
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM9) RogueStringReader__type_name,
   (void*) (ROGUEM10) RogueStringReader__has_another,
   (void*) (ROGUEM11) RogueStringReader__read,
-  0, // Reader<<Character>>.has_another() // Reader<<Character>>
-  0, // Object.operator==(Object) // Global
+  0, // Reader<<Character>>
+  0, // Global
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM12) RogueGlobal__type_name,
-  0, // Object.operator==(Object) // Console
+  0, // Console
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM13) RogueConsole__type_name,
-  0, // Object.operator==(Object) // RogueC
+  0, // RogueC
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM14) RogueRogueC__type_name,
-  0, // Object.operator==(Object) // Error
+  0, // Error
   (void*) (ROGUEM15) RogueError__to_String,
   (void*) (ROGUEM15) RogueError__type_name,
   (void*) (ROGUEM16) RogueError__init_object,
-  0, // Object.operator==(Object) // Program
+  0, // Program
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM17) RogueProgram__type_name,
-  0, // Object.operator==(Object) // Template[]
+  0, // Template[]
   (void*) (ROGUEM18) RogueTemplateList__to_String,
   (void*) (ROGUEM18) RogueTemplateList__type_name,
   (void*) (ROGUEM19) RogueTemplateList__init_object,
-  0, // Object.operator==(Object) // Template
+  0, // Template
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM20) RogueTemplate__type_name,
-  0, // Object.operator==(Object) // Table<<String,Template>>
+  0, // Table<<String,Template>>
   (void*) (ROGUEM21) RogueString_TemplateTable__to_String,
   (void*) (ROGUEM21) RogueString_TemplateTable__type_name,
-  0, // Object.operator==(Object) // Table<<String,Augment[]>>
+  0, // Table<<String,Augment[]>>
   (void*) (ROGUEM22) RogueString_AugmentListTable__to_String,
   (void*) (ROGUEM22) RogueString_AugmentListTable__type_name,
-  0, // Object.operator==(Object) // RequisiteItem[]
+  0, // RequisiteItem[]
   (void*) (ROGUEM23) RogueRequisiteItemList__to_String,
   (void*) (ROGUEM23) RogueRequisiteItemList__type_name,
   (void*) (ROGUEM24) RogueRequisiteItemList__init_object,
-  0, // Object.operator==(Object) // RequisiteItem
+  0, // RequisiteItem
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM25) RogueRequisiteItem__type_name,
-  0, // Object.operator==(Object) // Method
+  0, // Method
   (void*) (ROGUEM26) RogueMethod__to_String,
   (void*) (ROGUEM26) RogueMethod__type_name,
-  0, // Object.operator==(Object) // Table<<String,Method[]>>
+  0, // Table<<String,Method[]>>
   (void*) (ROGUEM27) RogueString_MethodListTable__to_String,
   (void*) (ROGUEM27) RogueString_MethodListTable__type_name,
-  0, // Object.operator==(Object) // Type[]
+  0, // Type[]
   (void*) (ROGUEM28) RogueTypeList__to_String,
   (void*) (ROGUEM28) RogueTypeList__type_name,
   (void*) (ROGUEM29) RogueTypeList__init_object,
-  0, // Object.operator==(Object) // Type
+  0, // Type
   (void*) (ROGUEM30) RogueType__to_String,
   (void*) (ROGUEM30) RogueType__type_name,
-  0, // Object.operator==(Object) // Table<<String,Type>>
+  0, // Table<<String,Type>>
   (void*) (ROGUEM31) RogueString_TypeTable__to_String,
   (void*) (ROGUEM31) RogueString_TypeTable__type_name,
-  0, // Object.operator==(Object) // Table<<String,Integer>>
+  0, // Table<<String,Integer>>
   (void*) (ROGUEM32) RogueString_IntegerTable__to_String,
   (void*) (ROGUEM32) RogueString_IntegerTable__type_name,
-  0, // Object.operator==(Object) // Token
+  0, // Token
   (void*) (ROGUEM33) RogueToken__to_String,
   (void*) (ROGUEM33) RogueToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM34) RogueToken__to_Character,
   (void*) (ROGUEM35) RogueToken__to_Integer,
   (void*) (ROGUEM36) RogueToken__to_Long,
   (void*) (ROGUEM37) RogueToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM39) RogueToken__init_object,
-  0, // Object.operator==(Object) // Attributes
+  0, // Attributes
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM40) RogueAttributes__type_name,
-  0, // Object.operator==(Object) // Cmd
+  0, // Cmd
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM41) RogueCmd__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6008,27 +6008,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM53) RogueCmd__init_object,
-  0, // Object.operator==(Object) // CmdReturn
+  0, // CmdReturn
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM54) RogueCmdReturn__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM55) RogueCmdReturn__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM56) RogueCmdReturn__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6038,27 +6038,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM58) Rogue_CmdReturn__type,
   (void*) (ROGUEM59) RogueCmdReturn__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM60) RogueCmdReturn__init_object,
-  0, // Object.operator==(Object) // CmdStatement
+  0, // CmdStatement
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM61) RogueCmdStatement__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6068,56 +6068,56 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM63) RogueCmdStatement__init_object,
-  0, // Object.operator==(Object) // CmdStatementList
+  0, // CmdStatementList
   (void*) (ROGUEM64) RogueCmdList__to_String,
   (void*) (ROGUEM65) RogueCmdStatementList__type_name,
   (void*) (ROGUEM66) RogueCmdStatementList__init_object,
   (void*) (ROGUEM66) RogueCmdStatementList__init,
   (void*) (ROGUEM67) RogueCmdStatementList__init__Integer,
-  0, // Object.operator==(Object) // Cmd[]
+  0, // Cmd[]
   (void*) (ROGUEM64) RogueCmdList__to_String,
   (void*) (ROGUEM64) RogueCmdList__type_name,
   (void*) (ROGUEM68) RogueCmdList__init_object,
   (void*) (ROGUEM68) RogueCmdList__init,
   (void*) (ROGUEM69) RogueCmdList__init__Integer,
-  0, // Object.operator==(Object) // TokenType
+  0, // TokenType
   (void*) (ROGUEM70) RogueTokenType__to_String,
   (void*) (ROGUEM70) RogueTokenType__type_name,
-  0, // TokenType.init(String)
+  0,
   (void*) (ROGUEM71) RogueTokenType__create_token__String_Integer_Integer,
-  0, // TokenType.create_token(String,Integer,Integer,Character)
-  0, // TokenType.create_token(String,Integer,Integer,Long)
-  0, // TokenType.create_token(String,Integer,Integer,Integer)
-  0, // TokenType.create_token(String,Integer,Integer,Real)
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM72) RogueTokenType__create_token__String_Integer_Integer_String,
-  0, // TokenType.create_token(Token,String)
+  0,
   (void*) (ROGUEM73) RogueTokenType__is_directive,
   (void*) (ROGUEM73) RogueTokenType__is_op_with_assign,
   (void*) (ROGUEM73) RogueTokenType__is_structure,
-  0, // TokenType.quoted_name()
-  0, // TokenType.to_String(Token)
+  0,
+  0,
   (void*) (ROGUEM74) RogueTokenType__init_object,
-  0, // Object.operator==(Object) // CmdLabel
+  0, // CmdLabel
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM75) RogueCmdLabel__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM76) RogueCmdLabel__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM77) RogueCmdLabel__requires_semicolon,
   (void*) (ROGUEM78) RogueCmdLabel__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6127,216 +6127,216 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM80) RogueCmdLabel__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM81) RogueCmdLabel__init_object,
-  0, // Object.operator==(Object) // RogueError
+  0, // RogueError
   (void*) (ROGUEM82) RogueRogueError__to_String,
   (void*) (ROGUEM82) RogueRogueError__type_name,
   (void*) (ROGUEM83) RogueRogueError__init_object,
-  0, // Object.operator==(Object) // Method[]
+  0, // Method[]
   (void*) (ROGUEM84) RogueMethodList__to_String,
   (void*) (ROGUEM84) RogueMethodList__type_name,
   (void*) (ROGUEM85) RogueMethodList__init_object,
-  0, // Object.operator==(Object) // CPPWriter
+  0, // CPPWriter
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM86) RogueCPPWriter__type_name,
-  0, // Object.operator==(Object) // Property[]
+  0, // Property[]
   (void*) (ROGUEM87) RoguePropertyList__to_String,
   (void*) (ROGUEM87) RoguePropertyList__type_name,
   (void*) (ROGUEM88) RoguePropertyList__init_object,
-  0, // Object.operator==(Object) // Property
+  0, // Property
   (void*) (ROGUEM89) RogueProperty__to_String,
   (void*) (ROGUEM89) RogueProperty__type_name,
-  0, // Object.operator==(Object) // Table<<String,Method>>
+  0, // Table<<String,Method>>
   (void*) (ROGUEM90) RogueString_MethodTable__to_String,
   (void*) (ROGUEM90) RogueString_MethodTable__type_name,
-  0, // Object.operator==(Object) // Local[]
+  0, // Local[]
   (void*) (ROGUEM91) RogueLocalList__to_String,
   (void*) (ROGUEM91) RogueLocalList__type_name,
   (void*) (ROGUEM92) RogueLocalList__init_object,
-  0, // Object.operator==(Object) // Local
+  0, // Local
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM93) RogueLocal__type_name,
-  0, // Object.operator==(Object) // Integer[]
+  0, // Integer[]
   (void*) (ROGUEM94) RogueIntegerList__to_String,
   (void*) (ROGUEM94) RogueIntegerList__type_name,
   (void*) (ROGUEM95) RogueIntegerList__init_object,
-  0, // Object.operator==(Object) // Byte[]
+  0, // Byte[]
   (void*) (ROGUEM96) RogueByteList__to_String,
   (void*) (ROGUEM96) RogueByteList__type_name,
   (void*) (ROGUEM97) RogueByteList__init_object,
-  0, // Object.operator==(Object) // Math
+  0, // Math
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM98) RogueMath__type_name,
-  0, // Object.operator==(Object) // System
+  0, // System
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM99) RogueSystem__type_name,
-  0, // Object.operator==(Object) // Table<<String,Logical>>
+  0, // Table<<String,Logical>>
   (void*) (ROGUEM100) RogueString_LogicalTable__to_String,
   (void*) (ROGUEM100) RogueString_LogicalTable__type_name,
-  0, // Object.operator==(Object) // File
+  0, // File
   (void*) (ROGUEM101) RogueFile__to_String,
   (void*) (ROGUEM101) RogueFile__type_name,
-  0, // Object.operator==(Object) // Parser
+  0, // Parser
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM102) RogueParser__type_name,
-  0, // Object.operator==(Object) // Token[]
+  0, // Token[]
   (void*) (ROGUEM103) RogueTokenList__to_String,
   (void*) (ROGUEM103) RogueTokenList__type_name,
   (void*) (ROGUEM104) RogueTokenList__init_object,
-  0, // Object.operator==(Object) // LineReader
+  0, // LineReader
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM105) RogueLineReader__type_name,
   (void*) (ROGUEM106) RogueLineReader__has_another,
   (void*) (ROGUEM105) RogueLineReader__read,
-  0, // Object.operator==(Object) // TypeParameter[]
+  0, // TypeParameter[]
   (void*) (ROGUEM107) RogueTypeParameterList__to_String,
   (void*) (ROGUEM107) RogueTypeParameterList__type_name,
   (void*) (ROGUEM108) RogueTypeParameterList__init_object,
-  0, // Object.operator==(Object) // TypeParameter
+  0, // TypeParameter
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM109) RogueTypeParameter__type_name,
-  0, // Object.operator==(Object) // Augment[]
+  0, // Augment[]
   (void*) (ROGUEM110) RogueAugmentList__to_String,
   (void*) (ROGUEM110) RogueAugmentList__type_name,
   (void*) (ROGUEM111) RogueAugmentList__init_object,
-  0, // Object.operator==(Object) // Augment
+  0, // Augment
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM112) RogueAugment__type_name,
-  0, // Object.operator==(Object) // Table<<String,TokenType>>
+  0, // Table<<String,TokenType>>
   (void*) (ROGUEM113) RogueString_TokenTypeTable__to_String,
   (void*) (ROGUEM113) RogueString_TokenTypeTable__type_name,
-  0, // Object.operator==(Object) // LiteralCharacterToken
+  0, // LiteralCharacterToken
   (void*) (ROGUEM114) RogueLiteralCharacterToken__to_String,
   (void*) (ROGUEM114) RogueLiteralCharacterToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM115) RogueLiteralCharacterToken__to_Character,
   (void*) (ROGUEM35) RogueToken__to_Integer,
   (void*) (ROGUEM36) RogueToken__to_Long,
   (void*) (ROGUEM37) RogueToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM116) RogueLiteralCharacterToken__init_object,
-  0, // Object.operator==(Object) // LiteralLongToken
+  0, // LiteralLongToken
   (void*) (ROGUEM117) RogueLiteralLongToken__to_String,
   (void*) (ROGUEM117) RogueLiteralLongToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM34) RogueToken__to_Character,
   (void*) (ROGUEM118) RogueLiteralLongToken__to_Integer,
   (void*) (ROGUEM119) RogueLiteralLongToken__to_Long,
   (void*) (ROGUEM120) RogueLiteralLongToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM121) RogueLiteralLongToken__init_object,
-  0, // Object.operator==(Object) // LiteralIntegerToken
+  0, // LiteralIntegerToken
   (void*) (ROGUEM122) RogueLiteralIntegerToken__to_String,
   (void*) (ROGUEM122) RogueLiteralIntegerToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM34) RogueToken__to_Character,
   (void*) (ROGUEM123) RogueLiteralIntegerToken__to_Integer,
   (void*) (ROGUEM36) RogueToken__to_Long,
   (void*) (ROGUEM124) RogueLiteralIntegerToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM125) RogueLiteralIntegerToken__init_object,
-  0, // Object.operator==(Object) // LiteralRealToken
+  0, // LiteralRealToken
   (void*) (ROGUEM126) RogueLiteralRealToken__to_String,
   (void*) (ROGUEM126) RogueLiteralRealToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM34) RogueToken__to_Character,
   (void*) (ROGUEM127) RogueLiteralRealToken__to_Integer,
   (void*) (ROGUEM36) RogueToken__to_Long,
   (void*) (ROGUEM128) RogueLiteralRealToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM129) RogueLiteralRealToken__init_object,
-  0, // Object.operator==(Object) // LiteralStringToken
+  0, // LiteralStringToken
   (void*) (ROGUEM130) RogueLiteralStringToken__to_String,
   (void*) (ROGUEM130) RogueLiteralStringToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM34) RogueToken__to_Character,
   (void*) (ROGUEM35) RogueToken__to_Integer,
   (void*) (ROGUEM36) RogueToken__to_Long,
   (void*) (ROGUEM37) RogueToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM131) RogueLiteralStringToken__init_object,
-  0, // Object.operator==(Object) // Table<<String,TypeSpecializer>>
+  0, // Table<<String,TypeSpecializer>>
   (void*) (ROGUEM132) RogueString_TypeSpecializerTable__to_String,
   (void*) (ROGUEM132) RogueString_TypeSpecializerTable__type_name,
-  0, // Object.operator==(Object) // TypeSpecializer
+  0, // TypeSpecializer
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM133) RogueTypeSpecializer__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,Template>>[]
+  0, // TableEntry<<String,Template>>[]
   (void*) (ROGUEM134) RogueString_TemplateTableEntryList__to_String,
   (void*) (ROGUEM134) RogueString_TemplateTableEntryList__type_name,
   (void*) (ROGUEM135) RogueString_TemplateTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Template>>
+  0, // TableEntry<<String,Template>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM136) RogueString_TemplateTableEntry__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,Augment[]>>[]
+  0, // TableEntry<<String,Augment[]>>[]
   (void*) (ROGUEM137) RogueString_AugmentListTableEntryList__to_String,
   (void*) (ROGUEM137) RogueString_AugmentListTableEntryList__type_name,
   (void*) (ROGUEM138) RogueString_AugmentListTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Augment[]>>
+  0, // TableEntry<<String,Augment[]>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM139) RogueString_AugmentListTableEntry__type_name,
-  0, // Object.operator==(Object) // CmdLabel[]
+  0, // CmdLabel[]
   (void*) (ROGUEM140) RogueCmdLabelList__to_String,
   (void*) (ROGUEM140) RogueCmdLabelList__type_name,
   (void*) (ROGUEM141) RogueCmdLabelList__init_object,
-  0, // Object.operator==(Object) // Table<<String,CmdLabel>>
+  0, // Table<<String,CmdLabel>>
   (void*) (ROGUEM142) RogueString_CmdLabelTable__to_String,
   (void*) (ROGUEM142) RogueString_CmdLabelTable__type_name,
-  0, // Object.operator==(Object) // CloneArgs
+  0, // CloneArgs
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM143) RogueCloneArgs__type_name,
   (void*) (ROGUEM144) RogueCloneArgs__register_label__CmdLabel,
   (void*) (ROGUEM145) RogueCloneArgs__init_object,
-  0, // Object.operator==(Object) // CloneMethodArgs
+  0, // CloneMethodArgs
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM146) RogueCloneMethodArgs__type_name,
   (void*) (ROGUEM147) RogueCloneMethodArgs__register_label__CmdLabel,
   (void*) (ROGUEM148) RogueCloneMethodArgs__init_object,
-  0, // Object.operator==(Object) // CmdAccess
+  0, // CmdAccess
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM149) RogueCmdAccess__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM150) RogueCmdAccess__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM151) Rogue_CmdAccess__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM152) RogueCmdAccess__resolve__Scope,
   (void*) (ROGUEM153) RogueCmdAccess__resolve_assignment__Scope_Cmd,
@@ -6346,33 +6346,33 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM151) Rogue_CmdAccess__type,
   (void*) (ROGUEM156) RogueCmdAccess__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM157) RogueCmdAccess__init_object,
-  0, // Object.operator==(Object) // CmdArgs
+  0, // CmdArgs
   (void*) (ROGUEM64) RogueCmdList__to_String,
   (void*) (ROGUEM158) RogueCmdArgs__type_name,
   (void*) (ROGUEM159) RogueCmdArgs__init_object,
   (void*) (ROGUEM159) RogueCmdArgs__init,
   (void*) (ROGUEM160) RogueCmdArgs__init__Integer,
-  0, // Object.operator==(Object) // CmdAssign
+  0, // CmdAssign
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM161) RogueCmdAssign__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM162) RogueCmdAssign__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM163) RogueCmdAssign__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6382,34 +6382,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM164) RogueCmdAssign__init_object,
-  0, // Object.operator==(Object) // Scope
+  0, // Scope
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM165) RogueScope__type_name,
-  0, // Object.operator==(Object) // CmdControlStructure[]
+  0, // CmdControlStructure[]
   (void*) (ROGUEM166) RogueCmdControlStructureList__to_String,
   (void*) (ROGUEM166) RogueCmdControlStructureList__type_name,
   (void*) (ROGUEM167) RogueCmdControlStructureList__init_object,
-  0, // Object.operator==(Object) // CmdControlStructure
+  0, // CmdControlStructure
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM168) RogueCmdControlStructure__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6420,27 +6420,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM170) RogueCmdControlStructure__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdLiteralThis
+  0, // CmdLiteralThis
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM172) RogueCmdLiteralThis__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM173) RogueCmdLiteralThis__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM174) Rogue_CmdThisContext__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM175) RogueCmdLiteralThis__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM176) RogueCmdLiteralThis__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6450,27 +6450,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM174) Rogue_CmdThisContext__type,
   (void*) (ROGUEM178) RogueCmdThisContext__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM179) RogueCmdLiteralThis__init_object,
-  0, // Object.operator==(Object) // CmdThisContext
+  0, // CmdThisContext
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM180) RogueCmdThisContext__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM181) RogueCmdThisContext__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM174) Rogue_CmdThisContext__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM177) RogueCmdThisContext__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM182) RogueCmdThisContext__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6480,27 +6480,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM174) Rogue_CmdThisContext__type,
   (void*) (ROGUEM178) RogueCmdThisContext__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM183) RogueCmdThisContext__init_object,
-  0, // Object.operator==(Object) // CmdGenericLoop
+  0, // CmdGenericLoop
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM184) RogueCmdGenericLoop__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM185) RogueCmdGenericLoop__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM186) RogueCmdGenericLoop__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6511,27 +6511,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM188) RogueCmdGenericLoop__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM189) RogueCmdGenericLoop__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdLiteralInteger
+  0, // CmdLiteralInteger
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM190) RogueCmdLiteralInteger__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM191) RogueCmdLiteralInteger__cast_to__Type,
   (void*) (ROGUEM192) RogueCmdLiteralInteger__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM195) RogueCmdLiteralInteger__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6541,27 +6541,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM197) Rogue_CmdLiteralInteger__type,
   (void*) (ROGUEM198) RogueCmdLiteralInteger__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM199) RogueCmdLiteralInteger__init_object,
-  0, // Object.operator==(Object) // CmdLiteral
+  0, // CmdLiteral
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM200) RogueCmdLiteral__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6571,27 +6571,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM201) RogueCmdLiteral__init_object,
-  0, // Object.operator==(Object) // CmdCompareNE
+  0, // CmdCompareNE
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM202) RogueCmdCompareNE__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM203) RogueCmdCompareNE__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM204) RogueCmdCompareNE__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6601,7 +6601,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM209) RogueCmdCompareNE__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -6610,27 +6610,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM202) RogueCmdCompareNE__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM215) RogueCmdCompareNE__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdComparison
+  0, // CmdComparison
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM216) RogueCmdComparison__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6640,7 +6640,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM217) RogueCmdComparison__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -6649,27 +6649,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM210) RogueCmdBinary__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM218) RogueCmdComparison__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdBinary
+  0, // CmdBinary
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM210) RogueCmdBinary__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6679,7 +6679,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM220) RogueCmdBinary__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -6687,32 +6687,32 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM214) RogueCmdBinary__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM210) RogueCmdBinary__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // TaskArgs
+  0, // TaskArgs
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM222) RogueTaskArgs__type_name,
   (void*) (ROGUEM144) RogueCloneArgs__register_label__CmdLabel,
   (void*) (ROGUEM223) RogueTaskArgs__init_object,
-  0, // Object.operator==(Object) // CmdTaskControl
+  0, // CmdTaskControl
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM224) RogueCmdTaskControl__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM225) RogueCmdTaskControl__requires_semicolon,
   (void*) (ROGUEM226) RogueCmdTaskControl__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6722,43 +6722,43 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM228) RogueCmdTaskControl__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM229) RogueCmdTaskControl__init_object,
-  0, // Object.operator==(Object) // CmdTaskControlSection
+  0, // CmdTaskControlSection
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM230) RogueCmdTaskControlSection__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,Method[]>>[]
+  0, // TableEntry<<String,Method[]>>[]
   (void*) (ROGUEM231) RogueString_MethodListTableEntryList__to_String,
   (void*) (ROGUEM231) RogueString_MethodListTableEntryList__type_name,
   (void*) (ROGUEM232) RogueString_MethodListTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Method[]>>
+  0, // TableEntry<<String,Method[]>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM233) RogueString_MethodListTableEntry__type_name,
-  0, // Object.operator==(Object) // Table<<String,Cmd>>
+  0, // Table<<String,Cmd>>
   (void*) (ROGUEM234) RogueString_CmdTable__to_String,
   (void*) (ROGUEM234) RogueString_CmdTable__type_name,
-  0, // Object.operator==(Object) // Table<<String,Property>>
+  0, // Table<<String,Property>>
   (void*) (ROGUEM235) RogueString_PropertyTable__to_String,
   (void*) (ROGUEM235) RogueString_PropertyTable__type_name,
-  0, // Object.operator==(Object) // CmdLiteralNull
+  0, // CmdLiteralNull
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM236) RogueCmdLiteralNull__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM237) RogueCmdLiteralNull__cast_to__Type,
   (void*) (ROGUEM238) RogueCmdLiteralNull__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM239) RogueCmdLiteralNull__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6768,27 +6768,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM240) Rogue_CmdLiteralNull__type,
   (void*) (ROGUEM241) RogueCmdLiteralNull__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM242) RogueCmdLiteralNull__init_object,
-  0, // Object.operator==(Object) // CmdCreateCompound
+  0, // CmdCreateCompound
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM243) RogueCmdCreateCompound__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM244) RogueCmdCreateCompound__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM245) RogueCmdCreateCompound__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6798,27 +6798,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM247) Rogue_CmdCreateCompound__type,
   (void*) (ROGUEM248) RogueCmdCreateCompound__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM249) RogueCmdCreateCompound__init_object,
-  0, // Object.operator==(Object) // CmdLiteralLogical
+  0, // CmdLiteralLogical
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM250) RogueCmdLiteralLogical__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM251) RogueCmdLiteralLogical__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM252) RogueCmdLiteralLogical__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6828,27 +6828,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM253) Rogue_CmdLiteralLogical__type,
   (void*) (ROGUEM254) RogueCmdLiteralLogical__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM255) RogueCmdLiteralLogical__init_object,
-  0, // Object.operator==(Object) // CmdLiteralString
+  0, // CmdLiteralString
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM256) RogueCmdLiteralString__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM257) RogueCmdLiteralString__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM258) RogueCmdLiteralString__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6858,27 +6858,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM260) Rogue_CmdLiteralString__type,
   (void*) (ROGUEM261) RogueCmdLiteralString__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM262) RogueCmdLiteralString__init_object,
-  0, // Object.operator==(Object) // CmdWriteGlobal
+  0, // CmdWriteGlobal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM263) RogueCmdWriteGlobal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM264) RogueCmdWriteGlobal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM265) RogueCmdWriteGlobal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6888,27 +6888,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM267) Rogue_CmdWriteGlobal__type,
   (void*) (ROGUEM268) RogueCmdWriteGlobal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM269) RogueCmdWriteGlobal__init_object,
-  0, // Object.operator==(Object) // CmdWriteProperty
+  0, // CmdWriteProperty
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM270) RogueCmdWriteProperty__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM271) RogueCmdWriteProperty__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM272) RogueCmdWriteProperty__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6918,41 +6918,41 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM274) Rogue_CmdWriteProperty__type,
   (void*) (ROGUEM275) RogueCmdWriteProperty__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM276) RogueCmdWriteProperty__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Type>>[]
+  0, // TableEntry<<String,Type>>[]
   (void*) (ROGUEM277) RogueString_TypeTableEntryList__to_String,
   (void*) (ROGUEM277) RogueString_TypeTableEntryList__type_name,
   (void*) (ROGUEM278) RogueString_TypeTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Type>>
+  0, // TableEntry<<String,Type>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM279) RogueString_TypeTableEntry__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,Integer>>[]
+  0, // TableEntry<<String,Integer>>[]
   (void*) (ROGUEM280) RogueString_IntegerTableEntryList__to_String,
   (void*) (ROGUEM280) RogueString_IntegerTableEntryList__type_name,
   (void*) (ROGUEM281) RogueString_IntegerTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Integer>>
+  0, // TableEntry<<String,Integer>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM282) RogueString_IntegerTableEntry__type_name,
-  0, // Object.operator==(Object) // CmdCastToType
+  0, // CmdCastToType
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM283) RogueCmdCastToType__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM284) RogueCmdCastToType__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM285) RogueCmdCastToType__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6962,27 +6962,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM287) Rogue_CmdTypeOperator__type,
   (void*) (ROGUEM288) RogueCmdCastToType__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM289) RogueCmdCastToType__init_object,
-  0, // Object.operator==(Object) // CmdTypeOperator
+  0, // CmdTypeOperator
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM290) RogueCmdTypeOperator__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -6992,27 +6992,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM287) Rogue_CmdTypeOperator__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM291) RogueCmdTypeOperator__init_object,
-  0, // Object.operator==(Object) // CmdLogicalize
+  0, // CmdLogicalize
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM292) RogueCmdLogicalize__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM293) RogueCmdLogicalize__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM294) RogueCmdLogicalize__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7022,34 +7022,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM296) Rogue_CmdLogicalize__type,
   (void*) (ROGUEM297) RogueCmdUnary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM298) RogueCmdLogicalize__init_object,
-  0, // CmdUnary.init(Token,Cmd)
+  0,
   (void*) (ROGUEM292) RogueCmdLogicalize__prefix_symbol,
   (void*) (ROGUEM294) RogueCmdLogicalize__resolve_for_literal_operand__Scope,
-  0, // CmdUnary.resolve_for_operand_type(Scope,Type)
+  0,
   (void*) (ROGUEM292) RogueCmdLogicalize__suffix_symbol,
   (void*) (ROGUEM292) RogueCmdLogicalize__cpp_prefix_symbol,
   (void*) (ROGUEM292) RogueCmdLogicalize__cpp_suffix_symbol,
-  0, // Object.operator==(Object) // CmdUnary
+  0, // CmdUnary
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM299) RogueCmdUnary__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM300) RogueCmdUnary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7059,34 +7059,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM301) Rogue_CmdUnary__type,
   (void*) (ROGUEM297) RogueCmdUnary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM302) RogueCmdUnary__init_object,
-  0, // CmdUnary.init(Token,Cmd)
+  0,
   (void*) (ROGUEM299) RogueCmdUnary__prefix_symbol,
   (void*) (ROGUEM300) RogueCmdUnary__resolve_for_literal_operand__Scope,
-  0, // CmdUnary.resolve_for_operand_type(Scope,Type)
+  0,
   (void*) (ROGUEM299) RogueCmdUnary__suffix_symbol,
   (void*) (ROGUEM299) RogueCmdUnary__cpp_prefix_symbol,
   (void*) (ROGUEM299) RogueCmdUnary__cpp_suffix_symbol,
-  0, // Object.operator==(Object) // CmdCreateOptionalValue
+  0, // CmdCreateOptionalValue
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM303) RogueCmdCreateOptionalValue__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM304) RogueCmdCreateOptionalValue__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM305) RogueCmdCreateOptionalValue__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7096,65 +7096,65 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM307) Rogue_CmdCreateOptionalValue__type,
   (void*) (ROGUEM308) RogueCmdCreateOptionalValue__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM309) RogueCmdCreateOptionalValue__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Method>>[]
+  0, // TableEntry<<String,Method>>[]
   (void*) (ROGUEM310) RogueString_MethodTableEntryList__to_String,
   (void*) (ROGUEM310) RogueString_MethodTableEntryList__type_name,
   (void*) (ROGUEM311) RogueString_MethodTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Method>>
+  0, // TableEntry<<String,Method>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM312) RogueString_MethodTableEntry__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,Logical>>[]
+  0, // TableEntry<<String,Logical>>[]
   (void*) (ROGUEM313) RogueString_LogicalTableEntryList__to_String,
   (void*) (ROGUEM313) RogueString_LogicalTableEntryList__type_name,
   (void*) (ROGUEM314) RogueString_LogicalTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Logical>>
+  0, // TableEntry<<String,Logical>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM315) RogueString_LogicalTableEntry__type_name,
-  0, // Object.operator==(Object) // FileReader
+  0, // FileReader
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM316) RogueFileReader__type_name,
   (void*) (ROGUEM317) RogueFileReader__has_another,
   (void*) (ROGUEM318) RogueFileReader__peek,
   (void*) (ROGUEM318) RogueFileReader__read,
-  0, // Object.operator==(Object) // FileWriter
+  0, // FileWriter
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM319) RogueFileWriter__type_name,
-  0, // Object.operator==(Object) // TokenReader
+  0, // TokenReader
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM320) RogueTokenReader__type_name,
-  0, // Object.operator==(Object) // Tokenizer
+  0, // Tokenizer
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM321) RogueTokenizer__type_name,
-  0, // Object.operator==(Object) // ParseReader
+  0, // ParseReader
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM322) RogueParseReader__type_name,
   (void*) (ROGUEM323) RogueParseReader__has_another,
   (void*) (ROGUEM324) RogueParseReader__peek,
   (void*) (ROGUEM324) RogueParseReader__read,
-  0, // Object.operator==(Object) // Preprocessor
+  0, // Preprocessor
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM325) RoguePreprocessor__type_name,
-  0, // Object.operator==(Object) // CmdAdd
+  0, // CmdAdd
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM326) RogueCmdAdd__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM327) RogueCmdAdd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM328) RogueCmdAdd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7164,7 +7164,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM329) RogueCmdAdd__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM326) RogueCmdAdd__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -7172,27 +7172,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM330) RogueCmdAdd__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM326) RogueCmdAdd__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdIf
+  0, // CmdIf
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM331) RogueCmdIf__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM332) RogueCmdIf__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM333) RogueCmdIf__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7203,27 +7203,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM335) RogueCmdIf__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM336) RogueCmdIf__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdWhich
+  0, // CmdWhich
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM337) RogueCmdWhich__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM338) RogueCmdWhich__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM339) RogueCmdWhich__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7234,27 +7234,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM340) RogueCmdWhich__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdContingent
+  0, // CmdContingent
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM341) RogueCmdContingent__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM342) RogueCmdContingent__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM343) RogueCmdContingent__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7265,27 +7265,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM345) RogueCmdContingent__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM346) RogueCmdContingent__init_object,
   (void*) (ROGUEM347) RogueCmdContingent__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdTry
+  0, // CmdTry
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM348) RogueCmdTry__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM349) RogueCmdTry__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM350) RogueCmdTry__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7296,27 +7296,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM352) RogueCmdTry__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM353) RogueCmdTry__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdAwait
+  0, // CmdAwait
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM354) RogueCmdAwait__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM355) RogueCmdAwait__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM356) RogueCmdAwait__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7326,27 +7326,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM357) RogueCmdAwait__init_object,
-  0, // Object.operator==(Object) // CmdYield
+  0, // CmdYield
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM358) RogueCmdYield__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM359) RogueCmdYield__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM360) RogueCmdYield__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7356,27 +7356,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM361) RogueCmdYield__init_object,
-  0, // Object.operator==(Object) // CmdThrow
+  0, // CmdThrow
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM362) RogueCmdThrow__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM363) RogueCmdThrow__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM364) RogueCmdThrow__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7386,27 +7386,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM366) RogueCmdThrow__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM367) RogueCmdThrow__init_object,
-  0, // Object.operator==(Object) // CmdTrace
+  0, // CmdTrace
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM368) RogueCmdTrace__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM369) RogueCmdTrace__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM370) RogueCmdTrace__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7416,27 +7416,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM372) RogueCmdTrace__init_object,
-  0, // Object.operator==(Object) // CmdEscape
+  0, // CmdEscape
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM373) RogueCmdEscape__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM374) RogueCmdEscape__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM375) RogueCmdEscape__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7446,27 +7446,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM377) RogueCmdEscape__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM378) RogueCmdEscape__init_object,
-  0, // Object.operator==(Object) // CmdNextIteration
+  0, // CmdNextIteration
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM379) RogueCmdNextIteration__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM380) RogueCmdNextIteration__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM381) RogueCmdNextIteration__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7476,27 +7476,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM383) RogueCmdNextIteration__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM384) RogueCmdNextIteration__init_object,
-  0, // Object.operator==(Object) // CmdNecessary
+  0, // CmdNecessary
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM385) RogueCmdNecessary__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM386) RogueCmdNecessary__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM387) RogueCmdNecessary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7506,27 +7506,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM389) RogueCmdNecessary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM390) RogueCmdNecessary__init_object,
-  0, // Object.operator==(Object) // CmdSufficient
+  0, // CmdSufficient
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM391) RogueCmdSufficient__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM392) RogueCmdSufficient__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM393) RogueCmdSufficient__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7536,27 +7536,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM395) RogueCmdSufficient__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM396) RogueCmdSufficient__init_object,
-  0, // Object.operator==(Object) // CmdAdjust
+  0, // CmdAdjust
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM397) RogueCmdAdjust__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM398) RogueCmdAdjust__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7566,27 +7566,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM399) RogueCmdAdjust__init_object,
-  0, // Object.operator==(Object) // CmdOpWithAssign
+  0, // CmdOpWithAssign
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM400) RogueCmdOpWithAssign__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM401) RogueCmdOpWithAssign__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM402) RogueCmdOpWithAssign__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7596,31 +7596,31 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM403) RogueCmdOpWithAssign__init_object,
-  0, // Object.operator==(Object) // CmdWhichCase[]
+  0, // CmdWhichCase[]
   (void*) (ROGUEM404) RogueCmdWhichCaseList__to_String,
   (void*) (ROGUEM404) RogueCmdWhichCaseList__type_name,
   (void*) (ROGUEM405) RogueCmdWhichCaseList__init_object,
-  0, // Object.operator==(Object) // CmdWhichCase
+  0, // CmdWhichCase
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM406) RogueCmdWhichCase__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM407) RogueCmdWhichCase__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7630,31 +7630,31 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM409) RogueCmdWhichCase__init_object,
-  0, // Object.operator==(Object) // CmdCatch[]
+  0, // CmdCatch[]
   (void*) (ROGUEM410) RogueCmdCatchList__to_String,
   (void*) (ROGUEM410) RogueCmdCatchList__type_name,
   (void*) (ROGUEM411) RogueCmdCatchList__init_object,
-  0, // Object.operator==(Object) // CmdCatch
+  0, // CmdCatch
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM412) RogueCmdCatch__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM413) RogueCmdCatch__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM414) RogueCmdCatch__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7664,27 +7664,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM416) RogueCmdCatch__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM417) RogueCmdCatch__init_object,
-  0, // Object.operator==(Object) // CmdLocalDeclaration
+  0, // CmdLocalDeclaration
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM418) RogueCmdLocalDeclaration__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM419) RogueCmdLocalDeclaration__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM420) RogueCmdLocalDeclaration__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM421) RogueCmdLocalDeclaration__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7694,27 +7694,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM423) RogueCmdLocalDeclaration__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM424) RogueCmdLocalDeclaration__init_object,
-  0, // Object.operator==(Object) // CmdAdjustLocal
+  0, // CmdAdjustLocal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM425) RogueCmdAdjustLocal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM426) RogueCmdAdjustLocal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM427) RogueCmdAdjustLocal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7724,27 +7724,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM429) Rogue_CmdAdjustLocal__type,
   (void*) (ROGUEM430) RogueCmdAdjustLocal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM431) RogueCmdAdjustLocal__init_object,
-  0, // Object.operator==(Object) // CmdReadLocal
+  0, // CmdReadLocal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM432) RogueCmdReadLocal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM433) RogueCmdReadLocal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM434) RogueCmdReadLocal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7754,27 +7754,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM437) Rogue_CmdReadLocal__type,
   (void*) (ROGUEM438) RogueCmdReadLocal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM439) RogueCmdReadLocal__init_object,
-  0, // Object.operator==(Object) // CmdCompareLE
+  0, // CmdCompareLE
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM440) RogueCmdCompareLE__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM441) RogueCmdCompareLE__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM442) RogueCmdCompareLE__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7784,7 +7784,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM443) RogueCmdCompareLE__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -7793,27 +7793,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM440) RogueCmdCompareLE__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM444) RogueCmdCompareLE__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdRange
+  0, // CmdRange
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM445) RogueCmdRange__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7823,27 +7823,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM447) RogueCmdRange__init_object,
-  0, // Object.operator==(Object) // CmdLocalOpWithAssign
+  0, // CmdLocalOpWithAssign
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM448) RogueCmdLocalOpWithAssign__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM449) RogueCmdLocalOpWithAssign__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM450) RogueCmdLocalOpWithAssign__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7853,27 +7853,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM452) Rogue_CmdLocalOpWithAssign__type,
   (void*) (ROGUEM453) RogueCmdLocalOpWithAssign__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM454) RogueCmdLocalOpWithAssign__init_object,
-  0, // Object.operator==(Object) // CmdResolvedOpWithAssign
+  0, // CmdResolvedOpWithAssign
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM455) RogueCmdResolvedOpWithAssign__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7883,27 +7883,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM456) RogueCmdResolvedOpWithAssign__init_object,
-  0, // Object.operator==(Object) // CmdForEach
+  0, // CmdForEach
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM457) RogueCmdForEach__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM458) RogueCmdForEach__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM459) RogueCmdForEach__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7914,27 +7914,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM461) RogueCmdForEach__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdRangeUpTo
+  0, // CmdRangeUpTo
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM462) RogueCmdRangeUpTo__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM463) RogueCmdRangeUpTo__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM42) RogueCmd__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7944,27 +7944,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM464) RogueCmdRangeUpTo__init_object,
-  0, // Object.operator==(Object) // CmdLogicalXor
+  0, // CmdLogicalXor
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM465) RogueCmdLogicalXor__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM466) RogueCmdLogicalXor__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM467) RogueCmdBinaryLogical__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -7974,7 +7974,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM468) Rogue_CmdBinaryLogical__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM469) RogueCmdLogicalXor__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -7983,27 +7983,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM465) RogueCmdLogicalXor__symbol,
   (void*) (ROGUEM465) RogueCmdLogicalXor__cpp_symbol,
   (void*) (ROGUEM471) RogueCmdLogicalXor__combine_literal_operands__Logical_Logical,
-  0, // Object.operator==(Object) // CmdBinaryLogical
+  0, // CmdBinaryLogical
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM472) RogueCmdBinaryLogical__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM467) RogueCmdBinaryLogical__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8013,7 +8013,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM468) Rogue_CmdBinaryLogical__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM473) RogueCmdBinaryLogical__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8022,27 +8022,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM210) RogueCmdBinary__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM474) RogueCmdBinaryLogical__combine_literal_operands__Logical_Logical,
-  0, // Object.operator==(Object) // CmdLogicalOr
+  0, // CmdLogicalOr
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM475) RogueCmdLogicalOr__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM476) RogueCmdLogicalOr__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM467) RogueCmdBinaryLogical__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8052,7 +8052,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM468) Rogue_CmdBinaryLogical__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM477) RogueCmdLogicalOr__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8061,27 +8061,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM475) RogueCmdLogicalOr__symbol,
   (void*) (ROGUEM475) RogueCmdLogicalOr__cpp_symbol,
   (void*) (ROGUEM478) RogueCmdLogicalOr__combine_literal_operands__Logical_Logical,
-  0, // Object.operator==(Object) // CmdLogicalAnd
+  0, // CmdLogicalAnd
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM479) RogueCmdLogicalAnd__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM480) RogueCmdLogicalAnd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM467) RogueCmdBinaryLogical__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8091,7 +8091,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM468) Rogue_CmdBinaryLogical__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM481) RogueCmdLogicalAnd__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8100,27 +8100,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM479) RogueCmdLogicalAnd__symbol,
   (void*) (ROGUEM479) RogueCmdLogicalAnd__cpp_symbol,
   (void*) (ROGUEM482) RogueCmdLogicalAnd__combine_literal_operands__Logical_Logical,
-  0, // Object.operator==(Object) // CmdCompareEQ
+  0, // CmdCompareEQ
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM483) RogueCmdCompareEQ__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM484) RogueCmdCompareEQ__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM485) RogueCmdCompareEQ__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8130,7 +8130,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM486) RogueCmdCompareEQ__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM487) RogueCmdCompareEQ__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -8139,27 +8139,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM483) RogueCmdCompareEQ__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM488) RogueCmdCompareEQ__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdCompareIs
+  0, // CmdCompareIs
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM489) RogueCmdCompareIs__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM490) RogueCmdCompareIs__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8169,7 +8169,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM491) RogueCmdCompareIs__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM492) RogueCmdCompareIs__resolve_for_types__Scope_Type_Type,
@@ -8178,27 +8178,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM489) RogueCmdCompareIs__symbol,
   (void*) (ROGUEM489) RogueCmdCompareIs__cpp_symbol,
   (void*) (ROGUEM218) RogueCmdComparison__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdCompareIsNot
+  0, // CmdCompareIsNot
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM493) RogueCmdCompareIsNot__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM494) RogueCmdCompareIsNot__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8208,7 +8208,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM495) RogueCmdCompareIsNot__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM496) RogueCmdCompareIsNot__resolve_for_types__Scope_Type_Type,
@@ -8217,27 +8217,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM493) RogueCmdCompareIsNot__symbol,
   (void*) (ROGUEM493) RogueCmdCompareIsNot__cpp_symbol,
   (void*) (ROGUEM218) RogueCmdComparison__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdCompareLT
+  0, // CmdCompareLT
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM497) RogueCmdCompareLT__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM498) RogueCmdCompareLT__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM499) RogueCmdCompareLT__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8247,7 +8247,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM500) RogueCmdCompareLT__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -8256,27 +8256,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM497) RogueCmdCompareLT__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM501) RogueCmdCompareLT__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdCompareGT
+  0, // CmdCompareGT
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM502) RogueCmdCompareGT__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM503) RogueCmdCompareGT__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM504) RogueCmdCompareGT__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8286,7 +8286,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM505) RogueCmdCompareGT__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -8295,27 +8295,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM502) RogueCmdCompareGT__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM506) RogueCmdCompareGT__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdCompareGE
+  0, // CmdCompareGE
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM507) RogueCmdCompareGE__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM508) RogueCmdCompareGE__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM509) RogueCmdCompareGE__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8325,7 +8325,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM207) Rogue_CmdComparison__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM510) RogueCmdCompareGE__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM211) RogueCmdComparison__requires_parens,
   (void*) (ROGUEM212) RogueCmdComparison__resolve_for_types__Scope_Type_Type,
@@ -8334,27 +8334,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM507) RogueCmdCompareGE__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
   (void*) (ROGUEM511) RogueCmdCompareGE__resolve_for_reference__Scope_Type_Type_Logical,
-  0, // Object.operator==(Object) // CmdInstanceOf
+  0, // CmdInstanceOf
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM512) RogueCmdInstanceOf__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM513) RogueCmdInstanceOf__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM514) RogueCmdInstanceOf__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8364,27 +8364,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM515) Rogue_CmdInstanceOf__type,
   (void*) (ROGUEM516) RogueCmdInstanceOf__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM517) RogueCmdInstanceOf__init_object,
-  0, // Object.operator==(Object) // CmdLogicalNot
+  0, // CmdLogicalNot
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM518) RogueCmdLogicalNot__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM519) RogueCmdLogicalNot__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM520) RogueCmdLogicalNot__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8394,34 +8394,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM521) Rogue_CmdLogicalNot__type,
   (void*) (ROGUEM297) RogueCmdUnary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM522) RogueCmdLogicalNot__init_object,
-  0, // CmdUnary.init(Token,Cmd)
+  0,
   (void*) (ROGUEM518) RogueCmdLogicalNot__prefix_symbol,
   (void*) (ROGUEM520) RogueCmdLogicalNot__resolve_for_literal_operand__Scope,
-  0, // CmdUnary.resolve_for_operand_type(Scope,Type)
+  0,
   (void*) (ROGUEM299) RogueCmdUnary__suffix_symbol,
   (void*) (ROGUEM518) RogueCmdLogicalNot__cpp_prefix_symbol,
   (void*) (ROGUEM299) RogueCmdUnary__cpp_suffix_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseXor
+  0, // CmdBitwiseXor
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM523) RogueCmdBitwiseXor__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM524) RogueCmdBitwiseXor__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM525) RogueCmdBitwiseXor__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8431,7 +8431,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM526) RogueCmdBitwiseXor__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8439,27 +8439,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM523) RogueCmdBitwiseXor__symbol,
   (void*) (ROGUEM523) RogueCmdBitwiseXor__cpp_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseOp
+  0, // CmdBitwiseOp
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM529) RogueCmdBitwiseOp__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8469,7 +8469,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM530) RogueCmdBitwiseOp__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8477,27 +8477,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM210) RogueCmdBinary__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseOr
+  0, // CmdBitwiseOr
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM531) RogueCmdBitwiseOr__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM532) RogueCmdBitwiseOr__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM533) RogueCmdBitwiseOr__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8507,7 +8507,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM534) RogueCmdBitwiseOr__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8515,27 +8515,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM531) RogueCmdBitwiseOr__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseAnd
+  0, // CmdBitwiseAnd
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM535) RogueCmdBitwiseAnd__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM536) RogueCmdBitwiseAnd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM537) RogueCmdBitwiseAnd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8545,7 +8545,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM538) RogueCmdBitwiseAnd__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8553,27 +8553,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM535) RogueCmdBitwiseAnd__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseShiftLeft
+  0, // CmdBitwiseShiftLeft
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM539) RogueCmdBitwiseShiftLeft__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM540) RogueCmdBitwiseShiftLeft__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM541) RogueCmdBitwiseShiftLeft__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8583,7 +8583,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM542) RogueCmdBitwiseShiftLeft__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8591,27 +8591,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM539) RogueCmdBitwiseShiftLeft__symbol,
   (void*) (ROGUEM539) RogueCmdBitwiseShiftLeft__cpp_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseShiftRight
+  0, // CmdBitwiseShiftRight
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM543) RogueCmdBitwiseShiftRight__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM544) RogueCmdBitwiseShiftRight__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM545) RogueCmdBitwiseShiftRight__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM546) RogueCmdBitwiseShiftRight__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8621,7 +8621,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM547) RogueCmdBitwiseShiftRight__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8629,27 +8629,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM543) RogueCmdBitwiseShiftRight__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseShiftRightX
+  0, // CmdBitwiseShiftRightX
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM548) RogueCmdBitwiseShiftRightX__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM549) RogueCmdBitwiseShiftRightX__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM550) RogueCmdBitwiseShiftRightX__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8659,7 +8659,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM551) RogueCmdBitwiseShiftRightX__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM210) RogueCmdBinary__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8667,27 +8667,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM528) RogueCmdBitwiseOp__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM548) RogueCmdBitwiseShiftRightX__symbol,
   (void*) (ROGUEM548) RogueCmdBitwiseShiftRightX__cpp_symbol,
-  0, // Object.operator==(Object) // CmdSubtract
+  0, // CmdSubtract
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM552) RogueCmdSubtract__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM553) RogueCmdSubtract__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM554) RogueCmdSubtract__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8697,7 +8697,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM555) RogueCmdSubtract__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM552) RogueCmdSubtract__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8705,27 +8705,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM214) RogueCmdBinary__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM552) RogueCmdSubtract__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdMultiply
+  0, // CmdMultiply
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM556) RogueCmdMultiply__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM557) RogueCmdMultiply__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM558) RogueCmdMultiply__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8735,7 +8735,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM559) RogueCmdMultiply__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM556) RogueCmdMultiply__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8743,27 +8743,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM214) RogueCmdBinary__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM556) RogueCmdMultiply__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdDivide
+  0, // CmdDivide
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM560) RogueCmdDivide__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM561) RogueCmdDivide__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM562) RogueCmdDivide__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8773,7 +8773,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM563) RogueCmdDivide__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM560) RogueCmdDivide__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8781,27 +8781,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM214) RogueCmdBinary__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM560) RogueCmdDivide__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdMod
+  0, // CmdMod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM564) RogueCmdMod__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM565) RogueCmdMod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM566) RogueCmdMod__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM567) RogueCmdMod__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8811,7 +8811,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM208) RogueCmdBinary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM568) RogueCmdMod__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM564) RogueCmdMod__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8819,27 +8819,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM214) RogueCmdBinary__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM564) RogueCmdMod__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdPower
+  0, // CmdPower
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM569) RogueCmdPower__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM570) RogueCmdPower__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM571) RogueCmdPower__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM205) RogueCmdBinary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8849,7 +8849,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM219) Rogue_CmdBinary__type,
   (void*) (ROGUEM572) RogueCmdPower__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM573) RogueCmdPower__init_object,
-  0, // CmdBinary.init(Token,Cmd,Cmd)
+  0,
   (void*) (ROGUEM569) RogueCmdPower__fn_name,
   (void*) (ROGUEM221) RogueCmdBinary__requires_parens,
   (void*) (ROGUEM214) RogueCmdBinary__resolve_for_types__Scope_Type_Type,
@@ -8857,27 +8857,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM214) RogueCmdBinary__resolve_operator_method__Scope_Type_Type,
   (void*) (ROGUEM569) RogueCmdPower__symbol,
   (void*) (ROGUEM210) RogueCmdBinary__cpp_symbol,
-  0, // Object.operator==(Object) // CmdNegate
+  0, // CmdNegate
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM574) RogueCmdNegate__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM575) RogueCmdNegate__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM576) Rogue_CmdNegate__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM300) RogueCmdUnary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8887,34 +8887,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM301) Rogue_CmdUnary__type,
   (void*) (ROGUEM297) RogueCmdUnary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM577) RogueCmdNegate__init_object,
-  0, // CmdUnary.init(Token,Cmd)
+  0,
   (void*) (ROGUEM574) RogueCmdNegate__prefix_symbol,
   (void*) (ROGUEM578) RogueCmdNegate__resolve_for_literal_operand__Scope,
-  0, // CmdUnary.resolve_for_operand_type(Scope,Type)
+  0,
   (void*) (ROGUEM574) RogueCmdNegate__suffix_symbol,
   (void*) (ROGUEM299) RogueCmdUnary__cpp_prefix_symbol,
   (void*) (ROGUEM299) RogueCmdUnary__cpp_suffix_symbol,
-  0, // Object.operator==(Object) // CmdBitwiseNot
+  0, // CmdBitwiseNot
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM579) RogueCmdBitwiseNot__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM580) RogueCmdBitwiseNot__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM300) RogueCmdUnary__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8924,34 +8924,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM581) Rogue_CmdBitwiseNot__type,
   (void*) (ROGUEM297) RogueCmdUnary__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM582) RogueCmdBitwiseNot__init_object,
-  0, // CmdUnary.init(Token,Cmd)
+  0,
   (void*) (ROGUEM579) RogueCmdBitwiseNot__prefix_symbol,
   (void*) (ROGUEM583) RogueCmdBitwiseNot__resolve_for_literal_operand__Scope,
-  0, // CmdUnary.resolve_for_operand_type(Scope,Type)
+  0,
   (void*) (ROGUEM299) RogueCmdUnary__suffix_symbol,
   (void*) (ROGUEM579) RogueCmdBitwiseNot__cpp_prefix_symbol,
   (void*) (ROGUEM299) RogueCmdUnary__cpp_suffix_symbol,
-  0, // Object.operator==(Object) // CmdGetOptionalValue
+  0, // CmdGetOptionalValue
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM584) RogueCmdGetOptionalValue__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM585) RogueCmdGetOptionalValue__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM586) RogueCmdGetOptionalValue__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -8961,27 +8961,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM588) Rogue_CmdGetOptionalValue__type,
   (void*) (ROGUEM589) RogueCmdGetOptionalValue__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM590) RogueCmdGetOptionalValue__init_object,
-  0, // Object.operator==(Object) // CmdElementAccess
+  0, // CmdElementAccess
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM591) RogueCmdElementAccess__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM592) RogueCmdElementAccess__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM593) RogueCmdElementAccess__resolve__Scope,
   (void*) (ROGUEM594) RogueCmdElementAccess__resolve_assignment__Scope_Cmd,
@@ -8991,27 +8991,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM596) RogueCmdElementAccess__init_object,
-  0, // Object.operator==(Object) // CmdConvertToType
+  0, // CmdConvertToType
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM597) RogueCmdConvertToType__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM598) RogueCmdConvertToType__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM599) RogueCmdConvertToType__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9021,27 +9021,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM287) Rogue_CmdTypeOperator__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM600) RogueCmdConvertToType__init_object,
-  0, // Object.operator==(Object) // CmdCreateCallback
+  0, // CmdCreateCallback
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM601) RogueCmdCreateCallback__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM602) RogueCmdCreateCallback__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM603) RogueCmdCreateCallback__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9051,27 +9051,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM604) RogueCmdCreateCallback__init_object,
-  0, // Object.operator==(Object) // CmdAs
+  0, // CmdAs
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM605) RogueCmdAs__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM606) RogueCmdAs__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM607) RogueCmdAs__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9081,27 +9081,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM287) Rogue_CmdTypeOperator__type,
   (void*) (ROGUEM608) RogueCmdAs__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM609) RogueCmdAs__init_object,
-  0, // Object.operator==(Object) // CmdDefaultValue
+  0, // CmdDefaultValue
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM610) RogueCmdDefaultValue__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM611) RogueCmdDefaultValue__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM612) RogueCmdDefaultValue__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9111,27 +9111,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM613) Rogue_CmdDefaultValue__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM614) RogueCmdDefaultValue__init_object,
-  0, // Object.operator==(Object) // CmdFormattedString
+  0, // CmdFormattedString
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM615) RogueCmdFormattedString__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM616) RogueCmdFormattedString__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM617) Rogue_CmdFormattedString__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM618) RogueCmdFormattedString__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9141,27 +9141,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM617) Rogue_CmdFormattedString__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM619) RogueCmdFormattedString__init_object,
-  0, // Object.operator==(Object) // CmdLiteralReal
+  0, // CmdLiteralReal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM620) RogueCmdLiteralReal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM621) RogueCmdLiteralReal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM622) RogueCmdLiteralReal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9171,27 +9171,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM623) Rogue_CmdLiteralReal__type,
   (void*) (ROGUEM624) RogueCmdLiteralReal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM625) RogueCmdLiteralReal__init_object,
-  0, // Object.operator==(Object) // CmdLiteralLong
+  0, // CmdLiteralLong
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM626) RogueCmdLiteralLong__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM627) RogueCmdLiteralLong__cast_to__Type,
   (void*) (ROGUEM628) RogueCmdLiteralLong__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM629) RogueCmdLiteralLong__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9201,27 +9201,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM630) Rogue_CmdLiteralLong__type,
   (void*) (ROGUEM631) RogueCmdLiteralLong__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM632) RogueCmdLiteralLong__init_object,
-  0, // Object.operator==(Object) // CmdLiteralCharacter
+  0, // CmdLiteralCharacter
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM633) RogueCmdLiteralCharacter__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM634) RogueCmdLiteralCharacter__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM193) Rogue_CmdLiteral__implicit_type,
   (void*) (ROGUEM194) RogueCmdLiteral__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM635) RogueCmdLiteralCharacter__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9231,27 +9231,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM636) Rogue_CmdLiteralCharacter__type,
   (void*) (ROGUEM637) RogueCmdLiteralCharacter__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM638) RogueCmdLiteralCharacter__init_object,
-  0, // Object.operator==(Object) // CmdCreateList
+  0, // CmdCreateList
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM639) RogueCmdCreateList__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM640) RogueCmdCreateList__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM641) RogueCmdCreateList__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9261,27 +9261,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM642) RogueCmdCreateList__init_object,
-  0, // Object.operator==(Object) // CmdCallPriorMethod
+  0, // CmdCallPriorMethod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM643) RogueCmdCallPriorMethod__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM644) RogueCmdCallPriorMethod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM645) RogueCmdCallPriorMethod__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9291,41 +9291,41 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM646) RogueCmdCallPriorMethod__init_object,
-  0, // Object.operator==(Object) // FnParam[]
+  0, // FnParam[]
   (void*) (ROGUEM647) RogueFnParamList__to_String,
   (void*) (ROGUEM647) RogueFnParamList__type_name,
   (void*) (ROGUEM648) RogueFnParamList__init_object,
-  0, // Object.operator==(Object) // FnParam
+  0, // FnParam
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM649) RogueFnParam__type_name,
-  0, // Object.operator==(Object) // FnArg[]
+  0, // FnArg[]
   (void*) (ROGUEM650) RogueFnArgList__to_String,
   (void*) (ROGUEM650) RogueFnArgList__type_name,
   (void*) (ROGUEM651) RogueFnArgList__init_object,
-  0, // Object.operator==(Object) // FnArg
+  0, // FnArg
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM652) RogueFnArg__type_name,
-  0, // Object.operator==(Object) // CmdCreateFunction
+  0, // CmdCreateFunction
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM653) RogueCmdCreateFunction__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM654) RogueCmdCreateFunction__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM655) RogueCmdCreateFunction__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9335,27 +9335,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM46) Rogue_Cmd__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM656) RogueCmdCreateFunction__init_object,
-  0, // Object.operator==(Object) // CmdNativeCode
+  0, // CmdNativeCode
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM657) RogueCmdNativeCode__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM658) RogueCmdNativeCode__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM659) RogueCmdNativeCode__requires_semicolon,
   (void*) (ROGUEM660) RogueCmdNativeCode__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9365,53 +9365,53 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM662) Rogue_CmdNativeCode__type,
   (void*) (ROGUEM663) RogueCmdNativeCode__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM664) RogueCmdNativeCode__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,TokenType>>[]
+  0, // TableEntry<<String,TokenType>>[]
   (void*) (ROGUEM665) RogueString_TokenTypeTableEntryList__to_String,
   (void*) (ROGUEM665) RogueString_TokenTypeTableEntryList__type_name,
   (void*) (ROGUEM666) RogueString_TokenTypeTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,TokenType>>
+  0, // TableEntry<<String,TokenType>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM667) RogueString_TokenTypeTableEntry__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,TypeSpecializer>>[]
+  0, // TableEntry<<String,TypeSpecializer>>[]
   (void*) (ROGUEM668) RogueString_TypeSpecializerTableEntryList__to_String,
   (void*) (ROGUEM668) RogueString_TypeSpecializerTableEntryList__type_name,
   (void*) (ROGUEM669) RogueString_TypeSpecializerTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,TypeSpecializer>>
+  0, // TableEntry<<String,TypeSpecializer>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM670) RogueString_TypeSpecializerTableEntry__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,CmdLabel>>[]
+  0, // TableEntry<<String,CmdLabel>>[]
   (void*) (ROGUEM671) RogueString_CmdLabelTableEntryList__to_String,
   (void*) (ROGUEM671) RogueString_CmdLabelTableEntryList__type_name,
   (void*) (ROGUEM672) RogueString_CmdLabelTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,CmdLabel>>
+  0, // TableEntry<<String,CmdLabel>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM673) RogueString_CmdLabelTableEntry__type_name,
-  0, // Object.operator==(Object) // MacroArgs
+  0, // MacroArgs
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM674) RogueMacroArgs__type_name,
   (void*) (ROGUEM144) RogueCloneArgs__register_label__CmdLabel,
   (void*) (ROGUEM675) RogueMacroArgs__init_object,
-  0, // Object.operator==(Object) // CmdReadSingleton
+  0, // CmdReadSingleton
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM676) RogueCmdReadSingleton__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM677) RogueCmdReadSingleton__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM678) RogueCmdReadSingleton__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM679) RogueCmdReadSingleton__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9421,27 +9421,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM680) Rogue_CmdReadSingleton__type,
   (void*) (ROGUEM681) RogueCmdReadSingleton__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM682) RogueCmdReadSingleton__init_object,
-  0, // Object.operator==(Object) // CmdCreateArray
+  0, // CmdCreateArray
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM683) RogueCmdCreateArray__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM684) RogueCmdCreateArray__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM685) RogueCmdCreateArray__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9451,27 +9451,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM687) Rogue_CmdCreateArray__type,
   (void*) (ROGUEM688) RogueCmdCreateArray__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM689) RogueCmdCreateArray__init_object,
-  0, // Object.operator==(Object) // CmdCallRoutine
+  0, // CmdCallRoutine
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM690) RogueCmdCallRoutine__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM691) RogueCmdCallRoutine__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9481,27 +9481,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM695) RogueCmdCallRoutine__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM696) RogueCmdCallRoutine__init_object,
-  0, // Object.operator==(Object) // CmdCall
+  0, // CmdCall
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM697) RogueCmdCall__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9511,27 +9511,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM698) RogueCmdCall__init_object,
-  0, // Object.operator==(Object) // CmdCreateObject
+  0, // CmdCreateObject
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM699) RogueCmdCreateObject__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM700) RogueCmdCreateObject__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM701) RogueCmdCreateObject__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9541,27 +9541,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM703) Rogue_CmdCreateObject__type,
   (void*) (ROGUEM704) RogueCmdCreateObject__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM705) RogueCmdCreateObject__init_object,
-  0, // Object.operator==(Object) // CmdReadGlobal
+  0, // CmdReadGlobal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM706) RogueCmdReadGlobal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM707) RogueCmdReadGlobal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM708) RogueCmdReadGlobal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9571,27 +9571,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM710) Rogue_CmdReadGlobal__type,
   (void*) (ROGUEM711) RogueCmdReadGlobal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM712) RogueCmdReadGlobal__init_object,
-  0, // Object.operator==(Object) // CmdReadProperty
+  0, // CmdReadProperty
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM713) RogueCmdReadProperty__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM714) RogueCmdReadProperty__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM715) RogueCmdReadProperty__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9601,27 +9601,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM718) Rogue_CmdReadProperty__type,
   (void*) (ROGUEM719) RogueCmdReadProperty__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM720) RogueCmdReadProperty__init_object,
-  0, // Object.operator==(Object) // CmdLogicalizeOptionalValue
+  0, // CmdLogicalizeOptionalValue
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM721) RogueCmdLogicalizeOptionalValue__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM722) RogueCmdLogicalizeOptionalValue__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM723) RogueCmdLogicalizeOptionalValue__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9631,27 +9631,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM725) Rogue_CmdLogicalizeOptionalValue__type,
   (void*) (ROGUEM726) RogueCmdLogicalizeOptionalValue__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM727) RogueCmdLogicalizeOptionalValue__init_object,
-  0, // Object.operator==(Object) // CmdWriteLocal
+  0, // CmdWriteLocal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM728) RogueCmdWriteLocal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM729) RogueCmdWriteLocal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM730) RogueCmdWriteLocal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9661,27 +9661,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM732) Rogue_CmdWriteLocal__type,
   (void*) (ROGUEM733) RogueCmdWriteLocal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM734) RogueCmdWriteLocal__init_object,
-  0, // Object.operator==(Object) // CmdOpAssignGlobal
+  0, // CmdOpAssignGlobal
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM735) RogueCmdOpAssignGlobal__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM736) RogueCmdOpAssignGlobal__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM737) RogueCmdOpAssignGlobal__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9691,27 +9691,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM739) Rogue_CmdOpAssignGlobal__type,
   (void*) (ROGUEM740) RogueCmdOpAssignGlobal__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM741) RogueCmdOpAssignGlobal__init_object,
-  0, // Object.operator==(Object) // CmdOpAssignProperty
+  0, // CmdOpAssignProperty
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM742) RogueCmdOpAssignProperty__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM743) RogueCmdOpAssignProperty__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM744) RogueCmdOpAssignProperty__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9721,27 +9721,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM746) Rogue_CmdOpAssignProperty__type,
   (void*) (ROGUEM747) RogueCmdOpAssignProperty__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM748) RogueCmdOpAssignProperty__init_object,
-  0, // Object.operator==(Object) // CmdCallInlineNativeRoutine
+  0, // CmdCallInlineNativeRoutine
   (void*) (ROGUEM749) RogueCmdCallInlineNative__to_String,
   (void*) (ROGUEM750) RogueCmdCallInlineNativeRoutine__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM751) RogueCmdCallInlineNativeRoutine__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9751,29 +9751,29 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM752) Rogue_CmdCallInlineNativeRoutine__type,
   (void*) (ROGUEM753) RogueCmdCallInlineNative__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM754) RogueCmdCallInlineNativeRoutine__init_object,
-  0, // CmdCall.init(Token,Cmd,Method,CmdArgs)
+  0,
   (void*) (ROGUEM755) RogueCmdCallInlineNative__print_this__CPPWriter,
-  0, // Object.operator==(Object) // CmdCallInlineNative
+  0, // CmdCallInlineNative
   (void*) (ROGUEM749) RogueCmdCallInlineNative__to_String,
   (void*) (ROGUEM749) RogueCmdCallInlineNative__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9783,29 +9783,29 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM753) RogueCmdCallInlineNative__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM756) RogueCmdCallInlineNative__init_object,
-  0, // CmdCall.init(Token,Cmd,Method,CmdArgs)
+  0,
   (void*) (ROGUEM755) RogueCmdCallInlineNative__print_this__CPPWriter,
-  0, // Object.operator==(Object) // CmdCallNativeRoutine
+  0, // CmdCallNativeRoutine
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM757) RogueCmdCallNativeRoutine__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM758) RogueCmdCallNativeRoutine__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9815,27 +9815,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM759) RogueCmdCallNativeRoutine__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM760) RogueCmdCallNativeRoutine__init_object,
-  0, // Object.operator==(Object) // CmdReadArrayCount
+  0, // CmdReadArrayCount
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM761) RogueCmdReadArrayCount__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM762) RogueCmdReadArrayCount__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM763) RogueCmdReadArrayCount__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9845,27 +9845,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM765) Rogue_CmdReadArrayCount__type,
   (void*) (ROGUEM766) RogueCmdReadArrayCount__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM767) RogueCmdReadArrayCount__init_object,
-  0, // Object.operator==(Object) // CmdCallInlineNativeMethod
+  0, // CmdCallInlineNativeMethod
   (void*) (ROGUEM749) RogueCmdCallInlineNative__to_String,
   (void*) (ROGUEM768) RogueCmdCallInlineNativeMethod__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM769) RogueCmdCallInlineNativeMethod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9875,29 +9875,29 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM770) Rogue_CmdCallInlineNativeMethod__type,
   (void*) (ROGUEM753) RogueCmdCallInlineNative__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM771) RogueCmdCallInlineNativeMethod__init_object,
-  0, // CmdCall.init(Token,Cmd,Method,CmdArgs)
+  0,
   (void*) (ROGUEM772) RogueCmdCallInlineNativeMethod__print_this__CPPWriter,
-  0, // Object.operator==(Object) // CmdCallNativeMethod
+  0, // CmdCallNativeMethod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM773) RogueCmdCallNativeMethod__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM774) RogueCmdCallNativeMethod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9907,27 +9907,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM775) RogueCmdCallNativeMethod__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM776) RogueCmdCallNativeMethod__init_object,
-  0, // Object.operator==(Object) // CmdCallAspectMethod
+  0, // CmdCallAspectMethod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM777) RogueCmdCallAspectMethod__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM778) RogueCmdCallAspectMethod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9937,27 +9937,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM779) RogueCmdCallAspectMethod__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM780) RogueCmdCallAspectMethod__init_object,
-  0, // Object.operator==(Object) // CmdCallDynamicMethod
+  0, // CmdCallDynamicMethod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM781) RogueCmdCallDynamicMethod__type_name,
   (void*) (ROGUEM782) RogueCmdCallMethod__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM783) RogueCmdCallDynamicMethod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9967,27 +9967,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM785) RogueCmdCallDynamicMethod__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM786) RogueCmdCallDynamicMethod__init_object,
-  0, // Object.operator==(Object) // CmdCallMethod
+  0, // CmdCallMethod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM787) RogueCmdCallMethod__type_name,
   (void*) (ROGUEM782) RogueCmdCallMethod__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM44) RogueCmd__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM692) RogueCmdCall__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -9997,34 +9997,34 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM52) RogueCmd__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM788) RogueCmdCallMethod__init_object,
-  0, // Object.operator==(Object) // CandidateMethods
+  0, // CandidateMethods
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM789) RogueCandidateMethods__type_name,
-  0, // Object.operator==(Object) // CmdTaskControlSection[]
+  0, // CmdTaskControlSection[]
   (void*) (ROGUEM790) RogueCmdTaskControlSectionList__to_String,
   (void*) (ROGUEM790) RogueCmdTaskControlSectionList__type_name,
   (void*) (ROGUEM791) RogueCmdTaskControlSectionList__init_object,
-  0, // Object.operator==(Object) // CmdBlock
+  0, // CmdBlock
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM792) RogueCmdBlock__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM793) RogueCmdBlock__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM794) RogueCmdBlock__requires_semicolon,
   (void*) (ROGUEM795) RogueCmdBlock__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10035,147 +10035,147 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM797) RogueCmdBlock__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM798) RogueCmdBlock__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // TableEntry<<String,Cmd>>[]
+  0, // TableEntry<<String,Cmd>>[]
   (void*) (ROGUEM799) RogueString_CmdTableEntryList__to_String,
   (void*) (ROGUEM799) RogueString_CmdTableEntryList__type_name,
   (void*) (ROGUEM800) RogueString_CmdTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Cmd>>
+  0, // TableEntry<<String,Cmd>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM801) RogueString_CmdTableEntry__type_name,
-  0, // Object.operator==(Object) // TableEntry<<String,Property>>[]
+  0, // TableEntry<<String,Property>>[]
   (void*) (ROGUEM802) RogueString_PropertyTableEntryList__to_String,
   (void*) (ROGUEM802) RogueString_PropertyTableEntryList__type_name,
   (void*) (ROGUEM803) RogueString_PropertyTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Property>>
+  0, // TableEntry<<String,Property>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM804) RogueString_PropertyTableEntry__type_name,
-  0, // Object.operator==(Object) // DirectiveTokenType
+  0, // DirectiveTokenType
   (void*) (ROGUEM70) RogueTokenType__to_String,
   (void*) (ROGUEM805) RogueDirectiveTokenType__type_name,
-  0, // TokenType.init(String)
+  0,
   (void*) (ROGUEM806) RogueDirectiveTokenType__create_token__String_Integer_Integer,
-  0, // TokenType.create_token(String,Integer,Integer,Character)
-  0, // TokenType.create_token(String,Integer,Integer,Long)
-  0, // TokenType.create_token(String,Integer,Integer,Integer)
-  0, // TokenType.create_token(String,Integer,Integer,Real)
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM72) RogueTokenType__create_token__String_Integer_Integer_String,
-  0, // TokenType.create_token(Token,String)
+  0,
   (void*) (ROGUEM807) RogueDirectiveTokenType__is_directive,
   (void*) (ROGUEM73) RogueTokenType__is_op_with_assign,
   (void*) (ROGUEM73) RogueTokenType__is_structure,
-  0, // TokenType.quoted_name()
-  0, // TokenType.to_String(Token)
+  0,
+  0,
   (void*) (ROGUEM808) RogueDirectiveTokenType__init_object,
-  0, // Object.operator==(Object) // StructuralDirectiveTokenType
+  0, // StructuralDirectiveTokenType
   (void*) (ROGUEM70) RogueTokenType__to_String,
   (void*) (ROGUEM809) RogueStructuralDirectiveTokenType__type_name,
-  0, // TokenType.init(String)
+  0,
   (void*) (ROGUEM810) RogueStructuralDirectiveTokenType__create_token__String_Integer_Integer,
-  0, // TokenType.create_token(String,Integer,Integer,Character)
-  0, // TokenType.create_token(String,Integer,Integer,Long)
-  0, // TokenType.create_token(String,Integer,Integer,Integer)
-  0, // TokenType.create_token(String,Integer,Integer,Real)
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM72) RogueTokenType__create_token__String_Integer_Integer_String,
-  0, // TokenType.create_token(Token,String)
+  0,
   (void*) (ROGUEM811) RogueStructuralDirectiveTokenType__is_directive,
   (void*) (ROGUEM73) RogueTokenType__is_op_with_assign,
   (void*) (ROGUEM811) RogueStructuralDirectiveTokenType__is_structure,
-  0, // TokenType.quoted_name()
-  0, // TokenType.to_String(Token)
+  0,
+  0,
   (void*) (ROGUEM812) RogueStructuralDirectiveTokenType__init_object,
-  0, // Object.operator==(Object) // EOLTokenType
+  0, // EOLTokenType
   (void*) (ROGUEM70) RogueTokenType__to_String,
   (void*) (ROGUEM813) RogueEOLTokenType__type_name,
-  0, // TokenType.init(String)
+  0,
   (void*) (ROGUEM814) RogueEOLTokenType__create_token__String_Integer_Integer,
-  0, // TokenType.create_token(String,Integer,Integer,Character)
-  0, // TokenType.create_token(String,Integer,Integer,Long)
-  0, // TokenType.create_token(String,Integer,Integer,Integer)
-  0, // TokenType.create_token(String,Integer,Integer,Real)
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM815) RogueEOLTokenType__create_token__String_Integer_Integer_String,
-  0, // TokenType.create_token(Token,String)
+  0,
   (void*) (ROGUEM73) RogueTokenType__is_directive,
   (void*) (ROGUEM73) RogueTokenType__is_op_with_assign,
   (void*) (ROGUEM816) RogueEOLTokenType__is_structure,
-  0, // TokenType.quoted_name()
-  0, // TokenType.to_String(Token)
+  0,
+  0,
   (void*) (ROGUEM817) RogueEOLTokenType__init_object,
-  0, // Object.operator==(Object) // StructureTokenType
+  0, // StructureTokenType
   (void*) (ROGUEM70) RogueTokenType__to_String,
   (void*) (ROGUEM818) RogueStructureTokenType__type_name,
-  0, // TokenType.init(String)
+  0,
   (void*) (ROGUEM819) RogueStructureTokenType__create_token__String_Integer_Integer,
-  0, // TokenType.create_token(String,Integer,Integer,Character)
-  0, // TokenType.create_token(String,Integer,Integer,Long)
-  0, // TokenType.create_token(String,Integer,Integer,Integer)
-  0, // TokenType.create_token(String,Integer,Integer,Real)
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM72) RogueTokenType__create_token__String_Integer_Integer_String,
-  0, // TokenType.create_token(Token,String)
+  0,
   (void*) (ROGUEM73) RogueTokenType__is_directive,
   (void*) (ROGUEM73) RogueTokenType__is_op_with_assign,
   (void*) (ROGUEM820) RogueStructureTokenType__is_structure,
-  0, // TokenType.quoted_name()
-  0, // TokenType.to_String(Token)
+  0,
+  0,
   (void*) (ROGUEM821) RogueStructureTokenType__init_object,
-  0, // Object.operator==(Object) // OpWithAssignTokenType
+  0, // OpWithAssignTokenType
   (void*) (ROGUEM70) RogueTokenType__to_String,
   (void*) (ROGUEM822) RogueOpWithAssignTokenType__type_name,
-  0, // TokenType.init(String)
+  0,
   (void*) (ROGUEM71) RogueTokenType__create_token__String_Integer_Integer,
-  0, // TokenType.create_token(String,Integer,Integer,Character)
-  0, // TokenType.create_token(String,Integer,Integer,Long)
-  0, // TokenType.create_token(String,Integer,Integer,Integer)
-  0, // TokenType.create_token(String,Integer,Integer,Real)
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM72) RogueTokenType__create_token__String_Integer_Integer_String,
-  0, // TokenType.create_token(Token,String)
+  0,
   (void*) (ROGUEM73) RogueTokenType__is_directive,
   (void*) (ROGUEM823) RogueOpWithAssignTokenType__is_op_with_assign,
   (void*) (ROGUEM73) RogueTokenType__is_structure,
-  0, // TokenType.quoted_name()
-  0, // TokenType.to_String(Token)
+  0,
+  0,
   (void*) (ROGUEM824) RogueOpWithAssignTokenType__init_object,
-  0, // Object.operator==(Object) // EOLToken
+  0, // EOLToken
   (void*) (ROGUEM825) RogueEOLToken__to_String,
   (void*) (ROGUEM825) RogueEOLToken__type_name,
-  0, // Token.init(TokenType)
-  0, // Token.error(String)
-  0, // Token.is_directive()
-  0, // Token.is_structure()
-  0, // Token.quoted_name()
-  0, // Token.set_location(String,Integer,Integer)
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM34) RogueToken__to_Character,
   (void*) (ROGUEM35) RogueToken__to_Integer,
   (void*) (ROGUEM36) RogueToken__to_Long,
   (void*) (ROGUEM37) RogueToken__to_Real,
   (void*) (ROGUEM38) RogueToken__to_Type,
   (void*) (ROGUEM826) RogueEOLToken__init_object,
-  0, // Object.operator==(Object) // Table<<String,Token[]>>
+  0, // Table<<String,Token[]>>
   (void*) (ROGUEM827) RogueString_TokenListTable__to_String,
   (void*) (ROGUEM827) RogueString_TokenListTable__type_name,
-  0, // Object.operator==(Object) // PreprocessorTokenReader
+  0, // PreprocessorTokenReader
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM828) RoguePreprocessorTokenReader__type_name,
-  0, // Object.operator==(Object) // CmdSwitch
+  0, // CmdSwitch
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM829) RogueCmdSwitch__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM830) RogueCmdSwitch__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM169) RogueCmdControlStructure__requires_semicolon,
   (void*) (ROGUEM831) RogueCmdSwitch__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10186,27 +10186,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM833) RogueCmdSwitch__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM834) RogueCmdSwitch__init_object,
   (void*) (ROGUEM171) RogueCmdControlStructure__set_control_logic__CmdControlStructure,
-  0, // Object.operator==(Object) // CmdReadArrayElement
+  0, // CmdReadArrayElement
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM835) RogueCmdReadArrayElement__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM836) RogueCmdReadArrayElement__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM837) RogueCmdReadArrayElement__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10216,27 +10216,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM840) Rogue_CmdReadArrayElement__type,
   (void*) (ROGUEM841) RogueCmdReadArrayElement__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM842) RogueCmdReadArrayElement__init_object,
-  0, // Object.operator==(Object) // CmdWriteArrayElement
+  0, // CmdWriteArrayElement
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM843) RogueCmdWriteArrayElement__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM844) RogueCmdWriteArrayElement__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM845) RogueCmdWriteArrayElement__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10246,27 +10246,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM847) Rogue_CmdWriteArrayElement__type,
   (void*) (ROGUEM848) RogueCmdWriteArrayElement__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM849) RogueCmdWriteArrayElement__init_object,
-  0, // Object.operator==(Object) // CmdConvertToPrimitiveType
+  0, // CmdConvertToPrimitiveType
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM850) RogueCmdConvertToPrimitiveType__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM851) RogueCmdConvertToPrimitiveType__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM852) RogueCmdConvertToPrimitiveType__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10276,27 +10276,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM287) Rogue_CmdTypeOperator__type,
   (void*) (ROGUEM853) RogueCmdConvertToPrimitiveType__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM854) RogueCmdConvertToPrimitiveType__init_object,
-  0, // Object.operator==(Object) // CmdAdjustProperty
+  0, // CmdAdjustProperty
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM855) RogueCmdAdjustProperty__type_name,
   (void*) (ROGUEM42) RogueCmd__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM856) RogueCmdAdjustProperty__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM857) RogueCmdAdjustProperty__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10306,27 +10306,27 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM859) Rogue_CmdAdjustProperty__type,
   (void*) (ROGUEM860) RogueCmdAdjustProperty__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM861) RogueCmdAdjustProperty__init_object,
-  0, // Object.operator==(Object) // CmdCallStaticMethod
+  0, // CmdCallStaticMethod
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM862) RogueCmdCallStaticMethod__type_name,
   (void*) (ROGUEM782) RogueCmdCallMethod__call_prior__Scope,
   (void*) (ROGUEM43) RogueCmd__cast_to__Type,
   (void*) (ROGUEM863) RogueCmdCallStaticMethod__clone__CloneArgs,
-  0, // Cmd.clone(Cmd,CloneArgs)
-  0, // Cmd.clone(CmdArgs,CloneArgs)
-  0, // Cmd.clone(CmdStatementList,CloneArgs)
+  0,
+  0,
+  0,
   (void*) (ROGUEM43) RogueCmd__combine_literal_operands__Type,
   (void*) (ROGUEM45) RogueCmd__exit_scope__Scope,
-  0, // Cmd.find_operation_result_type(Type,Type)
-  0, // Cmd.find_common_type(Type,Type)
-  0, // Cmd.must_find_common_type(Type,Type)
+  0,
+  0,
+  0,
   (void*) (ROGUEM46) Rogue_Cmd__implicit_type,
   (void*) (ROGUEM47) RogueCmd__is_literal,
   (void*) (ROGUEM48) RogueCmd__require_type_context,
-  0, // Cmd.require_integer()
-  0, // Cmd.require_logical(Scope)
-  0, // Cmd.require_type()
-  0, // Cmd.require_value()
+  0,
+  0,
+  0,
+  0,
   (void*) (ROGUEM47) RogueCmd__requires_semicolon,
   (void*) (ROGUEM864) RogueCmdCallStaticMethod__resolve__Scope,
   (void*) (ROGUEM49) RogueCmd__resolve_assignment__Scope_Cmd,
@@ -10336,11 +10336,11 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM694) Rogue_CmdCall__type,
   (void*) (ROGUEM865) RogueCmdCallStaticMethod__write_cpp__CPPWriter_Logical,
   (void*) (ROGUEM866) RogueCmdCallStaticMethod__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Token[]>>[]
+  0, // TableEntry<<String,Token[]>>[]
   (void*) (ROGUEM867) RogueString_TokenListTableEntryList__to_String,
   (void*) (ROGUEM867) RogueString_TokenListTableEntryList__type_name,
   (void*) (ROGUEM868) RogueString_TokenListTableEntryList__init_object,
-  0, // Object.operator==(Object) // TableEntry<<String,Token[]>>
+  0, // TableEntry<<String,Token[]>>
   (void*) (ROGUEM0) RogueObject__to_String,
   (void*) (ROGUEM869) RogueString_TokenListTableEntry__type_name,
 
@@ -12912,7 +12912,16 @@ void RogueRogueC__write_cpp( RogueClassRogueC* THIS )
   }
   else if ((RogueFile__is_folder__String( THIS->output_filepath )))
   {
-    THIS->output_filepath = ((RogueString__operatorPLUS__String( (RogueFile__path__String( THIS->output_filepath )), Rogue_literal_strings[372] )));
+    THIS->output_filepath = ((RogueString__operatorPLUS__String( THIS->output_filepath, Rogue_literal_strings[37] )));
+    RogueString* filename_0 = ((RogueFile__filename__String( THIS->first_filepath )));
+    if (((RogueString__ends_with__String( ((RogueString__to_lowercase( filename_0 ))), Rogue_literal_strings[34] ))))
+    {
+      THIS->output_filepath = ((RogueString__operatorPLUS__String( THIS->output_filepath, ((RogueString__leftmost__Integer( filename_0, -6 ))) )));
+    }
+    else
+    {
+      THIS->output_filepath = ((RogueString__operatorPLUS__String( THIS->output_filepath, Rogue_literal_strings[372] )));
+    }
   }
   else if (((RogueString__ends_with__String( ((RogueString__to_lowercase( THIS->output_filepath ))), Rogue_literal_strings[373] ))))
   {
@@ -12921,13 +12930,13 @@ void RogueRogueC__write_cpp( RogueClassRogueC* THIS )
   RogueProgram__write_cpp__String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), THIS->output_filepath );
   if (!!(THIS->execute_args))
   {
-    RogueString* exe_0 = (((RogueString__to_lowercase( THIS->output_filepath ))));
-    RogueString* cmd_1 = (((RogueStringBuilder__to_String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__init( ((RogueStringBuilder*)ROGUE_CREATE_OBJECT(StringBuilder)) ))), Rogue_literal_strings[526] ))), THIS->output_filepath ))), Rogue_literal_strings[527] ))), exe_0 ))), Rogue_literal_strings[528] ))), exe_0 ))), Rogue_literal_strings[255] ))), THIS->execute_args ))) ))));
-    RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), cmd_1 );
+    RogueString* exe_1 = (((RogueString__to_lowercase( THIS->output_filepath ))));
+    RogueString* cmd_2 = (((RogueStringBuilder__to_String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__init( ((RogueStringBuilder*)ROGUE_CREATE_OBJECT(StringBuilder)) ))), Rogue_literal_strings[526] ))), THIS->output_filepath ))), Rogue_literal_strings[527] ))), exe_1 ))), Rogue_literal_strings[528] ))), exe_1 ))), Rogue_literal_strings[255] ))), THIS->execute_args ))) ))));
+    RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), cmd_2 );
     RogueGlobal__println( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)) );
     {
       char cmd_buffer[4096];
-      RogueString_to_c_string( cmd_1, cmd_buffer, 4096 );
+      RogueString_to_c_string( cmd_2, cmd_buffer, 4096 );
       system( cmd_buffer );
     };
   }
@@ -17296,7 +17305,7 @@ RogueInteger RogueType__print_dynamic_method_table_entries__Integer_CPPWriter( R
         }
         else
         {
-          RogueCPPWriter__print__String( ((RogueCPPWriter__print__String( ((RogueCPPWriter__print__String( ((RogueCPPWriter__print__String( ((RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[483] ))), Rogue_literal_strings[484] ))), m_7->type_context->name ))), Rogue_literal_strings[44] ))), m_7->signature );
+          RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[483] );
         }
         if (print_type_name_4)
         {
@@ -37180,7 +37189,7 @@ void Rogue_configure()
   Rogue_literal_strings[369] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( " in type ", 9 ) ); 
   Rogue_literal_strings[370] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "init()", 6 ) ); 
   Rogue_literal_strings[371] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "::trace_used_code() is not defined.", 35 ) ); 
-  Rogue_literal_strings[372] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "/RogueProgram", 13 ) ); 
+  Rogue_literal_strings[372] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "RogueProgram", 12 ) ); 
   Rogue_literal_strings[373] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ".cpp", 4 ) ); 
   Rogue_literal_strings[374] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "type", 4 ) ); 
   Rogue_literal_strings[375] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "_of_", 4 ) ); 
