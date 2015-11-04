@@ -867,7 +867,7 @@ augment RogueC
 
     method write_output
       <<target_specific_code>>
-      if (target == "C++") write_cpp; return
+      if (compile_targets["C++"]) write_cpp; return
 
     method write_cpp
       if (output_filepath is null)

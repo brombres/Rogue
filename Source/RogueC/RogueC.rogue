@@ -25,6 +25,7 @@ class RogueC [singleton]
     prefix_path_list   = String[]
     prefix_path_lookup = Table<<String,Logical>>()
     compile_targets    = Table<<String,Logical>>()
+    target_list        = String[]
     libraries_folder   = ""
 
     source_files    = String[]
@@ -33,7 +34,6 @@ class RogueC [singleton]
     output_filepath : String
 
     supported_targets = String[]
-    target = "C++"
 
     execute_args     : String
 
@@ -78,7 +78,11 @@ class RogueC [singleton]
           System.exit( 1 )
         endIf
 
-        compile_targets["C++"] = true
+        if (target_list.count == 0) target_list.add( "C++" )
+        forEach (target in target_list)
+          compile_targets[target] = true
+        endForEach
+
         Program.configure
 
         forEach (filepath in source_files)
@@ -97,7 +101,7 @@ class RogueC [singleton]
 
     method write_output
       <<target_specific_code>>
-      throw RogueError( ''Compile target "$" is not supported.'' (target) )
+      throw RogueError( ''Compile target "$" is not supported.'' (target_list) )
 
     method include( filepath:String )
       if (not first_filepath) first_filepath = filepath
@@ -230,8 +234,10 @@ class RogueC [singleton]
             generate_main = true
 
           elseIf (arg == "--target")
-            if (not value.count) throw RogueError( ''Target name expected after "--target=" (e.g. "C++").'' )
-            target = value
+            if (not value.count)
+              throw RogueError( ''One or more comma-separated target names expected after "--target=" (e.g. "C++").'' )
+            endIf
+            target_list.add( value.split(',') )
           else
             throw RogueError( "Unknown option '$'." (arg) )
           endIf
