@@ -3396,15 +3396,13 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
 
       which (op)
         case TokenType.symbol_caret_equals
-          if (RogueC.compile_targets["C++"])
-            return CmdWriteLocal( t, local_info, CmdPower(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
-          endIf
+          #if (RogueC.compile_targets["C++"])
+          return CmdWriteLocal( t, local_info, CmdPower(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_percent_equals
           # Mod has be be expanded because Rogue uses a special mod function
-          if (RogueC.compile_targets["C++"])
-            return CmdWriteLocal( t, local_info, CmdMod(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
-          endIf
+          #if (RogueC.compile_targets["C++"])
+          return CmdWriteLocal( t, local_info, CmdMod(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess
@@ -3455,15 +3453,13 @@ class CmdOpAssignGlobal : CmdResolvedOpWithAssign
 
       which (op)
         case TokenType.symbol_caret_equals
-          if (RogueC.compile_targets["C++"])
-            return CmdWriteGlobal( t, global_info, CmdPower(t,CmdReadGlobal(t,global_info),new_value) ).resolve( scope )
-          endIf
+          #if (RogueC.compile_targets["C++"])
+          return CmdWriteGlobal( t, global_info, CmdPower(t,CmdReadGlobal(t,global_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_percent_equals
           # Mod has be be expanded because Rogue uses a special mod function
-          if (RogueC.compile_targets["C++"])
-            return CmdWriteGlobal( t, global_info, CmdMod(t,CmdReadGlobal(t,global_info),new_value) ).resolve( scope )
-          endIf
+          #if (RogueC.compile_targets["C++"])
+          return CmdWriteGlobal( t, global_info, CmdMod(t,CmdReadGlobal(t,global_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess
@@ -3515,15 +3511,13 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
 
       which (op)
         case TokenType.symbol_caret_equals
-          if (RogueC.compile_targets["C++"])
-            return CmdWriteProperty( t, context, property_info, CmdPower(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
-          endIf
+          #if (RogueC.compile_targets["C++"])
+          return CmdWriteProperty( t, context, property_info, CmdPower(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_percent_equals
           # Mod has be be expanded because Rogue uses a special mod function
-          if (RogueC.compile_targets["C++"])
-            return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
-          endIf
+          #if (RogueC.compile_targets["C++"])
+          return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess

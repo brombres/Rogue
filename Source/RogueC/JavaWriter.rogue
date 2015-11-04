@@ -1,0 +1,2479 @@
+#------------------------------------------------------------------------------
+# Program
+#------------------------------------------------------------------------------
+#{
+augment Program
+  METHODS
+    method validate_java_name( name:String )->String
+      local begins_with_code_prefix = false
+      if (name.begins_with(code_prefix))
+        begins_with_code_prefix = true
+        name = name.from( code_prefix.count )
+      endIf
+
+      # Convert "_*type" to "__*type"
+      local all_underscores = true
+      if (name.ends_with("type"))
+        forEach (i in 0..(name.count-5))
+          if (name[i] != '_') all_underscores = false; escapeForEach
+        endForEach
+        name = "_" + name
+      endIf
+
+      # Type? -> OptionalType
+      local i1 = name.locate('?')
+      while (i1?)
+        name = "Optional" + name.leftmost(i1.value) + name.from(i1.value+1)
+        i1 = name.locate('?')
+      endWhile
+
+      # Type<<Specialization>> -> SpecializationType
+      i1 = name.locate("<<")
+      while (i1?)
+        local i2 = name.locate_last(">>")
+        if (not i2?) escapeWhile
+
+        local before = name.from(0,i1.value-1)
+        local after  = name.from(i2.value+2)
+        local middle = name.from(i1.value+2,i2.value-1)
+
+        name = "$$$" (validate_java_name(middle),before,after)
+        # Example:
+        #   Table<<String,Integer>>[] -> StringIntegerTable[]
+
+        if (Program.find_type(name))
+          # Preferred name already exists; revert to "Type_of_Specialization"
+          name = "$_of_$$" (before,middle,after)
+        endIf
+
+        i1 = name.locate("<<")
+      endWhile
+
+      #   StringIntegerTable[] -> StringIntegerTableList
+      i1 = name.locate("[]")
+      while (i1?)
+        name = name.from(0,i1.value-1) + "List" + name.from(i1.value+2)
+        i1 = name.locate("[]")
+      endWhile
+
+      string_buffer.clear
+      if (begins_with_code_prefix) string_buffer.print( Program.code_prefix )
+      forEach (ch in name)
+        if (ch.is_alphanumeric)
+          string_buffer.print( ch )
+        else
+          which (ch)
+            case '!': string_buffer.print( "NOT" )
+            case '%': string_buffer.print( "MOD" )
+            case '&': string_buffer.print( "AND" )
+            case '*': string_buffer.print( "TIMES" )
+            case '+': string_buffer.print( "PLUS" )
+            case '-': string_buffer.print( "MINUS" )
+            case '.': string_buffer.print( "DOT" )
+            case '/': string_buffer.print( "SLASH" )
+            case '<': string_buffer.print( "LESSTHAN" )
+            case '=': string_buffer.print( "EQUALS" )
+            case '>': string_buffer.print( "GREATERTHAN" )
+            case '^': string_buffer.print( "POWER" )
+            case '|': string_buffer.print( "OR" )
+            case '~': string_buffer.print( "XOR" )
+            others:   string_buffer.print( '_' )
+          endWhich
+        endIf
+      endForEach
+
+      return string_buffer->String
+
+    method write_java( filepath:String )
+      forEach (type in type_list)
+        type.assign_java_name
+      endForEach
+      type_NativeArray.java_class_name = "RogueArray"
+
+      forEach (type in type_list)
+        forEach (r in type.routine_list) r.assign_java_name
+        forEach (m in type.method_list)  m.assign_java_name
+      endForEach
+
+      # .java -------------------------------------------------------------
+      println "Writing $.java..." (filepath)
+      local writer = JavaWriter( filepath + ".java" )
+
+      if (RogueC.package_name)
+        #writer.print( "package " ).print( RogueC.package_name ).println( ";\n" )
+      endIf
+
+      # Embed nativeHeader
+      forEach (line in native_header)
+        writer.println( line )
+      endForEach
+
+      writer.println "#include <cmath>"
+      writer.println
+
+      # RogueObject forward declarations
+      forEach (type in type_list)
+        if (not type.omit_output and not type.is_primitive)
+          writer.print( "struct " ).print( type.java_class_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
+      # Compound definitions
+      forEach (type in type_list)
+        if (type.is_compound and not type.omit_output)
+          type.print_data_definition( writer )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
+      # Global externs
+      writer.println "// GLOBALS"
+      forEach (type in type_list)
+        forEach (g in type.global_list)
+          writer.print( "extern " ).print( g.type ).print( " Rogue" )
+          writer.print( type.java_name ).print( "_" ).print( g.java_name ).println( ";" )
+        endForEach
+      endForEach
+      writer.println
+
+      # Class definitions
+      forEach (type in type_list)
+        if (not type.is_compound and not type.omit_output)
+          type.print_data_definition( writer )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
+      # RogueType_X externs.
+      forEach (type in type_list)
+        if (not type.omit_output or (type.is_native and not type.is_array))
+          writer.print( "extern RogueType* RogueType" );
+          writer.print( type.java_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
+      # Routine prototypes
+      forEach (type in type_list) type.print_routine_prototypes( writer )
+      writer.println
+
+      # Method prototypes
+      forEach (type in type_list) type.print_method_prototypes( writer )
+      writer.println
+
+      # Trace routine prototype
+      writer.println( "void Rogue_trace();" )
+      writer.println
+
+      local base_filename = filepath
+      if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
+      writer.println "#include <stdio.h>"
+      writer.println ''#include "$.h"'' (base_filename)
+      writer.println
+
+      # Embed nativeCode
+      forEach (line in native_code)
+        writer.println( line )
+      endForEach
+
+      # typedef each unique method signature
+      local native_method_signature_list   = String[]
+      local native_method_signature_lookup = Table<<String,Method>>()
+      forEach (type in type_list)
+        if (type.is_used)
+          type.determine_java_method_typedefs( native_method_signature_list, native_method_signature_lookup )
+        endIf
+      endForEach
+
+      forEach (sig in native_method_signature_list)
+        writer.print( "typedef " ).print( sig.before_first("(*)") ).print( "(*" )
+        writer.print( native_method_signature_lookup[sig].java_typedef ).print(")")
+        writer.print( sig.after_first("(*)") ).println( ";" )
+      endForEach
+      writer.println
+
+      # write dynamic dipatch methods
+      forEach (sig in native_method_signature_list)
+        local m = native_method_signature_lookup[sig]  # one of the methods using this signature
+        if (m.called_dynamically)
+          writer.print( m.return_type ).print( " call_" ).print( m.java_typedef )
+          writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+          forEach (i of m.parameters)
+            local p = m.parameters[i]
+            writer.print( ", " ).print(p.type).print( " p" ).print( i )
+          endForEach
+          writer.println( " )" )
+          writer.println( "{" )
+          writer.print( "  " )
+          if (m.return_type) writer.print( "return " )
+          writer.print( "((" ).print( m.java_typedef )
+          writer.print( ")(THIS->type->methods[i]))( THIS" )
+          forEach (i of m.parameters)
+            writer.print( ", p" ).print( i )
+          endForEach
+          writer.println( " );" )
+          writer.println( "}" )
+          writer.println
+        endIf
+      endForEach
+      writer.println
+
+      # Global declarations
+      writer.println "// GLOBALS"
+      forEach (type in type_list)
+        forEach (g in type.global_list)
+          writer.print( g.type ).print( " Rogue" )
+          writer.print( type.java_name ).print( "_" ).print( g.java_name )
+          writer.print( " = " ).print_default_value( g.type )
+          writer.println( ";" )
+        endForEach
+      endForEach
+      writer.println
+
+      # Trace Prototypes
+      forEach (type in type_list)
+        if (type.has_object_references and not type.is_reference_array)
+
+          local trace_name = type.java_name
+          if (type.is_array and type.element_type.is_compound)
+            trace_name = Program.validate_java_name( type.name )
+          endIf
+
+          writer.print(   "void Rogue" ).print( trace_name ).println( "_trace( void* obj );" )
+        endIf
+      endForEach
+      writer.println
+
+      # Trace Functions
+      forEach (type in type_list)
+        if (type.has_object_references and not type.is_reference_array)
+
+          local trace_name = type.java_name
+          if (type.is_array and type.element_type.is_compound)
+            trace_name = Program.validate_java_name( type.name )
+          endIf
+
+          writer.print(   "void Rogue" ).print( trace_name ).println( "_trace( void* obj )" )
+          writer.println( "{" )
+          writer.indent += 2
+
+          if (type.is_compound)
+            writer.println( "void* link;" )
+            print_property_trace_code( type, writer )
+
+          elseIf (type.is_array)
+            # We know this is not a reference array and so it must be an array of
+            # compounds containing references.
+            writer.println @|RogueArray* array = (RogueArray*) obj;
+                            |int count;
+
+            writer.print( type.element_type ).println( "* cur;" )
+
+            writer.println @|
+                            |if ( !array || array->object_size < 0 ) return;
+                            |array->object_size = ~array->object_size;
+                            |
+                            |count = array->count;
+
+            writer.print( "cur = ((" ).print( type.element_type.java_class_name ).println( "*)(array->bytes)) - 1;" )
+
+            writer.println( "while (--count >= 0)" )
+            writer.println( "{" )
+            writer.print(   "  Rogue" ).print( type.element_type.java_name ).println( "_trace( ++cur );" )
+            writer.println( "}" )
+
+          else
+            # Standard object with reference properties
+            writer.println @|void* link;
+                            |
+                            |if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
+                            |((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
+                            |
+            print_property_trace_code( type, writer )
+          endIf
+
+          writer.indent -= 2
+          writer.println( "}" )
+          writer.println
+
+        endIf
+      endForEach
+      writer.println
+
+      # Init Object Fn Table
+      writer.println "RogueInitFn Rogue_init_object_fn_table[] ="
+      writer.println "{"
+      writer.indent += 2
+      local first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        local m = type.find_method( "init_object()" )
+        if (m and not type.omit_output and m.is_used and m.statements.count > 1)
+          writer.print "(RogueInitFn) "
+          writer.print m.java_name
+        else
+          writer.print 0
+        endIf
+      endForEach
+      writer.println
+
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # Init Fn Table
+      writer.println "RogueInitFn Rogue_init_fn_table[] ="
+      writer.println "{"
+      writer.indent += 2
+      first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        local m = type.find_method( "init()" )
+        if (m and not type.omit_output and m.is_used and m.statements.count > 1)
+          writer.print "(RogueInitFn) "
+          writer.print m.java_name
+        else
+          writer.print 0
+        endIf
+      endForEach
+      writer.println
+
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # Trace Fn Table
+      writer.println "RogueTraceFn Rogue_trace_fn_table[] ="
+      writer.println "{"
+      writer.indent += 2
+      first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        if (type.has_object_references)
+          if (type.is_reference_array)
+            writer.print "RogueArray_trace"
+          else
+            local trace_name = type.java_name
+            if (type.is_array and type.element_type.is_compound)
+              trace_name = Program.validate_java_name( type.name )
+            endIf
+
+            writer.print(   "Rogue" ).print( trace_name ).print( "_trace" )
+          endIf
+        else
+          writer.print "RogueObject_trace"
+        endIf
+      endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # Trace routine
+      writer.println "void Rogue_trace()"
+      writer.println "{"
+      writer.indent += 2
+
+      writer.println "void* link;"
+      writer.println "int i;"
+      writer.println
+      writer.println "// Trace GLOBALS"
+      forEach (type in type_list)
+        if (type.has_global_references)
+          forEach (g in type.global_list)
+            if (g.type.is_reference or g.type.has_object_references)
+
+              if (g.type.is_reference and not g.type.is_functional and not g.type.is_array)
+                writer.print( "if ((link=Rogue" ).print( type.java_name ).print( "_" ).print( g.java_name )
+                writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
+
+              else
+                local trace_class_name = "Object"
+                if (g.type.is_array)
+                  if (g.type.element_type.is_compound)
+                    trace_class_name = Program.validate_java_name( g.type.name )
+                  elseIf (g.type.element_type.is_reference)
+                    trace_class_name = "Array"
+                  endIf
+
+                else
+                  trace_class_name = Program.validate_java_name(g.type.java_name)
+                endIf
+
+                writer.print( "if ((link=Rogue" ).print( type.java_name ).print( "_" ).print( g.java_name )
+                writer.print( ")) Rogue" ).print( trace_class_name ).println( "_trace( link );" )
+
+              endIf
+            endIf
+          endForEach
+        endIf
+
+      endForEach
+
+      writer.println
+
+      writer.println @|// Trace singletons
+                      |for (i=Rogue_type_count; --i>=0; )
+                      |{
+                      |  RogueType* type = &Rogue_types[i];
+                      |  if (type->_singleton)
+                      |  {
+                      |    type->trace_fn( type->_singleton );
+                      |  }
+                      |}
+
+
+      writer.indent -= 2
+      writer.println "}"
+      writer.println
+
+      #writer.println "*/"
+
+      # dynamic method table
+      writer.println( "void* Rogue_dynamic_method_table[] =" )
+      writer.println( "{" )
+      writer.indent += 2
+      local table_index = 0
+      forEach (type in type_list)
+        if (not type.omit_output)
+          table_index = type.print_dynamic_method_table_entries( table_index, writer )
+        endIf
+      endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # Base class info table
+      local info = Integer[]
+      forEach (type in type_list)
+        type.collect_type_info( info )
+      endForEach
+
+      writer.print(   "int Rogue_type_info_table[" ).print( info.count ).println( "] =" )
+      writer.println "{"
+      writer.indent += 2
+      writer.println "// allocator_index, dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
+
+      first = true
+      local items = 0
+      forEach (n in info)
+        if (first) first = false
+        else       writer.print ','
+
+        ++items
+        if (items == 25) writer.println; items = 0
+
+        writer.print n
+      endForEach
+
+      if (items > 0) writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+
+      # Object size table
+      writer.print(   "int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
+      writer.println "{"
+      writer.indent += 2
+
+      first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        writer.print( "(int) sizeof(" ).print( type.java_class_name ).print( ")" )
+      endForEach
+
+      if (items > 0) writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # Allocators
+      writer.print( "int Rogue_allocator_count = " ).print( 1 ).println( ";" )
+      writer.print( "RogueAllocator Rogue_allocators[" ).print( 1 ).println( "];" )
+      writer.println
+
+      # Types
+      writer.print( "int Rogue_type_count = " ).print( type_list.count ).println( ";" )
+      writer.print( "RogueType Rogue_types[" ).print( type_list.count ).println( "];" )
+      writer.println
+
+      # RogueType_X declarations.
+      forEach (type in type_list)
+        if (not type.omit_output or (type.is_native and not type.is_array))
+          writer.print( "RogueType* RogueType" );
+          writer.print( type.java_name ).println( ";" );
+        endIf
+      endForEach
+      writer.println
+
+      writer.print( "int Rogue_literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
+      writer.print( "RogueString* Rogue_literal_strings[" ).print( Program.literal_string_list.count ).println( "];" );
+      writer.println
+
+      forEach (type in type_list) type.print_routine_definitions( writer )
+      writer.println
+
+      forEach (type in type_list) type.print_method_definitions( writer )
+      writer.println
+
+      # configure() method
+      writer.println( "void Rogue_configure()" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      writer.println "Rogue_configure_types();"
+      writer.println
+
+      # Create types
+      forEach (type in type_list)
+        if (not type.omit_output or (type.is_native and not type.is_array))
+          writer.print("RogueType").print(type.java_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
+          # TODO
+        endIf
+      endForEach
+      writer.println
+
+      forEach (i of Program.literal_string_list)
+        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ")
+        writer.print_string_utf8( Program.literal_string_list[i] )
+        writer.print( ", " ).print( Program.literal_string_list[i].count )
+        writer.println( " ) ); " )
+      endForEach
+      writer.println
+
+      # End of configure()
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+      # launch()
+      writer.println( "void Rogue_launch( int argc, char* argv[] )" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      writer.println @|RogueErrorHandler uncaught_error_handler;
+                      |Rogue_error_handler = &uncaught_error_handler;
+                      |if (ROGUE_SETJMP(Rogue_error_handler->info))
+                      |{
+                      |  printf( "Uncaught error.\n" );
+                      |  return;
+                      |}
+
+      # Call all init_class() methods
+      forEach (type in type_list)
+        if (not type.omit_output)
+          local m = type.find_routine( "init_class()" )
+          if (m and m.type_context is type)
+            writer.print( m.java_name ).println( "();" )
+          endIf
+        endIf
+      endForEach
+      writer.println
+
+      # Copy command line args to System class
+      writer.println( "RogueSystem_executable_filepath = RogueString_create_with_c_string( argv[0], -1 );" );
+      writer.println( "for (int i=1; i<argc; ++i)" )
+      writer.println( "{" )
+      writer.println( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString_create_with_c_string( argv[i], -1 ) );" )
+      writer.println( "}" )
+      writer.println
+
+      # Call Global.on_launch()
+      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );"
+
+      writer.println( "Rogue_collect_garbage();" )
+
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+      # finish_tasks() method
+      #{
+      writer.println( @|void RogueProgram::finish_tasks()
+                       |{
+                       |  while (RogueTaskManager__update(Rogue_program.type_TaskManager->singleton()))
+                       |  {
+                       |    Rogue_program.collect_garbage();
+                       |  }
+                       |}
+                     )
+      }#
+
+      # Optional main()
+      if (RogueC.generate_main)
+        writer.println
+        writer.println( @|int main( int argc, char* argv[] )
+                         |{
+                         |  Rogue_configure();
+                         |  Rogue_launch( argc, argv );
+                         |  Rogue_quit();
+                         |  return 0;
+                         |}
+        )
+      endIf
+
+      writer.close
+
+    method print_property_trace_code( type:Type, writer:JavaWriter )
+      forEach (p in type.property_list)
+        if (p.type.is_reference or p.type.has_object_references)
+
+          if (p.type.is_reference and not p.type.is_functional and not p.type.is_array)
+            writer.print( "if ((link=((" ).print( type.java_class_name ).print( "*)obj)->" ).print( p.java_name )
+            writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
+
+          else
+            local trace_class_name = "Object"
+            if (p.type.is_array)
+              if (p.type.element_type.is_compound)
+                trace_class_name = Program.validate_java_name( p.type.name )
+              elseIf (p.type.element_type.is_reference)
+                trace_class_name = "Array"
+              endIf
+
+            else
+              trace_class_name = Program.validate_java_name(p.type.java_name)
+            endIf
+
+            writer.print( "if ((link=((" ).print( type.java_class_name ).print( "*)obj)->" ).print( p.java_name )
+            writer.print( ")) Rogue" ).print( trace_class_name ).println( "_trace( link );" )
+
+          endIf
+        endIf
+
+      endForEach
+endAugment
+
+
+#------------------------------------------------------------------------------
+# JavaWriter
+#------------------------------------------------------------------------------
+class JavaWriter
+  PROPERTIES
+    filepath : String
+    buffer   = StringBuilder()
+    indent   = 0
+    needs_indent = true
+
+    temp_buffer = StringBuilder()
+
+  METHODS
+    method init( filepath )
+
+    method close
+      File(filepath).save( buffer->String )
+
+    method print_indent
+      if (needs_indent)
+        needs_indent = false
+        forEach (1..indent) buffer.print(' ')
+      endIf
+
+    method print( value:Long )->JavaWriter
+      print_indent
+      buffer.print( value )
+      return this
+
+    method print( value:Integer )->JavaWriter
+      print_indent
+      buffer.print( value )
+      return this
+
+    method print( value:Real )->JavaWriter
+      print_indent
+
+      buffer.print( value )
+
+      return this
+
+    method print( value:String )->JavaWriter
+      local needs_newline = false
+      if (value.contains('\n'))
+        forEach (line in LineReader(value))
+          if (needs_newline) println
+          print_indent
+          buffer.print( line )
+          needs_newline = true
+        endForEach
+      else
+        print_indent
+        buffer.print( value )
+      endIf
+      return this
+
+    method print_code( code:String )->JavaWriter
+      forEach (line in LineReader(code))
+        local original_indent = indent
+        if (line.begins_with('#')) indent = 0
+
+        println( line )
+
+        indent = original_indent
+      endForEach
+      return this
+
+    method println->JavaWriter
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Long )->JavaWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Integer )->JavaWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:Real )->JavaWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method println( value:String )->JavaWriter
+      print( value )
+      buffer.print( '\n' )
+      needs_indent = true
+      return this
+
+    method print( type:Type )->JavaWriter
+      if (type and type.is_optional and type.element_type.is_reference)
+        return print( type.element_type )
+      else
+        print_type_name( type )
+        if (type and type.is_reference) buffer.print("*")
+        return this
+      endIf
+
+    method print_cast( from_type:Type, to_type:Type )->JavaWriter
+      if (from_type is to_type) return this
+      return print( "(" ).print( to_type ).print( ")" )
+      return this
+
+    method print_open_cast( from_type:Type, to_type:Type )->JavaWriter
+      if (from_type is to_type) return this
+      print( "(" )
+      return print_cast( from_type, to_type )
+
+    method print_close_cast( from_type:Type, to_type:Type )->JavaWriter
+      if (from_type is to_type) return this
+      print( ")" )
+      return this
+
+    method print_cast( from_type:Type, to_type:Type, cmd:Cmd )->JavaWriter
+      if (from_type is to_type)
+        cmd.write_java( this )
+      else
+        print( "(" )
+        print_cast( from_type, to_type )
+        cmd.write_java( this )
+        print( ")" )
+      endIf
+      return this
+
+    method print_access_operator( type:Type )->JavaWriter
+      if (type.is_reference) return print( "->" )
+      else                   return print( "." )
+
+    method print_type_name( type:Type )->JavaWriter
+      print_indent
+      if (type) buffer.print( type.java_class_name )
+      else       buffer.print( "void" )
+      return this
+
+    method print_type_info( type:Type )->JavaWriter
+      print_indent
+      buffer.print( "RogueType" ).print( type.java_name )
+      return this
+
+    method print_default_value( type:Type )->JavaWriter
+      if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
+        buffer.print( "0" )
+      else
+        print( type ).print( "()" )
+      endIf
+      return this
+
+    method print( ch:Character, in_string=false:Logical )->JavaWriter
+      if (ch < 0x80)
+        if (ch >= 32 and ch <= 126)
+          which (ch)
+            case '"'
+              if (in_string) print( "\\\"" )
+              else           print( "\"" )
+            case '\''
+              if (in_string) print( "'" )
+              else           print( "\\'" )
+            case '\\'
+              print( "\\\\" )
+            others
+              print( ""+ch )
+          endWhich
+        else
+          which (ch)
+            case 10
+              print "\\n"
+            others
+              print "\\"
+              print( "" + (ch->Integer / 64)->Integer )
+              print( "" + ((ch->Integer & 63) / 8)->Integer )
+              print( "" + (ch & 7) )
+          endWhich
+        endIf
+      endIf
+      return this
+
+    method print_string_utf8( st:String )->JavaWriter
+      if (st is null)
+        print( "0" )
+        return this
+      endIf
+
+      print( "\"" )
+      forEach (ch in st) print( ch, true )
+      print( "\"" )
+
+      return this
+endClass
+
+
+#------------------------------------------------------------------------------
+# RogueC
+#------------------------------------------------------------------------------
+augment RogueC
+  METHODS
+    method launch
+      <<collect_supported_targets>>
+      supported_targets.add( "Java" )
+
+    method write_output
+      <<target_specific_code>>
+      if (compile_targets["Java"]) write_java; return
+
+    method write_java
+      if (output_filepath is null)
+        output_filepath = File.filename(first_filepath)
+        if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
+      else
+        if (File.is_folder(output_filepath))
+          output_filepath += "/"
+          local filename = File.filename( first_filepath )
+          if (filename.to_lowercase.ends_with(".rogue")) output_filepath += filename.leftmost(-6)
+          else                                           output_filepath += "RogueProgram"
+
+        elseIf (output_filepath.to_lowercase.ends_with(".java"))
+          output_filepath = output_filepath.leftmost(-4)
+        endIf
+      endIf
+
+      Program.write_java( output_filepath )
+
+      if (execute_args)
+        local exe = output_filepath.to_lowercase
+        local cmd = "g++ $.java -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
+        println cmd
+        println
+        System.run( cmd )
+      endIf
+
+endAugment
+
+
+#------------------------------------------------------------------------------
+# Type
+#------------------------------------------------------------------------------
+augment Type
+  PROPERTIES
+    java_name       : String
+    java_class_name : String
+    java_type_name  : String
+
+  METHODS
+    method assign_java_name
+      java_name = Program.validate_java_name( name )
+
+      if (is_array or this is Program.type_NativeArray)
+        java_class_name = "RogueArray"
+        java_name = "Array"
+
+      elseIf (this.is_primitive or this.simplify_name)
+        java_class_name = "Rogue" + java_name
+
+      elseIf (is_list)
+        java_class_name = "Rogue" + java_name
+
+      elseIf (is_optional and element_type.is_primitive)
+        java_name = Program.validate_java_name( "Optional" + element_type.name )
+        java_class_name = "Rogue" + java_name
+
+      else
+        java_class_name = "RogueClass" + java_name
+      endIf
+
+      java_type_name = "RogueType" + java_name
+
+      forEach (s in global_list)
+        s.java_name = Program.validate_java_name( s.name )
+      endForEach
+
+      forEach (p in property_list)
+        p.java_name = Program.validate_java_name( p.name )
+      endForEach
+
+    method print_data_definition( writer:JavaWriter )
+      if (omit_output or is_primitive) return
+
+      writer.print( "struct " ).print( java_class_name )
+      local is_error = false
+      if (is_class)
+        if (instance_of(Program.type_Error))
+          is_error = true
+          writer.print( " : " ).print_type_name( base_class )
+        else
+          writer.print( " : RogueObject" )
+        endIf
+      endIf
+      writer.println.println( "{" )
+      writer.indent += 2
+
+      # Globals
+      if (global_list.count)
+        writer.println "// GLOBALS"
+        forEach (s in global_list)
+          writer.print( "static " ).print( s.type ).print(" ").print( s.java_name ).println(";")
+        endForEach
+        writer.println
+      endIf
+
+      writer.println "// PROPERTIES"
+      if (native_properties)
+        forEach (p in native_properties)
+          writer.print_code( p )
+        endForEach
+      endIf
+      forEach (p in property_list)
+        if (not is_error or p.type_context is this)
+          writer.print( p.type ).print(" ").print( p.java_name ).println(";")
+        endIf
+      endForEach
+      writer.println
+
+      if (is_compound)
+        if (property_list.count)
+          # Default Constructor
+          writer.print( this ).print( "() : " )
+          local first = true
+          forEach (p in property_list)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( p.java_name ).print("(").print_default_value(p.type).print(")")
+          endForEach
+          writer.println( " {}" )
+          writer.println
+
+          if (is_optional)
+            # Value Constructor, exists->true
+            writer.print( this ).print( "( " ).print( property_list.first.type )
+            writer.println( " value ) : value(value), exists(true) {}" )
+          else
+            # Standard Constructor
+            writer.print( this ).print( "( " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.type ).print(" ").print( p.java_name )
+            endForEach
+            writer.print( " ) : " )
+            first = true
+            forEach (p in property_list)
+              if (first) first = false
+              else       writer.print( ", " )
+              writer.print( p.java_name ).print("(").print( p.java_name ).print(")")
+            endForEach
+            writer.println( " {}" )
+            writer.println
+          endIf
+        endIf
+
+        # Default operator== and operator!= 
+        writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println( "{" )
+        if (is_optional)
+          writer.indent += 2
+          writer.println @|if (exists)
+                          |{
+                          |  if (other.exists) return value == other.value;
+                          |  else              return false;
+                          |}
+                          |else
+                          |{
+                          |  if (other.exists) return false;
+                          |  else              return true;
+                          |}
+          writer.indent -= 2
+        else
+          forEach (p in property_list)
+            writer.print( "  if (" ).print( p.java_name ).print( " != other." ).print( p.java_name ).println( ") return false;" )
+          endForEach
+          writer.println( "  return true;" )
+        endIf
+        writer.println( "}" )
+        writer.println
+
+        writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
+        writer.println @|{
+                        |  return !(*this == other);
+                        |}
+                        |
+
+        #{
+        # trace() method
+        if (has_object_references and not is_reference_array)
+          writer.println(   "void trace()" )
+          writer.println( "{" )
+          writer.indent += 2
+          forEach (p in property_list)
+            if (p.type.is_reference)
+              writer.print("ROGUE_TRACE( " ).print( p.java_name ).println( " );" )
+            elseIf (p.type.has_object_references)
+              # Compound
+              writer.print( p.java_name ).println( ".trace();" )
+            endIf
+          endForEach
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
+        }#
+
+        # check()
+        if (is_optional)
+          writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
+          writer.println @|{
+                          |  if ( !exists ) return false;
+                          |  *checked = value;
+                          |  return true;
+                          |}
+                          |
+        endIf
+
+      endIf
+
+      writer.indent -= 2
+      writer.println( "};" )
+
+    method collect_type_info( info:Integer[] )
+      info.add( 0 )  # allocator 0
+
+      if (is_primitive)
+        info.add( 0 )
+      else
+        info.add( dynamic_method_table_index )
+      endIf
+
+      info.add( base_types.count )
+      forEach (base_type in base_types) info.add( base_type.index )
+
+    method print_routine_prototypes( writer:JavaWriter )
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method print_routine_definitions( writer:JavaWriter )
+      forEach (m in routine_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
+    method print_method_prototypes( writer:JavaWriter )
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_prototype( writer )
+      endForEach
+
+    method determine_java_method_typedefs( list:String[], lookup:Table<<String,Method>> )
+      local buffer = StringBuilder()
+      forEach (m in method_list)
+        if (not m.is_macro and m.is_dynamic and m.is_used)
+          buffer.clear
+          if (m.return_type)
+            buffer.print( m.return_type.java_class_name )
+            if (m.return_type.is_reference) buffer.print('*')
+          else
+            buffer.print( "void" )
+          endIf
+          buffer.print( "(*)(" )
+          buffer.print( m.type_context.java_class_name ).print("*")
+          forEach (i of m.parameters)
+            buffer.print(',')
+            local param_type = m.parameters[i].type
+            buffer.print( param_type.java_class_name )
+            if (param_type.is_reference) buffer.print('*')
+          endForEach
+          buffer.print( ")" )
+          local sig = buffer->String
+          local mapping = lookup[sig]
+          if (mapping)
+            m.java_typedef = mapping.java_typedef
+            if (not mapping.called_dynamically and m.called_dynamically)
+              #list[ list.locate(mapping)! ] = m
+              lookup[ sig ] = m
+            endIf
+          else
+            m.java_typedef = "ROGUEM" + list.count
+            lookup[sig] = m
+            list.add( sig )
+          endIf
+        endIf
+      endForEach
+
+    method print_dynamic_method_table_entries( at_index:Integer, writer:JavaWriter )->Integer
+      if (not is_reference) return at_index
+
+      dynamic_method_table_index = at_index
+
+      local i2 = method_list.count - 1
+      while (i2 > 0)
+        local m = method_list[ i2 ]
+        if (not m.is_macro and m.is_dynamic and m.is_used) escapeWhile
+        --i2
+      endWhile
+
+      local print_type_name = true
+      forEach (i in 0..i2)
+        local m = method_list[i]
+
+        if (not m.is_macro)
+          if (m.is_dynamic and m.is_used)
+            # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
+            writer.print( "(void*) (" ).print( m.java_typedef ).print(") ").print( m.java_name ).print( "," )
+          else
+            writer.print( "0," ) #.print( " // " ).print(m.type_context.name).print(".").print( m.signature )
+          endIf
+          if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
+          writer.println
+          ++at_index
+        endIf
+      endForEach
+
+      return at_index
+
+    method print_method_definitions( writer:JavaWriter )
+      forEach (m in method_list)
+        if (m.type_context is this) m.print_definition( writer )
+      endForEach
+
+    method print_type_configuration( writer:JavaWriter )
+      if (omit_output) return
+      writer.print( "  type_" ).print( java_name ).print( " = Rogue_types[" ).print( index )
+      writer.print( "].init( " ).print( index ).print( ", \"" ).print( java_class_name ).print( "\", sizeof(Class" )
+      writer.print( java_class_name ).println( ") );" )
+
+endAugment
+
+
+#------------------------------------------------------------------------------
+# Method
+#------------------------------------------------------------------------------
+augment Method
+  PROPERTIES
+    java_name     : String
+    java_typedef  : String
+
+  METHODS
+    method clone->Method
+      <<initialize_result>>
+      result.java_name = java_name
+      result.java_typedef = java_typedef
+
+    method assign_java_name
+      if (java_name) return
+      local buffer = StringBuilder()
+      buffer.print( type_context.name ).print( "__" )
+      buffer.print( name )
+      if (parameters.count)
+        buffer.print "_"
+        forEach (param in parameters)
+          buffer.print "_"
+          buffer.print( param.type.java_name )
+        endForEach
+      endIf
+      java_name = "Rogue" + Program.validate_java_name( buffer->String )
+
+    method incorporate( into_type:Type )->Method
+      <<initialize_m>>
+      m.java_name = null
+
+    method print_prototype( writer:JavaWriter )
+      if (omit_output) return
+      print_signature( writer )
+      writer.println( ";" )
+
+    method print_signature( writer:JavaWriter )
+      writer.print( return_type ).print(" ").print( java_name )
+      writer.print( "(" )
+      local first = true
+      if (not is_routine)
+        first = false
+        writer.print( " " )
+        if (type_context.is_aspect)
+          writer.print( Program.type_Object )
+        else
+          writer.print( type_context )
+        endIf
+        writer.print( " THIS" )
+      endIf
+      if (parameters.count)
+        forEach (param in parameters)
+          if (first) writer.print( " " ); first = false
+          else       writer.print( ", " )
+          writer.print( param.type ).print( " " ).print( param.java_name )
+        endForEach
+      endIf
+      if (not first) writer.print( " " )
+      writer.print( ")" )
+
+    method print_definition( writer:JavaWriter )
+      if (omit_output) return
+
+      print_signature( writer )
+      writer.println
+      writer.println "{"
+      writer.indent += 2
+      if (type_context.is_aspect)
+        writer.println( "switch (THIS->type->index)" );
+        writer.println "{"
+        writer.indent += 2
+        if (incorporating_classes)
+          forEach (ic in incorporating_classes)
+            if (ic.is_used)
+              local m = ic.find_method(signature)
+              if (m.is_used)
+                writer.print("case ").print(ic.index).println(":")
+                if (return_type) writer.print( "  return " )
+                else              writer.print( "  " )
+                writer.print( m.java_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
+                forEach (param in parameters)
+                  writer.print( ", " ).print( param.java_name )
+                endForEach
+                writer.println( " );" )
+              endIf
+            endIf
+          endForEach
+        endIf
+        if (return_type)
+          writer.println( "default:" )
+          writer.print( "  return " ).print_default_value( return_type ).println( ";" )
+        endIf
+        writer.indent -= 2
+        writer.println "}"
+      else
+        statements.write_java( writer )
+      endIf
+
+      writer.indent -= 2
+      writer.println "}"
+      writer.println
+
+endAugment
+
+#------------------------------------------------------------------------------
+# Property
+#------------------------------------------------------------------------------
+augment Property
+  PROPERTIES
+    java_name      : String
+
+  METHODS
+    method clone->Property
+      <<init_result>>
+      result.java_name = java_name
+endAugment
+
+#------------------------------------------------------------------------------
+# Local
+#------------------------------------------------------------------------------
+augment Local
+  PROPERTIES
+    _java_name     : String
+
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Local
+      <<init_result>>
+      result._java_name = _java_name
+
+    method java_name->String
+      if (not _java_name) _java_name = Program.validate_java_name( name + "_" + index );
+      return _java_name
+
+endAugment
+
+#------------------------------------------------------------------------------
+# Cmd
+#------------------------------------------------------------------------------
+augment Cmd
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      throw t.error( "[INTERNAL] $::write_java() is not defined." (type_name) )
+endAugment
+
+augment CmdStatementList
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      forEach (statement in this)
+        statement.write_java( writer, true )
+        if (statement.requires_semicolon) writer.println ";"
+      endForEach
+endAugment
+
+augment CmdArgs
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      local first = true
+      forEach (arg in this)
+        if (first) first = false
+        else       writer.print(",")
+        arg.write_java( writer )
+      endForEach
+endAugment
+
+augment CmdLocalDeclaration
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( local_info.type ).print(" ").print( local_info.java_name ).print(" = ")
+      if (local_info.initial_value)
+        writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
+        local_info.initial_value.write_java( writer )
+        writer.print( ")" )
+      else
+        writer.print_default_value( local_info.type )
+      endIf
+endAugment
+
+
+augment CmdReturn
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (value)
+        writer.print( "return (" ).print( value.type ).print( ")(" )
+        value.write_java( writer )
+        writer.print( ")" )
+      else
+        writer.print "return"
+      endIf
+endAugment
+
+
+augment CmdBlock
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_java( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+      if (escape_label) writer.print( escape_label ).println( ":;" )
+endAugment
+
+
+augment CmdIf
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "if (" )
+      condition.write_java( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_java( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (else_statements)
+        if (else_statements.count == 1 and else_statements.first instanceOf CmdIf)
+          # Write the else/if in the "else if" style.
+          writer.print( "else " )
+          else_statements.write_java( writer )
+        else
+          # General 'else' block.
+          writer.println( "else" )
+          writer.println( "{" )
+          writer.indent += 2
+          else_statements.write_java( writer )
+          writer.indent -= 2
+          writer.println( "}" )
+        endIf
+      endIf
+
+      if (escape_label) writer.print( escape_label ).println( ":;" )
+
+endAugment
+
+
+augment CmdSwitch
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "switch (" )
+      expression.write_java( writer )
+      writer.println( ")" )
+      writer.println( "{" )
+      writer.indent += 2
+
+      forEach (c in cases)
+        forEach (condition in c.conditions)
+          writer.print( "case " )
+          condition.write_java( writer )
+          writer.println( ":" )
+        endForEach
+        writer.println "{"
+        writer.indent += 2
+        c.statements.write_java( writer )
+        writer.println "break;"
+        writer.indent -= 2
+        writer.println "}"
+      endForEach
+
+      if (case_others)
+        writer.println "default:"
+        writer.println "{"
+        writer.indent += 2
+        case_others.statements.write_java( writer )
+        writer.indent -= 2
+        writer.println "}"
+      endIf
+
+      writer.indent -= 2
+      writer.println( "}" )
+endAugment
+
+
+augment CmdContingent
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.println( "{" )
+      writer.indent += 2
+      writer.println( "{" )
+      writer.indent += 2
+
+      statements.write_java( writer )
+
+      if (satisfied_label)   writer.print( satisfied_label ).println( ":;" )
+      if (satisfied_statements) satisfied_statements.write_java( writer )
+      writer.print( "goto " ).print( escape_label ).println( ";" )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (unsatisfied_label)      writer.print( unsatisfied_label ).println( ":;" )
+      if (unsatisfied_statements) unsatisfied_statements.write_java( writer )
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+      writer.print( escape_label ).println( ":;" )
+endAugment
+
+
+augment CmdGenericLoop
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (control_statements)
+        writer.println( "{" )
+        writer.indent += 2
+
+        if (control_statements)
+          forEach (statement in control_statements)
+            statement.write_java( writer )
+            writer.println( ";" )
+          endForEach
+        endIf
+
+      endIf
+
+      if (upkeep or not condition)
+        writer.print( "for (;" )
+        if (condition) condition.write_java( writer )
+        writer.print( ";" )
+        local first = true
+        if (upkeep)
+          forEach (statement in upkeep)
+            if (first) first = false
+            else       writer.print( "," )
+            statement.write_java( writer )
+          endForEach
+        endIf
+        writer.println( ")" )
+      else
+        writer.print( "while (" )
+        condition.write_java( writer )
+        writer.println( ")" )
+      endIf
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_java( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+
+      if (control_statements)
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
+
+      if (escape_label)
+        writer.print( escape_label ).println( ":;" )
+      endIf
+
+endAugment
+
+
+augment CmdTry
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.println "ROGUE_TRY"
+      #writer.println "try"
+      writer.println "{"
+      writer.indent += 2
+      statements.write_java( writer )
+      writer.indent -= 2
+      writer.println "}"
+      forEach (c in catches)
+        c.write_java( writer )
+      endForEach
+
+      if (escape_label)
+        writer.print( escape_label ).println( ":;" )
+      endIf
+endAugment
+
+augment CmdCatch
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      #writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.java_name ).println( " )" )
+      writer.print( "ROGUE_CATCH( " ).print( error_var.java_name ).print( "," ).print( error_var.type ).println( " )" )
+      writer.println( "{" )
+      writer.indent += 2
+      statements.write_java( writer )
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println( "ROGUE_END_TRY" )
+endAugment
+
+augment CmdThrow
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "ROGUE_THROW(" )
+      expression.write_java( writer )
+      writer.print( ")" )
+endAugment
+
+augment CmdEscape
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print "goto " + target_cmd.escape_label
+
+endAugment
+
+
+augment CmdNextIteration
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print "continue"
+
+endAugment
+
+
+augment CmdNecessary
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "if ( !(" )
+      condition.write_java( writer )
+      writer.print( ") ) goto " ).print( target_cmd.unsatisfied_label )
+endAugment
+
+
+augment CmdSufficient
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "if (" )
+      condition.write_java( writer )
+      writer.print( ") goto " ).print( target_cmd.satisfied_label )
+endAugment
+
+augment CmdLiteralNull
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "NULL" )
+endAugment
+
+augment CmdLiteralReal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( value )
+endAugment
+
+
+augment CmdLiteralLong
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( value ).print( "LL" )
+endAugment
+
+augment CmdLiteralInteger
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( value )
+endAugment
+
+
+augment CmdLiteralCharacter
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "(RogueCharacter)" )
+      if (value >= 32 and value <= 126)
+        which (value)
+          case 10:   writer.print( "'\\n'" )
+          case '\\': writer.print( "'\\\\'" )
+          case '\'': writer.print( "'\\''" )
+          others
+            writer.print( "'" )
+            writer.print( value )
+            writer.print( "'" )
+        endWhich
+      else
+        writer.print( value->Integer )
+      endIf
+endAugment
+
+
+augment CmdLiteralLogical
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (value) writer.print "true"
+      else       writer.print "false"
+endAugment
+
+
+augment CmdLiteralString
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (value)
+        writer.print( "Rogue_literal_strings[" ).print( index ).print( "]" )
+      else
+        writer.print( "0" );
+      endIf
+endAugment
+
+augment CmdAccess
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      throw t.error( "[INTERNAL] $::write_java() is not defined (access name $)." (type_name,name) )
+endAugment
+
+augment CmdCreateObject
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
+
+      #writer.print("RogueType_create_object(RogueType").print(type.java_name).print(",0)")
+      writer.print("ROGUE_CREATE_OBJECT(").print(type.java_name).print(")")
+
+      if (not is_statement) writer.print( ")" )
+endAugment
+
+
+augment CmdCreateCompound
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( of_type ).print( "(" )
+      if (args.count)
+        writer.print( " " )
+        local first = true
+        forEach (arg in args)
+          if (first) first = false
+          else       writer.print( ", " )
+          arg.write_java( writer )
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+endAugment
+
+
+augment CmdAssign
+  METHODS
+endAugment
+
+augment CmdThisContext
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print "THIS"
+endAugment
+
+augment CmdReadSingleton
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not of_type.is_singleton)
+        throw t.error( "$ is not a singleton." (of_type.name) )
+      endIf
+      writer.print( "((" ).print( of_type.java_class_name )
+      if (of_type.is_reference) writer.print( "*" )
+      writer.print( ")ROGUE_SINGLETON(" ).print( of_type.java_name ).print( "))" )
+endAugment
+
+augment CmdReadLocal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( local_info.java_name )
+
+endAugment
+
+augment CmdWriteLocal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( local_info.java_name ).print(" = ")
+      writer.print( "((" ).print( local_info.type ).print( ")" )
+      new_value.write_java( writer )
+      writer.print( ")" )
+endAugment
+
+augment CmdReadGlobal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( global_info.type, global_info.type )
+
+      writer.print( "Rogue" ).print( global_info.type_context.java_name ).print( "_" )
+
+      writer.print( global_info.java_name )
+      if (not is_statement) writer.print_close_cast( global_info.type, global_info.type )
+endAugment
+
+
+augment CmdWriteGlobal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "Rogue" ).print( global_info.type_context.java_name ).print( "_" )
+
+      writer.print( global_info.java_name ).print(" = ")
+
+      if (global_info.type is new_value.type)
+        new_value.write_java( writer )
+      else
+        writer.print( "((" ).print( global_info.type ).print( ")" )
+        new_value.write_java( writer )
+        writer.print( ")" )
+      endIf
+endAugment
+
+augment CmdReadProperty
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print_open_cast( property_info.type, property_info.type )
+      context.write_java( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.java_name )
+      if (not is_statement) writer.print_close_cast( property_info.type, property_info.type )
+endAugment
+
+augment CmdWriteProperty
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      context.write_java( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.java_name ).print(" = ")
+
+      if (property_info.type is new_value.type)
+        new_value.write_java( writer )
+      else
+        writer.print( "((" ).print( property_info.type ).print( ")" )
+        new_value.write_java( writer )
+        writer.print( ")" )
+      endIf
+endAugment
+
+augment CmdCallRoutine
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+
+      writer.print( method_info.java_name )
+      writer.print( "(" )
+      if (args.count)
+        writer.print( " " )
+        local i = 0
+        forEach (arg in args)
+          if (i > 0) writer.print( ", " )
+          local param_type = method_info.parameters[i].type
+          if (param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
+            arg.write_java( writer )
+            writer.print( "))" )
+          else
+            arg.write_java( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " " )
+      endIf
+      writer.print( ")" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+augment CmdCallAspectMethod
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.java_name )
+      writer.print( "( " )
+      writer.print( "(" )
+      writer.print( Program.type_Object )
+      writer.print( ")" )
+      context.write_java( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = method_info.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
+          arg.write_java( writer )
+          writer.print( "))" )
+        else
+          arg.write_java( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+
+augment CmdCallDynamicMethod
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      if (method_info.is_overridden)
+        writer.print( "call_" ).print( method_info.java_typedef )
+        writer.print( "( " )
+        writer.print( method_info.index ).print( ", " )
+        writer.print( "(" )
+        writer.print( method_info.type_context )
+        writer.print( ")(" )
+        context.write_java( writer )
+        writer.print( ")" )
+        local i = 0
+        forEach (arg in args)
+          writer.print( ", " )
+          local param_type = method_info.parameters[i].type
+          if (param_type.is_aspect)
+            writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type)
+            arg.write_java( writer )
+            writer.print( ")" )
+          else
+            arg.write_java( writer )
+          endIf
+          ++i
+        endForEach
+        writer.print( " )" )
+
+      else
+        CmdCallStaticMethod( t, context, method_info, args ).write_java( writer, is_statement )
+      endIf
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+
+augment CmdCallStaticMethod
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.java_name )
+      writer.print( "( " )
+      writer.print_cast( context.type, method_info.type_context, context )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = method_info.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type)
+          arg.write_java( writer )
+          writer.print( ")" )
+        else
+          arg.write_java( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+
+augment CmdCallNativeRoutine
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.java_name )
+      writer.print( "( " )
+      local i = 0
+      forEach (arg in args)
+        if (i > 0) writer.print( ", " )
+        local param_type = method_info.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
+          arg.write_java( writer )
+          writer.print( "))" )
+        else
+          arg.write_java( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+augment CmdCallNativeMethod
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      writer.print( method_info.java_name )
+      writer.print( "( " )
+      context.write_java( writer )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        local param_type = method_info.parameters[i].type
+        if (param_type.is_aspect)
+          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
+          arg.write_java( writer )
+          writer.print( "))" )
+        else
+          arg.write_java( writer )
+        endIf
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
+augment CmdCallInlineNative
+  METHODS
+    method print_this( writer:JavaWriter )
+      throw t.error( "Illegal use of '$this' in routine." )
+
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      local st = method_info.native_code
+
+      local dollar = st.locate('$')
+      while (dollar)
+        writer.print( st.from(0,dollar!-1) )
+        st = st.from( dollar!+1 )
+        
+        local best_match : Local
+        forEach (p in method_info.parameters)
+          if (st.begins_with(p.name))
+            if (best_match is null or p.name.count > best_match.name.count) best_match = p
+          endIf
+        endForEach
+
+        if (best_match)
+          args[ best_match.index ].write_java( writer )
+          st = st.from( best_match.name.count )
+        else
+          if (st.begins_with("this"))
+            print_this( writer )
+            st = st.from( 4 )
+          endIf
+        endIf
+
+        dollar = st.locate('$')
+      endWhile
+
+      writer.print( st )
+endAugment
+
+
+augment CmdCallInlineNativeMethod
+  METHODS
+    method print_this( writer:JavaWriter )
+      context.write_java( writer )
+endAugment
+
+
+augment CmdUnary
+  METHODS
+    method java_prefix_symbol->String
+      return prefix_symbol
+
+    method java_suffix_symbol->String
+      return suffix_symbol
+
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( java_prefix_symbol ).print( "(" )
+      operand.write_java( writer )
+      writer.print( ")" ).print( java_suffix_symbol )
+endAugment
+
+augment CmdLogicalize
+  METHODS
+    method java_prefix_symbol->String
+      return "!!"
+
+    method java_suffix_symbol->String
+      return ""
+endAugment
+
+augment CmdLogicalNot
+  METHODS
+    method java_prefix_symbol->String
+      return "!"
+endAugment
+
+
+augment CmdBinary
+  METHODS
+    method java_symbol->String
+      return symbol
+
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (requires_parens) writer.print( "(" )
+      left.write_java( writer )
+      writer.print( " " ).print( java_symbol ).print( " " )
+      right.write_java( writer )
+      if (requires_parens) writer.print( ")" )
+endAugment
+
+#{
+augment CmdMod
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      local cast = "(RogueInteger)"
+      if (this_type is Program.type_Real)     cast = "(RogueReal)"
+      elseIf (this_type is Program.type_Long) cast = "(RogueLong)"
+      writer.print( Program.program_name ).print( ".mod( " ).print( cast )
+      left.write_java( writer )
+      writer.print( ", " ).print( cast )
+      right.write_java( writer )
+      writer.print( " )" )
+endAugment
+}#
+
+
+augment CmdPower
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( left.type ).print( ") pow((double)")
+      left.write_java( writer )
+      writer.print( ", (double)" )
+      right.write_java( writer )
+      writer.print( "))" )
+endAugment
+
+
+augment CmdLogicalAnd
+  METHODS
+    method java_symbol->String
+      return "&&"
+endAugment
+
+
+augment CmdLogicalOr
+  METHODS
+    method java_symbol->String
+      return "||"
+endAugment
+
+
+augment CmdLogicalXor
+  METHODS
+    method java_symbol->String
+      return "^"
+endAugment
+
+augment CmdCompareIs
+  METHODS
+    method java_symbol->String
+      return "=="
+endAugment
+
+augment CmdCompareIsNot
+  METHODS
+    method java_symbol->String
+      return "!="
+endAugment
+
+augment CmdBitwiseXor
+  METHODS
+    method java_symbol->String
+      return "^"
+endAugment
+
+augment CmdBitwiseShiftLeft
+  METHODS
+    method java_symbol->String
+      return "<<"
+endAugment
+
+#{
+augment CmdBitwiseShiftRight
+  PROPERTIES
+
+  METHODS
+    method java_symbol->String
+      return ">>>"
+
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "Rogue_program.shift_right( " )
+      left.write_java( writer )
+      writer.print( ", " )
+      right.write_java( writer )
+      writer.print( " )" )
+endAugment
+}#
+
+augment CmdBitwiseShiftRightX
+  METHODS
+    method java_symbol->String
+      return ">>"
+endAugment
+
+
+augment CmdBitwiseNot
+  METHODS
+    method java_prefix_symbol->String
+      return "~"
+endAugment
+
+augment CmdAdjustLocal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      writer.print( local_info.java_name )
+endAugment
+
+
+augment CmdAdjustProperty
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+      context.write_java( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.java_name )
+endAugment
+
+
+augment CmdResolvedOpWithAssign
+  METHODS
+    method java_symbol->String
+      return symbol
+endAugment
+
+augment CmdLocalOpWithAssign
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( local_info.java_name ).print( " " ).print( java_symbol ).print( " " )
+      new_value.write_java( writer )
+endAugment
+
+
+augment CmdOpAssignGlobal
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      #writer.print_type_name( global_info.type_context ).print( "::" )
+      writer.print( "Rogue" ).print( global_info.type_context.java_name ).print( "_" )
+
+      writer.print( global_info.java_name ).print(" ").print(java_symbol).print(" ")
+      new_value.write_java( writer )
+endAugment
+
+augment CmdOpAssignProperty
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      context.write_java( writer )
+      writer.print_access_operator( context.type )  # -> or .
+      writer.print( property_info.java_name ).print(" ").print(java_symbol).print(" ")
+      new_value.write_java( writer )
+endAugment
+
+augment CmdCreateArray
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "RogueType_create_array( " )
+      count_cmd.write_java( writer )
+      writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
+      if (array_type.element_type.is_reference) writer.print( ", true" )
+      writer.print( " )" )
+endAugment
+
+augment CmdReadArrayElement
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      local element_type = array_type.element_type
+      if (not is_statement) writer.print_open_cast( element_type, element_type )
+      if (element_type.is_reference)
+        writer.print( "((" )
+        writer.print( element_type )
+        writer.print( ")(" )
+        context.write_java( writer )
+        writer.print( "->objects[" )
+        index.write_java( writer )
+        writer.print( "]))" )
+
+      elseIf (element_type.is_primitive)
+        context.write_java( writer )
+        writer.print( "->" )
+        which (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+          others
+            throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
+        endWhich
+        index.write_java( writer )
+        writer.print( "]" )
+
+      else
+        # Compound
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_java( writer )
+        writer.print( "->bytes))[" )
+        index.write_java( writer )
+        writer.print( "]" )
+
+      endIf
+      if (not is_statement) writer.print_close_cast( element_type, element_type )
+endAugment
+
+augment CmdReadArrayCount
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      context.write_java( writer )
+      writer.print( "->count" )
+endAugment
+
+augment CmdWriteArrayElement
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      local element_type = array_type.element_type
+      if (element_type.is_primitive)
+        context.write_java( writer )
+        writer.print( "->" )
+        which (element_type)
+          case Program.type_Real:      writer.print( "reals[" )
+          case Program.type_Float:     writer.print( "floats[" )
+          case Program.type_Long:      writer.print( "longs[" )
+          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Character: writer.print( "characters[" )
+          case Program.type_Byte:      writer.print( "bytes[" )
+          case Program.type_Logical:   writer.print( "logical[" )
+        endWhich
+        index.write_java( writer )
+        writer.print( "] = " )
+        new_value.write_java( writer )
+
+      elseIf (element_type.is_reference)
+        context.write_java( writer )
+        writer.print( "->" )
+        writer.print( "objects[" )
+        index.write_java( writer )
+        writer.print( "] = " )
+        new_value.write_java( writer )
+
+      else
+        writer.print( "((" ).print( element_type ).print( "*)(" )
+        context.write_java( writer )
+        writer.print( "->bytes))[" )
+        index.write_java( writer )
+        writer.print( "] = " )
+        new_value.write_java( writer )
+
+      endIf
+endAugment
+
+augment CmdCastToType
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type ).print( ")(" )
+      operand.write_java( writer )
+      writer.print( "))" )
+endAugment
+
+augment CmdConvertToPrimitiveType
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type.java_class_name ).print( ")(" )
+      operand.write_java( writer )
+      writer.print( "))" )
+endAugment
+
+augment CmdAs
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( target_type ).print( ")(RogueObject_as(" )
+      operand.write_java( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")))" )
+endAugment
+
+augment CmdInstanceOf
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.print( "RogueObject_instance_of(" )
+      operand.write_java( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")" )
+endAugment
+
+
+augment CmdTaskControl
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      writer.println( "switch (++THIS->ip)" )
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (section in sections)
+        writer.print( "case " ).print( section.ip ).println( ":" )
+        section.statements.write_java( writer )
+      endForEach
+      writer.println( "default:" )
+      writer.println( "  THIS->ip = -1;" )
+      writer.println( "  return false;" )
+      writer.indent -= 2
+      writer.println( "}" )
+endAugment
+
+
+augment CmdCreateOptionalValue
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (of_type.element_type.is_reference)
+        # Reference types don't need an intermediate type to signify null
+        if (value)
+          value.write_java( writer )
+        else
+          writer.print "NULL"
+        endIf
+      else
+        # Non-reference types are kept in Optional<<DataType>> wrappers
+        writer.print( of_type )
+        if (value)
+          writer.print( "( " )
+          value.write_java( writer )
+          writer.print( " )" )
+        else
+          writer.print( "()" )
+        endIf
+      endIf
+
+endAugment
+
+
+augment CmdLogicalizeOptionalValue
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      if (value.type.element_type.is_reference)
+        writer.print( "!!" )
+        value.write_java( writer )
+      else
+        value.write_java( writer )
+        writer.print( ".exists" )
+      endIf
+endAugment
+
+augment CmdGetOptionalValue
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      value.write_java( writer )
+      if (not value.type.element_type.is_reference)
+        writer.print( ".value" )
+      endIf
+endAugment
+
+
+augment CmdLabel
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      statements.write_java( writer, is_statement )
+endAugment
+
+augment CmdNativeCode
+  METHODS
+    method write_java( writer:JavaWriter, is_statement=false:Logical )
+      local needs_newline = code.contains('\n') or not result_type
+
+      forEach (line in LineReader(code))
+        local original_indent = writer.indent
+        if (line.begins_with('#')) writer.indent = 0
+
+        # Replace $this and other local names ($x, $count, etc) with native
+        # variable reads.
+        local marker = line.locate( '$' )
+        while (marker)
+          local i1 = marker.value
+          if (i1 > 0) writer.print line.leftmost( i1 )
+          local i2 = i1+2
+          while (i2 < line.count and line[i2].is_identifier) ++i2
+
+          local name = line.from( i1+1, i2-1 )
+          line = line.from( i2 )
+
+          if (name == "$")
+            writer.print "$"
+          elseIf (name == "this")
+            writer.print "THIS"
+          else
+            local found = false
+            forEach (v in this_method.locals)
+              if (v.name == name)
+                found = true
+                writer.print( v.java_name )
+                escapeForEach
+              endIf
+            endForEach
+            if (not found)
+              local p = this_method.type_context.property_lookup[ name ]
+              if (p)
+                found = true
+                writer.print( "THIS->" ).print( p.java_name )
+              endIf
+            endIf
+            if (not found)
+              writer.print( '$' ).print( name )
+            endIf
+          endIf
+
+          marker = line.locate( '$' )
+        endWhile
+
+        if (needs_newline)
+          if (line.count) writer.println line
+          else            writer.println
+        elseIf (line.count)
+          writer.print line
+        endIf
+
+        writer.indent = original_indent
+      endForEach
+endAugment
+
+}#

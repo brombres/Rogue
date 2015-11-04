@@ -2,6 +2,7 @@ $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CloneArgs.rogue"
 $include "Cmd.rogue"
+$include "JavaWriter.rogue"
 $include "Local.rogue"
 $include "Method.rogue"
 $include "Parser.rogue"
@@ -37,6 +38,8 @@ class RogueC [singleton]
 
     execute_args     : String
 
+    package_name     : String
+
   METHODS
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
@@ -61,15 +64,17 @@ class RogueC [singleton]
                    |
                    |OPTIONS
                    |  --main
-                   |    Include a main() function in the .cpp output file.
+                   |    Include a main() function in the output file.
                    |
                    |  --execute[="args"]
-                   |    Use g++ to compile and run the .cpp output of the compiled .rogue program.
-                   |    Automatically enables the --main option.
+                   |    Use command line directives to compile and run the output of the
+                   |    compiled .rogue program.  Automatically enables the --main option.
                    |
                    |  --output=destpath/[file]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
+                   |
+                   |  --package=com.developer.app [Java only]
                    |
                    |  --target=
 
@@ -221,26 +226,35 @@ class RogueC [singleton]
         arg = arg.before_first('=')
         if (arg.begins_with("--"))
           # Option
-          if (arg == "--output")
-            if (value.count == 0) throw RogueError( ''Output filepath expected after "--output="'' )
-            output_filepath = value
+          which (arg)
+            case "--output"
+              if (value.count == 0) throw RogueError( ''Output filepath expected after "--output="'' )
+              output_filepath = value
 
-          elseIf (arg == "--execute")
-            generate_main = true
-            execute_args = value
+            case "--execute"
+              generate_main = true
+              execute_args = value
 
-          elseIf (arg == "--main")
-            if (value.count) throw RogueError( "Unexpected value for '--main' option." )
-            generate_main = true
+            case "--main"
+              if (value.count) throw RogueError( "Unexpected value for '--main' option." )
+              generate_main = true
 
-          elseIf (arg == "--target")
-            if (not value.count)
-              throw RogueError( ''One or more comma-separated target names expected after "--target=" (e.g. "C++").'' )
-            endIf
-            target_list.add( value.split(',') )
-          else
-            throw RogueError( "Unknown option '$'." (arg) )
-          endIf
+            case "--package"
+              if (not value.count)
+                throw RogueError( ''Java package name expected after "--package=" (e.g. "com.developer.app").'' )
+              endIf
+              package_name = value
+
+            case "--target"
+              if (not value.count)
+                throw RogueError( ''One or more comma-separated target names expected after "--target=" (e.g. "C++").'' )
+              endIf
+              target_list.add( value.split(',') )
+
+            others
+              throw RogueError( "Unknown option '$'." (arg) )
+
+          endWhich
         else
           # Input Filename
           source_files.add( arg )

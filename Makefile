@@ -64,6 +64,10 @@ libraries:
 test:
 	roguec Test.rogue --execute
 
+jtest:
+	mkdir -p JavaTest
+	roguec Test.rogue --target=Java --output=JavaTest
+
 x2:
 	make remake
 	sleep 1

@@ -850,6 +850,7 @@ struct RogueClassRogueC : RogueObject
   RogueString* output_filepath;
   RogueStringList* supported_targets;
   RogueString* execute_args;
+  RogueString* package_name;
 
 };
 
