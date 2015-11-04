@@ -3995,7 +3995,7 @@ RogueLocalList* RogueLocalList__reserve__Integer( RogueLocalList* THIS, RogueInt
 RogueClassLocal* RogueLocalList__remove_at__Integer( RogueLocalList* THIS, RogueInteger index_0 );
 RogueClassLocal* RogueLocalList__remove_last( RogueLocalList* THIS );
 RogueString* RogueLocal__type_name( RogueClassLocal* THIS );
-RogueClassLocal* RogueLocal__init__Token_String( RogueClassLocal* THIS, RogueClassToken* _auto_159_0, RogueString* _auto_160_1 );
+RogueClassLocal* RogueLocal__init__Token_String( RogueClassLocal* THIS, RogueClassToken* _auto_161_0, RogueString* _auto_162_1 );
 RogueClassLocal* RogueLocal__clone__CloneArgs( RogueClassLocal* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueString* RogueLocal__cpp_name( RogueClassLocal* THIS );
 RogueClassLocal* RogueLocal__init_object( RogueClassLocal* THIS );

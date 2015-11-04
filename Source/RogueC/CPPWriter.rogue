@@ -151,7 +151,11 @@ augment Program
       endForEach
       writer.println
 
-      # method prototypes
+      # Routine prototypes
+      forEach (type in type_list) type.print_routine_prototypes( writer )
+      writer.println
+
+      # Method prototypes
       forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
@@ -518,9 +522,6 @@ augment Program
 
       writer.print( "int Rogue_literal_string_count = " ).print( Program.literal_string_list.count ).println( ";" )
       writer.print( "RogueString* Rogue_literal_strings[" ).print( Program.literal_string_list.count ).println( "];" );
-
-
-      forEach (type in type_list) type.print_routine_prototypes( writer )
       writer.println
 
       forEach (type in type_list) type.print_routine_definitions( writer )
