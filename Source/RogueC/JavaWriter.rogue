@@ -1,7 +1,6 @@
 #------------------------------------------------------------------------------
 # Program
 #------------------------------------------------------------------------------
-#{
 augment Program
   METHODS
     method validate_java_name( name:String )->String
@@ -100,7 +99,7 @@ augment Program
       local writer = JavaWriter( filepath + ".java" )
 
       if (RogueC.package_name)
-        #writer.print( "package " ).print( RogueC.package_name ).println( ";\n" )
+        writer.print( "package " ).print( RogueC.package_name ).println( ";\n" )
       endIf
 
       # Embed nativeHeader
@@ -1079,18 +1078,6 @@ augment Type
 
       writer.indent -= 2
       writer.println( "};" )
-
-    method collect_type_info( info:Integer[] )
-      info.add( 0 )  # allocator 0
-
-      if (is_primitive)
-        info.add( 0 )
-      else
-        info.add( dynamic_method_table_index )
-      endIf
-
-      info.add( base_types.count )
-      forEach (base_type in base_types) info.add( base_type.index )
 
     method print_routine_prototypes( writer:JavaWriter )
       forEach (m in routine_list)
@@ -2476,4 +2463,3 @@ augment CmdNativeCode
       endForEach
 endAugment
 
-}#
