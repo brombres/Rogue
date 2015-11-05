@@ -20,11 +20,11 @@ class Console [singleton]
       native_print( value )
 
     $if ("C++")
-    method native_print( value:String )
-      macro native 'RogueString_print_string( $value )'
+    method native_print( value:String ) [macro]
+      native 'RogueString_print_string( $value )'
 
-    method native_print( value:StringBuilder )
-      macro native 'RogueString_print_characters( $value->characters->data->characters, $value->characters->count )'
+    method native_print( value:StringBuilder ) [macro]
+      native 'RogueString_print_characters( $value->characters->data->characters, $value->characters->count )'
     $endIf
 endClass
 

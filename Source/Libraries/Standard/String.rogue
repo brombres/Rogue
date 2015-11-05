@@ -1,7 +1,7 @@
 class String [native functional]
   ROUTINES
-    routine create( characters:Character[] )->String
-      $if ("C++") macro native 'RogueString_create_with_characters( $characters )'
+    routine create( characters:Character[] )->String [macro]
+      $if ("C++") native 'RogueString_create_with_characters( $characters )'
 
     routine create( characters:StringBuilder )->String
       return create( characters.characters )
@@ -93,8 +93,8 @@ class String [native functional]
       $endIf
 
 
-    method count->Integer
-      $if ("C++") macro native '$this->count'
+    method count->Integer [macro]
+      $if ("C++") native '$this->count'
 
     method ends_with( other:String )->Logical
       local other_count = other.count
@@ -151,11 +151,11 @@ class String [native functional]
       if (i.exists) return from( i.value )
       else          return ""
 
-    method get( index:Integer )->Character
-      $if ("C++") macro native '$this->characters[$index]'
+    method get( index:Integer )->Character [macro]
+      $if ("C++") native '$this->characters[$index]'
 
-    method hash_code->Integer
-      $if ("C++") macro native '$this->hash_code'
+    method hash_code->Integer [macro]
+      $if ("C++") native '$this->hash_code'
 
     method indented( spaces:Integer )->String
       local lines = split( '\n' )
@@ -265,8 +265,8 @@ class String [native functional]
 
       return null
 
-    method operator+( value:Byte )->String
-      macro this + value->Integer
+    method operator+( value:Byte )->String [macro]
+      this + value->Integer
 
     method operator+( value:Character )->String
       return StringBuilder().print( this ).print( value )->String

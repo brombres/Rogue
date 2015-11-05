@@ -1,47 +1,47 @@
 class Math
   ROUTINES
     $if ("C++")
-    routine acos( n:Real )->Real
-      macro native 'acos((double)$n)'
+    routine acos( n:Real )->Real [macro]
+      native 'acos((double)$n)'
 
-    routine asin( n:Real )->Real
-      macro native 'asin((double)$n)'
+    routine asin( n:Real )->Real [macro]
+      native 'asin((double)$n)'
 
-    routine atan( n:Real )->Real
-      macro native 'atan((double)$n)'
+    routine atan( n:Real )->Real [macro]
+      native 'atan((double)$n)'
 
-    routine atan2( y:Real, x:Real )->Real
-      macro native 'atan2((double)$y,(double)$x)'
+    routine atan2( y:Real, x:Real )->Real [macro]
+      native 'atan2((double)$y,(double)$x)'
 
-    routine ceil( n:Real )->Real
-      macro native 'ceil((double)$n)'
+    routine ceil( n:Real )->Real [macro]
+      native 'ceil((double)$n)'
 
-    routine cos( n:Real )->Real
-      macro native 'cos((double)$n)'
+    routine cos( n:Real )->Real [macro]
+      native 'cos((double)$n)'
 
-    routine exp( n:Real )->Real
-      macro native 'exp((double)$n)'
+    routine exp( n:Real )->Real [macro]
+      native 'exp((double)$n)'
 
-    routine floor( n:Real )->Real
-      macro native 'floor((double)$n)'
+    routine floor( n:Real )->Real [macro]
+      native 'floor((double)$n)'
 
-    routine log( n:Real )->Real
-      macro native 'log((double)$n)'
+    routine log( n:Real )->Real [macro]
+      native 'log((double)$n)'
 
-    routine log2( n:Real )->Real
-      macro native 'log2((double)$n)'
+    routine log2( n:Real )->Real [macro]
+      native 'log2((double)$n)'
 
-    routine log10( n:Real )->Real
-      macro native 'log10((double)$n)'
+    routine log10( n:Real )->Real [macro]
+      native 'log10((double)$n)'
 
-    routine sin( n:Real )->Real
-      macro native 'sin((double)$n)'
+    routine sin( n:Real )->Real [macro]
+      native 'sin((double)$n)'
 
-    routine sqrt( n:Real )->Real
-      macro native 'sqrt((double)$n)'
+    routine sqrt( n:Real )->Real [macro]
+      native 'sqrt((double)$n)'
 
-    routine tan( n:Real )->Real
-      macro native 'tan((double)$n)'
+    routine tan( n:Real )->Real [macro]
+      native 'tan((double)$n)'
 
     $endIf
 
@@ -86,14 +86,14 @@ class Degrees( value:Real ) [compound]
       return Degrees( (degrees.value / pi) * 180.0 )
 
   METHODS
-    method cos->Real
-      macro Math.cos( (this.value / 180.0) * pi )
+    method cos->Real [macro]
+      Math.cos( (this.value / 180.0) * pi )
 
-    method sin->Real
-      macro Math.sin( (this.value / 180.0) * pi )
+    method sin->Real [macro]
+      Math.sin( (this.value / 180.0) * pi )
 
-    method tan->Real
-      macro Math.sin( (this.value / 180.0) * pi )
+    method tan->Real [macro]
+      Math.sin( (this.value / 180.0) * pi )
 
     method to->String
       return "" + value
@@ -105,14 +105,14 @@ class Radians( value:Real ) [compound]
       return Radians( (degrees.value / 180.0) * pi )
 
   METHODS
-    method cos->Real
-      macro Math.cos( this.value )
+    method cos->Real [macro]
+      Math.cos( this.value )
 
-    method sin->Real
-      macro Math.sin( this.value )
+    method sin->Real [macro]
+      Math.sin( this.value )
 
-    method tan->Real
-      macro Math.tan( this.value )
+    method tan->Real [macro]
+      Math.tan( this.value )
 
     method to->String
       return "" + value

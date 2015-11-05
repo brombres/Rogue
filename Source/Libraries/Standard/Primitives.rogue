@@ -46,8 +46,8 @@ class Integer [primitive]
     method hash_code->Integer
       return this
 
-    method to->Long
-      $if ("C++") macro native "((RogueLong)$this)"
+    method to->Long [macro]
+      $if ("C++") native "((RogueLong)$this)"
 
     method to->Object
       return Boxed<<Integer>>(this)

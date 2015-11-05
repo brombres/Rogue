@@ -16,20 +16,20 @@ class PropertyValue
       return StringProperty( value )
 
   METHODS
-    method add( value:Character )->PropertyValue
-      macro this.add( PropertyValue(value) )
+    method add( value:Character )->PropertyValue [macro]
+      this.add( PropertyValue(value) )
 
-    method add( value:Integer )->PropertyValue
-      macro this.add( PropertyValue(value) )
+    method add( value:Integer )->PropertyValue [macro]
+      this.add( PropertyValue(value) )
 
-    method add( value:Logical )->PropertyValue
-      macro this.add( PropertyValue(value) )
+    method add( value:Logical )->PropertyValue [macro]
+      this.add( PropertyValue(value) )
 
-    method add( value:Real )->PropertyValue
-      macro this.add( PropertyValue(value) )
+    method add( value:Real )->PropertyValue [macro]
+      this.add( PropertyValue(value) )
 
-    method add( value:String )->PropertyValue
-      macro this.add( PropertyValue(value) )
+    method add( value:String )->PropertyValue [macro]
+      this.add( PropertyValue(value) )
 
     method add( value:PropertyValue )->PropertyValue
       return this
@@ -61,20 +61,20 @@ class PropertyValue
     method remove_last->PropertyValue
       return NullProperty()
 
-    method set( index:Integer, value:Character )
-      macro this.set( index, PropertyValue(value) )
+    method set( index:Integer, value:Character ) [macro]
+      this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Integer )
-      macro this.set( index, PropertyValue(value) )
+    method set( index:Integer, value:Integer ) [macro]
+      this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Logical )
-      macro this.set( index, PropertyValue(value) )
+    method set( index:Integer, value:Logical ) [macro]
+      this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Real )
-      macro this.set( index, PropertyValue(value) )
+    method set( index:Integer, value:Real ) [macro]
+      this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:String )
-      macro this.set( index, PropertyValue(value) )
+    method set( index:Integer, value:String ) [macro]
+      this.set( index, PropertyValue(value) )
 
 
     method set( index:Integer, value:PropertyValue )

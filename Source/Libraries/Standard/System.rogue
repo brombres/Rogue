@@ -9,8 +9,8 @@ class System [requisite]
         native "exit( $result_code );"
       $endIf
 
-    routine run( command:String )
-      macro native
+    routine run( command:String ) [macro]
+      native
         @|{
          |  char cmd_buffer[4096];
          |  RogueString_to_c_string( $command, cmd_buffer, 4096 );

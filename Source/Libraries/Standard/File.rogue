@@ -183,38 +183,38 @@ class File
   METHODS
     method init( filepath )
 
-    method absolute_filepath->String
-      macro File.absolute_filepath( this.filepath )
+    method absolute_filepath->String [macro]
+      File.absolute_filepath( this.filepath )
 
-    method exists->Logical
-      macro File.exists( this.filepath )
+    method exists->Logical [macro]
+      File.exists( this.filepath )
 
     method filename->String
       return filename( filepath )
 
-    method is_folder->Logical
-      macro File.is_folder( this.filepath )
+    method is_folder->Logical [macro]
+      File.is_folder( this.filepath )
 
-    method load_as_bytes->Byte[]
-      macro File.load_as_bytes( this.filepath )
+    method load_as_bytes->Byte[] [macro]
+      File.load_as_bytes( this.filepath )
 
-    method load_as_string->String
-      macro File.load_as_string( this.filepath )
+    method load_as_string->String [macro]
+      File.load_as_string( this.filepath )
 
-    method path->String
-      macro File.path( this.filepath )
+    method path->String [macro]
+      File.path( this.filepath )
 
-    method reader->FileReader
-      macro File.reader( this.filepath )
+    method reader->FileReader [macro]
+      File.reader( this.filepath )
 
-    method save( data:String )->Logical
-      macro File.save( this.filepath, data )
+    method save( data:String )->Logical [macro]
+      File.save( this.filepath, data )
 
-    method size->Integer
-      macro File.size( this.filepath )
+    method size->Integer [macro]
+      File.size( this.filepath )
 
-    method writer->FileWriter
-      macro File.writer( this.filepath )
+    method writer->FileWriter [macro]
+      File.writer( this.filepath )
 
     method to->String
       return filepath
@@ -243,8 +243,8 @@ class FileReader : Reader<<Character>>
       count = 0
       return this
 
-    method fp->Integer
-      macro native "$this->fp"
+    method fp->Integer [macro]
+      native "$this->fp"
 
     method has_another->Logical
       return (position < count)
@@ -331,8 +331,8 @@ class FileWriter
       buffer.clear
       return this
 
-    method fp->Integer
-      macro native( "$this->fp" )
+    method fp->Integer [macro]
+      native( "$this->fp" )
 
     method open( filepath )->Logical
       close

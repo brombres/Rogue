@@ -413,7 +413,7 @@ class Method
 
       statements.trace_used_code
 
-    method address->Long
-      macro native "(RogueLong)(intptr_t)$this"
+    method address->Long [macro]
+      native "(RogueLong)(intptr_t)$this"
 endClass
 

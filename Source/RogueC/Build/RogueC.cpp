@@ -21299,10 +21299,6 @@ RogueLogical RogueParser__parse_method__Logical( RogueClassParser* THIS, RogueLo
     RogueAttributes__add__Integer( THIS->this_method->attributes, 262144 );
   }
   RogueParser__consume_eols( THIS );
-  if (((RogueParser__consume__TokenType( THIS, RogueTokenType_keyword_macro ))))
-  {
-    RogueAttributes__add__Integer( THIS->this_method->attributes, 64 );
-  }
   if (((RogueMethod__is_macro( THIS->this_method ))))
   {
     if (((RogueParser__consume__TokenType( THIS, RogueTokenType_keyword_native ))))
@@ -37734,7 +37730,7 @@ void Rogue_configure()
   Rogue_literal_strings[252] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[253] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[254] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[255] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Parser::parse_for_each():1396 ", 30 ) ); 
+  Rogue_literal_strings[255] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Parser::parse_for_each():1394 ", 30 ) ); 
   Rogue_literal_strings[256] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[257] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "()", 2 ) ); 
   Rogue_literal_strings[258] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( " ", 1 ) ); 

@@ -25,19 +25,19 @@ class StringBuilder [requisite]
       indent += spaces
       return this
 
-    method capacity->Integer
-      macro this.characters.capacity
+    method capacity->Integer [macro]
+      this.characters.capacity
 
     method clear->this [requisite]
       characters.clear
       at_newline = true
       return this
 
-    method count->Integer
-      macro this.characters.count
+    method count->Integer [macro]
+      this.characters.count
 
-    method get( index:Integer )->Character
-      macro this.characters[ index ]
+    method get( index:Integer )->Character [macro]
+      this.characters[ index ]
 
     method insert( ch:Character )->this
       characters.insert( ch )
@@ -55,8 +55,8 @@ class StringBuilder [requisite]
       characters.add( value )
       return this
 
-    method print( value:Float )->this
-      macro this.print( value->Real )
+    method print( value:Float )->this [macro]
+      this.print( value->Real )
 
     method print( value:Integer )->this
       return print( value->Long )
@@ -199,8 +199,8 @@ class StringBuilder [requisite]
     method println( value:Character )->this
       return print( value ).print( '\n' )
 
-    method println( value:Float )->this
-      macro this.println( value->Real )
+    method println( value:Float )->this [macro]
+      this.println( value->Real )
 
     method println( value:Integer )->this
       return print( value ).print( '\n' )
