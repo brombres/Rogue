@@ -1,6 +1,7 @@
 *.swp
 .DS_Store
 Source/Compiler/Bard/RogueC.bc
+JavaTest
 Programs/Bard/Programs/Mac
 Programs/Bard/Programs/Windows
 /Test.rogue

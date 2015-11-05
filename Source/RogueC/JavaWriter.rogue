@@ -4,12 +4,6 @@
 augment Program
   METHODS
     method validate_java_name( name:String )->String
-      local begins_with_code_prefix = false
-      if (name.begins_with(code_prefix))
-        begins_with_code_prefix = true
-        name = name.from( code_prefix.count )
-      endIf
-
       # Convert "_*type" to "__*type"
       local all_underscores = true
       if (name.ends_with("type"))
@@ -56,7 +50,6 @@ augment Program
       endWhile
 
       string_buffer.clear
-      if (begins_with_code_prefix) string_buffer.print( Program.code_prefix )
       forEach (ch in name)
         if (ch.is_alphanumeric)
           string_buffer.print( ch )
@@ -113,46 +106,19 @@ augment Program
         writer.println( line )
       endForEach
 
-      #{
-      writer.println "#include <cmath>"
-      writer.println
-
-      # RogueObject forward declarations
-      forEach (type in type_list)
-        if (not type.omit_output and not type.is_primitive)
-          writer.print( "struct " ).print( type.java_class_name ).println( ";" );
-        endIf
-      endForEach
-      writer.println
-
-      # Compound definitions
-      forEach (type in type_list)
-        if (type.is_compound and not type.omit_output)
-          type.print_data_definition( writer )
-          writer.println
-        endIf
-      endForEach
-      writer.println
-
-      # Global externs
-      writer.println "// GLOBALS"
-      forEach (type in type_list)
-        forEach (g in type.global_list)
-          writer.print( "extern " ).print( g.type ).print( " Rogue" )
-          writer.print( type.java_name ).print( "_" ).print( g.java_name ).println( ";" )
-        endForEach
-      endForEach
+      writer.println "import java.util.*;"
       writer.println
 
       # Class definitions
       forEach (type in type_list)
-        if (not type.is_compound and not type.omit_output)
+        if (not type.omit_output)
           type.print_data_definition( writer )
           writer.println
         endIf
       endForEach
       writer.println
 
+      #{
       # RogueType_X externs.
       forEach (type in type_list)
         if (not type.omit_output or (type.is_native and not type.is_array))
@@ -179,12 +145,14 @@ augment Program
       writer.println "#include <stdio.h>"
       writer.println ''#include "$.h"'' (base_filename)
       writer.println
+      }#
 
       # Embed nativeCode
       forEach (line in native_code)
         writer.println( line )
       endForEach
 
+      #{
       # typedef each unique method signature
       local native_method_signature_list   = String[]
       local native_method_signature_lookup = Table<<String,Method>>()
@@ -612,10 +580,10 @@ augment Program
       if (RogueC.generate_main)
         writer.println( @|static public void main( String[] args )
                          |{
+                         |  System.out.println( "Hello World!" );
                          |  //Rogue_configure();
                          |  //Rogue_launch( argc, argv );
                          |  //Rogue_quit();
-                         |  return 0;
                          |}
         )
         writer.println
@@ -886,8 +854,11 @@ augment RogueC
       Program.write_java( output_filepath )
 
       if (execute_args)
-        local exe = output_filepath.to_lowercase
-        local cmd = "g++ $.java -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
+        local exe = output_filepath
+        local output_path = File.path( exe )
+        if (output_path == exe) output_path = "."
+        local cmd = "javac $.java -d $ && java -classpath $ $" (exe,output_path,output_path,File.filename(exe))
+        #local cmd = "javac $.java -d $ && ./$ $" (exe,exe,exe,execute_args)
         println cmd
         println
         System.run( cmd )
@@ -913,21 +884,31 @@ augment Type
         java_class_name = "RogueArray"
         java_name = "Array"
 
-      elseIf (this.is_primitive or this.simplify_name)
-        java_class_name = "Rogue" + java_name
+      elseIf (this.is_primitive)
+        if     (this is Program.type_Real)      java_class_name = "double"
+        elseIf (this is Program.type_Float)     java_class_name = "float"
+        elseIf (this is Program.type_Long)      java_class_name = "long"
+        elseIf (this is Program.type_Integer)   java_class_name = "int"
+        elseIf (this is Program.type_Character) java_class_name = "char"
+        elseIf (this is Program.type_Byte)      java_class_name = "byte"
+        elseIf (this is Program.type_Logical)   java_class_name = "boolean"
+        else   throw t.error( "[INTERNAL] No Java equivalent for primitive $." (name) )
+
+      elseIf (this.simplify_name)
+        java_class_name = java_name
 
       elseIf (is_list)
-        java_class_name = "Rogue" + java_name
+        java_class_name = java_name
 
       elseIf (is_optional and element_type.is_primitive)
-        java_name = Program.validate_java_name( "Optional" + element_type.name )
-        java_class_name = "Rogue" + java_name
+        java_name = element_type.java_name.capitalized
+        java_class_name = java_name
 
       else
-        java_class_name = "RogueClass" + java_name
+        java_class_name = "Class" + java_name
       endIf
 
-      java_type_name = "RogueType" + java_name
+      java_type_name = "Type" + java_name
 
       forEach (s in global_list)
         s.java_name = Program.validate_java_name( s.name )
@@ -940,15 +921,13 @@ augment Type
     method print_data_definition( writer:JavaWriter )
       if (omit_output or is_primitive) return
 
-      writer.print( "struct " ).print( java_class_name )
+      writer.print( "static public class " ).print( java_class_name )
       local is_error = false
       if (is_class)
         if (instance_of(Program.type_Error))
           is_error = true
-          writer.print( " : " ).print_type_name( base_class )
-        else
-          writer.print( " : RogueObject" )
         endIf
+        writer.print( " extends " ).print_type_name( base_class )
       endIf
       writer.println.println( "{" )
       writer.indent += 2
@@ -974,107 +953,6 @@ augment Type
         endIf
       endForEach
       writer.println
-
-      if (is_compound)
-        if (property_list.count)
-          # Default Constructor
-          writer.print( this ).print( "() : " )
-          local first = true
-          forEach (p in property_list)
-            if (first) first = false
-            else       writer.print( ", " )
-            writer.print( p.java_name ).print("(").print_default_value(p.type).print(")")
-          endForEach
-          writer.println( " {}" )
-          writer.println
-
-          if (is_optional)
-            # Value Constructor, exists->true
-            writer.print( this ).print( "( " ).print( property_list.first.type )
-            writer.println( " value ) : value(value), exists(true) {}" )
-          else
-            # Standard Constructor
-            writer.print( this ).print( "( " )
-            first = true
-            forEach (p in property_list)
-              if (first) first = false
-              else       writer.print( ", " )
-              writer.print( p.type ).print(" ").print( p.java_name )
-            endForEach
-            writer.print( " ) : " )
-            first = true
-            forEach (p in property_list)
-              if (first) first = false
-              else       writer.print( ", " )
-              writer.print( p.java_name ).print("(").print( p.java_name ).print(")")
-            endForEach
-            writer.println( " {}" )
-            writer.println
-          endIf
-        endIf
-
-        # Default operator== and operator!= 
-        writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
-        writer.println( "{" )
-        if (is_optional)
-          writer.indent += 2
-          writer.println @|if (exists)
-                          |{
-                          |  if (other.exists) return value == other.value;
-                          |  else              return false;
-                          |}
-                          |else
-                          |{
-                          |  if (other.exists) return false;
-                          |  else              return true;
-                          |}
-          writer.indent -= 2
-        else
-          forEach (p in property_list)
-            writer.print( "  if (" ).print( p.java_name ).print( " != other." ).print( p.java_name ).println( ") return false;" )
-          endForEach
-          writer.println( "  return true;" )
-        endIf
-        writer.println( "}" )
-        writer.println
-
-        writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
-        writer.println @|{
-                        |  return !(*this == other);
-                        |}
-                        |
-
-        #{
-        # trace() method
-        if (has_object_references and not is_reference_array)
-          writer.println(   "void trace()" )
-          writer.println( "{" )
-          writer.indent += 2
-          forEach (p in property_list)
-            if (p.type.is_reference)
-              writer.print("ROGUE_TRACE( " ).print( p.java_name ).println( " );" )
-            elseIf (p.type.has_object_references)
-              # Compound
-              writer.print( p.java_name ).println( ".trace();" )
-            endIf
-          endForEach
-          writer.indent -= 2
-          writer.println( "}" )
-        endIf
-        }#
-
-        # check()
-        if (is_optional)
-          writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
-          writer.println @|{
-                          |  if ( !exists ) return false;
-                          |  *checked = value;
-                          |  return true;
-                          |}
-                          |
-        endIf
-
-      endIf
 
       writer.indent -= 2
       writer.println( "};" )
@@ -1201,7 +1079,7 @@ augment Method
           buffer.print( param.type.java_name )
         endForEach
       endIf
-      java_name = "Rogue" + Program.validate_java_name( buffer->String )
+      java_name = Program.validate_java_name( buffer->String )
 
     method incorporate( into_type:Type )->Method
       <<initialize_m>>
@@ -1743,7 +1621,7 @@ augment CmdReadGlobal
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       if (not is_statement) writer.print_open_cast( global_info.type, global_info.type )
 
-      writer.print( "Rogue" ).print( global_info.type_context.java_name ).print( "_" )
+      writer.print( global_info.type_context.java_name ).print( "_" )
 
       writer.print( global_info.java_name )
       if (not is_statement) writer.print_close_cast( global_info.type, global_info.type )
@@ -1753,7 +1631,7 @@ endAugment
 augment CmdWriteGlobal
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
-      writer.print( "Rogue" ).print( global_info.type_context.java_name ).print( "_" )
+      writer.print( global_info.type_context.java_name ).print( "_" )
 
       writer.print( global_info.java_name ).print(" = ")
 
@@ -2181,7 +2059,7 @@ augment CmdOpAssignGlobal
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       #writer.print_type_name( global_info.type_context ).print( "::" )
-      writer.print( "Rogue" ).print( global_info.type_context.java_name ).print( "_" )
+      writer.print( global_info.type_context.java_name ).print( "_" )
 
       writer.print( global_info.java_name ).print(" ").print(java_symbol).print(" ")
       new_value.write_java( writer )

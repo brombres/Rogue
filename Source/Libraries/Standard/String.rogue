@@ -64,6 +64,13 @@ class String [native functional]
       local other_count = other.count
       return (count >= other_count and contains_at(other,0))
 
+    method capitalized->String
+      if (count == 0) return this
+      local ch = this[0]
+      if (ch < 'a' or ch > 'z') return this
+
+      return (ch + ('A'-'a'))->Character + this.from( 1 )
+
     method contains( substring:String )->Logical
       return locate(substring)?
 
