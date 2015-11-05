@@ -328,9 +328,9 @@ void Rogue_quit();
 
 #include <cmath>
 
+struct RogueStringBuilder;
 struct RogueCharacterList;
 struct RogueClassGenericList;
-struct RogueStringBuilder;
 struct RogueOptionalInteger;
 struct RogueStringList;
 struct RogueClassStringReader;
@@ -770,6 +770,18 @@ extern RogueClassString_TokenListTable* RoguePreprocessor_definitions;
 
 
 
+struct RogueStringBuilder : RogueObject
+{
+  // GLOBALS
+  static RogueByteList* work_bytes;
+
+  // PROPERTIES
+  RogueCharacterList* characters;
+  RogueInteger indent;
+  RogueLogical at_newline;
+
+};
+
 struct RogueCharacterList : RogueObject
 {
   // PROPERTIES
@@ -782,18 +794,6 @@ struct RogueCharacterList : RogueObject
 struct RogueClassGenericList : RogueObject
 {
   // PROPERTIES
-
-};
-
-struct RogueStringBuilder : RogueObject
-{
-  // GLOBALS
-  static RogueByteList* work_bytes;
-
-  // PROPERTIES
-  RogueCharacterList* characters;
-  RogueInteger indent;
-  RogueLogical at_newline;
 
 };
 
@@ -3263,10 +3263,10 @@ extern RogueType* RogueTypeLong;
 extern RogueType* RogueTypeInteger;
 extern RogueType* RogueTypeObject;
 extern RogueType* RogueTypeString;
+extern RogueType* RogueTypeStringBuilder;
 extern RogueType* RogueTypeCharacterList;
 extern RogueType* RogueTypeCharacter;
 extern RogueType* RogueTypeGenericList;
-extern RogueType* RogueTypeStringBuilder;
 extern RogueType* RogueTypeOptionalInteger;
 extern RogueType* RogueTypeLogical;
 extern RogueType* RogueTypeByte;
@@ -3567,22 +3567,6 @@ RogueStringList* RogueString__split__Character( RogueString* THIS, RogueCharacte
 RogueString* RogueString__to_lowercase( RogueString* THIS );
 RogueStringList* RogueString__word_wrapped__Integer( RogueString* THIS, RogueInteger width_0 );
 RogueStringBuilder* RogueString__word_wrapped__Integer_StringBuilder( RogueString* THIS, RogueInteger width_0, RogueStringBuilder* buffer_1 );
-RogueString* RogueCharacterList__to_String( RogueCharacterList* THIS );
-RogueString* RogueCharacterList__type_name( RogueCharacterList* THIS );
-RogueCharacterList* RogueCharacterList__init_object( RogueCharacterList* THIS );
-RogueCharacterList* RogueCharacterList__init__Integer( RogueCharacterList* THIS, RogueInteger initial_capacity_0 );
-RogueCharacterList* RogueCharacterList__add__Character( RogueCharacterList* THIS, RogueCharacter value_0 );
-RogueInteger RogueCharacterList__capacity( RogueCharacterList* THIS );
-RogueCharacterList* RogueCharacterList__clear( RogueCharacterList* THIS );
-RogueCharacterList* RogueCharacterList__reserve__Integer( RogueCharacterList* THIS, RogueInteger additional_count_0 );
-RogueLogical RogueCharacter__is_alphanumeric( RogueCharacter THIS );
-RogueLogical RogueCharacter__is_identifier( RogueCharacter THIS );
-RogueLogical RogueCharacter__is_letter( RogueCharacter THIS );
-RogueLogical RogueCharacter__is_number__Integer( RogueCharacter THIS, RogueInteger base_0 );
-RogueString* RogueCharacter__to_String( RogueCharacter THIS );
-RogueInteger RogueCharacter__to_number__Integer( RogueCharacter THIS, RogueInteger base_0 );
-RogueString* RogueGenericList__type_name( RogueClassGenericList* THIS );
-RogueClassGenericList* RogueGenericList__init_object( RogueClassGenericList* THIS );
 RogueString* RogueStringBuilder__to_String( RogueStringBuilder* THIS );
 RogueString* RogueStringBuilder__type_name( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS );
@@ -3606,6 +3590,22 @@ RogueStringBuilder* RogueStringBuilder__reserve__Integer( RogueStringBuilder* TH
 void RogueStringBuilder__round_off_work_bytes( RogueStringBuilder* THIS );
 RogueReal RogueStringBuilder__scan_work_bytes( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__init_object( RogueStringBuilder* THIS );
+RogueString* RogueCharacterList__to_String( RogueCharacterList* THIS );
+RogueString* RogueCharacterList__type_name( RogueCharacterList* THIS );
+RogueCharacterList* RogueCharacterList__init_object( RogueCharacterList* THIS );
+RogueCharacterList* RogueCharacterList__init__Integer( RogueCharacterList* THIS, RogueInteger initial_capacity_0 );
+RogueCharacterList* RogueCharacterList__add__Character( RogueCharacterList* THIS, RogueCharacter value_0 );
+RogueInteger RogueCharacterList__capacity( RogueCharacterList* THIS );
+RogueCharacterList* RogueCharacterList__clear( RogueCharacterList* THIS );
+RogueCharacterList* RogueCharacterList__reserve__Integer( RogueCharacterList* THIS, RogueInteger additional_count_0 );
+RogueLogical RogueCharacter__is_alphanumeric( RogueCharacter THIS );
+RogueLogical RogueCharacter__is_identifier( RogueCharacter THIS );
+RogueLogical RogueCharacter__is_letter( RogueCharacter THIS );
+RogueLogical RogueCharacter__is_number__Integer( RogueCharacter THIS, RogueInteger base_0 );
+RogueString* RogueCharacter__to_String( RogueCharacter THIS );
+RogueInteger RogueCharacter__to_number__Integer( RogueCharacter THIS, RogueInteger base_0 );
+RogueString* RogueGenericList__type_name( RogueClassGenericList* THIS );
+RogueClassGenericList* RogueGenericList__init_object( RogueClassGenericList* THIS );
 RogueString* RogueByte__to_String( RogueByte THIS );
 RogueString* RogueStringList__to_String( RogueStringList* THIS );
 RogueString* RogueStringList__type_name( RogueStringList* THIS );

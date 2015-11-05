@@ -1,37 +1,49 @@
 class Math
   ROUTINES
+    $if ("C++")
     routine acos( n:Real )->Real
-      $if ("C++") macro native 'acos((double)$n)'
+      macro native 'acos((double)$n)'
 
     routine asin( n:Real )->Real
-      $if ("C++") macro native 'asin((double)$n)'
+      macro native 'asin((double)$n)'
 
     routine atan( n:Real )->Real
-      $if ("C++") macro native 'atan((double)$n)'
+      macro native 'atan((double)$n)'
 
     routine atan2( y:Real, x:Real )->Real
-      $if ("C++") macro native 'atan2((double)$y,(double)$x)'
+      macro native 'atan2((double)$y,(double)$x)'
 
     routine ceil( n:Real )->Real
-      $if ("C++") macro native 'ceil((double)$n)'
+      macro native 'ceil((double)$n)'
 
     routine cos( n:Real )->Real
-      $if ("C++") macro native 'cos((double)$n)'
+      macro native 'cos((double)$n)'
 
     routine exp( n:Real )->Real
-      $if ("C++") macro native 'exp((double)$n)'
+      macro native 'exp((double)$n)'
 
     routine floor( n:Real )->Real
-      $if ("C++") macro native 'floor((double)$n)'
+      macro native 'floor((double)$n)'
 
     routine log( n:Real )->Real
-      $if ("C++") macro native 'log((double)$n)'
+      macro native 'log((double)$n)'
 
     routine log2( n:Real )->Real
-      $if ("C++") macro native 'log2((double)$n)'
+      macro native 'log2((double)$n)'
 
     routine log10( n:Real )->Real
-      $if ("C++") macro native 'log10((double)$n)'
+      macro native 'log10((double)$n)'
+
+    routine sin( n:Real )->Real
+      macro native 'sin((double)$n)'
+
+    routine sqrt( n:Real )->Real
+      macro native 'sqrt((double)$n)'
+
+    routine tan( n:Real )->Real
+      macro native 'tan((double)$n)'
+
+    $endIf
 
     routine mod( a:Integer, b:Integer )->Integer
       if ((not a and not b) or b == 1) return 0
@@ -65,15 +77,6 @@ class Math
       --bits
       if (bits) return ((value :>>>: 1) & 0x7fffFFFF) :>>>: bits
       else      return (value :>>>: 1) & 0x7fffFFFF
-
-    routine sin( n:Real )->Real
-      $if ("C++") macro native 'sin((double)$n)'
-
-    routine sqrt( n:Real )->Real
-      $if ("C++") macro native 'sqrt((double)$n)'
-
-    routine tan( n:Real )->Real
-      $if ("C++") macro native 'tan((double)$n)'
 endClass
 
 

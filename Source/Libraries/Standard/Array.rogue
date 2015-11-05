@@ -2,11 +2,15 @@ class NativeArray [native]
   METHODS
     method count->Integer [native]
 
+    $if ("C++")
+
     method element_size->Integer
-      $if ("C++") macro native '$this->element_size'
+      macro native '$this->element_size'
 
     method set( i1:Integer, other:NativeArray, other_i1=0:Integer, copy_count=-1:Integer )->NativeArray
-      $if ("C++") macro native 'RogueArray_set($this,$i1,$other,$other_i1,$copy_count)'
+      macro native 'RogueArray_set($this,$i1,$other,$other_i1,$copy_count)'
+
+    $endIf
 endClass
 
 class Array<<$DataType>> : NativeArray [native]
