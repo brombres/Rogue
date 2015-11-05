@@ -41,31 +41,37 @@ class Preprocessor
               if (def_t.type is TokenType.eol) escapeWhile
               defined_tokens.add( def_t )
             endWhile
-            definitions[defined_word] = defined_tokens
+            if (keep_tokens) definitions[defined_word] = defined_tokens
             nextIteration
 
           elseIf (t.type is TokenType.directive_include)
             local filepath_t = reader.read
-            if (filepath_t.type isNot TokenType.literal_string)
-              throw reader.error( "Filepath expected." )
+            if (keep_tokens)
+              if (filepath_t.type isNot TokenType.literal_string)
+                throw reader.error( "Filepath expected." )
+              endIf
+              RogueC.include( t, filepath_t->String )
             endIf
-            RogueC.include( t, filepath_t->String )
             nextIteration
 
           elseIf (t.type is TokenType.directive_includeNativeCode)
             local filepath_t = reader.read
-            if (filepath_t.type isNot TokenType.literal_string)
-              throw reader.error( "Filepath expected." )
+            if (keep_tokens)
+              if (filepath_t.type isNot TokenType.literal_string)
+                throw reader.error( "Filepath expected." )
+              endIf
+              RogueC.include_native( t, filepath_t->String, "code" )
             endIf
-            RogueC.include_native( t, filepath_t->String, "code" )
             nextIteration
 
           elseIf (t.type is TokenType.directive_includeNativeHeader)
             local filepath_t = reader.read
-            if (filepath_t.type isNot TokenType.literal_string)
-              throw reader.error( "Filepath expected." )
+            if (keep_tokens)
+              if (filepath_t.type isNot TokenType.literal_string)
+                throw reader.error( "Filepath expected." )
+              endIf
+              RogueC.include_native( t, filepath_t->String, "header" )
             endIf
-            RogueC.include_native( t, filepath_t->String, "header" )
             nextIteration
 
           elseIf (t.type is TokenType.directive_elseIf)

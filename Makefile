@@ -66,7 +66,7 @@ test:
 
 jtest:
 	mkdir -p JavaTest
-	roguec Test.rogue --target=Java --output=JavaTest
+	roguec Test.rogue --target=Java --output=JavaTest --main #--package=com.adcolony.moonshot 
 
 x2:
 	make remake

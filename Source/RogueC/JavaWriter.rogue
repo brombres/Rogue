@@ -84,6 +84,8 @@ augment Program
       return string_buffer->String
 
     method write_java( filepath:String )
+      local filename = File.filename( filepath )
+
       forEach (type in type_list)
         type.assign_java_name
       endForEach
@@ -102,11 +104,16 @@ augment Program
         writer.print( "package " ).print( RogueC.package_name ).println( ";\n" )
       endIf
 
+      writer.print( "public class " ).println( filename )
+      writer.println "{"
+      writer.indent += 2
+
       # Embed nativeHeader
       forEach (line in native_header)
         writer.println( line )
       endForEach
 
+      #{
       writer.println "#include <cmath>"
       writer.println
 
@@ -599,30 +606,23 @@ augment Program
       writer.println( "}" )
       writer.println
 
-      # finish_tasks() method
-      #{
-      writer.println( @|void RogueProgram::finish_tasks()
-                       |{
-                       |  while (RogueTaskManager__update(Rogue_program.type_TaskManager->singleton()))
-                       |  {
-                       |    Rogue_program.collect_garbage();
-                       |  }
-                       |}
-                     )
       }#
 
       # Optional main()
       if (RogueC.generate_main)
-        writer.println
-        writer.println( @|int main( int argc, char* argv[] )
+        writer.println( @|static public void main( String[] args )
                          |{
-                         |  Rogue_configure();
-                         |  Rogue_launch( argc, argv );
-                         |  Rogue_quit();
+                         |  //Rogue_configure();
+                         |  //Rogue_launch( argc, argv );
+                         |  //Rogue_quit();
                          |  return 0;
                          |}
         )
+        writer.println
       endIf
+
+      writer.indent -= 2
+      writer.println "}"
 
       writer.close
 
