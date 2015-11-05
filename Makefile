@@ -39,7 +39,16 @@ Programs/RogueC/roguec: Source/RogueC/Build/RogueC.cpp
 
 libraries:
 	@mkdir -p Programs/RogueC
-	@rsync -rt --delete Source/Libraries Programs/RogueC
+	@if [ $$(rsync -rtv --delete --exclude=.*.sw? --dry-run Source/Libraries Programs/RogueC | wc -l) -gt 4 ]; \
+	then \
+	  echo "==== Updating Libraries ===="; \
+		rsync -rtv --delete --exclude=.*.sw? Source/Libraries Programs/RogueC | tail +2 | tail -r | tail +4 | tail -r; \
+	fi
+
+libs: libraries
+
+if:
+	echo $(COPY_COUNT)
 
 /usr/local/bin:
 	sudo mkdir -p /usr/local/bin

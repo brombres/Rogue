@@ -1,0 +1,25 @@
+class Box( position:XY, size:XY ) [compound]
+  ROUTINES
+    routine create( x:Real, y:Real, width:Real, height:Real )->Box
+      return Box( XY(x,y), XY(width,height) )
+
+    routine create( width:Real, height:Real )->Box
+      return Box( XY(0,0), XY(width,height) )
+
+  METHODS
+    method height->Real
+      macro this.size.y
+
+    method to->String
+      return "[@$,$ $x$]" (x,y,width,height)
+
+    method width->Real
+      macro this.size.x
+
+    method x->Real
+      macro this.position.x
+
+    method y->Real
+      macro this.position.y
+
+endClass

@@ -1,17 +1,10 @@
+$include "Geometry/2D.rogue"
+
 test
 
 routine test
-  try
-    try
-      println "Alpha"
-      throw Error("Boom")
-      println "Beta"
-    catch (err:Error)
-      println err.message + "!"
-      throw err
-    endTry
-  catch (err:Error)
-    println err.message + "!!"
-  endTry
-  throw Error( "Again!" )
+  local pt = XY(3,4)
+  local box : Box
+  box = Box(pt,XY(5,6))
+  println box
 

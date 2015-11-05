@@ -20,7 +20,6 @@ $include "System.rogue"
 $include "Table.rogue"
 $include "Task.rogue"
 $include "Time.rogue"
-$include "XY.rogue"
 
 $if ("C++")
   $includeNativeHeader "NativeCPP.h"
