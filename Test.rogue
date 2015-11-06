@@ -3,8 +3,7 @@ $include "Geometry/2D.rogue"
 test
 
 routine test
-  local pt = XY(3,4)
-  local box : Box
-  box = Box(pt,XY(5,6))
-  println box
+  local inner = Box(1,1)
+  local outer = Box(10,100,20,110)
+  println inner.aligned_within( outer, XY(0,0) )
 

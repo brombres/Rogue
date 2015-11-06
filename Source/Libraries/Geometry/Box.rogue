@@ -7,19 +7,24 @@ class Box( position:XY, size:XY ) [compound]
       return Box( XY(0,0), XY(width,height) )
 
   METHODS
-    method height->Real
-      macro this.size.y
+    method aligned_within( enclosing:Box, alignment:XY )->Box
+      local excess_x = enclosing.width - width
+      local excess_y = enclosing.height - height
+      return Box( XY(enclosing.x + excess_x * alignment.x, enclosing.y + excess_y * alignment.y), size )
+
+    method height->Real [macro]
+      this.size.y
 
     method to->String
       return "[@$,$ $x$]" (x,y,width,height)
 
-    method width->Real
-      macro this.size.x
+    method width->Real [macro]
+      this.size.x
 
-    method x->Real
-      macro this.position.x
+    method x->Real [macro]
+      this.position.x
 
-    method y->Real
-      macro this.position.y
+    method y->Real [macro]
+      this.position.y
 
 endClass

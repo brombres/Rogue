@@ -214,6 +214,41 @@ class Program [requisite singleton]
 
       cull_unused_code
 
+      reorder_compounds
+
+    method reorder_compounds
+      # Source code for compounds is generated in the same order that they appear in the type_list.
+      # If compound B is defined before A *and* B has properties of type A then it results in an
+      # error.  Reorder compounds so that such dependencies occur earlier in the list.
+      local compounds = Type[]
+
+      local write_i = 0
+      forEach (read_i of type_list)
+        local type = type_list[ read_i ]
+        if (type.is_compound)
+          collect_compound_dependencies( type, compounds )
+        else
+          type_list[ write_i ] = type
+          type.index = write_i
+          ++write_i
+        endIf
+      endForEach
+      type_list.discard_from( write_i )
+
+      forEach (type in compounds)
+        type.index = type_list.count
+        type_list.add( type )
+      endForEach
+
+    method collect_compound_dependencies( type:Type, compounds:Type[] )
+      if (type.index == -1) return  # already collected
+      type.index = -1
+
+      forEach (p in type.property_list)
+        if (p.type.is_compound) collect_compound_dependencies( p.type, compounds )
+      endForEach
+      compounds.add( type )
+
     method cull_unused_code
       forEach (type in type_list)
         if (type.is_requisite) type.trace_used_code
@@ -226,7 +261,7 @@ class Program [requisite singleton]
       endForEach
 
       local write_i = 0
-      forEach (read_i in 0..(type_list.count-1))
+      forEach (read_i of type_list)
         local type = type_list[ read_i ]
         if (not type.should_cull)
           type_list[ write_i ] = type
