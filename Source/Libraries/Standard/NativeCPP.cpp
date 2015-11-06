@@ -219,7 +219,7 @@ RogueString* RogueString_create_with_count( int count )
 
 RogueString* RogueString_create_with_c_string( const char* c_string, int count )
 {
-  if (count == -1) count = strlen( c_string );
+  if (count == -1) count = (int) strlen( c_string );
 
   RogueString* st = RogueString_create_with_count( count );
 

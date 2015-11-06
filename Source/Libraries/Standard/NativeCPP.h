@@ -15,6 +15,8 @@
 #  define ROGUE_PLATFORM_WINDOWS 1
 #elif defined(__APPLE__)
 #  define ROGUE_PLATFORM_MAC 1
+#elif defined(__ANDROID__)
+#  define ROGUE_PLATFORM_ANDROID 1
 #else
 #  define ROGUE_PLATFORM_GENERIC 1
 #endif

@@ -8,9 +8,13 @@ class Box( position:XY, size:XY ) [compound]
 
   METHODS
     method aligned_within( enclosing:Box, alignment:XY )->Box
+      # -1..1 -> 0..1
+      local align_x = alignment.x / 2 + 0.5
+      local align_y = alignment.y / 2 + 0.5
+
       local excess_x = enclosing.width - width
       local excess_y = enclosing.height - height
-      return Box( XY(enclosing.x + excess_x * alignment.x, enclosing.y + excess_y * alignment.y), size )
+      return Box( XY(enclosing.x + excess_x * align_x, enclosing.y + excess_y * align_y), size )
 
     method height->Real [macro]
       this.size.y
