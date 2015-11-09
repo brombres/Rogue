@@ -708,7 +708,9 @@ class Type
 
       if (is_singleton)
         local m = find_method( "init()" )
-        if (m) m.attributes.add( Attribute.is_requisite )
+        if (m)
+          m.attributes.add( Attribute.is_requisite )
+        endIf
       endIf
 
       if (element_type) element_type.trace_used_code

@@ -591,6 +591,7 @@ void Rogue_configure_types()
     }
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
+    type->init_fn        = Rogue_init_fn_table[i];
   }
 }
 

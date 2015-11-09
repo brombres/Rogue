@@ -4,5 +4,31 @@ $include "Graphics"
 test
 
 routine test
-  println Color.RED
+  local cat = Pet( "Cat" )
+  local dog = Pet( "Dog" )
+  cat.speak
+  dog.speak
+
+
+class Pet
+  ROUTINES
+    routine create( type:String )->Pet
+      if (type == "Cat") return Cat()
+      else               return Dog()
+
+  METHODS
+    method speak
+endClass
+
+class Cat : Pet
+  METHODS
+    method speak
+      println "Meow"
+endClass
+
+class Dog : Pet
+  METHODS
+    method speak
+      println "Woof"
+endClass
 
