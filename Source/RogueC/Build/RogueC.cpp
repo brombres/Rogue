@@ -38056,13 +38056,13 @@ void Rogue_configure()
   Rogue_literal_strings[517] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Rogue_literal_strings[", 22 ) ); 
   Rogue_literal_strings[518] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ", 73 ) ); 
   Rogue_literal_strings[519] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( " ) ); ", 6 ) ); 
-  Rogue_literal_strings[520] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "void Rogue_launch( int const argc, char* argv[] )", 49 ) ); 
+  Rogue_literal_strings[520] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "void Rogue_launch( int const argc, const char* argv[] )", 55 ) ); 
   Rogue_literal_strings[521] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "RogueErrorHandler uncaught_error_handler;\nRogue_error_handler = &uncaught_error_handler;\nif (ROGUE_SETJMP(Rogue_error_handler->info))\n{\n  printf( \"Uncaught error.\\n\" );\n  return;\n}", 180 ) ); 
   Rogue_literal_strings[522] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "();", 3 ) ); 
   Rogue_literal_strings[523] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "RogueSystem_executable_filepath = RogueString_create_with_c_string(\n    argc ? argv[0] : \"Rogue\", -1 );\n\nfor (int i=1; i<argc; ++i)\n{\n  RogueStringList__add__String( RogueSystem_command_line_arguments, \n      RogueString_create_with_c_string( argv[i], -1 ) );\n}", 261 ) ); 
   Rogue_literal_strings[524] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );", 85 ) ); 
   Rogue_literal_strings[525] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Rogue_collect_garbage();", 24 ) ); 
-  Rogue_literal_strings[526] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "int main( int argc, char* argv[] )\n{\n  Rogue_configure();\n  Rogue_launch( argc, argv );\n  Rogue_quit();\n  return 0;\n}", 117 ) ); 
+  Rogue_literal_strings[526] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "int main( int argc, const char* argv[] )\n{\n  Rogue_configure();\n  Rogue_launch( argc, argv );\n  Rogue_quit();\n  return 0;\n}", 123 ) ); 
   Rogue_literal_strings[527] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "g++ ", 4 ) ); 
   Rogue_literal_strings[528] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ".cpp -o ", 8 ) ); 
   Rogue_literal_strings[529] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( " && ./", 6 ) ); 
@@ -38549,7 +38549,7 @@ void Rogue_configure()
 
 }
 
-void Rogue_launch( int const argc, char* argv[] )
+void Rogue_launch( int const argc, const char* argv[] )
 {
   RogueErrorHandler uncaught_error_handler;
   Rogue_error_handler = &uncaught_error_handler;
@@ -38577,7 +38577,7 @@ void Rogue_launch( int const argc, char* argv[] )
 }
 
 
-int main( int argc, char* argv[] )
+int main( int argc, const char* argv[] )
 {
   Rogue_configure();
   Rogue_launch( argc, argv );

@@ -565,7 +565,7 @@ augment Program
       writer.println
 
       # launch()
-      writer.println( "void Rogue_launch( int const argc, char* argv[] )" )
+      writer.println( "void Rogue_launch( int const argc, const char* argv[] )" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -623,7 +623,7 @@ augment Program
       # Optional main()
       if (RogueC.generate_main)
         writer.println
-        writer.println( @|int main( int argc, char* argv[] )
+        writer.println( @|int main( int argc, const char* argv[] )
                          |{
                          |  Rogue_configure();
                          |  Rogue_launch( argc, argv );
