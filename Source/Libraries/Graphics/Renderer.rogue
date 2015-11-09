@@ -1,10 +1,7 @@
 $include "OpenGLRenderer.rogue"
 
 class Renderer
-  PROPERTIES
-    canvas : Canvas
-
   METHODS
-    method clear
+    method clear( color:Integer )
 endClass
 

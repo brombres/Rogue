@@ -1,7 +1,0 @@
-class Display : Canvas [singleton]
-  PROPERTIES
-
-  METHODS
-    method configure( size )
-endClass
-

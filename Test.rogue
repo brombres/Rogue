@@ -11,8 +11,12 @@ routine test
 
 
 class Pet
+  GLOBALS
+    x : Pet
+
   ROUTINES
     routine create( type:String )->Pet
+      x = Cat()
       if (type == "Cat") return Cat()
       else               return Dog()
 

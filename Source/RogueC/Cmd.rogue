@@ -1749,7 +1749,7 @@ class CmdAccess : Cmd
         endIf
 
         local p = scope.this_method.type_context.find_global( name )
-        if (p) return CmdWriteGlobal( t, p, new_value )
+        if (p) return CmdWriteGlobal( t, p, new_value ).resolve( scope )
 
         if (scope.this_method.is_routine)
           p = scope.this_method.type_context.find_property( name )

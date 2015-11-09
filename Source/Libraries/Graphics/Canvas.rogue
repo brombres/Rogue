@@ -5,7 +5,4 @@ class Canvas
 
   METHODS
     method clear
-      native @|int c = background_color;
-              |glClearColor( ((c>>16)&255)/255f, ((c>>8)&255)/255f, (c&255)/255f, ((c>>24)&255)/255f );
-              |glClear( GL_COLOR_BUFFER_BIT );
 endClass

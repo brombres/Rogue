@@ -24562,7 +24562,7 @@ RogueClassCmd* RogueCmdAccess__resolve_assignment__Scope_Cmd( RogueClassCmdAcces
     RogueClassProperty* p_6 = (((RogueType__find_global__String( scope_0->this_method->type_context, THIS->name ))));
     if (!!(p_6))
     {
-      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdWriteGlobal__init__Token_Property_Cmd( ((RogueClassCmdWriteGlobal*)ROGUE_CREATE_OBJECT(CmdWriteGlobal)), THIS->t, p_6, new_value_1 ))))));
+      return (RogueClassCmd*)(((RogueCmdWriteGlobal__resolve__Scope( ((RogueCmdWriteGlobal__init__Token_Property_Cmd( ((RogueClassCmdWriteGlobal*)ROGUE_CREATE_OBJECT(CmdWriteGlobal)), THIS->t, p_6, new_value_1 ))), scope_0 ))));
     }
     if (((RogueMethod__is_routine( scope_0->this_method ))))
     {

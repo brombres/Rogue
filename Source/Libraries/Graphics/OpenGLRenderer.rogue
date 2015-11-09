@@ -1,7 +1,13 @@
 class OpenGLRenderer : Renderer
   METHODS
-    method clear
-      local c = canvas.background_color
-      native @|glClearColor( (($c>>16)&255)/255f, (($c>>8)&255)/255f, ($c&255)/255f, (($c>>24)&255)/255f );
+    method init
+
+    method clear( color:Integer )
+      native @|glClearColor(
+              |    (($color>>16)&255)/255.0f,
+              |    (($color>>8)&255)/255.0f,
+              |    ($color&255)/255.0f,
+              |    (($color>>24)&255)/255.0f
+              |);
               |glClear( GL_COLOR_BUFFER_BIT );
 endClass

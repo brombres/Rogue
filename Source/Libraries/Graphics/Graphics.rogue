@@ -4,13 +4,10 @@ $include "Display.rogue"
 $include "Geometry/2D.rogue"
 $include "Renderer.rogue"
 
-class Graphics [singleton]
+class Graphics
   PROPERTIES
-    canvas   = Display
-    renderer : Renderer
 
   METHODS
     method init
-      println "=============== Graphics Init ==============="
 endClass
 
