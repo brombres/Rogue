@@ -1,9 +1,8 @@
 $include "Geometry/2D.rogue"
+$include "Graphics"
 
 test
 
 routine test
-  local inner = Box(2,2)
-  local outer = Box(1,1,1,1)
-  println inner.aligned_within( outer, XY(1,1) )
+  println Color.RED
 

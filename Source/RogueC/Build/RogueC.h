@@ -15,6 +15,8 @@
 #  define ROGUE_PLATFORM_WINDOWS 1
 #elif defined(__APPLE__)
 #  define ROGUE_PLATFORM_MAC 1
+#elif defined(__ANDROID__)
+#  define ROGUE_PLATFORM_ANDROID 1
 #else
 #  define ROGUE_PLATFORM_GENERIC 1
 #endif
@@ -319,10 +321,11 @@ extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];
 extern RogueErrorHandler* Rogue_error_handler;
 extern RogueObject*       Rogue_error_object;
+extern RogueLogical       Rogue_configured;
 
 void Rogue_configure();
 void Rogue_collect_garbage();
-void Rogue_launch( int argc, char* argv[] );
+void Rogue_launch( int argc, const char* argv[] );
 void Rogue_quit();
 
 

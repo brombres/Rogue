@@ -535,8 +535,12 @@ augment Program
       writer.println( "{" )
       writer.indent += 2
 
-      writer.println "Rogue_configure_types();"
-      writer.println
+      writer.println @|if (Rogue_configured) return;
+                      |Rogue_configured = 1;
+                      |
+                      |Rogue_configure_types();
+                      |
+      
 
       # Create types
       forEach (type in type_list)
@@ -561,7 +565,7 @@ augment Program
       writer.println
 
       # launch()
-      writer.println( "void Rogue_launch( int argc, char* argv[] )" )
+      writer.println( "void Rogue_launch( int const argc, char* argv[] )" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -585,11 +589,14 @@ augment Program
       writer.println
 
       # Copy command line args to System class
-      writer.println( "RogueSystem_executable_filepath = RogueString_create_with_c_string( argv[0], -1 );" );
-      writer.println( "for (int i=1; i<argc; ++i)" )
-      writer.println( "{" )
-      writer.println( "  RogueStringList__add__String( RogueSystem_command_line_arguments, RogueString_create_with_c_string( argv[i], -1 ) );" )
-      writer.println( "}" )
+      writer.println @|RogueSystem_executable_filepath = RogueString_create_with_c_string(
+                      |    argc ? argv[0] : "Rogue", -1 );
+                      |
+                      |for (int i=1; i<argc; ++i)
+                      |{
+                      |  RogueStringList__add__String( RogueSystem_command_line_arguments, 
+                      |      RogueString_create_with_c_string( argv[i], -1 ) );
+                      |}
       writer.println
 
       # Call Global.on_launch()

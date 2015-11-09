@@ -1,0 +1,16 @@
+$include "Canvas.rogue"
+$include "Color.rogue"
+$include "Display.rogue"
+$include "Geometry/2D.rogue"
+$include "Renderer.rogue"
+
+class Graphics [singleton]
+  PROPERTIES
+    canvas   = Display
+    renderer : Renderer
+
+  METHODS
+    method init
+      println "=============== Graphics Init ==============="
+endClass
+

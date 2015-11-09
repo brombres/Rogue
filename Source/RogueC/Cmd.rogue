@@ -1659,7 +1659,7 @@ class CmdAccess : Cmd
           if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
 
           if (scope.this_method.is_routine)
-            throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+            throw t.error( "Cannot access object properties from routines - routines have no 'this' object context. (2)" )
           endIf
           context = CmdThisContext( t, scope.this_type )
           return CmdReadProperty( t, context, p )
@@ -1729,6 +1729,8 @@ class CmdAccess : Cmd
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
       if (args) throw t.error( "The result of a call cannot assigned to." )
 
+      local explicit_context = context?
+
       if (context is null)
         if (name[0] != '@')
           local setter_name = "set_" + name
@@ -1751,7 +1753,7 @@ class CmdAccess : Cmd
 
         if (scope.this_method.is_routine)
           p = scope.this_method.type_context.find_property( name )
-          if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context. (3)" )
         endIf
 
         context = CmdThisContext( t, scope.this_type )
@@ -1776,8 +1778,8 @@ class CmdAccess : Cmd
 
       p = context_type.find_property( name )
       if (p) 
-        if (scope.this_method.is_routine)
-          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        if (scope.this_method.is_routine and not explicit_context)
+          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context. (4)" )
         else
           return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
         endIf
@@ -1813,7 +1815,7 @@ class CmdAccess : Cmd
       if (p)
         if (not context) context = CmdThisContext( t, context_type )
         if (scope.this_method.is_routine)
-          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context. (1)" )
         endIf
         return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
       endIf

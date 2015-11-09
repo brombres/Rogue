@@ -60,6 +60,7 @@
 //-----------------------------------------------------------------------------
 //  GLOBALS
 //-----------------------------------------------------------------------------
+RogueLogical       Rogue_configured = 0;
 RogueErrorHandler* Rogue_error_handler = 0;
 RogueObject*       Rogue_error_object  = 0;
 
@@ -608,6 +609,9 @@ void Rogue_collect_garbage()
 void Rogue_quit()
 {
   int i;
+
+  if ( !Rogue_configured ) return;
+  Rogue_configured = 0;
 
   for (i=0; i<Rogue_allocator_count; ++i)
   {

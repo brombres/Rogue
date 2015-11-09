@@ -1,0 +1,16 @@
+class Color
+  DEFINITIONS
+    BLACK       = 0xff000000
+    BLUE        = 0xff0000ff
+    BROWN       = 0xff802a2a
+    CYAN        = 0xff00ffff
+    GRAY        = 0xff808080
+    GREEN       = 0xff008000
+    LIME        = 0xff00ff00
+    MAGENTA     = 0xffff00ff
+    ORANGE      = 0xffffa500
+    PURPLE      = 0xff800080
+    RED         = 0xffff0000
+    YELLOW      = 0xffffff00
+    WHITE       = 0xffffffff
+endClass

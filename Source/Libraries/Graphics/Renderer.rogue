@@ -1,0 +1,10 @@
+$include "OpenGLRenderer.rogue"
+
+class Renderer
+  PROPERTIES
+    canvas : Canvas
+
+  METHODS
+    method clear
+endClass
+
