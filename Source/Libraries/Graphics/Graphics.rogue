@@ -4,10 +4,3 @@ $include "Display.rogue"
 $include "Geometry/2D.rogue"
 $include "Renderer.rogue"
 
-class Graphics
-  PROPERTIES
-
-  METHODS
-    method init
-endClass
-

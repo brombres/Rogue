@@ -34,11 +34,12 @@ class RogueC [singleton]
     first_filepath  : String
     output_filepath : String
 
-    supported_targets = String[]
+    supported_targets      = String[]
+    requisite_declarations = String[]
 
-    execute_args     : String
+    execute_args      : String
 
-    package_name     : String
+    package_name      : String
 
   METHODS
     method launch
@@ -76,6 +77,8 @@ class RogueC [singleton]
                    |
                    |  --package=com.developer.app [Java only]
                    |
+                   |  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
+                   |
                    |  --target=
 
           usage += supported_targets->String.replace(',','|') + "\n"
@@ -94,6 +97,18 @@ class RogueC [singleton]
           include( filepath )
         endForEach
         include( "Standard" )
+
+        # Add requisite declarations to Program's requisite list
+        local t = TokenType("Internal").create_token( "[Command Line Arguments]", 0, 0 )
+        forEach (declaration in requisite_declarations)
+          if (declaration.contains('.'))
+            Program.requisite_list.add( RequisiteItem( t,
+                Program.get_type_reference( t, declaration.before_first('.') ),
+                declaration.after_first('.')) )
+          else
+            Program.requisite_list.add( RequisiteItem( t, Program.get_type_reference(t, declaration) ) )
+          endIf
+        endForEach
 
         Program.resolve
 
@@ -244,6 +259,11 @@ class RogueC [singleton]
                 throw RogueError( ''Java package name expected after "--package=" (e.g. "com.developer.app").'' )
               endIf
               package_name = value
+
+            case "--requisite"
+              if (value.count)
+                requisite_declarations.add( value.split(',') )
+              endIf
 
             case "--target"
               if (not value.count)
