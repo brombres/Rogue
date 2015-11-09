@@ -127,6 +127,9 @@ class LogicalProperty( value:Logical ) : PropertyValue
 endClass
 
 class NullProperty : PropertyValue
+  GLOBALS
+    value = NullProperty()
+
   METHODS
     method to->String
       return "null"

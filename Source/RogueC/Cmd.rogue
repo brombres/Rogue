@@ -1577,7 +1577,13 @@ class CmdAccess : Cmd
     method resolve( scope:Scope )->Cmd
       if (args) args.resolve( scope )
 
-      if (context is null)
+      if (context?)
+        if (name.ends_with('?'))
+          return CmdLogicalize( t, CmdAccess(t,context,name.leftmost(-1),args) ).resolve( scope )
+        endIf
+        context = context.resolve( scope )
+
+      else
         local v = scope.find_local( name )
         if (v)
           if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
@@ -1671,9 +1677,6 @@ class CmdAccess : Cmd
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
-
-      else
-        context = context.resolve( scope )
       endIf
 
       local context_type = context.require_type

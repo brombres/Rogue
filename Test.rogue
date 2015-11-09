@@ -4,32 +4,4 @@ $include "Graphics"
 test
 
 routine test
-  println "Hello"
-
-
-class Pet
-  GLOBALS
-    x : Pet
-
-  ROUTINES
-    routine create( type:String )->Pet
-      x = Cat()
-      if (type == "Cat") return Cat()
-      else               return Dog()
-
-  METHODS
-    method speak
-endClass
-
-class Cat : Pet
-  METHODS
-    method speak
-      println "Meow"
-endClass
-
-class Dog : Pet
-  METHODS
-    method speak
-      println "Woof"
-endClass
-
+  println NullProperty.value?

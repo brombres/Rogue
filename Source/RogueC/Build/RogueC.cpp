@@ -24372,7 +24372,15 @@ RogueClassCmd* RogueCmdAccess__resolve__Scope( RogueClassCmdAccess* THIS, RogueC
   {
     RogueCmdArgs__resolve__Scope( THIS->args, scope_0 );
   }
-  if (THIS->context == NULL)
+  if (!!(THIS->context))
+  {
+    if (((RogueString__ends_with__String( THIS->name, ((RogueCharacter__to_String( (RogueCharacter)'?' ))) ))))
+    {
+      return (RogueClassCmd*)((call_ROGUEM301( 22, (RogueClassCmdUnary*)(((RogueCmdUnary__init__Token_Cmd( ((RogueClassCmdUnary*)((RogueClassCmdLogicalize*)ROGUE_CREATE_OBJECT(CmdLogicalize))), THIS->t, ((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), THIS->t, THIS->context, ((RogueString__leftmost__Integer( THIS->name, -1 ))), THIS->args ))))) )))), scope_0 )));
+    }
+    THIS->context = (call_ROGUEM42( 22, (RogueClassCmd*)(THIS->context), scope_0 ));
+  }
+  else
   {
     RogueClassLocal* v_1 = (((RogueScope__find_local__String( scope_0, THIS->name ))));
     if (!!(v_1))
@@ -24490,10 +24498,6 @@ RogueClassCmd* RogueCmdAccess__resolve__Scope( RogueClassCmdAccess* THIS, RogueC
       }
     }
     return (RogueClassCmd*)(((RogueScope__resolve_call__Type_CmdAccess_Logical_Logical( scope_0, scope_0->_this_type, THIS, true, false ))));
-  }
-  else
-  {
-    THIS->context = (call_ROGUEM42( 22, (RogueClassCmd*)(THIS->context), scope_0 ));
   }
   RogueClassType* context_type_12 = (((Rogue_Cmd__require_type( THIS->context ))));
   RogueType__organize( context_type_12 );
@@ -38318,7 +38322,7 @@ void Rogue_configure()
   Rogue_literal_strings[752] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "count", 5 ) ); 
   Rogue_literal_strings[753] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Invalid arguments to array count.", 33 ) ); 
   Rogue_literal_strings[754] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Scope::resolve_call():137 ", 26 ) ); 
-  Rogue_literal_strings[755] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "CmdAccess::resolve():1607 ;throwt.error([INTERNAL])", 51 ) ); 
+  Rogue_literal_strings[755] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "CmdAccess::resolve():1613 ;throwt.error([INTERNAL])", 51 ) ); 
   Rogue_literal_strings[756] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "Recursive call to getter ", 25 ) ); 
   Rogue_literal_strings[757] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( "() - write @", 12 ) ); 
   Rogue_literal_strings[758] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( " instead.", 9 ) ); 
