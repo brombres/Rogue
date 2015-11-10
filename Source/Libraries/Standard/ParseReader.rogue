@@ -1,23 +1,26 @@
 class ParseReader : Reader<<Character>>
   PROPERTIES
-    data     : Character[]
-    position : Integer
-    count    : Integer
-    line     : Integer
-    column   : Integer
+    data           : Character[]
+    position       : Integer
+    count          : Integer
+    line           : Integer
+    column         : Integer
+    spaces_per_tab : Integer
 
   METHODS
-    method init( source:String )
+    method init( source:String, spaces_per_tab=0 )
       local tab_count = 0
-      forEach (b in source)
-        if (b == '\t') ++tab_count
-      endForEach
+
+      if (spaces_per_tab)
+        forEach (b in source)
+          if (b == '\t') ++tab_count
+        endForEach
+      endIf
 
       data = Character[]( source.count + tab_count )
       forEach (b in source)
-        if (b == '\t')
-          data.add( 32 )
-          data.add( 32 )
+        if (b == '\t' and spaces_per_tab)
+          forEach (1..spaces_per_tab) data.add( 32 )
         else
           data.add( b )
         endIf
@@ -27,20 +30,22 @@ class ParseReader : Reader<<Character>>
       line = 1
       column = 1
 
-    method init( file:File )
-      init( file.load_as_bytes )
+    method init( file:File, spaces_per_tab=0 )
+      init( file.load_as_bytes, spaces_per_tab )
 
-    method init( source:Byte[] )
+    method init( source:Byte[], spaces_per_tab=0 )
       local tab_count = 0
-      forEach (b in source)
-        if (b == '\t') ++tab_count
-      endForEach
+
+      if (spaces_per_tab)
+        forEach (b in source)
+          if (b == '\t') ++tab_count
+        endForEach
+      endIf
 
       data = Character[]( source.count + tab_count )
       forEach (b in source)
-        if (b == '\t')
-          data.add( 32 )
-          data.add( 32 )
+        if (b == '\t' and spaces_per_tab)
+          forEach (1..spaces_per_tab) data.add( 32 )
         elseIf (b == '\n' or (b >= 32 and b <= 126))
           data.add( b )
         endIf
@@ -50,17 +55,19 @@ class ParseReader : Reader<<Character>>
       line = 1
       column = 1
 
-    method init( source:Character[] )
+    method init( source:Character[], spaces_per_tab=0 )
       local tab_count = 0
-      forEach (b in source)
-        if (b == '\t') ++tab_count
-      endForEach
+
+      if (spaces_per_tab)
+        forEach (b in source)
+          if (b == '\t') ++tab_count
+        endForEach
+      endIf
 
       data = Character[]( source.count + tab_count )
       forEach (b in source)
-        if (b == '\t')
-          data.add( 32 )
-          data.add( 32 )
+        if (b == '\t' and spaces_per_tab)
+          forEach (1..spaces_per_tab) data.add( 32 )
         else
           data.add( b )
         endIf

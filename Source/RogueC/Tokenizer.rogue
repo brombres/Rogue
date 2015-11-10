@@ -11,12 +11,12 @@ class Tokenizer
 
   METHODS
     method tokenize( filepath )->Token[]
-      return tokenize( ParseReader(File(filepath)) )
+      return tokenize( ParseReader(File(filepath),2) )
 
     method tokenize( reference_t:Token, filepath, data:String )->Token[]
       local characters = Character[]( data.count )
       forEach (ch in data) characters.add( ch )
-      return tokenize( ParseReader(characters).set_position(reference_t.line,reference_t.column) )
+      return tokenize( ParseReader(characters,2).set_position(reference_t.line,reference_t.column) )
 
     method tokenize( reader )->Token[]
       configure_token_types
@@ -481,7 +481,7 @@ class Tokenizer
           error_buffer.print('.')
           throw error( error_buffer->String )
         endIf
-        local intval = reader.read->Integer
+        local intval = reader.read.to_number
         value = (value:<<:4) + intval
         ++i
       endWhile
