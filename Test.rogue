@@ -5,14 +5,9 @@ $include "Standard/JSON.rogue"
 test
 
 routine test
-  #local table = JSON.parse( "{}" )
-  local obj = create_pet : Pet
-
-
-  routine create_pet->Cat
-  return Cat()
-
-class Pet;
-
-class Cat : Pet;
+  println pi
+  local table = JSON.parse( "{name:'Abe',age:42,has_packages:true,pi:3.141592653589793,tab:'\u0065',special:'\u0065\b\f\n\r\t\u0065'}" )
+  println table.to_json
+  println table.get_real("pi") == pi
+  println table.get_string("tab")[0]->Integer
 

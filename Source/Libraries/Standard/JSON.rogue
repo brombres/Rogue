@@ -21,22 +21,22 @@ class JSON
         if (result.count == 0) return StringProperty.empty_string
 
         local first_ch = result[ 0 ]
-        if (first_ch == 't' and result.equals( "true" ))  return LogicalProperty.true_value
-        if (first_ch == 'f' and result.equals( "false" )) return LogicalProperty.false_value
-        if (first_ch == 'n' and result.equals( "null" ))  return null
+        if (first_ch == 't' and result == "true")  return LogicalProperty.true_value
+        if (first_ch == 'f' and result == "false") return LogicalProperty.false_value
+        if (first_ch == 'n' and result == "null")  return null
 
-        return StringProperty.empty_string
+        return StringProperty( result )
 
       elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch == '_' or ch == '$'))
         local result = parse_identifier( reader )
         if (result.count == 0) return StringProperty.empty_string
 
         local first_ch = result[ 0 ]
-        if (first_ch == 't' and result.equals( "true" ))  return LogicalProperty.true_value
-        if (first_ch == 'f' and result.equals( "false" )) return LogicalProperty.false_value
-        if (first_ch == 'n' and result.equals( "null" ))  return null
+        if (first_ch == 't' and result == "true")  return LogicalProperty.true_value
+        if (first_ch == 'f' and result == "false") return LogicalProperty.false_value
+        if (first_ch == 'n' and result == "null")  return null
 
-        return StringProperty.empty_string
+        return StringProperty( result )
       else
         return null
       endIf
@@ -58,11 +58,12 @@ class JSON
         local key = parse_identifier( reader )
         reader.consume_spaces
 
-        if (not reader.consume(':'))
-          table.set( key, true )
-        else
+        if (reader.consume(':'))
           reader.consume_spaces
-          table.set( key, parse_value(reader) )
+          local value = parse_value( reader )
+          table.set( key, value )
+        else
+          table.set( key, true )
         endIf
 
         reader.consume_spaces
@@ -79,7 +80,7 @@ class JSON
 
       reader.consume_spaces
 
-      local list = new ADCData.List()
+      local list = PropertyList()
       if (reader.consume(']')) return list
 
       local first = true
@@ -112,7 +113,7 @@ class JSON
           elseIf (ch == 'n') buffer.print( '\n' )
           elseIf (ch == 'r') buffer.print( '\r' )
           elseIf (ch == 't') buffer.print( '\t' )
-          elseIf (ch == 'u') buffer.print( parse_hex_quad( reader ) )
+          elseIf (ch == 'u') println "parsing hex quad"; buffer.print( parse_hex_quad( reader ) )
           else               buffer.print( ch )
         else
           buffer.print( ch )
@@ -122,14 +123,14 @@ class JSON
 
       return buffer->String
 
-    routine hex_character_to_value( ch:Integer )->Integer [macro]
-      return ch.to_number
+    routine hex_character_to_value( ch:Character )->Integer [macro]
+      ch.to_number
 
     routine parse_hex_quad( reader:ParseReader )->Character
       local code = 0
       forEach (i in 1..4)
         if (reader.has_another)
-          code = code :<<: 4 | hex_character_to_value( reader.read )
+          code = (code :<<: 4) | hex_character_to_value( reader.read )
         endIf
       endForEach
       return code->Character
@@ -186,7 +187,7 @@ class JSON
           power += 1.0
           ch = reader.peek
         endWhile
-        n += decimal / Math.pow( 10, power )
+        n += decimal / (10.0 ^ power)
       endIf
 
       if (reader.consume( 'e' ) or reader.consume( 'E' ))
