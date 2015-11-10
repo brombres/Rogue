@@ -17,6 +17,7 @@ class Program [requisite singleton]
 
     first_filepath           = ""
     m_on_launch              : Method
+    global_properties        = Property[]
 
     native_header = String[]
     native_code   = String[]
@@ -163,6 +164,10 @@ class Program [requisite singleton]
       else             m_on_launch = type_Global.add_method( type_Global.t, "on_launch" )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
       m_on_launch.attributes.add( Attribute.is_requisite )
+
+      forEach (p in global_properties)
+        type_Global.add_property( p )
+      endForEach
 
       type_null.resolve
       type_Real.resolve

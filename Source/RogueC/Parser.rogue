@@ -756,7 +756,11 @@ class Parser
       endIf
 
       if (next_is(TokenType.keyword_local))
-        parse_local_declaration( statements )
+        parse_local_or_global( statements )
+        return
+
+      elseIf (next_is(TokenType.keyword_global))
+        parse_local_or_global( null )
         return
 
       elseIf (consume(TokenType.keyword_return))
@@ -1045,9 +1049,9 @@ class Parser
 
       return cmd_try
 
-    method parse_local_declaration( statements:CmdStatementList )
+    method parse_local_or_global( statements:CmdStatementList )
       local_declarations.clear
-      local t = read   # "local"
+      local t = read   # "local" or "global"
 
       # local[=initial_value] [, ...]
       local first = true
@@ -1073,9 +1077,17 @@ class Parser
       endIf
 
       # Turn each declaration into a separate CmdLocalDeclaration
-      forEach (v in local_declarations)
-        statements.add( CmdLocalDeclaration(v.t,v) )
-      endForEach
+      if (statements)
+        # locals
+        forEach (v in local_declarations)
+          statements.add( CmdLocalDeclaration(v.t,v) )
+        endForEach
+      else
+        # globals
+        forEach (v in local_declarations)
+          Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type,v.initial_value) )
+        endForEach
+      endIf
 
     method parse_type->Type
       local name : String

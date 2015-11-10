@@ -70,6 +70,7 @@ class TokenType
     keyword_escapeWhile           : TokenType
     keyword_forEach               : TokenType
     keyword_function              : TokenType
+    keyword_global                : TokenType
     keyword_if                    : TokenType
     keyword_in                    : TokenType
     keyword_is                    : TokenType

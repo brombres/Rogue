@@ -1666,10 +1666,14 @@ class CmdAccess : Cmd
         if (p)
           if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
 
-          if (scope.this_method.is_routine)
-            throw t.error( "Cannot access object properties from routines - routines have no 'this' object context. (2)" )
+          if (scope.this_type.is_singleton)
+            context = CmdReadSingleton( t, scope.this_type )
+          else
+            if (scope.this_method.is_routine)
+              throw t.error( "Cannot access object properties from routines - routines have no 'this' object context. (2)" )
+            endIf
+            context = CmdThisContext( t, scope.this_type )
           endIf
-          context = CmdThisContext( t, scope.this_type )
           return CmdReadProperty( t, context, p )
         endIf
 

@@ -136,6 +136,7 @@ class Tokenizer
       TokenType.keyword_escapeWhile      = define( TokenType("escapeWhile") )
       TokenType.keyword_forEach          = define( TokenType("forEach") )
       TokenType.keyword_function         = define( TokenType("function") )
+      TokenType.keyword_global           = define( TokenType("global") )
       TokenType.keyword_if               = define( TokenType("if") )
       TokenType.keyword_in               = define( TokenType("in") )
       TokenType.keyword_is               = define( TokenType("is") )
