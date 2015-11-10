@@ -1,8 +1,5 @@
 class PropertyValue
   ROUTINES
-    routine create( value:Character )->PropertyValue
-      return CharacterProperty( value )
-
     routine create( value:Integer )->PropertyValue
       return IntegerProperty( value )
 
@@ -16,9 +13,6 @@ class PropertyValue
       return StringProperty( value )
 
   METHODS
-    method add( value:Character )->PropertyValue [macro]
-      this.add( PropertyValue(value) )
-
     method add( value:Integer )->PropertyValue [macro]
       this.add( PropertyValue(value) )
 
@@ -41,46 +35,98 @@ class PropertyValue
       return this
 
     method first->PropertyValue
-      return NullProperty()
+      return null
 
     method get( index:Integer )->PropertyValue
-      return NullProperty()
+      return null
+
+    method get( key:String )->PropertyValue
+      return null
+
+    method get_integer( index:Integer )->Integer
+      local value = get( index )
+      if (not value) return 0
+      return value->Integer
+
+    method get_logical( index:Integer )->Logical
+      local value = get( index )
+      if (not value) return false
+      return value->Logical
+
+    method get_real( index:Integer )->Real
+      local value = get( index )
+      if (not value) return 0.0
+      return value->Real
+
+    method get_string( index:Integer )->String
+      local value = get( index )
+      if (not value) return ""
+      return value->String
+
+    method get_integer( key:String )->Integer
+      local value = get( key )
+      if (not value) return 0
+      return value->Integer
+
+    method get_logical( key:String )->Logical
+      local value = get( key )
+      if (not value) return false
+      return value->Logical
+
+    method get_real( key:String )->Real
+      local value = get( key )
+      if (not value) return 0.0
+      return value->Real
+
+    method get_string( key:String )->String
+      local value = get( key )
+      if (not value) return ""
+      return value->String
 
     method last->PropertyValue
-      return NullProperty()
+      return null
 
     method remove( value:PropertyValue )->PropertyValue
-      return NullProperty()
+      return null
 
     method remove_at( index:Integer )->PropertyValue
-      return NullProperty()
+      return null
 
     method remove_first->PropertyValue
-      return NullProperty()
+      return null
 
     method remove_last->PropertyValue
-      return NullProperty()
+      return null
 
-    method set( index:Integer, value:Character ) [macro]
+    method set( index:Integer, value:Integer )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Integer ) [macro]
+    method set( index:Integer, value:Logical )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Logical ) [macro]
+    method set( index:Integer, value:Real )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Real ) [macro]
+    method set( index:Integer, value:String )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:String ) [macro]
-      this.set( index, PropertyValue(value) )
+    method set( index:Integer, value:PropertyValue )->PropertyValue
+      return this
 
+    method set( key:String, value:Integer )->PropertyValue [macro]
+      this.set( key, PropertyValue(value) )
 
-    method set( index:Integer, value:PropertyValue )
+    method set( key:String, value:Logical )->PropertyValue [macro]
+      this.set( key, PropertyValue(value) )
 
-    method to->Character
-      return this->Integer->Character
+    method set( key:String, value:Real )->PropertyValue [macro]
+      this.set( key, PropertyValue(value) )
+
+    method set( key:String, value:String )->PropertyValue [macro]
+      this.set( key, PropertyValue(value) )
+
+    method set( key:String, value:PropertyValue )->PropertyValue
+      return this
 
     method to->Integer
       return 0
@@ -90,18 +136,12 @@ class PropertyValue
 
     method to->Real
       return this->Integer->Real
-endClass
 
-class CharacterProperty( value:Character ) : PropertyValue
-  METHODS
-    method to->Character
-      return value
+    method to_json->String
+      return to_json( StringBuilder() )->String
 
-    method to->Integer
-      return value
-
-    method to->String
-      return value->String
+    method to_json( buffer:StringBuilder )->StringBuilder
+      return buffer
 endClass
 
 class IntegerProperty( value:Integer ) : PropertyValue
@@ -111,9 +151,17 @@ class IntegerProperty( value:Integer ) : PropertyValue
 
     method to->String
       return value->String
+
+    method to_json( buffer:StringBuilder )->StringBuilder
+      buffer.print( value )
+      return buffer
 endClass
 
 class LogicalProperty( value:Logical ) : PropertyValue
+  GLOBALS
+    true_value  = LogicalProperty( true )
+    false_value = LogicalProperty( false )
+
   METHODS
     method to->Integer
       if (value) return 1
@@ -124,15 +172,10 @@ class LogicalProperty( value:Logical ) : PropertyValue
 
     method to->String
       return value->String
-endClass
 
-class NullProperty : PropertyValue
-  GLOBALS
-    value = NullProperty()
-
-  METHODS
-    method to->String
-      return "null"
+    method to_json( buffer:StringBuilder )->StringBuilder
+      buffer.print( value )
+      return buffer
 endClass
 
 class RealProperty( value:Real ) : PropertyValue
@@ -145,9 +188,16 @@ class RealProperty( value:Real ) : PropertyValue
 
     method to->String
       return value->String
+
+    method to_json( buffer:StringBuilder )->StringBuilder
+      buffer.print( value )
+      return buffer
 endClass
 
 class StringProperty( value:String ) : PropertyValue
+  GLOBALS
+    empty_string = StringProperty( "" )
+
   METHODS
     method to->Character
       if (value.count > 0) return value[0]
@@ -173,6 +223,64 @@ class StringProperty( value:String ) : PropertyValue
 
     method to->String
       return value
+
+    method to_json( buffer:StringBuilder )->StringBuilder
+      return to_json( value, buffer )
+
+  ROUTINES
+    routine to_json( value:String, buffer:StringBuilder )->StringBuilder
+      if (value)
+        buffer.print '"'
+        forEach (ch in value)
+          which (ch)
+            case '"':
+              buffer.print( "\\\"" )
+            case '\\':
+              buffer.print( "\\\\" )
+            case '/':
+              buffer.print( "\\/" )
+            case '\b':
+              buffer.print( "\\b" )
+            case '\f':
+              buffer.print( "\\f" )
+            case '\n':
+              buffer.print( "\\n" )
+            case '\r':
+              buffer.print( "\\r" )
+            case '\t':
+              buffer.print( "\\t" )
+            others
+              if (ch >= 32 and ch <= 126)
+                buffer.print( ch )
+              elseIf (ch < 32 or ch == 127 or ch == 0x2028 or ch == 0x2029)
+                # RE: 2028/9:
+                # http://stackoverflow.com/questions/2965293/javascript-parse-error-on-u2028-unicode-character
+                buffer.print( "\\u" )
+                local n = ch : Integer
+                forEach (nibble in 0..3)
+                  local digit = (n :>>>: 12) & 15
+                  n = n:<<:4
+                  if (digit <= 9)
+                    buffer.print( digit )
+                  else
+                    buffer.print( ('a' + (digit - 10))->Character )
+                  endIf
+                endForEach
+              elseIf (ch >= 0xd800 and ch <= 0xdfff)
+                # RE: d800..dfff - reserved code points for encoding UTF16 that
+                # JS doesn't understand but browsers do (creates bad decoding)
+                buffer.print( '?' )
+              else
+                # Store printable Unicode without encoding as \\uXXXX
+                buffer.print( ch )
+              endIf
+          endWhich
+        endForEach
+        buffer.print '"'
+      else
+        buffer.print "null"
+      endIf
+      return buffer
 endClass
 
 class PropertyList : PropertyValue
@@ -211,8 +319,8 @@ class PropertyList : PropertyValue
       return this.get(0) as PropertyValue
 
     method get( index:Integer )->PropertyValue
-      if (index < 0 or index >= values.count) return NullProperty()
-      return values[ index ] as PropertyValue
+      if (index < 0 or index >= values.count) return null
+      return values[ index ]
 
     method last->PropertyValue
       return this.get( values.count - 1 ) as PropertyValue
@@ -229,28 +337,66 @@ class PropertyList : PropertyValue
     method remove_last->PropertyValue
       return values.remove_last as PropertyValue
 
-    method set( index:Integer, new_value:PropertyValue )
-      if (index < 0) return
+    method set( index:Integer, new_value:PropertyValue )->PropertyValue
+      if (index < 0) return this
 
-      while (index >= values.count) add( NullProperty() )
-
+      while (index >= values.count) add( null as PropertyValue )
       values.set( index, new_value )
+
+      return this
 
     method to->String
       return values->String
+
+    method to_json( buffer:StringBuilder )->StringBuilder
+      buffer.print( '[' )
+      local first = true
+      forEach (value in values)
+        if (first) first = false
+        else       buffer.print( ',' )
+
+        if (value) value.to_json( buffer )
+        else       buffer.print( "null" )
+      endForEach
+      buffer.print( ']' )
+      return buffer
 endClass
 
 class PropertyTable : PropertyValue
   PROPERTIES
-    value : Table<<String,PropertyValue>>
+    values : Table<<String,PropertyValue>>
 
   METHODS
     method init
-      value = Table<<String,PropertyValue>>()
+      values = Table<<String,PropertyValue>>()
 
-    method init( value )
+    method init( values )
+
+    method get( key:String )->PropertyValue
+      return values[ key ]
+
+    method set( key:String, new_value:PropertyValue )->PropertyValue
+      values.set( key, new_value )
+      return this
 
     method to->String
-      return value->String
+      return values->String
+
+    method to_json( buffer:StringBuilder )->StringBuilder
+      buffer.print( '{' )
+      local first = true
+      forEach (key in values.keys)
+        if (first) first = false
+        else       buffer.print( ',' )
+
+        StringProperty.to_json( key, buffer )
+        buffer.print( ':' )
+
+        local value = values[key]
+        if (value) value.to_json( buffer )
+        else       buffer.print( "null" )
+      endForEach
+      buffer.print( '}' )
+      return buffer
 endClass
 

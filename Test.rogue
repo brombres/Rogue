@@ -1,7 +1,18 @@
 $include "Geometry/2D.rogue"
 $include "Graphics"
+$include "Standard/JSON.rogue"
 
 test
 
 routine test
-  println NullProperty.value?
+  #local table = JSON.parse( "{}" )
+  local obj = create_pet : Pet
+
+
+  routine create_pet->Cat
+  return Cat()
+
+class Pet;
+
+class Cat : Pet;
+

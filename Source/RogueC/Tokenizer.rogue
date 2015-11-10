@@ -11,7 +11,7 @@ class Tokenizer
 
   METHODS
     method tokenize( filepath )->Token[]
-      return tokenize( ParseReader(filepath) )
+      return tokenize( ParseReader(File(filepath)) )
 
     method tokenize( reference_t:Token, filepath, data:String )->Token[]
       local characters = Character[]( data.count )

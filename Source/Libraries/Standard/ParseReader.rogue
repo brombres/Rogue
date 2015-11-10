@@ -7,20 +7,37 @@ class ParseReader : Reader<<Character>>
     column   : Integer
 
   METHODS
-    method init( filepath:String )
-      init( File(filepath) )
+    method init( source:String )
+      local tab_count = 0
+      forEach (b in source)
+        if (b == '\t') ++tab_count
+      endForEach
+
+      data = Character[]( source.count + tab_count )
+      forEach (b in source)
+        if (b == '\t')
+          data.add( 32 )
+          data.add( 32 )
+        else
+          data.add( b )
+        endIf
+      endForEach
+
+      count = data.count
+      line = 1
+      column = 1
 
     method init( file:File )
       init( file.load_as_bytes )
 
-    method init( original_data:Byte[] )
+    method init( source:Byte[] )
       local tab_count = 0
-      forEach (b in original_data)
+      forEach (b in source)
         if (b == '\t') ++tab_count
       endForEach
 
-      data = Character[]( original_data.count + tab_count )
-      forEach (b in original_data)
+      data = Character[]( source.count + tab_count )
+      forEach (b in source)
         if (b == '\t')
           data.add( 32 )
           data.add( 32 )
@@ -33,18 +50,18 @@ class ParseReader : Reader<<Character>>
       line = 1
       column = 1
 
-    method init( original_data:Character[] )
+    method init( source:Character[] )
       local tab_count = 0
-      forEach (b in original_data)
+      forEach (b in source)
         if (b == '\t') ++tab_count
       endForEach
 
-      data = Character[]( original_data.count + tab_count )
-      forEach (b in original_data)
+      data = Character[]( source.count + tab_count )
+      forEach (b in source)
         if (b == '\t')
           data.add( 32 )
           data.add( 32 )
-        elseIf (b == '\n' or (b >= 32 and b <= 126))
+        else
           data.add( b )
         endIf
       endForEach

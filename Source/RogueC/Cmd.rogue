@@ -17,10 +17,12 @@ class Cmd
       #throw t.error( "TODO: Cmd::cast_to() primitive->...." )
       #else
       # this is a reference type
+      this_type.organize
+      target_type.organize
+
       if (this_type.instance_of(target_type))
         return CmdCastToType( t, this, target_type )
       else
-        this_type.organize
         local m_name = "to_" + target_type.name
         if (this_type.has_method_named(m_name))
           return CmdAccess( t, this, m_name )

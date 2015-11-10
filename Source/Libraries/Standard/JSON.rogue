@@ -1,0 +1,214 @@
+class JSON
+  GLOBALS
+    buffer = StringBuilder()
+
+  ROUTINES
+    routine parse( json:String )->PropertyValue
+      return parse_value( ParseReader(json) )
+
+    routine parse_value( reader:ParseReader )->PropertyValue
+      reader.consume_spaces
+
+      local ch = reader.peek
+      if (ch == '{') return parse_table( reader )
+      if (ch == '[') return parse_list( reader )
+
+      if (ch == '-')               return parse_number( reader )
+      if (ch >= '0' and ch <= '9') return parse_number( reader )
+
+      if (ch == '"' or ch == '\'')
+        local result = parse_string( reader )
+        if (result.count == 0) return StringProperty.empty_string
+
+        local first_ch = result[ 0 ]
+        if (first_ch == 't' and result.equals( "true" ))  return LogicalProperty.true_value
+        if (first_ch == 'f' and result.equals( "false" )) return LogicalProperty.false_value
+        if (first_ch == 'n' and result.equals( "null" ))  return null
+
+        return StringProperty.empty_string
+
+      elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch == '_' or ch == '$'))
+        local result = parse_identifier( reader )
+        if (result.count == 0) return StringProperty.empty_string
+
+        local first_ch = result[ 0 ]
+        if (first_ch == 't' and result.equals( "true" ))  return LogicalProperty.true_value
+        if (first_ch == 'f' and result.equals( "false" )) return LogicalProperty.false_value
+        if (first_ch == 'n' and result.equals( "null" ))  return null
+
+        return StringProperty.empty_string
+      else
+        return null
+      endIf
+
+    routine parse_table( reader:ParseReader )->PropertyTable
+      reader.consume_spaces
+
+      if (not reader.consume('{')) return null
+
+      reader.consume_spaces
+
+      local table = PropertyTable()
+      if (reader.consume('}')) return table
+
+      local first = true
+      while (first or reader.consume( ',' ))
+        first = false
+
+        local key = parse_identifier( reader )
+        reader.consume_spaces
+
+        if (not reader.consume(':'))
+          table.set( key, true )
+        else
+          reader.consume_spaces
+          table.set( key, parse_value(reader) )
+        endIf
+
+        reader.consume_spaces
+      endWhile
+
+      if (not reader.consume('}')) return null
+
+      return table
+
+    routine parse_list( reader:ParseReader )->PropertyList
+      reader.consume_spaces
+
+      if (not reader.consume('[')) return null
+
+      reader.consume_spaces
+
+      local list = new ADCData.List()
+      if (reader.consume(']')) return list
+
+      local first = true
+      while (first or reader.consume(','))
+        first = false
+        list.add( parse_value( reader ) )
+        reader.consume_spaces
+      endWhile
+
+      if (not reader.consume(']')) return null
+
+      return list
+
+    routine parse_string( reader:ParseReader )->String
+      reader.consume_spaces
+
+      local terminator = '"'
+      if     (reader.consume( '"' ))  terminator = '"'
+      elseIf (reader.consume( '\'' )) terminator = '\''
+
+      if (not reader.has_another) return ""
+
+      buffer.clear
+      local ch = reader.read
+      while (reader.has_another and ch != terminator)
+        if (ch == '\\')
+          ch = reader.read
+          if (ch == 'b')     buffer.print( '\b' )
+          elseIf (ch == 'f') buffer.print( '\f' )
+          elseIf (ch == 'n') buffer.print( '\n' )
+          elseIf (ch == 'r') buffer.print( '\r' )
+          elseIf (ch == 't') buffer.print( '\t' )
+          elseIf (ch == 'u') buffer.print( parse_hex_quad( reader ) )
+          else               buffer.print( ch )
+        else
+          buffer.print( ch )
+        endIf
+        ch = reader.read
+      endWhile
+
+      return buffer->String
+
+    routine hex_character_to_value( ch:Integer )->Integer [macro]
+      return ch.to_number
+
+    routine parse_hex_quad( reader:ParseReader )->Character
+      local code = 0
+      forEach (i in 1..4)
+        if (reader.has_another)
+          code = code :<<: 4 | hex_character_to_value( reader.read )
+        endIf
+      endForEach
+      return code->Character
+
+    routine parse_identifier( reader:ParseReader )->String
+      reader.consume_spaces
+
+      local ch = reader.peek
+      if (ch == '"' or ch == '\'')
+        return parse_string( reader )
+      else
+        buffer.clear
+        local finished = false
+        while (not finished and reader.has_another)
+          if ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_' or ch == '$')
+            reader.read
+            buffer.print( ch->Character )
+            ch = reader.peek
+          else
+            finished = true
+          endIf
+        endWhile
+
+        return buffer->String
+      endIf
+
+    routine parse_number( reader:ParseReader )->PropertyValue
+      reader.consume_spaces
+
+      local sign = 1.0
+      if (reader.consume( '-' ))
+        sign = -1.0
+        reader.consume_spaces
+      endIf
+
+      local n = 0.0
+      local ch = reader.peek
+      while (reader.has_another and ch >= '0' and ch <= '9')
+        reader.read
+        n = n * 10 + (ch - '0')
+        ch = reader.peek
+      endWhile
+
+      local is_real = false
+
+      if (reader.consume( '.' ))
+        is_real = true
+        local decimal = 0.0
+        local power = 0.0
+        ch = reader.peek
+        while (reader.has_another and ch >= '0' and ch <= '9')
+          reader.read
+          decimal = decimal * 10 + (ch - '0')
+          power += 1.0
+          ch = reader.peek
+        endWhile
+        n += decimal / Math.pow( 10, power )
+      endIf
+
+      if (reader.consume( 'e' ) or reader.consume( 'E' ))
+        local negexp = false
+        if (not reader.consume('+') and reader.consume('-')) negexp = true
+
+        local power = 0.0
+        ch = reader.peek
+        while (reader.has_another and ch >= '0' and ch <= '9')
+          reader.read
+          power = power * 10.0 + (ch - '0')
+          ch = reader.peek
+        endWhile
+
+        if (negexp) n /= 10 ^ power
+        else        n *= 10 ^ power
+      endIf
+
+      n = n * sign
+
+      if (is_real or n != n->Integer) return RealProperty( n )
+      return IntegerProperty( n->Integer )
+
+endClass
+
