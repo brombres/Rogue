@@ -222,28 +222,12 @@ RogueString* RogueString_create_from_c_string( const char* c_string, int count )
 {
   if (count == -1) count = (int) strlen( c_string );
 
-//RogueInteger decoded_count = RogueString_decoded_utf8_count( c_string, count );
-//printf( "Count is %d, decoded count is %d\n", count, decoded_count );
+  RogueInteger decoded_count = RogueString_decoded_utf8_count( c_string, count );
 
-  RogueString* st = RogueString_create_with_count( count );
-  //RogueString* st = RogueString_create_with_count( decoded_count );
-  //RogueString_decode_utf8( c_string, count, st->characters );
+  RogueString* st = RogueString_create_with_count( decoded_count );
+  RogueString_decode_utf8( c_string, count, st->characters );
 
-  // Copy 8-bit chars to 16-bit data while computing hash code.
-  RogueCharacter* dest = st->characters - 1;
-  const unsigned char* src = (const unsigned char*) (c_string - 1);
-  int hash_code = 0;
-  while (--count >= 0)
-  {
-    int ch = *(++src);
-    *(++dest) = (RogueCharacter) ch;
-    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
-  }
-
-  st->hash_code = hash_code;
-
-  //return RogueString_update_hash_code( st );
-  return st;
+  return RogueString_update_hash_code( st );
 }
 
 RogueString* RogueString_create_from_characters( RogueCharacterList* characters )
@@ -327,7 +311,25 @@ void RogueString_print_characters( RogueCharacter* characters, int count )
     while (--count >= 0)
     {
       int ch = *(++src);
-      putchar( ch );
+
+      if (ch < 0x80)
+      {
+        // %0xxxxxxx
+        putchar( ch );
+      }
+      else if (ch < 0x800)
+      {
+        // %110xxxxx 10xxxxxx
+        putchar( ((ch >> 6) & 0x1f) | 0xc0 );
+        putchar( (ch & 0x3f) | 0x80 );
+      }
+      else
+      {
+        // %1110xxxx 10xxxxxx 10xxxxxx
+        putchar( ((ch >> 12) & 15) | 0xe0 );
+        putchar( ((ch >> 6) & 0x3f) | 0x80 );
+        putchar( (ch & 0x3f) | 0x80 );
+      }
     }
   }
   else

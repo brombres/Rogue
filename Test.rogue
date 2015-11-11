@@ -8,7 +8,7 @@ $include "Standard/JSON.rogue"
 #println "\x01\uf61c".count
 #println "\x01\uf61c"[0]->Integer
 #println "\x01\uf61c"[1]->Integer
-println "debug[\uf61c]"
+println "debug[\001\uf61c]"
 println '\uf61c'
 
 routine copy_file

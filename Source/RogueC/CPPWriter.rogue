@@ -555,7 +555,6 @@ augment Program
         writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ")
         local st = Program.literal_string_list[i].to_utf8
         local encoded_count = writer.print_literal_string( st )
-        #writer.print( ", " ).print( encoded_count )
         writer.print( ", " ).print( st.count )
         writer.println( " ) ); " )
       endForEach
@@ -828,34 +827,29 @@ class CPPWriter
       return this
 
     method print_literal_character( ch:Character, in_string:Logical )->this
-      if (ch < 0x80)
-        if (ch >= 32 and ch <= 126)
-          which (ch)
-            case '"'
-              if (in_string) print( "\\\"" )
-              else           print( "\"" )
-            case '\''
-              if (in_string) print( "'" )
-              else           print( "\\'" )
-            case '\\'
-              print( "\\\\" )
-            others
-              print( ch )
-          endWhich
-        else
-          which (ch)
-            case 10
-              print "\\n"
-            others
-              print "\\"
-              print( (ch->Integer / 64)->Integer )
-              print( ((ch->Integer & 63) / 8)->Integer )
-              print( (ch & 7) )
-          endWhich
-        endIf
-
+      if (ch >= 32 and ch <= 126)
+        which (ch)
+          case '"'
+            if (in_string) print( "\\\"" )
+            else           print( "\"" )
+          case '\''
+            if (in_string) print( "'" )
+            else           print( "\\'" )
+          case '\\'
+            print( "\\\\" )
+          others
+            print( ch )
+        endWhich
       else
-
+        which (ch)
+          case 10
+            print "\\n"
+          others
+            print "\\"
+            print( (ch->Integer / 64)->Integer )
+            print( ((ch->Integer & 63) / 8)->Integer )
+            print( (ch & 7) )
+        endWhich
       endIf
 
       return this
