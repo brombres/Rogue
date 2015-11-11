@@ -313,26 +313,26 @@ class PropertyList : PropertyValue
       return values.count
 
     method first->PropertyValue
-      return this.get(0) as PropertyValue
+      return this.get(0)
 
     method get( index:Integer )->PropertyValue
       if (index < 0 or index >= values.count) return null
       return values[ index ]
 
     method last->PropertyValue
-      return this.get( values.count - 1 ) as PropertyValue
+      return this.get( values.count - 1 )
 
     method remove( value:PropertyValue )->PropertyValue
-      return values.remove( value ) as PropertyValue
+      return values.remove( value )
 
     method remove_at( index:Integer )->PropertyValue
-      return values.remove_at( index ) as PropertyValue
+      return values.remove_at( index )
 
     method remove_first->PropertyValue
-      return values.remove_first as PropertyValue
+      return values.remove_first
 
     method remove_last->PropertyValue
-      return values.remove_last as PropertyValue
+      return values.remove_last
 
     method set( index:Integer, new_value:PropertyValue )->PropertyValue
       if (index < 0) return this
