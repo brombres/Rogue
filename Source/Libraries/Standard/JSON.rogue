@@ -4,7 +4,17 @@ class JSON
 
   ROUTINES
     routine parse( json:String )->PropertyValue
-    return parse_value( ParseReader(json) )
+      return parse_value( ParseReader(json) )
+
+    routine parse_list( json:String )->PropertyList
+      local list = parse(json) as PropertyList
+      if (list) return list
+      return PropertyList()
+
+    routine parse_table( json:String )->PropertyTable
+      local table = parse(json) as PropertyTable
+      if (table) return table
+      return PropertyTable()
 
     routine parse_value( reader:ParseReader )->PropertyValue
       reader.consume_spaces

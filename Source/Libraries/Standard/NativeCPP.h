@@ -194,8 +194,10 @@ struct RogueString : RogueObject
 };
 
 RogueString* RogueString_create_with_count( int count );
-RogueString* RogueString_create_with_c_string( const char* c_string, int count );
-RogueString* RogueString_create_with_characters( RogueCharacterList* characters );
+RogueString* RogueString_create_from_c_string( const char* c_string, int count );
+RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
+void         RogueString_decode_utf8( const char* utf8_data, RogueInteger utf8_count, RogueCharacter* dest_buffer );
+RogueInteger RogueString_decoded_utf8_count( const char* utf8_data, RogueInteger utf8_count );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 

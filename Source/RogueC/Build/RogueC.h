@@ -194,8 +194,10 @@ struct RogueString : RogueObject
 };
 
 RogueString* RogueString_create_with_count( int count );
-RogueString* RogueString_create_with_c_string( const char* c_string, int count );
-RogueString* RogueString_create_with_characters( RogueCharacterList* characters );
+RogueString* RogueString_create_from_c_string( const char* c_string, int count );
+RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
+void         RogueString_decode_utf8( const char* utf8_data, RogueInteger utf8_count, RogueCharacter* dest_buffer );
+RogueInteger RogueString_decoded_utf8_count( const char* utf8_data, RogueInteger utf8_count );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 
@@ -4015,6 +4017,7 @@ void RogueCPPWriter__print_indent( RogueClassCPPWriter* THIS );
 RogueClassCPPWriter* RogueCPPWriter__print__Long( RogueClassCPPWriter* THIS, RogueLong value_0 );
 RogueClassCPPWriter* RogueCPPWriter__print__Integer( RogueClassCPPWriter* THIS, RogueInteger value_0 );
 RogueClassCPPWriter* RogueCPPWriter__print__Real( RogueClassCPPWriter* THIS, RogueReal value_0 );
+RogueClassCPPWriter* RogueCPPWriter__print__Character( RogueClassCPPWriter* THIS, RogueCharacter value_0 );
 RogueClassCPPWriter* RogueCPPWriter__print__String( RogueClassCPPWriter* THIS, RogueString* value_0 );
 RogueClassCPPWriter* RogueCPPWriter__print_code__String( RogueClassCPPWriter* THIS, RogueString* code_0 );
 RogueClassCPPWriter* RogueCPPWriter__println( RogueClassCPPWriter* THIS );
@@ -4028,8 +4031,8 @@ RogueClassCPPWriter* RogueCPPWriter__print_access_operator__Type( RogueClassCPPW
 RogueClassCPPWriter* RogueCPPWriter__print_type_name__Type( RogueClassCPPWriter* THIS, RogueClassType* type_0 );
 RogueClassCPPWriter* RogueCPPWriter__print_type_info__Type( RogueClassCPPWriter* THIS, RogueClassType* type_0 );
 RogueClassCPPWriter* RogueCPPWriter__print_default_value__Type( RogueClassCPPWriter* THIS, RogueClassType* type_0 );
-RogueClassCPPWriter* RogueCPPWriter__print__Character_Logical( RogueClassCPPWriter* THIS, RogueCharacter ch_0, RogueLogical in_string_1 );
-RogueClassCPPWriter* RogueCPPWriter__print_string_utf8__String( RogueClassCPPWriter* THIS, RogueString* st_0 );
+RogueInteger RogueCPPWriter__print_literal_character__Character_Logical( RogueClassCPPWriter* THIS, RogueCharacter ch_0, RogueLogical in_string_1 );
+RogueInteger RogueCPPWriter__print_string_utf8__String( RogueClassCPPWriter* THIS, RogueString* st_0 );
 RogueClassCPPWriter* RogueCPPWriter__init_object( RogueClassCPPWriter* THIS );
 RogueString* RogueJavaWriter__type_name( RogueClassJavaWriter* THIS );
 RogueClassJavaWriter* RogueJavaWriter__init__String( RogueClassJavaWriter* THIS, RogueString* _auto_152_0 );

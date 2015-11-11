@@ -218,11 +218,16 @@ RogueString* RogueString_create_with_count( int count )
   return st;
 }
 
-RogueString* RogueString_create_with_c_string( const char* c_string, int count )
+RogueString* RogueString_create_from_c_string( const char* c_string, int count )
 {
   if (count == -1) count = (int) strlen( c_string );
 
+  //RogueInteger decoded_count = RogueString_decoded_utf8_count( c_string, count );
+//printf( "Count is %d, decoded count is %d\n", count, decoded_count );
+
   RogueString* st = RogueString_create_with_count( count );
+  //RogueString* st = RogueString_create_with_count( decoded_count );
+  //RogueString_decode_utf8( c_string, count, st->characters );
 
   // Copy 8-bit chars to 16-bit data while computing hash code.
   RogueCharacter* dest = st->characters - 1;
@@ -237,10 +242,11 @@ RogueString* RogueString_create_with_c_string( const char* c_string, int count )
 
   st->hash_code = hash_code;
 
+  //return RogueString_update_hash_code( st );
   return st;
 }
 
-RogueString* RogueString_create_with_characters( RogueCharacterList* characters )
+RogueString* RogueString_create_from_characters( RogueCharacterList* characters )
 {
   if ( !characters ) return RogueString_create_with_count(0);
 
@@ -260,6 +266,57 @@ void RogueString_print_string( RogueString* st )
   {
     printf( "null" );
   }
+}
+
+void RogueString_decode_utf8( const char* utf8_data, RogueInteger utf8_count, RogueCharacter* dest_buffer )
+{
+  RogueByte*      src  = (RogueByte*)(utf8_data - 1);
+  RogueCharacter* dest = dest_buffer - 1;
+
+  int remaining_count = utf8_count;
+  while (--remaining_count >= 0)
+  {
+    int ch = *(++src);
+    if (ch >= 0x80)
+    {
+      if ((ch & 0xe0) == 0xc0)
+      {
+        // 110x xxxx  10xx xxxx
+        ch = ((ch & 0x1f) << 6) | (*(++src) & 0x3f);
+        --remaining_count;
+      }
+      else
+      {
+        // 1110 xxxx  10xx xxxx  10xx xxxx
+        ch = ((ch & 0x1f) << 6) | (*(++src) & 0x3f);
+        ch = (ch << 6) | (*(++src) & 0x3f);
+        remaining_count -= 2;
+      }
+    }
+    *(++dest) = (RogueCharacter) ch;
+  }
+}
+
+RogueInteger RogueString_decoded_utf8_count( const char* utf8_data, RogueInteger utf8_count )
+{
+  if (utf8_count == -1) utf8_count = (int) strlen( utf8_data );
+
+  const char* cur   = utf8_data - 1;
+  const char* limit = utf8_data + utf8_count;
+
+  int result_count = 0;
+  while (++cur < limit)
+  {
+    ++result_count;
+    int ch = *((unsigned char*)cur);
+    if (ch >= 0x80)
+    {
+      if ((ch & 0xe0) == 0xc0) ++cur;
+      else                     cur += 2;
+    }
+  }
+
+  return result_count;
 }
 
 void RogueString_print_characters( RogueCharacter* characters, int count )

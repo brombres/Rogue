@@ -482,7 +482,7 @@ class Tokenizer
           error_buffer.print('.')
           throw error( error_buffer->String )
         endIf
-        local intval = reader.read.to_number
+        local intval = reader.read.to_number(16)
         value = (value:<<:4) + intval
         ++i
       endWhile

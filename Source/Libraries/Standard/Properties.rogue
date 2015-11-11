@@ -98,6 +98,9 @@ class PropertyValue
     method remove_last->PropertyValue
       return null
 
+    method save( file:File )
+      file.save( to_json )
+
     method set( index:Integer, value:Integer )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
@@ -237,8 +240,6 @@ class StringProperty( value:String ) : PropertyValue
               buffer.print( "\\\"" )
             case '\\':
               buffer.print( "\\\\" )
-            case '/':
-              buffer.print( "\\/" )
             case '\b':
               buffer.print( "\\b" )
             case '\f':
@@ -360,6 +361,11 @@ class PropertyList : PropertyValue
       endForEach
       buffer.print( ']' )
       return buffer
+
+    ROUTINES
+      routine load( file:File )->PropertyList
+        if (not file.exists) return PropertyList()
+        return JSON.parse_list( file.load_as_string )
 endClass
 
 class PropertyTable : PropertyValue
@@ -398,5 +404,10 @@ class PropertyTable : PropertyValue
       endForEach
       buffer.print( '}' )
       return buffer
+
+    ROUTINES
+      routine load( file:File )->PropertyTable
+        if (not file.exists) return PropertyTable()
+        return JSON.parse_table( file.load_as_string )
 endClass
 

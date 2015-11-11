@@ -469,7 +469,7 @@ augment Program
       local items = 0
       forEach (n in info)
         if (first) first = false
-        else       writer.print ','
+        else       writer.print_literal_character( ',', false )  # fix
 
         ++items
         if (items == 25) writer.println; items = 0
@@ -552,8 +552,9 @@ augment Program
       writer.println
 
       forEach (i of Program.literal_string_list)
-        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create_with_c_string( ")
-        writer.print_string_utf8( Program.literal_string_list[i] )
+        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ")
+        local encoded_count = writer.print_string_utf8( Program.literal_string_list[i] )
+        #writer.print( ", " ).print( encoded_count )
         writer.print( ", " ).print( Program.literal_string_list[i].count )
         writer.println( " ) ); " )
       endForEach
@@ -589,13 +590,13 @@ augment Program
       writer.println
 
       # Copy command line args to System class
-      writer.println @|RogueSystem_executable_filepath = RogueString_create_with_c_string(
+      writer.println @|RogueSystem_executable_filepath = RogueString_create_from_c_string(
                       |    argc ? argv[0] : "Rogue", -1 );
                       |
                       |for (int i=1; i<argc; ++i)
                       |{
                       |  RogueStringList__add__String( RogueSystem_command_line_arguments, 
-                      |      RogueString_create_with_c_string( argv[i], -1 ) );
+                      |      RogueString_create_from_c_string( argv[i], -1 ) );
                       |}
       writer.println
 
@@ -705,6 +706,11 @@ class CPPWriter
 
       buffer.print( value )
 
+      return this
+
+    method print( value:Character )->CPPWriter
+      print_indent
+      buffer.print( value )
       return this
 
     method print( value:String )->CPPWriter
@@ -820,46 +826,73 @@ class CPPWriter
       endIf
       return this
 
-    method print( ch:Character, in_string=false:Logical )->CPPWriter
+    method print_literal_character( ch:Character, in_string:Logical )->Integer
       if (ch < 0x80)
         if (ch >= 32 and ch <= 126)
           which (ch)
             case '"'
-              if (in_string) print( "\\\"" )
-              else           print( "\"" )
+              if (in_string) print( "\\\"" ); return 2
+              else           print( "\"" );   return 1
             case '\''
-              if (in_string) print( "'" )
-              else           print( "\\'" )
+              if (in_string) print( "'" );    return 1
+              else           print( "\\'" );  return 2
             case '\\'
-              print( "\\\\" )
+              print( "\\\\" ); return 2
             others
-              print( ""+ch )
+              print( ch ); return 1
           endWhich
         else
           which (ch)
             case 10
               print "\\n"
+              return 2
             others
               print "\\"
-              print( "" + (ch->Integer / 64)->Integer )
-              print( "" + ((ch->Integer & 63) / 8)->Integer )
-              print( "" + (ch & 7) )
+              print( (ch->Integer / 64)->Integer )
+              print( ((ch->Integer & 63) / 8)->Integer )
+              print( (ch & 7) )
+              return 4
           endWhich
         endIf
-      endIf
-      return this
 
-    method print_string_utf8( st:String )->CPPWriter
+      else
+        # UTF8-encode characters 128+
+        if (ch < 0x80)
+          # %0xxxxxxx
+          print( ch )
+          return 1
+
+        elseIf (ch < 0x800)
+          # %110xxxxx 10xxxxxx
+          print( (((ch:>>>:6) & 0x1f) | 0xc0)->Character )
+          print( ((ch & 0x3f) | 0x80)->Character )
+          return 2
+
+        else
+          # %1110xxxx 10xxxxxx 10xxxxxx
+          print( (((ch:>>>:12) & 15) | 0xe0)->Character )
+          print( (((ch:>>>:6) & 0x3f) | 0x80)->Character )
+          print( ((ch & 0x3f) | 0x80)->Character )
+          return 3
+
+        endIf
+
+      endIf
+
+    method print_string_utf8( st:String )->Integer
       if (st is null)
         print( "0" )
-        return this
+        return 1
       endIf
 
+      local count = 0
       print( "\"" )
-      forEach (ch in st) print( ch, true )
+      forEach (ch in st)
+        count += print_literal_character( ch, true )
+      endForEach
       print( "\"" )
 
-      return this
+      return count
 endClass
 
 
@@ -1647,7 +1680,7 @@ augment CmdLiteralCharacter
           case '\'': writer.print( "'\\''" )
           others
             writer.print( "'" )
-            writer.print( value )
+            writer.print_literal_character( value, false )
             writer.print( "'" )
         endWhich
       else
@@ -2454,7 +2487,7 @@ augment CmdNativeCode
               endIf
             endIf
             if (not found)
-              writer.print( '$' ).print( name )
+              writer.print( "$" ).print( name )
             endIf
           endIf
 

@@ -10,7 +10,7 @@ class Console [singleton]
               |int len = strlen( st );
               |if (len) st[--len] = 0;
               |
-              |return RogueString_create_with_c_string( st, len );
+              |return RogueString_create_from_c_string( st, len );
 
   METHODS
     method print( value:String )

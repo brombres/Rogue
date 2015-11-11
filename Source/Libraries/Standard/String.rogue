@@ -1,7 +1,7 @@
 class String [native functional]
   ROUTINES
     routine create( characters:Character[] )->String [macro]
-      $if ("C++") native 'RogueString_create_with_characters( $characters )'
+      $if ("C++") native 'RogueString_create_from_characters( $characters )'
 
     routine create( characters:StringBuilder )->String
       return create( characters.characters )

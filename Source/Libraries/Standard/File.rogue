@@ -22,7 +22,7 @@ class File
               |    return $filepath;
               |  }
               |
-              |  return RogueString_create_with_c_string( full_name, -1 );
+              |  return RogueString_create_from_c_string( full_name, -1 );
               |}
               |#else
               |
@@ -65,7 +65,7 @@ class File
               |  if (original_dir_fd >= 0) close( original_dir_fd );
               |  if (new_dir_fd >= 0) close( new_dir_fd );
               |
-              |  return RogueString_create_with_c_string( c_filepath, -1 );
+              |  return RogueString_create_from_c_string( c_filepath, -1 );
               |}
               |#endif
 
