@@ -222,7 +222,7 @@ RogueString* RogueString_create_from_c_string( const char* c_string, int count )
 {
   if (count == -1) count = (int) strlen( c_string );
 
-  //RogueInteger decoded_count = RogueString_decoded_utf8_count( c_string, count );
+//RogueInteger decoded_count = RogueString_decoded_utf8_count( c_string, count );
 //printf( "Count is %d, decoded count is %d\n", count, decoded_count );
 
   RogueString* st = RogueString_create_with_count( count );

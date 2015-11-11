@@ -471,6 +471,47 @@ class String [native functional]
       endForEach
       return result->String
 
+    method to_utf8->String
+      # Returns a copy of this string encoded in UTF-8 format where only
+      # the lower 8 bits of each character are used.  Any character
+      # with the unicode range 0..127 is unchanged; characters originally
+      # having a higher unicode value are encoded into a sequence of 2 or 3 
+      # consecutive characters.
+
+      # Return this string unchanged if no alterations are required
+      local needs_encoding = false
+      forEach (ch in this)
+        if (ch >= 0x80)
+          needs_encoding = true
+          escapeForEach
+        endIf
+      endForEach
+      if (not needs_encoding) return this
+
+      local result = StringBuilder( count )
+
+      forEach (ch in this)
+        if (ch < 0x80)
+          # %0xxxxxxx
+          result.print( ch )
+
+        elseIf (ch < 0x800)
+          # %110xxxxx 10xxxxxx
+          result.print( (((ch:>>>:6) & 0x1f) | 0xc0)->Character )
+          result.print( ((ch & 0x3f) | 0x80)->Character )
+
+        else
+          # %1110xxxx 10xxxxxx 10xxxxxx
+          result.print( (((ch:>>>:12) & 15) | 0xe0)->Character )
+          result.print( (((ch:>>>:6) & 0x3f) | 0x80)->Character )
+          result.print( ((ch & 0x3f) | 0x80)->Character )
+
+        endIf
+
+      endForEach
+
+      return result->String
+
     method word_wrapped( width:Integer )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin

@@ -553,9 +553,10 @@ augment Program
 
       forEach (i of Program.literal_string_list)
         writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ")
-        local encoded_count = writer.print_string_utf8( Program.literal_string_list[i] )
+        local st = Program.literal_string_list[i].to_utf8
+        local encoded_count = writer.print_literal_string( st )
         #writer.print( ", " ).print( encoded_count )
-        writer.print( ", " ).print( Program.literal_string_list[i].count )
+        writer.print( ", " ).print( st.count )
         writer.println( " ) ); " )
       endForEach
       writer.println
@@ -826,73 +827,52 @@ class CPPWriter
       endIf
       return this
 
-    method print_literal_character( ch:Character, in_string:Logical )->Integer
+    method print_literal_character( ch:Character, in_string:Logical )->this
       if (ch < 0x80)
         if (ch >= 32 and ch <= 126)
           which (ch)
             case '"'
-              if (in_string) print( "\\\"" ); return 2
-              else           print( "\"" );   return 1
+              if (in_string) print( "\\\"" )
+              else           print( "\"" )
             case '\''
-              if (in_string) print( "'" );    return 1
-              else           print( "\\'" );  return 2
+              if (in_string) print( "'" )
+              else           print( "\\'" )
             case '\\'
-              print( "\\\\" ); return 2
+              print( "\\\\" )
             others
-              print( ch ); return 1
+              print( ch )
           endWhich
         else
           which (ch)
             case 10
               print "\\n"
-              return 2
             others
               print "\\"
               print( (ch->Integer / 64)->Integer )
               print( ((ch->Integer & 63) / 8)->Integer )
               print( (ch & 7) )
-              return 4
           endWhich
         endIf
 
       else
-        # UTF8-encode characters 128+
-        if (ch < 0x80)
-          # %0xxxxxxx
-          print( ch )
-          return 1
-
-        elseIf (ch < 0x800)
-          # %110xxxxx 10xxxxxx
-          print( (((ch:>>>:6) & 0x1f) | 0xc0)->Character )
-          print( ((ch & 0x3f) | 0x80)->Character )
-          return 2
-
-        else
-          # %1110xxxx 10xxxxxx 10xxxxxx
-          print( (((ch:>>>:12) & 15) | 0xe0)->Character )
-          print( (((ch:>>>:6) & 0x3f) | 0x80)->Character )
-          print( ((ch & 0x3f) | 0x80)->Character )
-          return 3
-
-        endIf
 
       endIf
 
-    method print_string_utf8( st:String )->Integer
+      return this
+
+    method print_literal_string( st:String )->this
       if (st is null)
         print( "0" )
-        return 1
+        return this
       endIf
 
-      local count = 0
       print( "\"" )
       forEach (ch in st)
-        count += print_literal_character( ch, true )
+        print_literal_character( ch, true )
       endForEach
       print( "\"" )
 
-      return count
+      return this
 endClass
 
 
