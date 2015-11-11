@@ -96,6 +96,51 @@ class String [native functional]
     method count->Integer [macro]
       $if ("C++") native '$this->count'
 
+    method decode_utf8->String
+      local needs_decoding = false
+      forEach (ch in this)
+        if (ch >= 0x80)
+          needs_decoding = true
+          escapeForEach
+        endIf
+      endForEach
+      if (not needs_decoding) return this
+
+      local buffer = StringBuilder( count )
+      local characters = reader
+      while (characters.has_another)
+        local value = characters.read : Integer
+        if (value <= 0x7f)
+          buffer.print( value->Character )
+        elseIf ((value & 0xe0) == 0xc0)
+          # 110xxxxx 10xxxxxx
+          value = ((value & 0x1f) :<<: 6) | (characters.read & 0x3f)
+          buffer.print( value->Character )
+        elseIf ((value & 0xf0) == 0xe0)
+          # 1110xxxx 10xxxxxx 10xxxxxx
+          value = ((value & 0xf) :<<: 6) | (characters.read & 0x3f)
+          value = (value :<<: 6) | (characters.read & 0x3f)
+          buffer.print( value->Character )
+        else
+          # 11110xxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
+          if (characters.has_another(3))
+            value = ((value & 7) :<<: 18) | ((characters.read & 0x3f) :<<: 12)
+            value |= (characters.read & 0x3f) :<<: 6
+            value |= (characters.read & 0x3f)
+            if (value >= 0x10000)
+              # surrogate pair
+              value -= 0x10000
+              buffer.print( (0xd800 + ((value :>>>: 10) & 0x3ff))->Character )
+              buffer.print( (0xdc00 + (value & 0x3ff))->Character )
+            else
+              buffer.print( value->Character )
+            endIf
+          endIf
+        endIf
+      endWhile
+
+      return buffer->String
+
     method ends_with( other:String )->Logical
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
@@ -511,15 +556,10 @@ class String [native functional]
           ++i
           if (low >= 0xdc00 and low <= 0xdfff)
             local value = 0x10000 + (((ch - 0xd800):<<:10) | (low-0xdc00))
-Global.println( "TODO value " + value )
-Global.println( (0xf0 | ((ch:>>>:18) & 7))->Integer )
-Global.println( (0x80 | ((ch:>>>:12) & 0x3f))->Integer )
-Global.println( (0x80 | ((ch:>>>:6)  & 0x3f))->Integer )
-Global.println( ((ch & 0x3f) | 0x80)->Integer )
-            result.print( (0xf0 | ((ch:>>>:18) & 7))->Character )
-            result.print( (0x80 | ((ch:>>>:12) & 0x3f))->Character )
-            result.print( (0x80 | ((ch:>>>:6)  & 0x3f))->Character )
-            result.print( ((ch & 0x3f) | 0x80)->Character )
+            result.print( (0xf0 | ((value:>>>:18) & 7))->Character )
+            result.print( (0x80 | ((value:>>>:12) & 0x3f))->Character )
+            result.print( (0x80 | ((value:>>>:6)  & 0x3f))->Character )
+            result.print( ((value & 0x3f) | 0x80)->Character )
           endIf
         else
           # %1110xxxx 10xxxxxx 10xxxxxx

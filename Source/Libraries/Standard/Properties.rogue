@@ -99,7 +99,7 @@ class PropertyValue
       return null
 
     method save( file:File )
-      file.save( to_json )
+      file.save( to_json.to_utf8 )
 
     method set( index:Integer, value:Integer )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
@@ -267,10 +267,6 @@ class StringProperty( value:String ) : PropertyValue
                     buffer.print( ('a' + (digit - 10))->Character )
                   endIf
                 endForEach
-              elseIf (ch >= 0xd800 and ch <= 0xdfff)
-                # RE: d800..dfff - reserved code points for encoding UTF16 that
-                # JS doesn't understand but browsers do (creates bad decoding)
-                buffer.print( '?' )
               else
                 # Store printable Unicode without encoding as \\uXXXX
                 buffer.print( ch )
@@ -365,7 +361,7 @@ class PropertyList : PropertyValue
     ROUTINES
       routine load( file:File )->PropertyList
         if (not file.exists) return PropertyList()
-        return JSON.parse_list( file.load_as_string )
+        return JSON.parse_list( file.load_as_string.decode_utf8 )
 endClass
 
 class PropertyTable : PropertyValue
@@ -408,6 +404,6 @@ class PropertyTable : PropertyValue
     ROUTINES
       routine load( file:File )->PropertyTable
         if (not file.exists) return PropertyTable()
-        return JSON.parse_table( file.load_as_string )
+        return JSON.parse_table( file.load_as_string.decode_utf8 )
 endClass
 

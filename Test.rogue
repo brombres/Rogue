@@ -8,26 +8,21 @@ $include "Standard/JSON.rogue"
 #println "\x01\uf61c".count
 #println "\x01\uf61c"[0]->Integer
 #println "\x01\uf61c"[1]->Integer
-local st = ""
-st += 0xd83d->Character
-st += 0xde1c->Character
-println st.to_utf8
 
-routine copy_file
-  local table = PropertyTable.load( File("test.json") )
-  table.save( File("test2.json") )
+#{
+local table = PropertyTable()
+table[ "\s01f61c" ] = "\s01f4af"
+table.save( File("temp.txt") )
+println table.to_json
+println
 
-routine compare_files
-  local file1 = File( "test.json" ).reader
-  local file2 = File( "test2.json" ).reader
+table = PropertyTable.load( File("temp.txt") )
+println table.to_json
+println
+}#
 
-  local index = 0
-  forEach (ch1 in file1)
-    local ch2 = file2.read
-    if (ch1 != ch2)
-      println "First difference: $ != $ at $" (ch1->Integer,ch2->Integer,index)
-      escapeForEach
-    endIf
-    ++index
-  endForEach
-😜
+local st = "debug😜"
+println "[$]" (st)
+
+#local st = File("temp.txt").load_as_string.decode_utf8
+#println st

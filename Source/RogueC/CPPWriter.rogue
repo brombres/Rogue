@@ -552,7 +552,8 @@ augment Program
       writer.println
 
       forEach (i of Program.literal_string_list)
-        writer.print(   "Rogue_literal_strings[" ).print(i).print("] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ")
+        writer.print(   "Rogue_literal_strings[" ).print(i)
+        writer.print("] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ")
         local st = Program.literal_string_list[i].to_utf8
         local encoded_count = writer.print_literal_string( st )
         writer.print( ", " ).print( st.count )

@@ -421,7 +421,7 @@ class Tokenizer
       local ch = reader.peek
       return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
 
-    method read_character->Character
+    method read_character
       if (not reader.has_another) throw error( "Character expected." )
 
       local ch = reader.peek
@@ -431,44 +431,61 @@ class Tokenizer
         reader.read
         if (not reader.has_another) throw error( "Escaped character expected; found end of input." )
 
-        if (consume('b')) return 8->Character
-        if (consume('f')) return 12->Character
-        if (consume('n')) return '\n'
-        if (consume('r')) return '\r'
-        if (consume('t')) return '\t'
-        if (consume('v')) return 11->Character
-        if (consume('0')) return '\0'
-        if (consume('/')) return '/'
-        if (consume('\''))return '\''
-        if (consume('\\'))return '\\'
-        if (consume('"')) return '"'
-        if (consume('x')) return read_hex_value(2)
-        if (consume('u')) return read_hex_value(4)
-        throw error( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
-      endIf
+        local value : Integer
+        if     (consume('b')) value = 8
+        elseIf (consume('f')) value = 12
+        elseIf (consume('n')) value = '\n'
+        elseIf (consume('r')) value = '\r'
+        elseIf (consume('t')) value = '\t'
+        elseIf (consume('v')) value = 11
+        elseIf (consume('0')) value = '\0'
+        elseIf (consume('/')) value = '/'
+        elseIf (consume('\''))value = '\''
+        elseIf (consume('\\'))value = '\\'
+        elseIf (consume('"')) value = '"'
+        elseIf (consume('x')) value = read_hex_value(2)
+        elseIf (consume('u')) value = read_hex_value(4)
+        elseIf (consume('s')) value = read_hex_value(6)
+        # supplementary - 6-digit Unicode converted to a surrogate pair if needed
+        else throw error( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
 
-      local value = reader.read->Integer
-      if ((value & 0x80) != 0)
-        # Handle UTF8 encoding
-        local ch2 = reader.read->Integer
-
-        if ((value & 0x20) == 0)
-          # %110xxxxx 10xxxxxx
-          value = value & 0x1f
-          ch2 = value & 0x3f
-          return ((value:<<:6) | ch2)->Character
+        if (value < 0x10000)
+          # Standard Unicode
+          buffer.print( value->Character )
         else
-          # %1110xxxx 10xxxxxx 10xxxxxx
-          local ch3 = reader.read->Integer
-          value = value & 15
-          ch2 = ch2 & 0x3f
-          ch3 = ch3 & 0x3f
-          return ((value:<<:2) | (ch2:<<:6) | ch3)->Character
+          # Surrogate pair
+          value -= 0x10000
+          buffer.print( (0xd800 + ((value:>>:10)&0x3ff))->Character )
+          buffer.print( (0xdc00 + (value&0x3ff))->Character )
         endIf
-      endIf
-      return value->Character
 
-    method read_hex_value( digits:Integer )->Character
+      else
+        local value = reader.read->Integer
+        if ((value & 0x80) != 0)
+          # Handle UTF8 encoding
+          local ch2 = reader.read->Integer
+
+          if ((value & 0x20) == 0)
+            # %110xxxxx 10xxxxxx
+            value = value & 0x1f
+            ch2 = value & 0x3f
+            buffer.print( ((value:<<:6) | ch2)->Character )
+          else
+            # %1110xxxx 10xxxxxx 10xxxxxx
+            local ch3 = reader.read->Integer
+            value = value & 15
+            ch2 = ch2 & 0x3f
+            ch3 = ch3 & 0x3f
+            buffer.print( ((value:<<:2) | (ch2:<<:6) | ch3)->Character )
+          endIf
+
+        else
+          buffer.print( value->Character )
+        endIf
+
+      endIf
+
+    method read_hex_value( digits:Integer )->Integer
       local value = 0
       local i = 1
       while (i <= digits)
@@ -486,7 +503,7 @@ class Tokenizer
         value = (value:<<:4) + intval
         ++i
       endWhile
-      return value->Character
+      return value
 
     method read_identifier->String
       buffer.clear
@@ -516,7 +533,7 @@ class Tokenizer
               buffer.print( terminator )
             endIf
           else
-            buffer.print( read_character )
+            read_character
           endIf
         endIf
       endWhile
@@ -803,7 +820,7 @@ class Tokenizer
           reader.read
           return add_new_string_or_character_token_from_buffer(terminator)
         else
-          buffer.print( read_character )
+          read_character
         endIf
       endWhile
 
