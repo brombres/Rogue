@@ -490,7 +490,12 @@ class String [native functional]
 
       local result = StringBuilder( count )
 
-      forEach (ch in this)
+      local n = count
+      local i = 0
+      while (i < n)
+        local ch = this[i]
+        ++i
+
         if (ch < 0x80)
           # %0xxxxxxx
           result.print( ch )
@@ -500,6 +505,22 @@ class String [native functional]
           result.print( (((ch:>>>:6) & 0x1f) | 0xc0)->Character )
           result.print( ((ch & 0x3f) | 0x80)->Character )
 
+        elseIf (ch >= 0xd800 and ch <= 0xdbff and i < n)
+          # Start of a surrogate pair
+          local low = this[i]
+          ++i
+          if (low >= 0xdc00 and low <= 0xdfff)
+            local value = 0x10000 + (((ch - 0xd800):<<:10) | (low-0xdc00))
+Global.println( "TODO value " + value )
+Global.println( (0xf0 | ((ch:>>>:18) & 7))->Integer )
+Global.println( (0x80 | ((ch:>>>:12) & 0x3f))->Integer )
+Global.println( (0x80 | ((ch:>>>:6)  & 0x3f))->Integer )
+Global.println( ((ch & 0x3f) | 0x80)->Integer )
+            result.print( (0xf0 | ((ch:>>>:18) & 7))->Character )
+            result.print( (0x80 | ((ch:>>>:12) & 0x3f))->Character )
+            result.print( (0x80 | ((ch:>>>:6)  & 0x3f))->Character )
+            result.print( ((ch & 0x3f) | 0x80)->Character )
+          endIf
         else
           # %1110xxxx 10xxxxxx 10xxxxxx
           result.print( (((ch:>>>:12) & 15) | 0xe0)->Character )
@@ -508,7 +529,7 @@ class String [native functional]
 
         endIf
 
-      endForEach
+      endWhile
 
       return result->String
 

@@ -8,8 +8,10 @@ $include "Standard/JSON.rogue"
 #println "\x01\uf61c".count
 #println "\x01\uf61c"[0]->Integer
 #println "\x01\uf61c"[1]->Integer
-println "debug[\001\uf61c]"
-println '\uf61c'
+local st = ""
+st += 0xd83d->Character
+st += 0xde1c->Character
+println st.to_utf8
 
 routine copy_file
   local table = PropertyTable.load( File("test.json") )
