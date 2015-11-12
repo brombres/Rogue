@@ -108,22 +108,26 @@ class Parser
           local type = parse_type
           local signature : String
           if (consume(TokenType.symbol_dot))
-            local buffer = StringBuilder()
-            buffer.print( read_identifier )  # method name
-            if (consume(TokenType.symbol_open_paren))
-              buffer.print( '(' )
-              if (not consume(TokenType.symbol_close_paren))
-                local first_param = true
-                while (first_param or consume(TokenType.symbol_comma))
-                  if (first_param) first_param = false
-                  else             buffer.print( ',' )
-                  buffer.print( parse_possible_type )
-                endWhile
-                must_consume( TokenType.symbol_close_paren )
+            if (consume(TokenType.symbol_times))
+              signature = "*"
+            else
+              local buffer = StringBuilder()
+              buffer.print( read_identifier )  # method name
+              if (consume(TokenType.symbol_open_paren))
+                buffer.print( '(' )
+                if (not consume(TokenType.symbol_close_paren))
+                  local first_param = true
+                  while (first_param or consume(TokenType.symbol_comma))
+                    if (first_param) first_param = false
+                    else             buffer.print( ',' )
+                    buffer.print( parse_possible_type )
+                  endWhile
+                  must_consume( TokenType.symbol_close_paren )
+                endIf
+                buffer.print( ')' )
               endIf
-              buffer.print( ')' )
+              signature = buffer->String
             endIf
-            signature = buffer->String
           endIf
           Program.requisite_list.add( RequisiteItem(t,type,signature) )
           consume_eols

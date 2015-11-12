@@ -198,9 +198,14 @@ class Program [requisite singleton]
         req.type.resolve
         req.type.attributes.add( Attribute.is_requisite )
         if (req.signature)
-          local m = req.type.find_method( req.signature )
-          if (m) m.attributes.add( Attribute.is_requisite )
-          else     throw req.t.error( "No such method or routine $ in type $." (req.signature,req.type.name) )
+          if (req.signature == "*")
+            forEach (r in req.type.routine_list) r.attributes.add( Attribute.is_requisite )
+            forEach (m in req.type.method_list)  m.attributes.add( Attribute.is_requisite )
+          else
+            local m = req.type.find_method( req.signature )
+            if (m) m.attributes.add( Attribute.is_requisite )
+            else     throw req.t.error( "No such method or routine $ in type $." (req.signature,req.type.name) )
+          endIf
         endIf
       endForEach
 

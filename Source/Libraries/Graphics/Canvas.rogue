@@ -1,3 +1,5 @@
+$include "OpenGLCanvas.rogue"
+
 class Canvas
   PROPERTIES
     size                           : XY
