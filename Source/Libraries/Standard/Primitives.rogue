@@ -6,6 +6,11 @@ class Real [primitive]
       $endIf
 
   METHODS
+    method clamped( low:Real, high:Real )->Real
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
     method hash_code->Integer
       return Long(this)->Integer
 
@@ -19,6 +24,11 @@ endClass
 
 class Float [primitive]
   METHODS
+    method clamped( low:Float, high:Float )->Float
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
     method to->Object
       return Boxed<<Float>>(this)
 endClass
@@ -31,6 +41,11 @@ class Long [primitive]
       $endIf
 
   METHODS
+    method clamped( low:Long, high:Long )->Long
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
     method hash_code->Integer
       return this
 
@@ -43,6 +58,11 @@ endClass
 
 class Integer [primitive]
   METHODS
+    method clamped( low:Integer, high:Integer )->Integer
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
     method hash_code->Integer
       return this
 
@@ -58,6 +78,11 @@ endClass
 
 class Character [primitive]
   METHODS
+    method clamped( low:Character, high:Character )->Character
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
     method hash_code->Integer
       return this->Integer
 
@@ -94,6 +119,11 @@ endClass
 
 class Byte [primitive]
   METHODS
+    method clamped( low:Byte, high:Byte )->Byte
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
     method hash_code->Integer
       return this->Integer
 

@@ -2,27 +2,5 @@ $include "Geometry/2D.rogue"
 $include "Graphics"
 $include "Standard/JSON.rogue"
 
-#copy_file
-#compare_files
-
-#println "\x01\uf61c".count
-#println "\x01\uf61c"[0]->Integer
-#println "\x01\uf61c"[1]->Integer
-
-#{
-local table = PropertyTable()
-table[ "\s01f61c" ] = "\s01f4af"
-table.save( File("temp.txt") )
-println table.to_json
-println
-
-table = PropertyTable.load( File("temp.txt") )
-println table.to_json
-println
-}#
-
-local st = "debug😜"
-println "[$]" (st)
-
-#local st = File("temp.txt").load_as_string.decode_utf8
-#println st
+println Color(-1, 2, 256, 3)
+println Color(0,0,Math.sin(Time.current),1)

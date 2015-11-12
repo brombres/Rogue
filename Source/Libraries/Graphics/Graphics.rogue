@@ -1,6 +1,5 @@
 $include "Canvas.rogue"
 $include "Color.rogue"
-$include "Display.rogue"
 $include "Geometry/2D.rogue"
-$include "Renderer.rogue"
+$include "OpenGLCanvas.rogue"
 

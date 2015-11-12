@@ -1680,6 +1680,12 @@ class CmdAccess : Cmd
         if (not args)
           local def = scope.this_type.definition_lookup[ name ]
           if (def) return def.clone
+
+          p = Program.type_Global.find_property( name )
+          if (p)
+            return CmdReadProperty( t, CmdReadSingleton(t,Program.type_Global), p ).resolve( scope )
+          endIf
+
         endIf
 
         return scope.resolve_call( scope.this_type, this, true )
@@ -1763,6 +1769,13 @@ class CmdAccess : Cmd
         if (scope.this_method.is_routine)
           p = scope.this_method.type_context.find_property( name )
           if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+        endIf
+
+        if (scope.this_type isNot Program.type_Global)
+          p = Program.type_Global.find_property( name )
+          if (p)
+            return CmdWriteProperty( t, CmdReadSingleton(t,Program.type_Global), p, new_value ).resolve( scope )
+          endIf
         endIf
 
         context = CmdThisContext( t, scope.this_type )

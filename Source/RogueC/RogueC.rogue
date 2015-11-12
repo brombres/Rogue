@@ -2,7 +2,7 @@ $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CloneArgs.rogue"
 $include "Cmd.rogue"
-$include "JavaWriter.rogue"
+#$include "JavaWriter.rogue"
 $include "Local.rogue"
 $include "Method.rogue"
 $include "Parser.rogue"
@@ -75,11 +75,11 @@ class RogueC [singleton]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
                    |
-                   |  --package=com.developer.app [Java only]
-                   |
                    |  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
                    |
                    |  --target=
+
+                   #|  --package=com.developer.app [Java only]
 
           usage += supported_targets->String.replace(',','|') + "\n"
           println usage

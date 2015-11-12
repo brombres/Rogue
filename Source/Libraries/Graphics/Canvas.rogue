@@ -1,10 +1,13 @@
-$include "OpenGLCanvas.rogue"
-
 class Canvas
   PROPERTIES
     size                           : XY
     background_color = Color.BLACK : Integer
 
   METHODS
+    method init( size )
+
     method clear
+      flush
+
+    method flush
 endClass

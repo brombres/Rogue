@@ -13,4 +13,12 @@ class Color
     RED         = 0xffff0000
     YELLOW      = 0xffffff00
     WHITE       = 0xffffffff
+
+  ROUTINES
+    routine create( r:Integer, g:Integer, b:Integer, a=255:Integer )->Integer
+      return (a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255))
+
+    routine create( r:Real, g:Real, b:Real, a=1:Real )->Integer
+      return (((a.clamped(0,1)*255)->Integer:<<:24) | ((r.clamped(0,1)*255)->Integer:<<:16) |
+             ((g.clamped(0,1)*255)->Integer:<<:8) | (b.clamped(0,1)*255)->Integer )
 endClass

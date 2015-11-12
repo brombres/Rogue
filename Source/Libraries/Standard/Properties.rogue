@@ -63,10 +63,25 @@ class PropertyValue
       if (not value) return ""
       return value->String
 
+    method get_list( index:Integer )->PropertyList
+      local value = get( index ) as PropertyList
+      if (value) return value
+      else       return PropertyList()
+
+    method get_table( index:Integer )->PropertyTable
+      local value = get( index ) as PropertyTable
+      if (value) return value
+      else       return PropertyTable()
+
     method get_integer( key:String )->Integer
       local value = get( key )
       if (not value) return 0
       return value->Integer
+
+    method get_list( key:String )->PropertyList
+      local value = get( key ) as PropertyList
+      if (value) return value
+      else       return PropertyList()
 
     method get_logical( key:String )->Logical
       local value = get( key )
@@ -82,6 +97,11 @@ class PropertyValue
       local value = get( key )
       if (not value) return ""
       return value->String
+
+    method get_table( key:String )->PropertyTable
+      local value = get( key ) as PropertyTable
+      if (value) return value
+      else       return PropertyTable()
 
     method last->PropertyValue
       return null
@@ -362,6 +382,9 @@ class PropertyList : PropertyValue
       routine load( file:File )->PropertyList
         if (not file.exists) return PropertyList()
         return JSON.parse_list( file.load_as_string.decode_utf8 )
+
+      routine parse( json:String )->PropertyList
+        return JSON.parse_list( json )
 endClass
 
 class PropertyTable : PropertyValue
@@ -405,5 +428,8 @@ class PropertyTable : PropertyValue
       routine load( file:File )->PropertyTable
         if (not file.exists) return PropertyTable()
         return JSON.parse_table( file.load_as_string.decode_utf8 )
+
+      routine parse( json:String )->PropertyTable
+        return JSON.parse_table( json )
 endClass
 

@@ -164,6 +164,14 @@ class Type
       if (other.is_optional and other.element_type is this) return true
       return (this.instance_of(other))
 
+    method is_equivalent_or_more_specific_than( other:Type )->Logical
+      if (this is other) return true
+      if (this.is_primitive and other.is_primitive)
+        return this.primitive_rank >= other.primitive_rank
+      endIf
+      #if (other.is_optional and other.element_type is this) return true
+      return (this.instance_of(other))
+
     method is_direct->Logical
       return not is_reference
 
@@ -386,6 +394,16 @@ class Type
       index_and_move_inline_to_end( method_list )
 
       return this
+
+    method primitive_rank->Integer
+      if (this is Program.type_Real)      return 7
+      if (this is Program.type_Float)     return 6
+      if (this is Program.type_Long)      return 5
+      if (this is Program.type_Integer)   return 4
+      if (this is Program.type_Character) return 3
+      if (this is Program.type_Byte)      return 2
+      if (this is Program.type_Logical)   return 1
+      return 0
 
     method collect_base_types( list:Type[] )
       if (list.contains(this)) return
