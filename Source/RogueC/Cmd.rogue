@@ -146,10 +146,10 @@ class Cmd
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
 
-    method resolve_modify( scope:Scope, delta:Integer )->Cmd
-      throw t.error( "Invalid target for increment/decrement." )
+    method resolve_adjust( scope:Scope, delta:Integer )->Cmd
+      throw t.error( "Invalid target for increment/decrement. ($)" (type_name) )
 
-    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+    method resolve_adjust_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
 
     method trace_used_code
@@ -1809,7 +1809,7 @@ class CmdAccess : Cmd
 
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
-    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+    method resolve_adjust_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       if (args is null)
         local v = scope.find_local( name )
         if (v)
@@ -1892,7 +1892,7 @@ class CmdElementAccess : Cmd
         return result
       endIf
 
-    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+    method resolve_adjust( scope:Scope, delta:Integer )->Cmd
       return clone.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInteger(t,delta)) )
 
 endClass
@@ -2096,7 +2096,7 @@ class CmdReadLocal : Cmd
       local_info.type.organize
       return this
 
-    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+    method resolve_adjust( scope:Scope, delta:Integer )->Cmd
       return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
 
     method type->Type
@@ -2157,6 +2157,9 @@ class CmdReadGlobal : Cmd
       global_info.type_context.resolve
       return this
 
+    method resolve_adjust( scope:Scope, delta:Integer )->Cmd
+      return CmdAdjustGlobal( t, global_info, delta ).resolve( scope )
+
     method trace_used_code
       global_info.type_context.trace_used_code
       global_info.type.trace_used_code
@@ -2208,7 +2211,7 @@ class CmdReadProperty : Cmd
       context = context.resolve( scope ).require_value
       return this
 
-    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+    method resolve_adjust( scope:Scope, delta:Integer )->Cmd
       return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
     method trace_used_code
@@ -3279,7 +3282,7 @@ class CmdBitwiseNot : CmdUnary
 endClass
 
 #------------------------------------------------------------------------------
-# Modify
+# adjust
 #------------------------------------------------------------------------------
 class CmdAdjust : Cmd
   PROPERTIES
@@ -3291,7 +3294,7 @@ class CmdAdjust : Cmd
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
-      return operand.resolve_modify( scope, delta )
+      return operand.resolve_adjust( scope, delta )
 endClass
 
 class CmdAdjustLocal : Cmd
@@ -3354,6 +3357,29 @@ class CmdAdjustProperty : Cmd
 endClass
 
 
+class CmdAdjustGlobal : Cmd
+  PROPERTIES
+    global_info : Property
+    delta         : Integer
+
+  METHODS
+    method init( t, global_info, delta )
+
+    method clone( clone_args:CloneArgs )->Cmd
+      return CmdAdjustGlobal( t, global_info, delta )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+
+    method trace_used_code
+      global_info.type_context.trace_used_code
+      global_info.type.trace_used_code
+endClass
+
+
 #------------------------------------------------------------------------------
 # OpWithAssign
 #------------------------------------------------------------------------------
@@ -3370,7 +3396,7 @@ class CmdOpWithAssign : Cmd
       return CmdOpWithAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
       
     method resolve( scope:Scope )->Cmd
-      return target.resolve_modify_and_assign( scope, op, new_value )
+      return target.resolve_adjust_and_assign( scope, op, new_value )
 endClass
 
 class CmdResolvedOpWithAssign : Cmd
@@ -3617,7 +3643,7 @@ class CmdReadArrayElement : Cmd
       index = index.resolve(scope).require_integer
       return this
 
-    method resolve_modify( scope:Scope, delta:Integer )->Cmd
+    method resolve_adjust( scope:Scope, delta:Integer )->Cmd
       return CmdWriteArrayElement( t, context, index.clone, CmdAdd(t,this,CmdLiteralInteger(t,delta)) ).resolve( scope )
 
     method trace_used_code

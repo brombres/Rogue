@@ -59,7 +59,7 @@ class Math
     routine mod( a:Long, b:Long )->Long
       if ((not a and not b) or b == 1) return 0
 
-      local r = native("$a % $b")->Integer
+      local r = native("$a % $b")->Long
       if ((a ~ b) < 0)
         if (r) return r + b
         else   return 0

@@ -2180,6 +2180,17 @@ augment CmdAdjustProperty
 endAugment
 
 
+augment CmdAdjustGlobal
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (delta > 0) writer.print( "++" )
+      else           writer.print( "--" )
+
+      writer.print( "Rogue" ).print( global_info.type_context.cpp_name ).print( "_" )
+      writer.print( global_info.cpp_name )
+endAugment
+
+
 augment CmdResolvedOpWithAssign
   METHODS
     method cpp_symbol->String
