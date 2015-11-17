@@ -2,18 +2,5 @@ $include "Geometry/2D.rogue"
 $include "Graphics"
 $include "Standard/JSON.rogue"
 
-println Color.rgba(-1, 2, 256, 3)
-println Color.rgba(-1, 2, 256, 3).to_hex_string
-println Color.rgba(-1, 2, 256, 3).to_binary_string
-println Color.rgba(-1, 2, 256, 3).to_octal_string
-println
-local c = Color.rgba(0,0,Math.sin(Time.current),1) : Integer
-println c
-println c.to_hex_string
-println c.to_binary_string
-println c.to_octal_string
-
-println 'A'.to_hex_string
-println 'A'.to_binary_string
-println 'A'.to_octal_string
-
+local list = Byte[][] [[3,4],[5,6]]
+println list

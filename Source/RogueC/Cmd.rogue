@@ -10,7 +10,7 @@ class Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
     method cast_to( target_type:Type )->Cmd
-      local this_type = type
+      local this_type = require_type
       if (this_type is target_type) return this
 
       #if (this_type.is_primitive)
@@ -2262,6 +2262,13 @@ class CmdCall : Cmd
 
   METHODS
     method init( t, context, method_info, args )
+
+    method require_type->Type
+      local result = type
+      if (result is null)
+        throw t.error( "Value expected; call to $.$ does not return a value." (method_info.type_context,method_info.signature) )
+      endIf
+      return result
 
     method resolve( scope:Scope )->Cmd
       if (context) context = context.resolve(scope).require_value

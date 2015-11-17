@@ -1842,6 +1842,10 @@ class Parser
 
       elseIf (next_is(TokenType.identifier) or next_is(TokenType.symbol_at) or next_is(TokenType.keyword_meta))
         local result = parse_access( t )
+        local access = result as CmdAccess
+        if (access and access.name.ends_with(']') and not access.args)
+          if (next_is(TokenType.symbol_open_bracket)) return parse_typed_literal_list( access )
+        endIf
         return result
 
       elseIf (next_is(TokenType.type_identifier))
@@ -2129,6 +2133,33 @@ class Parser
 
       return fn_cmd
       }#
+
+    method parse_typed_literal_list( list:CmdAccess )->Cmd
+      local result = list : Cmd
+      must_consume( TokenType.symbol_open_bracket )
+      consume_eols
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+        local t = peek
+        if (next_is(TokenType.symbol_open_bracket))
+          # Nested list - propagate the type
+          if (list.name.ends_with("[][]"))
+            result = CmdAccess( t, result, "add",
+              parse_typed_literal_list( CmdAccess(t,list.name.leftmost(-2),CmdArgs()) )
+            )
+          else
+            throw t.error( "Literal list content contains more dimensions than literal list type." )
+          endIf
+        else
+          result = CmdAccess( t, result, "add", parse_expression )
+        endIf
+        consume_eols
+      endWhile
+      must_consume( TokenType.symbol_close_bracket )
+      return result
 endClass
 
 class FnParam( name:String )

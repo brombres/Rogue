@@ -1,0 +1,169 @@
+class PNGDecoder
+  # COMPILING
+  #
+  # Either link with a prebuilt libpng framework OR:
+  #
+  # 1.  Download the latest PNG library from: http://libpng.org
+  #
+  # 2.  Copy the libpng's scripts/pnglibconf.h.prebuilt to ./pnglibconf.h
+  #     or otherwise configure libpng.
+  #
+  # 3.  Compile the Rogue-generated C++ with -Ipath/to/libpngXXXX
+  #
+  # 4.  Compile & link the libpng source files with the Rogue C++:
+  #
+  #       png.c pngerror.c pngget.c pngmem.c pngpread.c pngread.c
+  #       pngrio.c pngrtran.c pngrutil.c pngset.c pngtrans.c
+  #       pngwio.c pngwrite.c pngwtran.c pngwutil.c
+  PROPERTIES
+    bitmap : Bitmap
+    native "jmp_buf      error_jmp_buffer;"
+    native "RogueByte*   png_data_cursor;"
+    native "RogueInteger png_data_remaining;"
+
+  METHODS
+    method decode( bytes:Byte[] )->Logical
+      native @|png_structp  png_ptr;
+              |png_infop    info_ptr;
+              |
+              |decoder->png_data_cursor = $bytes->data->bytes;
+              |decoder->png_data_remaining = $bytes->count;
+              |
+              |png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, decoder,
+              |    Rogue_png_error_handler, NULL );
+              |if ( !png_ptr ) return false; // Out of memory
+              |
+              |png_set_add_alpha( png_ptr, 255, PNG_FILLER_AFTER );
+              |
+              |info_ptr = png_create_info_struct(png_ptr);
+              |if (!info_ptr)
+              |{
+              |  png_destroy_read_struct( &png_ptr, NULL, NULL );
+              |  return false;  // Out of memory
+              |}
+              |
+              |if (setjmp(decoder->error_jmp_buffer))
+              |{
+              |  png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+              |  return false;
+              |}
+              |
+              |png_set_read_fn( png_ptr, decoder, Rogue_png_read_callback );
+              |
+              |// Prepare the reader to ignore all recognized chunks whose data won't be
+              |// used, i.e., all chunks recognized by libpng except for IHDR, PLTE, IDAT,
+              |// IEND, tRNS, bKGD, gAMA, and sRGB (small performance improvement).
+              |{
+              |  static png_byte chunks_to_ignore[] = 
+              |  {
+              |     99,  72,  82,  77, '\0',  // cHRM
+              |    104,  73,  83,  84, '\0',  // hIST
+              |    105,  67,  67,  80, '\0',  // iCCP
+              |    105,  84,  88, 116, '\0',  // iTXt
+              |    111,  70,  70, 115, '\0',  // oFFs
+              |    112,  67,  65,  76, '\0',  // pCAL
+              |    112,  72,  89, 115, '\0',  // pHYs
+              |    115,  66,  73,  84, '\0',  // sBIT
+              |    115,  67,  65,  76, '\0',  // sCAL
+              |    115,  80,  76,  84, '\0',  // sPLT
+              |    115,  84,  69,  82, '\0',  // sTER
+              |    116,  69,  88, 116, '\0',  // tEXt
+              |    116,  73,  77,  69, '\0',  // tIME
+              |    122,  84,  88, 116, '\0'   // zTXt
+              |  };
+              |
+              |  png_set_keep_unknown_chunks( png_ptr, PNG_HANDLE_CHUNK_NEVER,
+              |      chunks_to_ignore, sizeof(chunks_to_ignore)/5 );
+              |}
+              |
+              |png_read_png(
+              |    png_ptr,
+              |    info_ptr,
+              |    PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND | PNG_TRANSFORM_GRAY_TO_RGB,
+              |    NULL
+              |);
+              |
+              |png_uint_32 width  = png_get_image_width( png_ptr, info_ptr );
+              |png_uint_32 height = png_get_image_height( png_ptr, info_ptr );
+              |
+              |$this->bitmap = RogueClassBitmap__init__XY(
+              |    ROGUE_CREATE_OBJECT(RogueTypeBitmap),
+              |    RogueClassXY((RogueInteger)width,(RogueInteger)height)
+              |);
+              |
+              |png_bytepp row_pointers = png_get_rows( png_ptr, info_ptr );
+              |
+              |int row_size = (int) png_get_rowbytes( png_ptr, info_ptr );
+              |RogueInteger* dest = $this->bitmap->pixels->data->integers;
+              |
+              |for (int j=0; j<height; ++j)
+              |{
+              |  memcpy( dest, row_pointers[j], row_size );
+              |  dest += width;
+              |}
+              |
+              |// Premultiply the alpha and transform ABGR into ARGB
+              |RogueInteger* cur = decoder->pixels - 1;
+              |for (int i=width*height; --i>=0; )
+              |{
+              |  RogueInteger abgr = *(++cur);
+              |  RogueInteger a = (abgr >> 24) & 255;
+              |  RogueInteger r, g, b;
+              |
+              |  if (a)
+              |  {
+              |    b = (abgr >> 16) & 255;
+              |    g = (abgr >> 8)  & 255;
+              |    r = abgr & 255;
+              |    if (a != 255)
+              |    {
+              |      r = (r * a) / 255;
+              |      g = (g * a) / 255;
+              |      b = (b * a) / 255;
+              |    }
+              |  }
+              |  else
+              |  {
+              |    r = g = b = 0;
+              |  }
+              |
+              |  *cur = (a<<24) | (r<<16) | (g<<8) | b;
+              |}
+              |
+              |png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+              |
+              |return true;
+
+endClass
+
+nativeHeader
+#include <setjmp.h>
+#include "png.h"
+void Rogue_png_error_handler( png_structp png_ptr, png_const_charp msg );
+void Rogue_png_read_callback( png_structp png_ptr, png_bytep data, png_size_t count );
+endNativeHeader
+
+
+nativeCode
+void Rogue_png_error_handler( png_structp png_ptr, png_const_charp msg )
+{
+  fprintf(stderr, "libpng error: %s\n", msg);
+  fflush(stderr);
+
+  longjmp( ((RogueClassPNGDecoder*)png_get_io_ptr(png_ptr))->error_jmp_buffer, 1 );
+}
+
+void Rogue_png_read_callback( png_structp png_ptr, png_bytep data, png_size_t count )
+{
+  RogueClassPNGDecoder* decoder = (RogueClassPNGDecoder*) png_get_io_ptr( png_ptr );
+  if (count > decoder->png_data_remaining) count = (png_size_t) decoder->png_data_remaining;
+
+  if (count)
+  {
+    memcpy( data, decoder->png_data_cursor, count );
+    decoder->png_data_cursor    += count;
+    decoder->png_data_remaining -= count;
+  }
+}
+endNativeCode
+

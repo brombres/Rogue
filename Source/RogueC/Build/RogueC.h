@@ -4175,6 +4175,7 @@ RogueClassCmdArgs* RogueParser__parse_args__TokenType_TokenType( RogueClassParse
 RogueString* RogueParser__parse_specialization_string( RogueClassParser* THIS );
 void RogueParser__parse_specializer__StringBuilder_TokenList( RogueClassParser* THIS, RogueStringBuilder* buffer_0, RogueTokenList* tokens_1 );
 RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS );
+RogueClassCmd* RogueParser__parse_typed_literal_list__CmdAccess( RogueClassParser* THIS, RogueClassCmdAccess* list_0 );
 RogueClassParser* RogueParser__init_object( RogueClassParser* THIS );
 RogueString* RogueTokenList__to_String( RogueTokenList* THIS );
 RogueString* RogueTokenList__type_name( RogueTokenList* THIS );
@@ -5233,6 +5234,7 @@ void RogueCmdCallRoutine__write_cpp__CPPWriter_Logical( RogueClassCmdCallRoutine
 RogueClassCmdCallRoutine* RogueCmdCallRoutine__init_object( RogueClassCmdCallRoutine* THIS );
 RogueClassCmdCallRoutine* RogueCmdCallRoutine__init__Token_Method_CmdArgs( RogueClassCmdCallRoutine* THIS, RogueClassToken* _auto_883_0, RogueClassMethod* _auto_884_1, RogueClassCmdArgs* _auto_885_2 );
 RogueString* RogueCmdCall__type_name( RogueClassCmdCall* THIS );
+RogueClassType* Rogue_CmdCall__require_type( RogueClassCmdCall* THIS );
 RogueClassCmd* RogueCmdCall__resolve__Scope( RogueClassCmdCall* THIS, RogueClassScope* scope_0 );
 void RogueCmdCall__trace_used_code( RogueClassCmdCall* THIS );
 RogueClassType* Rogue_CmdCall__type( RogueClassCmdCall* THIS );

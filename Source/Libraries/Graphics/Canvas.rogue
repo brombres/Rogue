@@ -7,7 +7,15 @@ class Canvas
     method init( size )
 
     method clear
-      flush
+
+    method clear( background_color )
+      clear
+
+    method height->Integer [macro]
+      this.size.y
 
     method flush
+
+    method width->Integer [macro]
+      this.size.x
 endClass

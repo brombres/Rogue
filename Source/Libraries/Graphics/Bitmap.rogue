@@ -1,0 +1,12 @@
+class Bitmap : Canvas
+  PROPERTIES
+    pixels        : Integer[]
+
+  METHODS
+    method init( size ) [requisite]
+      pixels = Integer[]( width*height, Color.BLACK )
+
+    method clear
+      local color = background_color
+      forEach (i of pixels) pixels[i] = color
+endClass
