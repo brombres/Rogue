@@ -12,10 +12,10 @@ class Canvas
       clear
 
     method height->Integer [macro]
-      this.size.y
+      this.size.y->Integer
 
     method flush
 
     method width->Integer [macro]
-      this.size.x
+      this.size.x->Integer
 endClass

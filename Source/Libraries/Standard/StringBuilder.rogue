@@ -84,8 +84,6 @@ class StringBuilder [requisite]
       return print( "null" )
 
     method print( value:Real )->StringBuilder
-      local original_value = value
-
       if (value < 0)
         print( '-' )
         value = -value

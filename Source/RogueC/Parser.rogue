@@ -2135,7 +2135,6 @@ class Parser
       }#
 
     method parse_typed_literal_list( list:CmdAccess )->Cmd
-
       # Insert code to create the list before the current statement being parsed.
       # We can't just allow the whole thing to be built as a recursive expression as
       # some compilers choke on it (LLVM only allows 256 nesting levels).

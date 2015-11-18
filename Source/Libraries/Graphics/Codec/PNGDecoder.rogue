@@ -1,4 +1,4 @@
-class PNGDecoder
+class PNGDecoder [requisite]
   # COMPILING
   #
   # Either link with a prebuilt libpng framework OR:
@@ -26,10 +26,10 @@ class PNGDecoder
       native @|png_structp  png_ptr;
               |png_infop    info_ptr;
               |
-              |decoder->png_data_cursor = $bytes->data->bytes;
-              |decoder->png_data_remaining = $bytes->count;
+              |$this->png_data_cursor = $bytes->data->bytes;
+              |$this->png_data_remaining = $bytes->count;
               |
-              |png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, decoder,
+              |png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, $this,
               |    Rogue_png_error_handler, NULL );
               |if ( !png_ptr ) return false; // Out of memory
               |
@@ -42,13 +42,13 @@ class PNGDecoder
               |  return false;  // Out of memory
               |}
               |
-              |if (setjmp(decoder->error_jmp_buffer))
+              |if (setjmp($this->error_jmp_buffer))
               |{
               |  png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
               |  return false;
               |}
               |
-              |png_set_read_fn( png_ptr, decoder, Rogue_png_read_callback );
+              |png_set_read_fn( png_ptr, $this, Rogue_png_read_callback );
               |
               |// Prepare the reader to ignore all recognized chunks whose data won't be
               |// used, i.e., all chunks recognized by libpng except for IHDR, PLTE, IDAT,
@@ -86,8 +86,8 @@ class PNGDecoder
               |png_uint_32 width  = png_get_image_width( png_ptr, info_ptr );
               |png_uint_32 height = png_get_image_height( png_ptr, info_ptr );
               |
-              |$this->bitmap = RogueClassBitmap__init__XY(
-              |    ROGUE_CREATE_OBJECT(RogueTypeBitmap),
+              |$this->bitmap = RogueBitmap__init__XY(
+              |    (RogueClassBitmap*) ROGUE_CREATE_OBJECT(Bitmap),
               |    RogueClassXY((RogueInteger)width,(RogueInteger)height)
               |);
               |
@@ -103,7 +103,7 @@ class PNGDecoder
               |}
               |
               |// Premultiply the alpha and transform ABGR into ARGB
-              |RogueInteger* cur = decoder->pixels - 1;
+              |RogueInteger* cur = $this->bitmap->pixels->data->integers - 1;
               |for (int i=width*height; --i>=0; )
               |{
               |  RogueInteger abgr = *(++cur);
@@ -135,6 +135,7 @@ class PNGDecoder
               |return true;
 
 endClass
+
 
 nativeHeader
 #include <setjmp.h>
