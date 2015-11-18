@@ -6,6 +6,9 @@ class Cmd
     method access_name->String
       return null
 
+    method add_to( statements:CmdStatementList )
+      statements.add( this )
+
     method call_prior( scope:Scope )->Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
@@ -164,6 +167,9 @@ endClass
 # StatementList
 #------------------------------------------------------------------------------
 class CmdStatementList : Cmd[]
+  GLOBALS
+    current : CmdStatementList
+
   METHODS
     method init
       prior.init
@@ -213,11 +219,18 @@ class CmdStatementList : Cmd[]
       }#
 
     method resolve( scope:Scope )
-      forEach (i of this)
-        this[i] = this[i].resolve( scope )
+      local original_body = scope.this_body
+      scope.this_body = this
+
+      local n = count
+      forEach (i in 0..(n-1))
+        this[i].resolve(scope).add_to( this )
       endForEach
+      this.discard( 0, n )
 
       forEach (statement in this) statement.exit_scope( scope )
+
+      scope.this_body = original_body
 
     method trace_used_code
       forEach (statement in this)
@@ -265,6 +278,24 @@ endClass
 #------------------------------------------------------------------------------
 # Statements
 #------------------------------------------------------------------------------
+class CmdSubstituteStatements : Cmd
+  # Only ever used as a temporary return value from a resolve() call
+  PROPERTIES
+    statements = CmdStatementList()
+
+  METHODS
+    method init( t )
+
+    method add( statement:Cmd )->this
+      statements.add( statement )
+      return this
+
+    method add_to( list:CmdStatementList )
+      forEach (statement in statements)
+        statement.add_to( list )
+      endForEach
+endClass
+
 class CmdStatement : Cmd
   METHODS
     method trace_used_code
@@ -301,7 +332,7 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
       if (local_info.type is null)
-        throw t.error( "Cannot determine type of local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Integer)." (local_info.name,local_info.name) )
+        throw t.error( "Cannot determine the type of the local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Integer)." (local_info.name,local_info.name) )
       endIf
 
       if (local_info.initial_value)
@@ -4258,5 +4289,45 @@ class CmdNativeCode : Cmd
     method type->Type
       return result_type
 
+endClass
+
+
+class CmdTypedLiteralList : Cmd
+  PROPERTIES
+    list_type_name : String
+    elements  : CmdArgs
+
+  METHODS
+    method init( t, list_type_name, elements=CmdArgs() )
+
+    method add( element:Cmd )->CmdTypedLiteralList
+      elements.add( element )
+      return this
+
+    method clone( clone_args:CloneArgs )->CmdTypedLiteralList
+      return CmdTypedLiteralList( t, list_type_name, elements.clone(clone_args) )
+
+    method implicit_type->Type
+      return type
+
+    method resolve( scope:Scope )->Cmd
+      if (elements.count <= 32)
+        local result = CmdAccess( t, list_type_name, CmdArgs() ) : Cmd
+        forEach (element in elements)
+          result = CmdAccess( t, result, "add", element )
+        endForEach
+        return result.resolve( scope )
+      else
+        local list_var_name = Program.create_unique_id
+        local list_var = scope.this_method.add_local( t, list_var_name, null, CmdAccess(t,list_type_name,CmdArgs()) )
+        scope.this_body.add( CmdLocalDeclaration(t,list_var).resolve(scope) )
+        forEach (element in elements)
+          scope.this_body.add( CmdAccess(t,CmdAccess(t,list_var_name),"add",element).resolve(scope) )
+        endForEach
+        return CmdAccess(t,list_var_name).resolve(scope)
+      endIf
+
+    method type->Type
+      return Program.get_type_reference( t, list_type_name )
 endClass
 

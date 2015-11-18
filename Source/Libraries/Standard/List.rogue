@@ -48,6 +48,11 @@ class List<<$DataType>> : GenericList
     method first->$DataType [macro]
       this.data[0]
 
+    method discard( i1:Integer, n=1:Integer )
+      local i2 = i1 + n
+      data.set( i1, data, i2, (count-i2) )
+      discard_from( count-n )
+
     method discard_from( index:Integer )
       local zero_value : $DataType
       local c = count

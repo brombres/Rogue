@@ -2,6 +2,7 @@ class Scope
   PROPERTIES
     this_type   : Type
     this_method : Method
+    this_body   : CmdStatementList
 
     local_list = Local[]
 

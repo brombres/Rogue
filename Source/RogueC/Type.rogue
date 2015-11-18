@@ -700,6 +700,7 @@ class Type
       if (element_type) element_type.organize
 
       forEach (s in global_list) s.type.organize
+
       forEach (p in property_list)
         p.type.organize
       endForEach

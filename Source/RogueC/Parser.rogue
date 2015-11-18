@@ -1089,6 +1089,15 @@ class Parser
       else
         # globals
         forEach (v in local_declarations)
+          if (not v.type)
+            if (v.initial_value)
+              local mesg = "Cannot infer the type of the global property from its initial value.  Assign a type by appending ': TypeName' to the end of the declaration."
+              throw v.t.error( mesg )
+            else
+              local mesg = "Cannot determine the type of the global property - either assign an initial value (global $ = ...) or assign a type (global $ : Integer)." (v.name,v.name)
+              throw v.t.error( mesg )
+            endIf
+          endIf
           Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type,v.initial_value) )
         endForEach
       endIf
@@ -1844,7 +1853,7 @@ class Parser
         local result = parse_access( t )
         local access = result as CmdAccess
         if (access and access.name.ends_with(']') and not access.args)
-          if (next_is(TokenType.symbol_open_bracket)) return parse_typed_literal_list( access )
+          if (next_is(TokenType.symbol_open_bracket)) return parse_typed_literal_list( access.t, access.name )
         endIf
         return result
 
@@ -2134,13 +2143,8 @@ class Parser
       return fn_cmd
       }#
 
-    method parse_typed_literal_list( list:CmdAccess )->Cmd
-      # Insert code to create the list before the current statement being parsed.
-      # We can't just allow the whole thing to be built as a recursive expression as
-      # some compilers choke on it (LLVM only allows 256 nesting levels).
-      local list_var_name = Program.create_unique_id
-      local list_var = this_method.add_local( list.t, list_var_name, null, list )
-      cur_statement_list.add( CmdLocalDeclaration(list.t,list_var) )
+    method parse_typed_literal_list( t:Token, list_type_name:String )->Cmd
+      local list = CmdTypedLiteralList( t, list_type_name )
 
       must_consume( TokenType.symbol_open_bracket )
       consume_eols
@@ -2149,23 +2153,23 @@ class Parser
       while (first or consume(TokenType.symbol_comma))
         first = false
         consume_eols
-        local t = peek
+        t = peek
         if (next_is(TokenType.symbol_open_bracket))
           # Nested list - propagate the type
-          if (list.name.ends_with("[][]"))
-            local item = parse_typed_literal_list( CmdAccess(t,list.name.leftmost(-2),CmdArgs()) )
-            cur_statement_list.add( CmdAccess(t,CmdAccess(t,list_var_name),"add",item) )
+          if (list_type_name.ends_with("[][]"))
+            local item = parse_typed_literal_list( t, list_type_name.leftmost(-2) )
+            list.add( item )
           else
             throw t.error( "Literal list content contains more dimensions than literal list type." )
           endIf
         else
-          cur_statement_list.add( CmdAccess(t,CmdAccess(t,list_var_name),"add",parse_expression) )
+          list.add( parse_expression )
         endIf
         consume_eols
       endWhile
       must_consume( TokenType.symbol_close_bracket )
 
-      return CmdAccess( list_var.t, list_var_name )
+      return list
 endClass
 
 class FnParam( name:String )
