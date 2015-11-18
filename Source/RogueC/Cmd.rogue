@@ -4259,3 +4259,4 @@ class CmdNativeCode : Cmd
       return result_type
 
 endClass
+

@@ -13371,7 +13371,7 @@ void RogueProgram__configure( RogueClassProgram* THIS )
 
 RogueString* RogueProgram__create_unique_id( RogueClassProgram* THIS )
 {
-  return (RogueString*)(((RogueString__operatorPLUS__Integer( Rogue_literal_strings[250], ((RogueProgram__next_unique_integer( THIS ))) ))));
+  return (RogueString*)(((RogueString__operatorPLUS__Integer( Rogue_literal_strings[246], ((RogueProgram__next_unique_integer( THIS ))) ))));
 }
 
 RogueInteger RogueProgram__next_unique_integer( RogueClassProgram* THIS )
@@ -22710,7 +22710,7 @@ RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS )
   }
   else if (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_empty_brackets ))))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_0, Rogue_literal_strings[249], ((RogueCmdArgs__init( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)) ))) ))))));
+    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_0, Rogue_literal_strings[250], ((RogueCmdArgs__init( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)) ))) ))))));
   }
   else if (((RogueParser__consume__TokenType( THIS, RogueTokenType_keyword_prior ))))
   {
@@ -22831,34 +22831,37 @@ RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS )
 
 RogueClassCmd* RogueParser__parse_typed_literal_list__CmdAccess( RogueClassParser* THIS, RogueClassCmdAccess* list_0 )
 {
-  RogueClassCmd* result_1 = (((RogueClassCmd*)(list_0)));
+  RogueString* list_var_name_1 = (((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) ))));
+  RogueClassLocal* list_var_2 = (((RogueMethod__add_local__Token_String_Type_Cmd( THIS->this_method, list_0->t, list_var_name_1, ((RogueClassType*)(NULL)), ((RogueClassCmd*)(list_0)) ))));
+  RogueCmdList__add__Cmd( ((RogueCmdList*)THIS->cur_statement_list), ((RogueClassCmd*)(((RogueCmdLocalDeclaration__init__Token_Local( ((RogueClassCmdLocalDeclaration*)ROGUE_CREATE_OBJECT(CmdLocalDeclaration)), list_0->t, list_var_2 ))))) );
   RogueParser__must_consume__TokenType_String( THIS, RogueTokenType_symbol_open_bracket, ((RogueString*)(NULL)) );
   RogueParser__consume_eols( THIS );
-  RogueLogical first_2 = (true);
-  while ((first_2 || ((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_comma )))))
+  RogueLogical first_3 = (true);
+  while ((first_3 || ((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_comma )))))
   {
-    first_2 = ((RogueLogical)false);
+    first_3 = ((RogueLogical)false);
     RogueParser__consume_eols( THIS );
-    RogueClassToken* t_3 = (((RogueParser__peek( THIS ))));
+    RogueClassToken* t_4 = (((RogueParser__peek( THIS ))));
     if (((RogueParser__next_is__TokenType( THIS, RogueTokenType_symbol_open_bracket ))))
     {
-      if (((RogueString__ends_with__String( list_0->name, Rogue_literal_strings[246] ))))
+      if (((RogueString__ends_with__String( list_0->name, Rogue_literal_strings[247] ))))
       {
-        result_1 = ((RogueClassCmd*)((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_Cmd( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_3, result_1, Rogue_literal_strings[247], ((RogueParser__parse_typed_literal_list__CmdAccess( THIS, ((RogueCmdAccess__init__Token_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_3, ((RogueString__leftmost__Integer( list_0->name, -2 ))), ((RogueCmdArgs__init( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)) ))) ))) ))) ))))));
+        RogueClassCmd* item_5 = (((RogueParser__parse_typed_literal_list__CmdAccess( THIS, ((RogueCmdAccess__init__Token_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_4, ((RogueString__leftmost__Integer( list_0->name, -2 ))), ((RogueCmdArgs__init( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)) ))) ))) ))));
+        RogueCmdList__add__Cmd( ((RogueCmdList*)THIS->cur_statement_list), ((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_Cmd( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_4, ((RogueClassCmd*)(((RogueCmdAccess__init__Token_String( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_4, list_var_name_1 ))))), Rogue_literal_strings[248], item_5 ))))) );
       }
       else
       {
-        ROGUE_THROW(((RogueToken__error__String( t_3, Rogue_literal_strings[248] ))));
+        ROGUE_THROW(((RogueToken__error__String( t_4, Rogue_literal_strings[249] ))));
       }
     }
     else
     {
-      result_1 = ((RogueClassCmd*)((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_Cmd( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_3, result_1, Rogue_literal_strings[247], ((RogueParser__parse_expression( THIS ))) ))))));
+      RogueCmdList__add__Cmd( ((RogueCmdList*)THIS->cur_statement_list), ((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_Cmd( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_4, ((RogueClassCmd*)(((RogueCmdAccess__init__Token_String( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), t_4, list_var_name_1 ))))), Rogue_literal_strings[248], ((RogueParser__parse_expression( THIS ))) ))))) );
     }
     RogueParser__consume_eols( THIS );
   }
   RogueParser__must_consume__TokenType_String( THIS, RogueTokenType_symbol_close_bracket, ((RogueString*)(NULL)) );
-  return (RogueClassCmd*)(result_1);
+  return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), list_var_2->t, list_var_name_1 ))))));
 }
 
 RogueClassParser* RogueParser__init_object( RogueClassParser* THIS )
@@ -33606,7 +33609,7 @@ RogueClassCmd* RogueCmdCreateList__resolve__Scope( RogueClassCmdCreateList* THIS
     for (;_auto_1162_11 < _auto_1161_10->count;++_auto_1162_11)
     {
       RogueClassCmd* arg_12 = (((RogueClassCmd*)(_auto_1161_10->data->objects[_auto_1162_11])));
-      cmd_4 = ((RogueClassCmd*)((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), THIS->t, cmd_4, Rogue_literal_strings[247], ((RogueCmdArgs__init__Cmd( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)), arg_12 ))) ))))));
+      cmd_4 = ((RogueClassCmd*)((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String_CmdArgs( ((RogueClassCmdAccess*)ROGUE_CREATE_OBJECT(CmdAccess)), THIS->t, cmd_4, Rogue_literal_strings[248], ((RogueCmdArgs__init__Cmd( ((RogueClassCmdArgs*)ROGUE_CREATE_OBJECT(CmdArgs)), arg_12 ))) ))))));
     }
   }
   return (RogueClassCmd*)((call_ROGUEM45( 22, (RogueClassCmd*)(cmd_4), scope_0 )));
@@ -37828,11 +37831,11 @@ void Rogue_configure()
   Rogue_literal_strings[243] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "call", 4 ) ); 
   Rogue_literal_strings[244] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "param", 5 ) ); 
   Rogue_literal_strings[245] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Value expected, found empty parentheses ().", 43 ) ); 
-  Rogue_literal_strings[246] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[][]", 4 ) ); 
-  Rogue_literal_strings[247] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "add", 3 ) ); 
-  Rogue_literal_strings[248] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Literal list content contains more dimensions than literal list type.", 69 ) ); 
-  Rogue_literal_strings[249] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "PropertyList", 12 ) ); 
-  Rogue_literal_strings[250] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "_auto_", 6 ) ); 
+  Rogue_literal_strings[246] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "_auto_", 6 ) ); 
+  Rogue_literal_strings[247] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[][]", 4 ) ); 
+  Rogue_literal_strings[248] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "add", 3 ) ); 
+  Rogue_literal_strings[249] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Literal list content contains more dimensions than literal list type.", 69 ) ); 
+  Rogue_literal_strings[250] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "PropertyList", 12 ) ); 
   Rogue_literal_strings[251] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Single identifier expected for control variable name.", 53 ) ); 
   Rogue_literal_strings[252] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "at", 2 ) ); 
   Rogue_literal_strings[253] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Missing element name before 'at'.", 33 ) ); 
