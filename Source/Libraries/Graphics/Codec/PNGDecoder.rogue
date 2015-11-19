@@ -17,7 +17,7 @@ class PNGDecoder [requisite]
   #       pngwio.c pngwrite.c pngwtran.c pngwutil.c
   PROPERTIES
     bitmap : Bitmap
-    native "jmp_buf      error_jmp_buffer;"
+    native "jmp_buf      error_jump_buffer;"
     native "RogueByte*   png_data_cursor;"
     native "RogueInteger png_data_remaining;"
 
@@ -42,7 +42,7 @@ class PNGDecoder [requisite]
               |  return false;  // Out of memory
               |}
               |
-              |if (setjmp($this->error_jmp_buffer))
+              |if (setjmp($this->error_jump_buffer))
               |{
               |  png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
               |  return false;
@@ -151,7 +151,7 @@ void Rogue_png_error_handler( png_structp png_ptr, png_const_charp msg )
   fprintf(stderr, "libpng error: %s\n", msg);
   fflush(stderr);
 
-  longjmp( ((RogueClassPNGDecoder*)png_get_io_ptr(png_ptr))->error_jmp_buffer, 1 );
+  longjmp( ((RogueClassPNGDecoder*)png_get_io_ptr(png_ptr))->error_jump_buffer, 1 );
 }
 
 void Rogue_png_read_callback( png_structp png_ptr, png_bytep data, png_size_t count )

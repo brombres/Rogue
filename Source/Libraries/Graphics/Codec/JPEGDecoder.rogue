@@ -1,0 +1,130 @@
+class JPEGDecoder [requisite]
+  # COMPILING
+  #
+  # Either link with a prebuilt libjpeg library OR:
+  #
+  # 1.  Download the latest JPEG library from: http://ijg.org/
+  #
+  # 2.  Either run ./configure, copy one of the prebuilt "jconfig.*" files to
+  #     jconfig.h, or otherwise create a jconfig.h header file.
+  #
+  # 3.  Compile the Rogue-generated C++ with -Ipath/to/jpeg-XX
+  #
+  # 4.  Compile & link the Rogue-generated C++ with the jpeg lib source files:
+  #
+  #     jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c
+  #     jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c
+  #     jcparam.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c
+  #     jdarith.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c
+  #     jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c jdmerge.c
+  #     jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c jfdctfst.c
+  #     jfdctint.c jidctflt.c jidctfst.c jidctint.c jmemansi.c jmemmgr.c
+  #     jquant1.c jquant2.c jutils.c
+  PROPERTIES
+    bitmap : Bitmap
+
+    native @|struct ErrorInfo
+            |{
+            |  struct jpeg_error_mgr jpeg_error_manager;
+            |  jmp_buf               error_jump_buffer;
+            |} error_info;
+
+  METHODS
+    method decode( bytes:Byte[] )->Logical
+      #|$this->png_data_cursor = $bytes->data->bytes;
+      #|$this->png_data_remaining = $bytes->count;
+      native @|struct jpeg_decompress_struct jpeg_info;
+              |RogueInteger width, height;
+              |RogueByte*   buffer = 0;
+              |
+              |jpeg_info.err = jpeg_std_error( (struct jpeg_error_mgr*) &$this->error_info );
+              |$this->error_info.jpeg_error_manager.error_exit = Rogue_jpeg_error_handler;
+              |
+              |if (setjmp($this->error_info.error_jump_buffer))
+              |{
+              |  // Caught an error
+              |  jpeg_destroy_decompress( &jpeg_info );
+              |
+              |  if (buffer) free( buffer );
+              |
+              |  return false;
+              |}
+              |
+              |jpeg_create_decompress( &jpeg_info );
+              |jpeg_mem_src( &jpeg_info, $bytes->data->bytes, $bytes->count );
+              |jpeg_read_header( &jpeg_info, TRUE );
+              |
+              |jpeg_start_decompress( &jpeg_info );
+              |
+              |width = (RogueInteger) jpeg_info.output_width;
+              |height = (RogueInteger) jpeg_info.output_height;
+              |
+              |$this->bitmap = (RogueClassBitmap*) ROGUE_CREATE_OBJECT(Bitmap);
+              |RogueBitmap__init__XY( $this->bitmap, RogueClassXY(width,height) );
+              |
+              |$this->bitmap->size.x = width;
+              |$this->bitmap->size.y = height;
+              |
+              |RogueInteger* pixels = $this->bitmap->pixels->data->integers - 1;
+              |buffer = (RogueByte*) malloc( width*3 );
+              |
+              |int j = jpeg_info.output_scanline;
+              |while (j < height)
+              |{
+              |  RogueByte* dest = buffer;
+              |  jpeg_read_scanlines( &jpeg_info, &dest, 1 );
+              |
+              |  // Convert JPEG RGB or grayscale buffer to Rogue Bitmap ARGB
+              |  if (jpeg_info.jpeg_color_space == JCS_GRAYSCALE)
+              |  {
+              |    RogueByte* cursor = buffer - 1;
+              |    for (int i=0; i<width; ++i)
+              |    {
+              |      int k = *(++cursor);
+              |      *(++pixels) = (255<<24) | (k<<16) | (k<<8) | k;
+              |    }
+              |  }
+              |  else
+              |  {
+              |    // RGB Color
+              |    RogueByte* cursor = buffer;
+              |    for (int i=0; i<width; ++i)
+              |    {
+              |      int r = cursor[0];
+              |      int g = cursor[1];
+              |      int b = cursor[2];
+              |      *(++pixels) = (255<<24) | (r<<16) | (g<<8) | b;
+              |      cursor += 3;
+              |    }
+              |  }
+              |
+              |  j = jpeg_info.output_scanline;
+              |}
+              |
+              |free( buffer );
+              |
+              |jpeg_finish_decompress( &jpeg_info );
+              |jpeg_destroy_decompress( &jpeg_info );
+              |
+              |return true;
+
+endClass
+
+
+nativeHeader
+#include <stdio.h>
+#include <setjmp.h>
+#include "jpeglib.h"
+void Rogue_jpeg_error_handler( j_common_ptr jpeg_info );
+endNativeHeader
+
+
+nativeCode
+void Rogue_jpeg_error_handler( j_common_ptr jpeg_info )
+{
+  (*jpeg_info->err->output_message)( jpeg_info );
+
+  longjmp( ((RogueClassJPEGDecoder::ErrorInfo*)jpeg_info->err)->error_jump_buffer, 1 );
+}
+endNativeCode
+
