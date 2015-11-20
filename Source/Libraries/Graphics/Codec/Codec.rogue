@@ -1,2 +1,4 @@
 $include "JPEGDecoder.rogue"
 $include "PNGDecoder.rogue"
+
+# TODO: JPEGEncoder http://www.andrewewhite.net/wordpress/2008/09/02/very-simple-jpeg-writer-in-c-c/
