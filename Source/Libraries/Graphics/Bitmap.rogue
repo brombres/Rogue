@@ -1,12 +1,34 @@
 class Bitmap : Canvas
   PROPERTIES
-    pixels        : Integer[]
+    pixels : Integer[]
 
   METHODS
     method init( size ) [requisite]
       pixels = Integer[]( width*height, Color.BLACK )
 
+    method init( file:File )
+      init( file.load_as_bytes )
+
+    method init( bytes:Byte[] )
+      if (not decode(bytes)) init( XY(1,1) )
+
     method clear
       local color = background_color
       forEach (i of pixels) pixels[i] = color
+
+    method decode( bytes:Byte[] )->Logical
+      native @|ImageIODecoder decoder;
+              |if ( !ImageIODecoder_set_input(&decoder, $bytes->data->bytes, $bytes->count) ) return 0;
+
+      size = XY( native("decoder.width")->Integer, native("decoder.height")->Integer )
+      pixels = Integer[]( width * height )
+
+      native @|if ( !ImageIODecoder_decode_argb32(&decoder,(ImageIOARGB32*)$this->pixels->data->integers) ) return 0;
+      return true
+
+    method get( x:Integer, y:Integer )->Integer
+      return pixels[ y*width + x ]
 endClass
+
+nativeHeader #include "ImageIO.h"
+

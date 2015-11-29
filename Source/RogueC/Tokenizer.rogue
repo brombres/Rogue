@@ -447,7 +447,7 @@ class Tokenizer
         elseIf (consume('u')) value = read_hex_value(4)
         elseIf (consume('s')) value = read_hex_value(6)
         # supplementary - 6-digit Unicode converted to a surrogate pair if needed
-        else throw error( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
+        else throw error( "Invalid escape sequence.  Supported: \\n \\r \\s \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
 
         if (value < 0x10000)
           # Standard Unicode

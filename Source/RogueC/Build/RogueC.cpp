@@ -38095,7 +38095,7 @@ void Rogue_configure()
   Rogue_literal_strings[210] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "-9223372036854775808", 20 ) ); 
   Rogue_literal_strings[211] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "-digit hex value expected; found end of file.", 45 ) ); 
   Rogue_literal_strings[212] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid hex digit ", 18 ) ); 
-  Rogue_literal_strings[213] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid escape sequence.  Supported: \\n \\r \\t \\0 \\/ \\' \\\\ \\\" \\", 62 ) ); 
+  Rogue_literal_strings[213] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid escape sequence.  Supported: \\n \\r \\s \\t \\0 \\/ \\' \\\\ \\\" \\", 65 ) ); 
   Rogue_literal_strings[214] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "uXXXX \\", 7 ) ); 
   Rogue_literal_strings[215] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "xXX.", 4 ) ); 
   Rogue_literal_strings[216] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "End of file reached while looking for end of string.", 52 ) ); 
