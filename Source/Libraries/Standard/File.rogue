@@ -153,6 +153,12 @@ class File
     routine reader( filepath:String )->FileReader
       return FileReader( filepath )
 
+    routine save( filepath:String, data:Byte[] )->Logical
+      local outfile = writer( filepath )
+      forEach (ch in data) outfile.write( ch )
+      outfile.close
+      return true
+
     routine save( filepath:String, data:String )->Logical
       local outfile = writer( filepath )
       forEach (ch in data) outfile.write( ch )
@@ -206,6 +212,9 @@ class File
 
     method reader->FileReader [macro]
       File.reader( this.filepath )
+
+    method save( data:Byte[] )->Logical [macro]
+      File.save( this.filepath, data )
 
     method save( data:String )->Logical [macro]
       File.save( this.filepath, data )

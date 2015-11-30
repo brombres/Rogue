@@ -18,6 +18,7 @@ class Bitmap : Canvas
 
     method decode( bytes:Byte[] )->Logical
       native @|ImageIODecoder decoder;
+              |ImageIODecoder_init( &decoder );
               |if ( !ImageIODecoder_set_input(&decoder, $bytes->data->bytes, $bytes->count) ) return 0;
 
       size = XY( native("decoder.width")->Integer, native("decoder.height")->Integer )
@@ -28,6 +29,47 @@ class Bitmap : Canvas
 
     method get( x:Integer, y:Integer )->Integer
       return pixels[ y*width + x ]
+
+    method save_as_png( file:File )->Logical
+      return file.save( to_png_bytes )
+
+    method save_as_jpeg( file:File, quality=75:Integer )->Logical
+      return file.save( to_jpeg_bytes(quality) )
+
+    method set( x:Integer, y:Integer, color:Integer )->this
+      pixels[ y*width + x ] = color
+      return this
+
+    method to_png_bytes->Byte[]
+      local w = width
+      local h = height
+      local count : Integer
+      native @|ImageIOEncoder encoder;
+              |ImageIOEncoder_init( &encoder );
+              |ImageIOEncoder_encode_argb32_png( &encoder, (ImageIOARGB32*) $this->pixels->data->integers, $w, $h );
+              |$count = (RogueInteger) encoder.encoded_byte_count;
+
+      local bytes = Byte[]( count );
+      bytes.count = count
+      native @|memcpy( $bytes->data->bytes, encoder.encoded_bytes, $count );
+
+      return bytes
+
+    method to_jpeg_bytes( quality=75:Integer )->Byte[]
+      local w = width
+      local h = height
+      local count : Integer
+      native @|ImageIOEncoder encoder;
+              |ImageIOEncoder_init( &encoder );
+              |encoder.quality = $quality;
+              |ImageIOEncoder_encode_argb32_jpeg( &encoder, (ImageIOARGB32*) $this->pixels->data->integers, $w, $h );
+              |$count = (RogueInteger) encoder.encoded_byte_count;
+
+      local bytes = Byte[]( count );
+      bytes.count = count
+      native @|memcpy( $bytes->data->bytes, encoder.encoded_bytes, $count );
+
+      return bytes
 endClass
 
 nativeHeader #include "ImageIO.h"
