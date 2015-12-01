@@ -2,5 +2,6 @@ $include "Bitmap.rogue"
 $include "Canvas.rogue"
 $include "Color.rogue"
 $include "Geometry/2D.rogue"
+$include "GraphicsContext.rogue"
 $include "OpenGLCanvas.rogue"
 

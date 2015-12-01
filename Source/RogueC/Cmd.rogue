@@ -3,9 +3,6 @@ class Cmd
     t : Token
 
   METHODS
-    method access_name->String
-      return null
-
     method add_to( statements:CmdStatementList )
       statements.add( this )
 
@@ -1773,7 +1770,7 @@ class CmdAccess : Cmd
       throw t.error( "Recursive call to getter " + name + "() - write @" + name + " instead." )
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      if (args) throw t.error( "The result of a call cannot assigned to." )
+      if (args) throw t.error( "The result of a call cannot be assigned a value." )
 
       local explicit_context = context?
 
@@ -1787,6 +1784,11 @@ class CmdAccess : Cmd
             endIf
             return setter
           endIf
+        endIf
+
+        local as_type = Program.find_type( name )
+        if (as_type and as_type.is_singleton)
+          return CmdWriteSingleton( t, as_type, new_value ).resolve( scope )
         endIf
 
         local v = scope.find_local( name )
@@ -2078,9 +2080,6 @@ class CmdReadSingleton : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadSingleton( t, of_type )
 
-    method access_name->String
-      return of_type.name
-
     method require_type_context
       noAction
 
@@ -2093,6 +2092,31 @@ class CmdReadSingleton : Cmd
 
     method type->Type
       return of_type
+endClass
+
+
+class CmdWriteSingleton : Cmd
+  PROPERTIES
+    of_type   : Type
+    new_value : Cmd
+
+  METHODS
+    method init( t, of_type, new_value )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteSingleton( t, of_type, new_value.clone(clone_args) )
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize
+      new_value = new_value.resolve(scope).require_value
+      return this
+
+    method trace_used_code
+      of_type.trace_used_code
+      new_value.trace_used_code
+
+      #method type->Type
+      #return of_type
 endClass
 
 
@@ -2115,9 +2139,6 @@ class CmdReadLocal : Cmd
       endIf
 
       return CmdReadLocal( t, local_info )
-
-    method access_name->String
-      return local_info.name
 
     method trace_used_code
       local_info.type.trace_used_code
@@ -2166,8 +2187,8 @@ class CmdWriteLocal : Cmd
       local_info.type.trace_used_code
       new_value.trace_used_code
 
-    method type->Type
-      return local_info.type
+      #method type->Type
+      #return local_info.type
 endClass
 
 
@@ -2180,9 +2201,6 @@ class CmdReadGlobal : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadGlobal( t, global_info )
-
-    method access_name->String
-      return global_info.name
 
     method resolve( scope:Scope )->Cmd
       global_info.type_context.resolve
@@ -2220,8 +2238,8 @@ class CmdWriteGlobal : Cmd
       global_info.type.trace_used_code
       new_value.trace_used_code
 
-    method type->Type
-      return global_info.type
+      #method type->Type
+      #return global_info.type
 endClass
 
 class CmdReadProperty : Cmd
@@ -2234,9 +2252,6 @@ class CmdReadProperty : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdReadProperty( t, context.clone(clone_args), property_info )
-
-    method access_name->String
-      return property_info.name
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
@@ -2278,8 +2293,8 @@ class CmdWriteProperty : Cmd
       property_info.type.trace_used_code
       new_value.trace_used_code
 
-    method type->Type
-      return property_info.type
+      #method type->Type
+      #return property_info.type
 endClass
 
 #------------------------------------------------------------------------------
@@ -4175,9 +4190,6 @@ class CmdLogicalizeOptionalValue : Cmd
 
   METHODS
     method init( t, value, positive=true )
-
-    method access_name->String
-      return value.access_name
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalizeOptionalValue( t, value.clone(clone_args) )

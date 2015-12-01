@@ -1,10 +1,17 @@
-$include "Geometry/2D.rogue"
-$include "Graphics"
-$include "Standard/JSON.rogue"
 
-local list = Byte[][] [[3,4],[5,6]]
-println list
+class X [singleton]
+  PROPERTIES
+    value : Integer
 
-#local x = Integer[] [3,4,5,6,7]
-#println x
+  METHODS
+    method init
+      value = 1
 
+    method init( value )
+endClass
+
+println X.value
+local y = X(2)
+println X.value
+X = y
+println X.value

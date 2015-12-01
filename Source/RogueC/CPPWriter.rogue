@@ -1739,6 +1739,17 @@ augment CmdReadSingleton
       writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
 endAugment
 
+augment CmdWriteSingleton
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not of_type.is_singleton)
+        throw t.error( "$ is not a singleton." (of_type.name) )
+      endIf
+      writer.print( "RogueType" ).print( of_type.cpp_name ).print( "->_singleton = " )
+      new_value.write_cpp( writer )
+      writer.println( ";" )
+endAugment
+
 augment CmdReadLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )

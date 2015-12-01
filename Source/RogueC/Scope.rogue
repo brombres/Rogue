@@ -329,7 +329,7 @@ class CandidateMethods
 
         if (available.count == 0)
           if (not error_on_fail) return false
-          throw access.t.error( ''No such method or variable "$" exists in current scope of type $.'' (access.name,type_context) )
+          throw access.t.error( ''1 No such method or variable "$" exists in current scope of type $.'' (access.name,type_context) )
 
         elseIf (require_compatible)
           if (not error_on_fail) return false
