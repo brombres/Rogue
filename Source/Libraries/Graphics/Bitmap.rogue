@@ -12,6 +12,13 @@ class Bitmap : Canvas
     method init( bytes:Byte[] )
       if (not decode(bytes)) init( XY(1,1) )
 
+    method init( existing:Bitmap, bounds:Box )
+      local w = bounds.width
+      local h = bounds.height
+      init( XY(w,h) )
+      Graphics.save.canvas = this
+      Graphics.restore
+
     method clear
       local color = background_color
       forEach (i of pixels) pixels[i] = color

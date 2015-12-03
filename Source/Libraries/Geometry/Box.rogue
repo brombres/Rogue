@@ -6,6 +6,12 @@ class Box( position:XY, size:XY ) [compound]
     routine create( width:Real, height:Real )->Box
       return Box( XY(0,0), XY(width,height) )
 
+    routine create( size:XY )->Box
+      return Box( XY(0,0), size )
+
+    routine from_corners( top_left:XY, bottom_right:XY )->Box
+      return Box( top_left, bottom_right - top_left )
+
   METHODS
     method aligned_within( enclosing:Box, alignment:XY )->Box
       # -1..1 -> 0..1
@@ -15,6 +21,15 @@ class Box( position:XY, size:XY ) [compound]
       local excess_x = enclosing.width - width
       local excess_y = enclosing.height - height
       return Box( XY(enclosing.x + excess_x * align_x, enclosing.y + excess_y * align_y), size )
+
+    method bottom_right->XY
+      return (position + size)
+
+    method cropped( delta:Real )->Box
+      return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
+
+    method cropped( left:Real, top:Real, right:Real, bottom:Real )->Box
+      return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
     method height->Real [macro]
       this.size.y

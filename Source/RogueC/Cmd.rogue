@@ -2483,6 +2483,9 @@ class CmdUnary : Cmd
     method prefix_symbol->String
       return ""
 
+    method fn_name->String
+      return null
+
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
       if (operand.is_literal) return resolve_for_literal_operand( scope )
@@ -2492,6 +2495,17 @@ class CmdUnary : Cmd
       return this
 
     method resolve_for_operand_type( scope:Scope, operand_type:Type )->Cmd
+      local name = fn_name
+      if (name)
+        if (operand_type.has_method_named(name))
+          return CmdAccess( t, operand, name ).resolve( scope )
+        endIf
+
+        if (not operand_type.is_primitive)
+          throw t.error( "No method $.$() is defined." (operand_type,name) )
+        endIf
+
+      endIf
       return this
 
     method suffix_symbol->String
@@ -2508,6 +2522,9 @@ class CmdLogicalize : CmdUnary
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLogicalize( t, operand.clone(clone_args) )
+
+    method fn_name->String
+      return "operator?"
 
     method prefix_symbol->String
       return ""
@@ -2563,6 +2580,9 @@ class CmdNegate : CmdUnary
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdNegate( t, operand.clone(clone_args) )
+
+    method fn_name->String
+      return "operator-"
 
     method implicit_type->Type
       return operand.implicit_type
@@ -2628,6 +2648,12 @@ class CmdBinary : Cmd
         return CmdAccess( t, CmdAccess(t,left_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
       elseIf (right_type.has_routine_named(fn_name))
         return CmdAccess( t, CmdAccess(t,right_type.name), fn_name, CmdArgs(left,right) ).resolve( scope )
+      elseIf (not (left_type.is_primitive and right_type.is_primitive))
+        if (left_type is right_type)
+          throw t.error( "No method $.$(1) is defined." (left_type,fn_name) )
+        else
+          throw t.error( "Neither method $.$(1) nor method $.$(1) is defined." (left_type,fn_name,right_type,fn_name) )
+        endIf
       else
         return null
       endIf
@@ -3321,6 +3347,9 @@ class CmdBitwiseNot : CmdUnary
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdBitwiseNot( t, operand.clone(clone_args) )
 
+    method fn_name->String
+      return "operator!"
+
     method prefix_symbol->String
       return "!"
 
@@ -3328,6 +3357,7 @@ class CmdBitwiseNot : CmdUnary
       if (operand instanceOf CmdLiteralInteger)
         return CmdLiteralInteger( t, !(operand as CmdLiteralInteger).value )
       endIf
+
       return this
 
     method type->Type

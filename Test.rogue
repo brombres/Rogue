@@ -1,17 +1,4 @@
+$include "Geometry/2D"
 
-class X [singleton]
-  PROPERTIES
-    value : Integer
-
-  METHODS
-    method init
-      value = 1
-
-    method init( value )
-endClass
-
-println X.value
-local y = X(2)
-println X.value
-X = y
-println X.value
+println( -XY(3,4) )
+println XY(3,4) + 2

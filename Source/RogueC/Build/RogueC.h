@@ -4612,6 +4612,7 @@ RogueClassCmd* RogueCmdLogicalize__resolve__Scope( RogueClassCmdLogicalize* THIS
 RogueClassType* Rogue_CmdLogicalize__type( RogueClassCmdLogicalize* THIS );
 RogueClassCmdLogicalize* RogueCmdLogicalize__init_object( RogueClassCmdLogicalize* THIS );
 RogueString* RogueCmdLogicalize__prefix_symbol( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__fn_name( RogueClassCmdLogicalize* THIS );
 RogueClassCmd* RogueCmdLogicalize__resolve_for_literal_operand__Scope( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
 RogueString* RogueCmdLogicalize__suffix_symbol( RogueClassCmdLogicalize* THIS );
 RogueString* RogueCmdLogicalize__cpp_prefix_symbol( RogueClassCmdLogicalize* THIS );
@@ -4624,6 +4625,7 @@ void RogueCmdUnary__write_cpp__CPPWriter_Logical( RogueClassCmdUnary* THIS, Rogu
 RogueClassCmdUnary* RogueCmdUnary__init_object( RogueClassCmdUnary* THIS );
 RogueClassCmdUnary* RogueCmdUnary__init__Token_Cmd( RogueClassCmdUnary* THIS, RogueClassToken* _auto_571_0, RogueClassCmd* _auto_572_1 );
 RogueString* RogueCmdUnary__prefix_symbol( RogueClassCmdUnary* THIS );
+RogueString* RogueCmdUnary__fn_name( RogueClassCmdUnary* THIS );
 RogueClassCmd* RogueCmdUnary__resolve_for_literal_operand__Scope( RogueClassCmdUnary* THIS, RogueClassScope* scope_0 );
 RogueClassCmd* RogueCmdUnary__resolve_for_operand_type__Scope_Type( RogueClassCmdUnary* THIS, RogueClassScope* scope_0, RogueClassType* operand_type_1 );
 RogueString* RogueCmdUnary__suffix_symbol( RogueClassCmdUnary* THIS );
@@ -5079,6 +5081,7 @@ RogueClassCmd* RogueCmdNegate__clone__CloneArgs( RogueClassCmdNegate* THIS, Rogu
 RogueClassType* Rogue_CmdNegate__implicit_type( RogueClassCmdNegate* THIS );
 RogueClassCmdNegate* RogueCmdNegate__init_object( RogueClassCmdNegate* THIS );
 RogueString* RogueCmdNegate__prefix_symbol( RogueClassCmdNegate* THIS );
+RogueString* RogueCmdNegate__fn_name( RogueClassCmdNegate* THIS );
 RogueClassCmd* RogueCmdNegate__resolve_for_literal_operand__Scope( RogueClassCmdNegate* THIS, RogueClassScope* scope_0 );
 RogueString* RogueCmdNegate__suffix_symbol( RogueClassCmdNegate* THIS );
 RogueString* RogueCmdBitwiseNot__type_name( RogueClassCmdBitwiseNot* THIS );
@@ -5086,6 +5089,7 @@ RogueClassCmd* RogueCmdBitwiseNot__clone__CloneArgs( RogueClassCmdBitwiseNot* TH
 RogueClassType* Rogue_CmdBitwiseNot__type( RogueClassCmdBitwiseNot* THIS );
 RogueClassCmdBitwiseNot* RogueCmdBitwiseNot__init_object( RogueClassCmdBitwiseNot* THIS );
 RogueString* RogueCmdBitwiseNot__prefix_symbol( RogueClassCmdBitwiseNot* THIS );
+RogueString* RogueCmdBitwiseNot__fn_name( RogueClassCmdBitwiseNot* THIS );
 RogueClassCmd* RogueCmdBitwiseNot__resolve_for_literal_operand__Scope( RogueClassCmdBitwiseNot* THIS, RogueClassScope* scope_0 );
 RogueString* RogueCmdBitwiseNot__cpp_prefix_symbol( RogueClassCmdBitwiseNot* THIS );
 RogueString* RogueCmdGetOptionalValue__type_name( RogueClassCmdGetOptionalValue* THIS );

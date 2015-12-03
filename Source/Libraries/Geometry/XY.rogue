@@ -16,6 +16,45 @@ class XY( x:Real, y:Real ) [compound]
     method magnitude_squared->Real
       return x*x + y*y
 
+    method operator+( other:XY )->XY
+      return XY( x+other.x, y+other.y )
+
+    method operator+( value:Real )->XY
+      return XY( x+value, y+value )
+
+    method operator-()->XY
+      return XY( -x, -y )
+
+    method operator-( other:XY )->XY
+      return XY( x-other.x, y-other.y )
+
+    method operator-( value:Real )->XY
+      return XY( x-value, y-value )
+
+    method operator*( other:XY )->XY
+      return XY( x*other.x, y*other.y )
+
+    method operator*( value:Real )->XY
+      return XY( x*value, y*value )
+
+    method operator/( other:XY )->XY
+      return XY( x/other.x, y/other.y )
+
+    method operator/( value:Real )->XY
+      return XY( x/value, y/value )
+
+    method operator%( other:XY )->XY
+      return XY( x%other.x, y%other.y )
+
+    method operator%( value:Real )->XY
+      return XY( x%value, y%value )
+
+    method operator^( other:XY )->XY
+      return XY( x^other.x, y^other.y )
+
+    method operator^( value:Real )->XY
+      return XY( x^value, y^value )
+
     method radians->Radians
       return Radians( Math.atan2( y, x ) )
 
