@@ -13,10 +13,9 @@ class Bitmap : Canvas
       if (not decode(bytes)) init( XY(1,1) )
 
     method init( existing:Bitmap, bounds:Box )
-      local w = bounds.width
-      local h = bounds.height
-      init( XY(w,h) )
+      init( bounds.size )
       Graphics.save.canvas = this
+      existing.draw( -bounds.position )
       Graphics.restore
 
     method clear
@@ -33,6 +32,41 @@ class Bitmap : Canvas
 
       native @|if ( !ImageIODecoder_decode_argb32(&decoder,(ImageIOARGB32*)$this->pixels->data->integers) ) return 0;
       return true
+
+    method draw( pos:XY )
+      local dest_canvas = Graphics.canvas as Bitmap
+      if (not dest_canvas)
+        println "Cannot draw a Bitmap to a non-Bitmap canvas."
+        return
+      endIf
+
+      local dest_width = dest_canvas.width
+      local x1 = pos.x : Integer
+      local y1 = pos.y : Integer
+      local x_limit = x1 + width : Integer
+      local y_limit = y1 + height : Integer
+      local i1 = 0
+      local j1 = 0
+      if (x1 < 0) i1 -= x1; x1 = 0
+      if (y1 < 0) j1 -= y1; y1 = 0
+      if (x_limit > dest_width)  x_limit = dest_width
+      if (y_limit > dest_canvas.height) y_limit = dest_canvas.height
+      if (x1 >= x_limit or y1 >= y_limit) return
+      local x2 = x_limit - 1
+      local y2 = y_limit - 1
+
+      local w = x_limit - x1
+      local src_width = width
+
+      local src = j1 * width + i1 : Integer
+      local dest = y1 * dest_width + x1 : Integer
+      local src_pixels = pixels.data
+      local dest_pixels = dest_canvas.pixels.data
+      forEach (y1..y2)
+        dest_pixels.set( dest, src_pixels, src, w )
+        src  += src_width
+        dest += dest_width
+      endForEach
 
     method get( x:Integer, y:Integer )->Integer
       return pixels[ y*width + x ]
