@@ -1,15 +1,15 @@
 class PropertyValue
-  ROUTINES
-    routine create( value:Integer )->PropertyValue
+  GLOBAL METHODS
+    method create( value:Integer )->PropertyValue
       return IntegerProperty( value )
 
-    routine create( value:Logical )->PropertyValue
+    method create( value:Logical )->PropertyValue
       return LogicalProperty( value )
 
-    routine create( value:Real )->PropertyValue
+    method create( value:Real )->PropertyValue
       return RealProperty( value )
 
-    routine create( value:String )->PropertyValue
+    method create( value:String )->PropertyValue
       return StringProperty( value )
 
   METHODS
@@ -181,7 +181,7 @@ class IntegerProperty( value:Integer ) : PropertyValue
 endClass
 
 class LogicalProperty( value:Logical ) : PropertyValue
-  GLOBALS
+  GLOBAL PROPERTIES
     true_value  = LogicalProperty( true )
     false_value = LogicalProperty( false )
 
@@ -218,7 +218,7 @@ class RealProperty( value:Real ) : PropertyValue
 endClass
 
 class StringProperty( value:String ) : PropertyValue
-  GLOBALS
+  GLOBAL PROPERTIES
     empty_string = StringProperty( "" )
 
   METHODS
@@ -250,8 +250,8 @@ class StringProperty( value:String ) : PropertyValue
     method to_json( buffer:StringBuilder )->StringBuilder
       return to_json( value, buffer )
 
-  ROUTINES
-    routine to_json( value:String, buffer:StringBuilder )->StringBuilder
+  GLOBAL METHODS
+    method to_json( value:String, buffer:StringBuilder )->StringBuilder
       if (value)
         buffer.print '"'
         forEach (ch in value)
@@ -378,12 +378,12 @@ class PropertyList : PropertyValue
       buffer.print( ']' )
       return buffer
 
-    ROUTINES
-      routine load( file:File )->PropertyList
+    GLOBAL METHODS
+      method load( file:File )->PropertyList
         if (not file.exists) return PropertyList()
         return JSON.parse_list( file.load_as_string.decode_utf8 )
 
-      routine parse( json:String )->PropertyList
+      method parse( json:String )->PropertyList
         return JSON.parse_list( json )
 endClass
 
@@ -424,12 +424,12 @@ class PropertyTable : PropertyValue
       buffer.print( '}' )
       return buffer
 
-    ROUTINES
-      routine load( file:File )->PropertyTable
+    GLOBAL METHODS
+      method load( file:File )->PropertyTable
         if (not file.exists) return PropertyTable()
         return JSON.parse_table( file.load_as_string.decode_utf8 )
 
-      routine parse( json:String )->PropertyTable
+      method parse( json:String )->PropertyTable
         return JSON.parse_table( json )
 endClass
 

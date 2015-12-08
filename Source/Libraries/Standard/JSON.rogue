@@ -1,22 +1,22 @@
 class JSON
-  GLOBALS
+  GLOBAL PROPERTIES
     buffer = StringBuilder()
 
-  ROUTINES
-    routine parse( json:String )->PropertyValue
+  GLOBAL METHODS
+    method parse( json:String )->PropertyValue
       return parse_value( ParseReader(json) )
 
-    routine parse_list( json:String )->PropertyList
+    method parse_list( json:String )->PropertyList
       local list = parse(json) as PropertyList
       if (list) return list
       return PropertyList()
 
-    routine parse_table( json:String )->PropertyTable
+    method parse_table( json:String )->PropertyTable
       local table = parse(json) as PropertyTable
       if (table) return table
       return PropertyTable()
 
-    routine parse_value( reader:ParseReader )->PropertyValue
+    method parse_value( reader:ParseReader )->PropertyValue
       reader.consume_spaces
 
       local ch = reader.peek
@@ -51,7 +51,7 @@ class JSON
         return null
       endIf
 
-    routine parse_table( reader:ParseReader )->PropertyTable
+    method parse_table( reader:ParseReader )->PropertyTable
       reader.consume_spaces
 
       if (not reader.consume('{')) return null
@@ -83,7 +83,7 @@ class JSON
 
       return table
 
-    routine parse_list( reader:ParseReader )->PropertyList
+    method parse_list( reader:ParseReader )->PropertyList
       reader.consume_spaces
 
       if (not reader.consume('[')) return null
@@ -104,7 +104,7 @@ class JSON
 
       return list
 
-    routine parse_string( reader:ParseReader )->String
+    method parse_string( reader:ParseReader )->String
       reader.consume_spaces
 
       local terminator = '"'
@@ -133,10 +133,10 @@ class JSON
 
       return buffer->String
 
-    routine hex_character_to_value( ch:Character )->Integer [macro]
+    method hex_character_to_value( ch:Character )->Integer [macro]
       ch.to_number
 
-    routine parse_hex_quad( reader:ParseReader )->Character
+    method parse_hex_quad( reader:ParseReader )->Character
       local code = 0
       forEach (i in 1..4)
         if (reader.has_another)
@@ -145,7 +145,7 @@ class JSON
       endForEach
       return code->Character
 
-    routine parse_identifier( reader:ParseReader )->String
+    method parse_identifier( reader:ParseReader )->String
       reader.consume_spaces
 
       local ch = reader.peek
@@ -167,7 +167,7 @@ class JSON
         return buffer->String
       endIf
 
-    routine parse_number( reader:ParseReader )->PropertyValue
+    method parse_number( reader:ParseReader )->PropertyValue
       reader.consume_spaces
 
       local sign = 1.0

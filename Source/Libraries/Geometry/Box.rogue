@@ -1,15 +1,15 @@
 class Box( position:XY, size:XY ) [compound]
-  ROUTINES
-    routine create( x:Real, y:Real, width:Real, height:Real )->Box
+  GLOBAL METHODS
+    method create( x:Real, y:Real, width:Real, height:Real )->Box
       return Box( XY(x,y), XY(width,height) )
 
-    routine create( width:Real, height:Real )->Box
+    method create( width:Real, height:Real )->Box
       return Box( XY(0,0), XY(width,height) )
 
-    routine create( size:XY )->Box
+    method create( size:XY )->Box
       return Box( XY(0,0), size )
 
-    routine from_corners( top_left:XY, bottom_right:XY )->Box
+    method from_corners( top_left:XY, bottom_right:XY )->Box
       return Box( top_left, bottom_right - top_left )
 
   METHODS

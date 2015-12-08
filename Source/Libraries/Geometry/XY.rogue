@@ -1,9 +1,9 @@
 class XY( x:Real, y:Real ) [compound]
-  ROUTINES
-    routine create( m:Real, angle:Radians )->XY
+  GLOBAL METHODS
+    method create( m:Real, angle:Radians )->XY
       return XY( m * angle.cos, m * angle.sin )
 
-    routine create( m:Real, angle:Degrees )->XY
+    method create( m:Real, angle:Degrees )->XY
       return XY( m * angle.cos, m * angle.sin )
 
   METHODS

@@ -398,6 +398,16 @@ class Parser
         return true
       endIf
 
+      if (consume(TokenType.keyword_GLOBAL))
+        if (consume(TokenType.keyword_PROPERTIES))
+          while (parse_properties(true)) noAction
+          return true
+        elseIf (consume(TokenType.keyword_METHODS))
+          while (parse_method(true)) noAction
+          return true
+        endIf
+      endIf
+
       if (consume(TokenType.keyword_ROUTINES))
         while (parse_method(true)) noAction
         return true
@@ -519,10 +529,8 @@ class Parser
     method parse_method( as_routine=false:Logical )->Logical
       consume_eols
 
-      if (as_routine)
-        if (not next_is(TokenType.keyword_routine)) return false
-      else
-        if (not next_is(TokenType.keyword_method)) return false
+      if (not next_is(TokenType.keyword_method))
+        if (not as_routine or not next_is(TokenType.keyword_routine)) return false
       endIf
 
       local t = read  # 'routine' or 'method'

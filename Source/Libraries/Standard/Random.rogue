@@ -2,8 +2,8 @@
 #  Random
 #------------------------------------------------------------------------------
 class Random [singleton]
-  ROUTINES
-    routine next_state( state:Long )->Long [macro]
+  GLOBAL METHODS
+    method next_state( state:Long )->Long [macro]
       # Kludge until Long literals work in compiler
       $if ("C++") native "((THIS->state * 0x5DEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
 

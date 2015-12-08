@@ -1,51 +1,51 @@
 class Math
-  ROUTINES
+  GLOBAL METHODS
     $if ("C++")
-    routine acos( n:Real )->Real [macro]
+    method acos( n:Real )->Real [macro]
       native 'acos((double)$n)'
 
-    routine asin( n:Real )->Real [macro]
+    method asin( n:Real )->Real [macro]
       native 'asin((double)$n)'
 
-    routine atan( n:Real )->Real [macro]
+    method atan( n:Real )->Real [macro]
       native 'atan((double)$n)'
 
-    routine atan2( y:Real, x:Real )->Real [macro]
+    method atan2( y:Real, x:Real )->Real [macro]
       native 'atan2((double)$y,(double)$x)'
 
-    routine ceil( n:Real )->Real [macro]
+    method ceil( n:Real )->Real [macro]
       native 'ceil((double)$n)'
 
-    routine cos( n:Real )->Real [macro]
+    method cos( n:Real )->Real [macro]
       native 'cos((double)$n)'
 
-    routine exp( n:Real )->Real [macro]
+    method exp( n:Real )->Real [macro]
       native 'exp((double)$n)'
 
-    routine floor( n:Real )->Real [macro]
+    method floor( n:Real )->Real [macro]
       native 'floor((double)$n)'
 
-    routine log( n:Real )->Real [macro]
+    method log( n:Real )->Real [macro]
       native 'log((double)$n)'
 
-    routine log2( n:Real )->Real [macro]
+    method log2( n:Real )->Real [macro]
       native 'log2((double)$n)'
 
-    routine log10( n:Real )->Real [macro]
+    method log10( n:Real )->Real [macro]
       native 'log10((double)$n)'
 
-    routine sin( n:Real )->Real [macro]
+    method sin( n:Real )->Real [macro]
       native 'sin((double)$n)'
 
-    routine sqrt( n:Real )->Real [macro]
+    method sqrt( n:Real )->Real [macro]
       native 'sqrt((double)$n)'
 
-    routine tan( n:Real )->Real [macro]
+    method tan( n:Real )->Real [macro]
       native 'tan((double)$n)'
 
     $endIf
 
-    routine mod( a:Integer, b:Integer )->Integer
+    method mod( a:Integer, b:Integer )->Integer
       if ((not a and not b) or b == 1) return 0
 
       local r = native("$a % $b")->Integer
@@ -56,7 +56,7 @@ class Math
         return r
       endIf
 
-    routine mod( a:Long, b:Long )->Long
+    method mod( a:Long, b:Long )->Long
       if ((not a and not b) or b == 1) return 0
 
       local r = native("$a % $b")->Long
@@ -67,11 +67,11 @@ class Math
         return r
       endIf
 
-    routine mod( a:Real, b:Real )->Real
+    method mod( a:Real, b:Real )->Real
       local q = a / b
       return a - floor(q)*b
 
-    routine shift_right( value:Integer, bits:Integer )->Integer
+    method shift_right( value:Integer, bits:Integer )->Integer
       if (bits <= 0) return value
 
       --bits
@@ -81,8 +81,8 @@ endClass
 
 
 class Degrees( value:Real ) [compound]
-  ROUTINES
-    routine create( degrees:Radians )->Degrees
+  GLOBAL METHODS
+    method create( degrees:Radians )->Degrees
       return Degrees( (degrees.value / pi) * 180.0 )
 
   METHODS
@@ -100,8 +100,8 @@ class Degrees( value:Real ) [compound]
 endClass
 
 class Radians( value:Real ) [compound]
-  ROUTINES
-    routine create( degrees:Degrees )->Radians
+  GLOBAL METHODS
+    method create( degrees:Degrees )->Radians
       return Radians( (degrees.value / 180.0) * pi )
 
   METHODS

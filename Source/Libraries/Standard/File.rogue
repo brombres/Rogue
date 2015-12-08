@@ -62,8 +62,8 @@ class FileOptions( flags=0:Integer ) [compound]
 endClass
 
 class File
-  ROUTINES
-    routine absolute_filepath( filepath:String )->String
+  GLOBAL METHODS
+    method absolute_filepath( filepath:String )->String
       native @|if ( !$filepath ) return 0;
               |
               |char c_filepath[ PATH_MAX ];
@@ -132,7 +132,7 @@ class File
               |}
               |#endif
 
-    routine exists( filepath:String )->Logical
+    method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
               |
               |char c_filepath[ PATH_MAX ];
@@ -144,13 +144,13 @@ class File
               |fclose( fp );
               |return true;
 
-    routine filename( filepath:String )->String
+    method filename( filepath:String )->String
       local i = filepath.locate_last( '/' )
       if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return filepath
       return filepath.from( i.value+1 )
 
-    routine is_folder( filepath:String )->Logical
+    method is_folder( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
               |
               |char c_filepath[ PATH_MAX ];
@@ -191,7 +191,7 @@ class File
               |  return 1;
               |#endif
 
-    routine listing( folder:String, options=FileOptions():FileOptions, filepath="":String, result=String[]:String[] )->String[]
+    method listing( folder:String, options=FileOptions():FileOptions, filepath="":String, result=String[]:String[] )->String[]
       if (options.is_absolute)
         filepath = File.absolute_filepath( folder )  # add absolute path to every entry
         folder = ""
@@ -267,7 +267,7 @@ class File
       return result
 
 
-    routine load_as_bytes( filepath:String )->Byte[]
+    method load_as_bytes( filepath:String )->Byte[]
       local count = size( filepath )
       local bytes = Byte[]( count )
       local infile = reader( filepath )
@@ -275,7 +275,7 @@ class File
       infile.close
       return bytes
 
-    routine load_as_string( filepath:String )->String
+    method load_as_string( filepath:String )->String
       local count = size( filepath )
       local buffer = StringBuilder( count )
       local infile = reader( filepath )
@@ -283,31 +283,31 @@ class File
       infile.close
       return buffer->String
 
-    routine options->FileOptions [macro]
+    method options->FileOptions [macro]
       FileOptions()
 
-    routine path( filepath:String )->String
+    method path( filepath:String )->String
       local i = filepath.locate_last( '/' )
       if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return ""
       return filepath.from( 0, i!-1 )
 
-    routine reader( filepath:String )->FileReader
+    method reader( filepath:String )->FileReader
       return FileReader( filepath )
 
-    routine save( filepath:String, data:Byte[] )->Logical
+    method save( filepath:String, data:Byte[] )->Logical
       local outfile = writer( filepath )
       forEach (ch in data) outfile.write( ch )
       outfile.close
       return true
 
-    routine save( filepath:String, data:String )->Logical
+    method save( filepath:String, data:String )->Logical
       local outfile = writer( filepath )
       forEach (ch in data) outfile.write( ch )
       outfile.close
       return true
 
-    routine size( filepath:String )->Integer
+    method size( filepath:String )->Integer
       native @|if ( !$filepath ) return 0;
               |
               |char c_filepath[ PATH_MAX ];
@@ -322,7 +322,7 @@ class File
               |
               |return size;
 
-    routine writer( filepath:String )->FileWriter
+    method writer( filepath:String )->FileWriter
       return FileWriter( filepath )
 
   PROPERTIES

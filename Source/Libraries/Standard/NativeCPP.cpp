@@ -58,7 +58,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-//  GLOBALS
+//  GLOBAL PROPERTIES
 //-----------------------------------------------------------------------------
 RogueLogical       Rogue_configured = 0;
 RogueErrorHandler* Rogue_error_handler = 0;

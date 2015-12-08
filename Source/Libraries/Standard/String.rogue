@@ -1,9 +1,9 @@
 class String [native functional]
-  ROUTINES
-    routine create( characters:Character[] )->String [macro]
+  GLOBAL METHODS
+    method create( characters:Character[] )->String [macro]
       $if ("C++") native 'RogueString_create_from_characters( $characters )'
 
-    routine create( characters:StringBuilder )->String
+    method create( characters:StringBuilder )->String
       return create( characters.characters )
 
   METHODS

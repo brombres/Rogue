@@ -1,6 +1,6 @@
 class Console [singleton]
-  ROUTINES
-    routine input( prompt=null:String )->String
+  GLOBAL METHODS
+    method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
 
       native @|char st[4096];

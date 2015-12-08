@@ -1,15 +1,15 @@
 class System [requisite]
-  GLOBALS
+  GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
 
-  ROUTINES
-    routine exit( result_code:Integer )
+  GLOBAL METHODS
+    method exit( result_code:Integer )
       $if ("C++")
         native "exit( $result_code );"
       $endIf
 
-    routine run( command:String ) [macro]
+    method run( command:String ) [macro]
       native
         @|{
          |  char cmd_buffer[4096];

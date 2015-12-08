@@ -1,6 +1,6 @@
 class Real [primitive]
-  ROUTINES
-    routine create( bits:Long )->Real
+  GLOBAL METHODS
+    method create( bits:Long )->Real
       $if ("C++")
         native "return *((RogueReal*)&$bits);"
       $endIf
@@ -34,8 +34,8 @@ class Float [primitive]
 endClass
 
 class Long [primitive]
-  ROUTINES
-    routine create( bit_source:Real )->Long
+  GLOBAL METHODS
+    method create( bit_source:Real )->Long
       $if ("C++")
         native "return *((RogueLong*)&$bit_source);"
       $endIf

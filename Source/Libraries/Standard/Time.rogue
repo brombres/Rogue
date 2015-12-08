@@ -1,6 +1,6 @@
 class Time
-  ROUTINES
-    routine current->Real
+  GLOBAL METHODS
+    method current->Real
       $if ("C++")
         native @|#if defined(_WIN32)
                 |  struct __timeb64 time_struct;

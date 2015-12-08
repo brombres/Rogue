@@ -23,29 +23,29 @@ endClass
 
 #{
 class SystemEventQueue
-  ROUTINES
-    routine begin_reading
+  GLOBAL METHODS
+    method begin_reading
     macro native "Rogue_program.event_queue.begin_reading()"
 
-    routine has_another->Logical
+    method has_another->Logical
     macro native "Rogue_program.event_queue.has_another()"
 
-    routine read_byte->Byte
+    method read_byte->Byte
     macro native "Rogue_program.event_queue.read_byte()"
 
-    routine read_character->Character
+    method read_character->Character
     macro native "Rogue_program.event_queue.read_character()"
 
-    routine read_integer->Integer
+    method read_integer->Integer
     macro native "Rogue_program.event_queue.read_integer()"
 
-    routine read_logical->Logical
+    method read_logical->Logical
     macro native "Rogue_program.event_queue.read_logical()"
 
-    routine read_real->Real
+    method read_real->Real
     macro native "Rogue_program.event_queue.read_real()"
 
-    routine read_string->String
+    method read_string->String
     macro native "Rogue_program.event_queue.read_string()"
 endClass
 }#
