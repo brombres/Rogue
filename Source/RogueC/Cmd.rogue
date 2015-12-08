@@ -164,7 +164,7 @@ endClass
 # StatementList
 #------------------------------------------------------------------------------
 class CmdStatementList : Cmd[]
-  GLOBALS
+  GLOBAL PROPERTIES
     current : CmdStatementList
 
   METHODS
@@ -1697,7 +1697,7 @@ class CmdAccess : Cmd
           if (scope.this_type.is_singleton)
             context = CmdReadSingleton( t, scope.this_type )
           else
-            if (scope.this_method.is_routine)
+            if (scope.this_method.is_global)
               throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
             endIf
             context = CmdThisContext( t, scope.this_type )
@@ -1799,7 +1799,7 @@ class CmdAccess : Cmd
         local p = scope.this_method.type_context.find_global( name )
         if (p) return CmdWriteGlobal( t, p, new_value ).resolve( scope )
 
-        if (scope.this_method.is_routine)
+        if (scope.this_method.is_global)
           p = scope.this_method.type_context.find_property( name )
           if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
@@ -1833,7 +1833,7 @@ class CmdAccess : Cmd
 
       p = context_type.find_property( name )
       if (p) 
-        if (scope.this_method.is_routine and not explicit_context)
+        if (scope.this_method.is_global and not explicit_context)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         else
           return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
@@ -1869,7 +1869,7 @@ class CmdAccess : Cmd
       p = context_type.find_property( name )
       if (p)
         if (not context) context = CmdThisContext( t, context_type )
-        if (scope.this_method.is_routine)
+        if (scope.this_method.is_global)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
         return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
@@ -2063,7 +2063,7 @@ class CmdLiteralThis : CmdThisContext
 
     method resolve( scope:Scope )->Cmd
       this_type.organize
-      if (scope.this_method.is_routine)
+      if (scope.this_method.is_global)
         throw t.error( "Invalid reference to 'this' object - routines have no object context." )
       endIf
       return this
@@ -4097,7 +4097,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
         endIf
 
         local cmd : Cmd
-        if (m.is_routine)
+        if (m.is_global)
           callback_type.attributes.add( Attribute.is_singleton )
           cmd = CmdAccess( t, CmdAccess(t,context_type.name), name, args )
         else
@@ -4115,7 +4115,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
         m_call.statements.add( cmd )
       endIf
 
-      if (m.is_routine)
+      if (m.is_global)
         return CmdReadSingleton( t, callback_type ).resolve( scope )
       else
         return CmdAccess( t, callback_type_name, CmdArgs(context) ).resolve( scope )

@@ -393,11 +393,6 @@ class Parser
         return true
       endIf
 
-      if (consume(TokenType.keyword_GLOBALS))
-        while (parse_properties(true)) noAction
-        return true
-      endIf
-
       if (consume(TokenType.keyword_GLOBAL))
         if (consume(TokenType.keyword_PROPERTIES))
           while (parse_properties(true)) noAction
@@ -467,7 +462,7 @@ class Parser
 
       return true
 
-    method parse_properties( as_globals=false:Logical )->Logical
+    method parse_properties( as_global=false:Logical )->Logical
       consume_eols
 
       if (consume(TokenType.keyword_native))
@@ -493,7 +488,7 @@ class Parser
         consume_eols
         local t = must_read(TokenType.identifier)
         local p : Property
-        if (as_globals) p = this_type.add_global( t, t->String )
+        if (as_global) p = this_type.add_global( t, t->String )
         else             p = this_type.add_property( t, t->String )
         property_list.add( p )
         if (consume(TokenType.symbol_equals))
@@ -510,7 +505,7 @@ class Parser
       else
         forEach (p in property_list)
           local name = "property"
-          if (as_globals) name = "global"
+          if (as_global) name = "global property"
           if (p.initial_value)
             p.type = p.initial_value.implicit_type
             if (p.type is null) 
@@ -1095,7 +1090,7 @@ class Parser
           statements.add( CmdLocalDeclaration(v.t,v) )
         endForEach
       else
-        # globals
+        # global properties
         forEach (v in local_declarations)
           if (not v.type)
             if (v.initial_value)

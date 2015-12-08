@@ -85,7 +85,7 @@ augment Program
       type_NativeArray.java_class_name = "RogueArray"
 
       forEach (type in type_list)
-        forEach (r in type.routine_list) r.assign_java_name
+        forEach (r in type.global_method_list) r.assign_java_name
         forEach (m in type.method_list)  m.assign_java_name
       endForEach
 
@@ -196,7 +196,7 @@ augment Program
       writer.println
 
       # Global declarations
-      writer.println "// GLOBALS"
+      writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
           writer.print( g.type ).print( " Rogue" )
@@ -360,7 +360,7 @@ augment Program
       writer.println "void* link;"
       writer.println "int i;"
       writer.println
-      writer.println "// Trace GLOBALS"
+      writer.println "// Trace GLOBAL PROPERTIES"
       forEach (type in type_list)
         if (type.has_global_references)
           forEach (g in type.global_list)
@@ -932,9 +932,9 @@ augment Type
       writer.println.println( "{" )
       writer.indent += 2
 
-      # Globals
+      # Global Properties
       if (global_list.count)
-        writer.println "// GLOBALS"
+        writer.println "// GLOBAL PROPERTIES"
         forEach (s in global_list)
           writer.print( "static " ).print( s.type ).print(" ").print( s.java_name ).println(";")
         endForEach
@@ -958,12 +958,12 @@ augment Type
       writer.println( "};" )
 
     method print_routine_prototypes( writer:JavaWriter )
-      forEach (m in routine_list)
+      forEach (m in global_method_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
 
     method print_routine_definitions( writer:JavaWriter )
-      forEach (m in routine_list)
+      forEach (m in global_method_list)
         if (m.type_context is this) m.print_definition( writer )
       endForEach
 
@@ -1094,7 +1094,7 @@ augment Method
       writer.print( return_type ).print(" ").print( java_name )
       writer.print( "(" )
       local first = true
-      if (not is_routine)
+      if (not is_global)
         first = false
         writer.print( " " )
         if (type_context.is_aspect)

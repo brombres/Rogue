@@ -199,7 +199,7 @@ class Program [requisite singleton]
         req.type.attributes.add( Attribute.is_requisite )
         if (req.signature)
           if (req.signature == "*")
-            forEach (r in req.type.routine_list) r.attributes.add( Attribute.is_requisite )
+            forEach (r in req.type.global_method_list) r.attributes.add( Attribute.is_requisite )
             forEach (m in req.type.method_list)  m.attributes.add( Attribute.is_requisite )
           else
             local m = req.type.find_method( req.signature )

@@ -614,7 +614,7 @@ struct RogueOptionalInteger
 };
 
 
-// GLOBALS
+// GLOBAL PROPERTIES
 extern RogueByteList* RogueStringBuilder_work_bytes;
 extern RogueClassCmdStatementList* RogueCmdStatementList_current;
 extern RogueClassString_TokenTypeTable* RogueTokenType_lookup;
@@ -650,7 +650,6 @@ extern RogueClassTokenType* RogueTokenType_keyword_ENUMERATE;
 extern RogueClassTokenType* RogueTokenType_keyword_GLOBAL;
 extern RogueClassTokenType* RogueTokenType_keyword_GLOBAL_METHODS;
 extern RogueClassTokenType* RogueTokenType_keyword_GLOBAL_PROPERTIES;
-extern RogueClassTokenType* RogueTokenType_keyword_GLOBALS;
 extern RogueClassTokenType* RogueTokenType_keyword_macro;
 extern RogueClassTokenType* RogueTokenType_keyword_method;
 extern RogueClassTokenType* RogueTokenType_keyword_METHODS;
@@ -784,7 +783,7 @@ extern RogueClassString_TokenListTable* RoguePreprocessor_definitions;
 
 struct RogueStringBuilder : RogueObject
 {
-  // GLOBALS
+  // GLOBAL PROPERTIES
   static RogueByteList* work_bytes;
 
   // PROPERTIES
@@ -1067,7 +1066,7 @@ struct RogueClassType : RogueObject
   RogueClassString_PropertyTable* global_lookup;
   RoguePropertyList* property_list;
   RogueClassString_PropertyTable* property_lookup;
-  RogueMethodList* routine_list;
+  RogueMethodList* global_method_list;
   RogueClassString_MethodListTable* routine_lookup_by_name;
   RogueClassString_MethodTable* routine_lookup_by_signature;
   RogueMethodList* method_list;
@@ -1140,7 +1139,7 @@ struct RogueClassCmdStatement : RogueObject
 
 struct RogueClassCmdStatementList : RogueObject
 {
-  // GLOBALS
+  // GLOBAL PROPERTIES
   static RogueClassCmdStatementList* current;
 
   // PROPERTIES
@@ -1159,7 +1158,7 @@ struct RogueCmdList : RogueObject
 
 struct RogueClassTokenType : RogueObject
 {
-  // GLOBALS
+  // GLOBAL PROPERTIES
   static RogueClassString_TokenTypeTable* lookup;
   static RogueClassTokenType* directive_define;
   static RogueClassTokenType* directive_include;
@@ -1193,7 +1192,6 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* keyword_GLOBAL;
   static RogueClassTokenType* keyword_GLOBAL_METHODS;
   static RogueClassTokenType* keyword_GLOBAL_PROPERTIES;
-  static RogueClassTokenType* keyword_GLOBALS;
   static RogueClassTokenType* keyword_macro;
   static RogueClassTokenType* keyword_method;
   static RogueClassTokenType* keyword_METHODS;
@@ -1415,7 +1413,7 @@ struct RogueClassMath : RogueObject
 
 struct RogueClassSystem : RogueObject
 {
-  // GLOBALS
+  // GLOBAL PROPERTIES
   static RogueStringList* command_line_arguments;
   static RogueString* executable_filepath;
 
@@ -2088,7 +2086,7 @@ struct RogueClassParseReader : RogueObject
 
 struct RogueClassPreprocessor : RogueObject
 {
-  // GLOBALS
+  // GLOBAL PROPERTIES
   static RogueClassString_TokenListTable* definitions;
 
   // PROPERTIES
@@ -3776,7 +3774,7 @@ RogueLogical RogueMethod__is_macro( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_native( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_overridden( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_requisite( RogueClassMethod* THIS );
-RogueLogical RogueMethod__is_routine( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_global( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_task( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_task_conversion( RogueClassMethod* THIS );
 RogueLogical RogueMethod__omit_output( RogueClassMethod* THIS );
@@ -4157,7 +4155,7 @@ void RogueParser__ensure_unspecialized_element_type__Token_Attributes( RogueClas
 void RogueParser__parse_type_def__Type( RogueClassParser* THIS, RogueClassType* _auto_258_0 );
 RogueLogical RogueParser__parse_section( RogueClassParser* THIS );
 RogueLogical RogueParser__parse_definitions__Logical( RogueClassParser* THIS, RogueLogical enumerate_0 );
-RogueLogical RogueParser__parse_properties__Logical( RogueClassParser* THIS, RogueLogical as_globals_0 );
+RogueLogical RogueParser__parse_properties__Logical( RogueClassParser* THIS, RogueLogical as_global_0 );
 RogueLogical RogueParser__parse_method__Logical( RogueClassParser* THIS, RogueLogical as_routine_0 );
 void RogueParser__parse_single_or_multi_line_statements__CmdStatementList_TokenType( RogueClassParser* THIS, RogueClassCmdStatementList* statements_0, RogueClassTokenType* end_type_1 );
 void RogueParser__parse_multi_line_statements__CmdStatementList( RogueClassParser* THIS, RogueClassCmdStatementList* statements_0 );

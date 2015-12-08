@@ -1,5 +1,5 @@
 class TokenType
-  GLOBALS 
+  GLOBAL PROPERTIES
     lookup                        : Table<<String,TokenType>>
 
     # Directives
@@ -38,7 +38,6 @@ class TokenType
     keyword_GLOBAL                : TokenType
     keyword_GLOBAL_METHODS        : TokenType
     keyword_GLOBAL_PROPERTIES     : TokenType
-    keyword_GLOBALS               : TokenType
     keyword_macro                 : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType

@@ -15,7 +15,7 @@ class Attribute
     is_macro            = 64
     is_initializer      = 128
     is_immutable        = 256
-    is_routine          = 512
+    is_global          = 512
     is_singleton        = 1024
     is_dynamic          = 2048
     is_overridden       = 4096

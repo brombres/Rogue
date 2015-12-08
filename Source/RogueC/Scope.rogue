@@ -53,7 +53,7 @@ class Scope
 
       local context = access.context
       if (not context)
-        if (this_method.is_routine and not m.is_routine)
+        if (this_method.is_global and not m.is_global)
           # Calling a singleton method from a routine
           context = CmdReadSingleton( t, type_context )
         else
@@ -76,7 +76,7 @@ class Scope
       endForEach
 
       local cmd : Cmd
-      if (m.is_routine)
+      if (m.is_global)
         # routine
         if (m.is_native)
           if (m.native_code)

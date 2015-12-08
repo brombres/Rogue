@@ -38,7 +38,7 @@ class Type
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
-    routine_list                = Method[]                   : Method[]
+    global_method_list                = Method[]                   : Method[]
     routine_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     routine_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
@@ -67,9 +67,9 @@ class Type
 
     method add_routine( r_t:Token, r_name:String )->Method
       local r = Method( r_t, this, r_name )
-      r.attributes.add( Attribute.is_routine )
+      r.attributes.add( Attribute.is_global )
 
-      routine_list.add( r )
+      global_method_list.add( r )
       local list = routine_lookup_by_name[ r_name ]
       if (not list)
         list = Method[]
@@ -283,7 +283,7 @@ class Type
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
       # Organize routines and methods and create signatures
-      forEach (r in routine_list)
+      forEach (r in global_method_list)
         r.organize
       endForEach
 
@@ -295,9 +295,9 @@ class Type
       local full_routine_list = Method[]
       routine_lookup_by_signature.clear
       inherit_routines( full_routine_list, routine_lookup_by_signature )
-      routine_list = full_routine_list
+      global_method_list = full_routine_list
       routine_lookup_by_name.clear
-      forEach (r in routine_list)
+      forEach (r in global_method_list)
         local list = routine_lookup_by_name[r.name]
         if (not list)
           list = Method[]
@@ -320,7 +320,7 @@ class Type
         list.add( m )
       endForEach
 
-      # Create or locate init_class() to initialize globals
+      # Create or locate init_class() to initialize global properties
       if (global_list.count and not is_native)
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
@@ -390,7 +390,7 @@ class Type
         endIf
       endIf
 
-      index_and_move_inline_to_end( routine_list )
+      index_and_move_inline_to_end( global_method_list )
       index_and_move_inline_to_end( method_list )
 
       return this
@@ -608,12 +608,12 @@ class Type
 
     method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
-        forEach (base_m in base_type.routine_list)
+        forEach (base_m in base_type.global_method_list)
           inherit_routine( base_m, list, lookup )
         endForEach
       endForEach
 
-      forEach (m in routine_list)
+      forEach (m in global_method_list)
         inherit_routine( m, list, lookup )
       endForEach
 
@@ -705,7 +705,7 @@ class Type
         p.type.organize
       endForEach
 
-      forEach (r in routine_list)
+      forEach (r in global_method_list)
         r.resolve
       endForEach
 
@@ -746,7 +746,7 @@ class Type
         p.type.trace_used_code
       endForEach
 
-      forEach (r in routine_list)
+      forEach (r in global_method_list)
         if (r.is_requisite) r.trace_used_code
       endForEach
 

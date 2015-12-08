@@ -107,7 +107,6 @@ class Tokenizer
       TokenType.keyword_GLOBAL        = define( StructureTokenType("GLOBAL") )
       TokenType.keyword_GLOBAL_METHODS    = define( StructureTokenType("GLOBAL_METHODS") )
       TokenType.keyword_GLOBAL_PROPERTIES = define( StructureTokenType("GLOBAL_PROPERTIES") )
-      TokenType.keyword_GLOBALS       = define( StructureTokenType("GLOBALS") )
       TokenType.keyword_macro         = define( StructureTokenType("macro") )
       TokenType.keyword_method        = define( StructureTokenType("method") )
       TokenType.keyword_METHODS       = define( StructureTokenType("METHODS") )
