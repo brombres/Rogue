@@ -1,3 +1,66 @@
+class FileOptions( flags=0:Integer ) [compound]
+  ENUMERATE
+    FLAG_RECURSIVE     = 1
+    FLAG_ABSOLUTE      = 2
+    FLAG_FILES         = 4
+    FLAG_FOLDERS       = 8
+    FLAG_BOTH          = 12
+    FLAG_IGNORE_HIDDEN = 16
+
+  METHODS
+    method absolute->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
+
+    method ignore_hidden->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
+
+    method ignoring_hidden->Logical [macro]
+      (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
+
+    method including_both->Logical
+      local f = (flags & FLAG_BOTH)
+      return (f == 0) or (f == FLAG_BOTH)
+
+    method including_files->Logical
+      return (flags & FLAG_FILES) or not (flags & FLAG_BOTH)
+
+    method including_folders->Logical
+      return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
+
+    method files->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_FILES )
+
+    method folders->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
+
+    method is_absolute->Logical [macro]
+      (this.flags & FileOptions.FLAG_ABSOLUTE)
+
+    method is_limited->Logical [macro]
+      (not (this.flags & FileOptions.FLAG_RECURSIVE))
+
+    method is_recursive->Logical [macro]
+      (this.flags & FileOptions.FLAG_RECURSIVE)
+
+    method is_relative->Logical [macro]
+      return (not (this.flags & FileOptions.FLAG_ABSOLUTE))
+
+    method limited->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
+
+    method relative->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
+
+    method recursive->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
+
+    method showing_hidden->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
+
+    method shows_hidden->Logical [macro]
+      (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
+endClass
+
 class File
   ROUTINES
     routine absolute_filepath( filepath:String )->String
@@ -128,6 +191,82 @@ class File
               |  return 1;
               |#endif
 
+    routine listing( folder:String, options=FileOptions():FileOptions, filepath="":String, result=String[]:String[] )->String[]
+      if (options.is_absolute)
+        filepath = File.absolute_filepath( folder )  # add absolute path to every entry
+        folder = ""
+        options = options.relative
+      endIf
+
+      if (folder.count and not (folder.ends_with('/') or folder.ends_with('\\')))
+        folder += '/'
+      endIf
+
+      if (filepath.count and not (filepath.ends_with('/') or filepath.ends_with('\\')))
+        filepath += '/'
+      endIf
+
+      local native_folder = folder + filepath
+
+      if (not is_folder(native_folder)) return result
+
+      native @|{
+              |  DIR* dir;
+              |  struct dirent* entry;
+              |  char c_filepath[ PATH_MAX ];
+              |
+              |  RogueString_to_c_string( $native_folder, c_filepath, sizeof(c_filepath) );
+              |
+              |  dir = opendir( c_filepath );
+              |  if (dir)
+              |  {
+              |    entry = readdir( dir );
+              |    while (entry)
+              |    {
+              |      int keep = 1;
+              |      if (entry->d_name[0] == '.')
+              |      {
+              |        switch (entry->d_name[1])
+              |        {
+              |          case 0:   
+              |            keep = 0; 
+              |            break;
+              |          case '.':
+              |            keep = entry->d_name[2] != 0;
+              |            break;
+              |        }
+              |      }
+              |      if (keep)
+              |      {
+
+                       local entry = native("RogueString_create_from_c_string(entry->d_name,-1)")->String
+                       local is_hidden = entry.begins_with('.')
+                       entry = filepath + entry
+                       if (not (is_hidden and options.ignoring_hidden))
+                         local _is_folder = is_folder( entry )
+                         if (options.including_both or
+                             (_is_folder and options.including_folders) or
+                             (not _is_folder and options.including_files))
+                           result.add( entry )
+                         endIf
+
+                         if (_is_folder and options.is_recursive)
+                           listing( folder, options, entry, result )
+                         endIf
+
+                       endIf
+
+      native @|
+              |      }
+              |      entry = readdir( dir );
+              |    }
+              |    closedir( dir );
+              |  }
+              |}
+
+      return result
+
+
     routine load_as_bytes( filepath:String )->Byte[]
       local count = size( filepath )
       local bytes = Byte[]( count )
@@ -143,6 +282,9 @@ class File
       forEach (1..count) buffer.print( infile.read )
       infile.close
       return buffer->String
+
+    routine options->FileOptions [macro]
+      FileOptions()
 
     routine path( filepath:String )->String
       local i = filepath.locate_last( '/' )
@@ -200,6 +342,9 @@ class File
 
     method is_folder->Logical [macro]
       File.is_folder( this.filepath )
+
+    method listing->String[] [macro]
+      File.listing( this.filepath )
 
     method load_as_bytes->Byte[] [macro]
       File.load_as_bytes( this.filepath )

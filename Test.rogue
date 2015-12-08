@@ -1,4 +1,1 @@
-$include "Geometry/2D"
-
-println( -XY(3,4) )
-println XY(3,4) + 2
+forEach (filepath in File.listing(".",File.options.ignore_hidden)) println filepath
