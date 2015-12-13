@@ -1092,15 +1092,6 @@ class Parser
       else
         # global properties
         forEach (v in local_declarations)
-          if (not v.type)
-            if (v.initial_value)
-              local mesg = "Cannot infer the type of the global property from its initial value.  Assign a type by appending ': TypeName' to the end of the declaration."
-              throw v.t.error( mesg )
-            else
-              local mesg = "Cannot determine the type of the global property - either assign an initial value (global $ = ...) or assign a type (global $ : Integer)." (v.name,v.name)
-              throw v.t.error( mesg )
-            endIf
-          endIf
           Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type,v.initial_value) )
         endForEach
       endIf

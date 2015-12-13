@@ -367,8 +367,8 @@ struct RogueClassCmdStatementList;
 struct RogueCmdList;
 struct RogueClassTokenType;
 struct RogueClassCmdLabel;
-struct RogueMethodList;
 struct RogueClassRogueError;
+struct RogueMethodList;
 struct RogueClassCPPWriter;
 struct RogueClassString_MethodTable;
 struct RogueLocalList;
@@ -1332,20 +1332,20 @@ struct RogueClassCmdLabel : RogueObject
 
 };
 
-struct RogueMethodList : RogueObject
-{
-  // PROPERTIES
-  RogueArray* data;
-  RogueInteger count;
-
-};
-
 struct RogueClassRogueError : RogueClassError
 {
   // PROPERTIES
   RogueString* filepath;
   RogueInteger line;
   RogueInteger column;
+
+};
+
+struct RogueMethodList : RogueObject
+{
+  // PROPERTIES
+  RogueArray* data;
+  RogueInteger count;
 
 };
 
@@ -3331,8 +3331,8 @@ extern RogueType* RogueTypeCmdStatementList;
 extern RogueType* RogueTypeCmdList;
 extern RogueType* RogueTypeTokenType;
 extern RogueType* RogueTypeCmdLabel;
-extern RogueType* RogueTypeMethodList;
 extern RogueType* RogueTypeRogueError;
+extern RogueType* RogueTypeMethodList;
 extern RogueType* RogueTypeCPPWriter;
 extern RogueType* RogueTypeString_MethodTable;
 extern RogueType* RogueTypeLocalList;
@@ -4015,6 +4015,10 @@ void RogueCmdLabel__write_cpp__CPPWriter_Logical( RogueClassCmdLabel* THIS, Rogu
 RogueClassCmdLabel* RogueCmdLabel__init_object( RogueClassCmdLabel* THIS );
 RogueClassCmdLabel* RogueCmdLabel__init__Token_String_CmdStatementList( RogueClassCmdLabel* THIS, RogueClassToken* _auto_100_0, RogueString* _auto_101_1, RogueClassCmdStatementList* _auto_102_2 );
 RogueString* RoguePropertyArray__type_name( RogueArray* THIS );
+RogueString* RogueRogueError__to_String( RogueClassRogueError* THIS );
+RogueString* RogueRogueError__type_name( RogueClassRogueError* THIS );
+RogueClassRogueError* RogueRogueError__init_object( RogueClassRogueError* THIS );
+RogueClassRogueError* RogueRogueError__init__String_String_Integer_Integer( RogueClassRogueError* THIS, RogueString* _auto_105_0, RogueString* _auto_106_1, RogueInteger _auto_107_2, RogueInteger _auto_108_3 );
 RogueString* RogueRequisiteItemArray__type_name( RogueArray* THIS );
 RogueString* RogueMethodList__to_String( RogueMethodList* THIS );
 RogueString* RogueMethodList__type_name( RogueMethodList* THIS );
@@ -4030,10 +4034,6 @@ RogueMethodList* RogueMethodList__reserve__Integer( RogueMethodList* THIS, Rogue
 RogueClassMethod* RogueMethodList__remove__Method( RogueMethodList* THIS, RogueClassMethod* value_0 );
 RogueClassMethod* RogueMethodList__remove_at__Integer( RogueMethodList* THIS, RogueInteger index_0 );
 RogueString* RogueMethodArray__type_name( RogueArray* THIS );
-RogueString* RogueRogueError__to_String( RogueClassRogueError* THIS );
-RogueString* RogueRogueError__type_name( RogueClassRogueError* THIS );
-RogueClassRogueError* RogueRogueError__init_object( RogueClassRogueError* THIS );
-RogueClassRogueError* RogueRogueError__init__String_String_Integer_Integer( RogueClassRogueError* THIS, RogueString* _auto_112_0, RogueString* _auto_113_1, RogueInteger _auto_114_2, RogueInteger _auto_115_3 );
 RogueString* RogueTemplateArray__type_name( RogueArray* THIS );
 RogueString* RogueCPPWriter__type_name( RogueClassCPPWriter* THIS );
 RogueClassCPPWriter* RogueCPPWriter__init__String( RogueClassCPPWriter* THIS, RogueString* _auto_152_0 );
