@@ -16,7 +16,7 @@ class Method
     parameters = Local[] : Local[]
     locals     = Local[] : Local[]
 
-    min_args     : Integer
+    min_args     : Int32
 
     statements            = CmdStatementList()
     aspect_statements     : CmdStatementList
@@ -28,7 +28,7 @@ class Method
 
     organized : Logical
     resolved  : Logical
-    index     : Integer
+    index     : Int32
 
     is_used            : Logical
     called_dynamically : Logical
@@ -86,7 +86,7 @@ class Method
 
       return m
 
-    method accepts_arg_count( n:Integer )->Logical
+    method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
 
     method add_local( v_t:Token, v_name:String, v_type=null:Type, v_initial_value=null:Cmd )->Local
@@ -332,7 +332,7 @@ class Method
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
       m_update.statements.add( CmdGenericLoop( t, CmdControlStructure.type_while, CmdAccess(t,"execute",CmdArgs()) ) )
-      m_update.statements.add( CmdReturn( t, CmdCompareNE(t,CmdAccess(t,"ip"),CmdLiteralInteger(t,-1)) ) )
+      m_update.statements.add( CmdReturn( t, CmdCompareNE(t,CmdAccess(t,"ip"),CmdLiteralInt32(t,-1)) ) )
 
       local m_execute = task_type.add_method( t, "execute" )
       m_execute.return_type = Program.type_Logical
@@ -378,7 +378,7 @@ class Method
 
       local task_args = TaskArgs( task_type, m_execute, this.type_context, this )
       task_args.context_property = task_type.add_property( t, "context", this.type_context )
-      task_args.ip_property = task_type.add_property( t, "ip", Program.type_Integer )
+      task_args.ip_property = task_type.add_property( t, "ip", Program.type_Int32 )
 
       forEach (statement in m_temp.statements)
         statement = statement.clone( task_args )
@@ -413,7 +413,7 @@ class Method
 
       statements.trace_used_code
 
-    method address->Long [macro]
-      native "(RogueLong)(intptr_t)$this"
+    method address->Int64 [macro]
+      native "(RogueInt64)(intptr_t)$this"
 endClass
 

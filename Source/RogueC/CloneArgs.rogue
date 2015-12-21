@@ -101,7 +101,7 @@ class TaskArgs : CloneArgs
 
       local ip = to_section.ip
       if (cmd_task_control.current_section.ip + 1 != ip)
-        cmd_if.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) ) )
+        cmd_if.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,ip-1) ) )
       endIf
       cmd_if.statements.add( CmdReturn(t,CmdLiteralLogical(t,true)) )
 
@@ -111,13 +111,13 @@ class TaskArgs : CloneArgs
     method create_return( t:Token, value=null:Cmd )->Cmd
       local result = CmdBlock( t )
       if (value) result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
-      result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,-1) ) )
+      result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,-1) ) )
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return result
 
     method create_escape( t:Token, escape_section:CmdTaskControlSection )->Cmd
       local result = CmdBlock( t )
-      result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,escape_section.ip-1) ) )
+      result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,escape_section.ip-1) ) )
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return result
 
@@ -168,14 +168,14 @@ class TaskArgs : CloneArgs
     method set_next_ip( t:Token, to_section:CmdTaskControlSection )->TaskArgs
       local ip = to_section.ip
       if (cmd_task_control.current_section.ip + 1 != ip)
-        cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) ) )
+        cmd_task_control.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,ip-1) ) )
       endIf
       return this
 
     method create_set_next_ip( t:Token, to_section:CmdTaskControlSection )->Cmd
       local ip = to_section.ip
       if (cmd_task_control.current_section.ip + 1 != ip)
-        return CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInteger(t,ip-1) )
+        return CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,ip-1) )
       endIf
       return null
 

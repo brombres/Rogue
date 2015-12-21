@@ -1,7 +1,7 @@
 class Event
   PROPERTIES
     type : String
-    id   : Integer
+    id   : Int32
 
   METHODS
     method init( type, id=EventManager.create_event_id )
@@ -13,7 +13,7 @@ class EventManager [singleton]
     event_id_counter = 0
 
   METHODS
-    method create_event_id->Integer
+    method create_event_id->Int32
       ++event_id_counter
       return event_id_counter
 
@@ -36,13 +36,13 @@ class SystemEventQueue
     method read_character->Character
     macro native "Rogue_program.event_queue.read_character()"
 
-    method read_integer->Integer
+    method read_integer->Int32
     macro native "Rogue_program.event_queue.read_integer()"
 
     method read_logical->Logical
     macro native "Rogue_program.event_queue.read_logical()"
 
-    method read_real->Real
+    method read_real->Real64
     macro native "Rogue_program.event_queue.read_real()"
 
     method read_string->String

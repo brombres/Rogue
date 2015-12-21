@@ -3,41 +3,41 @@
 #------------------------------------------------------------------------------
 class Random [singleton]
   GLOBAL METHODS
-    method next_state( state:Long )->Long [macro]
-      # Kludge until Long literals work in compiler
+    method next_state( state:Int64 )->Int64 [macro]
+      # Kludge until Int64 literals work in compiler
       $if ("C++") native "((THIS->state * 0x5DEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
 
   PROPERTIES
-    state : Long
+    state : Int64
 
   METHODS
     method init
-      reset( (Time.current * 1000)->Long )
+      reset( (Time.current * 1000)->Int64 )
 
-    method init( seed:Long )
+    method init( seed:Int64 )
       reset( seed )
 
-    method advance_state()->Long
+    method advance_state()->Int64
       state = next_state( state )
       return state
 
     method reset( state )
       advance_state
 
-    method next_real->Real
-      return (advance_state->Real + 1.0) / 281474976710657.0 
+    method next_real->Real64
+      return (advance_state->Real64 + 1.0) / 281474976710657.0 
 
-    method next_real( low:Real, high:Real )->Real
+    method next_real( low:Real64, high:Real64 )->Real64
       return (next_real * (high-low)) + low
 
-    method next_integer->Integer
-      return (next_real * (2.0^31))->Integer
+    method next_integer->Int32
+      return (next_real * (2.0^31))->Int32
 
-    method next_integer( limit:Integer )->Integer
+    method next_integer( limit:Int32 )->Int32
       if (limit == 0) return 0
       return next_integer % limit
 
-    method next_integer( low:Integer, high:Integer )->Integer
+    method next_integer( low:Int32, high:Int32 )->Int32
       return next_integer( (high-low)+1 ) + low
 
     method next_logical->Logical

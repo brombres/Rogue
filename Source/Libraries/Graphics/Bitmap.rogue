@@ -1,10 +1,10 @@
 class Bitmap : Canvas
   PROPERTIES
-    pixels : Integer[]
+    pixels : Int32[]
 
   METHODS
     method init( size ) [requisite]
-      pixels = Integer[]( width*height, Color.BLACK )
+      pixels = Int32[]( width*height, Color.BLACK )
 
     method init( file:File )
       init( file.load_as_bytes )
@@ -27,8 +27,8 @@ class Bitmap : Canvas
               |ImageIODecoder_init( &decoder );
               |if ( !ImageIODecoder_set_input(&decoder, $bytes->data->bytes, $bytes->count) ) return 0;
 
-      size = XY( native("decoder.width")->Integer, native("decoder.height")->Integer )
-      pixels = Integer[]( width * height )
+      size = XY( native("decoder.width")->Int32, native("decoder.height")->Int32 )
+      pixels = Int32[]( width * height )
 
       native @|if ( !ImageIODecoder_decode_argb32(&decoder,(ImageIOARGB32*)$this->pixels->data->integers) ) return 0;
       return true
@@ -41,10 +41,10 @@ class Bitmap : Canvas
       endIf
 
       local dest_width = dest_canvas.width
-      local x1 = pos.x : Integer
-      local y1 = pos.y : Integer
-      local x_limit = x1 + width : Integer
-      local y_limit = y1 + height : Integer
+      local x1 = pos.x : Int32
+      local y1 = pos.y : Int32
+      local x_limit = x1 + width : Int32
+      local y_limit = y1 + height : Int32
       local i1 = 0
       local j1 = 0
       if (x1 < 0) i1 -= x1; x1 = 0
@@ -58,8 +58,8 @@ class Bitmap : Canvas
       local w = x_limit - x1
       local src_width = width
 
-      local src = j1 * width + i1 : Integer
-      local dest = y1 * dest_width + x1 : Integer
+      local src = j1 * width + i1 : Int32
+      local dest = y1 * dest_width + x1 : Int32
       local src_pixels = pixels.data
       local dest_pixels = dest_canvas.pixels.data
       forEach (y1..y2)
@@ -68,27 +68,27 @@ class Bitmap : Canvas
         dest += dest_width
       endForEach
 
-    method get( x:Integer, y:Integer )->Integer
+    method get( x:Int32, y:Int32 )->Int32
       return pixels[ y*width + x ]
 
     method save_as_png( file:File )->Logical
       return file.save( to_png_bytes )
 
-    method save_as_jpeg( file:File, quality=75:Integer )->Logical
+    method save_as_jpeg( file:File, quality=75:Int32 )->Logical
       return file.save( to_jpeg_bytes(quality) )
 
-    method set( x:Integer, y:Integer, color:Integer )->this
+    method set( x:Int32, y:Int32, color:Int32 )->this
       pixels[ y*width + x ] = color
       return this
 
     method to_png_bytes->Byte[]
       local w = width
       local h = height
-      local count : Integer
+      local count : Int32
       native @|ImageIOEncoder encoder;
               |ImageIOEncoder_init( &encoder );
               |ImageIOEncoder_encode_argb32_png( &encoder, (ImageIOARGB32*) $this->pixels->data->integers, $w, $h );
-              |$count = (RogueInteger) encoder.encoded_byte_count;
+              |$count = (RogueInt32) encoder.encoded_byte_count;
 
       local bytes = Byte[]( count );
       bytes.count = count
@@ -96,15 +96,15 @@ class Bitmap : Canvas
 
       return bytes
 
-    method to_jpeg_bytes( quality=75:Integer )->Byte[]
+    method to_jpeg_bytes( quality=75:Int32 )->Byte[]
       local w = width
       local h = height
-      local count : Integer
+      local count : Int32
       native @|ImageIOEncoder encoder;
               |ImageIOEncoder_init( &encoder );
               |encoder.quality = $quality;
               |ImageIOEncoder_encode_argb32_jpeg( &encoder, (ImageIOARGB32*) $this->pixels->data->integers, $w, $h );
-              |$count = (RogueInteger) encoder.encoded_byte_count;
+              |$count = (RogueInt32) encoder.encoded_byte_count;
 
       local bytes = Byte[]( count );
       bytes.count = count

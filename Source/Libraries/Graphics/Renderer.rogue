@@ -2,6 +2,6 @@ $include "OpenGLRenderer.rogue"
 
 class Renderer
   METHODS
-    method clear( color:Integer )
+    method clear( color:Int32 )
 endClass
 

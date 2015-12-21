@@ -32,7 +32,7 @@ augment Program
 
         name = "$$$" (validate_java_name(middle),before,after)
         # Example:
-        #   Table<<String,Integer>>[] -> StringIntegerTable[]
+        #   Table<<String,Int32>>[] -> StringInt32Table[]
 
         if (Program.find_type(name))
           # Preferred name already exists; revert to "Type_of_Specialization"
@@ -42,7 +42,7 @@ augment Program
         i1 = name.locate("<<")
       endWhile
 
-      #   StringIntegerTable[] -> StringIntegerTableList
+      #   StringInt32Table[] -> StringInt32TableList
       i1 = name.locate("[]")
       while (i1?)
         name = name.from(0,i1.value-1) + "List" + name.from(i1.value+2)
@@ -428,7 +428,7 @@ augment Program
       writer.println
 
       # Base class info table
-      local info = Integer[]
+      local info = Int32[]
       forEach (type in type_list)
         type.collect_type_info( info )
       endForEach
@@ -649,17 +649,17 @@ class JavaWriter
         forEach (1..indent) buffer.print(' ')
       endIf
 
-    method print( value:Long )->JavaWriter
+    method print( value:Int64 )->JavaWriter
       print_indent
       buffer.print( value )
       return this
 
-    method print( value:Integer )->JavaWriter
+    method print( value:Int32 )->JavaWriter
       print_indent
       buffer.print( value )
       return this
 
-    method print( value:Real )->JavaWriter
+    method print( value:Real64 )->JavaWriter
       print_indent
 
       buffer.print( value )
@@ -697,19 +697,19 @@ class JavaWriter
       needs_indent = true
       return this
 
-    method println( value:Long )->JavaWriter
+    method println( value:Int64 )->JavaWriter
       print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
 
-    method println( value:Integer )->JavaWriter
+    method println( value:Int32 )->JavaWriter
       print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
 
-    method println( value:Real )->JavaWriter
+    method println( value:Real64 )->JavaWriter
       print( value )
       buffer.print( '\n' )
       needs_indent = true
@@ -800,8 +800,8 @@ class JavaWriter
               print "\\n"
             others
               print "\\"
-              print( "" + (ch->Integer / 64)->Integer )
-              print( "" + ((ch->Integer & 63) / 8)->Integer )
+              print( "" + (ch->Int32 / 64)->Int32 )
+              print( "" + ((ch->Int32 & 63) / 8)->Int32 )
               print( "" + (ch & 7) )
           endWhich
         endIf
@@ -885,10 +885,10 @@ augment Type
         java_name = "Array"
 
       elseIf (this.is_primitive)
-        if     (this is Program.type_Real)      java_class_name = "double"
-        elseIf (this is Program.type_Float)     java_class_name = "float"
-        elseIf (this is Program.type_Long)      java_class_name = "long"
-        elseIf (this is Program.type_Integer)   java_class_name = "int"
+        if     (this is Program.type_Real64)      java_class_name = "double"
+        elseIf (this is Program.type_Real32)     java_class_name = "float"
+        elseIf (this is Program.type_Int64)      java_class_name = "long"
+        elseIf (this is Program.type_Int32)   java_class_name = "int"
         elseIf (this is Program.type_Character) java_class_name = "char"
         elseIf (this is Program.type_Byte)      java_class_name = "byte"
         elseIf (this is Program.type_Logical)   java_class_name = "boolean"
@@ -1008,7 +1008,7 @@ augment Type
         endIf
       endForEach
 
-    method print_dynamic_method_table_entries( at_index:Integer, writer:JavaWriter )->Integer
+    method print_dynamic_method_table_entries( at_index:Int32, writer:JavaWriter )->Int32
       if (not is_reference) return at_index
 
       dynamic_method_table_index = at_index
@@ -1485,20 +1485,20 @@ augment CmdLiteralNull
       writer.print( "NULL" )
 endAugment
 
-augment CmdLiteralReal
+augment CmdLiteralReal64
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       writer.print( value )
 endAugment
 
 
-augment CmdLiteralLong
+augment CmdLiteralInt64
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       writer.print( value ).print( "LL" )
 endAugment
 
-augment CmdLiteralInteger
+augment CmdLiteralInt32
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       writer.print( value )
@@ -1520,7 +1520,7 @@ augment CmdLiteralCharacter
             writer.print( "'" )
         endWhich
       else
-        writer.print( value->Integer )
+        writer.print( value->Int32 )
       endIf
 endAugment
 
@@ -1924,9 +1924,9 @@ endAugment
 augment CmdMod
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
-      local cast = "(RogueInteger)"
-      if (this_type is Program.type_Real)     cast = "(RogueReal)"
-      elseIf (this_type is Program.type_Long) cast = "(RogueLong)"
+      local cast = "(RogueInt32)"
+      if (this_type is Program.type_Real64)     cast = "(RogueReal64)"
+      elseIf (this_type is Program.type_Int64) cast = "(RogueInt64)"
       writer.print( Program.program_name ).print( ".mod( " ).print( cast )
       left.write_java( writer )
       writer.print( ", " ).print( cast )
@@ -2102,10 +2102,10 @@ augment CmdReadArrayElement
         context.write_java( writer )
         writer.print( "->" )
         which (element_type)
-          case Program.type_Real:      writer.print( "reals[" )
-          case Program.type_Float:     writer.print( "floats[" )
-          case Program.type_Long:      writer.print( "longs[" )
-          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Real64:      writer.print( "reals[" )
+          case Program.type_Real32:     writer.print( "floats[" )
+          case Program.type_Int64:      writer.print( "longs[" )
+          case Program.type_Int32:   writer.print( "integers[" )
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )
@@ -2142,10 +2142,10 @@ augment CmdWriteArrayElement
         context.write_java( writer )
         writer.print( "->" )
         which (element_type)
-          case Program.type_Real:      writer.print( "reals[" )
-          case Program.type_Float:     writer.print( "floats[" )
-          case Program.type_Long:      writer.print( "longs[" )
-          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Real64:      writer.print( "reals[" )
+          case Program.type_Real32:     writer.print( "floats[" )
+          case Program.type_Int64:      writer.print( "longs[" )
+          case Program.type_Int32:   writer.print( "integers[" )
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )

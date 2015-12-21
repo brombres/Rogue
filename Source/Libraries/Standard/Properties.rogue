@@ -1,25 +1,25 @@
 class PropertyValue
   GLOBAL METHODS
-    method create( value:Integer )->PropertyValue
-      return IntegerProperty( value )
+    method create( value:Int32 )->PropertyValue
+      return Int32Property( value )
 
     method create( value:Logical )->PropertyValue
       return LogicalProperty( value )
 
-    method create( value:Real )->PropertyValue
-      return RealProperty( value )
+    method create( value:Real64 )->PropertyValue
+      return Real64Property( value )
 
     method create( value:String )->PropertyValue
       return StringProperty( value )
 
   METHODS
-    method add( value:Integer )->PropertyValue [macro]
+    method add( value:Int32 )->PropertyValue [macro]
       this.add( PropertyValue(value) )
 
     method add( value:Logical )->PropertyValue [macro]
       this.add( PropertyValue(value) )
 
-    method add( value:Real )->PropertyValue [macro]
+    method add( value:Real64 )->PropertyValue [macro]
       this.add( PropertyValue(value) )
 
     method add( value:String )->PropertyValue [macro]
@@ -37,46 +37,46 @@ class PropertyValue
     method first->PropertyValue
       return null
 
-    method get( index:Integer )->PropertyValue
+    method get( index:Int32 )->PropertyValue
       return null
 
     method get( key:String )->PropertyValue
       return null
 
-    method get_integer( index:Integer )->Integer
+    method get_integer( index:Int32 )->Int32
       local value = get( index )
       if (not value) return 0
-      return value->Integer
+      return value->Int32
 
-    method get_logical( index:Integer )->Logical
+    method get_logical( index:Int32 )->Logical
       local value = get( index )
       if (not value) return false
       return value->Logical
 
-    method get_real( index:Integer )->Real
+    method get_real( index:Int32 )->Real64
       local value = get( index )
       if (not value) return 0.0
-      return value->Real
+      return value->Real64
 
-    method get_string( index:Integer )->String
+    method get_string( index:Int32 )->String
       local value = get( index )
       if (not value) return ""
       return value->String
 
-    method get_list( index:Integer )->PropertyList
+    method get_list( index:Int32 )->PropertyList
       local value = get( index ) as PropertyList
       if (value) return value
       else       return PropertyList()
 
-    method get_table( index:Integer )->PropertyTable
+    method get_table( index:Int32 )->PropertyTable
       local value = get( index ) as PropertyTable
       if (value) return value
       else       return PropertyTable()
 
-    method get_integer( key:String )->Integer
+    method get_integer( key:String )->Int32
       local value = get( key )
       if (not value) return 0
-      return value->Integer
+      return value->Int32
 
     method get_list( key:String )->PropertyList
       local value = get( key ) as PropertyList
@@ -88,10 +88,10 @@ class PropertyValue
       if (not value) return false
       return value->Logical
 
-    method get_real( key:String )->Real
+    method get_real( key:String )->Real64
       local value = get( key )
       if (not value) return 0.0
-      return value->Real
+      return value->Real64
 
     method get_string( key:String )->String
       local value = get( key )
@@ -109,7 +109,7 @@ class PropertyValue
     method remove( value:PropertyValue )->PropertyValue
       return null
 
-    method remove_at( index:Integer )->PropertyValue
+    method remove_at( index:Int32 )->PropertyValue
       return null
 
     method remove_first->PropertyValue
@@ -121,28 +121,28 @@ class PropertyValue
     method save( file:File )
       file.save( to_json.to_utf8 )
 
-    method set( index:Integer, value:Integer )->PropertyValue [macro]
+    method set( index:Int32, value:Int32 )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Logical )->PropertyValue [macro]
+    method set( index:Int32, value:Logical )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:Real )->PropertyValue [macro]
+    method set( index:Int32, value:Real64 )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:String )->PropertyValue [macro]
+    method set( index:Int32, value:String )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Integer, value:PropertyValue )->PropertyValue
+    method set( index:Int32, value:PropertyValue )->PropertyValue
       return this
 
-    method set( key:String, value:Integer )->PropertyValue [macro]
+    method set( key:String, value:Int32 )->PropertyValue [macro]
       this.set( key, PropertyValue(value) )
 
     method set( key:String, value:Logical )->PropertyValue [macro]
       this.set( key, PropertyValue(value) )
 
-    method set( key:String, value:Real )->PropertyValue [macro]
+    method set( key:String, value:Real64 )->PropertyValue [macro]
       this.set( key, PropertyValue(value) )
 
     method set( key:String, value:String )->PropertyValue [macro]
@@ -151,14 +151,14 @@ class PropertyValue
     method set( key:String, value:PropertyValue )->PropertyValue
       return this
 
-    method to->Integer
+    method to->Int32
       return 0
 
     method to->Logical
-      return (this->Integer)
+      return (this->Int32)
 
-    method to->Real
-      return this->Integer->Real
+    method to->Real64
+      return this->Int32->Real64
 
     method to_json->String
       return to_json( StringBuilder() )->String
@@ -167,9 +167,9 @@ class PropertyValue
       return buffer
 endClass
 
-class IntegerProperty( value:Integer ) : PropertyValue
+class Int32Property( value:Int32 ) : PropertyValue
   METHODS
-    method to->Integer
+    method to->Int32
       return value
 
     method to->String
@@ -186,7 +186,7 @@ class LogicalProperty( value:Logical ) : PropertyValue
     false_value = LogicalProperty( false )
 
   METHODS
-    method to->Integer
+    method to->Int32
       if (value) return 1
       else       return 0
 
@@ -201,12 +201,12 @@ class LogicalProperty( value:Logical ) : PropertyValue
       return buffer
 endClass
 
-class RealProperty( value:Real ) : PropertyValue
+class Real64Property( value:Real64 ) : PropertyValue
   METHODS
-    method to->Integer
+    method to->Int32
       return value
 
-    method to->Real
+    method to->Real64
       return value
 
     method to->String
@@ -226,8 +226,8 @@ class StringProperty( value:String ) : PropertyValue
       if (value.count > 0) return value[0]
       else                 return 0->Character
 
-    method to->Integer
-      return value->Integer
+    method to->Int32
+      return value->Int32
 
     method to->Logical
       return (value == "true" or value == "TRUE" or value == "yes" or value == "YES" or value == "1")
@@ -241,8 +241,8 @@ class StringProperty( value:String ) : PropertyValue
       endWhich
       }#
 
-    method to->Real
-      return value->Real
+    method to->Real64
+      return value->Real64
 
     method to->String
       return value
@@ -277,7 +277,7 @@ class StringProperty( value:String ) : PropertyValue
                 # RE: 2028/9:
                 # http://stackoverflow.com/questions/2965293/javascript-parse-error-on-u2028-unicode-character
                 buffer.print( "\\u" )
-                local n = ch : Integer
+                local n = ch : Int32
                 forEach (nibble in 0..3)
                   local digit = (n :>>>: 12) & 15
                   n = n:<<:4
@@ -308,7 +308,7 @@ class PropertyList : PropertyValue
     method init
       init( 10 )
 
-    method init( initial_capacity:Integer )
+    method init( initial_capacity:Int32 )
       values = PropertyValue[]( initial_capacity )
       
     method init( values )
@@ -329,13 +329,13 @@ class PropertyList : PropertyValue
       values.clear
       return this
 
-    method count->Integer
+    method count->Int32
       return values.count
 
     method first->PropertyValue
       return this.get(0)
 
-    method get( index:Integer )->PropertyValue
+    method get( index:Int32 )->PropertyValue
       if (index < 0 or index >= values.count) return null
       return values[ index ]
 
@@ -345,7 +345,7 @@ class PropertyList : PropertyValue
     method remove( value:PropertyValue )->PropertyValue
       return values.remove( value )
 
-    method remove_at( index:Integer )->PropertyValue
+    method remove_at( index:Int32 )->PropertyValue
       return values.remove_at( index )
 
     method remove_first->PropertyValue
@@ -354,7 +354,7 @@ class PropertyList : PropertyValue
     method remove_last->PropertyValue
       return values.remove_last
 
-    method set( index:Integer, new_value:PropertyValue )->PropertyValue
+    method set( index:Int32, new_value:PropertyValue )->PropertyValue
       if (index < 0) return this
 
       while (index >= values.count) add( null as PropertyValue )

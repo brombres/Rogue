@@ -11,6 +11,6 @@ endClass
 
 class OutOfBoundsError : Error
   METHODS
-    method init( index:Integer, limit:Integer )
+    method init( index:Int32, limit:Int32 )
       init( "Index $ is out of bounds ($..$)." (index,0,limit-1) )
 endClass

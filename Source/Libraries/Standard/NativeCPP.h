@@ -34,7 +34,11 @@
   typedef double           RogueReal;
   typedef float            RogueFloat;
   typedef __int64          RogueLong;
-  typedef __int32          RogueInteger;
+  typedef __int32          RogueInt32;
+  typedef double           RogueReal64;
+  typedef float            RogueReal32;
+  typedef __int64          RogueInt64;
+  typedef __int32          RogueInt32;
   typedef unsigned __int16 RogueCharacter;
   typedef unsigned char    RogueByte;
   typedef bool             RogueLogical;
@@ -42,7 +46,11 @@
   typedef double           RogueReal;
   typedef float            RogueFloat;
   typedef int64_t          RogueLong;
-  typedef int32_t          RogueInteger;
+  typedef int32_t          RogueInt32;
+  typedef double           RogueReal64;
+  typedef float            RogueReal32;
+  typedef int64_t          RogueInt64;
+  typedef int32_t          RogueInt32;
   typedef uint16_t         RogueCharacter;
   typedef uint8_t          RogueByte;
   typedef bool             RogueLogical;
@@ -144,7 +152,7 @@ struct RogueType
 };
 
 RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
-RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size );
+RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
 RogueType*   RogueType_retire( RogueType* THIS );
 RogueObject* RogueType_singleton( RogueType* THIS );
 
@@ -164,11 +172,11 @@ struct RogueObject
   RogueType*   type;
   // Type info for this object.
 
-  RogueInteger object_size;
+  RogueInt32 object_size;
   // Set to be ~object_size when traced through during a garbage collection,
   // then flipped back again at the end of GC.
 
-  RogueInteger reference_count;
+  RogueInt32 reference_count;
   // A positive reference_count ensures that this object will never be
   // collected.  A zero reference_count means this object is kept as long as
   // it is visible to the memory manager.
@@ -188,16 +196,16 @@ void RogueArray_trace( void* obj );
 //-----------------------------------------------------------------------------
 struct RogueString : RogueObject
 {
-  RogueInteger   count;
-  RogueInteger   hash_code;
+  RogueInt32   count;
+  RogueInt32   hash_code;
   RogueCharacter characters[];
 };
 
 RogueString* RogueString_create_with_count( int count );
 RogueString* RogueString_create_from_c_string( const char* c_string, int count );
 RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
-void         RogueString_decode_utf8( const char* utf8_data, RogueInteger utf8_count, RogueCharacter* dest_buffer );
-RogueInteger RogueString_decoded_utf8_count( const char* utf8_data, RogueInteger utf8_count );
+void         RogueString_decode_utf8( const char* utf8_data, RogueInt32 utf8_count, RogueCharacter* dest_buffer );
+RogueInt32 RogueString_decoded_utf8_count( const char* utf8_data, RogueInt32 utf8_count );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 
@@ -220,14 +228,14 @@ struct RogueArray : RogueObject
     RogueByte      logicals[];
     RogueByte      bytes[];
     RogueCharacter characters[];
-    RogueInteger   integers[];
-    RogueLong      longs[];
-    RogueFloat     floats[];
-    RogueReal      reals[];
+    RogueInt32   integers[];
+    RogueInt64      longs[];
+    RogueReal32     floats[];
+    RogueReal64      reals[];
   };
 };
 
-RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger copy_count );
+RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, RogueInt32 other_i1, RogueInt32 copy_count );
 
 
 //-----------------------------------------------------------------------------

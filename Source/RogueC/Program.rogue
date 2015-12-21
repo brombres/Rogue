@@ -7,7 +7,7 @@ class Program [requisite singleton]
     code_prefix  = "Rogue"
     program_name = "Rogue_program"
 
-    unique_integer : Integer
+    unique_integer : Int32
 
     template_list   = Template[]                 : Template[]
     template_lookup = Table<<String,Template>>() : Table<<String,Template>>
@@ -28,10 +28,10 @@ class Program [requisite singleton]
     type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
 
     type_null        : Type
-    type_Real        : Type
-    type_Float       : Type
-    type_Long        : Type
-    type_Integer     : Type
+    type_Real64        : Type
+    type_Real32       : Type
+    type_Int64        : Type
+    type_Int32     : Type
     type_Character   : Type
     type_Byte        : Type
     type_Logical     : Type
@@ -45,7 +45,7 @@ class Program [requisite singleton]
 
     type_StringBuilder : Type
 
-    literal_string_lookup = Table<<String,Integer>>() : Table<<String,Integer>>
+    literal_string_lookup = Table<<String,Int32>>() : Table<<String,Int32>>
     literal_string_list   = String[]
 
     string_buffer = StringBuilder()
@@ -53,10 +53,10 @@ class Program [requisite singleton]
   METHODS
     method configure
       type_null          = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
-      type_Real          = create_built_in_type( "Real",      Attribute.is_primitive )
-      type_Float         = create_built_in_type( "Float",     Attribute.is_primitive )
-      type_Long          = create_built_in_type( "Long",      Attribute.is_primitive )
-      type_Integer       = create_built_in_type( "Integer",   Attribute.is_primitive )
+      type_Real64          = create_built_in_type( "Real64",      Attribute.is_primitive )
+      type_Real32         = create_built_in_type( "Real32",     Attribute.is_primitive )
+      type_Int64          = create_built_in_type( "Int64",      Attribute.is_primitive )
+      type_Int32       = create_built_in_type( "Int32",   Attribute.is_primitive )
       type_Character     = create_built_in_type( "Character", Attribute.is_primitive )
       type_Byte          = create_built_in_type( "Byte",      Attribute.is_primitive )
       type_Logical       = create_built_in_type( "Logical",   Attribute.is_primitive )
@@ -83,7 +83,7 @@ class Program [requisite singleton]
     method create_unique_id->String
       return "_auto_" + next_unique_integer
 
-    method next_unique_integer->Integer
+    method next_unique_integer->Int32
       ++unique_integer
       return unique_integer - 1
 
@@ -153,7 +153,7 @@ class Program [requisite singleton]
 
       return type
 
-    method create_built_in_type( name:String, attributes=0:Integer )->Type
+    method create_built_in_type( name:String, attributes=0:Int32 )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       local type = get_type_reference( t, name )
       type.attributes.add( attributes )
@@ -174,7 +174,7 @@ class Program [requisite singleton]
               throw p.t.error( mesg )
             endIf
           else
-            local mesg = "Cannot determine the type of the global property - either assign an initial value (global $ = ...) or assign a type (global $ : Integer)." (p.name,p.name)
+            local mesg = "Cannot determine the type of the global property - either assign an initial value (global $ = ...) or assign a type (global $ : Int32)." (p.name,p.name)
             throw p.t.error( mesg )
           endIf
         endIf
@@ -182,10 +182,10 @@ class Program [requisite singleton]
       endForEach
 
       type_null.resolve
-      type_Real.resolve
-      type_Float.resolve
-      type_Long.resolve
-      type_Integer.resolve
+      type_Real64.resolve
+      type_Real32.resolve
+      type_Int64.resolve
+      type_Int32.resolve
       type_Character.resolve
       type_Byte.resolve
       type_Logical.resolve

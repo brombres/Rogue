@@ -4,7 +4,7 @@ class Graphics [singleton]
 
   PROPERTIES
     canvas : Canvas
-    value  : Integer
+    value  : Int32
 
   METHODS
     method init

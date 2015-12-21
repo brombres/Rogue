@@ -4,7 +4,7 @@ class System [requisite]
     executable_filepath    : String
 
   GLOBAL METHODS
-    method exit( result_code:Integer )
+    method exit( result_code:Int32 )
       $if ("C++")
         native "exit( $result_code );"
       $endIf

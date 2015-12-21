@@ -19,7 +19,7 @@ class PNGDecoder [requisite]
     bitmap : Bitmap
     native "jmp_buf      error_jump_buffer;"
     native "RogueByte*   png_data_cursor;"
-    native "RogueInteger png_data_remaining;"
+    native "RogueInt32 png_data_remaining;"
 
   METHODS
     method decode( bytes:Byte[] )->Logical
@@ -88,13 +88,13 @@ class PNGDecoder [requisite]
               |
               |$this->bitmap = RogueBitmap__init__XY(
               |    (RogueClassBitmap*) ROGUE_CREATE_OBJECT(Bitmap),
-              |    RogueClassXY((RogueInteger)width,(RogueInteger)height)
+              |    RogueClassXY((RogueInt32)width,(RogueInt32)height)
               |);
               |
               |png_bytepp row_pointers = png_get_rows( png_ptr, info_ptr );
               |
               |int row_size = (int) png_get_rowbytes( png_ptr, info_ptr );
-              |RogueInteger* dest = $this->bitmap->pixels->data->integers;
+              |RogueInt32* dest = $this->bitmap->pixels->data->integers;
               |
               |for (int j=0; j<height; ++j)
               |{
@@ -103,12 +103,12 @@ class PNGDecoder [requisite]
               |}
               |
               |// Premultiply the alpha and transform ABGR into ARGB
-              |RogueInteger* cur = $this->bitmap->pixels->data->integers - 1;
+              |RogueInt32* cur = $this->bitmap->pixels->data->integers - 1;
               |for (int i=width*height; --i>=0; )
               |{
-              |  RogueInteger abgr = *(++cur);
-              |  RogueInteger a = (abgr >> 24) & 255;
-              |  RogueInteger r, g, b;
+              |  RogueInt32 abgr = *(++cur);
+              |  RogueInt32 a = (abgr >> 24) & 255;
+              |  RogueInt32 r, g, b;
               |
               |  if (a)
               |  {

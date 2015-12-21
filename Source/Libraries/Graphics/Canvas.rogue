@@ -1,7 +1,7 @@
 class Canvas
   PROPERTIES
     size                           : XY
-    background_color = Color.BLACK : Integer
+    background_color = Color.BLACK : Int32
 
   METHODS
     method init( size )
@@ -11,11 +11,11 @@ class Canvas
     method clear( background_color )
       clear
 
-    method height->Integer [macro]
-      this.size.y->Integer
+    method height->Int32 [macro]
+      this.size.y->Int32
 
     method flush
 
-    method width->Integer [macro]
-      this.size.x->Integer
+    method width->Int32 [macro]
+      this.size.x->Int32
 endClass

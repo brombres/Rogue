@@ -1,55 +1,55 @@
-class Real [primitive]
+class Real64 [primitive]
   GLOBAL METHODS
-    method create( bits:Long )->Real
+    method create( bits:Int64 )->Real64
       $if ("C++")
-        native "return *((RogueReal*)&$bits);"
+        native "return *((RogueReal64*)&$bits);"
       $endIf
 
   METHODS
-    method clamped( low:Real, high:Real )->Real
+    method clamped( low:Real64, high:Real64 )->Real64
       if (this < low)  return low
       if (this > high) return high
       return this
 
-    method hash_code->Integer
-      return Long(this)->Integer
+    method hash_code->Int32
+      return Int64(this)->Int32
 
     method to->Object
-      return Boxed<<Real>>(this)
+      return Boxed<<Real64>>(this)
 
     method to->String
       return "" + this
 
 endClass
 
-class Float [primitive]
+class Real32 [primitive]
   METHODS
-    method clamped( low:Float, high:Float )->Float
+    method clamped( low:Real32, high:Real32 )->Real32
       if (this < low)  return low
       if (this > high) return high
       return this
 
     method to->Object
-      return Boxed<<Float>>(this)
+      return Boxed<<Real32>>(this)
 endClass
 
-class Long [primitive]
+class Int64 [primitive]
   GLOBAL METHODS
-    method create( bit_source:Real )->Long
+    method create( bit_source:Real64 )->Int64
       $if ("C++")
-        native "return *((RogueLong*)&$bit_source);"
+        native "return *((RogueInt64*)&$bit_source);"
       $endIf
 
   METHODS
-    method clamped( low:Long, high:Long )->Long
+    method clamped( low:Int64, high:Int64 )->Int64
       if (this < low)  return low
       if (this > high) return high
       return this
 
-    method hash_code->Integer
+    method hash_code->Int32
       return this
 
-    method print_in_power2_base( base:Integer, digits=16:Integer, buffer:StringBuilder )->StringBuilder
+    method print_in_power2_base( base:Int32, digits=16:Int32, buffer:StringBuilder )->StringBuilder
       local bits = 0
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
@@ -59,40 +59,40 @@ class Long [primitive]
       return buffer
 
     method to->Object
-      return Boxed<<Long>>(this)
+      return Boxed<<Int64>>(this)
 
     method to->String
       return StringBuilder().print( this )->String
 
     method to_digit->Character [macro]
-      (this->Integer).to_digit
+      (this->Int32).to_digit
 
-    method to_binary_string( digits=64:Integer )->String
+    method to_binary_string( digits=64:Int32 )->String
       return print_in_power2_base( 2, digits, StringBuilder() )->String
 
-    method to_hex_string( digits=16:Integer )->String
+    method to_hex_string( digits=16:Int32 )->String
       return print_in_power2_base( 16, digits, StringBuilder() )->String
 
-    method to_octal_string( digits=22:Integer )->String
+    method to_octal_string( digits=22:Int32 )->String
       return print_in_power2_base( 8, digits, StringBuilder() )->String
 
 endClass
 
-class Integer [primitive]
+class Int32 [primitive]
   METHODS
-    method clamped( low:Integer, high:Integer )->Integer
+    method clamped( low:Int32, high:Int32 )->Int32
       if (this < low)  return low
       if (this > high) return high
       return this
 
-    method hash_code->Integer
+    method hash_code->Int32
       return this
 
-    method to->Long [macro]
-      $if ("C++") native "((RogueLong)$this)"
+    method to->Int64 [macro]
+      $if ("C++") native "((RogueInt64)$this)"
 
     method to->Object
-      return Boxed<<Integer>>(this)
+      return Boxed<<Int32>>(this)
 
     method to->String
       return "" + this
@@ -102,14 +102,14 @@ class Integer [primitive]
       if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
       return '0'
 
-    method to_binary_string( digits=32:Integer )->String
-      return (this->Long).print_in_power2_base( 2, digits, StringBuilder() )->String
+    method to_binary_string( digits=32:Int32 )->String
+      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
 
-    method to_hex_string( digits=8:Integer )->String
-      return (this->Long).print_in_power2_base( 16, digits, StringBuilder() )->String
+    method to_hex_string( digits=8:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
 
-    method to_octal_string( digits=11:Integer )->String
-      return (this->Long).print_in_power2_base( 8, digits, StringBuilder() )->String
+    method to_octal_string( digits=11:Int32 )->String
+      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
 endClass
 
 class Character [primitive]
@@ -119,8 +119,8 @@ class Character [primitive]
       if (this > high) return high
       return this
 
-    method hash_code->Integer
-      return this->Integer
+    method hash_code->Int32
+      return this->Int32
 
     method is_alphanumeric->Logical
       return (this >= '0' and this <= '9') or
@@ -137,7 +137,7 @@ class Character [primitive]
       return (this >= 'a' and this <= 'z') or
              (this >= 'A' and this <= 'Z')
 
-    method is_number( base=10:Integer )->Logical
+    method is_number( base=10:Int32 )->Logical
       return to_number(base) != -1
 
     method to->Object
@@ -146,16 +146,16 @@ class Character [primitive]
     method to->String
       return "" + this
 
-    method to_binary_string( digits=16:Integer )->String
-      return (this->Long).print_in_power2_base( 2, digits, StringBuilder() )->String
+    method to_binary_string( digits=16:Int32 )->String
+      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
 
-    method to_hex_string( digits=4:Integer )->String
-      return (this->Long).print_in_power2_base( 16, digits, StringBuilder() )->String
+    method to_hex_string( digits=4:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
 
-    method to_octal_string( digits=6:Integer )->String
-      return (this->Long).print_in_power2_base( 8, digits, StringBuilder() )->String
+    method to_octal_string( digits=6:Int32 )->String
+      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
 
-    method to_number( base=10:Integer )->Integer
+    method to_number( base=10:Int32 )->Int32
       if (this >= '0' and this < '0'+base)      return (this - '0')
       if (this >= 'a' and this < 'a'+(base-10)) return (this - 'a') + 10
       if (this >= 'A' and this < 'A'+(base-10)) return (this - 'A') + 10
@@ -169,8 +169,8 @@ class Byte [primitive]
       if (this > high) return high
       return this
 
-    method hash_code->Integer
-      return this->Integer
+    method hash_code->Int32
+      return this->Int32
 
     method to->Object
       return Boxed<<Byte>>(this)
@@ -178,19 +178,19 @@ class Byte [primitive]
     method to->String
       return "" + this
 
-    method to_binary_string( digits=8:Integer )->String
-      return (this->Long).print_in_power2_base( 2, digits, StringBuilder() )->String
+    method to_binary_string( digits=8:Int32 )->String
+      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
 
-    method to_hex_string( digits=2:Integer )->String
-      return (this->Long).print_in_power2_base( 16, digits, StringBuilder() )->String
+    method to_hex_string( digits=2:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
 
-    method to_octal_string( digits=3:Integer )->String
-      return (this->Long).print_in_power2_base( 8, digits, StringBuilder() )->String
+    method to_octal_string( digits=3:Int32 )->String
+      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
 endClass
 
 class Logical [primitive]
   METHODS
-    method hash_code->Integer
+    method hash_code->Int32
       if (this) return 1
       else      return 0
 

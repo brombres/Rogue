@@ -74,9 +74,9 @@ class String [native functional]
     method contains( substring:String )->Logical
       return locate(substring)?
 
-    method contains_at( substring:String, at_index:Integer )->Logical
+    method contains_at( substring:String, at_index:Int32 )->Logical
       $if ("C++")
-        native @|RogueInteger other_count = $substring->count;
+        native @|RogueInt32 other_count = $substring->count;
                 |if ($at_index < 0 || $at_index + other_count > $this->count) return false;
                 |
                 |RogueCharacter* this_data  = $this->characters;
@@ -93,7 +93,7 @@ class String [native functional]
       $endIf
 
 
-    method count->Integer [macro]
+    method count->Int32 [macro]
       $if ("C++") native '$this->count'
 
     method decode_utf8->String
@@ -109,7 +109,7 @@ class String [native functional]
       local buffer = StringBuilder( count )
       local characters = reader
       while (characters.has_another)
-        local value = characters.read : Integer
+        local value = characters.read : Int32
         if (value <= 0x7f)
           buffer.print( value->Character )
         elseIf ((value & 0xe0) == 0xc0)
@@ -145,10 +145,10 @@ class String [native functional]
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
-    method from( i1:Integer )->String
+    method from( i1:Int32 )->String
       return from( i1, count-1 )
 
-    method from( i1:Integer, i2:Integer )->String
+    method from( i1:Int32, i2:Int32 )->String
       $if ("C++")
         native @|// Clamp i1 and i2
                 |if ($i1 < 0) $i1 = 0;
@@ -164,7 +164,7 @@ class String [native functional]
                 |// Copy character substring while computing hash code.
                 |RogueCharacter* dest = result->characters - 1;
                 |RogueCharacter* src  = ($this->characters + $i1) - 1;
-                |RogueInteger hash_code = 0;
+                |RogueInt32 hash_code = 0;
                 |while (--new_count >= 0)
                 |{
                 |  RogueCharacter ch = *(++src);
@@ -196,13 +196,13 @@ class String [native functional]
       if (i.exists) return from( i.value )
       else          return ""
 
-    method get( index:Integer )->Character [macro]
+    method get( index:Int32 )->Character [macro]
       $if ("C++") native '$this->characters[$index]'
 
-    method hash_code->Integer [macro]
+    method hash_code->Int32 [macro]
       $if ("C++") native '$this->hash_code'
 
-    method indented( spaces:Integer )->String
+    method indented( spaces:Int32 )->String
       local lines = split( '\n' )
       local builder = StringBuilder( count + lines.count*2 )
       forEach (line in lines)
@@ -215,7 +215,7 @@ class String [native functional]
     method last->Character
       return this[ count-1 ]
 
-    method left_justified( spaces:Integer )->String
+    method left_justified( spaces:Int32 )->String
       if (count >= spaces) return this
 
       local buffer = StringBuilder( spaces )
@@ -224,34 +224,34 @@ class String [native functional]
 
       return buffer->String
 
-    method leftmost( n:Integer )->String
+    method leftmost( n:Int32 )->String
       if (n >= 0) return from( 0, n-1 )
       else        return from( 0, (count + n) - 1 )
 
-    method locate( ch:Character, optional_i1=null:Integer? )->Integer?
+    method locate( ch:Character, optional_i1=null:Int32? )->Int32?
       $if ("C++")
-        native @|RogueInteger    limit = $this->count;
+        native @|RogueInt32    limit = $this->count;
                 |RogueCharacter* data  = $this->characters;
-                |RogueInteger    i1 = $optional_i1.exists ? ($optional_i1.value-1) : -1;
+                |RogueInt32    i1 = $optional_i1.exists ? ($optional_i1.value-1) : -1;
                 |
                 |while (++i1 < limit)
                 |{
                 |  if (data[i1] == $ch)
                 |  {
-                |    return RogueOptionalInteger(i1);
+                |    return RogueOptionalInt32(i1);
                 |  }
                 |}
-                |return RogueOptionalInteger();
+                |return RogueOptionalInt32();
       $endIf
 
-    method locate( other:String, optional_i1=null:Integer? )->Integer?
+    method locate( other:String, optional_i1=null:Int32? )->Int32?
       local other_count = other.count
       if (other_count == 1) return locate( other[0], optional_i1 )
 
       local this_limit = (count - other_count) + 1
       if (other_count == 0 or this_limit <= 0) return null
       
-      local i1 : Integer
+      local i1 : Int32
       if (optional_i1)
         i1 = optional_i1.value - 1
         if (i1 < -1) i1 = -1
@@ -259,15 +259,15 @@ class String [native functional]
         i1 = -1
       endIf
       
-      while (native("++$i1")->Integer < this_limit)
+      while (native("++$i1")->Int32 < this_limit)
         if (contains_at(other,i1)) return i1
       endWhile
 
       return null
 
-    method locate_last( ch:Character, starting_index=null:Integer? )->Integer?
+    method locate_last( ch:Character, starting_index=null:Int32? )->Int32?
       $if ("C++")
-        native @|RogueInteger    limit = $this->count;
+        native @|RogueInt32    limit = $this->count;
                 |RogueCharacter* data  = $this->characters;
                 |
                 |int i;
@@ -283,20 +283,20 @@ class String [native functional]
                 |
                 |while (--i >= 0)
                 |{
-                |  if (data[i] == $ch) return RogueOptionalInteger(i);
+                |  if (data[i] == $ch) return RogueOptionalInt32(i);
                 |}
                 |
-                |return RogueOptionalInteger();
+                |return RogueOptionalInt32();
       $endIf
 
-    method locate_last( other:String, starting_index=null:Integer? )->Integer?
+    method locate_last( other:String, starting_index=null:Int32? )->Int32?
       local other_count = other.count
       if (other_count == 1) return locate_last( other[0], starting_index )
 
       local this_limit = (count - other_count) + 1
       if (other_count == 0 or this_limit <= 0) return null
 
-      local i : Integer
+      local i : Int32
       if (starting_index)
         i = starting_index.value + 1
         if (i > this_limit) i = this_limit
@@ -304,27 +304,27 @@ class String [native functional]
         i = this_limit
       endIf
 
-      while (native("--$i")->Integer >= 0)
+      while (native("--$i")->Int32 >= 0)
         if (contains_at(other,i)) return i
       endWhile
 
       return null
 
     method operator+( value:Byte )->String [macro]
-      this + value->Integer
+      this + value->Int32
 
     method operator+( value:Character )->String
       return StringBuilder().print( this ).print( value )->String
 
-    method operator+( value:Integer )->String
+    method operator+( value:Int32 )->String
       return StringBuilder().print( this ).print( value )->String
 
-    method operator<>( other:String )->Integer
+    method operator<>( other:String )->Int32
       $if ("C++")
         native @|if ($this == $other) return 0;
                 |
-                |RogueInteger other_count = $other->count;
-                |RogueInteger limit = $this->count;
+                |RogueInt32 other_count = $other->count;
+                |RogueInt32 limit = $this->count;
                 |
                 |int result;
                 |if (limit == other_count)
@@ -353,14 +353,14 @@ class String [native functional]
       if (value) return this + "true"
       else       return this + "false"
 
-    method operator+( value:Long )->String
+    method operator+( value:Int64 )->String
       return StringBuilder().print( this ).print( value )->String
 
     method operator+( value:Object )->String
       if (value) return this + value->String
       else       return this + "null"
 
-    method operator+( value:Real )->String
+    method operator+( value:Real64 )->String
       return StringBuilder().print( this ).print( value )->String
 
     method operator+( value:String )->String
@@ -397,7 +397,7 @@ class String [native functional]
       endForEach
       return buffer->String
 
-    method right_justified( spaces:Integer )->String
+    method right_justified( spaces:Int32 )->String
       if (count >= spaces) return this
 
       local buffer = StringBuilder( spaces )
@@ -406,7 +406,7 @@ class String [native functional]
 
       return buffer->String
 
-    method rightmost( n:Integer )->String
+    method rightmost( n:Int32 )->String
       local this_count = count
       if (n < 0) return from( -n, this_count-1 )
       else       return from( this_count-n, this_count-1 )
@@ -442,10 +442,10 @@ class String [native functional]
 
       return result
 
-    method substring( i1:Integer, n:Integer )->String
+    method substring( i1:Int32, n:Int32 )->String
       return from( i1, i1+(n-1) )
 
-    method times( n:Integer )->String
+    method times( n:Int32 )->String
       if (n <= 0) return ""
       if (n == 1) return this
 
@@ -454,7 +454,7 @@ class String [native functional]
 
       return builder->String
 
-    method to->Integer
+    method to->Int32
       $if ("C++")
         native @|char buffer[80];
                 |if (RogueString_to_c_string($this,buffer,80))
@@ -470,7 +470,7 @@ class String [native functional]
     method to->Object
       return Boxed<<String>>(this)
 
-    method to->Real
+    method to->Real64
       $if ("C++")
         native @|char buffer[80];
                 |if (RogueString_to_c_string($this,buffer,80))
@@ -573,19 +573,19 @@ class String [native functional]
 
       return result->String
 
-    method word_wrapped( width:Integer )->String[]
+    method word_wrapped( width:Int32 )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin
       # immediately.  Spaces immediately following existing newline 
       # characters are preserved.
       return word_wrapped( width, StringBuilder() )->String.split('\n')
 
-    method word_wrapped( width:Integer, buffer:StringBuilder )->StringBuilder
+    method word_wrapped( width:Int32, buffer:StringBuilder )->StringBuilder
       # Prints a word-wrapped version of this string to the given
       # StringBuilder.  Existing newlines characters will cause a new line to 
       # begin immediately.  Spaces immediately following existing newline 
       # characters are preserved.
-      local i1, i2 : Integer
+      local i1, i2 : Int32
       local len = count
 
       if (len == 0) return buffer

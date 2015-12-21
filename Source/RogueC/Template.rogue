@@ -7,7 +7,7 @@ class Template
     type_parameters    : TypeParameter[]
 
   METHODS
-    method init( t, name, attribute_flags=0:Integer )
+    method init( t, name, attribute_flags=0:Int32 )
       attributes.add( attribute_flags )
 
     method add_type_parameter( p_t:Token, p_name:String )->TypeParameter
@@ -16,7 +16,7 @@ class Template
       type_parameters.add( param )
       return param
 
-    method element_type->Integer
+    method element_type->Int32
       return (attributes.flags & Attribute.type_mask)
 
     method instantiate( type:Type )
@@ -169,7 +169,7 @@ endClass
 class TypeSpecializer
   PROPERTIES
     name            : String
-    index           : Integer
+    index           : Int32
 
     tokens          : Token[]  # for templates
 

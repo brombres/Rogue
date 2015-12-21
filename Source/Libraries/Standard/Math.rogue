@@ -1,54 +1,54 @@
 class Math
   GLOBAL METHODS
     $if ("C++")
-    method acos( n:Real )->Real [macro]
+    method acos( n:Real64 )->Real64 [macro]
       native 'acos((double)$n)'
 
-    method asin( n:Real )->Real [macro]
+    method asin( n:Real64 )->Real64 [macro]
       native 'asin((double)$n)'
 
-    method atan( n:Real )->Real [macro]
+    method atan( n:Real64 )->Real64 [macro]
       native 'atan((double)$n)'
 
-    method atan2( y:Real, x:Real )->Real [macro]
+    method atan2( y:Real64, x:Real64 )->Real64 [macro]
       native 'atan2((double)$y,(double)$x)'
 
-    method ceil( n:Real )->Real [macro]
+    method ceil( n:Real64 )->Real64 [macro]
       native 'ceil((double)$n)'
 
-    method cos( n:Real )->Real [macro]
+    method cos( n:Real64 )->Real64 [macro]
       native 'cos((double)$n)'
 
-    method exp( n:Real )->Real [macro]
+    method exp( n:Real64 )->Real64 [macro]
       native 'exp((double)$n)'
 
-    method floor( n:Real )->Real [macro]
+    method floor( n:Real64 )->Real64 [macro]
       native 'floor((double)$n)'
 
-    method log( n:Real )->Real [macro]
+    method log( n:Real64 )->Real64 [macro]
       native 'log((double)$n)'
 
-    method log2( n:Real )->Real [macro]
+    method log2( n:Real64 )->Real64 [macro]
       native 'log2((double)$n)'
 
-    method log10( n:Real )->Real [macro]
+    method log10( n:Real64 )->Real64 [macro]
       native 'log10((double)$n)'
 
-    method sin( n:Real )->Real [macro]
+    method sin( n:Real64 )->Real64 [macro]
       native 'sin((double)$n)'
 
-    method sqrt( n:Real )->Real [macro]
+    method sqrt( n:Real64 )->Real64 [macro]
       native 'sqrt((double)$n)'
 
-    method tan( n:Real )->Real [macro]
+    method tan( n:Real64 )->Real64 [macro]
       native 'tan((double)$n)'
 
     $endIf
 
-    method mod( a:Integer, b:Integer )->Integer
+    method mod( a:Int32, b:Int32 )->Int32
       if ((not a and not b) or b == 1) return 0
 
-      local r = native("$a % $b")->Integer
+      local r = native("$a % $b")->Int32
       if ((a ~ b) < 0)
         if (r) return r + b
         else   return 0
@@ -56,10 +56,10 @@ class Math
         return r
       endIf
 
-    method mod( a:Long, b:Long )->Long
+    method mod( a:Int64, b:Int64 )->Int64
       if ((not a and not b) or b == 1) return 0
 
-      local r = native("$a % $b")->Long
+      local r = native("$a % $b")->Int64
       if ((a ~ b) < 0)
         if (r) return r + b
         else   return 0
@@ -67,11 +67,11 @@ class Math
         return r
       endIf
 
-    method mod( a:Real, b:Real )->Real
+    method mod( a:Real64, b:Real64 )->Real64
       local q = a / b
       return a - floor(q)*b
 
-    method shift_right( value:Integer, bits:Integer )->Integer
+    method shift_right( value:Int32, bits:Int32 )->Int32
       if (bits <= 0) return value
 
       --bits
@@ -80,38 +80,38 @@ class Math
 endClass
 
 
-class Degrees( value:Real ) [compound]
+class Degrees( value:Real64 ) [compound]
   GLOBAL METHODS
     method create( degrees:Radians )->Degrees
       return Degrees( (degrees.value / pi) * 180.0 )
 
   METHODS
-    method cos->Real [macro]
+    method cos->Real64 [macro]
       Math.cos( (this.value / 180.0) * pi )
 
-    method sin->Real [macro]
+    method sin->Real64 [macro]
       Math.sin( (this.value / 180.0) * pi )
 
-    method tan->Real [macro]
+    method tan->Real64 [macro]
       Math.sin( (this.value / 180.0) * pi )
 
     method to->String
       return "" + value
 endClass
 
-class Radians( value:Real ) [compound]
+class Radians( value:Real64 ) [compound]
   GLOBAL METHODS
     method create( degrees:Degrees )->Radians
       return Radians( (degrees.value / 180.0) * pi )
 
   METHODS
-    method cos->Real [macro]
+    method cos->Real64 [macro]
       Math.cos( this.value )
 
-    method sin->Real [macro]
+    method sin->Real64 [macro]
       Math.sin( this.value )
 
-    method tan->Real [macro]
+    method tan->Real64 [macro]
       Math.tan( this.value )
 
     method to->String

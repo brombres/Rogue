@@ -1,13 +1,13 @@
 class NativeArray [native]
   METHODS
-    method count->Integer [native]
+    method count->Int32 [native]
 
     $if ("C++")
 
-    method element_size->Integer [macro]
+    method element_size->Int32 [macro]
       native '$this->element_size'
 
-    method set( i1:Integer, other:NativeArray, other_i1=0:Integer, copy_count=-1:Integer )->NativeArray [macro]
+    method set( i1:Int32, other:NativeArray, other_i1=0:Int32, copy_count=-1:Int32 )->NativeArray [macro]
       native 'RogueArray_set($this,$i1,$other,$other_i1,$copy_count)'
 
     $endIf
@@ -15,7 +15,7 @@ endClass
 
 class Array<<$DataType>> : NativeArray [native]
   METHODS
-    method get( index:Integer )->$DataType [macro]
+    method get( index:Int32 )->$DataType [macro]
       this[ index ]
 endClass
 

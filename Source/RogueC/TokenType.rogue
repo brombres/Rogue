@@ -97,7 +97,7 @@ class TokenType
 
     # Expressions
     identifier                    : TokenType
-    type_identifier               : TokenType   # Contains complete type e.g. "Table<<String,Integer>>[]"
+    type_identifier               : TokenType   # Contains complete type e.g. "Table<<String,Int32>>[]"
     literal_character             : TokenType
     literal_integer               : TokenType
     literal_long                  : TokenType
@@ -178,22 +178,22 @@ class TokenType
   METHODS
     method init( name )
 
-    method create_token( filepath:String, line:Integer, column:Integer )->Token
+    method create_token( filepath:String, line:Int32, column:Int32 )->Token
       return Token( this ).set_location( filepath, line, column )
 
-    method create_token( filepath:String, line:Integer, column:Integer, value:Character )->Token
+    method create_token( filepath:String, line:Int32, column:Int32, value:Character )->Token
       return LiteralCharacterToken( this, value ).set_location( filepath, line, column )
 
-    method create_token( filepath:String, line:Integer, column:Integer, value:Long )->Token
-      return LiteralLongToken( this, value ).set_location( filepath, line, column )
+    method create_token( filepath:String, line:Int32, column:Int32, value:Int64 )->Token
+      return LiteralInt64Token( this, value ).set_location( filepath, line, column )
 
-    method create_token( filepath:String, line:Integer, column:Integer, value:Integer )->Token
-      return LiteralIntegerToken( this, value ).set_location( filepath, line, column )
+    method create_token( filepath:String, line:Int32, column:Int32, value:Int32 )->Token
+      return LiteralInt32Token( this, value ).set_location( filepath, line, column )
 
-    method create_token( filepath:String, line:Integer, column:Integer, value:Real )->Token
-      return LiteralRealToken( this, value ).set_location( filepath, line, column )
+    method create_token( filepath:String, line:Int32, column:Int32, value:Real64 )->Token
+      return LiteralReal64Token( this, value ).set_location( filepath, line, column )
 
-    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+    method create_token( filepath:String, line:Int32, column:Int32, value:String )->Token
       return LiteralStringToken( this, value ).set_location( filepath, line, column )
 
     method create_token( existing:Token, value:String )->Token
@@ -223,10 +223,10 @@ endClass
 
 class EOLTokenType : TokenType
   METHODS
-    method create_token( filepath:String, line:Integer, column:Integer )->Token
+    method create_token( filepath:String, line:Int32, column:Int32 )->Token
       return EOLToken( this, "" ).set_location( filepath, line, column )
 
-    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+    method create_token( filepath:String, line:Int32, column:Int32, value:String )->Token
       return EOLToken( this, value ).set_location( filepath, line, column )
 
     method is_structure->Logical
@@ -235,13 +235,13 @@ endClass
 
 class IdentifierTokenType : TokenType
   METHODS
-    method create_token( filepath:String, line:Integer, column:Integer, value:String )->Token
+    method create_token( filepath:String, line:Int32, column:Int32, value:String )->Token
       return IdentifierToken( this, value ).set_location( filepath, line, column )
 endClass
 
 class StructureTokenType : TokenType
   METHODS
-    method create_token( filepath:String, line:Integer, column:Integer )->Token
+    method create_token( filepath:String, line:Int32, column:Int32 )->Token
       return Token( this ).set_location( filepath, line, column )
 
     method is_structure->Logical
@@ -250,7 +250,7 @@ endClass
 
 class DirectiveTokenType : TokenType
   METHODS
-    method create_token( filepath:String, line:Integer, column:Integer )->Token
+    method create_token( filepath:String, line:Int32, column:Int32 )->Token
       return Token( this ).set_location( filepath, line, column )
 
     method is_directive->Logical
@@ -259,7 +259,7 @@ endClass
 
 class StructuralDirectiveTokenType : TokenType
   METHODS
-    method create_token( filepath:String, line:Integer, column:Integer )->Token
+    method create_token( filepath:String, line:Int32, column:Int32 )->Token
       return Token( this ).set_location( filepath, line, column )
 
     method is_directive->Logical

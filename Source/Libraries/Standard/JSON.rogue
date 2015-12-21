@@ -133,7 +133,7 @@ class JSON
 
       return buffer->String
 
-    method hex_character_to_value( ch:Character )->Integer [macro]
+    method hex_character_to_value( ch:Character )->Int32 [macro]
       ch.to_number
 
     method parse_hex_quad( reader:ParseReader )->Character
@@ -218,8 +218,8 @@ class JSON
 
       n = n * sign
 
-      if (is_real or n != n->Integer) return RealProperty( n )
-      return IntegerProperty( n->Integer )
+      if (is_real or n != n->Int32) return Real64Property( n )
+      return Int32Property( n->Int32 )
 
 endClass
 

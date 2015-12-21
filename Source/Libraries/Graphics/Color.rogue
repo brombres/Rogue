@@ -15,10 +15,10 @@ class Color
     WHITE       = 0xffffffff
 
   GLOBAL METHODS
-    method rgba( r:Integer, g:Integer, b:Integer, a=255:Integer )->Integer
+    method rgba( r:Int32, g:Int32, b:Int32, a=255:Int32 )->Int32
       return (a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255))
 
-    method rgba( r:Real, g:Real, b:Real, a=1:Real )->Integer
-      return (((a.clamped(0,1)*255)->Integer:<<:24) | ((r.clamped(0,1)*255)->Integer:<<:16) |
-             ((g.clamped(0,1)*255)->Integer:<<:8) | (b.clamped(0,1)*255)->Integer )
+    method rgba( r:Real64, g:Real64, b:Real64, a=1:Real64 )->Int32
+      return (((a.clamped(0,1)*255)->Int32:<<:24) | ((r.clamped(0,1)*255)->Int32:<<:16) |
+             ((g.clamped(0,1)*255)->Int32:<<:8) | (b.clamped(0,1)*255)->Int32 )
 endClass

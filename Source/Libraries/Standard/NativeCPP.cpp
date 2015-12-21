@@ -84,7 +84,7 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
   return array;
 }
 
-RogueObject* RogueType_create_object( RogueType* THIS, RogueInteger size )
+RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 {
   RogueObject* obj;
   RogueInitFn  fn;
@@ -222,7 +222,7 @@ RogueString* RogueString_create_from_c_string( const char* c_string, int count )
 {
   if (count == -1) count = (int) strlen( c_string );
 
-  RogueInteger decoded_count = RogueString_decoded_utf8_count( c_string, count );
+  RogueInt32 decoded_count = RogueString_decoded_utf8_count( c_string, count );
 
   RogueString* st = RogueString_create_with_count( decoded_count );
   RogueString_decode_utf8( c_string, count, st->characters );
@@ -252,7 +252,7 @@ void RogueString_print_string( RogueString* st )
   }
 }
 
-void RogueString_decode_utf8( const char* utf8_data, RogueInteger utf8_count, RogueCharacter* dest_buffer )
+void RogueString_decode_utf8( const char* utf8_data, RogueInt32 utf8_count, RogueCharacter* dest_buffer )
 {
   RogueByte*      src  = (RogueByte*)(utf8_data - 1);
   RogueCharacter* dest = dest_buffer - 1;
@@ -303,7 +303,7 @@ void RogueString_decode_utf8( const char* utf8_data, RogueInteger utf8_count, Ro
   }
 }
 
-RogueInteger RogueString_decoded_utf8_count( const char* utf8_data, RogueInteger utf8_count )
+RogueInt32 RogueString_decoded_utf8_count( const char* utf8_data, RogueInt32 utf8_count )
 {
   if (utf8_count == -1) utf8_count = (int) strlen( utf8_data );
 
@@ -424,7 +424,7 @@ RogueString* RogueString_update_hash_code( RogueString* THIS )
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
-RogueArray* RogueArray_set( RogueArray* THIS, RogueInteger i1, RogueArray* other, RogueInteger other_i1, RogueInteger copy_count )
+RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, RogueInt32 other_i1, RogueInt32 copy_count )
 {
   int element_size;
   int other_i2;

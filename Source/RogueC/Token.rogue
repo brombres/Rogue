@@ -2,8 +2,8 @@ class Token
   PROPERTIES
     type     : TokenType
     filepath : String
-    line     : Integer
-    column   : Integer
+    line     : Int32
+    column   : Int32
 
   METHODS
     method init( type )
@@ -35,13 +35,13 @@ class Token
     method to->Character
       return 0
 
-    method to->Integer
+    method to->Int32
       return 0
 
-    method to->Long
-      return this->Integer
+    method to->Int64
+      return this->Int32
 
-    method to->Real
+    method to->Real64
       return 0
 
     method to->String
@@ -105,54 +105,54 @@ class LiteralCharacterToken : Token
       return ""+value
 endClass
 
-class LiteralLongToken : Token
+class LiteralInt64Token : Token
   PROPERTIES
-    value : Long
+    value : Int64
 
   METHODS
     method init( type, value )
 
-    method to->Integer
-      return value->Integer
+    method to->Int32
+      return value->Int32
 
-    method to->Long
+    method to->Int64
       return value
 
-    method to->Real
-      return value->Real
+    method to->Real64
+      return value->Real64
 
     method to->String
       return ""+value
 endClass
 
-class LiteralIntegerToken : Token
+class LiteralInt32Token : Token
   PROPERTIES
-    value : Integer
+    value : Int32
 
   METHODS
     method init( type, value )
 
-    method to->Integer
+    method to->Int32
       return value
 
-    method to->Real
-      return value->Real
+    method to->Real64
+      return value->Real64
 
     method to->String
       return ""+value
 endClass
 
-class LiteralRealToken : Token
+class LiteralReal64Token : Token
   PROPERTIES
-    value : Real
+    value : Real64
 
   METHODS
     method init( type, value )
 
-    method to->Integer
-      return value->Integer
+    method to->Int32
+      return value->Int32
 
-    method to->Real
+    method to->Real64
       return value
 
     method to->String

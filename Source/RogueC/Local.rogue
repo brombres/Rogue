@@ -3,7 +3,7 @@ class Local
     t             : Token
     name          : String
     type          : Type
-    index         : Integer
+    index         : Int32
     initial_value : Cmd
       # Also serves as default_value for parameters
 

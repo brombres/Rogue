@@ -4,16 +4,16 @@ endClass
 class List<<$DataType>> : GenericList
   PROPERTIES
     data  : Array<<$DataType>>
-    count : Integer
+    count : Int32
 
   METHODS
     method init
       init( 10 )
 
-    method init( initial_capacity:Integer )
+    method init( initial_capacity:Int32 )
       data = Array<<$DataType>>( initial_capacity )
 
-    method init( initial_capacity:Integer, initial_value:$DataType )
+    method init( initial_capacity:Int32, initial_value:$DataType )
       data = Array<<$DataType>>( initial_capacity )
       forEach (i in 1..initial_capacity) add( initial_value )
 
@@ -34,7 +34,7 @@ class List<<$DataType>> : GenericList
       forEach (value in other) add( value )
       return this
 
-    method capacity->Integer
+    method capacity->Int32
       if (not data) return 0
       return data.count
 
@@ -48,12 +48,12 @@ class List<<$DataType>> : GenericList
     method first->$DataType [macro]
       this.data[0]
 
-    method discard( i1:Integer, n=1:Integer )
+    method discard( i1:Int32, n=1:Int32 )
       local i2 = i1 + n
       data.set( i1, data, i2, (count-i2) )
       discard_from( count-n )
 
-    method discard_from( index:Integer )
+    method discard_from( index:Int32 )
       local zero_value : $DataType
       local c = count
       while (c > index)
@@ -62,10 +62,10 @@ class List<<$DataType>> : GenericList
       endWhile
       count = c
 
-    method get( index:Integer )->$DataType [macro]
+    method get( index:Int32 )->$DataType [macro]
       this.data[index]
 
-    method insert( value:$DataType, before_index=0:Integer )->this
+    method insert( value:$DataType, before_index=0:Int32 )->this
       if (before_index < 0) before_index = 0
 
       if (before_index >= count)
@@ -82,7 +82,7 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method insert( other:$DataType[], before_index=0:Integer )->this
+    method insert( other:$DataType[], before_index=0:Int32 )->this
       if (before_index < 0) before_index = 0
       if (other.count == 0) return this
 
@@ -107,13 +107,13 @@ class List<<$DataType>> : GenericList
     method last->$DataType
       return this.data[ count - 1 ]
 
-    method locate( value:$DataType )->Integer?
+    method locate( value:$DataType )->Int32?
       forEach (i of this)
         if (value == this[i]) return i
       endForEach
       return null
 
-    method locate_last( value:$DataType )->Integer?
+    method locate_last( value:$DataType )->Int32?
       forEach (i of this step -1)
         if (value == this[i]) return i
       endForEach
@@ -126,7 +126,7 @@ class List<<$DataType>> : GenericList
 
       return this[ Random.next_integer(this.count) ]
 
-    method reserve( additional_count:Integer )->$DataType[]
+    method reserve( additional_count:Int32 )->$DataType[]
       local required_capacity = count + additional_count
 
       if (not data)
@@ -150,7 +150,7 @@ class List<<$DataType>> : GenericList
         return zero_value
       endIf
 
-    method remove_at( index:Integer )->$DataType
+    method remove_at( index:Int32 )->$DataType
       local result = this[ index ]
       data.set( index, data, index+1 )
       local zero_value : $DataType
@@ -167,7 +167,7 @@ class List<<$DataType>> : GenericList
     method reverse->this
       return reverse( 0, count-1 )
 
-    method reverse( i1:Integer, i2:Integer )->this
+    method reverse( i1:Int32, i2:Int32 )->this
       if (i1 < 0) i1 = 0
       if (i2 >= count) i2 = count - 1
 
@@ -182,7 +182,7 @@ class List<<$DataType>> : GenericList
 
       return this
 
-    method set( index:Integer, new_value:$DataType )->$DataType[] [macro]
+    method set( index:Int32, new_value:$DataType )->$DataType[] [macro]
       this.data[ index ] = new_value
 
     method to->String

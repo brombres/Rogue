@@ -1,11 +1,11 @@
 class ParseReader : Reader<<Character>>
   PROPERTIES
     data           : Character[]
-    position       : Integer
-    count          : Integer
-    line           : Integer
-    column         : Integer
-    spaces_per_tab : Integer
+    position       : Int32
+    count          : Int32
+    line           : Int32
+    column         : Int32
+    spaces_per_tab : Int32
 
   METHODS
     method init( source:String, spaces_per_tab=0 )
@@ -114,14 +114,14 @@ class ParseReader : Reader<<Character>>
     method has_another->Logical
       return (position < count)
 
-    method has_another( n:Integer )->Logical
+    method has_another( n:Int32 )->Logical
       return (position+n <= count)
 
     method peek->Character
       if (position == count) return 0->Character
       return data[position]
 
-    method peek( num_ahead:Integer )->Character
+    method peek( num_ahead:Int32 )->Character
       # Zero-based
       local peek_pos = position + num_ahead
       if (peek_pos >= count) return 0->Character
@@ -138,14 +138,14 @@ class ParseReader : Reader<<Character>>
       endIf
       return result
 
-    method read_hex_value->Integer
+    method read_hex_value->Int32
       local ch = read
       if (ch >= '0' and ch <= '9') return (ch - '0')
       if (ch >= 'a' and ch <= 'f') return 10 + (ch - 'a')
       if (ch >= 'A' and ch <= 'F') return 10 + (ch - 'A')
       return 0
 
-    method seek_to( new_line:Integer, new_column:Integer )->ParseReader
+    method seek_to( new_line:Int32, new_column:Int32 )->ParseReader
       if (new_line < line or (new_line == line and new_column < column))
         # start over at (1,1)
         position = 0

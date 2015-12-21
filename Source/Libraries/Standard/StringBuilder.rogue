@@ -4,14 +4,14 @@ class StringBuilder [requisite]
 
   PROPERTIES
     characters   : Character[]
-    indent       : Integer
+    indent       : Int32
     at_newline   = true
 
   METHODS
     method init [requisite]
       init( 40 )
 
-    method init( initial_capacity:Integer )
+    method init( initial_capacity:Int32 )
       characters = Character[]( initial_capacity )
 
     method init( initial_content:String )
@@ -21,11 +21,11 @@ class StringBuilder [requisite]
       init( initial_capacity )
       print( initial_content )
 
-    method add_indent( spaces:Integer )->this
+    method add_indent( spaces:Int32 )->this
       indent += spaces
       return this
 
-    method capacity->Integer [macro]
+    method capacity->Int32 [macro]
       this.characters.capacity
 
     method clear->this [requisite]
@@ -33,10 +33,10 @@ class StringBuilder [requisite]
       at_newline = true
       return this
 
-    method count->Integer [macro]
+    method count->Int32 [macro]
       this.characters.count
 
-    method get( index:Integer )->Character [macro]
+    method get( index:Int32 )->Character [macro]
       this.characters[ index ]
 
     method insert( ch:Character )->this
@@ -47,7 +47,7 @@ class StringBuilder [requisite]
       return (at_newline and indent > 0)
 
     method print( value:Byte )->this
-      return print( value->Integer )
+      return print( value->Int32 )
 
     method print( value:Character )->this
       if (value == '\n')    at_newline = true
@@ -55,18 +55,18 @@ class StringBuilder [requisite]
       characters.add( value )
       return this
 
-    method print( value:Float )->this [macro]
-      this.print( value->Real )
+    method print( value:Real32 )->this [macro]
+      this.print( value->Real64 )
 
-    method print( value:Integer )->this
-      return print( value->Long )
+    method print( value:Int32 )->this
+      return print( value->Int64 )
 
     method print( value:Logical )->this
       if (value) return print( "true" )
       else       return print( "false" )
 
-    method print( value:Long )->this
-      if (value == (1->Long :<<: 63))
+    method print( value:Int64 )->this
+      if (value == (1->Int64 :<<: 63))
         return print( "-9223372036854775808" )
       elseIf (value < 0)
         print( '-' )
@@ -83,7 +83,7 @@ class StringBuilder [requisite]
       if (value) return print( value->String )
       return print( "null" )
 
-    method print( value:Real )->StringBuilder
+    method print( value:Real64 )->StringBuilder
       if (value < 0)
         print( '-' )
         value = -value
@@ -102,7 +102,7 @@ class StringBuilder [requisite]
           ++pow10
         endWhile
 
-        return print( value ).print( 'e' ).print( pow10->Integer )
+        return print( value ).print( 'e' ).print( pow10->Int32 )
       endIf
 
       if (value < 0.00001)
@@ -112,7 +112,7 @@ class StringBuilder [requisite]
           --pow10
         endWhile
 
-        return print( value ).print( 'e' ).print( pow10->Integer )
+        return print( value ).print( 'e' ).print( pow10->Int32 )
       endIf
 
       # Standard output
@@ -125,7 +125,7 @@ class StringBuilder [requisite]
 
       return this
 
-    method print( value:Real, decimal_places:Integer )->this
+    method print( value:Real64, decimal_places:Int32 )->this
       if (value < 0 )
         print( '-' )
         value = -value
@@ -154,15 +154,15 @@ class StringBuilder [requisite]
       forEach (i in 1..indent) characters.add( ' ' )
       at_newline = false
 
-    method print_to_work_bytes( value:Real, decimal_places:Integer )->this
+    method print_to_work_bytes( value:Real64, decimal_places:Int32 )->this
       work_bytes.clear
       local whole = Math.floor( value )
       value -= whole
       while (whole >= 10)
-        work_bytes.add( ('0' + ((whole%10)->Integer))->Character )
+        work_bytes.add( ('0' + ((whole%10)->Int32))->Character )
         whole /= 10
       endWhile
-      work_bytes.add( ('0' + ((whole%10)->Integer))->Character )
+      work_bytes.add( ('0' + ((whole%10)->Int32))->Character )
 
       work_bytes.reverse
 
@@ -170,7 +170,7 @@ class StringBuilder [requisite]
         work_bytes.add( '.' )
         forEach (1..decimal_places)
           value *= 10
-          local digit = Math.floor(value)->Integer
+          local digit = Math.floor(value)->Int32
           value -= digit
           work_bytes.add( ('0' + digit)->Character )
         endForEach
@@ -192,27 +192,27 @@ class StringBuilder [requisite]
       return print( '\n' )
 
     method println( value:Byte )->this
-      return print( value->Integer ).print( '\n' )
+      return print( value->Int32 ).print( '\n' )
 
     method println( value:Character )->this
       return print( value ).print( '\n' )
 
-    method println( value:Float )->this [macro]
-      this.println( value->Real )
+    method println( value:Real32 )->this [macro]
+      this.println( value->Real64 )
 
-    method println( value:Integer )->this
+    method println( value:Int32 )->this
       return print( value ).print( '\n' )
 
     method println( value:Logical )->this
       return print( value ).print( '\n' )
 
-    method println( value:Long )->this
+    method println( value:Int64 )->this
       return print( value ).print( '\n' )
 
-    method println( value:Real )->this
+    method println( value:Real64 )->this
       return print( value ).print( '\n' )
 
-    method println( value:Real, decimal_places:Integer )->this
+    method println( value:Real64, decimal_places:Int32 )->this
       return print( value, decimal_places ).print( '\n' )
 
     method println( value:Object )->this
@@ -221,7 +221,7 @@ class StringBuilder [requisite]
     method println( value:String )->this
       return print( value ).print( '\n' )
 
-    method reserve( additional_count:Integer )->this [requisite]
+    method reserve( additional_count:Int32 )->this [requisite]
       characters.reserve( additional_count )
       return this
 
@@ -239,7 +239,7 @@ class StringBuilder [requisite]
         work_bytes.insert( '1' )
       endIf
 
-    method scan_work_bytes->Real
+    method scan_work_bytes->Real64
       local whole = 0.0
       local decimal = 0.0
       local decimal_count = 0
@@ -255,7 +255,7 @@ class StringBuilder [requisite]
       endForEach
       return whole + decimal / 10.0^decimal_count
 
-    method set( index:Integer, ch:Character )->this
+    method set( index:Int32, ch:Character )->this
       characters[index] = ch
       return this
 

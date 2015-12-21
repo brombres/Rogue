@@ -38,7 +38,7 @@ augment Program
 
         name = "$$$" (validate_cpp_name(middle),before,after)
         # Example:
-        #   Table<<String,Integer>>[] -> StringIntegerTable[]
+        #   Table<<String,Int32>>[] -> StringInt32Table[]
 
         if (Program.find_type(name))
           # Preferred name already exists; revert to "Type_of_Specialization"
@@ -48,7 +48,7 @@ augment Program
         i1 = name.locate("<<")
       endWhile
 
-      #   StringIntegerTable[] -> StringIntegerTableList
+      #   StringInt32Table[] -> StringInt32TableList
       i1 = name.locate("[]")
       while (i1?)
         name = name.from(0,i1.value-1) + "List" + name.from(i1.value+2)
@@ -455,7 +455,7 @@ augment Program
       writer.println
 
       # Base class info table
-      local info = Integer[]
+      local info = Int32[]
       forEach (type in type_list)
         type.collect_type_info( info )
       endForEach
@@ -692,17 +692,17 @@ class CPPWriter
         forEach (1..indent) buffer.print(' ')
       endIf
 
-    method print( value:Long )->CPPWriter
+    method print( value:Int64 )->CPPWriter
       print_indent
       buffer.print( value )
       return this
 
-    method print( value:Integer )->CPPWriter
+    method print( value:Int32 )->CPPWriter
       print_indent
       buffer.print( value )
       return this
 
-    method print( value:Real )->CPPWriter
+    method print( value:Real64 )->CPPWriter
       print_indent
 
       buffer.print( value )
@@ -745,19 +745,19 @@ class CPPWriter
       needs_indent = true
       return this
 
-    method println( value:Long )->CPPWriter
+    method println( value:Int64 )->CPPWriter
       print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
 
-    method println( value:Integer )->CPPWriter
+    method println( value:Int32 )->CPPWriter
       print( value )
       buffer.print( '\n' )
       needs_indent = true
       return this
 
-    method println( value:Real )->CPPWriter
+    method println( value:Real64 )->CPPWriter
       print( value )
       buffer.print( '\n' )
       needs_indent = true
@@ -847,8 +847,8 @@ class CPPWriter
             print "\\n"
           others
             print "\\"
-            print( (ch->Integer / 64)->Integer )
-            print( ((ch->Integer & 63) / 8)->Integer )
+            print( (ch->Int32 / 64)->Int32 )
+            print( ((ch->Int32 & 63) / 8)->Int32 )
             print( (ch & 7) )
         endWhich
       endIf
@@ -1147,7 +1147,7 @@ augment Type
         endIf
       endForEach
 
-    method print_dynamic_method_table_entries( at_index:Integer, writer:CPPWriter )->Integer
+    method print_dynamic_method_table_entries( at_index:Int32, writer:CPPWriter )->Int32
       if (not is_reference) return at_index
 
       dynamic_method_table_index = at_index
@@ -1624,20 +1624,20 @@ augment CmdLiteralNull
       writer.print( "NULL" )
 endAugment
 
-augment CmdLiteralReal
+augment CmdLiteralReal64
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value )
 endAugment
 
 
-augment CmdLiteralLong
+augment CmdLiteralInt64
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value ).print( "LL" )
 endAugment
 
-augment CmdLiteralInteger
+augment CmdLiteralInt32
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( value )
@@ -1659,7 +1659,7 @@ augment CmdLiteralCharacter
             writer.print( "'" )
         endWhich
       else
-        writer.print( value->Integer )
+        writer.print( value->Int32 )
       endIf
 endAugment
 
@@ -2074,9 +2074,9 @@ endAugment
 augment CmdMod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local cast = "(RogueInteger)"
-      if (this_type is Program.type_Real)     cast = "(RogueReal)"
-      elseIf (this_type is Program.type_Long) cast = "(RogueLong)"
+      local cast = "(RogueInt32)"
+      if (this_type is Program.type_Real64)     cast = "(RogueReal64)"
+      elseIf (this_type is Program.type_Int64) cast = "(RogueInt64)"
       writer.print( Program.program_name ).print( ".mod( " ).print( cast )
       left.write_cpp( writer )
       writer.print( ", " ).print( cast )
@@ -2263,10 +2263,10 @@ augment CmdReadArrayElement
         context.write_cpp( writer )
         writer.print( "->" )
         which (element_type)
-          case Program.type_Real:      writer.print( "reals[" )
-          case Program.type_Float:     writer.print( "floats[" )
-          case Program.type_Long:      writer.print( "longs[" )
-          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Real64:      writer.print( "reals[" )
+          case Program.type_Real32:     writer.print( "floats[" )
+          case Program.type_Int64:      writer.print( "longs[" )
+          case Program.type_Int32:   writer.print( "integers[" )
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )
@@ -2303,10 +2303,10 @@ augment CmdWriteArrayElement
         context.write_cpp( writer )
         writer.print( "->" )
         which (element_type)
-          case Program.type_Real:      writer.print( "reals[" )
-          case Program.type_Float:     writer.print( "floats[" )
-          case Program.type_Long:      writer.print( "longs[" )
-          case Program.type_Integer:   writer.print( "integers[" )
+          case Program.type_Real64:      writer.print( "reals[" )
+          case Program.type_Real32:     writer.print( "floats[" )
+          case Program.type_Int64:      writer.print( "longs[" )
+          case Program.type_Int32:   writer.print( "integers[" )
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
           case Program.type_Logical:   writer.print( "logical[" )

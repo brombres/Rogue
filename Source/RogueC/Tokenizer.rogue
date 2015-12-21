@@ -6,8 +6,8 @@ class Tokenizer
     buffer      = StringBuilder()
 
     next_filepath : String
-    next_line     : Integer
-    next_column   : Integer
+    next_line     : Int32
+    next_column   : Int32
 
   METHODS
     method tokenize( filepath )->Token[]
@@ -49,15 +49,15 @@ class Tokenizer
       tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
       return true
 
-    method add_new_token( type:TokenType, value:Long )->Logical
+    method add_new_token( type:TokenType, value:Int64 )->Logical
       tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
       return true
 
-    method add_new_token( type:TokenType, value:Integer )->Logical
+    method add_new_token( type:TokenType, value:Int32 )->Logical
       tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
       return true
 
-    method add_new_token( type:TokenType, value:Real )->Logical
+    method add_new_token( type:TokenType, value:Real64 )->Logical
       tokens.add( type.create_token(next_filepath,next_line,next_column,value) )
       return true
 
@@ -165,9 +165,9 @@ class Tokenizer
       TokenType.identifier                   = TokenType("identifier")
       TokenType.type_identifier              = TokenType("type identifier")
       TokenType.literal_character            = TokenType("Character")
-      TokenType.literal_integer              = TokenType("Integer")
-      TokenType.literal_long                 = TokenType("Long")
-      TokenType.literal_real                 = TokenType("Real")
+      TokenType.literal_integer              = TokenType("Int32")
+      TokenType.literal_long                 = TokenType("Int64")
+      TokenType.literal_real                 = TokenType("Real64")
       TokenType.literal_string               = TokenType("String")
 
       TokenType.keyword_and                  = define( TokenType("and") )
@@ -433,7 +433,7 @@ class Tokenizer
         reader.read
         if (not reader.has_another) throw error( "Escaped character expected; found end of input." )
 
-        local value : Integer
+        local value : Int32
         if     (consume('b')) value = 8
         elseIf (consume('f')) value = 12
         elseIf (consume('n')) value = '\n'
@@ -462,10 +462,10 @@ class Tokenizer
         endIf
 
       else
-        local value = reader.read->Integer
+        local value = reader.read->Int32
         if ((value & 0x80) != 0)
           # Handle UTF8 encoding
-          local ch2 = reader.read->Integer
+          local ch2 = reader.read->Int32
 
           if ((value & 0x20) == 0)
             # %110xxxxx 10xxxxxx
@@ -474,7 +474,7 @@ class Tokenizer
             buffer.print( ((value:<<:6) | ch2)->Character )
           else
             # %1110xxxx 10xxxxxx 10xxxxxx
-            local ch3 = reader.read->Integer
+            local ch3 = reader.read->Int32
             value = value & 15
             ch2 = ch2 & 0x3f
             ch3 = ch3 & 0x3f
@@ -487,7 +487,7 @@ class Tokenizer
 
       endIf
 
-    method read_hex_value( digits:Integer )->Integer
+    method read_hex_value( digits:Int32 )->Int32
       local value = 0
       local i = 1
       while (i <= digits)
@@ -496,7 +496,7 @@ class Tokenizer
           local ch = reader.peek
           local error_buffer = StringBuilder()
           error_buffer.print( "Invalid hex digit " )
-          if (ch < ' ' or ch->Integer == 127) error_buffer.print( ch->Integer )
+          if (ch < ' ' or ch->Int32 == 127) error_buffer.print( ch->Int32 )
           else error_buffer.print( "'" + ch + "'" )
           error_buffer.print('.')
           throw error( error_buffer->String )
@@ -612,7 +612,7 @@ class Tokenizer
 
       local name = "'$'" (ch)
       if (ch == 10) name = "EOL"
-      elseIf (ch < 32 or ch > 126) name = "(Unicode $)" (ch->Integer)
+      elseIf (ch < 32 or ch > 126) name = "(Unicode $)" (ch->Int32)
 
       throw error( "Syntax error - unexpected input $." (name) )
 
@@ -655,7 +655,7 @@ class Tokenizer
 
       return true
 
-    method tokenize_integer_in_base( base:Integer )->Logical
+    method tokenize_integer_in_base( base:Int32 )->Logical
       reader.read  # '0'
       reader.read  # [b,c,x] = [2,8,16]
 
@@ -710,10 +710,10 @@ class Tokenizer
           elseIf (ch == '.')
             # Start of range
             if (is_negative) n = -n
-            return add_new_token( TokenType.literal_integer, n->Integer )
+            return add_new_token( TokenType.literal_integer, n->Int32 )
           elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_')
             # E.g. 5.hash_code is (5).hash_code, not 5.0hashcode
-            return add_new_token( TokenType.literal_integer, n->Integer )
+            return add_new_token( TokenType.literal_integer, n->Int32 )
           else
             if (is_negative) n = -n
             return add_new_token( TokenType.literal_real, n )
@@ -732,32 +732,32 @@ class Tokenizer
         return add_new_token( TokenType.literal_real, n )
 
       else
-        # Integer or Long
+        # Int32 or Long
         local n = scan_long
         if (is_negative) n = -n;
 
-        if (n == n->Integer)
-          return add_new_token( TokenType.literal_integer, n->Integer )
+        if (n == n->Int32)
+          return add_new_token( TokenType.literal_integer, n->Int32 )
         else
           return add_new_token( TokenType.literal_long, n )
         endIf
       endIf
 
-    method scan_real->Real
+    method scan_real->Real64
       local n = 0.0
       local ch = reader.peek
       while (ch >= '0' and ch <= '9')
-        local intval = reader.read->Integer - '0'
+        local intval = reader.read->Int32 - '0'
         n = n * 10 + intval
         ch = reader.peek
       endWhile
       return n
 
-    method scan_long->Long
-      local n = 0 : Long
+    method scan_long->Int64
+      local n = 0 : Int64
       local ch = reader.peek
       while (ch >= '0' and ch <= '9')
-        local intval = reader.read->Integer - '0'
+        local intval = reader.read->Int32 - '0'
         n = n * 10 + intval
         ch = reader.peek
       endWhile

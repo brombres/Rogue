@@ -34,7 +34,7 @@ class JPEGDecoder [requisite]
       #|$this->png_data_cursor = $bytes->data->bytes;
       #|$this->png_data_remaining = $bytes->count;
       native @|struct jpeg_decompress_struct jpeg_info;
-              |RogueInteger width, height;
+              |RogueInt32 width, height;
               |RogueByte*   buffer = 0;
               |
               |jpeg_info.err = jpeg_std_error( (struct jpeg_error_mgr*) &$this->error_info );
@@ -56,8 +56,8 @@ class JPEGDecoder [requisite]
               |
               |jpeg_start_decompress( &jpeg_info );
               |
-              |width = (RogueInteger) jpeg_info.output_width;
-              |height = (RogueInteger) jpeg_info.output_height;
+              |width = (RogueInt32) jpeg_info.output_width;
+              |height = (RogueInt32) jpeg_info.output_height;
               |
               |$this->bitmap = (RogueClassBitmap*) ROGUE_CREATE_OBJECT(Bitmap);
               |RogueBitmap__init__XY( $this->bitmap, RogueClassXY(width,height) );
@@ -65,7 +65,7 @@ class JPEGDecoder [requisite]
               |$this->bitmap->size.x = width;
               |$this->bitmap->size.y = height;
               |
-              |RogueInteger* pixels = $this->bitmap->pixels->data->integers - 1;
+              |RogueInt32* pixels = $this->bitmap->pixels->data->integers - 1;
               |buffer = (RogueByte*) malloc( width*3 );
               |
               |int j = jpeg_info.output_scanline;

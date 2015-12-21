@@ -1,8 +1,8 @@
 class TokenReader
   PROPERTIES
     tokens   : Token[]
-    position : Integer
-    count    : Integer
+    position : Int32
+    count    : Int32
 
   METHODS
     method init( tokens )
@@ -29,7 +29,7 @@ class TokenReader
       if (position == count) return tokens.last
       return tokens[position]
 
-    method peek( num_ahead:Integer )->Token
+    method peek( num_ahead:Int32 )->Token
       if (position + num_ahead >= count) return tokens.last
       return tokens[ position + num_ahead ]
 
@@ -38,7 +38,7 @@ class TokenReader
       return tokens[ position - 1 ]
 
       #{
-    method source_string( i1:Integer, i2:Integer )->String
+    method source_string( i1:Int32, i2:Int32 )->String
       local buffer = StringBuilder()
       local i = i1
       while (i <= i2)
@@ -59,8 +59,8 @@ class PreprocessorTokenReader
   PROPERTIES
     tokens   : Token[]
     queue    = Token[]  # stored in reverse order
-    position : Integer
-    count    : Integer
+    position : Int32
+    count    : Int32
 
   METHODS
     method init( tokens )
@@ -102,7 +102,7 @@ class PreprocessorTokenReader
       if (queue.count) return queue.last
       return peek(0)
 
-    method peek( num_ahead:Integer )->Token
+    method peek( num_ahead:Int32 )->Token
       if (position + num_ahead >= count + queue.count) return tokens.last
 
       while (queue.count <= num_ahead)
@@ -141,7 +141,7 @@ class PreprocessorTokenReader
       return read->String
 
       #{
-    method source_string( i1:Integer, i2:Integer )->String
+    method source_string( i1:Int32, i2:Int32 )->String
       local buffer = StringBuilder()
       local i = i1
       while (i <= i2)

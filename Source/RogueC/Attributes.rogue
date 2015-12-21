@@ -31,7 +31,7 @@ endClass
 
 class Attributes
   PROPERTIES
-    flags : Integer
+    flags : Int32
     tags  : String[]
 
   METHODS
@@ -46,7 +46,7 @@ class Attributes
       endIf
       return result
 
-    method add( flag:Integer )->Attributes
+    method add( flag:Int32 )->Attributes
       flags |= flag
       return this
 

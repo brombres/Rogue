@@ -1,6 +1,6 @@
 class Table<<$KeyType,$ValueType>>
   PROPERTIES
-    bin_mask : Integer
+    bin_mask : Int32
     bins     : TableEntry<<$KeyType,$ValueType>>[]
     keys     : $KeyType[]
 
@@ -8,7 +8,7 @@ class Table<<$KeyType,$ValueType>>
     method init
       init( 16 )
 
-    method init( bin_count:Integer )
+    method init( bin_count:Int32 )
       local bins_power_of_2 = 1
       while (bins_power_of_2 < bin_count) bins_power_of_2 = bins_power_of_2 :<<: 1
       bin_count = bins_power_of_2
@@ -26,7 +26,7 @@ class Table<<$KeyType,$ValueType>>
       forEach (key in other.keys) this[key] = other[key]
       return this
 
-    method at( index:Integer )->$ValueType
+    method at( index:Int32 )->$ValueType
       return get( keys[index] )
 
     method clear
@@ -39,7 +39,7 @@ class Table<<$KeyType,$ValueType>>
     method contains( key:$KeyType )->Logical
       return find(key)
 
-    method count->Integer
+    method count->Int32
       return keys.count
 
     method find( key:$KeyType )->TableEntry<<$KeyType,$ValueType>>
@@ -137,10 +137,10 @@ class TableEntry<<$KeyType,$ValueType>>
     key        : $KeyType
     value      : $ValueType
     next_entry : TableEntry<<$KeyType,$ValueType>>
-    hash       : Integer
+    hash       : Int32
 
   METHODS
-    method init( _key:$KeyType, _value:$ValueType, _hash:Integer )
+    method init( _key:$KeyType, _value:$ValueType, _hash:Int32 )
       key = _key
       value = _value
       hash = _hash

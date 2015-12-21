@@ -4,7 +4,7 @@ class Property
     type_context  : Type
     name          : String
     type          : Type
-    attributes    : Integer
+    attributes    : Int32
     initial_value : Cmd
 
   METHODS

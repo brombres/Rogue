@@ -1,4 +1,4 @@
-class FileOptions( flags=0:Integer ) [compound]
+class FileOptions( flags=0:Int32 ) [compound]
   ENUMERATE
     FLAG_RECURSIVE     = 1
     FLAG_ABSOLUTE      = 2
@@ -74,7 +74,7 @@ class File
               |  char long_name[PATH_MAX+4];
               |  char full_name[PATH_MAX+4];
               |
-              |  if (GetLongPathName(c_filepath, long_name, PATH_MAX+4) == 0)
+              |  if (GetInt64PathName(c_filepath, long_name, PATH_MAX+4) == 0)
               |  {
               |    strcpy_s( long_name, PATH_MAX+4, c_filepath );
               |  }
@@ -307,7 +307,7 @@ class File
       outfile.close
       return true
 
-    method size( filepath:String )->Integer
+    method size( filepath:String )->Int32
       native @|if ( !$filepath ) return 0;
               |
               |char c_filepath[ PATH_MAX ];
@@ -317,7 +317,7 @@ class File
               |if ( !fp ) return 0;
               |
               |fseek( fp, 0, SEEK_END );
-              |RogueInteger size = (RogueInteger) ftell( fp );
+              |RogueInt32 size = (RogueInt32) ftell( fp );
               |fclose( fp );
               |
               |return size;
@@ -364,7 +364,7 @@ class File
     method save( data:String )->Logical [macro]
       File.save( this.filepath, data )
 
-    method size->Integer [macro]
+    method size->Int32 [macro]
       File.size( this.filepath )
 
     method writer->FileWriter [macro]
@@ -377,9 +377,9 @@ endClass
 class FileReader : Reader<<Character>>
   PROPERTIES
     filepath        : String
-    count           : Integer
-    position        : Integer
-    buffer_position : Integer
+    count           : Int32
+    position        : Int32
+    buffer_position : Int32
     buffer          = Byte[](1024)
     native "FILE* fp;"
 
@@ -397,7 +397,7 @@ class FileReader : Reader<<Character>>
       count = 0
       return this
 
-    method fp->Integer [macro]
+    method fp->Int32 [macro]
       native "$this->fp"
 
     method has_another->Logical
@@ -413,7 +413,7 @@ class FileReader : Reader<<Character>>
               |if ($this->fp)
               |{
               |  fseek( $this->fp, 0, SEEK_END );
-              |  $count = (RogueInteger) ftell( $this->fp );
+              |  $count = (RogueInt32) ftell( $this->fp );
               |  fseek( $this->fp, 0, SEEK_SET );
               |}
 
@@ -427,7 +427,7 @@ class FileReader : Reader<<Character>>
       if (position == count) return 0
 
       if (buffer_position == buffer.count)
-        native @|$buffer->count = (RogueInteger) fread( $buffer->data->bytes, 1, 1024, $this->fp );
+        native @|$buffer->count = (RogueInt32) fread( $buffer->data->bytes, 1, 1024, $this->fp );
         buffer_position = 0
       endIf
 
@@ -444,7 +444,7 @@ class FileReader : Reader<<Character>>
 
       return result
 
-    method remaining->Integer
+    method remaining->Int32
       return count - position
 
     method set_position( @position )->this
@@ -485,7 +485,7 @@ class FileWriter
       buffer.clear
       return this
 
-    method fp->Integer [macro]
+    method fp->Int32 [macro]
       native( "$this->fp" )
 
     method open( filepath )->Logical

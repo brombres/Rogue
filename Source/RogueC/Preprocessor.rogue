@@ -9,7 +9,7 @@ class Preprocessor
   METHODS
     method process( tokens )->Token[]
       reader = PreprocessorTokenReader( tokens )
-      tokens = Token[]( (tokens.count * 1.1)->Integer )
+      tokens = Token[]( (tokens.count * 1.1)->Int32 )
       process( true, 0, false )
 
       return tokens
@@ -21,7 +21,7 @@ class Preprocessor
       reader.read
       return true
 
-    method process( keep_tokens:Logical, depth:Integer, stop_on_eol:Logical )
+    method process( keep_tokens:Logical, depth:Int32, stop_on_eol:Logical )
       ++depth
       while (reader.has_another)
         local t = reader.read

@@ -1,8 +1,8 @@
 class RogueError : Error
   PROPERTIES
     filepath : String
-    line     : Integer
-    column   : Integer
+    line     : Int32
+    column   : Int32
 
   METHODS
     method init( message, filepath=null, line=0, column=0 )

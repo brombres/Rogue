@@ -2,7 +2,7 @@ class OpenGLRenderer : Renderer
   METHODS
     method init
 
-    method clear( color:Integer )
+    method clear( color:Int32 )
       native @|glClearColor(
               |    (($color>>16)&255)/255.0f,
               |    (($color>>8)&255)/255.0f,

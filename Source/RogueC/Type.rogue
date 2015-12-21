@@ -22,7 +22,7 @@ class Type
     is_used      : Logical
 
     simplify_name : Logical
-      # RogueInteger instead of RoguePrimitiveInteger, etc. - used for classes that are predefined
+      # RogueInt32 instead of RoguePrimitiveInt32, etc. - used for classes that are predefined
       # in the infrastructure and that developers will often use directly.
 
     definition_list   = String[]
@@ -46,7 +46,7 @@ class Type
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
-    dynamic_method_table_index : Integer
+    dynamic_method_table_index : Int32
 
   METHODS
     method init( t, name )
@@ -93,7 +93,7 @@ class Type
       property_lookup[p.name] = p
       return p
 
-    method collect_type_info( info:Integer[] )
+    method collect_type_info( info:Int32[] )
       info.add( 0 )  # allocator 0
 
       if (is_primitive)
@@ -112,7 +112,7 @@ class Type
       if (this.is_reference) return CmdLiteralNull( _t )
       if (this.is_compound) return CmdCreateCompound( _t, this, null )
       if (this is Program.type_Logical) return CmdLiteralLogical( _t, false )
-      return CmdLiteralInteger( _t, 0 )
+      return CmdLiteralInt32( _t, 0 )
 
     method extends_object->Logical
       return instance_of( Program.type_Object )
@@ -395,11 +395,11 @@ class Type
 
       return this
 
-    method primitive_rank->Integer
-      if (this is Program.type_Real)      return 7
-      if (this is Program.type_Float)     return 6
-      if (this is Program.type_Long)      return 5
-      if (this is Program.type_Integer)   return 4
+    method primitive_rank->Int32
+      if (this is Program.type_Real64)      return 7
+      if (this is Program.type_Real32)     return 6
+      if (this is Program.type_Int64)      return 5
+      if (this is Program.type_Int32)   return 4
       if (this is Program.type_Character) return 3
       if (this is Program.type_Byte)      return 2
       if (this is Program.type_Logical)   return 1
