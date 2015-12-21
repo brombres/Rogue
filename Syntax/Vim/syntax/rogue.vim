@@ -43,7 +43,7 @@ syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield yieldAndWait yieldWhile withTimeout
 syn keyword rogueSpecial      insertUnderlying
-syn keyword rogueType         Real Float Long Integer Character Byte Logical String
+syn keyword rogueType         Real64 Real32 Int64 Int32 Character Byte Logical String
 syn keyword rogueStorageClass overlaying underlying
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    deferred singleton managed

@@ -438,7 +438,7 @@
 		<key>types</key>
 		<dict>
 			<key>match</key>
-			<string>\b(Integer|Byte|Character|Real|Logical|null|String)\b</string>
+			<string>\b(Int64|Int32|Byte|Character|Real64|Real32|Logical|null|String)\b</string>
 			<key>name</key>
 			<string>storage.type.rogue</string>
 		</dict>
