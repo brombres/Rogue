@@ -25,7 +25,7 @@ class Bitmap : Canvas
     method decode( bytes:Byte[] )->Logical
       native @|ImageIODecoder decoder;
               |ImageIODecoder_init( &decoder );
-              |if ( !ImageIODecoder_set_input(&decoder, $bytes->data->bytes, $bytes->count) ) return 0;
+              |if ( !ImageIODecoder_open(&decoder, $bytes->data->bytes, $bytes->count) ) return 0;
 
       size = XY( native("decoder.width")->Int32, native("decoder.height")->Int32 )
       pixels = Int32[]( width * height )

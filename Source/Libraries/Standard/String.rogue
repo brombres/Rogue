@@ -7,6 +7,20 @@ class String [native functional]
       return create( characters.characters )
 
   METHODS
+    method after( index:Int32 )->String
+      # Returns the substring of this string that occur after
+      # the given index.
+      #
+      # Equivalent to ''from(index+1)''.
+      return from(index+1)
+
+    method before( index:Int32 )->String
+      # Returns the substring of this string that occur before
+      # the given index.
+      #
+      # Equivalent to ''leftmost(index)''.
+      return from(0,index-1)
+
     method after_any( ch:Character )->String
       local i = locate( ch )
       if (i.exists) return from( i.value+1 )
@@ -144,6 +158,44 @@ class String [native functional]
     method ends_with( other:String )->Logical
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
+
+    method equals_wildcard_pattern( wildcard_pattern:String )->Logical
+      # Determines whether or not this string matches the given
+      # Unix/Dos-style ''wildcard pattern''.  ''wildcard_pattern'' is a
+      # regular text string that may contain the following special
+      # characters:
+      #
+      # * * - matches zero or more characters of this string.
+      # * ? - matches any one character of this string.
+      #
+      # Example:
+      #
+      #   local String st = "img_01.png"
+      #   println( st.equals_wildcard_pattern("*.png") )  # true
+      #   println( st.equals_wildcard_pattern("img_??.png") )  # true
+      local c = count
+      if (c == 0 and wildcard_pattern.count == 0) return true
+      if (wildcard_pattern.count == 0) return false
+
+      local remaining_pattern = wildcard_pattern.from( 1 )
+      local ch = wildcard_pattern[0]
+      which (ch)
+        case '*':
+          forEach (n in 0..c)
+            if (from(n).equals_wildcard_pattern(remaining_pattern)) return true
+          endForEach
+
+        case '?':
+          if (c == 0) return false
+          return from(1).equals_wildcard_pattern( remaining_pattern )
+
+        others:
+          if (c == 0) return false
+          if (ch == this[0])
+            return from(1).equals_wildcard_pattern( remaining_pattern )
+          endIf
+      endWhich
+      return false
 
     method from( i1:Int32 )->String
       return from( i1, count-1 )
@@ -366,29 +418,110 @@ class String [native functional]
     method operator+( value:String )->String
       return StringBuilder().print( this ).print( value )->String
 
+    method pluralize( quantity:Int32 )->String
+      # Returns a pluralized form of this string.
+      #
+      # This string may be of the form "singlar" or "singlar/plural",
+      # where both singular and plural parts may contain a "#"
+      # to indicate where the given ''quantity'' should be inserted.
+      #
+      # If the string only contains the "singular" part, first a
+      # substring of the form "(s)" or "(es)" (etc.) is looked for.  
+      # If that exists, it is included in the result if the string
+      # is plural and omitted if the string is singular.
+      #
+      # If there is no "(s)" (etc.) then either "s" or "es" is 
+      # inserted after the last letter - "es" is used only when the 
+      # last letter is an "s" already.
+      #
+      # Examples:
+      #
+      #   "cat".pluralize(1)   # returns: cat
+      #   "cat".pluralize(2)   # returns: cats
+      #   "My # glass.".pluralize(1)  # returns: My 1 glass.
+      #   "My # glass.".pluralize(2)  # returns: My 2 glasses.
+      #   "a thief./# thieves".pluralize(1)   # returns: a thief.
+      #   "a thief./# thieves".pluralize(40)  # returns: 40 thieves.
+      #   "# match(es) found".pluralize(1)    # returns: 1 match found
+      #   "# match(es) found".pluralize(0)    # returns: 0 matches found
+      local st = this.replace( "#", ""+quantity )
+
+      if (st.contains('/'))
+        if (quantity == 1) return st.before_first( '/' )
+        else               return st.after_last( '/' )
+
+      else
+        local alt1 = st.locate('(')
+        if (alt1.exists)
+          local alt2 = st.locate(')',alt1.value+1)
+          if (not alt2.exists) return this
+
+          if (quantity == 1) 
+            return st.before(alt1.value) + st.after(alt2.value)
+          endIf
+
+          # plural
+          return "$$$" (st.before(alt1.value),st.from(alt1.value+1,alt2.value-1),st.after(alt2.value))
+        else
+          local alt2 = st.locate(')',alt1.value+1)
+
+          if (quantity == 1) return st
+
+          # plural
+          local index = 0
+          local i = st.count
+          while (i > 0)
+            --i
+            if (st[i].is_letter) index = i; escapeWhile
+          endWhile
+
+          if (st[index] == 's') return "$es$" (st.before(index+1),st.after(index))
+          else                  return "$s$" (st.before(index+1),st.after(index))
+        endIf
+
+      endIf
+
     method reader->StringReader
       return StringReader( this )
 
-    method replace( existing_ch:Character, replacement_ch:Character )->String
-      contingent
-        forEach (ch in this)
-          necessary (ch != existing_ch)
-        endForEach
+    method replace( look_for:Character, replace_with:Character )->String
+      if (not contains(look_for)) return this
 
-      satisfied
-        # No changes required
-        return this
+      local result = StringBuilder( count )
+      forEach (ch in this)
+        if (ch == look_for) result.print( replace_with )
+        else                   result.print( ch )
+      endForEach
+      return result->String
 
-      unsatisfied
-        local result = StringBuilder( count )
-        forEach (ch in this)
-          if (ch == existing_ch) result.print( replacement_ch )
-          else                   result.print( ch )
-        endForEach
-        return result->String
+    method replace( look_for:Character, replace_with:String )->String
+      # Returns a modified string where all instances of
+      # ''look_for'' are replaced with ''replace_with''.
+      if (not contains(look_for)) return this
 
-      endContingent
+      local buffer = StringBuilder(count*2)
+      forEach (ch in this)
+        if (ch == look_for) buffer.print( replace_with )
+        else                buffer.print( ch )
+      endForEach
 
+      return buffer->String
+
+    method replace( look_for:String, replace_with:String )->String
+      # Returns a modified string where all instances of
+      # ''look_for'' are replaced with ''replace_with''.
+      local buffer = StringBuilder( count*2 )
+      local st = this
+      local i = st.locate(look_for)
+      if (not i.exists) return st
+      while (i.exists)
+        buffer.print( st.before(i.value) )
+        buffer.print( replace_with )
+        st = st.from( i.value + look_for.count )
+        i = st.locate(look_for)
+      endWhile
+      buffer.print( st )
+      return buffer->String
 
     method reversed->String
       local buffer = StringBuilder(count)

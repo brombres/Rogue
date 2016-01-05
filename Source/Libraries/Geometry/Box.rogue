@@ -1,9 +1,9 @@
 class Box( position:XY, size:XY ) [compound]
   GLOBAL METHODS
-    method create( x:Real, y:Real, width:Real, height:Real )->Box
+    method create( x:Real64, y:Real64, width:Real64, height:Real64 )->Box
       return Box( XY(x,y), XY(width,height) )
 
-    method create( width:Real, height:Real )->Box
+    method create( width:Real64, height:Real64 )->Box
       return Box( XY(0,0), XY(width,height) )
 
     method create( size:XY )->Box
@@ -25,25 +25,25 @@ class Box( position:XY, size:XY ) [compound]
     method bottom_right->XY
       return (position + size)
 
-    method cropped( delta:Real )->Box
+    method cropped( delta:Real64 )->Box
       return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
 
-    method cropped( left:Real, top:Real, right:Real, bottom:Real )->Box
+    method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
 
-    method height->Real [macro]
+    method height->Real64 [macro]
       this.size.y
 
     method to->String
       return "[@$,$ $x$]" (x,y,width,height)
 
-    method width->Real [macro]
+    method width->Real64 [macro]
       this.size.x
 
-    method x->Real [macro]
+    method x->Real64 [macro]
       this.position.x
 
-    method y->Real [macro]
+    method y->Real64 [macro]
       this.position.y
 
 endClass

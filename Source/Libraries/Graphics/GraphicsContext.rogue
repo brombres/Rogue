@@ -1,5 +1,5 @@
 class Graphics [singleton]
-  GLOBALS
+  GLOBAL PROPERTIES
     stack = Graphics[]
 
   PROPERTIES

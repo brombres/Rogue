@@ -1,25 +1,25 @@
-class XY( x:Real, y:Real ) [compound]
+class XY( x:Real64, y:Real64 ) [compound]
   GLOBAL METHODS
-    method create( m:Real, angle:Radians )->XY
+    method create( m:Real64, angle:Radians )->XY
       return XY( m * angle.cos, m * angle.sin )
 
-    method create( m:Real, angle:Degrees )->XY
+    method create( m:Real64, angle:Degrees )->XY
       return XY( m * angle.cos, m * angle.sin )
 
   METHODS
     method degrees->Degrees [macro]
       Degrees( this.radians )
 
-    method magnitude->Real
+    method magnitude->Real64
       return Math.sqrt( x*x + y*y )
 
-    method magnitude_squared->Real
+    method magnitude_squared->Real64
       return x*x + y*y
 
     method operator+( other:XY )->XY
       return XY( x+other.x, y+other.y )
 
-    method operator+( value:Real )->XY
+    method operator+( value:Real64 )->XY
       return XY( x+value, y+value )
 
     method operator-()->XY
@@ -28,31 +28,31 @@ class XY( x:Real, y:Real ) [compound]
     method operator-( other:XY )->XY
       return XY( x-other.x, y-other.y )
 
-    method operator-( value:Real )->XY
+    method operator-( value:Real64 )->XY
       return XY( x-value, y-value )
 
     method operator*( other:XY )->XY
       return XY( x*other.x, y*other.y )
 
-    method operator*( value:Real )->XY
+    method operator*( value:Real64 )->XY
       return XY( x*value, y*value )
 
     method operator/( other:XY )->XY
       return XY( x/other.x, y/other.y )
 
-    method operator/( value:Real )->XY
+    method operator/( value:Real64 )->XY
       return XY( x/value, y/value )
 
     method operator%( other:XY )->XY
       return XY( x%other.x, y%other.y )
 
-    method operator%( value:Real )->XY
+    method operator%( value:Real64 )->XY
       return XY( x%value, y%value )
 
     method operator^( other:XY )->XY
       return XY( x^other.x, y^other.y )
 
-    method operator^( value:Real )->XY
+    method operator^( value:Real64 )->XY
       return XY( x^value, y^value )
 
     method radians->Radians
