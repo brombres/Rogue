@@ -152,7 +152,7 @@ class File
       # create or if the filepath already exists but is not a folder.
       if (File.exists(filepath)) return File.is_folder( filepath )
 
-      # Check for the parent folder's existance and recursively create
+      # Check for the parent folder's existence and recursively create
       # that if necessary.
       local parent = File.path( filepath )
       if (not create_folder(parent)) return false
