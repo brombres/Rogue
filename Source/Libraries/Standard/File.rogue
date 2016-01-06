@@ -64,13 +64,19 @@ endClass
 class File
   GLOBAL METHODS
     method absolute_filepath( filepath:String )->String
-      native @|if ( !$filepath ) return 0;
-              |
-              |char c_filepath[ PATH_MAX ];
-              |RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
-              |
-              |#if defined(_WIN32)
+      if (not filepath) return null
+
+      if (not exists(filepath))
+        local parent = path( filepath )
+        if (parent.count == 0) parent = "."
+        return "$/$" (absolute_filepath(parent),filename(filepath))
+      endIf
+
+      native @|#if defined(_WIN32)
               |{
+              |  char c_filepath[ PATH_MAX ];
+              |  RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
+              |
               |  char long_name[PATH_MAX+4];
               |  char full_name[PATH_MAX+4];
               |
@@ -88,13 +94,15 @@ class File
               |  return RogueString_create_from_c_string( full_name, -1 );
               |}
               |#else
-              |
-              |bool is_folder = RogueFile__is_folder__String( $filepath );
-              |
               |{
               |  int original_dir_fd;
               |  int new_dir_fd;
               |  char filename[PATH_MAX];
+              |  char c_filepath[ PATH_MAX ];
+              |  bool is_folder;
+              |
+              |  is_folder = RogueFile__is_folder__String( $filepath );
+              |  RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
               |
               |  // A way to get back to the starting folder when finished.
               |  original_dir_fd = open( ".", O_RDONLY );  
@@ -110,7 +118,8 @@ class File
               |    int i = (int) strlen( c_filepath ) - 1;
               |    while (i >= 0 && c_filepath[i] != '/') --i;
               |    strcpy( filename, c_filepath+i+1 );
-              |    c_filepath[i] = 0;
+              |    if (i == -1) strcpy( c_filepath, "." );
+              |    else         c_filepath[i] = 0;
               |  }
               |  new_dir_fd = open( c_filepath, O_RDONLY );
               |
@@ -131,6 +140,26 @@ class File
               |  return RogueString_create_from_c_string( c_filepath, -1 );
               |}
               |#endif
+
+    method create_folder( filepath:String )->Logical
+      # Creates the specified folder along with intermediate folders
+      # if necessary.  Returns 'true' on success or if the filepath
+      # already exists as a folder.  Returns 'false' on failure to
+      native "char c_filepath[PATH_MAX];"
+
+      filepath = File.absolute_filepath( filepath )
+
+      # create or if the filepath already exists but is not a folder.
+      if (File.exists(filepath)) return File.is_folder( filepath )
+
+      # Check for the parent folder's existance and recursively create
+      # that if necessary.
+      local parent = File.path( filepath )
+      if (not create_folder(parent)) return false
+
+      # Note: 0777 is a permission mask rather than the actual permission setting.
+      native @|RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
+              |return (0 == mkdir(c_filepath, 0777));
 
     method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
@@ -333,6 +362,9 @@ class File
 
     method absolute_filepath->String [macro]
       File.absolute_filepath( this.filepath )
+
+    method create_folder->Logical [macro]
+      return File.create_folder( this.filepath )
 
     method exists->Logical [macro]
       File.exists( this.filepath )

@@ -463,8 +463,6 @@ class String [native functional]
           # plural
           return "$$$" (st.before(alt1.value),st.from(alt1.value+1,alt2.value-1),st.after(alt2.value))
         else
-          local alt2 = st.locate(')',alt1.value+1)
-
           if (quantity == 1) return st
 
           # plural
