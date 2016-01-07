@@ -118,8 +118,8 @@ class PropertyValue
     method remove_last->PropertyValue
       return null
 
-    method save( file:File )
-      file.save( to_json.to_utf8 )
+    method save( file:File )->Logical
+      return file.save( to_json.to_utf8 )
 
     method set( index:Int32, value:Int32 )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )

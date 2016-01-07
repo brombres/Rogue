@@ -328,13 +328,13 @@ class File
       local outfile = writer( filepath )
       forEach (ch in data) outfile.write( ch )
       outfile.close
-      return true
+      return not outfile.error
 
     method save( filepath:String, data:String )->Logical
       local outfile = writer( filepath )
       forEach (ch in data) outfile.write( ch )
       outfile.close
-      return true
+      return not outfile.error
 
     method size( filepath:String )->Int32
       native @|if ( !$filepath ) return 0;
@@ -493,6 +493,7 @@ endClass
 class FileWriter
   PROPERTIES
     filepath : String
+    error    : Logical
     buffer   = Byte[](1024)
     native "FILE* fp;"
 
@@ -522,12 +523,14 @@ class FileWriter
 
     method open( filepath )->Logical
       close
+      error = false
 
       native @|char path[ PATH_MAX ];
               |RogueString_to_c_string( $filepath, path, PATH_MAX );
               |$this->fp = fopen( path, "wb" );
+              |$this->error = !($this->fp);
               |
-              |return !!$this->fp;
+              |return !$this->error;
 
     method write( ch:Character )->this
       if (not fp) return this

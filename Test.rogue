@@ -1,3 +1,8 @@
-forEach (angle in -720..720)
-  println "$ -> $" (angle,(Math.floor((angle+45.0)/90.0)*90 % 360)->Int32)
-endForEach
+Test(5)
+
+class Test
+  GLOBAL METHODS
+    method create( n:Int32 )->Test
+      println n
+      return null
+endClass

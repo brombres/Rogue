@@ -1,6 +1,7 @@
 class Bitmap : Canvas
   PROPERTIES
     pixels : Int32[]
+    error  : Logical
 
   METHODS
     method init( size ) [requisite]
@@ -10,7 +11,10 @@ class Bitmap : Canvas
       init( file.load_as_bytes )
 
     method init( bytes:Byte[] )
-      if (not decode(bytes)) init( XY(1,1) )
+      if (not decode(bytes))
+        init( XY(1,1) )
+        error = true
+      endIf
 
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
