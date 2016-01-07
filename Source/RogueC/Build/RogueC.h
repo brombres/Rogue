@@ -3603,7 +3603,7 @@ RogueString* RogueString__operatorPLUS__Object( RogueString* THIS, RogueObject* 
 RogueString* RogueString__operatorPLUS__Real64( RogueString* THIS, RogueReal64 value_0 );
 RogueString* RogueString__operatorPLUS__String( RogueString* THIS, RogueString* value_0 );
 RogueClassStringReader* RogueString__reader( RogueString* THIS );
-RogueString* RogueString__replace__Character_Character( RogueString* THIS, RogueCharacter existing_ch_0, RogueCharacter replacement_ch_1 );
+RogueString* RogueString__replace__Character_Character( RogueString* THIS, RogueCharacter look_for_0, RogueCharacter replace_with_1 );
 RogueString* RogueString__rightmost__Int32( RogueString* THIS, RogueInt32 n_0 );
 RogueStringList* RogueString__split__Character( RogueString* THIS, RogueCharacter separator_0 );
 RogueString* RogueString__to_lowercase( RogueString* THIS );
@@ -3653,7 +3653,7 @@ RogueString* RogueByte__to_String( RogueByte THIS );
 RogueString* RogueStringReader__type_name( RogueClassStringReader* THIS );
 RogueLogical RogueStringReader__has_another( RogueClassStringReader* THIS );
 RogueCharacter RogueStringReader__read( RogueClassStringReader* THIS );
-RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_16_0 );
+RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_17_0 );
 RogueLogical RogueStringReader__has_another__Int32( RogueClassStringReader* THIS, RogueInt32 n_0 );
 RogueClassStringReader* RogueStringReader__init_object( RogueClassStringReader* THIS );
 RogueLogical RogueCharacterReader__has_another( RogueObject* THIS );

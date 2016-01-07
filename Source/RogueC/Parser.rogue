@@ -73,6 +73,12 @@ class Parser
       local type = reader.peek.type
       return (type is TokenType.eol or type is TokenType.symbol_semicolon)
 
+    method next_is_identifier( name=null:String )->Logical
+      local t = peek
+      if (t.type != TokenType.identifier) return false
+      if (not name) return true
+      return (t->String == name)
+
     method next_is_statement->Logical
       if (not reader.has_another) return false
       return reader.next_is_statement_token
