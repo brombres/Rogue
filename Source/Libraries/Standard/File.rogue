@@ -272,7 +272,7 @@ class File
                        local is_hidden = entry.begins_with('.')
                        entry = filepath + entry
                        if (not (is_hidden and options.ignoring_hidden))
-                         local _is_folder = is_folder( entry )
+                         local _is_folder = is_folder( folder + entry )
                          if (options.including_both or
                              (_is_folder and options.including_folders) or
                              (not _is_folder and options.including_files))
