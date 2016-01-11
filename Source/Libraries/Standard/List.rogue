@@ -62,6 +62,9 @@ class List<<$DataType>> : GenericList
       endWhile
       count = c
 
+    method filter->ListFilter<<$DataType>>
+      return ListFilter<<$DataType>>( this )
+
     method get( index:Int32 )->$DataType [macro]
       this.data[index]
 
@@ -213,4 +216,32 @@ augment String[]
 
       return builder->String
 endAugment
+
+class ListFilter<<$DataType>>
+  PROPERTIES
+    list      : $DataType[]
+    count     : Int32
+    read_pos  : Int32
+    write_pos : Int32
+
+  METHODS
+    method init( list )
+      count = list.count
+
+    method discard_current
+      if (read_pos == count) list.discard_from( write_pos )
+
+    method has_another->Logical
+      return read_pos < count
+
+    method keep( element:$DataType )
+      list[ write_pos ] = element
+      ++write_pos
+      if (read_pos == count) list.discard_from( write_pos )
+
+    method read->$DataType
+      ++read_pos
+      return list[ read_pos-1 ]
+
+endClass
 

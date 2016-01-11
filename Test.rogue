@@ -1,8 +1,5 @@
-Test(5)
-
-class Test
-  GLOBAL METHODS
-    method create( n:Int32 )->Test
-      println n
-      return null
-endClass
+local names = ["apple","banana","cherry","date"]
+#forEach (name in names)
+#if (name.count & 1) names.keep
+#endForEach
+println names
