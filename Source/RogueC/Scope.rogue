@@ -217,9 +217,75 @@ class Scope
           endContingent
         endForEach
         if (not candidates.refine_matches) return null
-      endIf
 
-      if (arg_count)
+        # Match and specialize generic function arguments early on
+        local has_generic_fn = false
+        forEach (arg in args)
+          if (arg.is_generic_function) has_generic_fn = true; escapeForEach
+        endForEach
+
+        if (has_generic_fn)
+          local first_generic_fn_t : Token
+          forEach (m in candidates.available)
+            contingent
+              forEach (index of args)
+                local arg = args[index]
+                if (arg.is_generic_function)
+                  if (not first_generic_fn_t) first_generic_fn_t = arg.t
+                  local fn = arg as CmdCreateFunction
+                  local param_type = m.parameters[index].type
+                  necessary (param_type.name.begins_with("Callback("))
+
+                  local callback_param_count = 0
+                  if (param_type.callback_parameter_types) callback_param_count = param_type.callback_parameter_types.count
+                  necessary (fn.parameters.count == callback_param_count)
+                endIf
+              endForEach
+            satisfied
+              candidates.compatible.add( m )
+            endContingent
+          endForEach
+
+          if (not candidates.refine_matches) return null
+
+          if (candidates.has_match)
+            # Convert each generic function arg to a typed function arg and retry this find_method() call.
+            local m = candidates.match
+            forEach (index of args)
+              local arg = args[index]
+              if (arg.is_generic_function)
+                local fn = (arg as CmdCreateFunction).clone( null as CloneArgs )
+                fn.is_generic = false
+                args[index] = fn
+                local callback_type = m.parameters[index].type
+
+                forEach (i of fn.parameters)
+                  fn.parameters[i].type = callback_type.callback_parameter_types[i]
+                endForEach
+                fn.return_type = callback_type.callback_return_type
+
+                if (fn.statements.count)
+                  local last_expression = fn.statements.last
+                  if (last_expression notInstanceOf CmdReturn)
+                    fn.statements[fn.statements.count-1] = CmdReturn( last_expression.t, last_expression )
+                  endIf
+                endIf
+              endIf
+            endForEach
+
+            # Restart find_method() with the specialized function
+            return find_method( type_context, access, error_on_fail, suppress_inherited )
+
+          else
+            if (candidates.available.count == 0)
+              throw first_generic_fn_t.error( "Generic function argument does not match any compatible Callback parameters in available methods." )
+            else
+              throw first_generic_fn_t.error( "Generic function argument ambiguously matches Callback parameters in multiple available methods." )
+            endIf
+          endIf
+
+        endIf
+
         # Compatible arg check
         forEach (m in candidates.available)
           contingent

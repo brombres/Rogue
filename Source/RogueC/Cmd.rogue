@@ -99,6 +99,9 @@ class Cmd
 
       return null
 
+    method is_generic_function->Logical
+      return false
+
     method must_find_common_type( left_type:Type, right_type:Type )->Type
       local common_type = find_common_type( left_type, right_type )
       if (common_type) return common_type
@@ -4124,7 +4127,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
 endClass
 
 
-class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:FnArg[], statements:CmdStatementList ) : Cmd
+class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:FnArg[], statements:CmdStatementList, is_generic:Logical ) : Cmd
   METHODS
     method clone( clone_args:CloneArgs )->CmdCreateFunction
       local args2 : FnArg[]
@@ -4134,9 +4137,14 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
           args2.add( FnArg( arg.name, arg.value.clone(clone_args) ).set_type( arg.type ) )
         endForEach
       endIf
-      return CmdCreateFunction( t, parameters, return_type, args2, statements.clone(clone_args) )
+      return CmdCreateFunction( t, parameters, return_type, args2, statements.clone(clone_args), is_generic )
+
+    method is_generic_function->Logical
+      return is_generic
 
     method resolve( scope:Scope )->Cmd
+      if (is_generic) return this
+
       local parameter_types : Type[]
       if (parameters and parameters.count)
         parameter_types = Type[]
@@ -4179,6 +4187,11 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
         return CmdReadSingleton( t, fn_type ).resolve( scope )
       endIf
 
+    method type->Type
+      # Necessary for generic funtcions to avoid triggering a "value expected" error 
+      # before being able to match the generic function to a method's expected callback
+      # type.
+      return Program.type_Object
 
 endClass
 

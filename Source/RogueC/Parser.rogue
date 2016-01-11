@@ -2030,6 +2030,7 @@ class Parser
       elseIf (consume(TokenType.keyword_function))
         local parameters : FnParam[]
         local return_type : Type
+        local is_generic = false
         if (consume(TokenType.symbol_open_paren))
           if (not consume(TokenType.symbol_close_paren))
             parameters = FnParam[]
@@ -2037,14 +2038,34 @@ class Parser
             while (first or consume(TokenType.symbol_comma))
               first = false
               local param = FnParam( read_identifier )
-              must_consume( TokenType.symbol_colon )
-              param.type = parse_type
+              local t2 = peek
+              local cur_generic = false
+              if (consume(TokenType.symbol_colon)) param.type = parse_type
+              else                                 cur_generic = true
+
+              if (parameters.count and (is_generic != cur_generic))
+                throw t2.error( "function parameters must all be typed or all be generic." )
+              endIf
+
+              is_generic = cur_generic
               parameters.add( param )
             endWhile
             must_consume( TokenType.symbol_close_paren )
           endIf
         endIf
-        if (consume(TokenType.symbol_arrow))
+
+        local t2 = peek
+        if (consume(TokenType.symbol_fat_arrow))
+          if (parameters.count and not is_generic)
+            # Note: if there are no parameters then 'is_generic' is not valid and we can accept
+            # the generic arrow
+            throw t2.error( "A function with typed parameters must use '->' to define its return type." )
+          endIf
+
+          is_generic = true
+
+        elseIf (consume(TokenType.symbol_arrow))
+          if (is_generic) throw t2.error( "A function with generic parameters must use '=>' to define its body." )
           return_type = parse_type
         endIf
 
@@ -2056,7 +2077,7 @@ class Parser
             local first = true
             while (first or consume(TokenType.symbol_comma))
               first = false
-              local t2 = peek
+              t2 = peek
               local name  = read_identifier
               local value : Cmd
               if (consume(TokenType.symbol_equals))
@@ -2073,14 +2094,14 @@ class Parser
         endIf
 
         local statements = CmdStatementList()
-        if (consume_eols)
+        if (not is_generic and consume_eols)
           parse_multi_line_statements( statements )
           must_consume( TokenType.keyword_endFunction )
         else
           parse_single_line_statements( statements )
         endIf
 
-        return CmdCreateFunction( t, parameters, return_type, with_args, statements )
+        return CmdCreateFunction( t, parameters, return_type, with_args, statements, is_generic )
 
       elseIf (consume(TokenType.keyword_native))
         consume_eols

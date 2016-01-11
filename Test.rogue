@@ -1,5 +1,7 @@
 local names = ["apple","banana","cherry","date"]
-#forEach (name in names)
-#if (name.count & 1) names.keep
-#endForEach
+println names
+println
+
+names.filter( function(name:String)->Logical return not (name.count&1) )
+names.filter( function(name) => not (name.count&1) )
 println names
