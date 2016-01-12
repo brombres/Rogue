@@ -106,6 +106,7 @@ class TokenType
 
     keyword_and                   : TokenType
     keyword_as                    : TokenType
+    keyword_downTo                : TokenType
     keyword_false                 : TokenType
     keyword_instanceOf            : TokenType
     keyword_meta                  : TokenType

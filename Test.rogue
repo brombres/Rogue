@@ -18,3 +18,5 @@ names.apply( function(name) => println name + " has # letter".pluralize(name.cou
 
 names.modify( function(name) => "(" + name + ")" )
 println names
+
+forEach (n in 3 downTo 1) println n

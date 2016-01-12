@@ -1329,11 +1329,21 @@ class Parser
                 local step_value = parse_expression
                 step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
               else
-                step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
+                if (range instanceOf CmdRangeUpTo)
+                  step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
+                else
+                  step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
+                endIf
               endIf
 
-              local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach,
-                CmdCompareLE(t,CmdReadLocal(t,control_var),CmdReadLocal(t,last_var)) )
+              local compare_cmd : Cmd
+              if (range instanceOf CmdRangeUpTo)
+                compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+              else
+                compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+              endIf
+
+              local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach, compare_cmd )
 
               cmd_for_each.add_control_var( control_var )
               cmd_for_each.add_control_var( last_var )
@@ -1396,11 +1406,22 @@ class Parser
             local step_value = parse_expression
             step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
           else
-            step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
+            if (range instanceOf CmdRangeUpTo)
+              step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
+            else
+              step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
+            endIf
           endIf
 
-          local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach,
-            CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) ) )
+          local compare_cmd : Cmd
+          if (range instanceOf CmdRangeUpTo)
+            compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+          else
+            compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+          endIf
+
+          local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach, compare_cmd )
+
           cmd_for_each.add_control_var( control_var )
           cmd_for_each.add_control_var( last_var )
           cmd_for_each.add_upkeep( step_cmd )
@@ -1458,9 +1479,9 @@ class Parser
         return CmdRangeUpToLessThan( t, lhs, parse_logical_xor )
       elseIf (consume(TokenType.symbol_downToGreaterThan))
         return CmdRangeDownToGreaterThan( t, lhs, parse_logical_xor )
+        }#
       elseIf (consume(TokenType.keyword_downTo))
         return CmdRangeDownTo( t, lhs, parse_logical_xor )
-        }#
       else
         return lhs
       endIf

@@ -2472,6 +2472,12 @@ class CmdRangeUpTo : CmdRange
       return CmdRangeUpTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
 endClass
 
+class CmdRangeDownTo : CmdRange
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeDownTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
+endClass
+
 
 #------------------------------------------------------------------------------
 # Unary Operators
