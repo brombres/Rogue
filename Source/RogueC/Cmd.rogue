@@ -4386,3 +4386,31 @@ class CmdTypedLiteralList : Cmd
       return Program.get_type_reference( t, list_type_name )
 endClass
 
+
+class CmdListConvert( t, list:Cmd, to_type:Type, convert_fn:Cmd ) : Cmd
+  METHODS
+    method clone( clone_args:CloneArgs )->CmdListConvert
+      return CmdListConvert( t, list.clone(clone_args), to_type, convert_fn.clone(clone_args) )
+
+    method implicit_type->Type
+      return to_type
+
+    method resolve( scope:Scope )->Cmd
+      list = list.resolve( scope )
+      local list_type = list.require_type.organize
+      to_type.organize
+      if (not list_type.is_list)
+        throw t.error( "List conversion syntax used on a non-list value." )
+      endIf
+      if (to_type.is_list)
+        return CmdAccess( t, CmdAccess(t,"ListMap<<$,$>>"(list_type.element_type,to_type.element_type)),
+            "convert", CmdArgs(list,convert_fn) ).resolve( scope )
+      else
+        return CmdAccess( t, CmdAccess(t,"ListReduce<<$,$>>"(list_type.element_type,to_type)),
+            "convert", CmdArgs(list,convert_fn) ).resolve( scope )
+      endIf
+
+    method type->Type
+      return to_type
+endClass
+

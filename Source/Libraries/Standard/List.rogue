@@ -17,6 +17,10 @@ class List<<$DataType>> : GenericList
       data = Array<<$DataType>>( initial_capacity )
       forEach (i in 1..initial_capacity) add( initial_value )
 
+    method apply( fn:Callback($DataType) )->this
+      forEach (item in this) fn( item )
+      return this
+
     method clone->$DataType[]
       local result = $DataType[]( count )
       forEach (value in this)
@@ -128,16 +132,9 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-      #{
-    method map( fn:Callback($DataType)->$DataType )->this
-      local write_pos = 0
-      forEach (i of this)
-        local value = this[i]
-        if (fn(value)) this[write_pos] = value; ++write_pos
-      endForEach
-      discard_from( write_pos )
+    method modify( fn:Callback($DataType)->$DataType )->this
+      forEach (index of this) this[index] = fn(this[index])
       return this
-      }#
 
     method random->$DataType
       # Returns an element at random
@@ -233,4 +230,22 @@ augment String[]
 
       return builder->String
 endAugment
+
+class ListMap<<$FromType,$ToType>>
+  GLOBAL METHODS
+    method convert( list:$FromType[], map_fn:Callback($FromType)->$ToType )->$ToType[]
+      local result = $ToType[]( list.capacity )
+      forEach (element in list) result.add( map_fn(element) )
+      return result
+endClass
+
+class ListReduce<<$FromType,$ToType>>
+  GLOBAL METHODS
+    method convert( list:$FromType[], reduce_fn:Callback(Int32,$FromType,$ToType)->$ToType )->$ToType
+      local result : $ToType
+      forEach (index of list)
+        result = reduce_fn( index, list[index], result )
+      endForEach
+      return result
+endClass
 

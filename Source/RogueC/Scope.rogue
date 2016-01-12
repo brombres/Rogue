@@ -264,7 +264,7 @@ class Scope
                 endForEach
                 fn.return_type = callback_type.callback_return_type
 
-                if (fn.statements.count)
+                if (fn.return_type and fn.statements.count)
                   local last_expression = fn.statements.last
                   if (last_expression notInstanceOf CmdReturn)
                     fn.statements[fn.statements.count-1] = CmdReturn( last_expression.t, last_expression )
