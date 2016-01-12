@@ -38893,7 +38893,7 @@ void Rogue_configure()
   Rogue_literal_strings[242] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "default_value", 13 ) ); 
   Rogue_literal_strings[243] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'default_value' expected after 'meta.'.", 39 ) ); 
   Rogue_literal_strings[244] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Closing '>>' expected before end of line.", 41 ) ); 
-  Rogue_literal_strings[245] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Callback", 8 ) ); 
+  Rogue_literal_strings[245] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Function", 8 ) ); 
   Rogue_literal_strings[246] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "call", 4 ) ); 
   Rogue_literal_strings[247] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "param", 5 ) ); 
   Rogue_literal_strings[248] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "List conversion function expected.", 34 ) ); 
@@ -39393,9 +39393,9 @@ void Rogue_configure()
   Rogue_literal_strings[742] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ":\n\n", 3 ) ); 
   Rogue_literal_strings[743] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Call to ", 8 ) ); 
   Rogue_literal_strings[744] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( " has arguments that are incompatible with the best candidate:\n\n", 63 ) ); 
-  Rogue_literal_strings[745] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Callback(", 9 ) ); 
-  Rogue_literal_strings[746] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Generic function argument does not match any compatible Callback parameters in available methods.", 97 ) ); 
-  Rogue_literal_strings[747] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Generic function argument ambiguously matches Callback parameters in multiple available methods.", 96 ) ); 
+  Rogue_literal_strings[745] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Function(", 9 ) ); 
+  Rogue_literal_strings[746] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Generic function argument does not match any compatible Function parameters in available methods.", 97 ) ); 
+  Rogue_literal_strings[747] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Generic function argument ambiguously matches Function parameters in multiple available methods.", 96 ) ); 
   Rogue_literal_strings[748] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "to_Object", 9 ) ); 
   Rogue_literal_strings[749] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Type name expected, e.g. \"", 26 ) ); 
   Rogue_literal_strings[750] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ".\".", 3 ) ); 

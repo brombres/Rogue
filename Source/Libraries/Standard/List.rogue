@@ -17,7 +17,7 @@ class List<<$DataType>> : GenericList
       data = Array<<$DataType>>( initial_capacity )
       forEach (i in 1..initial_capacity) add( initial_value )
 
-    method apply( fn:Callback($DataType) )->this
+    method apply( fn:Function($DataType) )->this
       forEach (item in this) fn( item )
       return this
 
@@ -72,7 +72,7 @@ class List<<$DataType>> : GenericList
       endWhile
       count = c
 
-    method filter( fn:Callback($DataType)->Logical )->this
+    method filter( fn:Function($DataType)->Logical )->this
       local write_pos = 0
       forEach (i of this)
         local value = this[i]
@@ -84,7 +84,7 @@ class List<<$DataType>> : GenericList
     method get( index:Int32 )->$DataType [macro]
       this.data[index]
 
-    method heapsort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+    method heapsort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       Heapsort<<$DataType>>.sort( this, compare_fn )
 
     method insert( value:$DataType, before_index=0:Int32 )->this
@@ -125,7 +125,7 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method insertion_sort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+    method insertion_sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       InsertionSort<<$DataType>>.sort( this, compare_fn )
 
     method last->$DataType
@@ -143,11 +143,11 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method modify( fn:Callback($DataType)->$DataType )->this
+    method modify( fn:Function($DataType)->$DataType )->this
       forEach (index of this) this[index] = fn(this[index])
       return this
 
-    method quicksort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+    method quicksort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       Quicksort<<$DataType>>.sort( this, compare_fn )
 
     method random->$DataType
@@ -216,7 +216,7 @@ class List<<$DataType>> : GenericList
     method set( index:Int32, new_value:$DataType )->$DataType[] [macro]
       this.data[ index ] = new_value
 
-    method sort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+    method sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       this.quicksort( compare_fn )
 
     method swap( i1:Int32, i2:Int32 )->this
@@ -279,7 +279,7 @@ endAugment
 
 class ListMap<<$FromType,$ToType>>
   GLOBAL METHODS
-    method convert( list:$FromType[], map_fn:Callback($FromType)->$ToType )->$ToType[]
+    method convert( list:$FromType[], map_fn:Function($FromType)->$ToType )->$ToType[]
       local result = $ToType[]( list.capacity )
       forEach (element in list) result.add( map_fn(element) )
       return result
@@ -287,7 +287,7 @@ endClass
 
 class ListReduce<<$FromType,$ToType>>
   GLOBAL METHODS
-    method convert( list:$FromType[], reduce_fn:Callback(Int32,$FromType,$ToType)->$ToType )->$ToType
+    method convert( list:$FromType[], reduce_fn:Function(Int32,$FromType,$ToType)->$ToType )->$ToType
       local result : $ToType
       forEach (index of list)
         result = reduce_fn( index, list[index], result )

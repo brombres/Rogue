@@ -234,7 +234,7 @@ class Scope
                   if (not first_generic_fn_t) first_generic_fn_t = arg.t
                   local fn = arg as CmdCreateFunction
                   local param_type = m.parameters[index].type
-                  necessary (param_type.name.begins_with("Callback("))
+                  necessary (param_type.name.begins_with("Function("))
 
                   local callback_param_count = 0
                   if (param_type.callback_parameter_types) callback_param_count = param_type.callback_parameter_types.count
@@ -278,9 +278,9 @@ class Scope
 
           else
             if (candidates.available.count == 0)
-              throw first_generic_fn_t.error( "Generic function argument does not match any compatible Callback parameters in available methods." )
+              throw first_generic_fn_t.error( "Generic function argument does not match any compatible Function parameters in available methods." )
             else
-              throw first_generic_fn_t.error( "Generic function argument ambiguously matches Callback parameters in multiple available methods." )
+              throw first_generic_fn_t.error( "Generic function argument ambiguously matches Function parameters in multiple available methods." )
             endIf
           endIf
 
