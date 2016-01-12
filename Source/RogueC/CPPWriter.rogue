@@ -57,7 +57,10 @@ augment Program
 
       string_buffer.clear
       if (begins_with_code_prefix) string_buffer.print( Program.code_prefix )
-      forEach (ch in name)
+
+      local count = name.count
+      forEach (i of name)
+        local ch = name[i]
         if (ch.is_alphanumeric)
           string_buffer.print( ch )
         else
@@ -67,12 +70,39 @@ augment Program
             case '&': string_buffer.print( "AND" )
             case '*': string_buffer.print( "TIMES" )
             case '+': string_buffer.print( "PLUS" )
-            case '-': string_buffer.print( "MINUS" )
+            case '-'
+              if (i+1 < name.count)
+                which (name[i+1])
+                  case '>'
+                    string_buffer.print( "RETURNS" )
+                    ++i
+                  others
+                    string_buffer.print( "MINUS" )
+                endWhich
+              endIf
             case '.': string_buffer.print( "DOT" )
             case '/': string_buffer.print( "SLASH" )
-            case '<': string_buffer.print( "LESSTHAN" )
+            case '<'
+              if (i+1 < name.count)
+                which (name[i+1])
+                  case '='
+                    string_buffer.print( "LE" )
+                    ++i
+                  others
+                    string_buffer.print( "LT" )
+                endWhich
+              endIf
             case '=': string_buffer.print( "EQUALS" )
-            case '>': string_buffer.print( "GREATERTHAN" )
+            case '>'
+              if (i+1 < name.count)
+                which (name[i+1])
+                  case '='
+                    string_buffer.print( "GE" )
+                    ++i
+                  others
+                    string_buffer.print( "GT" )
+                endWhich
+              endIf
             case '^': string_buffer.print( "POWER" )
             case '|': string_buffer.print( "OR" )
             case '~': string_buffer.print( "XOR" )
