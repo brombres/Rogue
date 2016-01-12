@@ -1,0 +1,180 @@
+class InsertionSort<<$DataType>>
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:Callback(a:$DataType,b:$DataType)->Logical )->$DataType[]
+      if (list.count <= 1) return list
+
+      local original_count = list.count
+      list.count = 1
+
+      forEach (new_value in list.from(1,original_count-1))
+        local i = list.count
+        while (i > 0 and compare_fn(new_value,list[i-1])) --i
+        list.insert( new_value, i )
+      endForEach
+
+      return list
+endClass
+
+class Heapsort<<$DataType>>
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:Callback($DataType,$DataType)->Logical )->$DataType[]
+      # Sorts 'list' in-place using heapsort.
+
+      # Heapify
+      forEach (index of list)
+        local cur = index
+        local parent = (index - 1) / 2
+        while (cur and not compare_fn(list[cur],list[parent]))
+          list.swap( cur, parent )
+          cur = parent
+          parent = (parent - 1) / 2
+        endWhile
+      endForEach
+
+      # sort
+      local index = list.count - 1
+      while (index > 0)
+        list.swap( 0, index )
+
+        # push value at heap top back down
+        local cur = 0
+        loop
+          local left_child = cur * 2 + 1
+          local right_child = cur * 2 + 2
+          local cur_value = list[cur]
+          if (right_child < index)
+            # two children to pick from
+            local left_value = list[left_child]
+            local right_value = list[right_child]
+            if (compare_fn(cur_value,left_value) and not compare_fn(left_value,right_value))
+              list.swap( cur, left_child )
+              cur = left_child
+            elseIf (compare_fn(cur_value,right_value))
+              list.swap( cur, right_child )
+              cur = right_child
+            else
+              escapeLoop
+            endIf
+          elseIf (left_child < index and compare_fn(cur_value,list[left_child]))
+            # only the left child is available - also means this
+            # is last iteration for pushing
+            list.swap( cur, left_child )
+            escapeLoop
+          else
+            escapeLoop
+          endIf
+        endLoop
+
+        --index
+      endWhile
+
+      return list
+endClass
+
+class Quicksort<<$DataType>>
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:Callback($DataType,$DataType)->Logical )->$DataType[]
+      sort( list.data, compare_fn, 0, list.count-1 )
+      return list
+
+    method sort( data:Array<<$DataType>>, compare_fn:Callback($DataType,$DataType)->Logical, i1:Int32, i2:Int32 )
+      if (i1 >= i2)
+        # Zero or one elements - already sorted
+        return
+
+      elseIf (i1 + 1 == i2)
+        # Optimization for two elements
+        local a = data[i1]
+        local b = data[i2]
+        if (not compare_fn(a,b))
+          data[i2] = a
+          data[i1] = b
+        endIf
+        return
+
+      elseIf (i1 + 2 == i2)
+        # Optimization for three elements
+        local ib = i1 + 1
+        local a = data[i1]
+        local b = data[ib]
+        local c = data[i2]
+        if (compare_fn(a,b))
+          # abc, acb, cab
+          if (compare_fn(b,c))
+            # abc
+            return
+          elseIf (compare_fn(a,c))
+            # acb
+            data[ib] = c
+            data[i2] = b
+            return
+          else
+            # cab
+            data[i1] = c
+            data[ib] = a
+            data[i2] = b
+            return
+          endIf
+        else
+          # bac, bca, cba
+          if (compare_fn(a,c))
+            # bac
+            data[i1] = b
+            data[ib] = a
+            return
+          elseIf (compare_fn(b,c))
+            # bca
+            data[i1] = b
+            data[ib] = c
+            data[i2] = a
+            return
+          else
+            # cba
+            data[i1] = c
+            data[ib] = b
+            data[i2] = a
+            return
+          endIf
+        endIf
+      endIf
+
+      # General case - 4 or more elements.  Select the median value
+      # of the first, middle, and last numbers as the pivot.
+      local pivot_index = (i1+i2) :>>: 1
+      local pivot = data[ pivot_index ]
+      local first = data[i1]
+      if (compare_fn(pivot,first)) pivot = first; pivot_index = i1
+      local last = data[i2]
+      if (compare_fn(last,pivot)) pivot = last; pivot_index = i2
+
+      # Swap numbers until the left part of the array contains
+      # everything less than the pivot value and the right part contains
+      # everything greater than the pivot value - these two parts
+      # may well differ in size. 
+
+      # Place the pivot at the end temporarily
+      local temp = data[pivot_index]
+      data[pivot_index] = data[i2]
+      data[i2] = temp
+
+      pivot_index = i1
+      forEach (i in i1..(i2-1))
+        if (compare_fn(data[i],pivot))
+          # Read along swapping values when necessary so that all values 
+          # ordered before the pivot are on one side.
+          temp = data[i]
+          data[i] = data[pivot_index]
+          data[pivot_index] = temp
+          ++pivot_index
+        endIf
+      endForEach
+
+      # Put the pivot back in the middle
+      temp = data[pivot_index]
+      data[pivot_index] = data[i2]
+      data[i2] = temp
+
+      sort( data, compare_fn, i1, pivot_index-1 )
+      sort( data, compare_fn, pivot_index+1, i2 )
+endClass
+

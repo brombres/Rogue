@@ -1145,7 +1145,14 @@ class Parser
             local first = true
             while (first or consume(TokenType.symbol_comma))
               first = false
-              parameter_types.add( parse_type )
+              local type_t = peek
+              local type_name = parse_possible_type
+              if (consume(TokenType.symbol_colon))
+                # Discard the name of the callback parameter
+                parameter_types.add( parse_type )
+              else
+                parameter_types.add( Program.get_type_reference(type_t,type_name) )
+              endIf
             endWhile
             must_consume( TokenType.symbol_close_paren )
           endIf

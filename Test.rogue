@@ -19,4 +19,23 @@ names.apply( function(name) => println name + " has # letter".pluralize(name.cou
 names.modify( function(name) => "(" + name + ")" )
 println names
 
-forEach (n in 3 downTo 1) println n
+println 1..10
+println 5 downTo 1
+local nums = (0..9)->Int32[]
+println nums
+forEach (n in nums.from(5)) println n
+println
+
+forEach (n in nums.from(5,7)) println n
+println
+
+println nums.sort( function(a,b) => (a <= b) )
+println nums.sort( function(a,b) => (a >= b) )
+println nums.quicksort( function(a,b) => (a <= b) )
+println nums.quicksort( function(a,b) => (a >= b) )
+println nums.heapsort( function(a,b) => (a <= b) )
+println nums.heapsort( function(a,b) => (a >= b) )
+println nums.insertion_sort( function(a,b) => (a <= b) )
+println nums.insertion_sort( function(a,b) => (a >= b) )
+
+println nums.sort( function(a,b) => (a&1 == b&1 and a <= b) or (a&1 != b&1 and a&1 == 0) )

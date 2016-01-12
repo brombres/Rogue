@@ -52,6 +52,12 @@ class List<<$DataType>> : GenericList
     method first->$DataType [macro]
       this.data[0]
 
+    method from( i1:Int32 )->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, i1 )
+
+    method from( i1:Int32, i2:Int32 )->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, i1, i2 )
+
     method discard( i1:Int32, n=1:Int32 )
       local i2 = i1 + n
       data.set( i1, data, i2, (count-i2) )
@@ -78,17 +84,20 @@ class List<<$DataType>> : GenericList
     method get( index:Int32 )->$DataType [macro]
       this.data[index]
 
+    method heapsort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+      Heapsort<<$DataType>>.sort( this, compare_fn )
+
     method insert( value:$DataType, before_index=0:Int32 )->this
       if (before_index < 0) before_index = 0
 
       if (before_index >= count)
         return add( value )
       else
-        # Create a dummy spot at the end to size the array and update the count
-        add( first )
+        reserve( 1 )
 
         # Shift everything over
         data.set( before_index+1, data, before_index, (count-before_index) )
+        ++count
 
         # Copy in the new value
         data[ before_index ] = value
@@ -102,11 +111,10 @@ class List<<$DataType>> : GenericList
       if (before_index >= count)
         return add( other )
       else
-        # Create dummy spots at the end to size the array and update the count
         reserve( other.count )
 
         # Shift everything over
-        data.set( before_index+other.count, data, before_index, (count-before_index)+1 )
+        data.set( before_index+other.count, data, before_index, (count-before_index) )
         count += other.count
 
         # Copy in the new values
@@ -116,6 +124,9 @@ class List<<$DataType>> : GenericList
         endForEach
       endIf
       return this
+
+    method insertion_sort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+      InsertionSort<<$DataType>>.sort( this, compare_fn )
 
     method last->$DataType
       return this.data[ count - 1 ]
@@ -135,6 +146,9 @@ class List<<$DataType>> : GenericList
     method modify( fn:Callback($DataType)->$DataType )->this
       forEach (index of this) this[index] = fn(this[index])
       return this
+
+    method quicksort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+      Quicksort<<$DataType>>.sort( this, compare_fn )
 
     method random->$DataType
       # Returns an element at random
@@ -202,6 +216,15 @@ class List<<$DataType>> : GenericList
     method set( index:Int32, new_value:$DataType )->$DataType[] [macro]
       this.data[ index ] = new_value
 
+    method sort( compare_fn:Callback($DataType,$DataType)->Logical )->this [macro]
+      this.quicksort( compare_fn )
+
+    method swap( i1:Int32, i2:Int32 )->this
+      local temp = data[i1]
+      data[i1] = data[i2]
+      data[i2] = temp
+      return this
+
     method to->String
       local buffer = StringBuilder()
       buffer.print( '[' )
@@ -214,6 +237,29 @@ class List<<$DataType>> : GenericList
       endForEach
       buffer.print( ']' )
       return buffer
+endClass
+
+class ListReader<<$DataType>> : Reader<<$DataType>>
+  PROPERTIES
+    list     : $DataType[]
+    position : Int32
+    last     : Int32
+
+  METHODS
+    method init( list, position=0 )
+      last = list.count - 1
+
+    method init( list, position, last )
+
+    method has_another->Logical
+      return (position <= last)
+
+    method peek->$DataType
+      return list[ position ]
+
+    method read->$DataType
+      ++position
+      return list[ position - 1 ]
 endClass
 
 augment String[]
