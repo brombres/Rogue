@@ -39,3 +39,13 @@ println nums.insertion_sort( function(a,b) => (a <= b) )
 println nums.insertion_sort( function(a,b) => (a >= b) )
 
 println nums.sort( function(a,b) => (a&1 == b&1 and a <= b) or (a&1 != b&1 and a&1 == 0) )
+
+test()
+
+method test
+  local a = 3
+  local b = 4
+  test2( function with(a,b)=>println "Hello World:"+(a+b) )
+
+method test2( fn:Function )
+  fn()

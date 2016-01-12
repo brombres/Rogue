@@ -238,7 +238,9 @@ class Scope
 
                   local callback_param_count = 0
                   if (param_type.callback_parameter_types) callback_param_count = param_type.callback_parameter_types.count
-                  necessary (fn.parameters.count == callback_param_count)
+                  local fn_param_count = 0
+                  if (fn.parameters) fn_param_count = fn.parameters.count
+                  necessary (fn_param_count == callback_param_count)
                 endIf
               endForEach
             satisfied
@@ -259,9 +261,11 @@ class Scope
                 args[index] = fn
                 local callback_type = m.parameters[index].type
 
-                forEach (i of fn.parameters)
-                  fn.parameters[i].type = callback_type.callback_parameter_types[i]
-                endForEach
+                if (fn.parameters)
+                  forEach (i of fn.parameters)
+                    fn.parameters[i].type = callback_type.callback_parameter_types[i]
+                  endForEach
+                endIf
                 fn.return_type = callback_type.callback_return_type
 
                 if (fn.return_type and fn.statements.count)
