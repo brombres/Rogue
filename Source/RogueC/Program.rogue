@@ -11,7 +11,7 @@ class Program [requisite singleton]
 
     template_list   = Template[]                 : Template[]
     template_lookup = Table<<String,Template>>() : Table<<String,Template>>
-    module_paths    = Table<<String,String>>()
+    #module_paths    = Table<<String,String>>()
 
     augment_lookup = Table<<String,Augment[]>>()
     requisite_list = RequisiteItem[]
@@ -81,9 +81,9 @@ class Program [requisite singleton]
       literal_string_list.add( "" )
       literal_string_lookup[ "" ] = 0
 
-    method add_module_path( path:String )
-      if (module_paths.contains(path)) return
-      module_paths[ path ] = path
+      #method add_module_path( path:String )
+      #if (module_paths.contains(path)) return
+      #module_paths[ path ] = path
 
     method create_unique_id->String
       return "_auto_" + next_unique_integer

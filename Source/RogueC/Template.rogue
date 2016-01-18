@@ -36,10 +36,11 @@ class Template
       local possible_augments = Program.augment_lookup[ type.name ]
       if (possible_augments) augments = Augment[].add( possible_augments )
 
-      possible_augments = Program.augment_lookup[ type.name.after_any('.') ]
+      possible_augments = Program.augment_lookup[ type.name.after_any(':') ]
       if (possible_augments)
         forEach (aug in possible_augments)
           forEach (path in aug.used_modules)
+println "Checking $$ looking for $" (path,aug.name,type.name)
             if (path + aug.name == type.name)
               if (not augments) augments = Augment[]
               augments.add( aug )

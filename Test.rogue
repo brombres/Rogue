@@ -1,3 +1,21 @@
-local data::nums = (0..9)->Int32[]
-println data::nums
-println data::nums.sort( function(a,b)=(a >= b) )
+local nums = (0..9)->Int32[]
+println nums
+println nums.sort( function(a,b)=(a >= b) )
+
+Testing::Test()
+
+augment Testing::Test
+  METHODS
+    method init
+      <<append>>
+      println "Done"
+endAugment
+
+$module Testing
+
+class Test
+  METHODS
+    method init
+      println "Test success"
+endClass
+

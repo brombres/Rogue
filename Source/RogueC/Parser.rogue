@@ -25,6 +25,12 @@ class Parser
     method init( tokens:Token[] )
       reader = TokenReader( tokens )
 
+    method add_used_module( path:String )->String
+      if (used_modules.contains(path)) return path
+      used_modules.add( path )
+      #Program.add_module_path( path )
+      return path
+
     method consume( type:TokenType )->Logical
       if (not reader.next_is(type)) return false
       reader.read
@@ -100,27 +106,14 @@ class Parser
       local t = peek
 
       if (consume(TokenType.directive_module))
-        local module_name = ""
-        module_name += read_identifier
-        Program.module_paths[module_name] = module_name
-        while (consume(TokenType.symbol_dot))
-          module_name += '.'
-          module_name += read_identifier
-          Program.module_paths[module_name] = module_name
-        endWhile
-        must_consume_eols
-        cur_module = module_name + '.'
-        if (not used_modules.contains(cur_module))
-          used_modules.add( cur_module )
-        endIf
+        cur_module = add_used_module( read_identifier + "::" )
         return true
 
       elseIf (t.type is TokenType.directive_using)
         read
 
-        local m_name = parse_possible_type( true ) + "."
+        add_used_module( read_identifier + "::" )
         must_consume_eols
-        if (not used_modules.contains(m_name)) used_modules.add( m_name )
         return true
 
       elseIf (t.type is TokenType.keyword_class)
@@ -287,6 +280,16 @@ class Parser
         Program.augment_lookup[ name ] = augments
       endIf
       augments.add( aug )
+
+      local base_name = name.after_any(':')
+      if (base_name.count < name.count)
+        augments = Program.augment_lookup[ base_name ]
+        if (not augments)
+          augments = Augment[]
+          Program.augment_lookup[ base_name ] = augments
+        endIf
+        augments.add( aug )
+      endIf
 
       if (consume(TokenType.symbol_semicolon)) return
 

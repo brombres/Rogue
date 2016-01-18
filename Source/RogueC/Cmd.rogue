@@ -69,9 +69,6 @@ class Cmd
     method compile_type->Type
       return type.compile_type
 
-    method convert_to_module_path->String
-      return null
-
     method exit_scope( scope:Scope )
 
     method find_operation_result_type( left_type:Type, right_type:Type )->Type
@@ -1611,21 +1608,6 @@ class CmdAccess : Cmd
       if (macro_args) return macro_args.inline_access( result )
       return result
 
-    method convert_to_module_path->String
-      if (args) return null
-
-      local path = name
-      if (context)
-        path = context.convert_to_module_path
-        if (not path) return null
-        path += "." + name
-      endIf
-
-      if (Program.module_paths.contains(path))
-        return path
-      endIf
-      return null
-
     method implicit_type( scope:Scope )->Type
       return scope.find_type( name )
 
@@ -1635,11 +1617,6 @@ class CmdAccess : Cmd
       if (context?)
         if (name.ends_with('?'))
           return CmdLogicalize( t, CmdAccess(t,context,name.leftmost(-1),args) ).resolve( scope )
-        endIf
-
-        local path = context.convert_to_module_path
-        if (path)
-          return CmdAccess( t, path + "." + name, args ).resolve( scope )
         endIf
 
         context = context.resolve( scope )
