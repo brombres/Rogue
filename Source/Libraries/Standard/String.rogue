@@ -22,12 +22,12 @@ class String [native functional]
       return from(0,index-1)
 
     method after_any( ch:Character )->String
-      local i = locate( ch )
+      local i = locate_last( ch )
       if (i.exists) return from( i.value+1 )
       else          return this
 
     method after_any( st:String )->String
-      local i = locate( st )
+      local i = locate_last( st )
       if (i.exists) return from( i.value+st.count )
       else          return this
 
@@ -444,7 +444,7 @@ class String [native functional]
       #   "a thief./# thieves".pluralize(40)  # returns: 40 thieves.
       #   "# match(es) found".pluralize(1)    # returns: 1 match found
       #   "# match(es) found".pluralize(0)    # returns: 0 matches found
-      local st = this.replace( "#", ""+quantity )
+      local st = this.replacing( "#", ""+quantity )
 
       if (st.contains('/'))
         if (quantity == 1) return st.before_first( '/' )
@@ -482,7 +482,7 @@ class String [native functional]
     method reader->StringReader
       return StringReader( this )
 
-    method replace( look_for:Character, replace_with:Character )->String
+    method replacing( look_for:Character, replace_with:Character )->String
       if (not contains(look_for)) return this
 
       local result = StringBuilder( count )
@@ -492,7 +492,7 @@ class String [native functional]
       endForEach
       return result->String
 
-    method replace( look_for:Character, replace_with:String )->String
+    method replacing( look_for:Character, replace_with:String )->String
       # Returns a modified string where all instances of
       # ''look_for'' are replaced with ''replace_with''.
       if (not contains(look_for)) return this
@@ -505,7 +505,7 @@ class String [native functional]
 
       return buffer->String
 
-    method replace( look_for:String, replace_with:String )->String
+    method replacing( look_for:String, replace_with:String )->String
       # Returns a modified string where all instances of
       # ''look_for'' are replaced with ''replace_with''.
       local buffer = StringBuilder( count*2 )

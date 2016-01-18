@@ -69,6 +69,9 @@ class Cmd
     method compile_type->Type
       return type.compile_type
 
+    method convert_to_module_path->String
+      return null
+
     method exit_scope( scope:Scope )
 
     method find_operation_result_type( left_type:Type, right_type:Type )->Type
@@ -107,7 +110,7 @@ class Cmd
       if (common_type) return common_type
       throw t.error( "Types $ and $ are incompatible." (left_type,right_type) )
 
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return null
 
     method is_literal->Logical
@@ -1345,7 +1348,7 @@ endClass
 #------------------------------------------------------------------------------
 class CmdLiteral : Cmd
   METHODS
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return type
 
     method is_literal->Logical
@@ -1546,7 +1549,7 @@ class CmdFormattedString : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdFormattedString( t, format, args.clone(clone_args) )
 
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return Program.type_String
 
     method resolve( scope:Scope )->Cmd
@@ -1608,8 +1611,23 @@ class CmdAccess : Cmd
       if (macro_args) return macro_args.inline_access( result )
       return result
 
-    method implicit_type->Type
-      return Program.find_type( name )
+    method convert_to_module_path->String
+      if (args) return null
+
+      local path = name
+      if (context)
+        path = context.convert_to_module_path
+        if (not path) return null
+        path += "." + name
+      endIf
+
+      if (Program.module_paths.contains(path))
+        return path
+      endIf
+      return null
+
+    method implicit_type( scope:Scope )->Type
+      return scope.find_type( name )
 
     method resolve( scope:Scope )->Cmd
       if (args) args.resolve( scope )
@@ -1618,6 +1636,12 @@ class CmdAccess : Cmd
         if (name.ends_with('?'))
           return CmdLogicalize( t, CmdAccess(t,context,name.leftmost(-1),args) ).resolve( scope )
         endIf
+
+        local path = context.convert_to_module_path
+        if (path)
+          return CmdAccess( t, path + "." + name, args ).resolve( scope )
+        endIf
+
         context = context.resolve( scope )
 
       else
@@ -1627,7 +1651,7 @@ class CmdAccess : Cmd
           return CmdReadLocal(t,v).resolve(scope)
         endIf
 
-        local new_type = Program.find_type( name )
+        local new_type = scope.find_type( name )
         if (new_type)
           # new TypeName(...)
           new_type.organize
@@ -1793,7 +1817,7 @@ class CmdAccess : Cmd
           endIf
         endIf
 
-        local as_type = Program.find_type( name )
+        local as_type = scope.find_type( name )
         if (as_type and as_type.is_singleton)
           return CmdWriteSingleton( t, as_type, new_value ).resolve( scope )
         endIf
@@ -2032,7 +2056,7 @@ class CmdThisContext : Cmd
         return CmdThisContext( t, this_type )
       endIf
 
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return this_type
 
     method require_type_context
@@ -2612,8 +2636,8 @@ class CmdNegate : CmdUnary
     method fn_name->String
       return "operator-"
 
-    method implicit_type->Type
-      return operand.implicit_type
+    method implicit_type( scope:Scope )->Type
+      return operand.implicit_type(scope)
 
     method prefix_symbol->String
       return "(-"
@@ -4387,7 +4411,7 @@ class CmdTypedLiteralList : Cmd
     method clone( clone_args:CloneArgs )->CmdTypedLiteralList
       return CmdTypedLiteralList( t, list_type_name, elements.clone(clone_args) )
 
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return type
 
     method resolve( scope:Scope )->Cmd
@@ -4417,7 +4441,7 @@ class CmdListConvert( t, list:Cmd, to_type:Type, convert_fn:Cmd ) : Cmd
     method clone( clone_args:CloneArgs )->CmdListConvert
       return CmdListConvert( t, list.clone(clone_args), to_type, convert_fn.clone(clone_args) )
 
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return to_type
 
     method resolve( scope:Scope )->Cmd

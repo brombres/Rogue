@@ -1,51 +1,10 @@
-local names = ["apple","banana","cherry","date"]
-println names
-println
+$include "Standard"
+$module MyModule
 
-names.filter( function(name) => not (name.count&1) )
-println names
+MyModule.Test()   # 'MyModule' not necessary due to the $module directive above
 
-println ListMap<<String,Int32>>.convert( names, function(name) => name.count )
-
-println names->Int32[]( function(name)=>name.count )
-println names->Int32( function(i,name,sum) => sum + name.count )
-
-println names->String[]( function(name) => name.reversed )
-
-println( [1,2,3,4,5]->Int32[]( function(n) => n*n ) )
-
-names.apply( function(name) => println name + " has # letter".pluralize(name.count) )
-
-names.modify( function(name) => "(" + name + ")" )
-println names
-
-println 1..10
-println 5 downTo 1
-local nums = (0..9)->Int32[]
-println nums
-forEach (n in nums.from(5)) println n
-println
-
-forEach (n in nums.from(5,7)) println n
-println
-
-println nums.sort( function(a,b) => (a <= b) )
-println nums.sort( function(a,b) => (a >= b) )
-println nums.quicksort( function(a,b) => (a <= b) )
-println nums.quicksort( function(a,b) => (a >= b) )
-println nums.heapsort( function(a,b) => (a <= b) )
-println nums.heapsort( function(a,b) => (a >= b) )
-println nums.insertion_sort( function(a,b) => (a <= b) )
-println nums.insertion_sort( function(a,b) => (a >= b) )
-
-println nums.sort( function(a,b) => (a&1 == b&1 and a <= b) or (a&1 != b&1 and a&1 == 0) )
-
-test()
-
-method test
-  local a = 3
-  local b = 4
-  test2( function with(a,b)=>println "Hello World:"+(a+b) )
-
-method test2( fn:Function )
-  fn()
+class Test
+  METHODS
+    method init
+      println "Test success"
+endClass

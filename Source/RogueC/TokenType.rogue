@@ -11,7 +11,9 @@ class TokenType
     directive_elseIf              : TokenType
     directive_else                : TokenType
     directive_endIf               : TokenType
+    directive_module              : TokenType
     directive_requisite           : TokenType
+    directive_using               : TokenType
 
     placeholder_id                : TokenType
     begin_augment_tokens          : TokenType

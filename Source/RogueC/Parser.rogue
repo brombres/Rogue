@@ -12,6 +12,8 @@ class Parser
     cur_statement_list : CmdStatementList
 
     parsing_augment : Logical
+    used_modules    = String[]
+    cur_module      : String
 
   METHODS
     method init( filepath:String )
@@ -97,7 +99,31 @@ class Parser
 
       local t = peek
 
-      if (t.type is TokenType.keyword_class)
+      if (consume(TokenType.directive_module))
+        local module_name = ""
+        module_name += read_identifier
+        Program.module_paths[module_name] = module_name
+        while (consume(TokenType.symbol_dot))
+          module_name += '.'
+          module_name += read_identifier
+          Program.module_paths[module_name] = module_name
+        endWhile
+        must_consume_eols
+        cur_module = module_name + '.'
+        if (not used_modules.contains(cur_module))
+          used_modules.add( cur_module )
+        endIf
+        return true
+
+      elseIf (t.type is TokenType.directive_using)
+        read
+
+        local m_name = parse_possible_type( true ) + "."
+        must_consume_eols
+        if (not used_modules.contains(m_name)) used_modules.add( m_name )
+        return true
+
+      elseIf (t.type is TokenType.keyword_class)
         parse_class_template
         return true
 
@@ -142,6 +168,7 @@ class Parser
 
       elseIf (next_is_statement)
         this_type = Program.get_type_reference( peek, "Global" )
+        forEach (m_name in used_modules) this_type.add_used_module( m_name )
         if (not Program.m_on_launch)
           Program.m_on_launch = Method( peek, this_type, "on_launch" )
           Program.m_on_launch.statements.add( Program.m_on_launch.begin_label(peek,"insert",false) )
@@ -152,11 +179,13 @@ class Parser
 
       elseIf (next_is(TokenType.keyword_method))
         this_type = Program.get_type_reference( peek, "Global" )
+        forEach (m_name in used_modules) this_type.add_used_module( m_name )
         while (parse_method) noAction
         return true
 
       elseIf (next_is(TokenType.keyword_routine))
         this_type = Program.get_type_reference( peek, "Global" )
+        forEach (m_name in used_modules) this_type.add_used_module( m_name )
         while (parse_method(true)) noAction
         return true
 
@@ -167,7 +196,8 @@ class Parser
     method parse_class_template
       local t = read  # 'class'
       local name = read_identifier
-      local template = Template( t, name, Attribute.is_class )
+      if (cur_module) name = cur_module + name
+      local template = Template( t, used_modules, name, Attribute.is_class )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       which (template.element_type)
@@ -244,13 +274,13 @@ class Parser
     method parse_augment
       local t = reader.read  # 'augment'
 
-      local name = parse_possible_type
+      local name = parse_possible_type(true)
       if (name.contains('$'))
         local base_name = name.before_first( '<' )
         throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (base_name,base_name) )
       endIf
 
-      local aug = Augment( t, name )
+      local aug = Augment( t, name, used_modules )
       local augments = Program.augment_lookup[ name ]
       if (not augments)
         augments = Augment[]
@@ -513,7 +543,7 @@ class Parser
           local name = "property"
           if (as_global) name = "global property"
           if (p.initial_value)
-            p.type = p.initial_value.implicit_type
+            p.type = p.initial_value.implicit_type( Scope(this_type,null) )
             if (p.type is null) 
               println p.initial_value.type_name
               throw p.initial_value.t.error( 
@@ -1084,7 +1114,7 @@ class Parser
       else
         forEach (v in local_declarations)
           if (v.type is null and v.initial_value)
-            v.type = v.initial_value.implicit_type
+            v.type = v.initial_value.implicit_type( Scope(this_type,null) )
           endIf
         endForEach
       endIf
@@ -1097,6 +1127,7 @@ class Parser
         endForEach
       else
         # global properties
+        forEach (m_name in used_modules) Program.type_Global.add_used_module( m_name )
         forEach (v in local_declarations)
           Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type,v.initial_value) )
         endForEach
@@ -1130,9 +1161,15 @@ class Parser
 
       return Program.get_type_reference( t, name )
 
-    method parse_possible_type->String
+    method parse_possible_type( include_module_path=false:Logical )->String
       local t = peek
       local name = read_identifier
+
+      if (include_module_path)
+        while (consume(TokenType.symbol_dot))
+          name += '.' + read_identifier
+        endWhile
+      endIf
 
       if (next_is(TokenType.symbol_open_specialize))
         name += parse_specialization_string
@@ -1758,7 +1795,7 @@ class Parser
 
       if (consume(TokenType.keyword_meta))
         local context_type : Type
-        if (context) context_type = context.implicit_type
+        if (context) context_type = context.implicit_type( Scope(this_type,null) )
         else          context_type = this_type
         if (not context_type) throw t.error( "Unable to determine type for metadata access." )
 

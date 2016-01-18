@@ -19,6 +19,19 @@ class Scope
       endWhile
       return null
 
+    method find_type( name:String )->Type
+      local type = Program.find_type( name )
+      if (type) return type
+
+      if (this_type.used_modules)
+        forEach (module_prefix in this_type.used_modules)
+          type = Program.find_type( module_prefix + name )
+          if (type) return type
+        endForEach
+      endIf
+
+      return null
+
     method push_local( v:Local, validate_name=true:Logical )
       if (validate_name)
         local existing = find_local( v.name )

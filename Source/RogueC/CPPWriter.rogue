@@ -80,7 +80,7 @@ augment Program
                     string_buffer.print( "MINUS" )
                 endWhich
               endIf
-            case '.': string_buffer.print( "DOT" )
+            case '.': string_buffer.print( "_" )
             case '/': string_buffer.print( "SLASH" )
             case '<'
               if (i+1 < name.count)

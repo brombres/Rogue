@@ -81,7 +81,7 @@ class RogueC [singleton]
 
                    #|  --package=com.developer.app [Java only]
 
-          usage += supported_targets->String.replace(',','|') + "\n"
+          usage += supported_targets->String.replacing(',','|') + "\n"
           println usage
           System.exit( 1 )
         endIf
