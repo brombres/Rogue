@@ -81,6 +81,10 @@ class Program [requisite singleton]
       literal_string_list.add( "" )
       literal_string_lookup[ "" ] = 0
 
+    method add_module_path( path:String )
+      if (module_paths.contains(path)) return
+      module_paths[ path ] = path
+
     method create_unique_id->String
       return "_auto_" + next_unique_integer
 
