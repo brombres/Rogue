@@ -147,6 +147,42 @@ class List<<$DataType>> : GenericList
       forEach (index of this) this[index] = fn(this[index])
       return this
 
+    method permutation( n:Int64, output_list=null:$DataType[], work_list=null:Int32[] )->$DataType[]
+      # n           - A value between 0 and (permutation_count-1).  0 gives the
+      #               original list and (permutation_count-1) gives the list in
+      #               reverse order.
+      # output_list - A optional existing list to store the output permutation in.
+      #               Will be created dynamically if not passed in.
+      # work_list   - An optional Int32[] list needed for the algorithm.  Will be created
+      #               dynamically if not passed in.
+      if (not output_list) output_list = $DataType[]( count )
+      output_list.clear
+      if (count == 0) return output_list
+
+      if (not work_list) work_list = Int32[]( count )
+      work_list.clear
+      forEach (index in 0..(count-1)) work_list.add( index )
+
+      local c = work_list.count
+      while (c)
+        output_list.add( this[n % c] )
+        n /= c
+        --c
+      endWhile
+
+      return output_list
+
+    method permutation_count->Int64
+      # The permutation count is the factorial of the list size
+      if (count == 0) return 0
+
+      local c = 1 : Int64
+      forEach (n in 2..count)
+        c *= n
+      endForEach
+
+      return c
+
     method quicksort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       Quicksort<<$DataType>>.sort( this, compare_fn )
 
