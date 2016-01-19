@@ -26,9 +26,9 @@ class Parser
       reader = TokenReader( tokens )
 
     method add_used_module( path:String )->String
+      if (cur_module) used_modules.remove( cur_module )
       if (used_modules.contains(path)) return path
       used_modules.add( path )
-      #Program.add_module_path( path )
       return path
 
     method consume( type:TokenType )->Logical
