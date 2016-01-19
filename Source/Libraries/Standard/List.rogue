@@ -147,25 +147,21 @@ class List<<$DataType>> : GenericList
       forEach (index of this) this[index] = fn(this[index])
       return this
 
-    method permutation( n:Int64, output_list=null:$DataType[], work_list=null:Int32[] )->$DataType[]
+    method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
       # n           - A value between 0 and (permutation_count-1).  0 gives the
       #               original list and (permutation_count-1) gives the list in
       #               reverse order.
       # output_list - A optional existing list to store the output permutation in.
       #               Will be created dynamically if not passed in.
-      # work_list   - An optional Int32[] list needed for the algorithm.  Will be created
-      #               dynamically if not passed in.
       if (not output_list) output_list = $DataType[]( count )
       output_list.clear
       if (count == 0) return output_list
 
-      if (not work_list) work_list = Int32[]( count )
-      work_list.clear
-      forEach (index in 0..(count-1)) work_list.add( index )
+      forEach (value in this) output_list.add( value )
 
-      local c = work_list.count
+      local c = count
       while (c)
-        output_list.add( this[ work_list.remove_at(n % c) ] )
+        output_list.add( output_list.remove_at(n % c) )
         n /= c
         --c
       endWhile
