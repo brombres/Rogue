@@ -165,7 +165,7 @@ class List<<$DataType>> : GenericList
 
       local c = work_list.count
       while (c)
-        output_list.add( this[n % c] )
+        output_list.add( this[ work_list.remove_at(n % c) ] )
         n /= c
         --c
       endWhile
