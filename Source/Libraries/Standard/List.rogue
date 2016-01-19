@@ -221,6 +221,9 @@ class List<<$DataType>> : GenericList
       forEach (i of this) swap( i, Random.next_int32(n) )
       return this
 
+    method shuffled->$DataType[]
+      return clone.shuffle
+
     method sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       this.quicksort( compare_fn )
 

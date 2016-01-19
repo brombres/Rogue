@@ -1,1 +1,3 @@
-println ((1..9)->Int32[].shuffle)
+local nums = (1..9)->Int32[]
+println nums.shuffled
+println nums
