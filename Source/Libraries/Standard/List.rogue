@@ -155,7 +155,7 @@ class List<<$DataType>> : GenericList
       local default_value : $DataType
       if (not count) return default_value
 
-      return this[ Random.next_integer(this.count) ]
+      return this[ Random.next_int32(this.count) ]
 
     method reserve( additional_count:Int32 )->$DataType[]
       local required_capacity = count + additional_count
@@ -215,6 +215,11 @@ class List<<$DataType>> : GenericList
 
     method set( index:Int32, new_value:$DataType )->$DataType[] [macro]
       this.data[ index ] = new_value
+
+    method shuffle->this
+      local n = count
+      forEach (i of this) swap( i, Random.next_int32(n) )
+      return this
 
     method sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       this.quicksort( compare_fn )

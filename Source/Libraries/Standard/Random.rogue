@@ -24,24 +24,24 @@ class Random [singleton]
     method reset( state )
       advance_state
 
-    method next_real->Real64
+    method next_real64->Real64
       return (advance_state->Real64 + 1.0) / 281474976710657.0 
 
-    method next_real( low:Real64, high:Real64 )->Real64
-      return (next_real * (high-low)) + low
+    method next_real64( low:Real64, high:Real64 )->Real64
+      return (next_real64 * (high-low)) + low
 
-    method next_integer->Int32
-      return (next_real * (2.0^31))->Int32
+    method next_int32->Int32
+      return (next_real64 * (2.0^31))->Int32
 
-    method next_integer( limit:Int32 )->Int32
+    method next_int32( limit:Int32 )->Int32
       if (limit == 0) return 0
-      return next_integer % limit
+      return next_int32 % limit
 
-    method next_integer( low:Int32, high:Int32 )->Int32
-      return next_integer( (high-low)+1 ) + low
+    method next_int32( low:Int32, high:Int32 )->Int32
+      return next_int32( (high-low)+1 ) + low
 
     method next_logical->Logical
-      return (next_real > 0.5)
+      return (next_real64 > 0.5)
 
 endClass
 
