@@ -41,6 +41,11 @@ class RogueC [singleton]
 
     package_name      : String
 
+    parsers = Parser[]
+    # One parser is created for every file and all parsers are prepped with tokens
+    # before any parser parses its elements.  This allows all tokens to be filtered
+    # a final time after tokenization to facilitate 'module' and 'using' directives.
+
   METHODS
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
@@ -97,6 +102,9 @@ class RogueC [singleton]
           include( filepath )
         endForEach
         include( "Standard" )
+
+        forEach (parser in parsers) parser.insert_module_prefixes
+        forEach (parser in parsers) parser.parse_elements
 
         # Add requisite declarations to Program's requisite list
         local t = TokenType("Internal").create_token( "[Command Line Arguments]", 0, 0 )
@@ -184,8 +192,7 @@ class RogueC [singleton]
         prefix_path_list.add( prefix )
       endIf
 
-      #println "Parsing " + filepath
-      Parser( filepath ).parse_elements
+      parsers.add( Parser( filepath ) )
 
     method include_native( t:Token, filepath:String, native_type:String )
       local file = File(filepath)

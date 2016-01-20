@@ -49,14 +49,23 @@ class Program [requisite singleton]
     literal_string_list   = String[]
 
     string_buffer = StringBuilder()
+    ids_by_module = Table<<String,String[]>>()
 
   METHODS
+    method add_module_id( module_name:String, id_name:String )
+      local list = ids_by_module[ module_name ]
+      if (not list)
+        list = String[]
+        ids_by_module[ module_name ] = list
+      endIf
+      list.add( id_name )
+
     method configure
       type_null          = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
-      type_Real64          = create_built_in_type( "Real64",      Attribute.is_primitive )
-      type_Real32         = create_built_in_type( "Real32",     Attribute.is_primitive )
-      type_Int64          = create_built_in_type( "Int64",      Attribute.is_primitive )
-      type_Int32       = create_built_in_type( "Int32",   Attribute.is_primitive )
+      type_Real64        = create_built_in_type( "Real64",      Attribute.is_primitive )
+      type_Real32        = create_built_in_type( "Real32",     Attribute.is_primitive )
+      type_Int64         = create_built_in_type( "Int64",      Attribute.is_primitive )
+      type_Int32         = create_built_in_type( "Int32",   Attribute.is_primitive )
       type_Character     = create_built_in_type( "Character", Attribute.is_primitive )
       type_Byte          = create_built_in_type( "Byte",      Attribute.is_primitive )
       type_Logical       = create_built_in_type( "Logical",   Attribute.is_primitive )

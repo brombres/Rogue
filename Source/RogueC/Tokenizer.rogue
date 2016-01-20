@@ -518,6 +518,12 @@ class Tokenizer
       while ((ch>='a' and ch<='z') or (ch>='A' and ch<='Z') or (ch>='0' and ch<='9') or ch=='_')
         buffer.print( reader.read )
         ch = reader.peek
+        while (ch == ':' and reader.peek(1) == ':')
+          reader.read
+          reader.read
+          buffer.print( "::" )
+          ch = reader.peek
+        endWhile
       endWhile
 
       if (buffer.count == 0) throw error( "Identifier expected." )

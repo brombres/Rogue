@@ -12,16 +12,32 @@ class Parser
     cur_statement_list : CmdStatementList
 
     parsing_augment : Logical
+    cur_module      : String
+
+    used_modules    = String[]
+    module_id_map   : Table<<String,String>>
 
   METHODS
     method init( filepath:String )
-      init( Preprocessor().process(Tokenizer().tokenize(filepath)) )
+      init( Preprocessor(this).process(Tokenizer().tokenize(filepath)) )
 
     method init( t:Token, filepath:String, data:String )
-      init( Preprocessor().process(Tokenizer().tokenize(t,filepath,data)) )
+      init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data)) )
 
     method init( tokens:Token[] )
       reader = TokenReader( tokens )
+
+    method add_used_module( module_name:String )
+      if (used_modules.contains(module_name)) return
+      used_modules.add( module_name )
+
+      local module_ids = Program.ids_by_module[ module_name ]
+      if (module_ids)
+        if (not module_id_map) module_id_map = Table<<String,String>>()
+        forEach (m_id in module_ids)
+          module_id_map[ m_id ] = "$::$" (module_name,m_id)
+        endForEach
+      endIf
 
     method consume( type:TokenType )->Logical
       if (not reader.next_is(type)) return false
@@ -47,6 +63,22 @@ class Parser
 
     method error( message:String )->RogueError
       throw reader.peek.error( message )
+
+    method insert_module_prefixes
+      while (reader.has_another)
+        local t = reader.read
+        if (t.type is TokenType.identifier)
+          if (module_id_map)
+            local mapping = module_id_map[ t->String ]
+            if (mapping)
+              reader.tokens[ reader.position - 1 ] = t.type.create_token( t, mapping )
+            endIf
+          endIf
+        elseIf (t.type is TokenType.directive_using)
+          add_used_module( read_identifier )
+        endIf
+      endWhile
+      reader.position = 0  # rewind
 
     method must_consume( type:TokenType, error_message=null:String )
       if (consume(type)) return
@@ -103,6 +135,20 @@ class Parser
 
       elseIf (t.type is TokenType.keyword_augment)
         parse_augment
+        return true
+
+      elseIf (t.type is TokenType.directive_module)
+        read
+        cur_module = read_identifier
+        add_used_module( cur_module )
+        must_consume_eols
+        return true
+
+      elseIf (t.type is TokenType.directive_using)
+        # We've already processed this in insert_module_prefixes(), skip it here
+        read
+        read_identifier
+        must_consume_eols
         return true
 
       elseIf (t.type is TokenType.directive_requisite)

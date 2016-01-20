@@ -1,6 +1,15 @@
 $include "Standard/Boss.rogue"
 #$using Boss
 
-println "abc" instanceOf Object
-local value = Value(0,0,null,null)
-local abcdefg = Array<<Value>>(5)
+$using Testing::Stuff
+
+Test()
+
+$module Testing::Stuff
+
+class Test
+  METHODS
+    method init
+      println "Test successful"
+endClass
+

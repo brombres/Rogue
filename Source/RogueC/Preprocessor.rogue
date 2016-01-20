@@ -3,10 +3,15 @@ class Preprocessor
     definitions = Table<<String,Token[]>>()
 
   PROPERTIES
+    parser : Parser  # the parser that will be parsing these tokens later
     reader : PreprocessorTokenReader
     tokens : Token[]
 
+    cur_module : String
+
   METHODS
+    method init( parser )
+
     method process( tokens )->Token[]
       reader = PreprocessorTokenReader( tokens )
       tokens = Token[]( (tokens.count * 1.1)->Int32 )
@@ -27,7 +32,6 @@ class Preprocessor
         local t = reader.read
 
         if (t.is_directive)
-
           if (t.type is TokenType.directive_define)
             local defined_word = reader.read_identifier
             local defined_tokens = Token[]()
@@ -116,6 +120,26 @@ class Preprocessor
             if (not single_line) must_consume( TokenType.directive_endIf )
             nextIteration
 
+          elseIf (t.type is TokenType.directive_module)
+            if (keep_tokens)
+              tokens.add( t )
+              tokens.add( reader.peek )
+            endIf
+            cur_module = reader.read_identifier
+            nextIteration
+          endIf
+        endIf
+
+        if (t.type is TokenType.keyword_class)
+          if (cur_module and reader.peek.type is TokenType.identifier)
+            if (keep_tokens) tokens.add( t )
+            t = reader.read
+            local class_name = t->String
+            Program.add_module_id( cur_module, class_name )
+            if (keep_tokens)
+              tokens.add( t.type.create_token(t,"$::$"(cur_module,class_name)) )
+            endIf
+            nextIteration
           endIf
         endIf
 
