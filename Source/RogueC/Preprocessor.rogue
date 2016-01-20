@@ -26,11 +26,6 @@ class Preprocessor
       while (reader.has_another)
         local t = reader.read
 
-#       which (t.type)
-#         case Token.symbol_open_directive
-#           local t2 = reader.read
-#           which (t2.type)
-
         if (t.is_directive)
 
           if (t.type is TokenType.directive_define)
