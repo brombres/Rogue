@@ -5,14 +5,10 @@ class Template
     tokens=Token[]     : Token[]
     attributes         = Attributes()
     type_parameters    : TypeParameter[]
-    used_modules       = String[]
 
   METHODS
-    method init( t, modules:String[], name, attribute_flags=0:Int32 )
+    method init( t, name, attribute_flags=0:Int32 )
       attributes.add( attribute_flags )
-      if (modules)
-        forEach (module in modules) used_modules.add( modules )
-      endIf
 
     method add_type_parameter( p_t:Token, p_name:String )->TypeParameter
       if (type_parameters is null) type_parameters = TypeParameter[]
@@ -27,27 +23,10 @@ class Template
       type.t = t
       # replace location of first reference to type with location of type definition
 
-      # Add used modules in the scope where the type was defined
-      forEach (m_name in used_modules) type.add_used_module( m_name )
-
       type.attributes.add( attributes )
 
       local augmented_tokens = tokens
-      local augments : Augment[]
-      local possible_augments = Program.augment_lookup[ type.name ]
-      if (possible_augments) augments = Augment[].add( possible_augments )
-
-      possible_augments = Program.augment_lookup[ type.name.after_any(':') ]
-      if (possible_augments)
-        forEach (aug in possible_augments)
-          forEach (path in aug.used_modules)
-            if (path + aug.name == type.name)
-              if (not augments) augments = Augment[]
-              augments.add( aug )
-            endIf
-          endForEach
-        endForEach
-      endIf
+      local augments = Program.augment_lookup[ type.name ]
 
       if (augments)
         local t_count = tokens.count
@@ -133,18 +112,6 @@ class Template
         first = false
         local specializer_tokens = Token[]
         parser.parse_specializer( buffer.clear, specializer_tokens )
-
-        if (scope and scope.this_type.used_modules)
-          forEach (i of specializer_tokens)
-            local t2 = specializer_tokens[i]
-            if (t2.type == TokenType.identifier)
-              local as_type = scope.find_type( t2->String )
-              if (as_type)
-                specializer_tokens[i] = TokenType.identifier.create_token(t2,as_type.name)
-              endIf
-            endIf
-          endForEach
-        endIf
 
         local index = type_specializers.count
         if (index >= type_parameters.count) throw t.error( "Too many type specializers given." )

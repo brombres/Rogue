@@ -1,4 +1,4 @@
-$module Boss
+#$module Boss
 
 class Value( real:Real64, integer:Int64, object:Object, string:String ) [compound]
 endClass

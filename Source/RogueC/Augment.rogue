@@ -4,11 +4,7 @@ class Augment
     name         : String
     base_types   = Type[]
     tokens       = Token[]
-    used_modules = String[]
 
   METHODS
-    method init( t, name, modules:String[] )
-      if (modules)
-        forEach (m_name in modules) used_modules.add( m_name )
-      endIf
+    method init( t, name )
 endClass

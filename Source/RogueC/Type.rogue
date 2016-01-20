@@ -51,8 +51,6 @@ class Type
     callback_parameter_types : Type[]
     callback_return_type     : Type
 
-    used_modules : String[]
-
   METHODS
     method init( t, name )
 
@@ -97,10 +95,6 @@ class Type
       property_list.add( p )
       property_lookup[p.name] = p
       return p
-
-    method add_used_module( module_name:String )
-      if (not used_modules) used_modules = String[]
-      if (not used_modules.contains(module_name)) used_modules.add( module_name )
 
     method collect_type_info( info:Int32[] )
       info.add( 0 )  # allocator 0
@@ -228,7 +222,7 @@ class Type
 
       if (not defined)
         defined = true
-        local template = Program.find_template( name, used_modules )
+        local template = Program.find_template( name )
         if (template)
           template.instantiate( this, scope )
         else

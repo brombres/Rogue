@@ -1,5 +1,5 @@
 $include "Standard/Boss.rogue"
-$using Boss
+#$using Boss
 
 println "abc" instanceOf Object
 local value = Value(0,0,null,null)

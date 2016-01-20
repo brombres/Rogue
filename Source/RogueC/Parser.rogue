@@ -12,8 +12,6 @@ class Parser
     cur_statement_list : CmdStatementList
 
     parsing_augment : Logical
-    used_modules    = String[]
-    cur_module      : String
 
   METHODS
     method init( filepath:String )
@@ -24,11 +22,6 @@ class Parser
 
     method init( tokens:Token[] )
       reader = TokenReader( tokens )
-
-    method add_used_module( path:String )->String
-      if (used_modules.contains(path)) return path
-      used_modules.add( path )
-      return path
 
     method consume( type:TokenType )->Logical
       if (not reader.next_is(type)) return false
@@ -104,19 +97,7 @@ class Parser
 
       local t = peek
 
-      if (consume(TokenType.directive_module))
-        if (cur_module) used_modules.remove( cur_module )
-        cur_module = add_used_module( read_identifier + "::" )
-        return true
-
-      elseIf (t.type is TokenType.directive_using)
-        read
-
-        add_used_module( read_identifier + "::" )
-        must_consume_eols
-        return true
-
-      elseIf (t.type is TokenType.keyword_class)
+      if (t.type is TokenType.keyword_class)
         parse_class_template
         return true
 
@@ -161,7 +142,6 @@ class Parser
 
       elseIf (next_is_statement)
         this_type = Program.get_type_reference( peek, "Global" )
-        forEach (m_name in used_modules) this_type.add_used_module( m_name )
         if (not Program.m_on_launch)
           Program.m_on_launch = Method( peek, this_type, "on_launch" )
           Program.m_on_launch.statements.add( Program.m_on_launch.begin_label(peek,"insert",false) )
@@ -172,13 +152,11 @@ class Parser
 
       elseIf (next_is(TokenType.keyword_method))
         this_type = Program.get_type_reference( peek, "Global" )
-        forEach (m_name in used_modules) this_type.add_used_module( m_name )
         while (parse_method) noAction
         return true
 
       elseIf (next_is(TokenType.keyword_routine))
         this_type = Program.get_type_reference( peek, "Global" )
-        forEach (m_name in used_modules) this_type.add_used_module( m_name )
         while (parse_method(true)) noAction
         return true
 
@@ -189,8 +167,7 @@ class Parser
     method parse_class_template
       local t = read  # 'class'
       local name = read_identifier
-      if (cur_module) name = cur_module + name
-      local template = Template( t, used_modules, name, Attribute.is_class )
+      local template = Template( t, name, Attribute.is_class )
       parse_template_tokens( template, TokenType.keyword_endClass )
 
       which (template.element_type)
@@ -267,13 +244,13 @@ class Parser
     method parse_augment
       local t = reader.read  # 'augment'
 
-      local name = parse_possible_type(true)
+      local name = parse_possible_type
       if (name.contains('$'))
         local base_name = name.before_first( '<' )
         throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (base_name,base_name) )
       endIf
 
-      local aug = Augment( t, name, used_modules )
+      local aug = Augment( t, name )
       local augments = Program.augment_lookup[ name ]
       if (not augments)
         augments = Augment[]
@@ -1131,7 +1108,6 @@ class Parser
         endForEach
       else
         # global properties
-        forEach (m_name in used_modules) Program.type_Global.add_used_module( m_name )
         forEach (v in local_declarations)
           Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type,v.initial_value) )
         endForEach
@@ -1164,22 +1140,11 @@ class Parser
       endIf
 
       local type = Program.get_type_reference( t, name )
-      if (used_modules)
-        forEach (module_path in used_modules)
-          type.add_used_module( module_path )
-        endForEach
-      endIf
       return type
 
-    method parse_possible_type( include_module_path=false:Logical )->String
+    method parse_possible_type->String
       local t = peek
       local name = read_identifier
-
-      if (include_module_path)
-        while (consume(TokenType.symbol_dot))
-          name += '.' + read_identifier
-        endWhile
-      endIf
 
       if (next_is(TokenType.symbol_open_specialize))
         name += parse_specialization_string
