@@ -219,7 +219,7 @@ class Type
     method is_singleton->Logical
       return (attributes.flags & Attribute.is_singleton)
 
-    method organize->Type
+    method organize( scope=null:Scope )->Type
       if (organized) return this
       organized = true
 
@@ -230,14 +230,14 @@ class Type
         defined = true
         local template = Program.find_template( name, used_modules )
         if (template)
-          template.instantiate( this )
+          template.instantiate( this, scope )
         else
           throw t.error( "Reference to undefined type '$'." (name) )
         endIf
       endIf
 
       forEach (base_type in base_types)
-        base_type.organize
+        base_type.organize( scope )
 
         if (is_aspect)
           if (not base_type.is_aspect)
@@ -293,11 +293,11 @@ class Type
 
       # Organize routines and methods and create signatures
       forEach (r in global_method_list)
-        r.organize
+        r.organize( scope )
       endForEach
 
       forEach (m in method_list)
-        m.organize
+        m.organize( scope )
       endForEach
 
       # Inherit routines and methods
@@ -332,7 +332,7 @@ class Type
       # Create or locate init_class() to initialize global properties
       if (global_list.count and not is_native)
         local m = find_routine( "init_class()" )
-        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize
+        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize( scope )
         m.attributes.add( Attribute.is_requisite )
 
         # Insert global initializations
@@ -351,7 +351,7 @@ class Type
         local m = find_method( "init_object()" )
         local prior_m = m
         if (not m or m.type_context isNot this)
-          m = add_method( t, "init_object" ).organize
+          m = add_method( t, "init_object" ).organize( scope )
           m.attributes.add( Attribute.is_requisite )
           if (prior_m)
             prior_m.attributes.add( Attribute.is_dynamic )
@@ -379,7 +379,7 @@ class Type
       # Add a default to->String to compounds
       if (is_compound or is_primitive)
         local m = find_method( "to_String()" )
-        if (not m) m = add_method( t, "to_String" ).organize
+        if (not m) m = add_method( t, "to_String" ).organize( scope )
         m.return_type = Program.type_String
 
         m.statements.add( CmdReturn(t,CmdLiteralString(t,name)) )
@@ -395,7 +395,7 @@ class Type
           endWhile
 
           local element_type_name = cur_type.name.after_first("<<").before_last(">>")
-          element_type = Program.get_type_reference( t, element_type_name ).organize
+          element_type = Program.get_type_reference( t, element_type_name ).organize( scope )
         endIf
       endIf
 

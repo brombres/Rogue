@@ -23,10 +23,11 @@ class Template
     method element_type->Int32
       return (attributes.flags & Attribute.type_mask)
 
-    method instantiate( type:Type )
+    method instantiate( type:Type, scope:Scope )
       type.t = t
       # replace location of first reference to type with location of type definition
 
+      # Add used modules in the scope where the type was defined
       forEach (m_name in used_modules) type.add_used_module( m_name )
 
       type.attributes.add( attributes )

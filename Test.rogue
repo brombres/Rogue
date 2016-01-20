@@ -1,4 +1,6 @@
 $include "Standard/Boss.rogue"
 $using Boss
 
-println "Like a Boss"
+println "abc" instanceOf Object
+local value = Value(0,0,null,null)
+local abcdefg = Array<<Value>>(5)

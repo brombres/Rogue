@@ -9,7 +9,7 @@ class Cmd
     method call_prior( scope:Scope )->Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
-    method cast_to( target_type:Type )->Cmd
+    method cast_to( target_type:Type, scope:Scope )->Cmd
       local this_type = require_type
       if (this_type is target_type) return this
 
@@ -17,8 +17,8 @@ class Cmd
       #throw t.error( "TODO: Cmd::cast_to() primitive->...." )
       #else
       # this is a reference type
-      this_type.organize
-      target_type.organize
+      this_type.organize(scope)
+      target_type.organize(scope)
 
       if (this_type.instance_of(target_type))
         return CmdCastToType( t, this, target_type )
@@ -271,7 +271,7 @@ class CmdArgs : Cmd[]
       forEach (i of this)
         local arg = this[i].resolve( scope )
         this[i] = arg
-        arg.require_type.organize
+        arg.require_type.organize(scope)
       endForEach
 
     method trace_used_code
@@ -340,10 +340,10 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
       if (local_info.initial_value)
-        local_info.initial_value = local_info.initial_value.cast_to( local_info.type ).resolve( scope )
+        local_info.initial_value = local_info.initial_value.cast_to(local_info.type,scope).resolve( scope )
       endIf
 
-      local_info.type.organize
+      local_info.type.organize(scope)
 
       return this
 
@@ -373,7 +373,7 @@ class CmdReturn : CmdStatement
         if (not scope.this_method.return_type)
           throw t.error( "$ is not declared as returning a value." (scope.this_method.signature) )
         endIf
-        value = value.resolve( scope ).cast_to( scope.this_method.return_type ).resolve( scope )
+        value = value.resolve( scope ).cast_to(scope.this_method.return_type,scope).resolve( scope )
       endIf
       return this
 
@@ -589,7 +589,7 @@ class CmdWhich : CmdControlStructure
       local expression_type = expression.require_type
       if (expression_type isNot Program.type_Int32)
         if (expression_type is Program.type_Byte or expression_type is Program.type_Character)
-          expression = expression.cast_to( Program.type_Int32 ).resolve( scope )
+          expression = expression.cast_to(Program.type_Int32,scope).resolve( scope )
         else
           all_literal_cases = false  # prevent conversion to C 'switch'
         endIf
@@ -954,7 +954,7 @@ class CmdForEach : CmdControlStructure
       scope.control_stack.add( this )
 
       collection = collection.resolve( scope )
-      local collection_type = collection.require_type.organize
+      local collection_type = collection.require_type.organize(scope)
 
       local has_count = (collection_type.find_property("count") or collection_type.find_method("count()"))
       local m_at  = collection_type.find_method("at(Int32)")
@@ -1130,7 +1130,7 @@ class CmdCatch : Cmd
       return CmdCatch( t, error_var, statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      error_var.type.organize
+      error_var.type.organize(scope)
       if (not error_var.type.instance_of(Program.type_Error))
         throw t.error( "Caught value must be instanceOf class Error." )
       endIf
@@ -1158,7 +1158,7 @@ class CmdThrow : Cmd
     method resolve( scope:Scope )->Cmd
       expression = expression.resolve( scope )
       local expression_type = expression.require_type
-      expression_type.organize
+      expression_type.organize(scope)
       if (not expression_type.instance_of(Program.type_Error))
         throw expression.t.error( "Thrown value must be instanceOf class Error." )
       endIf
@@ -1359,11 +1359,11 @@ class CmdLiteralNull : CmdLiteral
   METHODS
     method init( t )
 
-    method cast_to( target_type:Type )->Cmd
+    method cast_to( target_type:Type, scope:Scope )->Cmd
       if (target_type.is_optional)
         return CmdCreateOptionalValue( t, target_type )
       else
-        return prior.cast_to( target_type )
+        return prior.cast_to( target_type, scope )
       endIf
 
     method clone( clone_args=null:CloneArgs )->Cmd
@@ -1387,7 +1387,7 @@ class CmdDefaultValue : CmdLiteral
       return CmdDefaultValue( t, of_type )
 
     method resolve( scope:Scope )->Cmd
-      of_type.organize
+      of_type.organize(scope)
       local default_value = of_type.create_default_value( t )
       if (of_type.is_reference)
         return CmdCastToType( t, default_value, of_type )
@@ -1427,13 +1427,13 @@ class CmdLiteralInt64 : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInt64( t, value )
 
-    method cast_to( target_type:Type )->Cmd
+    method cast_to( target_type:Type, scope:Scope )->Cmd
       if (target_type is Program.type_Real64)
         return CmdLiteralReal64( t, value )
       elseIf (target_type is Program.type_Int32)
         return CmdLiteralInt32( t, value )
       else
-        return prior.cast_to( target_type )
+        return prior.cast_to( target_type, scope )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -1454,11 +1454,11 @@ class CmdLiteralInt32 : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInt32( t, value )
 
-    method cast_to( target_type:Type )->Cmd
+    method cast_to( target_type:Type, scope:Scope )->Cmd
       if (target_type is Program.type_Real64)
         return CmdLiteralReal64( t, value )
       else
-        return prior.cast_to( target_type )
+        return prior.cast_to( target_type, scope )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -1562,7 +1562,7 @@ class CmdFormattedString : Cmd
         else
           fmt = fmt.from(1)
         endIf
-        cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String)) )
+        cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String,scope)) )
       endForEach
       if (fmt.count)
         if (fmt.locate('$'))
@@ -1571,7 +1571,7 @@ class CmdFormattedString : Cmd
         cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
       endIf
 
-      return cmd.resolve( scope ).cast_to( Program.type_String ).resolve( scope )
+      return cmd.resolve( scope ).cast_to( Program.type_String, scope ).resolve( scope )
 
     method type->Type
       return Program.type_String
@@ -1631,7 +1631,7 @@ class CmdAccess : Cmd
         local new_type = scope.find_type( name )
         if (new_type)
           # new TypeName(...)
-          new_type.organize
+          new_type.organize(scope)
 
           if (args is null)
             if (name.ends_with(']'))
@@ -1728,7 +1728,7 @@ class CmdAccess : Cmd
       endIf
 
       local context_type = context.require_type
-      context_type.organize
+      context_type.organize(scope)
 
       if (context_type.is_optional)
         which (name)
@@ -1825,7 +1825,7 @@ class CmdAccess : Cmd
       endIf
 
       local context_type = context.require_type
-      context_type.organize
+      context_type.organize(scope)
 
       if (name[0] != '@')
         local setter_name = "set_" + name
@@ -1910,7 +1910,7 @@ class CmdElementAccess : Cmd
       context = context.resolve( scope )
 
       local context_type = context.require_type
-      context_type.organize
+      context_type.organize(scope)
       if (context_type.is_array)
         return CmdReadArrayElement( t, context, index ).resolve( scope )
       else
@@ -1923,7 +1923,7 @@ class CmdElementAccess : Cmd
       context = context.resolve( scope )
 
       local context_type = context.require_type
-      context_type.organize
+      context_type.organize(scope)
       if (context_type.is_array)
         return CmdWriteArrayElement( t, context, index, new_value ).resolve( scope )
       else
@@ -1953,7 +1953,7 @@ class CmdCreateObject : Cmd
       return CmdCreateObject( t, of_type )
 
     method resolve( scope:Scope )->Cmd
-      of_type.organize
+      of_type.organize(scope)
       return this
 
     method trace_used_code
@@ -1976,7 +1976,7 @@ class CmdCreateCompound : Cmd
       return CmdCreateCompound( t, of_type, args.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      of_type.organize
+      of_type.organize(scope)
       if (args is null) args = CmdArgs()
       while (args.count < of_type.property_list.count)
         args.add( of_type.property_list[args.count].type.create_default_value(t) )
@@ -2040,7 +2040,7 @@ class CmdThisContext : Cmd
       noAction
 
     method resolve( scope:Scope )->Cmd
-      this_type.organize
+      this_type.organize(scope)
       return this
 
     method trace_used_code
@@ -2070,7 +2070,7 @@ class CmdLiteralThis : CmdThisContext
       throw t.error( "Type name expected." )
 
     method resolve( scope:Scope )->Cmd
-      this_type.organize
+      this_type.organize(scope)
       if (scope.this_method.is_global)
         throw t.error( "Invalid reference to 'this' object - routines have no object context." )
       endIf
@@ -2092,7 +2092,7 @@ class CmdReadSingleton : Cmd
       noAction
 
     method resolve( scope:Scope )->Cmd
-      of_type.organize
+      of_type.organize(scope)
       return this
 
     method trace_used_code
@@ -2115,7 +2115,7 @@ class CmdWriteSingleton : Cmd
       return CmdWriteSingleton( t, of_type, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      of_type.organize
+      of_type.organize(scope)
       new_value = new_value.resolve(scope).require_value
       return this
 
@@ -2153,7 +2153,7 @@ class CmdReadLocal : Cmd
 
     method resolve( scope:Scope )->Cmd
       #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
-      local_info.type.organize
+      local_info.type.organize(scope)
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
@@ -2186,9 +2186,9 @@ class CmdWriteLocal : Cmd
       return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      local_info.type.organize
+      local_info.type.organize(scope)
       new_value = new_value.resolve(scope)
-      new_value = new_value.cast_to( local_info.type ).resolve( scope )
+      new_value = new_value.cast_to( local_info.type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -2238,7 +2238,7 @@ class CmdWriteGlobal : Cmd
       return CmdWriteGlobal( t, global_info, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      new_value = new_value.resolve(scope).cast_to( global_info.type ).resolve( scope )
+      new_value = new_value.resolve(scope).cast_to( global_info.type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -2292,7 +2292,7 @@ class CmdWriteProperty : Cmd
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value
-      new_value = new_value.resolve(scope).require_value.cast_to( property_info.type ).resolve( scope )
+      new_value = new_value.resolve(scope).require_value.cast_to( property_info.type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -2662,8 +2662,8 @@ class CmdBinary : Cmd
       if (operator_method_call) return operator_method_call
 
       local common_type = must_find_common_type( left_type, right_type )
-      left = left.cast_to( common_type ).resolve( scope )
-      right = right.cast_to( common_type ).resolve( scope )
+      left = left.cast_to( common_type, scope ).resolve( scope )
+      right = right.cast_to( common_type, scope ).resolve( scope )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
       return resolve_for_common_type( scope, common_type )
 
@@ -2936,8 +2936,8 @@ class CmdComparison : CmdBinary
       endIf
 
       local common_type = must_find_common_type( left_type, right_type )
-      left = left.cast_to( common_type ).resolve( scope )
-      right = right.cast_to( common_type ).resolve( scope )
+      left = left.cast_to( common_type, scope ).resolve( scope )
+      right = right.cast_to( common_type, scope ).resolve( scope )
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
 
       return this
@@ -3244,14 +3244,14 @@ class CmdBitwiseOp : CmdBinary
   METHODS
     method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
       if (common_type is Program.type_Byte or common_type is Program.type_Character or common_type is Program.type_Int32)
-        left  = left.cast_to( Program.type_Int32 ).resolve( scope )
-        right = right.cast_to( Program.type_Int32 ).resolve( scope )
+        left  = left.cast_to( Program.type_Int32, scope ).resolve( scope )
+        right = right.cast_to( Program.type_Int32, scope ).resolve( scope )
         return this
       endIf
 
       if (common_type is Program.type_Int64)
-        left  = left.cast_to( Program.type_Int64 ).resolve( scope )
-        right = right.cast_to( Program.type_Int64 ).resolve( scope )
+        left  = left.cast_to( Program.type_Int64, scope ).resolve( scope )
+        right = right.cast_to( Program.type_Int64, scope ).resolve( scope )
         return this
       endIf
 
@@ -3574,7 +3574,7 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
           return CmdWriteLocal( t, local_info, access ).resolve( scope )
       endWhich
 
-      new_value = new_value.resolve( scope ).cast_to( local_info.type ).resolve( scope )
+      new_value = new_value.resolve( scope ).cast_to( local_info.type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -3631,7 +3631,7 @@ class CmdOpAssignGlobal : CmdResolvedOpWithAssign
           return CmdWriteGlobal( t, global_info, access ).resolve( scope )
       endWhich
 
-      new_value = new_value.resolve(scope).cast_to( global_info.type ).resolve( scope )
+      new_value = new_value.resolve(scope).cast_to( global_info.type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -3690,7 +3690,7 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
       endWhich
 
       context = context.resolve(scope).require_value
-      new_value = new_value.resolve(scope).cast_to( property_info.type ).resolve( scope )
+      new_value = new_value.resolve(scope).cast_to( property_info.type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -3723,7 +3723,7 @@ class CmdCreateArray : Cmd
       return CmdCreateArray( t, array_type, count_cmd.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      array_type.organize
+      array_type.organize(scope)
       count_cmd = count_cmd.resolve(scope).require_integer
       return this
 
@@ -3812,7 +3812,7 @@ class CmdWriteArrayElement : Cmd
       context = context.resolve(scope)
       array_type = context.require_type
       index = index.resolve(scope).require_integer
-      new_value = new_value.resolve( scope ).require_value.cast_to( array_type.element_type ).resolve( scope )
+      new_value = new_value.resolve( scope ).require_value.cast_to( array_type.element_type, scope ).resolve( scope )
       return this
 
     method trace_used_code
@@ -3853,7 +3853,7 @@ class CmdCastToType : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
-      target_type.organize
+      target_type.organize(scope)
       if (operand.require_type is target_type) return operand
       return this
 endClass
@@ -3866,7 +3866,7 @@ class CmdConvertToType : CmdTypeOperator
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       local operand_type = operand.require_type
-      target_type.organize
+      target_type.organize(scope)
       if (operand_type is target_type) return operand
 
       if (operand_type.is_primitive and target_type.is_primitive)
@@ -3894,7 +3894,7 @@ class CmdAs : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
-      target_type.organize
+      target_type.organize(scope)
 
       return this
 endClass
@@ -3906,7 +3906,7 @@ class CmdInstanceOf : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
-      target_type.organize
+      target_type.organize(scope)
 
       return this
 
@@ -3937,13 +3937,13 @@ class CmdCreateList : Cmd
           common_type = find_common_type( common_type, arg.type )
         endForEach
         list_type = Program.get_type_reference( t, common_type + "[]" )
-        list_type.organize
+        list_type.organize(scope)
       endIf
 
       if (list_type)
         local element_type = list_type.element_type
         forEach (index of args)
-          args[index] = args[index].resolve( scope ).cast_to( element_type ).resolve( scope )
+          args[index] = args[index].resolve( scope ).cast_to( element_type, scope ).resolve( scope )
         endForEach
       endIf
 
@@ -4088,7 +4088,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
 
       context = context.resolve( scope )
       local context_type = context.require_type
-      context_type.organize
+      context_type.organize(scope)
 
       local m = context_type.find_method( name + signature )
       if (not m)
@@ -4236,7 +4236,7 @@ class CmdCreateOptionalValue : Cmd
       return CmdCreateOptionalValue( t, of_type, clone(value,clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      of_type.organize
+      of_type.organize(scope)
       if (value) value = value.resolve( scope )
       return this
 
@@ -4362,7 +4362,7 @@ class CmdNativeCode : Cmd
 
     method resolve( scope:Scope )->Cmd
       this_method = scope.this_method
-      if (result_type) result_type.organize
+      if (result_type) result_type.organize(scope)
       return this
 
     method trace_used_code
@@ -4423,8 +4423,8 @@ class CmdListConvert( t, list:Cmd, to_type:Type, convert_fn:Cmd ) : Cmd
 
     method resolve( scope:Scope )->Cmd
       list = list.resolve( scope )
-      local list_type = list.require_type.organize
-      to_type.organize
+      local list_type = list.require_type.organize(scope)
+      to_type.organize(scope)
       if (not list_type.is_list)
         throw t.error( "List conversion syntax used on a non-list value." )
       endIf

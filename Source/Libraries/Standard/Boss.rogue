@@ -1,2 +1,36 @@
 $module Boss
 
+class Value( real:Real64, integer:Int64, object:Object, string:String ) [compound]
+endClass
+
+class Stack
+  ENUMERATE
+    TYPE_REAL64
+    TYPE_REAL32
+    TYPE_INT64
+    TYPE_INT32
+    TYPE_CHARACTER
+    TYPE_BYTE
+    TYPE_LOGICAL
+    TYPE_OBJECT
+    TYPE_STRING
+
+  PROPERTIES
+    frames   = Int32[]
+    types    = Int32[]
+    integers = Array<<Int64[]
+    reals    = Real64[]
+    objects  = Object[]
+    strings  = String[]
+
+  METHODS
+    method init
+
+    method push_frame->this
+      frames = types.count
+      return this
+
+    method pop_frame->this
+      if (frames.count) types.discard_from( frames.remove_last )
+      return this
+endClass

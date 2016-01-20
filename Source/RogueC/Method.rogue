@@ -182,7 +182,7 @@ class Method
     method omit_output->Logical
       return is_native or is_macro or not is_used or (is_generated and name=="create" and type_context.is_compound)
 
-    method organize( add_to_lookup=true:Logical )->Method
+    method organize( scope=null:Scope, add_to_lookup=true:Logical )->Method
       if (organized) return this
       organized = true
 
@@ -351,7 +351,7 @@ class Method
       m_temp.parameters = parameters
       m_temp.locals = locals
       m_temp.statements = statements
-      m_temp.organize( false )  # organize but don't add to type's method tables
+      m_temp.organize( null, false )  # organize but don't add to type's method tables
       m_temp.resolve
 
       # Now come back and fix up this method's parameters and statements

@@ -85,7 +85,7 @@ class Scope
       args.resolve( this )
 
       forEach (i of args)
-        args[i] = args[i].cast_to( m.parameters[i].type ).resolve( this )
+        args[i] = args[i].cast_to( m.parameters[i].type, this ).resolve( this )
       endForEach
 
       local cmd : Cmd
@@ -359,15 +359,15 @@ class Scope
             local param_type = m.parameters.first.type
             param_type.organize
             if (param_type is Program.type_Object and arg_type.has_method_named("to_Object"))
-              args[0] = args[0].cast_to( Program.type_Object )
+              args[0] = args[0].cast_to( Program.type_Object, this )
               return m
 
             elseIf (param_type is Program.type_String and arg_type.has_method_named("to_String"))
-              args[0] = args[0].cast_to( Program.type_String )
+              args[0] = args[0].cast_to( Program.type_String, this )
               return m
 
             elseIf (arg_type.has_method_named("to_"+param_type.name))
-              args[0] = args[0].cast_to( param_type )
+              args[0] = args[0].cast_to( param_type, this )
               return m
 
             endIf
