@@ -92,16 +92,29 @@ class Program [requisite singleton]
       ++unique_integer
       return unique_integer - 1
 
-    method find_template( name:String )->Template
+    method find_template( name:String, used_modules=null:String[] )->Template
+      local template : Template
+
       which (name.last)
         case '?'
           if (find_type(name.leftmost(-1))) return template_lookup[ "Optional" ]
           else return null
         case ']'
-          return template_lookup[ "List" ]
+          template = template_lookup[ "List" ]
         others
-          return template_lookup[ name.before_first('<') ]
+          template = template_lookup[ name.before_first('<') ]
       endWhich
+
+      if (template) return template
+
+      if (used_modules)
+        forEach (m in used_modules)
+          template = find_template( m + name )
+          if (template) return template
+        endForEach
+      endIf
+
+      return null
 
     method find_type( name:String )->Type
       local type = type_lookup[ name ]

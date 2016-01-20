@@ -40,7 +40,6 @@ class Template
       if (possible_augments)
         forEach (aug in possible_augments)
           forEach (path in aug.used_modules)
-println "Checking $$ looking for $" (path,aug.name,type.name)
             if (path + aug.name == type.name)
               if (not augments) augments = Augment[]
               augments.add( aug )

@@ -1163,7 +1163,13 @@ class Parser
 
       endIf
 
-      return Program.get_type_reference( t, name )
+      local type = Program.get_type_reference( t, name )
+      if (used_modules)
+        forEach (module_path in used_modules)
+          type.add_used_module( module_path )
+        endForEach
+      endIf
+      return type
 
     method parse_possible_type( include_module_path=false:Logical )->String
       local t = peek

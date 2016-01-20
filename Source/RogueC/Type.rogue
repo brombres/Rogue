@@ -228,7 +228,7 @@ class Type
 
       if (not defined)
         defined = true
-        local template = Program.find_template( name )
+        local template = Program.find_template( name, used_modules )
         if (template)
           template.instantiate( this )
         else

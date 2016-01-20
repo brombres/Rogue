@@ -1,5 +1,4 @@
-local numbers = (1..4)->Int32[]
-forEach (n in 0..(numbers.permutation_count-1))
-  println "$$" (n->String.left_justified(3), numbers.permutation(n))
-endForEach
+$include "Standard/Boss.rogue"
+$using Boss
 
+println "Like a Boss"
