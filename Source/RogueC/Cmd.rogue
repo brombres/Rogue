@@ -1562,7 +1562,7 @@ class CmdFormattedString : Cmd
         else
           fmt = fmt.from(1)
         endIf
-        cmd = CmdAccess( t, cmd, "print", CmdArgs(arg.cast_to(Program.type_String,scope)) )
+        cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdAdd(t,CmdLiteralString(t,""),arg)) )
       endForEach
       if (fmt.count)
         if (fmt.locate('$'))

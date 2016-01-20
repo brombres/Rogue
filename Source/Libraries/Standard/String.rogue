@@ -416,6 +416,9 @@ class String [native functional]
       return StringBuilder().print( this ).print( value )->String
 
     method operator+( value:String )->String
+      if (value is null) return this + "null"
+      if (count == 0) return value
+      if (value.count == 0) return this
       return StringBuilder().print( this ).print( value )->String
 
     method pluralize( quantity:Int32 )->String

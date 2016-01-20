@@ -71,7 +71,7 @@ class Template
       elseIf (type.name.ends_with('?'))
         instantiate_optional( type, augmented_tokens )
       elseIf (type_parameters)
-        instantiate_parameterized_type( type, augmented_tokens )
+        instantiate_parameterized_type( type, augmented_tokens, scope )
       else
         instantiate_standard_type( type, augmented_tokens )
       endIf
@@ -114,7 +114,7 @@ class Template
 
       Parser(instance_tokens).parse_type_def( type )
 
-    method instantiate_parameterized_type( type:Type, augmented_tokens:Token[] )
+    method instantiate_parameterized_type( type:Type, augmented_tokens:Token[], scope:Scope )
       local instance_tokens = augmented_tokens
 
       local type_specializers = Table<<String,TypeSpecializer>>()
@@ -133,6 +133,18 @@ class Template
         first = false
         local specializer_tokens = Token[]
         parser.parse_specializer( buffer.clear, specializer_tokens )
+
+        if (scope and scope.this_type.used_modules)
+          forEach (i of specializer_tokens)
+            local t2 = specializer_tokens[i]
+            if (t2.type == TokenType.identifier)
+              local as_type = scope.find_type( t2->String )
+              if (as_type)
+                specializer_tokens[i] = TokenType.identifier.create_token(t2,as_type.name)
+              endIf
+            endIf
+          endForEach
+        endIf
 
         local index = type_specializers.count
         if (index >= type_parameters.count) throw t.error( "Too many type specializers given." )
