@@ -3,4 +3,5 @@ $using Boss
 
 local stack = Stack()
 stack.push( 3.5 ).push( 4.0 )
-while (stack.count) println stack.pop_real64
+while (stack.count) println stack.pop
+println stack.pop
