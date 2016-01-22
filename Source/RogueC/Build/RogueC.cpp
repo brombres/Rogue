@@ -2838,7 +2838,6 @@ void RogueParser_trace( void* obj )
   if ((link=((RogueClassParser*)obj)->property_list)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassParser*)obj)->string_buffer)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassParser*)obj)->cur_statement_list)) ((RogueObject*)link)->type->trace_fn( link );
-  if ((link=((RogueClassParser*)obj)->cur_module)) RogueString_trace( link );
   if ((link=((RogueClassParser*)obj)->used_modules)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassParser*)obj)->module_id_map)) ((RogueObject*)link)->type->trace_fn( link );
 }
@@ -22118,6 +22117,10 @@ void RogueParser__insert_module_prefixes( RogueClassParser* THIS )
         }
       }
     }
+    else if (t_0->_type == RogueTokenType_directive_module)
+    {
+      RogueParser__add_used_module__String( THIS, ((RogueParser__read_identifier__Logical( THIS, false ))) );
+    }
     else if (t_0->_type == RogueTokenType_directive_using)
     {
       RogueParser__add_used_module__String( THIS, ((RogueParser__read_identifier__Logical( THIS, false ))) );
@@ -22213,8 +22216,7 @@ RogueLogical RogueParser__parse_element( RogueClassParser* THIS )
   else if (t_0->_type == RogueTokenType_directive_module)
   {
     RogueParser__read( THIS );
-    THIS->cur_module = ((RogueParser__read_identifier__Logical( THIS, false )));
-    RogueParser__add_used_module__String( THIS, THIS->cur_module );
+    RogueParser__read_identifier__Logical( THIS, false );
     RogueParser__must_consume_eols( THIS );
     return (RogueLogical)(true);
   }
@@ -39879,7 +39881,7 @@ void Rogue_configure()
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Parser::parse_for_each():1505 ", 30 ) ); 
+  Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Parser::parse_for_each():1511 ", 30 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "()", 2 ) ); 
   Rogue_literal_strings[273] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( " ", 1 ) ); 
@@ -39901,7 +39903,7 @@ void Rogue_configure()
   Rogue_literal_strings[289] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "singleton", 9 ) ); 
   Rogue_literal_strings[290] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "task", 4 ) ); 
   Rogue_literal_strings[291] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid attribute: ", 19 ) ); 
-  Rogue_literal_strings[292] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Parser::parse_template_tokens():287 end_type", 44 ) ); 
+  Rogue_literal_strings[292] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Parser::parse_template_tokens():293 end_type", 44 ) ); 
   Rogue_literal_strings[293] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( " expected, found end of file.", 29 ) ); 
   Rogue_literal_strings[294] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Illegal placeholder type in augment.  Write '", 45 ) ); 
   Rogue_literal_strings[295] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as ", 116 ) ); 

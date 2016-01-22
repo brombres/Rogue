@@ -49,6 +49,9 @@ class List<<$DataType>> : GenericList
     method contains( value:$DataType )->Logical [macro]
       this.locate( value )?
 
+    method ensure_capacity( desired_capacity:Int32 )->this
+      return reserve( desired_capacity - count )
+
     method first->$DataType [macro]
       this.data[0]
 

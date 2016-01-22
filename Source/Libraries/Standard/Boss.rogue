@@ -1,7 +1,4 @@
-#$module Boss
-
-class Value( real:Real64, integer:Int64, object:Object, string:String ) [compound]
-endClass
+$module Boss
 
 class Stack
   ENUMERATE
@@ -16,21 +13,92 @@ class Stack
     TYPE_STRING
 
   PROPERTIES
-    frames   = Int32[]
-    types    = Int32[]
-    integers = Array<<Int64[]
-    reals    = Real64[]
-    objects  = Object[]
-    strings  = String[]
+    frames       = Int32[]
+
+    type_list    = Int32[]
+    real_list    = Real64[]
+    integer_list = Int64[]
+    object_list  = Object[]
+    string_list  = String[]
+
+    count           : Int32
+    capacity     = real_list.capacity : Int32
+
+    type_stack    = type_list.data    : Array<<Int32>>
+    real_stack    = real_list.data    : Array<<Real64>>
+    integer_stack = integer_list.data : Array<<Int64>>
+    object_stack  = object_list.data  : Array<<Object>>
+    string_stack  = string_list.data  : Array<<String>>
 
   METHODS
     method init
+      println "Boss stack"
 
-    method push_frame->this
-      frames = types.count
+    method expand_capacity->this
+      capacity = capacity :<<: 1
+
+      real_list.ensure_capacity( capacity )
+      integer_list.ensure_capacity( capacity )
+      object_list.ensure_capacity( capacity )
+      string_list.ensure_capacity( capacity )
+
+      real_stack = real_list.data
+      integer_stack = integer_list.data
+      object_stack = object_list.data
+      string_stack = string_list.data
+
       return this
 
+      #{
     method pop_frame->this
       if (frames.count) types.discard_from( frames.remove_last )
       return this
+      }#
+
+    method pop_real64->Real64
+      if (count)
+        --count
+        which (type_stack[count])
+          case TYPE_REAL64, TYPE_REAL32: return real_stack[count]
+          case TYPE_INT64,  TYPE_INT32:  return integer_stack[count]
+          others:                        return 0
+        endWhich
+      else
+        return 0
+      endIf
+
+      #{
+    method push_frame->this
+      frames.add( types.count )
+      return this
+      }#
+
+    method push( value:Real64 )->Stack
+      if (count == capacity) expand_capacity
+      type_stack[count] = TYPE_REAL64
+      real_stack[count]= value
+      ++count
+      return this
+
+    method push( value:Real32 )->Stack
+      if (count == capacity) expand_capacity
+      type_stack[count] = TYPE_REAL32
+      real_stack[count]= value
+      ++count
+      return this
+
+    method push( value:Int64 )->Stack
+      if (count == capacity) expand_capacity
+      type_stack[count] = TYPE_INT64
+      integer_stack[count]= value
+      ++count
+      return this
+
+    method push( value:Int32 )->Stack
+      if (count == capacity) expand_capacity
+      type_stack[count] = TYPE_INT32
+      integer_stack[count]= value
+      ++count
+      return this
 endClass
+

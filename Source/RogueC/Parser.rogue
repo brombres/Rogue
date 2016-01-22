@@ -12,7 +12,6 @@ class Parser
     cur_statement_list : CmdStatementList
 
     parsing_augment : Logical
-    cur_module      : String
 
     used_modules    = String[]
     module_id_map   : Table<<String,String>>
@@ -66,6 +65,7 @@ class Parser
 
     method insert_module_prefixes
       while (reader.has_another)
+
         local t = reader.read
         if (t.type is TokenType.identifier)
           if (module_id_map)
@@ -74,9 +74,15 @@ class Parser
               reader.tokens[ reader.position - 1 ] = t.type.create_token( t, mapping )
             endIf
           endIf
+
+        elseIf (t.type is TokenType.directive_module)
+          add_used_module( read_identifier )
+
         elseIf (t.type is TokenType.directive_using)
           add_used_module( read_identifier )
+
         endIf
+
       endWhile
       reader.position = 0  # rewind
 
@@ -138,9 +144,9 @@ class Parser
         return true
 
       elseIf (t.type is TokenType.directive_module)
+        # We've already processed this in insert_module_prefixes(), skip it here
         read
-        cur_module = read_identifier
-        add_used_module( cur_module )
+        read_identifier
         must_consume_eols
         return true
 

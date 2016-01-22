@@ -1502,7 +1502,6 @@ struct RogueClassParser : RogueObject
   RogueStringBuilder* string_buffer;
   RogueClassCmdStatementList* cur_statement_list;
   RogueLogical parsing_augment;
-  RogueString* cur_module;
   RogueStringList* used_modules;
   RogueClassString_StringTable* module_id_map;
 

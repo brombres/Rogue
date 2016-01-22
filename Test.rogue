@@ -1,15 +1,6 @@
 $include "Standard/Boss.rogue"
-#$using Boss
+$using Boss
 
-$using Testing::Stuff
-
-Test()
-
-$module Testing::Stuff
-
-class Test
-  METHODS
-    method init
-      println "Test successful"
-endClass
-
+local stack = Stack()
+stack.push( 3.5 ).push( 4.0 )
+while (stack.count) println stack.pop_real64
