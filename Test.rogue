@@ -9,5 +9,5 @@ local vm = VM()
 vm.register_type( "Robot", function(task)=task.push( Robot() ) )
 
 #local task = vm.execute( "Robot()" )
-vm.execute( "3+4" )
-
+local task = vm.execute( "3+4" )
+println task.pop_integer

@@ -1192,7 +1192,6 @@ augment Type
       local print_type_name = true
       forEach (i in 0..i2)
         local m = method_list[i]
-
         if (not m.is_macro)
           if (m.is_dynamic and m.is_used)
             # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first

@@ -13,6 +13,7 @@ class Type
     base_class : Type
     base_types = Type[]
     flat_base_types = Type[]
+    has_extended_class : Logical
 
     is_array     : Logical
     is_list      : Logical
@@ -422,6 +423,7 @@ class Type
       return 0
 
     method collect_base_types( list:Type[] )
+      has_extended_class = true
       if (list.contains(this)) return
       list.add( this )
       forEach (base_type in base_types)
@@ -434,19 +436,33 @@ class Type
 
       forEach (base_type in base_types) base_type.cull_unused_methods
 
-      local list = method_list
-
-      local i = list.count - 1
+      # Remove macros only to start with
+      local i = method_list.count - 1
       while (i >= 0)
-        local m = list[i]
-        if (m.is_macro or not m.is_used)
-          list.remove( m )
-        endIf
+        local m = method_list[i]
+        if (m.is_macro) method_list.remove( m )
         --i
       endWhile
 
+      if (not has_extended_class)
+        # Don't mess up the slots for extended classes.  No big deal since
+        # code isn't actually generated for unused methods; cull_unused_methods()
+        # merely prevents some extra 0's in the dynamic call table.
+
+        i = method_list.count - 1
+        while (i >= 0)
+          local m = method_list[i]
+          if (not m.is_used)
+            if (not base_class or base_class.method_list.count <= i)
+              method_list.remove( m )
+            endIf
+          endIf
+          --i
+        endWhile
+      endIf
+
       i = 0
-      forEach (m in list)
+      forEach (m in method_list)
         m.index = i
         ++i
       endForEach

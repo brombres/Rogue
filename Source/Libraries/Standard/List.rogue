@@ -280,6 +280,13 @@ class List<<$DataType>> : GenericList
       endForEach
       buffer.print( ']' )
       return buffer
+
+    method to_array->Array<<$DataType>>
+      local result = Array<<$DataType>>( count )
+      forEach (i of this)
+        result[i] = this[i]
+      endForEach
+      return result
 endClass
 
 class ListReader<<$DataType>> : Reader<<$DataType>>

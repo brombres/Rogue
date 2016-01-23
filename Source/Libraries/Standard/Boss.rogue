@@ -33,58 +33,97 @@ endClass
 
 class Task
   PROPERTIES
-    vm   : VM
-    data_stack = DataStack(this)
+    vm            : VM
+    fp            : Int32
+    ip            : Int32
+    commands      : Array<<Cmd>>
+    data_stack    = Value[]
+    reg_stack     = Int32[]
+    command_stack = Array<<Cmd>>[]
 
   METHODS
     method init( vm )
 
-    method ensure_arg_count( n:Int32 )->this  [macro]
-      this.data_stack.ensure_arg_count( n )
+    method reset( commands )
+      fp = 0
+      ip = 0
+      data_stack.clear
+      reg_stack.clear
+      command_stack.clear
+
+    method ensure_arg_count( n:Int32 )->this
+      local delta = (data_stack.count - fp) - n
+
+      if (delta == 0) return this
+
+      while (delta > 0) data_stack.remove_last;        --delta
+      while (delta < 0) data_stack.add( NullValue() ); ++delta
+
+      return this
 
     method execute( source:String )->this
       try
-        Parser( this ).parse( source )
+        reset( Parser( this ).parse(source) )
+        execute
       catch (err:Error)
         println err
       endTry
       return this
 
+    method execute
+      local cmd = commands[ip]
+      ++ip
+      while (cmd.execute(this))
+        cmd = commands[ip]
+        ++ip
+      endWhile
+
     method pop->Value
-      local values = data_stack.values
-      if (values.count) return values.remove_last
+      if (data_stack.count) return data_stack.remove_last
       else              return NullValue()
 
     method pop_integer->Int32
-      local values = data_stack.values
-      if (values.count) return values.remove_last->Int32
-      else              return 0
+      if (data_stack.count) return data_stack.remove_last->Int32
+      else             return 0
 
     method pop_object->Object
-      local values = data_stack.values
-      if (values.count) return values.remove_last->Object
-      else              return null
+      if (data_stack.count) return data_stack.remove_last->Object
+      else             return null
 
     method pop_real->Real64
-      local values = data_stack.values
-      if (values.count) return values.remove_last->Real64
-      else              return 0
+      if (data_stack.count) return data_stack.remove_last->Real64
+      else             return 0
 
     method push( value:Int32 )->this
-      data_stack.values.add( IntegerValue(value) )
+      data_stack.add( IntegerValue(value) )
       return this
 
     method push( value:Object )->this
-      data_stack.values.add( ObjectValue(value) )
+      data_stack.add( ObjectValue(value) )
       return this
 
     method push( value:Real64 )->this
-      data_stack.values.add( RealValue(value) )
+      data_stack.add( RealValue(value) )
       return this
 
     method push( value:Value )->this
-      data_stack.values.add( value )
+      data_stack.add( value )
       return this
+
+    method push_frame( new_commands:Array<<Cmd>> )
+      reg_stack.add( fp )
+      reg_stack.add( ip )
+      fp = data_stack.count
+      command_stack.add( commands )
+      commands = new_commands
+
+    method pop_frame
+      local result = data_stack.last
+      data_stack.discard_from( fp )
+      commands = command_stack.remove_last
+      ip = reg_stack.remove_last
+      fp = reg_stack.remove_last
+      data_stack.add( result )
 
 endClass
 
@@ -112,17 +151,22 @@ endClass
 
 class Value
   ENUMERATE
-    TYPE_REAL64
-    TYPE_REAL32
-    TYPE_INT64
-    TYPE_INT32
-    TYPE_CHARACTER
-    TYPE_BYTE
+    TYPE_NULL
+    TYPE_REAL
+    TYPE_INTEGER
     TYPE_LOGICAL
     TYPE_OBJECT
     TYPE_STRING
 
+  PROPERTIES
+    type : Int32
+
   METHODS
+    method init( type )
+
+    method operator+( other:Value )->Value
+      return IntegerValue(0)
+
     method to->Int32
       return 0
 
@@ -141,6 +185,15 @@ class IntegerValue : Value
 
   METHODS
     method init( value )
+      type = TYPE_INTEGER
+
+    method operator+( other:Value )->Value
+      which (other.type)
+        case TYPE_REAL:    return RealValue( value + other->Real64 )
+        case TYPE_INTEGER: return IntegerValue( value + other->Int32 )
+        #case TYPE_STRING:  return StringValue( value + other->String )
+        others:            return IntegerValue( 0 )
+      endWhich
 
     method to->Int32
       return value
@@ -155,6 +208,9 @@ endClass
 
 class NullValue : Value
   METHODS
+    method init
+      type = TYPE_NULL
+
     method to->String
       return "null"
 endClass
@@ -166,6 +222,7 @@ class ObjectValue : Value
 
   METHODS
     method init( value )
+      type = TYPE_OBJECT
 
     method to->Object
       return value
@@ -181,6 +238,7 @@ class RealValue : Value
 
   METHODS
     method init( value )
+      type = TYPE_REAL
 
     method to->Int32
       return value->Int32
@@ -192,51 +250,9 @@ class RealValue : Value
       return value->String
 endClass
 
-
-class DataStack
-  PROPERTIES
-    task      : Task
-    values    = Value[]
-
-    fp        : Int32
-    frames    = Int32[]
-
-  METHODS
-    method init( task )
-      println "Boss DataStack"
-
-    method count->Int32 [macro]
-      this.values.count
-
-    method ensure_arg_count( n:Int32 )->Task
-      local delta = (values.count - fp) - n
-
-      if (delta == 0) return task
-
-      while (delta > 0) values.remove_last;        --delta
-      while (delta < 0) values.add( NullValue() ); ++delta
-
-      return task
-
-    method pop_frame
-      local result = values.last
-
-      if (frames.count)
-        values.discard_from( fp )
-        fp = frames.remove_last
-      else
-        values.clear
-      endIf
-
-      values.add( result )
-
-    method push_frame
-      frames.add( fp )
-      fp = values.count
-endClass
-
 class TokenType [requisite]
   ENUMERATE
+    INVALID
     EOL
     LITERAL_INTEGER
     SYMBOL_PLUS
@@ -284,6 +300,9 @@ class Token
     method set_info( filepath, line, column )->this
       return this
 
+    method to->Int32
+      return 0
+
     method to->String
       return TokenType.display_name( type )
 
@@ -297,24 +316,98 @@ class IntegerToken : Token
     method init( value )
       type = TokenType.LITERAL_INTEGER
 
+    method to->Int32
+      return value
+
     method to->String
       return value->String
 endClass
 
 class Parser
   PROPERTIES
-    vm     : VM
-    task   : Task
-    reader : ParseReader
-    tokens : Token[]
+    vm          : VM
+    task        : Task
+    tokens      : Token[]
+    token_index : Int32
+    token_count : Int32
+
+    commands    = Cmd[]
 
   METHODS
     method init( task )
       vm = task.vm
 
-    method parse( source:String )
+    method add( command:Cmd )
+      commands.add( command )
+
+    method consume( token_type:Int32 )->Logical
+      if (token_index == token_count) return false
+      local t = tokens[ token_index ]
+      if (t.type != token_type) return false
+      ++token_index
+      return true
+
+    method consume_eols->Logical
+      local found_any = false
+      while (consume(TokenType.EOL)) found_any = true
+      return found_any
+
+    method error( message:String )->Error
+      if (token_index < token_count)
+        return tokens[ token_index ].error( message )
+      else
+        if (token_count == 0) return Token().error( message )
+        else                  return tokens.last.error( message )
+      endIf
+
+    method has_another->Logical
+      return (token_index < token_count)
+
+    method parse( source:String )->Array<<Cmd>>
       tokens = Tokenizer( "[Runtime Code]", source ).tokenize
-      println tokens
+      token_count = tokens.count
+      parse_elements
+      add( CmdHalt(Token()) )
+      return commands.to_array
+
+    method parse_elements
+      consume_eols
+      while (has_another)
+        parse_expression
+      endWhile
+
+    method parse_expression
+      consume_eols
+      parse_add_or_subtract
+
+    method parse_add_or_subtract
+      parse_term
+      local t = peek
+      if (consume(TokenType.SYMBOL_PLUS))
+        parse_term
+        add( CmdAdd(t) )
+      endIf
+
+    method parse_term
+      local t = read
+      which (t.type)
+        case TokenType.LITERAL_INTEGER
+          commands.add( CmdReadLiteralInteger(t, t->Int32) )
+        others
+          throw t.error( "Syntax error." )
+      endWhich
+
+    method peek( skip=0:Int32 )->Token
+      local peek_index = token_index + skip
+      if (peek_index >= token_count) return Token( TokenType.INVALID )
+      return tokens[ peek_index ]
+
+    method read->Token
+      if (token_index == token_count)
+        throw error( "Unexpected end of input." )
+      endIf
+      ++token_index
+      return tokens[ token_index - 1 ]
 endClass
 
 class Tokenizer
@@ -643,5 +736,45 @@ class Tokenizer
       else
         throw error( "Unexpected input '"+ch+"'." )
       endIf
+endClass
+
+class Cmd
+  PROPERTIES
+    t : Token
+
+  METHODS
+    method init( t )
+
+    method execute( task:Task )->Logical
+      throw t.error( "No execute() defined for $." (type_name) )
+endClass
+
+class CmdHalt : Cmd
+  METHODS
+    method execute( task:Task )->Logical
+      return false
+endClass
+
+class CmdReadLiteralInteger : Cmd
+  PROPERTIES
+    value : Int32
+
+  METHODS
+    method init( t, value )
+
+    method execute( task:Task )->Logical
+      task.push( IntegerValue(value) )
+      return true
+endClass
+
+class CmdAdd : Cmd
+  PROPERTIES
+
+  METHODS
+    method execute( task:Task )->Logical
+      local b = task.pop
+      local a = task.pop
+      task.push( a + b )
+      return true
 endClass
 
