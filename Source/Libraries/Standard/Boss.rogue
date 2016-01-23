@@ -6,13 +6,26 @@ class VM
     type_lookup   = Table<<String,Type>>()
 
     free_tasks    = Task[]
+    active_tasks  = Task[]
 
   METHODS
     method init
 
     method execute( source:String )->Task
-      if (free_tasks.count) return free_tasks.remove_last.execute( source )
-      return Task(this).execute( source )
+      local task : Task
+
+      if (free_tasks.count) task = free_tasks.remove_last
+      else                  task = Task( this )
+
+      return task.execute( source )
+
+    method evaluate( source:String )->Value
+      local task = execute( source )
+      while (not task.is_finished) noAction
+      return task.pop
+
+    method evaluate_integer( source:String )->Int32 [macro]
+      this.evaluate( source )->Int32
 
     method register_type( name:String, on_create:Function(Task) )
       type_lookup[ name ] = Type( this, name, on_create )
@@ -40,9 +53,11 @@ class Task
     data_stack    = Value[]
     reg_stack     = Int32[]
     command_stack = Array<<Cmd>>[]
+    is_finished   : Logical
 
   METHODS
     method init( vm )
+      println "Creating task"
 
     method reset( commands )
       fp = 0
@@ -50,6 +65,7 @@ class Task
       data_stack.clear
       reg_stack.clear
       command_stack.clear
+      is_finished = false
 
     method ensure_arg_count( n:Int32 )->this
       local delta = (data_stack.count - fp) - n
@@ -64,7 +80,7 @@ class Task
     method execute( source:String )->this
       try
         reset( Parser( this ).parse(source) )
-        execute
+        is_finished  # calls execute
       catch (err:Error)
         println err
       endTry
@@ -77,6 +93,18 @@ class Task
         cmd = commands[ip]
         ++ip
       endWhile
+
+    method is_finished->Logical
+      if (@is_finished) return true
+
+      execute
+
+      if (@is_finished)
+        vm.free_tasks.add( this )
+        return true
+      else
+        return false
+      endIf
 
     method pop->Value
       if (data_stack.count) return data_stack.remove_last
@@ -165,7 +193,10 @@ class Value
     method init( type )
 
     method operator+( other:Value )->Value
-      return IntegerValue(0)
+      return RealValue(0)
+
+    method operator*( other:Value )->Value
+      return RealValue(0)
 
     method to->Int32
       return 0
@@ -192,6 +223,14 @@ class IntegerValue : Value
         case TYPE_REAL:    return RealValue( value + other->Real64 )
         case TYPE_INTEGER: return IntegerValue( value + other->Int32 )
         #case TYPE_STRING:  return StringValue( value + other->String )
+        others:            return IntegerValue( 0 )
+      endWhich
+
+    method operator*( other:Value )->Value
+      which (other.type)
+        case TYPE_REAL:    return RealValue( value * other->Real64 )
+        case TYPE_INTEGER: return IntegerValue( value * other->Int32 )
+        #case TYPE_STRING:  return StringValue( value * other->String )
         others:            return IntegerValue( 0 )
       endWhich
 
@@ -258,17 +297,21 @@ class TokenType [requisite]
     SYMBOL_PLUS
     SYMBOL_PLUS_EQUALS
     SYMBOL_PLUS_PLUS
+    SYMBOL_TIMES
+    SYMBOL_TIMES_EQUALS
 
   GLOBAL PROPERTIES
     type_to_name = Table<<Int32,String>>()
 
   GLOBAL METHODS
     method init_class
-      type_to_name[ EOL ]                = "\n"
-      type_to_name[ LITERAL_INTEGER ]    = "literal integer"
-      type_to_name[ SYMBOL_PLUS ]        = "+"
-      type_to_name[ SYMBOL_PLUS_EQUALS ] = "+="
-      type_to_name[ SYMBOL_PLUS_PLUS ]   = "++"
+      type_to_name[ EOL ]                 = "\n"
+      type_to_name[ LITERAL_INTEGER ]     = "literal integer"
+      type_to_name[ SYMBOL_PLUS ]         = "+"
+      type_to_name[ SYMBOL_PLUS_EQUALS ]  = "+="
+      type_to_name[ SYMBOL_PLUS_PLUS ]    = "++"
+      type_to_name[ SYMBOL_TIMES]         = "*"
+      type_to_name[ SYMBOL_TIMES_EQUALS ] = "*="
 
     method display_name( type:Int32 )->String
       which (type)
@@ -378,14 +421,22 @@ class Parser
 
     method parse_expression
       consume_eols
-      parse_add_or_subtract
+      parse_add_subtract
 
-    method parse_add_or_subtract
-      parse_term
+    method parse_add_subtract
+      parse_multiply_divide
       local t = peek
       if (consume(TokenType.SYMBOL_PLUS))
-        parse_term
+        parse_multiply_divide
         add( CmdAdd(t) )
+      endIf
+
+    method parse_multiply_divide
+      parse_term
+      local t = peek
+      if (consume(TokenType.SYMBOL_TIMES))
+        parse_term
+        add( CmdMultiply(t) )
       endIf
 
     method parse_term
@@ -616,13 +667,13 @@ class Tokenizer
 
       elseIf (ch == ')')
       return TokenType.symbol_close_paren
-
-      elseIf (ch == '*')
-        if     (consume('=')) return TokenType.symbol_times_equals
-        else                  return TokenType.symbol_times
         }#
 
-      if (ch == '+')
+      if (ch == '*')
+        if     (consume('=')) return TokenType.SYMBOL_TIMES_EQUALS
+        else                  return TokenType.SYMBOL_TIMES
+
+      elseIf (ch == '+')
         if     (consume('=')) return TokenType.SYMBOL_PLUS_EQUALS
         elseIf (consume('+')) return TokenType.SYMBOL_PLUS_PLUS
         else                  return TokenType.SYMBOL_PLUS
@@ -752,6 +803,8 @@ endClass
 class CmdHalt : Cmd
   METHODS
     method execute( task:Task )->Logical
+      task.is_finished = true
+      --task.ip  # stay at the HALT
       return false
 endClass
 
@@ -775,6 +828,17 @@ class CmdAdd : Cmd
       local b = task.pop
       local a = task.pop
       task.push( a + b )
+      return true
+endClass
+
+class CmdMultiply : Cmd
+  PROPERTIES
+
+  METHODS
+    method execute( task:Task )->Logical
+      local b = task.pop
+      local a = task.pop
+      task.push( a * b )
       return true
 endClass
 
