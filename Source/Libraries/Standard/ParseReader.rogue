@@ -33,30 +33,6 @@ class ParseReader : Reader<<Character>>
     method init( file:File, spaces_per_tab=0 )
       init( file.load_as_string.decode_utf8, spaces_per_tab )
 
-      #{
-    method init( source:Byte[], spaces_per_tab=0 )
-      local tab_count = 0
-
-      if (spaces_per_tab)
-        forEach (b in source)
-          if (b == '\t') ++tab_count
-        endForEach
-      endIf
-
-      data = Character[]( source.count + tab_count )
-      forEach (b in source)
-        if (b == '\t' and spaces_per_tab)
-          forEach (1..spaces_per_tab) data.add( 32 )
-        elseIf (b == '\n' or (b >= 32 and b <= 126))
-          data.add( b )
-        endIf
-      endForEach
-
-      count = data.count
-      line = 1
-      column = 1
-      }#
-
     method init( source:Character[], spaces_per_tab=0 )
       local tab_count = 0
 

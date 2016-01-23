@@ -68,8 +68,12 @@ class Parser
 
         local t = reader.read
         if (t.type is TokenType.identifier)
-          if (module_id_map)
-            local mapping = module_id_map[ t->String ]
+          local name = t->String
+          if (name[0] == ':')
+            # ::Name -> Name
+            reader.tokens[ reader.position - 1 ] = t.type.create_token( t, name.from(2) )
+          elseIf (module_id_map)
+            local mapping = module_id_map[ name ]
             if (mapping)
               reader.tokens[ reader.position - 1 ] = t.type.create_token( t, mapping )
             endIf
@@ -1532,9 +1536,9 @@ class Parser
 
       local result = read->String
       if (direct_access) result = "@" + result
-      while (consume(TokenType.symbol_colon_colon))
-        result += "::" + read_identifier
-      endWhile
+      #while (consume(TokenType.symbol_colon_colon))
+      #result += "::" + read_identifier
+      #endWhile
       return result
 
     method parse_expression->Cmd

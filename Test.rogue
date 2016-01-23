@@ -1,7 +1,13 @@
 $include "Standard/Boss.rogue"
 $using Boss
 
-local stack = Stack()
-stack.push( 3.5 ).push( 4.0 )
-while (stack.count) println stack.pop
-println stack.pop
+class Robot
+  PROPERTIES
+endClass
+
+local vm = VM()
+vm.register_type( "Robot", function(task)=task.push( Robot() ) )
+
+#local task = vm.execute( "Robot()" )
+vm.execute( "3+4" )
+

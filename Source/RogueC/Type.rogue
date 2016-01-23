@@ -323,8 +323,21 @@ class Type
         list.add( m )
       endForEach
 
-      # Create or locate init_class() to initialize global properties
+      # Mark any existing init_class() as requisite
+      local m_init_class = find_routine( "init_class()" )
+      if (m_init_class)
+        if (m_init_class.type_context is this)
+          m_init_class.attributes.add( Attribute.is_requisite )
+        endIf
+      else
+        m_init_class = find_method( "init_class()" )
+        if (m_init_class)
+          throw m_init_class.t.error( "$::init_class() must be declared under GLOBAL METHODS." (name) )
+        endIf
+      endIf
+
       if (global_list.count and not is_native)
+        # Create or locate init_class() to initialize global properties
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize( scope )
         m.attributes.add( Attribute.is_requisite )

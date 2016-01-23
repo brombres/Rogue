@@ -1,5 +1,115 @@
 $module Boss
 
+class VM
+  PROPERTIES
+    method_lookup = Table<<String,Int32>>()  # method name to dynamic slot number
+    type_lookup   = Table<<String,Type>>()
+
+    free_tasks    = Task[]
+
+  METHODS
+    method init
+
+    method execute( source:String )->Task
+      if (free_tasks.count) return free_tasks.remove_last.execute( source )
+      return Task(this).execute( source )
+
+    method register_type( name:String, on_create:Function(Task) )
+      type_lookup[ name ] = Type( this, name, on_create )
+endClass
+
+class Error : ::Error
+  PROPERTIES
+    filepath : String
+    line     : Int32
+    column   : Int32
+
+  METHODS
+    method init( t:Token, message )
+      filepath = t.filepath
+      line = t.line
+      column = t.column
+endClass
+
+class Task
+  PROPERTIES
+    vm   : VM
+    data_stack = DataStack(this)
+
+  METHODS
+    method init( vm )
+
+    method ensure_arg_count( n:Int32 )->this  [macro]
+      this.data_stack.ensure_arg_count( n )
+
+    method execute( source:String )->this
+      try
+        Parser( this ).parse( source )
+      catch (err:Error)
+        println err
+      endTry
+      return this
+
+    method pop->Value
+      local values = data_stack.values
+      if (values.count) return values.remove_last
+      else              return NullValue()
+
+    method pop_integer->Int32
+      local values = data_stack.values
+      if (values.count) return values.remove_last->Int32
+      else              return 0
+
+    method pop_object->Object
+      local values = data_stack.values
+      if (values.count) return values.remove_last->Object
+      else              return null
+
+    method pop_real->Real64
+      local values = data_stack.values
+      if (values.count) return values.remove_last->Real64
+      else              return 0
+
+    method push( value:Int32 )->this
+      data_stack.values.add( IntegerValue(value) )
+      return this
+
+    method push( value:Object )->this
+      data_stack.values.add( ObjectValue(value) )
+      return this
+
+    method push( value:Real64 )->this
+      data_stack.values.add( RealValue(value) )
+      return this
+
+    method push( value:Value )->this
+      data_stack.values.add( value )
+      return this
+
+endClass
+
+class Type
+  PROPERTIES
+    vm        : VM
+    name      : String
+    on_create : Function(Task)
+
+  METHODS
+    method init( vm, name, on_create )
+endClass
+
+
+class Method
+  PROPERTIES
+    vm   : VM
+    name : String
+    fn   : Function(Task)
+
+  METHODS
+    method init( vm, name, fn )
+endClass
+
+
 class Value
   ENUMERATE
     TYPE_REAL64
@@ -13,22 +123,27 @@ class Value
     TYPE_STRING
 
   METHODS
+    method to->Int32
+      return 0
+
+    method to->Object
+      return null
+
     method to->Real64
       return 0
+
 endClass
 
-class NullValue : Value
-  METHODS
-    method to->String
-      return "null"
-endClass
 
-class RealValue : Value
+class IntegerValue : Value
   PROPERTIES
-    value : Real64
+    value : Int32
 
   METHODS
     method init( value )
+
+    method to->Int32
+      return value
 
     method to->Real64
       return value
@@ -37,23 +152,475 @@ class RealValue : Value
       return value->String
 endClass
 
-class Stack
+
+class NullValue : Value
+  METHODS
+    method to->String
+      return "null"
+endClass
+
+
+class ObjectValue : Value
   PROPERTIES
-    values = Value[]
+    value : Object
 
   METHODS
-    method init
-      println "Boss stack"
+    method init( value )
 
-    method count->Int32
-      return values.count
+    method to->Object
+      return value
 
-    method pop->Value
-      if (values.count) return values.remove_last
-      else              return NullValue()
+    method to->String
+      return value->String
+endClass
 
-    method push( value:Real64 )->Stack
-      values.add( RealValue(value) )
+
+class RealValue : Value
+  PROPERTIES
+    value : Real64
+
+  METHODS
+    method init( value )
+
+    method to->Int32
+      return value->Int32
+
+    method to->Real64
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+
+class DataStack
+  PROPERTIES
+    task      : Task
+    values    = Value[]
+
+    fp        : Int32
+    frames    = Int32[]
+
+  METHODS
+    method init( task )
+      println "Boss DataStack"
+
+    method count->Int32 [macro]
+      this.values.count
+
+    method ensure_arg_count( n:Int32 )->Task
+      local delta = (values.count - fp) - n
+
+      if (delta == 0) return task
+
+      while (delta > 0) values.remove_last;        --delta
+      while (delta < 0) values.add( NullValue() ); ++delta
+
+      return task
+
+    method pop_frame
+      local result = values.last
+
+      if (frames.count)
+        values.discard_from( fp )
+        fp = frames.remove_last
+      else
+        values.clear
+      endIf
+
+      values.add( result )
+
+    method push_frame
+      frames.add( fp )
+      fp = values.count
+endClass
+
+class TokenType [requisite]
+  ENUMERATE
+    EOL
+    LITERAL_INTEGER
+    SYMBOL_PLUS
+    SYMBOL_PLUS_EQUALS
+    SYMBOL_PLUS_PLUS
+
+  GLOBAL PROPERTIES
+    type_to_name = Table<<Int32,String>>()
+
+  GLOBAL METHODS
+    method init_class
+      println "Init class"
+
+  METHODS
+    method display_name( type:Int32 )->String
+endClass
+
+class Token
+  PROPERTIES
+    filepath : String
+    line     : Int32
+    column   : Int32
+    type     : Int32
+
+  METHODS
+    method init( type )
+
+    method error( message:String )->Error
+      return Error( this, message )
+
+    method set_info( filepath, line, column )->this
       return this
+endClass
+
+class IntegerToken : Token
+  PROPERTIES
+    value : Int32
+
+  METHODS
+    method init( value )
+      type = TokenType.LITERAL_INTEGER
+endClass
+
+class Parser
+  PROPERTIES
+    vm     : VM
+    task   : Task
+    reader : ParseReader
+    tokens : Token[]
+
+  METHODS
+    method init( task )
+      vm = task.vm
+
+    method parse( source:String )
+      tokens = Tokenizer( "[Runtime Code]", source ).tokenize
+      println tokens
+endClass
+
+class Tokenizer
+  PROPERTIES
+    reader   : ParseReader
+    tokens   : Token[]
+    filepath : String
+    line     : Int32
+    column   : Int32
+
+  METHODS
+    method init( filepath, source:String )
+      reader = ParseReader( source, 2 )
+
+    method add_token( type:Int32 )->Logical
+      tokens.add( Token(type).set_info(filepath,line,column) )
+      return true
+
+    method add_integer_token( value:Int32 )->Logical
+      tokens.add( IntegerToken(value).set_info(filepath,line,column) )
+      return true
+
+    method add_real_token( value:Real64 )->Logical
+      tokens.add( IntegerToken(value).set_info(filepath,line,column) )
+      return true
+
+    method consume( ch:Character )->Logical [macro]
+      this.reader.consume( ch )
+
+    method error( message:String )->Error
+      return Token().set_info( filepath, line, column ).error( message )
+
+    method tokenize->Token[]
+      tokens = Token[]
+
+      while (tokenize_another) noAction
+
+      return tokens
+
+    method tokenize_another->Logical
+      reader.consume_spaces
+
+      line = reader.line
+      column = reader.column
+
+      if (not reader.has_another) return false
+
+      local ch = reader.peek
+
+      if (ch >= '0' and ch <= '9')
+        which (reader.peek(1))
+          case 'b': return tokenize_integer_in_base(2)
+          case 'c': return tokenize_integer_in_base(8)
+          case 'x': return tokenize_integer_in_base(16)
+          others:   return tokenize_number
+        endWhich
+
+      else
+        # Either a symbol or a decimal like ".1".
+        if (ch == '.')
+          local next = reader.peek(1)
+          if (next >= '0' and next <= '9') return tokenize_number
+        endIf
+
+        # Symbol
+        local token_type = scan_symbol_token_type
+        if (token_type == -1) return true  # something else is happening; it's fine
+        return add_token( token_type )
+      endIf
+
+    method tokenize_integer_in_base( base:Int32 )->Logical
+      reader.read  # '0'
+      reader.read  # [b,c,x] = [2,8,16]
+
+      local count = 0
+      local n = 0
+      local digit = reader.peek.to_number( base )
+      while (reader.has_another and digit != -1)
+        if (digit >= base) throw error( "Digit out of range for base " + base + "." )
+        ++count
+        n = n * base + digit
+        reader.read
+        digit = reader.peek.to_number( base )
+      endWhile
+
+      if (count == 0) throw error( "One or more digits expected." )
+
+      tokens.add( IntegerToken(TokenType.LITERAL_INTEGER).set_info(filepath,line,column) )
+      return true
+
+    method tokenize_number->Logical
+      local is_negative = consume('-')
+
+      local i = 0
+      while (reader.has_another(i+1) and reader.peek(i).is_number()) ++i
+      local ch = reader.peek(i)
+      local is_real = ((ch == '.' and reader.peek(i+1).is_number) or ch == 'e' or ch == 'E')
+
+      if (is_real)
+        # We have a real number
+        local n = scan_real
+        ch = reader.peek
+
+        if (ch == '.')
+          ch = reader.peek(1)
+          if (ch >= '0' and ch <= '9')
+            reader.read
+            local start_pos = reader.position
+            local fraction = scan_real
+            n += fraction / 10.0^(reader.position - start_pos)
+          elseIf (ch == '.')
+            # Start of range
+            if (is_negative) n = -n
+            return add_integer_token( n->Int32 )
+          elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_')
+            # E.g. 5.hash_code is (5).hash_code, not 5.0hashcode
+            return add_integer_token( n->Int32 )
+          else
+            if (is_negative) n = -n
+            return add_real_token( n )
+          endIf
+        endIf
+
+        if (consume('E') or consume('e'))
+          local negative_exponent = consume('-')
+          if (not negative_exponent) consume('+')
+          local power = scan_real
+          if (negative_exponent) n /= 10.0^power
+          else                   n *= 10.0^power
+        endIf
+
+        if (is_negative) n = -n;
+        return add_real_token( n )
+
+      else
+        # Int32 or Real64
+        local n = scan_long
+        if (is_negative) n = -n;
+
+        if (n == n->Int32)
+          return add_integer_token( n->Int32 )
+        else
+          return add_real_token( n )
+        endIf
+      endIf
+
+    method scan_real->Real64
+      local n = 0.0
+      local ch = reader.peek
+      while (ch >= '0' and ch <= '9')
+        local intval = reader.read->Int32 - '0'
+        n = n * 10 + intval
+        ch = reader.peek
+      endWhile
+      return n
+
+    method scan_long->Int64
+      local n = 0 : Int64
+      local ch = reader.peek
+      while (ch >= '0' and ch <= '9')
+        local intval = reader.read->Int32 - '0'
+        n = n * 10 + intval
+        ch = reader.peek
+      endWhile
+      return n
+
+    method scan_symbol_token_type->Int32
+      local ch = reader.read
+
+      #{
+      if (ch == '!')
+        if (consume('=')) return TokenType.symbol_ne
+        else              return TokenType.symbol_exclamation_point
+
+      elseIf (ch == '$' )
+        local id = read_identifier
+        which (id)
+          case "define":              add_new_token( TokenType.directive_define )
+          case "include":             add_new_token( TokenType.directive_include )
+          case "includeNativeCode":   add_new_token( TokenType.directive_includeNativeCode )
+          case "includeNativeHeader": add_new_token( TokenType.directive_includeNativeHeader )
+          case "if":                  add_new_token( TokenType.directive_if )
+          case "elseIf":              add_new_token( TokenType.directive_elseIf )
+          case "else":                add_new_token( TokenType.directive_else )
+          case "endIf":               add_new_token( TokenType.directive_endIf )
+          case "module":              add_new_token( TokenType.directive_module )
+          case "requisite":           add_new_token( TokenType.directive_requisite )
+          case "using":               add_new_token( TokenType.directive_using )
+          others
+            add_new_token( TokenType.placeholder_id, "$" + id )
+        endWhich
+        return null
+
+      elseIf (ch == '%')
+        if     (consume('=')) return TokenType.symbol_percent_equals
+        else                  return TokenType.symbol_percent
+
+
+      elseIf (ch == '&' )
+        if     (consume('&')) throw error( "Use 'and' instead of '&&'." )
+        elseIf (consume('=')) return TokenType.symbol_ampersand_equals
+        else                  return TokenType.symbol_ampersand
+
+      elseIf (ch == '(')
+        return TokenType.symbol_open_paren
+
+      elseIf (ch == ')')
+      return TokenType.symbol_close_paren
+
+      elseIf (ch == '*')
+        if     (consume('=')) return TokenType.symbol_times_equals
+        else                  return TokenType.symbol_times
+        }#
+
+      if (ch == '+')
+        if     (consume('=')) return TokenType.SYMBOL_PLUS_EQUALS
+        elseIf (consume('+')) return TokenType.SYMBOL_PLUS_PLUS
+        else                  return TokenType.SYMBOL_PLUS
+
+        #{
+      elseIf (ch == ',')
+        return TokenType.symbol_comma
+
+      elseIf (ch == '-')
+        if     (consume('='))  return TokenType.symbol_minus_equals
+        elseIf (consume('-'))  return TokenType.symbol_minus_minus
+        elseIf (reader.peek(0) == '>' and reader.peek(1) == '>') return TokenType.symbol_minus
+        elseIf (consume('>'))  return TokenType.symbol_arrow
+        else                   return TokenType.symbol_minus
+
+      elseIf (ch == '.' )
+        if (consume('.'))
+          if (consume('.'))
+            # ellipsis
+            while (consume(' ')) noAction
+            if (not consume('\n')) throw error( "End of line expected after '...'." )
+            return null 
+          elseIf (consume('<'))
+            return TokenType.symbol_upToLessThan
+          elseIf (consume('>'))
+            return TokenType.symbol_downToGreaterThan
+          else
+            return TokenType.symbol_upTo
+          endIf
+        elseIf (consume('='))
+          return TokenType.symbol_dot_equals
+        else
+          return TokenType.symbol_dot
+        endIf
+
+      elseIf (ch == '/')
+        if (consume('='))
+          return TokenType.symbol_slash_equals
+        else
+          return TokenType.symbol_slash
+        endIf
+
+      elseIf (ch == ':')
+        if (consume(':'))
+          add_new_token( TokenType.identifier, "::" + read_identifier )
+          return null
+        endIf
+
+        if (consume("<<:"))  return TokenType.symbol_shift_left
+        elseIf (consume(">>:"))  return TokenType.symbol_shift_right
+        elseIf (consume(">>>:")) return TokenType.symbol_shift_right_x
+        return TokenType.symbol_colon
+
+      elseIf (ch == ';')
+        return TokenType.symbol_semicolon
+
+      elseIf (ch == '<' )
+        if     (consume('<')) return TokenType.symbol_open_specialize
+        elseIf (consume('=')) return TokenType.symbol_le
+        elseIf (consume('>')) return TokenType.symbol_compare
+        else                  return TokenType.symbol_lt
+
+      elseIf (ch == '=' )
+        if (consume('='))     return TokenType.symbol_eq
+        elseIf (consume('>')) return TokenType.symbol_fat_arrow
+        else                  return TokenType.symbol_equals
+
+      elseIf (ch == '>' )
+        if      (consume('=')) return TokenType.symbol_ge
+        elseIf  (consume('>')) return TokenType.symbol_close_specialize
+        else                   return TokenType.symbol_gt
+
+      elseIf (ch == '?')
+        return TokenType.symbol_question_mark
+
+      elseIf (ch == '@' )
+        return TokenType.symbol_at
+
+      elseIf (ch == '[')
+        if (consume(']')) return TokenType.symbol_empty_brackets
+        return TokenType.symbol_open_bracket
+
+      elseIf (ch == '\\')
+        return TokenType.symbol_backslash
+
+      elseIf (ch == ']')
+        return TokenType.symbol_close_bracket
+
+      elseIf (ch == '^')
+        if     (consume('=')) return TokenType.symbol_caret_equals
+        else                  return TokenType.symbol_caret
+
+      elseIf (ch == '{')
+        if (consume('}')) return TokenType.symbol_empty_braces
+        return TokenType.symbol_open_brace
+
+      elseIf (ch == '|' )
+        if     (consume('|')) throw error( "Use 'or' instead of '||'." )
+        elseIf (consume('=')) return TokenType.symbol_vertical_bar_equals
+        else                  return TokenType.symbol_vertical_bar
+
+      elseIf (ch == '}' )
+        if     (consume('#')) return TokenType.symbol_close_comment # used for error reporting
+        else                  return TokenType.symbol_close_brace
+
+      elseIf (ch == '~')
+        if     (consume('=')) return TokenType.symbol_tilde_equals
+        else                  return TokenType.symbol_tilde
+      }#
+
+      else
+        throw error( "Unexpected input '"+ch+"'." )
+      endIf
 endClass
 

@@ -749,7 +749,6 @@ extern RogueClassTokenType* RogueTokenType_symbol_backslash;
 extern RogueClassTokenType* RogueTokenType_symbol_caret;
 extern RogueClassTokenType* RogueTokenType_symbol_caret_equals;
 extern RogueClassTokenType* RogueTokenType_symbol_colon;
-extern RogueClassTokenType* RogueTokenType_symbol_colon_colon;
 extern RogueClassTokenType* RogueTokenType_symbol_comma;
 extern RogueClassTokenType* RogueTokenType_symbol_compare;
 extern RogueClassTokenType* RogueTokenType_symbol_dot;
@@ -1319,7 +1318,6 @@ struct RogueClassTokenType : RogueObject
   static RogueClassTokenType* symbol_caret;
   static RogueClassTokenType* symbol_caret_equals;
   static RogueClassTokenType* symbol_colon;
-  static RogueClassTokenType* symbol_colon_colon;
   static RogueClassTokenType* symbol_comma;
   static RogueClassTokenType* symbol_compare;
   static RogueClassTokenType* symbol_dot;

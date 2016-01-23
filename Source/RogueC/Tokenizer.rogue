@@ -195,7 +195,7 @@ class Tokenizer
       TokenType.symbol_caret                 = define( TokenType("^") )
       TokenType.symbol_caret_equals          = define( OpWithAssignTokenType("^=") )
       TokenType.symbol_colon                 = define( TokenType(":") )
-      TokenType.symbol_colon_colon           = define( TokenType("::") )
+      #TokenType.symbol_colon_colon           = define( TokenType("::") )
       TokenType.symbol_comma                 = define( TokenType(",") )
       TokenType.symbol_compare               = define( TokenType("<>") )
       TokenType.symbol_dot                   = define( TokenType(".") )
@@ -354,7 +354,8 @@ class Tokenizer
 
       elseIf (ch == ':')
         if (consume(':'))
-          return TokenType.symbol_colon_colon
+          add_new_token( TokenType.identifier, "::" + read_identifier )
+          return null
         endIf
 
         if (consume("<<:"))  return TokenType.symbol_shift_left
@@ -556,7 +557,7 @@ class Tokenizer
     method tokenize_another->Logical
       reader.consume_spaces
 
-      # Must be the has_another test for the terminating EOL
+      # Must be before the has_another test for the terminating EOL
       next_filepath = filepath
       next_line = reader.line
       next_column = reader.column
@@ -670,17 +671,6 @@ class Tokenizer
       reader.read  # '0'
       reader.read  # [b,c,x] = [2,8,16]
 
-      #{
-      local count = 0
-      local digit = reader.peek.to_number
-      while (reader.has_another(count+1) and digit != -1 and digit < base)
-        ++count
-        digit = reader.peek( count ).to_number
-      endWhile
-
-      if (base == 2 and count > 32
-      }#
-
       local count = 0
       local n = 0
       local digit = reader.peek.to_number( base )
@@ -693,8 +683,6 @@ class Tokenizer
       endWhile
 
       if (count == 0) throw error( "One or more digits expected." )
-
-      #if (bits_per_value * count > 32) throw error( "Number too large for base " + base + "." )
 
       return add_new_token( TokenType.literal_integer, n )
 

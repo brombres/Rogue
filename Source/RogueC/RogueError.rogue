@@ -12,8 +12,8 @@ class RogueError : Error
       local m = message.word_wrapped(79).joined
       if (filepath)
         builder.println( "===============================================================================" )
-        builder.print( "ERROR in \"" ).print( File.filename(filepath) )
-        builder.print( "  line " ).print( line ).print( ", column " ).println( column )
+        builder.print( ''ERROR in "'' ).print( File.filename(filepath) )
+        builder.print( ''"  line '' ).print( line ).print( ", column " ).println( column )
         builder.println
         builder.println( m )
         builder.println( "===============================================================================" )
