@@ -248,10 +248,24 @@ class TokenType [requisite]
 
   GLOBAL METHODS
     method init_class
-      println "Init class"
+      type_to_name[ EOL ]                = "\n"
+      type_to_name[ LITERAL_INTEGER ]    = "literal integer"
+      type_to_name[ SYMBOL_PLUS ]        = "+"
+      type_to_name[ SYMBOL_PLUS_EQUALS ] = "+="
+      type_to_name[ SYMBOL_PLUS_PLUS ]   = "++"
 
-  METHODS
     method display_name( type:Int32 )->String
+      which (type)
+        case EOL:             return "[end of line]"
+        case LITERAL_INTEGER: return "literal integer"
+        others:               return "'$'" (type_to_name[type])
+      endWhich
+
+    method name( type:Int32 )->String
+      local result = type_to_name[ type ]
+      if (result) return result
+      return "(???)"
+
 endClass
 
 class Token
@@ -269,6 +283,10 @@ class Token
 
     method set_info( filepath, line, column )->this
       return this
+
+    method to->String
+      return TokenType.display_name( type )
+
 endClass
 
 class IntegerToken : Token
@@ -278,6 +296,9 @@ class IntegerToken : Token
   METHODS
     method init( value )
       type = TokenType.LITERAL_INTEGER
+
+    method to->String
+      return value->String
 endClass
 
 class Parser
