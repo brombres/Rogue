@@ -2,8 +2,11 @@ $module Boss
 
 class VM
   PROPERTIES
-    method_lookup = Table<<String,Int32>>()  # method name to dynamic slot number
-    type_lookup   = Table<<String,Type>>()
+    methods_by_name  = Table<<String,Method>>()
+
+    dispatch_table = Method[][]
+    # Dynamic dispatch table - for object type index 'm' called in the context of
+    # object type index 'obj', the correct method is dispatch_table[obj][m].
 
     free_tasks    = Task[]
     active_tasks  = Task[]
@@ -42,8 +45,43 @@ class VM
     method evaluate_integer( source:String )->Int32 [macro]
       this.evaluate( source )->Int32
 
-    method register_type( name:String, on_create:Function(Task) )
-      type_lookup[ name ] = Type( this, name, on_create )
+    method register( name:String, parameter_count:Int32, on_call:Function(Task) )
+      local dot          = name.locate( '.' )
+      if (dot.exists)
+        # TypeName.method_name
+        local context_name = name.before_first( '.' )
+        local context = methods_by_name[ context_name ]
+        if (not context)
+          # Create a placeholder context
+          register( context_name, 0, function(task)=noAction )
+          context = methods_by_name[ context_name ]
+        endIf
+
+        if (dispatch_table.count > context.index)
+          if (not dispatch_table[context.index])
+            dispatch_table[ context.index ] = Method[]
+          endIf
+        else
+          dispatch_table.expand_and_set( context.index, Method[] )
+        endIf
+
+        local method_name = name.after_first( '.' )
+        register( method_name, parameter_count, on_call )
+        local m = methods_by_name[ method_name ]
+
+        dispatch_table[ context.index ].expand_and_set( m.index, m )
+
+      else
+        # TypeName or global method_name only.
+        local m = methods_by_name[ name ]
+        if (m)
+          # Replacing existing; use same index
+          m = Method( this, m.index, name, parameter_count, on_call )
+        else
+          m = Method( this, methods_by_name.count, name, parameter_count, on_call )
+        endIf
+        methods_by_name[ name ] = m
+      endIf
 
     method update->Logical
       local write_i = 0
@@ -236,12 +274,14 @@ endClass
 
 class Method
   PROPERTIES
-    vm   : VM
-    name : String
-    fn   : Function(Task)
+    vm              : VM
+    name            : String
+    fn              : Function(Task)
+    index           : Int32
+    parameter_count : Int32
 
   METHODS
-    method init( vm, name, fn )
+    method init( vm, index, name, parameter_count, fn )
 endClass
 
 

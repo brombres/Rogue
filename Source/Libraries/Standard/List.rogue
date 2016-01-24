@@ -52,6 +52,14 @@ class List<<$DataType>> : GenericList
     method ensure_capacity( desired_capacity:Int32 )->this
       return reserve( desired_capacity - count )
 
+    method expand_and_set( index:Int32, value:$DataType )
+      # Expands the list if necessary to include the specified index.
+      if (count <= index)
+        ensure_capacity( index+1 )
+        count = index + 1
+      endIf
+      set( index, value )
+
     method first->$DataType [macro]
       this.data[0]
 
@@ -248,7 +256,7 @@ class List<<$DataType>> : GenericList
 
       return this
 
-    method set( index:Int32, new_value:$DataType )->$DataType[] [macro]
+    method set( index:Int32, new_value:$DataType ) [macro]
       this.data[ index ] = new_value
 
     method shuffle->this
