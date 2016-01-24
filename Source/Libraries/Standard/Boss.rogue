@@ -11,24 +11,59 @@ class VM
   METHODS
     method init
 
-    method execute( source:String )->Task
+    method execute( source:String, filepath="[Internal]":String )->Result
+      return execute_new_task( source, filepath ).result
+
+    method execute_new_task( source:String, filepath="[Internal]":String )->Task
+      # Internal use.
       local task : Task
 
       if (free_tasks.count) task = free_tasks.remove_last
       else                  task = Task( this )
 
-      return task.execute( source )
+      task.reset
+      task.result = Result()
+      task.load( source, filepath )
+      if (task.execute) 
+        # Did not finish immediately
+        active_tasks.add( task )
+      else
+        free_tasks.add( task )
+      endIf
+      return task
 
     method evaluate( source:String )->Value
-      local task = execute( source )
-      while (not task.is_finished) noAction
-      return task.pop
+      local task = execute_new_task( source )
+      if (not task.is_finished)
+        throw task.error( "Code cannot be evaluated because it contains a blocking call." )
+      endIf
+      return task.result.value
 
     method evaluate_integer( source:String )->Int32 [macro]
       this.evaluate( source )->Int32
 
     method register_type( name:String, on_create:Function(Task) )
       type_lookup[ name ] = Type( this, name, on_create )
+
+    method update->Logical
+      local write_i = 0
+      forEach (read_i of active_tasks)
+        local task = active_tasks[read_i]
+        if (task.execute)
+          active_tasks[write_i] = task
+          ++write_i
+        else
+          free_tasks.add( task )
+        endIf
+      endForEach
+      active_tasks.discard_from( write_i )
+      return (write_i > 0)
+endClass
+
+class Result
+  PROPERTIES
+    value    : Value
+    is_ready : Logical
 endClass
 
 class Error : ::Error
@@ -44,28 +79,41 @@ class Error : ::Error
       column = t.column
 endClass
 
+class TaskStatus
+  ENUMERATE
+    INITIALIZING
+    RUNNING
+    SUSPENDED
+    FINISHED
+endClass
+
 class Task
   PROPERTIES
     vm            : VM
     fp            : Int32
     ip            : Int32
-    commands      : Array<<Cmd>>
+    commands      = Cmd[]
     data_stack    = Value[]
     reg_stack     = Int32[]
-    command_stack = Array<<Cmd>>[]
-    is_finished   : Logical
+    command_stack = Cmd[][]
+
+    status        : Int32
+    result        : Result
+    filepath      : String
 
   METHODS
     method init( vm )
       println "Creating task"
 
-    method reset( commands )
+    method reset->Task
       fp = 0
       ip = 0
       data_stack.clear
       reg_stack.clear
+      commands.clear
       command_stack.clear
-      is_finished = false
+      status = TaskStatus.INITIALIZING
+      return this
 
     method ensure_arg_count( n:Int32 )->this
       local delta = (data_stack.count - fp) - n
@@ -77,33 +125,45 @@ class Task
 
       return this
 
-    method execute( source:String )->this
+    method error( message:String )->Error
+      local t : Token
+      if (commands.count) t = commands[ip].t
+      else                t = Token().set_info( filepath, 0, 0 )
+      throw t.error( message )
+
+    method is_finished->Logical
+      return (status == TaskStatus.FINISHED)
+
+    method load( source:String, filepath )->this
       try
-        reset( Parser( this ).parse(source) )
-        is_finished  # calls execute
+        commands.add( Parser(this).parse(source,filepath) )
       catch (err:Error)
         println err
       endTry
       return this
 
-    method execute
-      local cmd = commands[ip]
-      ++ip
-      while (cmd.execute(this))
-        cmd = commands[ip]
+    method execute->Logical
+      # Returns false if the task is finished
+      if (commands.count == 0) return false
+
+      if (status == TaskStatus.INITIALIZING)
+        status = TaskStatus.RUNNING
+      endIf
+
+      if (status == TaskStatus.RUNNING)
+        local cmd = commands[ip]
         ++ip
-      endWhile
+        while (cmd.execute(this))
+          cmd = commands[ip]
+          ++ip
+        endWhile
+      endIf
 
-    method is_finished->Logical
-      if (@is_finished) return true
-
-      execute
-
-      if (@is_finished)
-        vm.free_tasks.add( this )
-        return true
-      else
+      if (is_finished)
+        result.value = pop
         return false
+      else
+        return true
       endIf
 
     method pop->Value
@@ -138,7 +198,7 @@ class Task
       data_stack.add( value )
       return this
 
-    method push_frame( new_commands:Array<<Cmd>> )
+    method push_frame( new_commands:Cmd[] )
       reg_stack.add( fp )
       reg_stack.add( ip )
       fp = data_stack.count
@@ -152,6 +212,14 @@ class Task
       ip = reg_stack.remove_last
       fp = reg_stack.remove_last
       data_stack.add( result )
+
+    method resume->this
+      status = TaskStatus.RUNNING
+      return this
+
+    method suspend->this
+      status = TaskStatus.SUSPENDED
+      return this
 
 endClass
 
@@ -406,12 +474,12 @@ class Parser
     method has_another->Logical
       return (token_index < token_count)
 
-    method parse( source:String )->Array<<Cmd>>
-      tokens = Tokenizer( "[Runtime Code]", source ).tokenize
+    method parse( source:String, filepath:String )->Cmd[]
+      tokens = Tokenizer( filepath, source ).tokenize
       token_count = tokens.count
       parse_elements
       add( CmdHalt(Token()) )
-      return commands.to_array
+      return commands
 
     method parse_elements
       consume_eols
@@ -803,9 +871,9 @@ endClass
 class CmdHalt : Cmd
   METHODS
     method execute( task:Task )->Logical
-      task.is_finished = true
-      --task.ip  # stay at the HALT
-      return false
+    task.status = TaskStatus.FINISHED
+    --task.ip  # stay at the HALT
+    return false
 endClass
 
 class CmdReadLiteralInteger : Cmd

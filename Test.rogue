@@ -12,4 +12,4 @@ vm.register_type( "Robot", function(task)=task.push( Robot() ) )
 println vm.evaluate_integer( "1+2*3" )  # 7
 println vm.evaluate_integer( "1*2+3" )  # 5
 println vm.evaluate_integer( "2*3+4*5" )  # 26
-println vm.evaluate( "2*3+4*5" )  # 26
+println vm.evaluate( " 2 * 3 + 4 * 5" )  # 26
