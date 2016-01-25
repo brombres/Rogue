@@ -128,10 +128,10 @@ class Character [primitive]
              (this >= 'A' and this <= 'Z')
 
     method is_identifier->Logical
-      return (this >= '0' and this <= '9') or
-             (this >= 'a' and this <= 'z') or
+      return (this >= 'a' and this <= 'z') or
              (this >= 'A' and this <= 'Z') or
-             (this == '_')
+             (this == '_')                 or
+             (this >= '0' and this <= '9')
 
     method is_letter->Logical
       return (this >= 'a' and this <= 'z') or

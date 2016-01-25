@@ -8,10 +8,17 @@ endClass
 local vm = VM()
 vm.register( "Robot", 0, function(task)=task.push( Robot() ) )
 
+vm.register( "println", 0,
+  function(task:Task)
+    forEach (i in 0..(task.arg_count-1))
+      print task.arg(i)
+    endForEach
+    println
+    task.push( null )
+  endFunction
+)
+
 #local task = vm.execute( "Robot()" )
-println vm.evaluate_integer( "1+2*3" )  # 7
-println vm.evaluate_integer( "1*2+3" )  # 5
-println vm.evaluate_integer( "2*3+4*5" )  # 26
-println vm.evaluate( " 2 * 3 + 4 * 5" )  # 26
 
-
+vm.execute @|println 5 6 7+8
+            |println null

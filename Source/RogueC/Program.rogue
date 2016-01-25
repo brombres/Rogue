@@ -256,9 +256,12 @@ class Program [requisite singleton]
       reorder_compounds
 
     method reorder_compounds
-      # Source code for compounds is generated in the same order that they appear in the type_list.
-      # If compound B is defined before A *and* B has properties of type A then it results in an
-      # error.  Reorder compounds so that such dependencies occur earlier in the list.
+      # Source code for compounds and exception types is generated in the same order that they
+      # appear in the type_list.  If compound B is defined before A *and* B has properties of
+      # type A then it results in an error.  Reorder compounds and exceptions so that such
+      # dependencies occur earlier in the list.
+
+      # Compounds
       local compounds = Type[]
 
       local write_i = 0
@@ -278,6 +281,20 @@ class Program [requisite singleton]
         type.index = type_list.count
         type_list.add( type )
       endForEach
+
+      # Exceptions
+      forEach (type in type_list)
+        if (type.instance_of(Program.type_Error) and type isNot Program.type_Error)
+          if (type.base_class.index > type.index)
+            local i1 = type.base_class.index
+            local i2 = type.index
+            type_list.swap( i1, i2 )
+            type.index = i1
+            type.base_class.index = i2
+          endIf
+        endIf
+      endForEach
+
 
     method collect_compound_dependencies( type:Type, compounds:Type[] )
       if (type.index == -1) return  # already collected

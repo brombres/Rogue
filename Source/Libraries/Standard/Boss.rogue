@@ -14,6 +14,14 @@ class VM
   METHODS
     method init
 
+    method acquire( type_or_method_name:String )->Method
+      local m = methods_by_name[ type_or_method_name ]
+      if (m) return m
+
+      # Create a placeholder
+      register( type_or_method_name, 0, function(task)=noAction )
+      return methods_by_name[ type_or_method_name ]
+
     method execute( source:String, filepath="[Internal]":String )->Result
       return execute_new_task( source, filepath ).result
 
@@ -45,17 +53,12 @@ class VM
     method evaluate_integer( source:String )->Int32 [macro]
       this.evaluate( source )->Int32
 
-    method register( name:String, parameter_count:Int32, on_call:Function(Task) )
+    method register( name:String, min_param_count:Int32, on_call:Function(Task) )
       local dot          = name.locate( '.' )
       if (dot.exists)
         # TypeName.method_name
         local context_name = name.before_first( '.' )
-        local context = methods_by_name[ context_name ]
-        if (not context)
-          # Create a placeholder context
-          register( context_name, 0, function(task)=noAction )
-          context = methods_by_name[ context_name ]
-        endIf
+        local context = acquire( context_name )
 
         if (dispatch_table.count > context.index)
           if (not dispatch_table[context.index])
@@ -66,7 +69,7 @@ class VM
         endIf
 
         local method_name = name.after_first( '.' )
-        register( method_name, parameter_count, on_call )
+        register( method_name, min_param_count, on_call )
         local m = methods_by_name[ method_name ]
 
         dispatch_table[ context.index ].expand_and_set( m.index, m )
@@ -76,17 +79,16 @@ class VM
         local m = methods_by_name[ name ]
         if (m)
           # Replacing existing; use same index
-          m = Method( this, m.index, name, parameter_count, on_call )
+          m = Method( this, m.index, name, min_param_count, on_call )
         else
-          m = Method( this, methods_by_name.count, name, parameter_count, on_call )
+          m = Method( this, methods_by_name.count, name, min_param_count, on_call )
         endIf
         methods_by_name[ name ] = m
       endIf
 
     method update->Logical
       local write_i = 0
-      forEach (read_i of active_tasks)
-        local task = active_tasks[read_i]
+      forEach (task in active_tasks)
         if (task.execute)
           active_tasks[write_i] = task
           ++write_i
@@ -115,6 +117,26 @@ class Error : ::Error
       filepath = t.filepath
       line = t.line
       column = t.column
+
+    method to->String
+      local builder = StringBuilder()
+      local m = message.word_wrapped(79).joined
+      if (filepath)
+        builder.println( "===============================================================================" )
+        builder.print( ''ERROR in "'' ).print( File.filename(filepath) )
+        builder.print( ''"  line '' ).print( line ).print( ", column " ).println( column )
+        builder.println
+        builder.println( m )
+        builder.println( "===============================================================================" )
+      else
+        builder.println( "===============================================================================" )
+        builder.print( "ERROR" )
+        builder.println
+        builder.println( m )
+        builder.println( "===============================================================================" )
+      endIf
+      return builder->String
+
 endClass
 
 class TaskStatus
@@ -132,7 +154,8 @@ class Task
     ip            : Int32
     commands      = Cmd[]
     data_stack    = Value[]
-    reg_stack     = Int32[]
+    fp_stack      = Int32[]
+    ip_stack      = Int32[]
     command_stack = Cmd[][]
 
     status        : Int32
@@ -141,24 +164,27 @@ class Task
 
   METHODS
     method init( vm )
-      println "Creating task"
 
     method reset->Task
       fp = 0
       ip = 0
       data_stack.clear
-      reg_stack.clear
+      fp_stack.clear
+      ip_stack.clear
       commands.clear
       command_stack.clear
       status = TaskStatus.INITIALIZING
       return this
 
+    method arg( index:Int32 )->Value
+      return data_stack[ fp + index ]
+
+    method arg_count->Int32
+      return (data_stack.count - fp)
+
     method ensure_arg_count( n:Int32 )->this
       local delta = (data_stack.count - fp) - n
 
-      if (delta == 0) return this
-
-      while (delta > 0) data_stack.remove_last;        --delta
       while (delta < 0) data_stack.add( NullValue() ); ++delta
 
       return this
@@ -185,17 +211,22 @@ class Task
       if (commands.count == 0) return false
 
       if (status == TaskStatus.INITIALIZING)
+        resolve_commands
         status = TaskStatus.RUNNING
       endIf
 
-      if (status == TaskStatus.RUNNING)
-        local cmd = commands[ip]
-        ++ip
-        while (cmd.execute(this))
-          cmd = commands[ip]
+      try
+        if (status == TaskStatus.RUNNING)
+          local cmd = commands[ip]
           ++ip
-        endWhile
-      endIf
+          while (cmd.execute(this))
+            cmd = commands[ip]
+            ++ip
+          endWhile
+        endIf
+      catch (err:Error)
+        println err
+      endTry
 
       if (is_finished)
         result.value = pop
@@ -224,8 +255,13 @@ class Task
       data_stack.add( IntegerValue(value) )
       return this
 
-    method push( value:Object )->this
-      data_stack.add( ObjectValue(value) )
+    method push( value:Object, object_type_name=null:String )->this
+      if (value)
+        if (not object_type_name) object_type_name = value.type_name
+        data_stack.add( ObjectValue(value,vm.acquire(object_type_name).index) )
+      else
+        data_stack.add( NullValue() )
+      endIf
       return this
 
     method push( value:Real64 )->this
@@ -236,6 +272,20 @@ class Task
       data_stack.add( value )
       return this
 
+    method push_native_frame( arg_count:Int32 )
+      fp_stack.add( fp )
+      ip_stack.add( ip )
+      fp = data_stack.count - arg_count
+
+    method pop_native_frame
+      local result = data_stack.last
+      data_stack.discard_from( fp )
+      ip = ip_stack.remove_last
+      fp = fp_stack.remove_last
+      data_stack.add( result )
+
+
+      #{
     method push_frame( new_commands:Cmd[] )
       reg_stack.add( fp )
       reg_stack.add( ip )
@@ -250,6 +300,18 @@ class Task
       ip = reg_stack.remove_last
       fp = reg_stack.remove_last
       data_stack.add( result )
+      }#
+
+    method resolve_commands
+      local write_i = 0
+      forEach (i of commands)
+        local cmd = commands[i].resolve( this, write_i )
+        if (cmd)
+          commands[write_i] = cmd
+          ++write_i
+        endIf
+      endForEach
+      commands.discard_from( write_i )
 
     method resume->this
       status = TaskStatus.RUNNING
@@ -278,10 +340,10 @@ class Method
     name            : String
     fn              : Function(Task)
     index           : Int32
-    parameter_count : Int32
+    min_param_count : Int32
 
   METHODS
-    method init( vm, index, name, parameter_count, fn )
+    method init( vm, index, name, min_param_count, fn )
 endClass
 
 
@@ -365,10 +427,11 @@ endClass
 
 class ObjectValue : Value
   PROPERTIES
-    value : Object
+    value      : Object
+    type_index : Int32
 
   METHODS
-    method init( value )
+    method init( value, type_index )
       type = TYPE_OBJECT
 
     method to->Object
@@ -402,9 +465,13 @@ class TokenType [requisite]
     INVALID
     EOL
     LITERAL_INTEGER
+    LITERAL_REAL
+    LITERAL_NULL
+    IDENTIFIER
     SYMBOL_PLUS
     SYMBOL_PLUS_EQUALS
     SYMBOL_PLUS_PLUS
+    SYMBOL_SEMICOLON
     SYMBOL_TIMES
     SYMBOL_TIMES_EQUALS
 
@@ -415,9 +482,13 @@ class TokenType [requisite]
     method init_class
       type_to_name[ EOL ]                 = "\n"
       type_to_name[ LITERAL_INTEGER ]     = "literal integer"
+      type_to_name[ LITERAL_REAL ]        = "literal real"
+      type_to_name[ LITERAL_NULL ]        = "literal null"
+      type_to_name[ IDENTIFIER ]          = "identifier"
       type_to_name[ SYMBOL_PLUS ]         = "+"
       type_to_name[ SYMBOL_PLUS_EQUALS ]  = "+="
       type_to_name[ SYMBOL_PLUS_PLUS ]    = "++"
+      type_to_name[ SYMBOL_SEMICOLON ]    = ";"
       type_to_name[ SYMBOL_TIMES]         = "*"
       type_to_name[ SYMBOL_TIMES_EQUALS ] = "*="
 
@@ -454,6 +525,9 @@ class Token
     method to->Int32
       return 0
 
+    method to->Real64
+      return 0
+
     method to->String
       return TokenType.display_name( type )
 
@@ -469,6 +543,35 @@ class IntegerToken : Token
 
     method to->Int32
       return value
+
+    method to->String
+      return value->String
+endClass
+
+class RealToken : Token
+  PROPERTIES
+    value : Real64
+
+  METHODS
+    method init( value )
+      type = TokenType.LITERAL_REAL
+
+    method to->Int32
+      return value->Real64
+
+    method to->Real64
+      return value
+
+    method to->String
+      return value->String
+endClass
+
+class StringToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( type, value )
 
     method to->String
       return value->String
@@ -514,6 +617,11 @@ class Parser
     method has_another->Logical
       return (token_index < token_count)
 
+    method next_is( token_type:Int32 )->Logical
+      if (token_index == token_count) return false
+      local t = tokens[ token_index ]
+      return (t.type == token_type)
+
     method parse( source:String, filepath:String )->Cmd[]
       tokens = Tokenizer( filepath, source ).tokenize
       token_count = tokens.count
@@ -551,10 +659,31 @@ class Parser
       local t = read
       which (t.type)
         case TokenType.LITERAL_INTEGER
-          commands.add( CmdReadLiteralInteger(t, t->Int32) )
+          commands.add( CmdLiteralInteger(t, t->Int32) )
+
+        case TokenType.LITERAL_REAL
+          commands.add( CmdLiteralReal(t, t->Real64) )
+
+        case TokenType.LITERAL_NULL
+          commands.add( CmdLiteralNull(t) )
+
+        case TokenType.IDENTIFIER
+          local access = CmdAccess( t, t->String, parse_args )
+          commands.add( access )
+
         others
-          throw t.error( "Syntax error." )
+          throw t.error( "Syntax error - unexpected $." (t) )
+
       endWhich
+
+    method parse_args->Int32
+      local arg_count = 0
+      while (has_another)
+        if (next_is(TokenType.EOL) or next_is(TokenType.SYMBOL_SEMICOLON)) return arg_count
+        parse_expression
+        ++arg_count
+      endWhile
+      return arg_count
 
     method peek( skip=0:Int32 )->Token
       local peek_index = token_index + skip
@@ -569,10 +698,26 @@ class Parser
       return tokens[ token_index - 1 ]
 endClass
 
+class Keywords [singleton]
+  PROPERTIES
+    table : Table<<String,Int32>>
+
+  METHODS
+    method get( id:String )->Int32?
+      if (not table)
+        table = Table<<String,Int32>>()
+        table[ "null" ] = TokenType.LITERAL_NULL
+      endIf
+
+      if (table.contains(id)) return table[ id ]
+      return null
+endClass
+
 class Tokenizer
   PROPERTIES
     reader   : ParseReader
     tokens   : Token[]
+    buffer   = StringBuilder()
     filepath : String
     line     : Int32
     column   : Int32
@@ -590,7 +735,11 @@ class Tokenizer
       return true
 
     method add_real_token( value:Real64 )->Logical
-      tokens.add( IntegerToken(value).set_info(filepath,line,column) )
+      tokens.add( RealToken(value).set_info(filepath,line,column) )
+      return true
+
+    method add_string_token( type:Int32, value:String )->Logical
+      tokens.add( StringToken(type,value).set_info(filepath,line,column) )
       return true
 
     method consume( ch:Character )->Logical [macro]
@@ -624,6 +773,15 @@ class Tokenizer
           others:   return tokenize_number
         endWhich
 
+      elseIf (ch.is_letter or ch.is_number)
+        tokenize_identifier
+        return true
+
+      elseIf (ch == 10)
+        reader.read
+        add_token( TokenType.EOL )
+        return true
+
       else
         # Either a symbol or a decimal like ".1".
         if (ch == '.')
@@ -635,6 +793,22 @@ class Tokenizer
         local token_type = scan_symbol_token_type
         if (token_type == -1) return true  # something else is happening; it's fine
         return add_token( token_type )
+      endIf
+
+    method tokenize_identifier
+      buffer.clear.print( reader.read )
+      local ch = reader.peek
+      while (ch.is_identifier)
+        buffer.print( reader.read )
+        ch = reader.peek
+      endWhile
+
+      local name = buffer->String
+      local keyword_type = Keywords[ name ]
+      if (keyword_type.exists)
+        add_token( keyword_type.value )
+      else
+        add_string_token( TokenType.IDENTIFIER, name )
       endIf
 
     method tokenize_integer_in_base( base:Int32 )->Logical
@@ -834,10 +1008,12 @@ class Tokenizer
         elseIf (consume(">>:"))  return TokenType.symbol_shift_right
         elseIf (consume(">>>:")) return TokenType.symbol_shift_right_x
         return TokenType.symbol_colon
+      }#
 
       elseIf (ch == ';')
-        return TokenType.symbol_semicolon
+        return TokenType.SYMBOL_SEMICOLON
 
+      #{
       elseIf (ch == '<' )
         if     (consume('<')) return TokenType.symbol_open_specialize
         elseIf (consume('=')) return TokenType.symbol_le
@@ -906,17 +1082,20 @@ class Cmd
 
     method execute( task:Task )->Logical
       throw t.error( "No execute() defined for $." (type_name) )
+
+    method resolve( task:Task, index:Int32 )->Cmd
+      return this
 endClass
 
 class CmdHalt : Cmd
   METHODS
     method execute( task:Task )->Logical
-    task.status = TaskStatus.FINISHED
-    --task.ip  # stay at the HALT
-    return false
+      task.status = TaskStatus.FINISHED
+      --task.ip  # stay at the HALT
+      return false
 endClass
 
-class CmdReadLiteralInteger : Cmd
+class CmdLiteralInteger : Cmd
   PROPERTIES
     value : Int32
 
@@ -925,6 +1104,25 @@ class CmdReadLiteralInteger : Cmd
 
     method execute( task:Task )->Logical
       task.push( IntegerValue(value) )
+      return true
+endClass
+
+class CmdLiteralReal : Cmd
+  PROPERTIES
+    value : Real64
+
+  METHODS
+    method init( t, value )
+
+    method execute( task:Task )->Logical
+      task.push( RealValue(value) )
+      return true
+endClass
+
+class CmdLiteralNull : Cmd
+  METHODS
+    method execute( task:Task )->Logical
+      task.push( NullValue() )
       return true
 endClass
 
@@ -947,6 +1145,46 @@ class CmdMultiply : Cmd
       local b = task.pop
       local a = task.pop
       task.push( a * b )
+      return true
+endClass
+
+class CmdAccess : Cmd
+  PROPERTIES
+    name      : String
+    arg_count : Int32
+
+  METHODS
+    method init( t, name, arg_count )
+
+    method resolve( task:Task, index:Int32 )->Cmd
+      local m = task.vm.methods_by_name[ name ]
+      if (m) return CmdGlobalNativeCall( t, m, arg_count ).resolve( task, index )
+      throw t.error( ''Unknown identifier "$".'' (name) )
+endClass
+
+class CmdGlobalNativeCall : Cmd
+  PROPERTIES
+    method_info : Method
+    arg_count   : Int32
+
+  METHODS
+    method init( t, method_info, arg_count )
+
+    method execute( task:Task )->Logical
+      #task.push_native_frame( arg_count )
+      method_info.fn( task )
+      return (task.status == TaskStatus.RUNNING)
+endClass
+
+class CmdPopFrame : Cmd
+  PROPERTIES
+    arg_count   : Int32
+
+  METHODS
+    method init( t )
+
+    method execute( task:Task )->Logical
+      task.pop_native_frame
       return true
 endClass
 
