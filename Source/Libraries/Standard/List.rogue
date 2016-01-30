@@ -3,8 +3,8 @@ endClass
 
 class List<<$DataType>> : GenericList
   PROPERTIES
-    data  : Array<<$DataType>>
-    count : Int32
+    data      : Array<<$DataType>>
+    count     : Int32
 
   METHODS
     method init
@@ -200,6 +200,9 @@ class List<<$DataType>> : GenericList
 
       return this[ Random.next_int32(this.count) ]
 
+    method rebuilder->ListRebuilder<<$DataType>>
+      return ListRebuilder<<$DataType>>( this )
+
     method reserve( additional_count:Int32 )->$DataType[]
       local required_capacity = count + additional_count
 
@@ -351,5 +354,61 @@ class ListReduce<<$FromType,$ToType>>
         result = reduce_fn( index, list[index], result )
       endForEach
       return result
+endClass
+
+class ListRebuilder<<$DataType>>
+  PROPERTIES
+    list        : $DataType[]
+    read_index  : Int32
+    write_index : Int32
+
+  METHODS
+    method init( list )
+
+    method has_another->Logical
+      if (read_index < list.count)
+        return true
+      else
+        # automatically finish up
+        list.discard_from( write_index )
+        return false
+      endIf
+
+      return (read_index < list.count)
+
+    method read->$DataType
+      ++read_index
+      return list[ read_index - 1 ]
+
+    method reset( new_list=null:$DataType[] )->this
+      if (new_list) list = new_list  # else use same as before
+      read_index = 0
+      write_index = 0
+      return this
+
+    method write( value:$DataType )->this
+      if (write_index == read_index)
+        # We're adding more items to the list then it originally had.
+
+        # Make sure there's at least one more spot
+        list.reserve( 1 )
+
+        local unread_count = list.count - read_index
+
+        # Shift all the unread elements over to the end of the backing array,
+        # effectively inserting 1 or more empty spots for us to write
+        # additional data to.
+        list.data.set( list.capacity-unread_count, list.data, read_index, unread_count )
+
+        read_index += (list.capacity - list.count)
+
+        # Change the list count to include the shifted data
+        list.count = list.capacity
+      endIf
+
+      list[ write_index ] = value
+      ++write_index
+
+      return this
 endClass
 
