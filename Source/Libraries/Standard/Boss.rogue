@@ -303,15 +303,10 @@ class Task
       }#
 
     method resolve_commands
-      local write_i = 0
-      forEach (i of commands)
-        local cmd = commands[i].resolve( this, write_i )
-        if (cmd)
-          commands[write_i] = cmd
-          ++write_i
-        endIf
+      local builder = CmdBuilder( commands )
+      forEach (cmd in builder)
+        cmd.resolve( this, builder )
       endForEach
-      commands.discard_from( write_i )
 
     method resume->this
       status = TaskStatus.RUNNING
@@ -1073,6 +1068,9 @@ class Tokenizer
       endIf
 endClass
 
+class CmdBuilder : ListRebuilder<<Cmd>>
+endClass
+
 class Cmd
   PROPERTIES
     t : Token
@@ -1083,8 +1081,8 @@ class Cmd
     method execute( task:Task )->Logical
       throw t.error( "No execute() defined for $." (type_name) )
 
-    method resolve( task:Task, index:Int32 )->Cmd
-      return this
+    method resolve( task:Task, builder:CmdBuilder )
+      builder.write( this )
 endClass
 
 class CmdHalt : Cmd
@@ -1156,10 +1154,13 @@ class CmdAccess : Cmd
   METHODS
     method init( t, name, arg_count )
 
-    method resolve( task:Task, index:Int32 )->Cmd
+    method resolve( task:Task, builder:CmdBuilder )
       local m = task.vm.methods_by_name[ name ]
-      if (m) return CmdGlobalNativeCall( t, m, arg_count ).resolve( task, index )
-      throw t.error( ''Unknown identifier "$".'' (name) )
+      if (m)
+        CmdGlobalNativeCall(t, m, arg_count).resolve( task, builder )
+      else
+        throw t.error( ''Unknown identifier "$".'' (name) )
+      endIf
 endClass
 
 class CmdGlobalNativeCall : Cmd

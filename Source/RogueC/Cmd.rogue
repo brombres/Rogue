@@ -20,7 +20,7 @@ class Cmd
       this_type.organize(scope)
       target_type.organize(scope)
 
-      if (this_type.instance_of(target_type))
+      if (this_type.instance_of(target_type) or target_type.instance_of(this_type))
         return CmdCastToType( t, this, target_type )
       else
         local m_name = "to_" + target_type.name
@@ -1674,10 +1674,10 @@ class CmdAccess : Cmd
           endIf
 
           if (cmd_call)
-            cmd_new = cmd_call
+            return cmd_call.cast_to( new_type, scope ).resolve( scope )
+          else
+            return cmd_new.resolve(scope)
           endIf
-
-          return cmd_new.resolve(scope)
 
         else
           if (name.ends_with('?'))
@@ -3895,7 +3895,6 @@ class CmdAs : CmdTypeOperator
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       target_type.organize(scope)
-
       return this
 endClass
 
