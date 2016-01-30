@@ -22,20 +22,6 @@ vm.register( "println", 0,
 
 vm.execute @|println 5 6 7+8
             |println null
+            |println 1
+            |println 1+1
 
-local nums = Int32[](4)
-nums.add(1)
-nums.add(2)
-nums.add(3)
-nums.add(4)
-println nums
-local rebuilder = nums.rebuilder
-forEach (n in rebuilder)
-  if (n == 2) rebuilder.write(0).write(0).write(6)
-  else        rebuilder.write(n)
-endForEach
-println nums
-forEach (n in rebuilder.reset)
-  rebuilder.write( -n )
-endForEach
-println nums

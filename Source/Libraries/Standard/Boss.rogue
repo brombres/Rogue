@@ -14,7 +14,7 @@ class VM
   METHODS
     method init
 
-    method acquire( type_or_method_name:String )->Method
+    method element_info( type_or_method_name:String )->Method
       local m = methods_by_name[ type_or_method_name ]
       if (m) return m
 
@@ -58,7 +58,7 @@ class VM
       if (dot.exists)
         # TypeName.method_name
         local context_name = name.before_first( '.' )
-        local context = acquire( context_name )
+        local context = element_info( context_name )
 
         if (dispatch_table.count > context.index)
           if (not dispatch_table[context.index])
@@ -139,6 +139,24 @@ class Error : ::Error
 
 endClass
 
+class Frame
+  PROPERTIES
+    ip          : Int32
+    fp          : Int32
+    arg_count   : Int32
+    commands    = Cmd[]
+    method_info : Method
+
+  METHODS
+    method init
+      commands.add( CmdLiteralNull() )
+
+    method init( commands, ip )
+
+    method init( method_info )
+      commands = method_info.commands
+endClass
+
 class TaskStatus
   ENUMERATE
     INITIALIZING
@@ -149,50 +167,43 @@ endClass
 
 class Task
   PROPERTIES
-    vm            : VM
-    fp            : Int32
-    ip            : Int32
-    commands      = Cmd[]
-    data_stack    = Value[]
-    fp_stack      = Int32[]
-    ip_stack      = Int32[]
-    command_stack = Cmd[][]
+    vm          : VM
+    stack       = Value[]
+    frame       = Frame()
+    frames      = Frame[]
 
-    status        : Int32
-    result        : Result
-    filepath      : String
+    status    : Int32
+    result    : Result
+    filepath  : String
 
   METHODS
     method init( vm )
 
     method reset->Task
-      fp = 0
-      ip = 0
-      data_stack.clear
-      fp_stack.clear
-      ip_stack.clear
-      commands.clear
-      command_stack.clear
+      stack.clear
+      frames.clear
       status = TaskStatus.INITIALIZING
+      frame = Frame()
+      frame.commands = Cmd[]
       return this
 
     method arg( index:Int32 )->Value
-      return data_stack[ fp + index ]
+      return stack[ frame.fp + index ]
 
-    method arg_count->Int32
-      return (data_stack.count - fp)
+    method arg_count->Int32 [macro]
+      this.frame.arg_count
 
     method ensure_arg_count( n:Int32 )->this
-      local delta = (data_stack.count - fp) - n
-
-      while (delta < 0) data_stack.add( NullValue() ); ++delta
-
+      while (arg_count < n)
+        stack.add( NullValue() )
+        ++frame.arg_count
+      endWhile
       return this
 
     method error( message:String )->Error
       local t : Token
-      if (commands.count) t = commands[ip].t
-      else                t = Token().set_info( filepath, 0, 0 )
+      if (frame.commands.count) t = frame.commands[frame.ip].t
+      else                      t = Token().set_info( filepath, 0, 0 )
       throw t.error( message )
 
     method is_finished->Logical
@@ -200,7 +211,7 @@ class Task
 
     method load( source:String, filepath )->this
       try
-        commands.add( Parser(this).parse(source,filepath) )
+        frame.commands.add( Parser(this).parse(source,filepath) )
       catch (err:Error)
         println err
       endTry
@@ -208,7 +219,7 @@ class Task
 
     method execute->Logical
       # Returns false if the task is finished
-      if (commands.count == 0) return false
+      if (frame.commands.count == 0) return false
 
       if (status == TaskStatus.INITIALIZING)
         resolve_commands
@@ -217,11 +228,11 @@ class Task
 
       try
         if (status == TaskStatus.RUNNING)
-          local cmd = commands[ip]
-          ++ip
+          local cmd = frame.commands[frame.ip]
+          ++frame.ip
           while (cmd.execute(this))
-            cmd = commands[ip]
-            ++ip
+            cmd = frame.commands[frame.ip]
+            ++frame.ip
           endWhile
         endIf
       catch (err:Error)
@@ -236,74 +247,58 @@ class Task
       endIf
 
     method pop->Value
-      if (data_stack.count) return data_stack.remove_last
+      if (stack.count) return stack.remove_last
       else              return NullValue()
 
     method pop_integer->Int32
-      if (data_stack.count) return data_stack.remove_last->Int32
+      if (stack.count) return stack.remove_last->Int32
       else             return 0
 
     method pop_object->Object
-      if (data_stack.count) return data_stack.remove_last->Object
+      if (stack.count) return stack.remove_last->Object
       else             return null
 
     method pop_real->Real64
-      if (data_stack.count) return data_stack.remove_last->Real64
+      if (stack.count) return stack.remove_last->Real64
       else             return 0
 
     method push( value:Int32 )->this
-      data_stack.add( IntegerValue(value) )
+      stack.add( IntegerValue(value) )
       return this
 
     method push( value:Object, object_type_name=null:String )->this
       if (value)
         if (not object_type_name) object_type_name = value.type_name
-        data_stack.add( ObjectValue(value,vm.acquire(object_type_name).index) )
+        stack.add( ObjectValue(value,vm.element_info(object_type_name).index) )
       else
-        data_stack.add( NullValue() )
+        stack.add( NullValue() )
       endIf
       return this
 
     method push( value:Real64 )->this
-      data_stack.add( RealValue(value) )
+      stack.add( RealValue(value) )
       return this
 
     method push( value:Value )->this
-      data_stack.add( value )
+      stack.add( value )
       return this
 
-    method push_native_frame( arg_count:Int32 )
-      fp_stack.add( fp )
-      ip_stack.add( ip )
-      fp = data_stack.count - arg_count
-
-    method pop_native_frame
-      local result = data_stack.last
-      data_stack.discard_from( fp )
-      ip = ip_stack.remove_last
-      fp = fp_stack.remove_last
-      data_stack.add( result )
-
-
-      #{
-    method push_frame( new_commands:Cmd[] )
-      reg_stack.add( fp )
-      reg_stack.add( ip )
-      fp = data_stack.count
-      command_stack.add( commands )
-      commands = new_commands
+    method push_frame( new_arg_count:Int32, ip:Int32 )->Frame
+      frames.add( frame )
+      frame = Frame( frame.commands, ip )
+      frame.fp = stack.count - new_arg_count
+      frame.arg_count = new_arg_count
+      return frame
 
     method pop_frame
-      local result = data_stack.last
-      data_stack.discard_from( fp )
-      commands = command_stack.remove_last
-      ip = reg_stack.remove_last
-      fp = reg_stack.remove_last
-      data_stack.add( result )
-      }#
+      local result = stack.last
+      stack.discard_from( frame.fp )
+      stack.add( result )
+
+      frame = frames.remove_last
 
     method resolve_commands
-      local builder = CmdBuilder( commands )
+      local builder = CmdBuilder( frame.commands )
       forEach (cmd in builder)
         cmd.resolve( this, builder )
       endForEach
@@ -336,6 +331,7 @@ class Method
     fn              : Function(Task)
     index           : Int32
     min_param_count : Int32
+    commands        : Cmd[]
 
   METHODS
     method init( vm, index, name, min_param_count, fn )
@@ -663,6 +659,8 @@ class Parser
           commands.add( CmdLiteralNull(t) )
 
         case TokenType.IDENTIFIER
+          # TODO: check for local access
+          commands.add( CmdReadThis(t) )
           local access = CmdAccess( t, t->String, parse_args )
           commands.add( access )
 
@@ -1089,7 +1087,7 @@ class CmdHalt : Cmd
   METHODS
     method execute( task:Task )->Logical
       task.status = TaskStatus.FINISHED
-      --task.ip  # stay at the HALT
+      --task.frame.ip  # stay at the HALT
       return false
 endClass
 
@@ -1121,6 +1119,13 @@ class CmdLiteralNull : Cmd
   METHODS
     method execute( task:Task )->Logical
       task.push( NullValue() )
+      return true
+endClass
+
+class CmdReadThis : Cmd
+  METHODS
+    method execute( task:Task )->Logical
+      task.push( task.arg(0) )
       return true
 endClass
 
@@ -1158,6 +1163,7 @@ class CmdAccess : Cmd
       local m = task.vm.methods_by_name[ name ]
       if (m)
         CmdGlobalNativeCall(t, m, arg_count).resolve( task, builder )
+        CmdPopFrame(t).resolve( task, builder )
       else
         throw t.error( ''Unknown identifier "$".'' (name) )
       endIf
@@ -1172,7 +1178,14 @@ class CmdGlobalNativeCall : Cmd
     method init( t, method_info, arg_count )
 
     method execute( task:Task )->Logical
-      #task.push_native_frame( arg_count )
+      task.push_frame( arg_count, task.frame.ip )
+
+      # The new "native call" frame will execute the CmdPopFrame
+      # that comes next, but the popped frame will set the IP
+      # back to the same CmdPopFrame unless we adjust that previous
+      # frame to skip it.
+      ++task.frames.last.ip
+
       method_info.fn( task )
       return (task.status == TaskStatus.RUNNING)
 endClass
@@ -1185,7 +1198,7 @@ class CmdPopFrame : Cmd
     method init( t )
 
     method execute( task:Task )->Logical
-      task.pop_native_frame
+      task.pop_frame
       return true
 endClass
 
