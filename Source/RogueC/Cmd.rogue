@@ -2681,7 +2681,7 @@ class CmdBinary : Cmd
         if (left_type is right_type)
           throw t.error( "No method $.$(1) is defined." (left_type,fn_name) )
         else
-          throw t.error( "Neither method $.$(1) nor method $.$(1) is defined." (left_type,fn_name,right_type,fn_name) )
+          throw t.error( "Neither method $.$(1) nor global method $.$(2) is defined." (left_type,fn_name,right_type,fn_name) )
         endIf
       else
         return null

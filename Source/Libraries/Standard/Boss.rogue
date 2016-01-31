@@ -262,11 +262,11 @@ class Task
       if (stack.count) return stack.remove_last->Real64
       else             return 0
 
-    method push( value:Int32 )->this
+    method push_integer( value:Int32 )->this
       stack.add( IntegerValue(value) )
       return this
 
-    method push( value:Object, object_type_name=null:String )->this
+    method push_object( value:Object, object_type_name=null:String )->this
       if (value)
         if (not object_type_name) object_type_name = value.type_name
         stack.add( ObjectValue(value,vm.element_info(object_type_name).index) )
@@ -275,18 +275,23 @@ class Task
       endIf
       return this
 
-    method push( value:Real64 )->this
+    method push_string( value:String )->this
+      stack.add( StringValue(value) )
+      return this
+
+    method push_real( value:Real64 )->this
       stack.add( RealValue(value) )
       return this
 
     method push( value:Value )->this
-      stack.add( value )
+      if (value) stack.add( value )
+      else       stack.add( NullValue() )
       return this
 
     method push_frame( new_arg_count:Int32, ip:Int32 )->Frame
       frames.add( frame )
       frame = Frame( frame.commands, ip )
-      frame.fp = stack.count - new_arg_count
+      frame.fp = stack.count - (new_arg_count+1)  # +1 includes 'this'
       frame.arg_count = new_arg_count
       return frame
 
@@ -383,7 +388,7 @@ class IntegerValue : Value
       which (other.type)
         case TYPE_REAL:    return RealValue( value + other->Real64 )
         case TYPE_INTEGER: return IntegerValue( value + other->Int32 )
-        #case TYPE_STRING:  return StringValue( value + other->String )
+        case TYPE_STRING:  return StringValue( value + other->String )
         others:            return IntegerValue( 0 )
       endWhich
 
@@ -391,7 +396,7 @@ class IntegerValue : Value
       which (other.type)
         case TYPE_REAL:    return RealValue( value * other->Real64 )
         case TYPE_INTEGER: return IntegerValue( value * other->Int32 )
-        #case TYPE_STRING:  return StringValue( value * other->String )
+        case TYPE_STRING:  return StringValue( value * other->String )
         others:            return IntegerValue( 0 )
       endWhich
 
@@ -441,6 +446,22 @@ class RealValue : Value
     method init( value )
       type = TYPE_REAL
 
+    method operator+( other:Value )->Value
+      which (other.type)
+        case TYPE_REAL:    return RealValue( value + other->Real64 )
+        case TYPE_INTEGER: return RealValue( value + other->Int32 )
+        case TYPE_STRING:  return StringValue( value->Int32 + other->String )
+        others:            return IntegerValue( 0 )
+      endWhich
+
+    method operator*( other:Value )->Value
+      which (other.type)
+        case TYPE_REAL:    return RealValue( value * other->Real64 )
+        case TYPE_INTEGER: return RealValue( value * other->Int32 )
+        case TYPE_STRING:  return StringValue( value->Int32 * other->String )
+        others:            return IntegerValue( 0 )
+      endWhich
+
     method to->Int32
       return value->Int32
 
@@ -451,6 +472,28 @@ class RealValue : Value
       return value->String
 endClass
 
+class StringValue : Value
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( value )
+      type = TYPE_STRING
+
+    method operator+( other:Value )->Value
+      return StringValue( value + other->String )
+
+    method operator*( other:Value )->Value
+      which (other.type)
+        case TYPE_REAL:    return StringValue( value * other->Int32 )
+        case TYPE_INTEGER: return StringValue( value * other->Int32 )
+        others:            return IntegerValue( 0 )
+      endWhich
+
+    method to->String
+      return value
+endClass
+
 class TokenType [requisite]
   ENUMERATE
     INVALID
@@ -458,7 +501,12 @@ class TokenType [requisite]
     LITERAL_INTEGER
     LITERAL_REAL
     LITERAL_NULL
+    LITERAL_STRING
     IDENTIFIER
+    SYMBOL_CLOSE_PAREN
+    SYMBOL_COMMA
+    SYMBOL_DOT
+    SYMBOL_OPEN_PAREN
     SYMBOL_PLUS
     SYMBOL_PLUS_EQUALS
     SYMBOL_PLUS_PLUS
@@ -475,7 +523,12 @@ class TokenType [requisite]
       type_to_name[ LITERAL_INTEGER ]     = "literal integer"
       type_to_name[ LITERAL_REAL ]        = "literal real"
       type_to_name[ LITERAL_NULL ]        = "literal null"
+      type_to_name[ LITERAL_STRING ]      = "literal string"
       type_to_name[ IDENTIFIER ]          = "identifier"
+      type_to_name[ SYMBOL_CLOSE_PAREN ]  = ")"
+      type_to_name[ SYMBOL_COMMA ]        = ","
+      type_to_name[ SYMBOL_DOT ]          = "."
+      type_to_name[ SYMBOL_OPEN_PAREN ]   = "("
       type_to_name[ SYMBOL_PLUS ]         = "+"
       type_to_name[ SYMBOL_PLUS_EQUALS ]  = "+="
       type_to_name[ SYMBOL_PLUS_PLUS ]    = "++"
@@ -597,6 +650,9 @@ class Parser
       while (consume(TokenType.EOL)) found_any = true
       return found_any
 
+    method consume_end_command->Logical
+      return (consume_eols or consume(TokenType.SYMBOL_SEMICOLON) or not has_another)
+
     method error( message:String )->Error
       if (token_index < token_count)
         return tokens[ token_index ].error( message )
@@ -607,6 +663,20 @@ class Parser
 
     method has_another->Logical
       return (token_index < token_count)
+
+    method must_consume( token_type:Int32 )
+      if (consume(token_type)) return
+
+      throw error( "$ expected, found $." (TokenType.display_name(token_type),peek->String) )
+
+    method must_consume_end_command
+      if (consume_end_command) return
+      throw error( "End of line or ';' expected, found $." (peek->String) )
+
+    method must_read_identifier->String
+      local t = peek
+      must_consume( TokenType.IDENTIFIER )
+      return t->String
 
     method next_is( token_type:Int32 )->Logical
       if (token_index == token_count) return false
@@ -623,8 +693,15 @@ class Parser
     method parse_elements
       consume_eols
       while (has_another)
-        parse_expression
+        parse_statements
       endWhile
+
+    method parse_statements
+      consume_eols
+      if (not has_another) return
+
+      parse_expression
+      must_consume_end_command
 
     method parse_expression
       consume_eols
@@ -632,18 +709,38 @@ class Parser
 
     method parse_add_subtract
       parse_multiply_divide
+      parse_add_subtract_rhs
+
+    method parse_add_subtract_rhs
       local t = peek
       if (consume(TokenType.SYMBOL_PLUS))
         parse_multiply_divide
         add( CmdAdd(t) )
+        parse_add_subtract_rhs
       endIf
 
     method parse_multiply_divide
-      parse_term
+      parse_member_access
+      parse_multiply_divide_rhs
+
+    method parse_multiply_divide_rhs
       local t = peek
       if (consume(TokenType.SYMBOL_TIMES))
-        parse_term
+        parse_member_access
         add( CmdMultiply(t) )
+        parse_multiply_divide_rhs
+      endIf
+
+    method parse_member_access
+      parse_term
+      parse_member_access_rhs
+
+    method parse_member_access_rhs
+      local t = peek
+      if (consume(TokenType.SYMBOL_DOT))
+        local name = must_read_identifier
+        commands.add( CmdContextAccess(t, name, parse_args) )
+        parse_member_access_rhs
       endIf
 
     method parse_term
@@ -658,11 +755,17 @@ class Parser
         case TokenType.LITERAL_NULL
           commands.add( CmdLiteralNull(t) )
 
+        case TokenType.LITERAL_STRING
+          commands.add( CmdLiteralString(t,t->String) )
+
         case TokenType.IDENTIFIER
           # TODO: check for local access
           commands.add( CmdReadThis(t) )
-          local access = CmdAccess( t, t->String, parse_args )
-          commands.add( access )
+          commands.add( CmdAccess(t, t->String, parse_args) )
+
+        case TokenType.SYMBOL_OPEN_PAREN
+          parse_expression
+          must_consume( TokenType.SYMBOL_CLOSE_PAREN )
 
         others
           throw t.error( "Syntax error - unexpected $." (t) )
@@ -670,12 +773,19 @@ class Parser
       endWhich
 
     method parse_args->Int32
+      if (next_is(TokenType.EOL) or next_is(TokenType.SYMBOL_SEMICOLON)) return 0
+
+      local has_parens = consume( TokenType.SYMBOL_OPEN_PAREN )
+      if (has_parens and consume(TokenType.SYMBOL_CLOSE_PAREN)) return 0
+
       local arg_count = 0
-      while (has_another)
-        if (next_is(TokenType.EOL) or next_is(TokenType.SYMBOL_SEMICOLON)) return arg_count
+      local first = true
+      while (has_another and (first or consume(TokenType.SYMBOL_COMMA)))
+        first = false
         parse_expression
         ++arg_count
       endWhile
+      if (has_parens) must_consume( TokenType.SYMBOL_CLOSE_PAREN )
       return arg_count
 
     method peek( skip=0:Int32 )->Token
@@ -774,6 +884,9 @@ class Tokenizer
         reader.read
         add_token( TokenType.EOL )
         return true
+
+      elseIf (ch == '"')
+        return tokenize_string( ch )
 
       else
         # Either a symbol or a decimal like ".1".
@@ -900,6 +1013,132 @@ class Tokenizer
       endWhile
       return n
 
+    method tokenize_string( terminator:Character )->Logical
+      buffer.clear
+      reader.read
+      while (reader.has_another)
+        local ch = reader.peek
+        if (ch == terminator)
+          reader.read
+          add_string_token( TokenType.LITERAL_STRING, buffer->String )
+          return true
+        else
+          scan_character
+        endIf
+      endWhile
+
+      throw error( "End of input reached while looking for end of string." )
+
+    method tokenize_verbatim_string->Logical
+      buffer.clear
+      reader.read
+      reader.read
+      while (reader.has_another)
+        local ch = reader.read
+        if (ch == 10)
+          reader.consume_spaces
+          if (consume('|'))
+            buffer.print( ch )
+          else
+            add_string_token( TokenType.LITERAL_STRING, buffer->String )
+            return add_token( TokenType.EOL )
+          endIf
+        else
+          buffer.print( ch )
+        endIf
+      endWhile
+
+      throw error( "End of File reached while looking for end of verbatim string." )
+
+    method scan_character
+      # Adds a character to a buffer while handling any escape sequences.
+      if (not reader.has_another) throw error( "Character expected." )
+
+      local ch = reader.peek
+      if (ch == '\n') throw error( "Character expected; found end of line." )
+
+      if (ch == '\\')
+        reader.read
+        if (not reader.has_another) throw error( "Escaped character expected; found end of input." )
+
+        local value : Int32
+        if     (consume('b')) value = 8
+        elseIf (consume('f')) value = 12
+        elseIf (consume('n')) value = '\n'
+        elseIf (consume('r')) value = '\r'
+        elseIf (consume('t')) value = '\t'
+        elseIf (consume('v')) value = 11
+        elseIf (consume('0')) value = '\0'
+        elseIf (consume('/')) value = '/'
+        elseIf (consume('\''))value = '\''
+        elseIf (consume('\\'))value = '\\'
+        elseIf (consume('"')) value = '"'
+        elseIf (consume('x')) value = scan_hex_value(2)
+        elseIf (consume('u')) value = scan_hex_value(4)
+        elseIf (consume('s')) value = scan_hex_value(6)
+        # supplementary - 6-digit Unicode converted to a surrogate pair if needed
+        else throw error( "Invalid escape sequence.  Supported: \\n \\r \\s \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
+
+        if (value < 0x10000)
+          # Standard Unicode
+          buffer.print( value->Character )
+        else
+          # Surrogate pair
+          value -= 0x10000
+          buffer.print( (0xd800 + ((value:>>:10)&0x3ff))->Character )
+          buffer.print( (0xdc00 + (value&0x3ff))->Character )
+        endIf
+
+      else
+        local value = reader.read->Int32
+        if ((value & 0x80) != 0)
+          # Handle UTF8 encoding
+          local ch2 = reader.read->Int32
+
+          if ((value & 0x20) == 0)
+            # %110xxxxx 10xxxxxx
+            value = value & 0x1f
+            ch2 = value & 0x3f
+            buffer.print( ((value:<<:6) | ch2)->Character )
+          else
+            # %1110xxxx 10xxxxxx 10xxxxxx
+            local ch3 = reader.read->Int32
+            value = value & 15
+            ch2 = ch2 & 0x3f
+            ch3 = ch3 & 0x3f
+            buffer.print( ((value:<<:2) | (ch2:<<:6) | ch3)->Character )
+          endIf
+
+        else
+          buffer.print( value->Character )
+        endIf
+
+      endIf
+
+    method next_is_hex_digit->Logical
+      local ch = reader.peek
+      return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
+
+    method scan_hex_value( digits:Int32 )->Int32
+      local value = 0
+      local i = 1
+      while (i <= digits)
+        if (not reader.has_another) throw error( digits + "-digit hex value expected; found end of file." )
+        if (not next_is_hex_digit)
+          local ch = reader.peek
+          local error_buffer = StringBuilder()
+          error_buffer.print( "Invalid hex digit " )
+          if (ch < ' ' or ch->Int32 == 127) error_buffer.print( ch->Int32 )
+          else error_buffer.print( "'" + ch + "'" )
+          error_buffer.print('.')
+          throw error( error_buffer->String )
+        endIf
+        local intval = reader.read.to_number(16)
+        value = (value:<<:4) + intval
+        ++i
+      endWhile
+      return value
+
     method scan_symbol_token_type->Int32
       local ch = reader.read
 
@@ -936,15 +1175,15 @@ class Tokenizer
         if     (consume('&')) throw error( "Use 'and' instead of '&&'." )
         elseIf (consume('=')) return TokenType.symbol_ampersand_equals
         else                  return TokenType.symbol_ampersand
-
-      elseIf (ch == '(')
-        return TokenType.symbol_open_paren
-
-      elseIf (ch == ')')
-      return TokenType.symbol_close_paren
         }#
 
-      if (ch == '*')
+      if (ch == '(')
+        return TokenType.SYMBOL_OPEN_PAREN
+
+      elseIf (ch == ')')
+        return TokenType.SYMBOL_CLOSE_PAREN
+
+      elseIf (ch == '*')
         if     (consume('=')) return TokenType.SYMBOL_TIMES_EQUALS
         else                  return TokenType.SYMBOL_TIMES
 
@@ -953,18 +1192,20 @@ class Tokenizer
         elseIf (consume('+')) return TokenType.SYMBOL_PLUS_PLUS
         else                  return TokenType.SYMBOL_PLUS
 
-        #{
       elseIf (ch == ',')
-        return TokenType.symbol_comma
+        return TokenType.SYMBOL_COMMA
 
+        #{
       elseIf (ch == '-')
         if     (consume('='))  return TokenType.symbol_minus_equals
         elseIf (consume('-'))  return TokenType.symbol_minus_minus
         elseIf (reader.peek(0) == '>' and reader.peek(1) == '>') return TokenType.symbol_minus
         elseIf (consume('>'))  return TokenType.symbol_arrow
         else                   return TokenType.symbol_minus
+        }#
 
       elseIf (ch == '.' )
+        #{
         if (consume('.'))
           if (consume('.'))
             # ellipsis
@@ -981,9 +1222,11 @@ class Tokenizer
         elseIf (consume('='))
           return TokenType.symbol_dot_equals
         else
-          return TokenType.symbol_dot
-        endIf
+        }#
+          return TokenType.SYMBOL_DOT
+        #endIf
 
+        #{
       elseIf (ch == '/')
         if (consume('='))
           return TokenType.symbol_slash_equals
@@ -1062,7 +1305,7 @@ class Tokenizer
       }#
 
       else
-        throw error( "Unexpected input '"+ch+"'." )
+        throw error( "Unexpected character '"+ch+"'." )
       endIf
 endClass
 
@@ -1119,6 +1362,18 @@ class CmdLiteralNull : Cmd
   METHODS
     method execute( task:Task )->Logical
       task.push( NullValue() )
+      return true
+endClass
+
+class CmdLiteralString : Cmd
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( t, value )
+
+    method execute( task:Task )->Logical
+    task.push( StringValue(value) )
       return true
 endClass
 
@@ -1179,6 +1434,7 @@ class CmdGlobalNativeCall : Cmd
 
     method execute( task:Task )->Logical
       task.push_frame( arg_count, task.frame.ip )
+      task.ensure_arg_count( method_info.min_param_count )
 
       # The new "native call" frame will execute the CmdPopFrame
       # that comes next, but the popped frame will set the IP
@@ -1188,6 +1444,27 @@ class CmdGlobalNativeCall : Cmd
 
       method_info.fn( task )
       return (task.status == TaskStatus.RUNNING)
+endClass
+
+class CmdContextAccess : Cmd
+  PROPERTIES
+    name      : String
+    arg_count : Int32
+
+  METHODS
+    method init( t, name, arg_count )
+
+    method resolve( task:Task, builder:CmdBuilder )
+      throw t.error( "TODO" )
+      #{
+      local m = task.vm.methods_by_name[ name ]
+      if (m)
+        CmdGlobalNativeCall(t, m, arg_count).resolve( task, builder )
+        CmdPopFrame(t).resolve( task, builder )
+      else
+        throw t.error( ''Unknown identifier "$".'' (name) )
+      endIf
+      }#
 endClass
 
 class CmdPopFrame : Cmd

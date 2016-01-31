@@ -421,6 +421,9 @@ class String [native functional]
       if (value.count == 0) return this
       return StringBuilder().print( this ).print( value )->String
 
+    method operator*( value:Int32 )->String [macro]
+      this.times( value )
+
     method pluralize( quantity:Int32 )->String
       # Returns a pluralized form of this string.
       #
@@ -761,6 +764,10 @@ class String [native functional]
       endWhile
 
       return buffer
+
+  GLOBAL METHODS
+    method operator*( integer:Int32, string:String  )->String [macro]
+      string.times( integer )
 
 endClass
 

@@ -3,14 +3,29 @@ $using Boss
 
 class Robot
   PROPERTIES
+  METHODS
+    method init
+      println "Creating robot"
 endClass
 
 local vm = VM()
-vm.register( "Robot", 0, function(task)=task.push( Robot() ) )
+
+vm.register( "Robot", 0,
+  function(task:Task)
+    task.push_object( Robot() )
+  endFunction
+)
+
+vm.register( "Robot.speak", 0,
+  function(task:Task)
+    println "I AM ROBOT"
+    task.push( null )
+  endFunction
+)
 
 vm.register( "println", 0,
   function(task:Task)
-    forEach (i in 0..(task.arg_count-1))
+    forEach (i in 1..task.arg_count)
       print task.arg(i)
     endForEach
     println
@@ -20,8 +35,14 @@ vm.register( "println", 0,
 
 #local task = vm.execute( "Robot()" )
 
-vm.execute @|println 5 6 7+8
+vm.execute @|println 5, 6, 7+8
             |println null
             |println 1
-            |println 1+1
+            |println 2*3+4*5
+            |println 1 + " " + 2
+            |println 1 + 2 + " " + 3 + 4
+            |println 2+3*4+5
+            |println Robot()
+
+            #|println Robot().speak
 
