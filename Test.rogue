@@ -2,10 +2,25 @@ $include "Standard/Boss.rogue"
 $using Boss
 
 class Robot
+  GLOBAL PROPERTIES
+    phrases = String[] ...
+    [
+      "I AM ROBOT",
+      "ROBOT LOVES KITTEN",
+      "ALL YOUR BASE ARE BELONG TO ROBOT"
+    ]
+
   PROPERTIES
+    next_phrase = 0
+
   METHODS
     method init
       println "Creating robot"
+
+    method speak
+      println phrases[ next_phrase ]
+      ++next_phrase
+      next_phrase %= phrases.count
 endClass
 
 local vm = VM()
@@ -18,8 +33,8 @@ vm.register( "Robot", 0,
 
 vm.register( "Robot.speak", 0,
   function(task:Task)
-    println "I AM ROBOT"
-    task.push( null )
+    (task.object_arg(0) as Robot).speak
+    task.push_this
   endFunction
 )
 
@@ -43,6 +58,5 @@ vm.execute @|println 5, 6, 7+8
             |println 1 + 2 + " " + 3 + 4
             |println 2+3*4+5
             |println Robot()
-
-            #|println Robot().speak
+            |Robot().speak.speak.speak.speak
 

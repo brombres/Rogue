@@ -1,26 +1,30 @@
 $module Boss
 
 class VM
-  PROPERTIES
-    methods_by_name  = Table<<String,Method>>()
+  ENUMERATE
+    REAL_ID    = 1
+    INTEGER_ID = 2
+    LOGICAL_ID = 3
+    STRING_ID  = 4
 
-    dispatch_table = Method[][]
-    # Dynamic dispatch table - for object type index 'm' called in the context of
-    # object type index 'obj', the correct method is dispatch_table[obj][m].
+  PROPERTIES
+    global_dispatch  = Method[]
+    context_dispatch = Table<<Int32,Method>>[]
+    id_lookup        = Table<<String,Int32>>()
 
     free_tasks    = Task[]
     active_tasks  = Task[]
 
+    native_return = Cmd[]
+
   METHODS
     method init
+      native_return.add( CmdPopFrame(Token()) )
 
-    method element_info( type_or_method_name:String )->Method
-      local m = methods_by_name[ type_or_method_name ]
-      if (m) return m
-
-      # Create a placeholder
-      register( type_or_method_name, 0, function(task)=noAction )
-      return methods_by_name[ type_or_method_name ]
+      name_to_id( "Real" )     # id 1
+      name_to_id( "Integer" )  # id 2
+      name_to_id( "Logical" )  # id 3
+      name_to_id( "String" )   # id 4
 
     method execute( source:String, filepath="[Internal]":String )->Result
       return execute_new_task( source, filepath ).result
@@ -53,37 +57,32 @@ class VM
     method evaluate_integer( source:String )->Int32 [macro]
       this.evaluate( source )->Int32
 
+    method name_to_id( name:String )->Int32
+      local entry = id_lookup.find( name )
+      if (entry) return entry.value
+      
+      local id_value = id_lookup.count + 1
+      id_lookup[ name ] = id_value
+      return id_value
+
     method register( name:String, min_param_count:Int32, on_call:Function(Task) )
-      local dot          = name.locate( '.' )
+      local dot = name.locate( '.' )
       if (dot.exists)
         # TypeName.method_name
-        local context_name = name.before_first( '.' )
-        local context = element_info( context_name )
+        local context_id = name_to_id( name.before_first('.') )
+        local m_id = name_to_id( name.after_first('.') )
 
-        if (dispatch_table.count > context.index)
-          if (not dispatch_table[context.index])
-            dispatch_table[ context.index ] = Method[]
-          endIf
-        else
-          dispatch_table.expand_and_set( context.index, Method[] )
+        local lookup = context_dispatch.expand_to_include( context_id )[ context_id ]
+        if (not lookup)
+          lookup = Table<<Int32,Method>>()
+          context_dispatch[ context_id ] = lookup
         endIf
-
-        local method_name = name.after_first( '.' )
-        register( method_name, min_param_count, on_call )
-        local m = methods_by_name[ method_name ]
-
-        dispatch_table[ context.index ].expand_and_set( m.index, m )
+        lookup[ m_id ] = Method( this, name, min_param_count, on_call )
 
       else
-        # TypeName or global method_name only.
-        local m = methods_by_name[ name ]
-        if (m)
-          # Replacing existing; use same index
-          m = Method( this, m.index, name, min_param_count, on_call )
-        else
-          m = Method( this, methods_by_name.count, name, min_param_count, on_call )
-        endIf
-        methods_by_name[ name ] = m
+        # Global method
+        local m_id = name_to_id( name )
+        global_dispatch.expand_to_include( m_id )[ m_id ] = Method( this, name, min_param_count, on_call )
       endIf
 
     method update->Logical
@@ -144,14 +143,14 @@ class Frame
     ip          : Int32
     fp          : Int32
     arg_count   : Int32
-    commands    = Cmd[]
+    commands    : Cmd[]
     method_info : Method
 
   METHODS
     method init
-      commands.add( CmdLiteralNull() )
+      commands = Cmd[]
 
-    method init( commands, ip )
+    method init( commands )
 
     method init( method_info )
       commands = method_info.commands
@@ -172,6 +171,8 @@ class Task
     frame       = Frame()
     frames      = Frame[]
 
+    commands    = Cmd[]
+
     status    : Int32
     result    : Result
     filepath  : String
@@ -181,14 +182,28 @@ class Task
 
     method reset->Task
       stack.clear
+      stack.add( NullValue() )  # default 'this'
+
       frames.clear
       status = TaskStatus.INITIALIZING
-      frame = Frame()
-      frame.commands = Cmd[]
+      frame = Frame( commands )
+
       return this
 
     method arg( index:Int32 )->Value
       return stack[ frame.fp + index ]
+
+    method real_arg( index:Int32 )->Real64
+      return stack[ frame.fp + index ]->Real64
+
+    method integer_arg( index:Int32 )->Int32
+      return stack[ frame.fp + index ]->Int32
+
+    method object_arg( index:Int32 )->Object
+      return stack[ frame.fp + index ]->Object
+
+    method string_arg( index:Int32 )->String
+      return stack[ frame.fp + index ]->String
 
     method arg_count->Int32 [macro]
       this.frame.arg_count
@@ -211,7 +226,7 @@ class Task
 
     method load( source:String, filepath )->this
       try
-        frame.commands.add( Parser(this).parse(source,filepath) )
+        commands.add( Parser(this).parse(source,filepath) )
       catch (err:Error)
         println err
       endTry
@@ -269,7 +284,7 @@ class Task
     method push_object( value:Object, object_type_name=null:String )->this
       if (value)
         if (not object_type_name) object_type_name = value.type_name
-        stack.add( ObjectValue(value,vm.element_info(object_type_name).index) )
+        stack.add( ObjectValue(value,vm.name_to_id(object_type_name)) )
       else
         stack.add( NullValue() )
       endIf
@@ -283,14 +298,24 @@ class Task
       stack.add( RealValue(value) )
       return this
 
+    method push_this->this
+      return push( stack[frame.fp] )
+
     method push( value:Value )->this
       if (value) stack.add( value )
       else       stack.add( NullValue() )
       return this
 
-    method push_frame( new_arg_count:Int32, ip:Int32 )->Frame
-      frames.add( frame )
-      frame = Frame( frame.commands, ip )
+    method push_generic_frame( new_arg_count:Int32 )->Frame
+      frames.add( frame )  # save current frame
+      frame = Frame( null as Cmd[] )
+      frame.fp = stack.count - (new_arg_count+1)  # +1 includes 'this'
+      frame.arg_count = new_arg_count
+      return frame
+
+    method push_native_frame( new_arg_count:Int32 )->Frame
+      frames.add( frame )  # save current frame
+      frame = Frame( vm.native_return )  # vm.native_return[0] has a pop frame command
       frame.fp = stack.count - (new_arg_count+1)  # +1 includes 'this'
       frame.arg_count = new_arg_count
       return frame
@@ -303,7 +328,7 @@ class Task
       frame = frames.remove_last
 
     method resolve_commands
-      local builder = CmdBuilder( frame.commands )
+      local builder = CmdBuilder( commands )
       forEach (cmd in builder)
         cmd.resolve( this, builder )
       endForEach
@@ -334,12 +359,11 @@ class Method
     vm              : VM
     name            : String
     fn              : Function(Task)
-    index           : Int32
     min_param_count : Int32
     commands        : Cmd[]
 
   METHODS
-    method init( vm, index, name, min_param_count, fn )
+    method init( vm, name, min_param_count, fn )
 endClass
 
 
@@ -357,6 +381,9 @@ class Value
 
   METHODS
     method init( type )
+
+    method id->Int32
+      return 0
 
     method operator+( other:Value )->Value
       return RealValue(0)
@@ -383,6 +410,9 @@ class IntegerValue : Value
   METHODS
     method init( value )
       type = TYPE_INTEGER
+
+    method id->Int32
+      return VM.INTEGER_ID
 
     method operator+( other:Value )->Value
       which (other.type)
@@ -423,12 +453,15 @@ endClass
 
 class ObjectValue : Value
   PROPERTIES
-    value      : Object
-    type_index : Int32
+    value   : Object
+    type_id : Int32
 
   METHODS
-    method init( value, type_index )
+    method init( value, type_id )
       type = TYPE_OBJECT
+
+    method id->Int32
+      return type_id
 
     method to->Object
       return value
@@ -445,6 +478,9 @@ class RealValue : Value
   METHODS
     method init( value )
       type = TYPE_REAL
+
+    method id->Int32
+      return VM.REAL_ID
 
     method operator+( other:Value )->Value
       which (other.type)
@@ -479,6 +515,9 @@ class StringValue : Value
   METHODS
     method init( value )
       type = TYPE_STRING
+
+    method id->Int32
+      return VM.LOGICAL_ID
 
     method operator+( other:Value )->Value
       return StringValue( value + other->String )
@@ -683,6 +722,9 @@ class Parser
       local t = tokens[ token_index ]
       return (t.type == token_type)
 
+    method next_is_end_command->Logical
+      return (next_is(TokenType.EOL) or next_is(TokenType.SYMBOL_SEMICOLON))
+
     method parse( source:String, filepath:String )->Cmd[]
       tokens = Tokenizer( filepath, source ).tokenize
       token_count = tokens.count
@@ -697,10 +739,28 @@ class Parser
       endWhile
 
     method parse_statements
+      while (has_another)
+        parse_statement
+      endWhile
+
+    method parse_statement
       consume_eols
       if (not has_another) return
 
+      local i1 = commands.count
       parse_expression
+      if (not next_is_end_command)
+        if (commands.count == i1+2)
+          local access = commands.last as CmdAccess
+          if (access and access.arg_count == 0 and commands[i1] as CmdReadGlobalContext)
+            # add no-parens args
+            commands.remove_last
+            access.arg_count = parse_args( false )
+            commands.add( access )
+          endIf
+        endIf
+      endIf
+
       must_consume_end_command
 
     method parse_expression
@@ -760,7 +820,7 @@ class Parser
 
         case TokenType.IDENTIFIER
           # TODO: check for local access
-          commands.add( CmdReadThis(t) )
+          commands.add( CmdReadGlobalContext(t) )
           commands.add( CmdAccess(t, t->String, parse_args) )
 
         case TokenType.SYMBOL_OPEN_PAREN
@@ -772,11 +832,11 @@ class Parser
 
       endWhich
 
-    method parse_args->Int32
-      if (next_is(TokenType.EOL) or next_is(TokenType.SYMBOL_SEMICOLON)) return 0
-
-      local has_parens = consume( TokenType.SYMBOL_OPEN_PAREN )
-      if (has_parens and consume(TokenType.SYMBOL_CLOSE_PAREN)) return 0
+    method parse_args( require_parens=true:Logical )->Int32
+      if (require_parens)
+        if (not consume(TokenType.SYMBOL_OPEN_PAREN)) return 0
+        if (consume(TokenType.SYMBOL_CLOSE_PAREN))    return 0
+      endIf
 
       local arg_count = 0
       local first = true
@@ -785,7 +845,8 @@ class Parser
         parse_expression
         ++arg_count
       endWhile
-      if (has_parens) must_consume( TokenType.SYMBOL_CLOSE_PAREN )
+
+      if (require_parens) must_consume( TokenType.SYMBOL_CLOSE_PAREN )
       return arg_count
 
     method peek( skip=0:Int32 )->Token
@@ -1384,6 +1445,13 @@ class CmdReadThis : Cmd
       return true
 endClass
 
+class CmdReadGlobalContext : Cmd
+  METHODS
+    method execute( task:Task )->Logical
+      task.push( task.arg(0) )
+      return true
+endClass
+
 class CmdAdd : Cmd
   PROPERTIES
 
@@ -1415,13 +1483,15 @@ class CmdAccess : Cmd
     method init( t, name, arg_count )
 
     method resolve( task:Task, builder:CmdBuilder )
-      local m = task.vm.methods_by_name[ name ]
-      if (m)
+      local m_id = task.vm.name_to_id( name )
+      contingent
+        necessary (m_id < task.vm.global_dispatch.count)
+        local m = task.vm.global_dispatch[ m_id ]
+        necessary (m)
         CmdGlobalNativeCall(t, m, arg_count).resolve( task, builder )
-        CmdPopFrame(t).resolve( task, builder )
-      else
-        throw t.error( ''Unknown identifier "$".'' (name) )
-      endIf
+      unsatisfied
+        throw t.error( ''No such type, method, or variable "$".'' (name) )
+      endContingent
 endClass
 
 class CmdGlobalNativeCall : Cmd
@@ -1433,14 +1503,8 @@ class CmdGlobalNativeCall : Cmd
     method init( t, method_info, arg_count )
 
     method execute( task:Task )->Logical
-      task.push_frame( arg_count, task.frame.ip )
+      task.push_native_frame( arg_count )
       task.ensure_arg_count( method_info.min_param_count )
-
-      # The new "native call" frame will execute the CmdPopFrame
-      # that comes next, but the popped frame will set the IP
-      # back to the same CmdPopFrame unless we adjust that previous
-      # frame to skip it.
-      ++task.frames.last.ip
 
       method_info.fn( task )
       return (task.status == TaskStatus.RUNNING)
@@ -1449,22 +1513,36 @@ endClass
 class CmdContextAccess : Cmd
   PROPERTIES
     name      : String
+    m_id      : Int32
     arg_count : Int32
 
   METHODS
     method init( t, name, arg_count )
 
     method resolve( task:Task, builder:CmdBuilder )
-      throw t.error( "TODO" )
-      #{
-      local m = task.vm.methods_by_name[ name ]
-      if (m)
-        CmdGlobalNativeCall(t, m, arg_count).resolve( task, builder )
-        CmdPopFrame(t).resolve( task, builder )
-      else
-        throw t.error( ''Unknown identifier "$".'' (name) )
+      m_id = task.vm.name_to_id( name )
+      builder.write( this )
+
+    method execute( task:Task )->Logical
+      task.push_generic_frame( arg_count )
+
+      local context_id = task.arg(0).id
+      if (context_id < task.vm.context_dispatch.count)
+        local m = task.vm.context_dispatch[ context_id ][ m_id ]
+        if (m)
+          task.ensure_arg_count( m.min_param_count )
+          if (m.fn)
+            task.frame.commands = task.vm.native_return
+            m.fn( task )
+            return (task.status == TaskStatus.RUNNING)
+          endIf
+        endIf
       endIf
-      }#
+
+      # Error - push a null result and continue
+      task.push( null )
+      task.pop_frame
+      return true
 endClass
 
 class CmdPopFrame : Cmd

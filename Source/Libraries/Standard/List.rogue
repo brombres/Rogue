@@ -52,13 +52,13 @@ class List<<$DataType>> : GenericList
     method ensure_capacity( desired_capacity:Int32 )->this
       return reserve( desired_capacity - count )
 
-    method expand_and_set( index:Int32, value:$DataType )
+    method expand_to_include( index:Int32 )->this
       # Expands the list if necessary to include the specified index.
       if (count <= index)
         ensure_capacity( index+1 )
         count = index + 1
       endIf
-      set( index, value )
+      return this
 
     method first->$DataType [macro]
       this.data[0]

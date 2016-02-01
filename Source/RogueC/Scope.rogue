@@ -424,7 +424,7 @@ class CandidateMethods
 
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( "Multiple methods match ambiguous call to $:\n\n" (call_sig) )
+            buffer.print( "No exact match for ambiguous call to $:\n\n" (call_sig) )
           else
             buffer.print( "Call to $ has arguments that are incompatible with the best candidate:\n\n" (call_sig) )
           endIf
