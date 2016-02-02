@@ -12,10 +12,14 @@ class VM
     context_dispatch = Table<<Int32,Method>>[]
     id_lookup        = Table<<String,Int32>>()
 
-    free_tasks    = Task[]
-    active_tasks  = Task[]
+    free_tasks       = Task[]
+    active_tasks     = Task[]
+    loading_task     = Task()
 
-    native_return = Cmd[]
+    native_return    = Cmd[]
+
+    global_lookup    = Table<<String,Int32>>()
+    globals          = Value[]
 
   METHODS
     method init
@@ -26,29 +30,32 @@ class VM
       name_to_id( "Logical" )  # id 3
       name_to_id( "String" )   # id 4
 
+      loading_task = Task( this )
+      loading_task.reset
+
     method execute( source:String, filepath="[Internal]":String )->Result
-      return execute_new_task( source, filepath ).result
+      loading_task.load( source, filepath )
+      return execute
 
-    method execute_new_task( source:String, filepath="[Internal]":String )->Task
-      # Internal use.
-      local task : Task
-
-      if (free_tasks.count) task = free_tasks.remove_last
-      else                  task = Task( this )
-
-      task.reset
-      task.result = Result()
-      task.load( source, filepath )
-      if (task.execute) 
+    method execute->Result
+      local result = loading_task.result
+      if (loading_task.execute) 
         # Did not finish immediately
-        active_tasks.add( task )
+        active_tasks.add( loading_task )
       else
-        free_tasks.add( task )
+        free_tasks.add( loading_task )
       endIf
-      return task
 
-    method evaluate( source:String )->Value
-      local task = execute_new_task( source )
+      # Prep a new task for the next load, evaluate, and/or execute calls
+      if (free_tasks.count) loading_task = free_tasks.remove_last
+      else                  loading_task = Task( this )
+
+      loading_task.reset
+      return result
+
+    method evaluate( source:String, filepath="[Internal]":String )->Value
+      local task = loading_task
+      execute( source, filepath )
       if (not task.is_finished)
         throw task.error( "Code cannot be evaluated because it contains a blocking call." )
       endIf
@@ -56,6 +63,20 @@ class VM
 
     method evaluate_integer( source:String )->Int32 [macro]
       this.evaluate( source )->Int32
+
+    method find_global( name:String )->Int32?
+      local entry = global_lookup.find( name )
+      if (entry) return entry.value
+      return null
+
+    method add_global( name:String )->Int32
+      local index = global_lookup.count
+      global_lookup[name] = index
+      globals.expand_to_include( index )[ index ] = NullValue()
+      return index
+
+    method load( source:String, filepath="[Internal]":String )
+      loading_task.load( source, filepath )
 
     method name_to_id( name:String )->Int32
       local entry = id_lookup.find( name )
@@ -103,6 +124,7 @@ class Result
   PROPERTIES
     value    : Value
     is_ready : Logical
+    error    : Error
 endClass
 
 class Error : ::Error
@@ -192,6 +214,9 @@ class Task
       frames.clear
       status = TaskStatus.INITIALIZING
       frame = Frame( commands )
+      commands.clear
+
+      result = Result()
 
       return this
 
@@ -241,12 +266,12 @@ class Task
       # Returns false if the task is finished
       if (frame.commands.count == 0) return false
 
-      if (status == TaskStatus.INITIALIZING)
-        resolve_commands
-        status = TaskStatus.RUNNING
-      endIf
-
       try
+        if (status == TaskStatus.INITIALIZING)
+          resolve_commands
+          status = TaskStatus.RUNNING
+        endIf
+
         if (status == TaskStatus.RUNNING)
           local cmd = frame.commands[frame.ip]
           ++frame.ip
@@ -255,16 +280,22 @@ class Task
             ++frame.ip
           endWhile
         endIf
+
+        if (is_finished)
+          result.value = pop
+          return false
+        else
+          return true
+        endIf
+
       catch (err:Error)
         println err
+        status = TaskStatus.FINISHED
+        result.error = err
+        result.value = NullValue()
+        return false
       endTry
 
-      if (is_finished)
-        result.value = pop
-        return false
-      else
-        return true
-      endIf
 
     method pop->Value
       if (stack.count) return stack.remove_last
@@ -546,6 +577,7 @@ class TokenType [requisite]
     LITERAL_NULL
     LITERAL_STRING
     IDENTIFIER
+    KEYWORD_GLOBAL
     KEYWORD_LOCAL
     SYMBOL_CLOSE_PAREN
     SYMBOL_COMMA
@@ -784,6 +816,23 @@ class Parser
 
       local t = peek
 
+      if (consume(TokenType.KEYWORD_GLOBAL))
+        local first = true
+        while (first or consume(TokenType.SYMBOL_COMMA))
+          first = false
+          local name = read_identifier
+          if (vm.find_global(name))
+            throw t.error( ''A global variable named "$" already exists.'' (name) )
+          endIf
+          local global_index = vm.add_global( name )
+          if (consume(TokenType.SYMBOL_EQUALS))
+            parse_expression
+            commands.add( CmdWriteGlobal(t,global_index) )
+          endIf
+        endWhile
+        return
+      endIf
+
       if (consume(TokenType.KEYWORD_LOCAL))
         local first = true
         while (first or consume(TokenType.SYMBOL_COMMA))
@@ -883,10 +932,17 @@ class Parser
         case TokenType.IDENTIFIER
           local name = t->String
 
-          # Check for local access
+          # Check for local access first (local can shadow global)
           local index = find_local( name )
           if (index.exists)
             commands.add( CmdReadLocal(t,index.value) )
+            return
+          endIf
+
+          # Check for global access
+          index = vm.find_global( name )
+          if (index.exists)
+            commands.add( CmdReadGlobal(t,index.value) )
             return
           endIf
 
@@ -946,8 +1002,9 @@ class Keywords [singleton]
     method get( id:String )->Int32?
       if (not table)
         table = Table<<String,Int32>>()
-        table[ "null" ]  = TokenType.LITERAL_NULL
-        table[ "local" ] = TokenType.KEYWORD_LOCAL
+        table[ "global" ] = TokenType.KEYWORD_GLOBAL
+        table[ "local" ]  = TokenType.KEYWORD_LOCAL
+        table[ "null" ]   = TokenType.LITERAL_NULL
       endIf
 
       if (table.contains(id)) return table[ id ]
@@ -1680,6 +1737,33 @@ class CmdWriteLocal : Cmd
 
     method execute( task:Task )->Logical
       task.frame.locals[index] = task.pop
+      return true
+endClass
+
+class CmdReadGlobal : Cmd
+  PROPERTIES
+    index             : Int32
+
+  METHODS
+    method init( t, index )
+
+    method convert_to_write->Cmd
+      return CmdWriteGlobal( t, index )
+
+    method execute( task:Task )->Logical
+      task.push( task.vm.globals[index] )
+      return true
+endClass
+
+class CmdWriteGlobal : Cmd
+  PROPERTIES
+    index             : Int32
+
+  METHODS
+    method init( t, index )
+
+    method execute( task:Task )->Logical
+      task.vm.globals[index] = task.pop
       return true
 endClass
 
