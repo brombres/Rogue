@@ -789,6 +789,9 @@ class Parser
         while (first or consume(TokenType.SYMBOL_COMMA))
           first = false
           local name = read_identifier
+          if (find_local(name))
+            throw t.error( ''A local variable named "$" already exists.'' (name) )
+          endIf
           local declaration = CmdDeclareLocal( t, add_local(name) )
           if (consume(TokenType.SYMBOL_EQUALS))
             declaration.has_initial_value = true
@@ -801,6 +804,15 @@ class Parser
 
       local i1 = commands.count
       parse_expression
+
+      t = peek
+      if (consume(TokenType.SYMBOL_EQUALS))
+        local read_cmd = commands.remove_last
+        parse_expression  # new value
+        commands.add( read_cmd.convert_to_write )
+        return
+      endIf
+
       if (not next_is_end_command and commands.count > i1)
         local access = commands.last as CmdAccess
         if (access and access.arg_count == 0)
@@ -810,6 +822,8 @@ class Parser
           commands.add( access )
         endIf
       endIf
+
+      commands.add( CmdPopUnusedStatementResult(t) )
 
     method parse_expression
       consume_eols
@@ -1445,6 +1459,9 @@ class Cmd
   METHODS
     method init( t )
 
+    method convert_to_write->Cmd
+      throw t.error( "Illegal assignment." )
+
     method execute( task:Task )->Logical
       throw t.error( "No execute() defined for $." (type_name) )
 
@@ -1593,13 +1610,16 @@ class CmdContextAccess : Cmd
 
       local context_id = task.arg(0).id
       if (context_id < task.vm.context_dispatch.count)
-        local m = task.vm.context_dispatch[ context_id ][ m_id ]
-        if (m)
+        local methods = task.vm.context_dispatch[ context_id ]
+        if (methods)
+          local m = methods[ m_id ]
+          if (m)
           task.ensure_arg_count( m.min_param_count )
-          if (m.fn)
-            task.frame.commands = task.vm.native_return
-            m.fn( task )
-            return (task.status == TaskStatus.RUNNING)
+            if (m.fn)
+              task.frame.commands = task.vm.native_return
+              m.fn( task )
+              return (task.status == TaskStatus.RUNNING)
+            endIf
           endIf
         endIf
       endIf
@@ -1643,8 +1663,31 @@ class CmdReadLocal : Cmd
   METHODS
     method init( t, index )
 
+    method convert_to_write->Cmd
+      return CmdWriteLocal( t, index )
+
     method execute( task:Task )->Logical
       task.push( task.frame.locals[index] )
+      return true
+endClass
+
+class CmdWriteLocal : Cmd
+  PROPERTIES
+    index             : Int32
+
+  METHODS
+    method init( t, index )
+
+    method execute( task:Task )->Logical
+      task.frame.locals[index] = task.pop
+      return true
+endClass
+
+
+class CmdPopUnusedStatementResult : Cmd
+  METHODS
+    method execute( task:Task )->Logical
+      task.pop
       return true
 endClass
 
