@@ -17696,7 +17696,15 @@ RogueLogical RogueType__is_equivalent_or_more_specific_than__Type( RogueClassTyp
   {
     return (RogueLogical)(((RogueType__primitive_rank( THIS ))) >= ((RogueType__primitive_rank( other_0 ))));
   }
-  return (RogueLogical)(((RogueType__instance_of__Type( THIS, other_0 ))));
+  if (((RogueType__instance_of__Type( THIS, other_0 ))))
+  {
+    return (RogueLogical)(true);
+  }
+  if ((other_0->is_list && other_0->_element_type == THIS))
+  {
+    return (RogueLogical)(true);
+  }
+  return (RogueLogical)(false);
 }
 
 RogueLogical RogueType__is_aspect( RogueClassType* THIS )

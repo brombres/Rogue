@@ -59,4 +59,9 @@ vm.execute @|println 5, 6, 7+8
             |println 2+3*4+5
             |println Robot()
             |Robot().speak.speak.speak.speak
+            |local x = 5
+            |println x
+            |local x = Robot()
+            |x.speak
+            |x.speak
 

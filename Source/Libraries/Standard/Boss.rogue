@@ -145,6 +145,7 @@ class Frame
     arg_count   : Int32
     commands    : Cmd[]
     method_info : Method
+    locals      : Value[]
 
   METHODS
     method init
@@ -154,6 +155,10 @@ class Frame
 
     method init( method_info )
       commands = method_info.commands
+
+    method create_local( index:Int32, initial_value:Value )
+      if (not locals) locals = Value[]
+      locals.expand_to_include( index )[ index ] = initial_value
 endClass
 
 class TaskStatus
@@ -366,7 +371,6 @@ class Method
     method init( vm, name, min_param_count, fn )
 endClass
 
-
 class Value
   ENUMERATE
     TYPE_NULL
@@ -542,9 +546,13 @@ class TokenType [requisite]
     LITERAL_NULL
     LITERAL_STRING
     IDENTIFIER
+    KEYWORD_LOCAL
     SYMBOL_CLOSE_PAREN
     SYMBOL_COMMA
     SYMBOL_DOT
+    SYMBOL_EQ
+    SYMBOL_EQUALS
+    SYMBOL_FAT_ARROW
     SYMBOL_OPEN_PAREN
     SYMBOL_PLUS
     SYMBOL_PLUS_EQUALS
@@ -567,6 +575,9 @@ class TokenType [requisite]
       type_to_name[ SYMBOL_CLOSE_PAREN ]  = ")"
       type_to_name[ SYMBOL_COMMA ]        = ","
       type_to_name[ SYMBOL_DOT ]          = "."
+      type_to_name[ SYMBOL_EQ ]           = "=="
+      type_to_name[ SYMBOL_EQUALS ]       = "="
+      type_to_name[ SYMBOL_FAT_ARROW ]    = "=>"
       type_to_name[ SYMBOL_OPEN_PAREN ]   = "("
       type_to_name[ SYMBOL_PLUS ]         = "+"
       type_to_name[ SYMBOL_PLUS_EQUALS ]  = "+="
@@ -662,13 +673,16 @@ endClass
 
 class Parser
   PROPERTIES
-    vm          : VM
-    task        : Task
-    tokens      : Token[]
-    token_index : Int32
-    token_count : Int32
+    vm               : VM
+    task             : Task
+    tokens           : Token[]
+    token_index      : Int32
+    token_count      : Int32
 
-    commands    = Cmd[]
+    commands         = Cmd[]
+
+    next_local_index = 0
+    local_lookup     = Table<<String,Int32>>[] [null]
 
   METHODS
     method init( task )
@@ -676,6 +690,14 @@ class Parser
 
     method add( command:Cmd )
       commands.add( command )
+
+    method add_local( name:String )->Int32
+      if (not local_lookup.last)
+        local_lookup[ local_lookup.count - 1 ] = Table<<String,Int32>>()
+      endIf
+      local_lookup.last[name] = next_local_index
+      ++next_local_index
+      return next_local_index - 1
 
     method consume( token_type:Int32 )->Logical
       if (token_index == token_count) return false
@@ -700,6 +722,18 @@ class Parser
         else                  return tokens.last.error( message )
       endIf
 
+    method find_local( name:String )->Int32?
+      local i = local_lookup.count
+      while (i > 0)
+        --i
+        local scope = local_lookup[i]
+        if (scope)
+          local entry = scope.find( name )
+          if (entry) return entry.value
+        endIf
+      endWhile
+      return null
+
     method has_another->Logical
       return (token_index < token_count)
 
@@ -712,7 +746,7 @@ class Parser
       if (consume_end_command) return
       throw error( "End of line or ';' expected, found $." (peek->String) )
 
-    method must_read_identifier->String
+    method read_identifier->String
       local t = peek
       must_consume( TokenType.IDENTIFIER )
       return t->String
@@ -741,27 +775,41 @@ class Parser
     method parse_statements
       while (has_another)
         parse_statement
+        must_consume_end_command
       endWhile
 
     method parse_statement
       consume_eols
       if (not has_another) return
 
-      local i1 = commands.count
-      parse_expression
-      if (not next_is_end_command)
-        if (commands.count == i1+2)
-          local access = commands.last as CmdAccess
-          if (access and access.arg_count == 0 and commands[i1] as CmdReadGlobalContext)
-            # add no-parens args
-            commands.remove_last
-            access.arg_count = parse_args( false )
-            commands.add( access )
+      local t = peek
+
+      if (consume(TokenType.KEYWORD_LOCAL))
+        local first = true
+        while (first or consume(TokenType.SYMBOL_COMMA))
+          first = false
+          local name = read_identifier
+          local declaration = CmdDeclareLocal( t, add_local(name) )
+          if (consume(TokenType.SYMBOL_EQUALS))
+            declaration.has_initial_value = true
+            parse_expression
           endIf
-        endIf
+          commands.add( declaration )
+        endWhile
+        return
       endIf
 
-      must_consume_end_command
+      local i1 = commands.count
+      parse_expression
+      if (not next_is_end_command and commands.count > i1)
+        local access = commands.last as CmdAccess
+        if (access and access.arg_count == 0)
+          # add no-parens args
+          commands.remove_last
+          access.arg_count = parse_args( false )
+          commands.add( access )
+        endIf
+      endIf
 
     method parse_expression
       consume_eols
@@ -798,7 +846,7 @@ class Parser
     method parse_member_access_rhs
       local t = peek
       if (consume(TokenType.SYMBOL_DOT))
-        local name = must_read_identifier
+        local name = read_identifier
         commands.add( CmdContextAccess(t, name, parse_args) )
         parse_member_access_rhs
       endIf
@@ -819,9 +867,17 @@ class Parser
           commands.add( CmdLiteralString(t,t->String) )
 
         case TokenType.IDENTIFIER
-          # TODO: check for local access
+          local name = t->String
+
+          # Check for local access
+          local index = find_local( name )
+          if (index.exists)
+            commands.add( CmdReadLocal(t,index.value) )
+            return
+          endIf
+
           commands.add( CmdReadGlobalContext(t) )
-          commands.add( CmdAccess(t, t->String, parse_args) )
+          commands.add( CmdAccess(t, name, parse_args) )
 
         case TokenType.SYMBOL_OPEN_PAREN
           parse_expression
@@ -854,6 +910,12 @@ class Parser
       if (peek_index >= token_count) return Token( TokenType.INVALID )
       return tokens[ peek_index ]
 
+    method push_scope
+      local_lookup.add( null )
+
+    method pop_scope
+      local_lookup.remove_last
+
     method read->Token
       if (token_index == token_count)
         throw error( "Unexpected end of input." )
@@ -870,7 +932,8 @@ class Keywords [singleton]
     method get( id:String )->Int32?
       if (not table)
         table = Table<<String,Int32>>()
-        table[ "null" ] = TokenType.LITERAL_NULL
+        table[ "null" ]  = TokenType.LITERAL_NULL
+        table[ "local" ] = TokenType.KEYWORD_LOCAL
       endIf
 
       if (table.contains(id)) return table[ id ]
@@ -1316,12 +1379,14 @@ class Tokenizer
         elseIf (consume('=')) return TokenType.symbol_le
         elseIf (consume('>')) return TokenType.symbol_compare
         else                  return TokenType.symbol_lt
+        }#
 
       elseIf (ch == '=' )
-        if (consume('='))     return TokenType.symbol_eq
-        elseIf (consume('>')) return TokenType.symbol_fat_arrow
-        else                  return TokenType.symbol_equals
+        if (consume('='))     return TokenType.SYMBOL_EQ
+        elseIf (consume('>')) return TokenType.SYMBOL_FAT_ARROW
+        else                  return TokenType.SYMBOL_EQUALS
 
+        #{
       elseIf (ch == '>' )
         if      (consume('=')) return TokenType.symbol_ge
         elseIf  (consume('>')) return TokenType.symbol_close_specialize
@@ -1554,6 +1619,32 @@ class CmdPopFrame : Cmd
 
     method execute( task:Task )->Logical
       task.pop_frame
+      return true
+endClass
+
+class CmdDeclareLocal : Cmd
+  PROPERTIES
+    index             : Int32
+    has_initial_value : Logical
+
+  METHODS
+    method init( t, index )
+
+    method execute( task:Task )->Logical
+      if (has_initial_value) task.frame.create_local( index, task.pop )
+      else                   task.frame.create_local( index, NullValue() )
+      return true
+endClass
+
+class CmdReadLocal : Cmd
+  PROPERTIES
+    index             : Int32
+
+  METHODS
+    method init( t, index )
+
+    method execute( task:Task )->Logical
+      task.push( task.frame.locals[index] )
       return true
 endClass
 
