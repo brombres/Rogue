@@ -27,14 +27,13 @@ class Bitmap : Canvas
       forEach (i of pixels) pixels[i] = color
 
     method decode( bytes:Byte[] )->Logical
-      native @|ImageIODecoder decoder;
-              |ImageIODecoder_init( &decoder );
-              |if ( !ImageIODecoder_open(&decoder, $bytes->data->bytes, $bytes->count) ) return 0;
+      native @|Decoder decoder;
+              |if ( !decoder.open($bytes->data->bytes, $bytes->count) ) return 0;
 
       size = XY( native("decoder.width")->Int32, native("decoder.height")->Int32 )
       pixels = Int32[]( width * height )
 
-      native @|if ( !ImageIODecoder_decode_argb32(&decoder,(ImageIOARGB32*)$this->pixels->data->integers) ) return 0;
+      native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true
 
     method draw( pos:XY )
@@ -89,9 +88,8 @@ class Bitmap : Canvas
       local w = width
       local h = height
       local count : Int32
-      native @|ImageIOEncoder encoder;
-              |ImageIOEncoder_init( &encoder );
-              |ImageIOEncoder_encode_argb32_png( &encoder, (ImageIOARGB32*) $this->pixels->data->integers, $w, $h );
+      native @|Encoder encoder;
+              |encoder.encode_argb32_png( (ARGB32*) $this->pixels->data->integers, $w, $h );
               |$count = (RogueInt32) encoder.encoded_byte_count;
 
       local bytes = Byte[]( count );
@@ -104,10 +102,9 @@ class Bitmap : Canvas
       local w = width
       local h = height
       local count : Int32
-      native @|ImageIOEncoder encoder;
-              |ImageIOEncoder_init( &encoder );
+      native @|Encoder encoder;
               |encoder.quality = $quality;
-              |ImageIOEncoder_encode_argb32_jpeg( &encoder, (ImageIOARGB32*) $this->pixels->data->integers, $w, $h );
+              |encoder.encode_argb32_jpeg( (ARGB32*) $this->pixels->data->integers, $w, $h );
               |$count = (RogueInt32) encoder.encoded_byte_count;
 
       local bytes = Byte[]( count );
@@ -117,5 +114,8 @@ class Bitmap : Canvas
       return bytes
 endClass
 
-nativeHeader #include "ImageIO.h"
+nativeHeader
+#include "ImageIO.h"
+using namespace ImageIO;
+endNativeHeader
 

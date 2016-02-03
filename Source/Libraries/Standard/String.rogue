@@ -159,44 +159,6 @@ class String [native functional]
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
-    method equals_wildcard_pattern( wildcard_pattern:String )->Logical
-      # Determines whether or not this string matches the given
-      # Unix/Dos-style ''wildcard pattern''.  ''wildcard_pattern'' is a
-      # regular text string that may contain the following special
-      # characters:
-      #
-      # * * - matches zero or more characters of this string.
-      # * ? - matches any one character of this string.
-      #
-      # Example:
-      #
-      #   local String st = "img_01.png"
-      #   println( st.equals_wildcard_pattern("*.png") )  # true
-      #   println( st.equals_wildcard_pattern("img_??.png") )  # true
-      local c = count
-      if (c == 0 and wildcard_pattern.count == 0) return true
-      if (wildcard_pattern.count == 0) return false
-
-      local remaining_pattern = wildcard_pattern.from( 1 )
-      local ch = wildcard_pattern[0]
-      which (ch)
-        case '*':
-          forEach (n in 0..c)
-            if (from(n).equals_wildcard_pattern(remaining_pattern)) return true
-          endForEach
-
-        case '?':
-          if (c == 0) return false
-          return from(1).equals_wildcard_pattern( remaining_pattern )
-
-        others:
-          if (c == 0) return false
-          if (ch == this[0])
-            return from(1).equals_wildcard_pattern( remaining_pattern )
-          endIf
-      endWhich
-      return false
-
     method from( i1:Int32 )->String
       return from( i1, count-1 )
 
@@ -361,6 +323,44 @@ class String [native functional]
       endWhile
 
       return null
+
+    method matches_wildcard_pattern( wildcard_pattern:String )->Logical
+      # Determines whether or not this string matches the given
+      # Unix/Dos-style ''wildcard pattern''.  ''wildcard_pattern'' is a
+      # regular text string that may contain the following special
+      # characters:
+      #
+      # * * - matches zero or more characters of this string.
+      # * ? - matches any one character of this string.
+      #
+      # Example:
+      #
+      #   local String st = "img_01.png"
+      #   println( st.matches_wildcard_pattern("*.png") )  # true
+      #   println( st.matches_wildcard_pattern("img_??.png") )  # true
+      local c = count
+      if (c == 0 and wildcard_pattern.count == 0) return true
+      if (wildcard_pattern.count == 0) return false
+
+      local remaining_pattern = wildcard_pattern.from( 1 )
+      local ch = wildcard_pattern[0]
+      which (ch)
+        case '*':
+          forEach (n in 0..c)
+            if (from(n).matches_wildcard_pattern(remaining_pattern)) return true
+          endForEach
+
+        case '?':
+          if (c == 0) return false
+          return from(1).matches_wildcard_pattern( remaining_pattern )
+
+        others:
+          if (c == 0) return false
+          if (ch == this[0])
+            return from(1).matches_wildcard_pattern( remaining_pattern )
+          endIf
+      endWhich
+      return false
 
     method operator+( value:Byte )->String [macro]
       this + value->Int32
