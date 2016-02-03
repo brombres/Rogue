@@ -1,5 +1,7 @@
-$include "Standard/Boss.rogue"
-$using Boss
+local table = PropertyTable()
+table[ "robot" ] = Robot()
+println table
+table.get_object("robot") as Robot.speak
 
 class Robot
   GLOBAL PROPERTIES
@@ -22,6 +24,10 @@ class Robot
       ++next_phrase
       next_phrase %= phrases.count
 endClass
+
+#{
+$include "Standard/Boss.rogue"
+$using Boss
 
 local vm = VM()
 
@@ -58,3 +64,4 @@ vm.load @|global x = 5
 vm.load @|println "x:" + x
 
 vm.execute
+}#

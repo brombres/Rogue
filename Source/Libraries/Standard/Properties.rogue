@@ -9,6 +9,9 @@ class PropertyValue
     method create( value:Real64 )->PropertyValue
       return Real64Property( value )
 
+    method create( value:Object )->PropertyValue
+      return ObjectProperty( value )
+
     method create( value:String )->PropertyValue
       return StringProperty( value )
 
@@ -20,6 +23,9 @@ class PropertyValue
       this.add( PropertyValue(value) )
 
     method add( value:Real64 )->PropertyValue [macro]
+      this.add( PropertyValue(value) )
+
+    method add( value:Object )->PropertyValue [macro]
       this.add( PropertyValue(value) )
 
     method add( value:String )->PropertyValue [macro]
@@ -58,6 +64,11 @@ class PropertyValue
       if (not value) return 0.0
       return value->Real64
 
+    method get_object( index:Int32 )->Object
+      local value = get( index )
+      if (not value) return null
+      return value->Object
+
     method get_string( index:Int32 )->String
       local value = get( index )
       if (not value) return ""
@@ -92,6 +103,11 @@ class PropertyValue
       local value = get( key )
       if (not value) return 0.0
       return value->Real64
+
+    method get_object( key:String )->Object
+      local value = get( key )
+      if (not value) return null
+      return value->Object
 
     method get_string( key:String )->String
       local value = get( key )
@@ -130,6 +146,9 @@ class PropertyValue
     method set( index:Int32, value:Real64 )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
+    method set( index:Int32, value:Object )->PropertyValue [macro]
+      this.set( index, PropertyValue(value) )
+
     method set( index:Int32, value:String )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
 
@@ -143,6 +162,9 @@ class PropertyValue
       this.set( key, PropertyValue(value) )
 
     method set( key:String, value:Real64 )->PropertyValue [macro]
+      this.set( key, PropertyValue(value) )
+
+    method set( key:String, value:Object )->PropertyValue [macro]
       this.set( key, PropertyValue(value) )
 
     method set( key:String, value:String )->PropertyValue [macro]
@@ -159,6 +181,9 @@ class PropertyValue
 
     method to->Real64
       return this->Int32->Real64
+
+    method to->Object
+      return null
 
     method to_json->String
       return to_json( StringBuilder() )->String
@@ -217,6 +242,19 @@ class Real64Property( value:Real64 ) : PropertyValue
       return buffer
 endClass
 
+class ObjectProperty( value:Object ) : PropertyValue
+  METHODS
+    method to->Object
+      return value
+
+    method to->String
+      return value->String
+
+    method to_json( buffer:StringBuilder )->StringBuilder
+      buffer.print( value->String )
+      return buffer
+endClass
+
 class StringProperty( value:String ) : PropertyValue
   GLOBAL PROPERTIES
     empty_string = StringProperty( "" )
@@ -231,15 +269,6 @@ class StringProperty( value:String ) : PropertyValue
 
     method to->Logical
       return (value == "true" or value == "TRUE" or value == "yes" or value == "YES" or value == "1")
-      #{
-      which (value)
-        case "true", "TRUE", "yes", "YES", "1"
-          return true
-
-        others
-          return false
-      endWhich
-      }#
 
     method to->Real64
       return value->Real64
