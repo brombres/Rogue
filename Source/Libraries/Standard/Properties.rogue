@@ -40,6 +40,9 @@ class PropertyValue
     method clear->PropertyValue
       return this
 
+    method count->Int32
+      return 0
+
     method first->PropertyValue
       return null
 
@@ -119,6 +122,17 @@ class PropertyValue
       if (value) return value
       else       return PropertyTable()
 
+    method is_collection->Logical
+      return false
+
+    method is_complex->Logical
+      if (not is_collection) return false
+      if (count > 1)         return true
+      forEach (value in this)
+        if (value and value.is_complex) return true
+      endForEach
+      return false
+
     method last->PropertyValue
       return null
 
@@ -134,8 +148,8 @@ class PropertyValue
     method remove_last->PropertyValue
       return null
 
-    method save( file:File )->Logical
-      return file.save( to_json.to_utf8 )
+    method save( file:File, formatted=false:Logical )->Logical
+      return file.save( to_json(formatted).to_utf8 )
 
     method set( index:Int32, value:Int32 )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
@@ -185,10 +199,10 @@ class PropertyValue
     method to->Object
       return null
 
-    method to_json->String
-      return to_json( StringBuilder() )->String
+    method to_json( formatted=false:String )->String
+      return to_json( StringBuilder(), formatted )->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer
 endClass
 
@@ -200,7 +214,7 @@ class Int32Property( value:Int32 ) : PropertyValue
     method to->String
       return value->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       buffer.print( value )
       return buffer
 endClass
@@ -221,7 +235,7 @@ class LogicalProperty( value:Logical ) : PropertyValue
     method to->String
       return value->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       buffer.print( value )
       return buffer
 endClass
@@ -237,7 +251,7 @@ class Real64Property( value:Real64 ) : PropertyValue
     method to->String
       return value->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       buffer.print( value )
       return buffer
 endClass
@@ -250,7 +264,7 @@ class ObjectProperty( value:Object ) : PropertyValue
     method to->String
       return value->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       buffer.print( value->String )
       return buffer
 endClass
@@ -276,11 +290,11 @@ class StringProperty( value:String ) : PropertyValue
     method to->String
       return value
 
-    method to_json( buffer:StringBuilder )->StringBuilder
-      return to_json( value, buffer )
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      return to_json( value, buffer, formatted )
 
   GLOBAL METHODS
-    method to_json( value:String, buffer:StringBuilder )->StringBuilder
+    method to_json( value:String, buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       if (value)
         buffer.print '"'
         forEach (ch in value)
@@ -368,6 +382,9 @@ class PropertyList : PropertyValue
       if (index < 0 or index >= values.count) return null
       return values[ index ]
 
+    method is_collection->Logical
+      return true
+
     method last->PropertyValue
       return this.get( values.count - 1 )
 
@@ -394,16 +411,34 @@ class PropertyList : PropertyValue
     method to->String
       return values->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      local pretty_print = (formatted and is_complex)
+
       buffer.print( '[' )
+
+      if (pretty_print)
+        buffer.println
+        buffer.indent += 2
+      endIf
+
       local first = true
       forEach (value in values)
-        if (first) first = false
-        else       buffer.print( ',' )
+        if (first)
+          first = false
+        else
+          buffer.print( ',' )
+          if (pretty_print) buffer.println
+        endIf
 
-        if (value) value.to_json( buffer )
+        if (value) value.to_json( buffer, formatted )
         else       buffer.print( "null" )
       endForEach
+
+      if (pretty_print)
+        buffer.println
+        buffer.indent -= 2
+      endIf
+
       buffer.print( ']' )
       return buffer
 
@@ -418,7 +453,7 @@ endClass
 
 class PropertyTable : PropertyValue
   PROPERTIES
-    values : Table<<String,PropertyValue>>
+    values    : Table<<String,PropertyValue>>
 
   METHODS
     method init
@@ -426,8 +461,32 @@ class PropertyTable : PropertyValue
 
     method init( values )
 
+    method clear->this
+      values.clear
+      return this
+
+    method count->Int32
+      return values.count
+
+    method get( index:Int32 )->PropertyValue
+      if (index < 0 or index >= count) return null
+      return values[ keys[index] ]
+
     method get( key:String )->PropertyValue
       return values[ key ]
+
+    method is_collection->Logical
+      return true
+
+    method keys->String[] [macro]
+      values.keys
+
+    method remove( key:String )->PropertyValue
+      return values.remove( key )
+
+    method remove_at( index:Int32 )->PropertyValue
+      if (index < 0 or index >= count) return null
+      return values.remove( values.keys[index] )
 
     method set( key:String, new_value:PropertyValue )->PropertyValue
       values.set( key, new_value )
@@ -436,20 +495,37 @@ class PropertyTable : PropertyValue
     method to->String
       return values->String
 
-    method to_json( buffer:StringBuilder )->StringBuilder
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      local pretty_print = (formatted and is_complex)
+
       buffer.print( '{' )
+
+      if (pretty_print)
+        buffer.println
+        buffer.indent += 2
+      endIf
+
       local first = true
       forEach (key in values.keys)
-        if (first) first = false
-        else       buffer.print( ',' )
+        if (first)
+          first = false
+        else
+          buffer.print( ',' )
+          if (pretty_print) buffer.println
+        endIf
 
-        StringProperty.to_json( key, buffer )
+        StringProperty.to_json( key, buffer, formatted )
         buffer.print( ':' )
 
         local value = values[key]
-        if (value) value.to_json( buffer )
+        if (pretty_print and value and value.is_complex) buffer.println
+
+        if (value) value.to_json( buffer, formatted )
         else       buffer.print( "null" )
       endForEach
+
+      if (pretty_print) buffer.println; buffer.indent -= 2
+
       buffer.print( '}' )
       return buffer
 
