@@ -200,6 +200,9 @@ class List<<$DataType>> : GenericList
 
       return this[ Random.next_int32(this.count) ]
 
+    method reader->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this, 0 )
+
     method rebuilder->ListRebuilder<<$DataType>>
       return ListRebuilder<<$DataType>>( this )
 
