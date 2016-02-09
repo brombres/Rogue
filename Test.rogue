@@ -1,1 +1,9 @@
+println 43
+local milestone = Alpha()
+milestone = Beta()
 println "Hello World!"
+
+class Milestone;
+
+class Alpha : Milestone;
+class Beta : Alpha;

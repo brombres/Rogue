@@ -178,14 +178,14 @@ struct RogueObject
 
   RogueInt32 reference_count;
   // A positive reference_count ensures that this object will never be
-  // collected.  A zero reference_count means this object is kept as long as
-  // it is visible to the memory manager.
+  // collected.  A zero reference_count means this object is kept only as 
+  // long as it is visible to the memory manager.
 };
 
 RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
 void*        RogueObject_retain( RogueObject* THIS );
-void*        RogueObject_release( RogueObject* THIS );
+void         RogueObject_release( RogueObject* THIS );
 
 void RogueObject_trace( void* obj );
 void RogueString_trace( void* obj );

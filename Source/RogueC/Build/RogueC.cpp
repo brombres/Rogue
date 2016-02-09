@@ -163,10 +163,9 @@ void* RogueObject_retain( RogueObject* THIS )
   return THIS;
 }
 
-void* RogueObject_release( RogueObject* THIS )
+void RogueObject_release( RogueObject* THIS )
 {
   --THIS->reference_count;
-  return THIS;
 }
 
 void RogueObject_trace( void* obj )
@@ -427,45 +426,93 @@ RogueString* RogueString_update_hash_code( RogueString* THIS )
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
-RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, RogueInt32 other_i1, RogueInt32 copy_count )
+RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* src_array, RogueInt32 src_i1, RogueInt32 copy_count )
 {
   int element_size;
-  int other_i2;
+  int dest_i2, src_i2;
 
-  if ( !other || i1 >= THIS->count ) return THIS;
-  if (THIS->is_reference_array ^ other->is_reference_array) return THIS;
+  if ( !src_array || dest_i1 >= THIS->count ) return THIS;
+  if (THIS->is_reference_array ^ src_array->is_reference_array) return THIS;
 
-  if (copy_count == -1) other_i2 = other->count - 1;
-  else                  other_i2 = (other_i1 + copy_count) - 1;
+  if (copy_count == -1) src_i2 = src_array->count - 1;
+  else                  src_i2 = (src_i1 + copy_count) - 1;
 
-  if (i1 < 0)
+  if (dest_i1 < 0)
   {
-    other_i1 -= i1;
-    i1 = 0;
+    src_i1 -= dest_i1;
+    dest_i1 = 0;
   }
 
-  if (other_i1 < 0) other_i1 = 0;
-  if (other_i2 >= other->count) other_i2 = other->count - 1;
-  if (other_i1 > other_i2) return THIS;
+  if (src_i1 < 0) src_i1 = 0;
+  if (src_i2 >= src_array->count) src_i2 = src_array->count - 1;
+  if (src_i1 > src_i2) return THIS;
+
+  copy_count = (src_i2 - src_i1) + 1;
+  dest_i2 = dest_i1 + (copy_count - 1);
+  if (dest_i2 >= THIS->count)
+  {
+    dest_i2 = (THIS->count - 1);
+    copy_count = (dest_i2 - dest_i1) + 1;
+  }
+  if ( !copy_count ) return THIS;
+
+
+#if defined(ROGUE_ARC)
+  if (THIS != src_array || dest_i1 >= src_i1 + copy_count || (src_i1 + copy_count) <= dest_i1 || dest_i1 < src_i1)
+  {
+    // no overlap
+    RogueObject** src  = src_array->objects + src_i1 - 1;
+    RogueObject** dest = THIS->objects + dest_i1 - 1;
+    while (--copy_count >= 0)
+    {
+      RogueObject* src_obj, dest_obj;
+      if ((src_obj = *(++src))) ++src_obj->reference_count;
+      if ((dest_obj = *(++dest)) && !(--dest_obj->reference_count))
+      {
+        // TODO: delete dest_obj
+        *dest = src_obj;
+      }
+    }
+  }
+  else
+  {
+    // Copying earlier data to later data; copy in reverse order to
+    // avoid accidental overwriting
+    if (dest_i1 > src_i1)  // if they're equal then we don't need to copy anything!
+    {
+      RogueObject** src  = src_array->objects + src_i2 + 1;
+      RogueObject** dest = THIS->objects + dest_i2 + 1;
+      while (--copy_count >= 0)
+      {
+        RogueObject* src_obj, dest_obj;
+        if ((src_obj = *(--src))) ++src_obj->reference_count;
+        if ((dest_obj = *(--dest)) && !(--dest_obj->reference_count))
+        {
+          // TODO: delete dest_obj
+          *dest = src_obj;
+        }
+      }
+    }
+  }
+  return THIS;
+#endif
 
   element_size = THIS->element_size;
-  RogueByte* src = other->bytes + other_i1 * element_size;
-  int other_bytes = ((other_i2 - other_i1) + 1) * element_size;
+  RogueByte* src = src_array->bytes + src_i1 * element_size;
+  RogueByte* dest = THIS->bytes + (dest_i1 * element_size);
+  int copy_bytes = copy_count * element_size;
 
-  RogueByte* dest = THIS->bytes + (i1 * element_size);
-  int allowable_bytes = (THIS->count - i1) * element_size;
+  if (src == dest) return THIS;
 
-  if (other_bytes > allowable_bytes) other_bytes = allowable_bytes;
-
-  if (src >= dest + other_bytes || (src + other_bytes) < dest)
+  if (src >= dest + copy_bytes || (src + copy_bytes) <= dest)
   {
     // Copy region does not overlap
-    memcpy( dest, src, other_bytes );
+    memcpy( dest, src, copy_count * element_size );
   }
   else
   {
     // Copy region overlaps
-    memmove( dest, src, other_bytes );
+    memmove( dest, src, copy_count * element_size );
   }
 
   return THIS;
