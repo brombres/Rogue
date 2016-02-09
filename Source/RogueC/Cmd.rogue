@@ -1633,6 +1633,11 @@ class CmdAccess : Cmd
           # new TypeName(...)
           new_type.organize(scope)
 
+          if (new_type.is_routine)
+            # MyRoutine(args) -> MyRoutine.call(args)
+            return CmdAccess( t, CmdThisContext(t,new_type), "call", args ).resolve( scope )
+          endIf
+
           if (args is null)
             if (name.ends_with(']'))
               # Turn DataType[] -> DataType[]()

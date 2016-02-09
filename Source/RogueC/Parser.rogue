@@ -143,6 +143,10 @@ class Parser
         parse_class_template
         return true
 
+      elseIf (t.type is TokenType.keyword_routine)
+        parse_routine
+        return true
+
       elseIf (t.type is TokenType.keyword_augment)
         parse_augment
         return true
@@ -211,11 +215,6 @@ class Parser
         while (parse_method) noAction
         return true
 
-      elseIf (next_is(TokenType.keyword_routine))
-        this_type = Program.get_type_reference( peek, "Global" )
-        while (parse_method(true)) noAction
-        return true
-
       endIf
 
       return false
@@ -231,7 +230,17 @@ class Parser
           template.attributes.add( Attribute.is_functional )
       endWhich
 
+    method parse_routine
+      local t = read  # 'routine'
+      local name = read_identifier
+      local template = Template( t, name, Attribute.is_class | Attribute.is_routine )
+      parse_template_tokens( template, TokenType.keyword_endRoutine )
+
     method parse_template_tokens( template:Template, end_type:TokenType )
+      local first_t = peek
+
+      local is_routine = (end_type is TokenType.keyword_endRoutine)
+
       if (consume(TokenType.symbol_open_specialize))
         local first = true
         while (first or consume(TokenType.symbol_comma))
@@ -242,49 +251,64 @@ class Parser
         must_consume( TokenType.symbol_close_specialize )
       endIf
 
-      # Need a little finageling to parse out the attributes while
-      # leaving the base types for later.
-      #   (autoinit) : BaseType, ... [attributes] \n
-      #   ^^^^^^^^^^^^^^ leave       ^parse       ^leave
-      local starting_pos = reader.position
-
-      if (consume(TokenType.symbol_open_paren))
-        # ( name1[=value1][:Type1] [, ...] )
+      if (is_routine)
+        # routine MyRoutine<<type>>(args)... -> class MyRoutine<<type>>\n GLOBAL METHODS\n method call(args)...
         consume_eols
-        if (not consume(TokenType.symbol_close_paren))
-          local first = true
-          while (first or consume(TokenType.symbol_comma))
-            first = false
-            consume_eols
-            read_identifier
-            consume_eols
-            if (consume(TokenType.symbol_equals)) parse_expression
-            consume_eols
-            if (consume(TokenType.symbol_colon))
-              if (not consume(TokenType.placeholder_id)) parse_possible_type
-            endIf
-            consume_eols
-          endWhile
-          must_consume( TokenType.symbol_close_paren )
+        template.tokens.add( EOLToken(first_t) )
+        template.tokens.add( TokenType.keyword_GLOBAL.create_token(first_t) )
+        template.tokens.add( TokenType.keyword_METHODS.create_token(first_t) )
+        template.tokens.add( EOLToken(first_t) )
+        template.tokens.add( TokenType.keyword_method.create_token(first_t) )
+        template.tokens.add( TokenType.identifier.create_token(first_t,"call") )
+
+        Program.template_list.add( template )
+        Program.template_lookup[template.name] = template
+
+      else
+        # Need a little finageling to parse out the attributes while
+        # leaving the base types for later.
+        #   (autoinit) : BaseType, ... [attributes] \n
+        #   ^^^^^^^^^^^^^^ leave       ^parse       ^leave
+        local starting_pos = reader.position
+
+        if (consume(TokenType.symbol_open_paren))
+          # ( name1[=value1][:Type1] [, ...] )
+          consume_eols
+          if (not consume(TokenType.symbol_close_paren))
+            local first = true
+            while (first or consume(TokenType.symbol_comma))
+              first = false
+              consume_eols
+              read_identifier
+              consume_eols
+              if (consume(TokenType.symbol_equals)) parse_expression
+              consume_eols
+              if (consume(TokenType.symbol_colon))
+                if (not consume(TokenType.placeholder_id)) parse_possible_type
+              endIf
+              consume_eols
+            endWhile
+            must_consume( TokenType.symbol_close_paren )
+          endIf
         endIf
+
+        if (consume(TokenType.symbol_colon))
+          parse_possible_type
+          while (consume(TokenType.symbol_comma)) parse_possible_type
+        endIf
+
+        # Now go back and copy all the tokens up to this point into the template.
+        local final_pos = reader.position
+        reader.position = starting_pos
+        while (reader.position < final_pos) template.tokens.add( read )
+
+        parse_attributes( template.attributes )
+
+        Program.template_list.add( template )
+        Program.template_lookup[template.name] = template
+
+        if (consume(TokenType.symbol_semicolon)) return
       endIf
-
-      if (consume(TokenType.symbol_colon))
-        parse_possible_type
-        while (consume(TokenType.symbol_comma)) parse_possible_type
-      endIf
-
-      # Now go back and copy all the tokens up to this point into the template.
-      local final_pos = reader.position
-      reader.position = starting_pos
-      while (reader.position < final_pos) template.tokens.add( read )
-
-      parse_attributes( template.attributes )
-
-      Program.template_list.add( template )
-      Program.template_lookup[template.name] = template
-
-      if (consume(TokenType.symbol_semicolon)) return
 
       while (reader.has_another)
         local t = reader.read
@@ -475,11 +499,6 @@ class Parser
         endIf
       endIf
 
-      if (consume(TokenType.keyword_ROUTINES))
-        while (parse_method(true)) noAction
-        return true
-      endIf
-
       if (consume(TokenType.keyword_PROPERTIES))
         while (parse_properties) noAction
         return true
@@ -597,9 +616,7 @@ class Parser
     method parse_method( as_routine=false:Logical )->Logical
       consume_eols
 
-      if (not next_is(TokenType.keyword_method))
-        if (not as_routine or not next_is(TokenType.keyword_routine)) return false
-      endIf
+      if (not next_is(TokenType.keyword_method)) return false
 
       local t = read  # 'routine' or 'method'
       local name = read_identifier

@@ -1,9 +1,6 @@
-println 43
-local milestone = Alpha()
-milestone = Beta()
-println "Hello World!"
+routine Add<<$DataType>>( a:$DataType, b:$DataType )->$DataType
+  return a + b
+endRoutine
 
-class Milestone;
+println Add<<Int32>>(3,4)
 
-class Alpha : Milestone;
-class Beta : Alpha;

@@ -213,6 +213,9 @@ class Type
     method is_requisite->Logical
       return (attributes.flags & Attribute.is_requisite)
 
+    method is_routine->Logical
+      return (attributes.flags & Attribute.is_routine)
+
     method is_singleton->Logical
       return (attributes.flags & Attribute.is_singleton)
 

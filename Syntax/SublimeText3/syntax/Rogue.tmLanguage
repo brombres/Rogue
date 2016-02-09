@@ -12,7 +12,7 @@
 	<array>
 		<dict>
 			<key>begin</key>
-			<string>\b(class|compound|enumeration)\b\s*</string>
+			<string>\b(class|routine|augment)\b\s*</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -22,7 +22,7 @@
 				</dict>
 			</dict>
 			<key>comment</key>
-			<string>Class|Aspect|Compound|Enumeration declaration</string>
+			<string>Class Declaration|Routine Definition|Class Augment</string>
 			<key>end</key>
 			<string>($)</string>
 			<key>name</key>
@@ -74,7 +74,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(endClass|endAspect|endCompound|endEnumeration)\b</string>
+			<string>\b(endClass|endRoutine|endAugment)\b</string>
 			<key>name</key>
 			<string>storage.type.rogue</string>
 		</dict>

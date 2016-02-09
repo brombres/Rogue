@@ -17,13 +17,13 @@ if !exists("main_syntax")
 endif
 
 " keyword definitions
-syn keyword rogueClassDecl   class endClass aspect endAspect compound endCompound enumeration endEnumeration
+syn keyword rogueClassDecl   class endClass routine endRoutine
 syn keyword rogueClassDecl   delegate endDelegate function endFunction primitive endPrimitive
 syn keyword rogueClassDecl   with endWith
-syn keyword rogueClassDecl   augment endAugment framework endFramework
+syn keyword rogueClassDecl   augment endAugment
 syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHeader
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
-syn keyword rogueMember      PROPERTIES METHODS ROUTINES GLOBAL
+syn keyword rogueMember      PROPERTIES METHODS GLOBAL
 syn match   rogueError       "\<for\(\s\|(\)"
 syn keyword rogueConditional  if elseIf else endIf
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
@@ -80,7 +80,7 @@ syn keyword rogueOperator     instanceOf is isNot notInstanceOf duplicate
 "syn match   rogueOperator     "<[^<]"me=e-1
 "syn match   rogueOperator     ">[^>]"me=e-1
 
-syn keyword rogueFuncDef  method routine task
+syn keyword rogueFuncDef  method
 
 syn match   rogueLineComment  "#.*" 
 syn region  rogueLineComment  start="#{" end="}#"
