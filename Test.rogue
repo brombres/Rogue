@@ -4,3 +4,9 @@ endRoutine
 
 println Add<<Int32>>(3,4)
 
+
+local buffer = StringBuilder()
+buffer.print_character32( 128512 )
+println buffer
+println "😀"[0]->Int32
+println "😀"[1]->Int32

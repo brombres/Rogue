@@ -149,6 +149,16 @@ class StringBuilder [requisite]
         return print( "null" )
       endIf
 
+    method print_character32( value:Int32 )->this
+      if ((value & 0xffe00000) != 0)
+        return print( '?' )
+      else
+        # Surrogate pair
+        value -= 0x10000
+        print( (0xd800 + ((value :>>>: 10) & 0x3ff))->Character )
+        return print( (0xdc00 + (value & 0x3ff))->Character )
+      endIf
+
     method print_indent
       if (not needs_indent or indent == 0) return
       forEach (i in 1..indent) characters.add( ' ' )
@@ -220,6 +230,9 @@ class StringBuilder [requisite]
 
     method println( value:String )->this
       return print( value ).print( '\n' )
+
+    method println_character32( value:Int32 )->this
+      return print_character32( value ).print( '\n' )
 
     method reserve( additional_count:Int32 )->this [requisite]
       characters.reserve( additional_count )
