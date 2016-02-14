@@ -3,6 +3,9 @@
 #==============================================================================
 
 class Writer<<$DataType>> [aspect]
+  PROPERTIES
+    position : Int32
+
   METHODS
     method close->this
       return this
@@ -10,8 +13,8 @@ class Writer<<$DataType>> [aspect]
     method flush->this
       return this
 
-      #method position->Int32
-      #return 0
+    method position->Int32 [fallback]
+      return @position
 
     method seek( pos:Int32 )->Logical
       return false

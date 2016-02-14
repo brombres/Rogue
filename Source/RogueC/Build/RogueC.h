@@ -844,6 +844,7 @@ struct RogueClassStringReader : RogueObject
 struct RogueClassCharacterReader
 {
   // PROPERTIES
+  RogueInt32 position;
 
 };
 
@@ -900,6 +901,7 @@ struct RogueClassError : RogueObject
 struct RogueClassReader_of_String
 {
   // PROPERTIES
+  RogueInt32 position;
 
 };
 
@@ -1479,6 +1481,7 @@ struct RogueClassSystem : RogueObject
 struct RogueClassCharacterWriter
 {
   // PROPERTIES
+  RogueInt32 position;
 
 };
 
@@ -1533,6 +1536,7 @@ struct RogueTokenList : RogueObject
 struct RogueClassLineReader : RogueObject
 {
   // PROPERTIES
+  RogueInt32 position;
   RogueClassCharacterReader* source;
   RogueString* next;
   RogueStringBuilder* buffer;
@@ -2300,8 +2304,8 @@ struct RogueClassTokenizer : RogueObject
 struct RogueClassParseReader : RogueObject
 {
   // PROPERTIES
-  RogueCharacterList* data;
   RogueInt32 position;
+  RogueCharacterList* data;
   RogueInt32 count;
   RogueInt32 line;
   RogueInt32 column;
@@ -3030,9 +3034,9 @@ struct RogueClassFileReader : RogueObject
 {
   // PROPERTIES
   FILE* fp;
+  RogueInt32 position;
   RogueString* filepath;
   RogueInt32 count;
-  RogueInt32 position;
   RogueInt32 buffer_position;
   RogueByteList* buffer;
 
@@ -3042,6 +3046,7 @@ struct RogueClassFileWriter : RogueObject
 {
   // PROPERTIES
   FILE* fp;
+  RogueInt32 position;
   RogueString* filepath;
   RogueLogical error;
   RogueByteList* buffer;

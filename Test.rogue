@@ -15,6 +15,6 @@ class Numerical [aspect]
     method set_value( @value ) [fallback]
 endClass
 
-local n = Number(5)
+local n = Number(5) : Numerical
 n.value = 5
 println n.value

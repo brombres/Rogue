@@ -1,8 +1,14 @@
 class Reader<<$DataType>> [aspect]
+  PROPERTIES
+    position : Int32
+
   METHODS
     method has_another->Logical
 
     method peek->$DataType
+
+    method position->Int32 [fallback]
+      return @position
 
     method read->$DataType
 
