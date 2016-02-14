@@ -363,7 +363,9 @@ class Type
       if (is_class and not is_native)
         local m = find_method( "init_object()" )
         local prior_m = m
-        if (not m or m.type_context isNot this)
+        if (m and m.type_context is this)
+          m.attributes.add( Attribute.is_requisite )
+        else
           m = add_method( t, "init_object" ).organize( scope )
           m.attributes.add( Attribute.is_requisite )
           if (prior_m)

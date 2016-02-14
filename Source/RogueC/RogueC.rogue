@@ -52,6 +52,7 @@ class RogueC [singleton]
       if (File.exists(libs))
         libraries_folder = libs
         prefix_path_list.add( libs )
+        prefix_path_lookup[ libs ] = true
       endIf
 
       <<collect_supported_targets>>
@@ -76,7 +77,10 @@ class RogueC [singleton]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
                    |
-                   |  --output=destpath/[file]
+                   |  --libraries="path1[;path2...]"
+                   |    Add one or more additional library folders to the search path.
+                   |
+                   |  --output=destpath/[filename]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
                    |
@@ -163,7 +167,7 @@ class RogueC [singleton]
       if (not file.exists)
         local mesg = ''No such file "$".'' (filepath)
         if (t) throw t.error( mesg )
-        else    throw RogueError( mesg )
+        else   throw RogueError( mesg )
       endIf
 
       if (file.is_folder)
@@ -174,6 +178,10 @@ class RogueC [singleton]
           if (t) throw t.error( mesg )
           else    throw RogueError( mesg )
         else
+          if (not prefix_path_lookup.contains(file.filepath))
+            prefix_path_lookup[file.filepath] = true
+            prefix_path_list.add( file.filepath )
+          endIf
           filepath = path2
           file = file2
         endIf
@@ -250,12 +258,29 @@ class RogueC [singleton]
           # Option
           which (arg)
             case "--output"
-              if (value.count == 0) throw RogueError( ''Output filepath expected after "--output="'' )
+              if (value.count == 0) throw RogueError( ''Output filepath expected after "--output=".'' )
               output_filepath = value
 
             case "--execute"
               generate_main = true
               execute_args = value
+
+            case "--libraries"
+              if (not value.count) throw RogueError( ''One or more paths expected after "--libraries=".'' )
+              forEach (path in value.split(';'))
+                if (not File.exists(path))
+                  throw RogueError( ''--libraries option specifies non-existent folder "$".'' (path) )
+                endIf
+                if (File.is_folder(path))
+                  if (not path.ends_with('/')) path += '/'
+                  if (not prefix_path_lookup.contains(path))
+                    prefix_path_list.add( path )
+                    prefix_path_lookup[ path ] = true
+                  endIf
+                else
+                  source_files.add( path )
+                endIf
+              endForEach
 
             case "--main"
               if (value.count) throw RogueError( "Unexpected value for '--main' option." )

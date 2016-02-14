@@ -634,6 +634,16 @@ augment Program
                       |}
       writer.println
 
+      # Instantiate all requisite singletons
+      writer.println "// Instantiate requisite singletons"
+      forEach (type in type_list)
+        if (not type.omit_output and type.is_singleton)
+          writer.print( "ROGUE_SINGLETON( " ).print( type.cpp_name ).println( " );" )
+        endIf
+      endForEach
+      writer.println
+      
+
       # Call Global.on_launch()
       writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );"
 
