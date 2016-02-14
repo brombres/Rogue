@@ -327,6 +327,11 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
     method read->$DataType
       ++position
       return list[ position - 1 ]
+
+    method seek( pos:Int32 )->Logical
+      if (pos < 0 or pos > last+1) return false
+      position = pos
+      return true
 endClass
 
 class ListWriter<<$DataType>> : Writer<<$DataType>>

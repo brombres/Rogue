@@ -16,7 +16,7 @@ class Tokenizer
     method tokenize( reference_t:Token, filepath, data:String )->Token[]
       local characters = Character[]( data.count )
       forEach (ch in data) characters.add( ch )
-      return tokenize( ParseReader(characters,2).set_position(reference_t.line,reference_t.column) )
+      return tokenize( ParseReader(characters,2).set_location(reference_t.line,reference_t.column) )
 
     method tokenize( reader )->Token[]
       configure_token_types

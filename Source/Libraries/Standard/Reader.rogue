@@ -5,6 +5,9 @@ class Reader<<$DataType>> [aspect]
     method peek->$DataType
 
     method read->$DataType
+
+    method seek( pos:Int32 )->Logical
+      return false
 endClass
 
 class StringReader : Reader<<Character>>
@@ -30,6 +33,11 @@ class StringReader : Reader<<Character>>
     method read->Character
       ++position
       return string[ position - 1 ]
+
+    method seek( pos:Int32 )->Logical
+      if (pos < 0 or pos > count) return false
+      position = pos
+      return true
 endClass
 
 class LineReader : Reader<<String>>

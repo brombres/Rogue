@@ -479,11 +479,12 @@ class FileReader : Reader<<Character>>
     method remaining->Int32
       return count - position
 
-    method set_position( @position )->this
-      if (fp)
-        native "fseek( $this->fp, $position, SEEK_SET );"
-      endIf
+    method seek( pos:Int32 )->Logical
+      if (not fp or pos < 0 or pos > count) return false
 
+      native "fseek( $this->fp, $position, SEEK_SET );"
+
+      position = pos
       buffer_position = 0
       buffer.clear
       return this

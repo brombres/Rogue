@@ -80,6 +80,9 @@ class DataReader : Reader<<Byte>>
       local count = read_int32x
       forEach (1..count) buffer.print( read_int32x->Character )
       return buffer
+
+    method seek( pos:Int32 )->Logical
+      return source.seek( pos )
 endClass
 
 class BufferedDataReader : DataReader
