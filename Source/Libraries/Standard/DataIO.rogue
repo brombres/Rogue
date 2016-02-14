@@ -16,10 +16,70 @@ class DataReader : Reader<<Byte>>
       return source.has_another
 
     method peek->Byte
+      if (not source.has_another) return 0
       return source.peek
 
     method read->Byte
+      if (not source.has_another) return 0
       return source.read
+
+    method read_real64->Real64
+      return read_int64.as_real64
+
+    method read_real32->Real32
+      return read_int32.as_real32
+
+    method read_int64->Int64
+      local result = read_int32 : Int64
+      return (result :<<: 32) | read_int32
+
+    method read_int64x->Int64
+      local result = read_int32x : Int64
+      return (result :<<: 32) | read_int32x
+
+    method read_int32->Int32
+      local result = read : Int32
+      result = (result:<<:8) | read
+      result = (result:<<:8) | read
+      return (result:<<:8) | read
+
+    method read_int32x->Int32
+      local b = read : Int32
+      if ((b & 0xc0) != 0x80) return b->Byte.signed
+
+      which (b & 0x30)
+        case 0x00
+          b = (b :<<: 4)->Byte.signed :<<: 4
+          return b | read
+
+        case 0x10
+          b = (b :<<: 4)->Byte.signed :<<: 12
+          b |= (read :<<: 8)
+          return b | read
+
+        case 0x20
+          b = (b :<<: 4)->Byte.signed :<<: 20
+          b |= (read :<<: 16)
+          b |= (read :<<: 8)
+          return b | read
+
+        others
+          return read_int32
+      endWhich
+
+    method read_byte->Byte [macro]
+      this.read
+
+    method read_logical->Logical
+      return (read != 0)
+
+    method read_string->String
+      return read_string( StringBuilder() )->String
+
+    method read_string( buffer:StringBuilder )->StringBuilder
+      local count = read_int32x
+      forEach (1..count) buffer.print( read_int32x->Character )
+      return buffer
 endClass
 
 class BufferedDataReader : DataReader
@@ -63,15 +123,61 @@ class DataWriter : Writer<<Byte>>
       output.write( value )
       return this
 
+    method write_real64( value:Real64 )->this
+      return write_int64( value.as_int64 )
+
+    method write_real32( value:Real32 )->this
+      return write_int32( value.as_int32 )
+
     method write_int64( value:Int64 )->this
-      write_int32( value:>>:32 )
+      write_int32( value:>>>:32 )
       return write_int32( value )
 
+    method write_int64x( value:Int64 )->this
+      write_int32x( value:>>>:32 )
+      return write_int32x( value )
+
     method write_int32( value:Int32 )->this
-      write( value:>>:24 )
-      write( value:>>:16 )
-      write( value:>>:8 )
+      write( value:>>>:24 )
+      write( value:>>>:16 )
+      write( value:>>>:8 )
       return write( value )
+
+    method write_int32x( value:Int32 )->this
+      if (value >= -64 and value < 128)
+        return write( value )
+      elseIf (value >= -0x400 and value <= 0x3ff)
+        write( 0x80 | ((value :>>>: 8) & 15) )
+        return write( value )
+      elseIf (value >= -0x40000 and value <= 0x3ffff)
+        write( 0x90 | ((value :>>>: 16) & 15) )
+        write( value :>>>: 8 )
+        return write( value )
+      elseIf (value >= -0x4000000 and value <= 0x3ffffff)
+        write( 0xa0 | ((value :>>>: 24) & 15) )
+        write( value :>>>: 16 )
+        write( value :>>>: 8 )
+        return write( value )
+      else
+        write( 0xb0 )
+        write( value :>>>: 24 )
+        write( value :>>>: 16 )
+        write( value :>>>: 8 )
+        return write( value )
+      endIf
+
+    method write_byte( value:Byte )->this [macro]
+      this.write( value )
+
+    method write_logical( value:Logical )->this
+      if (value) return write( 1 )
+      else       return write( 0 )
+
+    method write_string( value:String )->this
+      if (not value) value = ""
+      write_int32x( value.count )
+      forEach (ch in value) write_int32x( ch )
+      return this
 endClass
 
 class BufferedDataWriter : DataWriter

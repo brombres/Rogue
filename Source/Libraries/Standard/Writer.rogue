@@ -1,0 +1,21 @@
+#==============================================================================
+# Writer.rogue
+#==============================================================================
+
+class Writer<<$DataType>> [aspect]
+  METHODS
+    method close->this
+      return this
+
+    method flush->this
+      return this
+
+    method seek( position:Int32 )->Logical
+      return false
+
+    method seek_end()->Logical
+      return false
+
+    method write( value:$DataType )->this
+endClass
+

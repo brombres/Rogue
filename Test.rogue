@@ -1,5 +1,37 @@
 local writer = BufferedDataWriter()
-writer.write_int64( 0x0102030405060708 )
+
+writer.write_string( "Testing" )
+writer.write_real64( pi )
+writer.write_int32x( 0x80000000 )
+writer.write_int32x( 0xA0000000 )
+writer.write_int32x( 0xC0000000 )
+writer.write_int32x( 0xE0000000 )
+writer.write_int32x( 0xF0000000 )
+writer.write_int32x( 0xF000000F )
+writer.write_int32x( 0xF00000FF )
+writer.write_int32x( 0xF0000FFF )
+writer.write_int32x( 0xF000FFFF )
+writer.write_int32x( 0xF00FFFFF )
+writer.write_int32x( 0xF0FFFFFF )
+writer.write_int32x( 0xFFFFFFFF )
+writer.write_int32x( 0 )
+writer.write_int32x( 1 )
+writer.write_int32x( 127 )
+writer.write_int32x( 128 )
+writer.write_int32x( 0xff )
+writer.write_int32x( 0xfff )
+writer.write_int32x( 0xffff )
+writer.write_int32x( 0xfffff )
+writer.write_int32x( 0xffffff )
+writer.write_int32x( 0xfffffff )
+writer.write_int32x( 0x7fffffff )
 
 println writer.buffer
+
+local reader = DataReader( writer.buffer )
+println reader.read_string
+println reader.read_real64
+while (reader.has_another)
+  println reader.read_int32x.to_hex_string
+endWhile
 

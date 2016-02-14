@@ -196,6 +196,10 @@ class Byte [primitive]
     method hash_code->Int32
       return this->Int32
 
+    method signed->Int32
+      if (this <= 127) return this
+      return (this - 256)
+
     method to->Object
       return Boxed<<Byte>>(this)
 
