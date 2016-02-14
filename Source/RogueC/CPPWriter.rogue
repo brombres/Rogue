@@ -1312,8 +1312,15 @@ augment Method
               local m = ic.find_method(signature)
               if (m.is_used)
                 writer.print("case ").print(ic.index).println(":")
-                if (return_type) writer.print( "  return " )
-                else              writer.print( "  " )
+                if (return_type)
+                  writer.print( "  return " )
+                  if (return_type isNot m.return_type)
+                    # Manual widening cast
+                    writer.print( "(" ).print( return_type ).print( ")" )
+                  endIf
+                else
+                  writer.print( "  " )
+                endIf
                 writer.print( m.cpp_name ).print( "( (" ).print( m.type_context ).print( ")THIS" )
                 forEach (param in parameters)
                   writer.print( ", " ).print( param.cpp_name )

@@ -672,7 +672,7 @@ class Tokenizer
       reader.read  # [b,c,x] = [2,8,16]
 
       local count = 0
-      local n = 0
+      local n = 0 : Int64
       local digit = reader.peek.to_number( base )
       while (reader.has_another and digit != -1)
         if (digit >= base) throw error( "Digit out of range for base " + base + "." )
@@ -684,7 +684,12 @@ class Tokenizer
 
       if (count == 0) throw error( "One or more digits expected." )
 
-      return add_new_token( TokenType.literal_integer, n )
+      # Check for Int32 vs Int64
+      if ((base==2 and count>32) or (base==8 and count>11) or (base==16 and count>8))
+        return add_new_token( TokenType.literal_long, n )
+      else
+        return add_new_token( TokenType.literal_integer, n )
+      endIf
 
     method tokenize_number->Logical
       local is_negative = consume('-')

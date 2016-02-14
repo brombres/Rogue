@@ -77,6 +77,13 @@ class Math
       --bits
       if (bits) return ((value :>>>: 1) & 0x7fffFFFF) :>>>: bits
       else      return (value :>>>: 1) & 0x7fffFFFF
+
+    method shift_right( value:Int64, bits:Int64 )->Int64
+      if (bits <= 0) return value
+
+      --bits
+      if (bits) return ((value :>>>: 1) & 0x7fffFFFFffffFFFF) :>>>: bits
+      else      return (value :>>>: 1) & 0x7fffFFFFffffFFFF
 endClass
 
 

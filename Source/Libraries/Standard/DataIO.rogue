@@ -1,0 +1,89 @@
+#==============================================================================
+# DataIO.rogue
+#==============================================================================
+
+class DataReader : Reader<<Byte>>
+  PROPERTIES
+    source : Reader<<Byte>>
+
+  METHODS
+    method init( source )
+
+    method init( list:Byte[] )
+      init( list.reader )
+
+    method has_another->Logical
+      return source.has_another
+
+    method peek->Byte
+      return source.peek
+
+    method read->Byte
+      return source.read
+endClass
+
+class BufferedDataReader : DataReader
+  PROPERTIES
+    buffer : Byte[]
+
+  METHODS
+    method init
+      buffer = Byte[]
+      prior.init( buffer )
+    
+    method init( buffer )
+      prior.init( buffer )
+endClass
+
+class DataWriter : Writer<<Byte>>
+  PROPERTIES
+    output : Writer<<Byte>>
+
+  METHODS
+    method init( output )
+
+    method init( list:Byte[] )
+      init( list.writer )
+
+    method close->this
+      output.close
+      return this
+
+    method flush->this
+      output.close
+      return this
+
+    method seek( pos:Int32 )->Logical
+      return output.seek( pos )
+
+    method seek_end()->Logical
+      return output.seek_end
+
+    method write( value:Byte )->this
+      output.write( value )
+      return this
+
+    method write_int64( value:Int64 )->this
+      write_int32( value:>>:32 )
+      return write_int32( value )
+
+    method write_int32( value:Int32 )->this
+      write( value:>>:24 )
+      write( value:>>:16 )
+      write( value:>>:8 )
+      return write( value )
+endClass
+
+class BufferedDataWriter : DataWriter
+  PROPERTIES
+    buffer : Byte[]
+
+  METHODS
+    method init
+      buffer = Byte[]
+      prior.init( buffer )
+    
+    method init( buffer )
+      prior.init( buffer )
+endClass
+

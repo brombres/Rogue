@@ -490,7 +490,7 @@ class FileReader : Reader<<Character>>
 endClass
 
 
-class FileWriter
+class FileWriter : Writer<<Character>>
   PROPERTIES
     filepath : String
     error    : Logical
@@ -501,7 +501,7 @@ class FileWriter
     method init( _filepath:String )
       open( _filepath )
 
-    method close->FileWriter
+    method close->this
       flush
 
       if (fp)
@@ -510,7 +510,7 @@ class FileWriter
 
       return this
 
-    method flush->FileWriter
+    method flush->this
       if (buffer.count == 0 or not fp) return this
 
       native @|fwrite( $buffer->data->bytes, 1, $buffer->count, $this->fp );

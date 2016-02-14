@@ -1,6 +1,7 @@
 $include "Array.rogue"
 $include "Boxed.rogue"
 $include "Console.rogue"
+$include "DataIO.rogue"
 $include "Error.rogue"
 $include "Event.rogue"
 $include "File.rogue"
@@ -24,6 +25,7 @@ $include "System.rogue"
 $include "Table.rogue"
 $include "Task.rogue"
 $include "Time.rogue"
+$include "Writer.rogue"
 
 $if ("C++")
   $includeNativeHeader "NativeCPP.h"

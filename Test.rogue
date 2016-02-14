@@ -1,12 +1,5 @@
-routine Add<<$DataType>>( a:$DataType, b:$DataType )->$DataType
-  return a + b
-endRoutine
+local writer = BufferedDataWriter()
+writer.write_int64( 0x0102030405060708 )
 
-println Add<<Int32>>(3,4)
+println writer.buffer
 
-
-local buffer = StringBuilder()
-buffer.print_character32( 128512 )
-println buffer
-println "😀"[0]->Int32
-println "😀"[1]->Int32

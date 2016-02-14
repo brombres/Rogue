@@ -6,6 +6,9 @@ class Real64 [primitive]
       $endIf
 
   METHODS
+    method as_int64->Int64
+      return Int64( this )
+
     method clamped( low:Real64, high:Real64 )->Real64
       if (this < low)  return low
       if (this > high) return high
@@ -23,7 +26,16 @@ class Real64 [primitive]
 endClass
 
 class Real32 [primitive]
+  GLOBAL METHODS
+    method create( bits:Int32 )->Real32
+      $if ("C++")
+        native "return *((RogueReal32*)&$bits);"
+      $endIf
+
   METHODS
+    method as_int32->Int32
+      return Int32( this )
+
     method clamped( low:Real32, high:Real32 )->Real32
       if (this < low)  return low
       if (this > high) return high
@@ -41,6 +53,9 @@ class Int64 [primitive]
       $endIf
 
   METHODS
+    method as_real64->Real64
+      return Real64( this )
+
     method clamped( low:Int64, high:Int64 )->Int64
       if (this < low)  return low
       if (this > high) return high
@@ -79,7 +94,16 @@ class Int64 [primitive]
 endClass
 
 class Int32 [primitive]
+  GLOBAL METHODS
+    method create( bit_source:Real32 )->Int32
+      $if ("C++")
+        native "return *((RogueInt32*)&$bit_source);"
+      $endIf
+
   METHODS
+    method as_real32->Real32
+      return Real32( this )
+
     method clamped( low:Int32, high:Int32 )->Int32
       if (this < low)  return low
       if (this > high) return high

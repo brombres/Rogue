@@ -28,8 +28,8 @@ class Type
 
     definition_list   = String[]
     definition_lookup = Table<<String,Cmd>>()
-    prev_enum_cmd    : Cmd
-    next_enum_offset = 0
+    prev_enum_cmd     : Cmd
+    next_enum_offset  = 0
 
     native_properties : String[]
 
@@ -39,7 +39,7 @@ class Type
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
-    global_method_list                = Method[]                   : Method[]
+    global_method_list          = Method[]                   : Method[]
     routine_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     routine_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
