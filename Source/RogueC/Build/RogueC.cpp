@@ -32758,7 +32758,16 @@ void RogueCmdIf__trace_used_code( RogueClassCmdIf* THIS )
 void RogueCmdIf__write_cpp__CPPWriter_Logical( RogueClassCmdIf* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 )
 {
   RogueCPPWriter__print__String( writer_0, Rogue_literal_strings[868] );
-  call_ROGUEM59( 31, (RogueClassCmd*)(THIS->condition), writer_0, false );
+  if ((RogueObject_instance_of(THIS->condition,RogueTypeCmdLiteralLogical) && !(((RogueClassCmdLiteralLogical*)(RogueObject_as(THIS->condition,RogueTypeCmdLiteralLogical)))->value)))
+  {
+    RogueCPPWriter__print__String( writer_0, Rogue_literal_strings[58] );
+    call_ROGUEM59( 31, (RogueClassCmd*)(THIS->condition), writer_0, false );
+    RogueCPPWriter__print__String( writer_0, Rogue_literal_strings[59] );
+  }
+  else
+  {
+    call_ROGUEM59( 31, (RogueClassCmd*)(THIS->condition), writer_0, false );
+  }
   RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[59] );
   RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[184] );
   writer_0->indent += 2;

@@ -1429,7 +1429,14 @@ augment CmdIf
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( "if (" )
-      condition.write_cpp( writer )
+      if (condition instanceOf CmdLiteralLogical and not (condition as CmdLiteralLogical).value)
+        # Surround with extra parens to prevent dead code warning
+        writer.print( "(" )
+        condition.write_cpp( writer )
+        writer.print( ")" )
+      else
+        condition.write_cpp( writer )
+      endIf
       writer.println( ")" )
       writer.println( "{" )
       writer.indent += 2
