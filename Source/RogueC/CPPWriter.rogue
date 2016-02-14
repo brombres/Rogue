@@ -561,12 +561,15 @@ augment Program
       writer.println
 
       # configure() method
-      writer.println( "void Rogue_configure()" )
+      writer.println( "void Rogue_configure( int argc, const char* argv[] )" )
       writer.println( "{" )
       writer.indent += 2
 
       writer.println @|if (Rogue_configured) return;
                       |Rogue_configured = 1;
+                      |
+                      |Rogue_argc = argc;
+                      |Rogue_argv = argv;
                       |
                       |Rogue_configure_types();
                       |
@@ -597,7 +600,7 @@ augment Program
       writer.println
 
       # launch()
-      writer.println( "void Rogue_launch( int const argc, const char* argv[] )" )
+      writer.println( "void Rogue_launch()" )
       writer.println( "{" )
       writer.indent += 2
 
@@ -622,12 +625,12 @@ augment Program
 
       # Copy command line args to System class
       writer.println @|RogueSystem_executable_filepath = RogueString_create_from_c_string(
-                      |    argc ? argv[0] : "Rogue", -1 );
+                      |    Rogue_argc ? Rogue_argv[0] : "Rogue", -1 );
                       |
-                      |for (int i=1; i<argc; ++i)
+                      |for (int i=1; i<Rogue_argc; ++i)
                       |{
                       |  RogueStringList__add__String( RogueSystem_command_line_arguments, 
-                      |      RogueString_create_from_c_string( argv[i], -1 ) );
+                      |      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );
                       |}
       writer.println
 
@@ -657,8 +660,8 @@ augment Program
         writer.println
         writer.println( @|int main( int argc, const char* argv[] )
                          |{
-                         |  Rogue_configure();
-                         |  Rogue_launch( argc, argv );
+                         |  Rogue_configure( argc, argv );
+                         |  Rogue_launch();
                          |  Rogue_quit();
                          |  return 0;
                          |}

@@ -63,6 +63,8 @@
 RogueLogical       Rogue_configured = 0;
 RogueErrorHandler* Rogue_error_handler = 0;
 RogueObject*       Rogue_error_object  = 0;
+int                Rogue_argc;
+const char**       Rogue_argv;
 
 
 //-----------------------------------------------------------------------------

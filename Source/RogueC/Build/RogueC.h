@@ -332,10 +332,12 @@ extern RogueString*       Rogue_literal_strings[];
 extern RogueErrorHandler* Rogue_error_handler;
 extern RogueObject*       Rogue_error_object;
 extern RogueLogical       Rogue_configured;
+extern int                Rogue_argc;
+extern const char**       Rogue_argv;
 
-void Rogue_configure();
+void Rogue_configure( int argc=0, const char* argv[]=0 );
 void Rogue_collect_garbage();
-void Rogue_launch( int argc, const char* argv[] );
+void Rogue_launch();
 void Rogue_quit();
 
 
