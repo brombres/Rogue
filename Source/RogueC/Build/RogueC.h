@@ -3904,6 +3904,7 @@ RogueClassCmdLabel* RogueMethod__begin_label__Token_String_Logical( RogueClassMe
 RogueLogical RogueMethod__is_abstract( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_augment( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_dynamic( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_fallback( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_generated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_incorporated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_initializer( RogueClassMethod* THIS );
@@ -3941,6 +3942,8 @@ RogueString* RogueProperty__to_String( RogueClassProperty* THIS );
 RogueString* RogueProperty__type_name( RogueClassProperty* THIS );
 RogueClassProperty* RogueProperty__init__Token_Type_String_Type_Cmd( RogueClassProperty* THIS, RogueClassToken* _auto_97_0, RogueClassType* _auto_98_1, RogueString* _auto_99_2, RogueClassType* _auto_100_3, RogueClassCmd* _auto_101_4 );
 RogueClassProperty* RogueProperty__clone( RogueClassProperty* THIS );
+RogueLogical RogueProperty__is_incorporated( RogueClassProperty* THIS );
+void RogueProperty__mark_incorporated( RogueClassProperty* THIS );
 RogueClassProperty* RogueProperty__set_type_context__Type( RogueClassProperty* THIS, RogueClassType* _auto_102_0 );
 RogueClassProperty* RogueProperty__init_object( RogueClassProperty* THIS );
 RogueString* RogueString_MethodListTable__to_String( RogueClassString_MethodListTable* THIS );

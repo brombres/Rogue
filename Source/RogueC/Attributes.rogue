@@ -27,6 +27,7 @@ class Attribute
     is_augment          = 262144
     is_abstract         = 524288
     is_routine          = 1048576
+    is_fallback         = 2097152
 endClass
 
 

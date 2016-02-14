@@ -19,6 +19,12 @@ class Property
       if (initial_value) result.initial_value = initial_value.clone
       return result
 
+    method is_incorporated->Logical
+      return (attributes & Attribute.is_incorporated)?
+
+    method mark_incorporated
+      attributes |= Attribute.is_incorporated
+
     method set_type_context( @type_context )->Property
       return this
 

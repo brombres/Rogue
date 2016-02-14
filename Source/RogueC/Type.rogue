@@ -526,7 +526,7 @@ class Type
       if (existing_p)
         local i = list.locate( existing_p )!
 
-        if (p.type_context is existing_p.type_context)
+        if (p.type_context is existing_p.type_context and not p.is_incorporated and not existing_p.is_incorporated)
           throw p.t.error( ''A property named "$" already exists.'' (p.name) )
         else
           if (p.type is existing_p.type)
@@ -534,7 +534,10 @@ class Type
               if (existing_p.initial_value)
                 if (p.type.instance_of(existing_p.type))
                   # Use the new declaration with its updated initial value
-                  if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
+                  if (p.type_context.is_aspect)
+                    p = p.clone.set_type_context( this )
+                    p.mark_incorporated
+                  endIf
                   list[i] = p
                   lookup[p.name] = p
                 else
@@ -543,7 +546,10 @@ class Type
                 endIf
               else
                 # Use newer property with its existing value instead of old property without a value
-                if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
+                if (p.type_context.is_aspect)
+                  p = p.clone.set_type_context( this )
+                  p.mark_incorporated
+                endIf
                 list[i] = p
                 lookup[p.name] = p
               endIf
@@ -559,7 +565,10 @@ class Type
         endIf
 
       else
-        if (p.type_context.is_aspect) p = p.clone.set_type_context( this )
+        if (p.type_context.is_aspect)
+          p = p.clone.set_type_context( this )
+          p.mark_incorporated
+        endIf
         list.add( p )
         lookup[p.name] = p
       endIf

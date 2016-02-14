@@ -1,37 +1,20 @@
-local writer = BufferedDataWriter()
+class Number( value:Int32 ) : Numerical
+  METHODS
+    #method value->Int32
+    #return @value
+endClass
 
-writer.write_string( "Testing" )
-writer.write_real64( pi )
-writer.write_int32x( 0x80000000 )
-writer.write_int32x( 0xA0000000 )
-writer.write_int32x( 0xC0000000 )
-writer.write_int32x( 0xE0000000 )
-writer.write_int32x( 0xF0000000 )
-writer.write_int32x( 0xF000000F )
-writer.write_int32x( 0xF00000FF )
-writer.write_int32x( 0xF0000FFF )
-writer.write_int32x( 0xF000FFFF )
-writer.write_int32x( 0xF00FFFFF )
-writer.write_int32x( 0xF0FFFFFF )
-writer.write_int32x( 0xFFFFFFFF )
-writer.write_int32x( 0 )
-writer.write_int32x( 1 )
-writer.write_int32x( 127 )
-writer.write_int32x( 128 )
-writer.write_int32x( 0xff )
-writer.write_int32x( 0xfff )
-writer.write_int32x( 0xffff )
-writer.write_int32x( 0xfffff )
-writer.write_int32x( 0xffffff )
-writer.write_int32x( 0xfffffff )
-writer.write_int32x( 0x7fffffff )
+class Numerical [aspect]
+  PROPERTIES
+    value : Int32
 
-println writer.buffer
+  METHODS
+    method value->Int32 [fallback]
+      return @value
 
-local reader = DataReader( writer.buffer )
-println reader.read_string
-println reader.read_real64
-while (reader.has_another)
-  println reader.read_int32x.to_hex_string
-endWhile
+    method set_value( @value ) [fallback]
+endClass
 
+local n = Number(5)
+n.value = 5
+println n.value

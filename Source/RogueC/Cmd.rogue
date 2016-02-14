@@ -1700,7 +1700,7 @@ class CmdAccess : Cmd
         local p = scope.this_type.find_global( name )
         if (p)
           if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
-          else       return CmdReadGlobal( t, p )
+          else      return CmdReadGlobal( t, p )
         endIf
 
         p = scope.this_type.find_property( name )
@@ -2268,6 +2268,10 @@ class CmdReadProperty : Cmd
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
+      if (context.type.is_aspect)
+        throw t.error( "Cannot read properties using aspect references.  Add a getter to the aspect definition - " +
+          "'method $->$: return @$'."  (property_info.name,property_info.type.name,property_info.name) )
+      endIf
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
@@ -2297,6 +2301,12 @@ class CmdWriteProperty : Cmd
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value
+
+      if (context.type.is_aspect)
+        throw t.error( "Cannot write properties using aspect references.  Add a setter to the aspect definition - " +
+          "'method set_$(@$)'." (property_info.name,property_info.name) )
+      endIf
+
       new_value = new_value.resolve(scope).require_value.cast_to( property_info.type, scope ).resolve( scope )
       return this
 

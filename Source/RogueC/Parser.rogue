@@ -388,6 +388,8 @@ class Parser
         elseIf (consume("compound"))
           ensure_unspecialized_element_type( t, attributes )
           attributes.add( Attribute.is_compound )
+        elseIf (consume("fallback"))
+          attributes.add( Attribute.is_fallback )
         elseIf (consume("functional"))
           attributes.add( Attribute.is_functional )
         elseIf (consume("immutable"))
@@ -675,6 +677,8 @@ class Parser
 
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
+
+      consume( TokenType.symbol_colon )
 
       consume_eols
 

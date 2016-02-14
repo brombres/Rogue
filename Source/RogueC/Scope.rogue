@@ -55,6 +55,13 @@ class Scope
 
       if (not m) return null
 
+      # resolve_call is called up to twice for a given access - once at the beginning to optionally try 
+      # and find a method before looking at locals and properties and once at the end to force an
+      # error message since nothing else has been found.  Fallback methods are a subset of getters and 
+      # setters that should only be called if all else fails, so we can hook into the error_on_fail
+      # flag to make that call.
+      if (not error_on_fail and m.is_fallback and not m.type_context.is_aspect) return null
+
       local t = access.t
 
       local context = access.context

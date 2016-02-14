@@ -149,6 +149,9 @@ class Method
     method is_dynamic->Logical
       return (attributes.flags & Attribute.is_dynamic)
 
+    method is_fallback->Logical
+      return (attributes.flags & Attribute.is_fallback)
+
     method is_generated->Logical
       return (attributes.flags & Attribute.is_generated)
 
