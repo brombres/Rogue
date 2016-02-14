@@ -348,8 +348,9 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       return this
 
     method seek( position )->Logical
-      if (position < 0) position = 0
-      else              list.expand_to_include( position - 1 )
+      if (position < 0 or position > list.count) return false
+
+      list.expand_to_include( position - 1 )
       return true
 
     method seek_end()->Logical

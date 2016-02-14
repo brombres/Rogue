@@ -10,7 +10,7 @@ class Writer<<$DataType>> [aspect]
     method flush->this
       return this
 
-    method seek( position:Int32 )->Logical
+    method seek( pos:Int32 )->Logical
       return false
 
     method seek_end()->Logical

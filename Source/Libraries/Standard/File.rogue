@@ -533,6 +533,22 @@ class FileWriter : Writer<<Character>>
               |
               |return !$this->error;
 
+    method seek( pos:Int32 )->Logical
+      flush
+      if (not fp or pos < 0) return false
+
+      native "fseek( $this->fp, 0, SEEK_SET )"
+
+      return true
+
+    method seek_end()->Logical
+      flush
+      if (not fp) return false
+
+      native "fseek( $this->fp, 0, SEEK_END )"
+
+      return true
+
     method write( ch:Character )->this
       if (not fp) return this
 
