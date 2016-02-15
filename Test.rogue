@@ -1,20 +1,5 @@
-class Number( value:Int32 ) : Numerical
-  METHODS
-    #method value->Int32
-    #return @value
-endClass
+$requisite Byte[].clear()
+$requisite Byte[].reserve(Int32)
 
-class Numerical [aspect]
-  PROPERTIES
-    value : Int32
+local receiver = Byte[]
 
-  METHODS
-    method value->Int32 [fallback]
-      return @value
-
-    method set_value( @value ) [fallback]
-endClass
-
-local n = Number(5) : Numerical
-n.value = 5
-println n.value

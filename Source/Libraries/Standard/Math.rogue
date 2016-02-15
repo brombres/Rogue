@@ -45,6 +45,22 @@ class Math
 
     $endIf
 
+    method max( a:Int32, b:Int32 )->Int32
+      if (a >= b) return a
+      else        return b
+
+    method max( a:Real64, b:Real64 )->Real64
+      if (a >= b) return a
+      else        return b
+
+    method min( a:Int32, b:Int32 )->Int32
+      if (a <= b) return a
+      else        return b
+
+    method min( a:Real64, b:Real64 )->Real64
+      if (a <= b) return a
+      else        return b
+
     method mod( a:Int32, b:Int32 )->Int32
       if ((not a and not b) or b == 1) return 0
 

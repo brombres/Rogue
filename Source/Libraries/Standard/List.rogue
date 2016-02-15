@@ -328,8 +328,13 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
       ++position
       return list[ position - 1 ]
 
-    method seek( pos:Int32 )->Logical
+    method reset( pos:Int32, n=null:Int32? )->Logical
+      last = list.count - 1
       if (pos < 0 or pos > last+1) return false
+      if (n.exists)
+        if (n.value < 0 or pos+n.value > last+1) return false
+        last = (pos + n.value) - 1
+      endIf
       position = pos
       return true
 endClass

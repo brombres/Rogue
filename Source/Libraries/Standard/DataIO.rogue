@@ -7,6 +7,8 @@ class DataReader : Reader<<Byte>>
     source : Reader<<Byte>>
 
   METHODS
+    method init
+
     method init( source )
 
     method init( list:Byte[] )
@@ -14,6 +16,9 @@ class DataReader : Reader<<Byte>>
 
     method has_another->Logical
       return source.has_another
+
+    method position->Int32
+      return source.position
 
     method peek->Byte
       if (not source.has_another) return 0
@@ -78,11 +83,14 @@ class DataReader : Reader<<Byte>>
 
     method read_string( buffer:StringBuilder )->StringBuilder
       local count = read_int32x
-      forEach (1..count) buffer.print( read_int32x->Character )
+      forEach (1..count)
+        local ch = read_int32x
+        buffer.print( ch->Character )
+      endForEach
       return buffer
 
-    method seek( pos:Int32 )->Logical
-      return source.seek( pos )
+    method reset( pos:Int32, n=null:Int32? )->Logical
+      return source.reset( pos, n )
 endClass
 
 class BufferedDataReader : DataReader

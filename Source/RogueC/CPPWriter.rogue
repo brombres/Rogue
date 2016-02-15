@@ -1123,6 +1123,7 @@ augment Type
         endIf
         }#
 
+        #{
         # check()
         if (is_optional)
           writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
@@ -1133,6 +1134,7 @@ augment Type
                           |}
                           |
         endIf
+        }#
 
       endIf
 

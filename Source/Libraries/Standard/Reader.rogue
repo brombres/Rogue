@@ -12,7 +12,13 @@ class Reader<<$DataType>> [aspect]
 
     method read->$DataType
 
-    method seek( pos:Int32 )->Logical
+    method read( buffer:$DataType[], limit:Int32 )
+      forEach (1..limit)
+        if (not has_another) return
+        buffer.add( read )
+      endForEach
+
+    method reset( pos:Int32, n=null:Int32? )->Logical
       return false
 endClass
 
@@ -40,8 +46,14 @@ class StringReader : Reader<<Character>>
       ++position
       return string[ position - 1 ]
 
-    method seek( pos:Int32 )->Logical
+    method reset( pos:Int32, n=null:Int32? )->Logical
+      count = string.count
       if (pos < 0 or pos > count) return false
+
+      if (n.exists)
+        if (n.value < 0 or pos+n.value > count) return false
+        count = pos + n.value
+      endIf
       position = pos
       return true
 endClass
