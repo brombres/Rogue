@@ -124,8 +124,8 @@ class DataWriter : Writer<<Byte>>
       output.close
       return this
 
-    method seek( pos:Int32 )->Logical
-      return output.seek( pos )
+    method reset( pos:Int32 )->Logical
+      return output.reset( pos )
 
     method seek_end()->Logical
       return output.seek_end
@@ -202,5 +202,10 @@ class BufferedDataWriter : DataWriter
     
     method init( buffer )
       prior.init( buffer )
+
+    method clear->BufferedDataWriter
+      buffer.clear
+      output.reset( 0 )
+      return this
 endClass
 

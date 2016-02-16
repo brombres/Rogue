@@ -541,7 +541,7 @@ class FileWriter : Writer<<Character>>
               |
               |return !$this->error;
 
-    method seek( pos:Int32 )->Logical
+    method reset( pos:Int32 )->Logical
       flush
       if (not fp or pos < 0) return false
 

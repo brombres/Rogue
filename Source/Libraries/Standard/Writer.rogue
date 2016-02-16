@@ -16,12 +16,17 @@ class Writer<<$DataType>> [aspect]
     method position->Int32 [fallback]
       return @position
 
-    method seek( pos:Int32 )->Logical
+    method reset( pos:Int32 )->Logical
       return false
 
     method seek_end()->Logical
       return false
 
     method write( value:$DataType )->this
+      return this
+
+    method write( list:$DataType[] )->this
+      forEach (value in list) write( value )
+      return this
 endClass
 

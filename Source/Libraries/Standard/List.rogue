@@ -352,7 +352,7 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       list.discard_from( position )
       return this
 
-    method seek( position )->Logical
+    method reset( position )->Logical
       if (position < 0 or position > list.count) return false
 
       list.expand_to_include( position - 1 )
