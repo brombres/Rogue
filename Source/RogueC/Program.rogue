@@ -41,7 +41,7 @@ class Program [requisite singleton]
     type_NativeArray : Type
     type_GenericList : Type
     type_Global      : Type
-    type_Error       : Type
+    type_Exception   : Type
 
     type_StringBuilder : Type
 
@@ -76,7 +76,7 @@ class Program [requisite singleton]
       type_NativeArray   = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
       type_GenericList   = create_built_in_type( "GenericList", Attribute.is_class )
       type_Global        = create_built_in_type( "Global", Attribute.is_class )
-      type_Error         = create_built_in_type( "Error", Attribute.is_class )
+      type_Exception     = create_built_in_type( "Exception", Attribute.is_class )
 
       type_Object.simplify_name = true
       type_String.simplify_name = true
@@ -207,7 +207,7 @@ class Program [requisite singleton]
       type_Byte.resolve
       type_Logical.resolve
       type_Global.resolve
-      type_Error.resolve
+      type_Exception.resolve
 
       type_Object.resolve
       type_NativeArray.resolve
@@ -284,7 +284,7 @@ class Program [requisite singleton]
 
       # Exceptions
       forEach (type in type_list)
-        if (type.instance_of(Program.type_Error) and type isNot Program.type_Error)
+        if (type.instance_of(Program.type_Exception) and type isNot Program.type_Exception)
           if (type.base_class.index > type.index)
             local i1 = type.base_class.index
             local i2 = type.index

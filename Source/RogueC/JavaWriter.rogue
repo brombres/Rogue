@@ -924,7 +924,7 @@ augment Type
       writer.print( "static public class " ).print( java_class_name )
       local is_error = false
       if (is_class)
-        if (instance_of(Program.type_Error))
+        if (instance_of(Program.type_Exception))
           is_error = true
         endIf
         writer.print( " extends " ).print_type_name( base_class )

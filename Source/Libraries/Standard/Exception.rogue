@@ -1,4 +1,4 @@
-class Error
+class Exception
   PROPERTIES
     message : String
 
@@ -7,6 +7,17 @@ class Error
 
     method to->String
       return message
+endClass
+
+class Error : Exception;
+
+class UnsupportedOperationError : Error
+  METHODS
+    method init
+      message = "Unsupported operation."
+
+    method init( operation_name:String )
+      message = "Unsupported operation: $." (operation_name)
 endClass
 
 class OutOfBoundsError : Error

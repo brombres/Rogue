@@ -612,6 +612,16 @@ augment Program
                       |  return;
                       |}
 
+                      # Currently no way of getting the class name
+                      #|  if (Rogue_error_object)
+                      #|  {
+                      #|    printf( "Uncaught %s.\n", Rogue_error_object->type->name );
+                      #|  }
+                      #|  else
+                      #|  {
+                      #|    printf( "Uncaught error.\n" );
+                      #|  }
+
       # Call all init_class() methods
       forEach (type in type_list)
         if (not type.omit_output)
@@ -1003,7 +1013,7 @@ augment Type
       writer.print( "struct " ).print( cpp_class_name )
       local is_error = false
       if (is_class)
-        if (instance_of(Program.type_Error))
+        if (instance_of(Program.type_Exception))
           is_error = true
           writer.print( " : " ).print_type_name( base_class )
         else

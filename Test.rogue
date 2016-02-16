@@ -1,5 +1,11 @@
-$requisite Byte[].clear()
-$requisite Byte[].reserve(Int32)
+try
+  Test()
+catch (ex:Exception)
+  println ex
+endTry
 
-local receiver = Byte[]
-
+routine Test
+  println "A"
+  throw UnsupportedOperationError( "B" )
+  println "C"
+endRoutine

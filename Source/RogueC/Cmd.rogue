@@ -1131,7 +1131,7 @@ class CmdCatch : Cmd
 
     method resolve( scope:Scope )->Cmd
       error_var.type.organize(scope)
-      if (not error_var.type.instance_of(Program.type_Error))
+      if (not error_var.type.instance_of(Program.type_Exception))
         throw t.error( "Caught value must be instanceOf class Error." )
       endIf
 
@@ -1159,7 +1159,7 @@ class CmdThrow : Cmd
       expression = expression.resolve( scope )
       local expression_type = expression.require_type
       expression_type.organize(scope)
-      if (not expression_type.instance_of(Program.type_Error))
+      if (not expression_type.instance_of(Program.type_Exception))
         throw expression.t.error( "Thrown value must be instanceOf class Error." )
       endIf
       return this

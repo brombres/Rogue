@@ -273,9 +273,9 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 #endif
 
 //-----------------------------------------------------------------------------
-//  RogueError
+//  RogueException
 //-----------------------------------------------------------------------------
-struct RogueError : RogueObject
+struct RogueException : RogueObject
 {
 };
 
