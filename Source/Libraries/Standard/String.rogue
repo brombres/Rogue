@@ -596,7 +596,7 @@ class String [native functional]
         native @|char buffer[80];
                 |if (RogueString_to_c_string($this,buffer,80))
                 |{
-                |  return strtol( buffer, 0, 10 );
+                |  return (RogueInt32) strtol( buffer, 0, 10 );
                 |}
                 |else
                 |{
