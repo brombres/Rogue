@@ -4210,6 +4210,8 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       m_call.return_type = return_type
       m_call.statements = statements
 
+      # TODO: change type of 'this' reference in statements
+
       if (with_args)
         local m_init = fn_type.add_method( t, "init" )
         local create_args = CmdArgs()

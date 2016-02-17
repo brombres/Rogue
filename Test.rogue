@@ -1,3 +1,8 @@
-local x = Function(Int32)[]
-x.add( function(n)=println n*2 )
-forEach (fn in x) fn(5)
+routine oh_hi( fn:Function(Int32) )
+  println "It's working " + fn.type_name
+endRoutine
+
+local fn = function(n:Int32) oh_hi( this ) : Function(Int32)
+
+fn(4)
+
