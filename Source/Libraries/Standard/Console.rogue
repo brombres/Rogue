@@ -1,4 +1,4 @@
-class Console [singleton]
+class Console : Writer<<Character>> [singleton]
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
@@ -13,13 +13,23 @@ class Console [singleton]
               |return RogueString_create_from_c_string( st, len );
 
   METHODS
+    method print( characters:Character[] )
+      native_print( characters )
+
     method print( value:String )
       native_print( value )
 
     method print( value:StringBuilder )
       native_print( value )
 
+    method write( characters:Character[] )->this
+      native_print( characters )
+      return this
+
     $if ("C++")
+    method native_print( characters:Character[] ) [macro]
+      native 'RogueString_print_characters( $characters->data->characters, $characters->count )'
+
     method native_print( value:String ) [macro]
       native 'RogueString_print_string( $value )'
 

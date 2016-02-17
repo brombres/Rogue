@@ -21,10 +21,6 @@ class StringBuilder [requisite]
       init( initial_capacity )
       print( initial_content )
 
-    method add_indent( spaces:Int32 )->this
-      indent += spaces
-      return this
-
     method capacity->Int32 [macro]
       this.characters.capacity
 

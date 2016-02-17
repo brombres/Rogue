@@ -523,6 +523,7 @@ class FileWriter : Writer<<Character>>
       if (buffer.count == 0 or not fp) return this
 
       native @|fwrite( $buffer->data->bytes, 1, $buffer->count, $this->fp );
+      native @|fflush( $this->fp );
 
       buffer.clear
       return this

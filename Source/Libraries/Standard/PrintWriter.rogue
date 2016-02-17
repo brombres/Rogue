@@ -1,0 +1,98 @@
+class PrintWriter : Writer<<Character>>, PrintWriterAspect
+  PROPERTIES
+    output : Writer<<Character>>
+
+  METHODS
+    method init( output )
+
+    method flush->this
+      if (printwriter_output_buffer.count)
+        write( printwriter_output_buffer.characters )
+        printwriter_output_buffer.clear
+      endIf
+      output.flush
+      return this
+
+    method write( characters:Character[] )->this
+      output.write characters
+      return this
+endClass
+
+
+class PrintWriterAspect [aspect]
+  PROPERTIES
+    printwriter_output_buffer = StringBuilder()
+
+  METHODS
+    method flush->this
+      if (printwriter_output_buffer.count)
+        write( printwriter_output_buffer.characters )
+        printwriter_output_buffer.clear
+      endIf
+      return this
+
+    method print( value:Byte )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method print( value:Character )->this
+      printwriter_output_buffer.print( value )
+      if (value == '\n') return flush
+      return this
+
+    method print( value:Int32 )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method print( value:Logical )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method print( value:Int64 )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method print( value:Object )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method print( value:Real64 )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method print( value:String )->this
+      printwriter_output_buffer.print( value )
+      return this
+
+    method println->this
+      printwriter_output_buffer.print( '\n' )
+      return flush
+
+    method println( value:Byte )->this
+      return print( value ).println
+
+    method println( value:Character )->this
+      return print( value ).println
+
+    method println( value:Int32 )->this
+      return print( value ).println
+
+    method println( value:Logical )->this
+      return print( value ).println
+
+    method println( value:Int64 )->this
+      return print( value ).println
+
+    method println( value:Real64 )->this
+      return print( value ).println
+
+    method println( value:Object )->this
+      return print( value ).println
+
+    method println( value:String )->this
+      return print( value ).println
+
+    method write( characters:Character[] )->this
+      return this
+endClass
+

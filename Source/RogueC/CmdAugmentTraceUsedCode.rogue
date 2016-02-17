@@ -1,0 +1,439 @@
+augment Cmd
+  METHODS
+    method trace_used_code
+      throw t.error( "[INTERNAL] $::trace_used_code() is not defined." (type_name) )
+
+endAugment
+
+augment CmdStatementList 
+  METHODS
+    method trace_used_code
+      forEach (statement in this)
+        statement.trace_used_code
+      endForEach
+endAugment
+
+augment CmdArgs 
+  METHODS
+    method trace_used_code
+      forEach (arg in this) arg.trace_used_code
+endAugment
+
+augment CmdStatement 
+  METHODS
+    method trace_used_code
+      noAction
+endAugment
+
+augment CmdLocalDeclaration 
+  METHODS
+    method trace_used_code
+      local_info.type.trace_used_code
+      if (local_info.initial_value) local_info.initial_value.trace_used_code
+endAugment
+
+augment CmdReturn 
+  METHODS
+    method trace_used_code
+      if (value) value.trace_used_code
+
+endAugment
+
+augment CmdBlock 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+endAugment
+
+augment CmdIf 
+  METHODS
+    method trace_used_code
+      condition.trace_used_code
+      statements.trace_used_code
+      if (else_statements) else_statements.trace_used_code
+endAugment
+
+augment CmdSwitch 
+  METHODS
+    method trace_used_code
+      expression.trace_used_code
+      forEach (c in cases) c.trace_used_code
+      if (case_others) case_others.trace_used_code
+endAugment
+
+augment CmdWhichCase 
+  METHODS
+    method trace_used_code
+      forEach (condition in conditions) condition.trace_used_code
+      statements.trace_used_code
+endAugment
+
+augment CmdContingent 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+      if (satisfied_statements)   satisfied_statements.trace_used_code
+      if (unsatisfied_statements) unsatisfied_statements.trace_used_code
+endAugment
+
+augment CmdGenericLoop 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+      if (control_statements) control_statements.trace_used_code
+      if (condition) condition.trace_used_code
+      if (upkeep) upkeep.trace_used_code
+
+endAugment
+
+augment CmdForEach 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+      collection.trace_used_code
+      if (step_cmd) step_cmd.trace_used_code
+endAugment
+
+augment CmdTry 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+      forEach (c in catches) c.trace_used_code
+endAugment
+
+augment CmdCatch 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+endAugment
+
+augment CmdThrow 
+  METHODS
+    method trace_used_code
+      expression.trace_used_code
+endAugment
+
+augment CmdEscape 
+  METHODS
+    method trace_used_code
+      noAction
+endAugment
+
+augment CmdNextIteration 
+  METHODS
+    method trace_used_code
+      noAction
+endAugment
+
+augment CmdNecessary 
+  METHODS
+    method trace_used_code
+      if (condition) condition.trace_used_code
+endAugment
+
+augment CmdSufficient 
+  METHODS
+    method trace_used_code
+      if (condition) condition.trace_used_code
+endAugment
+
+augment CmdLiteral 
+  METHODS
+    method trace_used_code
+      noAction
+endAugment
+
+augment CmdLiteralString 
+  METHODS
+    method trace_used_code
+      if (value)
+        if (not Program.literal_string_lookup.contains(value))
+          index = Program.literal_string_list.count
+          Program.literal_string_lookup[value] = index
+          Program.literal_string_list.add( value )
+        else
+          index = Program.literal_string_lookup[value]
+        endIf
+      endIf
+
+endAugment
+
+augment CmdAccess 
+  METHODS
+    method trace_used_code
+      throw t.error( ''[INTERNAL] $::trace_used_code() ("$") is not defined.'' (type_name,name) )
+
+endAugment
+
+augment CmdCreateObject 
+  METHODS
+    method trace_used_code
+      of_type.trace_used_code
+
+endAugment
+
+augment CmdCreateCompound 
+  METHODS
+    method trace_used_code
+      of_type.trace_used_code
+      forEach (arg in args) arg.trace_used_code
+
+endAugment
+
+augment CmdThisContext 
+  METHODS
+    method trace_used_code
+      noAction
+
+endAugment
+
+augment CmdReadSingleton 
+  METHODS
+    method trace_used_code
+      of_type.trace_used_code
+
+endAugment
+
+augment CmdWriteSingleton 
+  METHODS
+    method trace_used_code
+      of_type.trace_used_code
+      new_value.trace_used_code
+
+      #method type->Type
+      #return of_type
+endAugment
+
+augment CmdReadLocal 
+  METHODS
+    method trace_used_code
+      local_info.type.trace_used_code
+
+endAugment
+
+augment CmdWriteLocal 
+  METHODS
+    method trace_used_code
+      local_info.type.trace_used_code
+      new_value.trace_used_code
+
+      #method type->Type
+      #return local_info.type
+endAugment
+
+augment CmdReadGlobal 
+  METHODS
+    method trace_used_code
+      global_info.type_context.trace_used_code
+      global_info.type.trace_used_code
+
+endAugment
+
+augment CmdWriteGlobal 
+  METHODS
+    method trace_used_code
+      global_info.type_context.trace_used_code
+      global_info.type.trace_used_code
+      new_value.trace_used_code
+
+      #method type->Type
+      #return global_info.type
+endAugment
+
+augment CmdReadProperty 
+  METHODS
+    method trace_used_code
+      context.trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+
+endAugment
+
+augment CmdWriteProperty 
+  METHODS
+    method trace_used_code
+      if (context) context.trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+      new_value.trace_used_code
+
+      #method type->Type
+      #return property_info.type
+endAugment
+
+augment CmdCall 
+  METHODS
+    method trace_used_code
+      if (context) context.trace_used_code
+      method_info.trace_used_code
+      forEach (arg in args) arg.trace_used_code
+
+endAugment
+
+augment CmdCallDynamicMethod 
+  METHODS
+    method trace_used_code
+      prior.trace_used_code
+      if (method_info.is_overridden) method_info.called_dynamically = true
+endAugment
+
+augment CmdRange 
+  METHODS
+    method trace_used_code
+      first.trace_used_code
+      last.trace_used_code
+      if (step_size) step_size.trace_used_code
+endAugment
+
+augment CmdUnary 
+  METHODS
+    method trace_used_code
+      operand.trace_used_code
+
+endAugment
+
+augment CmdBinary 
+  METHODS
+    method trace_used_code
+      left.trace_used_code
+      right.trace_used_code
+
+endAugment
+
+augment CmdAdjustLocal 
+  METHODS
+    method trace_used_code
+      local_info.type.trace_used_code
+endAugment
+
+augment CmdAdjustProperty 
+  METHODS
+    method trace_used_code
+      context.trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+endAugment
+
+augment CmdAdjustGlobal 
+  METHODS
+    method trace_used_code
+      global_info.type_context.trace_used_code
+      global_info.type.trace_used_code
+endAugment
+
+augment CmdLocalOpWithAssign 
+  METHODS
+    method trace_used_code
+      local_info.type.trace_used_code
+      new_value.trace_used_code
+
+endAugment
+
+augment CmdOpAssignGlobal 
+  METHODS
+    method trace_used_code
+      global_info.type_context.trace_used_code
+      global_info.type.trace_used_code
+      new_value.trace_used_code
+
+endAugment
+
+augment CmdOpAssignProperty 
+  METHODS
+    method trace_used_code
+      property_info.type_context.trace_used_code
+      property_info.type.trace_used_code
+      new_value.trace_used_code
+
+endAugment
+
+augment CmdCreateArray 
+  METHODS
+    method trace_used_code
+      array_type.trace_used_code
+      count_cmd.trace_used_code
+
+endAugment
+
+augment CmdReadArrayElement 
+  METHODS
+    method trace_used_code
+      context.trace_used_code
+      array_type.trace_used_code
+      index.trace_used_code
+
+endAugment
+
+augment CmdReadArrayCount 
+  METHODS
+    method trace_used_code
+      context.trace_used_code
+      array_type.trace_used_code
+
+endAugment
+
+augment CmdWriteArrayElement 
+  METHODS
+    method trace_used_code
+      context.trace_used_code
+      array_type.trace_used_code
+      new_value.trace_used_code
+      index.trace_used_code
+
+endAugment
+
+augment CmdTypeOperator 
+  METHODS
+    method trace_used_code
+      operand.trace_used_code
+      target_type.trace_used_code
+
+endAugment
+
+augment CmdTaskControl 
+  METHODS
+    method trace_used_code
+      forEach (section in sections) section.statements.trace_used_code
+endAugment
+
+augment CmdCreateOptionalValue 
+  METHODS
+    method trace_used_code
+      of_type.trace_used_code
+      if (value) value.trace_used_code
+
+endAugment
+
+augment CmdLogicalizeOptionalValue 
+  METHODS
+    method trace_used_code
+      value.trace_used_code
+
+endAugment
+
+augment CmdGetOptionalValue 
+  METHODS
+    method trace_used_code
+      value.trace_used_code
+
+endAugment
+
+augment CmdTrace 
+  METHODS
+    method trace_used_code
+      noAction
+endAugment
+
+augment CmdLabel 
+  METHODS
+    method trace_used_code
+      statements.trace_used_code
+
+endAugment
+
+augment CmdNativeCode 
+  METHODS
+    method trace_used_code
+
+endAugment
+

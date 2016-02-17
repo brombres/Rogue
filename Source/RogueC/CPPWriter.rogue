@@ -2189,12 +2189,26 @@ augment CmdCompareIs
   METHODS
     method cpp_symbol->String
       return "=="
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((void*)" )
+      left.write_cpp( writer )
+      writer.print( ") == ((void*)" )
+      right.write_cpp( writer )
+      writer.print( ")" )
 endAugment
 
 augment CmdCompareIsNot
   METHODS
     method cpp_symbol->String
       return "!="
+
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((void*)" )
+      left.write_cpp( writer )
+      writer.print( ") != ((void*)" )
+      right.write_cpp( writer )
+      writer.print( ")" )
 endAugment
 
 augment CmdBitwiseXor
