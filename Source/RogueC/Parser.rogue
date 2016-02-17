@@ -1221,9 +1221,9 @@ class Parser
       local type = Program.get_type_reference( t, name )
       return type
 
-    method parse_possible_type->String
+    method parse_possible_type( allow_at_sign=false:Logical )->String
       local t = peek
-      local name = read_identifier
+      local name = read_identifier( allow_at_sign )
 
       if (next_is(TokenType.symbol_open_specialize))
         name += parse_specialization_string
@@ -1867,20 +1867,7 @@ class Parser
         endWhich
       endIf
 
-      local name = read_identifier( true )
-      if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
-
-      loop
-        if (consume(TokenType.symbol_empty_brackets))
-          name += "[]"
-        elseIf (consume(TokenType.symbol_question_mark))
-          name += "?"
-        else
-          escapeLoop
-        endIf
-      endLoop
-
-      local access = CmdAccess( t, name )
+      local access = CmdAccess( t, parse_possible_type(true) )
       access.args = parse_args
       access.context = context
       return access

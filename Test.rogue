@@ -1,11 +1,3 @@
-try
-  Test()
-catch (ex:Exception)
-  println ex
-endTry
-
-routine Test
-  println "A"
-  throw UnsupportedOperationError( "B" )
-  println "C"
-endRoutine
+local x = Function(Int32)[]
+x.add( function(n)=println n*2 )
+forEach (fn in x) fn(5)
