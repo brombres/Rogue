@@ -197,8 +197,7 @@ void RogueArray_trace( void* obj )
     RogueObject* cur = *(--src);
     if (cur && cur->object_size >= 0)
     {
-      cur->object_size = ~cur->object_size;
-      //cur->type->trace_fn( cur );
+      cur->type->trace_fn( cur );
     }
   }
 }
