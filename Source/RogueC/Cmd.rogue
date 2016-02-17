@@ -276,24 +276,6 @@ endClass
 #------------------------------------------------------------------------------
 # Statements
 #------------------------------------------------------------------------------
-class CmdSubstituteStatements : Cmd
-  # Only ever used as a temporary return value from a resolve() call
-  PROPERTIES
-    statements = CmdStatementList()
-
-  METHODS
-    method init( t )
-
-    method add( statement:Cmd )->this
-      statements.add( statement )
-      return this
-
-    method add_to( list:CmdStatementList )
-      forEach (statement in statements)
-        statement.add_to( list )
-      endForEach
-endClass
-
 class CmdStatement : Cmd
   METHODS
 endClass

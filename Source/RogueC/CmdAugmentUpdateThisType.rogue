@@ -52,6 +52,14 @@ augment CmdIf
       if (else_statements) else_statements.update_this_type( scope )
 endAugment
 
+augment CmdWhich
+  METHODS
+    method update_this_type( scope:Scope )
+      expression.update_this_type( scope )
+      forEach (c in cases) c.update_this_type( scope )
+      if (case_others) case_others.update_this_type( scope )
+endAugment
+
 augment CmdSwitch 
   METHODS
     method update_this_type( scope:Scope )
@@ -145,16 +153,13 @@ endAugment
 augment CmdLiteralString 
   METHODS
     method update_this_type( scope:Scope )
-      if (value)
-        if (not Program.literal_string_lookup.contains(value))
-          index = Program.literal_string_list.count
-          Program.literal_string_lookup[value] = index
-          Program.literal_string_list.add( value )
-        else
-          index = Program.literal_string_lookup[value]
-        endIf
-      endIf
+      noAction
+endAugment
 
+augment CmdFormattedString 
+  METHODS
+    method update_this_type( scope:Scope )
+      args.update_this_type( scope )
 endAugment
 
 augment CmdAccess 
@@ -162,6 +167,13 @@ augment CmdAccess
     method update_this_type( scope:Scope )
       if (context) context.update_this_type( scope )
       if (args)    args.update_this_type( scope )
+endAugment
+
+augment CmdElementAccess 
+  METHODS
+    method update_this_type( scope:Scope )
+      context.update_this_type( scope )
+      index.update_this_type( scope )
 endAugment
 
 augment CmdCreateObject 
@@ -177,11 +189,17 @@ augment CmdCreateCompound
 
 endAugment
 
+augment CmdAssign
+  METHODS
+    method update_this_type( scope:Scope )
+      target.update_this_type( scope )
+      new_value.update_this_type( scope )
+endAugment
+
 augment CmdThisContext 
   METHODS
     method update_this_type( scope:Scope )
       this_type = scope.this_type
-
 endAugment
 
 augment CmdReadSingleton 
@@ -254,10 +272,10 @@ augment CmdCall
 
 endAugment
 
-augment CmdCallDynamicMethod 
+augment CmdCallPriorMethod 
   METHODS
     method update_this_type( scope:Scope )
-      prior.update_this_type( scope )
+      args.update_this_type( scope )
 endAugment
 
 augment CmdRange 
