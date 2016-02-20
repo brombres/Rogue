@@ -635,9 +635,16 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   RogueObject* obj = (RogueObject*) RogueAllocator_allocate( THIS, size );
   memset( obj, 0, size );
 
-  obj->next_object = THIS->objects;
-  if (of_type->clean_up_fn) THIS->objects_requiring_cleanup = obj;
-  else                      THIS->objects = obj;
+  if (of_type->clean_up_fn)
+  {
+    obj->next_object = THIS->objects_requiring_cleanup;
+    THIS->objects_requiring_cleanup = obj;
+  }
+  else
+  {
+    obj->next_object = THIS->objects;
+    THIS->objects = obj;
+  }
   obj->type = of_type;
   obj->object_size = size;
 
