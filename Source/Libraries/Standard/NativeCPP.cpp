@@ -633,7 +633,8 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   memset( obj, 0, size );
 
   obj->next_object = THIS->objects;
-  THIS->objects = obj;
+  if (of_type->clean_up_fn) THIS->objects_requiring_cleanup = obj;
+  else                      THIS->objects = obj;
   obj->type = of_type;
   obj->object_size = size;
 
@@ -760,7 +761,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   {
     RogueObject* next_object = cur->next_object;
 
-    // TODO: call clean_up() on cur
+    cur->type->clean_up_fn( cur );
 
     cur->object_size = ~cur->object_size;
     cur->next_object = THIS->objects;
