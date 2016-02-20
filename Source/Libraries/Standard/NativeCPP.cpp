@@ -688,23 +688,53 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   {
     if (cur->object_size >= 0 && cur->reference_count > 0)
     {
-      cur->object_size = ~cur->object_size;
       cur->type->trace_fn( cur );
     }
     cur = cur->next_object;
   }
 
+  // For any unreferenced objects requiring clean-up, we'll:
+  //   1.  Reference them and move them to a separate short-term list.
+  //   2.  Finish the regular GC.
+  //   3.  Call clean_up() on each of them, which may create new
+  //       objects (which is why we have to wait until after the GC).   
+  //   4.  Move them to the list of regular objects.
+  cur = THIS->objects_requiring_cleanup;
+  RogueObject* unreferenced_clean_up_objects = 0;
+  RogueObject* survivors = 0;  // local var for speed
+  while (cur)
+  {
+    RogueObject* next_object = cur->next_object;
+    if (cur->object_size < 0)
+    {
+      // Referenced.
+      cur->object_size = ~cur->object_size;
+      cur->next_object = survivors;
+      survivors = cur;
+    }
+    else
+    {
+      // Unreferenced - go ahead and trace it since we'll call clean_up
+      // on it.
+      cur->type->trace_fn( cur );
+      cur->next_object = unreferenced_clean_up_objects;
+      unreferenced_clean_up_objects = cur;
+    }
+    cur = next_object;
+  }
+  THIS->objects_requiring_cleanup = survivors;
+
+
+  // Reset or delete each general object
   cur = THIS->objects;
   THIS->objects = 0;
-  RogueObject* survivors = 0;  // local var for speed
+  survivors = 0;  // local var for speed
 
   while (cur)
   {
     RogueObject* next_object = cur->next_object;
     if (cur->object_size < 0)
     {
-      // Discovered automatically during tracing.
-      //printf( "Referenced %s\n", cur->type->name() );
       cur->object_size = ~cur->object_size;
       cur->next_object = survivors;
       survivors = cur;
@@ -718,6 +748,26 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
 
   THIS->objects = survivors;
+
+
+  // Call clean_up() on unreferenced objects requiring cleanup
+  // and move them to the general objects list so they'll be deleted
+  // the next time they're unreferenced.  Calling clean_up() may 
+  // create additional objects so THIS->objects may change during a
+  // clean_up() call.
+  cur = unreferenced_clean_up_objects;
+  while (cur)
+  {
+    RogueObject* next_object = cur->next_object;
+
+    // TODO: call clean_up() on cur
+
+    cur->object_size = ~cur->object_size;
+    cur->next_object = THIS->objects;
+    THIS->objects = cur;
+
+    cur = next_object;
+  }
 }
 
 void Rogue_configure_types()
@@ -752,6 +802,7 @@ void Rogue_configure_types()
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
     type->init_fn        = Rogue_init_fn_table[i];
+    type->clean_up_fn    = Rogue_clean_up_fn_table[i];
   }
 }
 

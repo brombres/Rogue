@@ -379,7 +379,6 @@ class Type
         m.return_type = this
         m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
-
         # Insert property initializations
         local i = property_list.count - 1
         while (i >= 0)
@@ -389,6 +388,18 @@ class Type
           endIf
           --i
         endWhile
+      endIf
+
+      # Mark any clean_up() method as requisite
+      if (is_class and not is_native)
+        if (name == "Alpha") println
+        local m = find_method( "clean_up()" )
+        if (m and m.type_context is this)
+          if (m.return_type)
+            throw m.t.error( "clean_up() cannot return a value." )
+          endIf
+          m.attributes.add( Attribute.is_requisite )
+        endIf
       endIf
 
       # Add a default to->String to compounds

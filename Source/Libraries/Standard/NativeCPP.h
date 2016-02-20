@@ -125,8 +125,9 @@ struct RogueObject;
 //-----------------------------------------------------------------------------
 //  Callback Definitions
 //-----------------------------------------------------------------------------
-typedef void (*RogueTraceFn)( void* obj );
+typedef void         (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitFn)( void* obj );
+typedef void         (*RogueCleanUpFn)( void* obj );
 
 
 //-----------------------------------------------------------------------------
@@ -149,6 +150,7 @@ struct RogueType
   RogueTraceFn      trace_fn;
   RogueInitFn       init_object_fn;
   RogueInitFn       init_fn;
+  RogueCleanUpFn    clean_up_fn;
 };
 
 RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
@@ -305,6 +307,7 @@ struct RogueAllocator
 {
   RogueAllocationPage* pages;
   RogueObject*         objects;
+  RogueObject*         objects_requiring_cleanup;
   RogueObject*         available_objects[ROGUEMM_SLOT_COUNT];
 };
 
@@ -327,6 +330,7 @@ extern void*              Rogue_dynamic_method_table[];
 extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];
 extern RogueTraceFn       Rogue_trace_fn_table[];
+extern RogueCleanUpFn     Rogue_clean_up_fn_table[];
 extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];
 extern RogueErrorHandler* Rogue_error_handler;
