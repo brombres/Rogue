@@ -1,4 +1,4 @@
-class Bitmap : Canvas
+class Bitmap : Graphics
   PROPERTIES
     pixels : Int32[]
     error  : Logical
@@ -18,14 +18,15 @@ class Bitmap : Canvas
 
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
-      Graphics.save.canvas = this
+      Graphics.push( this )
       existing.draw( -bounds.position )
-      Graphics.restore
+      Graphics.pop
 
     method clear
       local color = background_color
       forEach (i of pixels) pixels[i] = color
 
+      #{
     method decode( bytes:Byte[] )->Logical
       native @|Decoder decoder;
               |if ( !decoder.open($bytes->data->bytes, $bytes->count) ) return 0;
@@ -35,6 +36,7 @@ class Bitmap : Canvas
 
       native @|if ( !decoder.decode_argb32((ARGB32*)$this->pixels->data->integers) ) return 0;
       return true
+      }#
 
     method draw( pos:XY )
       local dest_canvas = Graphics.canvas as Bitmap
@@ -74,16 +76,19 @@ class Bitmap : Canvas
     method get( x:Int32, y:Int32 )->Int32
       return pixels[ y*width + x ]
 
+      #{
     method save_as_png( file:File )->Logical
       return file.save( to_png_bytes )
 
     method save_as_jpeg( file:File, quality=75:Int32 )->Logical
       return file.save( to_jpeg_bytes(quality) )
+      }#
 
     method set( x:Int32, y:Int32, color:Int32 )->this
       pixels[ y*width + x ] = color
       return this
 
+      #{
     method to_png_bytes->Byte[]
       local w = width
       local h = height
@@ -112,10 +117,12 @@ class Bitmap : Canvas
       native @|memcpy( $bytes->data->bytes, encoder.encoded_bytes, $count );
 
       return bytes
+      }#
 endClass
 
+#{
 nativeHeader
 #include "ImageIO.h"
 using namespace ImageIO;
 endNativeHeader
-
+}#
