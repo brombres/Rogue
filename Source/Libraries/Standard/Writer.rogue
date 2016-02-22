@@ -16,13 +16,19 @@ class Writer<<$DataType>> [aspect]
     method position->Int32 [fallback]
       return @position
 
-    method reset
+    method reset->this
+      position = 0
+      return this
 
-    method seek( pos:Int32 )->Logical
-      return false
+    method seek( pos:Int32 )->this
+      position = pos
+      return this
 
-    method seek_end()->Logical
-      return false
+    method seek_end()->this
+      return this
+
+    method skip( n:Int32 )->this
+      return seek( position + n )
 
     method write( value:$DataType )->this
       return this

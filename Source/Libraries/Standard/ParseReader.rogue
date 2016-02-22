@@ -121,12 +121,13 @@ class ParseReader : Reader<<Character>>
       if (ch >= 'A' and ch <= 'F') return 10 + (ch - 'A')
       return 0
 
-    method reset
+    method reset->this
       count = data.count
-      seek( 0 )
+      return seek( 0 )
 
-    method seek( pos:Int32 )->Logical
-      if (pos < 0 or pos > count) return false
+    method seek( pos:Int32 )->this
+      if (pos < 0)         pos = 0
+      elseIf (pos > count) pos = count
 
       if (pos > position)
         position = 0
@@ -136,9 +137,9 @@ class ParseReader : Reader<<Character>>
 
       while (position < pos) read
 
-      return true
+      return this
 
-    method seek_location( new_line:Int32, new_column:Int32 )->Logical
+    method seek_location( new_line:Int32, new_column:Int32 )->this
       if (new_line < line or (new_line == line and new_column < column))
         # start over at (1,1)
         position = 0
@@ -149,9 +150,10 @@ class ParseReader : Reader<<Character>>
       while (has_another and line < new_line)     read
       while (has_another and column < new_column) read
 
-      return (line == new_line and column == new_column)
+      return this
 
     method set_location( line, column )->ParseReader
       return this
+
 endClass
 

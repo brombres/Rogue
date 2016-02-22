@@ -310,18 +310,18 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
   PROPERTIES
     list       : $DataType[]
     position   : Int32
-    last       : Int32
+    limit      : Int32
     is_limited : Logical
 
   METHODS
     method init( list, position=0 )
-      last  = list.count - 1
 
-    method init( list, position, last )
+    method init( list, position, limit )
       is_limited = true
 
     method has_another->Logical
-      return (position <= last)
+      if (is_limited) return (position < limit)
+      else            return (position < list.count)
 
     method peek->$DataType
       return list[ position ]
@@ -330,15 +330,23 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
       ++position
       return list[ position - 1 ]
 
-    method reset
+    method reset->this
       position = 0
-      if (not is_limited) last = list.count - 1
+      if (is_limited) limit = list.count
+      return this
 
-    method seek( pos:Int32 )->Logical
-      last = list.count - 1
-      if (pos < 0 or pos > last+1) return false
+    method seek( pos:Int32 )->this
+      if (pos < 0) pos = 0
+
+      if (is_limited)
+        if (pos > limit) pos = limit
+      else
+        if (pos > list.count) pos = list.count
+      endIf
+
       position = pos
-      return true
+      return this
+
 endClass
 
 class ListWriter<<$DataType>> : Writer<<$DataType>>
@@ -354,17 +362,15 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       list.discard_from( position )
       return this
 
-    method reset
-      position = 0
+    method seek( pos:Int32 )->this
+      if (pos < 0) pos = 0
+      position = pos
+      list.expand_to_include( pos )
+      return this
 
-    method seek( position )->Logical
-      if (position < 0 or position > list.count) return false
-      list.expand_to_include( position - 1 )
-      return true
-
-    method seek_end()->Logical
+    method seek_end()->this
       position = list.count
-      return true
+      return this
 
     method write( value:$DataType )->this
       if (position == list.count) list.add( value )

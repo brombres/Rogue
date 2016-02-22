@@ -809,14 +809,15 @@ class StringReader : Reader<<Character>>
       ++position
       return string[ position - 1 ]
 
-    method reset
+    method reset->this
       position = 0
+      return this
 
-    method seek( pos:Int32 )->Logical
+    method seek( pos:Int32 )->this
       count = string.count
-      if (pos < 0 or pos > count) return false
+      if (pos < 0 or pos > count) return this
       position = pos
-      return true
+      return this
 endClass
 
 class LineReader : Reader<<String>>
@@ -867,7 +868,23 @@ class LineReader : Reader<<String>>
     method read->String
       local result = next
       next = prepare_next
+      ++position
       return result
+
+    method reset->this
+      source.reset
+      next = prepare_next
+      position = 0
+      return this
+
+    method seek( n:Int32 )->this
+      if (n < 0) n = 0
+
+      if (position > n) reset
+      while (position < n) read
+
+      return this
+
 endClass
 
 

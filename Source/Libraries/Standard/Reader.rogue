@@ -18,9 +18,14 @@ class Reader<<$DataType>> [aspect]
         buffer.add( read )
       endForEach
 
-    method reset
+    method reset->this
+      position = 0
+      return this
 
-    method seek( pos:Int32 )->Logical
-      return false
+    method seek( pos:Int32 )->this
+      return this
+
+    method skip( n:Int32 )->this
+      return seek( position + n )
 endClass
 

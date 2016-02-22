@@ -89,11 +89,15 @@ class DataReader : Reader<<Byte>>
       endForEach
       return buffer
 
-    method reset
+    method reset->this
       return source.reset
 
-    method seek( pos:Int32 )->Logical
+    method seek( pos:Int32 )->this
       return source.seek( pos )
+
+    method skip( n:Int32 )->this
+      return source.skip( n )
+
 endClass
 
 class BufferedDataReader : DataReader
@@ -130,14 +134,17 @@ class DataWriter : Writer<<Byte>>
     method position->Int32
       return output.position
 
-    method reset
-      output.reset
+    method reset->this
+      return output.reset
 
-    method seek( pos:Int32 )->Logical
+    method seek( pos:Int32 )->this
       return output.seek( pos )
 
-    method seek_end()->Logical
+    method seek_end()->this
       return output.seek_end
+
+    method skip( n:Int32 )->this
+      return output.skip( n )
 
     method write( value:Byte )->this
       output.write( value )
@@ -217,10 +224,9 @@ class BufferedDataWriter : DataWriter
       output.seek( 0 )
       return this
 
-    method write( list:$DataType[] )->this
+    method write( list:Byte[] )->this
       buffer.reserve( list.count ).data.set( position, list.data, 0, list.count )
-      position += 
-      forEach (value in list) write( value )
+      skip( list.count )
       return this
 endClass
 
