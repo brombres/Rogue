@@ -18,95 +18,9 @@ class Reader<<$DataType>> [aspect]
         buffer.add( read )
       endForEach
 
-    method reset( pos:Int32, n=null:Int32? )->Logical
+    method reset
+
+    method seek( pos:Int32 )->Logical
       return false
 endClass
-
-class StringReader : Reader<<Character>>
-  PROPERTIES
-    position : Int32
-    count    : Int32
-    string   : String
-
-  METHODS
-    method init( string )
-      if (string) count = string.count
-
-    method has_another->Logical
-      return (position < count)
-
-    method has_another( n:Int32 )->Logical
-      return (position + n <= count)
-
-    method peek->Character
-      if (position == count) return 0
-      return string[ position ]
-
-    method read->Character
-      ++position
-      return string[ position - 1 ]
-
-    method reset( pos:Int32, n=null:Int32? )->Logical
-      count = string.count
-      if (pos < 0 or pos > count) return false
-
-      if (n.exists)
-        if (n.value < 0 or pos+n.value > count) return false
-        count = pos + n.value
-      endIf
-      position = pos
-      return true
-endClass
-
-class LineReader : Reader<<String>>
-  PROPERTIES
-    source : Reader<<Character>>
-    next   : String
-    buffer = StringBuilder()
-    prev   : Character
-
-  METHODS
-    method init( source )
-      next = prepare_next
-
-    method init( file:File )
-      init( file.reader )
-
-    method init( string:String )
-      init( string.reader )
-
-    method has_another->Logical
-      return next
-
-    method peek->String
-      return next
-
-    method prepare_next->String
-      if (not source.has_another)
-        if (prev == '\n')
-          # if the last line ended with '\n', count it as one more line
-          prev = 0
-          return ""
-        else
-          return null
-        endIf
-      endIf
-
-      prev = 0
-
-      buffer.clear
-      while (source.has_another)
-        local ch = source.read
-        if (ch == '\n') prev = '\n'; return buffer->String
-        buffer.print( ch )
-      endWhile
-
-      return buffer->String
-
-    method read->String
-      local result = next
-      next = prepare_next
-      return result
-endClass
-
 

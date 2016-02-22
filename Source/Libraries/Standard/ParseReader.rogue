@@ -121,14 +121,12 @@ class ParseReader : Reader<<Character>>
       if (ch >= 'A' and ch <= 'F') return 10 + (ch - 'A')
       return 0
 
-    method reset( pos:Int32, n=null:Int32? )->Logical
+    method reset
       count = data.count
-      if (pos < 0 or pos > count) return false
+      seek( 0 )
 
-      if (n.exists)
-        if (n.value < 0 or pos+n.value > count) return false
-        count = pos + n.value
-      endIf
+    method seek( pos:Int32 )->Logical
+      if (pos < 0 or pos > count) return false
 
       if (pos > position)
         position = 0

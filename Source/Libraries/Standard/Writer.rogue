@@ -16,7 +16,9 @@ class Writer<<$DataType>> [aspect]
     method position->Int32 [fallback]
       return @position
 
-    method reset( pos:Int32 )->Logical
+    method reset
+
+    method seek( pos:Int32 )->Logical
       return false
 
     method seek_end()->Logical

@@ -479,16 +479,15 @@ class FileReader : Reader<<Character>>
     method remaining->Int32
       return count - position
 
-    method reset( pos:Int32, n=null:Int32? )->Logical
+    method reset
+      if (not fp) return
+      count = native( "(RogueInt32)ftell($this->fp)" )->Int32
+      seek( 0 )
+
+    method seek( pos:Int32 )->Logical
       if (not fp) return false
 
-      count = native( "(RogueInt32)ftell($this->fp)" )->Int32
       if (pos < 0 or pos > count) return false
-
-      if (n.exists)
-        if (n.value < 0 or pos+n.value > count) return false
-        count = pos + n.value
-      endIf
 
       position = pos
       native "fseek( $this->fp, $position, SEEK_SET );"
@@ -542,7 +541,12 @@ class FileWriter : Writer<<Character>>
               |
               |return !$this->error;
 
-    method reset( pos:Int32 )->Logical
+    method reset
+      if (not fp) return
+      flush
+      seek( 0 )
+
+    method seek( pos:Int32 )->Logical
       flush
       if (not fp or pos < 0) return false
 
