@@ -63,6 +63,7 @@
 RogueLogical       Rogue_configured = 0;
 RogueErrorHandler* Rogue_error_handler = 0;
 RogueObject*       Rogue_error_object  = 0;
+int                Rogue_bytes_allocated_since_gc = 0;
 int                Rogue_argc;
 const char**       Rogue_argv;
 
@@ -577,10 +578,16 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
-  if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT) return malloc( size );
+  if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
+  {
+    Rogue_bytes_allocated_since_gc += size;
+    return malloc( size );
+  }
 
   if (size <= 0) size = ROGUEMM_GRANULARITY_SIZE;
   else           size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
+
+  Rogue_bytes_allocated_since_gc += size;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
   RogueObject* obj = THIS->available_objects[slot];
@@ -814,9 +821,14 @@ void Rogue_configure_types()
   }
 }
 
-void Rogue_collect_garbage()
+void Rogue_collect_garbage( bool forced )
 {
   int i;
+
+  if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_BYTES) return;
+
+//printf( "GC %d\n", Rogue_bytes_allocated_since_gc );
+  Rogue_bytes_allocated_since_gc = 0;
 
   Rogue_trace();
 

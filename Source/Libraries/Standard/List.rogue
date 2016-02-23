@@ -52,13 +52,17 @@ class List<<$DataType>> : GenericList
     method ensure_capacity( desired_capacity:Int32 )->this
       return reserve( desired_capacity - count )
 
-    method expand_to_include( index:Int32 )->this
-      # Expands the list if necessary to include the specified index.
-      if (count <= index)
-        ensure_capacity( index+1 )
-        count = index + 1
+    method expand_to_count( minimum_count:Int32 )->this
+      # Expands the list if necessary to have at least 'minimum_count' elements.
+      if (count < minimum_count)
+        ensure_capacity( minimum_count )
+        count = minimum_count
       endIf
       return this
+
+    method expand_to_include( index:Int32 )->this
+      # Expands the list if necessary to include the specified index.
+      return expand_to_count( index + 1 )
 
     method first->$DataType [macro]
       this.data[0]
@@ -365,7 +369,7 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
     method seek( pos:Int32 )->this
       if (pos < 0) pos = 0
       position = pos
-      list.expand_to_include( pos )
+      list.expand_to_count( pos )
       return this
 
     method seek_end()->this

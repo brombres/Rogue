@@ -221,7 +221,7 @@ class BufferedDataWriter : DataWriter
 
     method clear->BufferedDataWriter
       buffer.clear
-      output.seek( 0 )
+      output.reset
       return this
 
     method write( list:Byte[] )->this

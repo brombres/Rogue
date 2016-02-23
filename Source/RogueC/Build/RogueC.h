@@ -27,6 +27,11 @@
 #  include <cstdint>
 #endif
 
+#ifndef ROGUE_GC_THRESHOLD_KB
+  #define ROGUE_GC_THRESHOLD_KB 512
+#endif
+#define ROGUE_GC_THRESHOLD_BYTES (ROGUE_GC_THRESHOLD_KB << 10)
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -338,9 +343,10 @@ extern RogueObject*       Rogue_error_object;
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
+extern int                Rogue_bytes_allocated_since_gc;
 
 void Rogue_configure( int argc=0, const char* argv[]=0 );
-void Rogue_collect_garbage();
+void Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
 
