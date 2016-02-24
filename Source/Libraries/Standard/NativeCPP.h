@@ -350,7 +350,7 @@ extern const char**       Rogue_argv;
 extern int                Rogue_bytes_allocated_since_gc;
 
 void Rogue_configure( int argc=0, const char* argv[]=0 );
-void Rogue_collect_garbage( bool forced=false );
+bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
 

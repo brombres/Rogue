@@ -834,11 +834,11 @@ void Rogue_configure_types()
   }
 }
 
-void Rogue_collect_garbage( bool forced )
+bool Rogue_collect_garbage( bool forced )
 {
   int i;
 
-  if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_BYTES) return;
+  if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_BYTES) return false;
 
 //printf( "GC %d\n", Rogue_bytes_allocated_since_gc );
   Rogue_bytes_allocated_since_gc = 0;
@@ -849,6 +849,8 @@ void Rogue_collect_garbage( bool forced )
   {
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
   }
+
+  return true;
 }
 
 void Rogue_quit()
