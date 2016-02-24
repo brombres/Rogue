@@ -1,6 +1,15 @@
-local st = "Ace"
-local buffer = StringBuilder("Ace")
+Alpha.display
 
-local table = StringTable<<Int32>>()
-table[st] = 5
-println table[buffer]
+
+class Alpha [singleton]
+  PROPERTIES
+    y = 1 : Int32
+
+  METHODS
+    method display
+      println x
+
+    method x->Int32
+      ++y
+      return y
+endClass
