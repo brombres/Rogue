@@ -21,3 +21,43 @@ class Time
       $endIf
 endClass
 
+
+class Stopwatch
+  PROPERTIES
+    start_time = Time.current : Real64
+
+  METHODS
+    method elapsed->Real64
+      return (Time.current - start_time)
+
+    method restart->this
+      start_time = Time.current
+      return this
+
+    method to->String
+      return StringBuilder().print( elapsed, 2 ).print( " seconds" )->String
+endClass
+
+
+class Timer
+  PROPERTIES
+    duration                  : Real64
+    start_time = Time.current : Real64
+
+  METHODS
+    method init( duration )
+
+    method elapsed->Real64
+      return (Time.current - start_time)
+
+    method is_expired->Logical
+      return elapsed >= duration
+
+    method restart->this
+      start_time = Time.current
+      return this
+
+    method to->String
+      return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
+endClass
+
