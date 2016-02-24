@@ -141,6 +141,8 @@ typedef void         (*RogueCleanUpFn)( void* obj );
 
 struct RogueType
 {
+  int          name_index;
+
   int          base_type_count;
   RogueType**  base_types;
 
@@ -160,6 +162,7 @@ struct RogueType
 
 RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
+void         RogueType_print_name( RogueType* THIS );
 RogueType*   RogueType_retire( RogueType* THIS );
 RogueObject* RogueType_singleton( RogueType* THIS );
 
@@ -332,6 +335,7 @@ extern RogueType          Rogue_types[];
 extern int                Rogue_type_info_table[];
 extern int                Rogue_object_size_table[];
 extern void*              Rogue_dynamic_method_table[];
+extern int                Rogue_type_name_index_table[];
 extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];
 extern RogueTraceFn       Rogue_trace_fn_table[];

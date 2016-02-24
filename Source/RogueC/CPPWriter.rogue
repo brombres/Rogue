@@ -334,6 +334,22 @@ augment Program
       endForEach
       writer.println
 
+      # Type name index in literal string table
+      writer.println "int Rogue_type_name_index_table[] ="
+      writer.println "{"
+      writer.indent += 2
+      forEach (i of type_list)
+        local type = type_list[i]
+        if (i > 0)
+          writer.print ","
+          if (i & 15 == 0) writer.println
+        endIf
+        writer.print( add_literal_string(type.name) )
+      endForEach
+      writer.println
+      writer.indent -= 2
+      writer.println "};"
+
       # Init Object Fn Table
       writer.println "RogueInitFn Rogue_init_object_fn_table[] ="
       writer.println "{"

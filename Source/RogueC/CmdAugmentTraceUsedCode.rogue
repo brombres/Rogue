@@ -146,15 +146,7 @@ endAugment
 augment CmdLiteralString 
   METHODS
     method trace_used_code
-      if (value)
-        if (not Program.literal_string_lookup.contains(value))
-          index = Program.literal_string_list.count
-          Program.literal_string_lookup[value] = index
-          Program.literal_string_list.add( value )
-        else
-          index = Program.literal_string_lookup[value]
-        endIf
-      endIf
+      index = Program.add_literal_string( value )
 
 endAugment
 

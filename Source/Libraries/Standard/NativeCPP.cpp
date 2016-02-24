@@ -99,6 +99,17 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
   else                             return obj;
 }
 
+void RogueType_print_name( RogueType* THIS )
+{
+  char buffer[256];
+  RogueString* st = Rogue_literal_strings[ THIS->name_index ];
+  if (st)
+  {
+    RogueString_to_c_string( st, buffer, 256 );
+    printf( "%s", buffer );
+  }
+}
+
 RogueType* RogueType_retire( RogueType* THIS )
 {
   if (THIS->base_types)
@@ -756,7 +767,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     }
     else
     {
-      //printf( "Unreferenced %s\n", cur->type->name() );
+//printf( "Freeing " ); RogueType_print_name(cur->type); printf( "\n" );
       RogueAllocator_free( THIS, cur, cur->object_size );
     }
     cur = next_object;
@@ -802,6 +813,7 @@ void Rogue_configure_types()
     memset( type, 0, sizeof(RogueType) );
 
     type->index = i;
+    type->name_index = Rogue_type_name_index_table[i];
     type->object_size = Rogue_object_size_table[i];
     type->allocator = &Rogue_allocators[ *(++type_info) ];
     type->methods = Rogue_dynamic_method_table + *(++type_info);

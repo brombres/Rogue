@@ -52,6 +52,19 @@ class Program [requisite singleton]
     ids_by_module = Table<<String,String[]>>()
 
   METHODS
+    method add_literal_string( value:String )->Int32
+      if (not value) return 0
+
+      local entry = literal_string_lookup.find( value )
+      if (entry)
+        return entry.value
+      else
+        local index = literal_string_list.count
+        literal_string_lookup[value] = index
+        literal_string_list.add( value )
+        return index
+      endIf
+
     method add_module_id( module_name:String, id_name:String )
       local list = ids_by_module[ module_name ]
       if (not list)
