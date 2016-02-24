@@ -90,7 +90,7 @@ class Table<<$KeyType,$ValueType>>
       local default_zero_value : $ValueType
       return default_zero_value
 
-    method set( key:$KeyType, value:$ValueType )
+    method set( key:$KeyType, value:$ValueType )->this
       local hash = key.hash_code
       local index = hash & bin_mask
       local entry = bins[ index ]
@@ -98,7 +98,7 @@ class Table<<$KeyType,$ValueType>>
       while (entry)
         if (entry.hash == hash and entry.key == key)
           entry.value = value
-          return
+          return this
         endIf
         entry = entry.next_entry
       endWhile
@@ -108,10 +108,7 @@ class Table<<$KeyType,$ValueType>>
       bins[index] = entry
 
       keys.add( key )
-
-
-    #alias set_keys( key_list, value_fn ) => TableOps<<$KeyType,$ValueType>>.set_keys( this, key_list, value_fn )
-    #alias set_values( value_list, key_fn ) => TableOps<<$KeyType,$ValueType>>.set_values( this, value_list, key_fn )
+      return this
 
     method to->String
       return print_to( StringBuilder() )->String
@@ -146,4 +143,45 @@ class TableEntry<<$KeyType,$ValueType>>
       hash = _hash
 endClass
 
+class StringTable<<$ValueType>> : Table<<String,$ValueType>>
+  # Adds support for StringBuilder keys.
+  METHODS
+    method contains( key:StringBuilder )->Logical
+      return find_key( key )?
+
+    method find( key:StringBuilder )->TableEntry<<String,$ValueType>>
+      local key_string = find_key( key )
+      if (not key_string) return null
+      return find( key_string )
+
+    method find_key( key:StringBuilder )->String
+      local len  = key.count
+      local hash = key.hash_code
+      forEach (k in keys)
+        if (k.hash_code == hash and k.count == len and k == key) return k
+      endForEach
+      return null
+
+    method get( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return get( key_string )
+
+    method remove( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return remove( key_string )
+
+    method set( key:StringBuilder, value:$ValueType )->this
+      local key_string = find_key( key )
+      if (not key_string) return this
+      return set( key_string, value )
+
+endClass
 

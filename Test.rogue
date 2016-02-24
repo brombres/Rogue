@@ -1,22 +1,6 @@
-local bytes = Byte[]
+local st = "Ace"
+local buffer = StringBuilder("Ace")
 
-local reader = BufferedDataReader( bytes )
-local writer = BufferedDataWriter( bytes )
-println reader.has_another
-writer.write( 1 )
-writer.write( Byte[][2,3,4] )
-writer.write( 5 )
-println bytes
-println reader.has_another
-while (reader.has_another) println reader.read
-println
-
-local lines = "zero\none\ntwo\nthree\nfour\nfive\nsix\nseven"
-local line_reader = LineReader( lines )
-forEach (line in line_reader) println line
-println
-println line_reader.seek(0).read
-println line_reader.seek(3).read
-println line_reader.skip(1).read
-println line_reader.seek(7).read
-println line_reader.skip(-7).read
+local table = StringTable<<Int32>>()
+table[st] = 5
+println table[buffer]

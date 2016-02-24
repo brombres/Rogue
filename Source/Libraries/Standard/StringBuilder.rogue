@@ -35,12 +35,33 @@ class StringBuilder [requisite]
     method get( index:Int32 )->Character [macro]
       this.characters[ index ]
 
+    method hash_code->Int32
+      local code = 0
+      forEach (ch in this)
+        code = ((code:<<:3) - code) + ch
+      endForEach
+      return code
+
     method insert( ch:Character )->this
       characters.insert( ch )
       return this
 
     method needs_indent->Logical
       return (at_newline and indent > 0)
+
+    method operator==( value:String )->Logical
+      if (count != value.count) return false
+      forEach (i of this)
+        if (characters[i] != value[i]) return false
+      endForEach
+      return true
+
+    method operator==( value:StringBuilder )->Logical
+      if (count != value.count) return false
+      forEach (i of this)
+        if (characters[i] != value[i]) return false
+      endForEach
+      return true
 
     method print( value:Byte )->this
       return print( value->Int32 )

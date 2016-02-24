@@ -649,6 +649,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 {
   RogueObject* obj = (RogueObject*) RogueAllocator_allocate( THIS, size );
   memset( obj, 0, size );
+//printf( "Allocating " ); RogueType_print_name(of_type); printf( "\n" );
 
   if (of_type->clean_up_fn)
   {

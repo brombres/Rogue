@@ -371,6 +371,13 @@ class String [native functional]
     method operator+( value:Int32 )->String
       return StringBuilder().print( this ).print( value )->String
 
+    method operator==( value:String )->Logical
+      if (this.hash_code != value.hash_code or this.count != value.count) return false
+      return (native("(0==memcmp($this->characters,$value->characters,$this->count*sizeof(RogueCharacter)))")->Logical)
+
+    method operator==( value:StringBuilder )->Logical
+      return (value == this)  # invoke the existing operator== method on value)
+
     method operator<>( other:String )->Int32
       $if ("C++")
         native @|if ($this == $other) return 0;
