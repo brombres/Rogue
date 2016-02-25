@@ -1,4 +1,4 @@
-$module Boss
+module Boss
 
 class VM
   ENUMERATE

@@ -107,9 +107,9 @@ class RogueC [singleton]
         Program.configure
 
         forEach (filepath in source_files)
-          include( filepath )
+          include_source( filepath )
         endForEach
-        include( "Standard" )
+        include_source( "Standard" )
 
         forEach (parser in parsers) parser.insert_module_prefixes
         forEach (parser in parsers) parser.parse_elements
@@ -139,11 +139,11 @@ class RogueC [singleton]
       <<target_specific_code>>
       throw RogueError( ''Compile target "$" is not supported.'' (target_list) )
 
-    method include( filepath:String )
+    method include_source( filepath:String )
       if (not first_filepath) first_filepath = filepath
-      include( null, filepath )
+      include_source( null, filepath )
       
-    method include( t:Token, filepath:String )
+    method include_source( t:Token, filepath:String )
       # Preemptively (immediately) parses the given file.
       local file = File(filepath)
 

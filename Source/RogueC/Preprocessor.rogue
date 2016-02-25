@@ -49,7 +49,7 @@ class Preprocessor
               if (filepath_t.type isNot TokenType.literal_string)
                 throw reader.error( "Filepath expected." )
               endIf
-              RogueC.include( t, filepath_t->String )
+              RogueC.include_source( t, filepath_t->String )
             endIf
             nextIteration
 
