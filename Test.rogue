@@ -1,21 +1,21 @@
-println File.path( "Test.rogue" )
-println File.filename( "Test.rogue" )
-println File.extension( "Test.rogue" )
-println File.path( "Test" )
-println File.filename( "Test" )
-println File.extension( "Test" )
-println
+class Anchor( type:Int32 ) [compound]
+  ENUMERATE
+    ALIGN_LEFT     = 0b0000
+    ALIGN_HCENTER  = 0b0001
+    ALIGN_RIGHT    = 0b0010
+    ALIGN_TOP      = 0b0000
+    ALIGN_VCENTER  = 0b0100
+    ALIGN_BOTTOM   = 0b1000
+    ALIGN_ABSOLUTE = 0b1111
 
-local name = "Test.rogue"
-local extension = File.extension( name )
-if (extension.count) name = name.leftmost( -(extension.count+1) )
-println name
-println extension
-println
+  GLOBAL PROPERTIES
+    LEFT   = Anchor( ALIGN_LEFT )
+    CENTER = Anchor( ALIGN_HCENTER | ALIGN_VCENTER )
 
-name = "Test"
-extension = File.extension( name )
-if (extension.count) name = name.leftmost( -(extension.count+1) )
-println name
-println extension
-println
+  METHODS
+    method to->String
+      return type
+endClass
+
+println Anchor.LEFT
+println Anchor.CENTER

@@ -1,0 +1,10 @@
+class Definition
+  PROPERTIES
+    t              : Token
+    name           : String
+    expression     : Cmd
+    is_enumeration : Logical
+
+  METHODS
+    method init( t, name, expression, is_enumeration )
+endClass

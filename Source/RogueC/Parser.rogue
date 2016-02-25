@@ -552,8 +552,9 @@ class Parser
         ++this_type.next_enum_offset
       endIf
 
-      this_type.definition_lookup[ name ] = value
-      this_type.definition_list.add( name )
+      local def = Definition( t, name, value, enumerate )
+      this_type.definition_lookup[ name ] = def
+      this_type.definition_list.add( def )
 
       return true
 

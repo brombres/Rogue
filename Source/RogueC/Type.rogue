@@ -1,3 +1,5 @@
+$include "Definition.rogue"
+
 class Type
   PROPERTIES
     t            : Token
@@ -26,8 +28,8 @@ class Type
       # RogueInt32 instead of RoguePrimitiveInt32, etc. - used for classes that are predefined
       # in the infrastructure and that developers will often use directly.
 
-    definition_list   = String[]
-    definition_lookup = Table<<String,Cmd>>()
+    definition_list   = Definition[]
+    definition_lookup = Table<<String,Definition>>()
     prev_enum_cmd     : Cmd
     next_enum_offset  = 0
 
@@ -510,10 +512,10 @@ class Type
       return (is_array and element_type.is_reference)
 
     method inherit_definitions( from_type:Type )
-      forEach (def_name in from_type.definition_list)
-        if (not definition_lookup.contains(def_name))
-          definition_list.add( def_name )
-          definition_lookup[ def_name ] = from_type.definition_lookup[ def_name ]
+      forEach (def in from_type.definition_list)
+        if (not definition_lookup.contains(def.name))
+          definition_list.add( def )
+          definition_lookup[ def.name ] = from_type.definition_lookup[ def.name ]
         endIf
       endForEach
 

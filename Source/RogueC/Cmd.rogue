@@ -1633,7 +1633,7 @@ class CmdAccess : Cmd
 
         if (not args)
           local def = scope.this_type.definition_lookup[ name ]
-          if (def) return def.clone
+          if (def) return def.expression.clone.resolve( scope )
 
           p = Program.type_Global.find_property( name )
           if (p)
@@ -1681,7 +1681,7 @@ class CmdAccess : Cmd
 
       if (not args)
         local def = context_type.definition_lookup[ name ]
-        if (def) return def.clone
+        if (def) return def.expression.clone.resolve( Scope(context_type,null) )
       endIf
 
       return scope.resolve_call( context_type, this, true )
