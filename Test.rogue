@@ -49,3 +49,8 @@ local y = 4
 trace
 trace x,y," and ", x+y
 trace x,y
+
+forEach (n in -1..257)
+  println "$ -> $" (n,n.to_power_of_2)
+endForEach
+

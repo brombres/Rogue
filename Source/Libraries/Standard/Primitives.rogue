@@ -23,6 +23,8 @@ class Real64 [primitive]
     method to->String
       return "" + this
 
+    method to_power_of_2->Real64
+      return this->Int64.to_power_of_2->Real64
 endClass
 
 class Real32 [primitive]
@@ -43,6 +45,9 @@ class Real32 [primitive]
 
     method to->Object
       return Boxed<<Real32>>(this)
+
+    method to_power_of_2->Real32
+      return this->Int64.to_power_of_2->Real32
 endClass
 
 class Int64 [primitive]
@@ -91,6 +96,11 @@ class Int64 [primitive]
     method to_octal_string( digits=22:Int32 )->String
       return print_in_power2_base( 8, digits, StringBuilder() )->String
 
+    method to_power_of_2->Int64
+      if (this & 0xC000000000000000 or not this) return this
+      local p2 = 1 : Int64
+      while (p2 < this) p2 = p2 :<<: 1
+      return p2
 endClass
 
 class Int32 [primitive]
@@ -134,6 +144,12 @@ class Int32 [primitive]
 
     method to_octal_string( digits=11:Int32 )->String
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_2->Int32
+      if (this & 0xC0000000 or not this) return this
+      local p2 = 1
+      while (p2 < this) p2 = p2 :<<: 1
+      return p2
 endClass
 
 class Character [primitive]
