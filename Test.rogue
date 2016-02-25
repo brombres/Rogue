@@ -1,20 +1,17 @@
-class Anchor( type:Int32 ) [compound]
-  ENUMERATE
-    ALIGN_LEFT     = 0b0000
-    ALIGN_HCENTER  = 0b0001
-    ALIGN_RIGHT    = 0b0010
-    ALIGN_TOP      = 0b0000
-    ALIGN_VCENTER  = 0b0100
-    ALIGN_BOTTOM   = 0b1000
-    ALIGN_ABSOLUTE = 0b1111
+class XY( x:Real64, y:Real64 )
+  METHODS
+    method to->String
+      return StringBuilder().print('(').print(x,2).print(',').print(y,2).print(')')->String
+endClass
 
+class Anchor( position:XY ) [compound]
   GLOBAL PROPERTIES
-    LEFT   = Anchor( ALIGN_LEFT )
-    CENTER = Anchor( ALIGN_HCENTER | ALIGN_VCENTER )
+    LEFT   = Anchor( XY(-1, 0) )
+    CENTER = Anchor( XY( 0, 0) )
 
   METHODS
     method to->String
-      return type
+      return position->String
 endClass
 
 println Anchor.LEFT

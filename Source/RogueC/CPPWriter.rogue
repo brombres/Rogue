@@ -480,7 +480,9 @@ augment Program
                   trace_class_name = Program.validate_cpp_name(g.type.cpp_name)
                 endIf
 
-                writer.print( "if ((link=Rogue" ).print( type.cpp_name ).print( "_" ).print( g.cpp_name )
+                writer.print( "if ((link=" )
+                if (not g.type.is_reference) writer.print( '&' )
+                writer.print( "Rogue" ).print( type.cpp_name ).print( "_" ).print( g.cpp_name )
                 writer.print( ")) Rogue" ).print( trace_class_name ).println( "_trace( link );" )
 
               endIf
