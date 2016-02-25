@@ -46,6 +46,8 @@ class RogueC [singleton]
     # before any parser parses its elements.  This allows all tokens to be filtered
     # a final time after tokenization to facilitate 'module' and 'using' directives.
 
+    parsereaders_by_filepath = Table<<String,ParseReader>>()
+
   METHODS
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"

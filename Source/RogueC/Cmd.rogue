@@ -1565,14 +1565,15 @@ class CmdAccess : Cmd
           endIf
 
           if (new_type.is_compound)
-            local cmd_call = scope.resolve_call( new_type, CmdAccess(t,"create",args), true )
-            if (cmd_call notInstanceOf CmdCallRoutine) trace; throw t.error( "[INTERNAL]" )
-            local r = (cmd_call as CmdCallRoutine)
-            if (r.method_info.is_generated)
+            local cmd = scope.resolve_call( new_type, CmdAccess(t,"create",args), true )
+            local cmd_call = cmd as CmdCall
+            if (cmd_call and cmd_call.method_info.is_generated)
               # Calling the core compound creation routine
-              return CmdCreateCompound( t, new_type, r.args ).resolve( scope )
-            else
+              return CmdCreateCompound( t, new_type, cmd_call.args ).resolve( scope )
+            elseIf ( cmd_call)
               return cmd_call
+            else
+              return cmd
             endIf
           endIf
 
@@ -4101,16 +4102,16 @@ endClass
 #------------------------------------------------------------------------------
 class CmdTrace : Cmd
   PROPERTIES
-    value : String
+    info : Cmd
 
   METHODS
-    method init( t, value )
+    method init( t, info )
 
     method clone( clone_args:CloneArgs )->CmdTrace
-      return CmdTrace( t, value )
+      return CmdTrace( t, clone(info,clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(CmdLiteralString(t,value)) ).resolve( scope )
+      return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(info) ).resolve( scope )
 
 endClass
 

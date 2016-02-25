@@ -49,6 +49,12 @@ class Token
 
     method to->Type
       return null
+
+    method to_location->String
+      if (not line and not column) return filepath
+      local buffer = StringBuilder().print( filepath ).print( " line " ).print( line )
+      if (column) buffer.print( ", column " ).print( column )
+      return buffer->String
 endClass
 
 class EOLToken : Token

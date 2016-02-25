@@ -19,6 +19,8 @@ class Tokenizer
       return tokenize( ParseReader(characters,2).set_location(reference_t.line,reference_t.column) )
 
     method tokenize( reader )->Token[]
+      RogueC.parsereaders_by_filepath[ filepath ] = reader
+
       configure_token_types
       while (tokenize_another) noAction
 
