@@ -54,3 +54,12 @@ forEach (n in -1..257)
   println "$ -> $" (n,n.to_power_of_2)
 endForEach
 
+class Alpha( a:Int32 ) [compound]
+  METHODS
+    method init
+      a = 5
+endClass
+
+
+Alpha()
+

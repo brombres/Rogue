@@ -42466,7 +42466,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[351] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\" - ", 4 ) ); 
   Rogue_literal_strings[352] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( " in ", 4 ) ); 
   Rogue_literal_strings[353] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "type_name", 9 ) ); 
-  Rogue_literal_strings[354] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Compounds cannot have initializers.  Use create(...) routines instead.", 70 ) ); 
+  Rogue_literal_strings[354] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Compounds cannot have initializers.  Use global create(...) methods instead.", 76 ) ); 
   Rogue_literal_strings[355] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "TaskWithResult<<", 16 ) ); 
   Rogue_literal_strings[356] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Task", 4 ) ); 
   Rogue_literal_strings[357] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "No type declared for parameter \"", 32 ) ); 

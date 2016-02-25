@@ -191,7 +191,7 @@ class Method
 
       if (name == "init")
         if (type_context.is_compound)
-          throw t.error( "Compounds cannot have initializers.  Use create(...) routines instead." )
+          throw t.error( "Compounds cannot have initializers.  Use global create(...) methods instead." )
         endIf
         attributes.flags |= Attribute.is_initializer
         return_type = type_context
