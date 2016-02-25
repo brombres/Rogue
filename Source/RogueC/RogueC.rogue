@@ -88,9 +88,11 @@ class RogueC [singleton]
                    |
                    |  --target=
 
+                   # --target info filled in below
+
                    #|  --package=com.developer.app [Java only]
 
-          usage += supported_targets->String.replacing(',','|') + "\n"
+          usage += supported_targets->String.replacing(',','|').replacing("]",",Mac,Windows,iOS,Android,...]\n")
           println usage
           System.exit( 1 )
         endIf

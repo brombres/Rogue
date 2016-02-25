@@ -1,15 +1,21 @@
-Alpha.display
+println File.path( "Test.rogue" )
+println File.filename( "Test.rogue" )
+println File.extension( "Test.rogue" )
+println File.path( "Test" )
+println File.filename( "Test" )
+println File.extension( "Test" )
+println
 
+local name = "Test.rogue"
+local extension = File.extension( name )
+if (extension.count) name = name.leftmost( -(extension.count+1) )
+println name
+println extension
+println
 
-class Alpha [singleton]
-  PROPERTIES
-    y = 1 : Int32
-
-  METHODS
-    method display
-      println x
-
-    method x->Int32
-      ++y
-      return y
-endClass
+name = "Test"
+extension = File.extension( name )
+if (extension.count) name = name.leftmost( -(extension.count+1) )
+println name
+println extension
+println

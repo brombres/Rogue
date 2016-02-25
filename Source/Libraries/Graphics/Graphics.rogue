@@ -39,6 +39,9 @@ class Graphics [singleton]
       else                  Graphics = stack.remove_last
       return Graphics
 
+    method set_size( size )->this
+      return this
+
     method width->Int32 [macro]
       this.size.x->Int32
 endClass

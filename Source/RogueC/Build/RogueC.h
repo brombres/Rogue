@@ -3728,6 +3728,7 @@ RogueString* RogueInt32__to_String( RogueInt32 THIS );
 RogueLogical RogueObject__operatorEQUALSEQUALS__Object( RogueObject* THIS, RogueObject* other_0 );
 RogueString* RogueObject__to_String( RogueObject* THIS );
 RogueString* RogueObject__type_name( RogueObject* THIS );
+RogueString* RogueString__before__Int32( RogueString* THIS, RogueInt32 index_0 );
 RogueString* RogueString__after_any__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueString* RogueString__after_first__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueString* RogueString__after_first__String( RogueString* THIS, RogueString* st_0 );
@@ -3761,6 +3762,7 @@ RogueString* RogueString__operatorPLUS__Real64( RogueString* THIS, RogueReal64 v
 RogueString* RogueString__operatorPLUS__String( RogueString* THIS, RogueString* value_0 );
 RogueClassStringReader* RogueString__reader( RogueString* THIS );
 RogueString* RogueString__replacing__Character_Character( RogueString* THIS, RogueCharacter look_for_0, RogueCharacter replace_with_1 );
+RogueString* RogueString__replacing__String_String( RogueString* THIS, RogueString* look_for_0, RogueString* replace_with_1 );
 RogueString* RogueString__rightmost__Int32( RogueString* THIS, RogueInt32 n_0 );
 RogueStringList* RogueString__split__Character( RogueString* THIS, RogueCharacter separator_0 );
 RogueString* RogueString__to_lowercase( RogueString* THIS );

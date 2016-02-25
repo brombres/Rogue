@@ -173,6 +173,9 @@ class File
               |fclose( fp );
               |return true;
 
+    method extension( filepath:String )->String
+      return filepath.after_last( '.' )
+
     method filename( filepath:String )->String
       local i = filepath.locate_last( '/' )
       if (not i?) i = filepath.locate_last( '\\' )
@@ -368,6 +371,9 @@ class File
 
     method exists->Logical [macro]
       File.exists( this.filepath )
+
+    method extension->String [macro]
+      return File.extension( this.filepath )
 
     method filename->String
       return filename( filepath )
