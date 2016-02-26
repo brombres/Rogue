@@ -24450,6 +24450,7 @@ RogueLogical RogueParser__parse_method__Logical( RogueClassParser* THIS, RogueLo
       while ((first_4 || ((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_comma )))))
       {
         first_4 = ((RogueLogical)false);
+        RogueParser__consume_eols( THIS );
         RogueLogical is_flag_5 = (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_ampersand ))));
         t_1 = ((RogueClassToken*)((RogueParser__peek( THIS ))));
         RogueClassLocal* param_6 = (((RogueMethod__add_parameter__Token_String_Type( THIS->this_method, t_1, ((RogueParser__read_identifier__Logical( THIS, true ))), ((RogueClassType*)(NULL)) ))));
@@ -25910,8 +25911,8 @@ RogueCmdFlagArgList* RogueParser__parse_args__CmdArgs( RogueClassParser* THIS, R
     RogueLogical first_3 = (true);
     while ((first_3 || ((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_comma )))))
     {
-      RogueParser__consume_eols( THIS );
       first_3 = ((RogueLogical)false);
+      RogueParser__consume_eols( THIS );
       if (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_ampersand ))))
       {
         if (!(!!(flag_args_1)))
@@ -42771,7 +42772,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Parser.parse_for_each() | Parser.rogue line 1581", 48 ) ); 
+  Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Parser.parse_for_each() | Parser.rogue line 1582", 48 ) ); 
   Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[273] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ":$", 2 ) ); 
   Rogue_literal_strings[274] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "A comma-separated list of values is expected.", 45 ) ); 

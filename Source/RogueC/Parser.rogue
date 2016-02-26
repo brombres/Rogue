@@ -646,6 +646,7 @@ class Parser
           local first = true
           while (first or consume(TokenType.symbol_comma))
             first = false
+            consume_eols
 
             local is_flag = consume( TokenType.symbol_ampersand )
 
@@ -1930,8 +1931,8 @@ class Parser
       if (not consume(end_type))
         local first = true
         while (first or consume(TokenType.symbol_comma))
-          consume_eols
           first = false
+          consume_eols
           if (consume(TokenType.symbol_ampersand))
             if (not flag_args) flag_args = CmdFlagArg[]
             local is_negative = consume( TokenType.symbol_exclamation_point )
