@@ -1490,15 +1490,27 @@ class CmdFormattedString : Cmd
       return Program.type_String
 endClass
 
+class CmdNamedArg : Cmd
+  PROPERTIES
+    name  : String
+    value : Cmd
+
+  METHODS
+    method init( t, name, value )
+
+    method clone( clone_args=null:CloneArgs )->CmdNamedArg
+      return CmdNamedArg( t, name, clone(value) )
+endClass
 
 #------------------------------------------------------------------------------
 # Access
 #------------------------------------------------------------------------------
 class CmdAccess : Cmd
   PROPERTIES
-    context   : Cmd
-    name      : String
-    args      : CmdArgs
+    context    : Cmd
+    name       : String
+    args       : CmdArgs
+    named_args : CmdNamedArg[]
     #debug : Logical
 
   METHODS
@@ -1516,6 +1528,11 @@ class CmdAccess : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
+
+      if (named_args)
+        result.named_args = CmdNamedArg[]( named_args.count )
+        forEach (named_arg in named_args) result.named_args.add( named_arg.clone )
+      endIf
 
       local macro_args = (clone_args as MacroArgs)
       if (macro_args) return macro_args.inline_access( result )
@@ -2263,14 +2280,20 @@ endClass
 
 class CmdCallPriorMethod : Cmd
   PROPERTIES
-    name : String
-    args : CmdArgs
+    name       : String
+    args       : CmdArgs
+    named_args : CmdNamedArg[]
 
   METHODS
-    method init( t, name, args )
+    method init( t, name, args, named_args )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallPriorMethod( t, name, args.clone(clone_args) )
+      local cloned_named_args : CmdNamedArg[]
+      if (named_args)
+        cloned_named_args = CmdNamedArg[]( named_args.count )
+        forEach (named_arg in named_args) cloned_named_args.add( named_arg.clone )
+      endIf
+      return CmdCallPriorMethod( t, name, args.clone(clone_args), cloned_named_args )
 
     method resolve( scope:Scope )->Cmd
       return CmdAccess( t, name, args ).resolve( scope ).call_prior( scope )
