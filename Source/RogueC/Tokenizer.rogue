@@ -160,6 +160,7 @@ class Tokenizer
       TokenType.keyword_sufficient       = define( TokenType("sufficient") )
       TokenType.keyword_throw            = define( TokenType("throw") )
       TokenType.keyword_trace            = define( TokenType("trace") )
+      TokenType.keyword_trace_position   = define( TokenType("@trace") )
       TokenType.keyword_try              = define( TokenType("try") )
       TokenType.keyword_which            = define( TokenType("which") )
       TokenType.keyword_while            = define( TokenType("while") )
@@ -388,6 +389,7 @@ class Tokenizer
         return TokenType.symbol_question_mark
 
       elseIf (ch == '@' )
+        if (consume_id("trace")) return TokenType.keyword_trace_position
         return TokenType.symbol_at
 
       elseIf (ch == '[')

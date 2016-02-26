@@ -1,8 +1,9 @@
 class Scope
   PROPERTIES
-    this_type   : Type
-    this_method : Method
-    this_body   : CmdStatementList
+    this_type     : Type
+    this_method   : Method
+    this_body     : CmdStatementList
+    implicit_type : Type
 
     local_list = Local[]
 
@@ -34,6 +35,11 @@ class Scope
 
     method pop_local
       local_list.remove_last
+
+    method set_implicit_type( new_implicit_type:Type )->Type
+      local result = implicit_type
+      @implicit_type = new_implicit_type
+      return result
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Cmd
       local m = find_method( type_context, access, error_on_fail and access.context, suppress_inherited )
@@ -112,7 +118,7 @@ class Scope
 
       if (access.flag_args and access.flag_args.count)
         local arg = access.flag_args.first
-        throw arg.t.error( ''Called method does not contain a flag named '$'.'' (arg.name) )
+        throw arg.t.error( ''Called method does not have a parameter named '$'.'' (arg.name) )
       endIf
 
       args.resolve( this )

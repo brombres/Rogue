@@ -269,6 +269,26 @@ class List<<$DataType>> : GenericList
     method set( index:Int32, new_value:$DataType ) [macro]
       this.data[ index ] = new_value
 
+    method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this 
+      if (delta == 0) return this
+
+      local n : Int32
+      if (element_count.exists) n = element_count.value
+      else                      n = count - i1
+
+      local dest_i2 = (i1 + delta + n) - 1
+      expand_to_include( dest_i2 )
+      data.set( i1+delta, data, i1, n )
+      if (fill.exists)
+        local value = fill.value
+        if (delta > 0)
+          forEach (i in i1..i1+delta-1) data[i] = value
+        else
+          forEach (i in i1+delta+n..i1+n-1) data[i] = value
+        endIf
+      endIf
+      return this
+
     method shuffle->this
       local n = count
       forEach (i of this) swap( i, Random.next_int32(n) )

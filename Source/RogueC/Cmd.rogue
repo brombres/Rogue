@@ -1661,6 +1661,7 @@ class CmdAccess : Cmd
 
         if (not args)
           local def = scope.this_type.definition_lookup[ name ]
+          if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
           if (def) return def.expression.clone.resolve( scope )
 
           p = Program.type_Global.find_property( name )
@@ -1709,7 +1710,12 @@ class CmdAccess : Cmd
 
       if (not args)
         local def = context_type.definition_lookup[ name ]
-        if (def) return def.expression.clone.resolve( Scope(context_type,null) )
+        if (def)
+          local old_implicit_type = scope.set_implicit_type( context_type )
+          local def_result = def.expression.clone.resolve( scope )
+          scope.set_implicit_type( old_implicit_type )
+          return def_result
+        endIf
       endIf
 
       return scope.resolve_call( context_type, this, true )

@@ -1,9 +1,38 @@
-Test( &gamma, &!beta )
+#Test.DEFAULT
+println "hi"
 
-class Test
+println "-----"
+trace 5
+println "-----"
+@trace 5
+println "-----"
+
+class Test( n:Int32 ) [compound]
+  DEFINITIONS
+    DEFAULT = Test(0)
+
   METHODS
-    method init( &alpha,
-      &beta=2:Int32, &gamma )
-      trace alpha,beta,gamma
 endClass
 
+
+local nums = [1,2,3,4,5]
+@trace nums.capacity
+@trace nums
+nums.shift( 0, null, 3, 0 )
+@trace nums
+nums.shift( 0, null, -2, 9 )
+@trace nums
+nums.shift( 3, 2, 4, 8 )
+@trace nums
+forEach (1..10)
+nums.shift( &delta=-1, &fill=0 )
+@trace nums
+endForEach
+
+local buffer = StringBuilder()
+buffer.println( "ABCGHI" )
+@trace buffer
+buffer.insert_spaces( &spaces=3, &character='>' )
+@trace buffer
+buffer.insert_spaces( 6, 3, '-' )
+@trace buffer

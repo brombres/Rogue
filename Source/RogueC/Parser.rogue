@@ -916,13 +916,27 @@ class Parser
         noAction
         return
 
-      elseIf (consume(TokenType.keyword_trace))
-        local buffer = StringBuilder()
+      elseIf (consume(TokenType.keyword_trace) or consume(TokenType.keyword_trace_position))
+        local include_position = (t.type is TokenType.keyword_trace_position)
 
+        local buffer = StringBuilder()
+        buffer.print('[').print( this_type.name )
+        if (this_method) buffer.print( "." ).print( this_method.name ).print( "() " )
+        buffer.print( File(t.filepath).filename )
+        buffer.print( ':' ).print( t.line ).print( ']' )
+
+        local data_pos = buffer.count + 2
         local args = CmdArgs()
         local needs_space = false
         local first = true
         while (reader.has_another and not next_is_end_command and (first or consume(TokenType.symbol_comma)))
+          if (first)
+            if (include_position)
+              buffer.print( "  " )
+            else
+              buffer.clear
+            endIf
+          endIf
           first = false
           local start_t = peek
           local expr = parse_expression
@@ -947,15 +961,12 @@ class Parser
           endIf
         endWhile
 
-        if (reader.has_another and not next_is_end_command)
-          throw peek.error( "A comma-separated list of values is expected." )
+        if (include_position and args.count)
+          buffer.insert_spaces( data_pos, ((data_pos+3)&!3)-data_pos, ' ' )
         endIf
 
-        if (not args.count)
-          buffer.print( this_type.name )
-          if (this_method) buffer.print( "." ).print( this_method.name ).print( "() | " )
-          buffer.print( File(t.filepath).filename )
-          buffer.print( " line " ).print( t.line )
+        if (reader.has_another and not next_is_end_command)
+          throw peek.error( "A comma-separated list of values is expected." )
         endIf
 
         statements.add( CmdTrace( t, CmdFormattedString(t,buffer->String,args) ) )

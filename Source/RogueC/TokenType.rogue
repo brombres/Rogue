@@ -92,6 +92,7 @@ class TokenType
     keyword_sufficient            : TokenType
     keyword_throw                 : TokenType
     keyword_trace                 : TokenType
+    keyword_trace_position        : TokenType
     keyword_try                   : TokenType
     keyword_which                 : TokenType
     keyword_while                 : TokenType

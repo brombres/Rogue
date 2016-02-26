@@ -46,6 +46,12 @@ class StringBuilder [requisite]
       characters.insert( ch )
       return this
 
+    method insert_spaces( index=0:Int32, spaces=2:Int32, character=' ':Character )->this
+      if (spaces > 0 and index >= 0 and index < count)
+        characters.shift( index, null, spaces, character )
+      endIf
+      return this
+
     method needs_indent->Logical
       return (at_newline and indent > 0)
 
