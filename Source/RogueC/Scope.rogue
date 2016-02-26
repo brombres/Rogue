@@ -79,8 +79,41 @@ class Scope
 
       # Validate args
       while (args.count < m.parameters.count)
-        args.add( m.parameters[args.count].initial_value.clone )
+        local param = m.parameters[ args.count ]
+
+        # try to find a named arg for this position
+        local flag_arg : CmdFlagArg
+        if (access.flag_args)
+          forEach (arg in access.flag_args)
+            if (arg.name == param.name)
+              flag_arg = arg
+              access.flag_args.remove( arg )
+              escapeForEach
+            endIf
+          endForEach
+        endIf
+
+        if (flag_arg)
+          if (flag_arg.value)
+            args.add( flag_arg.value )
+          else 
+            if (param.type is Program.type_Logical)
+              if (flag_arg.is_negative) args.add( CmdLiteralLogical(flag_arg.t,false) )
+              else                      args.add( CmdLiteralLogical(flag_arg.t,true) )
+            else
+              if (flag_arg.is_negative) args.add( CmdLiteralInt32(flag_arg.t,0) )
+              else                      args.add( CmdLiteralInt32(flag_arg.t,1) )
+            endIf
+          endIf
+        else
+          args.add( param.initial_value.clone )
+        endIf
       endWhile
+
+      if (access.flag_args and access.flag_args.count)
+        local arg = access.flag_args.first
+        throw arg.t.error( ''Called method does not contain a flag named '$'.'' (arg.name) )
+      endIf
 
       args.resolve( this )
 

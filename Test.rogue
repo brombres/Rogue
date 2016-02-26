@@ -1,7 +1,8 @@
-Test()
+Test( &gamma, &!beta )
 
 class Test
   METHODS
-    method init( &alpha, &beta:Int32 )
-      trace alpha,beta
+    method init( &alpha, &beta=2:Int32, &gamma )
+      trace alpha,beta,gamma
 endClass
+

@@ -120,6 +120,12 @@ class Type
       if (this is Program.type_Logical) return CmdLiteralLogical( _t, false )
       return CmdLiteralInt32( _t, 0 )
 
+    method create_flag_value( _t:Token )->Cmd
+      if (this.is_reference) return CmdLiteralNull( _t )
+      if (this.is_compound) return CmdCreateCompound( _t, this, null )
+      if (this is Program.type_Logical) return CmdLiteralLogical( _t, false )
+      return CmdLiteralInt32( _t, 0 )
+
     method extends_object->Logical
       return instance_of( Program.type_Object )
 
