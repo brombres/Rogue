@@ -1303,8 +1303,11 @@ class Parser
             must_consume( TokenType.symbol_close_paren )
           endIf
         endIf
+
         if (consume(TokenType.symbol_arrow))
+          local has_parens = consume( TokenType.symbol_open_paren )
           return_type = parse_type
+          if (has_parens) must_consume( TokenType.symbol_close_paren )
         endIf
 
         name = Program.get_callback_type_reference( t, parameter_types, return_type ).name

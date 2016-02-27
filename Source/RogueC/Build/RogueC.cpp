@@ -25227,7 +25227,12 @@ RogueString* RogueParser__parse_possible_type__Logical( RogueClassParser* THIS, 
     }
     if (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_arrow ))))
     {
+      RogueLogical has_parens_8 = (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_open_paren ))));
       return_type_4 = ((RogueClassType*)((Rogue_Parser__parse_type( THIS ))));
+      if (has_parens_8)
+      {
+        RogueParser__must_consume__TokenType_String( THIS, RogueTokenType_symbol_close_paren, ((RogueString*)(NULL)) );
+      }
     }
     name_2 = ((RogueString*)((RogueProgram__get_callback_type_reference__Token_TypeList_Type( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), t_1, parameter_types_3, return_type_4 )))->name);
   }
@@ -42899,7 +42904,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Parser.parse_for_each() Parser.rogue:1593]", 43 ) ); 
+  Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Parser.parse_for_each() Parser.rogue:1596]", 43 ) ); 
   Rogue_literal_strings[273] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[274] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "() ", 3 ) ); 
   Rogue_literal_strings[275] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "  ", 2 ) ); 
