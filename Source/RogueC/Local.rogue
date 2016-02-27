@@ -2,6 +2,7 @@ class Local
   PROPERTIES
     t             : Token
     name          : String
+    original_name : String  # only different for auto-store parameters
     type          : Type
     index         : Int32
     initial_value : Cmd
@@ -9,9 +10,11 @@ class Local
 
   METHODS
     method init( t, name )
+      original_name = name
 
     method clone( clone_args=null:CloneArgs )->Local
       local result = Local( t, name )
+      result.original_name = original_name
 
       <<init_result>>
       result.type = type

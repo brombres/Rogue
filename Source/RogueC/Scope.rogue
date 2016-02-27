@@ -91,7 +91,7 @@ class Scope
         local flag_arg : CmdFlagArg
         if (access.flag_args)
           forEach (arg in access.flag_args)
-            if (arg.name == param.name)
+            if (arg.name == param.original_name)
               flag_arg = arg
               access.flag_args.remove( arg )
               escapeForEach

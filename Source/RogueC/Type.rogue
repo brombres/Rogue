@@ -71,6 +71,15 @@ class Type
 
       return m
 
+    method replace_method( existing:Method, m_t:Token, m_name:String )->Method
+      local m = Method( m_t, this, m_name )
+      m.index = existing.index
+      method_list[ m.index ] = m
+      local list = method_lookup_by_name[ m_name ]
+      list.remove( existing )
+      list.add( m )
+      return m
+
     method add_routine( r_t:Token, r_name:String )->Method
       local r = Method( r_t, this, r_name )
       r.attributes.add( Attribute.is_global )
@@ -247,9 +256,11 @@ class Type
       forEach (base_type in base_types)
         base_type.organize( scope )
 
-        if (is_aspect)
-          if (not base_type.is_aspect)
+        if (not base_type.is_aspect)
+          if (is_aspect)
             throw t.error( "Aspects can only extend other aspects." )
+          elseIf (is_compound)
+            throw t.error( "Compounds can only extend aspects." )
           endIf
         endIf
 
@@ -413,10 +424,13 @@ class Type
       # Add a default to->String to compounds
       if (is_compound or is_primitive)
         local m = find_method( "to_String()" )
-        if (not m) m = add_method( t, "to_String" ).organize( scope )
-        m.return_type = Program.type_String
-
-        m.statements.add( CmdReturn(t,CmdLiteralString(t,name)) )
+        if (not m or m.type_context isNot this)
+          if (m) m = replace_method( m, t, "to_String" )
+          else   m = add_method( t, "to_String" )
+          m.return_type = Program.type_String
+          m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
+          m.organize( scope )
+        endIf
       endIf
 
       if (this isNot Program.type_NativeArray)

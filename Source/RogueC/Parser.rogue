@@ -281,6 +281,7 @@ class Parser
             while (first or consume(TokenType.symbol_comma))
               first = false
               consume_eols
+              consume( TokenType.symbol_ampersand )
               read_identifier
               consume_eols
               if (consume(TokenType.symbol_equals)) parse_expression
@@ -436,23 +437,40 @@ class Parser
           while (first or consume(TokenType.symbol_comma))
             first = false
 
-            # name[=default_value][:Type]
+            # [&]name[=default_value][:Type]
             t = peek
+            local is_flag = consume( TokenType.symbol_ampersand )
             local p_name = read_identifier
             local param = m.add_parameter( t, p_name )
             consume_eols
             if (consume(TokenType.symbol_equals)) param.initial_value = parse_expression
             consume_eols
+
+            local p_type : Type
             if (consume(TokenType.symbol_colon))
               consume_eols
-              local p_type = parse_type
+              p_type = parse_type
 
               if (this_type.is_compound)
                 param.type = p_type
               endIf
 
               this_type.add_property( t, p_name, p_type )
+
+            elseIf (is_flag)
+              p_type = Program.type_Logical
+              if (this_type.is_compound) param.type = p_type
+              this_type.add_property( t, p_name, p_type )
             endIf
+
+            if (is_flag and not param.initial_value)
+              if (p_type is Program.type_Logical)
+                param.initial_value = CmdLiteralLogical( t, false )
+              else
+                param.initial_value = CmdLiteralInt32( t, 0 )
+              endIf
+            endIf
+
             consume_eols
           endWhile
           must_consume( TokenType.symbol_close_paren )

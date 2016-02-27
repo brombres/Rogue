@@ -1530,6 +1530,7 @@ struct RogueClassLocal : RogueObject
   // PROPERTIES
   RogueClassToken* t;
   RogueString* name;
+  RogueString* original_name;
   RogueClassType* _type;
   RogueInt32 index;
   RogueClassCmd* initial_value;
@@ -4163,6 +4164,7 @@ RogueString* RogueType__type_name( RogueClassType* THIS );
 RogueClassType* RogueType__init__Token_String( RogueClassType* THIS, RogueClassToken* _auto_120_0, RogueString* _auto_121_1 );
 RogueClassMethod* RogueType__add_method__Token_String( RogueClassType* THIS, RogueClassToken* m_t_0, RogueString* m_name_1 );
 RogueClassMethod* RogueType__add_method__Method( RogueClassType* THIS, RogueClassMethod* m_0 );
+RogueClassMethod* RogueType__replace_method__Method_Token_String( RogueClassType* THIS, RogueClassMethod* existing_0, RogueClassToken* m_t_1, RogueString* m_name_2 );
 RogueClassMethod* RogueType__add_routine__Token_String( RogueClassType* THIS, RogueClassToken* r_t_0, RogueString* r_name_1 );
 RogueClassProperty* RogueType__add_global__Token_String( RogueClassType* THIS, RogueClassToken* s_t_0, RogueString* s_name_1 );
 RogueClassProperty* RogueType__add_property__Token_String_Type_Cmd( RogueClassType* THIS, RogueClassToken* p_t_0, RogueString* p_name_1, RogueClassType* p_type_2, RogueClassCmd* initial_value_3 );
