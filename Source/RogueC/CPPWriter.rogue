@@ -2393,7 +2393,7 @@ augment CmdReadArrayElement
           case Program.type_Int32:   writer.print( "integers[" )
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
-          case Program.type_Logical:   writer.print( "logical[" )
+          case Program.type_Logical:   writer.print( "logicals[" )
           others
             throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
         endWhich
@@ -2433,7 +2433,7 @@ augment CmdWriteArrayElement
           case Program.type_Int32:   writer.print( "integers[" )
           case Program.type_Character: writer.print( "characters[" )
           case Program.type_Byte:      writer.print( "bytes[" )
-          case Program.type_Logical:   writer.print( "logical[" )
+          case Program.type_Logical:   writer.print( "logicals[" )
         endWhich
         index.write_cpp( writer )
         writer.print( "] = " )
