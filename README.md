@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.0
-- February 28, 2016
+- v1.0.2
+- February 29, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -25,12 +25,17 @@ Rogue
         roguec Hello --execute
 
 ## Change Log
-**v1.0.0** - February 28, 2016
+**v1.0.2** - February 29, 2016
+- Adjacent string literal concatenation now works for strings that were template specializers.
+- Default main() now GC's 3 times at the end to allow objects requiring clean-up a chance to do so.
 
+**v1.0.1** - February 28, 2016
+- Adjacent string literals are now concatenated into a single string literal.
+
+**v1.0.0** - February 28, 2016
 - Official release.
 
 **v0.0.1 (Beta)** - May 12, 2015
-
 - Initial beta release.
 
 ## About
