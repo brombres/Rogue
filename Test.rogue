@@ -1,12 +1,2 @@
+println "abe" "man"
 
-class Greek( &alpha, &beta ) 
-  METHODS
-    method to->String
-      return "($,$)" (alpha,beta)
-endClass
-
-trace Greek()
-trace Greek( &alpha )
-trace Greek( &beta )
-trace Greek( &alpha, &beta )
-trace Greek( &beta, &alpha )

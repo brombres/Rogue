@@ -34601,6 +34601,13 @@ void RoguePreprocessor__process__Logical_Int32_Logical( RogueClassPreprocessor* 
         continue;
       }
     }
+    if (((void*)t_3->_type) == ((void*)RogueTokenType_literal_string))
+    {
+      while (((void*)((RoguePreprocessorTokenReader__peek( THIS->reader )))->_type) == ((void*)RogueTokenType_literal_string))
+      {
+        t_3 = ((RogueClassToken*)((RogueTokenType__create_token__Token_String( t_3->_type, t_3, ((RogueString__operatorPLUS__String( (call_ROGUEM40( 1, (RogueClassToken*)(t_3) )), (call_ROGUEM40( 1, (RogueClassToken*)(((RoguePreprocessorTokenReader__read( THIS->reader )))) )) ))) ))));
+      }
+    }
     if (keep_tokens_0)
     {
       RogueTokenList__add__Token( THIS->tokens, t_3 );

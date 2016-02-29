@@ -143,6 +143,12 @@ class Preprocessor
           endIf
         endIf
 
+        if (t.type is TokenType.literal_string)
+          while (reader.peek.type is TokenType.literal_string)
+            t = t.type.create_token( t, t->String + reader.read->String )
+          endWhile
+        endIf
+
         if (keep_tokens) tokens.add( t )
         if (stop_on_eol and t.type is TokenType.eol) return
 
