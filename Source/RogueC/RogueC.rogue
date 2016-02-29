@@ -1,3 +1,6 @@
+$define RELEASE_VERSION "1.0.0"
+$define RELEASE_DATE    "February 28, 2016"
+
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CloneArgs.rogue"
@@ -63,11 +66,12 @@ class RogueC [singleton]
         process_command_line_arguments
 
         if (source_files.count == 0)
+          println
+          println "Rogue Compiler v" + RELEASE_VERSION
+          println RELEASE_DATE
+
           local usage =
                   @|
-                   |Rogue Compiler v0.0.1
-                   |May 12, 2015
-                   |
                    |USAGE
                    |  roguec [options] file1.rogue [file2.rogue ...]
                    |
