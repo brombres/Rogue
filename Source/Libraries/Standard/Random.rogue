@@ -12,7 +12,7 @@ class Random [singleton]
 
   METHODS
     method init
-      reset( (Time.current * 1000)->Int64 )
+      reset( (System.time * 1000)->Int64 )
 
     method init( seed:Int64 )
       reset( seed )

@@ -16,5 +16,25 @@ class System [requisite]
          |  RogueString_to_c_string( $command, cmd_buffer, 4096 );
          |  system( cmd_buffer );
          |}
+
+    method time->Real64
+      $if ("C++")
+        native @|#if defined(_WIN32)
+                |  struct __timeb64 time_struct;
+                |  RogueReal64 time_seconds;
+                |  _ftime64_s( &time_struct );
+                |  time_seconds = (RogueReal64) time_struct.time;
+                |  time_seconds += time_struct.millitm / 1000.0;
+                |  return time_seconds;
+                |
+                |#else
+                |  struct timeval time_struct;
+                |  RogueReal64 time_seconds;
+                |  gettimeofday( &time_struct, 0 );
+                |  time_seconds = (RogueReal64) time_struct.tv_sec;
+                |  time_seconds += (time_struct.tv_usec / 1000000.0);
+                |  return time_seconds;
+                |#endif
+      $endIf
 endClass
 

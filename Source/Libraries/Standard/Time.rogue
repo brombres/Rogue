@@ -1,37 +1,13 @@
-class Time
-  GLOBAL METHODS
-    method current->Real64
-      $if ("C++")
-        native @|#if defined(_WIN32)
-                |  struct __timeb64 time_struct;
-                |  RogueReal64 time_seconds;
-                |  _ftime64_s( &time_struct );
-                |  time_seconds = (RogueReal64) time_struct.time;
-                |  time_seconds += time_struct.millitm / 1000.0;
-                |  return time_seconds;
-                |
-                |#else
-                |  struct timeval time_struct;
-                |  RogueReal64 time_seconds;
-                |  gettimeofday( &time_struct, 0 );
-                |  time_seconds = (RogueReal64) time_struct.tv_sec;
-                |  time_seconds += (time_struct.tv_usec / 1000000.0);
-                |  return time_seconds;
-                |#endif
-      $endIf
-endClass
-
-
 class Stopwatch
   PROPERTIES
-    start_time = Time.current : Real64
+    start_time = System.time: Real64
 
   METHODS
     method elapsed->Real64
-      return (Time.current - start_time)
+      return (System.time - start_time)
 
     method restart->this
-      start_time = Time.current
+      start_time = System.time
       return this
 
     method to->String
@@ -41,20 +17,20 @@ endClass
 
 class Timer
   PROPERTIES
-    duration                  : Real64
-    start_time = Time.current : Real64
+    duration                 : Real64
+    start_time = System.time : Real64
 
   METHODS
     method init( duration )
 
     method elapsed->Real64
-      return (Time.current - start_time)
+      return (System.time - start_time)
 
     method is_expired->Logical
       return elapsed >= duration
 
     method restart->this
-      start_time = Time.current
+      start_time = System.time
       return this
 
     method to->String
