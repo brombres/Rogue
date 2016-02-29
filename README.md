@@ -1,7 +1,7 @@
 Rogue
 =====
-- v0.0.1 (Beta)
-- May 12, 2015
+- v1.0.0
+- February 28, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -24,7 +24,11 @@ Rogue
 
         roguec Hello --execute
 
-## Version History
+## Change Log
+**v1.0.0** - February 28, 2016
+
+- Official release.
+
 **v0.0.1 (Beta)** - May 12, 2015
 
 - Initial beta release.
