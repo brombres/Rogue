@@ -724,7 +724,14 @@ augment Program
                          |{
                          |  Rogue_configure( argc, argv );
                          |  Rogue_launch();
+                         |
+                         |  // Give a few GC's to allow objects requiring clean-up to do so.
+                         |  Rogue_collect_garbage( true );
+                         |  Rogue_collect_garbage( true );
+                         |  Rogue_collect_garbage( true );
+                         |
                          |  Rogue_quit();
+                         |
                          |  return 0;
                          |}
         )

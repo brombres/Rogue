@@ -1,2 +1,11 @@
-println "abe" "man"
+class NetTime( value:Real64 ) [compound]
+  GLOBAL METHODS
+    method create( hours:Int32, minutes:Int32 )->NetTime
+      return NetTime( hours * 3600 + minutes * 60 )
 
+  METHODS
+    method to->String
+      return "$ seconds" (value)
+endClass
+
+println NetTime(1,05)

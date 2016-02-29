@@ -456,6 +456,9 @@ class ListRebuilder<<$DataType>>
 
       return (read_index < list.count)
 
+    method peek( lookahead=0:Int32 )->$DataType
+      return list[ read_index + lookahead ]
+
     method read->$DataType
       ++read_index
       return list[ read_index - 1 ]

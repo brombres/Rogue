@@ -18,12 +18,13 @@ class Parser
 
   METHODS
     method init( filepath:String )
-      init( Preprocessor(this).process(Tokenizer().tokenize(filepath)) )
+      init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
 
     method init( t:Token, filepath:String, data:String )
-      init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data)) )
+      init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data)), &skip_reprocess )
 
-    method init( tokens:Token[] )
+    method init( tokens:Token[], &skip_reprocess )
+      if (not skip_reprocess) tokens = Preprocessor( this ).reprocess( tokens )
       reader = TokenReader( tokens )
 
     method add_used_module( module_name:String )
@@ -2044,7 +2045,12 @@ class Parser
 
         else
           if (tokens) tokens.add( t )
-          buffer.print( read->String )
+          local st = read->String
+          if (t.type is TokenType.literal_string)
+            buffer.print( '"' ).print( st ).print( '"' )
+          else
+            buffer.print( st )
+          endIf
         endIf
       endWhile
 
