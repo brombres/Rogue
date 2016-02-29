@@ -1,5 +1,1 @@
-class HelloWorld
-  METHODS
-    method init
-      println "Hello World!"
-endClass
+println "Hello World!"

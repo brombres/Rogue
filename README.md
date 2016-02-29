@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.3
-- February 29, 2016
+- v1.0.4
+- February X, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -14,17 +14,14 @@ Rogue
 
 2. Run `roguec` by itself for options.
 
-3.  Compile Hello.rogue for a simple test:
+3.  Run this for a simple test:
 
-        roguec Hello.rogue --main
-        g++ Hello.cpp -o hello
-        hello
-
-    OR
-
-        roguec Hello --execute
+        echo println '"Hello World!"' > Hello.rogue
+        roguec Hello.rogue --execute
 
 ## Change Log
+**v1.0.4** - February X, 2016
+
 **v1.0.3** - February 29, 2016
 - Renamed `Time.current()` to `System.time()` and removed the `Time` class.
 - Default main() now GC's 3 times at the end to allow objects requiring clean-up a chance to do so.
@@ -44,4 +41,7 @@ Rogue
 
 ## About
 The Rogue programming language is the successor to Slag (active years 2008-2011) and Bard (never released; multiple internal versions made in 2011-2014).
+
+## License
+Rogue is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
 
