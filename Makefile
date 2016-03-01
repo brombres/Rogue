@@ -1,4 +1,5 @@
 .PHONY: test
+.PHONY: /usr/local/bin
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
 ROGUEC_FLAGS = -std=c++11 -fno-strict-aliasing
