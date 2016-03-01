@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.5
+- v1.0.6
 - March 1, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.6 - March 1, 2016
+- Added native code marker support for $(var.retain) and $(var.release) that yield the value of the given variable while increasing or decreasing the reference count of regular objects, preventing them from being GC'd while they're stored in a native collection.  The markers yield the variable value with no reference count modifications for primitives and compounds.
+
 ###v1.0.5 - March 1, 2016
 - Added additional native code insertion marker operations for native properties and inline native code.
 

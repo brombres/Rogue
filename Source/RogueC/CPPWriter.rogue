@@ -1007,14 +1007,7 @@ class CPPWriter
               print "$"
 
             case "this"
-              which (operation)
-                case "type"
-                  print( type_context )
-                case ""
-                  print "THIS"
-                others
-                  throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
-              endWhich
+              print_native_code_marker_value( t, name, operation, "THIS", type_context )
 
             others
               if (name.begins_with('$'))
@@ -1038,14 +1031,7 @@ class CPPWriter
               if (method_context)
                 forEach (v in method_context.locals)
                   if (v.name == name)
-                    which (operation)
-                      case "type"
-                        print( v.type )
-                      case ""
-                        print( v.cpp_name )
-                      others
-                        throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
-                    endWhich
+                    print_native_code_marker_value( t, name, operation, v.cpp_name, v.type )
                     escapeWhich
                   endIf
                 endForEach
@@ -1053,14 +1039,7 @@ class CPPWriter
 
               local p = type_context.property_lookup[ name ]
               if (p)
-                which (operation)
-                  case "type"
-                    print( p.type )
-                  case ""
-                    print( "THIS->" ).print( p.cpp_name )
-                  others
-                    throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
-                endWhich
+                print_native_code_marker_value( t, name, operation, "THIS->" + p.cpp_name, p.type )
                 escapeWhich
               endIf
 
@@ -1075,6 +1054,30 @@ class CPPWriter
         indent = original_indent
       endForEach
       return this
+
+    method print_native_code_marker_value( t:Token, name:String, operation:String, default:String, type:Type )
+      which (operation)
+        case "release"
+          if (type and type.is_reference)
+            print( '(' ).print_cast( Program.type_Object, type ).print( "RogueObject_release(" )
+            print_cast( type, Program.type_Object ).print( default ).print( "))" )
+          else
+            print( default )
+          endIf
+        case "retain"
+          if (type and type.is_reference)
+            print( '(' ).print_cast( Program.type_Object, type ).print( "RogueObject_retain(" )
+            print_cast( type, Program.type_Object ).print( default ).print( "))" )
+          else
+            print( default )
+          endIf
+        case "type"
+          print( type )
+        case ""
+          print( default )
+        others
+          throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+      endWhich
 endClass
 
 

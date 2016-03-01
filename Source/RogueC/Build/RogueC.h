@@ -195,7 +195,7 @@ struct RogueObject
 RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
 void*        RogueObject_retain( RogueObject* THIS );
-void         RogueObject_release( RogueObject* THIS );
+void*        RogueObject_release( RogueObject* THIS );
 
 void RogueObject_trace( void* obj );
 void RogueString_trace( void* obj );
@@ -4465,6 +4465,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_default_value__Type( RogueClassCPPWri
 RogueClassCPPWriter* RogueCPPWriter__print_literal_character__Character_Logical( RogueClassCPPWriter* THIS, RogueCharacter ch_0, RogueLogical in_string_1 );
 RogueClassCPPWriter* RogueCPPWriter__print_literal_string__String( RogueClassCPPWriter* THIS, RogueString* st_0 );
 RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_String( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueString* code_3 );
+void RogueCPPWriter__print_native_code_marker_value__Token_String_String_String_Type( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueString* name_1, RogueString* operation_2, RogueString* default_3, RogueClassType* type_4 );
 RogueClassCPPWriter* RogueCPPWriter__init_object( RogueClassCPPWriter* THIS );
 RogueString* RogueString_MethodTable__to_String( RogueClassString_MethodTable* THIS );
 RogueString* RogueString_MethodTable__type_name( RogueClassString_MethodTable* THIS );
