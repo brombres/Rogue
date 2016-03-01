@@ -585,8 +585,9 @@ class Parser
         if (not next_is(TokenType.literal_string))
           throw peek.error( "Literal string expected." )
         endIf
-        if (not this_type.native_properties) this_type.native_properties = String[]
-        this_type.native_properties.add( read->String )
+        if (not this_type.native_properties) this_type.native_properties = NativeProperty[]
+        local native_t = read
+        this_type.native_properties.add( NativeProperty( native_t, native_t->String ) )
         must_consume_eols
         return true
       endIf

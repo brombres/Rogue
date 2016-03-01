@@ -24,6 +24,7 @@ class Template
       # replace location of first reference to type with location of type definition
 
       type.attributes.add( attributes )
+      type.source_template = this
 
       local augmented_tokens = tokens
       local augments = Program.augment_lookup[ type.name ]
@@ -121,6 +122,8 @@ class Template
         specializer.tokens = specializer_tokens
         type_specializers[specializer.name] = specializer
 
+        if (not type.specializers) type.specializers = TypeSpecializer[]
+        type.specializers.add( specializer )
       endWhile
 
       if (type_specializers.count < type_parameters.count)
