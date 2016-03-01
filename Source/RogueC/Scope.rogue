@@ -150,7 +150,7 @@ class Scope
           inline_statements.resolve( this )
           if (inline_statements.count == 1) return inline_statements.first
 
-          throw t.error( "TODO: multi-line inline statements" )
+          throw t.error( "TODO: multi-line macro statements" )
 
         else
           cmd = CmdCallRoutine( t, m, args )
@@ -188,7 +188,7 @@ class Scope
           if (inline_statements.count == 1) return inline_statements.first
 
           trace
-          throw t.error( "TODO: multi-line inline statements" )
+          throw t.error( "TODO: multi-line macro statements" )
 
         elseIf (type_context.is_aspect)
           cmd = CmdCallAspectMethod( t, context, m, args )

@@ -1,7 +1,7 @@
 .PHONY: test
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
-#ROGUEC_FLAGS = -O3
+ROGUEC_FLAGS = -std=c++11 -fno-strict-aliasing
 
 all: roguec
 
@@ -18,9 +18,9 @@ bootstrap_roguec:
 	  echo -------------------------------------------------------------------------------; \
 	  echo Compiling Programs/RogueC/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo g++ -Wall $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
+	  echo $(CXX) -Wall $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	  mkdir -p Programs/RogueC; \
-	  g++ $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
+	  $(CXX) $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	fi;
 
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
@@ -35,14 +35,14 @@ Programs/RogueC/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	g++ $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 libraries:
 	@mkdir -p Programs/RogueC
 	@if [ $$(rsync -rtv --delete --exclude=.*.sw? --dry-run Source/Libraries Programs/RogueC | wc -l) -gt 4 ]; \
 	then \
 	  echo "==== Updating Libraries ===="; \
-		rsync -rtv --delete --exclude=.*.sw? Source/Libraries Programs/RogueC | tail +2 | tail -r | tail +4 | tail -r; \
+		rsync -rtv --delete --exclude=.*.sw? Source/Libraries Programs/RogueC | tail -n +2 | (tac 2> /dev/null || tail -r) | tail -n +4 | (tac 2> /dev/null || tail -r); \
 	fi
 
 libs: libraries
@@ -66,7 +66,7 @@ if:
 	@echo Compile Hello.rogue for a simple test:
 	@echo
 	@echo "  roguec Hello.rogue --main"
-	@echo "  g++ Hello.cpp -o hello"
+	@echo "  $(CXX) Hello.cpp -o hello"
 	@echo "  ./hello"
 	@echo
 
