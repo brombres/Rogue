@@ -1,7 +1,7 @@
 Rogue
 =====
 - v1.0.4
-- February X, 2016
+- February 29, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -20,7 +20,8 @@ Rogue
         roguec Hello.rogue --execute
 
 ## Change Log
-**v1.0.4** - February X, 2016
+**v1.0.4** - February 29, 2016
+- Fixed off-by-one error in List.remove_at() that was causing seg faults on Linux.
 - Updated Makefile.
 
 **v1.0.3** - February 29, 2016

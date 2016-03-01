@@ -42833,7 +42833,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[19] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.3", 5 ) ); 
+  Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.4", 5 ) ); 
   Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "February 29, 2016", 17 ) ); 
   Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 599 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
@@ -43604,7 +43604,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[790] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Type name expected, e.g. \"", 26 ) ); 
   Rogue_literal_strings[791] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ".\".", 3 ) ); 
   Rogue_literal_strings[792] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Type name expected.", 19 ) ); 
-  Rogue_literal_strings[793] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "TODO: multi-line inline statements", 34 ) ); 
+  Rogue_literal_strings[793] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "TODO: multi-line macro statements", 33 ) ); 
   Rogue_literal_strings[794] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "count", 5 ) ); 
   Rogue_literal_strings[795] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid arguments to array count.", 33 ) ); 
   Rogue_literal_strings[796] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Scope.resolve_call() Scope.rogue:190]", 38 ) ); 
