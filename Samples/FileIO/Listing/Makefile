@@ -1,6 +1,6 @@
 all:
 	roguec Listing --main
-	g++ Listing.cpp -o listing
+	$(CXX) Listing.cpp -o listing
 	./listing Listing.rogue
 
 clean:

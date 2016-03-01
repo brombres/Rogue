@@ -1,4 +1,3 @@
-CC=gcc
 CFLAGS = -Wall
 
 C_FILES = $(shell find *.c | grep -v temp)

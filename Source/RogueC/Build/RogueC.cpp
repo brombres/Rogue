@@ -43377,7 +43377,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[563] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );", 85 ) ); 
   Rogue_literal_strings[564] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue_collect_garbage();", 24 ) ); 
   Rogue_literal_strings[565] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "int main( int argc, const char* argv[] )\n{\n  Rogue_configure( argc, argv );\n  Rogue_launch();\n\n  // Give a few GC's to allow objects requiring clean-up to do so.\n  Rogue_collect_garbage( true );\n  Rogue_collect_garbage( true );\n  Rogue_collect_garbage( true );\n\n  Rogue_quit();\n\n  return 0;\n}", 292 ) ); 
-  Rogue_literal_strings[566] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "g++ ", 4 ) ); 
+  Rogue_literal_strings[566] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "clang++ -std=c++11 -fno-strict-aliasing ", 40 ) ); 
   Rogue_literal_strings[567] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ".cpp -o ", 8 ) ); 
   Rogue_literal_strings[568] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( " && ./", 6 ) ); 
   Rogue_literal_strings[569] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Compile target \"", 16 ) ); 

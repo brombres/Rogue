@@ -21,6 +21,7 @@ Rogue
 
 ## Change Log
 **v1.0.4** - February X, 2016
+- Updated Makefile.
 
 **v1.0.3** - February 29, 2016
 - Renamed `Time.current()` to `System.time()` and removed the `Time` class.
