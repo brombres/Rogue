@@ -2,10 +2,13 @@ $include "Definition.rogue"
 
 class Type
   PROPERTIES
-    t            : Token
-    name         : String
-    attributes   = Attributes()
-    index        = -1
+    t               : Token
+    name            : String
+    attributes      = Attributes()
+    index           = -1
+
+    source_template : Template
+    specializers    : TypeSpecializer[]
 
     defined      : Logical
     organized    : Logical
@@ -33,7 +36,7 @@ class Type
     prev_enum_cmd     : Cmd
     next_enum_offset  = 0
 
-    native_properties : String[]
+    native_properties : NativeProperty[]
 
     global_list   = Property[]
     global_lookup = Table<<String,Property>>() : Table<<String,Property>>

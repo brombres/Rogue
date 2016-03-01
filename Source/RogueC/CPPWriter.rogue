@@ -970,6 +970,111 @@ class CPPWriter
       print( "\"" )
 
       return this
+
+    method print_native_code( t:Token, type_context:Type, method_context:Method, code:String )->this
+      forEach (line in LineReader(code))
+        local original_indent = indent
+        if (line.begins_with('#')) indent = 0
+
+        # Replace $this and other local names ($x, $count, etc) with native
+        # variable reads.
+        local marker = line.locate( '$' )
+        while (marker)
+          local name : String
+
+          local i1 = marker.value
+          if (i1 > 0) print line.leftmost( i1 )
+          local i2 = i1+1
+          if (i2 < line.count and line[i2] == '(')
+            # We have $(name) or $(name.x)
+            ++i2
+            while (i2 < line.count and line[i2] != ')') ++i2
+            name = line.from( i1+2, i2-1 )
+            line = line.from( i2+1 )
+          else
+            # Just $name
+            while (i2 < line.count and line[i2].is_identifier) ++i2
+            name = line.from( i1+1, i2-1 )
+            line = line.from( i2 )
+          endIf
+
+          # name:$(this.type) -> name:this, operation:type
+          local operation = name.after_first( '.' )
+          name = name.before_first( '.' )
+
+          which (name)
+            case "$"
+              print "$"
+
+            case "this"
+              which (operation)
+                case "type"
+                  print( type_context )
+                case ""
+                  print "THIS"
+                others
+                  throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+              endWhich
+
+            others
+              if (name.begins_with('$'))
+                # Probably a specializer name like $DataType
+                if (type_context.specializers)
+                  forEach (specializer in type_context.specializers)
+                    if (specializer.name == name)
+                      which (operation)
+                        case ""
+                          local type = Parser(specializer.tokens).parse_type.organize
+                          print( type )
+                        others
+                          throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+                      endWhich
+                      escapeWhich
+                    endIf
+                  endForEach
+                endIf
+              endIf
+
+              if (method_context)
+                forEach (v in method_context.locals)
+                  if (v.name == name)
+                    which (operation)
+                      case "type"
+                        print( v.type )
+                      case ""
+                        print( v.cpp_name )
+                      others
+                        throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+                    endWhich
+                    escapeWhich
+                  endIf
+                endForEach
+              endIf
+
+              local p = type_context.property_lookup[ name ]
+              if (p)
+                which (operation)
+                  case "type"
+                    print( p.type )
+                  case ""
+                    print( "THIS->" ).print( p.cpp_name )
+                  others
+                    throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+                endWhich
+                escapeWhich
+              endIf
+
+              print( "$" ).print( name )
+          endWhich
+
+          marker = line.locate( '$' )
+        endWhile
+
+        if (line.count) println line
+
+        indent = original_indent
+      endForEach
+      return this
 endClass
 
 
@@ -1084,7 +1189,7 @@ augment Type
       writer.println "// PROPERTIES"
       if (native_properties)
         forEach (p in native_properties)
-          writer.print_code( p )
+          writer.print_native_code( p.t, this, null, p.code )
         endForEach
       endIf
       forEach (p in property_list)
@@ -2576,60 +2681,7 @@ endAugment
 augment CmdNativeCode
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local needs_newline = code.contains('\n') or not result_type
-
-      forEach (line in LineReader(code))
-        local original_indent = writer.indent
-        if (line.begins_with('#')) writer.indent = 0
-
-        # Replace $this and other local names ($x, $count, etc) with native
-        # variable reads.
-        local marker = line.locate( '$' )
-        while (marker)
-          local i1 = marker.value
-          if (i1 > 0) writer.print line.leftmost( i1 )
-          local i2 = i1+2
-          while (i2 < line.count and line[i2].is_identifier) ++i2
-
-          local name = line.from( i1+1, i2-1 )
-          line = line.from( i2 )
-
-          if (name == "$")
-            writer.print "$"
-          elseIf (name == "this")
-            writer.print "THIS"
-          else
-            local found = false
-            forEach (v in this_method.locals)
-              if (v.name == name)
-                found = true
-                writer.print( v.cpp_name )
-                escapeForEach
-              endIf
-            endForEach
-            if (not found)
-              local p = this_method.type_context.property_lookup[ name ]
-              if (p)
-                found = true
-                writer.print( "THIS->" ).print( p.cpp_name )
-              endIf
-            endIf
-            if (not found)
-              writer.print( "$" ).print( name )
-            endIf
-          endIf
-
-          marker = line.locate( '$' )
-        endWhile
-
-        if (needs_newline)
-          if (line.count) writer.println line
-          else            writer.println
-        elseIf (line.count)
-          writer.print line
-        endIf
-
-        writer.indent = original_indent
-      endForEach
+      writer.print_native_code( t, this_method.type_context, this_method, code )
+      if (code.contains('\n') or not result_type) writer.println
 endAugment
 

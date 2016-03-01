@@ -32,3 +32,5 @@ class Property
       return name
 endClass
 
+class NativeProperty( t:Token, code:String );
+
