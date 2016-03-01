@@ -174,9 +174,10 @@ void* RogueObject_retain( RogueObject* THIS )
   return THIS;
 }
 
-void RogueObject_release( RogueObject* THIS )
+void* RogueObject_release( RogueObject* THIS )
 {
   --THIS->reference_count;
+  return THIS;
 }
 
 void RogueObject_trace( void* obj )
