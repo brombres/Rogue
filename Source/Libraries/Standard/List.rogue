@@ -238,8 +238,8 @@ class List<<$DataType>> : GenericList
       local result = this[ index ]
       data.set( index, data, index+1 )
       local zero_value : $DataType
-      data[count] = zero_value
       --count
+      data[count] = zero_value
       return result
 
     method remove_first->$DataType [macro]
