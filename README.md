@@ -29,8 +29,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.7 - March X, 2016
-- Added `count()->Int32` to all primitives that returns the number of characters that are required to represent the primitive in text form.
-- Added `significant_decimal_digit_count()->Int32` to `Real64` and `Real32` primitives.  The return value will be zero or higher.
+- Added `digit_count()->Int32` to all primitives that returns the number of characters that are required to represent the primitive in text form.
+- Added `whole_digit_count()` and `decimal_digit_count()->Int32` to `Real64` and `Real32` primitives.
 
 ###v1.0.6 - March 1, 2016
 - Added native code marker support for $(var.retain) and $(var.release) that yield the value of the given variable while increasing or decreasing the reference count of regular objects, preventing them from being GC'd while they're stored in a native collection.  The markers yield the variable value with no reference count modifications for primitives and compounds.
