@@ -1,3 +1,5 @@
+class PrimitiveWorkBuffer : StringBuilder [singleton];
+
 class Real64 [primitive]
   GLOBAL METHODS
     method create( bits:Int64 )->Real64
@@ -14,8 +16,26 @@ class Real64 [primitive]
       if (this > high) return high
       return this
 
+    method character_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
     method hash_code->Int32
       return Int64(this)->Int32
+
+    method significant_decimal_character_count->Int32
+      PrimitiveWorkBuffer.clear.print( this )
+      local dot = PrimitiveWorkBuffer.locate( '.' )
+
+      # NaN, +/- infinity
+      if (not dot.exists) return 0
+
+      local start = dot.value + 1
+      local count = PrimitiveWorkBuffer.count
+
+      # Check for "3.0" etc.
+      if (count == start + 1 and PrimitiveWorkBuffer[start] == '0') return 0
+
+      return (count - start)
 
     method to->Object
       return Boxed<<Real64>>(this)
@@ -43,6 +63,12 @@ class Real32 [primitive]
       if (this > high) return high
       return this
 
+    method character_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method significant_decimal_character_count->Int32
+      return this->Real64.significant_decimal_character_count
+
     method to->Object
       return Boxed<<Real32>>(this)
 
@@ -65,6 +91,9 @@ class Int64 [primitive]
       if (this < low)  return low
       if (this > high) return high
       return this
+
+    method character_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
 
     method hash_code->Int32
       return this
@@ -119,6 +148,9 @@ class Int32 [primitive]
       if (this > high) return high
       return this
 
+    method character_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
     method hash_code->Int32
       return this
 
@@ -158,6 +190,9 @@ class Character [primitive]
       if (this < low)  return low
       if (this > high) return high
       return this
+
+    method character_count->Int32
+      return 1
 
     method hash_code->Int32
       return this->Int32
@@ -209,6 +244,9 @@ class Byte [primitive]
       if (this > high) return high
       return this
 
+    method character_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
     method hash_code->Int32
       return this->Int32
 
@@ -234,6 +272,10 @@ endClass
 
 class Logical [primitive]
   METHODS
+    method character_count->Int32
+      if (this) return 4  # "true"
+      else      return 5  # "false"
+
     method hash_code->Int32
       if (this) return 1
       else      return 0

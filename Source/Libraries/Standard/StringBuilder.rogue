@@ -52,6 +52,18 @@ class StringBuilder [requisite]
       endIf
       return this
 
+    method locate( ch:Character )->Int32?
+      forEach (i of this)
+        if (characters[i] == ch) return i
+      endForEach
+      return null
+
+    method locate_last( ch:Character )->Int32?
+      forEach (i of this step -1)
+        if (characters[i] == ch) return i
+      endForEach
+      return null
+
     method needs_indent->Logical
       return (at_newline and indent > 0)
 
