@@ -1,7 +1,0 @@
-$include "OpenGLRenderer.rogue"
-
-class Renderer
-  METHODS
-    method clear( color:Int32 )
-endClass
-
