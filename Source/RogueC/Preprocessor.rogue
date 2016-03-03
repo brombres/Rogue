@@ -191,7 +191,8 @@ class Preprocessor
         endIf
 
         if (t.type is TokenType.literal_string)
-          return RogueC.compile_targets[reader.read->String]
+          local target = reader.read->String
+          return RogueC.compile_targets[target]
         endIf
 
         #{

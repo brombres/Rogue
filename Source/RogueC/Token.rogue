@@ -169,7 +169,22 @@ class LiteralReal64Token : Token
       return ""+value
 endClass
 
-class LiteralStringToken : Token
+class NativeCodeToken : Token
+  PROPERTIES
+    value : String
+
+  METHODS
+    method init( type, value )
+
+    method quoted_name->String
+      if (type is TokenType.keyword_nativeHeader) return "nativeHeader"
+      return "nativeCode"
+
+    method to->String
+      return value
+endClass
+
+class StringDataToken : Token
   PROPERTIES
     value : String
 

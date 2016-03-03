@@ -4177,6 +4177,52 @@ class CmdLabel : Cmd
 
 endClass
 
+class CmdNativeHeader : Cmd
+  PROPERTIES
+    code        : String
+
+  METHODS
+    method init( t, code )
+
+    method clone( clone_args:CloneArgs )->CmdNativeHeader
+      return CmdNativeHeader( t, code )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      if (code)
+        if (not Program.native_header.contains(code))
+          Program.native_header.add( code )
+        endIf
+        code = null
+      endIf
+      return this
+endClass
+
+class CmdNativeCodeBlock : Cmd
+  PROPERTIES
+    code        : String
+
+  METHODS
+    method init( t, code )
+
+    method clone( clone_args:CloneArgs )->CmdNativeCodeBlock
+      return CmdNativeCodeBlock( t, code )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      if (code)
+        if (not Program.native_code.contains(code))
+          Program.native_code.add( code )
+        endIf
+        code = null
+      endIf
+      return this
+endClass
+
 class CmdNativeCode : Cmd
   PROPERTIES
     code        : String

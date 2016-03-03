@@ -138,6 +138,8 @@ class Parser
       consume_eols
       if (not reader.has_another) return false
 
+      if (parse_native_elements) return true
+
       local t = peek
 
       if (t.type is TokenType.keyword_class)
@@ -498,6 +500,8 @@ class Parser
     method parse_section->Logical
       consume_eols
 
+      if (parse_native_elements) return true
+
       if (consume(TokenType.begin_augment_tokens))
         parsing_augment = true
         consume_eols
@@ -840,11 +844,23 @@ class Parser
     method parse_statement( statements:CmdStatementList, allow_control_structures:Logical )
       local t = peek
 
-      #{
-      if (next_is(TokenType.keyword_delegate))
-        throw t.error( "Unused delegate definition." )
+      if (consume(TokenType.keyword_nativeHeader))
+        # Turn this nativeHeader into a Cmd node instead of storing the native header
+        # directly so that the header is only added if the method is resolved (meaning
+        # it's actually used in the program).  This is a way to have classes with native
+        # dependencies that don't get pulled in if they're unused.
+        statements.add( CmdNativeHeader(t,t->String) )
+        return
       endIf
-      }#
+
+      if (consume(TokenType.keyword_nativeCode))
+        # Turn this nativeHeader into a Cmd node instead of storing the native header
+        # directly so that the header is only added if the method is resolved (meaning
+        # it's actually used in the program).  This is a way to have classes with native
+        # dependencies that don't get pulled in if they're unused.
+        statements.add( CmdNativeCode(t,t->String) )
+        return
+      endIf
 
       if (allow_control_structures)
         if (next_is(TokenType.keyword_if))
@@ -1193,6 +1209,27 @@ class Parser
 
       must_consume( TokenType.keyword_endWhich )
       return cmd_which
+
+    method parse_native_elements->Logical
+      local t = peek
+
+      if (consume(TokenType.keyword_nativeHeader))
+        local code = t->String
+        if (not Program.native_header.contains(code))
+          Program.native_header.add( code )
+        endIf
+        return true
+
+      elseIf (consume(TokenType.keyword_nativeCode))
+        local code = t->String
+        if (not Program.native_header.contains(code))
+          Program.native_code.add( code )
+        endIf
+        return true
+
+      else
+        return false
+      endIf
 
     method parse_contingent->CmdContingent
       local t = read  # 'contingent'

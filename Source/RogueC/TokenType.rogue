@@ -199,7 +199,7 @@ class TokenType
       return LiteralReal64Token( this, value ).set_location( filepath, line, column )
 
     method create_token( filepath:String, line:Int32, column:Int32, value:String )->Token
-      return LiteralStringToken( this, value ).set_location( filepath, line, column )
+      return StringDataToken( this, value ).set_location( filepath, line, column )
 
     method create_token( existing:Token )->Token
       return create_token( existing.filepath, existing.line, existing.column )
@@ -239,6 +239,15 @@ class EOLTokenType : TokenType
 
     method is_structure->Logical
       return false
+endClass
+
+class NativeCodeTokenType : TokenType
+  METHODS
+    method create_token( filepath:String, line:Int32, column:Int32, value:String )->Token
+      return NativeCodeToken( this, value ).set_location( filepath, line, column )
+
+    method create_token( existing:Token, value:String )->Token
+      return NativeCodeToken( this, value ).set_location( existing.filepath, existing.line, existing.column )
 endClass
 
 class IdentifierTokenType : TokenType

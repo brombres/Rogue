@@ -116,8 +116,6 @@ class Tokenizer
       TokenType.keyword_macro         = define( StructureTokenType("macro") )
       TokenType.keyword_method        = define( StructureTokenType("method") )
       TokenType.keyword_METHODS       = define( StructureTokenType("METHODS") )
-      TokenType.keyword_nativeCode    = define( StructureTokenType("nativeCode") )
-      TokenType.keyword_nativeHeader  = define( StructureTokenType("nativeHeader") )
       TokenType.keyword_others        = define( StructureTokenType("others") )
       TokenType.keyword_PROPERTIES    = define( StructureTokenType("PROPERTIES") )
       TokenType.keyword_routine       = define( StructureTokenType("routine") )
@@ -151,6 +149,8 @@ class Tokenizer
       TokenType.keyword_local            = define( TokenType("local") )
       TokenType.keyword_loop             = define( TokenType("loop") )
       TokenType.keyword_native           = define( TokenType("native") )
+      TokenType.keyword_nativeCode       = define( NativeCodeTokenType("nativeCode") )
+      TokenType.keyword_nativeHeader     = define( NativeCodeTokenType("nativeHeader") )
       TokenType.keyword_necessary        = define( TokenType("necessary") )
       TokenType.keyword_nextIteration    = define( TokenType("nextIteration") )
       TokenType.keyword_noAction         = define( TokenType("noAction") )
@@ -779,7 +779,16 @@ class Tokenizer
         # Multi-line native code ending with endNativeCode
         local found_end = false
         while (reader.has_another)
-          if (reader.column == 1 and reader.consume_id("endNativeCode")) found_end = true; escapeWhile
+          if (reader.column == 1)
+            local spaces = 0
+            while (reader.consume(' ')) ++spaces
+            if (reader.consume_id("endNativeCode"))
+              found_end = true
+              escapeWhile
+            else
+              forEach (1..spaces) buffer.print( ' ' )
+            endIf
+          endIf
           buffer.print( reader.read )
         endWhile
         if (not found_end) throw error( "'endNativeCode' expected before EOF." )
@@ -791,11 +800,7 @@ class Tokenizer
         endWhile
       endIf
 
-      forEach (line in LineReader(buffer->String))
-        Program.native_code.add( line )
-      endForEach
-
-      return true
+      return add_new_token( TokenType.keyword_nativeCode, buffer->String )
 
     method scan_native_header->Logical
       local buffer = StringBuilder()
@@ -804,7 +809,16 @@ class Tokenizer
         # Multi-line native code ending with endNativeHeader
         local found_end = false
         while (reader.has_another)
-          if (reader.column == 1 and reader.consume_id("endNativeHeader")) found_end = true; escapeWhile
+          if (reader.column == 1)
+            local spaces = 0
+            while (reader.consume(' ')) ++spaces
+            if (reader.consume_id("endNativeHeader"))
+              found_end = true
+              escapeWhile
+            else
+              forEach (1..spaces) buffer.print( ' ' )
+            endIf
+          endIf
           buffer.print( reader.read )
         endWhile
         if (not found_end) throw error( "'endNativeHeader' expected before EOF." )
@@ -816,11 +830,7 @@ class Tokenizer
         endWhile
       endIf
 
-      forEach (line in LineReader(buffer->String))
-        Program.native_header.add( line )
-      endForEach
-
-      return true
+      return add_new_token( TokenType.keyword_nativeHeader, buffer->String )
 
     method tokenize_string( terminator:Character )->Logical
       buffer.clear
