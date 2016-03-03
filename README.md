@@ -36,6 +36,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - Fixed several File macro methods that were incorrectly defined with a `return` keyword.
 - Conditional compilation now respects nativeHeader and nativeCode blocks.
 - nativeHeader and nativeCode blocks can appear at the global level, the class section level, or the statement level.  In the latter two cases they are only applied if the class or method is referenced, respectively.
+- Fixed generated trace() code to work for arrays of compounds that don't contain references.
 
 ###v1.0.6 - March 1, 2016
 - Added native code marker support for $(var.retain) and $(var.release) that yield the value of the given variable while increasing or decreasing the reference count of regular objects, preventing them from being GC'd while they're stored in a native collection.  The markers yield the variable value with no reference count modifications for primitives and compounds.

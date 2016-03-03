@@ -470,9 +470,9 @@ augment Program
               else
                 local trace_class_name = "Object"
                 if (g.type.is_array)
-                  if (g.type.element_type.is_compound)
+                  if (g.type.element_type.is_compound and g.type.element_type.has_object_references)
                     trace_class_name = Program.validate_cpp_name( g.type.name )
-                  elseIf (g.type.element_type.is_reference)
+                  else
                     trace_class_name = "Array"
                   endIf
 
@@ -750,9 +750,9 @@ augment Program
           else
             local trace_class_name = "Object"
             if (p.type.is_array)
-              if (p.type.element_type.is_compound)
+              if (p.type.element_type.is_compound and p.type.element_type.has_object_references)
                 trace_class_name = Program.validate_cpp_name( p.type.name )
-              elseIf (p.type.element_type.is_reference)
+              else
                 trace_class_name = "Array"
               endIf
 

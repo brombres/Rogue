@@ -2546,7 +2546,7 @@ void RogueCharacterList_trace( void* obj )
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
   ((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
   
-  if ((link=((RogueCharacterList*)obj)->data)) RogueObject_trace( link );
+  if ((link=((RogueCharacterList*)obj)->data)) RogueArray_trace( link );
 }
 
 void RogueStringReader_trace( void* obj )
@@ -3085,7 +3085,7 @@ void RogueInt32List_trace( void* obj )
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
   ((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
   
-  if ((link=((RogueInt32List*)obj)->data)) RogueObject_trace( link );
+  if ((link=((RogueInt32List*)obj)->data)) RogueArray_trace( link );
 }
 
 void RogueByteList_trace( void* obj )
@@ -3095,7 +3095,7 @@ void RogueByteList_trace( void* obj )
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
   ((RogueObject*)obj)->object_size = ~((RogueObject*)obj)->object_size;
   
-  if ((link=((RogueByteList*)obj)->data)) RogueObject_trace( link );
+  if ((link=((RogueByteList*)obj)->data)) RogueArray_trace( link );
 }
 
 void RogueString_LogicalTable_trace( void* obj )
@@ -16946,11 +16946,11 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
                 RogueString* trace_class_name_15 = (Rogue_literal_strings[38]);
                 if (g_108->_type->is_array)
                 {
-                  if (((RogueType__is_compound( g_108->_type->_element_type ))))
+                  if ((((RogueType__is_compound( g_108->_type->_element_type ))) && ((RogueType__has_object_references( g_108->_type->_element_type )))))
                   {
                     trace_class_name_15 = ((RogueString*)((RogueProgram__validate_cpp_name__String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), g_108->_type->name ))));
                   }
-                  else if (((RogueType__is_reference( g_108->_type->_element_type ))))
+                  else
                   {
                     trace_class_name_15 = ((RogueString*)Rogue_literal_strings[431]);
                   }
@@ -17219,11 +17219,11 @@ void RogueProgram__print_property_trace_code__Type_CPPWriter( RogueClassProgram*
           RogueString* trace_class_name_2 = (Rogue_literal_strings[38]);
           if (p_5->_type->is_array)
           {
-            if (((RogueType__is_compound( p_5->_type->_element_type ))))
+            if ((((RogueType__is_compound( p_5->_type->_element_type ))) && ((RogueType__has_object_references( p_5->_type->_element_type )))))
             {
               trace_class_name_2 = ((RogueString*)((RogueProgram__validate_cpp_name__String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), p_5->_type->name ))));
             }
-            else if (((RogueType__is_reference( p_5->_type->_element_type ))))
+            else
             {
               trace_class_name_2 = ((RogueString*)Rogue_literal_strings[431]);
             }
