@@ -437,6 +437,7 @@ class Parser
           local first = true
           while (first or consume(TokenType.symbol_comma))
             first = false
+            consume_eols
 
             # [&]name[=default_value][:Type]
             t = peek
