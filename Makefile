@@ -63,11 +63,10 @@ if:
 	printf "%s\nexec \"%s/Programs/RogueC/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > /usr/local/bin/roguec
 	chmod a+x /usr/local/bin/roguec
 	@echo
-	@echo Compile Hello.rogue for a simple test:
+	@echo You can execute the following as a simple test:
 	@echo
-	@echo "  roguec Hello.rogue --main"
-	@echo "  $(CXX) Hello.cpp -o hello"
-	@echo "  ./hello"
+	@echo    println '"Hello World!"' > Hello.rogue
+	@eco     roguec Hello.rogue --execute
 	@echo
 
 test:

@@ -89,6 +89,7 @@ class Tokenizer
 
       # Structure Tokens
       TokenType.eol                   = define( EOLTokenType("end of line") )
+      TokenType.eoi                   = define( StructureTokenType("end of input") )
       TokenType.begin_augment_tokens  = define( StructureTokenType("end of line") )
       TokenType.keyword_augment       = define( StructureTokenType("augment") )
       TokenType.keyword_case          = define( StructureTokenType("case") )

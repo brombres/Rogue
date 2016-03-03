@@ -43,7 +43,7 @@ class FileOptions( flags=0:Int32 ) [compound]
       (this.flags & FileOptions.FLAG_RECURSIVE)
 
     method is_relative->Logical [macro]
-      return (not (this.flags & FileOptions.FLAG_ABSOLUTE))
+      (not (this.flags & FileOptions.FLAG_ABSOLUTE))
 
     method limited->FileOptions [macro]
       FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
@@ -367,13 +367,13 @@ class File
       File.absolute_filepath( this.filepath )
 
     method create_folder->Logical [macro]
-      return File.create_folder( this.filepath )
+      File.create_folder( this.filepath )
 
     method exists->Logical [macro]
       File.exists( this.filepath )
 
     method extension->String [macro]
-      return File.extension( this.filepath )
+      File.extension( this.filepath )
 
     method filename->String
       return filename( filepath )

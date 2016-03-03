@@ -829,7 +829,9 @@ class Parser
       endWhile
 
       if (not consume(TokenType.eol))
-        if (not peek.is_structure) must_consume( TokenType.eol )  # force an error
+        if (not peek.is_structure)
+          must_consume( TokenType.eol )  # force an error
+        endIf
       endIf
 
       cur_statement_list = prev_statement_list
@@ -897,6 +899,10 @@ class Parser
         return
 
       elseIf (consume(TokenType.keyword_return))
+        if (this_method.is_macro and this_method.return_type?)
+          throw t.error( "Omit the 'return' in a macro method with a return type." )
+        endIf
+
         if (next_is_end_command)
           statements.add( CmdReturn(t) )
         else

@@ -148,9 +148,16 @@ class Scope
           endForEach
 
           inline_statements.resolve( this )
-          if (inline_statements.count == 1) return inline_statements.first
 
-          throw t.error( "TODO: multi-line macro statements" )
+          which (inline_statements.count)
+            case 0
+              if (m.return_type) throw t.error( "Missing return value in macro method." )
+              return CmdNativeCode( t, "" ).resolve( this )
+            case 1
+              return inline_statements.first
+            case 2
+              throw t.error( "Only single line macros are supported." )
+          endWhich
 
         else
           cmd = CmdCallRoutine( t, m, args )
@@ -185,10 +192,17 @@ class Scope
           endForEach
 
           inline_statements.resolve( this )
-          if (inline_statements.count == 1) return inline_statements.first
 
-          trace
-          throw t.error( "TODO: multi-line macro statements" )
+          which (inline_statements.count)
+            case 0
+              if (m.return_type) throw t.error( "Missing return value in macro method." )
+              return CmdNativeCode( t, "" ).resolve( this )
+            case 1
+              return inline_statements.first
+            case 2
+              throw t.error( "Only single line macros are supported." )
+          endWhich
+
 
         elseIf (type_context.is_aspect)
           cmd = CmdCallAspectMethod( t, context, m, args )

@@ -26,11 +26,11 @@ class TokenReader
       return true
 
     method peek->Token
-      if (position == count) return tokens.last
+      if (position == count) return TokenType.eoi.create_token( tokens.last )
       return tokens[position]
 
     method peek( num_ahead:Int32 )->Token
-      if (position + num_ahead >= count) return tokens.last
+      if (position + num_ahead >= count) return TokenType.eoi.create_token( tokens.last )
       return tokens[ position + num_ahead ]
 
     method read->Token
@@ -68,7 +68,7 @@ class PreprocessorTokenReader
 
     method error( message:String )->Error
       if (has_another) return peek.error( message )
-      if (count) return tokens.last.error( message )
+      if (count) return TokenType.eoi.create_token( tokens.last ).error( message )
       return RogueError( message )
 
     method expand_definition( t:Token )
@@ -103,7 +103,9 @@ class PreprocessorTokenReader
       return peek(0)
 
     method peek( num_ahead:Int32 )->Token
-      if (position + num_ahead >= count + queue.count) return tokens.last
+      if (position + num_ahead >= count + queue.count) 
+        return TokenType.eoi.create_token( tokens.last )
+      endIf
 
       while (queue.count <= num_ahead)
         local t = tokens[position]
