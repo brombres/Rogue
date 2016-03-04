@@ -237,7 +237,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(return|necessary|sufficient|noAction|yield|yieldAndWait|yieldWhile|withTimeout)\b</string>
+					<string>\b(return|select|necessary|sufficient|noAction|yield|yieldAndWait|yieldWhile|withTimeout)\b</string>
 					<key>name</key>
 					<string>keyword.control.rogue</string>
 				</dict>

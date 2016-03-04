@@ -15,7 +15,7 @@ endif
 let b:did_indent = 1
 
 " The function vim should call to determine indentation for any particular line
-setlocal indentexpr=GetBardIndent(v:lnum)
+setlocal indentexpr=GetRogueIndent(v:lnum)
 
 " if a line contains any of these, vim calls the indent function as soon as the last letter of that word is typed
 setlocal indentkeys&
@@ -29,7 +29,7 @@ setlocal indentkeys+=PROPERTIES,=METHODS,=INTERNAL,=EXTERNAL,=SETTINGS,=ENUMERAT
 
 
 " Don't redefine the function over and over
-if exists("*GetBardIndent")
+if exists("*GetRogueIndent")
   finish
 endif
 
@@ -300,7 +300,7 @@ function! IsSingleLineCond(_the_code)
   endif
 endfunction
 
-function! GetBardIndent( line_num )
+function! GetRogueIndent( line_num )
   " Line 0 always goes at column 0
   if a:line_num == 0
     return 0

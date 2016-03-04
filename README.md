@@ -1,7 +1,7 @@
 Rogue
 =====
 - v1.0.7
-- March X, 2016
+- March 3, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,7 +28,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.7 - March X, 2016
+###v1.0.7 - March 3, 2016
+- Added the 'select' operator, Rogue's alternative to the ternary "decision operator".  Example: https://gist.github.com/AbePralle/de8e46e025cffd47eea0
 - Added `digit_count()->Int32` to all primitives that returns the number of characters that are required to represent the primitive in text form.
 - Added `whole_digit_count()` and `decimal_digit_count()->Int32` to `Real64` and `Real32` primitives.
 - Parser bug fix: class auto-initializer properties can contain EOLs.

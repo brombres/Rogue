@@ -2238,18 +2238,6 @@ class Parser
       elseIf (consume(TokenType.symbol_empty_brackets))
         return CmdAccess( t, "PropertyList",  CmdArgs() )
 
-        #{
-      elseIf (consume(TokenType.symbol_double_vertical_bar))
-        local expr = parse_expression
-        must_consume( TokenType.symbol_double_vertical_bar )
-        return CmdGetOptionalValue( t, expr )
-
-      elseIf (consume(TokenType.symbol_vertical_bar))
-        local expr = parse_expression
-        must_consume( TokenType.symbol_vertical_bar )
-        return CmdGetOptionalValue( t, expr )
-        }#
-
       elseIf (consume(TokenType.keyword_prior))
         consume_eols
         must_consume( TokenType.symbol_dot )
@@ -2390,6 +2378,50 @@ class Parser
         if (consume(TokenType.symbol_arrow)) result_type = parse_type
 
         return CmdNativeCode( t, code, result_type )
+
+      elseIf (consume(TokenType.keyword_select))
+        consume_eols
+        local cmd_select = CmdSelect( t )
+
+        if (consume(TokenType.symbol_open_paren))
+          consume_eols
+          local comparison_var = this_method.add_local( t, Program.create_unique_id )
+          cur_statement_list.add( CmdLocalDeclaration(t,comparison_var,&skip_initialization) )
+          comparison_var.initial_value = parse_expression
+          cmd_select.local_info = comparison_var
+          cmd_select.expression = comparison_var.initial_value
+          consume_eols
+          must_consume( TokenType.symbol_close_paren )
+          consume_eols
+        endIf
+
+        must_consume( TokenType.symbol_open_bracket )
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          consume_eols
+          local select_case = CmdSelectCase( peek )
+          cmd_select.cases.add( select_case )
+          local expr = parse_expression
+          consume_eols
+          if (next_is(TokenType.symbol_comma) or next_is(TokenType.symbol_colon))
+            select_case.conditions = Cmd[].add( expr )
+            while (consume(TokenType.symbol_comma))
+              consume_eols
+              select_case.conditions.add( parse_expression )
+              consume_eols
+            endWhile
+            must_consume( TokenType.symbol_colon )
+            consume_eols
+            select_case.value = parse_expression
+            consume_eols
+          else
+            select_case.value = expr
+          endIf
+        endWhile
+        must_consume( TokenType.symbol_close_bracket )
+
+        return cmd_select
 
       else
         #throw peek.error( "Syntax error: unexpected '$'." (peek) )

@@ -282,10 +282,11 @@ endClass
 
 class CmdLocalDeclaration : CmdStatement
   PROPERTIES
-    local_info : Local
+    local_info          : Local
+    skip_initialization : Logical
 
   METHODS
-    method init( t, local_info )
+    method init( t, local_info, skip_initialization=false )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
@@ -294,7 +295,7 @@ class CmdLocalDeclaration : CmdStatement
         if (new_value) new_value = new_value.clone( clone_args )
         return task_args.replace_write_local( t, local_info, new_value )
       else
-        return CmdLocalDeclaration( t, local_info )
+        return CmdLocalDeclaration( t, local_info, skip_initialization )
       endIf
 
     method exit_scope( scope:Scope )
@@ -4314,5 +4315,104 @@ class CmdListConvert( t, list:Cmd, to_type:Type, convert_fn:Cmd ) : Cmd
 
     method type->Type
       return to_type
+endClass
+
+
+class CmdSelect : Cmd
+  PROPERTIES
+    local_info : Local
+    expression : Cmd
+    cases      : CmdSelectCase[]
+    value_type : Type
+
+  METHODS
+    method init( t, local_info=null, expression=null, cases=CmdSelectCase[] )
+
+    method clone( clone_args:CloneArgs )->CmdSelect
+      local result = CmdSelect( t, local_info, clone(expression,clone_args), CmdSelectCase[](cases.count) )
+      forEach (c in cases) result.cases.add( c.clone(clone_args) )
+      return result
+
+    method implicit_type( scope:Scope )->Type
+      local common_type : Type
+      forEach (c in cases)
+        local case_type = c.implicit_type( scope )
+        if (not common_type) common_type = case_type
+        elseIf (common_type isNot case_type) return null
+      endForEach
+      return common_type
+
+    method resolve( scope:Scope )->Cmd
+      if (value_type) return this
+      
+      if (not cases.count)
+        throw t.error( "Selection list cannot be empty." )
+      endIf
+
+      if (cases.last.conditions)
+        throw cases.last.t.error( "The final 'select' cannot have an attached condition." )
+      endIf
+
+      forEach (c in cases)
+        c.resolve( scope )
+        local case_type = c.type
+        value_type = must_find_common_type( value_type, case_type )
+      endForEach
+
+      forEach (c in cases)
+        c.value = c.value.cast_to( value_type, scope ).resolve( scope ).require_value
+      endForEach
+
+      if (expression)
+        expression = expression.resolve( scope )
+        local expr_type = expression.require_type
+        forEach (c in cases)
+          c.cast_conditions( expr_type, scope )
+        endForEach
+      endIf
+
+      return this
+
+    method type->Type
+      return value_type
+endClass
+
+class CmdSelectCase : Cmd
+  PROPERTIES
+    conditions : Cmd[]
+    value      : Cmd
+
+  METHODS
+    method init( t, conditions=null, value=null )
+
+    method clone( clone_args:CloneArgs )->CmdSelectCase
+      local result = CmdSelectCase( t, null, clone(value,clone_args) )
+      if (conditions)
+        result.conditions = Cmd[]( conditions.count )
+        forEach (c in conditions) result.conditions.add( c.clone(clone_args) )
+      endIf
+      return result
+
+    method cast_conditions( to_type:Type, scope:Scope )
+      if (conditions)
+        forEach (i of conditions)
+          conditions[i] = conditions[i].cast_to( to_type, scope ).resolve( scope ).require_value
+        endForEach
+      endIf
+
+    method implicit_type( scope:Scope )->Type
+      return value.implicit_type( scope )
+
+    method resolve( scope:Scope )->Cmd
+      if (conditions)
+        forEach (i of conditions)
+          conditions[i] = conditions[i].resolve( scope ).require_value
+        endForEach
+      endIf
+      value = value.resolve( scope ).require_value
+      return this
+
+    method type->Type
+      return value.type
 endClass
 

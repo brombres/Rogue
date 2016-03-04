@@ -422,3 +422,19 @@ augment CmdNativeCode
 
 endAugment
 
+augment CmdSelect
+  METHODS
+    method update_this_type( scope:Scope )
+      if (expression) expression.update_this_type( scope )
+      forEach (c in cases) c.update_this_type( scope )
+endAugment
+
+augment CmdSelectCase
+  METHODS
+    method update_this_type( scope:Scope )
+      if (conditions)
+        forEach (c in conditions) c.update_this_type( scope )
+      endIf
+      value.update_this_type( scope )
+endAugment
+

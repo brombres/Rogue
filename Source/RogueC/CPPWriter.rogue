@@ -1578,13 +1578,16 @@ endAugment
 augment CmdLocalDeclaration
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( local_info.type ).print(" ").print( local_info.cpp_name ).print(" = ")
-      if (local_info.initial_value)
-        writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
-        local_info.initial_value.write_cpp( writer )
-        writer.print( ")" )
-      else
-        writer.print_default_value( local_info.type )
+      writer.print( local_info.type ).print(" ").print( local_info.cpp_name )
+      if (not skip_initialization)
+        writer.print(" = ")
+        if (local_info.initial_value)
+          writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
+          local_info.initial_value.write_cpp( writer )
+          writer.print( ")" )
+        else
+          writer.print_default_value( local_info.type )
+        endIf
       endIf
 endAugment
 
@@ -2686,5 +2689,56 @@ augment CmdNativeCode
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print_native_code( t, this_method.type_context, this_method, code )
       if (code.contains('\n') or not result_type) writer.println
+endAugment
+
+augment CmdSelect
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      write_cpp( cases.reader, writer, &first_case )
+
+    method write_cpp( reader:ListReader<<CmdSelectCase>>, writer:CPPWriter, &first_case )
+      local select_case = reader.read
+
+      if (not reader.has_another)
+        # Final value
+        select_case.value.write_cpp( writer )
+        return
+      endIf
+
+      writer.print( "((" )
+
+      local first_condition = true
+      forEach (c in select_case.conditions)
+        if (first_condition) first_condition = false
+        else                 writer.print " || "
+
+        writer.print "("
+        if (expression)
+          if (first_case)
+            # Need to store expression in local
+            writer.print( "(" ).print( local_info.cpp_name ).print( "=" )
+            expression.write_cpp( writer )
+            writer.print( ")" )
+            first_case = false
+          else
+            writer.print( local_info.cpp_name )
+          endIf
+          writer.print( "==" )
+        endIf
+
+        writer.print( "(" )
+        c.write_cpp( writer )
+        writer.print( "))" )
+      endForEach
+
+      writer.print( ") ? (" )
+
+      select_case.value.write_cpp( writer )
+
+      writer.print( ") : " )
+
+      write_cpp( reader, writer )
+
+      writer.print ")"
 endAugment
 

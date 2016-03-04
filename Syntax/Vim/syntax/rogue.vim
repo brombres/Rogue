@@ -27,6 +27,7 @@ syn keyword rogueMember      PROPERTIES METHODS GLOBAL
 syn match   rogueError       "\<for\(\s\|(\)"
 syn keyword rogueConditional  if elseIf else endIf
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
+syn keyword rogueConditional  select
 syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
 syn keyword rogueConditional  try catch endTry
 syn keyword rogueConditional  block endBlock

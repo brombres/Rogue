@@ -157,6 +157,7 @@ class Tokenizer
       TokenType.keyword_null             = define( TokenType("null") )
       TokenType.keyword_of               = define( TokenType("of") )
       TokenType.keyword_return           = define( TokenType("return") )
+      TokenType.keyword_select           = define( TokenType("select") )
       TokenType.keyword_step             = define( TokenType("step") )
       TokenType.keyword_sufficient       = define( TokenType("sufficient") )
       TokenType.keyword_throw            = define( TokenType("throw") )

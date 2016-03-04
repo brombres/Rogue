@@ -429,3 +429,19 @@ augment CmdNativeCode
 
 endAugment
 
+augment CmdSelect
+  METHODS
+    method trace_used_code
+      if (expression) expression.trace_used_code
+      forEach (c in cases) c.trace_used_code
+endAugment
+
+augment CmdSelectCase
+  METHODS
+    method trace_used_code
+      if (conditions)
+        forEach (c in conditions) c.trace_used_code
+      endIf
+      value.trace_used_code
+endAugment
+
