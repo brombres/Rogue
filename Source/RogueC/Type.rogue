@@ -440,7 +440,7 @@ class Type
         is_array = this.instance_of( Program.type_NativeArray )
         if (is_array)
           local cur_type = this
-          while (not cur_type.name.begins_with("Array____1<<"))
+          while (not cur_type.name.begins_with("Array<<"))
             cur_type = cur_type.base_class
             if (cur_type is null) throw t.error( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>." )
           endWhile

@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.8
-- March 3, 2016
+- v1.0.9
+- March 4, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.9 - March 4, 2016
+- Fixed up inline native definitions and methods to work with op-assign and increment/decrement. 
 
 ###v1.0.8 - March 3, 2016
 - 'select' now uses curly braces instead of square brackets.

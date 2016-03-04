@@ -114,10 +114,10 @@ class Program [requisite singleton]
 
       which (name.last)
         case '?'
-          if (find_type(name.leftmost(-1))) return template_lookup[ "Optional____1" ]
+          if (find_type(name.leftmost(-1))) return template_lookup[ "Optional" ]
           else return null
         case ']'
-          template = template_lookup[ "List____1" ]
+          template = template_lookup[ "List" ]
         others
           template = template_lookup[ name.before_first('<') ]
       endWhich
