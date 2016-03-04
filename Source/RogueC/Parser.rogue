@@ -2394,7 +2394,7 @@ class Parser
         local result_type : Type
         if (consume(TokenType.symbol_arrow)) result_type = parse_type
 
-        return CmdNativeCode( t, code, result_type )
+        return CmdInlineNative( t, code, result_type )
 
       elseIf (consume(TokenType.keyword_select))
         consume_eols

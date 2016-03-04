@@ -998,53 +998,7 @@ class CPPWriter
             line = line.from( i2 )
           endIf
 
-          # name:$(this.type) -> name:this, operation:type
-          local operation = name.after_first( '.' )
-          name = name.before_first( '.' )
-
-          which (name)
-            case "$"
-              print "$"
-
-            case "this"
-              print_native_code_marker_value( t, name, operation, "THIS", type_context )
-
-            others
-              if (name.begins_with('$'))
-                # Probably a specializer name like $DataType
-                if (type_context.specializers)
-                  forEach (specializer in type_context.specializers)
-                    if (specializer.name == name)
-                      which (operation)
-                        case ""
-                          local type = Parser(specializer.tokens).parse_type.organize
-                          print( type )
-                        others
-                          throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
-                      endWhich
-                      escapeWhich
-                    endIf
-                  endForEach
-                endIf
-              endIf
-
-              if (method_context)
-                forEach (v in method_context.locals)
-                  if (v.name == name)
-                    print_native_code_marker_value( t, name, operation, v.cpp_name, v.type )
-                    escapeWhich
-                  endIf
-                endForEach
-              endIf
-
-              local p = type_context.property_lookup[ name ]
-              if (p)
-                print_native_code_marker_value( t, name, operation, "THIS->" + p.cpp_name, p.type )
-                escapeWhich
-              endIf
-
-              print( "$" ).print( name )
-          endWhich
+          print_native_marker( t, type_context, method_context, name )
 
           marker = line.locate( '$' )
         endWhile
@@ -1053,6 +1007,56 @@ class CPPWriter
 
         indent = original_indent
       endForEach
+      return this
+
+    method print_native_marker( t:Token, type_context:Type, method_context:Method, name:String )->this
+      # name:$(this.type) -> name:this, operation:type
+      local operation = name.after_first( '.' )
+      name = name.before_first( '.' )
+
+      which (name)
+        case "$"
+          print "$"
+
+        case "this"
+          print_native_code_marker_value( t, name, operation, "THIS", type_context )
+
+        others
+          if (name.begins_with('$'))
+            # Probably a specializer name like $DataType
+            if (type_context.specializers)
+              forEach (specializer in type_context.specializers)
+                if (specializer.name == name)
+                  which (operation)
+                    case ""
+                      local type = Parser(specializer.tokens).parse_type.organize
+                      print( type )
+                    others
+                      throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+                  endWhich
+                  escapeWhich
+                endIf
+              endForEach
+            endIf
+          endIf
+
+          if (method_context)
+            forEach (v in method_context.locals)
+              if (v.name == name)
+                print_native_code_marker_value( t, name, operation, v.cpp_name, v.type )
+                escapeWhich
+              endIf
+            endForEach
+          endIf
+
+          local p = type_context.property_lookup[ name ]
+          if (p)
+            print_native_code_marker_value( t, name, operation, "THIS->" + p.cpp_name, p.type )
+            escapeWhich
+          endIf
+
+          print( "$" ).print( name )
+      endWhich
       return this
 
     method print_native_code_marker_value( t:Token, name:String, operation:String, default:String, type:Type )
@@ -2217,28 +2221,55 @@ augment CmdCallInlineNative
       throw t.error( "Illegal use of '$this' in routine." )
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      which (adjust_delta)
+        case -1: writer.print( "--" )
+        case  1: writer.print( "++" )
+      endWhich
+
       local st = method_info.native_code
 
       local dollar = st.locate('$')
       while (dollar)
-        writer.print( st.from(0,dollar!-1) )
-        st = st.from( dollar!+1 )
-        
-        local best_match : Local
-        forEach (p in method_info.parameters)
-          if (st.begins_with(p.name))
-            if (best_match is null or p.name.count > best_match.name.count) best_match = p
-          endIf
-        endForEach
+        writer.print( st.from(0,dollar.value-1) )
+        st = st.from( dollar.value+1 )
 
-        if (best_match)
-          args[ best_match.index ].write_cpp( writer )
-          st = st.from( best_match.name.count )
+        local name  : String
+        local param : Local
+        if (st.begins_with('('))
+          # $(name)
+          name = st.before_first(')').from(1)
+          st = st.after_first( ')' )
+
+          forEach (p in method_info.parameters)
+            if (p.name == name)
+              param = p
+              escapeForEach
+            endIf
+          endForEach
+
         else
-          if (st.begins_with("this"))
+          # $name
+          local best_match : Local
+          forEach (p in method_info.parameters)
+            if (st.begins_with(p.name))
+              if (best_match is null or p.name.count > best_match.name.count) best_match = p
+            endIf
+          endForEach
+
+          if (best_match)
+            param = best_match
+            name = param.name
+            st = st.from( best_match.name.count )
+          elseIf (st.begins_with("this"))
             print_this( writer )
             st = st.from( 4 )
           endIf
+        endIf
+
+        if (param)
+          args[ param.index ].write_cpp( writer )
+        elseIf (name)
+          writer.print_native_marker( t, method_info.type_context, method_info, name )
         endIf
 
         dollar = st.locate('$')
@@ -2684,11 +2715,36 @@ augment CmdLabel
       statements.write_cpp( writer, is_statement )
 endAugment
 
+augment CmdInlineNative
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      which (adjust_delta)
+        case -1: writer.print( "--" )
+        case  1: writer.print( "++" )
+      endWhich
+
+      writer.print_native_code( t, this_method.type_context, this_method, code )
+      if (adjust_delta) writer.println( ";" ); return
+
+      if (code.contains('\n') or not result_type) writer.println
+      if (new_value)
+        if (modify_op) writer.print(' ').print( modify_op->String ).print(' ')
+        else           writer.print( " = " )
+        new_value.write_cpp( writer )
+        writer.println( ";" )
+      endIf
+endAugment
+
 augment CmdNativeCode
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print_native_code( t, this_method.type_context, this_method, code )
-      if (code.contains('\n') or not result_type) writer.println
+      noAction
+endAugment
+
+augment CmdNativeHeader
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      noAction
 endAugment
 
 augment CmdSelect

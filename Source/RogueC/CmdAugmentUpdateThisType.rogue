@@ -416,10 +416,21 @@ augment CmdLabel
 
 endAugment
 
-augment CmdNativeCode 
+augment CmdInlineNative 
   METHODS
     method update_this_type( scope:Scope )
+      if (new_value) new_value.update_this_type( scope )
 
+endAugment
+
+augment CmdNativeCode
+  METHODS
+    method update_this_type( scope:Scope )
+endAugment
+
+augment CmdNativeHeader
+  METHODS
+    method update_this_type( scope:Scope )
 endAugment
 
 augment CmdSelect

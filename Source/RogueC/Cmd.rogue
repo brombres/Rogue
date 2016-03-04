@@ -155,7 +155,7 @@ class Cmd
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
       throw t.error( "Invalid target for increment/decrement. ($)" (type_name) )
 
-    method resolve_adjust_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
 
     method type->Type
@@ -1735,9 +1735,10 @@ class CmdAccess : Cmd
 
       local explicit_context = context?
 
+      local setter_name : String
       if (context is null)
         if (name[0] != '@')
-          local setter_name = "set_" + name
+          setter_name = "set_" + name
           local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
           if (setter)
             if (scope.this_method.name == setter_name)
@@ -1756,6 +1757,10 @@ class CmdAccess : Cmd
         if (v)
           return CmdWriteLocal(t,v,new_value).resolve(scope)
         endIf
+
+        local def = scope.this_type.definition_lookup[ name ]
+        if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+        if (def) return def.expression.clone.resolve_assignment( scope, new_value )
 
         local p = scope.this_method.type_context.find_global( name )
         if (p) return CmdWriteGlobal( t, p, new_value ).resolve( scope )
@@ -1780,8 +1785,7 @@ class CmdAccess : Cmd
       local context_type = context.require_type
       context_type.organize(scope)
 
-      if (name[0] != '@')
-        local setter_name = "set_" + name
+      if (setter_name)
         local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), false )
         if (setter) return setter
       endIf
@@ -1801,24 +1805,62 @@ class CmdAccess : Cmd
         endIf
       endIf
 
-      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
+      local def = context_type.definition_lookup[ name ]
+      if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+      if (def) return def.expression.clone.resolve_assignment( scope, new_value )
 
-    method resolve_adjust_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
-      if (args is null)
-        local v = scope.find_local( name )
-        if (v)
-          if (args) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-          return CmdLocalOpWithAssign(t,v,op,new_value).resolve(scope)
-        endIf
+      if (setter_name)
+        local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), true )
+        if (setter) return setter
       endIf
 
+      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
+
+    method expand_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+      local cmd : Cmd
+      which (op)
+        case TokenType.symbol_ampersand_equals:    cmd = CmdBitwiseAnd( t, this, new_value )
+        case TokenType.symbol_caret_equals:        cmd = CmdPower( t, this, new_value )
+        case TokenType.symbol_dot_equals:          cmd = CmdAccess( t, this, name, new_value )
+        case TokenType.symbol_minus_equals:        cmd = CmdSubtract( t, this, new_value )
+        case TokenType.symbol_percent_equals:      cmd = CmdMod( t, this, new_value )
+        case TokenType.symbol_plus_equals:         cmd = CmdAdd( t, this, new_value )
+        case TokenType.symbol_slash_equals:        cmd = CmdDivide( t, this, new_value )
+        case TokenType.symbol_tilde_equals:        cmd = CmdBitwiseXor( t, this, new_value )
+        case TokenType.symbol_times_equals:        cmd = CmdMultiply( t, this, new_value )
+        case TokenType.symbol_vertical_bar_equals: cmd = CmdBitwiseOr( t, this, new_value )
+        others
+          @trace
+          throw t.error( "[INTERNAL]" )
+      endWhich
+      return CmdAssign( t, this.clone, cmd )
+
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       local context_type : Type
 
       if (context)
         context = context.resolve( scope )
         context_type = context.require_type
       else
+        if (args is null)
+          local v = scope.find_local( name )
+          if (v)
+            if (args) throw t.error( "Local variable '$' cannot be called like a method."(name) )
+            return CmdLocalOpWithAssign(t,v,op,new_value).resolve(scope)
+          endIf
+        endIf
+
         context_type = scope.this_type
+
+      endIf
+
+      local setter_name : String
+      if (name[0] != '@')
+        setter_name = "set_" + name
+        local setter = scope.resolve_call( context_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
+        if (setter) 
+          return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
+        endIf
       endIf
 
       local p = context_type.find_global( name )
@@ -1834,6 +1876,15 @@ class CmdAccess : Cmd
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
         return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
+      endIf
+
+      local def = context_type.definition_lookup[ name ]
+      if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+      if (def) return def.expression.clone.resolve_modify_and_assign( scope, op, new_value )
+
+      if (setter_name)
+        local setter = scope.resolve_call( context_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), true )
+        if (setter) return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
       endIf
 
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
@@ -2334,9 +2385,15 @@ class CmdCallNativeMethod : CmdCall
 endClass
 
 class CmdCallInlineNative : CmdCall
+  PROPERTIES
+    adjust_delta : Int32
+
   METHODS
     method to->String
       return method_info.signature
+
+    method resolve_adjust( scope:Scope, adjust_delta )->Cmd
+      return this
 endClass
 
 class CmdCallInlineNativeRoutine : CmdCallInlineNative
@@ -3394,7 +3451,7 @@ class CmdOpWithAssign : Cmd
       return CmdOpWithAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
       
     method resolve( scope:Scope )->Cmd
-      return target.resolve_adjust_and_assign( scope, op, new_value )
+      return target.resolve_modify_and_assign( scope, op, new_value )
 endClass
 
 class CmdResolvedOpWithAssign : Cmd
@@ -4201,15 +4258,15 @@ class CmdNativeHeader : Cmd
       return this
 endClass
 
-class CmdNativeCodeBlock : Cmd
+class CmdNativeCode : Cmd
   PROPERTIES
     code        : String
 
   METHODS
     method init( t, code )
 
-    method clone( clone_args:CloneArgs )->CmdNativeCodeBlock
-      return CmdNativeCodeBlock( t, code )
+    method clone( clone_args:CloneArgs )->CmdNativeCode
+      return CmdNativeCode( t, code )
 
     method requires_semicolon->Logical
       return false
@@ -4224,17 +4281,24 @@ class CmdNativeCodeBlock : Cmd
       return this
 endClass
 
-class CmdNativeCode : Cmd
+class CmdInlineNative : Cmd
   PROPERTIES
-    code        : String
-    this_method : Method
-    result_type : Type
+    code         : String
+    this_method  : Method
+    result_type  : Type
+    modify_op    : TokenType
+    adjust_delta : Int32
+    new_value    : Cmd
 
   METHODS
     method init( t, code, result_type=null )
 
-    method clone( clone_args:CloneArgs )->CmdNativeCode
-      return CmdNativeCode( t, code, result_type )
+    method clone( clone_args:CloneArgs )->CmdInlineNative
+      local result = CmdInlineNative( t, code, result_type )
+      result.modify_op = modify_op
+      result.adjust_delta = adjust_delta
+      result.new_value = new_value
+      return result
 
     method requires_semicolon->Logical
       return false
@@ -4242,6 +4306,37 @@ class CmdNativeCode : Cmd
     method resolve( scope:Scope )->Cmd
       this_method = scope.this_method
       if (result_type) result_type.organize(scope)
+      return this
+
+    method resolve_assignment( scope:Scope, new_value )->Cmd
+      this_method = scope.this_method
+      new_value = new_value.resolve( scope ).require_value
+      if (result_type)
+        result_type.organize(scope)
+      else
+        throw t.error( ''Cannot assign to inline native code without specifying its type.  For example, native("...")->$'' (new_value.type) )
+      endIf
+      new_value = new_value.cast_to( result_type, scope ).resolve( scope )
+      return this
+
+    method resolve_modify_and_assign( scope:Scope, modify_op, new_value )->Cmd
+      this_method = scope.this_method
+      new_value = new_value.resolve( scope ).require_value
+      if (result_type)
+        result_type.organize(scope)
+      else
+        throw t.error( ''Cannot modify-and-assign inline native code without specifying its type.  For example, native("...")->$'' (new_value.type) )
+      endIf
+      new_value = new_value.cast_to( result_type, scope ).resolve( scope )
+      return this
+
+    method resolve_adjust( scope:Scope, adjust_delta )->Cmd
+      this_method = scope.this_method
+      if (result_type)
+        result_type.organize(scope)
+      else
+        throw t.error( ''Cannot increment or decrement inline native code without specifying its type.  For example, native("...")->$'' (new_value.type) )
+      endIf
       return this
 
     method type->Type

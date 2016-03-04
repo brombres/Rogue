@@ -423,11 +423,23 @@ augment CmdLabel
 
 endAugment
 
-augment CmdNativeCode 
+augment CmdInlineNative
   METHODS
     method trace_used_code
+      if (new_value) new_value.trace_used_code
 
 endAugment
+
+augment CmdNativeCode
+  METHODS
+    method trace_used_code
+endAugment
+
+augment CmdNativeHeader
+  METHODS
+    method trace_used_code
+endAugment
+
 
 augment CmdSelect
   METHODS

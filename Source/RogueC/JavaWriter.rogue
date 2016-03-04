@@ -2281,7 +2281,7 @@ augment CmdLabel
       statements.write_java( writer, is_statement )
 endAugment
 
-augment CmdNativeCode
+augment CmdInlineNative
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       local needs_newline = code.contains('\n') or not result_type

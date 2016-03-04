@@ -152,7 +152,7 @@ class Scope
           which (inline_statements.count)
             case 0
               if (m.return_type) throw t.error( "Missing return value in macro method." )
-              return CmdNativeCode( t, "" ).resolve( this )
+              return CmdInlineNative( t, "" ).resolve( this )
             case 1
               return inline_statements.first
             case 2
@@ -196,7 +196,7 @@ class Scope
           which (inline_statements.count)
             case 0
               if (m.return_type) throw t.error( "Missing return value in macro method." )
-              return CmdNativeCode( t, "" ).resolve( this )
+              return CmdInlineNative( t, "" ).resolve( this )
             case 1
               return inline_statements.first
             case 2
