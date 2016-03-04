@@ -31,6 +31,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.8 - March 3, 2016
 - 'select' now uses curly braces instead of square brackets.
 - The final case in a `select` can be optionally prefixed with `others:`.  Example: https://gist.github.com/AbePralle/de8e46e025cffd47eea0
+- Added support for template overloads (same name, different numbers of specializers).
 - Bug fix in template backslash parsing.
 
 ###v1.0.7 - March 3, 2016

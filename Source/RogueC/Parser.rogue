@@ -311,7 +311,12 @@ class Parser
         parse_attributes( template.attributes )
 
         Program.template_list.add( template )
-        Program.template_lookup[template.name] = template
+
+        if (template.type_parameters == null)
+          Program.template_lookup[template.name] = template
+        else
+          Program.template_lookup[template.name + "____" + template.type_parameters.count] = template
+        endIf
 
         if (consume(TokenType.symbol_semicolon)) return
       endIf
@@ -1345,7 +1350,16 @@ class Parser
       local name = read_identifier( allow_at_sign )
 
       if (next_is(TokenType.symbol_open_specialize))
-        name += parse_specialization_string
+        local ss = parse_specialization_string
+        if (not name.contains("____")) name += "____" + ss.count
+        name += "<<"
+        local first = true
+        forEach (sx in ss)
+          if (first? == false) name +=','
+          first = false
+          name += sx
+        endForEach
+        name += ">>"
       elseIf (name == "Function")
         local parameter_types : Type[]
         local return_type : Type
@@ -2032,7 +2046,8 @@ class Parser
       return flag_args
 
 
-    method parse_specialization_string->String
+    method parse_specialization_string->String[]
+      local specializers = String[] #XXX
       string_buffer.clear
       read   # '<<'
       string_buffer.print( "<<" )
@@ -2041,13 +2056,16 @@ class Parser
       while (first or consume(TokenType.symbol_comma))
         if (first) first = false
         else       string_buffer.print(',')
+        string_buffer.clear #XXX
         parse_specializer( string_buffer )
+        specializers.add( string_buffer ) #XXX
       endWhile
 
       must_consume( TokenType.symbol_close_specialize )
       string_buffer.print( ">>" )
 
-      return string_buffer->String
+      #XXX return string_buffer->String
+      return specializers #XXX
 
     method parse_specializer( buffer=string_buffer:StringBuilder, tokens=null:Token[] )
       local nesting_level = 1
@@ -2475,4 +2493,3 @@ class FnArg( name:String, value:Cmd )
     method set_type( @type )->FnArg
       return this
 endClass
-
