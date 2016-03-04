@@ -2058,7 +2058,6 @@ class Parser
 
         local t = peek
         if (consume(TokenType.symbol_backslash))
-          if (tokens) tokens.add( t )
           buffer.print("\\")
 
           if (not reader.has_another) throw t.error( "Unexpected end of input." )
@@ -2395,16 +2394,20 @@ class Parser
           consume_eols
         endIf
 
-        must_consume( TokenType.symbol_open_bracket )
+        must_consume( TokenType.symbol_open_brace )
         local first = true
         while (first or consume(TokenType.symbol_comma))
           first = false
           consume_eols
           local select_case = CmdSelectCase( peek )
           cmd_select.cases.add( select_case )
+
+          local found_case_others = consume( TokenType.keyword_others )
+          if (found_case_others) must_consume( TokenType.symbol_colon )
           local expr = parse_expression
+
           consume_eols
-          if (next_is(TokenType.symbol_comma) or next_is(TokenType.symbol_colon))
+          if (not found_case_others and (next_is(TokenType.symbol_comma) or next_is(TokenType.symbol_colon)))
             select_case.conditions = Cmd[].add( expr )
             while (consume(TokenType.symbol_comma))
               consume_eols
@@ -2418,8 +2421,9 @@ class Parser
           else
             select_case.value = expr
           endIf
+          if (found_case_others) escapeWhile
         endWhile
-        must_consume( TokenType.symbol_close_bracket )
+        must_consume( TokenType.symbol_close_brace )
 
         return cmd_select
 
