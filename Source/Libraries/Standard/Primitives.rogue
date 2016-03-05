@@ -44,6 +44,9 @@ class Real64 [primitive]
       # Returns true for positive OR negative infinity
       return (this == this) and (this - this != 0)
 
+    method is_NaN->Logical
+      return (this != this)
+
     method is_not_a_number->Logical
       return (this != this)
 
@@ -91,6 +94,9 @@ class Real32 [primitive]
     method is_infinite->Logical
       # Returns true for positive OR negative infinity
       return (this == this) and (this - this != 0)
+
+    method is_NaN->Logical
+      return (this != this)
 
     method is_not_a_number->Logical
       return (this != this)

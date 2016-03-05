@@ -32,6 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - Fixed up inline native definitions and methods to work with op-assign and increment/decrement. 
 - Added convenience class `ListLookupTable<<$KeyType,$ValueType>>` where assigning a value to a key adds the value to a list of values instead of replacing a single value.
 - Reworked template overloading system.
+- Added Real64/32 `is_infinite()`, `is_finite`, `is_number()`, and `is_not_a_number()/is_NaN()` as well as literal values `infinity` and `NaN`.  StringBuilder now prints those values correctly.
+- Can now write `@routine_name` to obtain a Function object that calls the routine.
+- Added STL library containing STLPriorityQueue.
+
 
 ###v1.0.8 - March 3, 2016
 - 'select' now uses curly braces instead of square brackets.

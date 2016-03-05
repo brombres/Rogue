@@ -1564,14 +1564,37 @@ class CmdAccess : Cmd
           return CmdReadLocal(t,v).resolve(scope)
         endIf
 
-        local new_type = scope.find_type( name )
+        local new_type = scope.find_type( name.after_any('@') )
         if (new_type)
           # new TypeName(...)
           new_type.organize(scope)
 
           if (new_type.is_routine)
             # MyRoutine(args) -> MyRoutine.call(args)
-            return CmdAccess( t, CmdThisContext(t,new_type), "call", args ).resolve( scope )
+            if (name.begins_with('@'))
+              local m_call_list = new_type.routine_lookup_by_name[ "call" ]
+              if (m_call_list and m_call_list.count == 1)
+                local m_call = m_call_list.first
+                local parameters = FnParam[]( m_call.parameters.count )
+                local args = CmdArgs()
+                forEach (param in m_call.parameters)
+                  parameters.add( FnParam( param.name ) )
+                  parameters.last.type = param.type
+                  args.add( CmdAccess(t,param.name) )
+                endForEach
+                local statements = CmdStatementList(1)
+                if (m_call.return_type) statements.add( CmdReturn( t, CmdAccess( t, new_type.name, args ) ) )
+                else                    statements.add( CmdAccess( t, new_type.name, args ) )
+                return CmdCreateFunction( t, parameters, m_call.return_type, null, statements, false ).resolve( scope )
+              endIf
+            else
+              return CmdAccess( t, CmdThisContext(t,new_type), "call", args ).resolve( scope )
+            endIf
+          endIf
+
+          if (name.begins_with('@'))
+            # TODO: sometime turn this into class info
+            throw t.error( "Illegal '@'." )
           endIf
 
           if (args is null)

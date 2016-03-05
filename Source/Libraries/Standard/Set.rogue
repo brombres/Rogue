@@ -1,0 +1,101 @@
+#==================================================================
+# Set.rogue
+#
+# March 3, 2016 by Murphy McCauley
+#
+# A generic "Set" container Class
+# It's backed by a Table for simplicity, though this is somewhat
+# wasteful.  Removing the table dependency is a rainy day projects.
+#==================================================================
+
+class Set<<$T>>
+  PROPERTIES
+    _t : Table<<$T,Logical>>
+
+  METHODS
+    method init
+      _t = Table<<$T,Logical>>()
+
+    method init (other : Set<<$T>>)
+      _t = other._t.clone()
+
+    method init (other : $T[])
+      _t = Table<<$T,Logical>>()
+      forEach (v in other) add(v)
+
+    method clear
+      _t.clear()
+
+    method contains (v : $T) -> Logical
+      return _t.contains(v)
+
+    method at (index : Int32) -> $T
+      # Just so that it can be iterated
+      return _t.keys[index]
+
+    method add (v : $T) -> this
+      _t[v] = true
+      return this
+
+    method union_update (r : Set<<$T>>) -> this
+      forEach (v in r) add(v)
+      return this
+
+    method difference_update (r : Set<<$T>>) -> this
+      forEach (v in r) discard(v)
+      return this
+
+    method intersection_update (r : Set<<$T>>) -> this
+      local not_there = this.difference(r)
+      local not_here = r.difference(this)
+      local missing = not_here.union(not_there)
+      return discard_all(missing)
+
+    method union (r : Set<<$T>>) -> Set<<$T>>
+      return clone().union_update(r)
+
+    method difference (r : Set<<$T>>) -> Set<<$T>>
+      return clone().difference_update(r)
+
+    method intersection (r : Set<<$T>>) -> Set<<$T>>
+      return clone().intersection_update(r)
+
+    method discard (v : $T)
+      if (contains(v)) remove(v)
+
+    method discard_all (v : Set<<$T>>) -> this
+      forEach (value in v) discard(value)
+      return this
+
+    method remove (v : $T)
+      _t.remove(v)
+
+    method remove_all (v : Set<<$T>>) -> this
+      forEach (value in v) remove(value)
+      return this
+
+    method clone -> Set<<$T>>
+      return Set<<$T>>( this )
+
+    method count -> Int32
+      return _t.count
+
+    method as_array -> $T[]
+      return _t.keys
+
+    method to -> String
+      return print_to( StringBuilder() )->String
+
+    method print_to( buffer:StringBuilder ) -> StringBuilder
+      buffer.print( '{' )
+      local i = 0
+      while (i < _t.keys.count)
+        if (i > 0) buffer.print( ',' )
+        local key = _t.keys[i]
+        buffer.print( key )
+        ++i
+      endWhile
+      buffer.print( '}' )
+      return buffer
+endClass
+
