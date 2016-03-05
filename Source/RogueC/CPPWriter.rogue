@@ -1859,7 +1859,16 @@ endAugment
 augment CmdLiteralReal64
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( value )
+      if (value == value)
+        if (value - value == 0)
+          writer.print( value )
+        else
+          if (value > 0) writer.print( "(1.0/0.0)" )   #  infinity
+          else           writer.print( "(-1.0/0.0)" )  # -infinity
+        endIf
+      else
+        writer.print( "(0.0/0.0)" )  # NaN
+      endIf
 endAugment
 
 

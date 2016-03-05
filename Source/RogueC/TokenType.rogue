@@ -78,10 +78,12 @@ class TokenType
     keyword_global                : TokenType
     keyword_if                    : TokenType
     keyword_in                    : TokenType
+    keyword_infinity              : TokenType
     keyword_is                    : TokenType
     keyword_isNot                 : TokenType
     keyword_local                 : TokenType
     keyword_loop                  : TokenType
+    keyword_NaN                   : TokenType
     keyword_native                : TokenType
     keyword_necessary             : TokenType
     keyword_nextIteration         : TokenType

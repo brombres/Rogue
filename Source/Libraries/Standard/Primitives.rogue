@@ -16,12 +16,6 @@ class Real64 [primitive]
       if (this > high) return high
       return this
 
-    method digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).count
-
-    method hash_code->Int32
-      return Int64(this)->Int32
-
     method decimal_digit_count->Int32
       PrimitiveWorkBuffer.clear.print( this )
       local dot = PrimitiveWorkBuffer.locate( '.' )
@@ -36,6 +30,25 @@ class Real64 [primitive]
       if (count == start + 1 and PrimitiveWorkBuffer[start] == '0') return 0
 
       return (count - start)
+
+    method digit_count->Int32
+      return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method hash_code->Int32
+      return Int64(this)->Int32
+
+    method is_finite->Logical
+      return (this == this) and (this - this == 0)
+
+    method is_infinite->Logical
+      # Returns true for positive OR negative infinity
+      return (this == this) and (this - this != 0)
+
+    method is_not_a_number->Logical
+      return (this != this)
+
+    method is_number->Logical
+      return (this == this) and (this - this == 0)
 
     method to->Object
       return Boxed<<Real64>>(this)
@@ -71,6 +84,19 @@ class Real32 [primitive]
 
     method decimal_digit_count->Int32
       return this->Real64.decimal_digit_count
+
+    method is_finite->Logical
+      return (this == this) and (this - this == 0)
+
+    method is_infinite->Logical
+      # Returns true for positive OR negative infinity
+      return (this == this) and (this - this != 0)
+
+    method is_not_a_number->Logical
+      return (this != this)
+
+    method is_number->Logical
+      return (this == this) and (this - this == 0)
 
     method to->Object
       return Boxed<<Real32>>(this)

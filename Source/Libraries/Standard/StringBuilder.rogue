@@ -119,14 +119,21 @@ class StringBuilder [requisite]
       return print( "null" )
 
     method print( value:Real64 )->StringBuilder
-      if (value < 0)
-        print( '-' )
-        value = -value
-      endIf
-
       if (value == 0)
         print( "0.0" )
         return this
+      elseIf (value.is_infinite)
+        if (value < 0) print( "-infinity" )
+        else           print( "infinity" )
+        return this
+      elseIf (value.is_not_a_number)
+        print( "NaN" )
+        return this
+      endIf
+
+      if (value < 0)
+        print( '-' )
+        value = -value
       endIf
 
       # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
@@ -161,6 +168,15 @@ class StringBuilder [requisite]
       return this
 
     method print( value:Real64, decimal_places:Int32 )->this
+      if (value.is_infinite)
+        if (value < 0) print( "-infinity" )
+        else           print( "infinity" )
+        return this
+      elseIf (value.is_not_a_number)
+        print( "NaN" )
+        return this
+      endIf
+
       if (value < 0 )
         print( '-' )
         value = -value
