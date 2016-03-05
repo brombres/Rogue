@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.9
-- March 4, 2016
+- v1.0.10
+- March 5, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -27,6 +27,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.10 - March 5, 2016
+- Added call tracing when the `--debug` option is given.
+- Created StackTrace() class and added it to base Exception class.  If `--debug` is enabled then you can `ex.stack_trace.print` when catching an exception.  Seg faults (from referencing null) do not throw exceptions but the stack trace will still print out if `--debug` is enabled.
+- Fixed bug when DEFINITIONS have more than one token.
+- Tweaked default Reader `seek()` and `skip()` methods.
 
 ###v1.0.9 - March 4, 2016
 - Fixed up inline native definitions and methods to work with op-assign and increment/decrement. 

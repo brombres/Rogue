@@ -1,6 +1,7 @@
 class Parser
   PROPERTIES
     reader      : TokenReader
+    filepath    : String
     this_type   : Type
     this_method : Method
 
@@ -17,10 +18,10 @@ class Parser
     module_id_map   : Table<<String,String>>
 
   METHODS
-    method init( filepath:String )
+    method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
 
-    method init( t:Token, filepath:String, data:String )
+    method init( t:Token, filepath, data:String )
       init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data)), &skip_reprocess )
 
     method init( tokens:Token[], &skip_reprocess )

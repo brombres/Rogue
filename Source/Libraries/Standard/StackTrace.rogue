@@ -1,0 +1,38 @@
+class StackTrace [requisite]
+  PROPERTIES
+    entries      : String[]
+    count        : Int32
+    is_formatted : Logical
+
+  METHODS
+    method init( omit_count=0:Int32 ) [requisite]
+      count = Math.max( native( "Rogue_call_stack.count" )->Int32 - (omit_count+1), 0 )
+
+      entries = String[]( count )
+      forEach (i in count-1 downTo 0) 
+        entries.add( native("RogueString_create_from_c_string( Rogue_call_stack.locations[$i] )")->String )
+      endForEach
+
+    method format
+      if (is_formatted) return
+      is_formatted = true
+      local max_sp = 0
+      forEach (entry in entries)
+        local sp = entry.locate( ' ' )
+        if (sp.exists) max_sp = Math.max( max_sp, sp.value )
+      endForEach
+
+      ++max_sp
+      forEach (entry at i in entries)
+        if (entry.contains(' '))
+          entries[i] = entry.before_first(' ').left_justified(max_sp) + entry.from_first(' ')
+        endIf
+      endForEach
+
+    method print [requisite]
+      format
+      forEach (entry in entries)
+        println entry
+      endForEach
+endClass
+

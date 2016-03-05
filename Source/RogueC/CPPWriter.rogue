@@ -182,7 +182,7 @@ augment Program
       writer.println
 
       # Routine prototypes
-      forEach (type in type_list) type.print_routine_prototypes( writer )
+      forEach (type in type_list) type.print_global_method_prototypes( writer )
       writer.println
 
       # Method prototypes
@@ -596,7 +596,7 @@ augment Program
       writer.print( "RogueString* Rogue_literal_strings[" ).print( Program.literal_string_list.count ).println( "];" );
       writer.println
 
-      forEach (type in type_list) type.print_routine_definitions( writer )
+      forEach (type in type_list) type.print_global_method_definitions( writer )
       writer.println
 
       forEach (type in type_list) type.print_method_definitions( writer )
@@ -650,7 +650,18 @@ augment Program
                       |Rogue_error_handler = &uncaught_error_handler;
                       |if (ROGUE_SETJMP(Rogue_error_handler->info))
                       |{
-                      |  printf( "Uncaught error.\n" );
+                      |  if (Rogue_error_object && Rogue_error_object->type)
+                      |  {
+                      |    printf( "Uncaught " );
+                      |    RogueType_print_name( Rogue_error_object->type );
+                      |    printf( ".\n\n" );
+                      |
+                      |    RogueStackTrace__print( ((RogueClassException*)Rogue_error_object)->stack_trace );
+                      |  }
+                      |  else
+                      |  {
+                      |    printf( "Uncaught error.\n" );
+                      |  }
                       |  return;
                       |}
 
@@ -779,6 +790,7 @@ class CPPWriter
     buffer   = StringBuilder()
     indent   = 0
     needs_indent = true
+    line_number = 1
 
     temp_buffer = StringBuilder()
 
@@ -812,6 +824,7 @@ class CPPWriter
       return this
 
     method print( value:Character )->CPPWriter
+      # Do we need to check for newlines here?
       print_indent
       buffer.print( value )
       return this
@@ -820,7 +833,9 @@ class CPPWriter
       local needs_newline = false
       if (value.contains('\n'))
         forEach (line in LineReader(value))
-          if (needs_newline) println
+          if (needs_newline)
+            println
+          endIf
           print_indent
           buffer.print( line )
           needs_newline = true
@@ -844,30 +859,35 @@ class CPPWriter
 
     method println->CPPWriter
       buffer.print( '\n' )
+      ++line_number
       needs_indent = true
       return this
 
     method println( value:Int64 )->CPPWriter
       print( value )
       buffer.print( '\n' )
+      ++line_number
       needs_indent = true
       return this
 
     method println( value:Int32 )->CPPWriter
       print( value )
       buffer.print( '\n' )
+      ++line_number
       needs_indent = true
       return this
 
     method println( value:Real64 )->CPPWriter
       print( value )
       buffer.print( '\n' )
+      ++line_number
       needs_indent = true
       return this
 
     method println( value:String )->CPPWriter
       print( value )
       buffer.print( '\n' )
+      ++line_number
       needs_indent = true
       return this
 
@@ -1003,7 +1023,9 @@ class CPPWriter
           marker = line.locate( '$' )
         endWhile
 
-        if (line.count) println line
+        if (line.count)
+          println line
+        endIf
 
         indent = original_indent
       endForEach
@@ -1082,6 +1104,26 @@ class CPPWriter
         others
           throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
       endWhich
+
+  method mark_statement_start( statement_filepath:String, start_line:Int32, end_line:Int32 )
+    #@trace "STATEMENT ", this.filepath, this.line_number, statement_filepath, start_line, end_line
+
+  method mark_statement_end
+    noAction
+
+  method mark_method_start( t:Type, m:Method )
+    if (m.omit_output) return
+    #@trace "METHOD ", this.filepath, this.line_number, t.name, m.name
+
+  method mark_method_end
+    noAction
+
+  method mark_routine_start ( m:Method )
+    if (m.omit_output) return
+    #@trace "ROUTINE ", this.filepath, this.line_number, m.name
+
+  method mark_routine_end
+    noAction
 endClass
 
 
@@ -1312,14 +1354,18 @@ augment Type
       writer.indent -= 2
       writer.println( "};" )
 
-    method print_routine_prototypes( writer:CPPWriter )
+    method print_global_method_prototypes( writer:CPPWriter )
       forEach (m in global_method_list)
         if (m.type_context is this) m.print_prototype( writer )
       endForEach
 
-    method print_routine_definitions( writer:CPPWriter )
+    method print_global_method_definitions( writer:CPPWriter )
       forEach (m in global_method_list)
-        if (m.type_context is this) m.print_definition( writer )
+        if (m.type_context is this)
+          writer.mark_routine_start( m )
+          m.print_definition( writer )
+          writer.mark_routine_end
+        endIf
       endForEach
 
     method print_method_prototypes( writer:CPPWriter )
@@ -1395,7 +1441,11 @@ augment Type
 
     method print_method_definitions( writer:CPPWriter )
       forEach (m in method_list)
-        if (m.type_context is this) m.print_definition( writer )
+        if (m.type_context is this)
+          writer.mark_method_start(this, m)
+          m.print_definition( writer )
+          writer.mark_method_end
+        endIf
       endForEach
 
     method print_type_configuration( writer:CPPWriter )
@@ -1510,6 +1560,12 @@ augment Method
         writer.indent -= 2
         writer.println "}"
       else
+        if (RogueC.debug_mode)
+          writer.print( ''RogueCallTrace __trace( "'' )
+          writer.print( "[" ).print( type_context.name ).print( "." ).print( signature ).print( " " )
+          writer.print( File.filename(t.filepath) ).print( ":" ).print( t.line ).print( "]" )
+          writer.println( ''" );'' )
+        endIf
         statements.write_cpp( writer )
       endIf
 
@@ -1562,10 +1618,12 @@ endAugment
 augment CmdStatementList
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (count?) writer.mark_statement_start(this[0].t.filepath, this[0].t.line, this[count-1].t.line)
       forEach (statement in this)
         statement.write_cpp( writer, true )
         if (statement.requires_semicolon) writer.println ";"
       endForEach
+      if (count?) writer.mark_statement_end
 endAugment
 
 augment CmdArgs
@@ -2806,4 +2864,3 @@ augment CmdSelect
 
       writer.print ")"
 endAugment
-

@@ -37,20 +37,6 @@ class TokenReader
       ++position
       return tokens[ position - 1 ]
 
-      #{
-    method source_string( i1:Int32, i2:Int32 )->String
-      local buffer = StringBuilder()
-      local i = i1
-      while (i <= i2)
-        local lhs_is_letter = (buffer.count and buffer.last.is_letter)
-        local token_as_string = tokens[i].to_source_string
-        local rhs_is_letter = token_as_string.count and token_as_string[0].is_letter
-        if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
-        buffer.print( tokens[i].to_source_string )
-        ++i
-      endWhile
-      return buffer.to_String
-      }#
 endClass
 
 
@@ -77,7 +63,7 @@ class PreprocessorTokenReader
         if (entry.value)
           local def_tokens = entry.value
           entry.value = null   # temporarily null to prevent infinite recursion
-          forEach (def_t in def_tokens)
+          forEach (def_t in def_tokens step -1)
             if (t.type is TokenType.identifier) expand_definition( def_t )
             else                                queue.add( t )
           endForEach

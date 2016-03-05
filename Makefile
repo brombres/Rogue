@@ -70,7 +70,7 @@ if:
 	@echo
 
 test:
-	roguec Test.rogue --execute
+	roguec Test.rogue --execute --debug
 
 jtest:
 	mkdir -p JavaTest

@@ -212,7 +212,7 @@ struct RogueString : RogueObject
 };
 
 RogueString* RogueString_create_with_count( int count );
-RogueString* RogueString_create_from_c_string( const char* c_string, int count );
+RogueString* RogueString_create_from_c_string( const char* c_string, int count=-1 );
 RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
 void         RogueString_decode_utf8( const char* utf8_data, RogueInt32 utf8_count, RogueCharacter* dest_buffer );
 RogueInt32 RogueString_decoded_utf8_count( const char* utf8_data, RogueInt32 utf8_count );
@@ -353,4 +353,61 @@ void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
+
+//-----------------------------------------------------------------------------
+//  Stack Trace
+//-----------------------------------------------------------------------------
+struct RogueCallStack
+{
+  const char** locations;
+  int          count;
+  int          capacity;
+
+  RogueCallStack() : count(0)
+  {  
+    capacity = 256;
+    locations = new const char*[ capacity ];
+  }
+
+  ~RogueCallStack()
+  {
+    delete locations;
+  }
+
+  void push( const char* location )
+  {
+    //printf( "+%s\n", location );
+    if (count == capacity)
+    {
+      capacity *= 2;
+      const char** new_locations = new const char*[ capacity ];
+      memcpy( new_locations, locations, count * sizeof(const char*) );
+      delete locations;
+      locations = new_locations;
+    }
+    locations[ count++ ] = location;
+  }
+
+  void pop()
+  {
+    --count;
+    //printf( "-%s\n", locations[count] );
+  }
+};
+
+extern RogueCallStack Rogue_call_stack;
+
+
+struct RogueCallTrace
+{
+   RogueCallTrace( const char* location )
+   {
+     Rogue_call_stack.push( location );
+   }
+
+   ~RogueCallTrace()
+   {
+     Rogue_call_stack.pop();
+   }
+};
 

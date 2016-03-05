@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.0.9"
-$define RELEASE_DATE    "March 4, 2016"
+$define RELEASE_VERSION "1.0.10"
+$define RELEASE_DATE    "March 5, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
@@ -44,6 +44,8 @@ class RogueC [singleton]
 
     package_name      : String
 
+    debug_mode        : Logical
+
     parsers = Parser[]
     # One parser is created for every file and all parsers are prepped with tokens
     # before any parser parses its elements.  This allows all tokens to be filtered
@@ -78,6 +80,9 @@ class RogueC [singleton]
                    |OPTIONS
                    |  --main
                    |    Include a main() function in the output file.
+                   |
+                   |  --debug
+                   |    Enables exception stack traces.
                    |
                    |  --execute[="args"]
                    |    Use command line directives to compile and run the output of the
@@ -272,6 +277,9 @@ class RogueC [singleton]
             case "--execute"
               generate_main = true
               execute_args = value
+
+            case "--debug"
+              debug_mode = true
 
             case "--libraries"
               if (not value.count) throw RogueError( ''One or more paths expected after "--libraries=".'' )

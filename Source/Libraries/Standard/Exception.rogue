@@ -1,6 +1,7 @@
-class Exception
+class Exception [requisite]
   PROPERTIES
-    message : String
+    message     : String
+    stack_trace = StackTrace(1)
 
   METHODS
     method init( message )

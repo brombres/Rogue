@@ -66,6 +66,7 @@ RogueObject*       Rogue_error_object  = 0;
 int                Rogue_bytes_allocated_since_gc = 0;
 int                Rogue_argc;
 const char**       Rogue_argv;
+RogueCallStack     Rogue_call_stack;
 
 
 //-----------------------------------------------------------------------------
@@ -798,10 +799,33 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
 }
 
+void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
+{
+    printf( "Null reference error.\n\n" );
+
+    int i = Rogue_call_stack.count;
+    while (--i >= 0)
+    {
+      printf( "%s\n", Rogue_call_stack.locations[i] );
+    }
+
+    exit(0);
+}
+
 void Rogue_configure_types()
 {
   int i;
   int* type_info = Rogue_type_info_table - 1;
+
+  // Install seg fault handler
+  struct sigaction sa;
+
+  memset( &sa, 0, sizeof(sa) );
+  sigemptyset( &sa.sa_mask );
+  sa.sa_sigaction = Rogue_segfault_handler;
+  sa.sa_flags     = SA_SIGINFO;
+
+  sigaction( SIGSEGV, &sa, NULL );
 
   // Initialize allocators
   memset( Rogue_allocators, 0, sizeof(RogueAllocator)*Rogue_allocator_count );
