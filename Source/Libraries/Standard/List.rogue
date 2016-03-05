@@ -42,6 +42,15 @@ class List<<$DataType>> : GenericList
       if (not data) return 0
       return data.count
 
+    method choose( fn:Function($DataType)->Logical )->$DataType[]
+      # Returns a new list that contains only the chosen elements from
+      # this list.
+      local result = $DataType[]( count )
+      forEach (value in this)
+        if (fn(value)) result.add( value )
+      endForEach
+      return result
+
     method clear->$DataType[]
       count = 0
       return this

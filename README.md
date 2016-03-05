@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.10
+- v1.0.11
 - March 5, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,16 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.11 - March 5, 2016
+- Fixed bug in aspect call mechanism.
+- Added `List.choose(Function($DataType)->Logical)->$DataType[]` that returns a list subset.  Example:
+
+    println Int32[][3,4,5,6].choose( function(n)=(n%2==0) )
+
+- Added `StackTrace.to->String` in addition to the existing `StackTrace.print()`.
+
+
 
 ###v1.0.10 - March 5, 2016
 - Added call tracing when the `--debug` option is given.

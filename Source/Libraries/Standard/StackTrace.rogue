@@ -30,9 +30,17 @@ class StackTrace [requisite]
       endForEach
 
     method print [requisite]
+      print( Global.printwriter_output_buffer )
+      Global.flush
+
+    method print( buffer:StringBuilder )->StringBuilder
       format
       forEach (entry in entries)
-        println entry
+        buffer.println entry
       endForEach
+      return buffer
+
+    method to->String
+      return print( StringBuilder() )->String
 endClass
 

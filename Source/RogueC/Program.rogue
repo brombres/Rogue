@@ -416,4 +416,32 @@ class Program [requisite singleton]
 
       endWhile
 
+      # Each aspect method has a list of incorporating_classes that is used to generate
+      # the aspect dispatch methods.  To begin with the list only contains classes that
+      # directly incorporate the aspect.  Collect a list of used aspects and then
+      # make sure each method's incorporating_classes list includes all classes
+      # instanceOf that aspect that employ a given method.
+      local class_list = type_list.choose( function(type)=type.is_class and type.is_used )
+      local aspect_list = type_list.choose( function(type)=type.is_aspect and type.is_used )
+
+      # Clear each aspect method's list of incorporating classes before rebuilding
+      forEach (aspect in aspect_list)
+        forEach (aspect_m in aspect.method_list)
+          if (aspect_m.is_used) aspect_m.incorporating_classes.clear
+        endForEach
+      endForEach
+
+      forEach (aspect in aspect_list)
+        forEach (type in class_list)
+          if (type.instance_of(aspect))
+            forEach (aspect_m in aspect.method_list)
+              if (aspect_m.is_used)
+                local class_m = type.find_method( aspect_m.signature )
+                if (class_m and class_m.is_used) aspect_m.incorporating_classes.add( type )
+              endIf
+            endForEach
+          endIf
+        endForEach
+      endForEach
+
 endClass
