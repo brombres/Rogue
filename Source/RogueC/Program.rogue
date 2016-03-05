@@ -9,8 +9,8 @@ class Program [requisite singleton]
 
     unique_integer : Int32
 
-    template_list   = Template[]                 : Template[]
-    template_lookup = Table<<String,Template>>() : Table<<String,Template>>
+    template_list   = Template[]
+    template_lookup = Table<<String,Template>>()
 
     augment_lookup = Table<<String,Augment[]>>()
     requisite_list = RequisiteItem[]
@@ -72,6 +72,32 @@ class Program [requisite singleton]
         ids_by_module[ module_name ] = list
       endIf
       list.add( id_name )
+
+    method add_template( template:Template )
+      template_list.add( template )
+
+      contingent
+        local param_count = template.type_parameter_count
+        local existing_template = template_lookup[ template.name ]
+        sufficient (not existing_template)
+        necessary (param_count != existing_template.type_parameter_count)
+
+        if (not existing_template.alternates_by_param_count)
+          existing_template.alternates_by_param_count = Table<<Int32,Template>>()
+        endIf
+        necessary (not existing_template.alternates_by_param_count.contains(param_count))
+
+        existing_template.alternates_by_param_count[ param_count ] = template
+        escapeContingent
+
+      satisfied
+        template_lookup[ template.name ] = template
+
+      unsatisfied
+        throw template.t.error( "A class named $ already exists." (template.name) )
+
+      endContingent
+
 
     method configure
       type_null          = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )

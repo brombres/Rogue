@@ -266,8 +266,7 @@ class Parser
         template.tokens.add( TokenType.keyword_method.create_token(first_t) )
         template.tokens.add( TokenType.identifier.create_token(first_t,"call") )
 
-        Program.template_list.add( template )
-        Program.template_lookup[template.name] = template
+        Program.add_template( template )
 
       else
         # Need a little finageling to parse out the attributes while
@@ -310,14 +309,7 @@ class Parser
 
         parse_attributes( template.attributes )
 
-        Program.template_list.add( template )
-
-        # FIXME
-        #if (template.type_parameters == null)
-        Program.template_lookup[template.name] = template
-        #else
-        #Program.template_lookup[template.name + "____" + template.type_parameters.count] = template
-        #endIf
+        Program.add_template( template )
 
         if (consume(TokenType.symbol_semicolon)) return
       endIf
@@ -2069,28 +2061,20 @@ class Parser
 
       return string_buffer->String
 
-      #{
-    method parse_specialization_string->String[]
-      local specializers = String[] #XXX
-      string_buffer.clear
+    method parse_specializer_count->Int32
+      local num_specializers = 0
       read   # '<<'
-      string_buffer.print( "<<" )
 
       local first = true
       while (first or consume(TokenType.symbol_comma))
         if (first) first = false
-        else       string_buffer.print(',')
-        string_buffer.clear #XXX
-        parse_specializer( string_buffer )
-        specializers.add( string_buffer ) #XXX
+        parse_specializer( string_buffer.clear )
+        ++num_specializers
       endWhile
 
       must_consume( TokenType.symbol_close_specialize )
-      string_buffer.print( ">>" )
 
-      #XXX return string_buffer->String
-      return specializers #XXX
-      }#
+      return num_specializers
 
     method parse_specializer( buffer=string_buffer:StringBuilder, tokens=null:Token[] )
       local nesting_level = 1

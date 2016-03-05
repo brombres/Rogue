@@ -1,10 +1,11 @@
 class Template
   PROPERTIES
-    t                  : Token
-    name               : String
-    tokens=Token[]     : Token[]
-    attributes         = Attributes()
-    type_parameters    : TypeParameter[]
+    t                         : Token
+    name                      : String
+    tokens=Token[]            : Token[]
+    attributes                = Attributes()
+    type_parameters           : TypeParameter[]
+    alternates_by_param_count : Table<<Int32,Template>>
 
   METHODS
     method init( t, name, attribute_flags=0:Int32 )
@@ -20,6 +21,22 @@ class Template
       return (attributes.flags & Attribute.type_mask)
 
     method instantiate( type:Type, scope:Scope )
+      if (alternates_by_param_count)
+        local specializer_count = 0
+        if (type.name.contains('<'))
+          specializer_count = Parser(type.t,type.name,type.name.from_first('<')).parse_specializer_count()
+        endIf
+        if (type_parameter_count != specializer_count)
+          local alternate = alternates_by_param_count[ specializer_count ]
+          if (alternate)
+            alternate.instantiate( type, scope )
+            return
+          else
+            throw type.t.error( "No $ template accepting $ is defined." (name,"# parameter".pluralize(specializer_count)) )
+          endIf
+        endIf
+      endIf
+
       type.t = t
       # replace location of first reference to type with location of type definition
 
@@ -156,6 +173,10 @@ class Template
       endIf
 
       Parser(augmented_tokens).parse_type_def( type )
+
+    method type_parameter_count->Int32
+      if (type_parameters) return type_parameters.count
+      return 0
 
 endClass
 
