@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.11
+- v1.0.12
 - March 5, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.12 - March 5, 2016
+- Made several empty `Reader<<$DataType>>` methods abstract so they don't overwrite existing methods when incorporated in an extended class.
 
 ###v1.0.11 - March 5, 2016
 - Fixed bug in aspect call mechanism.
