@@ -4461,6 +4461,8 @@ void RogueTypeList__discard_from__Int32( RogueTypeList* THIS, RogueInt32 index_0
 RogueTypeList* RogueTypeList__insert__Type_Int32( RogueTypeList* THIS, RogueClassType* value_0, RogueInt32 before_index_1 );
 RogueOptionalInt32 RogueTypeList__locate__Type( RogueTypeList* THIS, RogueClassType* value_0 );
 RogueTypeList* RogueTypeList__reserve__Int32( RogueTypeList* THIS, RogueInt32 additional_count_0 );
+RogueClassType* RogueTypeList__remove__Type( RogueTypeList* THIS, RogueClassType* value_0 );
+RogueClassType* RogueTypeList__remove_at__Int32( RogueTypeList* THIS, RogueInt32 index_0 );
 RogueTypeList* RogueTypeList__swap__Int32_Int32( RogueTypeList* THIS, RogueInt32 i1_0, RogueInt32 i2_1 );
 RogueString* RogueType__to_String( RogueClassType* THIS );
 RogueString* RogueType__type_name( RogueClassType* THIS );

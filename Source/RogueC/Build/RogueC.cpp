@@ -19845,6 +19845,30 @@ RogueTypeList* RogueTypeList__reserve__Int32( RogueTypeList* THIS, RogueInt32 ad
   return (RogueTypeList*)(THIS);
 }
 
+RogueClassType* RogueTypeList__remove__Type( RogueTypeList* THIS, RogueClassType* value_0 )
+{
+  RogueOptionalInt32 index_1 = (((RogueTypeList__locate__Type( THIS, value_0 ))));
+  if (index_1.exists)
+  {
+    return (RogueClassType*)(((RogueTypeList__remove_at__Int32( THIS, index_1.value ))));
+  }
+  else
+  {
+    RogueClassType* zero_value_2 = 0;
+    return (RogueClassType*)(zero_value_2);
+  }
+}
+
+RogueClassType* RogueTypeList__remove_at__Int32( RogueTypeList* THIS, RogueInt32 index_0 )
+{
+  RogueClassType* result_1 = (((RogueClassType*)(THIS->data->objects[index_0])));
+  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),(index_0 + 1),-1);
+  RogueClassType* zero_value_2 = 0;
+  --THIS->count;
+  THIS->data->objects[THIS->count] = zero_value_2;
+  return (RogueClassType*)(result_1);
+}
+
 RogueTypeList* RogueTypeList__swap__Int32_Int32( RogueTypeList* THIS, RogueInt32 i1_0, RogueInt32 i2_1 )
 {
   RogueClassType* temp_2 = (((RogueClassType*)(THIS->data->objects[i1_0])));
@@ -20226,6 +20250,10 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
       THIS->base_class = ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object;
       RogueTypeList__insert__Type_Int32( THIS->base_types, THIS->base_class, 0 );
     }
+  }
+  if (!!(THIS->base_class))
+  {
+    RogueTypeList__insert__Type_Int32( THIS->base_types, ((RogueTypeList__remove__Type( THIS->base_types, THIS->base_class ))), 0 );
   }
   RogueTypeList__clear( THIS->flat_base_types );
   if (!!(THIS->base_class))
@@ -45627,7 +45655,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.12", 6 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.13", 6 ) ); 
   Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 5, 2016", 13 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 

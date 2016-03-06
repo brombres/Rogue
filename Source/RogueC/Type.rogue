@@ -290,6 +290,8 @@ class Type
         endIf
       endIf
 
+      if (base_class) base_types.insert( base_types.remove(base_class) )
+
       # Collect flat list base types while removing duplicates
       flat_base_types.clear
       if (base_class) base_class.collect_base_types( flat_base_types )
