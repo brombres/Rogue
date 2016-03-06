@@ -302,8 +302,6 @@ class CmdLocalDeclaration : CmdStatement
       scope.pop_local
 
     method resolve( scope:Scope )->Cmd
-      scope.push_local( local_info )
-
       if (local_info.initial_value)
         local_info.initial_value = local_info.initial_value.resolve( scope )
         local initial_value_type = local_info.initial_value.require_type
@@ -319,6 +317,7 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
       local_info.type.organize(scope)
+      scope.push_local( local_info )
 
       return this
 

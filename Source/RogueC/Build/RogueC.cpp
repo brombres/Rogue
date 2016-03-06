@@ -38893,7 +38893,6 @@ void RogueCmdLocalDeclaration__exit_scope__Scope( RogueClassCmdLocalDeclaration*
 
 RogueClassCmd* RogueCmdLocalDeclaration__resolve__Scope( RogueClassCmdLocalDeclaration* THIS, RogueClassScope* scope_0 )
 {
-  RogueScope__push_local__Local_Logical( scope_0, THIS->local_info, true );
   if (!!(THIS->local_info->initial_value))
   {
     THIS->local_info->initial_value = (call_ROGUEM56( 25, (RogueClassCmd*)(THIS->local_info->initial_value), scope_0 ));
@@ -38912,6 +38911,7 @@ RogueClassCmd* RogueCmdLocalDeclaration__resolve__Scope( RogueClassCmdLocalDecla
     THIS->local_info->initial_value = (call_ROGUEM56( 25, (RogueClassCmd*)((call_ROGUEM57( 5, (RogueClassCmd*)(THIS->local_info->initial_value), THIS->local_info->_type, scope_0 ))), scope_0 ));
   }
   RogueType__organize__Scope( THIS->local_info->_type, scope_0 );
+  RogueScope__push_local__Local_Logical( scope_0, THIS->local_info, true );
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -45655,8 +45655,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.13", 6 ) ); 
-  Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 5, 2016", 13 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.14.0", 8 ) ); 
+  Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March TBD, 2016", 15 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
   Rogue_literal_strings[27] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ",Mac,Windows,iOS,Android,...]\n", 30 ) ); 
@@ -46563,7 +46563,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[928] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Cannot increment or decrement inline native code without specifying its type.  For example, native(\"...\")->", 107 ) ); 
   Rogue_literal_strings[929] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Local variable '", 16 ) ); 
   Rogue_literal_strings[930] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "' cannot be called like a method.", 33 ) ); 
-  Rogue_literal_strings[931] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[CmdAccess.expand_modify_and_assign() Cmd.rogue:1856]", 53 ) ); 
+  Rogue_literal_strings[931] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[CmdAccess.expand_modify_and_assign() Cmd.rogue:1855]", 53 ) ); 
   Rogue_literal_strings[932] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[INTERNAL]", 10 ) ); 
   Rogue_literal_strings[933] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Cannot modify-and-assign inline native code without specifying its type.  For example, native(\"...\")->", 102 ) ); 
   Rogue_literal_strings[934] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "::type() is not defined (access name '", 38 ) ); 

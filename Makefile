@@ -7,6 +7,15 @@ all: roguec
 
 remake: touch_roguec roguec
 
+debug: libraries
+	@echo -------------------------------------------------------------------------------
+	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --debug..."
+	@echo -------------------------------------------------------------------------------
+	cd Source/RogueC && mkdir -p Build
+	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --debug
+	mkdir -p Programs
+	$(CXX) $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+
 roguec: bootstrap_roguec /usr/local/bin /usr/local/bin/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/roguec
 
 touch_roguec:

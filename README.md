@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.13
-- March 5, 2016
+- v1.0.14.0
+- March TBD, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.14 - March TBD, 2016
+- Fixed `local x = x` to throw a syntax error instead of crashing the compiler.
 
 ###v1.0.13 - March 5, 2016
 - Fixed bug where listing a base class after an aspect would corrupt the dynamic dispatch (vtable) ordering.
