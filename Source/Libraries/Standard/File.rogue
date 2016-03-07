@@ -486,7 +486,7 @@ class FileReader : Reader<<Character>>
       return count - position
 
     method reset->this
-      if (not fp) return
+      if (not fp) return this
       count = native( "(RogueInt32)ftell($this->fp)" )->Int32
       return seek( 0 )
 

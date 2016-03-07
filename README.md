@@ -29,8 +29,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.14 - March TBD, 2016
-- Fixed `local x = x` to throw a syntax error instead of crashing the compiler.
 - Renamed `IntX.as_realx()` and `RealX.as_intx()` to be `IntX.real_bits()` and `RealX.integer_bits()`.
+- Fixed GC code generation for compound properties.
+- Fixed `local x = x` to throw a syntax error instead of crashing the compiler.
 - Fixed compiler crash when parsing a super-minimal class definition such as "class Name;".
 - Compiler now ensures that 'as' is only used with references.
 
