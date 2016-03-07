@@ -25605,19 +25605,24 @@ void RogueParser__parse_template_tokens__Template_TokenType( RogueClassParser* T
     }
     RogueParser__parse_attributes__Attributes( THIS, template_0->attributes );
     RogueProgram__add_template__Template( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), template_0 );
+    RogueClassToken* semi_t_10 = (((RogueParser__peek( THIS ))));
     if (((RogueParser__consume__TokenType( THIS, RogueTokenType_symbol_semicolon ))))
     {
+      if (template_0->tokens->count == 0)
+      {
+        RogueTokenList__add__Token( template_0->tokens, ((RogueTokenType__create_token__Token( RogueTokenType_eol, semi_t_10 ))) );
+      }
       return;
     }
   }
   while (((RogueTokenReader__has_another( THIS->reader ))))
   {
-    RogueClassToken* t_10 = (((RogueTokenReader__read( THIS->reader ))));
-    if (((void*)t_10->_type) == ((void*)end_type_1))
+    RogueClassToken* t_11 = (((RogueTokenReader__read( THIS->reader ))));
+    if (((void*)t_11->_type) == ((void*)end_type_1))
     {
       return;
     }
-    RogueTokenList__add__Token( template_0->tokens, t_10 );
+    RogueTokenList__add__Token( template_0->tokens, t_11 );
   }
   RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ((RogueStringBuilder__to_String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__init( ((RogueStringBuilder*)ROGUE_CREATE_OBJECT(StringBuilder)) ))), Rogue_literal_strings[308] ))), ((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ((RogueObject*)(end_type_1)) ))) ))) ))) );
   ROGUE_THROW(((RogueTokenReader__error__String( THIS->reader, ((RogueStringBuilder__to_String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__print__String( ((RogueStringBuilder__init( ((RogueStringBuilder*)ROGUE_CREATE_OBJECT(StringBuilder)) ))), ((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ((RogueTokenType__quoted_name( end_type_1 ))) ))) ))), Rogue_literal_strings[309] ))) ))) ))));
@@ -45914,7 +45919,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[279] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[280] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[281] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[282] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Parser.parse_for_each() Parser.rogue:1673]", 43 ) ); 
+  Rogue_literal_strings[282] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Parser.parse_for_each() Parser.rogue:1677]", 43 ) ); 
   Rogue_literal_strings[283] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[284] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Omit the 'return' in a macro method with a return type.", 55 ) ); 
   Rogue_literal_strings[285] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "() ", 3 ) ); 

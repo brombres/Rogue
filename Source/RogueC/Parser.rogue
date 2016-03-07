@@ -312,7 +312,11 @@ class Parser
 
         Program.add_template( template )
 
-        if (consume(TokenType.symbol_semicolon)) return
+        local semi_t = peek
+        if (consume(TokenType.symbol_semicolon))
+          if (template.tokens.count == 0) template.tokens.add( TokenType.eol.create_token(semi_t) )
+          return
+        endIf
       endIf
 
       while (reader.has_another)
