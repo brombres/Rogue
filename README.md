@@ -30,6 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.14 - March TBD, 2016
 - Fixed `local x = x` to throw a syntax error instead of crashing the compiler.
+- Renamed `IntX.as_realx()` and `RealX.as_intx()` to be `IntX.real_bits()` and `RealX.integer_bits()`.
 
 ###v1.0.13 - March 5, 2016
 - Fixed bug where listing a base class after an aspect would corrupt the dynamic dispatch (vtable) ordering.

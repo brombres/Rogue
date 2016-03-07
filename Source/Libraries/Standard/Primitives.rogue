@@ -8,7 +8,7 @@ class Real64 [primitive]
       $endIf
 
   METHODS
-    method as_int64->Int64
+    method integer_bits->Int64
       return Int64( this )
 
     method clamped( low:Real64, high:Real64 )->Real64
@@ -74,7 +74,7 @@ class Real32 [primitive]
       $endIf
 
   METHODS
-    method as_int32->Int32
+    method integer_bits->Int32
       return Int32( this )
 
     method clamped( low:Real32, high:Real32 )->Real32
@@ -122,7 +122,7 @@ class Int64 [primitive]
       $endIf
 
   METHODS
-    method as_real64->Real64
+    method real_bits->Real64
       return Real64( this )
 
     method clamped( low:Int64, high:Int64 )->Int64
@@ -178,7 +178,7 @@ class Int32 [primitive]
       $endIf
 
   METHODS
-    method as_real32->Real32
+    method real_bits->Real32
       return Real32( this )
 
     method clamped( low:Int32, high:Int32 )->Int32

@@ -29,10 +29,10 @@ class DataReader : Reader<<Byte>>
       return source.read
 
     method read_real64->Real64
-      return read_int64.as_real64
+      return read_int64.real_bits
 
     method read_real32->Real32
-      return read_int32.as_real32
+      return read_int32.real_bits
 
     method read_int64->Int64
       local result = read_int32 : Int64
@@ -151,10 +151,10 @@ class DataWriter : Writer<<Byte>>
       return this
 
     method write_real64( value:Real64 )->this
-      return write_int64( value.as_int64 )
+      return write_int64( value.integer_bits )
 
     method write_real32( value:Real32 )->this
-      return write_int32( value.as_int32 )
+      return write_int32( value.integer_bits )
 
     method write_int64( value:Int64 )->this
       write_int32( value:>>>:32 )
