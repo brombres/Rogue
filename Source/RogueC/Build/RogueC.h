@@ -130,10 +130,43 @@ struct RogueObject;
 //-----------------------------------------------------------------------------
 //  Callback Definitions
 //-----------------------------------------------------------------------------
+typedef void         (*RogueCallback)();
 typedef void         (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitFn)( void* obj );
 typedef void         (*RogueCleanUpFn)( void* obj );
 
+//-----------------------------------------------------------------------------
+//  RogueCallbackInfo
+//-----------------------------------------------------------------------------
+struct RogueCallbackInfo
+{
+  RogueCallback      callback;
+  RogueCallbackInfo* next_callback_info;
+
+  RogueCallbackInfo() : callback(0), next_callback_info(0) {}
+  RogueCallbackInfo( RogueCallback callback ) : callback(callback), next_callback_info(0) {}
+
+  ~RogueCallbackInfo() { if (next_callback_info) delete next_callback_info; }
+
+  void add( RogueCallback callback )
+  {
+    if (this->callback)
+    {
+      if (next_callback_info) next_callback_info->add( callback );
+      else                    next_callback_info = new RogueCallbackInfo( callback );
+    }
+    else
+    {
+      this->callback = callback;
+    }
+  }
+
+  void call()
+  { 
+    if (callback) callback();
+    if (next_callback_info) next_callback_info->call();
+  }
+};
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -348,6 +381,8 @@ extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
 extern int                Rogue_bytes_allocated_since_gc;
+extern RogueCallbackInfo  Rogue_on_begin_gc;
+extern RogueCallbackInfo  Rogue_on_end_gc;
 
 void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );

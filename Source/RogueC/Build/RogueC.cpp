@@ -70,6 +70,8 @@ int                Rogue_bytes_allocated_since_gc = 0;
 int                Rogue_argc;
 const char**       Rogue_argv;
 RogueCallStack     Rogue_call_stack;
+RogueCallbackInfo  Rogue_on_begin_gc;
+RogueCallbackInfo  Rogue_on_end_gc;
 
 
 //-----------------------------------------------------------------------------
@@ -868,6 +870,8 @@ bool Rogue_collect_garbage( bool forced )
 
   if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_BYTES) return false;
 
+  Rogue_on_begin_gc.call();
+
 //printf( "GC %d\n", Rogue_bytes_allocated_since_gc );
   Rogue_bytes_allocated_since_gc = 0;
 
@@ -877,6 +881,8 @@ bool Rogue_collect_garbage( bool forced )
   {
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
   }
+
+  Rogue_on_end_gc.call();
 
   return true;
 }
@@ -45442,7 +45448,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.15.0", 8 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.15.1", 8 ) ); 
   Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March TBD, 2016", 15 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 

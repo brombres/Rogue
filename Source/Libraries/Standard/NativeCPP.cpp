@@ -67,6 +67,8 @@ int                Rogue_bytes_allocated_since_gc = 0;
 int                Rogue_argc;
 const char**       Rogue_argv;
 RogueCallStack     Rogue_call_stack;
+RogueCallbackInfo  Rogue_on_begin_gc;
+RogueCallbackInfo  Rogue_on_end_gc;
 
 
 //-----------------------------------------------------------------------------
@@ -865,6 +867,8 @@ bool Rogue_collect_garbage( bool forced )
 
   if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_BYTES) return false;
 
+  Rogue_on_begin_gc.call();
+
 //printf( "GC %d\n", Rogue_bytes_allocated_since_gc );
   Rogue_bytes_allocated_since_gc = 0;
 
@@ -874,6 +878,8 @@ bool Rogue_collect_garbage( bool forced )
   {
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
   }
+
+  Rogue_on_end_gc.call();
 
   return true;
 }

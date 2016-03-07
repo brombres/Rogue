@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.15.0
+- v1.0.15.1
 - March TBD, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.15 - March TBD, 2016
+- Added RogueCallback infrastructure along with `Rogue_on_begin_gc` and `Rogue_on_end_gc`.
 - Added Math.abs().
 
 ###v1.0.14 - March 7, 2016
