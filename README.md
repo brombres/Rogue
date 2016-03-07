@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.14
-- March 7, 2016
+- v1.0.15.0
+- March TBD, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.15 - March TBD, 2016
+- Added Math.abs().
 
 ###v1.0.14 - March 7, 2016
 - Renamed `IntX.as_realx()` and `RealX.as_intx()` to be `IntX.real_bits()` and `RealX.integer_bits()`.

@@ -45,6 +45,19 @@ class Math
 
     $endIf
 
+    method abs( n:Real64 )->Real64
+      if (n >= 0) return  n
+      else        return -n
+
+    method abs( n:Int64 )->Int64
+      if (n >= 0) return  n
+      else        return -n
+
+    method abs( n:Int32 )->Int32
+      if (n >= 0) return  n
+      else        return -n
+
+
     method max( a:Int32, b:Int32 )->Int32
       if (a >= b) return a
       else        return b
