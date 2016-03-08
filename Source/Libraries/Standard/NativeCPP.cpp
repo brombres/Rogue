@@ -724,6 +724,16 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     cur = cur->next_object;
   }
 
+  cur = THIS->objects_requiring_cleanup;
+  while (cur)
+  {
+    if (cur->object_size >= 0 && cur->reference_count > 0)
+    {
+      cur->type->trace_fn( cur );
+    }
+    cur = cur->next_object;
+  }
+
   // For any unreferenced objects requiring clean-up, we'll:
   //   1.  Reference them and move them to a separate short-term list.
   //   2.  Finish the regular GC.

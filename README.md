@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.16
+- v1.0.17
 - March 7, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.17 - March 7, 2016
+- Objects requiring clean-up are no longer freed if they have non-zero reference counts.
 
 ###v1.0.16 - March 7, 2016
 - Removed trailing whitespace in all source files.
