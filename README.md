@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.18
+- v1.0.19
 - March 8, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.19 - March 8, 2016
+- Aspect types now correctly extend RogueObject in C++ code.
 
 ###v1.0.18 - March 8, 2016
 - `RogueObject_retain()` and `RogueObject_release()` now guard against `NULL`.

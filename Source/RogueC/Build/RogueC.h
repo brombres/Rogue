@@ -1009,11 +1009,8 @@ struct RogueClassStringReader : RogueObject
 
 };
 
-struct RogueClassCharacterReader
+struct RogueClassCharacterReader : RogueObject
 {
-  // PROPERTIES
-  RogueInt32 position;
-
 };
 
 struct RogueStringList : RogueObject
@@ -1032,11 +1029,8 @@ struct RogueClassGlobal : RogueObject
 
 };
 
-struct RogueClassPrintWriterAspect
+struct RogueClassPrintWriterAspect : RogueObject
 {
-  // PROPERTIES
-  RogueStringBuilder* printwriter_output_buffer;
-
 };
 
 struct RogueClassConsole : RogueObject
@@ -1046,11 +1040,8 @@ struct RogueClassConsole : RogueObject
 
 };
 
-struct RogueClassCharacterWriter
+struct RogueClassCharacterWriter : RogueObject
 {
-  // PROPERTIES
-  RogueInt32 position;
-
 };
 
 struct RogueClassRogueC : RogueObject
@@ -1093,11 +1084,8 @@ struct RogueClassStackTrace : RogueObject
 
 };
 
-struct RogueClassReader_of_String
+struct RogueClassReader_of_String : RogueObject
 {
-  // PROPERTIES
-  RogueInt32 position;
-
 };
 
 struct RogueClassMath : RogueObject
@@ -3804,11 +3792,8 @@ struct RogueClassCmdSelectCaseListReader : RogueObject
 
 };
 
-struct RogueClassCmdSelectCaseReader
+struct RogueClassCmdSelectCaseReader : RogueObject
 {
-  // PROPERTIES
-  RogueInt32 position;
-
 };
 
 struct RogueClassCmdAdjustGlobal : RogueObject

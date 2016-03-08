@@ -266,7 +266,7 @@ augment Program
 
       # Trace Prototypes
       forEach (type in type_list)
-        if (type.has_object_references and not type.is_reference_array)
+        if (type.has_object_references and not type.is_reference_array and not type.is_aspect)
 
           local trace_name = type.cpp_name
           if (type.is_array and type.element_type.is_compound)
@@ -280,7 +280,7 @@ augment Program
 
       # Trace Functions
       forEach (type in type_list)
-        if (type.has_object_references and not type.is_reference_array)
+        if (type.has_object_references and not type.is_reference_array and not type.is_aspect)
 
           local trace_name = type.cpp_name
           if (type.is_array and type.element_type.is_compound)
@@ -445,7 +445,7 @@ augment Program
         if (first) first = false
         else       writer.println ","
 
-        if (type.has_object_references)
+        if (type.has_object_references and not type.is_aspect)
           if (type.is_reference_array)
             writer.print "RogueArray_trace"
           else
@@ -456,8 +456,10 @@ augment Program
 
             writer.print(   "Rogue" ).print( trace_name ).print( "_trace" )
           endIf
-        else
+        elseIf (type.is_class)
           writer.print "RogueObject_trace"
+        else
+          writer.print "0"
         endIf
       endForEach
       writer.println
@@ -1248,7 +1250,7 @@ augment Type
 
       writer.print( "struct " ).print( cpp_class_name )
       local is_error = false
-      if (is_class)
+      if (is_reference)
         if (instance_of(Program.type_Exception))
           is_error = true
           writer.print( " : " ).print_type_name( base_class )
@@ -1268,18 +1270,20 @@ augment Type
         writer.println
       endIf
 
-      writer.println "// PROPERTIES"
-      if (native_properties)
-        forEach (p in native_properties)
-          writer.print_native_code( p.t, this, null, p.code )
-        endForEach
-      endIf
-      forEach (p in property_list)
-        if (not is_error or p.type_context is this)
-          writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+      if (not is_aspect)
+        writer.println "// PROPERTIES"
+        if (native_properties)
+          forEach (p in native_properties)
+            writer.print_native_code( p.t, this, null, p.code )
+          endForEach
         endIf
-      endForEach
-      writer.println
+        forEach (p in property_list)
+          if (not is_error or p.type_context is this)
+            writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+          endIf
+        endForEach
+        writer.println
+      endIf
 
       if (is_compound)
         if (property_list.count)
@@ -1319,36 +1323,39 @@ augment Type
           endIf
         endIf
 
-        # Default operator== and operator!=
-        writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
-        writer.println( "{" )
-        if (is_optional)
-          writer.indent += 2
-          writer.println @|if (exists)
-                          |{
-                          |  if (other.exists) return value == other.value;
-                          |  else              return false;
-                          |}
-                          |else
-                          |{
-                          |  if (other.exists) return false;
-                          |  else              return true;
-                          |}
-          writer.indent -= 2
-        else
-          forEach (p in property_list)
-            writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
-          endForEach
-          writer.println( "  return true;" )
-        endIf
-        writer.println( "}" )
-        writer.println
+        if (not is_aspect)
+          # Default operator== and operator!=
+          writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
+          writer.println( "{" )
+          if (is_optional)
+            writer.indent += 2
+            writer.println @|if (exists)
+                            |{
+                            |  if (other.exists) return value == other.value;
+                            |  else              return false;
+                            |}
+                            |else
+                            |{
+                            |  if (other.exists) return false;
+                            |  else              return true;
+                            |}
+            writer.indent -= 2
+          else
+            forEach (p in property_list)
+              writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
+            endForEach
+            writer.println( "  return true;" )
+          endIf
+          writer.println( "}" )
+          writer.println
 
-        writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
-        writer.println @|{
-                        |  return !(*this == other);
-                        |}
-                        |
+          writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
+          writer.println @|{
+                          |  return !(*this == other);
+                          |}
+                          |
+
+        endIf
 
         #{
         # trace() method
