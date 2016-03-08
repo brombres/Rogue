@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.15.1
+- v1.0.15
 - March TBD, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -28,10 +28,35 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.15 - March TBD, 2016
-- Task system now works again.  The main loop should call `Rogue_update_tasks()` which returns `true` if tasks are still active for `false` if they've all finished.  `Rogue_update_tasks()` automatically runs the garbage collector if required.
+###v1.0.15 - March 7, 2016
+- Task system now works again.  Any custom main loop should call `Rogue_update_tasks()` which returns `true` if tasks are still active for `false` if they've all finished.  `Rogue_update_tasks()` automatically runs the garbage collector if required.
+- Fixed a bug in `await` implementation by adding an internal `yield` that was missing.
 - Added RogueCallback infrastructure for taking native actions before or after runtime events.  The first two supported callbacks are `Rogue_on_begin_gc` and `Rogue_on_end_gc`.
 - Added Math.abs().
+
+Task system example:
+
+    Tests()
+    println "Tests started!"
+
+    class Tests
+      METHODS
+        method init
+          run.start
+
+        method run [task]
+          print_numbers( 1, 10 ).start
+          await print_numbers( 10, 13 )
+          await print_numbers( 100, 103 )
+          print_numbers( 1000, 1003 ).start
+
+        method print_numbers( low:Int32, high:Int32 ) [task]
+          forEach (n in low..high)
+            println n
+            yield
+          endForEach
+    endClass
+
 
 ###v1.0.14 - March 7, 2016
 - Renamed `IntX.as_realx()` and `RealX.as_intx()` to be `IntX.real_bits()` and `RealX.integer_bits()`.

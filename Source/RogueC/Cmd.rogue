@@ -3932,8 +3932,10 @@ class CmdAwait : Cmd
       local task_var = scope.this_method.add_local( t, Program.create_unique_id )
       task_var.initial_value = expression
       statement_list.add( CmdLocalDeclaration(t, task_var) )
-        
-      statement_list.add( CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update")) )
+
+      local cmd_while = CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update"))
+      cmd_while.statements.add( CmdYield(t) )
+      statement_list.add( cmd_while )
 
       if (result_var)
         statement_list.add( CmdWriteLocal(t, result_var, CmdReadProperty(t,CmdReadLocal(t,task_var),p_result)) )

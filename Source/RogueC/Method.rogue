@@ -198,6 +198,8 @@ class Method
       endIf
 
       if (is_task)
+        if (is_global) throw t.error( "Global methods and routines cannot be tasks." )
+
         task_result_type = return_type
         if (return_type)
           return_type.organize

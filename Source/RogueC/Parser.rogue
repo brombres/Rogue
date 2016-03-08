@@ -258,7 +258,10 @@ class Parser
       endIf
 
       if (is_routine)
-        # routine MyRoutine<<type>>(args)... -> class MyRoutine<<type>>\n GLOBAL METHODS\n method call(args)...
+        # routine MyRoutine<<type>>(args)...
+        #   -> class MyRoutine<<type>>
+        #        GLOBAL METHODS
+        #          method call(args)...
         consume_eols
         template.tokens.add( EOLToken(first_t) )
         template.tokens.add( TokenType.keyword_GLOBAL.create_token(first_t) )

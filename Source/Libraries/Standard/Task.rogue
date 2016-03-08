@@ -64,7 +64,7 @@ class TaskManager [singleton]
 
       update_list.clear().add( active_list )
       active_list.clear()
-      forEach (task in update_list)
+      forEach (task at i in update_list)
         try
           if (task.update())
             # Active tasks stay in the list
@@ -77,6 +77,6 @@ class TaskManager [singleton]
         endTry
       endForEach
 
-      return any_active
+      return any_active or active_list.count
 endClass
 
