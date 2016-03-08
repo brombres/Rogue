@@ -176,13 +176,13 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
 
 void* RogueObject_retain( RogueObject* THIS )
 {
-  ++THIS->reference_count;
+  if (THIS) ++THIS->reference_count;
   return THIS;
 }
 
 void* RogueObject_release( RogueObject* THIS )
 {
-  --THIS->reference_count;
+  if (THIS) --THIS->reference_count;
   return THIS;
 }
 
@@ -45483,8 +45483,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.17", 6 ) ); 
-  Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 7, 2016", 13 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.18", 6 ) ); 
+  Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 8, 2016", 13 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
   Rogue_literal_strings[27] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ",Mac,Windows,iOS,Android,...]\n", 30 ) ); 

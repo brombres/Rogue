@@ -173,13 +173,13 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
 
 void* RogueObject_retain( RogueObject* THIS )
 {
-  ++THIS->reference_count;
+  if (THIS) ++THIS->reference_count;
   return THIS;
 }
 
 void* RogueObject_release( RogueObject* THIS )
 {
-  --THIS->reference_count;
+  if (THIS) --THIS->reference_count;
   return THIS;
 }
 
