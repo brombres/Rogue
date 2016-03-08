@@ -46,7 +46,7 @@
 #  define chdir _chdir
 #endif
 
-#if TARGET_OS_IPHONE 
+#if TARGET_OS_IPHONE
 #  include <sys/types.h>
 #  include <sys/sysctl.h>
 #endif
@@ -609,7 +609,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
   RogueObject* obj = THIS->available_objects[slot];
-  
+
   if (obj)
   {
     //printf( "found free object\n");
@@ -731,7 +731,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   //   1.  Reference them and move them to a separate short-term list.
   //   2.  Finish the regular GC.
   //   3.  Call clean_up() on each of them, which may create new
-  //       objects (which is why we have to wait until after the GC).   
+  //       objects (which is why we have to wait until after the GC).
   //   4.  Move them to the list of regular objects.
   cur = THIS->objects_requiring_cleanup;
   RogueObject* unreferenced_clean_up_objects = 0;
@@ -786,7 +786,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
 
   // Call clean_up() on unreferenced objects requiring cleanup
   // and move them to the general objects list so they'll be deleted
-  // the next time they're unreferenced.  Calling clean_up() may 
+  // the next time they're unreferenced.  Calling clean_up() may
   // create additional objects so THIS->objects may change during a
   // clean_up() call.
   cur = unreferenced_clean_up_objects;
@@ -855,7 +855,7 @@ void Rogue_configure_types()
       for (j=0; j<type->base_type_count; ++j)
       {
         type->base_types[j] = &Rogue_types[ *(++type_info) ];
-      } 
+      }
     }
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
@@ -13578,7 +13578,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
     }
     if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) == 0)
     {
-      // bail with name unchanged 
+      // bail with name unchanged
       return filepath_0;
     }
     return RogueString_create_from_c_string( full_name, -1 );
@@ -13593,7 +13593,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
     is_folder = RogueFile__is_folder__String( filepath_0 );
     RogueString_to_c_string( filepath_0, c_filepath, PATH_MAX );
     // A way to get back to the starting folder when finished.
-    original_dir_fd = open( ".", O_RDONLY );  
+    original_dir_fd = open( ".", O_RDONLY );
     if (is_folder)
     {
       filename[0] = 0;
@@ -13613,7 +13613,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
     {
       fchdir( new_dir_fd );
       getcwd( c_filepath, PATH_MAX );
-      if ( !is_folder ) 
+      if ( !is_folder )
       {
         strcat( c_filepath, "/" );
         strcat( c_filepath, filename );
@@ -45473,7 +45473,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.15", 6 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.16", 6 ) ); 
   Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 7, 2016", 13 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
@@ -46037,7 +46037,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[584] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "void Rogue_launch()", 19 ) ); 
   Rogue_literal_strings[585] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "RogueErrorHandler uncaught_error_handler;\nRogue_error_handler = &uncaught_error_handler;\nif (ROGUE_SETJMP(Rogue_error_handler->info))\n{\n  if (Rogue_error_object && Rogue_error_object->type)\n  {\n    printf( \"Uncaught \" );\n    RogueType_print_name( Rogue_error_object->type );\n    printf( \".\\n\\n\" );\n\n    RogueStackTrace__print( ((RogueClassException*)Rogue_error_object)->stack_trace );\n  }\n  else\n  {\n    printf( \"Uncaught error.\\n\" );\n  }\n  return;\n}", 451 ) ); 
   Rogue_literal_strings[586] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "();", 3 ) ); 
-  Rogue_literal_strings[587] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "RogueSystem_executable_filepath = RogueString_create_from_c_string(\n    Rogue_argc ? Rogue_argv[0] : \"Rogue\", -1 );\n\nfor (int i=1; i<Rogue_argc; ++i)\n{\n  RogueStringList__add__String( RogueSystem_command_line_arguments, \n      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );\n}", 285 ) ); 
+  Rogue_literal_strings[587] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "RogueSystem_executable_filepath = RogueString_create_from_c_string(\n    Rogue_argc ? Rogue_argv[0] : \"Rogue\", -1 );\n\nfor (int i=1; i<Rogue_argc; ++i)\n{\n  RogueStringList__add__String( RogueSystem_command_line_arguments,\n      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );\n}", 284 ) ); 
   Rogue_literal_strings[588] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "// Instantiate requisite singletons", 35 ) ); 
   Rogue_literal_strings[589] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "ROGUE_SINGLETON( ", 17 ) ); 
   Rogue_literal_strings[590] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );\nRogue_collect_garbage();", 110 ) ); 
