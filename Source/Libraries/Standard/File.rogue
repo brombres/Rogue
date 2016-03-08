@@ -87,7 +87,7 @@ class File
               |
               |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) == 0)
               |  {
-              |    // bail with name unchanged 
+              |    // bail with name unchanged
               |    return $filepath;
               |  }
               |
@@ -105,7 +105,7 @@ class File
               |  RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
               |
               |  // A way to get back to the starting folder when finished.
-              |  original_dir_fd = open( ".", O_RDONLY );  
+              |  original_dir_fd = open( ".", O_RDONLY );
               |
               |  if (is_folder)
               |  {
@@ -127,7 +127,7 @@ class File
               |  {
               |    fchdir( new_dir_fd );
               |    getcwd( c_filepath, PATH_MAX );
-              |    if ( !is_folder ) 
+              |    if ( !is_folder )
               |    {
               |      strcat( c_filepath, "/" );
               |      strcat( c_filepath, filename );
@@ -260,8 +260,8 @@ class File
               |      {
               |        switch (entry->d_name[1])
               |        {
-              |          case 0:   
-              |            keep = 0; 
+              |          case 0:
+              |            keep = 0;
               |            break;
               |          case '.':
               |            keep = entry->d_name[2] != 0;
@@ -458,7 +458,7 @@ class FileReader : Reader<<Character>>
       # Always close after the last byte is read, so if there are no
       # bytes then close right away.
       if (count == 0) close
-      
+
       return (position < count)
 
     method peek->Character

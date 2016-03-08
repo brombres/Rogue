@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.15
+- v1.0.16
 - March 7, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.16 - March 7, 2016
+- Removed trailing whitespace in all source files.
 
 ###v1.0.15 - March 7, 2016
 - Task system now works again.  Any custom main loop should call `Rogue_update_tasks()` which returns `true` if tasks are still active for `false` if they've all finished.  `Rogue_update_tasks()` automatically runs the garbage collector if required.
@@ -88,7 +91,7 @@ Task system example:
 - Tweaked default Reader `seek()` and `skip()` methods.
 
 ###v1.0.9 - March 4, 2016
-- Fixed up inline native definitions and methods to work with op-assign and increment/decrement. 
+- Fixed up inline native definitions and methods to work with op-assign and increment/decrement.
 - Added convenience class `ListLookupTable<<$KeyType,$ValueType>>` where assigning a value to a key adds the value to a list of values instead of replacing a single value.
 - Reworked template overloading system.
 - Added Real64/32 `is_infinite()`, `is_finite`, `is_number()`, and `is_not_a_number()/is_NaN()` as well as literal values `infinity` and `NaN`.  StringBuilder now prints those values correctly.
@@ -124,7 +127,7 @@ Task system example:
   2. Parens may be added for clarity: `$(this)` etc.
   3. `$(this.type)`, `$(local_var_name.type)`, and `$(property_name.type)` all print out the C++ type name of the given variable.  Parens are required in this case.
   4. `$($SpecializerName)` prints out the C++ type name of a template type specializer.  For instance, in `class Table<<$KeyType,$ValueType>>`, referring to `$($KeyType)` in your inlined native code would write `RogueInt32` for a `Table<<Int32,String>>`, etc.
-    
+
 
 ###v1.0.4 - February 29, 2016
 - Fixed off-by-one error in List.remove_at() that was causing seg faults on Linux.

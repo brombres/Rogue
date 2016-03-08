@@ -211,7 +211,7 @@ class Method
       endIf
 
       forEach (param in parameters)
-        if (not is_global) 
+        if (not is_global)
           local property = type_context.find_property( param.name )
 
           if (property)

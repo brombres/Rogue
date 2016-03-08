@@ -337,7 +337,7 @@ class Tokenizer
             # ellipsis
             while (consume(' ')) noAction
             if (not consume('\n')) throw error( "End of line expected after '...'." )
-            return null 
+            return null
           elseIf (consume('<'))
             return TokenType.symbol_upToLessThan
           elseIf (consume('>'))

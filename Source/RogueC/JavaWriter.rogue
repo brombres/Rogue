@@ -1552,7 +1552,7 @@ endAugment
 augment CmdCreateObject
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
+      if (not is_statement) writer.print( "((" ).print(of_type).print(")")
 
       #writer.print("RogueType_create_object(RogueType").print(type.java_name).print(",0)")
       writer.print("ROGUE_CREATE_OBJECT(").print(type.java_name).print(")")
@@ -1845,7 +1845,7 @@ augment CmdCallInlineNative
       while (dollar)
         writer.print( st.from(0,dollar!-1) )
         st = st.from( dollar!+1 )
-        
+
         local best_match : Local
         forEach (p in method_info.parameters)
           if (st.begins_with(p.name))

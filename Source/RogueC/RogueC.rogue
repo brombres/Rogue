@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.15"
+$define RELEASE_VERSION "1.0.16"
 $define RELEASE_DATE    "March 7, 2016"
 
 $include "Attributes.rogue"
@@ -151,7 +151,7 @@ class RogueC [singleton]
     method include_source( filepath:String )
       if (not first_filepath) first_filepath = filepath
       include_source( null, filepath )
-      
+
     method include_source( t:Token, filepath:String )
       # Preemptively (immediately) parses the given file.
       local file = File(filepath)

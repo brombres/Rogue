@@ -150,7 +150,7 @@ class Quicksort<<$DataType>>
       # Swap numbers until the left part of the array contains
       # everything less than the pivot value and the right part contains
       # everything greater than the pivot value - these two parts
-      # may well differ in size. 
+      # may well differ in size.
 
       # Place the pivot at the end temporarily
       local temp = data[pivot_index]
@@ -160,7 +160,7 @@ class Quicksort<<$DataType>>
       pivot_index = i1
       forEach (i in i1..(i2-1))
         if (compare_fn(data[i],pivot))
-          # Read along swapping values when necessary so that all values 
+          # Read along swapping values when necessary so that all values
           # ordered before the pivot are on one side.
           temp = data[i]
           data[i] = data[pivot_index]

@@ -353,7 +353,7 @@ class PropertyList : PropertyValue
 
     method init( initial_capacity:Int32 )
       values = PropertyValue[]( initial_capacity )
-      
+
     method init( values )
 
     method clone->PropertyList

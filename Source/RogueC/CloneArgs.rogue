@@ -6,7 +6,7 @@ endClass
 
 class CloneMethodArgs : CloneArgs
   PROPERTIES
-    cloned_method : Method  
+    cloned_method : Method
 
   METHODS
     method init( cloned_method )
@@ -87,7 +87,7 @@ class TaskArgs : CloneArgs
       cmd_task_control = CmdTaskControl( task_method.t )
 
     method add( cmd:Cmd )->TaskArgs
-      if (cmd) cmd_task_control.current_section.statements.add( cmd ) 
+      if (cmd) cmd_task_control.current_section.statements.add( cmd )
       return this
 
     method add_jump( t:Token, to_section:CmdTaskControlSection )->TaskArgs

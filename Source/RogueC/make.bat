@@ -12,26 +12,26 @@ type Test.cpp
 @REM BARDVM = ../../Programs/Bard/Programs/Mac/bard
 @REM BCC    = ../../Programs/Bard/Programs/BCC.bc
 @REM BCC_ARGS = --source-folders=../../Programs/Bard/Libraries/Bard --include=Standard.bard
-@REM 
+@REM
 @REM all: go
-@REM 
+@REM
 @REM go: compile run
-@REM 
+@REM
 @REM compile: ../../Programs/RogueC.bc
-@REM 
+@REM
 @REM ../../Programs/RogueC.bc: $(ROGUE_SOURCE) $(BARDVM)
 @REM 	$(BARDVM) $(BCC) $(BCC_ARGS) RogueC.bard
-@REM 
+@REM
 @REM $(BARDVM): $(BCC)
 @REM 	cd ../../Programs/Bard && make
-@REM 
+@REM
 @REM run:
 @REM 	$(BARDVM) RogueC.bc
 @REM 	cat Test.cpp
-@REM 
+@REM
 @REM cpp: compile run
 @REM 	g++ Test.cpp
 @REM 	./a.out
-@REM 
+@REM
 @REM clean:
 @REM 	rm -f *.bc

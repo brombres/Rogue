@@ -144,7 +144,7 @@ class Template
       endWhile
 
       if (type_specializers.count < type_parameters.count)
-        throw type.t.error( "Insufficient number of type parameters in $; $ given, $ expected." (type.name,type_specializers.count,type_parameters.count) ) 
+        throw type.t.error( "Insufficient number of type parameters in $; $ given, $ expected." (type.name,type_specializers.count,type_parameters.count) )
       endIf
 
       # Create specialized instance tokens
@@ -188,7 +188,7 @@ class TypeParameter
   PROPERTIES
     t               : Token
     name            : String
- 
+
   METHODS
     method init( t, name )
 endClass

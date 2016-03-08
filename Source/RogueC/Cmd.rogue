@@ -1117,7 +1117,7 @@ class CmdEscape : Cmd
     method clone( clone_args:CloneArgs )->Cmd
       if (target_cmd.task_escape_section)
         local task_args = (clone_args as TaskArgs)
-        return task_args.create_escape( t, target_cmd.task_escape_section ) 
+        return task_args.create_escape( t, target_cmd.task_escape_section )
       else
         local new_target = target_cmd
         while (new_target.cloned_command) new_target = new_target.cloned_command
@@ -1152,7 +1152,7 @@ class CmdNextIteration : Cmd
     method clone( clone_args:CloneArgs )->Cmd
       if (target_cmd.task_upkeep_section)
         local task_args = (clone_args as TaskArgs)
-        return task_args.create_escape( t, target_cmd.task_upkeep_section ) 
+        return task_args.create_escape( t, target_cmd.task_upkeep_section )
       else
         local new_target = target_cmd
         while (new_target.cloned_command) new_target = new_target.cloned_command
@@ -1188,7 +1188,7 @@ class CmdNecessary : Cmd
     method clone( clone_args:CloneArgs )->Cmd
       if (target_cmd.unsatisfied_section)
         local task_args = (clone_args as TaskArgs)
-        local cmd_jump = task_args.create_escape( t, target_cmd.unsatisfied_section ) 
+        local cmd_jump = task_args.create_escape( t, target_cmd.unsatisfied_section )
         if (condition)
           return CmdIf( t, CmdLogicalNot(t,condition.clone(task_args)), CmdStatementList(cmd_jump) )
         else
@@ -1233,7 +1233,7 @@ class CmdSufficient : Cmd
     method clone( clone_args:CloneArgs )->Cmd
       if (target_cmd.satisfied_section)
         local task_args = (clone_args as TaskArgs)
-        local cmd_jump = task_args.create_escape( t, target_cmd.satisfied_section ) 
+        local cmd_jump = task_args.create_escape( t, target_cmd.satisfied_section )
         if (condition)
           return CmdIf( t, condition.clone(task_args), CmdStatementList(cmd_jump) )
         else
@@ -1631,7 +1631,7 @@ class CmdAccess : Cmd
             cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,flag_args), false, true )
           endIf
           if (not cmd_call)
-            cmd_call = scope.resolve_call( new_type, 
+            cmd_call = scope.resolve_call( new_type,
             CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), false )
             if (not cmd_call and must_find)
               # Not found, trigger errors
@@ -1819,7 +1819,7 @@ class CmdAccess : Cmd
       endIf
 
       p = context_type.find_property( name )
-      if (p) 
+      if (p)
         if (scope.this_method.is_global and not explicit_context)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         else
@@ -1880,7 +1880,7 @@ class CmdAccess : Cmd
       if (name[0] != '@')
         setter_name = "set_" + name
         local setter = scope.resolve_call( context_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
-        if (setter) 
+        if (setter)
           return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
         endIf
       endIf
@@ -2458,7 +2458,7 @@ class CmdRange : Cmd
       last = last.resolve( scope ).require_value
       if (step_size) step_size = step_size.resolve( scope ).require_value
       else           step_size = CmdLiteralInt32( t, default_step_size )
-      
+
       local range_type = must_find_common_type( must_find_common_type(first.type,last.type), step_size.type )
       return CmdAccess( t, "Range<<$>>"(range_type), CmdArgs(first,last,step_size) ).resolve( scope )
 
@@ -3471,7 +3471,7 @@ class CmdOpWithAssign : Cmd
 
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdOpWithAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
-      
+
     method resolve( scope:Scope )->Cmd
       return target.resolve_modify_and_assign( scope, op, new_value )
 endClass
@@ -4146,7 +4146,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       endIf
 
     method type->Type
-      # Necessary for generic funtcions to avoid triggering a "value expected" error 
+      # Necessary for generic funtcions to avoid triggering a "value expected" error
       # before being able to match the generic function to a method's expected callback
       # type.
       return Program.type_Object
@@ -4466,7 +4466,7 @@ class CmdSelect : Cmd
 
     method resolve( scope:Scope )->Cmd
       if (value_type) return this
-      
+
       if (not cases.count)
         throw t.error( "Selection list cannot be empty." )
       endIf

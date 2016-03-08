@@ -43,7 +43,7 @@
 #  define chdir _chdir
 #endif
 
-#if TARGET_OS_IPHONE 
+#if TARGET_OS_IPHONE
 #  include <sys/types.h>
 #  include <sys/sysctl.h>
 #endif
@@ -606,7 +606,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
   RogueObject* obj = THIS->available_objects[slot];
-  
+
   if (obj)
   {
     //printf( "found free object\n");
@@ -728,7 +728,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   //   1.  Reference them and move them to a separate short-term list.
   //   2.  Finish the regular GC.
   //   3.  Call clean_up() on each of them, which may create new
-  //       objects (which is why we have to wait until after the GC).   
+  //       objects (which is why we have to wait until after the GC).
   //   4.  Move them to the list of regular objects.
   cur = THIS->objects_requiring_cleanup;
   RogueObject* unreferenced_clean_up_objects = 0;
@@ -783,7 +783,7 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
 
   // Call clean_up() on unreferenced objects requiring cleanup
   // and move them to the general objects list so they'll be deleted
-  // the next time they're unreferenced.  Calling clean_up() may 
+  // the next time they're unreferenced.  Calling clean_up() may
   // create additional objects so THIS->objects may change during a
   // clean_up() call.
   cur = unreferenced_clean_up_objects;
@@ -852,7 +852,7 @@ void Rogue_configure_types()
       for (j=0; j<type->base_type_count; ++j)
       {
         type->base_types[j] = &Rogue_types[ *(++type_info) ];
-      } 
+      }
     }
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];

@@ -9,7 +9,7 @@ class StackTrace [requisite]
       count = Math.max( native( "Rogue_call_stack.count" )->Int32 - (omit_count+1), 0 )
 
       entries = String[]( count )
-      forEach (i in count-1 downTo 0) 
+      forEach (i in count-1 downTo 0)
         entries.add( native("RogueString_create_from_c_string( Rogue_call_stack.locations[$i] )")->String )
       endForEach
 

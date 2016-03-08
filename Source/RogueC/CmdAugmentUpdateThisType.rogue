@@ -5,7 +5,7 @@ augment Cmd
 
 endAugment
 
-augment CmdStatementList 
+augment CmdStatementList
   METHODS
     method update_this_type( scope:Scope )
       forEach (statement in this)
@@ -13,38 +13,38 @@ augment CmdStatementList
       endForEach
 endAugment
 
-augment CmdArgs 
+augment CmdArgs
   METHODS
     method update_this_type( scope:Scope )
       forEach (arg in this) arg.update_this_type( scope )
 endAugment
 
-augment CmdStatement 
+augment CmdStatement
   METHODS
     method update_this_type( scope:Scope )
       noAction
 endAugment
 
-augment CmdLocalDeclaration 
+augment CmdLocalDeclaration
   METHODS
     method update_this_type( scope:Scope )
       if (local_info.initial_value) local_info.initial_value.update_this_type( scope )
 endAugment
 
-augment CmdReturn 
+augment CmdReturn
   METHODS
     method update_this_type( scope:Scope )
       if (value) value.update_this_type( scope )
 
 endAugment
 
-augment CmdBlock 
+augment CmdBlock
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
 endAugment
 
-augment CmdIf 
+augment CmdIf
   METHODS
     method update_this_type( scope:Scope )
       condition.update_this_type( scope )
@@ -60,7 +60,7 @@ augment CmdWhich
       if (case_others) case_others.update_this_type( scope )
 endAugment
 
-augment CmdSwitch 
+augment CmdSwitch
   METHODS
     method update_this_type( scope:Scope )
       expression.update_this_type( scope )
@@ -68,14 +68,14 @@ augment CmdSwitch
       if (case_others) case_others.update_this_type( scope )
 endAugment
 
-augment CmdWhichCase 
+augment CmdWhichCase
   METHODS
     method update_this_type( scope:Scope )
       forEach (condition in conditions) condition.update_this_type( scope )
       statements.update_this_type( scope )
 endAugment
 
-augment CmdContingent 
+augment CmdContingent
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
@@ -83,7 +83,7 @@ augment CmdContingent
       if (unsatisfied_statements) unsatisfied_statements.update_this_type( scope )
 endAugment
 
-augment CmdGenericLoop 
+augment CmdGenericLoop
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
@@ -93,7 +93,7 @@ augment CmdGenericLoop
 
 endAugment
 
-augment CmdForEach 
+augment CmdForEach
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
@@ -101,88 +101,88 @@ augment CmdForEach
       if (step_cmd) step_cmd.update_this_type( scope )
 endAugment
 
-augment CmdTry 
+augment CmdTry
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
       forEach (c in catches) c.update_this_type( scope )
 endAugment
 
-augment CmdCatch 
+augment CmdCatch
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
 endAugment
 
-augment CmdThrow 
+augment CmdThrow
   METHODS
     method update_this_type( scope:Scope )
       expression.update_this_type( scope )
 endAugment
 
-augment CmdEscape 
+augment CmdEscape
   METHODS
     method update_this_type( scope:Scope )
       noAction
 endAugment
 
-augment CmdNextIteration 
+augment CmdNextIteration
   METHODS
     method update_this_type( scope:Scope )
       noAction
 endAugment
 
-augment CmdNecessary 
+augment CmdNecessary
   METHODS
     method update_this_type( scope:Scope )
       if (condition) condition.update_this_type( scope )
 endAugment
 
-augment CmdSufficient 
+augment CmdSufficient
   METHODS
     method update_this_type( scope:Scope )
       if (condition) condition.update_this_type( scope )
 endAugment
 
-augment CmdLiteral 
+augment CmdLiteral
   METHODS
     method update_this_type( scope:Scope )
       noAction
 endAugment
 
-augment CmdLiteralString 
+augment CmdLiteralString
   METHODS
     method update_this_type( scope:Scope )
       noAction
 endAugment
 
-augment CmdFormattedString 
+augment CmdFormattedString
   METHODS
     method update_this_type( scope:Scope )
       args.update_this_type( scope )
 endAugment
 
-augment CmdAccess 
+augment CmdAccess
   METHODS
     method update_this_type( scope:Scope )
       if (context) context.update_this_type( scope )
       if (args)    args.update_this_type( scope )
 endAugment
 
-augment CmdElementAccess 
+augment CmdElementAccess
   METHODS
     method update_this_type( scope:Scope )
       context.update_this_type( scope )
       index.update_this_type( scope )
 endAugment
 
-augment CmdCreateObject 
+augment CmdCreateObject
   METHODS
     method update_this_type( scope:Scope )
 
 endAugment
 
-augment CmdCreateCompound 
+augment CmdCreateCompound
   METHODS
     method update_this_type( scope:Scope )
       forEach (arg in args) arg.update_this_type( scope )
@@ -196,19 +196,19 @@ augment CmdAssign
       new_value.update_this_type( scope )
 endAugment
 
-augment CmdThisContext 
+augment CmdThisContext
   METHODS
     method update_this_type( scope:Scope )
       this_type = scope.this_type
 endAugment
 
-augment CmdReadSingleton 
+augment CmdReadSingleton
   METHODS
     method update_this_type( scope:Scope )
 
 endAugment
 
-augment CmdWriteSingleton 
+augment CmdWriteSingleton
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
@@ -217,13 +217,13 @@ augment CmdWriteSingleton
       #return of_type
 endAugment
 
-augment CmdReadLocal 
+augment CmdReadLocal
   METHODS
     method update_this_type( scope:Scope )
 
 endAugment
 
-augment CmdWriteLocal 
+augment CmdWriteLocal
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
@@ -232,13 +232,13 @@ augment CmdWriteLocal
       #return local_info.type
 endAugment
 
-augment CmdReadGlobal 
+augment CmdReadGlobal
   METHODS
     method update_this_type( scope:Scope )
 
 endAugment
 
-augment CmdWriteGlobal 
+augment CmdWriteGlobal
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
@@ -247,14 +247,14 @@ augment CmdWriteGlobal
       #return global_info.type
 endAugment
 
-augment CmdReadProperty 
+augment CmdReadProperty
   METHODS
     method update_this_type( scope:Scope )
       context.update_this_type( scope )
 
 endAugment
 
-augment CmdWriteProperty 
+augment CmdWriteProperty
   METHODS
     method update_this_type( scope:Scope )
       if (context) context.update_this_type( scope )
@@ -264,7 +264,7 @@ augment CmdWriteProperty
       #return property_info.type
 endAugment
 
-augment CmdCall 
+augment CmdCall
   METHODS
     method update_this_type( scope:Scope )
       if (context) context.update_this_type( scope )
@@ -272,13 +272,13 @@ augment CmdCall
 
 endAugment
 
-augment CmdCallPriorMethod 
+augment CmdCallPriorMethod
   METHODS
     method update_this_type( scope:Scope )
       args.update_this_type( scope )
 endAugment
 
-augment CmdRange 
+augment CmdRange
   METHODS
     method update_this_type( scope:Scope )
       first.update_this_type( scope )
@@ -286,14 +286,14 @@ augment CmdRange
       if (step_size) step_size.update_this_type( scope )
 endAugment
 
-augment CmdUnary 
+augment CmdUnary
   METHODS
     method update_this_type( scope:Scope )
       operand.update_this_type( scope )
 
 endAugment
 
-augment CmdBinary 
+augment CmdBinary
   METHODS
     method update_this_type( scope:Scope )
       left.update_this_type( scope )
@@ -301,51 +301,51 @@ augment CmdBinary
 
 endAugment
 
-augment CmdAdjustLocal 
+augment CmdAdjustLocal
   METHODS
     method update_this_type( scope:Scope )
 endAugment
 
-augment CmdAdjustProperty 
+augment CmdAdjustProperty
   METHODS
     method update_this_type( scope:Scope )
       context.update_this_type( scope )
 endAugment
 
-augment CmdAdjustGlobal 
+augment CmdAdjustGlobal
   METHODS
     method update_this_type( scope:Scope )
 endAugment
 
-augment CmdLocalOpWithAssign 
-  METHODS
-    method update_this_type( scope:Scope )
-      new_value.update_this_type( scope )
-
-endAugment
-
-augment CmdOpAssignGlobal 
+augment CmdLocalOpWithAssign
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
 
 endAugment
 
-augment CmdOpAssignProperty 
+augment CmdOpAssignGlobal
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
 
 endAugment
 
-augment CmdCreateArray 
+augment CmdOpAssignProperty
+  METHODS
+    method update_this_type( scope:Scope )
+      new_value.update_this_type( scope )
+
+endAugment
+
+augment CmdCreateArray
   METHODS
     method update_this_type( scope:Scope )
       count_cmd.update_this_type( scope )
 
 endAugment
 
-augment CmdReadArrayElement 
+augment CmdReadArrayElement
   METHODS
     method update_this_type( scope:Scope )
       context.update_this_type( scope )
@@ -353,14 +353,14 @@ augment CmdReadArrayElement
 
 endAugment
 
-augment CmdReadArrayCount 
+augment CmdReadArrayCount
   METHODS
     method update_this_type( scope:Scope )
       context.update_this_type( scope )
 
 endAugment
 
-augment CmdWriteArrayElement 
+augment CmdWriteArrayElement
   METHODS
     method update_this_type( scope:Scope )
       context.update_this_type( scope )
@@ -369,54 +369,54 @@ augment CmdWriteArrayElement
 
 endAugment
 
-augment CmdTypeOperator 
+augment CmdTypeOperator
   METHODS
     method update_this_type( scope:Scope )
       operand.update_this_type( scope )
 
 endAugment
 
-augment CmdTaskControl 
+augment CmdTaskControl
   METHODS
     method update_this_type( scope:Scope )
       forEach (section in sections) section.statements.update_this_type( scope )
 endAugment
 
-augment CmdCreateOptionalValue 
+augment CmdCreateOptionalValue
   METHODS
     method update_this_type( scope:Scope )
       if (value) value.update_this_type( scope )
 
 endAugment
 
-augment CmdLogicalizeOptionalValue 
+augment CmdLogicalizeOptionalValue
   METHODS
     method update_this_type( scope:Scope )
       value.update_this_type( scope )
 
 endAugment
 
-augment CmdGetOptionalValue 
+augment CmdGetOptionalValue
   METHODS
     method update_this_type( scope:Scope )
       value.update_this_type( scope )
 
 endAugment
 
-augment CmdTrace 
+augment CmdTrace
   METHODS
     method update_this_type( scope:Scope )
       noAction
 endAugment
 
-augment CmdLabel 
+augment CmdLabel
   METHODS
     method update_this_type( scope:Scope )
       statements.update_this_type( scope )
 
 endAugment
 
-augment CmdInlineNative 
+augment CmdInlineNative
   METHODS
     method update_this_type( scope:Scope )
       if (new_value) new_value.update_this_type( scope )

@@ -182,7 +182,7 @@ class Type
     method is_compatible_with( other:Type )->Logical
       if (this is other) return true
       if (this.is_primitive and other.is_primitive)
-        if (this is Program.type_Logical xor other is Program.type_Logical) return false 
+        if (this is Program.type_Logical xor other is Program.type_Logical) return false
         return true
       endIf
       if (other.is_optional and other.element_type is this) return true
@@ -283,7 +283,7 @@ class Type
             endIf
           endIf
         endForEach
-        
+
         if (not base_class and not is_functional and this isNot Program.type_Object)
           Program.type_Object.organize
           base_class = Program.type_Object; base_types.insert( base_class )
@@ -668,7 +668,7 @@ class Type
           # not then we're replacing an aspect method and need to dig down further to get
           # the actual overridden method.
           if (m.overridden_method.overridden_method)
-            # Remove the aspect method from the list of overriding methods since it won't 
+            # Remove the aspect method from the list of overriding methods since it won't
             # be reachable or resolved otherwise.
             m.overridden_method.overridden_method.overriding_methods.remove( m.overridden_method )
           endIf

@@ -108,7 +108,7 @@ class BufferedDataReader : DataReader
     method init
       buffer = Byte[]
       prior.init( buffer )
-    
+
     method init( buffer )
       prior.init( buffer )
 endClass
@@ -215,7 +215,7 @@ class BufferedDataWriter : DataWriter
     method init
       buffer = Byte[]
       prior.init( buffer )
-    
+
     method init( buffer )
       prior.init( buffer )
 

@@ -226,7 +226,7 @@ class List<<$DataType>> : GenericList
         data = Array<<$DataType>>( 10 )
       elseIf (required_capacity > data.count)
         local x2 = capacity + capacity
-        if (required_capacity < x2) required_capacity = x2 
+        if (required_capacity < x2) required_capacity = x2
         local new_data = Array<<$DataType>>( required_capacity )
         new_data.set( 0, data )
         data = new_data
@@ -278,7 +278,7 @@ class List<<$DataType>> : GenericList
     method set( index:Int32, new_value:$DataType ) [macro]
       this.data[ index ] = new_value
 
-    method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this 
+    method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this
       if (delta == 0) return this
 
       local n : Int32

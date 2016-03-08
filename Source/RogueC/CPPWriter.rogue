@@ -631,7 +631,7 @@ augment Program
                       |
                       |Rogue_configure_types();
                       |
-      
+
 
       # Create types
       forEach (type in type_list)
@@ -708,7 +708,7 @@ augment Program
                       |
                       |for (int i=1; i<Rogue_argc; ++i)
                       |{
-                      |  RogueStringList__add__String( RogueSystem_command_line_arguments, 
+                      |  RogueStringList__add__String( RogueSystem_command_line_arguments,
                       |      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );
                       |}
       writer.println
@@ -721,7 +721,7 @@ augment Program
         endIf
       endForEach
       writer.println
-      
+
 
       # Call Global.on_launch()
       writer.println @|RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );
@@ -1319,7 +1319,7 @@ augment Type
           endIf
         endIf
 
-        # Default operator== and operator!= 
+        # Default operator== and operator!=
         writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
         writer.println( "{" )
         if (is_optional)
@@ -2023,7 +2023,7 @@ endAugment
 augment CmdCreateObject
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print( "((" ).print(of_type).print(")") 
+      if (not is_statement) writer.print( "((" ).print(of_type).print(")")
 
       #writer.print("RogueType_create_object(RogueType").print(type.cpp_name).print(",0)")
       writer.print("ROGUE_CREATE_OBJECT(").print(type.cpp_name).print(")")

@@ -39,7 +39,7 @@ class VM
 
     method execute->Result
       local result = loading_task.result
-      if (loading_task.execute) 
+      if (loading_task.execute)
         # Did not finish immediately
         active_tasks.add( loading_task )
       else
@@ -81,7 +81,7 @@ class VM
     method name_to_id( name:String )->Int32
       local entry = id_lookup.find( name )
       if (entry) return entry.value
-      
+
       local id_value = id_lookup.count + 1
       id_lookup[ name ] = id_value
       return id_value
@@ -1406,7 +1406,7 @@ class Tokenizer
             # ellipsis
             while (consume(' ')) noAction
             if (not consume('\n')) throw error( "End of line expected after '...'." )
-            return null 
+            return null
           elseIf (consume('<'))
             return TokenType.symbol_upToLessThan
           elseIf (consume('>'))

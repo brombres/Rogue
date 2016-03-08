@@ -264,7 +264,7 @@ class String [native functional]
 
       local this_limit = (count - other_count) + 1
       if (other_count == 0 or this_limit <= 0) return null
-      
+
       local i1 : Int32
       if (optional_i1)
         i1 = optional_i1.value - 1
@@ -272,7 +272,7 @@ class String [native functional]
       else
         i1 = -1
       endIf
-      
+
       while (native("++$i1")->Int32 < this_limit)
         if (contains_at(other,i1)) return i1
       endWhile
@@ -439,12 +439,12 @@ class String [native functional]
       # to indicate where the given ''quantity'' should be inserted.
       #
       # If the string only contains the "singular" part, first a
-      # substring of the form "(s)" or "(es)" (etc.) is looked for.  
+      # substring of the form "(s)" or "(es)" (etc.) is looked for.
       # If that exists, it is included in the result if the string
       # is plural and omitted if the string is singular.
       #
-      # If there is no "(s)" (etc.) then either "s" or "es" is 
-      # inserted after the last letter - "es" is used only when the 
+      # If there is no "(s)" (etc.) then either "s" or "es" is
+      # inserted after the last letter - "es" is used only when the
       # last letter is an "s" already.
       #
       # Examples:
@@ -469,7 +469,7 @@ class String [native functional]
           local alt2 = st.locate(')',alt1.value+1)
           if (not alt2.exists) return this
 
-          if (quantity == 1) 
+          if (quantity == 1)
             return st.before(alt1.value) + st.after(alt2.value)
           endIf
 
@@ -664,7 +664,7 @@ class String [native functional]
       # Returns a copy of this string encoded in UTF-8 format where only
       # the lower 8 bits of each character are used.  Any character
       # with the unicode range 0..127 is unchanged; characters originally
-      # having a higher unicode value are encoded into a sequence of 2 or 3 
+      # having a higher unicode value are encoded into a sequence of 2 or 3
       # consecutive characters.
 
       # Return this string unchanged if no alterations are required
@@ -734,14 +734,14 @@ class String [native functional]
     method word_wrapped( width:Int32 )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin
-      # immediately.  Spaces immediately following existing newline 
+      # immediately.  Spaces immediately following existing newline
       # characters are preserved.
       return word_wrapped( width, StringBuilder() )->String.split('\n')
 
     method word_wrapped( width:Int32, buffer:StringBuilder )->StringBuilder
       # Prints a word-wrapped version of this string to the given
-      # StringBuilder.  Existing newlines characters will cause a new line to 
-      # begin immediately.  Spaces immediately following existing newline 
+      # StringBuilder.  Existing newlines characters will cause a new line to
+      # begin immediately.  Spaces immediately following existing newline
       # characters are preserved.
       local i1, i2 : Int32
       local len = count

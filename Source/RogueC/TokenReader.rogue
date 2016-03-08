@@ -89,7 +89,7 @@ class PreprocessorTokenReader
       return peek(0)
 
     method peek( num_ahead:Int32 )->Token
-      if (position + num_ahead >= count + queue.count) 
+      if (position + num_ahead >= count + queue.count)
         return TokenType.eoi.create_token( tokens.last )
       endIf
 

@@ -81,10 +81,6 @@ if:
 test:
 	roguec Test.rogue --execute --debug
 
-jtest:
-	mkdir -p JavaTest
-	roguec Test.rogue --target=Java --output=JavaTest #--execute #--package=com.adcolony.moonshot 
-
 x2:
 	make remake
 	sleep 1

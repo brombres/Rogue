@@ -211,7 +211,7 @@ class Parser
           Program.m_on_launch.statements.add( Program.m_on_launch.begin_label(peek,"insert",false) )
         endIf
         this_method = Program.m_on_launch
-        parse_multi_line_statements( this_method.statements ) 
+        parse_multi_line_statements( this_method.statements )
         return true
 
         #{
@@ -636,9 +636,9 @@ class Parser
           if (as_global) name = "global property"
           if (p.initial_value)
             p.type = p.initial_value.implicit_type( Scope(this_type,null) )
-            if (p.type is null) 
+            if (p.type is null)
               println p.initial_value.type_name
-              throw p.initial_value.t.error( 
+              throw p.initial_value.t.error(
                 ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" '' (name) )
             endIf
           else
@@ -948,7 +948,7 @@ class Parser
         #     task = some_task(a,b)
         #     while (task.update) yield
         #   }
-        #   
+        #
         local statement_list = CmdStatementList()
         statements.add( CmdAwait(t,parse_expression,statement_list) )
         return
@@ -2307,7 +2307,7 @@ class Parser
         #     result = task.result
         #   }
         #   x = result
-        #   
+        #
         local result_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
         local statement_list = CmdStatementList()
         cur_statement_list.add( CmdLocalDeclaration(t,result_var) )
@@ -2382,7 +2382,7 @@ class Parser
             if (parameters and parameters.count and not is_generic)
               # Note: if there are no parameters then 'is_generic' is not valid and we can accept
               # the generic arrow
-              throw t2.error( "A function with typed parameters must use '->' to define its return type (if desired) and cannot use the generic function definition symbol '='." ) 
+              throw t2.error( "A function with typed parameters must use '->' to define its return type (if desired) and cannot use the generic function definition symbol '='." )
             endIf
 
             is_generic = true

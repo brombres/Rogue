@@ -162,7 +162,7 @@ struct RogueCallbackInfo
   }
 
   void call()
-  { 
+  {
     if (callback) callback();
     if (next_callback_info) next_callback_info->call();
   }
@@ -221,7 +221,7 @@ struct RogueObject
 
   RogueInt32 reference_count;
   // A positive reference_count ensures that this object will never be
-  // collected.  A zero reference_count means this object is kept only as 
+  // collected.  A zero reference_count means this object is kept only as
   // long as it is visible to the memory manager.
 };
 
@@ -400,7 +400,7 @@ struct RogueCallStack
   int          capacity;
 
   RogueCallStack() : count(0)
-  {  
+  {
     capacity = 256;
     locations = new const char*[ capacity ];
   }

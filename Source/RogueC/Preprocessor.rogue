@@ -156,7 +156,7 @@ class Preprocessor
 
     method must_consume( type:TokenType )
       local message = "Expected '$'." (type.name)
-      if (not reader.has_another) throw RogueError( message ) 
+      if (not reader.has_another) throw RogueError( message )
       local t = reader.read
       if (t.type isNot type) throw t.error( message )
 

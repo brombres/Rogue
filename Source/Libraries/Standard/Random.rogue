@@ -25,7 +25,7 @@ class Random [singleton]
       advance_state
 
     method next_real64->Real64
-      return (advance_state->Real64 + 1.0) / 281474976710657.0 
+      return (advance_state->Real64 + 1.0) / 281474976710657.0
 
     method next_real64( low:Real64, high:Real64 )->Real64
       return (next_real64 * (high-low)) + low

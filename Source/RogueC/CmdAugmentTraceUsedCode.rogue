@@ -5,7 +5,7 @@ augment Cmd
 
 endAugment
 
-augment CmdStatementList 
+augment CmdStatementList
   METHODS
     method trace_used_code
       forEach (statement in this)
@@ -13,39 +13,39 @@ augment CmdStatementList
       endForEach
 endAugment
 
-augment CmdArgs 
+augment CmdArgs
   METHODS
     method trace_used_code
       forEach (arg in this) arg.trace_used_code
 endAugment
 
-augment CmdStatement 
+augment CmdStatement
   METHODS
     method trace_used_code
       noAction
 endAugment
 
-augment CmdLocalDeclaration 
+augment CmdLocalDeclaration
   METHODS
     method trace_used_code
       local_info.type.trace_used_code
       if (local_info.initial_value) local_info.initial_value.trace_used_code
 endAugment
 
-augment CmdReturn 
+augment CmdReturn
   METHODS
     method trace_used_code
       if (value) value.trace_used_code
 
 endAugment
 
-augment CmdBlock 
+augment CmdBlock
   METHODS
     method trace_used_code
       statements.trace_used_code
 endAugment
 
-augment CmdIf 
+augment CmdIf
   METHODS
     method trace_used_code
       condition.trace_used_code
@@ -53,7 +53,7 @@ augment CmdIf
       if (else_statements) else_statements.trace_used_code
 endAugment
 
-augment CmdSwitch 
+augment CmdSwitch
   METHODS
     method trace_used_code
       expression.trace_used_code
@@ -61,14 +61,14 @@ augment CmdSwitch
       if (case_others) case_others.trace_used_code
 endAugment
 
-augment CmdWhichCase 
+augment CmdWhichCase
   METHODS
     method trace_used_code
       forEach (condition in conditions) condition.trace_used_code
       statements.trace_used_code
 endAugment
 
-augment CmdContingent 
+augment CmdContingent
   METHODS
     method trace_used_code
       statements.trace_used_code
@@ -76,7 +76,7 @@ augment CmdContingent
       if (unsatisfied_statements) unsatisfied_statements.trace_used_code
 endAugment
 
-augment CmdGenericLoop 
+augment CmdGenericLoop
   METHODS
     method trace_used_code
       statements.trace_used_code
@@ -86,7 +86,7 @@ augment CmdGenericLoop
 
 endAugment
 
-augment CmdForEach 
+augment CmdForEach
   METHODS
     method trace_used_code
       statements.trace_used_code
@@ -94,77 +94,77 @@ augment CmdForEach
       if (step_cmd) step_cmd.trace_used_code
 endAugment
 
-augment CmdTry 
+augment CmdTry
   METHODS
     method trace_used_code
       statements.trace_used_code
       forEach (c in catches) c.trace_used_code
 endAugment
 
-augment CmdCatch 
+augment CmdCatch
   METHODS
     method trace_used_code
       statements.trace_used_code
 endAugment
 
-augment CmdThrow 
+augment CmdThrow
   METHODS
     method trace_used_code
       expression.trace_used_code
 endAugment
 
-augment CmdEscape 
+augment CmdEscape
   METHODS
     method trace_used_code
       noAction
 endAugment
 
-augment CmdNextIteration 
+augment CmdNextIteration
   METHODS
     method trace_used_code
       noAction
 endAugment
 
-augment CmdNecessary 
+augment CmdNecessary
   METHODS
     method trace_used_code
       if (condition) condition.trace_used_code
 endAugment
 
-augment CmdSufficient 
+augment CmdSufficient
   METHODS
     method trace_used_code
       if (condition) condition.trace_used_code
 endAugment
 
-augment CmdLiteral 
+augment CmdLiteral
   METHODS
     method trace_used_code
       noAction
 endAugment
 
-augment CmdLiteralString 
+augment CmdLiteralString
   METHODS
     method trace_used_code
       index = Program.add_literal_string( value )
 
 endAugment
 
-augment CmdAccess 
+augment CmdAccess
   METHODS
     method trace_used_code
       throw t.error( ''[INTERNAL] $::trace_used_code() ("$") is not defined.'' (type_name,name) )
 
 endAugment
 
-augment CmdCreateObject 
+augment CmdCreateObject
   METHODS
     method trace_used_code
       of_type.trace_used_code
 
 endAugment
 
-augment CmdCreateCompound 
+augment CmdCreateCompound
   METHODS
     method trace_used_code
       of_type.trace_used_code
@@ -172,21 +172,21 @@ augment CmdCreateCompound
 
 endAugment
 
-augment CmdThisContext 
+augment CmdThisContext
   METHODS
     method trace_used_code
       noAction
 
 endAugment
 
-augment CmdReadSingleton 
+augment CmdReadSingleton
   METHODS
     method trace_used_code
       of_type.trace_used_code
 
 endAugment
 
-augment CmdWriteSingleton 
+augment CmdWriteSingleton
   METHODS
     method trace_used_code
       of_type.trace_used_code
@@ -196,14 +196,14 @@ augment CmdWriteSingleton
       #return of_type
 endAugment
 
-augment CmdReadLocal 
+augment CmdReadLocal
   METHODS
     method trace_used_code
       local_info.type.trace_used_code
 
 endAugment
 
-augment CmdWriteLocal 
+augment CmdWriteLocal
   METHODS
     method trace_used_code
       local_info.type.trace_used_code
@@ -213,7 +213,7 @@ augment CmdWriteLocal
       #return local_info.type
 endAugment
 
-augment CmdReadGlobal 
+augment CmdReadGlobal
   METHODS
     method trace_used_code
       global_info.type_context.trace_used_code
@@ -221,7 +221,7 @@ augment CmdReadGlobal
 
 endAugment
 
-augment CmdWriteGlobal 
+augment CmdWriteGlobal
   METHODS
     method trace_used_code
       global_info.type_context.trace_used_code
@@ -232,7 +232,7 @@ augment CmdWriteGlobal
       #return global_info.type
 endAugment
 
-augment CmdReadProperty 
+augment CmdReadProperty
   METHODS
     method trace_used_code
       context.trace_used_code
@@ -241,7 +241,7 @@ augment CmdReadProperty
 
 endAugment
 
-augment CmdWriteProperty 
+augment CmdWriteProperty
   METHODS
     method trace_used_code
       if (context) context.trace_used_code
@@ -253,7 +253,7 @@ augment CmdWriteProperty
       #return property_info.type
 endAugment
 
-augment CmdCall 
+augment CmdCall
   METHODS
     method trace_used_code
       if (context) context.trace_used_code
@@ -262,14 +262,14 @@ augment CmdCall
 
 endAugment
 
-augment CmdCallDynamicMethod 
+augment CmdCallDynamicMethod
   METHODS
     method trace_used_code
       prior.trace_used_code
       if (method_info.is_overridden) method_info.called_dynamically = true
 endAugment
 
-augment CmdRange 
+augment CmdRange
   METHODS
     method trace_used_code
       first.trace_used_code
@@ -277,14 +277,14 @@ augment CmdRange
       if (step_size) step_size.trace_used_code
 endAugment
 
-augment CmdUnary 
+augment CmdUnary
   METHODS
     method trace_used_code
       operand.trace_used_code
 
 endAugment
 
-augment CmdBinary 
+augment CmdBinary
   METHODS
     method trace_used_code
       left.trace_used_code
@@ -292,13 +292,13 @@ augment CmdBinary
 
 endAugment
 
-augment CmdAdjustLocal 
+augment CmdAdjustLocal
   METHODS
     method trace_used_code
       local_info.type.trace_used_code
 endAugment
 
-augment CmdAdjustProperty 
+augment CmdAdjustProperty
   METHODS
     method trace_used_code
       context.trace_used_code
@@ -306,14 +306,14 @@ augment CmdAdjustProperty
       property_info.type.trace_used_code
 endAugment
 
-augment CmdAdjustGlobal 
+augment CmdAdjustGlobal
   METHODS
     method trace_used_code
       global_info.type_context.trace_used_code
       global_info.type.trace_used_code
 endAugment
 
-augment CmdLocalOpWithAssign 
+augment CmdLocalOpWithAssign
   METHODS
     method trace_used_code
       local_info.type.trace_used_code
@@ -321,7 +321,7 @@ augment CmdLocalOpWithAssign
 
 endAugment
 
-augment CmdOpAssignGlobal 
+augment CmdOpAssignGlobal
   METHODS
     method trace_used_code
       global_info.type_context.trace_used_code
@@ -330,7 +330,7 @@ augment CmdOpAssignGlobal
 
 endAugment
 
-augment CmdOpAssignProperty 
+augment CmdOpAssignProperty
   METHODS
     method trace_used_code
       property_info.type_context.trace_used_code
@@ -339,7 +339,7 @@ augment CmdOpAssignProperty
 
 endAugment
 
-augment CmdCreateArray 
+augment CmdCreateArray
   METHODS
     method trace_used_code
       array_type.trace_used_code
@@ -347,7 +347,7 @@ augment CmdCreateArray
 
 endAugment
 
-augment CmdReadArrayElement 
+augment CmdReadArrayElement
   METHODS
     method trace_used_code
       context.trace_used_code
@@ -356,7 +356,7 @@ augment CmdReadArrayElement
 
 endAugment
 
-augment CmdReadArrayCount 
+augment CmdReadArrayCount
   METHODS
     method trace_used_code
       context.trace_used_code
@@ -364,7 +364,7 @@ augment CmdReadArrayCount
 
 endAugment
 
-augment CmdWriteArrayElement 
+augment CmdWriteArrayElement
   METHODS
     method trace_used_code
       context.trace_used_code
@@ -374,7 +374,7 @@ augment CmdWriteArrayElement
 
 endAugment
 
-augment CmdTypeOperator 
+augment CmdTypeOperator
   METHODS
     method trace_used_code
       operand.trace_used_code
@@ -382,13 +382,13 @@ augment CmdTypeOperator
 
 endAugment
 
-augment CmdTaskControl 
+augment CmdTaskControl
   METHODS
     method trace_used_code
       forEach (section in sections) section.statements.trace_used_code
 endAugment
 
-augment CmdCreateOptionalValue 
+augment CmdCreateOptionalValue
   METHODS
     method trace_used_code
       of_type.trace_used_code
@@ -396,27 +396,27 @@ augment CmdCreateOptionalValue
 
 endAugment
 
-augment CmdLogicalizeOptionalValue 
+augment CmdLogicalizeOptionalValue
   METHODS
     method trace_used_code
       value.trace_used_code
 
 endAugment
 
-augment CmdGetOptionalValue 
+augment CmdGetOptionalValue
   METHODS
     method trace_used_code
       value.trace_used_code
 
 endAugment
 
-augment CmdTrace 
+augment CmdTrace
   METHODS
     method trace_used_code
       noAction
 endAugment
 
-augment CmdLabel 
+augment CmdLabel
   METHODS
     method trace_used_code
       statements.trace_used_code

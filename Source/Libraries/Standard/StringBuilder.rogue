@@ -160,7 +160,7 @@ class StringBuilder [requisite]
       # Standard output
       forEach (decimal_count in 1..18)
         print_to_work_bytes( value, decimal_count )
-        if (scan_work_bytes == value) escapeForEach 
+        if (scan_work_bytes == value) escapeForEach
       endForEach
 
       print_work_bytes
@@ -181,7 +181,7 @@ class StringBuilder [requisite]
         print( '-' )
         value = -value
       endIf
-      
+
       print_to_work_bytes( value, decimal_places )
       print_work_bytes
 

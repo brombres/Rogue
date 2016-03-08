@@ -19,7 +19,7 @@ class ListLookupTable<<$KeyType,$ValueType>> : Table<<$KeyType,$ValueType[]>>
         local default_zero_value : $ValueType
         return default_zero_value
       endIf
-      
+
       return entry.value.remove( value )
 
     method set( key:$KeyType, value:$ValueType )->this

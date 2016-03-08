@@ -29,7 +29,7 @@ class Scope
     method push_local( v:Local, validate_name=true:Logical )
       if (validate_name)
         local existing = find_local( v.name )
-        if (existing) throw v.t.error( ''A local variable named "$" already exists.'' (v.name) ) 
+        if (existing) throw v.t.error( ''A local variable named "$" already exists.'' (v.name) )
       endIf
       local_list.add( v )
 
@@ -61,9 +61,9 @@ class Scope
 
       if (not m) return null
 
-      # resolve_call is called up to twice for a given access - once at the beginning to optionally try 
+      # resolve_call is called up to twice for a given access - once at the beginning to optionally try
       # and find a method before looking at locals and properties and once at the end to force an
-      # error message since nothing else has been found.  Fallback methods are a subset of getters and 
+      # error message since nothing else has been found.  Fallback methods are a subset of getters and
       # setters that should only be called if all else fails, so we can hook into the error_on_fail
       # flag to make that call.
       if (not error_on_fail and m.is_fallback and not m.type_context.is_aspect) return null
@@ -102,7 +102,7 @@ class Scope
         if (flag_arg)
           if (flag_arg.value)
             args.add( flag_arg.value )
-          else 
+          else
             if (param.type is Program.type_Logical)
               if (flag_arg.is_negative) args.add( CmdLiteralLogical(flag_arg.t,false) )
               else                      args.add( CmdLiteralLogical(flag_arg.t,true) )
@@ -206,7 +206,7 @@ class Scope
 
         elseIf (type_context.is_aspect)
           cmd = CmdCallAspectMethod( t, context, m, args )
-          
+
         else
           cmd = CmdCallDynamicMethod( t, context, m, args )
         endIf
