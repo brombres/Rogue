@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.19
+- v1.0.20
 - March 8, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,19 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.20 - March 8, 2016
+- `operator+=` and other modify-and-assign operator methods now work with compounds as well as regular class types.
+- `System.environment` provides several ways to operate environment variables: `.listing()->String[]`, `get(name:String)->String`, and `set(name:String,value:String)`.  A small example:
+
+    System.environment[ "STUFF" ] = "Whatever"
+
+    forEach (var_name in System.environment.listing)
+      println "$ = $" (var_name,System.environment[var_name])
+    endForEach
+
+    System.environment[ "STUFF" ] = null
+
 
 ###v1.0.19 - March 8, 2016
 - Aspect types now correctly extend RogueObject in C++ code.

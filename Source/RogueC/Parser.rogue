@@ -1135,7 +1135,7 @@ class Parser
 
       if (t.type.is_op_with_assign)
         read
-        statements.add( CmdOpWithAssign( t, expression, t.type, parse_expression ) )
+        statements.add( CmdModifyAndAssign( t, expression, t.type, parse_expression ) )
         return
       endIf
 
@@ -1169,7 +1169,7 @@ class Parser
         read
         local target = expression
         local new_value = parse_expression
-        statements.add( CmdOpWithAssign( t, target, t_type, new_value) )
+        statements.add( CmdModifyAndAssign( t, target, t_type, new_value) )
         return
       endIf
 
@@ -1567,7 +1567,7 @@ class Parser
               local step_cmd = null : Cmd
               if (consume(TokenType.keyword_step))
                 local step_value = parse_expression
-                step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
+                step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, step_value )
               else
                 if (range instanceOf CmdRangeUpTo)
                   step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
@@ -1644,7 +1644,7 @@ class Parser
           local step_cmd : Cmd
           if (consume(TokenType.keyword_step))
             local step_value = parse_expression
-            step_cmd = CmdLocalOpWithAssign( range.t, control_var, TokenType.symbol_plus_equals, step_value )
+            step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, step_value )
           else
             if (range instanceOf CmdRangeUpTo)
               step_cmd = CmdAdjustLocal( range.t, control_var, 1 )

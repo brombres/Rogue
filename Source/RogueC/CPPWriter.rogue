@@ -2582,13 +2582,13 @@ augment CmdAdjustGlobal
 endAugment
 
 
-augment CmdResolvedOpWithAssign
+augment CmdResolvedModifyAndAssign
   METHODS
     method cpp_symbol->String
       return symbol
 endAugment
 
-augment CmdLocalOpWithAssign
+augment CmdModifyAndAssignLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.cpp_name ).print( " " ).print( cpp_symbol ).print( " " )
@@ -2596,7 +2596,7 @@ augment CmdLocalOpWithAssign
 endAugment
 
 
-augment CmdOpAssignGlobal
+augment CmdModifyAndAssignGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       #writer.print_type_name( global_info.type_context ).print( "::" )
@@ -2606,7 +2606,7 @@ augment CmdOpAssignGlobal
       new_value.write_cpp( writer )
 endAugment
 
-augment CmdOpAssignProperty
+augment CmdModifyAndAssignProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       context.write_cpp( writer )

@@ -289,7 +289,7 @@ class StructuralDirectiveTokenType : TokenType
       return true
 endClass
 
-class OpWithAssignTokenType : TokenType
+class ModifyAndAssignTokenType : TokenType
   METHODS
     method is_op_with_assign->Logical
       return true

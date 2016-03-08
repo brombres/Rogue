@@ -317,21 +317,21 @@ augment CmdAdjustGlobal
     method update_this_type( scope:Scope )
 endAugment
 
-augment CmdLocalOpWithAssign
+augment CmdModifyAndAssignLocal
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
 
 endAugment
 
-augment CmdOpAssignGlobal
+augment CmdModifyAndAssignGlobal
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )
 
 endAugment
 
-augment CmdOpAssignProperty
+augment CmdModifyAndAssignProperty
   METHODS
     method update_this_type( scope:Scope )
       new_value.update_this_type( scope )

@@ -313,7 +313,7 @@ augment CmdAdjustGlobal
       global_info.type.trace_used_code
 endAugment
 
-augment CmdLocalOpWithAssign
+augment CmdModifyAndAssignLocal
   METHODS
     method trace_used_code
       local_info.type.trace_used_code
@@ -321,7 +321,7 @@ augment CmdLocalOpWithAssign
 
 endAugment
 
-augment CmdOpAssignGlobal
+augment CmdModifyAndAssignGlobal
   METHODS
     method trace_used_code
       global_info.type_context.trace_used_code
@@ -330,7 +330,7 @@ augment CmdOpAssignGlobal
 
 endAugment
 
-augment CmdOpAssignProperty
+augment CmdModifyAndAssignProperty
   METHODS
     method trace_used_code
       property_info.type_context.trace_used_code

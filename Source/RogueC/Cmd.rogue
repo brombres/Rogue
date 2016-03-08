@@ -945,9 +945,9 @@ class CmdForEach : CmdControlStructure
         if (step_size >= -1 and step_size <= 1)
           modifier = CmdAdjustLocal(t,index_var,step_size)
         elseIf (step_size >= 0)
-          modifier = CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInt32(t,step_size))
+          modifier = CmdModifyAndAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInt32(t,step_size))
         else
-          modifier = CmdOpWithAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInt32(t,-step_size))
+          modifier = CmdModifyAndAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_minus_equals,CmdLiteralInt32(t,-step_size))
         endIf
 
         local condition : Cmd
@@ -1868,7 +1868,7 @@ class CmdAccess : Cmd
           local v = scope.find_local( name )
           if (v)
             if (args) throw t.error( "Local variable '$' cannot be called like a method."(name) )
-            return CmdLocalOpWithAssign(t,v,op,new_value).resolve(scope)
+            return CmdModifyAndAssignLocal(t,v,op,new_value).resolve(scope)
           endIf
         endIf
 
@@ -1888,7 +1888,7 @@ class CmdAccess : Cmd
       local p = context_type.find_global( name )
       if (p)
         if (context) context.require_type_context
-        return CmdOpAssignGlobal( t, p, op, new_value ).resolve(scope)
+        return CmdModifyAndAssignGlobal( t, p, op, new_value ).resolve(scope)
       endIf
 
       p = context_type.find_property( name )
@@ -1897,7 +1897,7 @@ class CmdAccess : Cmd
         if (scope.this_method.is_global)
           throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
         endIf
-        return CmdOpAssignProperty( t, context, p, op, new_value ).resolve(scope)
+        return CmdModifyAndAssignProperty( t, context, p, op, new_value ).resolve(scope)
       endIf
 
       local def = context_type.definition_lookup[ name ]
@@ -3458,9 +3458,9 @@ endClass
 
 
 #------------------------------------------------------------------------------
-# OpWithAssign
+# ModifyAndAssign
 #------------------------------------------------------------------------------
-class CmdOpWithAssign : Cmd
+class CmdModifyAndAssign : Cmd
   PROPERTIES
     target    : Cmd
     op        : TokenType
@@ -3470,13 +3470,13 @@ class CmdOpWithAssign : Cmd
     method init( t, target, op, new_value )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdOpWithAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
+      return CmdModifyAndAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_modify_and_assign( scope, op, new_value )
 endClass
 
-class CmdResolvedOpWithAssign : Cmd
+class CmdResolvedModifyAndAssign : Cmd
   PROPERTIES
     op         : TokenType
     new_value  : Cmd
@@ -3488,7 +3488,7 @@ class CmdResolvedOpWithAssign : Cmd
 
 endClass
 
-class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
+class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
   PROPERTIES
     local_info : Local
 
@@ -3498,14 +3498,14 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
     method clone( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
-        return CmdOpWithAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.clone(task_args) )
+        return CmdModifyAndAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.clone(task_args) )
       else
-        return CmdLocalOpWithAssign( t, local_info, op, new_value.clone(clone_args) )
+        return CmdModifyAndAssignLocal( t, local_info, op, new_value.clone(clone_args) )
       endIf
 
 
     method resolve( scope:Scope )->Cmd
-      if (local_info.type.is_reference)
+      if (local_info.type.is_reference or local_info.type.is_compound)
         local m_name = "operator" + op->String
         if (local_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
@@ -3547,7 +3547,7 @@ class CmdLocalOpWithAssign : CmdResolvedOpWithAssign
 endClass
 
 
-class CmdOpAssignGlobal : CmdResolvedOpWithAssign
+class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
   PROPERTIES
     global_info : Property
 
@@ -3555,10 +3555,10 @@ class CmdOpAssignGlobal : CmdResolvedOpWithAssign
     method init( t, global_info, op, new_value )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdOpAssignGlobal( t, global_info, op, new_value.clone(clone_args) )
+      return CmdModifyAndAssignGlobal( t, global_info, op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      if (global_info.type.is_reference)
+      if (global_info.type.is_reference or global_info.type.is_compound)
         local m_name = "operator" + op->String
         if (global_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadGlobal(t,global_info), m_name, new_value ).resolve( scope )
@@ -3599,7 +3599,7 @@ class CmdOpAssignGlobal : CmdResolvedOpWithAssign
       return global_info.type
 endClass
 
-class CmdOpAssignProperty : CmdResolvedOpWithAssign
+class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
   PROPERTIES
     context       : Cmd
     property_info : Property
@@ -3608,10 +3608,10 @@ class CmdOpAssignProperty : CmdResolvedOpWithAssign
     method init( t, context, property_info, op, new_value )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdOpAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
+      return CmdModifyAndAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      if (property_info.type.is_reference)
+      if (property_info.type.is_reference or property_info.type.is_compound)
         local m_name = "operator" + op->String
         if (property_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )

@@ -2041,13 +2041,13 @@ augment CmdAdjustProperty
 endAugment
 
 
-augment CmdResolvedOpWithAssign
+augment CmdResolvedModifyAndAssign
   METHODS
     method java_symbol->String
       return symbol
 endAugment
 
-augment CmdLocalOpWithAssign
+augment CmdModifyAndAssignLocal
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       writer.print( local_info.java_name ).print( " " ).print( java_symbol ).print( " " )
@@ -2055,7 +2055,7 @@ augment CmdLocalOpWithAssign
 endAugment
 
 
-augment CmdOpAssignGlobal
+augment CmdModifyAndAssignGlobal
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       #writer.print_type_name( global_info.type_context ).print( "::" )
@@ -2065,7 +2065,7 @@ augment CmdOpAssignGlobal
       new_value.write_java( writer )
 endAugment
 
-augment CmdOpAssignProperty
+augment CmdModifyAndAssignProperty
   METHODS
     method write_java( writer:JavaWriter, is_statement=false:Logical )
       context.write_java( writer )
