@@ -388,6 +388,7 @@ void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
+bool Rogue_update_tasks();  // returns true if tasks are still active
 
 //-----------------------------------------------------------------------------
 //  Stack Trace

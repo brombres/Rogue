@@ -209,6 +209,11 @@ class Program [requisite singleton]
 
       return type
 
+    method is_type_defined( name:String )->Logical
+      local type = type_lookup[ name ]
+      if (not type) return false
+      return type.defined
+
     method create_built_in_type( name:String, attributes=0:Int32 )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
       local type = get_type_reference( t, name )

@@ -724,25 +724,31 @@ augment Program
       
 
       # Call Global.on_launch()
-      writer.println "RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );"
-
-      writer.println( "Rogue_collect_garbage();" )
+      writer.println @|RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );
+                      |Rogue_collect_garbage();
 
       writer.indent -= 2
       writer.println( "}" )
       writer.println
 
-      # finish_tasks() method
-      #{
-      writer.println( @|void RogueProgram::finish_tasks()
-                       |{
-                       |  while (RogueTaskManager__update(Rogue_program.type_TaskManager->singleton()))
-                       |  {
-                       |    Rogue_program.collect_garbage();
-                       |  }
-                       |}
-                     )
-      }#
+      # Rogue_update_tasks() method
+      writer.println @|bool Rogue_update_tasks()
+                      |{
+                      |  // Returns true if any tasks are still active
+
+      if (Program.is_type_defined("TaskManager"))
+        writer.println @|  RogueClassTaskManager* task_manager = (RogueClassTaskManager*) ROGUE_SINGLETON(TaskManager);
+                        |  bool result = RogueTaskManager__update( task_manager );
+                        |  Rogue_collect_garbage();
+                        |  return result;
+      else
+        writer.println @|  Rogue_collect_garbage();
+                        |  return false;
+      endIf
+
+      writer.println @|}
+                      |
+
 
       # Optional main()
       if (RogueC.generate_main)
@@ -751,6 +757,8 @@ augment Program
                          |{
                          |  Rogue_configure( argc, argv );
                          |  Rogue_launch();
+                         |
+                         |  while (Rogue_update_tasks()) {}
                          |
                          |  // Give a few GC's to allow objects requiring clean-up to do so.
                          |  Rogue_collect_garbage( true );

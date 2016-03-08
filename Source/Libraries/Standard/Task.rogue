@@ -49,8 +49,8 @@ class TaskManager [singleton]
           local active = false
           try
             active = task.update
-          catch (error:Error)
-            println "Uncaught error in task: " + error
+          catch (ex:Exception)
+            println "Uncaught exception in task: " + ex
           endTry
           if (active) still_waiting = true
           else        tasks.remove_at(i)
@@ -59,17 +59,7 @@ class TaskManager [singleton]
         if (still_waiting) yield
       endWhile
 
-    method dispatch_events
-      #{
-      SystemEventQueue.begin_reading
-      while (SystemEventQueue.has_another)
-        println SystemEventQueue.read_string
-      endWhile
-      }#
-
-    method update->Logical
-      EventManager.dispatch_events
-
+    method update->Logical [requisite]
       local any_active = false
 
       update_list.clear().add( active_list )
@@ -81,9 +71,9 @@ class TaskManager [singleton]
             any_active = true
             active_list.add( task )
           endIf
-        catch (error:Error)
+        catch (ex:Exception)
           # task is implicitly removed from list
-          println "Uncaught error in task: " + error
+          println "Uncaught exception in task: " + ex
         endTry
       endForEach
 

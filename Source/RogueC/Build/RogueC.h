@@ -388,6 +388,7 @@ void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
+bool Rogue_update_tasks();  // returns true if tasks are still active
 
 //-----------------------------------------------------------------------------
 //  Stack Trace
@@ -4360,6 +4361,7 @@ RogueClassType* RogueProgram__find_type__String( RogueClassProgram* THIS, RogueS
 RogueClassType* RogueProgram__get_type_reference__Token_String( RogueClassProgram* THIS, RogueClassToken* t_0, RogueString* name_1 );
 RogueString* RogueProgram__get_callback_type_signature__TypeList( RogueClassProgram* THIS, RogueTypeList* parameter_types_0 );
 RogueClassType* RogueProgram__get_callback_type_reference__Token_TypeList_Type( RogueClassProgram* THIS, RogueClassToken* t_0, RogueTypeList* parameter_types_1, RogueClassType* return_type_2 );
+RogueLogical RogueProgram__is_type_defined__String( RogueClassProgram* THIS, RogueString* name_0 );
 RogueClassType* RogueProgram__create_built_in_type__String_Int32( RogueClassProgram* THIS, RogueString* name_0, RogueInt32 attributes_1 );
 void RogueProgram__resolve( RogueClassProgram* THIS );
 void RogueProgram__reorder_compounds( RogueClassProgram* THIS );
