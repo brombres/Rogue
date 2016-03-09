@@ -3505,8 +3505,8 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
 
 
     method resolve( scope:Scope )->Cmd
+      local m_name = "operator" + op->String
       if (local_info.type.is_reference)
-        local m_name = "operator" + op->String
         if (local_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
         else
@@ -3519,6 +3519,9 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
             throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (local_info.type,m_name,arg_type,m_name,arg_type) )
           endIf
         endIf
+      elseIf (local_info.type.is_compound)
+        return CmdWriteLocal( t, local_info,
+            CmdAccess( t, CmdReadLocal(t,local_info), m_name.leftmost(-1), new_value ) ).resolve( scope )
       endIf
 
       which (op)
@@ -3558,8 +3561,8 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
       return CmdModifyAndAssignGlobal( t, global_info, op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
+      local m_name = "operator" + op->String
       if (global_info.type.is_reference)
-        local m_name = "operator" + op->String
         if (global_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadGlobal(t,global_info), m_name, new_value ).resolve( scope )
         else
@@ -3572,6 +3575,10 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
             throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (global_info.type,m_name,arg_type,m_name,arg_type) )
           endIf
         endIf
+
+      elseIf (global_info.type.is_compound)
+        return CmdWriteGlobal( t, global_info,
+          CmdAccess( t, CmdReadGlobal(t,global_info), m_name.leftmost(-1), new_value ) ).resolve( scope )
       endIf
 
       which (op)
@@ -3611,8 +3618,8 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
       return CmdModifyAndAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
+      local m_name = "operator" + op->String
       if (property_info.type.is_reference)
-        local m_name = "operator" + op->String
         if (property_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )
         else
@@ -3625,6 +3632,10 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
             throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (property_info.type,m_name,arg_type,m_name,arg_type) )
           endIf
         endIf
+
+      elseIf (property_info.type.is_compound)
+        return CmdWriteProperty( t, clone(context), property_info,
+          CmdAccess( t, CmdReadProperty(t,context,property_info), m_name.leftmost(-1), new_value ) ).resolve( scope )
       endIf
 
       which (op)
