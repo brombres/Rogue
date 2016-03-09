@@ -415,7 +415,7 @@ class Tokenizer
         return TokenType.symbol_open_brace
 
       elseIf (ch == '|' )
-        if     (consume('|')) throw error( "Use 'or' instead of '||'." )
+        if     (consume('|')) return TokenType.symbol_double_vertical_bar
         elseIf (consume('=')) return TokenType.symbol_vertical_bar_equals
         else                  return TokenType.symbol_vertical_bar
 

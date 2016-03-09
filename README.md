@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.20
+- v1.0.20.0
 - March 8, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.21 - March 8, 2016
+- Changed syntax of `select{ condition:value, default_value }` to `select{ condition:value || default_value }`.
 
 ###v1.0.20 - March 8, 2016
 - `operator+=` and other modify-and-assign operator methods now work with compounds as well as regular class types.
