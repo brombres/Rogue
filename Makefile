@@ -94,7 +94,7 @@ x3:
 	make remake
 
 revert:
-	git checkout Source/RogueC/Build && rm Programs/RogueC/roguec
+	git checkout Source/RogueC/Build && rm -f Programs/RogueC/roguec
 	make
 
 clean:
