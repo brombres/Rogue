@@ -1,14 +1,5 @@
-#pragma once
-
 //=============================================================================
-//  Rogue.h
-//
-//  ---------------------------------------------------------------------------
-//
-//  Created 2015.01.19 by Abe Pralle
-//
-//  This is free and unencumbered software released into the public domain
-//  under the terms of the UNLICENSE ( http://unlicense.org ).
+//  NativeCPP.h
 //=============================================================================
 
 #if defined(_WIN32)
@@ -135,6 +126,7 @@ typedef void         (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitFn)( void* obj );
 typedef void         (*RogueCleanUpFn)( void* obj );
 
+
 //-----------------------------------------------------------------------------
 //  RogueCallbackInfo
 //-----------------------------------------------------------------------------
@@ -168,6 +160,7 @@ struct RogueCallbackInfo
   }
 };
 
+
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
@@ -198,6 +191,7 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
 void         RogueType_print_name( RogueType* THIS );
 RogueType*   RogueType_retire( RogueType* THIS );
 RogueObject* RogueType_singleton( RogueType* THIS );
+
 
 //-----------------------------------------------------------------------------
 //  RogueObject
@@ -233,6 +227,7 @@ void*        RogueObject_release( RogueObject* THIS );
 void RogueObject_trace( void* obj );
 void RogueString_trace( void* obj );
 void RogueArray_trace( void* obj );
+
 
 //-----------------------------------------------------------------------------
 //  RogueString
@@ -315,6 +310,7 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 #  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
 #endif
 
+
 //-----------------------------------------------------------------------------
 //  RogueException
 //-----------------------------------------------------------------------------
@@ -340,6 +336,7 @@ struct RogueAllocationPage
 RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page );
 RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS );
 void*                RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size );
+
 
 //-----------------------------------------------------------------------------
 //  RogueAllocator
@@ -389,6 +386,7 @@ bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
 bool Rogue_update_tasks();  // returns true if tasks are still active
+
 
 //-----------------------------------------------------------------------------
 //  Stack Trace
@@ -447,3 +445,4 @@ struct RogueCallTrace
    }
 };
 
+//=============================================================================
