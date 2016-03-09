@@ -39078,7 +39078,7 @@ RogueClassCmd* RogueCmdModifyAndAssignLocal__clone__CloneArgs( RogueClassCmdModi
 
 RogueClassCmd* RogueCmdModifyAndAssignLocal__resolve__Scope( RogueClassCmdModifyAndAssignLocal* THIS, RogueClassScope* scope_0 )
 {
-  if ((((RogueType__is_reference( THIS->local_info->_type ))) || ((RogueType__is_compound( THIS->local_info->_type )))))
+  if (((RogueType__is_reference( THIS->local_info->_type ))))
   {
     RogueString* m_name_1 = (((RogueString__operatorPLUS__String( Rogue_literal_strings[341], ((RogueTokenType__to_String( THIS->op ))) ))));
     if (!!(((RogueString_MethodListTable__get__String( THIS->local_info->_type->method_lookup_by_name, m_name_1 )))))
@@ -43035,7 +43035,7 @@ RogueClassCmd* RogueCmdModifyAndAssignGlobal__clone__CloneArgs( RogueClassCmdMod
 
 RogueClassCmd* RogueCmdModifyAndAssignGlobal__resolve__Scope( RogueClassCmdModifyAndAssignGlobal* THIS, RogueClassScope* scope_0 )
 {
-  if ((((RogueType__is_reference( THIS->global_info->_type ))) || ((RogueType__is_compound( THIS->global_info->_type )))))
+  if (((RogueType__is_reference( THIS->global_info->_type ))))
   {
     RogueString* m_name_1 = (((RogueString__operatorPLUS__String( Rogue_literal_strings[341], ((RogueTokenType__to_String( THIS->op ))) ))));
     if (!!(((RogueString_MethodListTable__get__String( THIS->global_info->_type->method_lookup_by_name, m_name_1 )))))
@@ -43135,7 +43135,7 @@ RogueClassCmd* RogueCmdModifyAndAssignProperty__clone__CloneArgs( RogueClassCmdM
 
 RogueClassCmd* RogueCmdModifyAndAssignProperty__resolve__Scope( RogueClassCmdModifyAndAssignProperty* THIS, RogueClassScope* scope_0 )
 {
-  if ((((RogueType__is_reference( THIS->property_info->_type ))) || ((RogueType__is_compound( THIS->property_info->_type )))))
+  if (((RogueType__is_reference( THIS->property_info->_type ))))
   {
     RogueString* m_name_1 = (((RogueString__operatorPLUS__String( Rogue_literal_strings[341], ((RogueTokenType__to_String( THIS->op ))) ))));
     if (!!(((RogueString_MethodListTable__get__String( THIS->property_info->_type->method_lookup_by_name, m_name_1 )))))
@@ -45496,7 +45496,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.21.0", 8 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.21.1", 8 ) ); 
   Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 8, 2016", 13 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 

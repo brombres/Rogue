@@ -3505,7 +3505,7 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
 
 
     method resolve( scope:Scope )->Cmd
-      if (local_info.type.is_reference or local_info.type.is_compound)
+      if (local_info.type.is_reference)
         local m_name = "operator" + op->String
         if (local_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
@@ -3558,7 +3558,7 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
       return CmdModifyAndAssignGlobal( t, global_info, op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      if (global_info.type.is_reference or global_info.type.is_compound)
+      if (global_info.type.is_reference)
         local m_name = "operator" + op->String
         if (global_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadGlobal(t,global_info), m_name, new_value ).resolve( scope )
@@ -3611,7 +3611,7 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
       return CmdModifyAndAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      if (property_info.type.is_reference or property_info.type.is_compound)
+      if (property_info.type.is_reference)
         local m_name = "operator" + op->String
         if (property_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )
