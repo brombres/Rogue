@@ -448,7 +448,7 @@ struct RogueCallTrace
 };
 
 
-extern char **environ;
+extern "C" char **environ;
 #include <cmath>
 
 struct RogueStringBuilder;

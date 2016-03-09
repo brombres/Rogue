@@ -55,7 +55,7 @@ class SystemEnvironment [compound]
       return select{ not result:null || result.decode_utf8 }
 
     method listing->String[]
-      nativeHeader extern char **environ;
+      nativeHeader extern "C" char **environ;
 
       local result = String[]
       native "char** env = environ;"
