@@ -125,6 +125,55 @@ class Degrees( value:Real64 ) [compound]
     method cos->Real64 [macro]
       Math.cos( (this.value / 180.0) * pi )
 
+    method delta_to( other:Degrees )->Degrees
+      # Returns the smallest number of degrees necessary to get from this
+      # angle to the specified other angle.  For example, Degrees(270).delta_to(Degrees(0))
+      # yields Degrees(90), since turning 90 degrees will get you to 0 degrees
+      # "faster" than turning -270 degrees.
+      local diff = other.value - this.value
+      diff %= 360
+      if (diff > 180) diff = -(360 - diff)
+      return Degrees(diff)
+
+    method operator-()->Degrees [macro]
+      Degrees( -this.value )
+
+    method operator+( degrees:Real64 )->Degrees [macro]
+      Degrees( this.value + degrees )
+
+    method operator-( degrees:Real64 )->Degrees [macro]
+      Degrees( this.value - degrees )
+
+    method operator*( degrees:Real64 )->Degrees [macro]
+      Degrees( this.value * degrees )
+
+    method operator/( degrees:Real64 )->Degrees [macro]
+      Degrees( this.value / degrees )
+
+    method operator%( degrees:Real64 )->Degrees [macro]
+      Degrees( this.value % degrees )
+
+    method operator^( degrees:Real64 )->Degrees [macro]
+      Degrees( this.value ^ degrees )
+
+    method operator+( other:Degrees )->Degrees [macro]
+      Degrees( this.value + other.value )
+
+    method operator-( other:Degrees )->Degrees [macro]
+      Degrees( this.value - other.value )
+
+    method operator*( other:Degrees )->Degrees [macro]
+      Degrees( this.value * other.value )
+
+    method operator/( other:Degrees )->Degrees [macro]
+      Degrees( this.value / other.value )
+
+    method operator%( other:Degrees )->Degrees [macro]
+      Degrees( this.value % other.value )
+
+    method operator^( other:Degrees )->Degrees [macro]
+      Degrees( this.value ^ other.value )
+
     method sin->Real64 [macro]
       Math.sin( (this.value / 180.0) * pi )
 
@@ -133,7 +182,11 @@ class Degrees( value:Real64 ) [compound]
 
     method to->String
       return "" + value
+
+    method to->Radians [macro]
+      Radians( this )
 endClass
+
 
 class Radians( value:Real64 ) [compound]
   GLOBAL METHODS
@@ -144,6 +197,55 @@ class Radians( value:Real64 ) [compound]
     method cos->Real64 [macro]
       Math.cos( this.value )
 
+    method delta_to( other:Radians )->Radians
+      # Returns the smallest number of radians necessary to get from this
+      # angle to the specified other angle.  For example, Radians(pi*3/2).delta_to(Radians(0))
+      # yields Radians(pi/2), since turning pi/2 radians will get you to 0 radians
+      # "faster" than turning -pi*3/2 radians.
+      local diff = other.value - this.value
+      diff %= 2*pi
+      if (diff > pi) diff = -(2*pi - diff)
+      return Radians(diff)
+
+    method operator-()->Radians [macro]
+      Radians( -this.value )
+
+    method operator+( radians:Real64 )->Radians [macro]
+      Radians( this.value + radians )
+
+    method operator-( radians:Real64 )->Radians [macro]
+      Radians( this.value - radians )
+
+    method operator*( radians:Real64 )->Radians [macro]
+      Radians( this.value * radians )
+
+    method operator/( radians:Real64 )->Radians [macro]
+      Radians( this.value / radians )
+
+    method operator%( radians:Real64 )->Radians [macro]
+      Radians( this.value % radians )
+
+    method operator^( radians:Real64 )->Radians [macro]
+      Radians( this.value ^ radians )
+
+    method operator+( other:Radians )->Radians [macro]
+      Radians( this.value + other.value )
+
+    method operator-( other:Radians )->Radians [macro]
+      Radians( this.value - other.value )
+
+    method operator*( other:Radians )->Radians [macro]
+      Radians( this.value * other.value )
+
+    method operator/( other:Radians )->Radians [macro]
+      Radians( this.value / other.value )
+
+    method operator%( other:Radians )->Radians [macro]
+      Radians( this.value % other.value )
+
+    method operator^( other:Radians )->Radians [macro]
+      Radians( this.value ^ other.value )
+
     method sin->Real64 [macro]
       Math.sin( this.value )
 
@@ -152,6 +254,9 @@ class Radians( value:Real64 ) [compound]
 
     method to->String
       return "" + value
+
+    method to->Degrees [macro]
+      Degrees( this )
 endClass
 
 

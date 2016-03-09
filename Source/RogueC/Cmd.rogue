@@ -3400,6 +3400,14 @@ class CmdAdjustLocal : Cmd
       endIf
 
     method resolve( scope:Scope )->Cmd
+      if (local_info.type.is_compound)
+        return CmdWriteLocal( t, local_info,
+          CmdAccess( t,
+                     CmdReadLocal(t,local_info),
+                     "operator+",
+                     CmdLiteralInt32(t,delta)
+          ) ).resolve( scope )
+      endIf
       return this
 
     method type->Type
@@ -3418,17 +3426,18 @@ class CmdAdjustProperty : Cmd
     method init( t, context, property_info, delta )
 
     method clone( clone_args:CloneArgs )->Cmd
-      #{
-      local task_args = (clone_args as TaskArgs)
-      if (task_args)
-        return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.cmd_read(t,local_info)), delta )
-      else
-      endIf
-      }#
       return CmdAdjustProperty( t, context.clone(clone_args), property_info, delta )
 
     method resolve( scope:Scope )->Cmd
-      context = context.resolve( scope )
+      context = context.resolve( scope ).require_value
+      if (property_info.type.is_compound)
+        return CmdWriteProperty( t, context.clone, property_info,
+          CmdAccess( t,
+                     CmdReadProperty(t,context,property_info),
+                     "operator+",
+                     CmdLiteralInt32(t,delta)
+          ) ).resolve( scope )
+      endIf
       return this
 
     method type->Type
@@ -3449,6 +3458,14 @@ class CmdAdjustGlobal : Cmd
       return CmdAdjustGlobal( t, global_info, delta )
 
     method resolve( scope:Scope )->Cmd
+      if (global_info.type.is_compound)
+        return CmdWriteGlobal( t, global_info,
+          CmdAccess( t,
+                     CmdReadGlobal(t,global_info),
+                     "operator+",
+                     CmdLiteralInt32(t,delta)
+          ) ).resolve( scope )
+      endIf
       return this
 
     method type->Type
