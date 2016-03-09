@@ -40,6 +40,9 @@ class RogueC [singleton]
     supported_targets      = String[]
     requisite_declarations = String[]
 
+    # If True, everything is requisite
+    all_requisite = false
+
     execute_args      : String
 
     package_name      : String
@@ -137,6 +140,8 @@ class RogueC [singleton]
             Program.requisite_list.add( RequisiteItem( t, Program.get_type_reference(t, declaration) ) )
           endIf
         endForEach
+
+        if (all_requisite) Program.all_requisite = true
 
         Program.resolve
 
@@ -317,6 +322,8 @@ class RogueC [singleton]
             case "--requisite"
               if (value.count)
                 requisite_declarations.add( value.split(',') )
+              else
+                all_requisite = true
               endIf
 
             case "--target"
