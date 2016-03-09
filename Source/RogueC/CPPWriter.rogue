@@ -1026,7 +1026,7 @@ class CPPWriter
 
       return this
 
-    method print_native_code( t:Token, type_context:Type, method_context:Method, code:String )->this
+    method print_native_code( t:Token, type_context:Type, method_context:Method, code:String, result_type=null:Type )->this
       forEach (line in LineReader(code))
         local original_indent = indent
         if (line.begins_with('#')) indent = 0
@@ -1059,7 +1059,8 @@ class CPPWriter
         endWhile
 
         if (line.count)
-          println line
+          if (result_type) print   line
+          else             println line
         endIf
 
         indent = original_indent
@@ -1192,6 +1193,7 @@ augment RogueC
       endIf
 
       Program.write_cpp( output_filepath )
+      RogueC.on_compile_finished
 
       if (execute_args)
         local exe = output_filepath.to_lowercase
@@ -2830,7 +2832,7 @@ augment CmdInlineNative
         case  1: writer.print( "++" )
       endWhich
 
-      writer.print_native_code( t, this_method.type_context, this_method, code )
+      writer.print_native_code( t, this_method.type_context, this_method, code, result_type )
       if (adjust_delta) writer.println( ";" ); return
 
       if (code.contains('\n') or not result_type) writer.println

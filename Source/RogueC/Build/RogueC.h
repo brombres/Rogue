@@ -511,6 +511,7 @@ struct RogueClassString_LogicalTable;
 struct RogueParserList;
 struct RogueClassParser;
 struct RogueClassString_ParseReaderTable;
+struct RogueClassStopwatch;
 struct RogueClassFile;
 struct RogueTokenList;
 struct RogueClassLineReader;
@@ -1083,6 +1084,7 @@ struct RogueClassRogueC : RogueObject
   RogueLogical debug_mode;
   RogueParserList* parsers;
   RogueClassString_ParseReaderTable* parsereaders_by_filepath;
+  RogueClassStopwatch* stopwatch;
 
 };
 
@@ -1775,6 +1777,13 @@ struct RogueClassString_ParseReaderTable : RogueObject
   RogueInt32 bin_mask;
   RogueTableEntry_of_String_ParseReaderList* bins;
   RogueStringList* keys;
+
+};
+
+struct RogueClassStopwatch : RogueObject
+{
+  // PROPERTIES
+  RogueReal64 start_time;
 
 };
 
@@ -3952,6 +3961,7 @@ extern RogueType* RogueTypeString_LogicalTable;
 extern RogueType* RogueTypeParserList;
 extern RogueType* RogueTypeParser;
 extern RogueType* RogueTypeString_ParseReaderTable;
+extern RogueType* RogueTypeStopwatch;
 extern RogueType* RogueTypeFile;
 extern RogueType* RogueTypeTokenList;
 extern RogueType* RogueTypeLineReader;
@@ -4188,6 +4198,7 @@ RogueInt32 RogueMath__shift_right__Int32_Int32( RogueInt32 value_0, RogueInt32 b
 void RogueCmdStatementList__init_class();
 void RogueTokenType__init_class();
 void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
+RogueReal64 RogueSystem__time();
 void RogueSystem__init_class();
 RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 );
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 );
@@ -4218,6 +4229,7 @@ RogueStringBuilder* RogueStringBuilder__print__Logical( RogueStringBuilder* THIS
 RogueStringBuilder* RogueStringBuilder__print__Int64( RogueStringBuilder* THIS, RogueInt64 value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Object( RogueStringBuilder* THIS, RogueObject* value_0 );
 RogueStringBuilder* RogueStringBuilder__print__Real64( RogueStringBuilder* THIS, RogueReal64 value_0 );
+RogueStringBuilder* RogueStringBuilder__print__Real64_Int32( RogueStringBuilder* THIS, RogueReal64 value_0, RogueInt32 decimal_places_1 );
 RogueStringBuilder* RogueStringBuilder__print__String( RogueStringBuilder* THIS, RogueString* value_0 );
 void RogueStringBuilder__print_indent( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__print_to_work_bytes__Real64_Int32( RogueStringBuilder* THIS, RogueReal64 value_0, RogueInt32 decimal_places_1 );
@@ -4337,6 +4349,7 @@ RogueClassConsole* RogueConsole__init_object( RogueClassConsole* THIS );
 RogueString* RogueRogueC__type_name( RogueClassRogueC* THIS );
 void RogueRogueC__launch( RogueClassRogueC* THIS );
 void RogueRogueC__write_output( RogueClassRogueC* THIS );
+void RogueRogueC__on_compile_finished( RogueClassRogueC* THIS );
 void RogueRogueC__include_source__String( RogueClassRogueC* THIS, RogueString* filepath_0 );
 void RogueRogueC__include_source__Token_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* filepath_1 );
 void RogueRogueC__include_native__Token_String_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* filepath_1, RogueString* native_type_2 );
@@ -4788,7 +4801,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_type_info__Type( RogueClassCPPWriter*
 RogueClassCPPWriter* RogueCPPWriter__print_default_value__Type( RogueClassCPPWriter* THIS, RogueClassType* type_0 );
 RogueClassCPPWriter* RogueCPPWriter__print_literal_character__Character_Logical( RogueClassCPPWriter* THIS, RogueCharacter ch_0, RogueLogical in_string_1 );
 RogueClassCPPWriter* RogueCPPWriter__print_literal_string__String( RogueClassCPPWriter* THIS, RogueString* st_0 );
-RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_String( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueString* code_3 );
+RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_String_Type( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueString* code_3, RogueClassType* result_type_4 );
 RogueClassCPPWriter* RogueCPPWriter__print_native_marker__Token_Type_Method_String( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueString* name_3 );
 void RogueCPPWriter__print_native_code_marker_value__Token_String_String_String_Type( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueString* name_1, RogueString* operation_2, RogueString* default_3, RogueClassType* type_4 );
 void RogueCPPWriter__mark_statement_start__String_Int32_Int32( RogueClassCPPWriter* THIS, RogueString* statement_filepath_0, RogueInt32 start_line_1, RogueInt32 end_line_2 );
@@ -4965,6 +4978,10 @@ RogueClassParseReader* RogueString_ParseReaderTable__get__String( RogueClassStri
 RogueClassString_ParseReaderTable* RogueString_ParseReaderTable__set__String_ParseReader( RogueClassString_ParseReaderTable* THIS, RogueString* key_0, RogueClassParseReader* value_1 );
 RogueStringBuilder* RogueString_ParseReaderTable__print_to__StringBuilder( RogueClassString_ParseReaderTable* THIS, RogueStringBuilder* buffer_0 );
 RogueClassString_ParseReaderTable* RogueString_ParseReaderTable__init_object( RogueClassString_ParseReaderTable* THIS );
+RogueString* RogueStopwatch__to_String( RogueClassStopwatch* THIS );
+RogueString* RogueStopwatch__type_name( RogueClassStopwatch* THIS );
+RogueReal64 RogueStopwatch__elapsed( RogueClassStopwatch* THIS );
+RogueClassStopwatch* RogueStopwatch__init_object( RogueClassStopwatch* THIS );
 RogueString* RogueFile__to_String( RogueClassFile* THIS );
 RogueString* RogueFile__type_name( RogueClassFile* THIS );
 RogueClassFile* RogueFile__init__String( RogueClassFile* THIS, RogueString* _auto_374_0 );

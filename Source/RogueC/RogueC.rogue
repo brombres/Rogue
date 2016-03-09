@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.22.0"
+$define RELEASE_VERSION "1.0.22.1"
 $define RELEASE_DATE    "March 9, 2016"
 
 $include "Attributes.rogue"
@@ -52,6 +52,7 @@ class RogueC [singleton]
     # a final time after tokenization to facilitate 'module' and 'using' directives.
 
     parsereaders_by_filepath = Table<<String,ParseReader>>()
+    stopwatch : Stopwatch
 
   METHODS
     method launch
@@ -115,6 +116,8 @@ class RogueC [singleton]
 
         Program.configure
 
+        stopwatch = Stopwatch()
+
         forEach (filepath in source_files)
           include_source( filepath )
         endForEach
@@ -147,6 +150,9 @@ class RogueC [singleton]
     method write_output
       <<target_specific_code>>
       throw RogueError( ''Compile target "$" is not supported.'' (target_list) )
+
+    method on_compile_finished
+      println "SUCCESS ($)" (stopwatch)
 
     method include_source( filepath:String )
       if (not first_filepath) first_filepath = filepath
