@@ -15131,7 +15131,10 @@ RogueCharacterList* RogueCharacterList__init_object( RogueCharacterList* THIS )
 
 RogueCharacterList* RogueCharacterList__init__Int32( RogueCharacterList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueCharacter) );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueCharacter) );
+  }
   return (RogueCharacterList*)(THIS);
 }
 
@@ -15182,14 +15185,18 @@ RogueCharacterList* RogueCharacterList__reserve__Int32( RogueCharacterList* THIS
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueCharacter) );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueCharacter) );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCharacterList__capacity( THIS ))) + ((RogueCharacterList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCharacterList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueCharacter) ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -15376,13 +15383,16 @@ RogueStringList* RogueStringList__init_object( RogueStringList* THIS )
 
 RogueStringList* RogueStringList__init( RogueStringList* THIS )
 {
-  RogueStringList__init__Int32( THIS, 10 );
+  RogueStringList__init__Int32( THIS, 0 );
   return (RogueStringList*)(THIS);
 }
 
 RogueStringList* RogueStringList__init__Int32( RogueStringList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueString*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueString*), true );
+  }
   return (RogueStringList*)(THIS);
 }
 
@@ -15444,14 +15454,18 @@ RogueStringList* RogueStringList__reserve__Int32( RogueStringList* THIS, RogueIn
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueString*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueString*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueStringList__capacity( THIS ))) + ((RogueStringList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueStringList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueString*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -17928,13 +17942,16 @@ RogueTemplateList* RogueTemplateList__init_object( RogueTemplateList* THIS )
 
 RogueTemplateList* RogueTemplateList__init( RogueTemplateList* THIS )
 {
-  RogueTemplateList__init__Int32( THIS, 10 );
+  RogueTemplateList__init__Int32( THIS, 0 );
   return (RogueTemplateList*)(THIS);
 }
 
 RogueTemplateList* RogueTemplateList__init__Int32( RogueTemplateList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTemplate*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTemplate*), true );
+  }
   return (RogueTemplateList*)(THIS);
 }
 
@@ -17959,14 +17976,18 @@ RogueTemplateList* RogueTemplateList__reserve__Int32( RogueTemplateList* THIS, R
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassTemplate*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTemplate*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueTemplateList__capacity( THIS ))) + ((RogueTemplateList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueTemplateList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTemplate*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -18501,13 +18522,16 @@ RogueRequisiteItemList* RogueRequisiteItemList__init_object( RogueRequisiteItemL
 
 RogueRequisiteItemList* RogueRequisiteItemList__init( RogueRequisiteItemList* THIS )
 {
-  RogueRequisiteItemList__init__Int32( THIS, 10 );
+  RogueRequisiteItemList__init__Int32( THIS, 0 );
   return (RogueRequisiteItemList*)(THIS);
 }
 
 RogueRequisiteItemList* RogueRequisiteItemList__init__Int32( RogueRequisiteItemList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassRequisiteItem*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassRequisiteItem*), true );
+  }
   return (RogueRequisiteItemList*)(THIS);
 }
 
@@ -18532,14 +18556,18 @@ RogueRequisiteItemList* RogueRequisiteItemList__reserve__Int32( RogueRequisiteIt
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassRequisiteItem*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassRequisiteItem*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueRequisiteItemList__capacity( THIS ))) + ((RogueRequisiteItemList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueRequisiteItemList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassRequisiteItem*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -19323,13 +19351,16 @@ RoguePropertyList* RoguePropertyList__init_object( RoguePropertyList* THIS )
 
 RoguePropertyList* RoguePropertyList__init( RoguePropertyList* THIS )
 {
-  RoguePropertyList__init__Int32( THIS, 10 );
+  RoguePropertyList__init__Int32( THIS, 0 );
   return (RoguePropertyList*)(THIS);
 }
 
 RoguePropertyList* RoguePropertyList__init__Int32( RoguePropertyList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassProperty*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassProperty*), true );
+  }
   return (RoguePropertyList*)(THIS);
 }
 
@@ -19376,14 +19407,18 @@ RoguePropertyList* RoguePropertyList__reserve__Int32( RoguePropertyList* THIS, R
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassProperty*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassProperty*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RoguePropertyList__capacity( THIS ))) + ((RoguePropertyList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RoguePropertyList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassProperty*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -19609,13 +19644,16 @@ RogueTypeList* RogueTypeList__init_object( RogueTypeList* THIS )
 
 RogueTypeList* RogueTypeList__init( RogueTypeList* THIS )
 {
-  RogueTypeList__init__Int32( THIS, 10 );
+  RogueTypeList__init__Int32( THIS, 0 );
   return (RogueTypeList*)(THIS);
 }
 
 RogueTypeList* RogueTypeList__init__Int32( RogueTypeList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassType*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassType*), true );
+  }
   return (RogueTypeList*)(THIS);
 }
 
@@ -19712,14 +19750,18 @@ RogueTypeList* RogueTypeList__reserve__Int32( RogueTypeList* THIS, RogueInt32 ad
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassType*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassType*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueTypeList__capacity( THIS ))) + ((RogueTypeList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueTypeList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassType*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -22649,13 +22691,16 @@ RogueCmdList* RogueCmdList__init_object( RogueCmdList* THIS )
 
 RogueCmdList* RogueCmdList__init( RogueCmdList* THIS )
 {
-  call_ROGUEM87( 5, (RogueCmdList*)(THIS), 10 );
+  call_ROGUEM87( 5, (RogueCmdList*)(THIS), 0 );
   return (RogueCmdList*)(THIS);
 }
 
 RogueCmdList* RogueCmdList__init__Int32( RogueCmdList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmd*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmd*), true );
+  }
   return (RogueCmdList*)(THIS);
 }
 
@@ -22739,14 +22784,18 @@ RogueCmdList* RogueCmdList__reserve__Int32( RogueCmdList* THIS, RogueInt32 addit
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmd*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmd*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdList__capacity( THIS ))) + ((RogueCmdList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmd*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -23663,13 +23712,16 @@ RogueMethodList* RogueMethodList__init_object( RogueMethodList* THIS )
 
 RogueMethodList* RogueMethodList__init( RogueMethodList* THIS )
 {
-  RogueMethodList__init__Int32( THIS, 10 );
+  RogueMethodList__init__Int32( THIS, 0 );
   return (RogueMethodList*)(THIS);
 }
 
 RogueMethodList* RogueMethodList__init__Int32( RogueMethodList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassMethod*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassMethod*), true );
+  }
   return (RogueMethodList*)(THIS);
 }
 
@@ -23731,14 +23783,18 @@ RogueMethodList* RogueMethodList__reserve__Int32( RogueMethodList* THIS, RogueIn
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassMethod*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassMethod*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueMethodList__capacity( THIS ))) + ((RogueMethodList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueMethodList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassMethod*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -24504,13 +24560,16 @@ RogueLocalList* RogueLocalList__init_object( RogueLocalList* THIS )
 
 RogueLocalList* RogueLocalList__init( RogueLocalList* THIS )
 {
-  RogueLocalList__init__Int32( THIS, 10 );
+  RogueLocalList__init__Int32( THIS, 0 );
   return (RogueLocalList*)(THIS);
 }
 
 RogueLocalList* RogueLocalList__init__Int32( RogueLocalList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassLocal*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassLocal*), true );
+  }
   return (RogueLocalList*)(THIS);
 }
 
@@ -24541,14 +24600,18 @@ RogueLocalList* RogueLocalList__reserve__Int32( RogueLocalList* THIS, RogueInt32
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassLocal*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassLocal*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueLocalList__capacity( THIS ))) + ((RogueLocalList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueLocalList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassLocal*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -24663,13 +24726,16 @@ RogueInt32List* RogueInt32List__init_object( RogueInt32List* THIS )
 
 RogueInt32List* RogueInt32List__init( RogueInt32List* THIS )
 {
-  RogueInt32List__init__Int32( THIS, 10 );
+  RogueInt32List__init__Int32( THIS, 0 );
   return (RogueInt32List*)(THIS);
 }
 
 RogueInt32List* RogueInt32List__init__Int32( RogueInt32List* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueInt32) );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueInt32) );
+  }
   return (RogueInt32List*)(THIS);
 }
 
@@ -24694,14 +24760,18 @@ RogueInt32List* RogueInt32List__reserve__Int32( RogueInt32List* THIS, RogueInt32
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueInt32) );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueInt32) );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueInt32List__capacity( THIS ))) + ((RogueInt32List__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueInt32List__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueInt32) ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -24760,13 +24830,16 @@ RogueByteList* RogueByteList__init_object( RogueByteList* THIS )
 
 RogueByteList* RogueByteList__init( RogueByteList* THIS )
 {
-  RogueByteList__init__Int32( THIS, 10 );
+  RogueByteList__init__Int32( THIS, 0 );
   return (RogueByteList*)(THIS);
 }
 
 RogueByteList* RogueByteList__init__Int32( RogueByteList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueByte) );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueByte) );
+  }
   return (RogueByteList*)(THIS);
 }
 
@@ -24817,14 +24890,18 @@ RogueByteList* RogueByteList__reserve__Int32( RogueByteList* THIS, RogueInt32 ad
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueByte) );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueByte) );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueByteList__capacity( THIS ))) + ((RogueByteList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueByteList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueByte) ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -25045,13 +25122,16 @@ RogueParserList* RogueParserList__init_object( RogueParserList* THIS )
 
 RogueParserList* RogueParserList__init( RogueParserList* THIS )
 {
-  RogueParserList__init__Int32( THIS, 10 );
+  RogueParserList__init__Int32( THIS, 0 );
   return (RogueParserList*)(THIS);
 }
 
 RogueParserList* RogueParserList__init__Int32( RogueParserList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassParser*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassParser*), true );
+  }
   return (RogueParserList*)(THIS);
 }
 
@@ -25076,14 +25156,18 @@ RogueParserList* RogueParserList__reserve__Int32( RogueParserList* THIS, RogueIn
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassParser*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassParser*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueParserList__capacity( THIS ))) + ((RogueParserList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueParserList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassParser*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -28243,13 +28327,16 @@ RogueTokenList* RogueTokenList__init_object( RogueTokenList* THIS )
 
 RogueTokenList* RogueTokenList__init( RogueTokenList* THIS )
 {
-  RogueTokenList__init__Int32( THIS, 10 );
+  RogueTokenList__init__Int32( THIS, 0 );
   return (RogueTokenList*)(THIS);
 }
 
 RogueTokenList* RogueTokenList__init__Int32( RogueTokenList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassToken*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassToken*), true );
+  }
   return (RogueTokenList*)(THIS);
 }
 
@@ -28311,14 +28398,18 @@ RogueTokenList* RogueTokenList__reserve__Int32( RogueTokenList* THIS, RogueInt32
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassToken*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassToken*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueTokenList__capacity( THIS ))) + ((RogueTokenList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueTokenList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassToken*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -28459,13 +28550,16 @@ RogueTypeParameterList* RogueTypeParameterList__init_object( RogueTypeParameterL
 
 RogueTypeParameterList* RogueTypeParameterList__init( RogueTypeParameterList* THIS )
 {
-  RogueTypeParameterList__init__Int32( THIS, 10 );
+  RogueTypeParameterList__init__Int32( THIS, 0 );
   return (RogueTypeParameterList*)(THIS);
 }
 
 RogueTypeParameterList* RogueTypeParameterList__init__Int32( RogueTypeParameterList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTypeParameter*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTypeParameter*), true );
+  }
   return (RogueTypeParameterList*)(THIS);
 }
 
@@ -28490,14 +28584,18 @@ RogueTypeParameterList* RogueTypeParameterList__reserve__Int32( RogueTypeParamet
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassTypeParameter*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTypeParameter*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueTypeParameterList__capacity( THIS ))) + ((RogueTypeParameterList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueTypeParameterList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTypeParameter*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -28568,13 +28666,16 @@ RogueAugmentList* RogueAugmentList__init_object( RogueAugmentList* THIS )
 
 RogueAugmentList* RogueAugmentList__init( RogueAugmentList* THIS )
 {
-  RogueAugmentList__init__Int32( THIS, 10 );
+  RogueAugmentList__init__Int32( THIS, 0 );
   return (RogueAugmentList*)(THIS);
 }
 
 RogueAugmentList* RogueAugmentList__init__Int32( RogueAugmentList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassAugment*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassAugment*), true );
+  }
   return (RogueAugmentList*)(THIS);
 }
 
@@ -28599,14 +28700,18 @@ RogueAugmentList* RogueAugmentList__reserve__Int32( RogueAugmentList* THIS, Rogu
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassAugment*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassAugment*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueAugmentList__capacity( THIS ))) + ((RogueAugmentList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueAugmentList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassAugment*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -29076,13 +29181,16 @@ RogueTypeSpecializerList* RogueTypeSpecializerList__init_object( RogueTypeSpecia
 
 RogueTypeSpecializerList* RogueTypeSpecializerList__init( RogueTypeSpecializerList* THIS )
 {
-  RogueTypeSpecializerList__init__Int32( THIS, 10 );
+  RogueTypeSpecializerList__init__Int32( THIS, 0 );
   return (RogueTypeSpecializerList*)(THIS);
 }
 
 RogueTypeSpecializerList* RogueTypeSpecializerList__init__Int32( RogueTypeSpecializerList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTypeSpecializer*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTypeSpecializer*), true );
+  }
   return (RogueTypeSpecializerList*)(THIS);
 }
 
@@ -29107,14 +29215,18 @@ RogueTypeSpecializerList* RogueTypeSpecializerList__reserve__Int32( RogueTypeSpe
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassTypeSpecializer*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTypeSpecializer*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueTypeSpecializerList__capacity( THIS ))) + ((RogueTypeSpecializerList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueTypeSpecializerList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassTypeSpecializer*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -29168,13 +29280,16 @@ RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__init
 
 RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__init__Int32_String_TemplateTableEntry( RogueTableEntry_of_String_TemplateList* THIS, RogueInt32 initial_capacity_0, RogueClassString_TemplateTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TemplateTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_484_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_484_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TemplateTableEntry*), true );
     {
-      RogueString_TemplateTableEntryList__add__String_TemplateTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_484_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_484_3;++i_2)
+      {
+        RogueString_TemplateTableEntryList__add__String_TemplateTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_TemplateList*)(THIS);
@@ -29201,14 +29316,18 @@ RogueTableEntry_of_String_TemplateList* RogueString_TemplateTableEntryList__rese
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TemplateTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TemplateTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_TemplateTableEntryList__capacity( THIS ))) + ((RogueString_TemplateTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_TemplateTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TemplateTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -29285,13 +29404,16 @@ RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList
 
 RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList__init__Int32_String_AugmentListTableEntry( RogueTableEntry_of_String_AugmentListList* THIS, RogueInt32 initial_capacity_0, RogueClassString_AugmentListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_AugmentListTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_491_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_491_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_AugmentListTableEntry*), true );
     {
-      RogueString_AugmentListTableEntryList__add__String_AugmentListTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_491_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_491_3;++i_2)
+      {
+        RogueString_AugmentListTableEntryList__add__String_AugmentListTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_AugmentListList*)(THIS);
@@ -29318,14 +29440,18 @@ RogueTableEntry_of_String_AugmentListList* RogueString_AugmentListTableEntryList
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_AugmentListTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_AugmentListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_AugmentListTableEntryList__capacity( THIS ))) + ((RogueString_AugmentListTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_AugmentListTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_AugmentListTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -29402,13 +29528,16 @@ RogueCmdLabelList* RogueCmdLabelList__init_object( RogueCmdLabelList* THIS )
 
 RogueCmdLabelList* RogueCmdLabelList__init( RogueCmdLabelList* THIS )
 {
-  RogueCmdLabelList__init__Int32( THIS, 10 );
+  RogueCmdLabelList__init__Int32( THIS, 0 );
   return (RogueCmdLabelList*)(THIS);
 }
 
 RogueCmdLabelList* RogueCmdLabelList__init__Int32( RogueCmdLabelList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdLabel*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdLabel*), true );
+  }
   return (RogueCmdLabelList*)(THIS);
 }
 
@@ -29439,14 +29568,18 @@ RogueCmdLabelList* RogueCmdLabelList__reserve__Int32( RogueCmdLabelList* THIS, R
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdLabel*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdLabel*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdLabelList__capacity( THIS ))) + ((RogueCmdLabelList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdLabelList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdLabel*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -30391,13 +30524,16 @@ RogueCmdFlagArgList* RogueCmdFlagArgList__init_object( RogueCmdFlagArgList* THIS
 
 RogueCmdFlagArgList* RogueCmdFlagArgList__init( RogueCmdFlagArgList* THIS )
 {
-  RogueCmdFlagArgList__init__Int32( THIS, 10 );
+  RogueCmdFlagArgList__init__Int32( THIS, 0 );
   return (RogueCmdFlagArgList*)(THIS);
 }
 
 RogueCmdFlagArgList* RogueCmdFlagArgList__init__Int32( RogueCmdFlagArgList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdFlagArg*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdFlagArg*), true );
+  }
   return (RogueCmdFlagArgList*)(THIS);
 }
 
@@ -30438,14 +30574,18 @@ RogueCmdFlagArgList* RogueCmdFlagArgList__reserve__Int32( RogueCmdFlagArgList* T
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdFlagArg*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdFlagArg*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdFlagArgList__capacity( THIS ))) + ((RogueCmdFlagArgList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdFlagArgList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdFlagArg*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -30581,13 +30721,16 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__init_object( RogueCm
 
 RogueCmdControlStructureList* RogueCmdControlStructureList__init( RogueCmdControlStructureList* THIS )
 {
-  RogueCmdControlStructureList__init__Int32( THIS, 10 );
+  RogueCmdControlStructureList__init__Int32( THIS, 0 );
   return (RogueCmdControlStructureList*)(THIS);
 }
 
 RogueCmdControlStructureList* RogueCmdControlStructureList__init__Int32( RogueCmdControlStructureList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdControlStructure*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdControlStructure*), true );
+  }
   return (RogueCmdControlStructureList*)(THIS);
 }
 
@@ -30612,14 +30755,18 @@ RogueCmdControlStructureList* RogueCmdControlStructureList__reserve__Int32( Rogu
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdControlStructure*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdControlStructure*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdControlStructureList__capacity( THIS ))) + ((RogueCmdControlStructureList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdControlStructureList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdControlStructure*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -31675,13 +31822,16 @@ RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__
 
 RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__init__Int32_String_MethodListTableEntry( RogueTableEntry_of_String_MethodListList* THIS, RogueInt32 initial_capacity_0, RogueClassString_MethodListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_MethodListTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_662_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_662_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_MethodListTableEntry*), true );
     {
-      RogueString_MethodListTableEntryList__add__String_MethodListTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_662_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_662_3;++i_2)
+      {
+        RogueString_MethodListTableEntryList__add__String_MethodListTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_MethodListList*)(THIS);
@@ -31708,14 +31858,18 @@ RogueTableEntry_of_String_MethodListList* RogueString_MethodListTableEntryList__
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_MethodListTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_MethodListTableEntryList__capacity( THIS ))) + ((RogueString_MethodListTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_MethodListTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodListTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -31792,13 +31946,16 @@ RogueDefinitionList* RogueDefinitionList__init_object( RogueDefinitionList* THIS
 
 RogueDefinitionList* RogueDefinitionList__init( RogueDefinitionList* THIS )
 {
-  RogueDefinitionList__init__Int32( THIS, 10 );
+  RogueDefinitionList__init__Int32( THIS, 0 );
   return (RogueDefinitionList*)(THIS);
 }
 
 RogueDefinitionList* RogueDefinitionList__init__Int32( RogueDefinitionList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassDefinition*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassDefinition*), true );
+  }
   return (RogueDefinitionList*)(THIS);
 }
 
@@ -31823,14 +31980,18 @@ RogueDefinitionList* RogueDefinitionList__reserve__Int32( RogueDefinitionList* T
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassDefinition*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassDefinition*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueDefinitionList__capacity( THIS ))) + ((RogueDefinitionList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueDefinitionList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassDefinition*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -32013,13 +32174,16 @@ RogueNativePropertyList* RogueNativePropertyList__init_object( RogueNativeProper
 
 RogueNativePropertyList* RogueNativePropertyList__init( RogueNativePropertyList* THIS )
 {
-  RogueNativePropertyList__init__Int32( THIS, 10 );
+  RogueNativePropertyList__init__Int32( THIS, 0 );
   return (RogueNativePropertyList*)(THIS);
 }
 
 RogueNativePropertyList* RogueNativePropertyList__init__Int32( RogueNativePropertyList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassNativeProperty*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassNativeProperty*), true );
+  }
   return (RogueNativePropertyList*)(THIS);
 }
 
@@ -32044,14 +32208,18 @@ RogueNativePropertyList* RogueNativePropertyList__reserve__Int32( RogueNativePro
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassNativeProperty*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassNativeProperty*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueNativePropertyList__capacity( THIS ))) + ((RogueNativePropertyList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueNativePropertyList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassNativeProperty*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -32625,13 +32793,16 @@ RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__init_object(
 
 RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__init__Int32_String_TypeTableEntry( RogueTableEntry_of_String_TypeList* THIS, RogueInt32 initial_capacity_0, RogueClassString_TypeTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TypeTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_837_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_837_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TypeTableEntry*), true );
     {
-      RogueString_TypeTableEntryList__add__String_TypeTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_837_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_837_3;++i_2)
+      {
+        RogueString_TypeTableEntryList__add__String_TypeTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_TypeList*)(THIS);
@@ -32658,14 +32829,18 @@ RogueTableEntry_of_String_TypeList* RogueString_TypeTableEntryList__reserve__Int
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TypeTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_TypeTableEntryList__capacity( THIS ))) + ((RogueString_TypeTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_TypeTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -32742,13 +32917,16 @@ RogueTableEntry_of_String_Int32List* RogueString_Int32TableEntryList__init_objec
 
 RogueTableEntry_of_String_Int32List* RogueString_Int32TableEntryList__init__Int32_String_Int32TableEntry( RogueTableEntry_of_String_Int32List* THIS, RogueInt32 initial_capacity_0, RogueClassString_Int32TableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_Int32TableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_844_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_844_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_Int32TableEntry*), true );
     {
-      RogueString_Int32TableEntryList__add__String_Int32TableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_844_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_844_3;++i_2)
+      {
+        RogueString_Int32TableEntryList__add__String_Int32TableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_Int32List*)(THIS);
@@ -32775,14 +32953,18 @@ RogueTableEntry_of_String_Int32List* RogueString_Int32TableEntryList__reserve__I
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_Int32TableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_Int32TableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_Int32TableEntryList__capacity( THIS ))) + ((RogueString_Int32TableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_Int32TableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_Int32TableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -32841,13 +33023,16 @@ RogueTableEntry_of_String_StringListList* RogueString_StringListTableEntryList__
 
 RogueTableEntry_of_String_StringListList* RogueString_StringListTableEntryList__init__Int32_String_StringListTableEntry( RogueTableEntry_of_String_StringListList* THIS, RogueInt32 initial_capacity_0, RogueClassString_StringListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_StringListTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_851_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_851_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_StringListTableEntry*), true );
     {
-      RogueString_StringListTableEntryList__add__String_StringListTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_851_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_851_3;++i_2)
+      {
+        RogueString_StringListTableEntryList__add__String_StringListTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_StringListList*)(THIS);
@@ -32874,14 +33059,18 @@ RogueTableEntry_of_String_StringListList* RogueString_StringListTableEntryList__
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_StringListTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_StringListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_StringListTableEntryList__capacity( THIS ))) + ((RogueString_StringListTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_StringListTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_StringListTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -32958,13 +33147,16 @@ RogueTableEntry_of_Int32_TemplateList* RogueInt32_TemplateTableEntryList__init_o
 
 RogueTableEntry_of_Int32_TemplateList* RogueInt32_TemplateTableEntryList__init__Int32_Int32_TemplateTableEntry( RogueTableEntry_of_Int32_TemplateList* THIS, RogueInt32 initial_capacity_0, RogueClassInt32_TemplateTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassInt32_TemplateTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_858_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_858_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassInt32_TemplateTableEntry*), true );
     {
-      RogueInt32_TemplateTableEntryList__add__Int32_TemplateTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_858_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_858_3;++i_2)
+      {
+        RogueInt32_TemplateTableEntryList__add__Int32_TemplateTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_Int32_TemplateList*)(THIS);
@@ -32991,14 +33183,18 @@ RogueTableEntry_of_Int32_TemplateList* RogueInt32_TemplateTableEntryList__reserv
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassInt32_TemplateTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassInt32_TemplateTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueInt32_TemplateTableEntryList__capacity( THIS ))) + ((RogueInt32_TemplateTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueInt32_TemplateTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassInt32_TemplateTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -34562,13 +34758,16 @@ RogueFnParamList* RogueFnParamList__init_object( RogueFnParamList* THIS )
 
 RogueFnParamList* RogueFnParamList__init( RogueFnParamList* THIS )
 {
-  RogueFnParamList__init__Int32( THIS, 10 );
+  RogueFnParamList__init__Int32( THIS, 0 );
   return (RogueFnParamList*)(THIS);
 }
 
 RogueFnParamList* RogueFnParamList__init__Int32( RogueFnParamList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassFnParam*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassFnParam*), true );
+  }
   return (RogueFnParamList*)(THIS);
 }
 
@@ -34598,14 +34797,18 @@ RogueFnParamList* RogueFnParamList__reserve__Int32( RogueFnParamList* THIS, Rogu
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassFnParam*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassFnParam*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueFnParamList__capacity( THIS ))) + ((RogueFnParamList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueFnParamList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassFnParam*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -34685,13 +34888,16 @@ RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__init_obj
 
 RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__init__Int32_String_MethodTableEntry( RogueTableEntry_of_String_MethodList* THIS, RogueInt32 initial_capacity_0, RogueClassString_MethodTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_MethodTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1055_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1055_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_MethodTableEntry*), true );
     {
-      RogueString_MethodTableEntryList__add__String_MethodTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1055_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1055_3;++i_2)
+      {
+        RogueString_MethodTableEntryList__add__String_MethodTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_MethodList*)(THIS);
@@ -34718,14 +34924,18 @@ RogueTableEntry_of_String_MethodList* RogueString_MethodTableEntryList__reserve_
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_MethodTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_MethodTableEntryList__capacity( THIS ))) + ((RogueString_MethodTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_MethodTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_MethodTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -34802,13 +35012,16 @@ RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__init_o
 
 RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__init__Int32_String_LogicalTableEntry( RogueTableEntry_of_String_LogicalList* THIS, RogueInt32 initial_capacity_0, RogueClassString_LogicalTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_LogicalTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1163_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1163_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_LogicalTableEntry*), true );
     {
-      RogueString_LogicalTableEntryList__add__String_LogicalTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1163_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1163_3;++i_2)
+      {
+        RogueString_LogicalTableEntryList__add__String_LogicalTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_LogicalList*)(THIS);
@@ -34835,14 +35048,18 @@ RogueTableEntry_of_String_LogicalList* RogueString_LogicalTableEntryList__reserv
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_LogicalTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_LogicalTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_LogicalTableEntryList__capacity( THIS ))) + ((RogueString_LogicalTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_LogicalTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_LogicalTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -38522,13 +38739,16 @@ RogueCmdWhichCaseList* RogueCmdWhichCaseList__init_object( RogueCmdWhichCaseList
 
 RogueCmdWhichCaseList* RogueCmdWhichCaseList__init( RogueCmdWhichCaseList* THIS )
 {
-  RogueCmdWhichCaseList__init__Int32( THIS, 10 );
+  RogueCmdWhichCaseList__init__Int32( THIS, 0 );
   return (RogueCmdWhichCaseList*)(THIS);
 }
 
 RogueCmdWhichCaseList* RogueCmdWhichCaseList__init__Int32( RogueCmdWhichCaseList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdWhichCase*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdWhichCase*), true );
+  }
   return (RogueCmdWhichCaseList*)(THIS);
 }
 
@@ -38553,14 +38773,18 @@ RogueCmdWhichCaseList* RogueCmdWhichCaseList__reserve__Int32( RogueCmdWhichCaseL
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdWhichCase*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdWhichCase*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdWhichCaseList__capacity( THIS ))) + ((RogueCmdWhichCaseList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdWhichCaseList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdWhichCase*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -38687,13 +38911,16 @@ RogueCmdCatchList* RogueCmdCatchList__init_object( RogueCmdCatchList* THIS )
 
 RogueCmdCatchList* RogueCmdCatchList__init( RogueCmdCatchList* THIS )
 {
-  RogueCmdCatchList__init__Int32( THIS, 10 );
+  RogueCmdCatchList__init__Int32( THIS, 0 );
   return (RogueCmdCatchList*)(THIS);
 }
 
 RogueCmdCatchList* RogueCmdCatchList__init__Int32( RogueCmdCatchList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdCatch*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdCatch*), true );
+  }
   return (RogueCmdCatchList*)(THIS);
 }
 
@@ -38718,14 +38945,18 @@ RogueCmdCatchList* RogueCmdCatchList__reserve__Int32( RogueCmdCatchList* THIS, R
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdCatch*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdCatch*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdCatchList__capacity( THIS ))) + ((RogueCmdCatchList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdCatchList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdCatch*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -41450,13 +41681,16 @@ RogueFnArgList* RogueFnArgList__init_object( RogueFnArgList* THIS )
 
 RogueFnArgList* RogueFnArgList__init( RogueFnArgList* THIS )
 {
-  RogueFnArgList__init__Int32( THIS, 10 );
+  RogueFnArgList__init__Int32( THIS, 0 );
   return (RogueFnArgList*)(THIS);
 }
 
 RogueFnArgList* RogueFnArgList__init__Int32( RogueFnArgList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassFnArg*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassFnArg*), true );
+  }
   return (RogueFnArgList*)(THIS);
 }
 
@@ -41481,14 +41715,18 @@ RogueFnArgList* RogueFnArgList__reserve__Int32( RogueFnArgList* THIS, RogueInt32
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassFnArg*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassFnArg*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueFnArgList__capacity( THIS ))) + ((RogueFnArgList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueFnArgList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassFnArg*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -41769,13 +42007,16 @@ RogueCmdSelectCaseList* RogueCmdSelectCaseList__init_object( RogueCmdSelectCaseL
 
 RogueCmdSelectCaseList* RogueCmdSelectCaseList__init( RogueCmdSelectCaseList* THIS )
 {
-  RogueCmdSelectCaseList__init__Int32( THIS, 10 );
+  RogueCmdSelectCaseList__init__Int32( THIS, 0 );
   return (RogueCmdSelectCaseList*)(THIS);
 }
 
 RogueCmdSelectCaseList* RogueCmdSelectCaseList__init__Int32( RogueCmdSelectCaseList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdSelectCase*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdSelectCase*), true );
+  }
   return (RogueCmdSelectCaseList*)(THIS);
 }
 
@@ -41810,14 +42051,18 @@ RogueCmdSelectCaseList* RogueCmdSelectCaseList__reserve__Int32( RogueCmdSelectCa
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdSelectCase*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdSelectCase*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdSelectCaseList__capacity( THIS ))) + ((RogueCmdSelectCaseList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdSelectCaseList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdSelectCase*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -42057,13 +42302,16 @@ RogueTableEntry_of_String_ParseReaderList* RogueString_ParseReaderTableEntryList
 
 RogueTableEntry_of_String_ParseReaderList* RogueString_ParseReaderTableEntryList__init__Int32_String_ParseReaderTableEntry( RogueTableEntry_of_String_ParseReaderList* THIS, RogueInt32 initial_capacity_0, RogueClassString_ParseReaderTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_ParseReaderTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1382_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1382_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_ParseReaderTableEntry*), true );
     {
-      RogueString_ParseReaderTableEntryList__add__String_ParseReaderTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1382_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1382_3;++i_2)
+      {
+        RogueString_ParseReaderTableEntryList__add__String_ParseReaderTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_ParseReaderList*)(THIS);
@@ -42090,14 +42338,18 @@ RogueTableEntry_of_String_ParseReaderList* RogueString_ParseReaderTableEntryList
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_ParseReaderTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_ParseReaderTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_ParseReaderTableEntryList__capacity( THIS ))) + ((RogueString_ParseReaderTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_ParseReaderTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_ParseReaderTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -42387,13 +42639,16 @@ RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__in
 
 RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__init__Int32_String_TokenTypeTableEntry( RogueTableEntry_of_String_TokenTypeList* THIS, RogueInt32 initial_capacity_0, RogueClassString_TokenTypeTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TokenTypeTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1496_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1496_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TokenTypeTableEntry*), true );
     {
-      RogueString_TokenTypeTableEntryList__add__String_TokenTypeTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1496_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1496_3;++i_2)
+      {
+        RogueString_TokenTypeTableEntryList__add__String_TokenTypeTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_TokenTypeList*)(THIS);
@@ -42420,14 +42675,18 @@ RogueTableEntry_of_String_TokenTypeList* RogueString_TokenTypeTableEntryList__re
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TokenTypeTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenTypeTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_TokenTypeTableEntryList__capacity( THIS ))) + ((RogueString_TokenTypeTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_TokenTypeTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenTypeTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -42504,13 +42763,16 @@ RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableE
 
 RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableEntryList__init__Int32_String_TypeSpecializerTableEntry( RogueTableEntry_of_String_TypeSpecializerList* THIS, RogueInt32 initial_capacity_0, RogueClassString_TypeSpecializerTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1503_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1503_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
     {
-      RogueString_TypeSpecializerTableEntryList__add__String_TypeSpecializerTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1503_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1503_3;++i_2)
+      {
+        RogueString_TypeSpecializerTableEntryList__add__String_TypeSpecializerTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_TypeSpecializerList*)(THIS);
@@ -42537,14 +42799,18 @@ RogueTableEntry_of_String_TypeSpecializerList* RogueString_TypeSpecializerTableE
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeSpecializerTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_TypeSpecializerTableEntryList__capacity( THIS ))) + ((RogueString_TypeSpecializerTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_TypeSpecializerTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TypeSpecializerTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -42621,13 +42887,16 @@ RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__init
 
 RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__init__Int32_String_CmdLabelTableEntry( RogueTableEntry_of_String_CmdLabelList* THIS, RogueInt32 initial_capacity_0, RogueClassString_CmdLabelTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_CmdLabelTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1643_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1643_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_CmdLabelTableEntry*), true );
     {
-      RogueString_CmdLabelTableEntryList__add__String_CmdLabelTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1643_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1643_3;++i_2)
+      {
+        RogueString_CmdLabelTableEntryList__add__String_CmdLabelTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_CmdLabelList*)(THIS);
@@ -42654,14 +42923,18 @@ RogueTableEntry_of_String_CmdLabelList* RogueString_CmdLabelTableEntryList__rese
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_CmdLabelTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdLabelTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_CmdLabelTableEntryList__capacity( THIS ))) + ((RogueString_CmdLabelTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_CmdLabelTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdLabelTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -43384,13 +43657,16 @@ RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__init_object( Rog
 
 RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__init( RogueCmdTaskControlSectionList* THIS )
 {
-  RogueCmdTaskControlSectionList__init__Int32( THIS, 10 );
+  RogueCmdTaskControlSectionList__init__Int32( THIS, 0 );
   return (RogueCmdTaskControlSectionList*)(THIS);
 }
 
 RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__init__Int32( RogueCmdTaskControlSectionList* THIS, RogueInt32 initial_capacity_0 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdTaskControlSection*), true );
+  if (!!(initial_capacity_0))
+  {
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassCmdTaskControlSection*), true );
+  }
   return (RogueCmdTaskControlSectionList*)(THIS);
 }
 
@@ -43415,14 +43691,18 @@ RogueCmdTaskControlSectionList* RogueCmdTaskControlSectionList__reserve__Int32( 
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassCmdTaskControlSection*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdTaskControlSection*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueCmdTaskControlSectionList__capacity( THIS ))) + ((RogueCmdTaskControlSectionList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueCmdTaskControlSectionList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassCmdTaskControlSection*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -43569,13 +43849,16 @@ RogueTableEntry_of_String_DefinitionList* RogueString_DefinitionTableEntryList__
 
 RogueTableEntry_of_String_DefinitionList* RogueString_DefinitionTableEntryList__init__Int32_String_DefinitionTableEntry( RogueTableEntry_of_String_DefinitionList* THIS, RogueInt32 initial_capacity_0, RogueClassString_DefinitionTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_DefinitionTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1862_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1862_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_DefinitionTableEntry*), true );
     {
-      RogueString_DefinitionTableEntryList__add__String_DefinitionTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1862_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1862_3;++i_2)
+      {
+        RogueString_DefinitionTableEntryList__add__String_DefinitionTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_DefinitionList*)(THIS);
@@ -43602,14 +43885,18 @@ RogueTableEntry_of_String_DefinitionList* RogueString_DefinitionTableEntryList__
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_DefinitionTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_DefinitionTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_DefinitionTableEntryList__capacity( THIS ))) + ((RogueString_DefinitionTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_DefinitionTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_DefinitionTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -43686,13 +43973,16 @@ RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__init
 
 RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__init__Int32_String_PropertyTableEntry( RogueTableEntry_of_String_PropertyList* THIS, RogueInt32 initial_capacity_0, RogueClassString_PropertyTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_PropertyTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_1901_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_1901_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_PropertyTableEntry*), true );
     {
-      RogueString_PropertyTableEntryList__add__String_PropertyTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_1901_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_1901_3;++i_2)
+      {
+        RogueString_PropertyTableEntryList__add__String_PropertyTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_PropertyList*)(THIS);
@@ -43719,14 +44009,18 @@ RogueTableEntry_of_String_PropertyList* RogueString_PropertyTableEntryList__rese
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_PropertyTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_PropertyTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_PropertyTableEntryList__capacity( THIS ))) + ((RogueString_PropertyTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_PropertyTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_PropertyTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -43975,13 +44269,16 @@ RogueTableEntry_of_String_StringList* RogueString_StringTableEntryList__init_obj
 
 RogueTableEntry_of_String_StringList* RogueString_StringTableEntryList__init__Int32_String_StringTableEntry( RogueTableEntry_of_String_StringList* THIS, RogueInt32 initial_capacity_0, RogueClassString_StringTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_StringTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_2199_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_2199_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_StringTableEntry*), true );
     {
-      RogueString_StringTableEntryList__add__String_StringTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_2199_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_2199_3;++i_2)
+      {
+        RogueString_StringTableEntryList__add__String_StringTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_StringList*)(THIS);
@@ -44008,14 +44305,18 @@ RogueTableEntry_of_String_StringList* RogueString_StringTableEntryList__reserve_
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_StringTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_StringTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_StringTableEntryList__capacity( THIS ))) + ((RogueString_StringTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_StringTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_StringTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -45062,13 +45363,16 @@ RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__init_object( R
 
 RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__init__Int32_String_CmdTableEntry( RogueTableEntry_of_String_CmdList* THIS, RogueInt32 initial_capacity_0, RogueClassString_CmdTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_CmdTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_2762_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_2762_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_CmdTableEntry*), true );
     {
-      RogueString_CmdTableEntryList__add__String_CmdTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_2762_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_2762_3;++i_2)
+      {
+        RogueString_CmdTableEntryList__add__String_CmdTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_CmdList*)(THIS);
@@ -45095,14 +45399,18 @@ RogueTableEntry_of_String_CmdList* RogueString_CmdTableEntryList__reserve__Int32
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_CmdTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_CmdTableEntryList__capacity( THIS ))) + ((RogueString_CmdTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_CmdTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_CmdTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -45210,13 +45518,16 @@ RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__in
 
 RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__init__Int32_String_TokenListTableEntry( RogueTableEntry_of_String_TokenListList* THIS, RogueInt32 initial_capacity_0, RogueClassString_TokenListTableEntry* initial_value_1 )
 {
-  THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TokenListTableEntry*), true );
+  if (!!(initial_capacity_0))
   {
-    RogueInt32 i_2 = (1);
-    RogueInt32 _auto_2820_3 = (initial_capacity_0);
-    for (;i_2 <= _auto_2820_3;++i_2)
+    THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassString_TokenListTableEntry*), true );
     {
-      RogueString_TokenListTableEntryList__add__String_TokenListTableEntry( THIS, initial_value_1 );
+      RogueInt32 i_2 = (1);
+      RogueInt32 _auto_2820_3 = (initial_capacity_0);
+      for (;i_2 <= _auto_2820_3;++i_2)
+      {
+        RogueString_TokenListTableEntryList__add__String_TokenListTableEntry( THIS, initial_value_1 );
+      }
     }
   }
   return (RogueTableEntry_of_String_TokenListList*)(THIS);
@@ -45243,14 +45554,18 @@ RogueTableEntry_of_String_TokenListList* RogueString_TokenListTableEntryList__re
   RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
   if (!(!!(THIS->data)))
   {
-    THIS->data = RogueType_create_array( 10, sizeof(RogueClassString_TokenListTableEntry*), true );
+    if (required_capacity_1 < 10)
+    {
+      required_capacity_1 = ((RogueInt32)10);
+    }
+    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenListTableEntry*), true );
   }
   else if (required_capacity_1 > THIS->data->count)
   {
-    RogueInt32 x2_2 = ((((RogueString_TokenListTableEntryList__capacity( THIS ))) + ((RogueString_TokenListTableEntryList__capacity( THIS )))));
-    if (required_capacity_1 < x2_2)
+    RogueInt32 cap_2 = (((RogueString_TokenListTableEntryList__capacity( THIS ))));
+    if (required_capacity_1 < (cap_2 + cap_2))
     {
-      required_capacity_1 = ((RogueInt32)x2_2);
+      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
     }
     RogueArray* new_data_3 = (RogueType_create_array( required_capacity_1, sizeof(RogueClassString_TokenListTableEntry*), true ));
     RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
@@ -45613,7 +45928,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[20] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[21] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[22] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.22.1", 8 ) ); 
+  Rogue_literal_strings[23] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.22.2", 8 ) ); 
   Rogue_literal_strings[24] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 9, 2016", 13 ) ); 
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 

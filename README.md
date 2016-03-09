@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.22.1
+- v1.0.22.2
 - March 9, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -32,6 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - `++` and `--` now work on compounds by transforming `++compound` into `compound = compound.operator+(1)` and `--compound` into `compound.operator+(-1)`.
 - Added full set of `operator` methods to `Degrees` and `Radians` compounds.  Also added `Degrees.delta_to(other:Degrees)` which returns the smallest angle (which may be positive or negative) required to to from this angle to the specified other angle.  For instance, `Degrees(270).delta_to(Degrees(0))` returns `Degrees(90)`.
 - Added an elapsed time output when a compile is successful.
+- Lists now have a default capacity of zero to begin with and do not allocate a backing array.  When the first item is added an initial capacity of at last 10 is reserved.
 
 ###v1.0.21 - March 8, 2016
 - Changed syntax of `select{ condition:value, default_value }` to `select{ condition:value || default_value }`.

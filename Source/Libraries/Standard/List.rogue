@@ -8,14 +8,16 @@ class List<<$DataType>> : GenericList
 
   METHODS
     method init
-      init( 10 )
+      init( 0 )
 
     method init( initial_capacity:Int32 )
-      data = Array<<$DataType>>( initial_capacity )
+      if (initial_capacity) data = Array<<$DataType>>( initial_capacity )
 
     method init( initial_capacity:Int32, initial_value:$DataType )
-      data = Array<<$DataType>>( initial_capacity )
-      forEach (i in 1..initial_capacity) add( initial_value )
+      if (initial_capacity)
+        data = Array<<$DataType>>( initial_capacity )
+        forEach (i in 1..initial_capacity) add( initial_value )
+      endIf
 
     method apply( fn:Function($DataType) )->this
       forEach (item in this) fn( item )
@@ -223,10 +225,11 @@ class List<<$DataType>> : GenericList
       local required_capacity = count + additional_count
 
       if (not data)
-        data = Array<<$DataType>>( 10 )
+        if (required_capacity < 10) required_capacity = 10
+        data = Array<<$DataType>>( required_capacity )
       elseIf (required_capacity > data.count)
-        local x2 = capacity + capacity
-        if (required_capacity < x2) required_capacity = x2
+        local cap = capacity
+        if (required_capacity < cap+cap) required_capacity = cap+cap
         local new_data = Array<<$DataType>>( required_capacity )
         new_data.set( 0, data )
         data = new_data
