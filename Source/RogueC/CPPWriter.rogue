@@ -1295,7 +1295,13 @@ augment Type
         endIf
         forEach (p in property_list)
           if (not is_error or p.type_context is this)
-            writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+            if (is_compound and p.type.is_reference)
+              writer.print( "ROGUE_DEF_COMPOUND_REF_PROP(")
+              writer.print( p.type ).print(",").print( p.cpp_name )
+              writer.print( ");")
+            else
+              writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
+            endIf
           endIf
         endForEach
         writer.println
@@ -1691,15 +1697,31 @@ endAugment
 augment CmdLocalDeclaration
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( local_info.type ).print(" ").print( local_info.cpp_name )
-      if (not skip_initialization)
-        writer.print(" = ")
-        if (local_info.initial_value)
-          writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
-          local_info.initial_value.write_cpp( writer )
-          writer.print( ")" )
-        else
-          writer.print_default_value( local_info.type )
+      if (local_info.type.is_reference)
+        if (skip_initialization)
+          writer.print("ROGUE_DEF_LOCAL_REF_NULL(").print(local_info.type).print(",").print(local_info.cpp_name).println(")")
+        elseIf
+          writer.print("ROGUE_DEF_LOCAL_REF(").print(local_info.type).print(",").print(local_info.cpp_name).print(",")
+          if (local_info.initial_value)
+            writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
+            local_info.initial_value.write_cpp( writer )
+            writer.print( ")" )
+          else
+            writer.print_default_value( local_info.type )
+          endIf
+          writer.print(")")
+        endIf
+      else
+        writer.print( local_info.type ).print(" ").print( local_info.cpp_name )
+        if (not skip_initialization)
+          writer.print(" = ")
+          if (local_info.initial_value)
+            writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
+            local_info.initial_value.write_cpp( writer )
+            writer.print( ")" )
+          else
+            writer.print_default_value( local_info.type )
+          endIf
         endIf
       endIf
 endAugment
@@ -2041,7 +2063,7 @@ endAugment
 augment CmdCreateObject
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print( "((" ).print(of_type).print(")")
+      if (not is_statement) writer.print( "ROGUE_CREATE_REF(" ).print(of_type).print(",")
 
       #writer.print("RogueType_create_object(RogueType").print(type.cpp_name).print(",0)")
       writer.print("ROGUE_CREATE_OBJECT(").print(type.cpp_name).print(")")

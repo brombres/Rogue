@@ -92,7 +92,7 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
 
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 {
-  RogueObject* obj;
+  ROGUE_DEF_LOCAL_REF_NULL(RogueObject*, obj);
   RogueInitFn  fn;
 
   if ( !size ) size = THIS->object_size;
@@ -605,7 +605,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   Rogue_bytes_allocated_since_gc += size;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
-  RogueObject* obj = THIS->available_objects[slot];
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[slot]);
 
   if (obj)
   {
@@ -651,7 +651,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
 {
-  RogueObject* obj = (RogueObject*) RogueAllocator_allocate( THIS, size );
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*) RogueAllocator_allocate( THIS, size ));
 
   ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
   ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
