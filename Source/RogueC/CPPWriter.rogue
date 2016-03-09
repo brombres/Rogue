@@ -135,6 +135,7 @@ augment Program
       writer.println "#pragma once"
 
       # Embed nativeHeader
+      writer.println "// NATIVE HEADERS"
       forEach (line in native_header)
         writer.println( line )
       endForEach
@@ -143,6 +144,7 @@ augment Program
       writer.println
 
       # RogueObject forward declarations
+      writer.println "// FORWARD DECLARATIONS"
       forEach (type in type_list)
         if (not type.omit_output and not type.is_primitive)
           writer.print( "struct " ).print( type.cpp_class_name ).println( ";" );
@@ -151,6 +153,7 @@ augment Program
       writer.println
 
       # Compound definitions
+      writer.println "// COMPOUND DEFINITIONS"
       forEach (type in type_list)
         if (type.is_compound and not type.omit_output)
           type.print_data_definition( writer )
@@ -170,6 +173,7 @@ augment Program
       writer.println
 
       # Class definitions
+      writer.println "// CLASS DEFINITIONS"
       forEach (type in type_list)
         if (not type.is_compound and not type.omit_output)
           type.print_data_definition( writer )
@@ -179,6 +183,7 @@ augment Program
       writer.println
 
       # RogueType_X externs.
+      writer.println "// ROGUE TYPES"
       forEach (type in type_list)
         if (not type.omit_output or (type.is_native and not type.is_array))
           writer.print( "extern RogueType* RogueType" );
@@ -188,14 +193,17 @@ augment Program
       writer.println
 
       # Routine prototypes
+      writer.println "// ROUTINE PROTOTYPES"
       forEach (type in type_list) type.print_global_method_prototypes( writer )
       writer.println
 
       # Method prototypes
+      writer.println "// METHOD PROTOTYPES"
       forEach (type in type_list) type.print_method_prototypes( writer )
       writer.println
 
       # Trace routine prototype
+      writer.println "// INTERNAL PROTOTYPES"
       writer.println( "void Rogue_trace();" )
       writer.println
 
