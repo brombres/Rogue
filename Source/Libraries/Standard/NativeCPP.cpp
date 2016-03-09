@@ -652,8 +652,13 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
 {
   RogueObject* obj = (RogueObject*) RogueAllocator_allocate( THIS, size );
+
+  ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
+  ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
+  ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
+  //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
+
   memset( obj, 0, size );
-//printf( "Allocating " ); RogueType_print_name(of_type); printf( "\n" );
 
   if (of_type->clean_up_fn)
   {
@@ -675,6 +680,7 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
 {
   if (data)
   {
+    ROGUE_GCDEBUG_STATEMENT(memset(data,0,size));
     if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
     {
       free( data );
@@ -782,7 +788,9 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     }
     else
     {
-//printf( "Freeing " ); RogueType_print_name(cur->type); printf( "\n" );
+      ROGUE_GCDEBUG_STATEMENT( printf( "Freeing " ) );
+      ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(cur->type) );
+      ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", cur ) );
       RogueAllocator_free( THIS, cur, cur->object_size );
     }
     cur = next_object;

@@ -2,6 +2,18 @@
 //  NativeCPP.h
 //=============================================================================
 
+#if defined(ROGUE_DEBUG_BUILD)
+  #define ROGUE_DEBUG_STATEMENT(_s_) _s_
+#else
+  #define ROGUE_DEBUG_STATEMENT(_s_)
+#endif
+
+#if defined(ROGUE_GCDEBUG_BUILD)
+  #define ROGUE_GCDEBUG_STATEMENT(_s_) _s_
+#else
+  #define ROGUE_GCDEBUG_STATEMENT(_s_) ;
+#endif
+
 #if defined(_WIN32)
 #  define ROGUE_PLATFORM_WINDOWS 1
 #elif defined(__APPLE__)
