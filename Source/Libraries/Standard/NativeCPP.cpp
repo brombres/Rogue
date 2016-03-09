@@ -811,15 +811,37 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
 }
 
+void Rogue_print_stack_trace ( bool leading_newline )
+{
+  int i = Rogue_call_stack.count;
+  if (i && leading_newline) printf("\n");
+  while (--i >= 0)
+  {
+    printf( "%s\n", Rogue_call_stack.locations[i] );
+  }
+  printf("\n");
+}
+
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
-    printf( "Null reference error.\n\n" );
-
-    int i = Rogue_call_stack.count;
-    while (--i >= 0)
+    if (si->si_addr < (void*)4096)
     {
-      printf( "%s\n", Rogue_call_stack.locations[i] );
+      // Probably a null pointer dereference.
+      printf( "Null reference error (accessing memory at %p)\n",
+              si->si_addr );
     }
+    else
+    {
+      if (si->si_code == SEGV_MAPERR)
+        printf( "Access to unmapped memory at " );
+      else if (si->si_code == SEGV_ACCERR)
+        printf( "Access to forbidden memory at " );
+      else
+        printf( "Unknown segfault accessing " );
+      printf("%p\n", si->si_addr);
+    }
+
+    Rogue_print_stack_trace( true );
 
     exit(0);
 }
