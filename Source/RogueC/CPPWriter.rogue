@@ -1671,12 +1671,7 @@ endAugment
 augment CmdArgs
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      local first = true
-      forEach (arg in this)
-        if (first) first = false
-        else       writer.print(",")
-        arg.write_cpp( writer )
-      endForEach
+      throw this[0].t.error( "[INTERNAL] $::write_cpp() is not defined." (type_name) )
 endAugment
 
 augment CmdLocalDeclaration
