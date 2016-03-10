@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.0.22"
-$define RELEASE_DATE    "March 9, 2016"
+$define RELEASE_VERSION "1.0.23"
+$define RELEASE_DATE    "March 10, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
@@ -100,6 +100,13 @@ class RogueC [singleton]
                    |  --execute[="args"]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
+                   |
+                   |  --gc
+                   |    Enables 'auto' garbage collection mode.  Without this option Rogue will use
+                   |    'manual' garbage collection.
+                   |
+                   |  --gc=[manual|auto]
+                   |    Explicitly set the garbage collection mode to manual or auto.
                    |
                    |  --libraries="path1[;path2...]"
                    |    Add one or more additional library folders to the search path.
@@ -367,3 +374,15 @@ class RogueC [singleton]
 
 endClass
 
+#{
+                   |      manual - A GC cannot happen while Rogue-generated code is executing.
+                   |               After control returns to C++, the main loop must call either
+                   |               Rogue_collect_garbage() or Rogue_update_tasks() which will allow
+                   |               the GC to run if it needs to.  Manual execution is typically
+                   |               just slightly faster than auto.
+                   |
+                   |      auto   - Generated code code automatically checks for and performs a GC if
+                   |               necessary as it runs and allocates objects.  Generated auto-GC
+                   |               code should be compiled with -O3 to make its speed acceptable.
+                   |
+                   }#

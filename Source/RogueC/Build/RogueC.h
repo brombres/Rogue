@@ -4448,6 +4448,7 @@ RogueCharacterList* RogueCharacterList__clear( RogueCharacterList* THIS );
 RogueCharacterList* RogueCharacterList__ensure_capacity__Int32( RogueCharacterList* THIS, RogueInt32 desired_capacity_0 );
 RogueCharacterList* RogueCharacterList__expand_to_count__Int32( RogueCharacterList* THIS, RogueInt32 minimum_count_0 );
 RogueCharacterList* RogueCharacterList__expand_to_include__Int32( RogueCharacterList* THIS, RogueInt32 index_0 );
+void RogueCharacterList__discard_from__Int32( RogueCharacterList* THIS, RogueInt32 index_0 );
 RogueCharacterList* RogueCharacterList__reserve__Int32( RogueCharacterList* THIS, RogueInt32 additional_count_0 );
 RogueCharacterList* RogueCharacterList__shift__Int32_OptionalInt32_Int32_OptionalCharacter( RogueCharacterList* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalCharacter fill_3 );
 RogueString* RogueGenericList__type_name( RogueClassGenericList* THIS );
@@ -4471,6 +4472,7 @@ RogueStringList* RogueStringList__add__String( RogueStringList* THIS, RogueStrin
 RogueStringList* RogueStringList__add__StringList( RogueStringList* THIS, RogueStringList* other_0 );
 RogueInt32 RogueStringList__capacity( RogueStringList* THIS );
 RogueStringList* RogueStringList__clear( RogueStringList* THIS );
+void RogueStringList__discard_from__Int32( RogueStringList* THIS, RogueInt32 index_0 );
 RogueOptionalInt32 RogueStringList__locate__String( RogueStringList* THIS, RogueString* value_0 );
 RogueStringList* RogueStringList__reserve__Int32( RogueStringList* THIS, RogueInt32 additional_count_0 );
 RogueString* RogueStringList__joined__String( RogueStringList* THIS, RogueString* separator_0 );
@@ -4627,6 +4629,7 @@ RoguePropertyList* RoguePropertyList__init__Int32( RoguePropertyList* THIS, Rogu
 RoguePropertyList* RoguePropertyList__add__Property( RoguePropertyList* THIS, RogueClassProperty* value_0 );
 RogueInt32 RoguePropertyList__capacity( RoguePropertyList* THIS );
 RoguePropertyList* RoguePropertyList__clear( RoguePropertyList* THIS );
+void RoguePropertyList__discard_from__Int32( RoguePropertyList* THIS, RogueInt32 index_0 );
 RogueOptionalInt32 RoguePropertyList__locate__Property( RoguePropertyList* THIS, RogueClassProperty* value_0 );
 RoguePropertyList* RoguePropertyList__reserve__Int32( RoguePropertyList* THIS, RogueInt32 additional_count_0 );
 RogueString* RogueProperty__to_String( RogueClassProperty* THIS );
@@ -4909,6 +4912,7 @@ RogueMethodList* RogueMethodList__add__Method( RogueMethodList* THIS, RogueClass
 RogueMethodList* RogueMethodList__add__MethodList( RogueMethodList* THIS, RogueMethodList* other_0 );
 RogueInt32 RogueMethodList__capacity( RogueMethodList* THIS );
 RogueMethodList* RogueMethodList__clear( RogueMethodList* THIS );
+void RogueMethodList__discard_from__Int32( RogueMethodList* THIS, RogueInt32 index_0 );
 RogueOptionalInt32 RogueMethodList__locate__Method( RogueMethodList* THIS, RogueClassMethod* value_0 );
 RogueMethodList* RogueMethodList__reserve__Int32( RogueMethodList* THIS, RogueInt32 additional_count_0 );
 RogueClassMethod* RogueMethodList__remove__Method( RogueMethodList* THIS, RogueClassMethod* value_0 );
@@ -4975,6 +4979,7 @@ RogueLocalList* RogueLocalList__init__Int32( RogueLocalList* THIS, RogueInt32 in
 RogueLocalList* RogueLocalList__add__Local( RogueLocalList* THIS, RogueClassLocal* value_0 );
 RogueInt32 RogueLocalList__capacity( RogueLocalList* THIS );
 RogueLocalList* RogueLocalList__clear( RogueLocalList* THIS );
+void RogueLocalList__discard_from__Int32( RogueLocalList* THIS, RogueInt32 index_0 );
 RogueLocalList* RogueLocalList__reserve__Int32( RogueLocalList* THIS, RogueInt32 additional_count_0 );
 RogueClassLocal* RogueLocalList__remove_at__Int32( RogueLocalList* THIS, RogueInt32 index_0 );
 RogueClassLocal* RogueLocalList__remove_last( RogueLocalList* THIS );
@@ -5001,6 +5006,7 @@ RogueByteList* RogueByteList__init__Int32( RogueByteList* THIS, RogueInt32 initi
 RogueByteList* RogueByteList__add__Byte( RogueByteList* THIS, RogueByte value_0 );
 RogueInt32 RogueByteList__capacity( RogueByteList* THIS );
 RogueByteList* RogueByteList__clear( RogueByteList* THIS );
+void RogueByteList__discard_from__Int32( RogueByteList* THIS, RogueInt32 index_0 );
 RogueByteList* RogueByteList__insert__Byte_Int32( RogueByteList* THIS, RogueByte value_0, RogueInt32 before_index_1 );
 RogueByteList* RogueByteList__reserve__Int32( RogueByteList* THIS, RogueInt32 additional_count_0 );
 RogueByte RogueByteList__remove_at__Int32( RogueByteList* THIS, RogueInt32 index_0 );
@@ -5269,6 +5275,7 @@ RogueCmdLabelList* RogueCmdLabelList__init__Int32( RogueCmdLabelList* THIS, Rogu
 RogueCmdLabelList* RogueCmdLabelList__add__CmdLabel( RogueCmdLabelList* THIS, RogueClassCmdLabel* value_0 );
 RogueInt32 RogueCmdLabelList__capacity( RogueCmdLabelList* THIS );
 RogueCmdLabelList* RogueCmdLabelList__clear( RogueCmdLabelList* THIS );
+void RogueCmdLabelList__discard_from__Int32( RogueCmdLabelList* THIS, RogueInt32 index_0 );
 RogueCmdLabelList* RogueCmdLabelList__reserve__Int32( RogueCmdLabelList* THIS, RogueInt32 additional_count_0 );
 RogueString* RogueString_CmdLabelTable__to_String( RogueClassString_CmdLabelTable* THIS );
 RogueString* RogueString_CmdLabelTable__type_name( RogueClassString_CmdLabelTable* THIS );

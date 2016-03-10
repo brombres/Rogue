@@ -54,7 +54,7 @@ class List<<$DataType>> : GenericList
       return result
 
     method clear->$DataType[]
-      count = 0
+      discard_from( 0 )
       return this
 
     method contains( value:$DataType )->Logical [macro]

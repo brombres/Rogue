@@ -15198,7 +15198,7 @@ RogueInt32 RogueCharacterList__capacity( RogueCharacterList* THIS )
 
 RogueCharacterList* RogueCharacterList__clear( RogueCharacterList* THIS )
 {
-  THIS->count = 0;
+  RogueCharacterList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueCharacterList*)(THIS);
 }
 
@@ -15220,6 +15220,18 @@ RogueCharacterList* RogueCharacterList__expand_to_count__Int32( RogueCharacterLi
 RogueCharacterList* RogueCharacterList__expand_to_include__Int32( RogueCharacterList* THIS, RogueInt32 index_0 )
 {
   return (RogueCharacterList*)(((RogueCharacterList__expand_to_count__Int32( ROGUE_ARG(THIS), ROGUE_ARG((index_0 + 1)) ))));
+}
+
+void RogueCharacterList__discard_from__Int32( RogueCharacterList* THIS, RogueInt32 index_0 )
+{
+  RogueCharacter zero_value_1 = 0;
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->characters[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueCharacterList* RogueCharacterList__reserve__Int32( RogueCharacterList* THIS, RogueInt32 additional_count_0 )
@@ -15471,8 +15483,20 @@ RogueInt32 RogueStringList__capacity( RogueStringList* THIS )
 
 RogueStringList* RogueStringList__clear( RogueStringList* THIS )
 {
-  THIS->count = 0;
+  RogueStringList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueStringList*)(THIS);
+}
+
+void RogueStringList__discard_from__Int32( RogueStringList* THIS, RogueInt32 index_0 )
+{
+  ROGUE_DEF_LOCAL_REF(RogueString*,zero_value_1,0);
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->objects[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueOptionalInt32 RogueStringList__locate__String( RogueStringList* THIS, RogueString* value_0 )
@@ -19530,8 +19554,20 @@ RogueInt32 RoguePropertyList__capacity( RoguePropertyList* THIS )
 
 RoguePropertyList* RoguePropertyList__clear( RoguePropertyList* THIS )
 {
-  THIS->count = 0;
+  RoguePropertyList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RoguePropertyList*)(THIS);
+}
+
+void RoguePropertyList__discard_from__Int32( RoguePropertyList* THIS, RogueInt32 index_0 )
+{
+  ROGUE_DEF_LOCAL_REF(RogueClassProperty*,zero_value_1,0);
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->objects[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueOptionalInt32 RoguePropertyList__locate__Property( RoguePropertyList* THIS, RogueClassProperty* value_0 )
@@ -19841,7 +19877,7 @@ RogueTypeList* RogueTypeList__choose__Function_Type_RETURNSLogical( RogueTypeLis
 
 RogueTypeList* RogueTypeList__clear( RogueTypeList* THIS )
 {
-  THIS->count = 0;
+  RogueTypeList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueTypeList*)(THIS);
 }
 
@@ -23925,8 +23961,20 @@ RogueInt32 RogueMethodList__capacity( RogueMethodList* THIS )
 
 RogueMethodList* RogueMethodList__clear( RogueMethodList* THIS )
 {
-  THIS->count = 0;
+  RogueMethodList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueMethodList*)(THIS);
+}
+
+void RogueMethodList__discard_from__Int32( RogueMethodList* THIS, RogueInt32 index_0 )
+{
+  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,zero_value_1,0);
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->objects[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueOptionalInt32 RogueMethodList__locate__Method( RogueMethodList* THIS, RogueClassMethod* value_0 )
@@ -24795,8 +24843,20 @@ RogueInt32 RogueLocalList__capacity( RogueLocalList* THIS )
 
 RogueLocalList* RogueLocalList__clear( RogueLocalList* THIS )
 {
-  THIS->count = 0;
+  RogueLocalList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueLocalList*)(THIS);
+}
+
+void RogueLocalList__discard_from__Int32( RogueLocalList* THIS, RogueInt32 index_0 )
+{
+  ROGUE_DEF_LOCAL_REF(RogueClassLocal*,zero_value_1,0);
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->objects[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueLocalList* RogueLocalList__reserve__Int32( RogueLocalList* THIS, RogueInt32 additional_count_0 )
@@ -25065,8 +25125,20 @@ RogueInt32 RogueByteList__capacity( RogueByteList* THIS )
 
 RogueByteList* RogueByteList__clear( RogueByteList* THIS )
 {
-  THIS->count = 0;
+  RogueByteList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueByteList*)(THIS);
+}
+
+void RogueByteList__discard_from__Int32( RogueByteList* THIS, RogueInt32 index_0 )
+{
+  RogueByte zero_value_1 = 0;
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->bytes[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueByteList* RogueByteList__insert__Byte_Int32( RogueByteList* THIS, RogueByte value_0, RogueInt32 before_index_1 )
@@ -29763,8 +29835,20 @@ RogueInt32 RogueCmdLabelList__capacity( RogueCmdLabelList* THIS )
 
 RogueCmdLabelList* RogueCmdLabelList__clear( RogueCmdLabelList* THIS )
 {
-  THIS->count = 0;
+  RogueCmdLabelList__discard_from__Int32( ROGUE_ARG(THIS), 0 );
   return (RogueCmdLabelList*)(THIS);
+}
+
+void RogueCmdLabelList__discard_from__Int32( RogueCmdLabelList* THIS, RogueInt32 index_0 )
+{
+  ROGUE_DEF_LOCAL_REF(RogueClassCmdLabel*,zero_value_1,0);
+  RogueInt32 c_2 = (THIS->count);
+  while (c_2 > index_0)
+  {
+    --c_2;
+    THIS->data->objects[c_2] = zero_value_1;
+  }
+  THIS->count = c_2;
 }
 
 RogueCmdLabelList* RogueCmdLabelList__reserve__Int32( RogueCmdLabelList* THIS, RogueInt32 additional_count_0 )
@@ -46094,9 +46178,9 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[25] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[26] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[27] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[28] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.22", 6 ) ); 
-  Rogue_literal_strings[29] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 9, 2016", 13 ) ); 
-  Rogue_literal_strings[30] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 646 ) ); 
+  Rogue_literal_strings[28] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.23", 6 ) ); 
+  Rogue_literal_strings[29] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 10, 2016", 14 ) ); 
+  Rogue_literal_strings[30] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc\n    Enables 'auto' garbage collection mode.  Without this option Rogue will use\n    'manual' garbage collection.\n\n  --gc=[manual|auto]\n    Explicitly set the garbage collection mode to manual or auto.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 855 ) ); 
   Rogue_literal_strings[31] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
   Rogue_literal_strings[32] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ",Mac,Windows,iOS,Android,...]\n", 30 ) ); 
   Rogue_literal_strings[33] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue", 5 ) ); 

@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.22
-- March 9, 2016
+- v1.0.23
+- March 10, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -27,6 +27,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.23 - March 10, 2016
+- Integrated MurphyMc's gc option which allows GC to happen during execution rather than only between calls into the Rogue system.
+- Fixed a reference holding error in List.
 
 ###v1.0.22 - March 9, 2016
 - `++` and `--` now work on compounds by transforming `++compound` into `compound = compound.operator+(1)` and `--compound` into `compound.operator+(-1)`.

@@ -4,7 +4,7 @@
 class Task
   METHODS
     method start->Task
-      if (update()) TaskManager.add( this )
+      if (update) TaskManager.add( this )
       return this
 
     method update->Logical
@@ -21,7 +21,7 @@ class TaskWithResult<<$ResultType>> : Task
       # Synchronously runs task until completion.  You can call
       # "await task" instead of "task.finish" to allow it to finish
       # concurrently.
-      while (update()) noAction
+      while (update) noAction
       return result
 endClass
 
@@ -60,15 +60,12 @@ class TaskManager [singleton]
       endWhile
 
     method update->Logical [requisite]
-      local any_active = false
-
-      update_list.clear().add( active_list )
-      active_list.clear()
+      update_list.add( active_list )
+      active_list.clear
       forEach (task at i in update_list)
         try
-          if (task.update())
+          if (task.update)
             # Active tasks stay in the list
-            any_active = true
             active_list.add( task )
           endIf
         catch (ex:Exception)
@@ -77,6 +74,8 @@ class TaskManager [singleton]
         endTry
       endForEach
 
-      return any_active or active_list.count
+      update_list.clear
+
+      return active_list.count
 endClass
 
