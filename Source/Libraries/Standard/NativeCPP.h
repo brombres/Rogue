@@ -1,15 +1,18 @@
-#pragma once
+//=============================================================================
+//  NativeCPP.h
+//=============================================================================
 
-//=============================================================================
-//  Rogue.h
-//
-//  ---------------------------------------------------------------------------
-//
-//  Created 2015.01.19 by Abe Pralle
-//
-//  This is free and unencumbered software released into the public domain
-//  under the terms of the UNLICENSE ( http://unlicense.org ).
-//=============================================================================
+#if defined(ROGUE_DEBUG_BUILD)
+  #define ROGUE_DEBUG_STATEMENT(_s_) _s_
+#else
+  #define ROGUE_DEBUG_STATEMENT(_s_)
+#endif
+
+#if defined(ROGUE_GCDEBUG_BUILD)
+  #define ROGUE_GCDEBUG_STATEMENT(_s_) _s_
+#else
+  #define ROGUE_GCDEBUG_STATEMENT(_s_) ;
+#endif
 
 #if defined(_WIN32)
 #  define ROGUE_PLATFORM_WINDOWS 1
@@ -135,6 +138,7 @@ typedef void         (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitFn)( void* obj );
 typedef void         (*RogueCleanUpFn)( void* obj );
 
+
 //-----------------------------------------------------------------------------
 //  RogueCallbackInfo
 //-----------------------------------------------------------------------------
@@ -168,6 +172,7 @@ struct RogueCallbackInfo
   }
 };
 
+
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
@@ -198,6 +203,7 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
 void         RogueType_print_name( RogueType* THIS );
 RogueType*   RogueType_retire( RogueType* THIS );
 RogueObject* RogueType_singleton( RogueType* THIS );
+
 
 //-----------------------------------------------------------------------------
 //  RogueObject
@@ -233,6 +239,7 @@ void*        RogueObject_release( RogueObject* THIS );
 void RogueObject_trace( void* obj );
 void RogueString_trace( void* obj );
 void RogueArray_trace( void* obj );
+
 
 //-----------------------------------------------------------------------------
 //  RogueString
@@ -315,6 +322,7 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 #  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
 #endif
 
+
 //-----------------------------------------------------------------------------
 //  RogueException
 //-----------------------------------------------------------------------------
@@ -340,6 +348,7 @@ struct RogueAllocationPage
 RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page );
 RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS );
 void*                RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size );
+
 
 //-----------------------------------------------------------------------------
 //  RogueAllocator
@@ -389,6 +398,7 @@ bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_quit();
 bool Rogue_update_tasks();  // returns true if tasks are still active
+
 
 //-----------------------------------------------------------------------------
 //  Stack Trace
@@ -447,3 +457,119 @@ struct RogueCallTrace
    }
 };
 
+void Rogue_print_stack_trace ( bool leading_newline=false);
+
+
+//-----------------------------------------------------------------------------
+//  Garbage Collection
+//-----------------------------------------------------------------------------
+#define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
+#define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) _t_ _n_ = 0
+#define ROGUE_CREATE_REF(_t_,_n_) ((_t_)_n_)
+#define ROGUE_ARG(_a_) _a_
+#define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) RoguePtr<_t_> _n_
+
+#if ROGUE_GC_MODE_AUTO
+  #undef ROGUE_DEF_LOCAL_REF_NULL
+  #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
+  #undef ROGUE_DEF_LOCAL_REF
+  #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) RoguePtr<_t_> _n_(_v_);
+  #undef ROGUE_ARG
+  #define ROGUE_ARG(_a_) rogue_ptr(_a_)
+#endif
+
+
+template <class T>
+struct RoguePtr
+{
+  T o;
+  RoguePtr ( ) : o(0) { }
+
+  RoguePtr (  T oo )
+   : o(oo)
+  {
+    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
+    ROGUE_GCDEBUG_STATEMENT(show());
+    if (o) o->reference_count++;
+  }
+
+  RoguePtr (const RoguePtr<T> & oo)
+   : o(oo.o)
+  {
+    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
+    ROGUE_GCDEBUG_STATEMENT(show());
+    if (o) o->reference_count++;
+  }
+
+  template <class O>
+  operator O ()
+  {
+    return (O)o;
+  }
+
+  operator T ()
+  {
+    return o;
+  }
+
+  RoguePtr & operator= ( T oo )
+  {
+    release();
+    o = oo;
+    if (o) o->reference_count++;
+    ROGUE_GCDEBUG_STATEMENT(printf("assign "));
+    ROGUE_GCDEBUG_STATEMENT(show());
+    return *this;
+  }
+
+  T& operator->()
+  {
+    return o;
+  }
+
+  void release ()
+  {
+    if (!o) return;
+    o->reference_count--;
+    ROGUE_GCDEBUG_STATEMENT( if (o->reference_count == 0) show() );
+    if (o->reference_count < 0) o->reference_count = 0;
+    o = 0;
+  }
+
+  ~RoguePtr ()
+  {
+    release();
+  }
+
+  void show () {
+    printf("ptr:%p o:%p rc:%i\n", this, o, o ? o->reference_count : -42);
+  }
+};
+
+
+template < class T, class U >
+bool operator!=( const RoguePtr<T>& lhs, const RoguePtr<U>& rhs )
+{
+  return lhs.o != rhs.o;
+}
+
+
+template <class T>
+RoguePtr<T> & rogue_ptr ( RoguePtr<T> & o )
+{
+  return o;
+}
+
+template <class T>
+RoguePtr<T*> rogue_ptr ( T * p )
+{
+  return RoguePtr<T*>(p);
+}
+
+template <class T>
+T rogue_ptr (T p)
+{
+  return p;
+}
+
+//=============================================================================

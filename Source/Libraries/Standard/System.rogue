@@ -18,6 +18,20 @@ class System [requisite]
          |  system( cmd_buffer );
          |}
 
+    method collect_garbage ( force=false:Logical )->Logical
+      # Runs the garbage collector if possible
+      #
+      # "force" tries harder to run the GC.
+      # Returns true if the collector ran.
+
+      local result = false
+      $if ("C++")
+        native @|#if ROGUE_GC_MODE_AUTO
+                |$result = Rogue_collect_garbage($force);
+                |#endif
+      $endIf
+      return result
+
     method time->Real64
       $if ("C++")
         native @|#if defined(_WIN32)
@@ -55,7 +69,7 @@ class SystemEnvironment [compound]
       return select{ not result:null || result.decode_utf8 }
 
     method listing->String[]
-      nativeHeader extern char **environ;
+      nativeHeader extern "C" char **environ;
 
       local result = String[]
       native "char** env = environ;"

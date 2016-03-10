@@ -75,7 +75,7 @@ if:
 	@echo You can execute the following as a simple test:
 	@echo
 	@echo    println '"Hello World!"' > Hello.rogue
-	@eco     roguec Hello.rogue --execute
+	@echo    roguec Hello.rogue --execute
 	@echo
 
 test:

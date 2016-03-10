@@ -15,6 +15,8 @@ class Program [requisite singleton]
     augment_lookup = Table<<String,Augment[]>>()
     requisite_list = RequisiteItem[]
 
+    all_requisite = false # Make everything requisite
+
     first_filepath           = ""
     m_on_launch              : Method
     global_properties        = Property[]
@@ -281,6 +283,24 @@ class Program [requisite singleton]
           endIf
         endIf
       endForEach
+
+      if (all_requisite)
+        forEach (t in type_lookup)
+          t.resolve
+          t.attributes.add( Attribute.is_requisite )
+          forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
+          forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
+        endForEach
+        forEach (templ in template_list)
+          if (not templ.type_parameters)
+            templ.attributes.add( Attribute.is_requisite )
+            local t = get_type_reference( templ.t, templ.name )
+            t.resolve
+            forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
+            forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
+          endIf
+        endForEach
+      endIf
 
       # Reference and resolve all requisite type templates
       forEach (templ in template_list)

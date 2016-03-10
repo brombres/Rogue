@@ -92,7 +92,7 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
 
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 {
-  RogueObject* obj;
+  ROGUE_DEF_LOCAL_REF_NULL(RogueObject*, obj);
   RogueInitFn  fn;
 
   if ( !size ) size = THIS->object_size;
@@ -593,10 +593,22 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
+#if ROGUE_GC_MODE_AUTO
+  Rogue_collect_garbage();
+#endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
     Rogue_bytes_allocated_since_gc += size;
-    return malloc( size );
+    void * mem = malloc( size );
+#if ROGUE_GC_MODE_AUTO
+    if (!mem)
+    {
+      // Try hard!
+      Rogue_collect_garbage(true);
+      mem = malloc( size );
+    }
+#endif
+    return mem;
   }
 
   if (size <= 0) size = ROGUEMM_GRANULARITY_SIZE;
@@ -605,7 +617,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   Rogue_bytes_allocated_since_gc += size;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
-  RogueObject* obj = THIS->available_objects[slot];
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[slot]);
 
   if (obj)
   {
@@ -651,9 +663,14 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
 {
-  RogueObject* obj = (RogueObject*) RogueAllocator_allocate( THIS, size );
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*) RogueAllocator_allocate( THIS, size ));
+
+  ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
+  ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
+  ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
+  //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
+
   memset( obj, 0, size );
-//printf( "Allocating " ); RogueType_print_name(of_type); printf( "\n" );
 
   if (of_type->clean_up_fn)
   {
@@ -675,6 +692,7 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
 {
   if (data)
   {
+    ROGUE_GCDEBUG_STATEMENT(memset(data,0,size));
     if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
     {
       free( data );
@@ -782,7 +800,9 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     }
     else
     {
-//printf( "Freeing " ); RogueType_print_name(cur->type); printf( "\n" );
+      ROGUE_GCDEBUG_STATEMENT( printf( "Freeing " ) );
+      ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(cur->type) );
+      ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", cur ) );
       RogueAllocator_free( THIS, cur, cur->object_size );
     }
     cur = next_object;
@@ -811,15 +831,37 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
 }
 
+void Rogue_print_stack_trace ( bool leading_newline )
+{
+  int i = Rogue_call_stack.count;
+  if (i && leading_newline) printf("\n");
+  while (--i >= 0)
+  {
+    printf( "%s\n", Rogue_call_stack.locations[i] );
+  }
+  printf("\n");
+}
+
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
-    printf( "Null reference error.\n\n" );
-
-    int i = Rogue_call_stack.count;
-    while (--i >= 0)
+    if (si->si_addr < (void*)4096)
     {
-      printf( "%s\n", Rogue_call_stack.locations[i] );
+      // Probably a null pointer dereference.
+      printf( "Null reference error (accessing memory at %p)\n",
+              si->si_addr );
     }
+    else
+    {
+      if (si->si_code == SEGV_MAPERR)
+        printf( "Access to unmapped memory at " );
+      else if (si->si_code == SEGV_ACCERR)
+        printf( "Access to forbidden memory at " );
+      else
+        printf( "Unknown segfault accessing " );
+      printf("%p\n", si->si_addr);
+    }
+
+    Rogue_print_stack_trace( true );
 
     exit(0);
 }
