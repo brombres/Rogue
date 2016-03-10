@@ -117,7 +117,9 @@ RogueType* RogueType_retire( RogueType* THIS )
 {
   if (THIS->base_types)
   {
+#if !ROGUE_GC_MODE_BOEHM
     delete [] THIS->base_types;
+#endif
     THIS->base_types = 0;
     THIS->base_type_count = 0;
   }
@@ -661,6 +663,42 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   return RogueAllocationPage_allocate( THIS->pages, size );
 }
 
+#if ROGUE_GC_MODE_BOEHM
+void Rogue_Boehm_Finalizer( void* obj, void* data )
+{
+  RogueObject* o = (RogueObject*)obj;
+  o->type->clean_up_fn(o);
+}
+
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
+{
+  // If we had more type information (e.g., whether the data contained
+  // references), we could make better decisions here.
+  // Also, it seems like we could probably use the small allocator too.
+  RogueObject* obj = (RogueObject*)GC_MALLOC( size );
+  if (!obj)
+  {
+    Rogue_collect_garbage( true );
+    obj = (RogueObject*)GC_MALLOC( size );
+  }
+  ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
+  ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
+  ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
+  //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
+
+  if (of_type->clean_up_fn)
+  {
+    GC_REGISTER_FINALIZER_IGNORE_SELF( obj, Rogue_Boehm_Finalizer, 0, 0, 0 );
+  }
+
+  memset( obj, 0, size );
+
+  obj->type = of_type;
+  obj->object_size = size;
+
+  return obj;
+}
+#else
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
 {
   ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*) RogueAllocator_allocate( THIS, size ));
@@ -687,6 +725,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 
   return obj;
 }
+#endif
 
 void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
 {
@@ -900,7 +939,11 @@ void Rogue_configure_types()
     type->base_type_count = *(++type_info);
     if (type->base_type_count)
     {
+#if ROGUE_GC_MODE_BOEHM
+      type->base_types = new (NoGC) RogueType*[ type->base_type_count ];
+#else
       type->base_types = new RogueType*[ type->base_type_count ];
+#endif
       for (j=0; j<type->base_type_count; ++j)
       {
         type->base_types[j] = &Rogue_types[ *(++type_info) ];
@@ -913,10 +956,45 @@ void Rogue_configure_types()
   }
 }
 
+#if ROGUE_GC_MODE_BOEHM
+GC_ToggleRefStatus Rogue_Boehm_ToggleRefStatus (void * o)
+{
+  RogueObject* obj = (RogueObject*)o;
+  if (obj->reference_count > 0) return GC_TOGGLE_REF_STRONG;
+  return GC_TOGGLE_REF_DROP;
+}
+
+void Rogue_configure_gc()
+{
+  // Initialize Boehm collector
+  //GC_set_finalize_on_demand(0);
+  GC_set_toggleref_func(Rogue_Boehm_ToggleRefStatus);
+  //GC_set_all_interior_pointers(0);
+  GC_INIT();
+}
+#else
 void Rogue_configure_gc()
 {
 }
+#endif
 
+#if ROGUE_GC_MODE_BOEHM
+bool Rogue_collect_garbage( bool forced )
+{
+  if (forced)
+  {
+    Rogue_on_begin_gc.call();
+    GC_gcollect();
+    Rogue_on_end_gc.call();
+    return true;
+  }
+
+  Rogue_on_begin_gc.call();
+  int r = GC_collect_a_little();
+  Rogue_on_end_gc.call();
+  return r;
+}
+#else
 bool Rogue_collect_garbage( bool forced )
 {
   int i;
@@ -939,6 +1017,7 @@ bool Rogue_collect_garbage( bool forced )
 
   return true;
 }
+#endif
 
 void Rogue_quit()
 {
@@ -958,3 +1037,22 @@ void Rogue_quit()
   }
 }
 
+#if ROGUE_GC_MODE_BOEHM
+
+void Rogue_Boehm_IncRef (RogueObject* o)
+{
+  ++o->reference_count;
+  if (o->reference_count == 1)
+  {
+    GC_toggleref_add(o, 1);
+  }
+}
+void Rogue_Boehm_DecRef (RogueObject* o)
+{
+  --o->reference_count;
+  if (o->reference_count < 0)
+  {
+    o->reference_count = 0;
+  }
+}
+#endif

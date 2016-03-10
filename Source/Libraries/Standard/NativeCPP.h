@@ -58,6 +58,32 @@
 
 extern void Rogue_configure_gc();
 
+#if ROGUE_GC_MODE_BOEHM
+  #define GC_NAME_CONFLICT
+  #include "gc.h"
+  #include "gc_cpp.h"
+  #include "gc_allocator.h"
+
+  struct RogueObject;
+  extern void Rogue_Boehm_IncRef (RogueObject*);
+  extern void Rogue_Boehm_DecRef (RogueObject*);
+
+  #undef ROGUE_NEW_BYTES
+  #undef ROGUE_DEL_BYTES
+  #define ROGUE_NEW_BYTES(_count_) ((void*)GC_MALLOC(_count_))
+  //#define ROGUE_DEL_BYTES(_ptr_) GC_FREE(_ptr_)
+  #define ROGUE_DEL_BYTES(_ptr_) /* May perform better! */
+
+  #undef ROGUE_INCREF
+  #undef ROGUE_DECREF
+  #undef ROGUE_XINCREF
+  #undef ROGUE_XDECREF
+  #define ROGUE_INCREF(_o_) if (_o_) Rogue_Boehm_IncRef(_o_)
+  #define ROGUE_DECREF(_o_) if (_o_) Rogue_Boehm_DecRef(_o_)
+  #define ROGUE_XINCREF(_o_) Rogue_Boehm_IncRef(_o_)
+  #define ROGUE_XDECREF(_o_) Rogue_Boehm_DecRef(_o_)
+#endif
+
 #if ROGUE_GC_MODE_AUTO
   #undef ROGUE_DEF_LOCAL_REF_NULL
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
