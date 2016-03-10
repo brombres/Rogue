@@ -957,11 +957,23 @@ void Rogue_configure_types()
 }
 
 #if ROGUE_GC_MODE_BOEHM
-GC_ToggleRefStatus Rogue_Boehm_ToggleRefStatus (void * o)
+static GC_ToggleRefStatus Rogue_Boehm_ToggleRefStatus( void * o )
 {
   RogueObject* obj = (RogueObject*)o;
   if (obj->reference_count > 0) return GC_TOGGLE_REF_STRONG;
   return GC_TOGGLE_REF_DROP;
+}
+
+static void Rogue_Boehm_on_collection_event( GC_EventType event )
+{
+  if (event == GC_EVENT_START)
+  {
+    Rogue_on_begin_gc.call();
+  }
+  else if (event == GC_EVENT_END)
+  {
+    Rogue_on_end_gc.call();
+  }
 }
 
 void Rogue_configure_gc()
@@ -969,6 +981,7 @@ void Rogue_configure_gc()
   // Initialize Boehm collector
   //GC_set_finalize_on_demand(0);
   GC_set_toggleref_func(Rogue_Boehm_ToggleRefStatus);
+  GC_set_on_collection_event(Rogue_Boehm_on_collection_event);
   //GC_set_all_interior_pointers(0);
   GC_INIT();
 }
@@ -983,16 +996,11 @@ bool Rogue_collect_garbage( bool forced )
 {
   if (forced)
   {
-    Rogue_on_begin_gc.call();
     GC_gcollect();
-    Rogue_on_end_gc.call();
     return true;
   }
 
-  Rogue_on_begin_gc.call();
-  int r = GC_collect_a_little();
-  Rogue_on_end_gc.call();
-  return r;
+  return GC_collect_a_little();
 }
 #else
 bool Rogue_collect_garbage( bool forced )
