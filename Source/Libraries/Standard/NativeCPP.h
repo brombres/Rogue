@@ -30,14 +30,131 @@
 #  include <cstdint>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
+
+//-----------------------------------------------------------------------------
+//  Garbage Collection
+//-----------------------------------------------------------------------------
 #ifndef ROGUE_GC_THRESHOLD_KB
   #define ROGUE_GC_THRESHOLD_KB (512)
 #endif
 #define ROGUE_GC_THRESHOLD_BYTES (ROGUE_GC_THRESHOLD_KB << 10)
 
-#include <stdlib.h>
-#include <string.h>
+#define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
+#define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) _t_ _n_ = 0
+#define ROGUE_CREATE_REF(_t_,_n_) ((_t_)_n_)
+#define ROGUE_ARG(_a_) _a_
+#define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) RoguePtr<_t_> _n_
 
+#if ROGUE_GC_MODE_AUTO
+  #undef ROGUE_DEF_LOCAL_REF_NULL
+  #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
+  #undef ROGUE_DEF_LOCAL_REF
+  #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) RoguePtr<_t_> _n_(_v_);
+  #undef ROGUE_ARG
+  #define ROGUE_ARG(_a_) rogue_ptr(_a_)
+#endif
+
+
+template <class T>
+struct RoguePtr
+{
+  T o;
+  RoguePtr ( ) : o(0) { }
+
+  RoguePtr (  T oo )
+   : o(oo)
+  {
+    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
+    ROGUE_GCDEBUG_STATEMENT(show());
+    if (o) o->reference_count++;
+  }
+
+  RoguePtr (const RoguePtr<T> & oo)
+   : o(oo.o)
+  {
+    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
+    ROGUE_GCDEBUG_STATEMENT(show());
+    if (o) o->reference_count++;
+  }
+
+  template <class O>
+  operator O ()
+  {
+    return (O)o;
+  }
+
+  operator T ()
+  {
+    return o;
+  }
+
+  RoguePtr & operator= ( T oo )
+  {
+    release();
+    o = oo;
+    if (o) o->reference_count++;
+    ROGUE_GCDEBUG_STATEMENT(printf("assign "));
+    ROGUE_GCDEBUG_STATEMENT(show());
+    return *this;
+  }
+
+  T& operator->()
+  {
+    return o;
+  }
+
+  void release ()
+  {
+    if (!o) return;
+    o->reference_count--;
+    ROGUE_GCDEBUG_STATEMENT( if (o->reference_count == 0) show() );
+    if (o->reference_count < 0) o->reference_count = 0;
+    o = 0;
+  }
+
+  ~RoguePtr ()
+  {
+    release();
+  }
+
+  void show () {
+    printf("ptr:%p o:%p rc:%i\n", this, o, o ? o->reference_count : -42);
+  }
+};
+
+
+template < class T, class U >
+bool operator!=( const RoguePtr<T>& lhs, const RoguePtr<U>& rhs )
+{
+  return lhs.o != rhs.o;
+}
+
+
+template <class T>
+RoguePtr<T> & rogue_ptr ( RoguePtr<T> & o )
+{
+  return o;
+}
+
+template <class T>
+RoguePtr<T*> rogue_ptr ( T * p )
+{
+  return RoguePtr<T*>(p);
+}
+
+template <class T>
+T rogue_ptr (T p)
+{
+  return p;
+}
+
+
+//-----------------------------------------------------------------------------
+//  Basics (Primitive types, macros, etc.)
+//-----------------------------------------------------------------------------
 #if defined(ROGUE_PLATFORM_WINDOWS)
   typedef double           RogueReal;
   typedef float            RogueFloat;
@@ -460,116 +577,6 @@ struct RogueCallTrace
 void Rogue_print_stack_trace ( bool leading_newline=false);
 
 
-//-----------------------------------------------------------------------------
-//  Garbage Collection
-//-----------------------------------------------------------------------------
-#define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
-#define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) _t_ _n_ = 0
-#define ROGUE_CREATE_REF(_t_,_n_) ((_t_)_n_)
-#define ROGUE_ARG(_a_) _a_
-#define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) RoguePtr<_t_> _n_
 
-#if ROGUE_GC_MODE_AUTO
-  #undef ROGUE_DEF_LOCAL_REF_NULL
-  #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
-  #undef ROGUE_DEF_LOCAL_REF
-  #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) RoguePtr<_t_> _n_(_v_);
-  #undef ROGUE_ARG
-  #define ROGUE_ARG(_a_) rogue_ptr(_a_)
-#endif
-
-
-template <class T>
-struct RoguePtr
-{
-  T o;
-  RoguePtr ( ) : o(0) { }
-
-  RoguePtr (  T oo )
-   : o(oo)
-  {
-    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
-    ROGUE_GCDEBUG_STATEMENT(show());
-    if (o) o->reference_count++;
-  }
-
-  RoguePtr (const RoguePtr<T> & oo)
-   : o(oo.o)
-  {
-    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
-    ROGUE_GCDEBUG_STATEMENT(show());
-    if (o) o->reference_count++;
-  }
-
-  template <class O>
-  operator O ()
-  {
-    return (O)o;
-  }
-
-  operator T ()
-  {
-    return o;
-  }
-
-  RoguePtr & operator= ( T oo )
-  {
-    release();
-    o = oo;
-    if (o) o->reference_count++;
-    ROGUE_GCDEBUG_STATEMENT(printf("assign "));
-    ROGUE_GCDEBUG_STATEMENT(show());
-    return *this;
-  }
-
-  T& operator->()
-  {
-    return o;
-  }
-
-  void release ()
-  {
-    if (!o) return;
-    o->reference_count--;
-    ROGUE_GCDEBUG_STATEMENT( if (o->reference_count == 0) show() );
-    if (o->reference_count < 0) o->reference_count = 0;
-    o = 0;
-  }
-
-  ~RoguePtr ()
-  {
-    release();
-  }
-
-  void show () {
-    printf("ptr:%p o:%p rc:%i\n", this, o, o ? o->reference_count : -42);
-  }
-};
-
-
-template < class T, class U >
-bool operator!=( const RoguePtr<T>& lhs, const RoguePtr<U>& rhs )
-{
-  return lhs.o != rhs.o;
-}
-
-
-template <class T>
-RoguePtr<T> & rogue_ptr ( RoguePtr<T> & o )
-{
-  return o;
-}
-
-template <class T>
-RoguePtr<T*> rogue_ptr ( T * p )
-{
-  return RoguePtr<T*>(p);
-}
-
-template <class T>
-T rogue_ptr (T p)
-{
-  return p;
-}
 
 //=============================================================================
