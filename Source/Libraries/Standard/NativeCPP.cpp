@@ -599,7 +599,16 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
     Rogue_bytes_allocated_since_gc += size;
-    return malloc( size );
+    void * mem = malloc( size );
+#if ROGUE_GC_MODE_AUTO
+    if (!mem)
+    {
+      // Try hard!
+      Rogue_collect_garbage(true);
+      mem = malloc( size );
+    }
+#endif
+    return mem;
   }
 
   if (size <= 0) size = ROGUEMM_GRANULARITY_SIZE;
