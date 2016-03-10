@@ -652,6 +652,7 @@ augment Program
                       |Rogue_argc = argc;
                       |Rogue_argv = argv;
                       |
+                      |Rogue_configure_gc();
                       |Rogue_configure_types();
                       |
 

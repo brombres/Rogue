@@ -913,6 +913,10 @@ void Rogue_configure_types()
   }
 }
 
+void Rogue_configure_gc()
+{
+}
+
 bool Rogue_collect_garbage( bool forced )
 {
   int i;
