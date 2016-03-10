@@ -134,6 +134,13 @@ augment Program
       writer.println "//-----------------------------------------------------------------------------"
       writer.println "#pragma once"
 
+      # It'd be nice to be able to override these with a C++ -D arg...
+      writer.print "#define ROGUE_GC_MODE_MANUAL "
+      writer.println select{RogueC.gc_mode == GCMode.MANUAL: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO "
+      writer.println select{RogueC.gc_mode == GCMode.AUTO: "1" || "0"}
+      writer.println
+
       # Embed nativeHeader
       writer.println "// NATIVE HEADERS"
       forEach (line in native_header)
@@ -1165,6 +1172,22 @@ class CPPWriter
     # If cast_to is given, we'll insert a cast to this type.
 
     local close_paren = 0
+
+    # We want to increase the reference count of arguments we're passing,
+    # which happens by wrapping them in ROGUE_ARG.  If this argument is
+    # guaranteed to have a lifetime at least as long as the call we're
+    # making, we can skip this.
+    if (arg instanceOf CmdReadLocal)
+      noAction # Current frame won't die before cal
+    elseIf (arg instanceOf CmdReadSingleton)
+      noAction # Singletons live forever
+    elseIf (arg instanceOf CmdLiteral)
+      noAction # Literals live forever
+    else
+      # Can't be sure.  Increase the ref count.
+      print( "ROGUE_ARG(" )
+      ++ close_paren
+    endIf
 
     if (param_type and param_type.is_aspect)
       print( "(" ).print_cast(arg.type, param_type).print("(")

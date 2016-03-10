@@ -593,6 +593,9 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
+#if ROGUE_GC_MODE_AUTO
+  Rogue_collect_garbage();
+#endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
     Rogue_bytes_allocated_since_gc += size;

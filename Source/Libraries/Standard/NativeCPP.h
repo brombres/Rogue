@@ -466,7 +466,17 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
 #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
 #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) _t_ _n_ = 0
 #define ROGUE_CREATE_REF(_t_,_n_) ((_t_)_n_)
+#define ROGUE_ARG(_a_) _a_
 #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) RoguePtr<_t_> _n_
+
+#if ROGUE_GC_MODE_AUTO
+  #undef ROGUE_DEF_LOCAL_REF_NULL
+  #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
+  #undef ROGUE_DEF_LOCAL_REF
+  #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) RoguePtr<_t_> _n_(_v_);
+  #undef ROGUE_ARG
+  #define ROGUE_ARG(_a_) rogue_ptr(_a_)
+#endif
 
 
 template <class T>

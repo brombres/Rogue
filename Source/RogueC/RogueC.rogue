@@ -23,6 +23,14 @@ $include "Type.rogue"
 
 RogueC.launch
 
+
+class GCMode
+  ENUMERATE
+    MANUAL
+    AUTO
+endClass
+
+
 class RogueC [singleton]
   PROPERTIES
     included_files     = String[]
@@ -57,6 +65,7 @@ class RogueC [singleton]
     parsereaders_by_filepath = Table<<String,ParseReader>>()
     stopwatch : Stopwatch
 
+    gc_mode = GCMode.MANUAL : Int32
   METHODS
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
@@ -331,6 +340,16 @@ class RogueC [singleton]
                 throw RogueError( ''One or more comma-separated target names expected after "--target=" (e.g. "C++").'' )
               endIf
               target_list.add( value.split(',') )
+
+            case "--gc"
+              if ((not value.count) or value == "auto")
+                # Default to AUTO if nothing specified
+                gc_mode = GCMode.AUTO
+              elseIf (value == "manual")
+                gc_mode = GCMode.MANUAL
+              else
+                throw RogueError( 'Unknown GC mode (--gc=$)' (value) )
+              endIf
 
             others
               throw RogueError( "Unknown option '$'." (arg) )
