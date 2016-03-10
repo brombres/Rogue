@@ -117,7 +117,7 @@ RogueType* RogueType_retire( RogueType* THIS )
 {
   if (THIS->base_types)
   {
-    delete THIS->base_types;
+    delete [] THIS->base_types;
     THIS->base_types = 0;
     THIS->base_type_count = 0;
   }
