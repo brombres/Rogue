@@ -56,6 +56,8 @@
 #define ROGUE_NEW_BYTES(_count_) malloc(_count_)
 #define ROGUE_DEL_BYTES(_ptr_) free(_ptr_)
 
+#define ROGUE_STL_ALLOCATOR std::allocator
+
 extern void Rogue_configure_gc();
 
 #ifdef ROGUE_GC_UNSAFE_COMPOUNDS
@@ -68,6 +70,9 @@ extern void Rogue_configure_gc();
   #include "gc.h"
   #include "gc_cpp.h"
   #include "gc_allocator.h"
+
+  #undef ROGUE_STL_ALLOCATOR
+  #define ROGUE_STL_ALLOCATOR traceable_allocator
 
   struct RogueObject;
   extern void Rogue_Boehm_IncRef (RogueObject*);
