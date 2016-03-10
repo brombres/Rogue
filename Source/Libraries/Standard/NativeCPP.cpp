@@ -173,13 +173,13 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
 
 void* RogueObject_retain( RogueObject* THIS )
 {
-  if (THIS) ++THIS->reference_count;
+  ROGUE_INCREF(THIS);
   return THIS;
 }
 
 void* RogueObject_release( RogueObject* THIS )
 {
-  if (THIS) --THIS->reference_count;
+  ROGUE_DECREF(THIS);
   return THIS;
 }
 
@@ -480,8 +480,8 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* sr
     while (--copy_count >= 0)
     {
       RogueObject* src_obj, dest_obj;
-      if ((src_obj = *(++src))) ++src_obj->reference_count;
-      if ((dest_obj = *(++dest)) && !(--dest_obj->reference_count))
+      if ((src_obj = *(++src))) ROGUE_INCREF(src_obj);
+      if ((dest_obj = *(++dest)) && !(ROGUE_DECREF(dest_obj)))
       {
         // TODO: delete dest_obj
         *dest = src_obj;
@@ -499,8 +499,8 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* sr
       while (--copy_count >= 0)
       {
         RogueObject* src_obj, dest_obj;
-        if ((src_obj = *(--src))) ++src_obj->reference_count;
-        if ((dest_obj = *(--dest)) && !(--dest_obj->reference_count))
+        if ((src_obj = *(--src))) ROGUE_INCREF(src_obj);
+        if ((dest_obj = *(--dest)) && !(ROGUE_DECREF(dest_obj)))
         {
           // TODO: delete dest_obj
           *dest = src_obj;

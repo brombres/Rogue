@@ -48,6 +48,11 @@
 #define ROGUE_ARG(_a_) _a_
 #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) RoguePtr<_t_> _n_
 
+#define ROGUE_XINCREF(_o_)  (++((_o_)->reference_count))
+#define ROGUE_XDECREF(_o_)  (--((_o_)->reference_count))
+#define ROGUE_INCREF(_o_) if (_o_) (++((_o_)->reference_count))
+#define ROGUE_DECREF(_o_) if (_o_) (--((_o_)->reference_count))
+
 #if ROGUE_GC_MODE_AUTO
   #undef ROGUE_DEF_LOCAL_REF_NULL
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
@@ -69,7 +74,7 @@ struct RoguePtr
   {
     ROGUE_GCDEBUG_STATEMENT(printf("ref "));
     ROGUE_GCDEBUG_STATEMENT(show());
-    if (o) o->reference_count++;
+    ROGUE_INCREF(o);
   }
 
   RoguePtr (const RoguePtr<T> & oo)
@@ -77,7 +82,7 @@ struct RoguePtr
   {
     ROGUE_GCDEBUG_STATEMENT(printf("ref "));
     ROGUE_GCDEBUG_STATEMENT(show());
-    if (o) o->reference_count++;
+    ROGUE_INCREF(o);
   }
 
   template <class O>
@@ -95,7 +100,7 @@ struct RoguePtr
   {
     release();
     o = oo;
-    if (o) o->reference_count++;
+    ROGUE_INCREF(o);
     ROGUE_GCDEBUG_STATEMENT(printf("assign "));
     ROGUE_GCDEBUG_STATEMENT(show());
     return *this;
@@ -109,7 +114,7 @@ struct RoguePtr
   void release ()
   {
     if (!o) return;
-    o->reference_count--;
+    ROGUE_DECREF(o);
     ROGUE_GCDEBUG_STATEMENT( if (o->reference_count == 0) show() );
     if (o->reference_count < 0) o->reference_count = 0;
     o = 0;
