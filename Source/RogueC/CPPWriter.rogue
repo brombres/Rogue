@@ -1155,6 +1155,33 @@ class CPPWriter
           throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
       endWhich
 
+  method print_arg ( arg:Cmd, param_type=null:Type, cast_to=null:Type )
+    # Prints an argument to a call
+    #
+    # Note that the argument here may not be an argument as far as *Rogue*
+    # is concerned, but it's an argument as far as C++ is concerned (e.g.,
+    # it may be the "this" pointer).
+    # If param_type is given and is an aspect, we do an aspect-wrap.
+    # If cast_to is given, we'll insert a cast to this type.
+
+    local close_paren = 0
+
+    if (param_type and param_type.is_aspect)
+      print( "(" ).print_cast(arg.type, param_type).print("(")
+      close_paren += 2
+    endIf
+
+    if (cast_to)
+      print_cast( arg.type, cast_to, arg )
+    else
+      arg.write_cpp( this )
+    endIf
+
+    while (close_paren)
+      -- close_paren
+      print( ")" )
+    endWhile
+
   method mark_statement_start( statement_filepath:String, start_line:Int32, end_line:Int32 )
     #@trace "STATEMENT ", this.filepath, this.line_number, statement_filepath, start_line, end_line
 
@@ -2204,14 +2231,7 @@ augment CmdCallRoutine
         local i = 0
         forEach (arg in args)
           if (i > 0) writer.print( ", " )
-          local param_type = method_info.parameters[i].type
-          if (param_type.is_aspect)
-            writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
-            arg.write_cpp( writer )
-            writer.print( "))" )
-          else
-            arg.write_cpp( writer )
-          endIf
+          writer.print_arg( arg, method_info.parameters[i].type )
           ++i
         endForEach
         writer.print( " " )
@@ -2226,21 +2246,11 @@ augment CmdCallAspectMethod
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       writer.print( method_info.cpp_name )
       writer.print( "( " )
-      writer.print( "(" )
-      writer.print( Program.type_Object )
-      writer.print( ")" )
-      context.write_cpp( writer )
+      writer.print_arg( context, &cast_to=Program.type_Object )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        local param_type = method_info.parameters[i].type
-        if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
-          arg.write_cpp( writer )
-          writer.print( "))" )
-        else
-          arg.write_cpp( writer )
-        endIf
+        writer.print_arg( arg, method_info.parameters[i].type )
         ++i
       endForEach
       writer.print( " )" )
@@ -2256,22 +2266,11 @@ augment CmdCallDynamicMethod
         writer.print( "call_" ).print( method_info.cpp_typedef )
         writer.print( "( " )
         writer.print( method_info.index ).print( ", " )
-        writer.print( "(" )
-        writer.print( method_info.type_context )
-        writer.print( ")(" )
-        context.write_cpp( writer )
-        writer.print( ")" )
+        writer.print_arg( context, &cast_to = method_info.type_context )
         local i = 0
         forEach (arg in args)
           writer.print( ", " )
-          local param_type = method_info.parameters[i].type
-          if (param_type.is_aspect)
-            writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type)
-            arg.write_cpp( writer )
-            writer.print( ")" )
-          else
-            arg.write_cpp( writer )
-          endIf
+          writer.print_arg( arg, method_info.parameters[i].type )
           ++i
         endForEach
         writer.print( " )" )
@@ -2289,18 +2288,11 @@ augment CmdCallStaticMethod
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       writer.print( method_info.cpp_name )
       writer.print( "( " )
-      writer.print_cast( context.type, method_info.type_context, context )
+      writer.print_arg( context, &cast_to = method_info.type_context )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        local param_type = method_info.parameters[i].type
-        if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type)
-          arg.write_cpp( writer )
-          writer.print( ")" )
-        else
-          arg.write_cpp( writer )
-        endIf
+        writer.print_arg( arg, method_info.parameters[i].type )
         ++i
       endForEach
       writer.print( " )" )
@@ -2317,14 +2309,7 @@ augment CmdCallNativeRoutine
       local i = 0
       forEach (arg in args)
         if (i > 0) writer.print( ", " )
-        local param_type = method_info.parameters[i].type
-        if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
-          arg.write_cpp( writer )
-          writer.print( "))" )
-        else
-          arg.write_cpp( writer )
-        endIf
+        writer.print_arg( arg, method_info.parameters[i].type )
         ++i
       endForEach
       writer.print( " )" )
@@ -2337,18 +2322,11 @@ augment CmdCallNativeMethod
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       writer.print( method_info.cpp_name )
       writer.print( "( " )
-      context.write_cpp( writer )
+      writer.print_arg( context )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        local param_type = method_info.parameters[i].type
-        if (param_type.is_aspect)
-          writer.print( "(" ).print_cast(arg.type,method_info.parameters[i].type).print("(")
-          arg.write_cpp( writer )
-          writer.print( "))" )
-        else
-          arg.write_cpp( writer )
-        endIf
+        writer.print_arg( arg, method_info.parameters[i].type )
         ++i
       endForEach
       writer.print( " )" )
