@@ -537,7 +537,7 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* sr
 //-----------------------------------------------------------------------------
 RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page )
 {
-  RogueAllocationPage* result = (RogueAllocationPage*) malloc( sizeof(RogueAllocationPage) );
+  RogueAllocationPage* result = (RogueAllocationPage*) ROGUE_NEW_BYTES(sizeof(RogueAllocationPage));
   result->next_page = next_page;
   result->cursor = result->data;
   result->remaining = ROGUEMM_PAGE_SIZE;
@@ -546,7 +546,7 @@ RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page 
 
 RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS )
 {
-  if (THIS) free( THIS );
+  if (THIS) ROGUE_DEL_BYTES( THIS );
   return 0;
 };
 
@@ -573,7 +573,7 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 //-----------------------------------------------------------------------------
 RogueAllocator* RogueAllocator_create()
 {
-  RogueAllocator* result = (RogueAllocator*) malloc( sizeof(RogueAllocator) );
+  RogueAllocator* result = (RogueAllocator*) ROGUE_NEW_BYTES( sizeof(RogueAllocator) );
 
   memset( result, 0, sizeof(RogueAllocator) );
 
@@ -599,13 +599,13 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
     Rogue_bytes_allocated_since_gc += size;
-    void * mem = malloc( size );
+    void * mem = ROGUE_NEW_BYTES(size);
 #if ROGUE_GC_MODE_AUTO
     if (!mem)
     {
       // Try hard!
       Rogue_collect_garbage(true);
-      mem = malloc( size );
+      mem = ROGUE_NEW_BYTES(size);
     }
 #endif
     return mem;
@@ -695,7 +695,7 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
     ROGUE_GCDEBUG_STATEMENT(memset(data,0,size));
     if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
     {
-      free( data );
+      ROGUE_DEL_BYTES( data );
     }
     else
     {

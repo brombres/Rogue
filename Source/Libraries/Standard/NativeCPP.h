@@ -53,6 +53,9 @@
 #define ROGUE_INCREF(_o_) if (_o_) (++((_o_)->reference_count))
 #define ROGUE_DECREF(_o_) if (_o_) (--((_o_)->reference_count))
 
+#define ROGUE_NEW_BYTES(_count_) malloc(_count_)
+#define ROGUE_DEL_BYTES(_ptr_) free(_ptr_)
+
 #if ROGUE_GC_MODE_AUTO
   #undef ROGUE_DEF_LOCAL_REF_NULL
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
