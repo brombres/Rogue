@@ -58,6 +58,11 @@
 
 extern void Rogue_configure_gc();
 
+#ifdef ROGUE_GC_UNSAFE_COMPOUNDS
+  #undef ROGUE_DEF_COMPOUND_REF_PROP
+  #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) _t_ _n_
+#endif
+
 #if ROGUE_GC_MODE_BOEHM
   #define GC_NAME_CONFLICT
   #include "gc.h"
