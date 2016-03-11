@@ -60,6 +60,7 @@
 //-----------------------------------------------------------------------------
 //  GLOBAL PROPERTIES
 //-----------------------------------------------------------------------------
+int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 RogueLogical       Rogue_configured = 0;
 RogueErrorHandler* Rogue_error_handler = 0;
 RogueObject*       Rogue_error_object  = 0;
@@ -1007,7 +1008,7 @@ bool Rogue_collect_garbage( bool forced )
 {
   int i;
 
-  if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_BYTES) return false;
+  if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_DEFAULT) return false;
 
   Rogue_on_begin_gc.call();
 

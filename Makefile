@@ -1,7 +1,8 @@
 .PHONY: test
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
-ROGUEC_FLAGS = -std=c++11 -fno-strict-aliasing
+ROGUEC_ROGUE_FLAGS =
+ROGUEC_CPP_FLAGS = -std=c++11 -fno-strict-aliasing
 
 all: roguec
 
@@ -12,9 +13,9 @@ debug: libraries
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --debug..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
-	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --debug
+	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --debug $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 roguec: bootstrap_roguec /usr/local/bin /usr/local/bin/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/roguec
 
@@ -27,9 +28,9 @@ bootstrap_roguec:
 	  echo -------------------------------------------------------------------------------; \
 	  echo Compiling Programs/RogueC/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo $(CXX) -Wall $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
+	  echo $(CXX) -Wall $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	  mkdir -p Programs/RogueC; \
-	  $(CXX) $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
+	  $(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	fi;
 
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
@@ -37,14 +38,14 @@ Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
-	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC
+	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
 Programs/RogueC/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 libraries:
 	@mkdir -p Programs/RogueC

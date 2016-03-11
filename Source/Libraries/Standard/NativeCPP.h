@@ -40,7 +40,7 @@
 #ifndef ROGUE_GC_THRESHOLD_KB
   #define ROGUE_GC_THRESHOLD_KB (512)
 #endif
-#define ROGUE_GC_THRESHOLD_BYTES (ROGUE_GC_THRESHOLD_KB << 10)
+#define ROGUE_GC_THRESHOLD_DEFAULT (ROGUE_GC_THRESHOLD_KB << 10)
 
 #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
 #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) _t_ _n_ = 0
@@ -535,6 +535,7 @@ void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
 extern int                Rogue_allocator_count;
 extern RogueAllocator     Rogue_allocators[];
+extern int                Rogue_gc_threshold;
 extern int                Rogue_type_count;
 extern RogueType          Rogue_types[];
 extern int                Rogue_type_info_table[];
