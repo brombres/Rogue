@@ -99,8 +99,7 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
   ROGUE_DEF_LOCAL_REF_NULL(RogueObject*, obj);
   RogueInitFn  fn;
 
-  if ( !size ) size = THIS->object_size;
-  obj = RogueAllocator_allocate_object( THIS->allocator, THIS, size );
+  obj = RogueAllocator_allocate_object( THIS->allocator, THIS, size ? size : THIS->object_size );
 
   if ((fn = THIS->init_object_fn)) return fn( obj );
   else                             return obj;
@@ -617,13 +616,12 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
     return mem;
   }
 
-  if (size <= 0) size = ROGUEMM_GRANULARITY_SIZE;
-  else           size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
+  size = (size > 0) ? (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK : ROGUEMM_GRANULARITY_SIZE;
 
   Rogue_allocation_bytes_until_gc -= size;
 
-  int slot = (size >> ROGUEMM_GRANULARITY_BITS);
-  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[slot]);
+  int slot;
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[(slot=(size>>ROGUEMM_GRANULARITY_BITS))]);
 
   if (obj)
   {
@@ -635,30 +633,27 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   // No free objects for requested size.
 
   // Try allocating a new object from the current page.
-  if ( !THIS->pages )
+  if (THIS->pages )
   {
-    THIS->pages = RogueAllocationPage_create(0);
-  }
+    obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, size );
+    if (obj) return obj;
 
-  obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, size );
-  if (obj) return obj;
-
-
-  // Not enough room on allocation page.  Allocate any smaller blocks
-  // we're able to and then move on to a new page.
-  int s = slot - 1;
-  while (s >= 1)
-  {
-    obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, s << ROGUEMM_GRANULARITY_BITS );
-    if (obj)
+    // Not enough room on allocation page.  Allocate any smaller blocks
+    // we're able to and then move on to a new page.
+    int s = slot - 1;
+    while (s >= 1)
     {
-      //printf( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
-      obj->next_object = THIS->available_objects[s];
-      THIS->available_objects[s] = obj;
-    }
-    else
-    {
-      --s;
+      obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, s << ROGUEMM_GRANULARITY_BITS );
+      if (obj)
+      {
+        //printf( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
+        obj->next_object = THIS->available_objects[s];
+        THIS->available_objects[s] = obj;
+      }
+      else
+      {
+        --s;
+      }
     }
   }
 
