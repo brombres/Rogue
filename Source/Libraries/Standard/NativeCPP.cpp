@@ -64,7 +64,7 @@ int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 RogueLogical       Rogue_configured = 0;
 RogueErrorHandler* Rogue_error_handler = 0;
 RogueObject*       Rogue_error_object  = 0;
-int                Rogue_bytes_allocated_since_gc = 0;
+int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
 RogueCallStack     Rogue_call_stack;
@@ -601,7 +601,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 #endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
-    Rogue_bytes_allocated_since_gc += size;
+    Rogue_allocation_bytes_until_gc -= size;
     void * mem = ROGUE_NEW_BYTES(size);
 #if ROGUE_GC_MODE_AUTO
     if (!mem)
@@ -617,7 +617,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   if (size <= 0) size = ROGUEMM_GRANULARITY_SIZE;
   else           size = (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK;
 
-  Rogue_bytes_allocated_since_gc += size;
+  Rogue_allocation_bytes_until_gc -= size;
 
   int slot = (size >> ROGUEMM_GRANULARITY_BITS);
   ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[slot]);
@@ -1008,12 +1008,12 @@ bool Rogue_collect_garbage( bool forced )
 {
   int i;
 
-  if (!forced && Rogue_bytes_allocated_since_gc < ROGUE_GC_THRESHOLD_DEFAULT) return false;
+  if (Rogue_allocation_bytes_until_gc > 0 && !forced) return false;
 
   Rogue_on_begin_gc.call();
 
-//printf( "GC %d\n", Rogue_bytes_allocated_since_gc );
-  Rogue_bytes_allocated_since_gc = 0;
+//printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
+  Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 
   Rogue_trace();
 

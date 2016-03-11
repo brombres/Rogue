@@ -66,7 +66,9 @@ class RogueC [singleton]
     parsereaders_by_filepath = Table<<String,ParseReader>>()
     stopwatch : Stopwatch
 
-    gc_mode = GCMode.MANUAL : Int32
+    gc_mode = GCMode.MANUAL  : Int32
+    gc_threshold = 1024*1024 : Int32
+
   METHODS
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
@@ -102,12 +104,21 @@ class RogueC [singleton]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
                    |
-                   |  --gc
-                   |    Enables 'auto' garbage collection mode.  Without this option Rogue will use
-                   |    'manual' garbage collection.
+                   |  --gc[=[manual|auto|boehm]]
+                   |    Set the garbage collection mode:
+                   |      (no --gc)   - Manual GC mode, the default (see below).
+                   |      --gc        - Auto GC mode (see below).
+                   |      --gc=manual - Rogue_collect_garbage() must be called in-between calls
+                   |                    into the Rogue runtime.
+                   |      --gc=auto   - Rogue collects garbage as it executes.  Slower than
+                   |                    'manual' without optimizations enabled.
+                   |      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library
+                   |                    must be obtained separately and linked in.
                    |
-                   |  --gc=[manual|auto|boehm]
-                   |    Explicitly set the garbage collection mode.
+                   |  --gc-threshold={number}[MB|K]
+                   |    Specifies the default garbage collection threshold of the compiled program.
+                   |    Default is 1MB.  If neither MB nor K is specified then the number is
+                   |    assumed to be bytes.
                    |
                    |  --libraries="path1[;path2...]"
                    |    Add one or more additional library folders to the search path.
@@ -360,6 +371,15 @@ class RogueC [singleton]
               else
                 throw RogueError( 'Unknown GC mode (--gc=$)' (value) )
               endIf
+
+            case "--gc-threshold"
+              if (not value.count)
+                throw RogueError( ''A value such as 1.1MB, 512K, or 65536 expected after "--gc-threshold=".'' )
+              endIf
+              local n = value->Real64
+              if (value.ends_with('M') or value.ends_with("MB")) n *= 1024*1024
+              elseIf (value.ends_with('K') or value.ends_with("KB")) n *= 1024
+              gc_threshold = Math.max( n->Int32, 1 )
 
             others
               throw RogueError( "Unknown option '$'." (arg) )

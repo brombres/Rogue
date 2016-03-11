@@ -143,6 +143,12 @@ augment Program
       writer.println select{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
       writer.println
 
+      # GC Threshold
+      writer.println "#ifndef ROGUE_GC_THRESHOLD_DEFAULT"
+      writer.print(  "  #define ROGUE_GC_THRESHOLD_DEFAULT " ).println( RogueC.gc_threshold )
+      writer.println "#endif"
+      writer.println
+
       # Embed nativeHeader
       writer.println "// NATIVE HEADERS"
       forEach (line in native_header)
