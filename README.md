@@ -1,7 +1,7 @@
 Rogue
 =====
 - v1.0.24
-- March 10, 2016
+- March 11, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,10 +28,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.24 - March 10, 2016
+###v1.0.24 - March 11, 2016
 - Added '--gc=boehm' support for Boehm's garbage collector, courtesy Murphy McCauley.
 - Added '--gc-threshold={number}[MB|K]' and increased default to 1MB.
 - Changed the allocation tracker to count down from the threshold to 0 instead of counting up from 0 to the threshold.
+- Fixed bug mapping variable writes to `set_` methods.
 
 ###v1.0.23 - March 10, 2016
 - Integrated MurphyMc's gc option which allows GC to happen during execution rather than only between calls into the Rogue system.

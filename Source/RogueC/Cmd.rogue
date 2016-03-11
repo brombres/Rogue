@@ -1757,10 +1757,10 @@ class CmdAccess : Cmd
 
       local explicit_context = context?
 
-      local setter_name : String
+      local setter_name = select(name[0]) { '@':null || "set_"+name } : String
+
       if (context is null)
-        if (name[0] != '@')
-          setter_name = "set_" + name
+        if (setter_name)
           local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
           if (setter)
             if (scope.this_method.name == setter_name)
