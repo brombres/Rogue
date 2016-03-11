@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.23"
+$define RELEASE_VERSION "1.0.24"
 $define RELEASE_DATE    "March 10, 2016"
 
 $include "Attributes.rogue"
@@ -376,9 +376,10 @@ class RogueC [singleton]
               if (not value.count)
                 throw RogueError( ''A value such as 1.1MB, 512K, or 65536 expected after "--gc-threshold=".'' )
               endIf
+              value = value.to_lowercase
               local n = value->Real64
-              if (value.ends_with('M') or value.ends_with("MB")) n *= 1024*1024
-              elseIf (value.ends_with('K') or value.ends_with("KB")) n *= 1024
+              if (value.ends_with('m') or value.ends_with("mb")) n *= 1024*1024
+              elseIf (value.ends_with('k') or value.ends_with("kb")) n *= 1024
               gc_threshold = Math.max( n->Int32, 1 )
 
             others
