@@ -4,7 +4,9 @@ class Object
       return this is other
 
     method to->String
-      return "(" + type_name + ")"
+      local addr : Int64
+      native "$addr = (RogueInt64)(intptr_t)$this;"
+      return "(" + type_name + " 0x" + addr.to_hex_string + ")"
 endClass
 
 
