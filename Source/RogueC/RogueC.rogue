@@ -28,6 +28,7 @@ class GCMode
   ENUMERATE
     MANUAL
     AUTO
+    BOEHM
 endClass
 
 
@@ -105,8 +106,8 @@ class RogueC [singleton]
                    |    Enables 'auto' garbage collection mode.  Without this option Rogue will use
                    |    'manual' garbage collection.
                    |
-                   |  --gc=[manual|auto]
-                   |    Explicitly set the garbage collection mode to manual or auto.
+                   |  --gc=[manual|auto|boehm]
+                   |    Explicitly set the garbage collection mode.
                    |
                    |  --libraries="path1[;path2...]"
                    |    Add one or more additional library folders to the search path.
@@ -354,6 +355,8 @@ class RogueC [singleton]
                 gc_mode = GCMode.AUTO
               elseIf (value == "manual")
                 gc_mode = GCMode.MANUAL
+              elseIf (value == "boehm")
+                gc_mode = GCMode.BOEHM
               else
                 throw RogueError( 'Unknown GC mode (--gc=$)' (value) )
               endIf
