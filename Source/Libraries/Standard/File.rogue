@@ -72,6 +72,8 @@ class File
         return "$/$" (absolute_filepath(parent),filename(filepath))
       endIf
 
+      local return_value : String
+
       native @|#if defined(_WIN32)
               |{
               |  char c_filepath[ PATH_MAX ];
@@ -85,13 +87,10 @@ class File
               |    strcpy_s( long_name, PATH_MAX+4, c_filepath );
               |  }
               |
-              |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) == 0)
+              |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
               |  {
-              |    // bail with name unchanged
-              |    return $filepath;
+              |    $return_value = RogueString_create_from_c_string( full_name, -1 );
               |  }
-              |
-              |  return RogueString_create_from_c_string( full_name, -1 );
               |}
               |#else
               |{
@@ -123,23 +122,34 @@ class File
               |  }
               |  new_dir_fd = open( c_filepath, O_RDONLY );
               |
-              |  if (original_dir_fd >= 0 && new_dir_fd >= 0)
+              |  do
               |  {
-              |    fchdir( new_dir_fd );
-              |    getcwd( c_filepath, PATH_MAX );
-              |    if ( !is_folder )
+              |    if (original_dir_fd >= 0 && new_dir_fd >= 0)
               |    {
-              |      strcat( c_filepath, "/" );
-              |      strcat( c_filepath, filename );
+              |      int r = fchdir( new_dir_fd );
+              |      if ( r != 0 ) break;
+              |      char * r2 = getcwd( c_filepath, PATH_MAX );
+              |      if ( r2 == 0 ) break;
+              |      if ( !is_folder )
+              |      {
+              |        strcat( c_filepath, "/" );
+              |        strcat( c_filepath, filename );
+              |      }
+              |      r = fchdir( original_dir_fd );
+              |      if ( r != 0 ) break;
               |    }
-              |    fchdir( original_dir_fd );
-              |  }
+              |
+              |    $return_value = RogueString_create_from_c_string( c_filepath, -1 );
+              |  } while (false);
+              |
               |  if (original_dir_fd >= 0) close( original_dir_fd );
               |  if (new_dir_fd >= 0) close( new_dir_fd );
-              |
-              |  return RogueString_create_from_c_string( c_filepath, -1 );
               |}
               |#endif
+      if (return_value is null)
+        throw IOError("Could not get absolute path")
+      endIf
+      return return_value
 
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
@@ -182,7 +192,7 @@ class File
       if (not i?) return filepath
       return filepath.from( i.value+1 )
 
-    method is_folder( filepath:String )->Logical
+    method is_folder( filepath:String )->Logical [requisite]
       native @|if ( !$filepath ) return false;
               |
               |char c_filepath[ PATH_MAX ];
@@ -559,7 +569,7 @@ class FileWriter : Writer<<Character>>
       if (pos < 0) pos = 0
       position = pos
 
-      native "fseek( $this->fp, 0, SEEK_SET )"
+      native "fseek( $this->fp, 0, SEEK_SET );"
 
       return this
 
@@ -567,7 +577,7 @@ class FileWriter : Writer<<Character>>
       if (not fp) return this
       flush
 
-      native "fseek( $this->fp, 0, SEEK_END )"
+      native "fseek( $this->fp, 0, SEEK_END );"
       position = native( "(RogueInt32)ftell( $this->fp )" )->Int32
 
       return this
