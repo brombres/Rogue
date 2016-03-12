@@ -8,6 +8,10 @@ class Real64 [primitive]
       $endIf
 
   METHODS
+    method abs->Real64
+      if (this >= 0) return this
+      else           return -this
+
     method integer_bits->Int64
       return Int64( this )
 
@@ -74,6 +78,10 @@ class Real32 [primitive]
       $endIf
 
   METHODS
+    method abs->Real32
+      if (this >= 0) return this
+      else           return -this
+
     method integer_bits->Int32
       return Int32( this )
 
@@ -122,6 +130,10 @@ class Int64 [primitive]
       $endIf
 
   METHODS
+    method abs->Int64
+      if (this >= 0) return this
+      else           return -this
+
     method real_bits->Real64
       return Real64( this )
 
@@ -178,6 +190,10 @@ class Int32 [primitive]
       $endIf
 
   METHODS
+    method abs->Int32
+      if (this >= 0) return this
+      else           return -this
+
     method real_bits->Real32
       return Real32( this )
 
