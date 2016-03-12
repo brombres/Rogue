@@ -62,6 +62,7 @@ class PrintWriterAspect [aspect]
 
     method print( value:String )->this
       printwriter_output_buffer.print( value )
+      if (printwriter_output_buffer.count > 1024) flush
       return this
 
     method println->this
