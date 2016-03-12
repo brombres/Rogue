@@ -380,7 +380,9 @@ class RogueC [singleton]
               local n = value->Real64
               if (value.ends_with('m') or value.ends_with("mb")) n *= 1024*1024
               elseIf (value.ends_with('k') or value.ends_with("kb")) n *= 1024
-              gc_threshold = Math.max( n->Int32, 1 )
+              local thresh = n->Int32
+              if (thresh < 1) thresh = 0x7fffffff
+              gc_threshold = thresh
 
             others
               throw RogueError( "Unknown option '$'." (arg) )

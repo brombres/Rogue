@@ -5,6 +5,15 @@ class System [requisite]
     environment            : SystemEnvironment
 
   GLOBAL METHODS
+    method init_class
+      local value = environment["ROGUE_GC_THRESHOLD"]
+      if (value isNot null)
+        local n = value->Real64
+        if (value.ends_with('M') or value.ends_with("MB")) n *= 1024*1024
+        elseIf (value.ends_with('K') or value.ends_with("KB")) n*= 1024
+        gc_threshold = n->Int32
+      endIf
+
     method exit( result_code:Int32 )
       $if ("C++")
         native "exit( $result_code );"
@@ -17,6 +26,19 @@ class System [requisite]
               |$return_val = system( cmd_buffer );
       if (return_val == -1) throw Error("Process was not created")
       return return_val
+
+    method gc_threshold->Int32
+      # Returns the current GC threshold in bytes
+      local n : Int32
+      native "$n = Rogue_gc_threshold;"
+      return n
+
+    method set_gc_threshold( value:Int32 )
+      if (value <= 0) value = 0x7fffffff
+      # We might want -1 to mean max value and 0 to mean never,
+      # but for now, just have anything strange mean max value.
+
+      native "Rogue_gc_threshold = $value;"
 
     method collect_garbage ( force=false:Logical )->Logical
       # Runs the garbage collector if possible
