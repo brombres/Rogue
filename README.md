@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.24
+- v1.0.25.0
 - March 11, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.25 - March 11, 2016
+- Improved error message when illegally naming a global method `init()`.
+- Changed some vestigial references of "routines" to be "global methods" instead in error messages.
 
 ###v1.0.24 - March 11, 2016
 - Added '--gc=boehm' support for Boehm's garbage collector, courtesy Murphy McCauley.

@@ -1675,7 +1675,7 @@ class CmdAccess : Cmd
           #  context = CmdReadSingleton( t, scope.this_type )
           #else
           if (scope.this_method.is_global)
-            throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+            throw t.error( "Cannot access object property '$' from a global method." (name) )
           endIf
           context = CmdThisContext( t, scope.this_type )
           #endIf
@@ -1789,7 +1789,7 @@ class CmdAccess : Cmd
 
         if (scope.this_method.is_global)
           p = scope.this_method.type_context.find_property( name )
-          if (p) throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          if (p) throw t.error( "Cannot access object property '$' from a global method." (name) )
         endIf
 
         if (scope.this_type isNot Program.type_Global)
@@ -1821,7 +1821,7 @@ class CmdAccess : Cmd
       p = context_type.find_property( name )
       if (p)
         if (scope.this_method.is_global and not explicit_context)
-          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          throw t.error( "Cannot access object property '$' from a global method." (name) )
         else
           return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
         endIf
@@ -1895,7 +1895,7 @@ class CmdAccess : Cmd
       if (p)
         if (not context) context = CmdThisContext( t, context_type )
         if (scope.this_method.is_global)
-          throw t.error( "Cannot access object properties from routines - routines have no 'this' object context." )
+          throw t.error( "Cannot access object property '$' from a global method." (name) )
         endIf
         return CmdModifyAndAssignProperty( t, context, p, op, new_value ).resolve(scope)
       endIf
@@ -2085,7 +2085,7 @@ class CmdLiteralThis : CmdThisContext
     method resolve( scope:Scope )->Cmd
       this_type.organize(scope)
       if (scope.this_method.is_global)
-        throw t.error( "Invalid reference to 'this' object - routines have no object context." )
+        throw t.error( "Invalid reference to 'this' object - global methods have no object context." )
       endIf
       return this
 endClass
@@ -4052,7 +4052,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
       if (not m)
         local methods = context_type.method_lookup_by_name[ name ]
         if (not methods) methods = context_type.routine_lookup_by_name[ name ]
-        if (not methods)        throw t.error( "No such method or routine '$' exists in type $." (name,context_type.name) )
+        if (not methods)        throw t.error( "No such method '$' exists in type $." (name,context_type.name) )
         if (methods.count != 1) throw t.error( "Multiple candidates match ambiguous reference to '$'; add qualifiying parameter types." (name) )
         m = methods.first
       endIf

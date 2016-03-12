@@ -279,7 +279,7 @@ class Program [requisite singleton]
           else
             local m = req.type.find_method( req.signature )
             if (m) m.attributes.add( Attribute.is_requisite )
-            else     throw req.t.error( "No such method or routine $ in type $." (req.signature,req.type.name) )
+            else     throw req.t.error( "No such method $ in type $." (req.signature,req.type.name) )
           endIf
         endIf
       endForEach

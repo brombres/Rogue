@@ -712,7 +712,7 @@ class Type
             apply_augment_labels( m, existing_m )
             return
           else
-            throw m.t.error( "Type $ already defines routine $." (m.type_context,m.signature) )
+            throw m.t.error( "Type $ already defines global method $." (m.type_context,m.signature) )
           endIf
         endIf
 

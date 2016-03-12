@@ -2368,7 +2368,7 @@ endAugment
 augment CmdCallInlineNative
   METHODS
     method print_this( writer:CPPWriter )
-      throw t.error( "Illegal use of '$this' in routine." )
+      throw t.error( "Illegal use of '$this' in global method." )
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       which (adjust_delta)
