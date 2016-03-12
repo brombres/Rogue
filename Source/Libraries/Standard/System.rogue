@@ -10,13 +10,13 @@ class System [requisite]
         native "exit( $result_code );"
       $endIf
 
-    method run( command:String ) [macro]
-      native
-        @|{
-         |  char cmd_buffer[4096];
-         |  RogueString_to_c_string( $command, cmd_buffer, 4096 );
-         |  system( cmd_buffer );
-         |}
+    method run( command:String )->Int32
+      local return_val = 0
+      native @|char cmd_buffer[4096];
+              |RogueString_to_c_string( $command, cmd_buffer, 4096 );
+              |$return_val = system( cmd_buffer );
+      if (return_val == -1) throw Error("Process was not created")
+      return return_val
 
     method collect_garbage ( force=false:Logical )->Logical
       # Runs the garbage collector if possible
