@@ -430,16 +430,10 @@ augment CmdInlineNative
 
 endAugment
 
-augment CmdNativeCode
+augment CmdNoAction
   METHODS
     method trace_used_code
 endAugment
-
-augment CmdNativeHeader
-  METHODS
-    method trace_used_code
-endAugment
-
 
 augment CmdSelect
   METHODS

@@ -239,6 +239,10 @@ class Type
     method is_singleton->Logical
       return (attributes.flags & Attribute.is_singleton)
 
+    method make_requisite->this
+      attributes.add( Attribute.is_requisite )
+      return this
+
     method organize( scope=null:Scope )->Type
       if (organized) return this
       organized = true
@@ -357,7 +361,7 @@ class Type
       local m_init_class = find_routine( "init_class()" )
       if (m_init_class)
         if (m_init_class.type_context is this)
-          m_init_class.attributes.add( Attribute.is_requisite )
+          m_init_class.make_requisite
         endIf
       else
         m_init_class = find_method( "init_class()" )
@@ -370,7 +374,7 @@ class Type
         # Create or locate init_class() to initialize global properties
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize( scope )
-        m.attributes.add( Attribute.is_requisite )
+        m.make_requisite
 
         # Insert global initializations
         local i = global_list.count - 1
@@ -388,10 +392,10 @@ class Type
         local m = find_method( "init_object()" )
         local prior_m = m
         if (m and m.type_context is this)
-          m.attributes.add( Attribute.is_requisite )
+          m.make_requisite
         else
           m = add_method( t, "init_object" ).organize( scope )
-          m.attributes.add( Attribute.is_requisite )
+          m.make_requisite
           if (prior_m)
             prior_m.attributes.add( Attribute.is_dynamic )
             prior_m.attributes.add( Attribute.is_overridden )
@@ -422,7 +426,7 @@ class Type
           if (m.return_type)
             throw m.t.error( "clean_up() cannot return a value." )
           endIf
-          m.attributes.add( Attribute.is_requisite )
+          m.make_requisite
         endIf
       endIf
 
@@ -814,7 +818,7 @@ class Type
       if (is_singleton)
         local m = find_method( "init()" )
         if (m)
-          m.attributes.add( Attribute.is_requisite )
+          m.make_requisite
         endIf
       endIf
 

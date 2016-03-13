@@ -191,6 +191,10 @@ class StringDataToken : Token
   METHODS
     method init( type, value )
 
+    method quoted_name->String
+      if (type is TokenType.directive_requisite) return "$requisite"
+      return prior.quoted_name
+
     method to->String
       return value
 endClass

@@ -202,31 +202,24 @@ class CmdStatementList : Cmd[]
       endForEach
       return result
 
-      #{
-    method dispatch( v:Visitor ) [propagated]
-      v.visit( this )
-
-    method print( buffer:StringBuilder )
-      Analyzer.context.push_local_scope
-      forEach (statement in this)
-        buffer.print( "      " )
-        buffer.print( statement.type_name )
-        buffer.print( " " )
-        statement.print( buffer )
-        buffer.println
-      endForEach
-      Analyzer.context.pop_local_scope
-      }#
-
-    method resolve( scope:Scope )
+    method resolve( scope:Scope, &use_separate_results_list )
       local original_body = scope.this_body
       scope.this_body = this
 
-      local n = count
-      forEach (i in 0..(n-1))
-        this[i].resolve(scope).add_to( this )
-      endForEach
-      this.discard( 0, n )
+      if (use_separate_results_list)
+        # Necessary for Global.on_launch which can have new statements added
+        # to it (via newly organized classes' $requisite directives) as
+        # it's being iterated through.
+        local result = CmdStatementList( count )
+        forEach (cmd in this) cmd.resolve( scope ).add_to( result )
+        clear.add( result )
+      else
+        local n = count
+        forEach (i in 0..(n-1))
+          this[i].resolve(scope).add_to( this )
+        endForEach
+        this.discard( 0, n )
+      endIf
 
       forEach (statement in this) statement.exit_scope( scope )
 
@@ -4310,7 +4303,7 @@ class CmdNativeHeader : Cmd
         endIf
         code = null
       endIf
-      return this
+      return CmdNoAction(t)
 endClass
 
 class CmdNativeCode : Cmd
@@ -4331,9 +4324,8 @@ class CmdNativeCode : Cmd
         if (not Program.native_code.contains(code))
           Program.native_code.add( code )
         endIf
-        code = null
       endIf
-      return this
+      return CmdNoAction(t)
 endClass
 
 class CmdInlineNative : Cmd
@@ -4399,6 +4391,67 @@ class CmdInlineNative : Cmd
 
 endClass
 
+class CmdMakeRequisite : Cmd
+  PROPERTIES
+    pattern : String
+
+  METHODS
+    method init( t, pattern )
+
+    method clone( clone_args:CloneArgs )->CmdMakeRequisite
+      return CmdMakeRequisite( t, pattern )
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      if (pattern.contains('.'))
+        local req_type = Program.get_type_reference( t, pattern.before_first('.') )
+        req_type.make_requisite.organize
+        local sig = pattern.after_first('.')
+
+        if (sig.contains('('))
+          local m = req_type.find_method( sig )
+          if (m) m.make_requisite
+
+        else
+          local list = req_type.routine_lookup_by_name[ sig ]
+          if (list)
+            forEach (m in list) m.make_requisite
+          endIf
+
+          list = req_type.method_lookup_by_name[ sig ]
+          if (list)
+            forEach (m in list) m.make_requisite
+          endIf
+        endIf
+
+      else
+        local req_type = Program.get_type_reference( t, pattern )
+        req_type.make_requisite.organize
+      endIf
+      return CmdNoAction(t)
+endClass
+
+class CmdNoAction : Cmd
+  METHODS
+    method init( t )
+
+    method clone( clone_args:CloneArgs )->CmdNoAction
+      return CmdNoAction( t )
+
+    method add_to( statements:CmdStatementList )
+      noAction
+
+    method requires_semicolon->Logical
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+endClass
 
 class CmdTypedLiteralList : Cmd
   PROPERTIES

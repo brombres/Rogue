@@ -160,13 +160,7 @@ class RogueC [singleton]
         # Add requisite declarations to Program's requisite list
         local t = TokenType("Internal").create_token( "[Command Line Arguments]", 0, 0 )
         forEach (declaration in requisite_declarations)
-          if (declaration.contains('.'))
-            Program.requisite_list.add( RequisiteItem( t,
-                Program.get_type_reference( t, declaration.before_first('.') ),
-                declaration.after_first('.')) )
-          else
-            Program.requisite_list.add( RequisiteItem( t, Program.get_type_reference(t, declaration) ) )
-          endIf
+          Program.get_launch_method( t ).statements.add( CmdMakeRequisite(t,declaration) )
         endForEach
 
         if (all_requisite) Program.all_requisite = true

@@ -81,7 +81,7 @@ class Tokenizer
       TokenType.directive_elseIf              = define( DirectiveTokenType("$elseIf") )
       TokenType.directive_else                = define( DirectiveTokenType("$else") )
       TokenType.directive_endIf               = define( DirectiveTokenType("$endIf") )
-      TokenType.directive_requisite           = define( StructuralDirectiveTokenType("$requisite") )
+      TokenType.directive_requisite           = define( DirectiveTokenType("$requisite") )
       TokenType.directive_module              = define( StructuralDirectiveTokenType("module") )
       TokenType.directive_using               = define( StructuralDirectiveTokenType("using") )
 
@@ -288,7 +288,7 @@ class Tokenizer
           case "elseIf":              add_new_token( TokenType.directive_elseIf )
           case "else":                add_new_token( TokenType.directive_else )
           case "endIf":               add_new_token( TokenType.directive_endIf )
-          case "requisite":           add_new_token( TokenType.directive_requisite )
+          case "requisite":           scan_requisite_directive; return null
             #case "module":              add_new_token( TokenType.directive_module )
             #case "using":               add_new_token( TokenType.directive_using )
           others
@@ -582,6 +582,8 @@ class Tokenizer
             return scan_native_code
           elseIf (keyword_type is TokenType.keyword_nativeHeader)
             return scan_native_header
+          elseIf (keyword_type is TokenType.directive_requisite)
+            return scan_requisite_directive
           else
             return add_new_token( keyword_type )
           endIf
@@ -833,6 +835,18 @@ class Tokenizer
       endIf
 
       return add_new_token( TokenType.keyword_nativeHeader, buffer->String )
+
+    method scan_requisite_directive->Logical
+      local buffer = StringBuilder()
+      reader.consume_spaces
+
+      # Single line native code to EOL
+      while (reader.has_another)
+        if (reader.consume('\n')) escapeWhile
+        buffer.print( reader.read )
+      endWhile
+
+      return add_new_token( TokenType.directive_requisite, buffer->String.trimmed )
 
     method tokenize_string( terminator:Character )->Logical
       buffer.clear

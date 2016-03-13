@@ -32,6 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - Improved error message when illegally naming a global method `init()`.
 - Changed some vestigial references of "routines" to be "global methods" instead in error messages.
 - Added .abs() to Real and Int primitives.
+- Renamed Math.ceil() to ceiling().
+- `$requisite ...` can now be specified inside a class or method to only take effect if the class or method is used.
 
 ###v1.0.24 - March 11, 2016
 - Added '--gc=boehm' support for Boehm's garbage collector, courtesy Murphy McCauley.

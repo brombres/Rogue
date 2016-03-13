@@ -2885,13 +2885,7 @@ augment CmdInlineNative
       endIf
 endAugment
 
-augment CmdNativeCode
-  METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      noAction
-endAugment
-
-augment CmdNativeHeader
+augment CmdNoAction
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       noAction

@@ -182,6 +182,10 @@ class Method
     method is_task_conversion->Logical
       return (attributes.flags & Attribute.is_task_conversion)
 
+    method make_requisite->this
+      attributes.add( Attribute.is_requisite )
+      return this
+
     method omit_output->Logical
       return is_native or is_macro or not is_used or (is_generated and name=="create" and type_context.is_compound)
 
@@ -287,7 +291,7 @@ class Method
       local scope = Scope( type_context, this )
       forEach (p in parameters) scope.push_local( p )
 
-      statements.resolve( scope )
+      statements.resolve( scope, this is Program.m_on_launch )
 
       if (scope.local_list.count > parameters.count) throw t.error( "locals left on scope stack" )
       if (scope.control_stack.count) throw t.error( "control stucture left on scope stack" )

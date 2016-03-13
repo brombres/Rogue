@@ -13,7 +13,7 @@ class Math
     method atan2( y:Real64, x:Real64 )->Real64 [macro]
       native 'atan2((double)$y,(double)$x)'
 
-    method ceil( n:Real64 )->Real64 [macro]
+    method ceiling( n:Real64 )->Real64 [macro]
       native 'ceil((double)$n)'
 
     method cos( n:Real64 )->Real64 [macro]

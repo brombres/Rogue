@@ -13,7 +13,7 @@ class Program [requisite singleton]
     template_lookup = Table<<String,Template>>()
 
     augment_lookup = Table<<String,Augment[]>>()
-    requisite_list = RequisiteItem[]
+    #requisite_list = RequisiteItem[]
 
     all_requisite = false # Make everything requisite
 
@@ -133,6 +133,14 @@ class Program [requisite singleton]
     method create_unique_id->String
       return "_auto_" + next_unique_integer
 
+    method get_launch_method( t:Token )->Method
+      local type_global = get_type_reference( t, "Global" )
+      if (not m_on_launch)
+        m_on_launch = Method( t, type_global, "on_launch" )
+        m_on_launch.statements.add( Program.m_on_launch.begin_label(t,"insert",false) )
+      endIf
+      return m_on_launch
+
     method next_unique_integer->Int32
       ++unique_integer
       return unique_integer - 1
@@ -226,7 +234,7 @@ class Program [requisite singleton]
       if (m_on_launch) type_Global.add_method( m_on_launch )
       else             m_on_launch = type_Global.add_method( type_Global.t, "on_launch" )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
-      m_on_launch.attributes.add( Attribute.is_requisite )
+      m_on_launch.make_requisite
 
       forEach (p in global_properties)
         if (not p.type)
@@ -260,15 +268,9 @@ class Program [requisite singleton]
       type_GenericList.resolve
       type_String.resolve
 
-      #{
-      local type_CharacterList = find_type( "Character[]" )
-      if (type_CharacterList)
-        #type_CharacterList
-      endIf
-      }#
-
       # Go through requisite directives, resolving and marking as requisite each named type
       # and method
+      #{
       forEach (req in requisite_list)
         req.type.resolve
         req.type.attributes.add( Attribute.is_requisite )
@@ -283,6 +285,7 @@ class Program [requisite singleton]
           endIf
         endIf
       endForEach
+      }#
 
       if (all_requisite)
         forEach (t in type_lookup)

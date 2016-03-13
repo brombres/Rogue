@@ -169,6 +169,7 @@ class Parser
         must_consume_eols
         return true
 
+        #{
       elseIf (t.type is TokenType.directive_requisite)
         read
         local first = true
@@ -203,14 +204,11 @@ class Parser
           consume_eols
         endWhile
         return true
+        }#
 
       elseIf (next_is_statement)
         this_type = Program.get_type_reference( peek, "Global" )
-        if (not Program.m_on_launch)
-          Program.m_on_launch = Method( peek, this_type, "on_launch" )
-          Program.m_on_launch.statements.add( Program.m_on_launch.begin_label(peek,"insert",false) )
-        endIf
-        this_method = Program.m_on_launch
+        this_method = Program.get_launch_method( t )
         parse_multi_line_statements( this_method.statements )
         return true
 
@@ -868,6 +866,13 @@ class Parser
         return
       endIf
 
+      if (consume(TokenType.directive_requisite))
+        # Turn this $requisite directive into a Cmd node so that it only takes effect 
+        # if the method is actually used in the program.
+        statements.add( CmdMakeRequisite(t,t->String) )
+        return
+      endIf
+
       if (allow_control_structures)
         if (next_is(TokenType.keyword_if))
           statements.add( parse_if )
@@ -1231,6 +1236,11 @@ class Parser
         if (not Program.native_header.contains(code))
           Program.native_code.add( code )
         endIf
+        return true
+
+      elseIf (consume(TokenType.directive_requisite))
+        local pattern = t->String
+        Program.get_launch_method( t ).statements.add( CmdMakeRequisite(t,pattern) )
         return true
 
       else
