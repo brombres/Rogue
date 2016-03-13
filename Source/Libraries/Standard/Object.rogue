@@ -6,7 +6,7 @@ class Object
     method to->String
       local addr : Int64
       native "$addr = (RogueInt64)(intptr_t)$this;"
-      return "(" + type_name + " 0x" + addr.to_hex_string + ")"
+      return "($ 0x$)" (type_name,addr.to_hex_string)
 endClass
 
 

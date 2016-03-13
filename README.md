@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.25.1
-- March 11, 2016
+- v1.0.25
+- March 13, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,12 +28,21 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.25 - March 11, 2016
-- Improved error message when illegally naming a global method `init()`.
-- Changed some vestigial references of "routines" to be "global methods" instead in error messages.
+###v1.0.25 - March 13, 2016
+- All compound/primitive/functional types now have default `to->Object` returning Boxed<<$DataType>>.
+- Routine [attributes] now apply to the routine as well as the method.
+- stdlib.System: Expose GC threshold; make overridable
+- stdlib.System: Improve `run()` method to throw error on failure and return exit code.
+- stdlib.File: Fixes and improvements
+- stdlib.Object: Include address in default `to->String`
+- stdlib.PrintWriter: Flush more often
 - Added .abs() to Real and Int primitives.
 - Renamed Math.ceil() to ceiling().
 - `$requisite ...` can now be specified inside a class or method to only take effect if the class or method is used.
+- Removed conversion of optional reference types to plain references to allow dependable functionality (e.g. boxing) to be present in class Optional<<$DataType>>.
+- Improved error message when illegally naming a global method `init()`.
+- Changed some vestigial references of "routines" to be "global methods" instead in error messages.
+- Fixed new side effect bug resolving statement list of `Global.on_launch()`.  Was not expecting list to be modified while looping but the type-level "inner requisite" directive causes new CmdMakeRequisite nodes to be added to `on_launch`.  Resolving list would create new types which would add additional commands to list.
 
 ###v1.0.24 - March 11, 2016
 - Added '--gc=boehm' support for Boehm's garbage collector, courtesy Murphy McCauley.
