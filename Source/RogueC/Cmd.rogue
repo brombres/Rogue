@@ -1564,7 +1564,7 @@ class CmdAccess : Cmd
           if (new_type.is_routine)
             # MyRoutine(args) -> MyRoutine.call(args)
             if (name.begins_with('@'))
-              local m_call_list = new_type.routine_lookup_by_name[ "call" ]
+              local m_call_list = new_type.global_method_lookup_by_name[ "call" ]
               if (m_call_list and m_call_list.count == 1)
                 local m_call = m_call_list.first
                 local parameters = FnParam[]( m_call.parameters.count )
@@ -4044,7 +4044,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
       local m = context_type.find_method( name + signature )
       if (not m)
         local methods = context_type.method_lookup_by_name[ name ]
-        if (not methods) methods = context_type.routine_lookup_by_name[ name ]
+        if (not methods) methods = context_type.global_method_lookup_by_name[ name ]
         if (not methods)        throw t.error( "No such method '$' exists in type $." (name,context_type.name) )
         if (methods.count != 1) throw t.error( "Multiple candidates match ambiguous reference to '$'; add qualifiying parameter types." (name) )
         m = methods.first
@@ -4410,12 +4410,17 @@ class CmdMakeRequisite : Cmd
         req_type.make_requisite.organize
         local sig = pattern.after_first('.')
 
-        if (sig.contains('('))
+        if (sig == "*")
+          forEach (r in req_type.global_method_list) r.make_requisite
+          forEach (m in req_type.method_list)        m.make_requisite
+
+        elseIf (sig.contains('('))
           local m = req_type.find_method( sig )
           if (m) m.make_requisite
+          else   throw t.error( "No such method $ in type $." (sig,req_type.name) )
 
         else
-          local list = req_type.routine_lookup_by_name[ sig ]
+          local list = req_type.global_method_lookup_by_name[ sig ]
           if (list)
             forEach (m in list) m.make_requisite
           endIf

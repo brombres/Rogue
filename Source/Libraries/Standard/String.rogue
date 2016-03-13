@@ -611,8 +611,10 @@ class String [native functional]
                 |}
       $endIf
 
+      #{
     method to->Object
       return Boxed<<String>>(this)
+      }#
 
     method to->Real64
       $if ("C++")

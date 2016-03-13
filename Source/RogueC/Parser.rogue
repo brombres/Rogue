@@ -412,6 +412,8 @@ class Parser
           attributes.add( Attribute.is_requisite )
         elseIf (consume("singleton"))
           attributes.add( Attribute.is_singleton )
+        elseIf (consume("special"))
+          attributes.add( Attribute.is_special )
         elseIf (consume("task"))
           attributes.add( Attribute.is_task )
         elseIf (next_is(TokenType.identifier))
@@ -437,7 +439,7 @@ class Parser
         if (not consume(TokenType.symbol_close_paren))
           local m : Method
           if (this_type.is_compound)
-            m = this_type.add_routine( t, "create" )
+            m = this_type.add_global_method( t, "create" )
             m.attributes.add( Attribute.is_generated )
           else
             m = this_type.add_method( t, "init" )
@@ -667,9 +669,7 @@ class Parser
           name = "to_" + return_type.name
       endWhich
 
-      if (as_routine) this_method = this_type.add_routine( t, name )
-      else            this_method = this_type.add_method( t, name )
-
+      this_method = Method( t, this_type, name )
       this_method.return_type = return_type
 
       # Parse parameters
@@ -718,6 +718,14 @@ class Parser
 
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
+
+      contingent
+        necessary (this_method.is_special)
+        necessary (this_type.name == "Boxed<<String>>")
+      unsatisfied
+        if (as_routine) this_type.add_global_method( this_method )
+        else            this_type.add_method( this_method )
+      endContingent
 
       consume( TokenType.symbol_colon )
 

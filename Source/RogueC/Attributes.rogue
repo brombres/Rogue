@@ -28,6 +28,7 @@ class Attribute
     is_abstract         = 524288
     is_routine          = 1048576
     is_fallback         = 2097152
+    is_special          = 4194304
 endClass
 
 

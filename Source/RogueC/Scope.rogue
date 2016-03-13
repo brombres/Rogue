@@ -217,7 +217,7 @@ class Scope
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Method
       local candidates = CandidateMethods( type_context, access, error_on_fail )
 
-      local list = type_context.routine_lookup_by_name[ access.name ]
+      local list = type_context.global_method_lookup_by_name[ access.name ]
       if (list)
         forEach (m in list)
           candidates.available.add( m )

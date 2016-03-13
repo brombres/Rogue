@@ -176,6 +176,9 @@ class Method
     method is_global->Logical
       return (attributes.flags & Attribute.is_global)
 
+    method is_special->Logical
+      return (attributes.flags & Attribute.is_special)
+
     method is_task->Logical
       return (attributes.flags & Attribute.is_task)
 

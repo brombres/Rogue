@@ -45,7 +45,7 @@ class Type
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
     global_method_list          = Method[]                   : Method[]
-    routine_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
+    global_method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     routine_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
     method_list                = Method[]                   : Method[]
@@ -83,15 +83,17 @@ class Type
       list.add( m )
       return m
 
-    method add_routine( r_t:Token, r_name:String )->Method
-      local r = Method( r_t, this, r_name )
+    method add_global_method( r_t:Token, r_name:String )->Method
+      return add_global_method( Method(r_t, this, r_name) )
+
+    method add_global_method( r:Method )->Method
       r.attributes.add( Attribute.is_global )
 
       global_method_list.add( r )
-      local list = routine_lookup_by_name[ r_name ]
+      local list = global_method_lookup_by_name[ r.name ]
       if (not list)
         list = Method[]
-        routine_lookup_by_name[ r_name ] = list
+        global_method_lookup_by_name[ r.name ] = list
       endIf
       list.add( r )
 
@@ -166,7 +168,7 @@ class Type
       return (list and list.count)
 
     method has_routine_named( r_name:String )->Logical
-      local list = routine_lookup_by_name[r_name]
+      local list = global_method_lookup_by_name[r_name]
       return (list and list.count)
 
     method instance_of( ancestor_type:Type )->Logical
@@ -238,6 +240,9 @@ class Type
 
     method is_singleton->Logical
       return (attributes.flags & Attribute.is_singleton)
+
+    method is_special->Logical
+      return (attributes.flags & Attribute.is_special)
 
     method make_requisite->this
       attributes.add( Attribute.is_requisite )
@@ -333,12 +338,12 @@ class Type
       routine_lookup_by_signature.clear
       inherit_routines( full_routine_list, routine_lookup_by_signature )
       global_method_list = full_routine_list
-      routine_lookup_by_name.clear
+      global_method_lookup_by_name.clear
       forEach (r in global_method_list)
-        local list = routine_lookup_by_name[r.name]
+        local list = global_method_lookup_by_name[r.name]
         if (not list)
           list = Method[]
-          routine_lookup_by_name[r.name] = list
+          global_method_lookup_by_name[r.name] = list
         endIf
         list.add( r )
       endForEach
@@ -373,7 +378,7 @@ class Type
       if (global_list.count and not is_native)
         # Create or locate init_class() to initialize global properties
         local m = find_routine( "init_class()" )
-        if (not m or m.type_context isNot this) m = add_routine( t, "init_class" ).organize( scope )
+        if (not m or m.type_context isNot this) m = add_global_method( t, "init_class" ).organize( scope )
         m.make_requisite
 
         # Insert global initializations
@@ -431,16 +436,31 @@ class Type
       endIf
 
       # Add a default to->String to compounds
-      if (is_compound or is_primitive)
+      if (is_compound or is_primitive or is_functional)
         local m = find_method( "to_String()" )
-        if (not m or m.type_context isNot this)
-          if (m) m = replace_method( m, t, "to_String" )
-          else   m = add_method( t, "to_String" )
+        if (not m)
+          m = add_method( t, "to_String" )
           m.return_type = Program.type_String
           m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
           m.organize( scope )
         endIf
       endIf
+
+      # Add a default to->Object to compounds
+#{ 
+      if (is_compound or is_primitive or is_functional)
+        local m = find_method( "to_Object()" )
+        if (not m)
+@trace
+          m = add_method( t, "to_Object" )
+          local boxed_name = "Boxed<<$>>" (name)
+          m.return_type = Program.get_type_reference( t, boxed_name )
+          m.statements.add( CmdReturn(t,CmdAccess(t,boxed_name,CmdArgs(CmdLiteralThis(t,this)))) )
+          m.organize( scope )
+@trace
+        endIf
+      endIf
+|}#
 
       if (this isNot Program.type_NativeArray)
         is_array = this.instance_of( Program.type_NativeArray )
