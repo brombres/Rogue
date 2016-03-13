@@ -255,11 +255,49 @@ class Parser
         must_consume( TokenType.symbol_close_specialize )
       endIf
 
+      # Skip past any args and base types to get to the [attributes]
+      #   (autoinit) : BaseType, ... [attributes] \n
+      #   ^^^^^^^^^^^^^^ leave       ^parse       ^leave
+      local starting_pos = reader.position
+
+      if (consume(TokenType.symbol_open_paren))
+        # ( name1[=value1][:Type1] [, ...] )
+        consume_eols
+        if (not consume(TokenType.symbol_close_paren))
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+            consume_eols
+            consume( TokenType.symbol_ampersand )
+            read_identifier
+            consume_eols
+            if (consume(TokenType.symbol_equals)) parse_expression
+            consume_eols
+            if (consume(TokenType.symbol_colon))
+              if (not consume(TokenType.placeholder_id)) parse_possible_type
+            endIf
+            consume_eols
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+        endIf
+      endIf
+
+      if (consume(TokenType.symbol_colon))
+        parse_possible_type
+        while (consume(TokenType.symbol_comma)) parse_possible_type
+      endIf
+
+      local final_pos = reader.position
+
       if (is_routine)
         # routine MyRoutine<<type>>(args)...
         #   -> class MyRoutine<<type>>
         #        GLOBAL METHODS
         #          method call(args)...
+        parse_attributes( template.attributes )
+
+        reader.position = starting_pos
+
         consume_eols
         template.tokens.add( EOLToken(first_t) )
         template.tokens.add( TokenType.keyword_GLOBAL.create_token(first_t) )
@@ -267,50 +305,14 @@ class Parser
         template.tokens.add( EOLToken(first_t) )
         template.tokens.add( TokenType.keyword_method.create_token(first_t) )
         template.tokens.add( TokenType.identifier.create_token(first_t,"call") )
-
         Program.add_template( template )
 
       else
-        # Need a little finageling to parse out the attributes while
-        # leaving the base types for later.
-        #   (autoinit) : BaseType, ... [attributes] \n
-        #   ^^^^^^^^^^^^^^ leave       ^parse       ^leave
-        local starting_pos = reader.position
-
-        if (consume(TokenType.symbol_open_paren))
-          # ( name1[=value1][:Type1] [, ...] )
-          consume_eols
-          if (not consume(TokenType.symbol_close_paren))
-            local first = true
-            while (first or consume(TokenType.symbol_comma))
-              first = false
-              consume_eols
-              consume( TokenType.symbol_ampersand )
-              read_identifier
-              consume_eols
-              if (consume(TokenType.symbol_equals)) parse_expression
-              consume_eols
-              if (consume(TokenType.symbol_colon))
-                if (not consume(TokenType.placeholder_id)) parse_possible_type
-              endIf
-              consume_eols
-            endWhile
-            must_consume( TokenType.symbol_close_paren )
-          endIf
-        endIf
-
-        if (consume(TokenType.symbol_colon))
-          parse_possible_type
-          while (consume(TokenType.symbol_comma)) parse_possible_type
-        endIf
-
-        # Now go back and copy all the tokens up to this point into the template.
-        local final_pos = reader.position
         reader.position = starting_pos
         while (reader.position < final_pos) template.tokens.add( read )
 
+        # Parse out attributes
         parse_attributes( template.attributes )
-
         Program.add_template( template )
 
         local semi_t = peek
@@ -318,6 +320,7 @@ class Parser
           if (template.tokens.count == 0) template.tokens.add( TokenType.eol.create_token(semi_t) )
           return
         endIf
+
       endIf
 
       while (reader.has_another)
