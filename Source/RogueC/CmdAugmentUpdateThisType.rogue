@@ -389,20 +389,6 @@ augment CmdCreateOptionalValue
 
 endAugment
 
-augment CmdLogicalizeOptionalValue
-  METHODS
-    method update_this_type( scope:Scope )
-      value.update_this_type( scope )
-
-endAugment
-
-augment CmdGetOptionalValue
-  METHODS
-    method update_this_type( scope:Scope )
-      value.update_this_type( scope )
-
-endAugment
-
 augment CmdTrace
   METHODS
     method update_this_type( scope:Scope )

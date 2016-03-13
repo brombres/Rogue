@@ -195,7 +195,6 @@ class Type
       if (this.is_primitive and other.is_primitive)
         return this.primitive_rank >= other.primitive_rank
       endIf
-      #if (other.is_optional and other.element_type is this) return true
       if (this.instance_of(other)) return true
       if (other.is_list and other.element_type is this) return true
       return false
@@ -406,7 +405,7 @@ class Type
             prior_m.attributes.add( Attribute.is_overridden )
             m.attributes.add( Attribute.is_dynamic )
             method_list.remove( m )
-            method_list[ method_list.locate( prior_m )! ] = m
+            method_list[ method_list.locate( prior_m ).value ] = m
           endIf
         endIf
         m.return_type = this
@@ -446,21 +445,17 @@ class Type
         endIf
       endIf
 
-      # Add a default to->Object to compounds
-#{ 
+      # Add a default to->Object to compounds, primitives, and functional types
       if (is_compound or is_primitive or is_functional)
         local m = find_method( "to_Object()" )
         if (not m)
-@trace
           m = add_method( t, "to_Object" )
           local boxed_name = "Boxed<<$>>" (name)
           m.return_type = Program.get_type_reference( t, boxed_name )
           m.statements.add( CmdReturn(t,CmdAccess(t,boxed_name,CmdArgs(CmdLiteralThis(t,this)))) )
           m.organize( scope )
-@trace
         endIf
       endIf
-|}#
 
       if (this isNot Program.type_NativeArray)
         is_array = this.instance_of( Program.type_NativeArray )
@@ -586,7 +581,7 @@ class Type
     method inherit_property( p:Property, list:Property[], lookup:Table<<String,Property>> )
       local existing_p = lookup[ p.name ]
       if (existing_p)
-        local i = list.locate( existing_p )!
+        local i = list.locate( existing_p ).value
 
         if (p.type_context is existing_p.type_context and not p.is_incorporated and not existing_p.is_incorporated)
           throw p.t.error( ''A property named "$" already exists.'' (p.name) )
@@ -650,7 +645,7 @@ class Type
       local existing_m = lookup[ m.signature ]
 
       if (existing_m)
-        local i = list.locate( existing_m )!
+        local i = list.locate( existing_m ).value
 
         if (not existing_m.is_incorporated)
           if (m.type_context is existing_m.type_context)
@@ -740,7 +735,7 @@ class Type
           endIf
         endIf
 
-        local i = list.locate( existing_m )!
+        local i = list.locate( existing_m ).value
 
         # Aspect routines are not incorporated
         if (m.type_context.is_aspect) return
@@ -799,7 +794,7 @@ class Type
       endForEach
 
     method omit_output->Logical
-      return is_native or not is_used or (is_optional and element_type.is_reference)
+      return is_native or not is_used
 
     method resolve->Type
       if (resolved) return this
@@ -826,7 +821,7 @@ class Type
       return this
 
     method should_cull->Logical
-      return not is_used or (is_optional and element_type.is_reference)
+      return not is_used
 
     method to->String
       return name

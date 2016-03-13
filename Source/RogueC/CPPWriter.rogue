@@ -957,13 +957,9 @@ class CPPWriter
       return this
 
     method print( type:Type )->CPPWriter
-      if (type and type.is_optional and type.element_type.is_reference)
-        return print( type.element_type )
-      else
-        print_type_name( type )
-        if (type and type.is_reference) buffer.print("*")
-        return this
-      endIf
+      print_type_name( type )
+      if (type and type.is_reference) buffer.print("*")
+      return this
 
     method print_cast( from_type:Type, to_type:Type )->CPPWriter
       if (from_type is to_type) return this
@@ -1007,10 +1003,10 @@ class CPPWriter
       return this
 
     method print_default_value( type:Type )->CPPWriter
-      if ((type.is_optional and type.element_type.is_reference) or not type.is_compound)
-        buffer.print( "0" )
-      else
+      if (type.is_compound)
         print( type ).print( "()" )
+      else
+        buffer.print( "0" )
       endIf
       return this
 
@@ -1302,8 +1298,8 @@ augment Type
       elseIf (is_list)
         cpp_class_name = "Rogue" + cpp_name
 
-      elseIf (is_optional and element_type.is_primitive)
-        cpp_name = Program.validate_cpp_name( "Optional" + element_type.name )
+      elseIf (is_optional)
+        cpp_name = Program.validate_cpp_name( "Optional" + element_type.cpp_name )
         cpp_class_name = "Rogue" + cpp_name
 
       else
@@ -1382,7 +1378,7 @@ augment Type
           if (is_optional)
             # Value Constructor, exists->true
             writer.print( this ).print( "( " ).print( property_list.first.type )
-            writer.println( " value ) : value(value), exists(true) {}" )
+            writer.println( " value, bool exists=true ) : value(value), exists(exists) {}" )
           else
             # Standard Constructor
             writer.print( this ).print( "( " )
@@ -1404,6 +1400,7 @@ augment Type
           endIf
         endIf
 
+        #{
         if (not is_aspect)
           # Default operator== and operator!=
           writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
@@ -1436,37 +1433,6 @@ augment Type
                           |}
                           |
 
-        endIf
-
-        #{
-        # trace() method
-        if (has_object_references and not is_reference_array)
-          writer.println(   "void trace()" )
-          writer.println( "{" )
-          writer.indent += 2
-          forEach (p in property_list)
-            if (p.type.is_reference)
-              writer.print("ROGUE_TRACE( " ).print( p.cpp_name ).println( " );" )
-            elseIf (p.type.has_object_references)
-              # Compound
-              writer.print( p.cpp_name ).println( ".trace();" )
-            endIf
-          endForEach
-          writer.indent -= 2
-          writer.println( "}" )
-        endIf
-        }#
-
-        #{
-        # check()
-        if (is_optional)
-          writer.print( "bool check( " ).print( element_type ).println( "* checked )" )
-          writer.println @|{
-                          |  if ( !exists ) return false;
-                          |  *checked = value;
-                          |  return true;
-                          |}
-                          |
         endIf
         }#
 
@@ -2834,28 +2800,6 @@ augment CmdCreateOptionalValue
         endIf
       endIf
 
-endAugment
-
-
-augment CmdLogicalizeOptionalValue
-  METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (value.type.element_type.is_reference)
-        writer.print( "!!" )
-        value.write_cpp( writer )
-      else
-        value.write_cpp( writer )
-        writer.print( ".exists" )
-      endIf
-endAugment
-
-augment CmdGetOptionalValue
-  METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      value.write_cpp( writer )
-      if (not value.type.element_type.is_reference)
-        writer.print( ".value" )
-      endIf
 endAugment
 
 

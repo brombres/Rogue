@@ -396,20 +396,6 @@ augment CmdCreateOptionalValue
 
 endAugment
 
-augment CmdLogicalizeOptionalValue
-  METHODS
-    method trace_used_code
-      value.trace_used_code
-
-endAugment
-
-augment CmdGetOptionalValue
-  METHODS
-    method trace_used_code
-      value.trace_used_code
-
-endAugment
-
 augment CmdTrace
   METHODS
     method trace_used_code

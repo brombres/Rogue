@@ -332,7 +332,7 @@ class File
       local i = filepath.locate_last( '/' )
       if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return ""
-      return filepath.from( 0, i!-1 )
+      return filepath.from( 0, i.value-1 )
 
     method reader( filepath:String )->FileReader
       return FileReader( filepath )

@@ -193,12 +193,12 @@ class String [native functional]
     method from_first( ch:Character )->String
       local i = locate( ch )
       if (not i) return ""
-      return from( i! )
+      return from( i.value )
 
     method from_first( st:String )->String
       local i = locate( st )
       if (not i) return ""
-      return from( i! )
+      return from( i.value )
 
     method from_last( ch:Character )->String
       local i = locate_last( ch )

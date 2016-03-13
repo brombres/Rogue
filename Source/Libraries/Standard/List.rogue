@@ -240,7 +240,7 @@ class List<<$DataType>> : GenericList
     method remove( value:$DataType )->$DataType
       local index = locate( value )
       if (index)
-        return remove_at( index! )
+        return remove_at( index.value )
       else
         local zero_value : $DataType
         return zero_value

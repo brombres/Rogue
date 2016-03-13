@@ -1940,8 +1940,6 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
-      elseIf (consume(TokenType.symbol_exclamation_point))
-        return parse_post_unary( CmdGetOptionalValue(t,operand) )
       endIf
       return operand
 

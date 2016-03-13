@@ -1,2 +1,11 @@
-class Optional<<$DataType>>( value:$DataType, exists:Logical ) [compound]
+class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
+  GLOBAL METHODS
+    method create->$DataType?
+      local default_value : $DataType
+      return $DataType?( default_value, false )
+
+  METHODS
+    method to->String
+      if (exists) return value->String
+      else        return "null"
 endClass

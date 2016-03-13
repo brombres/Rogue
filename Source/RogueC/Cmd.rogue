@@ -41,9 +41,9 @@ class Cmd
 
         if (target_type.is_optional)
           if (this_type is target_type.element_type)
-            return CmdCreateOptionalValue( t, target_type, this )
+            return CmdAccess( t, "$?"(this_type.name), CmdArgs(this) )
           elseIf (this_type is Program.type_null)
-            return CmdCreateOptionalValue( t, target_type, null )
+            return CmdAccess( t, "$?"(this_type.name), CmdArgs() )
           endIf
         endIf
 
@@ -1278,7 +1278,7 @@ class CmdLiteralNull : CmdLiteral
 
     method cast_to( target_type:Type, scope:Scope )->Cmd
       if (target_type.is_optional)
-        return CmdCreateOptionalValue( t, target_type )
+        return CmdAccess( t, "$?"(target_type.element_type.name), CmdArgs() )
       else
         return prior.cast_to( target_type, scope )
       endIf
@@ -1462,9 +1462,9 @@ class CmdFormattedString : Cmd
         arg = arg.resolve(scope).require_value
         local i = fmt.locate( '$' )
         if (not i) throw t.error( "More arguments than format markers ('$') in formatted string." )
-        if (i! > 0)
-          cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i!))) )
-          fmt = fmt.from(i!+1)
+        if (i.value > 0)
+          cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i.value))) )
+          fmt = fmt.from(i.value+1)
         else
           fmt = fmt.from(1)
         endIf
@@ -1692,21 +1692,6 @@ class CmdAccess : Cmd
 
       local context_type = context.require_type
       context_type.organize(scope)
-
-      if (context_type.is_optional)
-        which (name)
-          case "exists"
-            if (args and args.count) throw t.error( "Optional value existence check takes no arguments." )
-            return CmdLogicalizeOptionalValue( t, context )
-
-          case "value"
-            if (args and args.count) throw t.error( "Optional value retrieval takes no arguments." )
-            return CmdGetOptionalValue( t, context )
-
-          others
-            throw t.error( "'exists' and 'value' are the only valid properties of an optional type." )
-        endWhich
-      endIf
 
       local result = scope.resolve_call( context_type, this, false )
       if (result) return result
@@ -2532,7 +2517,7 @@ class CmdLogicalize : CmdUnary
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       if (operand.require_type.is_optional)
-        return CmdLogicalizeOptionalValue( t, operand )
+        return CmdAccess( t, operand, "exists" ).resolve( scope )
       else
         return this
       endIf
@@ -4196,49 +4181,6 @@ class CmdCreateOptionalValue : Cmd
     method type->Type
       return of_type
 
-endClass
-
-
-class CmdLogicalizeOptionalValue : Cmd
-  PROPERTIES
-    value    : Cmd
-    positive : Logical
-      # positive:true  returns "true" if exists and "false" if not.
-      # positive:false returns the opposite
-
-  METHODS
-    method init( t, value, positive=true )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLogicalizeOptionalValue( t, value.clone(clone_args) )
-
-    method resolve( scope:Scope )->this
-      value = value.resolve( scope ).require_value
-      return this
-
-    method type->Type
-      return Program.type_Logical
-endClass
-
-class CmdGetOptionalValue : Cmd
-  PROPERTIES
-    value    : Cmd
-
-  METHODS
-    method init( t, value )
-
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdGetOptionalValue( t, value.clone(clone_args) )
-
-    method resolve( scope:Scope )->this
-      value = value.resolve( scope )
-      if (not value.require_type.is_optional)
-        throw t.error( "The optional value retriever ('!') can only be used on optional values." )
-      endIf
-      return this
-
-    method type->Type
-      return value.type.element_type
 endClass
 
 
