@@ -1265,7 +1265,12 @@ augment RogueC
       RogueC.on_compile_finished
 
       if (execute_args)
-        local exe = output_filepath.to_lowercase
+        local exe = output_filepath
+        if (exe.contains('/'))
+          exe = File.path(exe) + "/" + File.filename(exe).to_lowercase
+        else
+          exe = exe.to_lowercase
+        endIf
         local cmd = "clang++ -std=c++11 -fno-strict-aliasing $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
         println cmd
         println

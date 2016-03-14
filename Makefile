@@ -114,3 +114,5 @@ release:
 	git checkout develop
 	git push
 
+docs:
+	cd Source/DocGen && make
