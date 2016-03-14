@@ -4392,7 +4392,7 @@ RogueString* RogueString__before_last__Character( RogueString* THIS, RogueCharac
 RogueString* RogueString__before_last__String( RogueString* THIS, RogueString* st_0 );
 RogueLogical RogueString__begins_with__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueLogical RogueString__begins_with__String( RogueString* THIS, RogueString* other_0 );
-RogueLogical RogueString__contains__String( RogueString* THIS, RogueString* substring_0 );
+RogueLogical RogueString__contains__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueString* substring_0, RogueInt32 at_index_1 );
 RogueString* RogueString__decode_utf8( RogueString* THIS );
 RogueLogical RogueString__ends_with__String( RogueString* THIS, RogueString* other_0 );

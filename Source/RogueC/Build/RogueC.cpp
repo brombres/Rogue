@@ -14556,9 +14556,9 @@ RogueLogical RogueString__begins_with__String( RogueString* THIS, RogueString* o
   return (RogueLogical)((THIS->count >= other_count_1 && ((RogueString__contains_at__String_Int32( ROGUE_ARG(THIS), other_0, 0 )))));
 }
 
-RogueLogical RogueString__contains__String( RogueString* THIS, RogueString* substring_0 )
+RogueLogical RogueString__contains__Character( RogueString* THIS, RogueCharacter ch_0 )
 {
-  return (RogueLogical)(((RogueString__locate__String_OptionalInt32( ROGUE_ARG(THIS), substring_0, ROGUE_ARG((RogueOptionalInt32__create())) ))).exists);
+  return (RogueLogical)(((RogueString__locate__Character_OptionalInt32( ROGUE_ARG(THIS), ch_0, ROGUE_ARG((RogueOptionalInt32__create())) ))).exists);
 }
 
 RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueString* substring_0, RogueInt32 at_index_1 )
@@ -14917,7 +14917,7 @@ RogueString* RogueString__operatorPLUS__String( RogueString* THIS, RogueString* 
 RogueString* RogueString__pluralize__Int32( RogueString* THIS, RogueInt32 quantity_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueString*,st_1,(((RogueString__replacing__String_String( ROGUE_ARG(THIS), Rogue_literal_strings[339], ROGUE_ARG(((RogueString__operatorPLUS__Int32( Rogue_literal_strings[0], quantity_0 )))) )))));
-  if (((RogueString__contains__String( st_1, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'/' )))) ))))
+  if (((RogueString__contains__Character( st_1, (RogueCharacter)'/' ))))
   {
     if (quantity_0 == 1)
     {
@@ -14981,7 +14981,7 @@ RogueClassStringReader* RogueString__reader( RogueString* THIS )
 
 RogueString* RogueString__replacing__Character_Character( RogueString* THIS, RogueCharacter look_for_0, RogueCharacter replace_with_1 )
 {
-  if (!(((RogueString__contains__String( ROGUE_ARG(THIS), ROGUE_ARG(((RogueCharacter__to_String( look_for_0 )))) )))))
+  if (!(((RogueString__contains__Character( ROGUE_ARG(THIS), look_for_0 )))))
   {
     return (RogueString*)(THIS);
   }
@@ -16303,7 +16303,7 @@ void RogueRogueC__write_cpp( RogueClassRogueC* THIS )
   if (!!(THIS->execute_args))
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,exe_1,(THIS->output_filepath));
-    if (((RogueString__contains__String( exe_1, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'/' )))) ))))
+    if (((RogueString__contains__Character( exe_1, (RogueCharacter)'/' ))))
     {
       exe_1 = ((RogueString*)((RogueString__operatorPLUS__String( ROGUE_ARG(((RogueString__operatorPLUS__String( ROGUE_ARG((RogueFile__path__String( exe_1 ))), Rogue_literal_strings[61] )))), ROGUE_ARG(((RogueString__to_lowercase( ROGUE_ARG((RogueFile__filename__String( exe_1 ))) )))) ))));
     }
@@ -16412,7 +16412,7 @@ void RogueStackTrace__format( RogueClassStackTrace* THIS )
     for (;i_6 < _auto_275_5->count;++i_6)
     {
       ROGUE_DEF_LOCAL_REF(RogueString*,entry_7,(((RogueString*)(_auto_275_5->data->objects[i_6]))));
-      if (((RogueString__contains__String( entry_7, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)' ' )))) ))))
+      if (((RogueString__contains__Character( entry_7, (RogueCharacter)' ' ))))
       {
         THIS->entries->data->objects[i_6] = ((RogueString__operatorPLUS__String( ROGUE_ARG(((RogueString__left_justified__Int32( ROGUE_ARG(((RogueString__before_first__Character( entry_7, (RogueCharacter)' ' )))), max_sp_0 )))), ROGUE_ARG(((RogueString__from_first__Character( entry_7, (RogueCharacter)' ' )))) )));
       }
@@ -17474,7 +17474,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
   RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[465] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], filepath_0 )))) )))), Rogue_literal_strings[519] )))) )))) );
   writer_1 = ((RogueClassCPPWriter*)((RogueCPPWriter__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCPPWriter*,ROGUE_CREATE_OBJECT(CPPWriter))), ROGUE_ARG(((RogueString__operatorPLUS__String( filepath_0, Rogue_literal_strings[442] )))) ))));
   ROGUE_DEF_LOCAL_REF(RogueString*,base_filename_2,(filepath_0));
-  if (((RogueString__contains__String( base_filename_2, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'/' )))) ))))
+  if (((RogueString__contains__Character( base_filename_2, (RogueCharacter)'/' ))))
   {
     base_filename_2 = ((RogueString*)((RogueString__after_last__Character( base_filename_2, (RogueCharacter)'/' ))));
   }
@@ -18352,7 +18352,7 @@ void RogueTemplate__instantiate__Type_Scope( RogueClassTemplate* THIS, RogueClas
   if (!!(THIS->alternates_by_param_count))
   {
     RogueInt32 specializer_count_2 = (0);
-    if (((RogueString__contains__String( ROGUE_ARG(type_0->name), ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'<' )))) ))))
+    if (((RogueString__contains__Character( ROGUE_ARG(type_0->name), (RogueCharacter)'<' ))))
     {
       specializer_count_2 = ((RogueInt32)((RogueParser__parse_specializer_count( ROGUE_ARG(((RogueParser__init__Token_String_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassParser*,ROGUE_CREATE_OBJECT(Parser))), ROGUE_ARG(type_0->t), ROGUE_ARG(type_0->name), ROGUE_ARG(((RogueString__from_first__Character( ROGUE_ARG(type_0->name), (RogueCharacter)'<' )))) )))) ))));
     }
@@ -18566,7 +18566,7 @@ void RogueTemplate__instantiate_parameterized_type__Type_TokenList_Scope( RogueC
 
 void RogueTemplate__instantiate_standard_type__Type_TokenList( RogueClassTemplate* THIS, RogueClassType* type_0, RogueTokenList* augmented_tokens_1 )
 {
-  if (((RogueString__contains__String( ROGUE_ARG(type_0->name), ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'<' )))) ))))
+  if (((RogueString__contains__Character( ROGUE_ARG(type_0->name), (RogueCharacter)'<' ))))
   {
     ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(THIS->t), Rogue_literal_strings[369] ))));
   }
@@ -24202,7 +24202,7 @@ RogueClassCPPWriter* RogueCPPWriter__print__Character( RogueClassCPPWriter* THIS
 RogueClassCPPWriter* RogueCPPWriter__print__String( RogueClassCPPWriter* THIS, RogueString* value_0 )
 {
   RogueLogical needs_newline_1 = (false);
-  if (((RogueString__contains__String( value_0, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)10 )))) ))))
+  if (((RogueString__contains__Character( value_0, (RogueCharacter)10 ))))
   {
     {
       ROGUE_DEF_LOCAL_REF(RogueClassLineReader*,_auto_1008_2,(((RogueLineReader__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassLineReader*,ROGUE_CREATE_OBJECT(LineReader))), value_0 )))));
@@ -25893,7 +25893,7 @@ void RogueParser__parse_augment( RogueClassParser* THIS )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassToken*,t_0,(((RogueTokenReader__read( ROGUE_ARG(THIS->reader) )))));
   ROGUE_DEF_LOCAL_REF(RogueString*,name_1,(((RogueParser__parse_possible_type__Logical( ROGUE_ARG(THIS), false )))));
-  if (((RogueString__contains__String( name_1, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'$' )))) ))))
+  if (((RogueString__contains__Character( name_1, (RogueCharacter)'$' ))))
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,base_name_2,(((RogueString__before_first__Character( name_1, (RogueCharacter)'<' )))));
     ROGUE_THROW(((RogueToken__error__String( t_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[325] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], base_name_2 )))) )))), Rogue_literal_strings[326] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], base_name_2 )))) )))), Rogue_literal_strings[327] )))) )))) ))));
@@ -28601,7 +28601,7 @@ RogueLogical RogueCmdMakeRequisite__requires_semicolon( RogueClassCmdMakeRequisi
 
 RogueClassCmd* RogueCmdMakeRequisite__resolve__Scope( RogueClassCmdMakeRequisite* THIS, RogueClassScope* scope_0 )
 {
-  if (((RogueString__contains__String( ROGUE_ARG(THIS->pattern), ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'.' )))) ))))
+  if (((RogueString__contains__Character( ROGUE_ARG(THIS->pattern), (RogueCharacter)'.' ))))
   {
     ROGUE_DEF_LOCAL_REF(RogueClassType*,req_type_1,(((RogueProgram__get_type_reference__Token_String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueString__before_first__Character( ROGUE_ARG(THIS->pattern), (RogueCharacter)'.' )))) )))));
     RogueType__organize__Scope( ROGUE_ARG(((RogueType__make_requisite( req_type_1 )))), ROGUE_ARG(((RogueClassScope*)(NULL))) );
@@ -28627,7 +28627,7 @@ RogueClassCmd* RogueCmdMakeRequisite__resolve__Scope( RogueClassCmdMakeRequisite
         }
       }
     }
-    else if (((RogueString__contains__String( sig_2, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'(' )))) ))))
+    else if (((RogueString__contains__Character( sig_2, (RogueCharacter)'(' ))))
     {
       ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_3,(((RogueType__find_method__String( req_type_1, sig_2 )))));
       if (!!(m_3))
@@ -34387,7 +34387,7 @@ void RogueCmdInlineNative__write_cpp__CPPWriter_Logical( RogueClassCmdInlineNati
     RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[219] );
     return;
   }
-  if ((((RogueString__contains__String( ROGUE_ARG(THIS->code), ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)10 )))) ))) || !(!!(THIS->_result_type))))
+  if ((((RogueString__contains__Character( ROGUE_ARG(THIS->code), (RogueCharacter)10 ))) || !(!!(THIS->_result_type))))
   {
     RogueCPPWriter__println( writer_0 );
   }
@@ -46178,7 +46178,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[33] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[34] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[35] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.27.0", 8 ) ); 
+  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.27.1", 8 ) ); 
   Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 14, 2016", 14 ) ); 
   Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
   Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 

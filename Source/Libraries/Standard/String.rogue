@@ -85,6 +85,9 @@ class String [foreign]
 
       return (ch + ('A'-'a'))->Character + this.from( 1 )
 
+    method contains( ch:Character )->Logical
+      return locate(ch)?
+
     method contains( substring:String )->Logical
       return locate(substring)?
 
