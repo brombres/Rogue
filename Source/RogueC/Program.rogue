@@ -112,7 +112,7 @@ class Program [requisite singleton]
       type_Logical       = create_built_in_type( "Logical",   Attribute.is_primitive )
 
       type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
-      type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_functional )
+      type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_foreign )
       type_StringBuilder = create_built_in_type( "StringBuilder", Attribute.is_class )
       type_NativeArray   = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
       type_GenericList   = create_built_in_type( "GenericList", Attribute.is_class )

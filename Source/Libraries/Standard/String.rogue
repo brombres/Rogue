@@ -1,4 +1,4 @@
-class String [native functional]
+class String [foreign]
   GLOBAL METHODS
     method create( characters:Character[] )->String [macro]
       $if ("C++") native 'RogueString_create_from_characters( $characters )'

@@ -231,7 +231,7 @@ class Parser
 
       which (template.element_type)
         case Attribute.is_compound
-          template.attributes.add( Attribute.is_functional )
+          template.attributes.add( Attribute.is_foreign )
       endWhich
 
     method parse_routine
@@ -401,8 +401,8 @@ class Parser
           attributes.add( Attribute.is_compound )
         elseIf (consume("fallback"))
           attributes.add( Attribute.is_fallback )
-        elseIf (consume("functional"))
-          attributes.add( Attribute.is_functional )
+        elseIf (consume("foreign"))
+          attributes.add( Attribute.is_foreign | Attribute.is_native )
         elseIf (consume("immutable"))
           attributes.add( Attribute.is_immutable )
         elseIf (consume("primitive"))

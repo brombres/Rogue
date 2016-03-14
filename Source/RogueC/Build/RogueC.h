@@ -4669,7 +4669,7 @@ RogueLogical RogueType__is_equivalent_or_more_specific_than__Type( RogueClassTyp
 RogueLogical RogueType__is_aspect( RogueClassType* THIS );
 RogueLogical RogueType__is_class( RogueClassType* THIS );
 RogueLogical RogueType__is_compound( RogueClassType* THIS );
-RogueLogical RogueType__is_functional( RogueClassType* THIS );
+RogueLogical RogueType__is_foreign( RogueClassType* THIS );
 RogueLogical RogueType__is_native( RogueClassType* THIS );
 RogueLogical RogueType__is_primitive( RogueClassType* THIS );
 RogueLogical RogueType__is_reference( RogueClassType* THIS );

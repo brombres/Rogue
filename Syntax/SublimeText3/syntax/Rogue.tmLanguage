@@ -411,7 +411,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(native|inline|inlineNative|requisite|abstract|final|propagated|functional|dynamicAccess|marshalling|omit)\b</string>
+					<string>\b(native|inline|inlineNative|requisite|abstract|final|propagated|foreign|dynamicAccess|marshalling|omit)\b</string>
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>

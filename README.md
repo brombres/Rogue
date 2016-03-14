@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.25
-- March 13, 2016
+- v1.0.26.1
+- March X, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.26 - March X, 2016
+- Renamed `[functional]` to `[foreign]`.  A `[foreign]` class is one that supplements a native non-Rogue reference type with methods callable from Rogue.  This feature is still somewhat hard-coded for the C++ implementation of Rogue `String`.
 
 ###v1.0.25 - March 13, 2016
 - All compound/primitive/functional types now have default `to->Object` returning Boxed<<$DataType>>.

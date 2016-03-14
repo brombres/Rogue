@@ -211,8 +211,8 @@ class Type
     method is_compound->Logical
       return (attributes.flags & Attribute.type_mask) == Attribute.is_compound
 
-    method is_functional->Logical
-      return (attributes.flags & Attribute.is_functional)
+    method is_foreign->Logical
+      return (attributes.flags & Attribute.is_foreign)
 
     method is_immutable->Logical
       return (attributes.flags & Attribute.is_immutable)
@@ -292,7 +292,7 @@ class Type
           endIf
         endForEach
 
-        if (not base_class and not is_functional and this isNot Program.type_Object)
+        if (not base_class and not is_foreign and this isNot Program.type_Object)
           Program.type_Object.organize
           base_class = Program.type_Object; base_types.insert( base_class )
         endIf
@@ -435,7 +435,7 @@ class Type
       endIf
 
       # Add a default to->String to compounds
-      if (is_compound or is_primitive or is_functional)
+      if (is_compound or is_primitive or is_foreign)
         local m = find_method( "to_String()" )
         if (not m)
           m = add_method( t, "to_String" )
@@ -446,7 +446,7 @@ class Type
       endIf
 
       # Add a default to->Object to compounds, primitives, and functional types
-      if (is_compound or is_primitive or is_functional)
+      if (is_compound or is_primitive or is_foreign)
         local m = find_method( "to_Object()" )
         if (not m)
           m = add_method( t, "to_Object" )

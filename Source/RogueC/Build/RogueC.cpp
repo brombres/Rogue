@@ -17869,7 +17869,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
             ROGUE_DEF_LOCAL_REF(RogueClassProperty*,g_116,(((RogueClassProperty*)(_auto_244_114->data->objects[_auto_245_115]))));
             if ((((RogueType__is_reference( ROGUE_ARG(g_116->_type) ))) || ((RogueType__has_object_references( ROGUE_ARG(g_116->_type) )))))
             {
-              if (((((RogueType__is_reference( ROGUE_ARG(g_116->_type) ))) && !(((RogueType__is_functional( ROGUE_ARG(g_116->_type) ))))) && !(g_116->_type->is_array)))
+              if (((((RogueType__is_reference( ROGUE_ARG(g_116->_type) ))) && !(((RogueType__is_foreign( ROGUE_ARG(g_116->_type) ))))) && !(g_116->_type->is_array)))
               {
                 RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[571] )))), ROGUE_ARG(type_113->cpp_name) )))), Rogue_literal_strings[425] )))), ROGUE_ARG(g_116->cpp_name) );
                 RogueCPPWriter__println__String( writer_1, Rogue_literal_strings[544] );
@@ -18151,7 +18151,7 @@ void RogueProgram__print_property_trace_code__Type_CPPWriter( RogueClassProgram*
       ROGUE_DEF_LOCAL_REF(RogueClassProperty*,p_5,(((RogueClassProperty*)(_auto_271_3->data->objects[_auto_272_4]))));
       if ((((RogueType__is_reference( ROGUE_ARG(p_5->_type) ))) || ((RogueType__has_object_references( ROGUE_ARG(p_5->_type) )))))
       {
-        if (((((RogueType__is_reference( ROGUE_ARG(p_5->_type) ))) && !(((RogueType__is_functional( ROGUE_ARG(p_5->_type) ))))) && !(p_5->_type->is_array)))
+        if (((((RogueType__is_reference( ROGUE_ARG(p_5->_type) ))) && !(((RogueType__is_foreign( ROGUE_ARG(p_5->_type) ))))) && !(p_5->_type->is_array)))
         {
           RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[542] )))), ROGUE_ARG(type_0->cpp_class_name) )))), Rogue_literal_strings[543] )))), ROGUE_ARG(p_5->cpp_name) );
           RogueCPPWriter__println__String( writer_1, Rogue_literal_strings[544] );
@@ -20272,7 +20272,7 @@ RogueLogical RogueType__is_compound( RogueClassType* THIS )
   return (RogueLogical)((THIS->attributes->flags & 7) == 3);
 }
 
-RogueLogical RogueType__is_functional( RogueClassType* THIS )
+RogueLogical RogueType__is_foreign( RogueClassType* THIS )
 {
   return (RogueLogical)(!!((THIS->attributes->flags & 16)));
 }
@@ -20392,7 +20392,7 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
         }
       }
     }
-    if (((!(!!(THIS->base_class)) && !(((RogueType__is_functional( ROGUE_ARG(THIS) ))))) && ((void*)THIS) != ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object)))
+    if (((!(!!(THIS->base_class)) && !(((RogueType__is_foreign( ROGUE_ARG(THIS) ))))) && ((void*)THIS) != ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object)))
     {
       RogueType__organize__Scope( ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object), ROGUE_ARG(((RogueClassScope*)(NULL))) );
       THIS->base_class = ((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object;
@@ -20576,7 +20576,7 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
       RogueMethod__make_requisite( m_16 );
     }
   }
-  if (((((RogueType__is_compound( ROGUE_ARG(THIS) ))) || ((RogueType__is_primitive( ROGUE_ARG(THIS) )))) || ((RogueType__is_functional( ROGUE_ARG(THIS) )))))
+  if (((((RogueType__is_compound( ROGUE_ARG(THIS) ))) || ((RogueType__is_primitive( ROGUE_ARG(THIS) )))) || ((RogueType__is_foreign( ROGUE_ARG(THIS) )))))
   {
     ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_17,(((RogueType__find_method__String( ROGUE_ARG(THIS), Rogue_literal_strings[415] )))));
     if (!(!!(m_17)))
@@ -20587,7 +20587,7 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
       RogueMethod__organize__Scope_Logical( m_17, scope_0, true );
     }
   }
-  if (((((RogueType__is_compound( ROGUE_ARG(THIS) ))) || ((RogueType__is_primitive( ROGUE_ARG(THIS) )))) || ((RogueType__is_functional( ROGUE_ARG(THIS) )))))
+  if (((((RogueType__is_compound( ROGUE_ARG(THIS) ))) || ((RogueType__is_primitive( ROGUE_ARG(THIS) )))) || ((RogueType__is_foreign( ROGUE_ARG(THIS) )))))
   {
     ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_18,(((RogueType__find_method__String( ROGUE_ARG(THIS), Rogue_literal_strings[417] )))));
     if (!(!!(m_18)))
@@ -25965,7 +25965,7 @@ void RogueParser__parse_attributes__Attributes( RogueClassParser* THIS, RogueCla
     }
     else if (((RogueParser__consume__String( ROGUE_ARG(THIS), Rogue_literal_strings[315] ))))
     {
-      RogueAttributes__add__Int32( attributes_0, 16 );
+      RogueAttributes__add__Int32( attributes_0, 48 );
     }
     else if (((RogueParser__consume__String( ROGUE_ARG(THIS), Rogue_literal_strings[316] ))))
     {
@@ -46166,7 +46166,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[33] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[34] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[35] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.25", 6 ) ); 
+  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.26.1", 8 ) ); 
   Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 13, 2016", 14 ) ); 
   Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
   Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
@@ -46445,7 +46445,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[312] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "primitive", 9 ) ); 
   Rogue_literal_strings[313] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "compound", 8 ) ); 
   Rogue_literal_strings[314] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "fallback", 8 ) ); 
-  Rogue_literal_strings[315] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "functional", 10 ) ); 
+  Rogue_literal_strings[315] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "foreign", 7 ) ); 
   Rogue_literal_strings[316] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "immutable", 9 ) ); 
   Rogue_literal_strings[317] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "singleton", 9 ) ); 
   Rogue_literal_strings[318] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "special", 7 ) ); 

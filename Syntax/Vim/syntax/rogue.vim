@@ -17,7 +17,7 @@ if !exists("main_syntax")
 endif
 
 " keyword definitions
-syn keyword rogueClassDecl   class endClass routine endRoutine
+syn keyword rogueClassDecl   class endClass routine endRoutine aspect
 syn keyword rogueClassDecl   delegate endDelegate function endFunction primitive endPrimitive
 syn keyword rogueClassDecl   with endWith
 syn keyword rogueClassDecl   augment endAugment
@@ -48,7 +48,7 @@ syn keyword rogueType         Real64 Real32 Int64 Int32 Character Byte Logical S
 syn keyword rogueStorageClass overlaying underlying
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    deferred singleton managed
-syn keyword rogueStorageClass native macro requisite abstract final propagated functional dynamicAccess
+syn keyword rogueStorageClass native macro requisite abstract final propagated foreign dynamicAccess
 syn keyword rogueStorageClass marshalling omit
 syn keyword rogueExceptions   throw try catch finally
 syn keyword roguePreProc      useFramework
