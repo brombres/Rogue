@@ -645,6 +645,12 @@ class Type
       local existing_m = lookup[ m.signature ]
 
       if (existing_m)
+        if (m.return_type isNot existing_m.return_type)
+          if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
+            throw m.t.error( "In $::$ the overridden return type ($) is not compatible with the prior definition return type ($)." (m.type_context.name, m.signature,m.return_type,existing_m.return_type) )
+          endIf
+        endIf
+
         local i = list.locate( existing_m ).value
 
         if (not existing_m.is_incorporated)
@@ -654,12 +660,6 @@ class Type
               return
             else
               throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
-            endIf
-          else
-            if (m.return_type isNot existing_m.return_type)
-              if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
-                throw m.t.error( "In $::$ the overridden return type ($) is not compatible with the prior definition return type ($)." (m.type_context.name, m.signature,m.return_type,existing_m.return_type) )
-              endIf
             endIf
           endIf
         endIf
