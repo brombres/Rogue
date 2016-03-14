@@ -19,7 +19,7 @@ class Reader<<$DataType>> [aspect]
       endForEach
 
     method reset->this
-      position = 0
+      seek( 0 )
       return this
 
     method seek( pos:Int32 )->this

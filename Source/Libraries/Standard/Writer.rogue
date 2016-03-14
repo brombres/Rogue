@@ -17,8 +17,7 @@ class Writer<<$DataType>> [aspect]
       return @position
 
     method reset->this
-      position = 0
-      return this
+      return seek( 0 )
 
     method seek( pos:Int32 )->this
       position = pos

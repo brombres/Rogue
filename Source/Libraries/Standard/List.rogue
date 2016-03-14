@@ -367,8 +367,7 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
       return list[ position - 1 ]
 
     method reset->this
-      position = 0
-      if (is_limited) limit = list.count
+      seek( 0 )
       return this
 
     method seek( pos:Int32 )->this

@@ -90,7 +90,8 @@ class DataReader : Reader<<Byte>>
       return buffer
 
     method reset->this
-      return source.reset
+      source.reset
+      return this
 
     method seek( pos:Int32 )->this
       return source.seek( pos )
@@ -135,10 +136,12 @@ class DataWriter : Writer<<Byte>>
       return output.position
 
     method reset->this
-      return output.reset
+      output.reset
+      return this
 
     method seek( pos:Int32 )->this
-      return output.seek( pos )
+      output.seek( pos )
+      return this
 
     method seek_end()->this
       return output.seek_end
