@@ -105,3 +105,12 @@ clean:
 	rm -f Hello.h
 	rm -f ./a.out
 	rm -f ./hello
+
+release:
+	git checkout master
+	git pull
+	git merge
+	git push
+	git checkout develop
+	git push
+

@@ -294,6 +294,10 @@ class Parser
         #   -> class MyRoutine<<type>>
         #        GLOBAL METHODS
         #          method call(args)...
+
+        # Skip the return type if it exists
+        if (consume(TokenType.symbol_arrow)) parse_possible_type
+
         parse_attributes( template.attributes )
 
         reader.position = starting_pos
@@ -878,7 +882,7 @@ class Parser
       endIf
 
       if (consume(TokenType.directive_requisite))
-        # Turn this $requisite directive into a Cmd node so that it only takes effect 
+        # Turn this $requisite directive into a Cmd node so that it only takes effect
         # if the method is actually used in the program.
         statements.add( CmdMakeRequisite(t,t->String) )
         return

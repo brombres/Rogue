@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.26.3
-- March X, 2016
+- v1.0.26
+- March 14, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,7 +28,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.26 - March X, 2016
+###v1.0.26 - March 14, 2016
+- Fixed `[requisite]` routines to work correctly when the routine has a return type.
 - Renamed `[functional]` to `[foreign]`.  A `[foreign]` class is one that supplements a native non-Rogue reference type with methods callable from Rogue.  This feature is still somewhat hard-coded for the C++ implementation of Rogue `String`.
 - Fixed method overriding to make sure the overriding method's return type is instanceOf the overridden method's return type instead of short-circuiting when the overridden method is abstract.
 - Tightened up `reset()` and `seek()` in various readers and writers, fixing a few potential bugs in the process.

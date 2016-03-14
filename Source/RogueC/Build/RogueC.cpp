@@ -25834,6 +25834,10 @@ void RogueParser__parse_template_tokens__Template_TokenType( RogueClassParser* T
   RogueInt32 final_pos_9 = (THIS->reader->position);
   if (is_routine_3)
   {
+    if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_arrow) ))))
+    {
+      RogueParser__parse_possible_type__Logical( ROGUE_ARG(THIS), false );
+    }
     RogueParser__parse_attributes__Attributes( ROGUE_ARG(THIS), ROGUE_ARG(template_0->attributes) );
     THIS->reader->position = starting_pos_7;
     RogueParser__consume_eols( ROGUE_ARG(THIS) );
@@ -46166,7 +46170,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[33] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[34] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[35] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.26.3", 8 ) ); 
+  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.26.4", 8 ) ); 
   Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 14, 2016", 14 ) ); 
   Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
   Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 
@@ -46428,7 +46432,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[295] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[296] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[297] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[298] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Parser.parse_for_each() Parser.rogue:1701]", 43 ) ); 
+  Rogue_literal_strings[298] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[Parser.parse_for_each() Parser.rogue:1705]", 43 ) ); 
   Rogue_literal_strings[299] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[300] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Omit the 'return' in a macro method with a return type.", 55 ) ); 
   Rogue_literal_strings[301] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "() ", 3 ) ); 
