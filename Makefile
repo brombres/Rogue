@@ -109,7 +109,7 @@ clean:
 release:
 	git checkout master
 	git pull
-	git merge
+	git merge develop
 	git push
 	git checkout develop
 	git push
