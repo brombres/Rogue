@@ -4414,7 +4414,7 @@ RogueString* RogueString__operatorPLUS__Int64( RogueString* THIS, RogueInt64 val
 RogueString* RogueString__operatorPLUS__Object( RogueString* THIS, RogueObject* value_0 );
 RogueString* RogueString__operatorPLUS__Real64( RogueString* THIS, RogueReal64 value_0 );
 RogueString* RogueString__operatorPLUS__String( RogueString* THIS, RogueString* value_0 );
-RogueString* RogueString__pluralize__Int32( RogueString* THIS, RogueInt32 quantity_0 );
+RogueString* RogueString__pluralized__Int32( RogueString* THIS, RogueInt32 quantity_0 );
 RogueClassStringReader* RogueString__reader( RogueString* THIS );
 RogueString* RogueString__replacing__Character_Character( RogueString* THIS, RogueCharacter look_for_0, RogueCharacter replace_with_1 );
 RogueString* RogueString__replacing__String_String( RogueString* THIS, RogueString* look_for_0, RogueString* replace_with_1 );

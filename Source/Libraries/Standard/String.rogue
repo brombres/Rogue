@@ -434,7 +434,7 @@ class String [foreign]
     method operator*( value:Int32 )->String [macro]
       this.times( value )
 
-    method pluralize( quantity:Int32 )->String
+    method pluralized( quantity:Int32 )->String
       # Returns a pluralized form of this string.
       #
       # This string may be of the form "singlar" or "singlar/plural",
@@ -452,14 +452,14 @@ class String [foreign]
       #
       # Examples:
       #
-      #   "cat".pluralize(1)   # returns: cat
-      #   "cat".pluralize(2)   # returns: cats
-      #   "My # glass.".pluralize(1)  # returns: My 1 glass.
-      #   "My # glass.".pluralize(2)  # returns: My 2 glasses.
-      #   "a thief./# thieves".pluralize(1)   # returns: a thief.
-      #   "a thief./# thieves".pluralize(40)  # returns: 40 thieves.
-      #   "# match(es) found".pluralize(1)    # returns: 1 match found
-      #   "# match(es) found".pluralize(0)    # returns: 0 matches found
+      #   "cat".pluralized(1)   # returns: cat
+      #   "cat".pluralized(2)   # returns: cats
+      #   "My # glass.".pluralized(1)  # returns: My 1 glass.
+      #   "My # glass.".pluralized(2)  # returns: My 2 glasses.
+      #   "a thief./# thieves".pluralized(1)   # returns: a thief.
+      #   "a thief./# thieves".pluralized(40)  # returns: 40 thieves.
+      #   "# match(es) found".pluralized(1)    # returns: 1 match found
+      #   "# match(es) found".pluralized(0)    # returns: 0 matches found
       local st = this.replacing( "#", ""+quantity )
 
       if (st.contains('/'))

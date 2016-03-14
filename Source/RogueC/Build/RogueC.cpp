@@ -14914,7 +14914,7 @@ RogueString* RogueString__operatorPLUS__String( RogueString* THIS, RogueString* 
   return (RogueString*)(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(THIS) )))), value_0 )))) ))));
 }
 
-RogueString* RogueString__pluralize__Int32( RogueString* THIS, RogueInt32 quantity_0 )
+RogueString* RogueString__pluralized__Int32( RogueString* THIS, RogueInt32 quantity_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueString*,st_1,(((RogueString__replacing__String_String( ROGUE_ARG(THIS), Rogue_literal_strings[339], ROGUE_ARG(((RogueString__operatorPLUS__Int32( Rogue_literal_strings[0], quantity_0 )))) )))));
   if (((RogueString__contains__Character( st_1, (RogueCharacter)'/' ))))
@@ -18366,7 +18366,7 @@ void RogueTemplate__instantiate__Type_Scope( RogueClassTemplate* THIS, RogueClas
       }
       else
       {
-        ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(type_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[336] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(THIS->name) )))) )))), Rogue_literal_strings[337] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString__pluralize__Int32( Rogue_literal_strings[338], specializer_count_2 )))) )))) )))), Rogue_literal_strings[342] )))) )))) ))));
+        ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(type_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[336] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(THIS->name) )))) )))), Rogue_literal_strings[337] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString__pluralized__Int32( Rogue_literal_strings[338], specializer_count_2 )))) )))) )))), Rogue_literal_strings[342] )))) )))) ))));
       }
     }
   }
@@ -46178,7 +46178,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[33] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[34] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "'.", 2 ) ); 
   Rogue_literal_strings[35] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "Rogue Compiler v", 16 ) ); 
-  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.27.1", 8 ) ); 
+  Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "1.0.27.2", 8 ) ); 
   Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "March 14, 2016", 14 ) ); 
   Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
   Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( "]", 1 ) ); 

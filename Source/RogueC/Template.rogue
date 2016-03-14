@@ -32,7 +32,7 @@ class Template
             alternate.instantiate( type, scope )
             return
           else
-            throw type.t.error( "No $ template accepting $ is defined." (name,"# parameter".pluralize(specializer_count)) )
+            throw type.t.error( "No $ template accepting $ is defined." (name,"# parameter".pluralized(specializer_count)) )
           endIf
         endIf
       endIf

@@ -30,6 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.27 - March 14+, 2016
 - Added `String.contains(Character)->Logical`.
+- Renamed `String.pluralize()` to `String.pluralized()` for consistency.
 
 ###v1.0.26 - March 14, 2016
 - Fixed `[requisite]` routines to work correctly when the routine has a return type.
