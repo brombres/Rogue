@@ -20,3 +20,26 @@ class Range<<$DataType>>( current:$DataType, last:$DataType, step_size=1:$DataTy
     method to->String
       return to_list->String
 endClass
+
+class RangeToLimit<<$DataType>> : Range<<$DataType>>
+  METHODS
+    method has_another->Logical
+      if (step_size >= 0) return current < last
+      else                return current > last
+
+    method read->$DataType
+      local result = current
+      current += step_size
+      return result
+
+    method to_list->$DataType[]
+      return this->$DataType[]
+
+    method to->$DataType[]
+      local result = $DataType[]
+      while (has_another) result.add( read )
+      return result
+
+    method to->String
+      return to_list->String
+endClass

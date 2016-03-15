@@ -825,6 +825,8 @@ struct RogueClassCmdRange;
 struct RogueClassCmdModifyAndAssignLocal;
 struct RogueClassCmdResolvedModifyAndAssign;
 struct RogueClassCmdRangeUpTo;
+struct RogueClassCmdRangeUpToLessThan;
+struct RogueClassCmdCompareLT;
 struct RogueClassCmdCompareGE;
 struct RogueClassCmdForEach;
 struct RogueClassCmdRangeDownTo;
@@ -835,7 +837,6 @@ struct RogueClassCmdLogicalAnd;
 struct RogueClassCmdCompareEQ;
 struct RogueClassCmdCompareIs;
 struct RogueClassCmdCompareIsNot;
-struct RogueClassCmdCompareLT;
 struct RogueClassCmdCompareGT;
 struct RogueClassCmdInstanceOf;
 struct RogueClassCmdLogicalNot;
@@ -3120,6 +3121,26 @@ struct RogueClassCmdRangeUpTo : RogueObject
 
 };
 
+struct RogueClassCmdRangeUpToLessThan : RogueObject
+{
+  // PROPERTIES
+  RogueClassToken* t;
+  RogueClassCmd* first;
+  RogueClassCmd* last;
+  RogueClassCmd* step_size;
+
+};
+
+struct RogueClassCmdCompareLT : RogueObject
+{
+  // PROPERTIES
+  RogueClassToken* t;
+  RogueClassCmd* left;
+  RogueClassCmd* right;
+  RogueLogical resolved;
+
+};
+
 struct RogueClassCmdCompareGE : RogueObject
 {
   // PROPERTIES
@@ -3216,16 +3237,6 @@ struct RogueClassCmdCompareIs : RogueObject
 };
 
 struct RogueClassCmdCompareIsNot : RogueObject
-{
-  // PROPERTIES
-  RogueClassToken* t;
-  RogueClassCmd* left;
-  RogueClassCmd* right;
-  RogueLogical resolved;
-
-};
-
-struct RogueClassCmdCompareLT : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
@@ -4210,6 +4221,8 @@ extern RogueType* RogueTypeCmdRange;
 extern RogueType* RogueTypeCmdModifyAndAssignLocal;
 extern RogueType* RogueTypeCmdResolvedModifyAndAssign;
 extern RogueType* RogueTypeCmdRangeUpTo;
+extern RogueType* RogueTypeCmdRangeUpToLessThan;
+extern RogueType* RogueTypeCmdCompareLT;
 extern RogueType* RogueTypeCmdCompareGE;
 extern RogueType* RogueTypeCmdForEach;
 extern RogueType* RogueTypeCmdRangeDownTo;
@@ -4220,7 +4233,6 @@ extern RogueType* RogueTypeCmdLogicalAnd;
 extern RogueType* RogueTypeCmdCompareEQ;
 extern RogueType* RogueTypeCmdCompareIs;
 extern RogueType* RogueTypeCmdCompareIsNot;
-extern RogueType* RogueTypeCmdCompareLT;
 extern RogueType* RogueTypeCmdCompareGT;
 extern RogueType* RogueTypeCmdInstanceOf;
 extern RogueType* RogueTypeCmdLogicalNot;
@@ -4834,6 +4846,7 @@ void RogueCmdList__discard_from__Int32( RogueCmdList* THIS, RogueInt32 index_0 )
 RogueCmdList* RogueCmdList__insert__Cmd_Int32( RogueCmdList* THIS, RogueClassCmd* value_0, RogueInt32 before_index_1 );
 RogueClassCmd* RogueCmdList__last( RogueCmdList* THIS );
 RogueCmdList* RogueCmdList__reserve__Int32( RogueCmdList* THIS, RogueInt32 additional_count_0 );
+RogueClassCmd* RogueCmdList__remove_at__Int32( RogueCmdList* THIS, RogueInt32 index_0 );
 RogueString* RogueAttributes__type_name( RogueClassAttributes* THIS );
 RogueClassAttributes* RogueAttributes__init__Int32( RogueClassAttributes* THIS, RogueInt32 _auto_108_0 );
 RogueClassAttributes* RogueAttributes__clone( RogueClassAttributes* THIS );
@@ -6083,6 +6096,15 @@ RogueString* RogueCmdResolvedModifyAndAssign__cpp_symbol( RogueClassCmdResolvedM
 RogueString* RogueCmdRangeUpTo__type_name( RogueClassCmdRangeUpTo* THIS );
 RogueClassCmd* RogueCmdRangeUpTo__clone__CloneArgs( RogueClassCmdRangeUpTo* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmdRangeUpTo* RogueCmdRangeUpTo__init_object( RogueClassCmdRangeUpTo* THIS );
+RogueString* RogueCmdRangeUpToLessThan__type_name( RogueClassCmdRangeUpToLessThan* THIS );
+RogueClassCmd* RogueCmdRangeUpToLessThan__clone__CloneArgs( RogueClassCmdRangeUpToLessThan* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassCmdRangeUpToLessThan* RogueCmdRangeUpToLessThan__init_object( RogueClassCmdRangeUpToLessThan* THIS );
+RogueString* RogueCmdCompareLT__type_name( RogueClassCmdCompareLT* THIS );
+RogueClassCmd* RogueCmdCompareLT__clone__CloneArgs( RogueClassCmdCompareLT* THIS, RogueClassCloneArgs* clone_args_0 );
+RogueClassCmd* RogueCmdCompareLT__combine_literal_operands__Type( RogueClassCmdCompareLT* THIS, RogueClassType* common_type_0 );
+RogueClassCmdCompareLT* RogueCmdCompareLT__init_object( RogueClassCmdCompareLT* THIS );
+RogueString* RogueCmdCompareLT__symbol( RogueClassCmdCompareLT* THIS );
+RogueClassCmd* RogueCmdCompareLT__resolve_for_reference__Scope_Type_Type_Logical( RogueClassCmdCompareLT* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2, RogueLogical force_error_3 );
 RogueString* RogueCmdCompareGE__type_name( RogueClassCmdCompareGE* THIS );
 RogueClassCmd* RogueCmdCompareGE__clone__CloneArgs( RogueClassCmdCompareGE* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdCompareGE__combine_literal_operands__Type( RogueClassCmdCompareGE* THIS, RogueClassType* common_type_0 );
@@ -6145,12 +6167,6 @@ RogueClassCmdCompareIsNot* RogueCmdCompareIsNot__init_object( RogueClassCmdCompa
 RogueClassCmd* RogueCmdCompareIsNot__resolve_for_types__Scope_Type_Type( RogueClassCmdCompareIsNot* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2 );
 RogueString* RogueCmdCompareIsNot__symbol( RogueClassCmdCompareIsNot* THIS );
 RogueString* RogueCmdCompareIsNot__cpp_symbol( RogueClassCmdCompareIsNot* THIS );
-RogueString* RogueCmdCompareLT__type_name( RogueClassCmdCompareLT* THIS );
-RogueClassCmd* RogueCmdCompareLT__clone__CloneArgs( RogueClassCmdCompareLT* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmdCompareLT__combine_literal_operands__Type( RogueClassCmdCompareLT* THIS, RogueClassType* common_type_0 );
-RogueClassCmdCompareLT* RogueCmdCompareLT__init_object( RogueClassCmdCompareLT* THIS );
-RogueString* RogueCmdCompareLT__symbol( RogueClassCmdCompareLT* THIS );
-RogueClassCmd* RogueCmdCompareLT__resolve_for_reference__Scope_Type_Type_Logical( RogueClassCmdCompareLT* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2, RogueLogical force_error_3 );
 RogueString* RogueCmdCompareGT__type_name( RogueClassCmdCompareGT* THIS );
 RogueClassCmd* RogueCmdCompareGT__clone__CloneArgs( RogueClassCmdCompareGT* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdCompareGT__combine_literal_operands__Type( RogueClassCmdCompareGT* THIS, RogueClassType* common_type_0 );

@@ -1596,7 +1596,7 @@ class Parser
                 local step_value = parse_expression
                 step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, step_value )
               else
-                if (range instanceOf CmdRangeUpTo)
+                if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
                   step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
                 else
                   step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
@@ -1606,6 +1606,8 @@ class Parser
               local compare_cmd : Cmd
               if (range instanceOf CmdRangeUpTo)
                 compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+              elseIf (range instanceOf CmdRangeUpToLessThan)
+                compare_cmd = CmdCompareLT( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
               else
                 compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
               endIf
@@ -1673,7 +1675,7 @@ class Parser
             local step_value = parse_expression
             step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, step_value )
           else
-            if (range instanceOf CmdRangeUpTo)
+            if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
               step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
             else
               step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
@@ -1683,6 +1685,8 @@ class Parser
           local compare_cmd : Cmd
           if (range instanceOf CmdRangeUpTo)
             compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+          elseIf (range instanceOf CmdRangeUpToLessThan)
+            compare_cmd = CmdCompareLT( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
           else
             compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
           endIf
@@ -1744,9 +1748,9 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_upTo))
         return CmdRangeUpTo( t, lhs, parse_logical_xor )
-        #{
       elseIf (consume(TokenType.symbol_upToLessThan))
         return CmdRangeUpToLessThan( t, lhs, parse_logical_xor )
+        #{
       elseIf (consume(TokenType.symbol_downToGreaterThan))
         return CmdRangeDownToGreaterThan( t, lhs, parse_logical_xor )
         }#
@@ -2462,8 +2466,7 @@ class Parser
 
         must_consume( TokenType.symbol_open_brace )
         local first = true
-        local found_case_others = false
-        while (first or consume(TokenType.symbol_comma))
+        while (first or consume(TokenType.symbol_double_vertical_bar))
           first = false
           consume_eols
           local select_case = CmdSelectCase( peek )
@@ -2473,32 +2476,39 @@ class Parser
             consume_eols
             must_consume( TokenType.symbol_colon )
             consume_eols
-            select_case.value = parse_expression
-            found_case_others = true
+            
+            # If we don't use the 'others' keyword then the last value
+            # will end up in 'conditions' to begin with so stick to that
+            # pattern.
+            select_case.conditions.add( parse_expression )
+
             escapeWhile
 
           else
-            select_case.conditions = Cmd[].add( parse_expression )
+            select_case.conditions.add( parse_expression )
             while (consume(TokenType.symbol_comma))
               consume_eols
               select_case.conditions.add( parse_expression )
               consume_eols
             endWhile
-            must_consume( TokenType.symbol_colon )
-            consume_eols
-            select_case.value = parse_expression
-            consume_eols
 
+            if (consume(TokenType.symbol_colon))
+              consume_eols
+              select_case.value = parse_expression
+              consume_eols
+            elseIf (select_case.conditions.count > 1)
+              must_consume( TokenType.symbol_colon )  # Force an error
+            endIf
           endIf
         endWhile
 
-        if (not found_case_others)
-          must_consume( TokenType.symbol_double_vertical_bar )
-          consume_eols
-          local select_case = CmdSelectCase( peek )
-          cmd_select.cases.add( select_case )
-          select_case.value = parse_expression
-          consume_eols
+        if (cmd_select.cases.last.conditions.count > 1)
+          throw t.error( "The last part of a select{} must be a single expression." )
+        elseIf (cmd_select.cases.last.value)
+          throw t.error( "The last part of a select{} cannot have a condition." )
+        else
+          cmd_select.cases.last.value = cmd_select.cases.last.conditions.remove_first
+          cmd_select.cases.last.conditions.clear
         endIf
 
         must_consume( TokenType.symbol_close_brace )

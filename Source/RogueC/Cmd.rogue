@@ -2447,7 +2447,9 @@ class CmdRange : Cmd
       else           step_size = CmdLiteralInt32( t, default_step_size )
 
       local range_type = must_find_common_type( must_find_common_type(first.type,last.type), step_size.type )
-      return CmdAccess( t, "Range<<$>>"(range_type), CmdArgs(first,last,step_size) ).resolve( scope )
+      local name = "Range"
+      if (this instanceOf CmdRangeUpToLessThan) name = "RangeToLimit"
+      return CmdAccess( t, "$<<$>>"(name,range_type), CmdArgs(first,last,step_size) ).resolve( scope )
 
 endClass
 
@@ -2455,6 +2457,12 @@ class CmdRangeUpTo : CmdRange
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdRangeUpTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
+endClass
+
+class CmdRangeUpToLessThan : CmdRange
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeUpToLessThan( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
 endClass
 
 class CmdRangeDownTo : CmdRange
@@ -4508,10 +4516,6 @@ class CmdSelect : Cmd
         throw t.error( "Selection list cannot be empty." )
       endIf
 
-      if (cases.last.conditions)
-        throw cases.last.t.error( "The final 'select' cannot have an attached condition." )
-      endIf
-
       forEach (c in cases)
         c.resolve( scope )
         local case_type = c.type
@@ -4542,33 +4546,38 @@ class CmdSelectCase : Cmd
     value      : Cmd
 
   METHODS
-    method init( t, conditions=null, value=null )
+    method init( t, conditions=Cmd[](1), value=null )
 
     method clone( clone_args:CloneArgs )->CmdSelectCase
       local result = CmdSelectCase( t, null, clone(value,clone_args) )
-      if (conditions)
-        result.conditions = Cmd[]( conditions.count )
-        forEach (c in conditions) result.conditions.add( c.clone(clone_args) )
-      endIf
+      result.conditions = Cmd[]( conditions.count )
+      forEach (c in conditions) result.conditions.add( c.clone(clone_args) )
       return result
 
     method cast_conditions( to_type:Type, scope:Scope )
-      if (conditions)
-        forEach (i of conditions)
-          conditions[i] = conditions[i].cast_to( to_type, scope ).resolve( scope ).require_value
-        endForEach
-      endIf
+      forEach (i of conditions)
+        conditions[i] = conditions[i].cast_to( to_type, scope ).resolve( scope ).require_value
+      endForEach
 
     method implicit_type( scope:Scope )->Type
       return value.implicit_type( scope )
 
     method resolve( scope:Scope )->Cmd
-      if (conditions)
-        forEach (i of conditions)
-          conditions[i] = conditions[i].resolve( scope ).require_value
-        endForEach
-      endIf
+      if (not value) value = conditions.first.clone
+
+      forEach (condition at i in conditions)
+        condition = conditions[i].resolve( scope ).require_value
+        if (condition.type.is_optional)
+          condition = CmdAccess(condition.t,condition,"exists").resolve( scope )
+        endIf
+        conditions[i] = condition
+      endForEach
+
       value = value.resolve( scope ).require_value
+      if (value.type.is_optional)
+        value = CmdAccess(value.t,value,"value").resolve( scope )
+      endIf
+
       return this
 
     method type->Type
