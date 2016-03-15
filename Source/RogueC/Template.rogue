@@ -6,6 +6,7 @@ class Template
     attributes                = Attributes()
     type_parameters           : TypeParameter[]
     alternates_by_param_count : Table<<Int32,Template>>
+    routine_return_type       : Type
 
   METHODS
     method init( t, name, attribute_flags=0:Int32 )

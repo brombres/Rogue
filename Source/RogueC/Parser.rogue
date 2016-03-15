@@ -296,7 +296,9 @@ class Parser
         #          method call(args)...
 
         # Skip the return type if it exists
-        if (consume(TokenType.symbol_arrow)) parse_possible_type
+        if (consume(TokenType.symbol_arrow))
+          template.routine_return_type = parse_type
+        endIf
 
         parse_attributes( template.attributes )
 

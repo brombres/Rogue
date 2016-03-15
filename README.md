@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.27
+- v1.0.28
 - March 14, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.28 - March 14, 2016
+- When used in implicit typing, routine calls now correctly report the return type instead of the type of the routine wrapper class.
 
 ###v1.0.27 - March 14, 2016
 - Added `String.contains(Character)->Logical`.

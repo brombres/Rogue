@@ -169,6 +169,7 @@ class Program [requisite singleton]
       local template = find_template( name )
       if (template)
         type = Type( template.t, name )
+        type.attributes.add( template.attributes )
         type_lookup[name] = type
         return type
       endIf

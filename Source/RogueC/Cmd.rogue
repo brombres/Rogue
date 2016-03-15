@@ -1537,7 +1537,16 @@ class CmdAccess : Cmd
       return result
 
     method implicit_type( scope:Scope )->Type
-      return scope.find_type( name )
+      local result = scope.find_type( name )
+      if (not result or not result.is_routine) return result
+
+      local template = Program.find_template( name )
+      if (template)
+        if (template.routine_return_type) return template.routine_return_type
+        throw t.error( "Routine '$' does not return a value." (name) )
+      endIf
+
+      return null
 
     method resolve( scope:Scope )->Cmd
       if (args) args.resolve( scope )

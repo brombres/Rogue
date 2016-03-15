@@ -1306,6 +1306,7 @@ struct RogueClassTemplate : RogueObject
   RogueClassAttributes* attributes;
   RogueTypeParameterList* type_parameters;
   RogueClassInt32_TemplateTable* alternates_by_param_count;
+  RogueClassType* _routine_return_type;
 
 };
 
@@ -4833,15 +4834,15 @@ void RogueCmdList__discard_from__Int32( RogueCmdList* THIS, RogueInt32 index_0 )
 RogueCmdList* RogueCmdList__insert__Cmd_Int32( RogueCmdList* THIS, RogueClassCmd* value_0, RogueInt32 before_index_1 );
 RogueClassCmd* RogueCmdList__last( RogueCmdList* THIS );
 RogueCmdList* RogueCmdList__reserve__Int32( RogueCmdList* THIS, RogueInt32 additional_count_0 );
-RogueString* RogueTypeArray__type_name( RogueArray* THIS );
 RogueString* RogueAttributes__type_name( RogueClassAttributes* THIS );
-RogueClassAttributes* RogueAttributes__init__Int32( RogueClassAttributes* THIS, RogueInt32 _auto_110_0 );
+RogueClassAttributes* RogueAttributes__init__Int32( RogueClassAttributes* THIS, RogueInt32 _auto_108_0 );
 RogueClassAttributes* RogueAttributes__clone( RogueClassAttributes* THIS );
 RogueClassAttributes* RogueAttributes__add__Int32( RogueClassAttributes* THIS, RogueInt32 flag_0 );
 RogueClassAttributes* RogueAttributes__add__String( RogueClassAttributes* THIS, RogueString* tag_0 );
 RogueClassAttributes* RogueAttributes__add__Attributes( RogueClassAttributes* THIS, RogueClassAttributes* other_0 );
 RogueString* RogueAttributes__element_type_name( RogueClassAttributes* THIS );
 RogueClassAttributes* RogueAttributes__init_object( RogueClassAttributes* THIS );
+RogueString* RogueTypeArray__type_name( RogueArray* THIS );
 RogueString* RogueCmdReturn__type_name( RogueClassCmdReturn* THIS );
 RogueClassCmd* RogueCmdReturn__clone__CloneArgs( RogueClassCmdReturn* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdReturn__resolve__Scope( RogueClassCmdReturn* THIS, RogueClassScope* scope_0 );
