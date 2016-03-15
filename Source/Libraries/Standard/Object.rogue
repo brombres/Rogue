@@ -1,4 +1,4 @@
-class Object
+class Object [native]
   METHODS
     method operator==( other:Object )->Logical
       return this is other

@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.29.0
+- v1.0.30.0
 - March 15, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.30 - March 15, 2016
+- Added explicit `[native]` attribute to type Object - the compiler was already doing so internally.
 
 ###v1.0.29 - March 15, 2016
 - Improved `select{}` syntax - `||` is used to separate all parts (`select{ a:x || b:y || c:z || d }`) and `x` may be used instead of both `x:x` and `x.exists:x:value` (if `x` is an optional type).
