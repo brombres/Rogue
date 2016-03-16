@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.30.0"
+$define RELEASE_VERSION "1.0.30.1"
 $define RELEASE_DATE    "March 15, 2016"
 
 $include "Attributes.rogue"
@@ -49,7 +49,7 @@ class RogueC [singleton]
     supported_targets      = String[]
     requisite_declarations = String[]
 
-    # If True, everything is requisite
+    # If true everything is requisite
     all_requisite = false
 
     execute_args      : String
@@ -57,6 +57,7 @@ class RogueC [singleton]
     package_name      : String
 
     debug_mode        : Logical
+    print_version     : Logical
 
     parsers = Parser[]
     # One parser is created for every file and all parsers are prepped with tokens
@@ -84,6 +85,13 @@ class RogueC [singleton]
         process_command_line_arguments
 
         if (source_files.count == 0)
+          if (print_version)
+            # Print version and date only and exit
+            print( 'v' ).println( RELEASE_VERSION )
+            println RELEASE_DATE
+            System.exit( 0 )
+          endIf
+
           println
           println "Rogue Compiler v" + RELEASE_VERSION
           println RELEASE_DATE
@@ -136,6 +144,10 @@ class RogueC [singleton]
                    #|  --package=com.developer.app [Java only]
 
           usage += supported_targets->String.replacing(',','|').replacing("]",",Mac,Windows,iOS,Android,...]\n")
+
+          usage += @|
+                    |  --version
+                    |    Print the version number and release date.
           println usage
           System.exit( 1 )
         endIf
@@ -377,6 +389,12 @@ class RogueC [singleton]
               local thresh = n->Int32
               if (thresh < 1) thresh = 0x7fffffff
               gc_threshold = thresh
+
+            case "--version"
+              if (value.count)
+                throw RogueError( ''Unexpected argument to --version option.'' )
+              endIf
+              print_version = true
 
             others
               throw RogueError( "Unknown option '$'." (arg) )

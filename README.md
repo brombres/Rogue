@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.30.0
-- March 15, 2016
+- v1.0.30.1
+- March 16, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,8 +28,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.30 - March 15, 2016
+###v1.0.30 - March 16, 2016
+- Added `--version` directive.
 - Added explicit `[native]` attribute to type Object - the compiler was already doing so internally.
+- Removed unused, vestigial copy of global properties generated as static variables in class definitions.
 
 ###v1.0.29 - March 15, 2016
 - Improved `select{}` syntax - `||` is used to separate all parts (`select{ a:x || b:y || c:z || d }`) and `x` may be used instead of both `x:x` and `x.exists:x:value` (if `x` is an optional type).

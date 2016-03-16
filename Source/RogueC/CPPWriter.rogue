@@ -1183,7 +1183,7 @@ class CPPWriter
     # guaranteed to have a lifetime at least as long as the call we're
     # making, we can skip this.
     if (arg instanceOf CmdReadLocal)
-      noAction # Current frame won't die before cal
+      noAction # Current frame won't die before call
     elseIf (arg instanceOf CmdReadSingleton)
       noAction # Singletons live forever
     elseIf (arg instanceOf CmdLiteral)
@@ -1337,15 +1337,7 @@ augment Type
       writer.println.println( "{" )
       writer.indent += 2
 
-      # Global Properties
-      if (global_list.count)
-        writer.println "// GLOBAL PROPERTIES"
-        forEach (s in global_list)
-          writer.print( "static " ).print( s.type ).print(" ").print( s.cpp_name ).println(";")
-        endForEach
-        writer.println
-      endIf
-
+      # Properties
       if (not is_aspect)
         writer.println "// PROPERTIES"
         if (native_properties)
