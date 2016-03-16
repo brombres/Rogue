@@ -62,6 +62,7 @@ class FileOptions( flags=0:Int32 ) [compound]
 endClass
 
 class File
+  nativeHeader #include <cstdio>
   GLOBAL METHODS
     method absolute_filepath( filepath:String )->String
       if (not filepath) return null
