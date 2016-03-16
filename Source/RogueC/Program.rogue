@@ -325,7 +325,7 @@ class Program [requisite singleton]
 
         # Give plug-ins a chance to generate new classes before we're done
         forEach (plugin in RogueC.plugins)
-          if (plugin.on_types_resolved) resolve_types = true
+          if (plugin.generate_additional_types) resolve_types = true
         endForEach
       endWhile
 

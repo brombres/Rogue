@@ -1616,8 +1616,8 @@ struct RogueClassPlugin : RogueObject
 {
   // PROPERTIES
   RogueString* name;
-  RogueClassFunction__* collect_supported_targets_callback;
-  RogueClassFunction__RETURNSLogical* types_resolved_callback;
+  RogueClassFunction__* collect_supported_types_callback;
+  RogueClassFunction__RETURNSLogical* generate_additonal_types_callback;
 
 };
 
@@ -4793,9 +4793,9 @@ RogueInt32 RoguePluginList__capacity( RoguePluginList* THIS );
 RoguePluginList* RoguePluginList__reserve__Int32( RoguePluginList* THIS, RogueInt32 additional_count_0 );
 RogueString* RoguePlugin__type_name( RogueClassPlugin* THIS );
 RogueClassPlugin* RoguePlugin__init__String( RogueClassPlugin* THIS, RogueString* _auto_137_0 );
-void RoguePlugin__on_collect_supported_targets( RogueClassPlugin* THIS );
-RogueLogical RoguePlugin__on_types_resolved( RogueClassPlugin* THIS );
-RogueClassPlugin* RoguePlugin__set_types_resolved_callback__Function__RETURNSLogical( RogueClassPlugin* THIS, RogueClassFunction__RETURNSLogical* _auto_139_0 );
+void RoguePlugin__collect_supported_targets( RogueClassPlugin* THIS );
+RogueLogical RoguePlugin__generate_additional_types( RogueClassPlugin* THIS );
+RogueClassPlugin* RoguePlugin__on_generate_additional_types__Function__RETURNSLogical( RogueClassPlugin* THIS, RogueClassFunction__RETURNSLogical* _auto_139_0 );
 RogueClassPlugin* RoguePlugin__init_object( RogueClassPlugin* THIS );
 RogueString* RoguePluginArray__type_name( RogueArray* THIS );
 RogueString* RogueFunction_Type_RETURNSLogical__type_name( RogueClassFunction_Type_RETURNSLogical* THIS );

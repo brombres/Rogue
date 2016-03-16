@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.30.2
+- v1.0.31.0
 - March 16, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.31 - March 16, 2016
+- Renamed the methods of the plug-in architecture.
 
 ###v1.0.30 - March 16, 2016
 - Added beginnings of compiler plug-in infrastructure.

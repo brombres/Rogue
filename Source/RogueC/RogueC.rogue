@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.30.2"
+$define RELEASE_VERSION "1.0.31.0"
 $define RELEASE_DATE    "March 16, 2016"
 
 $include "Attributes.rogue"
@@ -86,7 +86,7 @@ class RogueC [singleton]
         process_command_line_arguments
 
         <<collect_supported_targets>>
-        forEach (plugin in plugins) plugin.on_collect_supported_targets
+        forEach (plugin in plugins) plugin.collect_supported_targets
 
         if (source_files.count == 0)
           if (print_version)
@@ -396,20 +396,21 @@ class RogueC [singleton]
 
             case "--plugin-test"
               plugins.add(
-                Plugin( "Test" ).set_types_resolved_callback(
+                Plugin( "Test" ).on_generate_additional_types(
                   function->Logical
-                    @trace "All types resolved!"
+                  @trace "All types resolved - generate additional types?"
                     if (not Program.find_type("Alpha"))
                       local src = @|class Alpha [requisite singleton]
                                    |  METHODS
                                    |    method init
                                    |      @trace "Alpha singleton instantiated!"
                                    |endClass
-                      println "Creating type Alpha:"
+                      println "Yes - compiling type Alpha:"
                       println src
                       Parser( "(compiler-generated)", src ).parse_elements
                       return true
                     else
+                      println "No"
                       return false
                     endIf
                   endFunction

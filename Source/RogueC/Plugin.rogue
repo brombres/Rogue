@@ -1,30 +1,30 @@
 class Plugin
-  # Override the 'on_x' methods and/or set the corresponding callback
+  # Override the action methods and/or set the corresponding callback
   PROPERTIES
     name : String  # Name of this plug-in for debugging purposes
 
-    collect_supported_targets_callback : Function()
-    types_resolved_callback            : Function()->Logical
+    collect_supported_types_callback : Function()
+    generate_additonal_types_callback : Function()->Logical
 
   METHODS
     method init( name )
 
-    method on_collect_supported_targets
+    method collect_supported_targets
       # Add strings to RogueC.target_list e.g. "Cython" which will end up being
       # accessible as RogueC.compile_targets["Cython"]->Logical and affects source
       # code bounded by conditional $if "Cython" ... $endIf directives.
-      if (collect_supported_targets_callback) collect_supported_targets_callback()
+      if (collect_supported_types_callback) collect_supported_types_callback()
 
-    method on_types_resolved->Logical
+    method generate_additional_types->Logical
       # Can be called multiple times.  Return "true" to have the compiler re-check types
       # and compile any new types.
-      if (types_resolved_callback) return types_resolved_callback()
+      if (generate_additonal_types_callback) return generate_additonal_types_callback()
       return false
 
-    method set_collect_supported_types_callback( @collect_supported_targets_callback )->this
+    method on_collect_supported_types( collect_supported_types_callback )->this
       return this
 
-    method set_types_resolved_callback( @types_resolved_callback )->this
+    method on_generate_additional_types( generate_additonal_types_callback )->this
       return this
 endClass
 
