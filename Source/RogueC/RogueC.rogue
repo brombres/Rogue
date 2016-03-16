@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.0.30.1"
-$define RELEASE_DATE    "March 15, 2016"
+$define RELEASE_VERSION "1.0.30.2"
+$define RELEASE_DATE    "March 16, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
@@ -9,6 +9,7 @@ $include "Cmd.rogue"
 $include "Local.rogue"
 $include "Method.rogue"
 $include "Parser.rogue"
+$include "Plugin.rogue"
 $include "Preprocessor.rogue"
 $include "Program.rogue"
 $include "Property.rogue"
@@ -70,6 +71,8 @@ class RogueC [singleton]
     gc_mode = GCMode.MANUAL  : Int32
     gc_threshold = 1024*1024 : Int32
 
+    plugins = Plugin[]
+
   METHODS
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
@@ -79,10 +82,11 @@ class RogueC [singleton]
         prefix_path_lookup[ libs ] = true
       endIf
 
-      <<collect_supported_targets>>
-
       try
         process_command_line_arguments
+
+        <<collect_supported_targets>>
+        forEach (plugin in plugins) plugin.on_collect_supported_targets
 
         if (source_files.count == 0)
           if (print_version)
@@ -389,6 +393,28 @@ class RogueC [singleton]
               local thresh = n->Int32
               if (thresh < 1) thresh = 0x7fffffff
               gc_threshold = thresh
+
+            case "--plugin-test"
+              plugins.add(
+                Plugin( "Test" ).set_types_resolved_callback(
+                  function->Logical
+                    @trace "All types resolved!"
+                    if (not Program.find_type("Alpha"))
+                      local src = @|class Alpha [requisite singleton]
+                                   |  METHODS
+                                   |    method init
+                                   |      @trace "Alpha singleton instantiated!"
+                                   |endClass
+                      println "Creating type Alpha:"
+                      println src
+                      Parser( "(compiler-generated)", src ).parse_elements
+                      return true
+                    else
+                      return false
+                    endIf
+                  endFunction
+                )
+              )
 
             case "--version"
               if (value.count)

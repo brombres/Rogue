@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.30.1
+- v1.0.30.2
 - March 16, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.30 - March 16, 2016
+- Added beginnings of compiler plug-in infrastructure.
 - Added `--version` directive.
 - Added explicit `[native]` attribute to type Object - the compiler was already doing so internally.
 - Removed unused, vestigial copy of global properties generated as static variables in class definitions.

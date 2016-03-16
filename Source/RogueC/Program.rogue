@@ -306,17 +306,27 @@ class Program [requisite singleton]
         endForEach
       endIf
 
-      # Reference and resolve all requisite type templates
-      forEach (templ in template_list)
-        if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
-          get_type_reference( templ.t, templ.name ).resolve
-        endIf
-      endForEach
+      local resolve_types = true
+      while (resolve_types)
+        resolve_types = false
 
-      local i = 0
-      while (i < type_list.count)
-        type_list[i].resolve
-        ++i
+        # Reference and resolve all requisite type templates
+        forEach (templ in template_list)
+          if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
+            get_type_reference( templ.t, templ.name ).resolve
+          endIf
+        endForEach
+
+        local i = 0
+        while (i < type_list.count)
+          type_list[i].resolve
+          ++i
+        endWhile
+
+        # Give plug-ins a chance to generate new classes before we're done
+        forEach (plugin in RogueC.plugins)
+          if (plugin.on_types_resolved) resolve_types = true
+        endForEach
       endWhile
 
       cull_unused_code

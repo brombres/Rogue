@@ -17,9 +17,14 @@ class Parser
     used_modules    = String[]
     module_id_map   : Table<<String,String>>
 
+    inserted_module_prefixes : Logical
+
   METHODS
     method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
+
+    method init( filepath, content:String )
+      init( Preprocessor(this).process(Tokenizer().tokenize(filepath,content)), &skip_reprocess )
 
     method init( t:Token, filepath, data:String )
       init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data)), &skip_reprocess )
@@ -66,6 +71,9 @@ class Parser
       throw reader.peek.error( message )
 
     method insert_module_prefixes
+      if (inserted_module_prefixes) return
+      inserted_module_prefixes = true
+
       while (reader.has_another)
 
         local t = reader.read
@@ -128,6 +136,8 @@ class Parser
       return reader.next_is_statement_token
 
     method parse_elements
+      insert_module_prefixes  # no effect if called twice
+
       while (parse_element) noAction
 
       if (reader.has_another)
