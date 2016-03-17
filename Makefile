@@ -106,7 +106,7 @@ clean:
 	rm -f ./a.out
 	rm -f ./hello
 
-release:
+publish:
 	git checkout master
 	git pull
 	git merge develop

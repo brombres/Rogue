@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.33.1
+- v1.0.33
 - March 17, 2016
 
 ## Installation (Mac, maybe Linux)
