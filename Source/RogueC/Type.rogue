@@ -374,7 +374,7 @@ class Type
         endIf
       endIf
 
-      if (global_list.count and not is_native)
+      if (global_list.count)
         # Create or locate init_class() to initialize global properties
         local m = find_routine( "init_class()" )
         if (not m or m.type_context isNot this) m = add_global_method( t, "init_class" ).organize( scope )

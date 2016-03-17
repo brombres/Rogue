@@ -85,6 +85,9 @@ class String [foreign]
 
       return (ch + ('A'-'a'))->Character + this.from( 1 )
 
+    method consolidated->String
+      return StringConsolidationTable[ this ]
+
     method contains( ch:Character )->Logical
       return locate(ch)?
 
@@ -902,6 +905,28 @@ class LineReader : Reader<<String>>
 
       return this
 
+endClass
+
+
+class StringConsolidationTable : StringTable<<String>> [singleton]
+  # Used by the consolidate() and consolidated() methods to map equivalent
+  # strings to the same string object on demand.  Reduces memory usage and
+  # allows the use of the 'is' test rather than the '==' test.  Similar
+  # to Java's intern() method.
+  METHODS
+    method get( st:String )->String
+      local result = prior.get( st )
+      if (result) return result
+      this[ st ] = st
+      return st
+
+    method get( buffer:StringBuilder )->String
+      local result = prior.get( buffer )
+      if (result) return result
+      
+      result = buffer->String
+      this[ result ] = result
+      return result
 endClass
 
 

@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.32.0
-- March 16, 2016
+- v1.0.32.1
+- March 17, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,7 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.32 - March 16, 2016
+###v1.0.32 - March 17, 2016
+- Added `consolidated()->String` method to String and StringBuilder.  Operates similarly to Java's intern() and maps equivalent strings to a single string object instance.
+- Compiler now generates global properties for native classes and initializes them with the class's `init_class()` call.
 - Class File now includes native header `<cstdio>` when referenced.
 
 ###v1.0.31 - March 16, 2016

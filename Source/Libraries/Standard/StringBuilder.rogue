@@ -29,6 +29,11 @@ class StringBuilder [requisite]
       at_newline = true
       return this
 
+    method consolidated->String
+      # Returns the equivalent string to the data in this StringBuilder,
+      # reusing a previously consolidated String object if possible.
+      return StringConsolidationTable[ this ]
+
     method count->Int32 [macro]
       this.characters.count
 
