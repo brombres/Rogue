@@ -448,16 +448,30 @@ class Type
         endIf
       endIf
 
+      # Have aspects generate getters and setters for aspect properties
+
       # Add a default to->Object to compounds, primitives, and functional types
-      if (is_compound or is_primitive or is_foreign)
-        local m = find_method( "to_Object()" )
-        if (not m)
-          m = add_method( t, "to_Object" )
-          local boxed_name = "Boxed<<$>>" (name)
-          m.return_type = Program.get_type_reference( t, boxed_name )
-          m.statements.add( CmdReturn(t,CmdAccess(t,boxed_name,CmdArgs(CmdLiteralThis(t,this)))) )
-          m.organize( scope )
-        endIf
+      if (is_aspect)
+        forEach (p in property_list)
+          local m = find_method( p.name + "()" )
+          if (not m)
+            m = add_method( p.t, p.name )
+            m.attributes.add( Attribute.is_fallback )
+            m.return_type = p.type
+            m.statements.add( CmdReturn(p.t,CmdAccess(p.t,"@"+p.name)) )
+            m.organize( scope )
+          endIf
+
+          m = find_method( "set_$($)" (p.name,p.type) )
+          if (not m)
+            m = add_method( p.t, "set_" + p.name )
+            m.add_parameter( p.t, "@"+p.name )
+            m.attributes.add( Attribute.is_fallback )
+            m.return_type = this
+            m.statements.add( CmdReturn(p.t,CmdLiteralThis(p.t, this)) )
+            m.organize( scope )
+          endIf
+        endForEach
       endIf
 
       if (this isNot Program.type_NativeArray)

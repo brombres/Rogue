@@ -2297,6 +2297,18 @@ class CmdCall : Cmd
       args.resolve( scope )
       return this
 
+    method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
+      if (not method_info.return_type)
+        throw t.error( "Method '$' does not return a value." (method_info.signature) )
+      endIf
+
+      if (context)
+        return CmdAccess( t, context.clone, "set_" + method_info.name,
+                          CmdArgs(CmdAdd(t,this,CmdLiteralInt32(t,delta))) ).resolve(scope)
+      else
+        return CmdAccess( t, "set_" + method_info.name, CmdArgs(CmdAdd(t,this,CmdLiteralInt32(t,delta))) ).resolve(scope)
+      endIf
+
     method type->Type
       return method_info.return_type
 endClass

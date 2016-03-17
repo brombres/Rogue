@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.33
+- v1.0.33.1
 - March 17, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -30,6 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.33 - March 17, 2016
 - Aspects are now compatible with Object, instanceOf Object, and can be be cast to Object in more places.
+- Added fallback property getters and setters to aspects.
 
 ###v1.0.32 - March 17, 2016
 - Added `consolidated()->String` method to String and StringBuilder.  Operates similarly to Java's intern() and maps equivalent strings to a single string object instance.
