@@ -174,6 +174,7 @@ class Type
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
       if (this is Program.type_null and ancestor_type.is_reference) return true
+      if (this.is_reference and ancestor_type is Program.type_Object and not this.is_foreign) return true
 
       forEach (base_type in base_types)
         if (base_type.instance_of(ancestor_type)) return true
@@ -188,6 +189,7 @@ class Type
         return true
       endIf
       if (other.is_optional and other.element_type is this) return true
+      if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
 
     method is_equivalent_or_more_specific_than( other:Type )->Logical
@@ -294,7 +296,8 @@ class Type
 
         if (not base_class and not is_foreign and this isNot Program.type_Object)
           Program.type_Object.organize
-          base_class = Program.type_Object; base_types.insert( base_class )
+          base_class = Program.type_Object
+          base_types.insert( base_class )
         endIf
       endIf
 

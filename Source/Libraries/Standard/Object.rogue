@@ -10,3 +10,15 @@ class Object [native]
 endClass
 
 
+class Aspect [aspect]
+  METHODS
+    method operator==( other:Object )->Logical
+      return this is other
+
+    method to->String
+      local addr : Int64
+      native "$addr = (RogueInt64)(intptr_t)$this;"
+      return "($ 0x$)" (type_name,addr.to_hex_string)
+endClass
+
+
