@@ -592,6 +592,19 @@ class String [foreign]
 
       return result
 
+    method join( substrings:String[] )->String
+      return join( substrings.reader )
+
+    method join( substrings:Reader<<String>> )->String
+      local result = StringBuilder()
+      local first = true
+      forEach (s in substrings)
+        if (not first) result.print(this)
+        first = false
+        result.print( s )
+      endForEach
+      return result->String
+
     method substring( i1:Int32, n:Int32 )->String
       return from( i1, i1+(n-1) )
 
