@@ -662,6 +662,7 @@ augment Program
                       |
                       |Rogue_configure_gc();
                       |Rogue_configure_types();
+                      |std::set_terminate( Rogue_terminate_handler );
                       |
 
 
@@ -693,35 +694,6 @@ augment Program
       writer.println( "void Rogue_launch()" )
       writer.println( "{" )
       writer.indent += 2
-
-      writer.println @|RogueErrorHandler uncaught_error_handler;
-                      |Rogue_error_handler = &uncaught_error_handler;
-                      |if (ROGUE_SETJMP(Rogue_error_handler->info))
-                      |{
-                      |  if (Rogue_error_object && Rogue_error_object->type)
-                      |  {
-                      |    printf( "Uncaught " );
-                      |    RogueType_print_name( Rogue_error_object->type );
-                      |    printf( ".\n\n" );
-                      |
-                      |    RogueStackTrace__print( ((RogueClassException*)Rogue_error_object)->stack_trace );
-                      |  }
-                      |  else
-                      |  {
-                      |    printf( "Uncaught error.\n" );
-                      |  }
-                      |  return;
-                      |}
-
-                      # Currently no way of getting the class name
-                      #|  if (Rogue_error_object)
-                      #|  {
-                      #|    printf( "Uncaught %s.\n", Rogue_error_object->type->name );
-                      #|  }
-                      #|  else
-                      #|  {
-                      #|    printf( "Uncaught error.\n" );
-                      #|  }
 
       # Call all init_class() methods
       forEach (type in type_list)

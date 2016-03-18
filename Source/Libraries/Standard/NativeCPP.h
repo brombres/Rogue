@@ -237,52 +237,6 @@ struct RogueString;
 
 
 //-----------------------------------------------------------------------------
-//  Error Handling
-//-----------------------------------------------------------------------------
-#include <setjmp.h>
-#if defined(ROGUE_PLATFORM_MAC)
-  // _setjmp/_longjmp on Mac are equivalent to setjmp/longjmp on other Unix
-  // systems.  The non-underscore versions are much slower as they save and
-  // restore the signal state as well as registers.
-  #define ROGUE_SETJMP  _setjmp
-  #define ROGUE_LONGJMP _longjmp
-#else
-  #define ROGUE_SETJMP  setjmp
-  #define ROGUE_LONGJMP longjmp
-#endif
-
-#define ROGUE_TRY \
-  { \
-    RogueErrorHandler local_error_handler; \
-    local_error_handler.previous_jump_buffer = Rogue_error_handler; \
-    Rogue_error_handler = &local_error_handler; \
-    if ( !ROGUE_SETJMP(local_error_handler.info) ) \
-    {
-
-#define ROGUE_CATCH(local_error_object,local_error_type) \
-      Rogue_error_handler = local_error_handler.previous_jump_buffer; \
-    } \
-    else \
-    { \
-      local_error_type local_error_object = (local_error_type) Rogue_error_object; \
-      Rogue_error_handler = local_error_handler.previous_jump_buffer;
-
-#define ROGUE_END_TRY \
-    } \
-  }
-
-#define ROGUE_THROW(_error_object) \
-  Rogue_error_object = _error_object; \
-  ROGUE_LONGJMP( Rogue_error_handler->info, 1 )
-
-typedef struct RogueErrorHandler
-{
-  jmp_buf                   info;
-  struct RogueErrorHandler* previous_jump_buffer;
-} RogueErrorHandler;
-
-
-//-----------------------------------------------------------------------------
 //  Forward References
 //-----------------------------------------------------------------------------
 struct RogueObject;
@@ -542,7 +496,6 @@ extern RogueTraceFn       Rogue_trace_fn_table[];
 extern RogueCleanUpFn     Rogue_clean_up_fn_table[];
 extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];
-extern RogueErrorHandler* Rogue_error_handler;
 extern RogueObject*       Rogue_error_object;
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
@@ -619,6 +572,42 @@ struct RogueCallTrace
 void Rogue_print_stack_trace ( bool leading_newline=false);
 
 
+//-----------------------------------------------------------------------------
+//  Error Handling
+//-----------------------------------------------------------------------------
+#define ROGUE_TRY \
+  try \
+  {
+
+#define ROGUE_CATCH(local_error_object,local_error_type) \
+  } \
+  catch (const RogueCPPException & caught_error) \
+  { \
+    local_error_type local_error_object = (local_error_type) caught_error.err;
+
+#define ROGUE_END_TRY \
+  }
+
+#define ROGUE_THROW(_error_object) \
+  throw RogueCPPException( _error_object );
+
+
+struct RogueCPPException
+{
+  RogueObject * err;
+  RogueCPPException ( RogueObject * err )
+  : err(err)
+  {
+    Rogue_error_object = err;
+    RogueObject_retain( err );
+  }
+  ~RogueCPPException ()
+  {
+    RogueObject_release( err );
+  }
+};
+
+extern void Rogue_terminate_handler ();
 
 
 //=============================================================================
