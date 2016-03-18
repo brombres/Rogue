@@ -30,6 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.35 - March 18, 2016
 - Reworked debug trace infrastructure; now substantially faster and more flexible - 1.3s vs 1.7s roguec recompile in debug mode.
+- Debug Stack Trace now shows accurate line numbers.
 - Fixed access resolution error where class `Global` could be checked before the current class context.
 - Fixed several errors resulting from compiling with `--requisite`.
 

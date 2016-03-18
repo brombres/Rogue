@@ -26,7 +26,7 @@ augment Program
         i1 = name.locate('?')
       endWhile
 
-      # Convert ABC->XYZ to ABCRETURNSXYZ 
+      # Convert ABC->XYZ to ABCRETURNSXYZ
       i1 = name.locate( "->" )
       while (i1?)
         name = "$RETURNS$" (name.leftmost(i1.value),name.from(i1.value+2))
@@ -836,6 +836,8 @@ class CPPWriter
     needs_indent = true
     line_number = 1
 
+    trace_token : Token
+
     temp_buffer = StringBuilder()
 
   METHODS
@@ -1208,6 +1210,19 @@ class CPPWriter
 
   method mark_routine_end
     noAction
+
+  method update_trace_info( t:Token )
+    if (trace_token and t and t.filepath)
+      if (t.filepath isNot trace_token.filepath)
+        if (RogueC.debug_mode)
+          print( "__trace.filename = \"" ).print( t.filename ).println( "\";" )
+          print( "__trace.line = " ).print( t.line ).println( ";" )
+        endIf
+      elseIf (t.line != trace_token.line)
+        if (RogueC.debug_mode) print( "__trace.line = " ).print( t.line ).println( ";" )
+      endIf
+    endIf
+    trace_token = t
 endClass
 
 
@@ -1624,9 +1639,10 @@ augment Method
         writer.println "}"
       else
         if (RogueC.debug_mode)
+          writer.trace_token = t
           writer.print( ''RogueDebugTrace __trace( "'' )
           writer.print( type_context.name ).print( "." ).print( signature ).print( ''", "'' )
-          writer.print( File.filename(t.filepath) ).print( ''", '' ).print( t.line )
+          writer.print( t.filename ).print( ''", '' ).print( t.line )
           writer.println( '' );'' )
         endIf
         statements.write_cpp( writer )
@@ -1680,9 +1696,10 @@ endAugment
 
 augment CmdStatementList
   METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical, &skip_trace_update )
       if (count?) writer.mark_statement_start(this[0].t.filepath, this[0].t.line, this[count-1].t.line)
       forEach (statement in this)
+        if (not skip_trace_update) writer.update_trace_info( statement.t )
         statement.write_cpp( writer, true )
         if (statement.requires_semicolon) writer.println ";"
       endForEach
@@ -1776,7 +1793,7 @@ augment CmdIf
         if (else_statements.count == 1 and else_statements.first instanceOf CmdIf)
           # Write the else/if in the "else if" style.
           writer.print( "else " )
-          else_statements.write_cpp( writer )
+          else_statements.write_cpp( writer, &skip_trace_update )
         else
           # General 'else' block.
           writer.println( "else" )

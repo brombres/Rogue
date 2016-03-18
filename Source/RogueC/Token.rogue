@@ -1,4 +1,7 @@
 class Token
+  GLOBAL PROPERTIES
+    filepath_to_filename = Table<<String,String>>()
+
   PROPERTIES
     type     : TokenType
     filepath : String
@@ -13,6 +16,15 @@ class Token
 
     method error( message:String )->RogueError
       return RogueError( message, filepath, line, column )
+
+    method filename->String
+      if (not filepath) return "(unknown)"
+      local f = filepath_to_filename[ filepath ]
+      if (f) return f
+
+      f = File.filename( filepath )
+      filepath_to_filename[ filepath ] = f
+      return f
 
     method is_directive->Logical
       return type.is_directive
