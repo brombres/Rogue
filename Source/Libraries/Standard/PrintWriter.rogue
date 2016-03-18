@@ -1,4 +1,4 @@
-class PrintWriter : Writer<<Character>>, PrintWriterAspect
+class PrintWriter : Writer<<Character>>, PrintWriterAspect<<PrintWriter>>
   PROPERTIES
     output : Writer<<Character>>
 
@@ -19,81 +19,81 @@ class PrintWriter : Writer<<Character>>, PrintWriterAspect
 endClass
 
 
-class PrintWriterAspect [aspect]
+class PrintWriterAspect<<$WriterType>> [aspect]
   PROPERTIES
     printwriter_output_buffer = StringBuilder()
 
   METHODS
-    method flush->this
+    method flush->$WriterType
       if (printwriter_output_buffer.count)
         write( printwriter_output_buffer.characters )
         printwriter_output_buffer.clear
       endIf
       return this
 
-    method print( value:Byte )->this
+    method print( value:Byte )->$WriterType
       printwriter_output_buffer.print( value )
       return this
 
-    method print( value:Character )->this
+    method print( value:Character )->$WriterType
       printwriter_output_buffer.print( value )
       if (value == '\n') return flush
       return this
 
-    method print( value:Int32 )->this
+    method print( value:Int32 )->$WriterType
       printwriter_output_buffer.print( value )
       return this
 
-    method print( value:Logical )->this
+    method print( value:Logical )->$WriterType
       printwriter_output_buffer.print( value )
       return this
 
-    method print( value:Int64 )->this
+    method print( value:Int64 )->$WriterType
       printwriter_output_buffer.print( value )
       return this
 
-    method print( value:Object )->this
+    method print( value:Object )->$WriterType
       printwriter_output_buffer.print( value )
       return this
 
-    method print( value:Real64 )->this
+    method print( value:Real64 )->$WriterType
       printwriter_output_buffer.print( value )
       return this
 
-    method print( value:String )->this
+    method print( value:String )->$WriterType
       printwriter_output_buffer.print( value )
       if (printwriter_output_buffer.count > 1024) flush
       return this
 
-    method println->this
+    method println->$WriterType
       printwriter_output_buffer.print( '\n' )
       return flush
 
-    method println( value:Byte )->this
+    method println( value:Byte )->$WriterType
       return print( value ).println
 
-    method println( value:Character )->this
+    method println( value:Character )->$WriterType
       return print( value ).println
 
-    method println( value:Int32 )->this
+    method println( value:Int32 )->$WriterType
       return print( value ).println
 
-    method println( value:Logical )->this
+    method println( value:Logical )->$WriterType
       return print( value ).println
 
-    method println( value:Int64 )->this
+    method println( value:Int64 )->$WriterType
       return print( value ).println
 
-    method println( value:Real64 )->this
+    method println( value:Real64 )->$WriterType
       return print( value ).println
 
-    method println( value:Object )->this
+    method println( value:Object )->$WriterType
       return print( value ).println
 
-    method println( value:String )->this
+    method println( value:String )->$WriterType
       return print( value ).println
 
-    method write( characters:Character[] )->this
+    method write( characters:Character[] )->$WriterType
       return this
 endClass
 

@@ -1,7 +1,7 @@
 Rogue
 =====
 - v1.0.34
-- March 17, 2016
+- March 18, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -28,8 +28,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.34 - March 17, 2016
+###v1.0.34 - March 18, 2016
 - C++ exceptions and stdlib improvements.
+- Fixed access resolution error where class Global could be checked before the current class context.
+- Fixed several errors resulting from compiling with `--requisite`.
 
 ###v1.0.33 - March 17, 2016
 - Aspects are now compatible with Object, instanceOf Object, and can be be cast to Object in more places.

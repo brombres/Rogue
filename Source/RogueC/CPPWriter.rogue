@@ -26,10 +26,17 @@ augment Program
         i1 = name.locate('?')
       endWhile
 
+      # Convert ABC->XYZ to ABCRETURNSXYZ 
+      i1 = name.locate( "->" )
+      while (i1?)
+        name = "$RETURNS$" (name.leftmost(i1.value),name.from(i1.value+2))
+        i1 = name.locate( "->" )
+      endWhile
+
       # Type<<Specialization>> -> SpecializationType
       i1 = name.locate("<<")
       while (i1?)
-        local i2 = name.locate_last(">>")
+        local i2 = name.locate(">>",i1)
         if (not i2?) escapeWhile
 
         local before = name.from(0,i1.value-1)

@@ -6,7 +6,7 @@ ROGUEC_CPP_FLAGS = -std=c++11 -fno-strict-aliasing
 
 all: roguec
 
-remake: touch_roguec roguec
+remake: libraries touch_roguec roguec
 
 debug: libraries
 	@echo -------------------------------------------------------------------------------

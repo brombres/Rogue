@@ -1,4 +1,4 @@
-class Global : PrintWriterAspect [requisite singleton]
+class Global : PrintWriterAspect<<Global>> [requisite singleton]
   PROPERTIES
     standard_output      = Console
 

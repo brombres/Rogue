@@ -1746,6 +1746,7 @@ class CmdAccess : Cmd
 
       local setter_name = select(name[0]) { '@':null || "set_"+name } : String
 
+      local context_was_null = context is null
       if (context is null)
         if (setter_name)
           local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
@@ -1777,13 +1778,6 @@ class CmdAccess : Cmd
         if (scope.this_method.is_global)
           p = scope.this_method.type_context.find_property( name )
           if (p) throw t.error( "Cannot access object property '$' from a global method." (name) )
-        endIf
-
-        if (scope.this_type isNot Program.type_Global)
-          p = Program.type_Global.find_property( name )
-          if (p)
-            return CmdWriteProperty( t, CmdReadSingleton(t,Program.type_Global), p, new_value ).resolve( scope )
-          endIf
         endIf
 
         context = CmdThisContext( t, scope.this_type )
@@ -1821,6 +1815,13 @@ class CmdAccess : Cmd
       if (setter_name)
         local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), true )
         if (setter) return setter
+      endIf
+
+      if (context_was_null and scope.this_type isNot Program.type_Global)
+        p = Program.type_Global.find_property( name )
+        if (p)
+          return CmdWriteProperty( t, CmdReadSingleton(t,Program.type_Global), p, new_value ).resolve( scope )
+        endIf
       endIf
 
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )

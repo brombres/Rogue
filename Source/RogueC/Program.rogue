@@ -420,7 +420,7 @@ class Program [requisite singleton]
             if (type.is_aspect)
               # trace aspect types and methods
               forEach (m in type.method_list)
-                if (m.is_used)
+                if (m.is_used and m.incorporating_classes)
                   forEach (ic in m.incorporating_classes)
                     if (ic.is_used)
                       local im = ic.find_method( m.signature )
@@ -468,7 +468,7 @@ class Program [requisite singleton]
       # Clear each aspect method's list of incorporating classes before rebuilding
       forEach (aspect in aspect_list)
         forEach (aspect_m in aspect.method_list)
-          if (aspect_m.is_used) aspect_m.incorporating_classes.clear
+          if (aspect_m.is_used and aspect_m.incorporating_classes) aspect_m.incorporating_classes.clear
         endForEach
       endForEach
 
@@ -478,7 +478,9 @@ class Program [requisite singleton]
             forEach (aspect_m in aspect.method_list)
               if (aspect_m.is_used)
                 local class_m = type.find_method( aspect_m.signature )
-                if (class_m and class_m.is_used) aspect_m.incorporating_classes.add( type )
+                if (class_m and class_m.is_used and aspect_m.incorporating_classes)
+                  aspect_m.incorporating_classes.add( type )
+                endIf
               endIf
             endForEach
           endIf
