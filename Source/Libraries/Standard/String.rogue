@@ -592,6 +592,33 @@ class String [foreign]
 
       return result
 
+    method split->String[]
+      # Splits the string on whitespace
+
+      local result = String[]
+      local start = -1
+      local current = 0
+      forEach (ch in this)
+        which (ch)
+          case ' ', '\t', '\n':
+            if start >= 0
+              result.add( this.from(start, current-1) )
+              start = -1
+            endIf
+          others:
+            if start < 0
+              start = current
+            endIf
+          endWhich
+        current++
+      endForEach
+
+      if start >= 0
+        result.add( this.from(start, current-1) )
+      endIf
+
+      return result
+
     method join( substrings:String[] )->String
       return join( substrings.reader )
 
