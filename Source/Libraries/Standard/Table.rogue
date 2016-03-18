@@ -127,7 +127,86 @@ class Table<<$KeyType,$ValueType>>
       buffer.print( '}' )
       return buffer
 
+    method values->$ValueType[]
+      local r = $ValueType[]
+      forEach (k in keys)
+        r.add(get(k))
+      endForEach
+      return r
+
+    method item_reader->TableReader<<$KeyType,$ValueType>>
+      return TableReader<<$KeyType,$ValueType>>(this)
+
+    method value_reader->TableValueReader<<$KeyType,$ValueType>>
+      return TableValueReader<<$KeyType,$ValueType>>(this)
+
+    method key_reader->TableKeyReader<<$KeyType,$ValueType>>
+      return TableKeyReader<<$KeyType,$ValueType>>(this)
 endClass
+
+
+class TableReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueType>>>>
+  PROPERTIES
+    table : Table<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      noAction
+
+    method has_another->Logical
+      return @position < table.count
+
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return table.find(table.keys[@position])
+
+    method read->TableEntry<<$KeyType,$ValueType>>
+      local r = peek()
+      @position++
+      return r
+endClass
+
+
+class TableKeyReader<<$KeyType, $ValueType>> : Reader<<$KeyType>>
+  PROPERTIES
+    table : Table<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      noAction
+
+    method has_another->Logical
+      return @position < table.count
+
+    method peek->$KeyType
+      return table.keys[@position]
+
+    method read->$KeyType
+      local r = peek()
+      @position++
+      return r
+endClass
+
+
+class TableValueReader<<$KeyType, $ValueType>> : Reader<<$ValueType>>
+  PROPERTIES
+    table : Table<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      noAction
+
+    method has_another->Logical
+      return @position < table.count
+
+    method peek->$ValueType
+      return table.find(table.keys[@position]).value
+
+    method read->$ValueType
+      local r = peek()
+      @position++
+      return r
+endClass
+
 
 class TableEntry<<$KeyType,$ValueType>>
   PROPERTIES
@@ -141,7 +220,11 @@ class TableEntry<<$KeyType,$ValueType>>
       key = _key
       value = _value
       hash = _hash
+
+    method to->String
+      return "($ $:$)" (type_name, key, value)
 endClass
+
 
 class StringTable<<$ValueType>> : Table<<String,$ValueType>>
   # Adds support for StringBuilder keys.
