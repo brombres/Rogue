@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.33
+- v1.0.34
 - March 17, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.34 - March 17, 2016
+- C++ exceptions and stdlib improvements.
 
 ###v1.0.33 - March 17, 2016
 - Aspects are now compatible with Object, instanceOf Object, and can be be cast to Object in more places.
