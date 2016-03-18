@@ -28,6 +28,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.35 - March 18, 2016
+- Reworked debug trace infrastructure; now substantially faster and more flexible - 1.3s vs 1.7s roguec recompile in debug mode.
+- Fixed access resolution error where class `Global` could be checked before the current class context.
+- Fixed several errors resulting from compiling with `--requisite`.
+
 ###v1.0.34 - March 18, 2016
 - C++ exceptions and stdlib improvements.
 - Fixed access resolution error where class `Global` could be checked before the current class context.

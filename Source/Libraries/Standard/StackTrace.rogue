@@ -6,12 +6,20 @@ class StackTrace [requisite]
 
   METHODS
     method init( omit_count=0:Int32 ) [requisite]
-      count = Math.max( native( "Rogue_call_stack.count" )->Int32 - (omit_count+1), 0 )
+      ++omit_count
+      native @|RogueDebugTrace* current = Rogue_call_stack;
+              |while (current && $omit_count)
+              |{
+              |  --$omit_count;
+              |  current = current->previous_trace;
+              |}
+              |if (current) $count = current->count();
 
       entries = String[]( count )
-      forEach (i in count-1 downTo 0)
-        entries.add( native("RogueString_create_from_c_string( Rogue_call_stack.locations[$i] )")->String )
-      endForEach
+      while (native("current!=0")->Logical)
+        entries.add( native("RogueString_create_from_c_string( current->to_c_string() )")->String )
+        native "current = current->previous_trace;"
+      endWhile
 
     method format
       if (is_formatted) return

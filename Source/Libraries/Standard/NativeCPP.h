@@ -513,60 +513,23 @@ bool Rogue_update_tasks();  // returns true if tasks are still active
 
 
 //-----------------------------------------------------------------------------
-//  Stack Trace
+//  RogueDebugTrace
 //-----------------------------------------------------------------------------
-struct RogueCallStack
+struct RogueDebugTrace
 {
-  const char** locations;
-  int          count;
-  int          capacity;
+  static char buffer[120];
 
-  RogueCallStack() : count(0)
-  {
-    capacity = 256;
-    locations = new const char*[ capacity ];
-  }
+  const char* method_signature;
+  const char* filename;
+  int line;
+  RogueDebugTrace* previous_trace;
 
-  ~RogueCallStack()
-  {
-    delete locations;
-  }
+  RogueDebugTrace( const char* method_signature, const char* filename, int line );
+  ~RogueDebugTrace();
 
-  void push( const char* location )
-  {
-    //printf( "+%s\n", location );
-    if (count == capacity)
-    {
-      capacity *= 2;
-      const char** new_locations = new const char*[ capacity ];
-      memcpy( new_locations, locations, count * sizeof(const char*) );
-      delete locations;
-      locations = new_locations;
-    }
-    locations[ count++ ] = location;
-  }
+  int   count();
 
-  void pop()
-  {
-    --count;
-    //printf( "-%s\n", locations[count] );
-  }
-};
-
-extern RogueCallStack Rogue_call_stack;
-
-
-struct RogueCallTrace
-{
-   RogueCallTrace( const char* location )
-   {
-     Rogue_call_stack.push( location );
-   }
-
-   ~RogueCallTrace()
-   {
-     Rogue_call_stack.pop();
-   }
+  char* to_c_string();
 };
 
 void Rogue_print_stack_trace ( bool leading_newline=false);

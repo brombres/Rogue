@@ -67,10 +67,43 @@ RogueObject*       Rogue_error_object  = 0;
 int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
-RogueCallStack     Rogue_call_stack;
+RogueDebugTrace*   Rogue_call_stack = 0;
 RogueCallbackInfo  Rogue_on_begin_gc;
 RogueCallbackInfo  Rogue_on_end_gc;
+char               RogueDebugTrace::buffer[120];
 
+//-----------------------------------------------------------------------------
+//  RogueDebugTrace
+//-----------------------------------------------------------------------------
+RogueDebugTrace::RogueDebugTrace( const char* method_signature, const char* filename, int line )
+  : method_signature(method_signature), filename(filename), line(line), previous_trace(0)
+{
+  previous_trace = Rogue_call_stack;
+  Rogue_call_stack = this;
+}
+
+RogueDebugTrace::~RogueDebugTrace()
+{
+  Rogue_call_stack = previous_trace;
+}
+
+int RogueDebugTrace::count()
+{
+  int n = 1;
+  RogueDebugTrace* current = previous_trace;
+  while (current)
+  {
+    ++n;
+    current = current->previous_trace;
+  }
+  return n;
+}
+
+char* RogueDebugTrace::to_c_string()
+{
+  sprintf( buffer, "[%s %s:%d]", method_signature, filename, line );
+  return buffer;
+}
 
 //-----------------------------------------------------------------------------
 //  RogueType
@@ -868,11 +901,12 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
 
 void Rogue_print_stack_trace ( bool leading_newline )
 {
-  int i = Rogue_call_stack.count;
-  if (i && leading_newline) printf("\n");
-  while (--i >= 0)
+  RogueDebugTrace* current = Rogue_call_stack;
+  if (current && leading_newline) printf( "\n" );
+  while (current)
   {
-    printf( "%s\n", Rogue_call_stack.locations[i] );
+    printf( "%s\n", current->to_c_string() );
+    current = current->previous_trace;
   }
   printf("\n");
 }

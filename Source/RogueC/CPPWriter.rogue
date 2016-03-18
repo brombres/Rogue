@@ -1624,10 +1624,10 @@ augment Method
         writer.println "}"
       else
         if (RogueC.debug_mode)
-          writer.print( ''RogueCallTrace __trace( "'' )
-          writer.print( "[" ).print( type_context.name ).print( "." ).print( signature ).print( " " )
-          writer.print( File.filename(t.filepath) ).print( ":" ).print( t.line ).print( "]" )
-          writer.println( ''" );'' )
+          writer.print( ''RogueDebugTrace __trace( "'' )
+          writer.print( type_context.name ).print( "." ).print( signature ).print( ''", "'' )
+          writer.print( File.filename(t.filepath) ).print( ''", '' ).print( t.line )
+          writer.println( '' );'' )
         endIf
         statements.write_cpp( writer )
       endIf
