@@ -416,6 +416,11 @@ augment CmdInlineNative
 
 endAugment
 
+augment CmdMakeRequisite
+  METHODS
+    method trace_used_code
+endAugment
+
 augment CmdNoAction
   METHODS
     method trace_used_code

@@ -2798,6 +2798,12 @@ augment CmdInlineNative
       endIf
 endAugment
 
+augment CmdMakeRequisite
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      noAction
+endAugment
+
 augment CmdNoAction
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
