@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <inttypes.h>
+#include <exception>
 
 #if !defined(ROGUE_PLATFORM_WINDOWS)
 #  include <sys/time.h>
@@ -62,7 +63,6 @@
 //-----------------------------------------------------------------------------
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 RogueLogical       Rogue_configured = 0;
-RogueErrorHandler* Rogue_error_handler = 0;
 RogueObject*       Rogue_error_object  = 0;
 int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
@@ -898,7 +898,7 @@ void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 
     Rogue_print_stack_trace( true );
 
-    exit(0);
+    exit(1);
 }
 
 void Rogue_configure_types()
@@ -1060,3 +1060,24 @@ void Rogue_Boehm_DecRef (RogueObject* o)
   }
 }
 #endif
+
+
+//-----------------------------------------------------------------------------
+//  Exception handling
+//-----------------------------------------------------------------------------
+void Rogue_terminate_handler ()
+{
+  if (Rogue_error_object && Rogue_error_object->type)
+  {
+    printf( "Uncaught " );
+    RogueType_print_name( Rogue_error_object->type );
+    printf( ".\n\n" );
+
+    RogueStackTrace__print( ((RogueClassException*)Rogue_error_object)->stack_trace );
+  }
+  else
+  {
+    printf( "Uncaught error.\n" );
+  }
+  exit(1);
+}

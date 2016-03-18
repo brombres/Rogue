@@ -3,10 +3,16 @@ class Object [native]
     method operator==( other:Object )->Logical
       return this is other
 
-    method to->String
+    method object_id->Int64
       local addr : Int64
       native "$addr = (RogueInt64)(intptr_t)$this;"
-      return "($ 0x$)" (type_name,addr.to_hex_string)
+      return addr
+
+    method hash_code->Int32
+      return object_id->Int32
+
+    method to->String
+      return "($ 0x$)" (type_name, object_id.to_hex_string)
 endClass
 
 
