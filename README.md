@@ -28,6 +28,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.37 - March 18, 2016
+- Improved call resolution.
+- For a call to `NewType(x)`, methods named `init()` and global methods named create() are all considered simultaneously instead of in two separate steps as before.
+- If all else fails during call resolution the compiler will try and convert the arg of a 1-arg call `to->Object`, `to->String`, or `to->ParameterType` in that order (missing from previous release but present before that).
+
 ###v1.0.36 - March 18, 2016
 - Fixed overly liberal method selection so that for e.g. constructor `NewType(String)`, `create(String)` will be matched before `init(Int32)` (this latter wasn't throwing an error due to String having a `to->Int32` method).
 - Fixed runtime `as` and `instanceOf` to work with more than direct parent class checks.

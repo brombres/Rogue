@@ -1632,16 +1632,12 @@ class CmdAccess : Cmd
           if (not new_type.is_native)
             cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,flag_args), false, true )
           endIf
-          if (not cmd_call)
+          if (not cmd_call and must_find)
+            # Not found, trigger errors
+            if (not new_type.is_native) cmd_call = scope.resolve_call( new_type,
+            CmdAccess(t,cmd_new,"init",args,flag_args), true, true )
             cmd_call = scope.resolve_call( new_type,
-                CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), false )
-            if (not cmd_call and must_find)
-              # Not found, trigger errors
-              if (not new_type.is_native) cmd_call = scope.resolve_call( new_type,
-              CmdAccess(t,cmd_new,"init",args,flag_args), true, true )
-              cmd_call = scope.resolve_call( new_type,
-              CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), true )
-            endIf
+            CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), true )
           endIf
 
           if (cmd_call)
