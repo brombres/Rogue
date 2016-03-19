@@ -17,7 +17,6 @@ class Type
 
     base_class : Type
     base_types = Type[]
-    flat_base_types = Type[]
     has_extended_class : Logical
 
     is_array     : Logical
@@ -122,8 +121,14 @@ class Type
         info.add( dynamic_method_table_index )
       endIf
 
-      info.add( base_types.count )
-      forEach (base_type in base_types) info.add( base_type.index )
+      local flat_base_types = Type[]
+      if (base_class) base_class.collect_base_types( flat_base_types )
+      forEach (base_type in base_types)
+        base_type.collect_base_types( flat_base_types )
+      endForEach
+
+      info.add( flat_base_types.count )
+      forEach (base_type in flat_base_types) info.add( base_type.index )
 
     method compile_type->Type
       return this
@@ -188,7 +193,10 @@ class Type
         if (this is Program.type_Logical xor other is Program.type_Logical) return false
         return true
       endIf
-      if (other.is_optional and other.element_type is this) return true
+      if (other.is_optional)
+        if (other.element_type is this) return true
+        if (this is Program.type_null) return true
+      endIf
       if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
 
@@ -303,11 +311,9 @@ class Type
 
       if (base_class) base_types.insert( base_types.remove(base_class) )
 
-      # Collect flat list base types while removing duplicates
-      flat_base_types.clear
-      if (base_class) base_class.collect_base_types( flat_base_types )
+      # Mark classes that are extended
       forEach (base_type in base_types)
-        base_type.collect_base_types( flat_base_types )
+        base_type.mark_extended_types
       endForEach
 
       # Inherit definitions
@@ -502,6 +508,12 @@ class Type
       if (this is Program.type_Byte)      return 2
       if (this is Program.type_Logical)   return 1
       return 0
+
+    method mark_extended_types
+      has_extended_class = true
+      forEach (base_type in base_types)
+        base_type.mark_extended_types
+      endForEach
 
     method collect_base_types( list:Type[] )
       has_extended_class = true

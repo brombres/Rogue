@@ -356,7 +356,9 @@ class Scope
 
         endIf
 
-        # Compatible arg check
+        # Compatible arg check.  Leaves incompatible method if it's the only
+        # one, so we can't return a single method right away.  But we can
+        # pare down the options.
         forEach (m in candidates.available)
           contingent
             forEach (index of args)
@@ -368,10 +370,12 @@ class Scope
             candidates.compatible.add( m )
           endContingent
         endForEach
-        if (not candidates.refine_matches) return null
+        if (not candidates.update_matches) return null
       endIf
 
-      if (candidates.has_match) return candidates.match
+      if (candidates.has_match)
+        return candidates.match
+      endIf
 
       # More specialized arg check (if every parameter of some method m2 has
       # an equivalent or more specialized type than the corresponding arg in
@@ -401,33 +405,6 @@ class Scope
       endIf
 
       if (candidates.has_match) return candidates.match
-
-      if (arg_count == 1)
-        # 1. Try candidate(arg) -> candidate(arg->toObject)
-        # 2. Try candidate(arg) -> candidate(arg->toString)
-        # 3. Try candidate(arg) -> candidate(arg->toParameterType)
-        forEach (m in candidates.available)
-          if (m.parameters.count == 1)
-            local arg_type = args.first.type
-            local param_type = m.parameters.first.type
-            param_type.organize
-            if (param_type is Program.type_Object and arg_type.has_method_named("to_Object"))
-              args[0] = args[0].cast_to( Program.type_Object, this )
-              return m
-
-            elseIf (param_type is Program.type_String and arg_type.has_method_named("to_String"))
-              args[0] = args[0].cast_to( Program.type_String, this )
-              return m
-
-            elseIf (arg_type.has_method_named("to_"+param_type.name))
-              args[0] = args[0].cast_to( param_type, this )
-              return m
-
-            endIf
-
-          endIf
-        endForEach
-      endIf
 
       candidates.update_matches  # Force error if required
       return null

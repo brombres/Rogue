@@ -161,6 +161,9 @@ class String [foreign]
 
       return buffer->String
 
+    method ends_with( ch:Character )->Logical
+      return (count > 0 and this[count-1] == ch)
+
     method ends_with( other:String )->Logical
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
@@ -963,7 +966,7 @@ class StringConsolidationTable : StringTable<<String>> [singleton]
     method get( buffer:StringBuilder )->String
       local result = prior.get( buffer )
       if (result) return result
-      
+
       result = buffer->String
       this[ result ] = result
       return result

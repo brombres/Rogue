@@ -1634,7 +1634,7 @@ class CmdAccess : Cmd
           endIf
           if (not cmd_call)
             cmd_call = scope.resolve_call( new_type,
-            CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), false )
+                CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), false )
             if (not cmd_call and must_find)
               # Not found, trigger errors
               if (not new_type.is_native) cmd_call = scope.resolve_call( new_type,

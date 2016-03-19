@@ -135,6 +135,17 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
   else                             return obj;
 }
 
+bool RogueType_name_equals( RogueType* THIS, const char* name )
+{
+  // For debugging purposes
+  char buffer[256];
+  RogueString* st = Rogue_literal_strings[ THIS->name_index ];
+  if ( !st ) return false;
+
+  RogueString_to_c_string( st, buffer, 256 );
+  return (0 == strcmp(buffer,name));
+}
+
 void RogueType_print_name( RogueType* THIS )
 {
   char buffer[256];
@@ -194,13 +205,19 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
   if ( !THIS ) return true;
 
   this_type = THIS->type;
-  if (this_type == ancestor_type) return true;
+  if (this_type == ancestor_type)
+  {
+    return true;
+  }
 
   int count = this_type->base_type_count;
   RogueType** base_type_ptr = this_type->base_types - 1;
   while (--count >= 0)
   {
-    if (ancestor_type == *(++base_type_ptr)) return true;
+    if (ancestor_type == *(++base_type_ptr))
+    {
+      return true;
+    }
   }
 
   return false;

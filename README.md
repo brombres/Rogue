@@ -28,6 +28,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.36 - March 18, 2016
+- Fixed overly liberal method selection so that for e.g. constructor `NewType(String)`, `create(String)` will be matched before `init(Int32)` (this latter wasn't throwing an error due to String having a `to->Int32` method).
+- Fixed runtime `as` and `instanceOf` to work with more than direct parent class checks.
+- Moved creation of compiler's `flat_base_types` to be on-demand when generating code.
+
 ###v1.0.35 - March 18, 2016
 - Reworked debug trace infrastructure; now substantially faster and more flexible - 1.3s vs 1.7s roguec recompile in debug mode.
 - Debug Stack Trace now shows accurate line numbers.
