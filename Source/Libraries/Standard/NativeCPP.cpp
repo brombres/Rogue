@@ -298,7 +298,7 @@ RogueString* RogueString_create_from_c_string( const char* c_string, int count )
   return RogueString_update_hash_code( st );
 }
 
-RogueString* RogueString_create_from_characters( RogueCharacter$List* characters )
+RogueString* RogueString_create_from_characters( RogueCharacter_List* characters )
 {
   if ( !characters ) return RogueString_create_with_count(0);
 

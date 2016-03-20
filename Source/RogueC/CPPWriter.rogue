@@ -34,7 +34,7 @@ local original_name = name
         i1 = name.locate( "->" )
       endWhile
 
-      # Type<<Specialization>> -> Type$Specialization$
+      # Type<<Specialization>> -> Type_Specialization_
       i1 = name.locate("<<")
       while (i1?)
         local i2 = locate_matching_close_specialize( name, i1 )
@@ -44,15 +44,15 @@ local original_name = name
         local after  = name.from(i2.value+2)
         local middle = name.from(i1.value+2,i2.value-1)
 
-        name = "$$$$$" (before,"$",middle,"$",after)
+        name = "$_$_$" (before,middle,after)
 
         i1 = name.locate("<<")
       endWhile
 
-      #   Table_of_String,Int32[] -> Table_of_String,Int32$List
+      #   Table_of_String,Int32[] -> Table_of_String,Int32_List
       i1 = name.locate("[]")
       while (i1?)
-        name = "$$List$" (name.from(0,i1.value-1),"$",name.from(i1.value+2))
+        name = "$_List$" (name.from(0,i1.value-1),name.from(i1.value+2))
         i1 = name.locate("[]")
       endWhile
 
@@ -731,7 +731,7 @@ endIf
                       |
                       |for (int i=1; i<Rogue_argc; ++i)
                       |{
-                      |  RogueString$List__add__String( RogueSystem_command_line_arguments,
+                      |  RogueString_List__add__String( RogueSystem_command_line_arguments,
                       |      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );
                       |}
       writer.println

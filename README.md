@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.40 - March 20, 2016
+- Changed C++ name adaptation syntax: `TemplateName<<Alpha,Beta>>` now becomes `TemplateName_Alpha_Beta_` and `TypeName[]` becomes `TypeName_List`.
+
 ###v1.0.39 - March 20, 2016
 - Added default `init()` to base class Object.
 - Classes can no longer be instantiated with a default initializer if they have other initializers all with one or more args.
