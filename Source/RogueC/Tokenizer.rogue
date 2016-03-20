@@ -102,6 +102,7 @@ class Tokenizer
       TokenType.keyword_else          = define( StructureTokenType("else") )
       TokenType.keyword_elseIf        = define( StructureTokenType("elseIf") )
       TokenType.keyword_endAugment    = define( StructureTokenType("endAugment") )
+      TokenType.keyword_endBlock      = define( StructureTokenType("endBlock") )
       TokenType.keyword_endClass      = define( StructureTokenType("endClass") )
       TokenType.keyword_endContingent = define( StructureTokenType("endContingent") )
       TokenType.keyword_endForEach    = define( StructureTokenType("endForEach") )
@@ -134,7 +135,9 @@ class Tokenizer
 
       # Statement Tokens
       TokenType.keyword_await            = define( TokenType("await") )
+      TokenType.keyword_block            = define( TokenType("block") )
       TokenType.keyword_contingent       = define( TokenType("contingent") )
+      TokenType.keyword_escapeBlock      = define( TokenType("escapeBlock") )
       TokenType.keyword_escapeContingent = define( TokenType("escapeContingent") )
       TokenType.keyword_escapeForEach    = define( TokenType("escapeForEach") )
       TokenType.keyword_escapeIf         = define( TokenType("escapeIf") )

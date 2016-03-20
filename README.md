@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.38 - March 19, 2016
+- Added `block`/`endBlock` control structure that scopes local variables and supports `escapeBlock`.
+
 ###v1.0.37 - March 18, 2016
 - Improved call resolution.
 - For a call to `NewType(x)`, methods named `init()` and global methods named create() are all considered simultaneously instead of in two separate steps as before.

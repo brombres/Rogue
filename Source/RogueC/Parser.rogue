@@ -919,6 +919,10 @@ class Parser
           statements.add( parse_for_each )
           return
 
+        elseIf (next_is(TokenType.keyword_block))
+          statements.add( parse_block )
+          return
+
         elseIf (next_is(TokenType.keyword_contingent))
           statements.add( parse_contingent )
           return
@@ -1100,34 +1104,32 @@ class Parser
       if (consume(TokenType.keyword_escapeWhile))
         statements.add( CmdEscape(t,CmdControlStructure.type_while) )
         return
-      endIf
 
-      if (consume(TokenType.keyword_escapeForEach))
+      elseIf (consume(TokenType.keyword_escapeForEach))
         statements.add( CmdEscape(t,CmdControlStructure.type_forEach) )
         return
-      endIf
 
-      if (consume(TokenType.keyword_escapeContingent))
+      elseIf (consume(TokenType.keyword_escapeBlock))
+        statements.add( CmdEscape(t,CmdControlStructure.type_block) )
+        return
+
+      elseIf (consume(TokenType.keyword_escapeContingent))
         statements.add( CmdEscape(t,CmdControlStructure.type_contingent) )
         return
-      endIf
 
-      if (consume(TokenType.keyword_escapeLoop))
+      elseIf (consume(TokenType.keyword_escapeLoop))
         statements.add( CmdEscape(t,CmdControlStructure.type_loop) )
         return
-      endIf
 
-      if (consume(TokenType.keyword_escapeIf))
+      elseIf (consume(TokenType.keyword_escapeIf))
         statements.add( CmdEscape(t,CmdControlStructure.type_if) )
         return
-      endIf
 
-      if (consume(TokenType.keyword_escapeTry))
+      elseIf (consume(TokenType.keyword_escapeTry))
         statements.add( CmdEscape(t,CmdControlStructure.type_try) )
         return
-      endIf
 
-      if (consume(TokenType.keyword_escapeWhich))
+      elseIf (consume(TokenType.keyword_escapeWhich))
         statements.add( CmdEscape(t,CmdControlStructure.type_which) )
         return
       endIf
@@ -1553,6 +1555,16 @@ class Parser
       must_consume( TokenType.keyword_endLoop )
 
       return cmd_loop
+
+    method parse_block->CmdBlock
+      local t = read
+      local cmd_block = CmdBlock( t )
+
+      must_consume_eols
+      parse_multi_line_statements( cmd_block.statements )
+      must_consume( TokenType.keyword_endBlock )
+
+      return cmd_block
 
     method parse_while->CmdGenericLoop
       local t = read

@@ -27,6 +27,7 @@ class TokenType
     keyword_else                  : TokenType
     keyword_elseIf                : TokenType
     keyword_endAugment            : TokenType
+    keyword_endBlock              : TokenType
     keyword_endClass              : TokenType
     keyword_endContingent         : TokenType
     keyword_endForEach            : TokenType
@@ -65,7 +66,9 @@ class TokenType
 
     # Statements
     keyword_await                 : TokenType
+    keyword_block                 : TokenType
     keyword_contingent            : TokenType
+    keyword_escapeBlock           : TokenType
     keyword_escapeContingent      : TokenType
     keyword_escapeForEach         : TokenType
     keyword_escapeIf              : TokenType
