@@ -148,6 +148,10 @@ augment Program
       writer.println "//-----------------------------------------------------------------------------"
       writer.println "#pragma once"
 
+      forEach (plugin in RogueC.plugins)
+        plugin.start_header_file( writer )
+      endForEach
+
       # It'd be nice to be able to override these with a C++ -D arg...
       writer.print "#define ROGUE_GC_MODE_MANUAL "
       writer.println select{RogueC.gc_mode == GCMode.MANUAL: "1" || "0"}
@@ -236,6 +240,10 @@ augment Program
       writer.println( "void Rogue_trace();" )
       writer.println
 
+      forEach (plugin in RogueC.plugins)
+        plugin.finish_header_file( writer )
+      endForEach
+
       writer.close
 
       # .CPP implementation ---------------------------------------------------
@@ -251,6 +259,10 @@ augment Program
       # Embed nativeCode
       forEach (line in native_code)
         writer.println( line )
+      endForEach
+
+      forEach (plugin in RogueC.plugins)
+        plugin.start_code_file( writer )
       endForEach
 
       # typedef each unique method signature
@@ -895,6 +907,10 @@ augment Program
                          |}
         )
       endIf
+
+      forEach (plugin in RogueC.plugins)
+        plugin.finish_code_file( writer )
+      endForEach
 
       writer.close
 
