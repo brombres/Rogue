@@ -256,12 +256,6 @@ class NativeCodeTokenType : TokenType
       return NativeCodeToken( this, value ).set_location( existing.filepath, existing.line, existing.column )
 endClass
 
-class IdentifierTokenType : TokenType
-  METHODS
-    method create_token( filepath:String, line:Int32, column:Int32, value:String )->Token
-      return IdentifierToken( this, value ).set_location( filepath, line, column )
-endClass
-
 class StructureTokenType : TokenType
   METHODS
     method create_token( filepath:String, line:Int32, column:Int32 )->Token

@@ -199,7 +199,7 @@ class PropertyValue
     method to->Object
       return null
 
-    method to_json( formatted=false:String )->String
+    method to_json( formatted=false:Logical )->String
       return to_json( StringBuilder(), formatted )->String
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder

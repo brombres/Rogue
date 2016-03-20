@@ -28,6 +28,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.39 - March 20, 2016
+- Added default `init()` to base class Object.
+- Classes can no longer be instantiated with a default initializer if they have other initializers all with one or more args.
+- Added `requisite` target to `Makefile` that recompiles with the `--requisite` flag.
+- Fixed bug where create() method candidates could be prematurely discarded from consideration in favor of `init()` methods with the same signature.
+- Tweaked the C++ name adaptation and validation to make it more robust and reduce the chances of conflict.  `TemplateName<<Alpha,Beta>>` now becomes `Template$Alpha_Beta$` and `TypeName[]` becomes `TypeName$List`.
+
 ###v1.0.38 - March 19, 2016
 - Added `block`/`endBlock` control structure that scopes local variables and supports `escapeBlock`.
 

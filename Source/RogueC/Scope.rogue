@@ -247,7 +247,7 @@ class Scope
         # Find method with most specific type context
         local most_specific_type : Type
         forEach (m in candidates.available)
-          if (m.is_initializer)
+          if (m.is_initializer or m.name=="create")
             local m_type_context = m.type_context
             if (most_specific_type is null or m_type_context.instance_of(most_specific_type))
               most_specific_type = m_type_context

@@ -1,5 +1,8 @@
 class Object [native]
   METHODS
+    method init
+      noAction
+
     method operator==( other:Object )->Logical
       return this is other
 

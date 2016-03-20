@@ -38,6 +38,8 @@ class Attributes
     tags  : String[]
 
   METHODS
+    method init
+
     method init( flags )
 
     method clone->Attributes

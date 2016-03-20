@@ -17,6 +17,15 @@ debug: libraries
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
+requisite: libraries
+	@echo -------------------------------------------------------------------------------
+	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --requisite..."
+	@echo -------------------------------------------------------------------------------
+	cd Source/RogueC && mkdir -p Build
+	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --requisite $(ROGUEC_ROGUE_FLAGS)
+	mkdir -p Programs
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+
 roguec: bootstrap_roguec /usr/local/bin /usr/local/bin/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/roguec
 
 touch_roguec:

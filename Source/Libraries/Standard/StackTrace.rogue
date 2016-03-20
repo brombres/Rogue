@@ -8,7 +8,7 @@ class StackTrace [requisite]
     method init( omit_count=0:Int32 ) [requisite]
       ++omit_count
       native @|RogueDebugTrace* current = Rogue_call_stack;
-              |while (current && $omit_count)
+              |while (current && $omit_count > 0)
               |{
               |  --$omit_count;
               |  current = current->previous_trace;
@@ -24,16 +24,17 @@ class StackTrace [requisite]
     method format
       if (is_formatted) return
       is_formatted = true
-      local max_sp = 0
+
+      local max_characters = 0
       forEach (entry in entries)
         local sp = entry.locate( ' ' )
-        if (sp.exists) max_sp = Math.max( max_sp, sp.value )
+        if (sp.exists) max_characters = Math.max( max_characters, sp.value )
       endForEach
 
-      ++max_sp
+      ++max_characters
       forEach (entry at i in entries)
         if (entry.contains(' '))
-          entries[i] = entry.before_first(' ').left_justified(max_sp) + entry.from_first(' ')
+          entries[i] = entry.before_first(' ').left_justified(max_characters) + entry.from_first(' ')
         endIf
       endForEach
 

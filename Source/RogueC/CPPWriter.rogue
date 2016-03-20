@@ -4,6 +4,7 @@
 augment Program
   METHODS
     method validate_cpp_name( name:String )->String
+local original_name = name
       local begins_with_code_prefix = false
       if (name.begins_with(code_prefix))
         begins_with_code_prefix = true
@@ -33,32 +34,25 @@ augment Program
         i1 = name.locate( "->" )
       endWhile
 
-      # Type<<Specialization>> -> SpecializationType
+      # Type<<Specialization>> -> Type$Specialization$
       i1 = name.locate("<<")
       while (i1?)
-        local i2 = name.locate(">>",i1)
+        local i2 = locate_matching_close_specialize( name, i1 )
         if (not i2?) escapeWhile
 
         local before = name.from(0,i1.value-1)
         local after  = name.from(i2.value+2)
         local middle = name.from(i1.value+2,i2.value-1)
 
-        name = "$$$" (validate_cpp_name(middle),before,after)
-        # Example:
-        #   Table<<String,Int32>>[] -> StringInt32Table[]
-
-        if (Program.find_type(name))
-          # Preferred name already exists; revert to "Type_of_Specialization"
-          name = "$_of_$$" (before,middle,after)
-        endIf
+        name = "$$$$$" (before,"$",middle,"$",after)
 
         i1 = name.locate("<<")
       endWhile
 
-      #   StringInt32Table[] -> StringInt32TableList
+      #   Table_of_String,Int32[] -> Table_of_String,Int32$List
       i1 = name.locate("[]")
       while (i1?)
-        name = name.from(0,i1.value-1) + "List" + name.from(i1.value+2)
+        name = "$$List$" (name.from(0,i1.value-1),"$",name.from(i1.value+2))
         i1 = name.locate("[]")
       endWhile
 
@@ -68,7 +62,7 @@ augment Program
       local count = name.count
       forEach (i of name)
         local ch = name[i]
-        if (ch.is_alphanumeric)
+        if (ch.is_alphanumeric or ch == '$')
           string_buffer.print( ch )
         else
           which (ch)
@@ -117,8 +111,26 @@ augment Program
           endWhich
         endIf
       endForEach
+if (string_buffer->String.contains("TableEntryOfString_StringList"))
+@trace original_name
+@trace string_buffer
+endIf
 
       return string_buffer->String
+
+    method locate_matching_close_specialize( st:String, i1:Int32? )->Int32?
+      local nesting_level = 1
+      forEach (i in i1.value+2..st.count-2)
+        if (st[i] == '<' and st[i+1] == '<')
+          ++nesting_level
+          ++i
+        elseIf (st[i] == '>' and st[i+1] == '>')
+          --nesting_level
+          if (nesting_level == 0) return i
+          ++i
+        endIf
+      endForEach
+      return null
 
     method write_cpp( filepath:String )
       forEach (type in type_list)
@@ -719,7 +731,7 @@ augment Program
                       |
                       |for (int i=1; i<Rogue_argc; ++i)
                       |{
-                      |  RogueStringList__add__String( RogueSystem_command_line_arguments,
+                      |  RogueString$List__add__String( RogueSystem_command_line_arguments,
                       |      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );
                       |}
       writer.println

@@ -1627,17 +1627,12 @@ class CmdAccess : Cmd
           local cmd_create = CmdCreateObject( t, new_type )
           local cmd_new = cmd_create : Cmd
 
-          local must_find = args.count or new_type.is_native
           local cmd_call : Cmd
-          if (not new_type.is_native)
-            cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,flag_args), false, true )
-          endIf
-          if (not cmd_call and must_find)
-            # Not found, trigger errors
-            if (not new_type.is_native) cmd_call = scope.resolve_call( new_type,
-            CmdAccess(t,cmd_new,"init",args,flag_args), true, true )
+          if (new_type.is_native)
             cmd_call = scope.resolve_call( new_type,
-            CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), true )
+                CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), true )
+          else
+            cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,flag_args), true, true )
           endIf
 
           if (cmd_call)
