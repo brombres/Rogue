@@ -55,6 +55,7 @@ class Type
 
     dynamic_method_table_index : Int32
 
+    is_function = false
     callback_parameter_types : Type[]
     callback_return_type     : Type
 
