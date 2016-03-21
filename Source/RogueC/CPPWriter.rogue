@@ -1394,11 +1394,11 @@ class CPPWriter
     if (trace_token and t and t.filepath)
       if (t.filepath isNot trace_token.filepath)
         if (RogueC.debug_mode)
-          print( "__trace.filename = \"" ).print( t.filename ).println( "\";" )
-          print( "__trace.line = " ).print( t.line ).println( ";" )
+          print( ";__trace.filename = \"" ).print( t.filename ).println( "\";" )
+          print( ";__trace.line = " ).print( t.line ).println( ";" )
         endIf
       elseIf (t.line != trace_token.line)
-        if (RogueC.debug_mode) print( "__trace.line = " ).print( t.line ).println( ";" )
+        if (RogueC.debug_mode) print( ";__trace.line = " ).print( t.line ).println( ";" )
       endIf
     endIf
     trace_token = t
