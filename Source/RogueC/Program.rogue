@@ -76,11 +76,10 @@ class Program [requisite singleton]
       list.add( id_name )
 
     method add_template( template:Template )
-      template_list.add( template )
+      local existing_template = template_lookup[ template.name ]
 
       contingent
         local param_count = template.type_parameter_count
-        local existing_template = template_lookup[ template.name ]
         sufficient (not existing_template)
         necessary (param_count != existing_template.type_parameter_count)
 
@@ -93,10 +92,21 @@ class Program [requisite singleton]
         escapeContingent
 
       satisfied
+        template_list.add( template )
         template_lookup[ template.name ] = template
 
       unsatisfied
-        throw template.t.error( "A class named $ already exists." (template.name) )
+        # We have an illegal standard class.  Could be two overloaded routines.
+        if (template.is_routine and existing_template.is_routine)
+          # Merge the routines and worry about exact duplicate routines later
+          existing_template.tokens.add( template.tokens )
+        else
+          if (existing_template.is_routine)
+            throw template.t.error( "A routine named $ already exists." (template.name) )
+          else
+            throw template.t.error( "A class named $ already exists." (template.name) )
+          endIf
+        endIf
 
       endContingent
 

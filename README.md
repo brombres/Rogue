@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.41 - March 21, 2016
+- Routines can now be overloaded.
+
 ###v1.0.40 - March 20, 2016
 - Changed C++ name adaptation syntax: `TemplateName<<Alpha,Beta>>` now becomes `TemplateName_Alpha_Beta_` and `TypeName[]` becomes `TypeName_List`.
 

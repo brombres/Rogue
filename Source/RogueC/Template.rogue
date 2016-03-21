@@ -7,6 +7,7 @@ class Template
     type_parameters           : TypeParameter[]
     alternates_by_param_count : Table<<Int32,Template>>
     routine_return_type       : Type
+    routine_parameter_types   : Type[]
 
   METHODS
     method init( t, name, attribute_flags=0:Int32 )
@@ -174,6 +175,9 @@ class Template
       endIf
 
       Parser(augmented_tokens).parse_type_def( type )
+
+    method is_routine->Logical [macro]
+      (this.attributes.flags & Attribute.is_routine)
 
     method is_task->Logical [macro]
       (this.attributes.flags & Attribute.is_task)
