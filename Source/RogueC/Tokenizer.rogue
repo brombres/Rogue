@@ -91,9 +91,9 @@ class Tokenizer
       TokenType.placeholder_id       = define( TokenType("$id") )
 
       # Structure Tokens
-      TokenType.eol                   = define( EOLTokenType("end of line") )
+      TokenType.eol                   = define( EOLTokenType("end of line").mark_end_command )
       TokenType.eoi                   = define( StructureTokenType("end of input") )
-      TokenType.begin_augment_tokens  = define( StructureTokenType("end of line") )
+      TokenType.begin_augment_tokens  = define( StructureTokenType("(beginning of augment)") )
       TokenType.keyword_augment       = define( StructureTokenType("augment") )
       TokenType.keyword_case          = define( StructureTokenType("case") )
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
@@ -237,7 +237,7 @@ class Tokenizer
       TokenType.symbol_plus_equals           = define( ModifyAndAssignTokenType("+=") )
       TokenType.symbol_plus_plus             = define( TokenType("++") )
       TokenType.symbol_question_mark         = define( TokenType("?") )
-      TokenType.symbol_semicolon             = define( TokenType(";") )
+      TokenType.symbol_semicolon             = define( TokenType(";").mark_end_command )
       TokenType.symbol_shift_left            = define( TokenType(":<<:") )
       TokenType.symbol_shift_right           = define( TokenType(":>>:") )
       TokenType.symbol_shift_right_x         = define( TokenType(":>>>:") )
@@ -641,7 +641,7 @@ class Tokenizer
       if (ch == 10) name = "EOL"
       elseIf (ch < 32 or ch > 126) name = "(Unicode $)" (ch->Int32)
 
-      throw error( "Syntax error - unexpected input $." (name) )
+      throw error( "Syntax error: unexpected input $." (name) )
 
     method tokenize_comment->Logical
       buffer.clear

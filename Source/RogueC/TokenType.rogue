@@ -184,7 +184,8 @@ class TokenType
     symbol_double_vertical_bar    : TokenType
 
   PROPERTIES
-    name : String
+    name           : String
+    is_end_command : Logical
 
   METHODS
     method init( name )
@@ -224,6 +225,10 @@ class TokenType
 
     method is_structure->Logical
       return false
+
+    method mark_end_command->this
+      is_end_command = true
+      return this
 
     method quoted_name->String
       return "'$'" (name)

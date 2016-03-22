@@ -46,23 +46,9 @@ class Template
       type.source_template = this
 
       local augmented_tokens = tokens
-      local augments = Program.augment_lookup[ type.name ]
-
-      if (augments)
-        local t_count = tokens.count
-        forEach (aug in augments) t_count += aug.tokens.count
-
-        augmented_tokens = Token[]( t_count )
-        augmented_tokens.add( tokens )
-        augmented_tokens.remove_last  # will be an EOL
-        augmented_tokens.add( Token(TokenType.begin_augment_tokens) )
-        forEach (aug in augments)
-          forEach (base_type in aug.base_types)
-            type.base_types.add( base_type )
-          endForEach
-          augmented_tokens.add( aug.tokens )
-        endForEach
-        augmented_tokens.add( tokens.last )  # add the EOL back in
+      augmented_tokens = add_augmented_tokens( type, name, augmented_tokens )  # ex: Table
+      if (type.name != name)
+        augmented_tokens = add_augmented_tokens( type, type.name, augmented_tokens ) # ex: Table<<String,Int32>>
       endIf
 
       if (type.name.ends_with(']'))
@@ -74,6 +60,33 @@ class Template
       else
         instantiate_standard_type( type, augmented_tokens )
       endIf
+
+    method add_augmented_tokens( type:Type, augment_name:String, augmented_tokens:Token[] )->Token[]
+      local augments = Program.augment_lookup[ augment_name ]
+
+      if (not augments) return augmented_tokens
+
+      # +2 for an extra begin_augment_tokens at the beginning and an extra EOL at the end
+      local t_count = 2
+      forEach (aug in augments) t_count += aug.tokens.count
+
+      if (augmented_tokens is tokens)
+        # Use a working copy
+        augmented_tokens = Token[]( tokens.count + t_count ).add( augmented_tokens )
+      else
+        augmented_tokens.reserve( t_count )
+      endIf
+
+      augmented_tokens.add( Token(TokenType.begin_augment_tokens) )
+      forEach (aug in augments)
+        forEach (base_type in aug.base_types)
+          type.base_types.add( base_type )
+        endForEach
+        augmented_tokens.add( aug.tokens )
+      endForEach
+      augmented_tokens.add( tokens.last )  # add an EOL to the end
+
+      return augmented_tokens
 
     method instantiate_list( type:Type, augmented_tokens:Token[] )
       type.is_list = true

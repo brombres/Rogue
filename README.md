@@ -30,6 +30,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.41 - March 21, 2016
 - Routines can now be overloaded.
+- Augments now work correctly again - augments to all specialized types (`Table`) and to specific specialized types (`Table<<String,Int32>>`) are now applied correctly.
+- Fixed mysterious "unexpected end of line" error relating to augments - augments use special tokens indicating the beginning of augment code.  Those tokens were labeled "end of line" (for some reason) and their application was slightly messed up.
 
 ###v1.0.40 - March 20, 2016
 - Changed C++ name adaptation syntax: `TemplateName<<Alpha,Beta>>` now becomes `TemplateName_Alpha_Beta_` and `TypeName[]` becomes `TypeName_List`.

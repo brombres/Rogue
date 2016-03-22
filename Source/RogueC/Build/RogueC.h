@@ -1560,6 +1560,7 @@ struct RogueClassTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -3662,6 +3663,7 @@ struct RogueClassDirectiveTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -3669,6 +3671,7 @@ struct RogueClassStructuralDirectiveTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -3676,6 +3679,7 @@ struct RogueClassEOLTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -3683,6 +3687,7 @@ struct RogueClassStructureTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -3690,6 +3695,7 @@ struct RogueClassNativeCodeTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -3697,6 +3703,7 @@ struct RogueClassModifyAndAssignTokenType : RogueObject
 {
   // PROPERTIES
   RogueString* name;
+  RogueLogical is_end_command;
 
 };
 
@@ -4226,6 +4233,7 @@ RogueInt32 RogueCharacter__to_number__Int32( RogueCharacter THIS, RogueInt32 bas
 RogueString* RogueString__after__Int32( RogueString* THIS, RogueInt32 index_0 );
 RogueString* RogueString__before__Int32( RogueString* THIS, RogueInt32 index_0 );
 RogueString* RogueString__after_any__Character( RogueString* THIS, RogueCharacter ch_0 );
+RogueString* RogueString__after_any__String( RogueString* THIS, RogueString* st_0 );
 RogueString* RogueString__after_first__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueString* RogueString__after_first__String( RogueString* THIS, RogueString* st_0 );
 RogueString* RogueString__after_last__Character( RogueString* THIS, RogueCharacter ch_0 );
@@ -4394,6 +4402,7 @@ RogueClassTemplate* RogueTemplate__init__Token_String_Int32( RogueClassTemplate*
 RogueClassTypeParameter* RogueTemplate__add_type_parameter__Token_String( RogueClassTemplate* THIS, RogueClassToken* p_t_0, RogueString* p_name_1 );
 RogueInt32 Rogue_Template__element_type( RogueClassTemplate* THIS );
 void RogueTemplate__instantiate__Type_Scope( RogueClassTemplate* THIS, RogueClassType* type_0, RogueClassScope* scope_1 );
+RogueToken_List* RogueTemplate__add_augmented_tokens__Type_String_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueString* augment_name_1, RogueToken_List* augmented_tokens_2 );
 void RogueTemplate__instantiate_list__Type_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1 );
 void RogueTemplate__instantiate_optional__Type_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1 );
 void RogueTemplate__instantiate_parameterized_type__Type_Token_List_Scope( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1, RogueClassScope* scope_2 );
@@ -4745,6 +4754,7 @@ RogueClassToken* RogueTokenType__create_token__Token_String( RogueClassTokenType
 RogueLogical RogueTokenType__is_directive( RogueClassTokenType* THIS );
 RogueLogical RogueTokenType__is_op_with_assign( RogueClassTokenType* THIS );
 RogueLogical RogueTokenType__is_structure( RogueClassTokenType* THIS );
+RogueClassTokenType* RogueTokenType__mark_end_command( RogueClassTokenType* THIS );
 RogueString* RogueTokenType__quoted_name( RogueClassTokenType* THIS );
 RogueString* RogueTokenType__to_String__Token( RogueClassTokenType* THIS, RogueClassToken* t_0 );
 RogueClassTokenType* RogueTokenType__init_object( RogueClassTokenType* THIS );
