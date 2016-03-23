@@ -1978,7 +1978,12 @@ class CmdCreateCompound : Cmd
       of_type.organize(scope)
       if (args is null) args = CmdArgs()
       while (args.count < of_type.property_list.count)
-        args.add( of_type.property_list[args.count].type.create_default_value(t) )
+        local p = of_type.property_list[args.count]
+        if (p.initial_value)
+          args.add( p.initial_value.clone.resolve(scope) )
+        else
+          args.add( p.type.create_default_value(t) )
+        endIf
       endWhile
       args.resolve( scope )
       return this
@@ -2896,16 +2901,8 @@ class CmdComparison : CmdBinary
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       resolved = true
 
-      if (left_type.is_compound or right_type.is_compound)
-        local result = resolve_for_reference( scope, left_type, right_type, false )
-        if (result) return result
-
-        if (left_type is right_type) return this
-        throw t.error( "Incompatible types for comparison: $ and $." (left_type,right_type) )
-
-      elseIf (left_type.is_reference or right_type.is_reference)
+      if (left_type.is_compound or right_type.is_compound or left_type.is_reference or right_type.is_reference)
         return resolve_for_reference( scope, left_type, right_type, true )
-
       endIf
 
       local common_type = must_find_common_type( left_type, right_type )

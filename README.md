@@ -28,6 +28,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.43 - March 23, 2016
+- Fixed additional PROPERTIES in compounds to be initialized correctly.
+- Compounds now generate an appropriate error message when operator methods are required but undefined (such as `operator==`).
+
 ###v1.0.42 - March 23, 2016
 - Fixed runtime instanceOf to return `false` instead of `true` for null references.
 - Compounds can now be declared without properties.
