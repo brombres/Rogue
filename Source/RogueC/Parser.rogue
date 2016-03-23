@@ -407,12 +407,14 @@ class Parser
     method parse_type_def( this_type )
       local t = peek
 
+      local compound_has_create = false
       if (consume(TokenType.symbol_open_paren))
         # ( auto_property[=value][:Type, ... )
         consume_eols
         if (not consume(TokenType.symbol_close_paren))
           local m : Method
           if (this_type.is_compound)
+            compound_has_create = true
             m = this_type.add_global_method( t, "create" )
             m.attributes.add( Attribute.is_generated )
           else
@@ -464,6 +466,12 @@ class Parser
         endIf
       endIf
 
+      if (this_type.is_compound and not compound_has_create)
+        local m = this_type.add_global_method( t, "create" )
+        m.attributes.add( Attribute.is_generated )
+        m.return_type = this_type
+      endIf
+
       if (consume(TokenType.symbol_colon))
         # : BaseType1, BaseType2, ...
         local first = true
@@ -479,7 +487,6 @@ class Parser
       consume_eols
 
       if (reader.has_another)
-@trace this_type.name
         throw peek.error( "Syntax error: unexpected $." (peek.quoted_name) )
       endIf
 

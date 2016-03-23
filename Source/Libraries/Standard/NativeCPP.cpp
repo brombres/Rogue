@@ -202,7 +202,10 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
 {
   RogueType* this_type;
 
-  if ( !THIS ) return true;
+  if ( !THIS )
+  {
+    return false;
+  }
 
   this_type = THIS->type;
   if (this_type == ancestor_type)

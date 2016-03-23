@@ -28,7 +28,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.41 - March 21, 2016
+###v1.0.42 - March 23, 2016
+- Fixed runtime instanceOf to return `false` instead of `true` for null references.
+- Compounds can now be declared without properties.
+
+###v1.0.41 - March 22, 2016
 - Routines can now be overloaded.
 - Augments now work correctly again - augments to all specialized types (`Table`) and to specific specialized types (`Table<<String,Int32>>`) are now applied correctly.
 - Fixed mysterious "unexpected end of line" error relating to augments - augments use special tokens indicating the beginning of augment code.  Those tokens were labeled "end of line" (for some reason) and their application was slightly messed up.
