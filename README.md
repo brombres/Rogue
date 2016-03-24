@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.43 - March 23, 2016
+- During call resolution, candidate methods not containing any given named args as parameters are discarded early.
 - Fixed additional PROPERTIES in compounds to be initialized correctly.
 - Compounds now generate an appropriate error message when operator methods are required but undefined (such as `operator==`).
 

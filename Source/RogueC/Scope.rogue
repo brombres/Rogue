@@ -278,6 +278,26 @@ class Scope
         if (m.accepts_arg_count(arg_count)) candidates.compatible.add( m )
       endForEach
       if (not candidates.update_matches) return null
+      
+      if (access.flag_args)
+        # Throw out any method that does not have one of the supplied named parameters
+        forEach (m in candidates.available)
+          contingent
+            forEach (arg in access.flag_args)
+              block
+                forEach (param in m.parameters)
+                  if (param.original_name == arg.name)
+                    escapeBlock
+                  endIf
+                endForEach
+                necessary (false)  # failed to find named arg
+              endBlock
+            endForEach
+            candidates.compatible.add( m )
+          endContingent
+        endForEach
+        if (not candidates.update_matches) return null
+      endIf
 
       if (arg_count)
         # Exact arg type check

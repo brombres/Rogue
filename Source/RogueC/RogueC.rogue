@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.43.0"
+$define RELEASE_VERSION "1.0.43.1"
 $define RELEASE_DATE    "March 23, 2016"
 
 $include "Attributes.rogue"
