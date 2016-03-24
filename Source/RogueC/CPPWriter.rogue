@@ -1403,7 +1403,6 @@ augment Type
           endIf
         endIf
 
-        #{
         if (not is_aspect)
           # Default operator== and operator!=
           writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
@@ -1437,7 +1436,6 @@ augment Type
                           |
 
         endIf
-        }#
 
       endIf
 

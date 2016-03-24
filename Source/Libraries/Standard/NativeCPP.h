@@ -142,6 +142,16 @@ struct RoguePtr
     return *this;
   }
 
+  bool operator==( RoguePtr<T> other ) const
+  {
+    return (o == other.o);
+  }
+
+  bool operator!=( RoguePtr<T> other ) const
+  {
+    return (o != other.o);
+  }
+
   T& operator->()
   {
     return o;

@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.44 - March 24, 2016
+- Restored default `==` and `!=` functionality to compounds.  No operator methods are required for equivalence comparisons.
+
 ###v1.0.43 - March 23, 2016
 - During call resolution, candidate methods not containing any given named args as parameters are discarded early.
 - Fixed additional PROPERTIES in compounds to be initialized correctly.
