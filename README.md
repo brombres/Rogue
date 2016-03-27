@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.45 - March 26, 2016
+- Fixed `Table` crash when `remove()` is called with a key that hashes to an unused bin.
+
 ###v1.0.44 - March 24, 2016
 - Restored default `==` and `!=` functionality to compounds.  No operator methods are required for equivalence comparisons.
 

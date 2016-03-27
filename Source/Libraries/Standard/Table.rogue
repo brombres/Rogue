@@ -67,6 +67,11 @@ class Table<<$KeyType,$ValueType>>
       local index = hash & bin_mask
       local entry = bins[ index ]
 
+      if (not entry)
+        local default_zero_value : $ValueType
+        return default_zero_value
+      endIf
+
       keys.remove( key )
 
       if (entry.hash == hash and entry.key == key)
