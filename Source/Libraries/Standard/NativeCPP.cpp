@@ -280,7 +280,7 @@ RogueString* RogueString_create_with_count( int count )
 {
   if (count < 0) count = 0;
 
-  int total_size = sizeof(RogueString) + (count * sizeof(RogueCharacter));
+  int total_size = sizeof(RogueString) + ((count+1) * sizeof(RogueCharacter));
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
   st->count = count;
@@ -293,10 +293,11 @@ RogueString* RogueString_create_from_c_string( const char* c_string, int count )
 {
   if (count == -1) count = (int) strlen( c_string );
 
-  RogueInt32 decoded_count = RogueString_decoded_utf8_count( c_string, count );
-
-  RogueString* st = RogueString_create_with_count( decoded_count );
-  RogueString_decode_utf8( c_string, count, st->characters );
+  RogueString* st = RogueString_create_with_count( count );
+  for (int i=0; i<count; ++i)
+  {
+    st->characters[i] = (RogueCharacter) c_string[i];
+  }
 
   return RogueString_update_hash_code( st );
 }
@@ -323,95 +324,6 @@ void RogueString_print_string( RogueString* st )
   }
 }
 
-void RogueString_decode_utf8( const char* utf8_data, RogueInt32 utf8_count, RogueCharacter* dest_buffer )
-{
-  RogueByte*      src  = (RogueByte*)(utf8_data - 1);
-  RogueCharacter* dest = dest_buffer - 1;
-
-  int remaining_count = utf8_count;
-  while (--remaining_count >= 0)
-  {
-    int ch = *(++src);
-    if (ch >= 0x80)
-    {
-      if ((ch & 0xe0) == 0xc0)
-      {
-        // 110x xxxx  10xx xxxx
-        ch = ((ch & 0x1f) << 6) | (*(++src) & 0x3f);
-        --remaining_count;
-      }
-      else if ((ch & 0xf0) == 0xe0)
-      {
-        // 1110 xxxx  10xx xxxx  10xx xxxx
-        ch = ((ch & 0xf) << 6) | (*(++src) & 0x3f);
-        ch = (ch << 6) | (*(++src) & 0x3f);
-        remaining_count -= 2;
-      }
-      else
-      {
-        // 11110xxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
-        if (remaining_count >= 3)
-        {
-          ch = ((ch & 7) << 18) | ((src[1] & 0x3f) << 12);
-          ch |= (src[2] & 0x3f) << 6;
-          ch |= (src[3] & 0x3f);
-          src += 3;
-          remaining_count -= 3;
-        }
-        if (ch >= 0x10000)
-        {
-          // write surrogate pair
-          ch -= 0x10000;
-          dest[1] = (RogueCharacter) (0xd800 + ((ch >> 10) & 0x3ff));
-          dest[2] = (RogueCharacter) (0xdc00 + (ch & 0x3ff));
-          dest += 2;
-          continue;
-        }
-        // else fall through and write a regular character
-      }
-    }
-    *(++dest) = (RogueCharacter) ch;
-  }
-}
-
-RogueInt32 RogueString_decoded_utf8_count( const char* utf8_data, RogueInt32 utf8_count )
-{
-  if (utf8_count == -1) utf8_count = (int) strlen( utf8_data );
-
-  const char* cur   = utf8_data - 1;
-  const char* limit = utf8_data + utf8_count;
-
-  int result_count = 0;
-  while (++cur < limit)
-  {
-    ++result_count;
-    int ch = *((unsigned char*)cur);
-    if (ch >= 0x80)
-    {
-      if ((ch & 0xe0) == 0xc0)      ++cur;
-      else if ((ch & 0xf0) == 0xe0) cur += 2;
-      else
-      {
-        if (cur+3 < limit)
-        {
-          // This 4-byte UTF-8 value will encode to either one or two characters.
-          int low = ((unsigned char*)cur)[1];
-          cur += 3;
-
-          if ((ch & 7) || (low & 0x30))
-          {
-            // Decoded value is >= 0x10000 - will be written as a surrogate pair
-            ++result_count;
-          }
-          //else Decoded value is <= 0xffff - will be written normally
-        }
-      }
-    }
-  }
-
-  return result_count;
-}
-
 void RogueString_print_characters( RogueCharacter* characters, int count )
 {
   if (characters)
@@ -432,26 +344,20 @@ void RogueString_print_characters( RogueCharacter* characters, int count )
         putchar( ((ch >> 6) & 0x1f) | 0xc0 );
         putchar( (ch & 0x3f) | 0x80 );
       }
-      else if (ch >= 0xd800 && ch <= 0xdbff && --count >= 0)
-      {
-        // 'ch' is the high surrogate beginning of a surrogate pair.
-        // Together with the next 16-bit 'low' value, the pair forms
-        // a single 21 bit value between 0x10000 and 0x10FFFF.
-        int low = *(++src);
-        if (low >= 0xdc00 and low <= 0xdfff)
-        {
-          int value = 0x10000 + (((ch - 0xd800)<<10) | (low-0xdc00));
-          putchar( 0xf0 | ((value>>18) & 7) );
-          putchar( 0x80 | ((value>>12) & 0x3f) );
-          putchar( 0x80 | ((value>>6)  & 0x3f) );
-          putchar( (value & 0x3f) | 0x80 );
-        }
-      }
-      else
+      else if (ch <= 0xFFFF)
       {
         // %1110xxxx 10xxxxxx 10xxxxxx
         putchar( ((ch >> 12) & 15) | 0xe0 );
         putchar( ((ch >> 6) & 0x3f) | 0x80 );
+        putchar( (ch & 0x3f) | 0x80 );
+      }
+      else
+      {
+        // Assume 21-bit
+        // %11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+        putchar( 0xf0 | ((ch>>18) & 7) );
+        putchar( 0x80 | ((ch>>12) & 0x3f) );
+        putchar( 0x80 | ((ch>>6)  & 0x3f) );
         putchar( (ch & 0x3f) | 0x80 );
       }
     }
