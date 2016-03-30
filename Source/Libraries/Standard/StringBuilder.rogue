@@ -3,16 +3,16 @@ class StringBuilder [requisite]
     work_bytes = Byte[]
 
   PROPERTIES
-    characters   : Character[]
-    indent       : Int32
-    at_newline   = true
+    utf8       : Byte[]
+    indent     : Int32
+    at_newline = true
 
   METHODS
     method init [requisite]
       init( 40 )
 
     method init( initial_capacity:Int32 )
-      characters = Character[]( initial_capacity )
+      utf8 = Byte[]( initial_capacity )
 
     method init( initial_content:String )
       if (initial_content is null) initial_content = "null"
@@ -22,10 +22,10 @@ class StringBuilder [requisite]
       print( initial_content )
 
     method capacity->Int32 [macro]
-      this.characters.capacity
+      this.utf8.capacity
 
     method clear->this [requisite]
-      characters.clear
+      utf8.clear
       at_newline = true
       return this
 
@@ -35,10 +35,10 @@ class StringBuilder [requisite]
       return StringConsolidationTable[ this ]
 
     method count->Int32 [macro]
-      this.characters.count
+      this.utf8.count
 
     method get( index:Int32 )->Character [macro]
-      this.characters[ index ]
+      this.utf8[ index ]
 
     method hash_code->Int32
       local code = 0
@@ -48,24 +48,24 @@ class StringBuilder [requisite]
       return code
 
     method insert( ch:Character )->this
-      characters.insert( ch )
+      utf8.insert( ch )
       return this
 
     method insert_spaces( index=0:Int32, spaces=2:Int32, character=' ':Character )->this
       if (spaces > 0 and index >= 0 and index < count)
-        characters.shift( index, null, spaces, character )
+        utf8.shift( index, null, spaces, character->Byte )
       endIf
       return this
 
     method locate( ch:Character )->Int32?
       forEach (i of this)
-        if (characters[i] == ch) return i
+        if (utf8[i] == ch) return i
       endForEach
       return null
 
     method locate_last( ch:Character )->Int32?
       forEach (i of this step -1)
-        if (characters[i] == ch) return i
+        if (utf8[i] == ch) return i
       endForEach
       return null
 
@@ -75,14 +75,14 @@ class StringBuilder [requisite]
     method operator==( value:String )->Logical
       if (count != value.count) return false
       forEach (i of this)
-        if (characters[i] != value[i]) return false
+        if (utf8[i] != value[i]) return false
       endForEach
       return true
 
     method operator==( value:StringBuilder )->Logical
       if (count != value.count) return false
       forEach (i of this)
-        if (characters[i] != value[i]) return false
+        if (utf8[i] != value[i]) return false
       endForEach
       return true
 
@@ -92,7 +92,7 @@ class StringBuilder [requisite]
     method print( value:Character )->this
       if (value == '\n')    at_newline = true
       elseIf (needs_indent) print_indent
-      characters.add( value )
+      utf8.add( value )
       return this
 
     method print( value:Real32 )->this [macro]
@@ -197,7 +197,7 @@ class StringBuilder [requisite]
         if (indent)
           forEach (ch in value) print( ch )
         else
-          forEach (ch in value) characters.add( ch )
+          forEach (ch in value) utf8.add( ch )
           if (value.count and value.last == '\n') at_newline = true
         endIf
         return this
@@ -217,7 +217,7 @@ class StringBuilder [requisite]
 
     method print_indent
       if (not needs_indent or indent == 0) return
-      forEach (i in 1..indent) characters.add( ' ' )
+      forEach (i in 1..indent) utf8.add( ' ' )
       at_newline = false
 
     method print_to_work_bytes( value:Real64, decimal_places:Int32 )->this
@@ -291,7 +291,7 @@ class StringBuilder [requisite]
       return print_character32( value ).print( '\n' )
 
     method reserve( additional_count:Int32 )->this [requisite]
-      characters.reserve( additional_count )
+      utf8.reserve( additional_count )
       return this
 
     method round_off_work_bytes
@@ -325,10 +325,10 @@ class StringBuilder [requisite]
       return whole + decimal / 10.0^decimal_count
 
     method set( index:Int32, ch:Character )->this
-      characters[index] = ch
+      utf8[index] = ch
       return this
 
     method to->String
-      return String( characters )
+      return String( utf8 )
 endClass
 

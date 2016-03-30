@@ -41,3 +41,5 @@ $endIf
 # Ensure String[] exists so that command line arguments may be set by native code.
 $requisite String[].add(String)
 
+$requisite Character[]
+

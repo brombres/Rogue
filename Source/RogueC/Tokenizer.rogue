@@ -41,7 +41,7 @@ class Tokenizer
     method add_new_string_or_character_token_from_buffer( terminator:Character )->Logical
       # We have a string in 'buffer' already; convert it to a character if it has count 1.
       if (buffer.count == 1 and terminator == '\'')
-        return add_new_token( TokenType.literal_character, buffer[0] )
+        return add_new_token( TokenType.literal_character, buffer[0]->Character )
       else
         return add_new_token( TokenType.literal_string, buffer->String )
       endIf

@@ -138,22 +138,18 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 bool RogueType_name_equals( RogueType* THIS, const char* name )
 {
   // For debugging purposes
-  char buffer[256];
   RogueString* st = Rogue_literal_strings[ THIS->name_index ];
   if ( !st ) return false;
 
-  RogueString_to_c_string( st, buffer, 256 );
-  return (0 == strcmp(buffer,name));
+  return (0 == strcmp((char*)st->utf8,name));
 }
 
 void RogueType_print_name( RogueType* THIS )
 {
-  char buffer[256];
   RogueString* st = Rogue_literal_strings[ THIS->name_index ];
   if (st)
   {
-    RogueString_to_c_string( st, buffer, 256 );
-    printf( "%s", buffer );
+    printf( "%s", st->utf8 );
   }
 }
 
@@ -280,7 +276,7 @@ RogueString* RogueString_create_with_count( int count )
 {
   if (count < 0) count = 0;
 
-  int total_size = sizeof(RogueString) + ((count+1) * sizeof(RogueCharacter));
+  int total_size = sizeof(RogueString) + (count+1);
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
   st->count = count;
@@ -291,14 +287,15 @@ RogueString* RogueString_create_with_count( int count )
 
 RogueString* RogueString_create_from_c_string( const char* c_string, int count )
 {
-  if (count == -1) count = (int) strlen( c_string );
+  return RogueString_create_from_utf8( c_string, count );
+}
+
+RogueString* RogueString_create_from_utf8( const char* utf8, int count )
+{
+  if (count == -1) count = (int) strlen( utf8 );
 
   RogueString* st = RogueString_create_with_count( count );
-  for (int i=0; i<count; ++i)
-  {
-    st->characters[i] = (RogueCharacter) c_string[i];
-  }
-
+  memcpy( st->utf8, utf8, count );
   return RogueString_update_hash_code( st );
 }
 
@@ -306,9 +303,50 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
 {
   if ( !characters ) return RogueString_create_with_count(0);
 
+  RogueCharacter* data = characters->data->characters;
   int count = characters->count;
-  RogueString* result = RogueString_create_with_count( characters->count );
-  memcpy( result->characters, characters->data->characters, count*sizeof(RogueCharacter) );
+  int utf8_count = 0;
+  for (int i=count; --i>=0; )
+  {
+    RogueCharacter ch = data[i];
+    if (ch <= 0x7F)         ++utf8_count;
+    else if (ch <= 0x7FF)   utf8_count += 2;
+    else if (ch <= 0xFFFF)  utf8_count += 3;
+    else                    utf8_count += 4;
+  }
+
+  RogueString* result = RogueString_create_with_count( utf8_count );
+  RogueByte*   dest = result->utf8;
+  for (int i=0; i<count; ++i)
+  {
+    RogueCharacter ch = data[i];
+    if (ch <= 0x7F)
+    {
+      *(dest++) = (RogueByte) ch;
+    }
+    else if (ch <= 0x7FF)
+    {
+      dest[0] = (RogueByte) (0xC0 | ((ch >> 6) & 0x1F));
+      dest[1] = (RogueByte) (0x80 | (ch & 0x3F));
+      dest += 2;
+    }
+    else if (ch <= 0xFFFF)
+    {
+      dest[0] = (RogueByte) (0xE0 | ((ch >> 12) & 0xF));
+      dest[1] = (RogueByte) (0x80 | ((ch >> 6) & 0x3F));
+      dest[2] = (RogueByte) (0x80 | (ch & 0x3F));
+      dest += 3;
+    }
+    else
+    {
+      dest[0] = (RogueByte) (0xF0 | ((ch >> 18) & 0x7));
+      dest[1] = (RogueByte) (0x80 | ((ch >> 12) & 0x3F));
+      dest[2] = (RogueByte) (0x80 | ((ch >> 6) & 0x3F));
+      dest[3] = (RogueByte) (0x80 | (ch & 0x3F));
+      dest += 4;
+    }
+  }
+
   return RogueString_update_hash_code( result );
 }
 
@@ -316,7 +354,7 @@ void RogueString_print_string( RogueString* st )
 {
   if (st)
   {
-    RogueString_print_characters( st->characters, st->count );
+    RogueString_print_utf8( st->utf8, st->count );
   }
   else
   {
@@ -368,28 +406,21 @@ void RogueString_print_characters( RogueCharacter* characters, int count )
   }
 }
 
-bool RogueString_to_c_string( RogueString* THIS, char* buffer, int buffer_size )
+void RogueString_print_utf8( RogueByte* utf8, int count )
 {
-  if (THIS->count + 1 > buffer_size) return false;
-
-  RogueCharacter* src = THIS->characters - 1;
-  char* dest = buffer - 1;
-  int n = THIS->count;
-
-  while (--n >= 0)
+  --utf8;
+  while (--count >= 0)
   {
-    *(++dest) = (char) (*(++src));
+    putchar( *(++utf8) );
   }
-  *(++dest) = 0;
-
-  return true;
 }
+
 
 RogueString* RogueString_update_hash_code( RogueString* THIS )
 {
   int code = 0;
   int len = THIS->count;
-  RogueCharacter* src = THIS->characters - 1;
+  RogueByte* src = THIS->utf8 - 1;
   while (--len >= 0)
   {
     code = ((code<<3) - code) + *(++src);

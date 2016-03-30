@@ -26,7 +26,7 @@ class PrintWriterAspect<<$WriterType>> [aspect]
   METHODS
     method flush->$WriterType
       if (printwriter_output_buffer.count)
-        write( printwriter_output_buffer.characters )
+        write( printwriter_output_buffer.utf8 )
         printwriter_output_buffer.clear
       endIf
       return this

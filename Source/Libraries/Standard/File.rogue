@@ -77,15 +77,12 @@ class File
 
       native @|#if defined(_WIN32)
               |{
-              |  char c_filepath[ PATH_MAX ];
-              |  RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
-              |
               |  char long_name[PATH_MAX+4];
               |  char full_name[PATH_MAX+4];
               |
-              |  if (GetInt64PathName(c_filepath, long_name, PATH_MAX+4) == 0)
+              |  if (GetInt64PathName((char*)$filepath->utf8, long_name, PATH_MAX+4) == 0)
               |  {
-              |    strcpy_s( long_name, PATH_MAX+4, c_filepath );
+              |    strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->utf8 );
               |  }
               |
               |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
@@ -102,7 +99,11 @@ class File
               |  bool is_folder;
               |
               |  is_folder = RogueFile__is_folder__String( $filepath );
-              |  RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
+              |
+              |  int len = $filepath->count;
+              |  if (len >= PATH_MAX) len = PATH_MAX - 1;
+              |  memcpy( c_filepath, (char*)$filepath->utf8, len );
+              |  c_filepath[len] = 0;
               |
               |  // A way to get back to the starting folder when finished.
               |  original_dir_fd = open( ".", O_RDONLY );
@@ -156,8 +157,6 @@ class File
       # Creates the specified folder along with intermediate folders
       # if necessary.  Returns 'true' on success or if the filepath
       # already exists as a folder.  Returns 'false' on failure to
-      native "char c_filepath[PATH_MAX];"
-
       filepath = File.absolute_filepath( filepath )
 
       # create or if the filepath already exists but is not a folder.
@@ -169,16 +168,12 @@ class File
       if (not create_folder(parent)) return false
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
-      native @|RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
-              |return (0 == mkdir(c_filepath, 0777));
+      native @|return (0 == mkdir((char*)$filepath->utf8, 0777));
 
     method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
               |
-              |char c_filepath[ PATH_MAX ];
-              |RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
-              |
-              |FILE* fp = fopen( c_filepath, "rb" );
+              |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !fp ) return false;
               |
               |fclose( fp );
@@ -196,14 +191,11 @@ class File
     method is_folder( filepath:String )->Logical [requisite]
       native @|if ( !$filepath ) return false;
               |
-              |char c_filepath[ PATH_MAX ];
-              |RogueString_to_c_string( $filepath, c_filepath, PATH_MAX );
-              |
               |#if defined(_WIN32)
               |  char filepath_copy[PATH_MAX];
-              |  strcpy( filepath_copy, c_filepath );
+              |  strcpy( filepath_copy, (char*)$filepath->utf8 );
               |
-              |  int path_len = strlen( c_filepath );
+              |  int path_len = $filepath->count;
               |  int i = strlen(filepath_copy)-1;
               |  while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
               |
@@ -227,7 +219,7 @@ class File
               |  return 0;
               |
               |#else
-              |  DIR* dir = opendir( c_filepath );
+              |  DIR* dir = opendir( (char*)$filepath->utf8 );
               |  if ( !dir ) return 0;
               |
               |  closedir( dir );
@@ -256,11 +248,8 @@ class File
       native @|{
               |  DIR* dir;
               |  struct dirent* entry;
-              |  char c_filepath[ PATH_MAX ];
               |
-              |  RogueString_to_c_string( $native_folder, c_filepath, sizeof(c_filepath) );
-              |
-              |  dir = opendir( c_filepath );
+              |  dir = opendir( $native_folder->utf8 );
               |  if (dir)
               |  {
               |    entry = readdir( dir );
@@ -353,10 +342,7 @@ class File
     method size( filepath:String )->Int32
       native @|if ( !$filepath ) return 0;
               |
-              |char c_filepath[ PATH_MAX ];
-              |RogueString_to_c_string( $filepath, c_filepath, sizeof(c_filepath) );
-              |
-              |FILE* fp = fopen( c_filepath, "rb" );
+              |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !fp ) return 0;
               |
               |fseek( fp, 0, SEEK_END );
@@ -455,10 +441,7 @@ class FileReader : Reader<<Character>>
     method open( filepath )->Logical
       close
 
-      native @|char path[ PATH_MAX ];
-              |RogueString_to_c_string( $filepath, path, PATH_MAX );
-              |
-              |$this->fp = fopen( path, "rb" );
+      native @|$this->fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ($this->fp)
               |{
               |  fseek( $this->fp, 0, SEEK_END );
@@ -552,9 +535,7 @@ class FileWriter : Writer<<Character>>
       close
       error = false
 
-      native @|char path[ PATH_MAX ];
-              |RogueString_to_c_string( $filepath, path, PATH_MAX );
-              |$this->fp = fopen( path, "wb" );
+      native @|$this->fp = fopen( (char*)$filepath->utf8, "wb" );
               |$this->error = !($this->fp);
               |
               |return !$this->error;

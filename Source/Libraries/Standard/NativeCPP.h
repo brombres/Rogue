@@ -369,18 +369,19 @@ void RogueArray_trace( void* obj );
 //-----------------------------------------------------------------------------
 struct RogueString : RogueObject
 {
-  RogueInt32     count;
-  RogueInt32     hash_code;
-  RogueCharacter characters[];
+  RogueInt32 count;
+  RogueInt32 hash_code;
+  RogueByte  utf8[];
 };
 
 RogueString* RogueString_create_with_count( int count );
 RogueString* RogueString_create_from_c_string( const char* c_string, int count=-1 );
+RogueString* RogueString_create_from_utf8( const char* utf8, int count=-1 );
 RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
+void         RogueString_print_utf8( RogueByte* utf8, int count );
 
-bool         RogueString_to_c_string( RogueString* THIS, char* buffer, int buffer_size );
 RogueString* RogueString_update_hash_code( RogueString* THIS );
 
 

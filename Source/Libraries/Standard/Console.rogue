@@ -27,6 +27,9 @@ class Console : Writer<<Character>> [singleton]
       return this
 
     $if ("C++")
+    method native_print( utf8:Byte[] ) [macro]
+      native 'RogueString_print_utf8( $utf8->data->bytes, $utf8->count )'
+
     method native_print( characters:Character[] ) [macro]
       native 'RogueString_print_characters( $characters->data->characters, $characters->count )'
 
@@ -34,7 +37,7 @@ class Console : Writer<<Character>> [singleton]
       native 'RogueString_print_string( $value )'
 
     method native_print( value:StringBuilder ) [macro]
-      native 'RogueString_print_characters( $value->characters->data->characters, $value->characters->count )'
+      native 'RogueString_print_utf8( $value->utf8->data->bytes, $value->utf8->count )'
     $endIf
 endClass
 

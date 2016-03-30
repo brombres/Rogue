@@ -696,7 +696,7 @@ endIf
 
       forEach (i of Program.literal_string_list)
         writer.print(   "Rogue_literal_strings[" ).print(i)
-        writer.print("] = (RogueString*) RogueObject_retain( RogueString_create_from_c_string( ")
+        writer.print("] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ")
         local st = Program.literal_string_list[i].to_utf8
         local encoded_count = writer.print_literal_string( st )
         writer.print( ", " ).print( st.count )
@@ -726,13 +726,13 @@ endIf
       writer.println
 
       # Copy command line args to System class
-      writer.println @|RogueSystem_executable_filepath = RogueString_create_from_c_string(
+      writer.println @|RogueSystem_executable_filepath = RogueString_create_from_utf8(
                       |    Rogue_argc ? Rogue_argv[0] : "Rogue", -1 );
                       |
                       |for (int i=1; i<Rogue_argc; ++i)
                       |{
                       |  RogueString_List__add__String( RogueSystem_command_line_arguments,
-                      |      RogueString_create_from_c_string( Rogue_argv[i], -1 ) );
+                      |      RogueString_create_from_utf8( Rogue_argv[i], -1 ) );
                       |}
       writer.println
 

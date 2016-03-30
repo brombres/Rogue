@@ -1,10 +1,13 @@
-class String [foreign]
+class String
   GLOBAL METHODS
+    method create( utf8:Byte[] )->String [macro]
+      $if ("C++") native 'RogueString_create_from_utf8( (char*)$utf8->data->bytes, $utf8->count )'
+
     method create( characters:Character[] )->String [macro]
       $if ("C++") native 'RogueString_create_from_characters( $characters )'
 
     method create( characters:StringBuilder )->String
-      return create( characters.characters )
+      return create( characters.utf8 )
 
   METHODS
     method after( index:Int32 )->String
@@ -99,8 +102,8 @@ class String [foreign]
         native @|RogueInt32 other_count = $substring->count;
                 |if ($at_index < 0 || $at_index + other_count > $this->count) return false;
                 |
-                |RogueCharacter* this_data  = $this->characters;
-                |RogueCharacter* other_data = $substring->characters;
+                |RogueByte* this_data  = $this->utf8;
+                |RogueByte* other_data = $substring->utf8;
                 |
                 |int i = -1;
                 |int i2 = other_count - 1;
@@ -185,13 +188,13 @@ class String [foreign]
                 |RogueString* result = RogueString_create_with_count( new_count );
                 |
                 |// Copy character substring while computing hash code.
-                |RogueCharacter* dest = result->characters - 1;
-                |RogueCharacter* src  = ($this->characters + $i1) - 1;
+                |RogueByte* dest = result->utf8 - 1;
+                |RogueByte* src  = ($this->utf8 + $i1) - 1;
                 |RogueInt32 hash_code = 0;
                 |while (--new_count >= 0)
                 |{
-                |  RogueCharacter ch = *(++src);
-                |  *(++dest) = ch;
+                |  int ch = *(++src);
+                |  *(++dest) = (RogueByte) ch;
                 |  hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
                 |}
                 |
@@ -220,7 +223,7 @@ class String [foreign]
       else          return ""
 
     method get( index:Int32 )->Character [macro]
-      $if ("C++") native '$this->characters[$index]'
+      $if ("C++") native '((RogueCharacter)$this->utf8[$index])'
 
     method hash_code->Int32 [macro]
       $if ("C++") native '$this->hash_code'
@@ -253,9 +256,9 @@ class String [foreign]
 
     method locate( ch:Character, optional_i1=null:Int32? )->Int32?
       $if ("C++")
-        native @|RogueInt32    limit = $this->count;
-                |RogueCharacter* data  = $this->characters;
-                |RogueInt32    i1 = $optional_i1.exists ? ($optional_i1.value-1) : -1;
+        native @|RogueInt32 limit = $this->count;
+                |RogueByte* data  = $this->utf8;
+                |RogueInt32 i1    = $optional_i1.exists ? ($optional_i1.value-1) : -1;
                 |
                 |while (++i1 < limit)
                 |{
@@ -290,8 +293,8 @@ class String [foreign]
 
     method locate_last( ch:Character, starting_index=null:Int32? )->Int32?
       $if ("C++")
-        native @|RogueInt32    limit = $this->count;
-                |RogueCharacter* data  = $this->characters;
+        native @|RogueInt32 limit = $this->count;
+                |RogueByte* data  = $this->utf8;
                 |
                 |int i;
                 |if ($starting_index.exists)
@@ -382,7 +385,7 @@ class String [foreign]
 
     method operator==( value:String )->Logical
       if (this.hash_code != value.hash_code or this.count != value.count) return false
-      return (native("(0==memcmp($this->characters,$value->characters,$this->count*sizeof(RogueCharacter)))")->Logical)
+      return (native("(0==memcmp($this->utf8,$value->utf8,$this->count))")->Logical)
 
     method operator==( value:StringBuilder )->Logical
       return (value == this)  # invoke the existing operator== method on value)
@@ -398,14 +401,14 @@ class String [foreign]
                 |if (limit == other_count)
                 |{
                 |  // Strings are same length
-                |  result = memcmp( $this->characters, $other->characters, limit * sizeof(RogueCharacter) );
+                |  result = memcmp( $this->utf8, $other->utf8, limit );
                 |  if (result == 0) return 0;
                 |}
                 |else
                 |{
                 |  // Strings differ in length.  Compare the part that matches first.
                 |  if (limit > other_count) limit = other_count;
-                |  result = memcmp( $this->characters, $other->characters, limit * sizeof(RogueCharacter) );
+                |  result = memcmp( $this->utf8, $other->utf8, limit );
                 |  if (result == 0)
                 |  {
                 |    // Equal so far - the shorter string comes before the longer one.
@@ -647,36 +650,16 @@ class String [foreign]
 
       return builder->String
 
-    method to->Int32
-      $if ("C++")
-        native @|char buffer[80];
-                |if (RogueString_to_c_string($this,buffer,80))
-                |{
-                |  return (RogueInt32) strtol( buffer, 0, 10 );
-                |}
-                |else
-                |{
-                |  return 0;
-                |}
-      $endIf
+    method to->Int32 [macro]
+      native( "strtol( (char*)$this->utf8, 0, 10 )" )
 
       #{
     method to->Object
       return Boxed<<String>>(this)
       }#
 
-    method to->Real64
-      $if ("C++")
-        native @|char buffer[80];
-                |if (RogueString_to_c_string($this,buffer,80))
-                |{
-                |  return strtod( buffer, 0 );
-                |}
-                |else
-                |{
-                |  return 0;
-                |}
-      $endIf
+    method to->Real64 [macro]
+      native( "strtod( (char*)$this->utf8, 0 )" )
 
     method to->String
       return this
@@ -712,61 +695,7 @@ class String [foreign]
       return result->String
 
     method to_utf8->String
-      # Returns a copy of this string encoded in UTF-8 format where only
-      # the lower 8 bits of each character are used.  Any character
-      # with the unicode range 0..127 is unchanged; characters originally
-      # having a higher unicode value are encoded into a sequence of 2 or 3
-      # consecutive characters.
-
-      # Return this string unchanged if no alterations are required
-      local needs_encoding = false
-      forEach (ch in this)
-        if (ch >= 0x80)
-          needs_encoding = true
-          escapeForEach
-        endIf
-      endForEach
-      if (not needs_encoding) return this
-
-      local result = StringBuilder( count )
-
-      local n = count
-      local i = 0
-      while (i < n)
-        local ch = this[i]
-        ++i
-
-        if (ch < 0x80)
-          # %0xxxxxxx
-          result.print( ch )
-
-        elseIf (ch < 0x800)
-          # %110xxxxx 10xxxxxx
-          result.print( (((ch:>>>:6) & 0x1f) | 0xc0)->Character )
-          result.print( ((ch & 0x3f) | 0x80)->Character )
-
-        elseIf (ch >= 0xd800 and ch <= 0xdbff and i < n)
-          # Start of a surrogate pair
-          local low = this[i]
-          ++i
-          if (low >= 0xdc00 and low <= 0xdfff)
-            local value = 0x10000 + (((ch - 0xd800):<<:10) | (low-0xdc00))
-            result.print( (0xf0 | ((value:>>>:18) & 7))->Character )
-            result.print( (0x80 | ((value:>>>:12) & 0x3f))->Character )
-            result.print( (0x80 | ((value:>>>:6)  & 0x3f))->Character )
-            result.print( ((value & 0x3f) | 0x80)->Character )
-          endIf
-        else
-          # %1110xxxx 10xxxxxx 10xxxxxx
-          result.print( (((ch:>>>:12) & 15) | 0xe0)->Character )
-          result.print( (((ch:>>>:6) & 0x3f) | 0x80)->Character )
-          result.print( ((ch & 0x3f) | 0x80)->Character )
-
-        endIf
-
-      endWhile
-
-      return result->String
+      return this
 
     method trimmed->String
       local i1 = 0

@@ -21,9 +21,7 @@ class System [requisite]
 
     method run( command:String )->Int32
       local return_val = 0
-      native @|char cmd_buffer[4096];
-              |RogueString_to_c_string( $command, cmd_buffer, 4096 );
-              |$return_val = system( cmd_buffer );
+      native @|$return_val = system( (char*)$command->utf8 );
       if (return_val == -1) throw Error("Process was not created")
       return return_val
 
@@ -80,9 +78,7 @@ class SystemEnvironment [compound]
     method get( name:String )->String
       local result : String
 
-      native @|char buffer[128];
-              |RogueString_to_c_string( $name, buffer, 128 );
-              |char* c_result = getenv( buffer );
+      native @|char* c_result = getenv( (char*)$name->utf8 );
               |if (c_result)
               |{
               |  $result = RogueString_create_from_c_string( c_result );
@@ -102,22 +98,9 @@ class SystemEnvironment [compound]
       return result;
 
     method set( name:String, value:String )
-      native @|char name_buffer[128];
-              |RogueString_to_c_string( $name, name_buffer, 128 );
-
       if (value and value.count)
-        value = value.to_utf8
-        if (value.count < 4096)
-          native @|char value_buffer[4096];
-                  |RogueString_to_c_string( $value, value_buffer, 4096 );
-                  |setenv( name_buffer, value_buffer, 1 );
-        else
-          native @|char* value_buffer = new char[ $value->count ];
-                  |RogueString_to_c_string( $value, value_buffer, $value->count+1 );
-                  |setenv( name_buffer, value_buffer, 1 );
-                  |delete value_buffer;
-        endIf
+        native @|setenv( (char*)$name->utf8, (char*)$value->utf8, 1 );
       else
-        native @|unsetenv( name_buffer );
+        native @|unsetenv( (char*)$name->utf8 );
       endIf
 endClass
