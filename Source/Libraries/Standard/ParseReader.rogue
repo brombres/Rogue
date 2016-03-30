@@ -31,7 +31,7 @@ class ParseReader : Reader<<Character>>
       column = 1
 
     method init( file:File, spaces_per_tab=0 )
-      init( file.load_as_string.decode_utf8, spaces_per_tab )
+      init( file.load_as_string, spaces_per_tab )
 
     method init( source:Character[], spaces_per_tab=0 )
       local tab_count = 0

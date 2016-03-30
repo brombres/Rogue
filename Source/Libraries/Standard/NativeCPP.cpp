@@ -280,14 +280,10 @@ RogueString* RogueString_create_with_count( int count )
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
   st->count = count;
+  st->character_count = -1;
   st->hash_code = 0;
 
   return st;
-}
-
-RogueString* RogueString_create_from_c_string( const char* c_string, int count )
-{
-  return RogueString_create_from_utf8( c_string, count );
 }
 
 RogueString* RogueString_create_from_utf8( const char* utf8, int count )
@@ -346,6 +342,8 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
       dest += 4;
     }
   }
+
+  result->character_count = count;
 
   return RogueString_update_hash_code( result );
 }

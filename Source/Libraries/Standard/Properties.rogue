@@ -149,7 +149,7 @@ class PropertyValue
       return null
 
     method save( file:File, formatted=false:Logical )->Logical
-      return file.save( to_json(formatted).to_utf8 )
+      return file.save( to_json(formatted) )
 
     method set( index:Int32, value:Int32 )->PropertyValue [macro]
       this.set( index, PropertyValue(value) )
@@ -445,7 +445,7 @@ class PropertyList : PropertyValue
     GLOBAL METHODS
       method load( file:File )->PropertyList
         if (not file.exists) return PropertyList()
-        return JSON.parse_list( file.load_as_string.decode_utf8 )
+        return JSON.parse_list( file.load_as_string )
 
       method parse( json:String )->PropertyList
         return JSON.parse_list( json )
@@ -532,7 +532,7 @@ class PropertyTable : PropertyValue
     GLOBAL METHODS
       method load( file:File )->PropertyTable
         if (not file.exists) return PropertyTable()
-        return JSON.parse_table( file.load_as_string.decode_utf8 )
+        return JSON.parse_table( file.load_as_string )
 
       method parse( json:String )->PropertyTable
         return JSON.parse_table( json )

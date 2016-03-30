@@ -17,7 +17,7 @@ class StackTrace [requisite]
 
       entries = String[]( count )
       while (native("current!=0")->Logical)
-        entries.add( native("RogueString_create_from_c_string( current->to_c_string() )")->String )
+        entries.add( native("RogueString_create_from_utf8( current->to_c_string() )")->String )
         native "current = current->previous_trace;"
       endWhile
 

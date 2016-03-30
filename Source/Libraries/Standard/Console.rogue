@@ -10,7 +10,7 @@ class Console : Writer<<Character>> [singleton]
               |int len = strlen( st );
               |if (len) st[--len] = 0;
               |
-              |return RogueString_create_from_c_string( st, len );
+              |return RogueString_create_from_utf8( st, len );
 
   METHODS
     method print( characters:Character[] )

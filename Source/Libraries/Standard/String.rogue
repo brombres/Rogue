@@ -81,12 +81,123 @@ class String
       local other_count = other.count
       return (count >= other_count and contains_at(other,0))
 
+    method byte_count_at_byte_index( byte_index:Int32 )->Int32
+      local ch = this[ byte_index ]
+      if (ch <= 0x7F)       return 1
+      elseIf (ch <= 0x7FF)  return 2
+      elseIf (ch <= 0xFFFF) return 3
+      else                  return 4
+
     method capitalized->String
       if (count == 0) return this
       local ch = this[0]
       if (ch < 'a' or ch > 'z') return this
 
       return (ch + ('A'-'a'))->Character + this.from( 1 )
+
+    method character( character_index:Int32 )->Character
+      native @|int count = $this->count;
+              |for (int i=0; i<count; )
+              |{
+              |  RogueCharacter ch;
+              |
+              |  if (--$character_index < 0)
+              |  {
+                   return character_at_byte_index( native("i")->Int32 )
+      native @|  }
+              |
+              |  // Advance past this character
+              |  if ((ch = $this->utf8[i]) & 0x80)
+              |  {
+              |    // %1xxx, assumed to be %11xx xxxx
+              |    if (ch & 0x20)
+              |    {
+              |      if (ch & 0x10) i += 4;  // %1111 0xxx
+              |      else           i += 3;  // %1110 xxxx
+              |    }
+              |    else
+              |    {
+              |      i += 2;  // %110x xxxx
+              |    }
+              |  }
+              |  else
+              |  {
+              |    ++i;  // %0xxx xxxx
+              |  }
+              |}
+              |
+              |return 0;
+
+    method character_at_byte_index( byte_index:Int32 )->Character
+      native @|RogueCharacter ch;
+              |int count = $this->count;
+              |
+              |// We're at the start of the UTF8-encoded character we want to return.
+              |if ((ch = $this->utf8[$byte_index]) & 0x80)
+              |{
+              |  // %1xxx, assumed to be %11xx xxxx
+              |  if (ch & 0x20)
+              |  {
+              |    if (ch & 0x10)
+              |    {
+              |      // %1111 0xxx
+              |      if ($byte_index + 3 >= count) return 0;
+              |      return ((ch & 0x07) << 18)
+              |             | (($this->utf8[$byte_index+1] & 0x3F) << 12)
+              |             | (($this->utf8[$byte_index+2] & 0x3F) << 6)
+              |             | ($this->utf8[$byte_index+3] & 0x3F);
+              |    }
+              |    else
+              |    {
+              |      // %1110 xxxx
+              |      if ($byte_index + 2 >= count) return 0;
+              |      return ((ch & 0x0F) << 12)
+              |             | (($this->utf8[$byte_index+1] & 0x3F) << 6)
+              |             | ($this->utf8[$byte_index+2] & 0x3F);
+              |    }
+              |  }
+              |  else
+              |  {
+              |    // %110x xxxx
+              |    if ($byte_index + 1 >= count) return 0;
+              |    return ((ch & 0x1F) << 6) | ($this->utf8[$byte_index+6] & 0x3F);
+              |  }
+              |}
+              |else
+              |{
+              |  // %0xxx xxxx
+              |  return ch;
+              |}
+
+    method character_count->Int32
+      native @|if ($this->character_count >= 0) return $this->character_count;
+              |
+              |RogueInt32 n = 0;
+              |int count = $this->count;
+              |for (int i=0; i<count; ++n)
+              |{
+              |  RogueCharacter ch;
+              |  if ((ch = $this->utf8[i]) & 0x80)
+              |  {
+              |    // %1xxx, assumed to be %11xx xxxx
+              |    if (ch & 0x20)
+              |    {
+              |      if (ch & 0x10) i += 4;  // %1111 0xxx
+              |      else           i += 3;  // %1110 xxxx
+              |    }
+              |    else
+              |    {
+              |      i += 2;  // %110x xxxx
+              |    }
+              |  }
+              |  else
+              |  {
+              |    ++i;  // %0xxx xxxx
+              |  }
+              |}
+              |
+              |$this->character_count = n;
+              |return n;
 
     method consolidated->String
       return StringConsolidationTable[ this ]
@@ -118,51 +229,6 @@ class String
 
     method count->Int32 [macro]
       $if ("C++") native '$this->count'
-
-    method decode_utf8->String
-      local needs_decoding = false
-      forEach (ch in this)
-        if (ch >= 0x80)
-          needs_decoding = true
-          escapeForEach
-        endIf
-      endForEach
-      if (not needs_decoding) return this
-
-      local buffer = StringBuilder( count )
-      local characters = reader
-      while (characters.has_another)
-        local value = characters.read : Int32
-        if (value <= 0x7f)
-          buffer.print( value->Character )
-        elseIf ((value & 0xe0) == 0xc0)
-          # 110xxxxx 10xxxxxx
-          value = ((value & 0x1f) :<<: 6) | (characters.read & 0x3f)
-          buffer.print( value->Character )
-        elseIf ((value & 0xf0) == 0xe0)
-          # 1110xxxx 10xxxxxx 10xxxxxx
-          value = ((value & 0xf) :<<: 6) | (characters.read & 0x3f)
-          value = (value :<<: 6) | (characters.read & 0x3f)
-          buffer.print( value->Character )
-        else
-          # 11110xxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
-          if (characters.has_another(3))
-            value = ((value & 7) :<<: 18) | ((characters.read & 0x3f) :<<: 12)
-            value |= (characters.read & 0x3f) :<<: 6
-            value |= (characters.read & 0x3f)
-            if (value >= 0x10000)
-              # surrogate pair
-              value -= 0x10000
-              buffer.print( (0xd800 + ((value :>>>: 10) & 0x3ff))->Character )
-              buffer.print( (0xdc00 + (value & 0x3ff))->Character )
-            else
-              buffer.print( value->Character )
-            endIf
-          endIf
-        endIf
-      endWhile
-
-      return buffer->String
 
     method ends_with( ch:Character )->Logical
       return (count > 0 and this[count-1] == ch)
@@ -222,8 +288,8 @@ class String
       if (i.exists) return from( i.value )
       else          return ""
 
-    method get( index:Int32 )->Character [macro]
-      $if ("C++") native '((RogueCharacter)$this->utf8[$index])'
+    method get( byte_index:Int32 )->Character [macro]
+      $if ("C++") native '((RogueCharacter)$this->utf8[$byte_index])'
 
     method hash_code->Int32 [macro]
       $if ("C++") native '$this->hash_code'
@@ -650,13 +716,14 @@ class String
 
       return builder->String
 
+    method to->Character[]
+      return Character[]
+
     method to->Int32 [macro]
       native( "strtol( (char*)$this->utf8, 0, 10 )" )
 
-      #{
     method to->Object
-      return Boxed<<String>>(this)
-      }#
+      return this
 
     method to->Real64 [macro]
       native( "strtod( (char*)$this->utf8, 0 )" )
@@ -693,9 +760,6 @@ class String
         else                         result.print( ch )
       endForEach
       return result->String
-
-    method to_utf8->String
-      return this
 
     method trimmed->String
       local i1 = 0
@@ -774,13 +838,14 @@ endClass
 
 class StringReader : Reader<<Character>>
   PROPERTIES
-    position : Int32
-    count    : Int32
-    string   : String
+    byte_index : Int32
+    position   : Int32
+    count      : Int32
+    string     : String
 
   METHODS
     method init( string )
-      if (string) count = string.count
+      if (string) count = string.character_count
 
     method has_another->Logical
       return (position < count)
@@ -790,20 +855,23 @@ class StringReader : Reader<<Character>>
 
     method peek->Character
       if (position == count) return 0
-      return string[ position ]
+      return string.character_at_byte_index( byte_index )
 
     method read->Character
+      local result = string.character_at_byte_index( byte_index )
+      byte_index += string.byte_count_at_byte_index( byte_index )
       ++position
-      return string[ position - 1 ]
+      return result
 
     method reset->this
       seek( 0 )
       return this
 
     method seek( pos:Int32 )->this
-      count = string.count
       if (pos < 0 or pos > count) return this
       position = pos
+      byte_index = 0
+      forEach (1..pos) byte_index += string.byte_count_at_byte_index( byte_index )
       return this
 endClass
 

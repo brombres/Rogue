@@ -92,7 +92,16 @@ class StringBuilder [requisite]
     method print( value:Character )->this
       if (value == '\n')    at_newline = true
       elseIf (needs_indent) print_indent
-      utf8.add( value )
+      if (value <= 0x7F)
+        utf8.add( value )
+      elseIf (value <= 0x7FF)
+        utf8.add( 0xC0 | (value:>>>:6) ).add( 0x80 | (value & 0x3F) )
+      elseIf (value <= 0xFFFF)
+        utf8.add( 0xE0 | (value:>>>:12) ).add( 0x80 | ((value:>>>:6) & 0x3F) ).add( 0x80 | (value & 0x3F) )
+      else
+        utf8.add( 0xF0 | (value:>>>:18) ).add( 0x80 | ((value:>>>:12) & 0x3F) )
+        utf8.add( 0x80 | ((value:>>>:6) & 0x3F) ).add( 0x80 | (value & 0x3F) )
+      endIf
       return this
 
     method print( value:Real32 )->this [macro]
