@@ -395,7 +395,7 @@ void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 void         RogueString_print_utf8( RogueByte* utf8, int count );
 
-RogueString* RogueString_update_hash_code( RogueString* THIS );
+RogueString* RogueString_validate( RogueString* THIS );
 
 
 //-----------------------------------------------------------------------------
@@ -4224,7 +4224,6 @@ RogueInt32 RogueMath__max__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
 RogueInt32 RogueMath__mod__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
 RogueInt64 RogueMath__mod__Int64_Int64( RogueInt64 a_0, RogueInt64 b_1 );
 RogueReal64 RogueMath__mod__Real64_Real64( RogueReal64 a_0, RogueReal64 b_1 );
-RogueInt32 RogueMath__shift_right__Int32_Int32( RogueInt32 value_0, RogueInt32 bits_1 );
 void RogueSystem__init_class();
 void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
 RogueInt32 RogueSystem__run__String( RogueString* command_0 );
@@ -5820,7 +5819,8 @@ RogueClassRogueError* RogueTokenizer__error__String( RogueClassTokenizer* THIS, 
 RogueClassTokenType* Rogue_Tokenizer__get_symbol_token_type( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__next_is_hex_digit( RogueClassTokenizer* THIS );
 void RogueTokenizer__read_character( RogueClassTokenizer* THIS );
-RogueInt32 RogueTokenizer__read_hex_value__Int32( RogueClassTokenizer* THIS, RogueInt32 digits_0 );
+RogueInt32 RogueTokenizer__read_hex_value__Int32_Logical( RogueClassTokenizer* THIS, RogueInt32 digits_0, RogueLogical variable_length_1 );
+void RogueTokenizer__read_hex_sequence( RogueClassTokenizer* THIS );
 RogueString* RogueTokenizer__read_identifier( RogueClassTokenizer* THIS );
 RogueLogical RogueTokenizer__tokenize_alternate_string__Character( RogueClassTokenizer* THIS, RogueCharacter terminator_0 );
 RogueLogical RogueTokenizer__tokenize_another( RogueClassTokenizer* THIS );

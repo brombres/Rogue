@@ -292,7 +292,7 @@ RogueString* RogueString_create_from_utf8( const char* utf8, int count )
 
   RogueString* st = RogueString_create_with_count( count );
   memcpy( st->utf8, utf8, count );
-  return RogueString_update_hash_code( st );
+  return RogueString_validate( st );
 }
 
 RogueString* RogueString_create_from_characters( RogueCharacter_List* characters )
@@ -345,7 +345,7 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
 
   result->character_count = count;
 
-  return RogueString_update_hash_code( result );
+  return RogueString_validate( result );
 }
 
 void RogueString_print_string( RogueString* st )
@@ -414,8 +414,26 @@ void RogueString_print_utf8( RogueByte* utf8, int count )
 }
 
 
-RogueString* RogueString_update_hash_code( RogueString* THIS )
+RogueString* RogueString_validate( RogueString* THIS )
 {
+  // Trims any invalid UTF-8, counts the number of characters, and sets the hash code
+  /*
+  int character_count = 0;
+  int byte_count = THIS->byte_count;
+  int i;
+  for (i=0; i<byte_count; ++character_count)
+  {
+    int b = THIS->utf8[ i ];
+    if (utf8 & 0x80)
+    {
+    }
+    else
+    {
+      ++i;
+    }
+  }
+  */
+
   int code = 0;
   int len = THIS->byte_count;
   RogueByte* src = THIS->utf8 - 1;

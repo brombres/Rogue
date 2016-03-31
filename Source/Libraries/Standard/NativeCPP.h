@@ -382,7 +382,7 @@ void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 void         RogueString_print_utf8( RogueByte* utf8, int count );
 
-RogueString* RogueString_update_hash_code( RogueString* THIS );
+RogueString* RogueString_validate( RogueString* THIS );
 
 
 //-----------------------------------------------------------------------------

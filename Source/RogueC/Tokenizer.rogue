@@ -466,19 +466,10 @@ class Tokenizer
         elseIf (consume('"')) value = '"'
         elseIf (consume('x')) value = read_hex_value(2)
         elseIf (consume('u')) value = read_hex_value(4)
-        elseIf (consume('s')) value = read_hex_value(6)
-        # supplementary - 6-digit Unicode converted to a surrogate pair if needed
+        elseIf (consume('[')) read_hex_sequence; return
         else throw error( "Invalid escape sequence.  Supported: \\n \\r \\s \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
 
-        if (value < 0x10000)
-          # Standard Unicode
-          buffer.print( value->Character )
-        else
-          # Surrogate pair
-          value -= 0x10000
-          buffer.print( (0xd800 + ((value:>>:10)&0x3ff))->Character )
-          buffer.print( (0xdc00 + (value&0x3ff))->Character )
-        endIf
+        buffer.print( value->Character )
 
       else
         local value = reader.read->Int32
@@ -506,12 +497,13 @@ class Tokenizer
 
       endIf
 
-    method read_hex_value( digits:Int32 )->Int32
+    method read_hex_value( digits=6:Int32, &variable_length )->Int32
       local value = 0
       local i = 1
       while (i <= digits)
         if (not reader.has_another) throw error( digits + "-digit hex value expected; found end of file." )
         if (not next_is_hex_digit)
+          if (variable_length) return value
           local ch = reader.peek
           local error_buffer = StringBuilder()
           error_buffer.print( "Invalid hex digit " )
@@ -525,6 +517,18 @@ class Tokenizer
         ++i
       endWhile
       return value
+
+    method read_hex_sequence
+      local value = 0
+
+      local first = true
+      while (first or consume(','))
+        first = false
+        buffer.print( read_hex_value(&variable_length)->Character )
+      endWhile
+
+      if (consume(']')) return 
+      throw error( "Closing ']' expected." )
 
     method read_identifier->String
       buffer.clear
