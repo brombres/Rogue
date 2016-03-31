@@ -417,22 +417,58 @@ void RogueString_print_utf8( RogueByte* utf8, int count )
 RogueString* RogueString_validate( RogueString* THIS )
 {
   // Trims any invalid UTF-8, counts the number of characters, and sets the hash code
-  /*
+  THIS->is_ascii = 1;  // assumption
+
   int character_count = 0;
   int byte_count = THIS->byte_count;
   int i;
+  RogueByte* utf8 = THIS->utf8;
   for (i=0; i<byte_count; ++character_count)
   {
-    int b = THIS->utf8[ i ];
-    if (utf8 & 0x80)
+    int b = utf8[ i ];
+    if (b & 0x80)
     {
+      THIS->is_ascii = 0;
+      if ( !(b & 0x40) ) break;  // invalid UTF-8
+
+      if (b & 0x20)
+      {
+        if (b & 0x10)
+        {
+          // %11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+          if (b & 0x80) break;
+          if (i + 4 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)
+              || ((utf8[i+3] & 0xC0) != 0x80)) break;
+          i += 4;
+        }
+        else
+        {
+          // %1110xxxx 10xxxxxx 10xxxxxx
+          if (i + 3 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)) break;
+          i += 3;
+        }
+      }
+      else
+      {
+        // %110x xxxx 10xx xxxx
+        if (i + 2 > byte_count || ((utf8[i+1] & 0xC0) != 0x80)) break;
+        i += 2;
+      }
     }
     else
     {
       ++i;
     }
   }
-  */
+
+  if (i != byte_count)
+  {
+    printf( "RogueString validation error - invalid UTF8:\n" );
+    printf( "%s\n", utf8 );
+  }
+
+  THIS->byte_count = i;
+  THIS->character_count = character_count;
 
   int code = 0;
   int len = THIS->byte_count;

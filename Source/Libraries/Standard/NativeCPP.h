@@ -370,7 +370,8 @@ void RogueArray_trace( void* obj );
 struct RogueString : RogueObject
 {
   RogueInt32 byte_count;       // in UTF-8 bytes
-  RogueInt32 character_count;  // in whole characters; -1 until first computed
+  RogueInt32 character_count;  // in whole characters
+  RogueInt32 is_ascii;
   RogueInt32 hash_code;
   RogueByte  utf8[];
 };
