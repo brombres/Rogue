@@ -372,13 +372,13 @@ struct RogueString : RogueObject
   RogueInt32 byte_count;       // in UTF-8 bytes
   RogueInt32 character_count;  // in whole characters
   RogueInt32 is_ascii;
-  RogueInt32 last_byte_offset;
-  RogueInt32 last_character_index;
+  RogueInt32 previous_byte_offset;
+  RogueInt32 previous_character_index;
   RogueInt32 hash_code;
   RogueByte  utf8[];
 };
 
-RogueString* RogueString_create_with_count( int count );
+RogueString* RogueString_create_with_byte_count( int byte_count );
 RogueString* RogueString_create_from_utf8( const char* utf8, int count=-1 );
 RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
 void         RogueString_print_string( RogueString* st );

@@ -272,14 +272,14 @@ void RogueArray_trace( void* obj )
 //-----------------------------------------------------------------------------
 //  RogueString
 //-----------------------------------------------------------------------------
-RogueString* RogueString_create_with_count( int count )
+RogueString* RogueString_create_with_byte_count( int byte_count )
 {
-  if (count < 0) count = 0;
+  if (byte_count < 0) byte_count = 0;
 
-  int total_size = sizeof(RogueString) + (count+1);
+  int total_size = sizeof(RogueString) + (byte_count+1);
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
-  st->byte_count = count;
+  st->byte_count = byte_count;
 
   return st;
 }
@@ -288,14 +288,14 @@ RogueString* RogueString_create_from_utf8( const char* utf8, int count )
 {
   if (count == -1) count = (int) strlen( utf8 );
 
-  RogueString* st = RogueString_create_with_count( count );
+  RogueString* st = RogueString_create_with_byte_count( count );
   memcpy( st->utf8, utf8, count );
   return RogueString_validate( st );
 }
 
 RogueString* RogueString_create_from_characters( RogueCharacter_List* characters )
 {
-  if ( !characters ) return RogueString_create_with_count(0);
+  if ( !characters ) return RogueString_create_with_byte_count(0);
 
   RogueCharacter* data = characters->data->characters;
   int count = characters->count;
@@ -309,7 +309,7 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
     else                    utf8_count += 4;
   }
 
-  RogueString* result = RogueString_create_with_count( utf8_count );
+  RogueString* result = RogueString_create_with_byte_count( utf8_count );
   RogueByte*   dest = result->utf8;
   for (int i=0; i<count; ++i)
   {
@@ -415,9 +415,20 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
 {
   if (THIS->is_ascii) return (RogueCharacter) THIS->utf8[ index ];
 
-  RogueInt32 offset  = THIS->last_byte_offset;
-  RogueInt32 c_index = THIS->last_character_index;
+  RogueInt32 offset  = THIS->previous_byte_offset;
+  RogueInt32 c_index = THIS->previous_character_index;
   RogueByte* utf8    = THIS->utf8;
+
+  if (index == 0)
+  {
+    offset = 0;
+    c_index = 0;
+  }
+  else if (index >= THIS->character_count - 1)
+  {
+    offset = THIS->byte_count;
+    c_index = THIS->character_count;
+  }
 
   while (c_index < index)
   {
@@ -431,8 +442,8 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
     --c_index;
   }
 
-  THIS->last_byte_offset = offset;
-  THIS->last_character_index = c_index;
+  THIS->previous_byte_offset = offset;
+  THIS->previous_character_index = c_index;
 
   RogueCharacter ch = utf8[ offset ];
   if (ch & 0x80)
