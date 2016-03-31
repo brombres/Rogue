@@ -280,8 +280,6 @@ RogueString* RogueString_create_with_count( int count )
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
   st->byte_count = count;
-  st->character_count = -1;
-  st->hash_code = 0;
 
   return st;
 }
@@ -413,6 +411,53 @@ void RogueString_print_utf8( RogueByte* utf8, int count )
   }
 }
 
+RogueCharacter RogueString_character_at( RogueString* THIS, int index )
+{
+  if (THIS->is_ascii) return (RogueCharacter) THIS->utf8[ index ];
+
+  RogueInt32 offset  = THIS->last_byte_offset;
+  RogueInt32 c_index = THIS->last_character_index;
+  RogueByte* utf8    = THIS->utf8;
+
+  while (c_index < index)
+  {
+    while ((utf8[++offset] & 0xC0) == 0x80) {}
+    ++c_index;
+  }
+
+  while (c_index > index)
+  {
+    while ((utf8[--offset] & 0xC0) == 0x80) {}
+    --c_index;
+  }
+
+  THIS->last_byte_offset = offset;
+  THIS->last_character_index = c_index;
+
+  RogueCharacter ch = utf8[ offset ];
+  if (ch & 0x80)
+  {
+    if (ch & 0x20)
+    {
+      if (ch & 0x10)
+      {
+        return ((ch&7)<<18) | ((utf8[offset+1] & 0x3F) << 12) | ((utf8[offset+2] & 0x3F) << 6) | (utf8[offset+3] & 0x3F);
+      }
+      else
+      {
+        return ((ch&15)<<12) | ((utf8[offset+1] & 0x3F) << 6) | (utf8[offset+2] & 0x3F);
+      }
+    }
+    else
+    {
+      return ((ch&31)<<6) | (utf8[offset+1] & 0x3F);
+    }
+  }
+  else
+  {
+    return ch;
+  }
+}
 
 RogueString* RogueString_validate( RogueString* THIS )
 {
@@ -429,29 +474,29 @@ RogueString* RogueString_validate( RogueString* THIS )
     if (b & 0x80)
     {
       THIS->is_ascii = 0;
-      if ( !(b & 0x40) ) break;  // invalid UTF-8
+      if ( !(b & 0x40) ) { printf("pt1\n"); break;}  // invalid UTF-8
 
       if (b & 0x20)
       {
         if (b & 0x10)
         {
           // %11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-          if (b & 0x80) break;
+          if (b & 0x08) { printf("pt2\n"); break;}
           if (i + 4 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)
-              || ((utf8[i+3] & 0xC0) != 0x80)) break;
+              || ((utf8[i+3] & 0xC0) != 0x80)) { printf("pt3\n"); break;}
           i += 4;
         }
         else
         {
           // %1110xxxx 10xxxxxx 10xxxxxx
-          if (i + 3 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)) break;
+          if (i + 3 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)) { printf("pt4\n"); break;}
           i += 3;
         }
       }
       else
       {
         // %110x xxxx 10xx xxxx
-        if (i + 2 > byte_count || ((utf8[i+1] & 0xC0) != 0x80)) break;
+        if (i + 2 > byte_count || ((utf8[i+1] & 0xC0) != 0x80)) { printf("pt5\n"); break; }
         i += 2;
       }
     }
@@ -463,8 +508,9 @@ RogueString* RogueString_validate( RogueString* THIS )
 
   if (i != byte_count)
   {
-    printf( "RogueString validation error - invalid UTF8:\n" );
+    printf( "*** RogueString validation error - invalid UTF8 (%d/%d):\n", i, byte_count );
     printf( "%s\n", utf8 );
+    utf8[ i ] = 0;
   }
 
   THIS->byte_count = i;

@@ -206,7 +206,7 @@ class StringBuilder [requisite]
         if (indent)
           forEach (ch in value) print( ch )
         else
-          forEach (ch in value) utf8.add( ch )
+          forEach (i in 0..<value.byte_count) utf8.add( value.byte(i) )
           if (value.count and value.last == '\n') at_newline = true
         endIf
         return this
