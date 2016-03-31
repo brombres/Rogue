@@ -282,7 +282,7 @@ RogueString* RogueString_create_with_count( int count )
   int total_size = sizeof(RogueString) + (count+1);
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
-  st->count = count;
+  st->byte_count = count;
   st->character_count = -1;
   st->hash_code = 0;
 
@@ -355,7 +355,7 @@ void RogueString_print_string( RogueString* st )
 {
   if (st)
   {
-    RogueString_print_utf8( st->utf8, st->count );
+    RogueString_print_utf8( st->utf8, st->byte_count );
   }
   else
   {
@@ -420,7 +420,7 @@ void RogueString_print_utf8( RogueByte* utf8, int count )
 RogueString* RogueString_update_hash_code( RogueString* THIS )
 {
   int code = 0;
-  int len = THIS->count;
+  int len = THIS->byte_count;
   RogueByte* src = THIS->utf8 - 1;
   while (--len >= 0)
   {
@@ -14791,7 +14791,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
   if (!((RogueFile__exists__String( filepath_0 ))))
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,parent_1,((RogueFile__path__String( filepath_0 ))));
-    if (parent_1->count == 0)
+    if (parent_1->byte_count == 0)
     {
       parent_1 = ((RogueString*)Rogue_literal_strings[69]);
     }
@@ -14819,7 +14819,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
     char c_filepath[ PATH_MAX ];
     bool is_folder;
     is_folder = RogueFile__is_folder__String( filepath_0 );
-    int len = filepath_0->count;
+    int len = filepath_0->byte_count;
     if (len >= PATH_MAX) len = PATH_MAX - 1;
     memcpy( c_filepath, (char*)filepath_0->utf8, len );
     c_filepath[len] = 0;
@@ -14900,7 +14900,7 @@ RogueLogical RogueFile__is_folder__String( RogueString* filepath_0 )
 #if defined(_WIN32)
     char filepath_copy[PATH_MAX];
     strcpy( filepath_copy, (char*)filepath_0->utf8 );
-    int path_len = filepath_0->count;
+    int path_len = filepath_0->byte_count;
     int i = strlen(filepath_copy)-1;
     while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
     // Windows allows dir\* to count as a directory; guard against.
@@ -14971,7 +14971,7 @@ RogueLogical RogueFile__save__String_String( RogueString* filepath_0, RogueStrin
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_1687_3,(data_1));
     RogueInt32 _auto_1688_4 = (0);
-    for (;_auto_1688_4 < _auto_1687_3->count;++_auto_1688_4)
+    for (;_auto_1688_4 < _auto_1687_3->byte_count;++_auto_1688_4)
     {
       RogueCharacter ch_5 = (((RogueCharacter)_auto_1687_3->utf8[_auto_1688_4]));
       RogueFileWriter__write__Character( outfile_2, ch_5 );
@@ -15290,7 +15290,7 @@ RogueStringBuilder* RogueStringBuilder__print__String( RogueStringBuilder* THIS,
       {
         ROGUE_DEF_LOCAL_REF(RogueString*,_auto_313_1,(value_0));
         RogueInt32 _auto_314_2 = (0);
-        for (;_auto_314_2 < _auto_313_1->count;++_auto_314_2)
+        for (;_auto_314_2 < _auto_313_1->byte_count;++_auto_314_2)
         {
           RogueCharacter ch_3 = (((RogueCharacter)_auto_313_1->utf8[_auto_314_2]));
           RogueStringBuilder__print__Character( ROGUE_ARG(THIS), ch_3 );
@@ -15302,13 +15302,13 @@ RogueStringBuilder* RogueStringBuilder__print__String( RogueStringBuilder* THIS,
       {
         ROGUE_DEF_LOCAL_REF(RogueString*,_auto_315_4,(value_0));
         RogueInt32 _auto_316_5 = (0);
-        for (;_auto_316_5 < _auto_315_4->count;++_auto_316_5)
+        for (;_auto_316_5 < _auto_315_4->byte_count;++_auto_316_5)
         {
           RogueCharacter ch_6 = (((RogueCharacter)_auto_315_4->utf8[_auto_316_5]));
           RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)(ch_6))) );
         }
       }
-      if ((!!(value_0->count) && ((RogueString__last( value_0 ))) == (RogueCharacter)10))
+      if ((!!(value_0->byte_count) && ((RogueString__last( value_0 ))) == (RogueCharacter)10))
       {
         THIS->at_newline = true;
       }
@@ -15574,7 +15574,7 @@ RogueString* RogueString__after_any__String( RogueString* THIS, RogueString* st_
   RogueOptionalInt32 i_1 = (((RogueString__locate_last__String_OptionalInt32( ROGUE_ARG(THIS), st_0, ROGUE_ARG((RogueOptionalInt32__create())) ))));
   if (i_1.exists)
   {
-    return (RogueString*)(((RogueString__from__Int32( ROGUE_ARG(THIS), ROGUE_ARG((i_1.value + st_0->count)) ))));
+    return (RogueString*)(((RogueString__from__Int32( ROGUE_ARG(THIS), ROGUE_ARG((i_1.value + st_0->byte_count)) ))));
   }
   else
   {
@@ -15600,7 +15600,7 @@ RogueString* RogueString__after_first__String( RogueString* THIS, RogueString* s
   RogueOptionalInt32 i_1 = (((RogueString__locate__String_OptionalInt32( ROGUE_ARG(THIS), st_0, ROGUE_ARG((RogueOptionalInt32__create())) ))));
   if (i_1.exists)
   {
-    return (RogueString*)(((RogueString__from__Int32( ROGUE_ARG(THIS), ROGUE_ARG((i_1.value + st_0->count)) ))));
+    return (RogueString*)(((RogueString__from__Int32( ROGUE_ARG(THIS), ROGUE_ARG((i_1.value + st_0->byte_count)) ))));
   }
   else
   {
@@ -15675,13 +15675,13 @@ RogueString* RogueString__before_last__String( RogueString* THIS, RogueString* s
 
 RogueLogical RogueString__begins_with__Character( RogueString* THIS, RogueCharacter ch_0 )
 {
-  return (RogueLogical)((!!(THIS->count) && ((RogueCharacter)THIS->utf8[0]) == ch_0));
+  return (RogueLogical)((!!(THIS->byte_count) && ((RogueCharacter)THIS->utf8[0]) == ch_0));
 }
 
 RogueLogical RogueString__begins_with__String( RogueString* THIS, RogueString* other_0 )
 {
-  RogueInt32 other_count_1 = (other_0->count);
-  return (RogueLogical)((THIS->count >= other_count_1 && ((RogueString__contains_at__String_Int32( ROGUE_ARG(THIS), other_0, 0 )))));
+  RogueInt32 other_count_1 = (other_0->byte_count);
+  return (RogueLogical)((THIS->byte_count >= other_count_1 && ((RogueString__contains_at__String_Int32( ROGUE_ARG(THIS), other_0, 0 )))));
 }
 
 RogueInt32 RogueString__byte_count_at_byte_index__Int32( RogueString* THIS, RogueInt32 byte_index_0 )
@@ -15708,7 +15708,7 @@ RogueInt32 RogueString__byte_count_at_byte_index__Int32( RogueString* THIS, Rogu
 RogueCharacter RogueString__character_at_byte_index__Int32( RogueString* THIS, RogueInt32 byte_index_0 )
 {
   RogueCharacter ch;
-  int count = THIS->count;
+  int count = THIS->byte_count;
   // We're at the start of the UTF8-encoded character we want to return.
   if ((ch = THIS->utf8[byte_index_0]) & 0x80)
   {
@@ -15752,7 +15752,7 @@ RogueInt32 RogueString__character_count( RogueString* THIS )
 {
   if (THIS->character_count >= 0) return THIS->character_count;
   RogueInt32 n = 0;
-  int count = THIS->count;
+  int count = THIS->byte_count;
   for (int i=0; i<count; ++n)
   {
     RogueCharacter ch;
@@ -15791,8 +15791,8 @@ RogueLogical RogueString__contains__String( RogueString* THIS, RogueString* subs
 
 RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueString* substring_0, RogueInt32 at_index_1 )
 {
-  RogueInt32 other_count = substring_0->count;
-  if (at_index_1 < 0 || at_index_1 + other_count > THIS->count) return false;
+  RogueInt32 other_count = substring_0->byte_count;
+  if (at_index_1 < 0 || at_index_1 + other_count > THIS->byte_count) return false;
   RogueByte* this_data  = THIS->utf8;
   RogueByte* other_data = substring_0->utf8;
   int i = -1;
@@ -15807,25 +15807,25 @@ RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueStr
 
 RogueLogical RogueString__ends_with__Character( RogueString* THIS, RogueCharacter ch_0 )
 {
-  return (RogueLogical)((THIS->count > 0 && ((RogueCharacter)THIS->utf8[(THIS->count - 1)]) == ch_0));
+  return (RogueLogical)((THIS->byte_count > 0 && ((RogueCharacter)THIS->utf8[(THIS->byte_count - 1)]) == ch_0));
 }
 
 RogueLogical RogueString__ends_with__String( RogueString* THIS, RogueString* other_0 )
 {
-  RogueInt32 other_count_1 = (other_0->count);
-  return (RogueLogical)(((THIS->count >= other_count_1 && other_count_1 > 0) && ((RogueString__contains_at__String_Int32( ROGUE_ARG(THIS), other_0, ROGUE_ARG((THIS->count - other_count_1)) )))));
+  RogueInt32 other_count_1 = (other_0->byte_count);
+  return (RogueLogical)(((THIS->byte_count >= other_count_1 && other_count_1 > 0) && ((RogueString__contains_at__String_Int32( ROGUE_ARG(THIS), other_0, ROGUE_ARG((THIS->byte_count - other_count_1)) )))));
 }
 
 RogueString* RogueString__from__Int32( RogueString* THIS, RogueInt32 i1_0 )
 {
-  return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), i1_0, ROGUE_ARG((THIS->count - 1)) ))));
+  return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), i1_0, ROGUE_ARG((THIS->byte_count - 1)) ))));
 }
 
 RogueString* RogueString__from__Int32_Int32( RogueString* THIS, RogueInt32 i1_0, RogueInt32 i2_1 )
 {
   // Clamp i1 and i2
   if (i1_0 < 0) i1_0 = 0;
-  if (i2_1 >= THIS->count) i2_1 = THIS->count - 1;
+  if (i2_1 >= THIS->byte_count) i2_1 = THIS->byte_count - 1;
   // Return empty quotes if zero-length
   if (i1_0 > i2_1) return Rogue_literal_strings[0]; // empty string
   int new_count = (i2_1 - i1_0) + 1;
@@ -15857,19 +15857,19 @@ RogueString* RogueString__from_first__Character( RogueString* THIS, RogueCharact
 
 RogueCharacter RogueString__last( RogueString* THIS )
 {
-  return (RogueCharacter)(((RogueCharacter)THIS->utf8[(THIS->count - 1)]));
+  return (RogueCharacter)(((RogueCharacter)THIS->utf8[(THIS->byte_count - 1)]));
 }
 
 RogueString* RogueString__left_justified__Int32( RogueString* THIS, RogueInt32 spaces_0 )
 {
-  if (THIS->count >= spaces_0)
+  if (THIS->byte_count >= spaces_0)
   {
     return (RogueString*)(THIS);
   }
   ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,buffer_1,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), spaces_0 )))));
   RogueStringBuilder__print__String( buffer_1, ROGUE_ARG(THIS) );
   {
-    RogueInt32 _auto_4_2 = (THIS->count);
+    RogueInt32 _auto_4_2 = (THIS->byte_count);
     RogueInt32 _auto_5_3 = (spaces_0);
     for (;_auto_4_2 <= _auto_5_3;++_auto_4_2)
     {
@@ -15887,13 +15887,13 @@ RogueString* RogueString__leftmost__Int32( RogueString* THIS, RogueInt32 n_0 )
   }
   else
   {
-    return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), 0, ROGUE_ARG(((THIS->count + n_0) - 1)) ))));
+    return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), 0, ROGUE_ARG(((THIS->byte_count + n_0) - 1)) ))));
   }
 }
 
 RogueOptionalInt32 RogueString__locate__Character_OptionalInt32( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInt32 optional_i1_1 )
 {
-  RogueInt32 limit = THIS->count;
+  RogueInt32 limit = THIS->byte_count;
   RogueByte* data  = THIS->utf8;
   RogueInt32 i1    = optional_i1_1.exists ? (optional_i1_1.value-1) : -1;
   while (++i1 < limit)
@@ -15909,12 +15909,12 @@ RogueOptionalInt32 RogueString__locate__Character_OptionalInt32( RogueString* TH
 
 RogueOptionalInt32 RogueString__locate__String_OptionalInt32( RogueString* THIS, RogueString* other_0, RogueOptionalInt32 optional_i1_1 )
 {
-  RogueInt32 other_count_2 = (other_0->count);
+  RogueInt32 other_count_2 = (other_0->byte_count);
   if (other_count_2 == 1)
   {
     return (RogueOptionalInt32)(((RogueString__locate__Character_OptionalInt32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueCharacter)other_0->utf8[0])), optional_i1_1 ))));
   }
-  RogueInt32 this_limit_3 = (((THIS->count - other_count_2) + 1));
+  RogueInt32 this_limit_3 = (((THIS->byte_count - other_count_2) + 1));
   if ((other_count_2 == 0 || this_limit_3 <= 0))
   {
     return (RogueOptionalInt32)((RogueOptionalInt32__create()));
@@ -15944,7 +15944,7 @@ RogueOptionalInt32 RogueString__locate__String_OptionalInt32( RogueString* THIS,
 
 RogueOptionalInt32 RogueString__locate_last__Character_OptionalInt32( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInt32 starting_index_1 )
 {
-  RogueInt32 limit = THIS->count;
+  RogueInt32 limit = THIS->byte_count;
   RogueByte* data  = THIS->utf8;
   int i;
   if (starting_index_1.exists)
@@ -15966,12 +15966,12 @@ RogueOptionalInt32 RogueString__locate_last__Character_OptionalInt32( RogueStrin
 
 RogueOptionalInt32 RogueString__locate_last__String_OptionalInt32( RogueString* THIS, RogueString* other_0, RogueOptionalInt32 starting_index_1 )
 {
-  RogueInt32 other_count_2 = (other_0->count);
+  RogueInt32 other_count_2 = (other_0->byte_count);
   if (other_count_2 == 1)
   {
     return (RogueOptionalInt32)(((RogueString__locate_last__Character_OptionalInt32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueCharacter)other_0->utf8[0])), starting_index_1 ))));
   }
-  RogueInt32 this_limit_3 = (((THIS->count - other_count_2) + 1));
+  RogueInt32 this_limit_3 = (((THIS->byte_count - other_count_2) + 1));
   if ((other_count_2 == 0 || this_limit_3 <= 0))
   {
     return (RogueOptionalInt32)((RogueOptionalInt32__create()));
@@ -16011,18 +16011,18 @@ RogueString* RogueString__operatorPLUS__Int32( RogueString* THIS, RogueInt32 val
 
 RogueLogical RogueString__operatorEQUALSEQUALS__String( RogueString* THIS, RogueString* value_0 )
 {
-  if ((THIS->hash_code != value_0->hash_code || THIS->count != value_0->count))
+  if ((THIS->hash_code != value_0->hash_code || THIS->byte_count != value_0->byte_count))
   {
     return (RogueLogical)(false);
   }
-  return (RogueLogical)((0==memcmp(THIS->utf8,value_0->utf8,THIS->count)));
+  return (RogueLogical)((0==memcmp(THIS->utf8,value_0->utf8,THIS->byte_count)));
 }
 
 RogueInt32 RogueString__operatorLTGT__String( RogueString* THIS, RogueString* other_0 )
 {
   if (THIS == other_0) return 0;
-  RogueInt32 other_count = other_0->count;
-  RogueInt32 limit = THIS->count;
+  RogueInt32 other_count = other_0->byte_count;
+  RogueInt32 limit = THIS->byte_count;
   int result;
   if (limit == other_count)
   {
@@ -16087,11 +16087,11 @@ RogueString* RogueString__operatorPLUS__String( RogueString* THIS, RogueString* 
   {
     return (RogueString*)(((RogueString__operatorPLUS__String( ROGUE_ARG(THIS), Rogue_literal_strings[4] ))));
   }
-  if (THIS->count == 0)
+  if (THIS->byte_count == 0)
   {
     return (RogueString*)(value_0);
   }
-  if (value_0->count == 0)
+  if (value_0->byte_count == 0)
   {
     return (RogueString*)(THIS);
   }
@@ -16135,7 +16135,7 @@ RogueString* RogueString__pluralized__Int32( RogueString* THIS, RogueInt32 quant
         return (RogueString*)(st_1);
       }
       RogueInt32 index_4 = (0);
-      RogueInt32 i_5 = (st_1->count);
+      RogueInt32 i_5 = (st_1->byte_count);
       while (i_5 > 0)
       {
         --i_5;
@@ -16169,11 +16169,11 @@ RogueString* RogueString__replacing__Character_Character( RogueString* THIS, Rog
   {
     return (RogueString*)(THIS);
   }
-  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG(THIS->count) )))));
+  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG(THIS->byte_count) )))));
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_36_3,(THIS));
     RogueInt32 _auto_37_4 = (0);
-    for (;_auto_37_4 < _auto_36_3->count;++_auto_37_4)
+    for (;_auto_37_4 < _auto_36_3->byte_count;++_auto_37_4)
     {
       RogueCharacter ch_5 = (((RogueCharacter)_auto_36_3->utf8[_auto_37_4]));
       if (ch_5 == look_for_0)
@@ -16191,7 +16191,7 @@ RogueString* RogueString__replacing__Character_Character( RogueString* THIS, Rog
 
 RogueString* RogueString__replacing__String_String( RogueString* THIS, RogueString* look_for_0, RogueString* replace_with_1 )
 {
-  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,buffer_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG((THIS->count * 2)) )))));
+  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,buffer_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG((THIS->byte_count * 2)) )))));
   ROGUE_DEF_LOCAL_REF(RogueString*,st_3,(THIS));
   RogueOptionalInt32 i_4 = (((RogueString__locate__String_OptionalInt32( st_3, look_for_0, ROGUE_ARG((RogueOptionalInt32__create())) ))));
   if (!(i_4.exists))
@@ -16202,7 +16202,7 @@ RogueString* RogueString__replacing__String_String( RogueString* THIS, RogueStri
   {
     RogueStringBuilder__print__String( buffer_2, ROGUE_ARG(((RogueString__before__Int32( st_3, ROGUE_ARG(i_4.value) )))) );
     RogueStringBuilder__print__String( buffer_2, replace_with_1 );
-    st_3 = ((RogueString*)((RogueString__from__Int32( st_3, ROGUE_ARG((i_4.value + look_for_0->count)) ))));
+    st_3 = ((RogueString*)((RogueString__from__Int32( st_3, ROGUE_ARG((i_4.value + look_for_0->byte_count)) ))));
     i_4 = ((RogueOptionalInt32)((RogueString__locate__String_OptionalInt32( st_3, look_for_0, ROGUE_ARG((RogueOptionalInt32__create())) ))));
   }
   RogueStringBuilder__print__String( buffer_2, st_3 );
@@ -16211,7 +16211,7 @@ RogueString* RogueString__replacing__String_String( RogueString* THIS, RogueStri
 
 RogueString* RogueString__rightmost__Int32( RogueString* THIS, RogueInt32 n_0 )
 {
-  RogueInt32 this_count_1 = (THIS->count);
+  RogueInt32 this_count_1 = (THIS->byte_count);
   if (n_0 < 0)
   {
     return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), ROGUE_ARG((-(n_0))), ROGUE_ARG((this_count_1 - 1)) ))));
@@ -16243,7 +16243,7 @@ RogueString* RogueString__to_lowercase( RogueString* THIS )
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_55_2,(THIS));
     RogueInt32 _auto_56_3 = (0);
-    for (;_auto_56_3 < _auto_55_2->count;++_auto_56_3)
+    for (;_auto_56_3 < _auto_55_2->byte_count;++_auto_56_3)
     {
       RogueCharacter ch_4 = (((RogueCharacter)_auto_55_2->utf8[_auto_56_3]));
       if ((ch_4 >= (RogueCharacter)'A' && ch_4 <= (RogueCharacter)'Z'))
@@ -16258,11 +16258,11 @@ RogueString* RogueString__to_lowercase( RogueString* THIS )
   {
     return (RogueString*)(THIS);
   }
-  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_1,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG(THIS->count) )))));
+  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_1,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG(THIS->byte_count) )))));
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_58_5,(THIS));
     RogueInt32 _auto_59_6 = (0);
-    for (;_auto_59_6 < _auto_58_5->count;++_auto_59_6)
+    for (;_auto_59_6 < _auto_58_5->byte_count;++_auto_59_6)
     {
       RogueCharacter ch_7 = (((RogueCharacter)_auto_58_5->utf8[_auto_59_6]));
       if ((ch_7 >= (RogueCharacter)'A' && ch_7 <= (RogueCharacter)'Z'))
@@ -16281,7 +16281,7 @@ RogueString* RogueString__to_lowercase( RogueString* THIS )
 RogueString* RogueString__trimmed( RogueString* THIS )
 {
   RogueInt32 i1_0 = (0);
-  RogueInt32 i2_1 = ((THIS->count - 1));
+  RogueInt32 i2_1 = ((THIS->byte_count - 1));
   while (i1_0 <= i2_1)
   {
     if (((RogueCharacter)THIS->utf8[i1_0]) <= (RogueCharacter)' ')
@@ -16302,7 +16302,7 @@ RogueString* RogueString__trimmed( RogueString* THIS )
   {
     return (RogueString*)(Rogue_literal_strings[0]);
   }
-  if ((i1_0 == 0 && i2_1 == (THIS->count - 1)))
+  if ((i1_0 == 0 && i2_1 == (THIS->byte_count - 1)))
   {
     return (RogueString*)(THIS);
   }
@@ -16318,7 +16318,7 @@ RogueStringBuilder* RogueString__word_wrapped__Int32_StringBuilder( RogueString*
 {
   RogueInt32 i1_2 = 0;
   RogueInt32 i2_3 = 0;
-  RogueInt32 len_4 = (THIS->count);
+  RogueInt32 len_4 = (THIS->byte_count);
   if (len_4 == 0)
   {
     return (RogueStringBuilder*)(buffer_1);
@@ -17020,7 +17020,7 @@ RogueString* RogueString_List__joined__String( RogueString_List* THIS, RogueStri
     for (;_auto_427_4 < _auto_426_3->count;++_auto_427_4)
     {
       ROGUE_DEF_LOCAL_REF(RogueString*,line_5,(((RogueString*)(_auto_426_3->data->objects[_auto_427_4]))));
-      total_count_1 += line_5->count;
+      total_count_1 += line_5->byte_count;
     }
   }
   ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,builder_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), total_count_1 )))));
@@ -17524,7 +17524,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
         {
           if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[7] ))))
           {
-            if (value_0->count == 0)
+            if (value_0->byte_count == 0)
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[8], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -17541,7 +17541,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[11] ))))
           {
-            if (!(!!(value_0->count)))
+            if (!(!!(value_0->byte_count)))
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[12], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -17576,7 +17576,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[15] ))))
           {
-            if (!!(value_0->count))
+            if (!!(value_0->byte_count))
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[16], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -17584,7 +17584,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[17] ))))
           {
-            if (!(!!(value_0->count)))
+            if (!(!!(value_0->byte_count)))
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[18], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -17592,7 +17592,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[19] ))))
           {
-            if (!!(value_0->count))
+            if (!!(value_0->byte_count))
             {
               RogueString_List__add__String_List( ROGUE_ARG(THIS->requisite_declarations), ROGUE_ARG(((RogueString__split__Character( value_0, (RogueCharacter)',' )))) );
             }
@@ -17603,7 +17603,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[20] ))))
           {
-            if (!(!!(value_0->count)))
+            if (!(!!(value_0->byte_count)))
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[21], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -17611,7 +17611,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[22] ))))
           {
-            if ((!(!!(value_0->count)) || ((RogueString__operatorEQUALSEQUALS__String( value_0, Rogue_literal_strings[23] )))))
+            if ((!(!!(value_0->byte_count)) || ((RogueString__operatorEQUALSEQUALS__String( value_0, Rogue_literal_strings[23] )))))
             {
               THIS->gc_mode = 1;
             }
@@ -17630,7 +17630,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[28] ))))
           {
-            if (!(!!(value_0->count)))
+            if (!(!!(value_0->byte_count)))
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[29], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -17657,7 +17657,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           }
           else if (((RogueString__operatorEQUALSEQUALS__String( arg_6, Rogue_literal_strings[34] ))))
           {
-            if (!!(value_0->count))
+            if (!!(value_0->byte_count))
             {
               ROGUE_THROW(((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), Rogue_literal_strings[35], ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
             }
@@ -18540,14 +18540,14 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
   if (((RogueString__begins_with__String( name_0, ROGUE_ARG(THIS->code_prefix) ))))
   {
     begins_with_code_prefix_2 = ((RogueLogical)true);
-    name_0 = ((RogueString*)((RogueString__from__Int32( name_0, ROGUE_ARG(THIS->code_prefix->count) ))));
+    name_0 = ((RogueString*)((RogueString__from__Int32( name_0, ROGUE_ARG(THIS->code_prefix->byte_count) ))));
   }
   RogueLogical all_underscores_3 = (true);
   if (((RogueString__ends_with__String( name_0, Rogue_literal_strings[457] ))))
   {
     {
       RogueInt32 i_4 = (0);
-      RogueInt32 _auto_75_5 = ((name_0->count - 5));
+      RogueInt32 _auto_75_5 = ((name_0->byte_count - 5));
       for (;i_4 <= _auto_75_5;++i_4)
       {
         if (((RogueCharacter)name_0->utf8[i_4]) != (RogueCharacter)'_')
@@ -18598,11 +18598,11 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
   {
     RogueStringBuilder__print__String( ROGUE_ARG(THIS->string_buffer), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->code_prefix) );
   }
-  RogueInt32 count_11 = (name_0->count);
+  RogueInt32 count_11 = (name_0->byte_count);
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_201_13,(name_0));
     RogueInt32 i_14 = (0);
-    for (;i_14 < _auto_201_13->count;++i_14)
+    for (;i_14 < _auto_201_13->byte_count;++i_14)
     {
       RogueCharacter ch_12 = (((RogueCharacter)name_0->utf8[i_14]));
       if ((((RogueCharacter__is_alphanumeric( ch_12 ))) || ch_12 == (RogueCharacter)'$'))
@@ -18640,7 +18640,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
           }
           case (RogueCharacter)'-':
           {
-            if ((i_14 + 1) < name_0->count)
+            if ((i_14 + 1) < name_0->byte_count)
             {
               switch (((RogueInt32)(((RogueCharacter)name_0->utf8[(i_14 + 1)]))))
               {
@@ -18670,7 +18670,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
           }
           case (RogueCharacter)'<':
           {
-            if ((i_14 + 1) < name_0->count)
+            if ((i_14 + 1) < name_0->byte_count)
             {
               switch (((RogueInt32)(((RogueCharacter)name_0->utf8[(i_14 + 1)]))))
               {
@@ -18695,7 +18695,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
           }
           case (RogueCharacter)'>':
           {
-            if ((i_14 + 1) < name_0->count)
+            if ((i_14 + 1) < name_0->byte_count)
             {
               switch (((RogueInt32)(((RogueCharacter)name_0->utf8[(i_14 + 1)]))))
               {
@@ -18749,7 +18749,7 @@ RogueOptionalInt32 RogueProgram__locate_matching_close_specialize__String_Option
   RogueInt32 nesting_level_2 = (1);
   {
     RogueInt32 i_3 = ((i1_1.value + 2));
-    RogueInt32 _auto_76_4 = ((st_0->count - 2));
+    RogueInt32 _auto_76_4 = ((st_0->byte_count - 2));
     for (;i_3 <= _auto_76_4;++i_3)
     {
       if ((((RogueCharacter)st_0->utf8[i_3]) == (RogueCharacter)'<' && ((RogueCharacter)st_0->utf8[(i_3 + 1)]) == (RogueCharacter)'<'))
@@ -19554,7 +19554,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
       RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[639] );
       ROGUE_DEF_LOCAL_REF(RogueString*,st_21,(((RogueString*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->literal_string_list->data->objects[i_142]))));
       ROGUE_DEF_LOCAL_REF(RogueClassCPPWriter*,encoded_count_22,(((RogueCPPWriter__print_literal_string__String( writer_1, st_21 )))));
-      RogueCPPWriter__print__Int32( ROGUE_ARG(((RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[517] )))), ROGUE_ARG(st_21->count) );
+      RogueCPPWriter__print__Int32( ROGUE_ARG(((RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[517] )))), ROGUE_ARG(st_21->byte_count) );
       RogueCPPWriter__println__String( writer_1, Rogue_literal_strings[640] );
     }
   }
@@ -19983,7 +19983,7 @@ void RogueTemplate__instantiate_parameterized_type__Type_Token_List_Scope( Rogue
   ROGUE_DEF_LOCAL_REF(RogueToken_List*,instance_tokens_3,(augmented_tokens_1));
   ROGUE_DEF_LOCAL_REF(RogueClassTable_String_TypeSpecializer_*,type_specializers_4,(((RogueTable_String_TypeSpecializer___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_TypeSpecializer_*,ROGUE_CREATE_OBJECT(Table_String_TypeSpecializer_))) )))));
   ROGUE_DEF_LOCAL_REF(RogueString*,specialization_string_5,(((RogueString__from_first__Character( ROGUE_ARG(type_0->name), (RogueCharacter)'<' )))));
-  if (specialization_string_5->count == 0)
+  if (specialization_string_5->byte_count == 0)
   {
     ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(type_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[375] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(type_0->name) )))) )))), Rogue_literal_strings[376] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(type_0->name) )))) )))), Rogue_literal_strings[377] )))) )))) ))));
   }
@@ -26417,7 +26417,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_literal_string__String( RogueClassCPP
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_1279_1,(st_0));
     RogueInt32 _auto_1280_2 = (0);
-    for (;_auto_1280_2 < _auto_1279_1->count;++_auto_1280_2)
+    for (;_auto_1280_2 < _auto_1279_1->byte_count;++_auto_1280_2)
     {
       RogueCharacter ch_3 = (((RogueCharacter)_auto_1279_1->utf8[_auto_1280_2]));
       RogueCPPWriter__print_literal_character__Character_Logical( ROGUE_ARG(THIS), ch_3, true );
@@ -26449,10 +26449,10 @@ RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_String
           RogueCPPWriter__print__String( ROGUE_ARG(THIS), ROGUE_ARG(((RogueString__leftmost__Int32( line_11, i1_8 )))) );
         }
         RogueInt32 i2_9 = ((i1_8 + 1));
-        if ((i2_9 < line_11->count && ((RogueCharacter)line_11->utf8[i2_9]) == (RogueCharacter)'('))
+        if ((i2_9 < line_11->byte_count && ((RogueCharacter)line_11->utf8[i2_9]) == (RogueCharacter)'('))
         {
           ++i2_9;
-          while ((i2_9 < line_11->count && ((RogueCharacter)line_11->utf8[i2_9]) != (RogueCharacter)')'))
+          while ((i2_9 < line_11->byte_count && ((RogueCharacter)line_11->utf8[i2_9]) != (RogueCharacter)')'))
           {
             ++i2_9;
           }
@@ -26461,7 +26461,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_String
         }
         else
         {
-          while ((i2_9 < line_11->count && ((RogueCharacter__is_identifier( ROGUE_ARG(((RogueCharacter)line_11->utf8[i2_9])) )))))
+          while ((i2_9 < line_11->byte_count && ((RogueCharacter__is_identifier( ROGUE_ARG(((RogueCharacter)line_11->utf8[i2_9])) )))))
           {
             ++i2_9;
           }
@@ -26471,7 +26471,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_String
         RogueCPPWriter__print_native_marker__Token_Type_Method_String( ROGUE_ARG(THIS), t_0, type_context_1, method_context_2, name_7 );
         marker_6 = ((RogueOptionalInt32)((RogueString__locate__Character_OptionalInt32( line_11, (RogueCharacter)'$', ROGUE_ARG((RogueOptionalInt32__create())) ))));
       }
-      if (!!(line_11->count))
+      if (!!(line_11->byte_count))
       {
         if (!!(result_type_4))
         {
@@ -27898,7 +27898,7 @@ void RogueParser__parse_augment( RogueClassParser* THIS )
   }
   RogueAugment_List__add__Augment( augments_4, aug_3 );
   ROGUE_DEF_LOCAL_REF(RogueString*,base_name_5,(((RogueString__after_any__String( name_1, Rogue_literal_strings[87] )))));
-  if (base_name_5->count < name_1->count)
+  if (base_name_5->byte_count < name_1->byte_count)
   {
     augments_4 = ((RogueAugment_List*)((RogueTable_String_Augment_List___get__String( ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->augment_lookup), base_name_5 ))));
     if (!(!!(augments_4)))
@@ -36167,7 +36167,7 @@ void RogueCmdCallInlineNative__write_cpp__CPPWriter_Logical( RogueClassCmdCallIn
           ROGUE_DEF_LOCAL_REF(RogueClassLocal*,p_12,(((RogueClassLocal*)(_auto_2451_10->data->objects[_auto_2452_11]))));
           if (((RogueString__begins_with__String( st_2, ROGUE_ARG(p_12->name) ))))
           {
-            if ((((void*)best_match_6) == ((void*)NULL) || p_12->name->count > best_match_6->name->count))
+            if ((((void*)best_match_6) == ((void*)NULL) || p_12->name->byte_count > best_match_6->name->byte_count))
             {
               best_match_6 = ((RogueClassLocal*)p_12);
             }
@@ -36178,7 +36178,7 @@ void RogueCmdCallInlineNative__write_cpp__CPPWriter_Logical( RogueClassCmdCallIn
       {
         param_5 = ((RogueClassLocal*)best_match_6);
         name_4 = ((RogueString*)param_5->name);
-        st_2 = ((RogueString*)((RogueString__from__Int32( st_2, ROGUE_ARG(best_match_6->name->count) ))));
+        st_2 = ((RogueString*)((RogueString__from__Int32( st_2, ROGUE_ARG(best_match_6->name->byte_count) ))));
       }
       else if (((RogueString__begins_with__String( st_2, Rogue_literal_strings[191] ))))
       {
@@ -37735,11 +37735,11 @@ RogueToken_List* RogueTokenizer__tokenize__String_String( RogueClassTokenizer* T
 RogueToken_List* RogueTokenizer__tokenize__Token_String_String( RogueClassTokenizer* THIS, RogueClassToken* reference_t_0, RogueString* _auto_1480_1, RogueString* data_2 )
 {
   THIS->filepath = _auto_1480_1;
-  ROGUE_DEF_LOCAL_REF(RogueCharacter_List*,characters_3,(((RogueCharacter_List__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueCharacter_List*,ROGUE_CREATE_OBJECT(Character_List))), ROGUE_ARG(data_2->count) )))));
+  ROGUE_DEF_LOCAL_REF(RogueCharacter_List*,characters_3,(((RogueCharacter_List__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueCharacter_List*,ROGUE_CREATE_OBJECT(Character_List))), ROGUE_ARG(data_2->byte_count) )))));
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_2630_4,(data_2));
     RogueInt32 _auto_2631_5 = (0);
-    for (;_auto_2631_5 < _auto_2630_4->count;++_auto_2631_5)
+    for (;_auto_2631_5 < _auto_2630_4->byte_count;++_auto_2631_5)
     {
       RogueCharacter ch_6 = (((RogueCharacter)_auto_2630_4->utf8[_auto_2631_5]));
       RogueCharacter_List__add__Character( characters_3, ch_6 );
@@ -39165,7 +39165,7 @@ RogueClassParseReader* RogueParseReader__init__String_Int32( RogueClassParseRead
     {
       ROGUE_DEF_LOCAL_REF(RogueString*,_auto_2638_5,(source_0));
       RogueInt32 _auto_2639_6 = (0);
-      for (;_auto_2639_6 < _auto_2638_5->count;++_auto_2639_6)
+      for (;_auto_2639_6 < _auto_2638_5->byte_count;++_auto_2639_6)
       {
         RogueCharacter b_7 = (((RogueCharacter)_auto_2638_5->utf8[_auto_2639_6]));
         if (b_7 == (RogueCharacter)9)
@@ -39175,11 +39175,11 @@ RogueClassParseReader* RogueParseReader__init__String_Int32( RogueClassParseRead
       }
     }
   }
-  THIS->data = ((RogueCharacter_List__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueCharacter_List*,ROGUE_CREATE_OBJECT(Character_List))), ROGUE_ARG((source_0->count + tab_count_2)) )));
+  THIS->data = ((RogueCharacter_List__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueCharacter_List*,ROGUE_CREATE_OBJECT(Character_List))), ROGUE_ARG((source_0->byte_count + tab_count_2)) )));
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_2640_8,(source_0));
     RogueInt32 _auto_2641_9 = (0);
-    for (;_auto_2641_9 < _auto_2640_8->count;++_auto_2641_9)
+    for (;_auto_2641_9 < _auto_2640_8->byte_count;++_auto_2641_9)
     {
       RogueCharacter b_10 = (((RogueCharacter)_auto_2640_8->utf8[_auto_2641_9]));
       if ((b_10 == (RogueCharacter)9 && !!(THIS->spaces_per_tab)))
@@ -39273,7 +39273,7 @@ RogueLogical RogueParseReader__consume__Character( RogueClassParseReader* THIS, 
 
 RogueLogical RogueParseReader__consume__String( RogueClassParseReader* THIS, RogueString* text_0 )
 {
-  RogueInt32 limit_1 = (text_0->count);
+  RogueInt32 limit_1 = (text_0->byte_count);
   RogueInt32 i_2 = (0);
   while (i_2 < limit_1)
   {
@@ -39294,7 +39294,7 @@ RogueLogical RogueParseReader__consume__String( RogueClassParseReader* THIS, Rog
 
 RogueLogical RogueParseReader__consume_id__String( RogueClassParseReader* THIS, RogueString* text_0 )
 {
-  RogueCharacter ch_1 = (((RogueParseReader__peek__Int32( ROGUE_ARG(THIS), ROGUE_ARG(text_0->count) ))));
+  RogueCharacter ch_1 = (((RogueParseReader__peek__Int32( ROGUE_ARG(THIS), ROGUE_ARG(text_0->byte_count) ))));
   if ((((RogueCharacter__is_alphanumeric( ch_1 ))) || ch_1 == (RogueCharacter)'_'))
   {
     return (RogueLogical)(false);
@@ -39682,7 +39682,7 @@ RogueClassPreprocessor* RoguePreprocessor__init_object( RogueClassPreprocessor* 
 
 RogueString* RogueEOLToken__to_String( RogueClassEOLToken* THIS )
 {
-  if ((!!(THIS->comment) && !!(THIS->comment->count)))
+  if ((!!(THIS->comment) && !!(THIS->comment->byte_count)))
   {
     return (RogueString*)(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[834] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(THIS->comment) )))) )))) ))));
   }
@@ -40774,7 +40774,7 @@ RogueClassCmd* RogueCmdFormattedString__resolve__Scope( RogueClassCmdFormattedSt
       cmd_1 = ((RogueClassCmdAccess*)((RogueCmdAccess__init__Token_Cmd_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueClassCmd*)(cmd_1))), Rogue_literal_strings[948], ROGUE_ARG(((RogueCmdArgs__init__Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))), ROGUE_ARG(((RogueClassCmd*)(((RogueClassCmdAdd*)(((RogueCmdBinary__init__Token_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdBinary*)ROGUE_CREATE_REF(RogueClassCmdAdd*,ROGUE_CREATE_OBJECT(CmdAdd)))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdLiteralString__init__Token_String_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLiteralString*,ROGUE_CREATE_OBJECT(CmdLiteralString))), ROGUE_ARG(THIS->t), Rogue_literal_strings[0], 0 )))))), arg_6 )))))))) )))) ))));
     }
   }
-  if (!!(fmt_2->count))
+  if (!!(fmt_2->byte_count))
   {
     if (((RogueString__locate__Character_OptionalInt32( fmt_2, (RogueCharacter)'$', ROGUE_ARG((RogueOptionalInt32__create())) ))).exists)
     {

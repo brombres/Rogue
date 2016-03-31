@@ -96,7 +96,7 @@ class String
       return (ch + ('A'-'a'))->Character + this.from( 1 )
 
     method character( character_index:Int32 )->Character
-      native @|int count = $this->count;
+      native @|int count = $this->byte_count;
               |for (int i=0; i<count; )
               |{
               |  RogueCharacter ch;
@@ -130,7 +130,7 @@ class String
 
     method character_at_byte_index( byte_index:Int32 )->Character
       native @|RogueCharacter ch;
-              |int count = $this->count;
+              |int count = $this->byte_count;
               |
               |// We're at the start of the UTF8-encoded character we want to return.
               |if ((ch = $this->utf8[$byte_index]) & 0x80)
@@ -173,7 +173,7 @@ class String
       native @|if ($this->character_count >= 0) return $this->character_count;
               |
               |RogueInt32 n = 0;
-              |int count = $this->count;
+              |int count = $this->byte_count;
               |for (int i=0; i<count; ++n)
               |{
               |  RogueCharacter ch;
@@ -210,8 +210,8 @@ class String
 
     method contains_at( substring:String, at_index:Int32 )->Logical
       $if ("C++")
-        native @|RogueInt32 other_count = $substring->count;
-                |if ($at_index < 0 || $at_index + other_count > $this->count) return false;
+        native @|RogueInt32 other_count = $substring->byte_count;
+        |if ($at_index < 0 || $at_index + other_count > $this->byte_count) return false;
                 |
                 |RogueByte* this_data  = $this->utf8;
                 |RogueByte* other_data = $substring->utf8;
@@ -228,7 +228,7 @@ class String
 
 
     method count->Int32 [macro]
-      $if ("C++") native '$this->count'
+      $if ("C++") native '$this->byte_count'
 
     method ends_with( ch:Character )->Logical
       return (count > 0 and this[count-1] == ch)
@@ -244,7 +244,7 @@ class String
       $if ("C++")
         native @|// Clamp i1 and i2
                 |if ($i1 < 0) $i1 = 0;
-                |if ($i2 >= $this->count) $i2 = $this->count - 1;
+                |if ($i2 >= $this->byte_count) $i2 = $this->byte_count - 1;
                 |
                 |// Return empty quotes if zero-length
                 |if ($i1 > $i2) return Rogue_literal_strings[0]; // empty string
@@ -322,7 +322,7 @@ class String
 
     method locate( ch:Character, optional_i1=null:Int32? )->Int32?
       $if ("C++")
-        native @|RogueInt32 limit = $this->count;
+        native @|RogueInt32 limit = $this->byte_count;
                 |RogueByte* data  = $this->utf8;
                 |RogueInt32 i1    = $optional_i1.exists ? ($optional_i1.value-1) : -1;
                 |
@@ -359,7 +359,7 @@ class String
 
     method locate_last( ch:Character, starting_index=null:Int32? )->Int32?
       $if ("C++")
-        native @|RogueInt32 limit = $this->count;
+        native @|RogueInt32 limit = $this->byte_count;
                 |RogueByte* data  = $this->utf8;
                 |
                 |int i;
@@ -451,7 +451,7 @@ class String
 
     method operator==( value:String )->Logical
       if (this.hash_code != value.hash_code or this.count != value.count) return false
-      return (native("(0==memcmp($this->utf8,$value->utf8,$this->count))")->Logical)
+      return (native("(0==memcmp($this->utf8,$value->utf8,$this->byte_count))")->Logical)
 
     method operator==( value:StringBuilder )->Logical
       return (value == this)  # invoke the existing operator== method on value)
@@ -460,8 +460,8 @@ class String
       $if ("C++")
         native @|if ($this == $other) return 0;
                 |
-                |RogueInt32 other_count = $other->count;
-                |RogueInt32 limit = $this->count;
+                |RogueInt32 other_count = $other->byte_count;
+                |RogueInt32 limit = $this->byte_count;
                 |
                 |int result;
                 |if (limit == other_count)

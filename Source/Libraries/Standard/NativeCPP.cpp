@@ -279,7 +279,7 @@ RogueString* RogueString_create_with_count( int count )
   int total_size = sizeof(RogueString) + (count+1);
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
-  st->count = count;
+  st->byte_count = count;
   st->character_count = -1;
   st->hash_code = 0;
 
@@ -352,7 +352,7 @@ void RogueString_print_string( RogueString* st )
 {
   if (st)
   {
-    RogueString_print_utf8( st->utf8, st->count );
+    RogueString_print_utf8( st->utf8, st->byte_count );
   }
   else
   {
@@ -417,7 +417,7 @@ void RogueString_print_utf8( RogueByte* utf8, int count )
 RogueString* RogueString_update_hash_code( RogueString* THIS )
 {
   int code = 0;
-  int len = THIS->count;
+  int len = THIS->byte_count;
   RogueByte* src = THIS->utf8 - 1;
   while (--len >= 0)
   {

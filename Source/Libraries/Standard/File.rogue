@@ -100,7 +100,7 @@ class File
               |
               |  is_folder = RogueFile__is_folder__String( $filepath );
               |
-              |  int len = $filepath->count;
+              |  int len = $filepath->byte_count;
               |  if (len >= PATH_MAX) len = PATH_MAX - 1;
               |  memcpy( c_filepath, (char*)$filepath->utf8, len );
               |  c_filepath[len] = 0;
@@ -195,7 +195,7 @@ class File
               |  char filepath_copy[PATH_MAX];
               |  strcpy( filepath_copy, (char*)$filepath->utf8 );
               |
-              |  int path_len = $filepath->count;
+              |  int path_len = $filepath->byte_count;
               |  int i = strlen(filepath_copy)-1;
               |  while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
               |
