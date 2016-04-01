@@ -488,29 +488,29 @@ RogueString* RogueString_validate( RogueString* THIS )
     if (b & 0x80)
     {
       THIS->is_ascii = 0;
-      if ( !(b & 0x40) ) { printf("pt1\n"); break;}  // invalid UTF-8
+      if ( !(b & 0x40) ) { break;}  // invalid UTF-8
 
       if (b & 0x20)
       {
         if (b & 0x10)
         {
           // %11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-          if (b & 0x08) { printf("pt2\n"); break;}
+          if (b & 0x08) { break;}
           if (i + 4 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)
-              || ((utf8[i+3] & 0xC0) != 0x80)) { printf("pt3\n"); break;}
+              || ((utf8[i+3] & 0xC0) != 0x80)) { break;}
           i += 4;
         }
         else
         {
           // %1110xxxx 10xxxxxx 10xxxxxx
-          if (i + 3 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)) { printf("pt4\n"); break;}
+          if (i + 3 > byte_count || ((utf8[i+1] & 0xC0) != 0x80) || ((utf8[i+2] & 0xC0) != 0x80)) { break;}
           i += 3;
         }
       }
       else
       {
         // %110x xxxx 10xx xxxx
-        if (i + 2 > byte_count || ((utf8[i+1] & 0xC0) != 0x80)) { printf("pt5\n"); break; }
+        if (i + 2 > byte_count || ((utf8[i+1] & 0xC0) != 0x80)) { break; }
         i += 2;
       }
     }
