@@ -29,6 +29,7 @@ $include "System.rogue"
 $include "Table.rogue"
 $include "Task.rogue"
 $include "Time.rogue"
+$include "UTF8Reader.rogue"
 $include "Writer.rogue"
 
 $if ("C++")

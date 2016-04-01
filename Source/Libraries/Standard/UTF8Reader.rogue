@@ -1,0 +1,63 @@
+class UTF8Reader : Reader<<Character>>
+  PROPERTIES
+    byte_reader : Reader<<Byte>>
+    next        : Character?
+
+  METHODS
+    method init( byte_reader )
+
+    method has_another->Logical
+      return next.exists or byte_reader.has_another
+
+    method peek->Character
+      if (next.exists) return next.value
+      if (not byte_reader.has_another) return 0
+
+      local ch = byte_reader.read : Character
+      if (ch & 0x80)
+        if (ch & 0x20)
+          if (ch & 0x10)
+            ch  = ((ch&7):<<:18) | ((byte_reader.read & 0x3F) :<<: 12)
+            ch |= (byte_reader.read & 0x3F) :<<: 6
+            ch |= byte_reader.read & 0x3F
+          else
+            ch  = ((ch&15):<<:12) | ((byte_reader.read & 0x3F) :<<: 6)
+            ch |= (byte_reader.read & 0x3F)
+          endIf
+        else
+          ch = ((ch&31):<<:6) | (byte_reader.read & 0x3F)
+        endIf
+      endIf
+
+      next = ch
+
+      return ch
+
+    method read->Character
+      local result = peek
+      next = null
+      ++position
+      return result
+
+    method read( buffer:Character[], limit:Int32 )
+      forEach (1..limit)
+        if (not has_another) return
+        buffer.add( read )
+      endForEach
+
+    method reset->this
+      seek( 0 )
+      return this
+
+    method seek( pos:Int32 )->this
+      if (pos < position)
+        position = 0
+        byte_reader.seek( 0 )
+      endIf
+      return skip( pos - position )
+
+    method skip( n:Int32 )->this
+      forEach (1..n) read
+      return this
+endClass
+
