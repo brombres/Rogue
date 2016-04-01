@@ -29,7 +29,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.46 - March 30, 2016
-- Converted String and StringBuilder to use utf8 bytes instead of a Character[] array.
+- Converted String and StringBuilder to use utf8 bytes instead of a Character[] array internally and character indices externally.
+- Fixed named parameters to work with routines.
 - Removed [foreign] qualifier on String.
 - Changed Character to be a UInt32 internally.
 

@@ -519,12 +519,11 @@ class Tokenizer
       return value
 
     method read_hex_sequence
-      local value = 0
-
       local first = true
       while (first or consume(','))
         first = false
-        buffer.print( read_hex_value(&variable_length)->Character )
+        local ch = read_hex_value( &variable_length )->Character
+        buffer.print( ch )
       endWhile
 
       if (consume(']')) return 

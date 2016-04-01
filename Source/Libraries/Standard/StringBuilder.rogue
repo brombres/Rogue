@@ -3,8 +3,11 @@ class StringBuilder [requisite]
     work_bytes = Byte[]
 
   PROPERTIES
-    utf8       : Byte[]
-    indent     : Int32
+    utf8          : Byte[]
+    count         : Int32  # character count
+    indent        : Int32
+    cursor_offset : Int32  # in bytes
+    cursor_index  : Int32  # in characters
     at_newline = true
 
   METHODS
@@ -16,7 +19,7 @@ class StringBuilder [requisite]
 
     method init( initial_content:String )
       if (initial_content is null) initial_content = "null"
-      local initial_capacity = initial_content.count
+      local initial_capacity = initial_content.byte_count
       if (initial_capacity < 40) initial_capacity = 40
       init( initial_capacity )
       print( initial_content )
@@ -26,7 +29,10 @@ class StringBuilder [requisite]
 
     method clear->this [requisite]
       utf8.clear
+      count = 0
       at_newline = true
+      cursor_index = 0
+      cursor_offset = 0
       return this
 
     method consolidated->String
@@ -34,38 +40,74 @@ class StringBuilder [requisite]
       # reusing a previously consolidated String object if possible.
       return StringConsolidationTable[ this ]
 
-    method count->Int32 [macro]
-      this.utf8.count
+    method get( index:Int32 )->Character
+      if (index == 0)
+        cursor_offset = 0
+        cursor_index = 0
+      elseIf (index == count - 1)
+        cursor_offset = utf8.count
+        cursor_index = count
+      endIf
 
-    method get( index:Int32 )->Character [macro]
-      this.utf8[ index ]
+      while (cursor_index < index)
+        ++cursor_offset
+        while ((utf8[cursor_offset] & 0xC0) == 0x80) ++cursor_offset
+        ++cursor_index
+      endWhile
+
+      while (cursor_index > index)
+        --cursor_offset
+        while ((utf8[cursor_offset] & 0xC0) == 0x80) --cursor_offset
+        --cursor_index
+      endWhile
+
+      local ch = utf8[ cursor_offset ]
+      if (ch & 0x80)
+        if (ch & 0x20)
+          if (ch & 0x10)
+            return ((ch&7):<<:18) | ((utf8[cursor_offset+1] & 0x3F) :<<: 12) ...
+                 | ((utf8[cursor_offset+2] & 0x3F) :<<: 6) | (utf8[cursor_offset+3] & 0x3F)
+          else
+            return ((ch&15):<<:12) | ((utf8[cursor_offset+1] & 0x3F) :<<: 6) | (utf8[cursor_offset+2] & 0x3F)
+          endIf
+        else
+          return ((ch&31):<<:6) | (utf8[cursor_offset+1] & 0x3F)
+        endIf
+      else
+        return ch
+      endIf
 
     method hash_code->Int32
       local code = 0
-      forEach (ch in this)
+      forEach (ch in utf8)
         code = ((code:<<:3) - code) + ch
       endForEach
       return code
 
     method insert( ch:Character )->this
-      utf8.insert( ch )
+      local i1 = utf8.count
+      print( ch, &!formatted )   # put new UTF8 bytes on end
+      local n = utf8.count - i1 
+      utf8.shift( 0, null, n, null )  # shift data over to make room for same bytes at beginning
+      utf8.shift( i1, n, -i1, null )  # copy bytes to beginning
       return this
 
-    method insert_spaces( index=0:Int32, spaces=2:Int32, character=' ':Character )->this
+    method insert_spaces( index=0:Int32, spaces=2:Int32 )->this
       if (spaces > 0 and index >= 0 and index < count)
-        utf8.shift( index, null, spaces, character->Byte )
+        utf8.shift( index, null, spaces, ' '->Byte )
+        count += 2
       endIf
       return this
 
     method locate( ch:Character )->Int32?
       forEach (i of this)
-        if (utf8[i] == ch) return i
+        if (this[i] == ch) return i
       endForEach
       return null
 
     method locate_last( ch:Character )->Int32?
       forEach (i of this step -1)
-        if (utf8[i] == ch) return i
+        if (this[i] == ch) return i
       endForEach
       return null
 
@@ -75,23 +117,27 @@ class StringBuilder [requisite]
     method operator==( value:String )->Logical
       if (count != value.count) return false
       forEach (i of this)
-        if (utf8[i] != value[i]) return false
+        if (this[i] != value[i]) return false
       endForEach
       return true
 
     method operator==( value:StringBuilder )->Logical
       if (count != value.count) return false
       forEach (i of this)
-        if (utf8[i] != value[i]) return false
+        if (this[i] != value[i]) return false
       endForEach
       return true
 
     method print( value:Byte )->this
       return print( value->Int32 )
 
-    method print( value:Character )->this
-      if (value == '\n')    at_newline = true
-      elseIf (needs_indent) print_indent
+    method print( value:Character, &formatted=true )->this
+      if (formatted)
+        if (value == '\n')    at_newline = true
+        elseIf (needs_indent) print_indent
+      endIf
+
+      ++count
       if (value <= 0x7F)
         utf8.add( value )
       elseIf (value <= 0x7FF)
@@ -207,6 +253,7 @@ class StringBuilder [requisite]
           forEach (ch in value) print( ch )
         else
           forEach (i in 0..<value.byte_count) utf8.add( value.byte(i) )
+          count += value.count
           if (value.count and value.last == '\n') at_newline = true
         endIf
         return this
@@ -214,19 +261,10 @@ class StringBuilder [requisite]
         return print( "null" )
       endIf
 
-    method print_character32( value:Int32 )->this
-      if ((value & 0xffe00000) != 0)
-        return print( '?' )
-      else
-        # Surrogate pair
-        value -= 0x10000
-        print( (0xd800 + ((value :>>>: 10) & 0x3ff))->Character )
-        return print( (0xdc00 + (value & 0x3ff))->Character )
-      endIf
-
     method print_indent
       if (not needs_indent or indent == 0) return
       forEach (i in 1..indent) utf8.add( ' ' )
+      count += indent
       at_newline = false
 
     method print_to_work_bytes( value:Real64, decimal_places:Int32 )->this
@@ -296,11 +334,8 @@ class StringBuilder [requisite]
     method println( value:String )->this
       return print( value ).print( '\n' )
 
-    method println_character32( value:Int32 )->this
-      return print_character32( value ).print( '\n' )
-
-    method reserve( additional_count:Int32 )->this [requisite]
-      utf8.reserve( additional_count )
+    method reserve( additional_bytes:Int32 )->this [requisite]
+      utf8.reserve( additional_bytes )
       return this
 
     method round_off_work_bytes
@@ -334,7 +369,22 @@ class StringBuilder [requisite]
       return whole + decimal / 10.0^decimal_count
 
     method set( index:Int32, ch:Character )->this
-      utf8[index] = ch
+      this[ index ]  # position cursor
+      if (ch <= 0x7F)
+        utf8[ cursor_offset ] = ch
+      elseIf (ch <= 0x7FF)
+        utf8[ cursor_offset ]     = ( 0xC0 | (ch:>>>:6) )
+        utf8[ cursor_offset + 1 ] = ( 0x80 | (ch & 0x3F) )
+      elseIf (ch <= 0xFFFF)
+        utf8[ cursor_offset ]     = ( 0xE0 | (ch:>>>:12) )
+        utf8[ cursor_offset + 1 ] = ( 0x80 | ((ch:>>>:6) & 0x3F) )
+        utf8[ cursor_offset + 2 ] = ( 0x80 | (ch & 0x3F) )
+      else
+        utf8[ cursor_offset ]     = ( 0xF0 | (ch:>>>:18) )
+        utf8[ cursor_offset + 1 ] = ( 0x80 | ((ch:>>>:12) & 0x3F) )
+        utf8[ cursor_offset + 2 ] = ( 0x80 | ((ch:>>>:6) & 0x3F) )
+        utf8[ cursor_offset + 3 ] = ( 0x80 | (ch & 0x3F) )
+      endIf
       return this
 
     method to->String

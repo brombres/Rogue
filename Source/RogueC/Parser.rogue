@@ -1015,7 +1015,7 @@ class Parser
         endWhile
 
         if (include_position and args.count)
-          buffer.insert_spaces( data_pos, ((data_pos+3)&!3)-data_pos, ' ' )
+          buffer.insert_spaces( data_pos, ((data_pos+3)&!3)-data_pos )
         endIf
 
         if (reader.has_another and not next_is_end_command)

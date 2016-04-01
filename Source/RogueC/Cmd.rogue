@@ -1589,7 +1589,9 @@ class CmdAccess : Cmd
                 return CmdCreateFunction( t, parameters, m_call.return_type, null, statements, false ).resolve( scope )
               endIf
             else
-              return CmdAccess( t, CmdThisContext(t,new_type), "call", args ).resolve( scope )
+              local cmd = CmdAccess( t, CmdThisContext(t,new_type), "call", args )
+              cmd.flag_args = flag_args
+              return cmd.resolve( scope )
             endIf
           endIf
 

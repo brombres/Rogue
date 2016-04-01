@@ -311,7 +311,11 @@ class File
       local count = size( filepath )
       local buffer = StringBuilder( count )
       local infile = reader( filepath )
-      forEach (1..count) buffer.print( infile.read )
+      forEach (1..count)
+        local b = infile.read
+        buffer.utf8.add( b )
+        if ((b & 0xC0) != 0x80) ++buffer.count
+      endForEach
       infile.close
       return buffer->String
 
@@ -335,7 +339,7 @@ class File
 
     method save( filepath:String, data:String )->Logical
       local outfile = writer( filepath )
-      forEach (ch in data) outfile.write( ch )
+      forEach (i in 0..<data.byte_count) outfile.write( data.byte(i) )
       outfile.close
       return not outfile.error
 

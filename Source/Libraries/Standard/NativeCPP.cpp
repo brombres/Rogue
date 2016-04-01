@@ -520,6 +520,7 @@ RogueString* RogueString_validate( RogueString* THIS )
   if (i != byte_count)
   {
     printf( "*** RogueString validation error - invalid UTF8 (%d/%d):\n", i, byte_count );
+    printf( "%02x\n", utf8[0] );
     printf( "%s\n", utf8 );
     utf8[ i ] = 0;
   }
