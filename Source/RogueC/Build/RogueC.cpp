@@ -15789,17 +15789,26 @@ RogueLogical RogueString__contains__String( RogueString* THIS, RogueString* subs
 
 RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueString* substring_0, RogueInt32 at_index_1 )
 {
-  RogueInt32 other_count = substring_0->byte_count;
-  if (at_index_1 < 0 || at_index_1 + other_count > THIS->byte_count) return false;
-  RogueByte* this_data  = THIS->utf8;
-  RogueByte* other_data = substring_0->utf8;
-  int i = -1;
-  int i2 = other_count - 1;
-  while (++i <= i2)
+  if (at_index_1 < 0)
   {
-    if (this_data[at_index_1+i] != other_data[i]) return false;
+    return (RogueLogical)(false);
   }
-  return true;
+  RogueInt32 offset;
+
+  if (THIS->is_ascii)
+  {
+    offset = at_index_1;
+
+  }
+  else
+  {
+    RogueString_character_at(THIS,at_index_1);
+    offset = THIS->previous_byte_offset;
+
+  }
+  RogueInt32 other_count = substring_0->byte_count;
+  if (offset + other_count > THIS->byte_count) return false;
+  return (0 == memcmp(THIS->utf8 + offset, substring_0->utf8, other_count));
 
 }
 

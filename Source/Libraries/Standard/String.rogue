@@ -104,33 +104,20 @@ class String
       return locate(substring)?
 
     method contains_at( substring:String, at_index:Int32 )->Logical
-      #{
       if (at_index < 0) return false
 
       $if ("C++")
-        native @|RogueString_character_at( $this, $at_index );  // position byte_offset at index
-                |RogueInt32 other_count = $substring->byte_count;
-                |if ($this->previous_byte_offset + other_count > $this->byte_count) return false;
-                |
-                |return (0 == memcmp($this->utf8 + $this->previous_byte_offset, $substring->utf8, other_count));
-      $endIf
-      }#
-
-      $if ("C++")
+        native( "RogueInt32 offset;" )
+        if (is_ascii)
+          native @|offset = $at_index;
+        else
+          this[ at_index ]  # position previous_byte_offset at index
+          native @|offset = $this->previous_byte_offset;
+        endIf
         native @|RogueInt32 other_count = $substring->byte_count;
-        |if ($at_index < 0 || $at_index + other_count > $this->byte_count) return false;
+                |if (offset + other_count > $this->byte_count) return false;
                 |
-                |RogueByte* this_data  = $this->utf8;
-                |RogueByte* other_data = $substring->utf8;
-                |
-                |int i = -1;
-                |int i2 = other_count - 1;
-                |while (++i <= i2)
-                |{
-                |  if (this_data[$at_index+i] != other_data[i]) return false;
-                |}
-                |
-                |return true;
+                |return (0 == memcmp($this->utf8 + offset, $substring->utf8, other_count));
       $endIf
 
 
