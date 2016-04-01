@@ -148,32 +148,6 @@ class String
       return from( i1, count-1 )
 
     method from( i1:Int32, i2:Int32 )->String
-        native @|// Clamp i1 and i2
-                |if ($i1 < 0) $i1 = 0;
-                |if ($i2 >= $this->byte_count) $i2 = $this->byte_count - 1;
-                |
-                |// Return empty quotes if zero-length
-                |if ($i1 > $i2) return Rogue_literal_strings[0]; // empty string
-                |
-                |int new_count = ($i2 - $i1) + 1;
-                |
-                |RogueString* result = RogueString_create_with_byte_count( new_count );
-                |
-                |// Copy character substring while computing hash code.
-                |RogueByte* dest = result->utf8 - 1;
-                |RogueByte* src  = ($this->utf8 + $i1) - 1;
-                |RogueInt32 hash_code = 0;
-                |while (--new_count >= 0)
-                |{
-                |  int ch = *(++src);
-                |  *(++dest) = (RogueByte) ch;
-                |  hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
-                |}
-                |
-                |result->hash_code = hash_code;
-                |return RogueString_validate( result );
-
-                #{
       if (i1 < 0)          i1 = 0
       elseIf (i2 >= count) i2 = count - 1
 
@@ -183,18 +157,22 @@ class String
 
       $if ("C++")
         # Find byte offsets of i1 and i2+1
-        this[i1]
-        native( "RogueInt32 byte_i1 = $this->previous_byte_offset;" )
-        this[i2+1]
-        native( "RogueInt32 byte_limit = $this->previous_byte_offset;" )
+        native( "RogueInt32 byte_i1, byte_limit;" );
+        if (this.is_ascii)
+          native @|byte_i1 = $i1;
+                  |byte_limit = $i2 + 1;
+        else
+          this[i1]
+          native( "byte_i1 = $this->previous_byte_offset;" )
+          this[i2+1]
+          native @|byte_limit = $this->previous_byte_offset;
+        endIf
 
         native @|int new_count = (byte_limit - byte_i1);
-                |
                 |RogueString* result = RogueString_create_with_byte_count( new_count );
                 |memcpy( result->utf8, $this->utf8+byte_i1, new_count );
                 |return RogueString_validate( result );
       $endIf
-      }#
 
     method from_first( ch:Character )->String
       local i = locate( ch )
@@ -231,6 +209,10 @@ class String
         elseIf (spaces < 0) builder.print( line.rightmost(spaces) )
       endForEach
       return builder->String
+
+    method is_ascii->Logical [macro]
+      # Returns 'true' if all character codes in this string are in the range 0..127.
+      native( "$this->is_ascii" )
 
     method last->Character
       return this[ count-1 ]
@@ -287,31 +269,6 @@ class String
         --i
       endWhile
       return null
-
-      #{
-      $if ("C++")
-        native @|RogueInt32 limit = $this->byte_count;
-                |RogueByte* data  = $this->utf8;
-                |
-                |int i;
-                |if ($starting_index.exists)
-                |{
-                |  i = $starting_index.value + 1;
-                |  if (i > limit) i = limit;
-                |}
-                |else
-                |{
-                |  i = limit;
-                |}
-                |
-                |while (--i >= 0)
-                |{
-                |  if (data[i] == $ch) return RogueOptionalInt32(i);
-                |}
-                |
-                |return RogueOptionalInt32();
-      $endIf
-      }#
 
     method locate_last( other:String, starting_index=null:Int32? )->Int32?
       local other_count = other.count

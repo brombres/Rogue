@@ -15821,24 +15821,42 @@ RogueString* RogueString__from__Int32( RogueString* THIS, RogueInt32 i1_0 )
 
 RogueString* RogueString__from__Int32_Int32( RogueString* THIS, RogueInt32 i1_0, RogueInt32 i2_1 )
 {
-  // Clamp i1 and i2
-  if (i1_0 < 0) i1_0 = 0;
-  if (i2_1 >= THIS->byte_count) i2_1 = THIS->byte_count - 1;
-  // Return empty quotes if zero-length
-  if (i1_0 > i2_1) return Rogue_literal_strings[0]; // empty string
-  int new_count = (i2_1 - i1_0) + 1;
-  RogueString* result = RogueString_create_with_byte_count( new_count );
-  // Copy character substring while computing hash code.
-  RogueByte* dest = result->utf8 - 1;
-  RogueByte* src  = (THIS->utf8 + i1_0) - 1;
-  RogueInt32 hash_code = 0;
-  while (--new_count >= 0)
+  if (i1_0 < 0)
   {
-    int ch = *(++src);
-    *(++dest) = (RogueByte) ch;
-    hash_code = ((hash_code << 3) - hash_code) + ch;  // hash * 7 + ch
+    i1_0 = ((RogueInt32)0);
   }
-  result->hash_code = hash_code;
+  else if (i2_1 >= THIS->character_count)
+  {
+    i2_1 = ((RogueInt32)(THIS->character_count - 1));
+  }
+  if (i1_0 > i2_1)
+  {
+    return (RogueString*)(Rogue_literal_strings[0]);
+  }
+  if (i1_0 == i2_1)
+  {
+    return (RogueString*)(((RogueString__operatorPLUS__Character( Rogue_literal_strings[0], ROGUE_ARG(RogueString_character_at(THIS,i1_0)) ))));
+  }
+  RogueInt32 byte_i1, byte_limit;
+
+  if (THIS->is_ascii)
+  {
+    byte_i1 = i1_0;
+    byte_limit = i2_1 + 1;
+
+  }
+  else
+  {
+    RogueString_character_at(THIS,i1_0);
+    byte_i1 = THIS->previous_byte_offset;
+
+    RogueString_character_at(THIS,(i2_1 + 1));
+    byte_limit = THIS->previous_byte_offset;
+
+  }
+  int new_count = (byte_limit - byte_i1);
+  RogueString* result = RogueString_create_with_byte_count( new_count );
+  memcpy( result->utf8, THIS->utf8+byte_i1, new_count );
   return RogueString_validate( result );
 
 }
