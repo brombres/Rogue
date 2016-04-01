@@ -153,6 +153,12 @@ class File
       endIf
       return return_value
 
+    method character_reader( filepath:String )->UTF8Reader [macro]
+      UTF8Reader( File.reader(filepath) )
+
+    method character_writer( filepath:String )->UTF8Writer [macro]
+      UTF8Writer( File.writer(filepath) )
+
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
       # if necessary.  Returns 'true' on success or if the filepath
@@ -367,6 +373,12 @@ class File
     method absolute_filepath->String [macro]
       File.absolute_filepath( this.filepath )
 
+    method character_reader->UTF8Reader [macro]
+      UTF8Reader( this.reader )
+
+    method character_writer->UTF8Writer [macro]
+      UTF8Writer( this.writer )
+
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )
 
@@ -413,7 +425,7 @@ class File
       return filepath
 endClass
 
-class FileReader : Reader<<Character>>
+class FileReader : Reader<<Byte>>
   PROPERTIES
     filepath        : String
     count           : Int32
@@ -459,7 +471,7 @@ class FileReader : Reader<<Character>>
 
       return (position < count)
 
-    method peek->Character
+    method peek->Byte
       if (position == count) return 0
 
       if (buffer_position == buffer.count)
@@ -469,7 +481,7 @@ class FileReader : Reader<<Character>>
 
       return buffer[ buffer_position ]
 
-    method read->Character
+    method read->Byte
       if (position == count) return 0
 
       local result = peek
@@ -503,7 +515,7 @@ class FileReader : Reader<<Character>>
 endClass
 
 
-class FileWriter : Writer<<Character>>
+class FileWriter : Writer<<Byte>>
   PROPERTIES
     filepath : String
     error    : Logical
@@ -568,7 +580,7 @@ class FileWriter : Writer<<Character>>
 
       return this
 
-    method write( ch:Character )->this
+    method write( ch:Byte )->this
       if (not fp) return this
 
       ++position

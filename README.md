@@ -28,11 +28,16 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.46 - March 30, 2016
-- Converted String and StringBuilder to use utf8 bytes instead of a Character[] array internally and character indices externally.
+###v1.0.46 - April 1, 2016
+- Converted String and StringBuilder to use utf8 bytes instead of a Character[] array internally while using character indices externally.
+- Changed Character to be an unsigned 32-bit value.
+- All string indexing and substring operations operate on whole characters (code points 0 through 10FFFF); characters never span multiple indices though the internal UTF8 representation has a variable size.
+- Added classes `UTF8Reader:Reader<<Character>>` and `UTF8Writer:Writer<<Character>>` that wrap `Byte` readers and writers to provide UTF-8 decoding and encoding.
+- `File.reader()` and `File.writer()` now return raw byte readers and writers while `File.character_reader()` and `File.character_writer()` return UTF-8 readers and writers.
 - Fixed named parameters to work with routines.
 - Removed [foreign] qualifier on String.
-- Changed Character to be a UInt32 internally.
+- Renamed C++ method `RogueString_create_from_c_string()` to `RogueString_create_from_utf8()`.
+- Removed C++ method `RogueString_to_c_string()`; a RogueString's `utf8` property is a null-terminated UTF-8 string that can be cast directly to `const char*`.
 
 
 ###v1.0.45 - March 26, 2016

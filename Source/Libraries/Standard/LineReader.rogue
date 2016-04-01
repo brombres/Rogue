@@ -1,0 +1,72 @@
+class LineReader : Reader<<String>>
+  PROPERTIES
+    source : Reader<<Character>>
+    next   : String
+    buffer = StringBuilder()
+    prev   : Character
+
+  METHODS
+    method init( source )
+      next = prepare_next
+
+    method init( file:File )
+      init( file.character_reader )
+
+    method init( string:String )
+      init( string.reader )
+
+    method has_another->Logical
+      return next
+
+    method peek->String
+      return next
+
+    method prepare_next->String
+      if (not source.has_another)
+        if (prev == '\n')
+          # if the last line ended with '\n', count it as one more line
+          prev = 0
+          return ""
+        else
+          return null
+        endIf
+      endIf
+
+      prev = 0
+
+      buffer.clear
+      while (source.has_another)
+        local ch = source.read
+        if (ch == '\n') prev = '\n'; return buffer->String
+        buffer.print( ch )
+      endWhile
+
+      return buffer->String
+
+    method read->String
+      local result = next
+      next = prepare_next
+      ++position
+      return result
+
+    method reset->this
+      seek( 0 )
+      return this
+
+    method seek( n:Int32 )->this
+      if (n < 0) n = 0
+
+      if (n < position)
+        source.reset
+        position = 0
+        next = prepare_next
+      endIf
+
+      while (n > position)
+        read
+      endWhile
+
+      return this
+
+endClass
+

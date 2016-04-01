@@ -61,3 +61,50 @@ class UTF8Reader : Reader<<Character>>
       return this
 endClass
 
+
+class UTF8Writer : Writer<<Character>>
+  PROPERTIES
+    byte_writer : Writer<<Byte>>
+
+  METHODS
+    method init( byte_writer )
+
+    method close->this
+      byte_writer.close
+      return this
+
+    method flush->this
+      byte_writer.flush
+      return this
+
+    method reset->this
+      return seek( 0 )
+
+    method seek( pos:Int32 )->this
+      if (pos != 0)
+        throw UnsupportedOperationError( "UTF8Writer.seek(Int32) to non-zero position" )
+      endIf
+      position = 0
+      byte_writer.seek( 0 )
+      return this
+
+    method seek_end()->this
+      throw UnsupportedOperationError( "UTF8Writer.seek_end()" )
+
+    method skip( n:Int32 )->this
+      throw UnsupportedOperationError( "UTF8Writer.skip(Int32)" )
+
+    method write( value:Character )->this
+      if (value <= 0x7F)
+        byte_writer.write( value )
+      elseIf (value <= 0x7FF)
+        byte_writer.write( 0xC0 | (value:>>>:6) ).write( 0x80 | (value & 0x3F) )
+      elseIf (value <= 0xFFFF)
+        byte_writer.write( 0xE0 | (value:>>>:12) ).write( 0x80 | ((value:>>>:6) & 0x3F) ).write( 0x80 | (value & 0x3F) )
+      else
+        byte_writer.write( 0xF0 | (value:>>>:18) ).write( 0x80 | ((value:>>>:12) & 0x3F) )
+        byte_writer.write( 0x80 | ((value:>>>:6) & 0x3F) ).write( 0x80 | (value & 0x3F) )
+      endIf
+      return this
+endClass
+
