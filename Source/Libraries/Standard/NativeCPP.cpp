@@ -463,8 +463,8 @@ RogueInt32 RogueString_set_cursor( RogueString* THIS, int index )
   RogueInt32 c_index;
   if (index == 0)
   {
-    c_offset = 0;
-    c_index = 0;
+    THIS->cursor_index = 0;
+    return THIS->cursor_offset = 0;
   }
   else if (index >= THIS->character_count - 1)
   {
