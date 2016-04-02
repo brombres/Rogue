@@ -28,6 +28,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.47 - April 2, 2016
+- [C++] - Renamed RogueString's `previous_byte_offset` and `previous_character_index` to be `cursor_offset` and `cursor_index`.
+- [C++] - Added new method `RogueString_set_cursor(THIS,index)->RogueInt32` that takes a character index, sets the cached `cursor_offset` and `cursor_index` in the string, and returns `cursor_offset`.
+
 ###v1.0.46 - April 1, 2016
 - Converted String and StringBuilder to use utf8 bytes instead of a Character[] array internally while using character indices externally.
 - Changed Character to be an unsigned 32-bit value.

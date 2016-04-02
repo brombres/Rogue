@@ -415,35 +415,8 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
 {
   if (THIS->is_ascii) return (RogueCharacter) THIS->utf8[ index ];
 
-  RogueInt32 offset  = THIS->previous_byte_offset;
-  RogueInt32 c_index = THIS->previous_character_index;
-  RogueByte* utf8    = THIS->utf8;
-
-  if (index == 0)
-  {
-    offset = 0;
-    c_index = 0;
-  }
-  else if (index >= THIS->character_count - 1)
-  {
-    offset = THIS->byte_count;
-    c_index = THIS->character_count;
-  }
-
-  while (c_index < index)
-  {
-    while ((utf8[++offset] & 0xC0) == 0x80) {}
-    ++c_index;
-  }
-
-  while (c_index > index)
-  {
-    while ((utf8[--offset] & 0xC0) == 0x80) {}
-    --c_index;
-  }
-
-  THIS->previous_byte_offset = offset;
-  THIS->previous_character_index = c_index;
+  RogueInt32 offset = RogueString_set_cursor( THIS, index );
+  RogueByte* utf8 = THIS->utf8;
 
   RogueCharacter ch = utf8[ offset ];
   if (ch & 0x80)
@@ -452,22 +425,72 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
     {
       if (ch & 0x10)
       {
-        return ((ch&7)<<18) | ((utf8[offset+1] & 0x3F) << 12) | ((utf8[offset+2] & 0x3F) << 6) | (utf8[offset+3] & 0x3F);
+        return ((ch&7)<<18)
+            | ((utf8[offset+1] & 0x3F) << 12)
+            | ((utf8[offset+2] & 0x3F) << 6)
+            | (utf8[offset+3] & 0x3F);
       }
       else
       {
-        return ((ch&15)<<12) | ((utf8[offset+1] & 0x3F) << 6) | (utf8[offset+2] & 0x3F);
+        return ((ch&15)<<12)
+            | ((utf8[offset+1] & 0x3F) << 6)
+            | (utf8[offset+2] & 0x3F);
       }
     }
     else
     {
-      return ((ch&31)<<6) | (utf8[offset+1] & 0x3F);
+      return ((ch&31)<<6)
+          | (utf8[offset+1] & 0x3F);
     }
   }
   else
   {
     return ch;
   }
+}
+
+RogueInt32 RogueString_set_cursor( RogueString* THIS, int index )
+{
+  // Sets this string's cursor_offset and cursor_index and returns cursor_offset.
+  if (THIS->is_ascii)
+  {
+    return THIS->cursor_offset = THIS->cursor_index = index;
+  }
+
+  RogueByte* utf8 = THIS->utf8;
+
+  RogueInt32 c_offset;
+  RogueInt32 c_index;
+  if (index == 0)
+  {
+    c_offset = 0;
+    c_index = 0;
+  }
+  else if (index >= THIS->character_count - 1)
+  {
+    c_offset = THIS->byte_count;
+    c_index = THIS->character_count;
+  }
+  else
+  {
+    c_offset  = THIS->cursor_offset;
+    c_index = THIS->cursor_index;
+  }
+
+  while (c_index < index)
+  {
+    while ((utf8[++c_offset] & 0xC0) == 0x80) {}
+    ++c_index;
+  }
+
+  while (c_index > index)
+  {
+    while ((utf8[--c_offset] & 0xC0) == 0x80) {}
+    --c_index;
+  }
+
+  THIS->cursor_index = c_index;
+  return THIS->cursor_offset = c_offset;
 }
 
 RogueString* RogueString_validate( RogueString* THIS )

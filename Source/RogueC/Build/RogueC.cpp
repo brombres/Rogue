@@ -418,35 +418,8 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
 {
   if (THIS->is_ascii) return (RogueCharacter) THIS->utf8[ index ];
 
-  RogueInt32 offset  = THIS->previous_byte_offset;
-  RogueInt32 c_index = THIS->previous_character_index;
-  RogueByte* utf8    = THIS->utf8;
-
-  if (index == 0)
-  {
-    offset = 0;
-    c_index = 0;
-  }
-  else if (index >= THIS->character_count - 1)
-  {
-    offset = THIS->byte_count;
-    c_index = THIS->character_count;
-  }
-
-  while (c_index < index)
-  {
-    while ((utf8[++offset] & 0xC0) == 0x80) {}
-    ++c_index;
-  }
-
-  while (c_index > index)
-  {
-    while ((utf8[--offset] & 0xC0) == 0x80) {}
-    --c_index;
-  }
-
-  THIS->previous_byte_offset = offset;
-  THIS->previous_character_index = c_index;
+  RogueInt32 offset = RogueString_set_cursor( THIS, index );
+  RogueByte* utf8 = THIS->utf8;
 
   RogueCharacter ch = utf8[ offset ];
   if (ch & 0x80)
@@ -455,22 +428,72 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
     {
       if (ch & 0x10)
       {
-        return ((ch&7)<<18) | ((utf8[offset+1] & 0x3F) << 12) | ((utf8[offset+2] & 0x3F) << 6) | (utf8[offset+3] & 0x3F);
+        return ((ch&7)<<18)
+            | ((utf8[offset+1] & 0x3F) << 12)
+            | ((utf8[offset+2] & 0x3F) << 6)
+            | (utf8[offset+3] & 0x3F);
       }
       else
       {
-        return ((ch&15)<<12) | ((utf8[offset+1] & 0x3F) << 6) | (utf8[offset+2] & 0x3F);
+        return ((ch&15)<<12)
+            | ((utf8[offset+1] & 0x3F) << 6)
+            | (utf8[offset+2] & 0x3F);
       }
     }
     else
     {
-      return ((ch&31)<<6) | (utf8[offset+1] & 0x3F);
+      return ((ch&31)<<6)
+          | (utf8[offset+1] & 0x3F);
     }
   }
   else
   {
     return ch;
   }
+}
+
+RogueInt32 RogueString_set_cursor( RogueString* THIS, int index )
+{
+  // Sets this string's cursor_offset and cursor_index and returns cursor_offset.
+  if (THIS->is_ascii)
+  {
+    return THIS->cursor_offset = THIS->cursor_index = index;
+  }
+
+  RogueByte* utf8 = THIS->utf8;
+
+  RogueInt32 c_offset;
+  RogueInt32 c_index;
+  if (index == 0)
+  {
+    c_offset = 0;
+    c_index = 0;
+  }
+  else if (index >= THIS->character_count - 1)
+  {
+    c_offset = THIS->byte_count;
+    c_index = THIS->character_count;
+  }
+  else
+  {
+    c_offset  = THIS->cursor_offset;
+    c_index = THIS->cursor_index;
+  }
+
+  while (c_index < index)
+  {
+    while ((utf8[++c_offset] & 0xC0) == 0x80) {}
+    ++c_index;
+  }
+
+  while (c_index > index)
+  {
+    while ((utf8[--c_offset] & 0xC0) == 0x80) {}
+    --c_index;
+  }
+
+  THIS->cursor_index = c_index;
+  return THIS->cursor_offset = c_offset;
 }
 
 RogueString* RogueString_validate( RogueString* THIS )
@@ -15917,19 +15940,7 @@ RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueStr
   {
     return (RogueLogical)(false);
   }
-  RogueInt32 offset;
-
-  if (THIS->is_ascii)
-  {
-    offset = at_index_1;
-
-  }
-  else
-  {
-    RogueString_character_at(THIS,at_index_1);
-    offset = THIS->previous_byte_offset;
-
-  }
+  RogueInt32 offset = RogueString_set_cursor( THIS, at_index_1 );
   RogueInt32 other_count = substring_0->byte_count;
   if (offset + other_count > THIS->byte_count) return false;
   return (0 == memcmp(THIS->utf8 + offset, substring_0->utf8, other_count));
@@ -15970,23 +15981,8 @@ RogueString* RogueString__from__Int32_Int32( RogueString* THIS, RogueInt32 i1_0,
   {
     return (RogueString*)(((RogueString__operatorPLUS__Character( Rogue_literal_strings[0], ROGUE_ARG(RogueString_character_at(THIS,i1_0)) ))));
   }
-  RogueInt32 byte_i1, byte_limit;
-
-  if (THIS->is_ascii)
-  {
-    byte_i1 = i1_0;
-    byte_limit = i2_1 + 1;
-
-  }
-  else
-  {
-    RogueString_character_at(THIS,i1_0);
-    byte_i1 = THIS->previous_byte_offset;
-
-    RogueString_character_at(THIS,(i2_1 + 1));
-    byte_limit = THIS->previous_byte_offset;
-
-  }
+  RogueInt32 byte_i1 = RogueString_set_cursor( THIS, i1_0 );
+  RogueInt32 byte_limit = RogueString_set_cursor( THIS, i2_1+1 );
   int new_count = (byte_limit - byte_i1);
   RogueString* result = RogueString_create_with_byte_count( new_count );
   memcpy( result->utf8, THIS->utf8+byte_i1, new_count );
@@ -48581,8 +48577,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.46.2", 8 ) ); 
-  Rogue_literal_strings[40] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 1, 2016", 13 ) ); 
+  Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.47.0", 8 ) ); 
+  Rogue_literal_strings[40] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 2, 2016", 13 ) ); 
   Rogue_literal_strings[41] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[42] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 

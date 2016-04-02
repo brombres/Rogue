@@ -372,8 +372,8 @@ struct RogueString : RogueObject
   RogueInt32 byte_count;       // in UTF-8 bytes
   RogueInt32 character_count;  // in whole characters
   RogueInt32 is_ascii;
-  RogueInt32 previous_byte_offset;
-  RogueInt32 previous_character_index;
+  RogueInt32 cursor_offset;
+  RogueInt32 cursor_index;
   RogueInt32 hash_code;
   RogueByte  utf8[];
 };
@@ -386,6 +386,7 @@ void         RogueString_print_characters( RogueCharacter* characters, int count
 void         RogueString_print_utf8( RogueByte* utf8, int count );
 
 RogueCharacter RogueString_character_at( RogueString* THIS, int index );
+RogueInt32     RogueString_set_cursor( RogueString* THIS, int index );
 RogueString*   RogueString_validate( RogueString* THIS );
 
 

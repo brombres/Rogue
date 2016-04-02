@@ -107,14 +107,8 @@ class String
       if (at_index < 0) return false
 
       $if ("C++")
-        native( "RogueInt32 offset;" )
-        if (is_ascii)
-          native @|offset = $at_index;
-        else
-          this[ at_index ]  # position previous_byte_offset at index
-          native @|offset = $this->previous_byte_offset;
-        endIf
-        native @|RogueInt32 other_count = $substring->byte_count;
+        native @|RogueInt32 offset = RogueString_set_cursor( $this, $at_index );
+                |RogueInt32 other_count = $substring->byte_count;
                 |if (offset + other_count > $this->byte_count) return false;
                 |
                 |return (0 == memcmp($this->utf8 + offset, $substring->utf8, other_count));
@@ -143,19 +137,9 @@ class String
       if (i1 == i2) return ""+this[i1]
 
       $if ("C++")
-        # Find byte offsets of i1 and i2+1
-        native( "RogueInt32 byte_i1, byte_limit;" );
-        if (this.is_ascii)
-          native @|byte_i1 = $i1;
-                  |byte_limit = $i2 + 1;
-        else
-          this[i1]
-          native( "byte_i1 = $this->previous_byte_offset;" )
-          this[i2+1]
-          native @|byte_limit = $this->previous_byte_offset;
-        endIf
-
-        native @|int new_count = (byte_limit - byte_i1);
+        native @|RogueInt32 byte_i1 = RogueString_set_cursor( $this, $i1 );
+                |RogueInt32 byte_limit = RogueString_set_cursor( $this, $i2+1 );
+                |int new_count = (byte_limit - byte_i1);
                 |RogueString* result = RogueString_create_with_byte_count( new_count );
                 |memcpy( result->utf8, $this->utf8+byte_i1, new_count );
                 |return RogueString_validate( result );
