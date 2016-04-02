@@ -645,6 +645,26 @@ class String
       if (i1 == 0 and i2 == count-1) return this
       return from( i1, i2 )
 
+    method up_to_first( ch:Character )->String
+      local i = locate( ch )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_first( st:String )->String
+      local i = locate( st )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_last( ch:Character )->String
+      local i = locate_last( ch )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_last( st:String )->String
+      local i = locate_last( st )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
     method word_wrapped( width:Int32 )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin

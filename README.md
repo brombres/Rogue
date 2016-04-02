@@ -29,6 +29,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.47 - April 2, 2016
+- [Standard Library] - Added `String.up_to_first()` and `.up_to_last()` methods that are inclusive versions of `.before_first/last()`.
+- [C++] - Fixed literal string generation to prevent ambiguous hex escapes, e.g. "\x9CCool" is now "\x9C" "Cool"
 - [C++] - Renamed RogueString's `previous_byte_offset` and `previous_character_index` to be `cursor_offset` and `cursor_index`.
 - [C++] - Added new method `RogueString_set_cursor(THIS,index)->RogueInt32` that takes a character index, sets the cached `cursor_offset` and `cursor_index` in the string, and returns `cursor_offset`.
 

@@ -1028,6 +1028,10 @@ class CPPWriter
           case 10
             print "\\n"
           others
+            # Must print as separate string to avoid C \x ambiguity.  For instance,
+            # "This is \x9CCool" is interpreeted as "This is \x9CC" followed by "ool",
+            # so we have to generate "This is ""\x9C""Cool".
+            print( "\"\"" )  # end of string so far and beginning of hex escape string
             if (ch <= 0x7F)
               print_hex_pair( ch )
             elseIf (ch <= 0x7FF)
@@ -1043,6 +1047,7 @@ class CPPWriter
               print_hex_pair( 0x80 | ((ch :>>>: 6) & 0x3F) )
               print_hex_pair( 0x80 | (ch & 0x3F) )
             endIf
+            print( "\"\"" )  # end of hex escape string and continuation of original string
         endWhich
       endIf
 
