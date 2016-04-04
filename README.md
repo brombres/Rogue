@@ -28,6 +28,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.48 - April 4, 2016
+- [RogueC] - Stand-alone ranges (outside of forEach loops) now accept a `step` size.
+- [RogueC] - If a range has no explicit step size then its default step type now matches the range type.
+
 ###v1.0.47 - April 2, 2016
 - [Standard Library] - Added `String.up_to_first()` and `.up_to_last()` methods that are inclusive versions of `.before_first/last()`.
 - [C++] - Fixed literal string generation to prevent ambiguous hex escapes, e.g. "\x9CCool" is now "\x9C" "Cool"

@@ -2454,10 +2454,14 @@ class CmdRange : Cmd
     method resolve( scope:Scope )->Cmd
       first = first.resolve( scope ).require_value
       last = last.resolve( scope ).require_value
-      if (step_size) step_size = step_size.resolve( scope ).require_value
-      else           step_size = CmdLiteralInt32( t, default_step_size )
 
-      local range_type = must_find_common_type( must_find_common_type(first.type,last.type), step_size.type )
+      local range_type = must_find_common_type( first.type,last.type )
+      if (step_size)
+        step_size = step_size.resolve( scope )
+        range_type = must_find_common_type( range_type, step_size.require_type )
+      else
+        step_size = CmdLiteralInt32( t, default_step_size ).cast_to( range_type, scope ).resolve( scope ).require_value
+      endIf
       local name = "Range"
       if (this instanceOf CmdRangeUpToLessThan) name = "RangeToLimit"
       return CmdAccess( t, "$<<$>>"(name,range_type), CmdArgs(first,last,step_size) ).resolve( scope )

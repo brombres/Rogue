@@ -29695,15 +29695,30 @@ RogueClassCmd* RogueParser__parse_range__Cmd( RogueClassParser* THIS, RogueClass
   ROGUE_DEF_LOCAL_REF(RogueClassToken*,t_1,(((RogueParser__peek( ROGUE_ARG(THIS) )))));
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_upTo) ))))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdRangeUpTo*)(((RogueCmdRange__init__Token_Cmd_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdRange*)ROGUE_CREATE_REF(RogueClassCmdRangeUpTo*,ROGUE_CREATE_OBJECT(CmdRangeUpTo)))), t_1, lhs_0, ROGUE_ARG(((RogueParser__parse_logical_xor( ROGUE_ARG(THIS) )))), ROGUE_ARG(((RogueClassCmd*)(NULL))) ))))))));
+    ROGUE_DEF_LOCAL_REF(RogueClassCmdRangeUpTo*,result_2,(((RogueClassCmdRangeUpTo*)(((RogueCmdRange__init__Token_Cmd_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdRange*)ROGUE_CREATE_REF(RogueClassCmdRangeUpTo*,ROGUE_CREATE_OBJECT(CmdRangeUpTo)))), t_1, lhs_0, ROGUE_ARG(((RogueParser__parse_logical_xor( ROGUE_ARG(THIS) )))), ROGUE_ARG(((RogueClassCmd*)(NULL))) )))))));
+    if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_step) ))))
+    {
+      result_2->step_size = ((RogueParser__parse_expression( ROGUE_ARG(THIS) )));
+    }
+    return (RogueClassCmd*)(((RogueClassCmd*)(result_2)));
   }
   else if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_upToLessThan) ))))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdRangeUpToLessThan*)(((RogueCmdRange__init__Token_Cmd_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdRange*)ROGUE_CREATE_REF(RogueClassCmdRangeUpToLessThan*,ROGUE_CREATE_OBJECT(CmdRangeUpToLessThan)))), t_1, lhs_0, ROGUE_ARG(((RogueParser__parse_logical_xor( ROGUE_ARG(THIS) )))), ROGUE_ARG(((RogueClassCmd*)(NULL))) ))))))));
+    ROGUE_DEF_LOCAL_REF(RogueClassCmdRangeUpToLessThan*,result_3,(((RogueClassCmdRangeUpToLessThan*)(((RogueCmdRange__init__Token_Cmd_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdRange*)ROGUE_CREATE_REF(RogueClassCmdRangeUpToLessThan*,ROGUE_CREATE_OBJECT(CmdRangeUpToLessThan)))), t_1, lhs_0, ROGUE_ARG(((RogueParser__parse_logical_xor( ROGUE_ARG(THIS) )))), ROGUE_ARG(((RogueClassCmd*)(NULL))) )))))));
+    if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_step) ))))
+    {
+      result_3->step_size = ((RogueParser__parse_expression( ROGUE_ARG(THIS) )));
+    }
+    return (RogueClassCmd*)(((RogueClassCmd*)(result_3)));
   }
   else if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_downTo) ))))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdRangeDownTo*)(((RogueCmdRange__init__Token_Cmd_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdRange*)ROGUE_CREATE_REF(RogueClassCmdRangeDownTo*,ROGUE_CREATE_OBJECT(CmdRangeDownTo)))), t_1, lhs_0, ROGUE_ARG(((RogueParser__parse_logical_xor( ROGUE_ARG(THIS) )))), ROGUE_ARG(((RogueClassCmd*)(NULL))) ))))))));
+    ROGUE_DEF_LOCAL_REF(RogueClassCmdRangeDownTo*,result_4,(((RogueClassCmdRangeDownTo*)(((RogueCmdRange__init__Token_Cmd_Cmd_Cmd( ROGUE_ARG(((RogueClassCmdRange*)ROGUE_CREATE_REF(RogueClassCmdRangeDownTo*,ROGUE_CREATE_OBJECT(CmdRangeDownTo)))), t_1, lhs_0, ROGUE_ARG(((RogueParser__parse_logical_xor( ROGUE_ARG(THIS) )))), ROGUE_ARG(((RogueClassCmd*)(NULL))) )))))));
+    if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_step) ))))
+    {
+      result_4->step_size = ((RogueParser__parse_expression( ROGUE_ARG(THIS) )));
+    }
+    return (RogueClassCmd*)(((RogueClassCmd*)(result_4)));
   }
   else
   {
@@ -42038,15 +42053,16 @@ RogueClassCmd* RogueCmdRange__resolve__Scope( RogueClassCmdRange* THIS, RogueCla
 {
   THIS->first = ((RogueCmd__require_value( ROGUE_ARG((call_ROGUEM69( 28, ROGUE_ARG(THIS->first), scope_0 ))) )));
   THIS->last = ((RogueCmd__require_value( ROGUE_ARG((call_ROGUEM69( 28, ROGUE_ARG(THIS->last), scope_0 ))) )));
+  ROGUE_DEF_LOCAL_REF(RogueClassType*,range_type_1,(((RogueCmd__must_find_common_type__Type_Type( ROGUE_ARG(((RogueClassCmd*)THIS)), ROGUE_ARG((call_ROGUEM77( 32, ROGUE_ARG(THIS->first) ))), ROGUE_ARG((call_ROGUEM77( 32, ROGUE_ARG(THIS->last) ))) )))));
   if (!!(THIS->step_size))
   {
-    THIS->step_size = ((RogueCmd__require_value( ROGUE_ARG((call_ROGUEM69( 28, ROGUE_ARG(THIS->step_size), scope_0 ))) )));
+    THIS->step_size = (call_ROGUEM69( 28, ROGUE_ARG(THIS->step_size), scope_0 ));
+    range_type_1 = ((RogueClassType*)((RogueCmd__must_find_common_type__Type_Type( ROGUE_ARG(((RogueClassCmd*)THIS)), range_type_1, ROGUE_ARG((call_ROGUEM77( 25, ROGUE_ARG(THIS->step_size) ))) ))));
   }
   else
   {
-    THIS->step_size = ((RogueClassCmd*)(((RogueCmdLiteralInt32__init__Token_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLiteralInt32*,ROGUE_CREATE_OBJECT(CmdLiteralInt32))), ROGUE_ARG(THIS->t), ROGUE_ARG((call_ROGUEM664( 38, ROGUE_ARG(THIS) ))) )))));
+    THIS->step_size = ((RogueCmd__require_value( ROGUE_ARG((call_ROGUEM69( 28, ROGUE_ARG(((RogueCmdLiteralInt32__cast_to__Type_Scope( ROGUE_ARG(((RogueCmdLiteralInt32__init__Token_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLiteralInt32*,ROGUE_CREATE_OBJECT(CmdLiteralInt32))), ROGUE_ARG(THIS->t), ROGUE_ARG((call_ROGUEM664( 38, ROGUE_ARG(THIS) ))) )))), range_type_1, scope_0 )))), scope_0 ))) )));
   }
-  ROGUE_DEF_LOCAL_REF(RogueClassType*,range_type_1,(((RogueCmd__must_find_common_type__Type_Type( ROGUE_ARG(((RogueClassCmd*)THIS)), ROGUE_ARG(((RogueCmd__must_find_common_type__Type_Type( ROGUE_ARG(((RogueClassCmd*)THIS)), ROGUE_ARG((call_ROGUEM77( 32, ROGUE_ARG(THIS->first) ))), ROGUE_ARG((call_ROGUEM77( 32, ROGUE_ARG(THIS->last) ))) )))), ROGUE_ARG((call_ROGUEM77( 32, ROGUE_ARG(THIS->step_size) ))) )))));
   ROGUE_DEF_LOCAL_REF(RogueString*,name_2,(Rogue_literal_strings[962]));
   if (RogueObject_instance_of(THIS,RogueTypeCmdRangeUpToLessThan))
   {
@@ -48859,7 +48875,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[316] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Literal string expected.", 24 ) ); 
   Rogue_literal_strings[317] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "The last part of a select{} must be a single expression.", 56 ) ); 
   Rogue_literal_strings[318] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "The last part of a select{} cannot have a condition.", 52 ) ); 
-  Rogue_literal_strings[319] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_term() Parser.rogue:2509]     this_type.name:", 59 ) ); 
+  Rogue_literal_strings[319] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_term() Parser.rogue:2515]     this_type.name:", 59 ) ); 
   Rogue_literal_strings[320] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Syntax error: unexpected '", 26 ) ); 
   Rogue_literal_strings[321] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "abstract", 8 ) ); 
   Rogue_literal_strings[322] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "aspect", 6 ) ); 

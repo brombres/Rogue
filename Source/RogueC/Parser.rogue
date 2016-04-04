@@ -1737,15 +1737,21 @@ class Parser
     method parse_range( lhs:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.symbol_upTo))
-        return CmdRangeUpTo( t, lhs, parse_logical_xor )
+        local result = CmdRangeUpTo( t, lhs, parse_logical_xor )
+        if (consume(TokenType.keyword_step)) result.step_size = parse_expression
+        return result
       elseIf (consume(TokenType.symbol_upToLessThan))
-        return CmdRangeUpToLessThan( t, lhs, parse_logical_xor )
+        local result = CmdRangeUpToLessThan( t, lhs, parse_logical_xor )
+        if (consume(TokenType.keyword_step)) result.step_size = parse_expression
+        return result
         #{
       elseIf (consume(TokenType.symbol_downToGreaterThan))
         return CmdRangeDownToGreaterThan( t, lhs, parse_logical_xor )
         }#
       elseIf (consume(TokenType.keyword_downTo))
-        return CmdRangeDownTo( t, lhs, parse_logical_xor )
+        local result = CmdRangeDownTo( t, lhs, parse_logical_xor )
+        if (consume(TokenType.keyword_step)) result.step_size = parse_expression
+        return result
       else
         return lhs
       endIf
@@ -2466,7 +2472,7 @@ class Parser
             consume_eols
             must_consume( TokenType.symbol_colon )
             consume_eols
-            
+
             # If we don't use the 'others' keyword then the last value
             # will end up in 'conditions' to begin with so stick to that
             # pattern.
