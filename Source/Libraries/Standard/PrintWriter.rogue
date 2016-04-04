@@ -60,6 +60,10 @@ class PrintWriterAspect<<$WriterType>> [aspect]
       printwriter_output_buffer.print( value )
       return this
 
+    method print( value:Real32 )->$WriterType
+      printwriter_output_buffer.print( value->Real64 )
+      return this
+
     method print( value:String )->$WriterType
       printwriter_output_buffer.print( value )
       if (printwriter_output_buffer.count > 1024) flush
@@ -85,6 +89,9 @@ class PrintWriterAspect<<$WriterType>> [aspect]
       return print( value ).println
 
     method println( value:Real64 )->$WriterType
+      return print( value ).println
+
+    method println( value:Real32 )->$WriterType
       return print( value ).println
 
     method println( value:Object )->$WriterType

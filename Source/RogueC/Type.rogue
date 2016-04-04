@@ -200,6 +200,30 @@ class Type
       if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
 
+    method is_real->Logical
+      return this is Program.type_Real64 or this is Program.type_Real32
+
+    method widening_distance_to( other:Type )->Int32
+      if (this is other) return 0
+      if (this.is_primitive and other.is_primitive)
+        return other.primitive_rank - this.primitive_rank
+      endIf
+      if (other.is_optional)
+        if (other.element_type is this) return 1
+        if (this is Program.type_null) return 1
+      endIf
+      if (this.is_aspect and other is Program.type_Object) return 1
+
+      if (this is Program.type_null and other.is_reference) return 1
+
+      forEach (base_type in base_types)
+        if (base_type.instance_of(other)) return 1 + base_type.widening_distance_to( other )
+      endForEach
+
+      if (this.is_reference and other is Program.type_Object and not this.is_foreign) return 1
+
+      return -10
+
     method is_equivalent_or_more_specific_than( other:Type )->Logical
       if (this is other) return true
       if (this.is_primitive and other.is_primitive)

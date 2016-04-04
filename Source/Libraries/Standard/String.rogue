@@ -360,6 +360,9 @@ class String
     method operator+( value:Real64 )->String
       return StringBuilder().print( this ).print( value )->String
 
+    method operator+( value:Real32 )->String [macro]
+      this + value->Real64
+
     method operator+( value:String )->String
       if (value is null) return this + "null"
       if (count == 0) return value

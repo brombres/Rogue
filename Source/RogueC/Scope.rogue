@@ -278,7 +278,7 @@ class Scope
         if (m.accepts_arg_count(arg_count)) candidates.compatible.add( m )
       endForEach
       if (not candidates.update_matches) return null
-      
+
       if (access.flag_args)
         # Throw out any method that does not have one of the supplied named parameters
         forEach (m in candidates.available)
@@ -386,9 +386,7 @@ class Scope
 
         endIf
 
-        # Compatible arg check.  Leaves incompatible method if it's the only
-        # one, so we can't return a single method right away.  But we can
-        # pare down the options.
+        # Compatible arg check.
         forEach (m in candidates.available)
           contingent
             forEach (index of args)
@@ -400,6 +398,11 @@ class Scope
             candidates.compatible.add( m )
           endContingent
         endForEach
+
+        if (candidates.compatible.count)
+          candidates.update_matches
+          if (candidates.has_match) return candidates.match
+        endIf
       endIf
 
       if (candidates.compatible.count)

@@ -2,10 +2,26 @@ class PrimitiveWorkBuffer : StringBuilder [singleton];
 
 class Real64 [primitive]
   GLOBAL METHODS
-    method create( bits:Int64 )->Real64
-      $if ("C++")
-        native "return *((RogueReal64*)&$bits);"
-      $endIf
+    method create( value:Real64 )->Real64
+      return value
+
+    method create( value:Real32 )->Real64
+      return value->Real64
+
+    method create( value:Int64 )->Real64
+      return value->Real64
+
+    method create( value:Int32 )->Real64
+      return value->Real64
+
+    method create( value:Character )->Real64
+      return value->Real64
+
+    method create( value:Byte )->Real64
+      return value->Real64
+
+    method create( value:Logical )->Real64
+      return value->Real64
 
   METHODS
     method abs->Real64
@@ -13,7 +29,9 @@ class Real64 [primitive]
       else           return -this
 
     method integer_bits->Int64
-      return Int64( this )
+      $if ("C++")
+        native "return *((RogueInt64*)&$bit_source);"
+      $endIf
 
     method clamped( low:Real64, high:Real64 )->Real64
       if (this < low)  return low
@@ -39,7 +57,7 @@ class Real64 [primitive]
       return PrimitiveWorkBuffer.clear.print( this ).count
 
     method hash_code->Int32
-      return Int64(this)->Int32
+      return integer_bits->Int32
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -72,10 +90,26 @@ endClass
 
 class Real32 [primitive]
   GLOBAL METHODS
-    method create( bits:Int32 )->Real32
-      $if ("C++")
-        native "return *((RogueReal32*)&$bits);"
-      $endIf
+    method create( value:Real64 )->Real32
+      return value->Real32
+
+    method create( value:Real32 )->Real32
+      return value
+
+    method create( value:Int64 )->Real32
+      return value->Real32
+
+    method create( value:Int32 )->Real32
+      return value->Real32
+
+    method create( value:Character )->Real32
+      return value->Real32
+
+    method create( value:Byte )->Real32
+      return value->Real32
+
+    method create( value:Logical )->Real32
+      return value->Real32
 
   METHODS
     method abs->Real32
@@ -83,7 +117,9 @@ class Real32 [primitive]
       else           return -this
 
     method integer_bits->Int32
-      return Int32( this )
+      $if ("C++")
+        native "return *((RogueInt32*)&$bit_source);"
+      $endIf
 
     method clamped( low:Real32, high:Real32 )->Real32
       if (this < low)  return low
@@ -124,10 +160,26 @@ endClass
 
 class Int64 [primitive]
   GLOBAL METHODS
-    method create( bit_source:Real64 )->Int64
-      $if ("C++")
-        native "return *((RogueInt64*)&$bit_source);"
-      $endIf
+    method create( value:Real64 )->Int64
+      return value->Int64
+
+    method create( value:Real32 )->Int64
+      return value->Int64
+
+    method create( value:Int64 )->Int64
+      return value
+
+    method create( value:Int32 )->Int64
+      return value->Int64
+
+    method create( value:Character )->Int64
+      return value->Int64
+
+    method create( value:Byte )->Int64
+      return value->Int64
+
+    method create( value:Logical )->Int64
+      return value->Int64
 
   METHODS
     method abs->Int64
@@ -135,7 +187,9 @@ class Int64 [primitive]
       else           return -this
 
     method real_bits->Real64
-      return Real64( this )
+      $if ("C++")
+        native "return *((RogueReal64*)&$bits);"
+      $endIf
 
     method clamped( low:Int64, high:Int64 )->Int64
       if (this < low)  return low
@@ -184,10 +238,26 @@ endClass
 
 class Int32 [primitive]
   GLOBAL METHODS
-    method create( bit_source:Real32 )->Int32
-      $if ("C++")
-        native "return *((RogueInt32*)&$bit_source);"
-      $endIf
+    method create( value:Real64 )->Int32
+      return value->Int32
+
+    method create( value:Real32 )->Int32
+      return value->Int32
+
+    method create( value:Int64 )->Int32
+      return value->Int32
+
+    method create( value:Int32 )->Int32
+      return value
+
+    method create( value:Character )->Int32
+      return value->Int32
+
+    method create( value:Byte )->Int32
+      return value->Int32
+
+    method create( value:Logical )->Int32
+      return value->Int32
 
   METHODS
     method abs->Int32
@@ -195,7 +265,9 @@ class Int32 [primitive]
       else           return -this
 
     method real_bits->Real32
-      return Real32( this )
+      $if ("C++")
+        native "return *((RogueReal32*)&$bits);"
+      $endIf
 
     method clamped( low:Int32, high:Int32 )->Int32
       if (this < low)  return low
@@ -239,6 +311,27 @@ class Int32 [primitive]
 endClass
 
 class Character [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Character
+      return value->Character
+
+    method create( value:Real32 )->Character
+      return value->Character
+
+    method create( value:Int64 )->Character
+      return value->Character
+
+    method create( value:Int32 )->Character
+      return value->Character
+
+    method create( value:Character )->Character
+      return value
+
+    method create( value:Byte )->Character
+      return value->Character
+
+    method create( value:Logical )->Character
+      return value->Character
   METHODS
     method clamped( low:Character, high:Character )->Character
       if (this < low)  return low
@@ -292,6 +385,28 @@ class Character [primitive]
 endClass
 
 class Byte [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Byte
+      return value->Byte
+
+    method create( value:Real32 )->Byte
+      return value->Byte
+
+    method create( value:Int64 )->Byte
+      return value->Byte
+
+    method create( value:Int32 )->Byte
+      return value->Byte
+
+    method create( value:Character )->Byte
+      return value->Byte
+
+    method create( value:Byte )->Byte
+      return value
+
+    method create( value:Logical )->Byte
+      return value->Byte
+
   METHODS
     method clamped( low:Byte, high:Byte )->Byte
       if (this < low)  return low
@@ -325,6 +440,28 @@ class Byte [primitive]
 endClass
 
 class Logical [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Logical
+      return value != 0
+
+    method create( value:Real32 )->Logical
+      return value != 0
+
+    method create( value:Int64 )->Logical
+      return value != 0
+
+    method create( value:Int32 )->Logical
+      return value != 0
+
+    method create( value:Character )->Logical
+      return value != 0
+
+    method create( value:Byte )->Logical
+      return value != 0
+
+    method create( value:Logical )->Logical
+      return value
+
   METHODS
     method digit_count->Int32
       if (this) return 4  # "true"

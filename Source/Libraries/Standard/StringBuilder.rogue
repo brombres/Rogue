@@ -87,7 +87,7 @@ class StringBuilder [requisite]
     method insert( ch:Character )->this
       local i1 = utf8.count
       print( ch, &!formatted )   # put new UTF8 bytes on end
-      local n = utf8.count - i1 
+      local n = utf8.count - i1
       utf8.shift( 0, null, n, null )  # shift data over to make room for same bytes at beginning
       utf8.shift( i1, n, -i1, null )  # copy bytes to beginning
       return this
@@ -138,15 +138,17 @@ class StringBuilder [requisite]
       endIf
 
       ++count
-      if (value <= 0x7F)
+      if (value <= Character(0x7F))
         utf8.add( value )
-      elseIf (value <= 0x7FF)
+      elseIf (value <= Character(0x7FF))
         utf8.add( 0xC0 | (value:>>>:6) ).add( 0x80 | (value & 0x3F) )
-      elseIf (value <= 0xFFFF)
+      elseIf (value <= Character(0xFFFF))
         utf8.add( 0xE0 | (value:>>>:12) ).add( 0x80 | ((value:>>>:6) & 0x3F) ).add( 0x80 | (value & 0x3F) )
-      else
+      elseIf (value <= Character(0x10FFFF))
         utf8.add( 0xF0 | (value:>>>:18) ).add( 0x80 | ((value:>>>:12) & 0x3F) )
         utf8.add( 0x80 | ((value:>>>:6) & 0x3F) ).add( 0x80 | (value & 0x3F) )
+      else
+        utf8.add( '?' )
       endIf
       return this
 
@@ -312,6 +314,9 @@ class StringBuilder [requisite]
 
     method println( value:Real32 )->this [macro]
       this.println( value->Real64 )
+
+    method println( value:Real32, decimal_places:Int32 )->this [macro]
+      this.println( value->Real64, decimal_places )
 
     method println( value:Int32 )->this
       return print( value ).print( '\n' )
