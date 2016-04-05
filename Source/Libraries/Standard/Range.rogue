@@ -1,8 +1,8 @@
 class Range<<$DataType>>( current:$DataType, last:$DataType, step_size=1:$DataType )
   METHODS
     method has_another->Logical
-      if (step_size >= 0) return current <= last
-      else                return current >= last
+      if (Int32(step_size) >= 0) return current <= last
+      else                       return current >= last
 
     method read->$DataType
       local result = current
@@ -24,8 +24,8 @@ endClass
 class RangeToLimit<<$DataType>> : Range<<$DataType>>
   METHODS
     method has_another->Logical
-      if (step_size >= 0) return current < last
-      else                return current > last
+      if (Int32(step_size) >= 0) return current < last
+      else                       return current > last
 
     method read->$DataType
       local result = current
