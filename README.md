@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.50 - April 5, 2016
+- [RogueC] Nil returns in `init()` methods are now automatically converted to `return this`.
+
 ###v1.0.49 - April 4, 2016
 - [Standard Library] Fixed bugs in `real_bits()` and `integer_bits()`.
 

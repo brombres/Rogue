@@ -338,6 +338,10 @@ class CmdReturn : CmdStatement
           throw t.error( "$ is not declared as returning a value." (scope.this_method.signature) )
         endIf
         value = value.resolve( scope ).cast_to(scope.this_method.return_type,scope).resolve( scope )
+
+      elseIf (scope.this_method.is_initializer)
+        # 'return' -> 'return this'
+        value = CmdLiteralThis( t, scope.this_method.type_context ).resolve( scope )
       endIf
       return this
 
