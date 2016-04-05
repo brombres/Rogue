@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.49 - April 4, 2016
+- [Standard Library] Fixed bugs in `real_bits()` and `integer_bits()`.
+
 ###v1.0.48 - April 4, 2016
 - [Standard Library] - Moved core functionality for primitive `real_bits()` and `integer_bits()` out of global create methods and into those methods themselves.
 - [Standard Library] - Primitives can now be created and cast with constructor-style syntax, e.g. `n = Int32(3.4)`.

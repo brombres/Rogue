@@ -30,7 +30,7 @@ class Real64 [primitive]
 
     method integer_bits->Int64
       $if ("C++")
-        native "return *((RogueInt64*)&$bit_source);"
+        native "return *((RogueInt64*)&$this);"
       $endIf
 
     method clamped( low:Real64, high:Real64 )->Real64
@@ -118,7 +118,7 @@ class Real32 [primitive]
 
     method integer_bits->Int32
       $if ("C++")
-        native "return *((RogueInt32*)&$bit_source);"
+        native "return *((RogueInt32*)&$this);"
       $endIf
 
     method clamped( low:Real32, high:Real32 )->Real32
@@ -188,7 +188,7 @@ class Int64 [primitive]
 
     method real_bits->Real64
       $if ("C++")
-        native "return *((RogueReal64*)&$bits);"
+        native "return *((RogueReal64*)&$this);"
       $endIf
 
     method clamped( low:Int64, high:Int64 )->Int64
@@ -266,7 +266,7 @@ class Int32 [primitive]
 
     method real_bits->Real32
       $if ("C++")
-        native "return *((RogueReal32*)&$bits);"
+        native "return *((RogueReal32*)&$this);"
       $endIf
 
     method clamped( low:Int32, high:Int32 )->Int32
