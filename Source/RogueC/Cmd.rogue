@@ -78,7 +78,7 @@ class Cmd
       local result = find_common_type( left_type, right_type )
       if (not result) return left_type
 
-      if (result is Program.type_Byte or result is Program.type_Character) return Program.type_Int32
+      if (result is Program.type_Byte) return Program.type_Int32
       return result
 
     method find_common_type( left_type:Type, right_type:Type )->Type
@@ -92,8 +92,8 @@ class Cmd
           if (left_type is Program.type_Real64 or right_type is Program.type_Real64) return Program.type_Real64
           if (left_type is Program.type_Real32 or right_type is Program.type_Real32) return Program.type_Real32
           if (left_type is Program.type_Int64 or right_type is Program.type_Int64) return Program.type_Int64
-          if (left_type is Program.type_Int32 or right_type is Program.type_Int32) return Program.type_Int32
           if (left_type is Program.type_Character or right_type is Program.type_Character) return Program.type_Character
+          if (left_type is Program.type_Int32 or right_type is Program.type_Int32) return Program.type_Int32
         endIf
       endIf
 
@@ -546,8 +546,8 @@ class CmdWhich : CmdControlStructure
       local all_literal_cases = true
 
       local expression_type = expression.require_type
-      if (expression_type isNot Program.type_Int32)
-        if (expression_type is Program.type_Byte or expression_type is Program.type_Character)
+      if (expression_type isNot Program.type_Int32 and expression_type isNot Program.type_Character)
+        if (expression_type is Program.type_Byte)
           expression = expression.cast_to(Program.type_Int32,scope).resolve( scope )
         else
           all_literal_cases = false  # prevent conversion to C 'switch'
@@ -3231,9 +3231,15 @@ endClass
 class CmdBitwiseOp : CmdBinary
   METHODS
     method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
-      if (common_type is Program.type_Byte or common_type is Program.type_Character or common_type is Program.type_Int32)
+      if (common_type is Program.type_Byte or common_type is Program.type_Int32)
         left  = left.cast_to( Program.type_Int32, scope ).resolve( scope )
         right = right.cast_to( Program.type_Int32, scope ).resolve( scope )
+        return this
+      endIf
+
+      if (common_type is Program.type_Character)
+        left  = left.cast_to( Program.type_Character, scope ).resolve( scope )
+        right = right.cast_to( Program.type_Character, scope ).resolve( scope )
         return this
       endIf
 

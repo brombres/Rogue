@@ -15237,11 +15237,11 @@ RogueCharacter RogueInt32__to_digit( RogueInt32 THIS )
 {
   if ((THIS >= 0 && THIS <= 9))
   {
-    return (RogueCharacter)(((RogueCharacter)((THIS + ((RogueInt32)((RogueCharacter)'0'))))));
+    return (RogueCharacter)((((RogueCharacter)(THIS)) + (RogueCharacter)'0'));
   }
   if ((THIS >= 10 && THIS <= 35))
   {
-    return (RogueCharacter)(((RogueCharacter)(((THIS - 10) + ((RogueInt32)((RogueCharacter)'A'))))));
+    return (RogueCharacter)((((RogueCharacter)((THIS - 10))) + (RogueCharacter)'A'));
   }
   return (RogueCharacter)((RogueCharacter)'0');
 }
@@ -15273,17 +15273,17 @@ RogueString* RogueCharacter__to_String( RogueCharacter THIS )
 
 RogueInt32 RogueCharacter__to_number__Int32( RogueCharacter THIS, RogueInt32 base_0 )
 {
-  if ((THIS >= (RogueCharacter)'0' && ((RogueInt32)(THIS)) < (((RogueInt32)((RogueCharacter)'0')) + base_0)))
+  if ((THIS >= (RogueCharacter)'0' && THIS < ((RogueCharacter)'0' + ((RogueCharacter)(base_0)))))
   {
-    return (RogueInt32)((THIS - (RogueCharacter)'0'));
+    return (RogueInt32)(((RogueInt32)((THIS - (RogueCharacter)'0'))));
   }
-  if ((THIS >= (RogueCharacter)'a' && ((RogueInt32)(THIS)) < (((RogueInt32)((RogueCharacter)'a')) + (base_0 - 10))))
+  if ((THIS >= (RogueCharacter)'a' && THIS < ((RogueCharacter)'a' + ((RogueCharacter)((base_0 - 10))))))
   {
-    return (RogueInt32)(((THIS - (RogueCharacter)'a') + 10));
+    return (RogueInt32)(((RogueInt32)(((THIS - (RogueCharacter)'a') + ((RogueCharacter)(10))))));
   }
-  if ((THIS >= (RogueCharacter)'A' && ((RogueInt32)(THIS)) < (((RogueInt32)((RogueCharacter)'A')) + (base_0 - 10))))
+  if ((THIS >= (RogueCharacter)'A' && THIS < ((RogueCharacter)'A' + ((RogueCharacter)((base_0 - 10))))))
   {
-    return (RogueInt32)(((THIS - (RogueCharacter)'A') + 10));
+    return (RogueInt32)(((RogueInt32)(((THIS - (RogueCharacter)'A') + ((RogueCharacter)(10))))));
   }
   return (RogueInt32)(-1);
 }
@@ -15415,16 +15415,16 @@ RogueStringBuilder* RogueStringBuilder__print__Character_Logical( RogueStringBui
   }
   else if (value_0 <= (RogueCharacter__create__Int32( 2047 )))
   {
-    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((192 | (((RogueInt32)(value_0)) >> 6))))) )))), ROGUE_ARG(((RogueByte)((128 | (((RogueInt32)(value_0)) & 63))))) );
+    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((((RogueCharacter)(192)) | (value_0 >> ((RogueCharacter)(6))))))) )))), ROGUE_ARG(((RogueByte)((((RogueCharacter)(128)) | (value_0 & ((RogueCharacter)(63))))))) );
   }
   else if (value_0 <= (RogueCharacter__create__Int32( 65535 )))
   {
-    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((224 | (((RogueInt32)(value_0)) >> 12))))) )))), ROGUE_ARG(((RogueByte)((128 | ((((RogueInt32)(value_0)) >> 6) & 63))))) )))), ROGUE_ARG(((RogueByte)((128 | (((RogueInt32)(value_0)) & 63))))) );
+    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((((RogueCharacter)(224)) | (value_0 >> ((RogueCharacter)(12))))))) )))), ROGUE_ARG(((RogueByte)((((RogueCharacter)(128)) | ((value_0 >> ((RogueCharacter)(6))) & ((RogueCharacter)(63))))))) )))), ROGUE_ARG(((RogueByte)((((RogueCharacter)(128)) | (value_0 & ((RogueCharacter)(63))))))) );
   }
   else if (value_0 <= (RogueCharacter__create__Int32( 1114111 )))
   {
-    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((240 | (((RogueInt32)(value_0)) >> 18))))) )))), ROGUE_ARG(((RogueByte)((128 | ((((RogueInt32)(value_0)) >> 12) & 63))))) );
-    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((128 | ((((RogueInt32)(value_0)) >> 6) & 63))))) )))), ROGUE_ARG(((RogueByte)((128 | (((RogueInt32)(value_0)) & 63))))) );
+    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((((RogueCharacter)(240)) | (value_0 >> ((RogueCharacter)(18))))))) )))), ROGUE_ARG(((RogueByte)((((RogueCharacter)(128)) | ((value_0 >> ((RogueCharacter)(12))) & ((RogueCharacter)(63))))))) );
+    RogueByte_List__add__Byte( ROGUE_ARG(((RogueByte_List__add__Byte( ROGUE_ARG(THIS->utf8), ROGUE_ARG(((RogueByte)((((RogueCharacter)(128)) | ((value_0 >> ((RogueCharacter)(6))) & ((RogueCharacter)(63))))))) )))), ROGUE_ARG(((RogueByte)((((RogueCharacter)(128)) | (value_0 & ((RogueCharacter)(63))))))) );
   }
   else
   {
@@ -15641,10 +15641,10 @@ RogueStringBuilder* RogueStringBuilder__print_to_work_bytes__Real64_Int32( Rogue
   value_0 -= whole_2;
   while (whole_2 >= 10.0)
   {
-    RogueByte_List__add__Byte( ROGUE_ARG(RogueStringBuilder_work_bytes), ROGUE_ARG(((RogueByte)(((RogueCharacter)((((RogueInt32)((RogueCharacter)'0')) + ((RogueInt32)((RogueMath__mod__Real64_Real64( whole_2, 10.0 )))))))))) );
+    RogueByte_List__add__Byte( ROGUE_ARG(RogueStringBuilder_work_bytes), ROGUE_ARG(((RogueByte)(((RogueCharacter)'0' + ((RogueCharacter)(((RogueInt32)((RogueMath__mod__Real64_Real64( whole_2, 10.0 )))))))))) );
     whole_2 /= 10.0;
   }
-  RogueByte_List__add__Byte( ROGUE_ARG(RogueStringBuilder_work_bytes), ROGUE_ARG(((RogueByte)(((RogueCharacter)((((RogueInt32)((RogueCharacter)'0')) + ((RogueInt32)((RogueMath__mod__Real64_Real64( whole_2, 10.0 )))))))))) );
+  RogueByte_List__add__Byte( ROGUE_ARG(RogueStringBuilder_work_bytes), ROGUE_ARG(((RogueByte)(((RogueCharacter)'0' + ((RogueCharacter)(((RogueInt32)((RogueMath__mod__Real64_Real64( whole_2, 10.0 )))))))))) );
   RogueByte_List__reverse( ROGUE_ARG(RogueStringBuilder_work_bytes) );
   if (decimal_places_1 != 0)
   {
@@ -15657,7 +15657,7 @@ RogueStringBuilder* RogueStringBuilder__print_to_work_bytes__Real64_Int32( Rogue
         value_0 *= 10.0;
         RogueInt32 digit_5 = (((RogueInt32)(floor((double)value_0))));
         value_0 -= ((RogueReal64)(digit_5));
-        RogueByte_List__add__Byte( ROGUE_ARG(RogueStringBuilder_work_bytes), ROGUE_ARG(((RogueByte)(((RogueCharacter)((((RogueInt32)((RogueCharacter)'0')) + digit_5)))))) );
+        RogueByte_List__add__Byte( ROGUE_ARG(RogueStringBuilder_work_bytes), ROGUE_ARG(((RogueByte)(((RogueCharacter)'0' + ((RogueCharacter)(digit_5)))))) );
       }
     }
   }
@@ -15713,7 +15713,7 @@ void RogueStringBuilder__round_off_work_bytes( RogueStringBuilder* THIS )
       if (((RogueCharacter)(RogueStringBuilder_work_bytes->data->bytes[i_0])) != (RogueCharacter)'.')
       {
         RogueStringBuilder_work_bytes->data->bytes[i_0] = ((RogueByte)((((RogueInt32)(RogueStringBuilder_work_bytes->data->bytes[i_0])) + 1)));
-        if (((RogueInt32)(RogueStringBuilder_work_bytes->data->bytes[i_0])) == (((RogueInt32)((RogueCharacter)'9')) + 1))
+        if (((RogueCharacter)(RogueStringBuilder_work_bytes->data->bytes[i_0])) == ((RogueCharacter)'9' + ((RogueCharacter)(1))))
         {
           RogueStringBuilder_work_bytes->data->bytes[i_0] = ((RogueByte)((RogueCharacter)'0'));
         }
@@ -16420,7 +16420,7 @@ RogueString* RogueString__to_lowercase( RogueString* THIS )
       RogueCharacter ch_7 = (RogueString_character_at(_auto_60_5,_auto_61_6));
       if ((ch_7 >= (RogueCharacter)'A' && ch_7 <= (RogueCharacter)'Z'))
       {
-        RogueStringBuilder__print__Character_Logical( result_1, ROGUE_ARG(((RogueCharacter)(((ch_7 - (RogueCharacter)'A') + ((RogueInt32)((RogueCharacter)'a')))))), true );
+        RogueStringBuilder__print__Character_Logical( result_1, ROGUE_ARG(((ch_7 - (RogueCharacter)'A') + (RogueCharacter)'a')), true );
       }
       else
       {
@@ -16520,7 +16520,7 @@ RogueStringBuilder* RogueString__word_wrapped__Int32_StringBuilder( RogueString*
     }
     else
     {
-      switch (((RogueInt32)(RogueString_character_at(THIS,i2_3))))
+      switch (RogueString_character_at(THIS,i2_3))
       {
         case (RogueCharacter)' ':
         {
@@ -18129,7 +18129,7 @@ RogueInt32 RogueProgram__next_unique_integer( RogueClassProgram* THIS )
 RogueClassTemplate* RogueProgram__find_template__String( RogueClassProgram* THIS, RogueString* name_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassTemplate*,template_1,0);
-  switch (((RogueInt32)(((RogueString__last( name_0 ))))))
+  switch (((RogueString__last( name_0 ))))
   {
     case (RogueCharacter)'?':
     {
@@ -18757,7 +18757,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
       }
       else
       {
-        switch (((RogueInt32)(ch_12)))
+        switch (ch_12)
         {
           case (RogueCharacter)'!':
           {
@@ -18788,7 +18788,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
           {
             if ((i_14 + 1) < name_0->character_count)
             {
-              switch (((RogueInt32)(RogueString_character_at(name_0,(i_14 + 1)))))
+              switch (RogueString_character_at(name_0,(i_14 + 1)))
               {
                 case (RogueCharacter)'>':
                 {
@@ -18818,7 +18818,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
           {
             if ((i_14 + 1) < name_0->character_count)
             {
-              switch (((RogueInt32)(RogueString_character_at(name_0,(i_14 + 1)))))
+              switch (RogueString_character_at(name_0,(i_14 + 1)))
               {
                 case (RogueCharacter)'=':
                 {
@@ -18843,7 +18843,7 @@ RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, R
           {
             if ((i_14 + 1) < name_0->character_count)
             {
-              switch (((RogueInt32)(RogueString_character_at(name_0,(i_14 + 1)))))
+              switch (RogueString_character_at(name_0,(i_14 + 1)))
               {
                 case (RogueCharacter)'=':
                 {
@@ -22327,11 +22327,11 @@ RogueInt32 RogueType__primitive_rank( RogueClassType* THIS )
   {
     return (RogueInt32)(5);
   }
-  if (((void*)THIS) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32))
+  if (((void*)THIS) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character))
   {
     return (RogueInt32)(4);
   }
-  if (((void*)THIS) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character))
+  if (((void*)THIS) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32))
   {
     return (RogueInt32)(3);
   }
@@ -24404,7 +24404,7 @@ RogueClassType* RogueCmd__find_operation_result_type__Type_Type( RogueClassCmd* 
   {
     return (RogueClassType*)(left_type_0);
   }
-  if ((((void*)result_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte) || ((void*)result_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character)))
+  if (((void*)result_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte))
   {
     return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32);
   }
@@ -24441,13 +24441,13 @@ RogueClassType* RogueCmd__find_common_type__Type_Type( RogueClassCmd* THIS, Rogu
       {
         return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64);
       }
-      if ((((void*)left_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32) || ((void*)right_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32)))
-      {
-        return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32);
-      }
       if ((((void*)left_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character) || ((void*)right_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character)))
       {
         return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character);
+      }
+      if ((((void*)left_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32) || ((void*)right_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32)))
+      {
+        return (RogueClassType*)(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32);
       }
     }
   }
@@ -26512,9 +26512,9 @@ RogueClassCPPWriter* RogueCPPWriter__print_hex_pair__Int32( RogueClassCPPWriter*
 
 RogueClassCPPWriter* RogueCPPWriter__print_literal_character__Character_Logical( RogueClassCPPWriter* THIS, RogueCharacter ch_0, RogueLogical in_string_1 )
 {
-  if ((((RogueInt32)(ch_0)) >= 32 && ((RogueInt32)(ch_0)) <= 126))
+  if ((ch_0 >= ((RogueCharacter)(32)) && ch_0 <= ((RogueCharacter)(126))))
   {
-    switch (((RogueInt32)(ch_0)))
+    switch (ch_0)
     {
       case (RogueCharacter)'"':
       {
@@ -26553,7 +26553,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_literal_character__Character_Logical(
   }
   else
   {
-    switch (((RogueInt32)(ch_0)))
+    switch (ch_0)
     {
       case 10:
       {
@@ -26563,27 +26563,27 @@ RogueClassCPPWriter* RogueCPPWriter__print_literal_character__Character_Logical(
       default:
       {
         RogueCPPWriter__print__String( ROGUE_ARG(THIS), Rogue_literal_strings[612] );
-        if (((RogueInt32)(ch_0)) <= 127)
+        if (ch_0 <= ((RogueCharacter)(127)))
         {
           RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)(ch_0))) );
         }
-        else if (((RogueInt32)(ch_0)) <= 2047)
+        else if (ch_0 <= ((RogueCharacter)(2047)))
         {
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((192 | ((((RogueInt32)(ch_0)) >> 6) & 31))) );
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((128 | (((RogueInt32)(ch_0)) & 63))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(192)) | ((ch_0 >> ((RogueCharacter)(6))) & ((RogueCharacter)(31))))))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(128)) | (ch_0 & ((RogueCharacter)(63))))))) );
         }
-        else if (((RogueInt32)(ch_0)) <= 65535)
+        else if (ch_0 <= ((RogueCharacter)(65535)))
         {
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((224 | ((((RogueInt32)(ch_0)) >> 12) & 15))) );
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((128 | ((((RogueInt32)(ch_0)) >> 6) & 63))) );
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((128 | (((RogueInt32)(ch_0)) & 63))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(224)) | ((ch_0 >> ((RogueCharacter)(12))) & ((RogueCharacter)(15))))))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(128)) | ((ch_0 >> ((RogueCharacter)(6))) & ((RogueCharacter)(63))))))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(128)) | (ch_0 & ((RogueCharacter)(63))))))) );
         }
         else
         {
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((240 | ((((RogueInt32)(ch_0)) >> 18) & 7))) );
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((128 | ((((RogueInt32)(ch_0)) >> 12) & 63))) );
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((128 | ((((RogueInt32)(ch_0)) >> 6) & 63))) );
-          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG((128 | (((RogueInt32)(ch_0)) & 63))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(240)) | ((ch_0 >> ((RogueCharacter)(18))) & ((RogueCharacter)(7))))))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(128)) | ((ch_0 >> ((RogueCharacter)(12))) & ((RogueCharacter)(63))))))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(128)) | ((ch_0 >> ((RogueCharacter)(6))) & ((RogueCharacter)(63))))))) );
+          RogueCPPWriter__print_hex_pair__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((RogueInt32)((((RogueCharacter)(128)) | (ch_0 & ((RogueCharacter)(63))))))) );
         }
         RogueCPPWriter__print__String( ROGUE_ARG(THIS), Rogue_literal_strings[612] );
       }
@@ -38914,7 +38914,7 @@ RogueLogical RogueTokenizer__tokenize_another( RogueClassTokenizer* THIS )
   }
   else if ((ch_0 >= (RogueCharacter)'0' && ch_0 <= (RogueCharacter)'9'))
   {
-    switch (((RogueInt32)(((RogueParseReader__peek__Int32( ROGUE_ARG(THIS->reader), 1 ))))))
+    switch (((RogueParseReader__peek__Int32( ROGUE_ARG(THIS->reader), 1 ))))
     {
       case (RogueCharacter)'b':
       {
@@ -38959,11 +38959,11 @@ RogueLogical RogueTokenizer__tokenize_another( RogueClassTokenizer* THIS )
     return (RogueLogical)(((RogueTokenizer__add_new_token__TokenType( ROGUE_ARG(THIS), token_type_4 ))));
   }
   ROGUE_DEF_LOCAL_REF(RogueString*,name_5,(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[74] )))), ROGUE_ARG(((RogueString__operatorPLUS__Character( Rogue_literal_strings[0], ch_0 )))) )))), Rogue_literal_strings[74] )))) )))));
-  if (((RogueInt32)(ch_0)) == 10)
+  if (ch_0 == ((RogueCharacter)(10)))
   {
     name_5 = ((RogueString*)Rogue_literal_strings[274]);
   }
-  else if ((((RogueInt32)(ch_0)) < 32 || ((RogueInt32)(ch_0)) > 126))
+  else if ((ch_0 < ((RogueCharacter)(32)) || ch_0 > ((RogueCharacter)(126))))
   {
     name_5 = ((RogueString*)((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[275] )))), ROGUE_ARG(((RogueString__operatorPLUS__Int32( Rogue_literal_strings[0], ROGUE_ARG(((RogueInt32)(ch_0))) )))) )))), Rogue_literal_strings[27] )))) ))));
   }
@@ -38980,7 +38980,7 @@ RogueLogical RogueTokenizer__tokenize_comment( RogueClassTokenizer* THIS )
     while (((RogueParseReader__has_another( ROGUE_ARG(THIS->reader) ))))
     {
       RogueCharacter ch_1 = (((RogueParseReader__read( ROGUE_ARG(THIS->reader) ))));
-      switch (((RogueInt32)(ch_1)))
+      switch (ch_1)
       {
         case (RogueCharacter)'#':
         {
@@ -39159,7 +39159,7 @@ RogueReal64 RogueTokenizer__scan_real( RogueClassTokenizer* THIS )
   RogueCharacter ch_1 = (((RogueParseReader__peek( ROGUE_ARG(THIS->reader) ))));
   while ((ch_1 >= (RogueCharacter)'0' && ch_1 <= (RogueCharacter)'9'))
   {
-    RogueInt32 intval_2 = ((((RogueInt32)(((RogueParseReader__read( ROGUE_ARG(THIS->reader) ))))) - ((RogueInt32)((RogueCharacter)'0'))));
+    RogueCharacter intval_2 = ((((RogueCharacter)(((RogueInt32)(((RogueParseReader__read( ROGUE_ARG(THIS->reader) ))))))) - (RogueCharacter)'0'));
     n_0 = ((RogueReal64)((n_0 * 10.0) + ((RogueReal64)(intval_2))));
     ch_1 = ((RogueCharacter)((RogueParseReader__peek( ROGUE_ARG(THIS->reader) ))));
   }
@@ -39172,8 +39172,8 @@ RogueInt64 RogueTokenizer__scan_long( RogueClassTokenizer* THIS )
   RogueCharacter ch_1 = (((RogueParseReader__peek( ROGUE_ARG(THIS->reader) ))));
   while ((ch_1 >= (RogueCharacter)'0' && ch_1 <= (RogueCharacter)'9'))
   {
-    RogueInt32 intval_2 = ((((RogueInt32)(((RogueParseReader__read( ROGUE_ARG(THIS->reader) ))))) - ((RogueInt32)((RogueCharacter)'0'))));
-    n_0 = ((RogueInt64)((n_0 * ((RogueInt64)10)) + ((RogueInt64)intval_2)));
+    RogueCharacter intval_2 = ((((RogueCharacter)(((RogueInt32)(((RogueParseReader__read( ROGUE_ARG(THIS->reader) ))))))) - (RogueCharacter)'0'));
+    n_0 = ((RogueInt64)((n_0 * ((RogueInt64)10)) + ((RogueInt64)(intval_2))));
     ch_1 = ((RogueCharacter)((RogueParseReader__peek( ROGUE_ARG(THIS->reader) ))));
   }
   return (RogueInt64)(n_0);
@@ -39335,7 +39335,7 @@ RogueLogical RogueTokenizer__tokenize_verbatim_string( RogueClassTokenizer* THIS
   while (((RogueParseReader__has_another( ROGUE_ARG(THIS->reader) ))))
   {
     RogueCharacter ch_0 = (((RogueParseReader__read( ROGUE_ARG(THIS->reader) ))));
-    if (((RogueInt32)(ch_0)) == 10)
+    if (ch_0 == ((RogueCharacter)(10)))
     {
       RogueTokenizer__consume_spaces( ROGUE_ARG(THIS) );
       if (((RogueTokenizer__consume__Character( ROGUE_ARG(THIS), (RogueCharacter)'|' ))))
@@ -39386,7 +39386,7 @@ RogueCharacter RogueParseReader__read( RogueClassParseReader* THIS )
 {
   RogueCharacter result_0 = (THIS->data->data->characters[THIS->position]);
   ++THIS->position;
-  if (((RogueInt32)(result_0)) == 10)
+  if (result_0 == ((RogueCharacter)(10)))
   {
     ++THIS->line;
     THIS->column = 1;
@@ -40282,9 +40282,9 @@ RogueClassCmd* RogueCmdWhich__resolve__Scope( RogueClassCmdWhich* THIS, RogueCla
   THIS->expression = (call_ROGUEM69( 28, ROGUE_ARG(THIS->expression), scope_0 ));
   RogueLogical all_literal_cases_1 = (true);
   ROGUE_DEF_LOCAL_REF(RogueClassType*,expression_type_2,((call_ROGUEM77( 25, ROGUE_ARG(THIS->expression) ))));
-  if (((void*)expression_type_2) != ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32))
+  if ((((void*)expression_type_2) != ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32) && ((void*)expression_type_2) != ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character)))
   {
-    if ((((void*)expression_type_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte) || ((void*)expression_type_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character)))
+    if (((void*)expression_type_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte))
     {
       THIS->expression = (call_ROGUEM69( 28, ROGUE_ARG((call_ROGUEM70( 8, ROGUE_ARG(THIS->expression), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0 ))), scope_0 ));
     }
@@ -43160,10 +43160,16 @@ RogueClassCmdBitwiseOp* RogueCmdBitwiseOp__init_object( RogueClassCmdBitwiseOp* 
 
 RogueClassCmd* RogueCmdBitwiseOp__resolve_for_common_type__Scope_Type( RogueClassCmdBitwiseOp* THIS, RogueClassScope* scope_0, RogueClassType* common_type_1 )
 {
-  if (((((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte) || ((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character)) || ((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32)))
+  if ((((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte) || ((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32)))
   {
     THIS->left = (call_ROGUEM69( 28, ROGUE_ARG((call_ROGUEM70( 8, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0 ))), scope_0 ));
     THIS->right = (call_ROGUEM69( 28, ROGUE_ARG((call_ROGUEM70( 8, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0 ))), scope_0 ));
+    return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
+  }
+  if (((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character))
+  {
+    THIS->left = (call_ROGUEM69( 28, ROGUE_ARG((call_ROGUEM70( 8, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character), scope_0 ))), scope_0 ));
+    THIS->right = (call_ROGUEM69( 28, ROGUE_ARG((call_ROGUEM70( 8, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character), scope_0 ))), scope_0 ));
     return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
   }
   if (((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64))
@@ -44172,9 +44178,9 @@ RogueClassType* Rogue_CmdLiteralCharacter__type( RogueClassCmdLiteralCharacter* 
 void RogueCmdLiteralCharacter__write_cpp__CPPWriter_Logical( RogueClassCmdLiteralCharacter* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 )
 {
   RogueCPPWriter__print__String( writer_0, Rogue_literal_strings[1049] );
-  if ((((RogueInt32)(THIS->value)) >= 32 && ((RogueInt32)(THIS->value)) <= 126))
+  if ((THIS->value >= ((RogueCharacter)(32)) && THIS->value <= ((RogueCharacter)(126))))
   {
-    switch (((RogueInt32)(THIS->value)))
+    switch (THIS->value)
     {
       case 10:
       {
@@ -45292,25 +45298,25 @@ RogueCharacter RogueUTF8Reader__peek( RogueClassUTF8Reader* THIS )
     return (RogueCharacter)(((RogueCharacter)(0)));
   }
   RogueCharacter ch_0 = (((RogueCharacter)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))));
-  if (!!((((RogueInt32)(ch_0)) & 128)))
+  if (!!((ch_0 & ((RogueCharacter)(128)))))
   {
-    if (!!((((RogueInt32)(ch_0)) & 32)))
+    if (!!((ch_0 & ((RogueCharacter)(32)))))
     {
-      if (!!((((RogueInt32)(ch_0)) & 16)))
+      if (!!((ch_0 & ((RogueCharacter)(16)))))
       {
-        ch_0 = ((RogueCharacter)((RogueCharacter)((((((RogueInt32)(ch_0)) & 7) << 18) | ((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63) << 12)))));
+        ch_0 = ((RogueCharacter)(((ch_0 & ((RogueCharacter)(7))) << ((RogueCharacter)(18))) | ((RogueCharacter)(((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63) << 12)))));
         ch_0 |= ((RogueCharacter)(((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63) << 6)));
         ch_0 |= ((RogueCharacter)((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63)));
       }
       else
       {
-        ch_0 = ((RogueCharacter)((RogueCharacter)((((((RogueInt32)(ch_0)) & 15) << 12) | ((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63) << 6)))));
+        ch_0 = ((RogueCharacter)(((ch_0 & ((RogueCharacter)(15))) << ((RogueCharacter)(12))) | ((RogueCharacter)(((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63) << 6)))));
         ch_0 |= ((RogueCharacter)((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63)));
       }
     }
     else
     {
-      ch_0 = ((RogueCharacter)((RogueCharacter)((((((RogueInt32)(ch_0)) & 31) << 6) | (((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63)))));
+      ch_0 = ((RogueCharacter)(((ch_0 & ((RogueCharacter)(31))) << ((RogueCharacter)(6))) | ((RogueCharacter)((((RogueInt32)((RogueReader_Byte___read( ROGUE_ARG(((RogueObject*)THIS->byte_reader)) )))) & 63)))));
     }
   }
   THIS->next = RogueOptionalCharacter( ch_0, true );
@@ -48616,7 +48622,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[36] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[37] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[38] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.50.0", 8 ) ); 
+  Rogue_literal_strings[39] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.50.1", 8 ) ); 
   Rogue_literal_strings[40] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 5, 2016", 13 ) ); 
   Rogue_literal_strings[41] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[42] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
