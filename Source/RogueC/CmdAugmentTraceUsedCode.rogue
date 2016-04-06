@@ -257,6 +257,8 @@ augment CmdCall
   METHODS
     method trace_used_code
       if (context) context.trace_used_code
+#FIXME
+if (method_info.type_context.name.contains("Visitor")) println "$ $.$" (type_name,method_info.type_context,method_info.signature)
       method_info.trace_used_code
       forEach (arg in args) arg.trace_used_code
 

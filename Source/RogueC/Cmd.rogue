@@ -1,6 +1,7 @@
 $include "CmdAugmentTraceUsedCode.rogue"
 $include "CmdAugmentUpdateThisType.rogue"
 $include "Visitor.rogue"
+$include "UpdateThisTypeVisitor.rogue"
 
 class Cmd
   PROPERTIES
@@ -209,6 +210,9 @@ class CmdStatementList : Cmd[]
       endForEach
       return result
 
+    method dispatch( v:Visitor ) [propagated]
+      v.visit( this )
+
     method resolve( scope:Scope, &use_separate_results_list )
       local original_body = scope.this_body
       scope.this_body = this
@@ -262,6 +266,9 @@ class CmdArgs : Cmd[]
       local result = CmdArgs( count )
       forEach (cmd in this) result.add( cmd.clone(clone_args) )
       return result
+
+    method dispatch( v:Visitor ) [propagated]
+      v.visit( this )
 
     method resolve( scope:Scope )
       forEach (i of this)
@@ -4250,7 +4257,7 @@ class CmdAssert : Cmd
     method resolve( scope:Scope )->Cmd
       local cmd_if = CmdIf( t, CmdLogicalNot(t,condition) )
       cmd_if.statements.add(
-          CmdThrow( t, 
+          CmdThrow( t,
               CmdAccess( t, "AssertionError", CmdArgs( CmdLiteralString(t,assertion) ) )
           )
       )

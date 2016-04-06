@@ -1,0 +1,2 @@
+class UpdateThisTypeVisitor( this_type:Type ) : Visitor
+endClass

@@ -1,7 +1,691 @@
 class Visitor
   METHODS
     method visit( cmd:Cmd )
+      throw cmd.t.error( "$ does not overload method visit($)." (type_name,cmd.type_name) )
+
+    method visit( type:Type )
+      #{
+      on_enter( type )
+      dispatch( type )
+      on_leave( type )
+      }#
+
+    method visit( m:Method )
+      #{
+      on_enter( m )
+      dispatch( m )
+      on_leave( m )
+      }#
 
     method visit( statements:CmdStatementList )
+      #{
+      on_enter( statements )
+      dispatch( statements )
+      on_leave( statements )
+      }#
+
+    method visit( args:CmdArgs )
+      #{
+      on_enter( args )
+      dispatch( args )
+      on_leave( args )
+      }#
+
+#{
+    method visit( cmd:CmdStatement )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdLocalDeclaration )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReturn )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdBlock )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdIf )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdSwitch )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdWhichCase )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdContingent )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdGenericLoop )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdForEach )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdTry )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCatch )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdThrow )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdEscape )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdNextIteration )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdNecessary )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdSufficient )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdLiteral )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdLiteralString )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdAccess )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCreateObject )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCreateCompound )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdThisContext )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReadSingleton )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdWriteSingleton )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReadLocal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdWriteLocal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReadGlobal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdWriteGlobal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReadProperty )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdWriteProperty )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCall )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCallDynamicMethod )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdRange )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdUnary )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdBinary )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdAdjustLocal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdAdjustProperty )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdAdjustGlobal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdModifyAndAssignLocal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdModifyAndAssignGlobal )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdModifyAndAssignProperty )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCreateArray )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReadArrayElement )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdReadArrayCount )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdWriteArrayElement )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdTypeOperator )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdTaskControl )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCreateOptionalValue )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdTrace )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdLabel )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdInlineNative )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdMakeRequisite )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdNoAction )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdSelect )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdSelectCase )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdFlagArg )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+
+    method on_enter( cmd:Cmd )
+    method on_enter( type:Type )
+    method on_enter( m:Method )
+    method on_enter( statements:CmdStatementList )
+    method on_enter( args:CmdArgs )
+    method on_enter( cmd:CmdStatement )
+    method on_enter( cmd:CmdLocalDeclaration )
+    method on_enter( cmd:CmdReturn )
+    method on_enter( cmd:CmdBlock )
+    method on_enter( cmd:CmdIf )
+    method on_enter( cmd:CmdSwitch )
+    method on_enter( cmd:CmdWhichCase )
+    method on_enter( cmd:CmdContingent )
+    method on_enter( cmd:CmdGenericLoop )
+    method on_enter( cmd:CmdForEach )
+    method on_enter( cmd:CmdTry )
+    method on_enter( cmd:CmdCatch )
+    method on_enter( cmd:CmdThrow )
+    method on_enter( cmd:CmdEscape )
+    method on_enter( cmd:CmdNextIteration )
+    method on_enter( cmd:CmdNecessary )
+    method on_enter( cmd:CmdSufficient )
+    method on_enter( cmd:CmdLiteral )
+    method on_enter( cmd:CmdLiteralString )
+    method on_enter( cmd:CmdAccess )
+    method on_enter( cmd:CmdCreateObject )
+    method on_enter( cmd:CmdCreateCompound )
+    method on_enter( cmd:CmdThisContext )
+    method on_enter( cmd:CmdReadSingleton )
+    method on_enter( cmd:CmdWriteSingleton )
+    method on_enter( cmd:CmdReadLocal )
+    method on_enter( cmd:CmdWriteLocal )
+    method on_enter( cmd:CmdReadGlobal )
+    method on_enter( cmd:CmdWriteGlobal )
+    method on_enter( cmd:CmdReadProperty )
+    method on_enter( cmd:CmdWriteProperty )
+    method on_enter( cmd:CmdCall )
+    method on_enter( cmd:CmdCallDynamicMethod )
+    method on_enter( cmd:CmdRange )
+    method on_enter( cmd:CmdUnary )
+    method on_enter( cmd:CmdBinary )
+    method on_enter( cmd:CmdAdjustLocal )
+    method on_enter( cmd:CmdAdjustProperty )
+    method on_enter( cmd:CmdAdjustGlobal )
+    method on_enter( cmd:CmdModifyAndAssignLocal )
+    method on_enter( cmd:CmdModifyAndAssignGlobal )
+    method on_enter( cmd:CmdModifyAndAssignProperty )
+    method on_enter( cmd:CmdCreateArray )
+    method on_enter( cmd:CmdReadArrayElement )
+    method on_enter( cmd:CmdReadArrayCount )
+    method on_enter( cmd:CmdWriteArrayElement )
+    method on_enter( cmd:CmdTypeOperator )
+    method on_enter( cmd:CmdTaskControl )
+    method on_enter( cmd:CmdCreateOptionalValue )
+    method on_enter( cmd:CmdTrace )
+    method on_enter( cmd:CmdLabel )
+    method on_enter( cmd:CmdInlineNative )
+    method on_enter( cmd:CmdMakeRequisite )
+    method on_enter( cmd:CmdNoAction )
+    method on_enter( cmd:CmdSelect )
+    method on_enter( cmd:CmdSelectCase )
+    method on_enter( cmd:CmdFlagArg )
+
+    method on_leave( cmd:Cmd )
+    method on_leave( type:Type )
+    method on_leave( m:Method )
+    method on_leave( statements:CmdStatementList )
+    method on_leave( args:CmdArgs )
+    method on_leave( cmd:CmdStatement )
+    method on_leave( cmd:CmdLocalDeclaration )
+    method on_leave( cmd:CmdReturn )
+    method on_leave( cmd:CmdBlock )
+    method on_leave( cmd:CmdIf )
+    method on_leave( cmd:CmdSwitch )
+    method on_leave( cmd:CmdWhichCase )
+    method on_leave( cmd:CmdContingent )
+    method on_leave( cmd:CmdGenericLoop )
+    method on_leave( cmd:CmdForEach )
+    method on_leave( cmd:CmdTry )
+    method on_leave( cmd:CmdCatch )
+    method on_leave( cmd:CmdThrow )
+    method on_leave( cmd:CmdEscape )
+    method on_leave( cmd:CmdNextIteration )
+    method on_leave( cmd:CmdNecessary )
+    method on_leave( cmd:CmdSufficient )
+    method on_leave( cmd:CmdLiteral )
+    method on_leave( cmd:CmdLiteralString )
+    method on_leave( cmd:CmdAccess )
+    method on_leave( cmd:CmdCreateObject )
+    method on_leave( cmd:CmdCreateCompound )
+    method on_leave( cmd:CmdThisContext )
+    method on_leave( cmd:CmdReadSingleton )
+    method on_leave( cmd:CmdWriteSingleton )
+    method on_leave( cmd:CmdReadLocal )
+    method on_leave( cmd:CmdWriteLocal )
+    method on_leave( cmd:CmdReadGlobal )
+    method on_leave( cmd:CmdWriteGlobal )
+    method on_leave( cmd:CmdReadProperty )
+    method on_leave( cmd:CmdWriteProperty )
+    method on_leave( cmd:CmdCall )
+    method on_leave( cmd:CmdCallDynamicMethod )
+    method on_leave( cmd:CmdRange )
+    method on_leave( cmd:CmdUnary )
+    method on_leave( cmd:CmdBinary )
+    method on_leave( cmd:CmdAdjustLocal )
+    method on_leave( cmd:CmdAdjustProperty )
+    method on_leave( cmd:CmdAdjustGlobal )
+    method on_leave( cmd:CmdModifyAndAssignLocal )
+    method on_leave( cmd:CmdModifyAndAssignGlobal )
+    method on_leave( cmd:CmdModifyAndAssignProperty )
+    method on_leave( cmd:CmdCreateArray )
+    method on_leave( cmd:CmdReadArrayElement )
+    method on_leave( cmd:CmdReadArrayCount )
+    method on_leave( cmd:CmdWriteArrayElement )
+    method on_leave( cmd:CmdTypeOperator )
+    method on_leave( cmd:CmdTaskControl )
+    method on_leave( cmd:CmdCreateOptionalValue )
+    method on_leave( cmd:CmdTrace )
+    method on_leave( cmd:CmdLabel )
+    method on_leave( cmd:CmdInlineNative )
+    method on_leave( cmd:CmdMakeRequisite )
+    method on_leave( cmd:CmdNoAction )
+    method on_leave( cmd:CmdSelect )
+    method on_leave( cmd:CmdSelectCase )
+    method on_leave( cmd:CmdFlagArg )
+
+    method dispatch( cmd:Cmd )
+      throw RogueError( "$ does not overload method dispatch($)." (type_name,cmd.type_name) )
+
+    method dispatch( type:Type )
+      noAction
+
+    method dispatch( m:Method )
+      noAction
+
+    method dispatch( statements:CmdStatementList )
+      forEach (statement in statements)
+        statement.dispatch( this )
+      endForEach
+
+    method dispatch( args:CmdArgs )
+      forEach (arg in args) arg.dispatch( this )
+
+    method dispatch( cmd:CmdStatement )
+      noAction
+
+    method dispatch( cmd:CmdLocalDeclaration )
+      cmd.local_info.type.dispatch( this )
+      if (cmd.local_info.initial_value) cmd.local_info.initial_value.dispatch( this )
+
+    method dispatch( cmd:CmdReturn )
+      if (cmd.value) cmd.value.dispatch( this )
+
+    method dispatch( cmd:CmdBlock )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdIf )
+      cmd.condition.dispatch( this )
+      cmd.statements.dispatch( this )
+      if (cmd.else_statements) cmd.else_statements.dispatch( this )
+
+    method dispatch( cmd:CmdSwitch )
+      cmd.expression.dispatch( this )
+      forEach (c in cmd.cases) c.dispatch( this )
+      if (cmd.case_others) cmd.case_others.dispatch( this )
+
+    method dispatch( cmd:CmdWhichCase )
+      forEach (condition in cmd.conditions) condition.dispatch( this )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdContingent )
+      cmd.statements.dispatch( this )
+      if (cmd.satisfied_statements)   cmd.satisfied_statements.dispatch( this )
+      if (cmd.unsatisfied_statements) cmd.unsatisfied_statements.dispatch( this )
+
+    method dispatch( cmd:CmdGenericLoop )
+      cmd.statements.dispatch( this )
+      if (cmd.control_statements) cmd.control_statements.dispatch( this )
+      if (cmd.condition) cmd.condition.dispatch( this )
+      if (cmd.upkeep) cmd.upkeep.dispatch( this )
+
+    method dispatch( cmd:CmdForEach )
+      cmd.statements.dispatch( this )
+      cmd.collection.dispatch( this )
+      if (cmd.step_cmd) cmd.step_cmd.dispatch( this )
+
+    method dispatch( cmd:CmdTry )
+      cmd.statements.dispatch( this )
+      forEach (c in cmd.catches) c.dispatch( this )
+
+    method dispatch( cmd:CmdCatch )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdThrow )
+      cmd.expression.dispatch( this )
+
+    method dispatch( cmd:CmdEscape )
+      noAction
+
+    method dispatch( cmd:CmdNextIteration )
+      noAction
+
+    method dispatch( cmd:CmdNecessary )
+      if (cmd.condition) cmd.condition.dispatch( this )
+
+    method dispatch( cmd:CmdSufficient )
+      if (cmd.condition) cmd.condition.dispatch( this )
+
+    method dispatch( cmd:CmdLiteral )
+      noAction
+
+    method dispatch( cmd:CmdLiteralString )
+
+    method dispatch( cmd:CmdAccess )
+      if (cmd.context)   cmd.context.dispatch( this )
+      if (cmd.args)      cmd.args.dispatch( this )
+      if (cmd.flag_args)
+        forEach (arg in cmd.flag_args) arg.dispatch( this )
+      endIf
+
+    method dispatch( cmd:CmdCreateObject )
+      cmd.of_type.dispatch( this )
+
+    method dispatch( cmd:CmdCreateCompound )
+      cmd.of_type.dispatch( this )
+      forEach (arg in cmd.args) arg.dispatch( this )
+
+    method dispatch( cmd:CmdThisContext )
+      noAction
+
+    method dispatch( cmd:CmdReadSingleton )
+      cmd.of_type.dispatch( this )
+
+    method dispatch( cmd:CmdWriteSingleton )
+      cmd.of_type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdReadLocal )
+      cmd.local_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdWriteLocal )
+      cmd.local_info.type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdReadGlobal )
+      cmd.global_info.type_context.dispatch( this )
+      cmd.global_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdWriteGlobal )
+      cmd.global_info.type_context.dispatch( this )
+      cmd.global_info.type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdReadProperty )
+      cmd.context.dispatch( this )
+      cmd.property_info.type_context.dispatch( this )
+      cmd.property_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdWriteProperty )
+      if (cmd.context) cmd.context.dispatch( this )
+      cmd.property_info.type_context.dispatch( this )
+      cmd.property_info.type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdCall )
+      if (cmd.context) cmd.context.dispatch( this )
+      cmd.method_info.dispatch( this )
+      forEach (arg in cmd.args) arg.dispatch( this )
+
+    method dispatch( cmd:CmdCallDynamicMethod )
+      if (cmd.context) cmd.context.dispatch( this )
+      cmd.method_info.dispatch( this )
+      forEach (arg in cmd.args) arg.dispatch( this )
+
+    method dispatch( cmd:CmdRange )
+      cmd.first.dispatch( this )
+      cmd.last.dispatch( this )
+      if (cmd.step_size) cmd.step_size.dispatch( this )
+
+    method dispatch( cmd:CmdUnary )
+      cmd.operand.dispatch( this )
+
+    method dispatch( cmd:CmdBinary )
+      cmd.left.dispatch( this )
+      cmd.right.dispatch( this )
+
+    method dispatch( cmd:CmdAdjustLocal )
+      cmd.local_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdAdjustProperty )
+      cmd.context.dispatch( this )
+      cmd.property_info.type_context.dispatch( this )
+      cmd.property_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdAdjustGlobal )
+      cmd.global_info.type_context.dispatch( this )
+      cmd.global_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdModifyAndAssignLocal )
+      cmd.local_info.type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdModifyAndAssignGlobal )
+      cmd.global_info.type_context.dispatch( this )
+      cmd.global_info.type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdModifyAndAssignProperty )
+      cmd.property_info.type_context.dispatch( this )
+      cmd.property_info.type.dispatch( this )
+      cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdCreateArray )
+      cmd.array_type.dispatch( this )
+      cmd.count_cmd.dispatch( this )
+
+    method dispatch( cmd:CmdReadArrayElement )
+      cmd.context.dispatch( this )
+      cmd.array_type.dispatch( this )
+      cmd.index.dispatch( this )
+
+    method dispatch( cmd:CmdReadArrayCount )
+      cmd.context.dispatch( this )
+      cmd.array_type.dispatch( this )
+
+    method dispatch( cmd:CmdWriteArrayElement )
+      cmd.context.dispatch( this )
+      cmd.array_type.dispatch( this )
+      cmd.new_value.dispatch( this )
+      cmd.index.dispatch( this )
+
+    method dispatch( cmd:CmdTypeOperator )
+      cmd.operand.dispatch( this )
+      cmd.target_type.dispatch( this )
+
+    method dispatch( cmd:CmdTaskControl )
+      forEach (section in cmd.sections) section.statements.dispatch( this )
+
+    method dispatch( cmd:CmdCreateOptionalValue )
+      cmd.of_type.dispatch( this )
+      if (cmd.value) cmd.value.dispatch( this )
+
+    method dispatch( cmd:CmdTrace )
+      noAction
+
+    method dispatch( cmd:CmdLabel )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdInlineNative )
+      if (cmd.new_value) cmd.new_value.dispatch( this )
+
+    method dispatch( cmd:CmdMakeRequisite )
+
+    method dispatch( cmd:CmdNoAction )
+
+    method dispatch( cmd:CmdSelect )
+      if (cmd.expression) cmd.expression.dispatch( this )
+      forEach (c in cmd.cases) c.dispatch( this )
+
+    method dispatch( cmd:CmdSelectCase )
+      if (cmd.conditions)
+        forEach (c in cmd.conditions) c.dispatch( this )
+      endIf
+      cmd.value.dispatch( this )
+
+    method dispatch( cmd:CmdFlagArg )
+      noAction
+}#
+
 endClass
 

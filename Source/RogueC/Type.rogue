@@ -145,6 +145,9 @@ class Type
       if (this is Program.type_Logical) return CmdLiteralLogical( _t, false )
       return CmdLiteralInt32( _t, 0 )
 
+    method dispatch( v:Visitor )
+      v.visit( this )
+
     method extends_object->Logical
       return instance_of( Program.type_Object )
 
@@ -699,6 +702,17 @@ class Type
         inherit_method( m, list, lookup )
       endForEach
 
+      # Override inherited propagated methods
+      forEach (m in list)
+        if (m.is_propagated and m.type_context isNot this)
+          # Override a copy of the method which will have the correct 'this' context.
+          m = m.clone.set_type_context( this )
+          m.statements.update_this_type( Scope(this,m) )
+          #m.statements.dispatch( UpdateThisTypeVisitor(this) )
+          inherit_method( m, list, lookup )
+        endIf
+      endForEach
+
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
@@ -761,16 +775,14 @@ class Type
         # No existing method
         if (m.type_context.is_aspect)
           m = m.incorporate( this )
+          m.statements.update_this_type( Scope(this,m) )
         elseIf (m.is_augment)
           m.convert_augment_to_standalone
-        elseIf (m.is_propagated)
-          # Create a copy of the method which will have the correct 'this' context.
-          m = m.clone.set_type_context( this )
-          m.statements.update_this_type( Scope(this,m) )
         endIf
 
         list.add( m )
         lookup[m.signature] = m
+
       endIf
 
     method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
