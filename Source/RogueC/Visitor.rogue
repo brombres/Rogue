@@ -1,0 +1,7 @@
+class Visitor
+  METHODS
+    method visit( cmd:Cmd )
+
+    method visit( statements:CmdStatementList )
+endClass
+

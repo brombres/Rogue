@@ -1,5 +1,6 @@
 $include "CmdAugmentTraceUsedCode.rogue"
 $include "CmdAugmentUpdateThisType.rogue"
+$include "Visitor.rogue"
 
 class Cmd
   PROPERTIES
@@ -71,6 +72,9 @@ class Cmd
 
     method compile_type->Type
       return type.compile_type
+
+    method dispatch( v:Visitor ) [propagated]
+      v.visit( this )
 
     method exit_scope( scope:Scope )
 
