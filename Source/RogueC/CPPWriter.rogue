@@ -1243,6 +1243,8 @@ class CPPWriter
 
     if (cast_to)
       print_cast( arg.type, cast_to, arg )
+    elseIf (arg.type isNot param_type)
+      print_cast( arg.type, param_type, arg )
     else
       arg.write_cpp( this )
     endIf

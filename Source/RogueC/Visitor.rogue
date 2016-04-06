@@ -4,34 +4,25 @@ class Visitor
       throw cmd.t.error( "$ does not overload method visit($)." (type_name,cmd.type_name) )
 
     method visit( type:Type )
-      #{
       on_enter( type )
       dispatch( type )
       on_leave( type )
-      }#
 
     method visit( m:Method )
-      #{
       on_enter( m )
       dispatch( m )
       on_leave( m )
-      }#
 
     method visit( statements:CmdStatementList )
-      #{
       on_enter( statements )
       dispatch( statements )
       on_leave( statements )
-      }#
 
     method visit( args:CmdArgs )
-      #{
       on_enter( args )
       dispatch( args )
       on_leave( args )
-      }#
 
-#{
     method visit( cmd:CmdStatement )
       on_enter( cmd )
       dispatch( cmd )
@@ -685,7 +676,6 @@ class Visitor
 
     method dispatch( cmd:CmdFlagArg )
       noAction
-}#
 
 endClass
 
