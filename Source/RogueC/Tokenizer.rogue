@@ -97,6 +97,7 @@ class Tokenizer
       TokenType.keyword_augment       = define( StructureTokenType("augment") )
       TokenType.keyword_case          = define( StructureTokenType("case") )
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
+      TokenType.keyword_CLASS         = define( StructureTokenType("CLASS") )
       TokenType.keyword_class         = define( StructureTokenType("class") )
       TokenType.keyword_DEFINITIONS   = define( StructureTokenType("DEFINITIONS") )
       TokenType.keyword_else          = define( StructureTokenType("else") )
@@ -111,6 +112,7 @@ class Tokenizer
       TokenType.keyword_endLoop       = define( StructureTokenType("endLoop") )
       TokenType.keyword_endRoutine    = define( StructureTokenType("endRoutine") )
       TokenType.keyword_endTry        = define( StructureTokenType("endTry") )
+      TokenType.keyword_endUnitTest   = define( StructureTokenType("endUnitTest") )
       TokenType.keyword_endWhich      = define( StructureTokenType("endWhich") )
       TokenType.keyword_endWhile      = define( StructureTokenType("endWhile") )
       TokenType.keyword_ENUMERATE     = define( StructureTokenType("ENUMERATE") )
@@ -171,6 +173,7 @@ class Tokenizer
       TokenType.keyword_trace            = define( TokenType("trace") )
       TokenType.keyword_trace_position   = define( TokenType("@trace") )
       TokenType.keyword_try              = define( TokenType("try") )
+      TokenType.keyword_unitTest         = define( TokenType("unitTest") )
       TokenType.keyword_which            = define( TokenType("which") )
       TokenType.keyword_while            = define( TokenType("while") )
       TokenType.keyword_yield            = define( TokenType("yield") )
@@ -527,7 +530,7 @@ class Tokenizer
         buffer.print( ch )
       endWhile
 
-      if (consume(']')) return 
+      if (consume(']')) return
       throw error( "Closing ']' expected." )
 
     method read_identifier->String

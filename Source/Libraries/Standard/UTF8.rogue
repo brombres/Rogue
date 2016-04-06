@@ -5,6 +5,7 @@ class UTF8Reader : Reader<<Character>>
 
   METHODS
     method init( byte_reader )
+      next = null
 
     method has_another->Logical
       return next.exists or byte_reader.has_another
@@ -62,7 +63,7 @@ class UTF8Reader : Reader<<Character>>
 endClass
 
 
-class UTF8Writer : Writer<<Character>>
+class CharacterToUTF8ByteWriter : Writer<<Character>>
   PROPERTIES
     byte_writer : Writer<<Byte>>
 
@@ -82,17 +83,17 @@ class UTF8Writer : Writer<<Character>>
 
     method seek( pos:Int32 )->this
       if (pos != 0)
-        throw UnsupportedOperationError( "UTF8Writer.seek(Int32) to non-zero position" )
+        throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.seek(Int32) to non-zero position" )
       endIf
       position = 0
       byte_writer.seek( 0 )
       return this
 
     method seek_end()->this
-      throw UnsupportedOperationError( "UTF8Writer.seek_end()" )
+      throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.seek_end()" )
 
     method skip( n:Int32 )->this
-      throw UnsupportedOperationError( "UTF8Writer.skip(Int32)" )
+      throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.skip(Int32)" )
 
     method write( value:Character )->this
       if (value <= 0x7F)
@@ -105,6 +106,81 @@ class UTF8Writer : Writer<<Character>>
         byte_writer.write( 0xF0 | (value:>>>:18) ).write( 0x80 | ((value:>>>:12) & 0x3F) )
         byte_writer.write( 0x80 | ((value:>>>:6) & 0x3F) ).write( 0x80 | (value & 0x3F) )
       endIf
+      return this
+endClass
+
+
+class UTF8ByteToCharacterWriter : Writer<<Byte>>
+  PROPERTIES
+    character_writer : Writer<<Character>>
+    bytes = Byte[](4)
+
+  METHODS
+    method init( character_writer )
+
+    method close->this
+      character_writer.close
+      return this
+
+    method flush->this
+      bytes.clear
+      character_writer.flush
+      return this
+
+    method reset->this
+      return seek( 0 )
+
+    method seek( pos:Int32 )->this
+      if (pos != 0)
+        throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.seek(Int32) to non-zero position" )
+      endIf
+      position = 0
+      character_writer.seek( 0 )
+      return this
+
+    method seek_end()->this
+      throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.seek_end()" )
+
+    method skip( n:Int32 )->this
+      throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.skip(Int32)" )
+
+    method write( value:Byte )->this
+      bytes.add( value )
+
+      local ch = bytes[0] : Character
+      if (ch & 0x80)
+        if (ch & 0x20)
+          if (ch & 0x10)
+            if (bytes.count == 4)
+              ch  = ((ch&7):<<:18)
+              ch |= ((bytes[1] & 0x3F) :<<: 12)
+              ch |= (bytes[2] & 0x3F) :<<: 6
+              ch |= bytes[3] & 0x3F
+              bytes.clear
+              character_writer.write( ch )
+            endIf
+          else
+            if (bytes.count == 3)
+              ch  = ((ch&15):<<:12)
+              ch |= ((bytes[1] & 0x3F) :<<: 6)
+              ch |= (bytes[2] & 0x3F)
+              bytes.clear
+              character_writer.write( ch )
+            endIf
+          endIf
+        else
+          if (bytes.count == 2)
+            ch  = ((ch&31):<<:6)
+            ch |= (bytes[1] & 0x3F)
+            bytes.clear
+            character_writer.write( ch )
+          endIf
+        endIf
+      else
+        bytes.clear
+        character_writer.write( ch )
+      endIf
+
       return this
 endClass
 

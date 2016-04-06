@@ -62,7 +62,9 @@ class FileOptions( flags=0:Int32 ) [compound]
 endClass
 
 class File
-  nativeHeader #include <cstdio>
+  CLASS
+    nativeHeader #include <cstdio>
+
   GLOBAL METHODS
     method absolute_filepath( filepath:String )->String
       if (not filepath) return null
@@ -156,8 +158,8 @@ class File
     method character_reader( filepath:String )->UTF8Reader [macro]
       UTF8Reader( File.reader(filepath) )
 
-    method character_writer( filepath:String )->UTF8Writer [macro]
-      UTF8Writer( File.writer(filepath) )
+    method character_writer( filepath:String )->CharacterToUTF8ByteWriter [macro]
+      CharacterToUTF8ByteWriter( File.writer(filepath) )
 
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
@@ -255,7 +257,7 @@ class File
               |  DIR* dir;
               |  struct dirent* entry;
               |
-              |  dir = opendir( $native_folder->utf8 );
+              |  dir = opendir( (const char*) $native_folder->utf8 );
               |  if (dir)
               |  {
               |    entry = readdir( dir );
@@ -376,8 +378,8 @@ class File
     method character_reader->UTF8Reader [macro]
       UTF8Reader( this.reader )
 
-    method character_writer->UTF8Writer [macro]
-      UTF8Writer( this.writer )
+    method character_writer->CharacterToUTF8ByteWriter [macro]
+      CharacterToUTF8ByteWriter( this.writer )
 
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )

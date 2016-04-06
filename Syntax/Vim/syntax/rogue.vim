@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     Rogue
 " Maintainer:   Abe Pralle <Abe.Pralle@plasmaworks.com>
-" URL:    
+" URL:
 " Last Change:  2010.06.03
 
 " Windows: place in c:\Program Files\vim\vimfiles\syntax\
@@ -23,13 +23,14 @@ syn keyword rogueClassDecl   with endWith
 syn keyword rogueClassDecl   augment endAugment
 syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHeader
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
-syn keyword rogueMember      PROPERTIES METHODS GLOBAL
+syn keyword rogueMember      CLASS PROPERTIES METHODS GLOBAL
 syn match   rogueError       "\<for\(\s\|(\)"
 syn keyword rogueConditional  if elseIf else endIf
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
 syn keyword rogueConditional  select
 syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
 syn keyword rogueConditional  block endBlock
+syn keyword rogueConditional  unitTest endUnitTest
 syn keyword rogueLoop         await
 syn keyword rogueLoop         while endWhile forEach endForEach in of step
 syn keyword rogueLoop         loop endLoop
@@ -62,7 +63,7 @@ syn keyword rogueOperator     instanceOf is isNot notInstanceOf
 "syn match   rogueOperator     "\.\.\<"
 "syn match   rogueOperator     "\.\.\>"
 "syn match   rogueOperator     "\.\."
-"syn keyword rogueOperator     == != <= >= 
+"syn keyword rogueOperator     == != <= >=
 "syn keyword rogueOperator     + - * / = ^ %
 "syn match   rogueOperator    "+"
 "syn match   rogueOperator    "-"
@@ -78,7 +79,7 @@ syn keyword rogueOperator     instanceOf is isNot notInstanceOf
 
 syn keyword rogueFuncDef  method
 
-syn match   rogueLineComment  "#.*" 
+syn match   rogueLineComment  "#.*"
 syn region  rogueLineComment  start="#{" end="}#"
 syn region  rogueString       start=+"+ skip=+\\\\\|\\"+ end=+"+
 syn region  rogueString       start=+''+ end=+''+

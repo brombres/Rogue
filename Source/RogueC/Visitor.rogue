@@ -28,6 +28,11 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdAssert )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdAssign )
       on_enter( cmd )
       dispatch( cmd )
@@ -84,6 +89,11 @@ class Visitor
       on_leave( cmd )
 
     method visit( cmd:CmdForEach )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdFormattedString )
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -340,6 +350,7 @@ class Visitor
     method on_enter( cmd:CmdAdjustGlobal )
     method on_enter( cmd:CmdAdjustLocal )
     method on_enter( cmd:CmdAdjustProperty )
+    method on_enter( cmd:CmdAssert )
     method on_enter( cmd:CmdAssign )
     method on_enter( cmd:CmdBinary )
     method on_enter( cmd:CmdBlock )
@@ -356,6 +367,7 @@ class Visitor
     method on_enter( cmd:CmdEscape )
     method on_enter( cmd:CmdFlagArg )
     method on_enter( cmd:CmdForEach )
+    method on_enter( cmd:CmdFormattedString )
     method on_enter( cmd:CmdGenericLoop )
     method on_enter( cmd:CmdIf )
     method on_enter( cmd:CmdInlineNative )
@@ -410,6 +422,7 @@ class Visitor
     method on_leave( cmd:CmdAdjustGlobal )
     method on_leave( cmd:CmdAdjustLocal )
     method on_leave( cmd:CmdAdjustProperty )
+    method on_leave( cmd:CmdAssert )
     method on_leave( cmd:CmdAssign )
     method on_leave( cmd:CmdBinary )
     method on_leave( cmd:CmdBlock )
@@ -426,6 +439,7 @@ class Visitor
     method on_leave( cmd:CmdEscape )
     method on_leave( cmd:CmdFlagArg )
     method on_leave( cmd:CmdForEach )
+    method on_leave( cmd:CmdFormattedString )
     method on_leave( cmd:CmdGenericLoop )
     method on_leave( cmd:CmdIf )
     method on_leave( cmd:CmdInlineNative )
@@ -488,6 +502,9 @@ class Visitor
     method dispatch( cmd:CmdStatement )
       noAction
 
+    method dispatch( cmd:CmdAssert )
+      cmd.condition.dispatch( this )
+
     method dispatch( cmd:CmdAssign )
       cmd.new_value.dispatch( this )
       cmd.target.dispatch( this )
@@ -536,6 +553,9 @@ class Visitor
       cmd.statements.dispatch( this )
       cmd.collection.dispatch( this )
       if (cmd.step_cmd) cmd.step_cmd.dispatch( this )
+
+    method dispatch( cmd:CmdFormattedString )
+      forEach (arg in cmd.args) arg.dispatch( this )
 
     method dispatch( cmd:CmdTry )
       cmd.statements.dispatch( this )

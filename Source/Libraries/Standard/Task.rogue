@@ -2,7 +2,8 @@
 # Task
 #------------------------------------------------------------------------------
 class Task
-  $requisite TaskManager
+  CLASS
+    $requisite TaskManager
 
   METHODS
     method start->Task

@@ -247,6 +247,12 @@
 					<key>name</key>
 					<string>keyword.control.rogue</string>
 				</dict>
+				<dict>
+					<key>match</key>
+					<string>\b(unitTest|endUnitTest)\b</string>
+					<key>name</key>
+					<string>keyword.control.rogue</string>
+				</dict>
 			</array>
 		</dict>
 		<key>keywords_formatting</key>
@@ -261,7 +267,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(PROPERTIES|METHODS|ROUTINES)\b</string>
+					<string>\b(CLASS|PROPERTIES|METHODS|ROUTINES)\b</string>
 					<key>name</key>
 					<string>keyword.other.rogue</string>
 				</dict>

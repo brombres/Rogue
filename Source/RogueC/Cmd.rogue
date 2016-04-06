@@ -2375,6 +2375,9 @@ class CmdCallDynamicMethod : CmdCallMethod
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
 
+
+    method to->String
+      return "CmdCallDynamicMethod($.$,$)" (method_info.type_context,method_info.signature,args)
 endClass
 
 

@@ -150,7 +150,7 @@ class Parser
       consume_eols
       if (not reader.has_another) return false
 
-      if (parse_native_elements) return true
+      if (parse_native_element) return true
 
       local t = peek
 
@@ -182,7 +182,7 @@ class Parser
 
       elseIf (next_is_statement)
         this_type = Program.get_type_reference( peek, "Global" )
-        this_method = Program.get_launch_method( t )
+        this_method = Program.get_on_launch_method( t )
         parse_multi_line_statements( this_method.statements )
         return true
 
@@ -495,7 +495,10 @@ class Parser
     method parse_section->Logical
       consume_eols
 
-      if (parse_native_elements) return true
+      if (consume(TokenType.keyword_CLASS))
+        while (parse_class_level_element) noAction
+        return true
+      endIf
 
       if (consume(TokenType.begin_augment_tokens))
         parsing_augment = true
@@ -1223,7 +1226,31 @@ class Parser
       must_consume( TokenType.keyword_endWhich )
       return cmd_which
 
-    method parse_native_elements->Logical
+    method parse_class_level_element->Logical
+      consume_eols
+      local t = peek
+      if (consume(TokenType.keyword_unitTest))
+        consume_eols
+
+        local original_type = this_type
+        local original_method = this_method
+        this_type = Program.get_type_reference( peek, "Global" )
+        this_method = Program.get_run_tests_method( t )
+
+        local cmd_block = CmdBlock( t )
+        parse_multi_line_statements( cmd_block.statements )
+        if (RogueC.run_tests) this_method.statements.add( cmd_block )
+
+        this_type = original_type
+        this_method = original_method
+
+        must_consume( TokenType.keyword_endUnitTest )
+        return true
+      else
+        return parse_native_element
+      endIf
+
+    method parse_native_element->Logical
       local t = peek
 
       if (consume(TokenType.keyword_nativeHeader))
@@ -1242,7 +1269,7 @@ class Parser
 
       elseIf (consume(TokenType.directive_requisite))
         local pattern = t->String
-        Program.get_launch_method( t ).statements.add( CmdMakeRequisite(t,pattern) )
+        Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,pattern) )
         return true
 
       else

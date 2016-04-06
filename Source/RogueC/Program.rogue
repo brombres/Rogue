@@ -19,6 +19,7 @@ class Program [requisite singleton]
 
     first_filepath           = ""
     m_on_launch              : Method
+    m_run_tests              : Method
     global_properties        = Property[]
 
     native_header = String[]
@@ -143,13 +144,27 @@ class Program [requisite singleton]
     method create_unique_id->String
       return "_auto_" + next_unique_integer
 
-    method get_launch_method( t:Token )->Method
+    method get_on_launch_method( t:Token )->Method
       local type_global = get_type_reference( t, "Global" )
       if (not m_on_launch)
         m_on_launch = Method( t, type_global, "on_launch" )
-        m_on_launch.statements.add( Program.m_on_launch.begin_label(t,"insert",false) )
+        if (RogueC.run_tests)
+          m_on_launch.statements.add( CmdAccess(t,"run_tests") )
+          get_run_tests_method( t )
+        endIf
+        m_on_launch.statements.add( m_on_launch.begin_label(t,"insert",false) )
+        m_on_launch.make_requisite
       endIf
       return m_on_launch
+
+    method get_run_tests_method( t:Token )->Method
+      local type_global = get_type_reference( t, "Global" )
+      if (not m_run_tests)
+        m_run_tests = Method( t, type_global, "run_tests" )
+        m_run_tests.statements.add( m_run_tests.begin_label(t,"insert",false) )
+        m_run_tests.make_requisite
+      endIf
+      return m_run_tests
 
     method next_unique_integer->Int32
       ++unique_integer
@@ -242,10 +257,9 @@ class Program [requisite singleton]
       return type
 
     method resolve
-      if (m_on_launch) type_Global.add_method( m_on_launch )
-      else             m_on_launch = type_Global.add_method( type_Global.t, "on_launch" )
+      type_Global.add_method( get_on_launch_method(type_Global.t) )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
-      m_on_launch.make_requisite
+      type_Global.add_method( get_run_tests_method(type_Global.t) )
 
       forEach (p in global_properties)
         if (not p.type)
@@ -278,25 +292,6 @@ class Program [requisite singleton]
       type_NativeArray.resolve
       type_GenericList.resolve
       type_String.resolve
-
-      # Go through requisite directives, resolving and marking as requisite each named type
-      # and method
-      #{
-      forEach (req in requisite_list)
-        req.type.resolve
-        req.type.attributes.add( Attribute.is_requisite )
-        if (req.signature)
-          if (req.signature == "*")
-            forEach (r in req.type.global_method_list) r.attributes.add( Attribute.is_requisite )
-            forEach (m in req.type.method_list)  m.attributes.add( Attribute.is_requisite )
-          else
-            local m = req.type.find_method( req.signature )
-            if (m) m.attributes.add( Attribute.is_requisite )
-            else     throw req.t.error( "No such method $ in type $." (req.signature,req.type.name) )
-          endIf
-        endIf
-      endForEach
-      }#
 
       if (all_requisite)
         forEach (t in type_lookup)
@@ -331,6 +326,14 @@ class Program [requisite singleton]
         while (i < type_list.count)
           type_list[i].resolve
           ++i
+          if (i == type_list.count)
+            # Re-resolve Global.run_tests() as the last thing since various methods add unit
+            # tests and such to it.
+            if (m_run_tests)
+              m_run_tests.resolved = false
+              m_run_tests.resolve
+            endIf
+          endIf
         endWhile
 
         # Give plug-ins a chance to generate new classes before we're done

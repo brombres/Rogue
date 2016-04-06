@@ -22,6 +22,7 @@ class TokenType
     keyword_augment               : TokenType
     keyword_case                  : TokenType
     keyword_catch                 : TokenType
+    keyword_CLASS                 : TokenType
     keyword_class                 : TokenType
     keyword_DEFINITIONS           : TokenType
     keyword_else                  : TokenType
@@ -36,6 +37,7 @@ class TokenType
     keyword_endLoop               : TokenType
     keyword_endRoutine            : TokenType
     keyword_endTry                : TokenType
+    keyword_endUnitTest           : TokenType
     keyword_endWhich              : TokenType
     keyword_endWhile              : TokenType
     keyword_ENUMERATE             : TokenType
@@ -102,6 +104,7 @@ class TokenType
     keyword_trace                 : TokenType
     keyword_trace_position        : TokenType
     keyword_try                   : TokenType
+    keyword_unitTest              : TokenType
     keyword_which                 : TokenType
     keyword_while                 : TokenType
     keyword_yield                 : TokenType

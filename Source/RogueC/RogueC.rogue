@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.51.1"
+$define RELEASE_VERSION "1.0.51.2"
 $define RELEASE_DATE    "April 6, 2016"
 
 $include "Attributes.rogue"
@@ -57,8 +57,9 @@ class RogueC [singleton]
 
     package_name      : String
 
-    debug_mode        : Logical
-    print_version     : Logical
+    debug_mode    : Logical
+    run_tests     : Logical
+    print_version : Logical
 
     parsers = Parser[]
     # One parser is created for every file and all parsers are prepped with tokens
@@ -150,6 +151,10 @@ class RogueC [singleton]
           usage += supported_targets->String.replacing(',','|').replacing("]",",Mac,Windows,iOS,Android,...]\n")
 
           usage += @|
+                    |  --test
+                    |    Compiled program includes any defined unit tests and runs them on launch.
+                    |    Enables --debug automatically.
+                    |
                     |  --version
                     |    Print the version number and release date.
           println usage
@@ -176,7 +181,7 @@ class RogueC [singleton]
         # Add requisite declarations to Program's requisite list
         local t = TokenType("Internal").create_token( "[Command Line Arguments]", 0, 0 )
         forEach (declaration in requisite_declarations)
-          Program.get_launch_method( t ).statements.add( CmdMakeRequisite(t,declaration) )
+          Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,declaration) )
         endForEach
 
         if (all_requisite) Program.all_requisite = true
@@ -416,6 +421,10 @@ class RogueC [singleton]
                   endFunction
                 )
               )
+
+            case "--test"
+              run_tests = true
+              debug_mode = true
 
             case "--version"
               if (value.count)

@@ -29,9 +29,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.51 - April 6, 2016
+- [Rogue] Added class-level `unitTest...endUnitTest` support.  Tests are compiled and run at launch if `--test` is passed to `roguec` and if the containing class is used in the program.
 - [Rogue] Added `[propagated]` method qualifier.  Propagated methods are cloned each time they are inherited so that their `this` reference has the correct type.  This is primarily useful when implementing the Visitor pattern.
 - [RogueC] Implemented the Visitor pattern for misc. tasks.  Removed `CmdAugment*.rogue` in favor of `TraceUsedCodeVisitor.rogue` and `UpdateThisTypeVisitor.rogue` - much, much, simpler.
 - [RogueC] Tweaked CPPWriter's `print_arg()` to automatically cast the arg type to the param type if they differ.
+- [Standard Library] Used `--requisite` to find and fix some errors that had crept in due to other revamps.
 
 ###v1.0.50 - April 5, 2016
 - [Rogue] Added `assert(condition)` statement.  When `--debug` is enabled an AssertionError will be thrown if the condition is false.  When `--debug` is not enabled the assert is stripped during compilation.

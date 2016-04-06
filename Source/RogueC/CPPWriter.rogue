@@ -4,7 +4,6 @@
 augment Program
   METHODS
     method validate_cpp_name( name:String )->String
-local original_name = name
       local begins_with_code_prefix = false
       if (name.begins_with(code_prefix))
         begins_with_code_prefix = true
@@ -111,10 +110,6 @@ local original_name = name
           endWhich
         endIf
       endForEach
-if (string_buffer->String.contains("TableEntryOfString_StringList"))
-@trace original_name
-@trace string_buffer
-endIf
 
       return string_buffer->String
 
@@ -2136,6 +2131,7 @@ endAugment
 augment CmdAccess
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+println StackTrace()
       throw t.error( "[INTERNAL] $::write_cpp() is not defined (access name $)." (type_name,name) )
 endAugment
 

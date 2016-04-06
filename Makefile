@@ -89,7 +89,7 @@ if:
 	@echo
 
 test:
-	roguec Test.rogue --execute --debug
+	roguec Test.rogue --execute --debug --test
 
 x2:
 	make remake

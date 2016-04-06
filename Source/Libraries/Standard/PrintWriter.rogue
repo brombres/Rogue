@@ -1,20 +1,21 @@
 class PrintWriter : Writer<<Character>>, PrintWriterAspect<<PrintWriter>>
   PROPERTIES
-    output : Writer<<Character>>
+    output : Writer<<Byte>>
 
   METHODS
-    method init( output )
+    method init( character_writer:Writer<<Character>> )
+      output = UTF8ByteToCharacterWriter( character_writer )
 
     method flush->this
       if (printwriter_output_buffer.count)
-        write( printwriter_output_buffer.characters )
+        write( printwriter_output_buffer.utf8 )
         printwriter_output_buffer.clear
       endIf
       output.flush
       return this
 
-    method write( characters:Character[] )->this
-      output.write characters
+    method write( bytes:Byte[] )->this
+      forEach (b in bytes) output.write( b )
       return this
 endClass
 
