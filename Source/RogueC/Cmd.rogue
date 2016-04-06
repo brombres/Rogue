@@ -1,5 +1,4 @@
 $include "CmdAugmentTraceUsedCode.rogue"
-$include "CmdAugmentUpdateThisType.rogue"
 $include "Visitor.rogue"
 $include "UpdateThisTypeVisitor.rogue"
 
@@ -1919,8 +1918,8 @@ endClass
 
 class CmdElementAccess : Cmd
   PROPERTIES
-    context   : Cmd
-    index : Cmd
+    context : Cmd
+    index   : Cmd
 
   METHODS
     method init( t, context, index )
@@ -4188,7 +4187,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       m_call.return_type = return_type
       m_call.statements = statements
 
-      m_call.statements.update_this_type( Scope(fn_type,m_call) )
+      m_call.statements.dispatch( UpdateThisTypeVisitor(fn_type,m_call) )
 
       if (with_args)
         local m_init = fn_type.add_method( t, "init" )

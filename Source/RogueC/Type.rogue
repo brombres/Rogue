@@ -707,8 +707,7 @@ class Type
         if (m.is_propagated and m.type_context isNot this)
           # Override a copy of the method which will have the correct 'this' context.
           m = m.clone.set_type_context( this )
-          m.statements.update_this_type( Scope(this,m) )
-          #m.statements.dispatch( UpdateThisTypeVisitor(this) )
+          m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
           inherit_method( m, list, lookup )
         endIf
       endForEach
@@ -775,7 +774,7 @@ class Type
         # No existing method
         if (m.type_context.is_aspect)
           m = m.incorporate( this )
-          m.statements.update_this_type( Scope(this,m) )
+          m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
         elseIf (m.is_augment)
           m.convert_augment_to_standalone
         endIf

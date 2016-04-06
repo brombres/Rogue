@@ -1,2 +1,5 @@
-class UpdateThisTypeVisitor( this_type:Type ) : Visitor
+class UpdateThisTypeVisitor( this_type:Type, this_method:Method ) : Visitor
+  METHODS
+    method on_enter( cmd:CmdThisContext )
+      cmd.this_type = this_type
 endClass
