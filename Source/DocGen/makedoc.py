@@ -14,7 +14,7 @@ def out (fmt = "", *args):
   print fmt % tuple(r)
 
 def is_section (l):
-  for w in ["DEFINITIONS", METHODS", "ENUMERATE", "PROPERTIES", "GLOBAL PROPERTIES", "GLOBAL METHODS"]: # Is that all?
+  for w in ["DEFINITIONS", "METHODS", "ENUMERATE", "PROPERTIES", "GLOBAL PROPERTIES", "GLOBAL METHODS"]: # Is that all?
     if l == w: return True
   return False
 
