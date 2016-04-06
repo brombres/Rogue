@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.49
-- April 4, 2016
+- v1.0.50
+- April 5, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [C++] The `to->String()` of any uncaught exceptions is now displayed at runtime. 
 - [RogueC] Nil returns in `init()` methods are now automatically converted to `return this`.
 - [RogueC] In mixed Int32-Character operations, Int32 is now promoted to Character rather than vice versa.  Before, `Character(-1) > 0)` returned `false` even though Character is unsigned because it was being converted back to Int32 during the comparison.
+- [Syntax] Updated Vim and Sublime Text 3 syntax files.
 
 ###v1.0.49 - April 4, 2016
 - [Standard Library] Fixed bugs in `real_bits()` and `integer_bits()`.
