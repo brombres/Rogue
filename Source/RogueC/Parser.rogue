@@ -382,6 +382,8 @@ class Parser
         elseIf (consume("primitive"))
           ensure_unspecialized_element_type( t, attributes )
           attributes.add( Attribute.is_primitive )
+        elseIf (consume("propagated"))
+          attributes.add( Attribute.is_propagated )
         elseIf (consume("requisite"))
           attributes.add( Attribute.is_requisite )
         elseIf (consume("singleton"))

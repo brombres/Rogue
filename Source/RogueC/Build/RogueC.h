@@ -4595,6 +4595,7 @@ RogueLogical RogueMethod__is_native( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_overridden( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_requisite( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_global( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_propagated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_special( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_task( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_task_conversion( RogueClassMethod* THIS );

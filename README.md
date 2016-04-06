@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.51 - April 6, 2016
+- [Rogue] Added `[propagated]` method qualifier.  Propagated methods are cloned each time they are inherited so that their `this` reference has the correct type.  This is primarily useful when implementing the Visitor pattern.
+
 ###v1.0.50 - April 5, 2016
 - [Rogue] Added `assert(condition)` statement.  When `--debug` is enabled an AssertionError will be thrown if the condition is false.  When `--debug` is not enabled the assert is stripped during compilation.
 - [C++] `RogueObject_to_string(obj)` can now be called to invoke any object's `to->String()` method.  If `to->String()` was culled during compilation then the object's class name will be returned.  Exception `to->String()` methods are automatically marked `[requisite]`.

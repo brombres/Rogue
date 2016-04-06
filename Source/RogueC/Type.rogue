@@ -763,6 +763,10 @@ class Type
           m = m.incorporate( this )
         elseIf (m.is_augment)
           m.convert_augment_to_standalone
+        elseIf (m.is_propagated)
+          # Create a copy of the method which will have the correct 'this' context.
+          m = m.clone.set_type_context( this )
+          m.statements.update_this_type( Scope(this,m) )
         endIf
 
         list.add( m )
