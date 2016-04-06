@@ -234,6 +234,14 @@ void* RogueObject_release( RogueObject* THIS )
   return THIS;
 }
 
+RogueString* RogueObject_to_string( RogueObject* THIS )
+{
+  RogueToStringFn fn = THIS->type->to_string_fn;
+  if (fn) return fn( THIS );
+
+  return Rogue_literal_strings[ THIS->type->name_index ];
+}
+
 void RogueObject_trace( void* obj )
 {
   if ( !obj || ((RogueObject*)obj)->object_size < 0 ) return;
@@ -1073,6 +1081,7 @@ void Rogue_configure_types()
     type->init_object_fn = Rogue_init_object_fn_table[i];
     type->init_fn        = Rogue_init_fn_table[i];
     type->clean_up_fn    = Rogue_clean_up_fn_table[i];
+    type->to_string_fn   = Rogue_to_string_fn_table[i];
   }
 }
 
@@ -1193,9 +1202,15 @@ void Rogue_terminate_handler ()
 {
   if (Rogue_error_object && Rogue_error_object->type)
   {
-    printf( "Uncaught " );
+    printf( "*** Uncaught " );
     RogueType_print_name( Rogue_error_object->type );
-    printf( ".\n\n" );
+    printf( ":\n\n" );
+
+    RogueString* message = RogueObject_to_string( Rogue_error_object );
+    if (message)
+    {
+      printf( "%s\n\n", message->utf8 );
+    }
 
     RogueStackTrace__print( ((RogueClassException*)Rogue_error_object)->stack_trace );
   }

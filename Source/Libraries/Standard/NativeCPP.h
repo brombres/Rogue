@@ -360,6 +360,7 @@ RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
 void*        RogueObject_retain( RogueObject* THIS );
 void*        RogueObject_release( RogueObject* THIS );
+RogueString* RogueObject_to_string( RogueObject* THIS );
 
 void RogueObject_trace( void* obj );
 void RogueString_trace( void* obj );

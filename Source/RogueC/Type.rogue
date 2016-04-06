@@ -457,7 +457,6 @@ class Type
 
       # Mark any clean_up() method as requisite
       if (is_class and not is_native)
-        if (name == "Alpha") println
         local m = find_method( "clean_up()" )
         if (m and m.type_context is this)
           if (m.return_type)
@@ -465,6 +464,12 @@ class Type
           endIf
           m.make_requisite
         endIf
+      endIf
+
+      # to->String is requisite for Exception and extended classes
+      if (is_class and instance_of(Program.type_Exception))
+        local m = find_method( "to_String()" )
+        if (m) m.make_requisite
       endIf
 
       # Add a default to->String to compounds

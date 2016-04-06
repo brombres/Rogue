@@ -30,6 +30,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.50 - April 5, 2016
 - [Rogue] Added `assert(condition)` statement.  When `--debug` is enabled an AssertionError will be thrown if the condition is false.  When `--debug` is not enabled the assert is stripped during compilation.
+- [C++] `RogueObject_to_string(obj)` can now be called to invoke any object's `to->String()` method.  If `to->String()` was culled during compilation then the object's class name will be returned.  Exception `to->String()` methods are automatically marked `[requisite]`.
+- [C++] The `to->String()` of any uncaught exceptions is now displayed at runtime. 
 - [RogueC] Nil returns in `init()` methods are now automatically converted to `return this`.
 - [RogueC] In mixed Int32-Character operations, Int32 is now promoted to Character rather than vice versa.  Before, `Character(-1) > 0)` returned `false` even though Character is unsigned because it was being converted back to Int32 during the comparison.
 

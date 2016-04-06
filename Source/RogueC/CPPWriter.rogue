@@ -490,10 +490,10 @@ endIf
       writer.indent += 2
       first = true
       forEach (type in type_list)
-        if (type.is_reference)
-          if (first) first = false
-          else       writer.println ","
+        if (first) first = false
+        else       writer.println ","
 
+        if (type.is_reference)
           local m = type.find_method( "to_String()" )
           if (m and not type.omit_output and m.is_used and m.statements.count)
             writer.print "(RogueToStringFn) "
@@ -501,6 +501,8 @@ endIf
           else
             writer.print 0
           endIf
+        else
+          writer.print 0
         endIf
 
       endForEach
