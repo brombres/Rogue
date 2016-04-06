@@ -1,5 +1,5 @@
-$include "CmdAugmentTraceUsedCode.rogue"
 $include "Visitor.rogue"
+$include "TraceUsedCodeVisitor.rogue"
 $include "UpdateThisTypeVisitor.rogue"
 
 class Cmd
@@ -165,6 +165,9 @@ class Cmd
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
 
+    method trace_used_code
+      dispatch( TraceUsedCodeVisitor )
+
     method type->Type
       throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
 
@@ -235,6 +238,8 @@ class CmdStatementList : Cmd[]
 
       scope.this_body = original_body
 
+    method trace_used_code
+      dispatch( TraceUsedCodeVisitor )
 endClass
 
 
@@ -276,6 +281,8 @@ class CmdArgs : Cmd[]
         arg.require_type.organize(scope)
       endForEach
 
+    method trace_used_code
+      dispatch( TraceUsedCodeVisitor )
 endClass
 
 

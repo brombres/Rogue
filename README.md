@@ -30,11 +30,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.51 - April 6, 2016
 - [Rogue] Added `[propagated]` method qualifier.  Propagated methods are cloned each time they are inherited so that their `this` reference has the correct type.  This is primarily useful when implementing the Visitor pattern.
+- [RogueC] Implemented the Visitor pattern for misc. tasks.  Removed `CmdAugment*.rogue` in favor of `TraceUsedCodeVisitor.rogue` and `UpdateThisTypeVisitor.rogue` - much, much, simpler.
+- [RogueC] Tweaked CPPWriter's `print_arg()` to automatically cast the arg type to the param type if they differ.
 
 ###v1.0.50 - April 5, 2016
 - [Rogue] Added `assert(condition)` statement.  When `--debug` is enabled an AssertionError will be thrown if the condition is false.  When `--debug` is not enabled the assert is stripped during compilation.
 - [C++] `RogueObject_to_string(obj)` can now be called to invoke any object's `to->String()` method.  If `to->String()` was culled during compilation then the object's class name will be returned.  Exception `to->String()` methods are automatically marked `[requisite]`.
-- [C++] The `to->String()` of any uncaught exceptions is now displayed at runtime. 
+- [C++] The `to->String()` of any uncaught exceptions is now displayed at runtime.
 - [RogueC] Nil returns in `init()` methods are now automatically converted to `return this`.
 - [RogueC] In mixed Int32-Character operations, Int32 is now promoted to Character rather than vice versa.  Before, `Character(-1) > 0)` returned `false` even though Character is unsigned because it was being converted back to Int32 during the comparison.
 - [Syntax] Updated Vim and Sublime Text 3 syntax files.
