@@ -1025,27 +1025,30 @@ class Parser
         statements.add( CmdTrace( t, CmdFormattedString(t,buffer->String,args) ) )
         return
 
-        #{
-        local cmd_trace = CmdTrace(t,this_method)
-        while (reader.has_another)
-          if (next_is(TokenType.symbol_semicolon) or next_is(TokenType.eol) or next_is(TokenType.symbol_close_brace))
-            escapeWhile
-          endIf
+      elseIf (consume(TokenType.keyword_assert))
+        consume_eols
+        local has_parens = consume( TokenType.symbol_open_paren )
 
-          local pos1 = reader.position
-          t = peek
-          if (consume(TokenType.symbol_comma))
-            cmd_trace.labels.add(", ")
-            cmd_trace.expressions.add( CmdLiteralString(t,", ") )
-          else
-            cmd_trace.expressions.add( parse_expression )
-            cmd_trace.labels.add( reader.source_string(pos1,reader.position-1) )
-          endIf
+        local start_t = peek
+        local expr = parse_expression
+        local end_t = peek
 
-        endWhile
-        statements.add( cmd_trace )
+        if (has_parens) must_consume( TokenType.symbol_close_paren )
+
+        if (not RogueC.debug_mode) return
+
+        local buffer = StringBuilder()
+        local parse_reader = RogueC.parsereaders_by_filepath[ start_t.filepath ]
+        if (parse_reader and start_t.line and start_t.column and start_t.filepath == end_t.filepath)
+          parse_reader.seek_location( start_t.line, start_t.column )
+          while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
+                 (parse_reader.line == end_t.line and parse_reader.column < end_t.column)))
+            buffer.print( parse_reader.read )
+          endWhile
+        endIf
+
+        statements.add( CmdAssert(t, expr, buffer->String) )
         return
-        }#
 
         #{
       elseIf (consume(TokenType.keyword_tron))

@@ -12,6 +12,13 @@ endClass
 
 class Error : Exception;
 
+class AssertionError : Error
+  METHODS
+    method init( assertion:String )
+      if (assertion.count) message = "Assertion failed $." (assertion)
+      else                 message = "Assertion failed."
+endClass
+
 class UnsupportedOperationError : Error
   METHODS
     method init

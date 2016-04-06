@@ -102,6 +102,9 @@ class Cmd
 
       return null
 
+    method generates_output->Logical
+      return true
+
     method is_generic_function->Logical
       return false
 
@@ -4229,6 +4232,28 @@ endClass
 #------------------------------------------------------------------------------
 # Miscellaneous
 #------------------------------------------------------------------------------
+class CmdAssert : Cmd
+  PROPERTIES
+    condition : Cmd
+    assertion : String
+
+  METHODS
+    method init( t, condition, assertion )
+
+    method clone( clone_args:CloneArgs )->CmdAssert
+      return CmdAssert( t, condition.clone, assertion )
+
+    method resolve( scope:Scope )->Cmd
+      local cmd_if = CmdIf( t, CmdLogicalNot(t,condition) )
+      cmd_if.statements.add(
+          CmdThrow( t, 
+              CmdAccess( t, "AssertionError", CmdArgs( CmdLiteralString(t,assertion) ) )
+          )
+      )
+      return cmd_if.resolve( scope )
+
+endClass
+
 class CmdTrace : Cmd
   PROPERTIES
     info : Cmd
@@ -4257,6 +4282,12 @@ class CmdLabel : Cmd
       local result = CmdLabel( t, name, statements.clone(clone_args) )
       if (clone_args) clone_args.register_label( result )
       return result
+
+    method generates_output->Logical
+      forEach (statement in statements)
+        if (statement.generates_output) return true
+      endForEach
+      return false
 
     method requires_semicolon->Logical
       return false
@@ -4431,6 +4462,9 @@ class CmdNoAction : Cmd
 
     method add_to( statements:CmdStatementList )
       noAction
+
+    method generates_output->Logical
+      return false
 
     method requires_semicolon->Logical
       return false

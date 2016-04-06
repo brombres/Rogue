@@ -65,6 +65,7 @@ class TokenType
     eoi                           : TokenType
 
     # Statements
+    keyword_assert                : TokenType
     keyword_await                 : TokenType
     keyword_block                 : TokenType
     keyword_contingent            : TokenType

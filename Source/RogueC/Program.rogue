@@ -264,6 +264,7 @@ class Program [requisite singleton]
       endForEach
 
       type_null.resolve
+      type_Exception.resolve
       type_Real64.resolve
       type_Real32.resolve
       type_Int64.resolve
@@ -272,7 +273,6 @@ class Program [requisite singleton]
       type_Byte.resolve
       type_Logical.resolve
       type_Global.resolve
-      type_Exception.resolve
 
       type_Object.resolve
       type_NativeArray.resolve

@@ -29,7 +29,6 @@ syn keyword rogueConditional  if elseIf else endIf
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
 syn keyword rogueConditional  select
 syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
-syn keyword rogueConditional  try catch endTry
 syn keyword rogueConditional  block endBlock
 syn keyword rogueLoop         await
 syn keyword rogueLoop         while endWhile forEach endForEach in of step
@@ -42,16 +41,12 @@ syn keyword rogueBoolean      true false
 syn keyword rogueConstant     null void gt lt eq infinity NaN
 syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
-syn keyword rogueStatement    yield yieldAndWait yieldWhile withTimeout
-syn keyword rogueSpecial      insertUnderlying
+syn keyword rogueStatement    yield
 syn keyword rogueType         Real64 Real32 Int64 Int32 Character Byte Logical String
-syn keyword rogueStorageClass overlaying underlying
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    deferred singleton managed
-syn keyword rogueStorageClass native macro requisite abstract final propagated foreign dynamicAccess
-syn keyword rogueStorageClass marshalling omit
-syn keyword rogueExceptions   throw try catch finally
-syn keyword roguePreProc      useFramework
+syn keyword rogueStorageClass native macro requisite abstract final propagated foreign
+syn keyword rogueExceptions   throw try catch endTry
 "syn match  roguegPreProc      "^\[.*]"
 syn region  roguePreProc      start="\$\[" end="[\n\]]"
 syn match   rogueNumber       "\<\d\+\(\.\d\+\)\=\>"
@@ -63,7 +58,7 @@ syn match   rogueNumber       "\<0x\x\+\(\.\x\+\)\=\>"
 
 syn keyword rogueStatement    require ensure assert
 syn keyword rogueOperator     and or xor not
-syn keyword rogueOperator     instanceOf is isNot notInstanceOf duplicate
+syn keyword rogueOperator     instanceOf is isNot notInstanceOf
 "syn match   rogueOperator     "\.\.\<"
 "syn match   rogueOperator     "\.\.\>"
 "syn match   rogueOperator     "\.\."

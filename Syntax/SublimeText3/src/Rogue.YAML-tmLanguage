@@ -49,10 +49,7 @@ patterns:
   match: \b(with|endWith)\b
 
 - name: storage.type.rogue
-  match: \b(augment|endAugment|framework|endFramework)\b
-
-- name: keyword.other.rogue
-  match: \b(insertUnderlying|useFramework)\b
+  match: \b(augment|endAugment)\b
 
 - name: support.function.rogue
   match: \b(require|ensure|assert)\b
@@ -139,10 +136,10 @@ repository:
       match: \b(if|elseIf|else|endIf|contingent|endContingent|satisfied|unsatisfied|try|catch|endTry)\b
 
     - name: keyword.control.rogue
-      match: \b(return|necessary|sufficient|noAction|yield|yieldAndWait|yieldWhile|withTimeout)\b
+      match: \b(return|necessary|sufficient|noAction|yield)\b
 
     - name: keyword.control.rogue
-      match: \b(try|catch|finally)\b
+      match: \b(try|catch)\b
 
   keywords_loop:
     patterns:
@@ -162,13 +159,10 @@ repository:
   scope_declaration:
     patterns:
     - name: storage.modifier.rogue
-      match: \b(overlaying|underlying)\b
-
-    - name: storage.modifier.rogue
       match: \b(readOnly|writeOnly|public|private|limited|const|local|deferred|singleton|managed|primitive|aspect)\b
 
     - name: storage.modifier.rogue
-      match: \b(native|inline|inlineNative|requisite|abstract|final|propagated|functional|dynamicAccess|marshalling|omit)\b
+      match: \b(native|inline|inlineNative|requisite|abstract|final|propagated|foreign)\b
 
   method_params:
     name: meta.method.params.rogue

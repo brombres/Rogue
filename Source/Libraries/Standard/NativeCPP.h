@@ -259,6 +259,7 @@ typedef void         (*RogueCallback)();
 typedef void         (*RogueTraceFn)( void* obj );
 typedef RogueObject* (*RogueInitFn)( void* obj );
 typedef void         (*RogueCleanUpFn)( void* obj );
+typedef RogueString* (*RogueToStringFn)( void* obj );
 
 
 //-----------------------------------------------------------------------------
@@ -318,6 +319,7 @@ struct RogueType
   RogueInitFn       init_object_fn;
   RogueInitFn       init_fn;
   RogueCleanUpFn    clean_up_fn;
+  RogueToStringFn   to_string_fn;
 };
 
 RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
@@ -509,6 +511,7 @@ extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];
 extern RogueTraceFn       Rogue_trace_fn_table[];
 extern RogueCleanUpFn     Rogue_clean_up_fn_table[];
+extern RogueToStringFn    Rogue_to_string_fn_table[];
 extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];
 extern RogueObject*       Rogue_error_object;

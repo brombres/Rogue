@@ -134,6 +134,7 @@ class Tokenizer
       TokenType.symbol_close_specialize      = define( StructureTokenType(">>") )
 
       # Statement Tokens
+      TokenType.keyword_assert           = define( TokenType("assert") )
       TokenType.keyword_await            = define( TokenType("await") )
       TokenType.keyword_block            = define( TokenType("block") )
       TokenType.keyword_contingent       = define( TokenType("contingent") )
