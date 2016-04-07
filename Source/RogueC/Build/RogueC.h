@@ -5184,6 +5184,7 @@ void RogueParser__parse_single_line_statements__CmdStatementList( RogueClassPars
 void RogueParser__parse_statement__CmdStatementList_Logical( RogueClassParser* THIS, RogueClassCmdStatementList* statements_0, RogueLogical allow_control_structures_1 );
 RogueClassCmdWhich* RogueParser__parse_which( RogueClassParser* THIS );
 RogueLogical RogueParser__parse_class_level_element( RogueClassParser* THIS );
+RogueLogical RogueParser__parse_unit_test( RogueClassParser* THIS );
 RogueLogical RogueParser__parse_native_element( RogueClassParser* THIS );
 RogueClassCmdContingent* RogueParser__parse_contingent( RogueClassParser* THIS );
 RogueClassCmdTry* RogueParser__parse_try( RogueClassParser* THIS );

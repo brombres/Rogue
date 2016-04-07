@@ -846,6 +846,8 @@ class Parser
 
 
     method parse_statement( statements:CmdStatementList, allow_control_structures:Logical )
+      if (parse_unit_test) return
+
       local t = peek
 
       if (consume(TokenType.keyword_nativeHeader))
@@ -1227,30 +1229,38 @@ class Parser
       return cmd_which
 
     method parse_class_level_element->Logical
+      if (parse_unit_test) return true
+      return parse_native_element
+
+    method parse_unit_test->Logical
       consume_eols
+
       local t = peek
-      if (consume(TokenType.keyword_unitTest))
-        consume_eols
+      if (not consume(TokenType.keyword_unitTest)) return false
 
-        local original_type = this_type
-        local original_method = this_method
-        this_type = Program.get_type_reference( peek, "Global" )
-        this_method = Program.get_run_tests_method( t )
+      local is_multi_line = consume_eols
 
-        local cmd_block = CmdBlock( t )
+      local original_type = this_type
+      local original_method = this_method
+      this_type = Program.get_type_reference( peek, "Global" )
+      this_method = Program.get_run_tests_method( t )
+
+      local cmd_block = CmdBlock( t )
+      if (is_multi_line)
         parse_multi_line_statements( cmd_block.statements )
-        if (RogueC.run_tests) this_method.statements.add( cmd_block )
-
-        this_type = original_type
-        this_method = original_method
-
         must_consume( TokenType.keyword_endUnitTest )
-        return true
-      else
-        return parse_native_element
+      else      
+        parse_single_line_statements( cmd_block.statements )
       endIf
+      if (RogueC.run_tests) this_method.statements.add( cmd_block )
+
+      this_type = original_type
+      this_method = original_method
+      return true
 
     method parse_native_element->Logical
+      consume_eols
+
       local t = peek
 
       if (consume(TokenType.keyword_nativeHeader))

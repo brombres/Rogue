@@ -31242,6 +31242,10 @@ void RogueParser__parse_single_line_statements__CmdStatementList( RogueClassPars
 
 void RogueParser__parse_statement__CmdStatementList_Logical( RogueClassParser* THIS, RogueClassCmdStatementList* statements_0, RogueLogical allow_control_structures_1 )
 {
+  if (((RogueParser__parse_unit_test( ROGUE_ARG(THIS) ))))
+  {
+    return;
+  }
   ROGUE_DEF_LOCAL_REF(RogueClassToken*,t_2,(((RogueParser__peek( ROGUE_ARG(THIS) )))));
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_nativeHeader) ))))
   {
@@ -31609,34 +31613,48 @@ RogueClassCmdWhich* RogueParser__parse_which( RogueClassParser* THIS )
 
 RogueLogical RogueParser__parse_class_level_element( RogueClassParser* THIS )
 {
+  if (((RogueParser__parse_unit_test( ROGUE_ARG(THIS) ))))
+  {
+    return (RogueLogical)(true);
+  }
+  return (RogueLogical)(((RogueParser__parse_native_element( ROGUE_ARG(THIS) ))));
+}
+
+RogueLogical RogueParser__parse_unit_test( RogueClassParser* THIS )
+{
   RogueParser__consume_eols( ROGUE_ARG(THIS) );
   ROGUE_DEF_LOCAL_REF(RogueClassToken*,t_0,(((RogueParser__peek( ROGUE_ARG(THIS) )))));
-  if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_unitTest) ))))
+  if (!(((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_unitTest) )))))
   {
-    RogueParser__consume_eols( ROGUE_ARG(THIS) );
-    ROGUE_DEF_LOCAL_REF(RogueClassType*,original_type_1,(THIS->_this_type));
-    ROGUE_DEF_LOCAL_REF(RogueClassMethod*,original_method_2,(THIS->this_method));
-    THIS->_this_type = ((RogueProgram__get_type_reference__Token_String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), ROGUE_ARG(((RogueParser__peek( ROGUE_ARG(THIS) )))), Rogue_literal_strings[70] )));
-    THIS->this_method = ((RogueProgram__get_run_tests_method__Token( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), t_0 )));
-    ROGUE_DEF_LOCAL_REF(RogueClassCmdBlock*,cmd_block_3,(((RogueCmdBlock__init__Token_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdBlock*,ROGUE_CREATE_OBJECT(CmdBlock))), t_0, 0 )))));
-    RogueParser__parse_multi_line_statements__CmdStatementList( ROGUE_ARG(THIS), ROGUE_ARG(cmd_block_3->statements) );
-    if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->run_tests)
-    {
-      RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->this_method->statements)), ROGUE_ARG(((RogueClassCmd*)(cmd_block_3))) );
-    }
-    THIS->_this_type = original_type_1;
-    THIS->this_method = original_method_2;
+    return (RogueLogical)(false);
+  }
+  RogueLogical is_multi_line_1 = (((RogueParser__consume_eols( ROGUE_ARG(THIS) ))));
+  ROGUE_DEF_LOCAL_REF(RogueClassType*,original_type_2,(THIS->_this_type));
+  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,original_method_3,(THIS->this_method));
+  THIS->_this_type = ((RogueProgram__get_type_reference__Token_String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), ROGUE_ARG(((RogueParser__peek( ROGUE_ARG(THIS) )))), Rogue_literal_strings[70] )));
+  THIS->this_method = ((RogueProgram__get_run_tests_method__Token( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), t_0 )));
+  ROGUE_DEF_LOCAL_REF(RogueClassCmdBlock*,cmd_block_4,(((RogueCmdBlock__init__Token_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdBlock*,ROGUE_CREATE_OBJECT(CmdBlock))), t_0, 0 )))));
+  if (is_multi_line_1)
+  {
+    RogueParser__parse_multi_line_statements__CmdStatementList( ROGUE_ARG(THIS), ROGUE_ARG(cmd_block_4->statements) );
     RogueParser__must_consume__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_endUnitTest), ROGUE_ARG(((RogueString*)(NULL))) );
-    return (RogueLogical)(true);
   }
   else
   {
-    return (RogueLogical)(((RogueParser__parse_native_element( ROGUE_ARG(THIS) ))));
+    RogueParser__parse_single_line_statements__CmdStatementList( ROGUE_ARG(THIS), ROGUE_ARG(cmd_block_4->statements) );
   }
+  if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->run_tests)
+  {
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->this_method->statements)), ROGUE_ARG(((RogueClassCmd*)(cmd_block_4))) );
+  }
+  THIS->_this_type = original_type_2;
+  THIS->this_method = original_method_3;
+  return (RogueLogical)(true);
 }
 
 RogueLogical RogueParser__parse_native_element( RogueClassParser* THIS )
 {
+  RogueParser__consume_eols( ROGUE_ARG(THIS) );
   ROGUE_DEF_LOCAL_REF(RogueClassToken*,t_0,(((RogueParser__peek( ROGUE_ARG(THIS) )))));
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_nativeHeader) ))))
   {
@@ -51761,7 +51779,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.51.2", 8 ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.51.3", 8 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 6, 2016", 13 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
@@ -52034,7 +52052,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[317] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[318] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[319] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[320] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_for_each() Parser.rogue:1733]", 43 ) ); 
+  Rogue_literal_strings[320] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_for_each() Parser.rogue:1743]", 43 ) ); 
   Rogue_literal_strings[321] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[322] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Omit the 'return' in a macro method with a return type.", 55 ) ); 
   Rogue_literal_strings[323] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "() ", 3 ) ); 
@@ -52045,7 +52063,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[328] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Literal string expected.", 24 ) ); 
   Rogue_literal_strings[329] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "The last part of a select{} must be a single expression.", 56 ) ); 
   Rogue_literal_strings[330] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "The last part of a select{} cannot have a condition.", 52 ) ); 
-  Rogue_literal_strings[331] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_term() Parser.rogue:2547]     this_type.name:", 59 ) ); 
+  Rogue_literal_strings[331] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_term() Parser.rogue:2557]     this_type.name:", 59 ) ); 
   Rogue_literal_strings[332] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Syntax error: unexpected '", 26 ) ); 
   Rogue_literal_strings[333] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "abstract", 8 ) ); 
   Rogue_literal_strings[334] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "aspect", 6 ) ); 
