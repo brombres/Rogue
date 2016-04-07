@@ -2941,3 +2941,28 @@ augment CmdSelect
 
       writer.print ")"
 endAugment
+
+
+augment CmdAssert
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( local_info.cpp_name ).print( "=" )
+      writer.print "("
+      condition.write_cpp( writer )
+      writer.print( "))?" ).print( local_info.cpp_name ).print( ":" )
+      error.write_cpp( writer )
+      writer.print( ")" )
+endAugment
+
+
+augment CmdRequire
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "((" ).print( local_info.cpp_name ).print( "=" )
+      writer.print "("
+      condition.write_cpp( writer )
+      writer.print( "))?" ).print( local_info.cpp_name ).print( ":" )
+      error.write_cpp( writer )
+      writer.print( ")" )
+endAugment
+

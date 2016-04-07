@@ -4254,23 +4254,54 @@ endClass
 #------------------------------------------------------------------------------
 class CmdAssert : Cmd
   PROPERTIES
-    condition : Cmd
-    assertion : String
+    condition  : Cmd
+    message    : Cmd
+    error      : Cmd
+    local_info : Local
 
   METHODS
-    method init( t, condition, assertion )
+    method init( t, condition, message, local_info=null )
 
     method clone( clone_args:CloneArgs )->CmdAssert
-      return CmdAssert( t, condition.clone, assertion )
+      return CmdAssert( t, condition.clone(clone_args), message.clone(clone_args), local_info )
 
     method resolve( scope:Scope )->Cmd
-      local cmd_if = CmdIf( t, CmdLogicalNot(t,condition) )
-      cmd_if.statements.add(
-          CmdThrow( t,
-              CmdAccess( t, "AssertionError", CmdArgs( CmdLiteralString(t,assertion) ) )
-          )
-      )
-      return cmd_if.resolve( scope )
+      condition = condition.resolve( scope )
+      local_info.type = condition.require_type
+
+      message = message.resolve( scope ).require_value
+      error = CmdThrow( t, CmdAccess( t, "AssertionError", CmdArgs(message) ) ).resolve( scope )
+
+      return this
+
+    method type->Type
+      return condition.type
+endClass
+
+class CmdRequire : Cmd
+  PROPERTIES
+    condition  : Cmd
+    message    : Cmd
+    error      : Cmd
+    local_info : Local
+
+  METHODS
+    method init( t, condition, message, local_info=null )
+
+    method clone( clone_args:CloneArgs )->CmdRequire
+      return CmdRequire( t, condition.clone(clone_args), message.clone(clone_args), local_info )
+
+    method resolve( scope:Scope )->Cmd
+      condition = condition.resolve( scope )
+      local_info.type = condition.require_type
+
+      message = message.resolve( scope ).require_value
+      error = CmdThrow( t, CmdAccess( t, "RequirementError", CmdArgs(message) ) ).resolve( scope )
+
+      return this
+
+    method type->Type
+      return condition.type
 
 endClass
 

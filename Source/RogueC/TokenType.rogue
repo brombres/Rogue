@@ -96,6 +96,7 @@ class TokenType
     keyword_noAction              : TokenType
     keyword_null                  : TokenType
     keyword_of                    : TokenType
+    keyword_require               : TokenType
     keyword_return                : TokenType
     keyword_select                : TokenType
     keyword_step                  : TokenType

@@ -571,7 +571,7 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
   }
 
 #define ROGUE_THROW(_error_object) \
-  throw RogueCPPException( _error_object );
+  throw RogueCPPException( _error_object )
 
 
 struct RogueCPPException

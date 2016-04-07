@@ -165,6 +165,7 @@ class Tokenizer
       TokenType.keyword_noAction         = define( TokenType("noAction") )
       TokenType.keyword_null             = define( TokenType("null") )
       TokenType.keyword_of               = define( TokenType("of") )
+      TokenType.keyword_require          = define( TokenType("require") )
       TokenType.keyword_return           = define( TokenType("return") )
       TokenType.keyword_select           = define( TokenType("select") )
       TokenType.keyword_step             = define( TokenType("step") )

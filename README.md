@@ -29,6 +29,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.51 - April 6, 2016
+- [Rogue] `assert` now accepts an optional custom message: `assert(condition||message)`.
+- [Rogue] `assert(condition[||message])` may now be used as part of expression - for example, `q = a / assert(b)`.  `b` is returned if it is "truthy" or if `--debug` is not enabled.
+- [Rogue] Added `require(condition[||message])` that works just like `assert` except that it is always compiled in and does not depend on `--debug` mode.  A failed requirement will throw a `RequirementError`.
 - [Rogue] Added class and method level `unitTest...endUnitTest` support (also single-line `unitTest ...`).  Tests are compiled and run at launch if `--test` is passed to `roguec` and if the containing class is used in the program.
 - [Rogue] Added `[propagated]` method qualifier.  Propagated methods are cloned each time they are inherited so that their `this` reference has the correct type.  This is primarily useful when implementing the Visitor pattern.
 - [RogueC] Implemented the Visitor pattern for misc. tasks.  Removed `CmdAugment*.rogue` in favor of `TraceUsedCodeVisitor.rogue` and `UpdateThisTypeVisitor.rogue` - much, much, simpler.

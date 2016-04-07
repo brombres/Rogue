@@ -15,8 +15,15 @@ class Error : Exception;
 class AssertionError : Error
   METHODS
     method init( assertion:String )
-      if (assertion.count) message = "Assertion failed: $." (assertion)
+      if (assertion.count) message = "Assertion failed:  $." (assertion)
       else                 message = "Assertion failed."
+endClass
+
+class RequirementError : Error
+  METHODS
+    method init( requirement:String )
+      if (requirement.count) message = "Requirement failed:  $." (requirement)
+      else                   message = "Requirement failed."
 endClass
 
 class UnsupportedOperationError : Error
