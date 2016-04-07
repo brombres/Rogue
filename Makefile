@@ -122,6 +122,13 @@ publish:
 	git push
 	git checkout develop
 	git push
+	@[ -f Local.mk ] && make -f Local.mk publish || true
 
 docs:
 	cd Source/DocGen && make
+
+# Local.mk
+#publish:
+	#cd Wiki && git pull
+	#cd Source/DocGen && make
+	#cd Wiki && git commit -am "Updated documentation" && git push

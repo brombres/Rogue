@@ -1,5 +1,5 @@
 all:
-	cd ../Libraries/Standard && python ../../DocGen/makedoc.py *.rogue | pbcopy
+	cd ../Libraries/Standard && python ../../DocGen/makedoc.py *.rogue > ../../../Wiki/API.mediawiki
 
 rogue_unused:
 	mkdir -p Build
