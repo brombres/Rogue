@@ -4,6 +4,9 @@ class System [requisite]
     executable_filepath    : String
     environment            : SystemEnvironment
 
+    classes = Table<<String,Object>>()
+    # Actually a Class lookup but avoiding pulling in Class unless it's used.
+
   GLOBAL METHODS
     method init_class
       local value = environment["ROGUE_GC_THRESHOLD"]
@@ -13,6 +16,25 @@ class System [requisite]
         elseIf (value.ends_with('K') or value.ends_with("KB")) n*= 1024
         gc_threshold = n->Int32
       endIf
+
+    method get_class( name:String )->Class
+      local existing = classes[ name ]
+      if (existing) return existing as Class
+
+      local result : Class
+      native @|for (int i=Rogue_type_count; --i>=0; )
+              |{
+              |  RogueType* cur_type = &Rogue_types[ i ];
+              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
+              |  {
+              |    $result = (RogueClass*) ROGUE_CREATE_OBJECT( Class );
+              |    RogueClass__init__Int32_String( $result, cur_type->index, $name );
+              |    break;
+              |  }
+              |}
+
+      if (result) classes[name] = result
+      return result
 
     method exit( result_code:Int32 )
       $if ("C++")

@@ -1620,8 +1620,10 @@ class CmdAccess : Cmd
           endIf
 
           if (name.begins_with('@'))
-            # TODO: sometime turn this into class info
-            throw t.error( "Illegal '@'." )
+            if (args)
+              throw t.error( "Invalid arguments to class selector $." (name) )
+            endIf
+            return CmdAccess( t, CmdAccess(t,"System"), "get_class", CmdArgs(CmdLiteralString(t,name.from(1))) ).resolve( scope )
           endIf
 
           if (args is null)

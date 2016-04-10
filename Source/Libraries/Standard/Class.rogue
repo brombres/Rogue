@@ -1,0 +1,12 @@
+class Class
+  PROPERTIES
+    index : Int32
+    name  : String
+
+  METHODS
+    method init( index, name ) [requisite]
+
+    method create_object->Object
+      native @|return RogueType_create_object( &Rogue_types[$index], 0 );
+endClass
+

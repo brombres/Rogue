@@ -1,5 +1,6 @@
 $include "Array.rogue"
 $include "Boxed.rogue"
+$include "Class.rogue"
 $include "Console.rogue"
 $include "DataIO.rogue"
 $include "Exception.rogue"
