@@ -2536,7 +2536,7 @@ class CmdUnary : Cmd
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
       if (operand.is_literal) return resolve_for_literal_operand( scope )
-      else                    return resolve_for_operand_type( scope, operand.require_type )
+      else                    return resolve_for_operand_type( scope, operand.require_type.organize(scope) )
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       return this
@@ -2667,8 +2667,8 @@ class CmdBinary : Cmd
     method resolve( scope:Scope )->Cmd
       left = left.resolve( scope )
       right = right.resolve( scope )
-      local left_type = left.require_type
-      local right_type = right.require_type
+      local left_type = left.require_type.organize( scope )
+      local right_type = right.require_type.organize( scope )
       local result = resolve_for_types( scope, left_type, right_type )
       return result
 

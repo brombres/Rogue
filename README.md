@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.52 - April 10, 2016
+- [RogueC] CmdBinary and CmdUnary now call organize() on the operand types before proceeding to ensure that operator methods can be found if they exist.
+
 ###v1.0.51 - April 6, 2016
 - [Rogue] `assert` now accepts an optional custom message: `assert(condition||message)`.
 - [Rogue] `assert(condition[||message])` may now be used as part of expression - for example, `q = a / assert(b)`.  `b` is returned if it is "truthy" or if `--debug` is not enabled.
