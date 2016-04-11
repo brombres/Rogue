@@ -101,7 +101,7 @@ class PrintWriterAspect<<$WriterType>> [aspect]
     method println( value:String )->$WriterType
       return print( value ).println
 
-    method write( characters:Character[] )->$WriterType
+    method write( bytes:Byte[] )->$WriterType
       return this
 endClass
 
