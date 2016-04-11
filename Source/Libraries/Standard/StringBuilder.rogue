@@ -40,6 +40,9 @@ class StringBuilder [requisite]
       # reusing a previously consolidated String object if possible.
       return StringConsolidationTable[ this ]
 
+    method contains( ch:Character )->Logical
+      return locate(ch).exists
+
     method get( index:Int32 )->Character
       if (index == 0)
         cursor_offset = 0
