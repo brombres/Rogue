@@ -29,6 +29,9 @@ class Timer
     method is_expired->Logical
       return elapsed >= duration
 
+    method remaining->Real64
+      return duration - elapsed
+
     method restart->this
       start_time = System.time
       return this
