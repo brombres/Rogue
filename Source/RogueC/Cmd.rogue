@@ -1625,7 +1625,7 @@ class CmdAccess : Cmd
             endIf
             local type_name = name.from(1)
             Program.get_type_reference( t, type_name ).organize( scope ).make_requisite
-            return CmdAccess( t, CmdAccess(t,"System"), "get_class", CmdArgs(CmdLiteralString(t,type_name)) ).resolve( scope )
+            return CmdAccess( t, CmdAccess(t,"System"), "type_info", CmdArgs(CmdLiteralString(t,type_name)) ).resolve( scope )
           endIf
 
           if (args is null)

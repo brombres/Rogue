@@ -124,6 +124,17 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
   return array;
 }
 
+RogueTypeInfo* RogueType_type_info( RogueType* THIS )
+{
+  if ( !THIS->type_info )
+  {
+    THIS->type_info = RogueTypeInfo__init__Int32_String( (RogueTypeInfo*)ROGUE_CREATE_OBJECT(TypeInfo),
+        THIS->index, Rogue_literal_strings[ THIS->name_index ] );
+  }
+  
+  return THIS->type_info;
+}
+
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 {
   ROGUE_DEF_LOCAL_REF_NULL(RogueObject*, obj);

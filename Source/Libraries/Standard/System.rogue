@@ -4,8 +4,7 @@ class System [requisite]
     executable_filepath    : String
     environment            : SystemEnvironment
 
-    classes = Table<<String,Object>>()
-    # Actually a Class lookup but avoiding pulling in Class unless it's used.
+    classes = Table<<String,TypeInfo>>()
 
   GLOBAL METHODS
     method init_class
@@ -16,25 +15,6 @@ class System [requisite]
         elseIf (value.ends_with('K') or value.ends_with("KB")) n*= 1024
         gc_threshold = n->Int32
       endIf
-
-    method get_class( name:String )->Class
-      local existing = classes[ name ]
-      if (existing) return existing as Class
-
-      local result : Class
-      native @|for (int i=Rogue_type_count; --i>=0; )
-              |{
-              |  RogueType* cur_type = &Rogue_types[ i ];
-              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
-              |  {
-              |    $result = (RogueClass*) ROGUE_CREATE_OBJECT( Class );
-              |    RogueClass__init__Int32_String( $result, cur_type->index, $name );
-              |    break;
-              |  }
-              |}
-
-      if (result) classes[name] = result
-      return result
 
     method exit( result_code:Int32 )
       $if ("C++")
@@ -59,6 +39,23 @@ class System [requisite]
       # but for now, just have anything strange mean max value.
 
       native "Rogue_gc_threshold = $value;"
+
+    method type_info( name:String )->TypeInfo
+      local result = classes[ name ]
+      if (result) return result
+
+      native @|for (int i=Rogue_type_count; --i>=0; )
+              |{
+              |  RogueType* cur_type = &Rogue_types[ i ];
+              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
+              |  {
+              |    $result = RogueType_type_info( cur_type );
+              |    break;
+              |  }
+              |}
+
+      if (result) classes[ name ] = result
+      return result
 
     method collect_garbage ( force=false:Logical )->Logical
       # Runs the garbage collector if possible

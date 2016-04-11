@@ -29,7 +29,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.52 - April 10, 2016
-- [Rogue] Added simple introspection support. `@ClassName` is a convenience method for calling `System.get_class("ClassName")` that returns a `Class` object with a `name` property.  You can call `.create_object()->Object` on a Class object, cast the Object to a specific type, and manually call one of the specific type's `init()` methods.
+- [Rogue] Added preliminary introspection support. `@TypeName` is a convenience method for calling `System.type_info("TypeName")` that returns a `TypeInfo` object with a `name` property.  You can call `.create_object()->Object` on a TypeInfo object, cast the Object to a specific type, and manually call one of the specific type's `init()` methods.
+- [Rogue] Added `Object.type_info()->TypeInfo` that returns the runtime type (AKA "Class") of an object.
+- [Rogue] C++ now has a function `RogueType_type_info(RogueType*)->RogueTypeInfo*` that returns the runtime type info of an object.
 - [RogueC] CmdBinary and CmdUnary now call organize() on the operand types before proceeding to ensure that operator methods can be found if they exist.
 
 ###v1.0.51 - April 6, 2016

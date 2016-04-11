@@ -47,7 +47,7 @@ class Program [requisite singleton]
     type_Exception   : Type
 
     type_StringBuilder : Type
-    type_Class         : Type
+    type_TypeInfo      : Type
 
     literal_string_lookup = Table<<String,Int32>>() : Table<<String,Int32>>
     literal_string_list   = String[]
@@ -126,7 +126,7 @@ class Program [requisite singleton]
       type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
       type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_foreign )
       type_StringBuilder = create_built_in_type( "StringBuilder", Attribute.is_class )
-      type_Class         = create_built_in_type( "Class", Attribute.is_class )
+      type_TypeInfo      = create_built_in_type( "TypeInfo", Attribute.is_class )
       type_NativeArray   = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
       type_GenericList   = create_built_in_type( "GenericList", Attribute.is_class )
       type_Global        = create_built_in_type( "Global", Attribute.is_class )
@@ -135,7 +135,7 @@ class Program [requisite singleton]
       type_Object.simplify_name = true
       type_String.simplify_name = true
       type_StringBuilder.simplify_name = true
-      type_Class.simplify_name = true
+      type_TypeInfo.simplify_name = true
 
       type_null.organized = true
       type_null.defined   = true

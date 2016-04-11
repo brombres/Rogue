@@ -1,4 +1,4 @@
-class Class
+class TypeInfo [requisite]
   PROPERTIES
     index : Int32
     name  : String

@@ -582,14 +582,12 @@ augment Program
 
       writer.println
 
-      writer.println @|// Trace singletons
+      writer.println @|// Trace Class objects and singletons
                       |for (i=Rogue_type_count; --i>=0; )
                       |{
                       |  RogueType* type = &Rogue_types[i];
-                      |  if (type->_singleton)
-                      |  {
-                      |    type->trace_fn( type->_singleton );
-                      |  }
+                      |  if (type->type_info) RogueTypeInfo_trace( type->type_info );
+                      |  if (type->_singleton) type->trace_fn( type->_singleton );
                       |}
 
 
