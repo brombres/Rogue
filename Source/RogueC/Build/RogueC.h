@@ -4592,7 +4592,7 @@ RogueClassGlobal* RogueGlobal__print__String( RogueClassGlobal* THIS, RogueStrin
 RogueClassGlobal* RogueGlobal__println( RogueClassGlobal* THIS );
 RogueClassGlobal* RogueGlobal__println__Object( RogueClassGlobal* THIS, RogueObject* value_0 );
 RogueClassGlobal* RogueGlobal__println__String( RogueClassGlobal* THIS, RogueString* value_0 );
-RogueClassGlobal* RogueGlobal__write__Byte_List( RogueClassGlobal* THIS, RogueByte_List* utf8_0 );
+RogueClassGlobal* RogueGlobal__write__StringBuilder( RogueClassGlobal* THIS, RogueStringBuilder* buffer_0 );
 void RogueGlobal__on_launch( RogueClassGlobal* THIS );
 void RogueGlobal__run_tests( RogueClassGlobal* THIS );
 RogueClassGlobal* RogueGlobal__init_object( RogueClassGlobal* THIS );

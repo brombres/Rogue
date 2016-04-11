@@ -1260,7 +1260,7 @@ typedef RogueString*(*ROGUEM21)(RogueClassStringReader*);
 typedef RogueLogical(*ROGUEM22)(RogueClassStringReader*);
 typedef RogueCharacter(*ROGUEM23)(RogueClassStringReader*);
 typedef RogueString*(*ROGUEM24)(RogueClassGlobal*);
-typedef RogueClassGlobal*(*ROGUEM25)(RogueClassGlobal*,RogueByte_List*);
+typedef RogueClassGlobal*(*ROGUEM25)(RogueClassGlobal*,RogueStringBuilder*);
 typedef RogueString*(*ROGUEM26)(RogueClassConsole*);
 typedef RogueString*(*ROGUEM27)(RogueClassRogueC*);
 typedef RogueString*(*ROGUEM28)(RogueClassProgram*);
@@ -8397,7 +8397,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM25) RogueGlobal__write__Byte_List,
+  (void*) (ROGUEM25) RogueGlobal__write__StringBuilder,
   0, // PrintWriterAspect<<Global>>
   (void*) (ROGUEM0) RogueObject__init, // Console
   0,
@@ -19428,7 +19428,7 @@ RogueClassGlobal* RogueGlobal__flush( RogueClassGlobal* THIS )
 {
   if (!!(THIS->printwriter_output_buffer->count))
   {
-    RogueGlobal__write__Byte_List( ROGUE_ARG(THIS), ROGUE_ARG(THIS->printwriter_output_buffer->utf8) );
+    RogueGlobal__write__StringBuilder( ROGUE_ARG(THIS), ROGUE_ARG(THIS->printwriter_output_buffer) );
     RogueStringBuilder__clear( ROGUE_ARG(THIS->printwriter_output_buffer) );
   }
   return (RogueClassGlobal*)(THIS);
@@ -19476,9 +19476,9 @@ RogueClassGlobal* RogueGlobal__println__String( RogueClassGlobal* THIS, RogueStr
   return (RogueClassGlobal*)(((RogueGlobal__println( ROGUE_ARG(((RogueGlobal__print__String( ROGUE_ARG(THIS), value_0 )))) ))));
 }
 
-RogueClassGlobal* RogueGlobal__write__Byte_List( RogueClassGlobal* THIS, RogueByte_List* utf8_0 )
+RogueClassGlobal* RogueGlobal__write__StringBuilder( RogueClassGlobal* THIS, RogueStringBuilder* buffer_0 )
 {
-  RogueConsole__print__StringBuilder( ROGUE_ARG(THIS->standard_output), ROGUE_ARG(THIS->printwriter_output_buffer) );
+  RogueConsole__print__StringBuilder( ROGUE_ARG(THIS->standard_output), buffer_0 );
   return (RogueClassGlobal*)(THIS);
 }
 
@@ -52726,7 +52726,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.52.3", 8 ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.53.0", 8 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 10, 2016", 14 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 

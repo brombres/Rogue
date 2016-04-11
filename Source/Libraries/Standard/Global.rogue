@@ -3,8 +3,8 @@ class Global : PrintWriterAspect<<Global>> [requisite singleton]
     standard_output      = Console
 
   METHODS
-    method write( utf8:Byte[] )->this
-      standard_output.print( printwriter_output_buffer )
+    method write( buffer:StringBuilder )->this
+      standard_output.print( buffer )
       return this
 endClass
 

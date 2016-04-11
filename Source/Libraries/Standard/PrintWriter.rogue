@@ -8,14 +8,14 @@ class PrintWriter : Writer<<Character>>, PrintWriterAspect<<PrintWriter>>
 
     method flush->this
       if (printwriter_output_buffer.count)
-        write( printwriter_output_buffer.utf8 )
+        write( printwriter_output_buffer )
         printwriter_output_buffer.clear
       endIf
       output.flush
       return this
 
-    method write( bytes:Byte[] )->this
-      forEach (b in bytes) output.write( b )
+    method write( buffer:StringBuilder )->this
+      forEach (b in buffer.utf8) output.write( b )
       return this
 endClass
 
@@ -27,7 +27,7 @@ class PrintWriterAspect<<$WriterType>> [aspect]
   METHODS
     method flush->$WriterType
       if (printwriter_output_buffer.count)
-        write( printwriter_output_buffer.utf8 )
+        write( printwriter_output_buffer )
         printwriter_output_buffer.clear
       endIf
       return this
@@ -101,7 +101,6 @@ class PrintWriterAspect<<$WriterType>> [aspect]
     method println( value:String )->$WriterType
       return print( value ).println
 
-    method write( bytes:Byte[] )->$WriterType
-      return this
+    method write( buffer:StringBuilder )->$WriterType [abstract]
 endClass
 
