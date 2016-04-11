@@ -39,7 +39,7 @@ class StackTrace [requisite]
       endForEach
 
     method print [requisite]
-      print( Global.printwriter_output_buffer )
+      print( Global.global_output_buffer )
       Global.flush
 
     method print( buffer:StringBuilder )->StringBuilder

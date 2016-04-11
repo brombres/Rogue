@@ -1,6 +1,7 @@
-class Global : PrintWriterAspect<<Global>> [requisite singleton]
+class Global : PrintWriterAspect<<Global,global_output_buffer>> [requisite singleton]
   PROPERTIES
-    standard_output = Console : Writer<<StringBuilder>>
+    standard_output = Console : PrintWriter
+    global_output_buffer      = StringBuilder()
     exit_functions = Function()[]
 
   METHODS

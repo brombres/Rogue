@@ -1,77 +1,77 @@
-class PrintWriter : Writer<<Character>>, PrintWriterAspect<<PrintWriter>>
-  PROPERTIES
-    output : Writer<<Byte>>
-
+class PrintWriter [aspect]
   METHODS
-    method init( character_writer:Writer<<Character>> )
-      output = UTF8ByteToCharacterWriter( character_writer )
-
-    method flush->this
-      if (printwriter_output_buffer.count)
-        write( printwriter_output_buffer )
-        printwriter_output_buffer.clear
-      endIf
-      output.flush
-      return this
-
-    method write( buffer:StringBuilder )->this
-      forEach (b in buffer.utf8) output.write( b )
-      return this
+    method flush->PrintWriter                         [abstract]
+    method print( value:Byte )->PrintWriter           [abstract]
+    method print( value:Character )->PrintWriter      [abstract]
+    method print( value:Int32 )->PrintWriter          [abstract]
+    method print( value:Logical )->PrintWriter        [abstract]
+    method print( value:Int64 )->PrintWriter          [abstract]
+    method print( value:Object )->PrintWriter         [abstract]
+    method print( value:Real64 )->PrintWriter         [abstract]
+    method print( value:Real32 )->PrintWriter         [abstract]
+    method print( value:String )->PrintWriter         [abstract]
+    method println->PrintWriter                       [abstract]
+    method println( value:Byte )->PrintWriter         [abstract]
+    method println( value:Character )->PrintWriter    [abstract]
+    method println( value:Int32 )->PrintWriter        [abstract]
+    method println( value:Logical )->PrintWriter      [abstract]
+    method println( value:Int64 )->PrintWriter        [abstract]
+    method println( value:Real64 )->PrintWriter       [abstract]
+    method println( value:Real32 )->PrintWriter       [abstract]
+    method println( value:Object )->PrintWriter       [abstract]
+    method println( value:String )->PrintWriter       [abstract]
+    method write( buffer:StringBuilder )->PrintWriter [abstract]
 endClass
 
-
-class PrintWriterAspect<<$WriterType>> [aspect]
-  PROPERTIES
-    printwriter_output_buffer = StringBuilder()
-
+class PrintWriterAspect<<$WriterType,$buffer>> : PrintWriter [aspect]
   METHODS
     method flush->$WriterType
-      if (printwriter_output_buffer.count)
-        write( printwriter_output_buffer )
-        printwriter_output_buffer.clear
+      if ($buffer.count)
+        write( $buffer )
+        $buffer.clear
       endIf
       return this
 
     method print( value:Byte )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       return this
 
     method print( value:Character )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       if (value == '\n') return flush
       return this
 
     method print( value:Int32 )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       return this
 
     method print( value:Logical )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       return this
 
     method print( value:Int64 )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       return this
 
     method print( value:Object )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       return this
 
     method print( value:Real64 )->$WriterType
-      printwriter_output_buffer.print( value )
+      $buffer.print( value )
       return this
 
     method print( value:Real32 )->$WriterType
-      printwriter_output_buffer.print( value->Real64 )
+      $buffer.print( value->Real64 )
       return this
 
     method print( value:String )->$WriterType
-      printwriter_output_buffer.print( value )
-      if (printwriter_output_buffer.count > 1024) flush
+      $buffer.print( value )
+      if ($buffer.count > 1024) flush
       return this
 
     method println->$WriterType
-      printwriter_output_buffer.print( '\n' )
+      $buffer.print( '\n' )
       return flush
 
     method println( value:Byte )->$WriterType

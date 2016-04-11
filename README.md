@@ -36,8 +36,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
     - Lists and tables may be nested; omit the leading `@` on nested structures.
 - [API] Changed PropertyValue etc. `get_integer()` and `get_real()` to `get_int32()` and `get_real64()`.
 - [API] Changed PropertyValue etc. `get_integer()` and `get_real()` to `get_int32()` and `get_real64()`.
-- [API] Modified LineReader to not return an extra blank line if the very last character was '\n'.  That logic was a side effect of a verbatim string printing issue that has since been separately addressed.
+- [API] Reworked printing infrastructure of PrintWriter, Global, and Console.  `Global` and `Console` are both printwriters now, with `Console` being set as the default `Global.standard_output`.  In addition to `println(value)` you can now print to the console directly with `Console.println(value)`.
 - [API] The Global singleton now flushes the console output buffer on exit.
+- [API] Modified LineReader to not return an extra blank line if the very last character was '\n'.  That logic was a side effect of a verbatim string printing issue that has since been separately addressed.
 
 ###v1.0.52 - April 10, 2016
 - [Rogue] Added preliminary introspection support. `@TypeName` is a convenience method for calling `System.type_info("TypeName")` that returns a `TypeInfo` object with a `name` property.  You can call `.create_object()->Object` on a TypeInfo object, cast the Object to a specific type, and manually call one of the specific type's `init()` methods.
