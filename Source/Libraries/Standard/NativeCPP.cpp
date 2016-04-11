@@ -131,7 +131,7 @@ RogueTypeInfo* RogueType_type_info( RogueType* THIS )
     THIS->type_info = RogueTypeInfo__init__Int32_String( (RogueTypeInfo*)ROGUE_CREATE_OBJECT(TypeInfo),
         THIS->index, Rogue_literal_strings[ THIS->name_index ] );
   }
-  
+
   return THIS->type_info;
 }
 
@@ -1173,6 +1173,13 @@ void Rogue_quit()
 
   if ( !Rogue_configured ) return;
   Rogue_configured = 0;
+
+  RogueGlobal__call_exit_functions( (RogueClassGlobal*) ROGUE_SINGLETON(Global) );
+
+  // Give a few GC's to allow objects requiring clean-up to do so.
+  Rogue_collect_garbage( true );
+  Rogue_collect_garbage( true );
+  Rogue_collect_garbage( true );
 
   for (i=0; i<Rogue_allocator_count; ++i)
   {

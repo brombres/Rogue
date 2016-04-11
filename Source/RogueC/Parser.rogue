@@ -1257,7 +1257,7 @@ class Parser
       if (is_multi_line)
         parse_multi_line_statements( cmd_block.statements )
         must_consume( TokenType.keyword_endUnitTest )
-      else      
+      else
         parse_single_line_statements( cmd_block.statements )
       endIf
       if (RogueC.run_tests) this_method.statements.add( cmd_block )
@@ -2285,70 +2285,27 @@ class Parser
 
       elseIf (consume(TokenType.symbol_open_bracket))
         # [ literal, list ]
-        #{
-        if (parsing_properties)
-          local cmd = CmdNewObject( t, Program.get_type_reference(t,"PropertyList") ) : Cmd
-
+        local list = CmdCreateList( t )
+        consume_eols
+        if (not consume(TokenType.symbol_close_bracket))
           local first = true
           while (first or consume(TokenType.symbol_comma))
             first = false
-            local value = parse_expression
-            cmd = CmdAccess( value.t, cmd, "add", CmdArgs(value) )
+            list.args.add( parse_expression )
             consume_eols
           endWhile
           must_consume( TokenType.symbol_close_bracket )
-
-          return cmd
-
-        else
-          }#
-          local list = CmdCreateList( t )
-          consume_eols
-          if (not consume(TokenType.symbol_close_bracket))
-            local first = true
-            while (first or consume(TokenType.symbol_comma))
-              first = false
-              list.args.add( parse_expression )
-              consume_eols
-            endWhile
-            must_consume( TokenType.symbol_close_bracket )
-          endIf
-          return list
-        #endIf
-
-      #{
-      elseIf (consume(TokenType.symbol_open_brace))
-        # { key:value, key:value, ... }
-        local table = CmdLiteralTable(t)
-        consume_eols
-        if (not consume(TokenType.symbol_close_brace))
-          local first = true
-          while (first or consume(TokenType.symbol_comma))
-            first = false
-            if (peek.type == TokenType.identifier)
-              local kt = read
-              table.keys.add( CmdLiteralTableKey(kt, kt->String) )
-            else
-              ++parsing_properties
-              table.keys.add( parse_expression )
-              --parsing_properties
-            endIf
-            must_consume( TokenType.symbol_colon )
-#local expr = parse_expression
-#trace expr
-#table.values.add( expr )
-            ++parsing_properties
-            table.values.add( parse_expression )
-            --parsing_properties
-            consume_eols
-          endWhile
-          must_consume( TokenType.symbol_close_brace )
         endIf
-        return table
+        return list
+
+      elseIf (consume(TokenType.symbol_at_brace))
+        return parse_property_table( t )
+
+      elseIf (consume(TokenType.symbol_at_bracket))
+        return parse_property_list( t )
 
       elseIf (consume(TokenType.symbol_empty_braces))
-        return CmdCreateObject( t, Program.get_type_reference( t, "PropertyTable" ) )
-        }#
+        return CmdAccess( t, "PropertyTable", CmdArgs() )
 
       elseIf (consume(TokenType.symbol_empty_brackets))
         return CmdAccess( t, "PropertyList",  CmdArgs() )
@@ -2629,6 +2586,78 @@ class Parser
 println StackTrace()
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
+
+    method parse_property_table( t:Token )->Cmd
+      # '{' already consumed
+      local table = CmdAccess( t, "PropertyTable", CmdArgs() ) : Cmd
+      consume_eols
+      if (consume(TokenType.symbol_close_brace)) return table
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        local key : Cmd
+        if (next_is_identifier)
+          t = peek
+          key = CmdLiteralString( t, read_identifier )
+        else
+          key = parse_expression
+        endIf
+        consume_eols
+
+        local value : Cmd
+        if (consume(TokenType.symbol_colon))
+          consume_eols
+          t = peek
+          if (consume(TokenType.symbol_open_brace))
+            value = parse_property_table( t )
+          elseIf (consume(TokenType.symbol_open_bracket))
+            value = parse_property_list( t )
+          else
+            value = parse_expression
+          endIf
+        else
+          value = CmdLiteralLogical( t, true )
+        endIf
+
+        table = CmdAccess( key.t, table, "set", CmdArgs(key,value) )
+
+        consume_eols
+      endWhile
+
+      must_consume( TokenType.symbol_close_brace )
+      return table
+
+    method parse_property_list( t:Token )->Cmd
+      # '[' already consumed
+      local list = CmdAccess( t, "PropertyList", CmdArgs() ) : Cmd
+      consume_eols
+      if (consume(TokenType.symbol_close_bracket)) return list
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        local value : Cmd
+        t = peek
+        if (consume(TokenType.symbol_open_brace))
+          value = parse_property_table( t )
+        elseIf (consume(TokenType.symbol_open_bracket))
+          value = parse_property_list( t )
+        else
+          value = parse_expression
+        endIf
+
+        list = CmdAccess( value.t, list, "add", CmdArgs(value) )
+
+        consume_eols
+      endWhile
+
+      must_consume( TokenType.symbol_close_bracket )
+      return list
 
     method parse_typed_literal_list( t:Token, list_type_name:String )->Cmd
       local list = CmdTypedLiteralList( t, list_type_name )

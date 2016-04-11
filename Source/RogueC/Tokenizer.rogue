@@ -209,6 +209,8 @@ class Tokenizer
       TokenType.symbol_ampersand_equals      = define( ModifyAndAssignTokenType("&=") )
       TokenType.symbol_arrow                 = define( TokenType("->") )
       TokenType.symbol_at                    = define( TokenType("@") )
+      TokenType.symbol_at_brace              = define( TokenType("@{") )
+      TokenType.symbol_at_bracket            = define( TokenType("@[") )
       TokenType.symbol_backslash             = define( TokenType("\\") )
       TokenType.symbol_caret                 = define( TokenType("^") )
       TokenType.symbol_caret_equals          = define( ModifyAndAssignTokenType("^=") )
@@ -404,12 +406,13 @@ class Tokenizer
 
       elseIf (ch == '@' )
         if (consume_id("trace")) return TokenType.keyword_trace_position
+        if (consume('{'))        return TokenType.symbol_at_brace
+        if (consume('['))        return TokenType.symbol_at_bracket
         return TokenType.symbol_at
 
       elseIf (ch == '[')
         if (consume(']')) return TokenType.symbol_empty_brackets
         return TokenType.symbol_open_bracket
-        #return check_for_directives( TokenType.symbol_open_bracket )
 
       elseIf (ch == '\\')
         return TokenType.symbol_backslash

@@ -138,11 +138,12 @@ class TokenType
     symbol_ampersand_equals       : TokenType
     symbol_arrow                  : TokenType
     symbol_at                     : TokenType
+    symbol_at_brace               : TokenType
+    symbol_at_bracket             : TokenType
     symbol_backslash              : TokenType
     symbol_caret                  : TokenType
     symbol_caret_equals           : TokenType
     symbol_colon                  : TokenType
-    #symbol_colon_colon            : TokenType
     symbol_comma                  : TokenType
     symbol_compare                : TokenType
     symbol_dot                    : TokenType

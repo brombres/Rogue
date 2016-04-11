@@ -1,10 +1,27 @@
 class Global : PrintWriterAspect<<Global>> [requisite singleton]
   PROPERTIES
-    standard_output      = Console
+    standard_output = Console : Writer<<StringBuilder>>
+    exit_functions = Function()[]
 
   METHODS
+    method init
+      on_exit( function flush )
+
+    method call_exit_functions [requisite]
+      # Called by the native layer when the program is ending normally or exiting
+      # due to a System.exit(Int32) call.
+
+      # Ensure these functions won't be called multiple times
+      local functions = exit_functions
+      exit_functions = Function()[]
+
+      forEach (fn in functions) fn()
+
+    method on_exit( fn:Function() )
+      exit_functions.add( fn )
+
     method write( buffer:StringBuilder )->this
-      standard_output.print( buffer )
+      standard_output.write( buffer )
       return this
 endClass
 

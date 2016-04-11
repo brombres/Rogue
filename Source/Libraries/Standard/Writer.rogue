@@ -29,8 +29,7 @@ class Writer<<$DataType>> [aspect]
     method skip( n:Int32 )->this
       return seek( position + n )
 
-    method write( value:$DataType )->this
-      return this
+    method write( value:$DataType )->this [abstract]
 
     method write( list:$DataType[] )->this
       forEach (value in list) write( value )

@@ -3,11 +3,17 @@ class String
     method create( utf8:Byte[] )->String [macro]
       $if ("C++") native 'RogueString_create_from_utf8( (char*)$utf8->data->bytes, $utf8->count )'
 
+    method create( utf8:Byte[], i1:Int32, count:Int32 )->String [macro]
+      $if ("C++") native 'RogueString_create_from_utf8( (char*)($utf8->data->bytes+$i1), $count )'
+
     method create( characters:Character[] )->String [macro]
       $if ("C++") native 'RogueString_create_from_characters( $characters )'
 
     method create( characters:StringBuilder )->String
       return create( characters.utf8 )
+
+    method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
+      return create( characters.utf8, i1, count )
 
   METHODS
     method after( index:Int32 )->String

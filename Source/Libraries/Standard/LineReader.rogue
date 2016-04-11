@@ -22,15 +22,7 @@ class LineReader : Reader<<String>>
       return next
 
     method prepare_next->String
-      if (not source.has_another)
-        if (prev == '\n')
-          # if the last line ended with '\n', count it as one more line
-          prev = 0
-          return ""
-        else
-          return null
-        endIf
-      endIf
+      if (not source.has_another) return null
 
       prev = 0
 

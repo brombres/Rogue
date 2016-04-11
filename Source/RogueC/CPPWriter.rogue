@@ -803,11 +803,6 @@ augment Program
                          |
                          |  while (Rogue_update_tasks()) {}
                          |
-                         |  // Give a few GC's to allow objects requiring clean-up to do so.
-                         |  Rogue_collect_garbage( true );
-                         |  Rogue_collect_garbage( true );
-                         |  Rogue_collect_garbage( true );
-                         |
                          |  Rogue_quit();
                          |
                          |  return 0;

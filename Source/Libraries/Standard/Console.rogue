@@ -1,4 +1,4 @@
-class Console : Writer<<Character>> [singleton]
+class Console : Writer<<StringBuilder>> [singleton]
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
@@ -13,17 +13,16 @@ class Console : Writer<<Character>> [singleton]
               |return RogueString_create_from_utf8( st, len );
 
   METHODS
-    method print( characters:Character[] )
-      native_print( characters )
-
-    method print( value:String )
-      native_print( value )
-
-    method print( value:StringBuilder )
-      native_print( value )
-
     method write( characters:Character[] )->this
       native_print( characters )
+      return this
+
+    method write( value:String )->this
+      native_print( value )
+      return this
+
+    method write( buffer:StringBuilder )->this
+      native_print( buffer )
       return this
 
     $if ("C++")

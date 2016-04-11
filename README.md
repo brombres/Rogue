@@ -28,6 +28,17 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.53 - April 11, 2016
+- [API] Added `Global.on_exit(Function())` that stores the given function object and calls it when a program ends normally or ends due to a `System.exit(Int32)` call.
+- [Rogue] Added JSON-style literal syntax to create PropertyList and PropertyTable values as follows:
+    - `@{ key1:value1, key2:value2, ... }` creates a PropertyTable object.  The keys do not require quotes.
+    - `@[ value1, value2, ... ]` creates a PropertyList object.
+    - Lists and tables may be nested; omit the leading `@` on nested structures.
+- [API] Changed PropertyValue etc. `get_integer()` and `get_real()` to `get_int32()` and `get_real64()`.
+- [API] Changed PropertyValue etc. `get_integer()` and `get_real()` to `get_int32()` and `get_real64()`.
+- [API] Modified LineReader to not return an extra blank line if the very last character was '\n'.  That logic was a side effect of a verbatim string printing issue that has since been separately addressed.
+- [API] The Global singleton now flushes the console output buffer on exit.
+
 ###v1.0.52 - April 10, 2016
 - [Rogue] Added preliminary introspection support. `@TypeName` is a convenience method for calling `System.type_info("TypeName")` that returns a `TypeInfo` object with a `name` property.  You can call `.create_object()->Object` on a TypeInfo object, cast the Object to a specific type, and manually call one of the specific type's `init()` methods.
 - [Rogue] Added `Object.type_info()->TypeInfo` that returns the runtime type (AKA "Class") of an object.

@@ -40,6 +40,9 @@ class PropertyValue
     method clear->PropertyValue
       return this
 
+    method contains( key:String )->Logical
+      return false
+
     method count->Int32
       return 0
 
@@ -52,7 +55,7 @@ class PropertyValue
     method get( key:String )->PropertyValue
       return null
 
-    method get_integer( index:Int32 )->Int32
+    method get_int32( index:Int32 )->Int32
       local value = get( index )
       if (not value) return 0
       return value->Int32
@@ -62,7 +65,7 @@ class PropertyValue
       if (not value) return false
       return value->Logical
 
-    method get_real( index:Int32 )->Real64
+    method get_real64( index:Int32 )->Real64
       local value = get( index )
       if (not value) return 0.0
       return value->Real64
@@ -87,7 +90,7 @@ class PropertyValue
       if (value) return value
       else       return PropertyTable()
 
-    method get_integer( key:String )->Int32
+    method get_int32( key:String )->Int32
       local value = get( key )
       if (not value) return 0
       return value->Int32
@@ -102,7 +105,7 @@ class PropertyValue
       if (not value) return false
       return value->Logical
 
-    method get_real( key:String )->Real64
+    method get_real64( key:String )->Real64
       local value = get( key )
       if (not value) return 0.0
       return value->Real64
@@ -131,6 +134,30 @@ class PropertyValue
       forEach (value in this)
         if (value and value.is_complex) return true
       endForEach
+      return false
+
+    method is_int32->Logical
+      return false
+
+    method is_list->Logical
+      return false
+
+    method is_logical->Logical
+      return false
+
+    method is_number->Logical
+      return false
+
+    method is_object->Logical
+      return false
+
+    method is_real64->Logical
+      return false
+
+    method is_string->Logical
+      return false
+
+    method is_table->Logical
       return false
 
     method last->PropertyValue
@@ -208,6 +235,12 @@ endClass
 
 class Int32Property( value:Int32 ) : PropertyValue
   METHODS
+    method is_int32->Logical
+      return true
+
+    method is_number->Logical
+      return true
+
     method to->Int32
       return value
 
@@ -225,6 +258,9 @@ class LogicalProperty( value:Logical ) : PropertyValue
     false_value = LogicalProperty( false )
 
   METHODS
+    method is_logical->Logical
+      return true
+
     method to->Int32
       if (value) return 1
       else       return 0
@@ -242,6 +278,12 @@ endClass
 
 class Real64Property( value:Real64 ) : PropertyValue
   METHODS
+    method is_number->Logical
+      return true
+
+    method is_real64->Logical
+      return true
+
     method to->Int32
       return value
 
@@ -258,6 +300,9 @@ endClass
 
 class ObjectProperty( value:Object ) : PropertyValue
   METHODS
+    method is_object->Logical
+      return true
+
     method to->Object
       return value
 
@@ -274,6 +319,9 @@ class StringProperty( value:String ) : PropertyValue
     empty_string = StringProperty( "" )
 
   METHODS
+    method is_string->Logical
+      return true
+
     method to->Character
       if (value.count > 0) return value[0]
       else                 return 0->Character
@@ -385,6 +433,9 @@ class PropertyList : PropertyValue
     method is_collection->Logical
       return true
 
+    method is_list->Logical
+      return true
+
     method last->PropertyValue
       return this.get( values.count - 1 )
 
@@ -465,6 +516,9 @@ class PropertyTable : PropertyValue
       values.clear
       return this
 
+    method contains( key:String )->Logical
+      return values.contains( key )
+
     method count->Int32
       return values.count
 
@@ -478,6 +532,9 @@ class PropertyTable : PropertyValue
     method is_collection->Logical
       return true
 
+    method is_table->Logical
+      return true
+
     method keys->String[] [macro]
       values.keys
 
@@ -488,7 +545,7 @@ class PropertyTable : PropertyValue
       if (index < 0 or index >= count) return null
       return values.remove( values.keys[index] )
 
-    method set( key:String, new_value:PropertyValue )->PropertyValue
+    method set( key:String, new_value:PropertyValue )->this
       values.set( key, new_value )
       return this
 
