@@ -30,6 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.54 - April 13, 2016
 - [RogueC] Reworked native properties to be stored with regular properties instead separately.  Fixes severe bug where classes with native properties were not polymorphically compatible with base classes or extended classes due to the order in which native properties were written out.
+- [Rogue] A value being explicitly or implicitly converted (cast) now checks for to-type constructor methods as well as from-type conversion methods.  So for `x:FromType -> ToType", the compiler first checks for a method `x->ToType` and then checks for `ToType.init(FromType)` or `ToType.create(FromType)`, resulting in a conversion to `ToType(x)` if that method is found.
 
 ###v1.0.53 - April 11, 2016
 - [API] Added `Global.on_exit(Function())` that stores the given function object and calls it when a program ends normally or ends due to a `System.exit(Int32)` call.

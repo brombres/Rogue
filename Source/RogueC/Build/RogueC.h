@@ -4391,6 +4391,7 @@ extern RogueType* RogueTypeSystemEnvironment;
 extern RogueType* RogueTypeOptionalCharacter;
 
 // ROUTINE PROTOTYPES
+RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 );
 void RogueStringBuilder__init_class();
 RogueCharacter RogueCharacter__create__Int32( RogueInt32 value_0 );
 void RogueToken__init_class();

@@ -17,9 +17,6 @@ class Cmd
       local this_type = require_type
       if (this_type is target_type) return this
 
-      #if (this_type.is_primitive)
-      #throw t.error( "TODO: Cmd::cast_to() primitive->...." )
-      #else
       # this is a reference type
       this_type.organize(scope)
       target_type.organize(scope)
@@ -27,15 +24,20 @@ class Cmd
       if (this_type.instance_of(target_type) or target_type.instance_of(this_type))
         return CmdCastToType( t, this, target_type )
       else
+        if (this_type.is_primitive and target_type.is_primitive)
+          if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
+            return CmdCastToType( t, this, target_type )
+          endIf
+        endIf
+
         local m_name = "to_" + target_type.name
         if (this_type.has_method_named(m_name))
           return CmdAccess( t, this, m_name )
         endIf
 
-        if (this_type.is_primitive and target_type.is_primitive)
-          if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
-            return CmdCastToType( t, this, target_type )
-          endIf
+        if (target_type.find_method( "init($)"(this_type.name) )...
+            or target_type.find_routine( "create($)"(this_type.name)))
+          return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
         endIf
 
         if (target_type is Program.type_Logical) return CmdLogicalize(t,this)
