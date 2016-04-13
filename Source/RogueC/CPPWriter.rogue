@@ -1363,7 +1363,8 @@ augment Type
       endForEach
 
       forEach (p in property_list)
-        p.cpp_name = Program.validate_cpp_name( p.name )
+        if (p.is_native) p.cpp_name = p.name
+        else             p.cpp_name = Program.validate_cpp_name( p.name )
       endForEach
 
     method print_data_definition( writer:CPPWriter )
@@ -1385,17 +1386,14 @@ augment Type
       # Properties
       if (not is_aspect)
         writer.println "// PROPERTIES"
-        if (native_properties)
-          forEach (p in native_properties)
-            writer.print_native_code( p.t, this, null, p.code )
-          endForEach
-        endIf
         forEach (p in property_list)
           if (not is_error or p.type_context is this)
             if (is_compound and p.type.is_reference)
               writer.print( "ROGUE_DEF_COMPOUND_REF_PROP(")
               writer.print( p.type ).print(",").print( p.cpp_name )
               writer.print( ");")
+            elseIf (p.is_native)
+              writer.print_native_code( p.t, this, null, p.name )
             else
               writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
             endIf

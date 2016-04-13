@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.54 - April 13, 2016
+- [RogueC] Reworked native properties to be stored with regular properties instead separately.  Fixes severe bug where classes with native properties were not polymorphically compatible with base classes or extended classes due to the order in which native properties were written out.
+
 ###v1.0.53 - April 11, 2016
 - [API] Added `Global.on_exit(Function())` that stores the given function object and calls it when a program ends normally or ends due to a `System.exit(Int32)` call.
 - [Rogue] Added JSON-style literal syntax to create PropertyList and PropertyTable values as follows:

@@ -22,8 +22,16 @@ class Property
     method is_incorporated->Logical
       return (attributes & Attribute.is_incorporated)?
 
-    method mark_incorporated
+    method is_native->Logical
+      return (attributes & Attribute.is_native)?
+
+    method mark_incorporated->this
       attributes |= Attribute.is_incorporated
+      return this
+
+    method mark_native->this
+      attributes |= Attribute.is_native
+      return this
 
     method set_type_context( @type_context )->Property
       return this
@@ -31,6 +39,4 @@ class Property
     method to->String
       return name
 endClass
-
-class NativeProperty( t:Token, code:String );
 

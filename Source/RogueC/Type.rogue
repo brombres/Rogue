@@ -35,8 +35,6 @@ class Type
     prev_enum_cmd     : Cmd
     next_enum_offset  = 0
 
-    native_properties : NativeProperty[]
-
     global_list   = Property[]
     global_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
