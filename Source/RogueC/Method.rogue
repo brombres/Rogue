@@ -259,7 +259,7 @@ class Method
         list.add( this )
 
         if (is_global)
-          local existing_m = type_context.routine_lookup_by_signature[signature]
+          local existing_m = type_context.global_method_lookup_by_signature[signature]
           if (existing_m and existing_m.type_context is type_context)
             if (type_context.is_routine)
               throw t.error( "A routine with the signature $$ is already defined." ...
@@ -268,7 +268,7 @@ class Method
               throw t.error( "A global method with the signature $ is already defined." (signature) )
             endIf
           endIf
-          type_context.routine_lookup_by_signature[signature] = this
+          type_context.global_method_lookup_by_signature[signature] = this
         else
           local existing_m = type_context.method_lookup_by_signature[signature]
           if (existing_m and existing_m.type_context is type_context)

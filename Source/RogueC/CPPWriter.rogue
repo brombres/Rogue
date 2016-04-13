@@ -737,7 +737,7 @@ augment Program
       # Call all init_class() methods
       forEach (type in type_list)
         if (type.is_used)
-          local m = type.find_routine( "init_class()" )
+          local m = type.find_global_method( "init_class()" )
           if (m and m.type_context is type)
             writer.print( m.cpp_name ).println( "();" )
           endIf

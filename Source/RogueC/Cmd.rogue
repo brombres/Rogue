@@ -36,7 +36,7 @@ class Cmd
         endIf
 
         if (target_type.find_method( "init($)"(this_type.name) )...
-            or target_type.find_routine( "create($)"(this_type.name)))
+            or target_type.find_global_method( "create($)"(this_type.name)))
           return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
         endIf
 

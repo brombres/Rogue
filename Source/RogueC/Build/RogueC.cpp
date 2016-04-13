@@ -3455,7 +3455,7 @@ void RogueType_trace( void* obj )
   if ((link=((RogueClassType*)obj)->property_lookup)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassType*)obj)->global_method_list)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassType*)obj)->global_method_lookup_by_name)) ((RogueObject*)link)->type->trace_fn( link );
-  if ((link=((RogueClassType*)obj)->routine_lookup_by_signature)) ((RogueObject*)link)->type->trace_fn( link );
+  if ((link=((RogueClassType*)obj)->global_method_lookup_by_signature)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassType*)obj)->method_list)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassType*)obj)->method_lookup_by_name)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=((RogueClassType*)obj)->method_lookup_by_signature)) ((RogueObject*)link)->type->trace_fn( link );
@@ -21792,7 +21792,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
       ROGUE_DEF_LOCAL_REF(RogueClassType*,type_149,(((RogueClassType*)(_auto_339_147->data->objects[_auto_340_148]))));
       if (type_149->is_used)
       {
-        ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_24,(((RogueType__find_routine__String( type_149, Rogue_literal_strings[446] )))));
+        ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_24,(((RogueType__find_global_method__String( type_149, Rogue_literal_strings[446] )))));
         if ((!!(m_24) && ((void*)m_24->type_context) == ((void*)type_149)))
         {
           RogueCPPWriter__println__String( ROGUE_ARG(((RogueCPPWriter__print__String( writer_1, ROGUE_ARG(m_24->cpp_name) )))), Rogue_literal_strings[700] );
@@ -22832,7 +22832,7 @@ RogueClassMethod* RogueMethod__organize__Scope_Logical( RogueClassMethod* THIS, 
     RogueMethod_List__add__Method( list_5, ROGUE_ARG(THIS) );
     if (((RogueMethod__is_global( ROGUE_ARG(THIS) ))))
     {
-      ROGUE_DEF_LOCAL_REF(RogueClassMethod*,existing_m_6,(((RogueTable_String_Method___get__String( ROGUE_ARG(THIS->type_context->routine_lookup_by_signature), ROGUE_ARG(THIS->signature) )))));
+      ROGUE_DEF_LOCAL_REF(RogueClassMethod*,existing_m_6,(((RogueTable_String_Method___get__String( ROGUE_ARG(THIS->type_context->global_method_lookup_by_signature), ROGUE_ARG(THIS->signature) )))));
       if ((!!(existing_m_6) && ((void*)existing_m_6->type_context) == ((void*)THIS->type_context)))
       {
         if (((RogueType__is_routine( ROGUE_ARG(THIS->type_context) ))))
@@ -22844,7 +22844,7 @@ RogueClassMethod* RogueMethod__organize__Scope_Logical( RogueClassMethod* THIS, 
           ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[433] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(THIS->signature) )))) )))), Rogue_literal_strings[432] )))) )))) ))));
         }
       }
-      RogueTable_String_Method___set__String_Method( ROGUE_ARG(THIS->type_context->routine_lookup_by_signature), ROGUE_ARG(THIS->signature), ROGUE_ARG(THIS) );
+      RogueTable_String_Method___set__String_Method( ROGUE_ARG(THIS->type_context->global_method_lookup_by_signature), ROGUE_ARG(THIS->signature), ROGUE_ARG(THIS) );
     }
     else
     {
@@ -23910,12 +23910,12 @@ RogueClassMethod* RogueType__find_method__String( RogueClassType* THIS, RogueStr
   {
     return (RogueClassMethod*)(m_1);
   }
-  return (RogueClassMethod*)(((RogueType__find_routine__String( ROGUE_ARG(THIS), signature_0 ))));
+  return (RogueClassMethod*)(((RogueType__find_global_method__String( ROGUE_ARG(THIS), signature_0 ))));
 }
 
-RogueClassMethod* RogueType__find_routine__String( RogueClassType* THIS, RogueString* signature_0 )
+RogueClassMethod* RogueType__find_global_method__String( RogueClassType* THIS, RogueString* signature_0 )
 {
-  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_1,(((RogueTable_String_Method___get__String( ROGUE_ARG(THIS->routine_lookup_by_signature), signature_0 )))));
+  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_1,(((RogueTable_String_Method___get__String( ROGUE_ARG(THIS->global_method_lookup_by_signature), signature_0 )))));
   if (!!(m_1))
   {
     return (RogueClassMethod*)(m_1);
@@ -24225,8 +24225,8 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
     }
   }
   ROGUE_DEF_LOCAL_REF(RogueMethod_List*,full_routine_list_4,(((RogueMethod_List__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueMethod_List*,ROGUE_CREATE_OBJECT(Method_List))) )))));
-  RogueTable_String_Method___clear( ROGUE_ARG(THIS->routine_lookup_by_signature) );
-  RogueType__inherit_routines__Method_List_Table_String_Method_( ROGUE_ARG(THIS), full_routine_list_4, ROGUE_ARG(THIS->routine_lookup_by_signature) );
+  RogueTable_String_Method___clear( ROGUE_ARG(THIS->global_method_lookup_by_signature) );
+  RogueType__inherit_routines__Method_List_Table_String_Method_( ROGUE_ARG(THIS), full_routine_list_4, ROGUE_ARG(THIS->global_method_lookup_by_signature) );
   THIS->global_method_list = full_routine_list_4;
   RogueTable_String_Method_List___clear( ROGUE_ARG(THIS->global_method_lookup_by_name) );
   {
@@ -24264,7 +24264,7 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
       RogueMethod_List__add__Method( list_7, m_45 );
     }
   }
-  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_init_class_8,(((RogueType__find_routine__String( ROGUE_ARG(THIS), Rogue_literal_strings[446] )))));
+  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_init_class_8,(((RogueType__find_global_method__String( ROGUE_ARG(THIS), Rogue_literal_strings[446] )))));
   if (!!(m_init_class_8))
   {
     if (((void*)m_init_class_8->type_context) == ((void*)THIS))
@@ -24282,7 +24282,7 @@ RogueClassType* RogueType__organize__Scope( RogueClassType* THIS, RogueClassScop
   }
   if (!!(THIS->global_list->count))
   {
-    ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_9,(((RogueType__find_routine__String( ROGUE_ARG(THIS), Rogue_literal_strings[446] )))));
+    ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m_9,(((RogueType__find_global_method__String( ROGUE_ARG(THIS), Rogue_literal_strings[446] )))));
     if ((!(!!(m_9)) || ((void*)m_9->type_context) != ((void*)THIS)))
     {
       m_9 = ((RogueClassMethod*)((RogueMethod__organize__Scope_Logical( ROGUE_ARG(((RogueType__add_global_method__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(THIS->t), Rogue_literal_strings[448] )))), scope_0, true ))));
@@ -25491,7 +25491,7 @@ RogueClassType* RogueType__init_object( RogueClassType* THIS )
   THIS->property_lookup = ((RogueTable_String_Property___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_Property_*,ROGUE_CREATE_OBJECT(Table_String_Property_))) )));
   THIS->global_method_list = ((RogueMethod_List__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueMethod_List*,ROGUE_CREATE_OBJECT(Method_List))) )));
   THIS->global_method_lookup_by_name = ((RogueTable_String_Method_List___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_Method_List_*,ROGUE_CREATE_OBJECT(Table_String_Method_List_))) )));
-  THIS->routine_lookup_by_signature = ((RogueTable_String_Method___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_Method_*,ROGUE_CREATE_OBJECT(Table_String_Method_))) )));
+  THIS->global_method_lookup_by_signature = ((RogueTable_String_Method___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_Method_*,ROGUE_CREATE_OBJECT(Table_String_Method_))) )));
   THIS->method_list = ((RogueMethod_List__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueMethod_List*,ROGUE_CREATE_OBJECT(Method_List))) )));
   THIS->method_lookup_by_name = ((RogueTable_String_Method_List___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_Method_List_*,ROGUE_CREATE_OBJECT(Table_String_Method_List_))) )));
   THIS->method_lookup_by_signature = ((RogueTable_String_Method___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_String_Method_*,ROGUE_CREATE_OBJECT(Table_String_Method_))) )));
@@ -27023,7 +27023,7 @@ RogueClassCmd* RogueCmd__cast_to__Type_Scope( RogueClassCmd* THIS, RogueClassTyp
     {
       return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_Cmd_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), m_name_3 ))))));
     }
-    if ((!!(((RogueType__find_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[474] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_2->name) )))) )))), Rogue_literal_strings[34] )))) )))) )))) || !!(((RogueType__find_routine__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[475] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_2->name) )))) )))), Rogue_literal_strings[34] )))) )))) ))))))
+    if ((!!(((RogueType__find_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[474] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_2->name) )))) )))), Rogue_literal_strings[34] )))) )))) )))) || !!(((RogueType__find_global_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[475] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_2->name) )))) )))), Rogue_literal_strings[34] )))) )))) ))))))
     {
       return (RogueClassCmd*)(((RogueCmdAccess__resolve__Scope( ROGUE_ARG(((RogueCmdAccess__init__Token_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(target_type_0->name), ROGUE_ARG(((RogueCmdArgs__init__Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))), ROGUE_ARG(THIS) )))) )))), scope_1 ))));
     }
@@ -52675,7 +52675,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.54.1", 8 ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.54.2", 8 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 13, 2016", 14 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 

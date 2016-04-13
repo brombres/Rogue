@@ -1571,7 +1571,7 @@ struct RogueClassType : RogueObject
   RogueClassTable_String_Property_* property_lookup;
   RogueMethod_List* global_method_list;
   RogueClassTable_String_Method_List_* global_method_lookup_by_name;
-  RogueClassTable_String_Method_* routine_lookup_by_signature;
+  RogueClassTable_String_Method_* global_method_lookup_by_signature;
   RogueMethod_List* method_list;
   RogueClassTable_String_Method_List_* method_lookup_by_name;
   RogueClassTable_String_Method_* method_lookup_by_signature;
@@ -4798,7 +4798,7 @@ void RogueType__collect_type_info__Int32_List( RogueClassType* THIS, RogueInt32_
 RogueClassCmd* RogueType__create_default_value__Token( RogueClassType* THIS, RogueClassToken* _t_0 );
 void RogueType__dispatch__Visitor( RogueClassType* THIS, RogueClassVisitor* v_0 );
 RogueClassMethod* RogueType__find_method__String( RogueClassType* THIS, RogueString* signature_0 );
-RogueClassMethod* RogueType__find_routine__String( RogueClassType* THIS, RogueString* signature_0 );
+RogueClassMethod* RogueType__find_global_method__String( RogueClassType* THIS, RogueString* signature_0 );
 RogueClassProperty* RogueType__find_property__String( RogueClassType* THIS, RogueString* p_name_0 );
 RogueClassProperty* RogueType__find_global__String( RogueClassType* THIS, RogueString* s_name_0 );
 RogueLogical RogueType__has_method_named__String( RogueClassType* THIS, RogueString* m_name_0 );

@@ -43,7 +43,7 @@ class Type
 
     global_method_list          = Method[]                   : Method[]
     global_method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
-    routine_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
+    global_method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
     method_list                = Method[]                   : Method[]
     method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
@@ -153,10 +153,10 @@ class Type
       local m = method_lookup_by_signature[signature]
       if (m) return m
 
-      return find_routine( signature )
+      return find_global_method( signature )
 
-    method find_routine( signature:String )->Method
-      local m = routine_lookup_by_signature[signature]
+    method find_global_method( signature:String )->Method
+      local m = global_method_lookup_by_signature[signature]
       if (m) return m
 
       return null
@@ -368,8 +368,8 @@ class Type
 
       # Inherit routines and methods
       local full_routine_list = Method[]
-      routine_lookup_by_signature.clear
-      inherit_routines( full_routine_list, routine_lookup_by_signature )
+      global_method_lookup_by_signature.clear
+      inherit_routines( full_routine_list, global_method_lookup_by_signature )
       global_method_list = full_routine_list
       global_method_lookup_by_name.clear
       forEach (r in global_method_list)
@@ -396,7 +396,7 @@ class Type
       endForEach
 
       # Mark any existing init_class() as requisite
-      local m_init_class = find_routine( "init_class()" )
+      local m_init_class = find_global_method( "init_class()" )
       if (m_init_class)
         if (m_init_class.type_context is this)
           m_init_class.make_requisite
@@ -410,7 +410,7 @@ class Type
 
       if (global_list.count)
         # Create or locate init_class() to initialize global properties
-        local m = find_routine( "init_class()" )
+        local m = find_global_method( "init_class()" )
         if (not m or m.type_context isNot this) m = add_global_method( t, "init_class" ).organize( scope )
         m.make_requisite
 
