@@ -18,7 +18,7 @@ endif
 
 " keyword definitions
 syn keyword rogueClassDecl   class endClass routine endRoutine aspect
-syn keyword rogueClassDecl   delegate endDelegate function endFunction primitive endPrimitive
+syn keyword rogueClassDecl   function endFunction
 syn keyword rogueClassDecl   with endWith
 syn keyword rogueClassDecl   augment endAugment
 syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHeader
@@ -45,8 +45,8 @@ syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield
 syn keyword rogueType         Real64 Real32 Int64 Int32 Character Byte Logical String
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
-syn keyword rogueScopeDecl    deferred singleton managed
-syn keyword rogueStorageClass native macro requisite abstract final propagated foreign
+syn keyword rogueScopeDecl    singleton
+syn keyword rogueStorageClass native macro requisite abstract final compound propagated foreign
 syn keyword rogueExceptions   throw try catch endTry
 "syn match  roguegPreProc      "^\[.*]"
 syn region  roguePreProc      start="\$\[" end="[\n\]]"

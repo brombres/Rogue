@@ -80,7 +80,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(delegate|endDelegate|function|endFunction|primitive|endPrimitive)\b</string>
+			<string>\b(function|endFunction)\b</string>
 			<key>name</key>
 			<string>storage.type.rogue</string>
 		</dict>
@@ -411,13 +411,13 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(readOnly|writeOnly|public|private|limited|const|local|deferred|singleton|managed|primitive|aspect)\b</string>
+					<string>\b(readOnly|writeOnly|public|private|const|local|singleton|primitive|aspect)\b</string>
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(native|inline|inlineNative|requisite|abstract|final|propagated|foreign|dynamicAccess|marshalling|omit)\b</string>
+					<string>\b(native|inline|requisite|abstract|final|compound|propagated|foreign)\b</string>
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>
