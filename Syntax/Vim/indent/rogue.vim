@@ -1,12 +1,9 @@
 " Vim indent file
 " Language:    Rogue
-" Maintainer:  Ty Heath <ty.heath@gmail.com>
-" Created:     2009 Aug 5
-" Last Change: 2009 Aug 5
-
-" This is my attempt at an indent file for the Rogue programming language.  
-" I do not know the vim scripting language, so many things are not written as elegantly as possible.
-" Everything should be logically correct though
+" Author:      Ty Heath <ty.heath@gmail.com>
+" Maintainer:  Abe Pralle <abe.pralle@gmail.com>
+" Created:     August 5, 2009
+" Last Change: April 13, 2016
 
 " Don't override another indent script
 if exists("b:did_indent")
@@ -23,12 +20,11 @@ setlocal indentkeys+=forEach,=endForEach,=while,=endWhile,=nextIteration,=escape
 setlocal indentkeys+=if,=elseIf,=endIf
 setlocal indentkeys+=delegate,=endDelegate
 setlocal indentkeys+=which,=endWhich
-setlocal indentkeys+=method,=task,=alias,=class,=endClass,=augment,=endAugment,=aspect,=endAspect,=underlying,=enum,=endEnum
+setlocal indentkeys+=method,=class,=endClass,=augment,=endAugment
 setlocal indentkeys+=compound,=deferred,=singleton,=requisite,=protected
 setlocal indentkeys+=PROPERTIES,=METHODS,=INTERNAL,=EXTERNAL,=SETTINGS,=ENUMERATE
 
 
-" Don't redefine the function over and over
 if exists("*GetRogueIndent")
   finish
 endif
@@ -37,7 +33,7 @@ function! GetPrevNonBlank(startline)
   let s:lnum = a:startline
   while s:lnum > 1
     " a blank line can be any number of #'s followed by any number of white space characters
-    if getline(s:lnum) =~ '^#*\s*$' 
+    if getline(s:lnum) =~ '^#*\s*$'
       let s:lnum = s:lnum - 1
     else
       return s:lnum
@@ -53,7 +49,7 @@ function! FindIndentOfPrevWhich(startline)
     if getline(s:lnum) =~ '^\s*endWhich\>'  "we found a nested endWhich
       let s:depth=s:depth + 1
     endif
-    if getline(s:lnum) =~ '^\s*which\>' 
+    if getline(s:lnum) =~ '^\s*which\>'
       if(s:depth>0)
         let s:depth= s:depth-1
         let s:lnum=s:lnum-1
@@ -75,9 +71,9 @@ function! FindIndentOfPrevDelegate(startline)
 
     if s:code_line =~ '^\s*endDelegate\>'  "we found a nested delegate
       let s:depth=s:depth + 1
-    elseif s:code_line =~ '^\s*delegate\>' 
+    elseif s:code_line =~ '^\s*delegate\>'
       if IsSingleLineCond(s:code_line)==0
-        if s:depth>0 
+        if s:depth>0
           let s:depth=s:depth-1
         else
           return indent(s:lnum)
@@ -97,9 +93,9 @@ function! FindIndentOfPrevIf(startline)
 
     if s:code_line =~ '^\s*endIf\>'  "we found a nested if
       let s:depth=s:depth + 1
-    elseif s:code_line =~ '^\s*if\>' 
+    elseif s:code_line =~ '^\s*if\>'
       if IsSingleLineCond(s:code_line)==0
-        if s:depth>0 
+        if s:depth>0
           let s:depth=s:depth-1
         else
           return indent(s:lnum)
@@ -119,9 +115,9 @@ function! FindIndentOfPrevForEach(startline)
 
     if s:code_line =~ '^\s*endForEach\>'  "we found a nested forEach
       let s:depth=s:depth + 1
-    elseif s:code_line =~ '^\s*forEach\>' 
+    elseif s:code_line =~ '^\s*forEach\>'
       if IsSingleLineCond(s:code_line)==0
-        if s:depth>0 
+        if s:depth>0
           let s:depth=s:depth-1
         else
           return indent(s:lnum)
@@ -141,9 +137,9 @@ function! FindIndentOfPrevWhile(startline)
 
     if s:code_line =~ '^\s*endWhile\>'  "we found a nested forEach
       let s:depth=s:depth + 1
-    elseif s:code_line =~ '^\s*while\>' 
+    elseif s:code_line =~ '^\s*while\>'
       if IsSingleLineCond(s:code_line)==0
-        if s:depth>0 
+        if s:depth>0
           let s:depth=s:depth-1
         else
           return indent(s:lnum)
@@ -162,7 +158,7 @@ function! FindIndentOfPrevTry(startline)
     if getline(s:lnum) =~ '^\s*endTry\>'  "we found a nested while
       let s:depth=s:depth + 1
     endif
-    if getline(s:lnum) =~ '^\s*try\>' 
+    if getline(s:lnum) =~ '^\s*try\>'
       if(s:depth>0)
         let s:depth= s:depth-1
         let s:lnum=s:lnum-1
@@ -183,7 +179,7 @@ function! FindIndentOfPrevLoop(startline)
     if getline(s:lnum) =~ '^\s*endLoop\>'  "we found a nested loop
       let s:depth=s:depth + 1
     endif
-    if getline(s:lnum) =~ '^\s*loop\>' 
+    if getline(s:lnum) =~ '^\s*loop\>'
       if(s:depth>0)
         let s:depth= s:depth-1
         let s:lnum=s:lnum-1
@@ -202,17 +198,17 @@ function! FindIndentForCase(startline)
   let s:lnum = a:startline
   let s:depth=0
   while s:lnum > 1
-    if getline(s:lnum) =~ '^\s*endWhich\>' 
+    if getline(s:lnum) =~ '^\s*endWhich\>'
       let s:depth=s:depth+1
     endif
-    if getline(s:lnum) =~ '^\s*which\>' 
+    if getline(s:lnum) =~ '^\s*which\>'
       if(s:depth>0)
         let s:depth=s:depth-1
       else
         return indent(s:lnum)+s:sw
       endif
     endif
-    if getline(s:lnum) =~ '^\s*case\>' 
+    if getline(s:lnum) =~ '^\s*case\>'
       if(s:depth!>0)
         return indent(s:lnum)
       endif
@@ -295,7 +291,7 @@ function! IsSingleLineCond(_the_code)
   " is the remaining line empty.  Empty is all spaces or a comment
   if IsLineEmpty(s:rem)
     return 0
-  else 
+  else
     return 1
   endif
 endfunction
@@ -311,13 +307,13 @@ function! GetRogueIndent( line_num )
   let s:this_codeline = getline( a:line_num )
 
   "previous line number
-  let s:prev_line_num = GetPrevNonBlank(a:line_num-1)  
+  let s:prev_line_num = GetPrevNonBlank(a:line_num-1)
 
   "previous line of code
-  let s:prev_codeline = getline( s:prev_line_num )  
+  let s:prev_codeline = getline( s:prev_line_num )
 
   "previous level of indent
-  let s:indnt = indent( s:prev_line_num )  
+  let s:indnt = indent( s:prev_line_num )
 
   if s:this_codeline =~ '^\s*\(task\|alias\|method\)'
     return s:sw*2
@@ -406,7 +402,7 @@ function! GetRogueIndent( line_num )
   if s:prev_codeline =~ '^\s*\(method\|task\|alias\)\>'
     return s:indnt + s:sw
   endif
-  
+
   if s:prev_codeline =~ '^\s*\(try\|catch\)\>'
     return s:indnt + s:sw
   endif
@@ -419,7 +415,7 @@ function! GetRogueIndent( line_num )
       "echo('Previous is conditional')
     if IsSingleLineCond(s:prev_codeline)>0
       "echo('Prev is Single line cond')
-      return s:indnt 
+      return s:indnt
     else
       "echo('Prev is NOT Single line cond, prev = ' s:prev_codeline)
       return s:indnt + s:sw
