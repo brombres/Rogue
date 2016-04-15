@@ -43,7 +43,7 @@ function! FindIndentOfPrevWhich(startline)
   let s:lnum = a:startline
   let s:depth=0
   while s:lnum > 1
-    if getline(s:lnum) =~ '\C^\s*endWhich\>'  "we found a nested endWhich
+    if getline(s:lnum) =~# '^\s*endWhich\>'  "we found a nested endWhich
       let s:depth=s:depth + 1
     endif
     if getline(s:lnum) =~ '\C^\s*which\>'
@@ -365,6 +365,10 @@ function! GetRogueIndent( line_num )
     return FindIndentBeforeVerbatimLiteralString(a:line_num-1)
   endif
 
+  if s:this_codeline =~# '^\s*endWhich'
+    return FindIndentOfPrevWhich(a:line_num-1)
+  endif
+
   if s:prev_codeline =~ '\C^\s*which'
     return s:indnt + s:sw
   endif
@@ -375,10 +379,6 @@ function! GetRogueIndent( line_num )
 
   if s:prev_codeline =~ '\C^\s*\(case\|others\)'
       return s:indnt + s:sw
-  endif
-
-  if s:this_codeline =~ '\C^\s*endWhich'
-    return FindIndentOfPrevWhich(a:line_num-1)
   endif
 
   if s:this_codeline =~ '\C^\s*\(endIf\)\>'
