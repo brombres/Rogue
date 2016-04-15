@@ -478,8 +478,8 @@ class Program [requisite singleton]
       # directly incorporate the aspect.  Collect a list of used aspects and then
       # make sure each method's incorporating_classes list includes all classes
       # instanceOf that aspect that employ a given method.
-      local class_list = type_list.choose( function(type)=type.is_class and type.is_used )
-      local aspect_list = type_list.choose( function(type)=type.is_aspect and type.is_used )
+      local class_list = type_list.filtered( function(type)=type.is_class and type.is_used )
+      local aspect_list = type_list.filtered( function(type)=type.is_aspect and type.is_used )
 
       # Clear each aspect method's list of incorporating classes before rebuilding
       forEach (aspect in aspect_list)

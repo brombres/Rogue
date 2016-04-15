@@ -28,6 +28,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.55 - April 15, 2016
+- [API] Made functional programming more flexible.  In addition to the in-place list modification methods `apply()`, `filter()`, `modify()`, and `sort()`, there are now versions of those methods that return a modified list instead: `applying()`, `filtered()`, `modified()`, and `sorted()`.  Note: `filtered()` is functionally equivalent to `choose()` and so the latter method has been removed.
+
+
 ###v1.0.54 - April 13, 2016
 - [RogueC] Reworked native properties to be stored with regular properties instead separately.  Fixes severe bug where classes with native properties were not polymorphically compatible with base classes or extended classes due to the order in which native properties were written out.
 - [Rogue] A value being explicitly or implicitly converted (cast) now checks for to-type constructor methods as well as from-type conversion methods.  So for `x:FromType -> ToType", the compiler first checks for a method `x->ToType` and then checks for `ToType.init(FromType)` or `ToType.create(FromType)`, resulting in a conversion to `ToType(x)` if that method is found.

@@ -23,6 +23,9 @@ class List<<$DataType>> : GenericList
       forEach (item in this) fn( item )
       return this
 
+    method applying( fn:Function($DataType) )->$DataType[]
+      return clone.apply( fn )
+
     method clone->$DataType[]
       local result = $DataType[]( count )
       forEach (value in this)
@@ -43,15 +46,6 @@ class List<<$DataType>> : GenericList
     method capacity->Int32
       if (not data) return 0
       return data.count
-
-    method choose( fn:Function($DataType)->Logical )->$DataType[]
-      # Returns a new list that contains only the chosen elements from
-      # this list.
-      local result = $DataType[]( count )
-      forEach (value in this)
-        if (fn(value)) result.add( value )
-      endForEach
-      return result
 
     method clear->$DataType[]
       discard_from( 0 )
@@ -102,10 +96,16 @@ class List<<$DataType>> : GenericList
       local write_pos = 0
       forEach (i of this)
         local value = this[i]
-        if (fn(value)) this[write_pos] = value; ++write_pos
+        if (fn(value))
+          this[write_pos] = value
+          ++write_pos
+        endIf
       endForEach
       discard_from( write_pos )
       return this
+
+    method filtered( fn:Function($DataType)->Logical )->$DataType[]
+      return clone.filter( fn )
 
     method get( index:Int32 )->$DataType [macro]
       this.data[index]
@@ -172,6 +172,9 @@ class List<<$DataType>> : GenericList
     method modify( fn:Function($DataType)->$DataType )->this
       forEach (index of this) this[index] = fn(this[index])
       return this
+
+    method modified( fn:Function($DataType)->$DataType )->$DataType[]
+      return clone.modify( fn )
 
     method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
       # n           - A value between 0 and (permutation_count-1).  0 gives the
@@ -309,8 +312,11 @@ class List<<$DataType>> : GenericList
     method shuffled->$DataType[]
       return clone.shuffle
 
-    method sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
-      this.quicksort( compare_fn )
+    method sort( compare_fn:Function($DataType,$DataType)->Logical )->this
+      return this.quicksort( compare_fn )
+
+    method sorted( compare_fn:Function($DataType,$DataType)->Logical )->$DataType[]
+      return clone.sorted( compare_fn )
 
     method swap( i1:Int32, i2:Int32 )->this
       local temp = data[i1]
