@@ -10,10 +10,12 @@ class Type
     source_template : Template
     specializers    : TypeSpecializer[]
 
-    defined      : Logical
-    organized    : Logical
-    resolved     : Logical
-    culled       : Logical
+    defined           : Logical
+    organized         : Logical
+    resolved          : Logical
+    culled            : Logical
+
+    reinherit_methods : Logical
 
     base_class : Type
     base_types = Type[]
@@ -173,7 +175,7 @@ class Type
       local list = method_lookup_by_name[m_name]
       return (list and list.count)
 
-    method has_routine_named( r_name:String )->Logical
+    method has_global_method_named( r_name:String )->Logical
       local list = global_method_lookup_by_name[r_name]
       return (list and list.count)
 
@@ -357,43 +359,7 @@ class Type
       m_type_name.return_type = Program.type_String
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
-      # Organize routines and methods and create signatures
-      forEach (r in global_method_list)
-        r.organize( scope )
-      endForEach
-
-      forEach (m in method_list)
-        m.organize( scope )
-      endForEach
-
-      # Inherit routines and methods
-      local full_routine_list = Method[]
-      global_method_lookup_by_signature.clear
-      inherit_routines( full_routine_list, global_method_lookup_by_signature )
-      global_method_list = full_routine_list
-      global_method_lookup_by_name.clear
-      forEach (r in global_method_list)
-        local list = global_method_lookup_by_name[r.name]
-        if (not list)
-          list = Method[]
-          global_method_lookup_by_name[r.name] = list
-        endIf
-        list.add( r )
-      endForEach
-
-      local full_method_list = Method[]
-      method_lookup_by_signature.clear
-      inherit_methods( full_method_list, method_lookup_by_signature )
-      method_list = full_method_list
-      method_lookup_by_name.clear
-      forEach (m in method_list)
-        local list = method_lookup_by_name[m.name]
-        if (not list)
-          list = Method[]
-          method_lookup_by_name[m.name] = list
-        endIf
-        list.add( m )
-      endForEach
+      inherit_methods( scope )
 
       # Mark any existing init_class() as requisite
       local m_init_class = find_global_method( "init_class()" )
@@ -689,6 +655,47 @@ class Type
         lookup[p.name] = p
       endIf
 
+    method inherit_methods( scope=null:Scope )
+      # Organize methods and create signatures
+      forEach (m in global_method_list)
+        m.organize( scope )
+      endForEach
+
+      forEach (m in method_list)
+        m.organize( scope )
+      endForEach
+
+      global_method_lookup_by_signature.clear
+      global_method_lookup_by_name.clear
+      method_lookup_by_signature.clear
+      method_lookup_by_name.clear
+
+      # Inherit routines and methods
+      local full_routine_list = Method[]
+      inherit_global_methods( full_routine_list, global_method_lookup_by_signature )
+      global_method_list = full_routine_list
+      forEach (r in global_method_list)
+        local list = global_method_lookup_by_name[r.name]
+        if (not list)
+          list = Method[]
+          global_method_lookup_by_name[r.name] = list
+        endIf
+        list.add( r )
+      endForEach
+
+      local full_method_list = Method[]
+      inherit_methods( full_method_list, method_lookup_by_signature )
+      method_list = full_method_list
+      forEach (m in method_list)
+        local list = method_lookup_by_name[m.name]
+        if (not list)
+          list = Method[]
+          method_lookup_by_name[m.name] = list
+        endIf
+        list.add( m )
+      endForEach
+
+
     method inherit_methods( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
         forEach (base_m in base_type.method_list)
@@ -698,16 +705,6 @@ class Type
 
       forEach (m in method_list)
         inherit_method( m, list, lookup )
-      endForEach
-
-      # Override inherited propagated methods
-      forEach (m in list)
-        if (m.is_propagated and m.type_context isNot this)
-          # Override a copy of the method which will have the correct 'this' context.
-          m = m.clone.set_type_context( this )
-          m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
-          inherit_method( m, list, lookup )
-        endIf
       endForEach
 
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
@@ -767,6 +764,7 @@ class Type
         endIf
         list[i] = m
         lookup[m.signature] = m
+        override_inherited_propagated_method( m, list, lookup )
 
       else
         # No existing method
@@ -779,21 +777,30 @@ class Type
 
         list.add( m )
         lookup[m.signature] = m
+        override_inherited_propagated_method( m, list, lookup )
 
       endIf
 
-    method inherit_routines( list:Method[], lookup:Table<<String,Method>> )
+    method override_inherited_propagated_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
+      if (m.is_propagated and m.type_context isNot this)
+        # Override a copy of the method which will have the correct 'this' context.
+        m = m.clone.set_type_context( this )
+        m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
+        inherit_method( m, list, lookup )
+      endIf
+
+    method inherit_global_methods( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
         forEach (base_m in base_type.global_method_list)
-          inherit_routine( base_m, list, lookup )
+          inherit_global_method( base_m, list, lookup )
         endForEach
       endForEach
 
       forEach (m in global_method_list)
-        inherit_routine( m, list, lookup )
+        inherit_global_method( m, list, lookup )
       endForEach
 
-    method inherit_routine( m:Method, list:Method[], lookup:Table<<String,Method>> )
+    method inherit_global_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
 
       if (existing_m)
@@ -808,7 +815,7 @@ class Type
 
         local i = list.locate( existing_m ).value
 
-        # Aspect routines are not incorporated
+        # Global aspect methods are not incorporated
         if (m.type_context.is_aspect) return
 
         if (m.is_augment)
@@ -820,7 +827,7 @@ class Type
         lookup[m.signature] = m
 
       else
-        # Aspect routines are not incorporated
+        # Global aspect methods are not incorporated
         if (m.type_context.is_aspect) return
 
         if (m.is_augment)
@@ -829,6 +836,48 @@ class Type
 
         list.add( m )
         lookup[m.signature] = m
+      endIf
+
+    method inject_global_method( m:Method, at_index=null:Int32? )
+      if (not organized) add_global_method( m ); return
+
+      if (at_index.exists)
+        inherit_method( m, global_method_list, global_method_lookup_by_signature )
+        global_method_list.insert( global_method_list.remove_last, at_index.value )
+
+      else
+        m.organize
+
+        local index = global_method_list.count
+        inherit_method( m, global_method_list, global_method_lookup_by_signature )
+        if (has_extended_class)
+          forEach (type in Program.type_list)
+            if (type.organized and type isNot this and type.instance_of(this))
+              type.inject_method( m, index )
+            endIf
+          endForEach
+        endIf
+      endIf
+
+    method inject_method( m:Method, at_index=null:Int32? )
+      if (m.is_global) inject_global_method( m, at_index ); return
+      if (not organized) add_method( m ); return
+
+      if (at_index.exists)
+        inherit_method( m, method_list, method_lookup_by_signature )
+        method_list.insert( method_list.remove_last, at_index.value )
+
+      else
+        m.organize( &!add_to_lookup )
+        local index = method_list.count
+        inherit_method( m, method_list, method_lookup_by_signature )
+        if (has_extended_class)
+          forEach (type in Program.type_list)
+            if (type.organized and type isNot this and type.instance_of(this))
+              type.inject_method( m, index )
+            endIf
+          endForEach
+        endIf
       endIf
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )

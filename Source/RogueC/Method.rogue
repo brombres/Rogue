@@ -33,6 +33,8 @@ class Method
     is_used            : Logical
     called_dynamically : Logical
 
+    type_parameters : TypeParameter[]
+
     label_list   = CmdLabel[]
     label_lookup = Table<<String,CmdLabel>>()
     cur_label    : CmdLabel
@@ -191,6 +193,10 @@ class Method
     method is_task_conversion->Logical
       return (attributes.flags & Attribute.is_task_conversion)
 
+    method make_propagated->this
+      attributes.add( Attribute.is_propagated )
+      return this
+
     method make_requisite->this
       attributes.add( Attribute.is_requisite )
       return this
@@ -237,7 +243,8 @@ class Method
               statements.insert( CmdAssign(pt,CmdAccess(pt,param.name),CmdAccess(pt,new_name)) )
               param.name = new_name
               param.type = property.type
-            else
+            elseIf (property.type_context is type_context and property.is_incorporated == this.is_incorporated)
+              trace property.type_context, type_context, is_incorporated
               throw param.t.error( ''A property named "$" already exists.'' (param.name) )
             endIf
           endIf

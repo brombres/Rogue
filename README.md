@@ -30,7 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.55 - April 15, 2016
 - [API] Made functional programming more flexible.  In addition to the in-place list modification methods `apply()`, `filter()`, `modify()`, and `sort()`, there are now versions of those methods that return a modified list instead: `applying()`, `filtered()`, `modified()`, and `sorted()`.  Note: `filtered()` is functionally equivalent to `choose()` and so the latter method has been removed.
-
+- [RogueC] Added method `Type.inject_method(Method)` that can be used to add a new method after the type has already been organized, correctly adjusting inherited method tables in extended classes.
 
 ###v1.0.54 - April 13, 2016
 - [RogueC] Reworked native properties to be stored with regular properties instead separately.  Fixes severe bug where classes with native properties were not polymorphically compatible with base classes or extended classes due to the order in which native properties were written out.
