@@ -111,9 +111,31 @@ function! FindIndentOfPrevWhile(startline)
   while s:lnum > 1
     let s:code_line=getline(s:lnum)
 
-    if s:code_line =~ '\C^\s*endWhile\>'  "we found a nested forEach
+    if s:code_line =~ '\C^\s*endWhile\>'  "we found a nested while
       let s:depth=s:depth + 1
     elseif s:code_line =~ '\C^\s*while\>'
+      if IsSingleLineCond(s:code_line)==0
+        if s:depth>0
+          let s:depth=s:depth-1
+        else
+          return indent(s:lnum)
+        endif
+      endif
+    endif
+    let s:lnum=s:lnum-1
+  endwhile
+  return 0
+endfunction
+
+function! FindIndentOfPrevContingent(startline)
+  let s:lnum = a:startline
+  let s:depth=0
+  while s:lnum > 1
+    let s:code_line=getline(s:lnum)
+
+    if s:code_line =~ '\C^\s*endContingent\>'  "we found a nested contingent
+      let s:depth=s:depth + 1
+    elseif s:code_line =~ '\C^\s*contingent\>'
       if IsSingleLineCond(s:code_line)==0
         if s:depth>0
           let s:depth=s:depth-1
@@ -416,6 +438,10 @@ function! GetRogueIndent( line_num )
     return FindIndentOfPrevWhile(a:line_num-1)
   endif
 
+  if s:this_codeline =~ '\C^\s*\(endContingent\|satisfied\|unsatisfied\)\>'
+    return FindIndentOfPrevContingent(a:line_num-1)
+  endif
+
   if s:this_codeline =~ '\C^\s*\(endLoop\)\>'
     return FindIndentOfPrevLoop(a:line_num-1)
   endif
@@ -435,9 +461,9 @@ function! GetRogueIndent( line_num )
     endif
   endif
 
-  "if s:prev_codeline =~ '^\s*\<\(while\)\>'
-    "return s:indnt + s:sw
-  "endif
+  if s:prev_codeline =~ '^\s*\<\(contingent\|satisfied\|unsatisfied\)\>'
+    return s:indnt + s:sw
+  endif
 
   "if s:prev_codeline =~ '^\s*\<\(elseIf\)\>'
     "return s:indnt + s:sw

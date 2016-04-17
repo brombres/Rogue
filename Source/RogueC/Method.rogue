@@ -1,3 +1,5 @@
+$include "MethodTemplate.rogue"
+
 class Method
   PROPERTIES
     t            : Token
@@ -32,8 +34,6 @@ class Method
 
     is_used            : Logical
     called_dynamically : Logical
-
-    type_parameters : TypeParameter[]
 
     label_list   = CmdLabel[]
     label_lookup = Table<<String,CmdLabel>>()

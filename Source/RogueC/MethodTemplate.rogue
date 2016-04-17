@@ -1,0 +1,13 @@
+class MethodTemplate
+  PROPERTIES
+    t               : Token
+    type_context    : Type
+    name            : String
+
+    type_parameters = TypeParameter[]
+    template_tokens = Token[]
+
+  METHODS
+    method init( t, type_context, name )
+
+endClass

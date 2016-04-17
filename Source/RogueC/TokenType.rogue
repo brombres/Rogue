@@ -42,9 +42,6 @@ class TokenType
     keyword_endWhile              : TokenType
     keyword_ENUMERATE             : TokenType
     keyword_GLOBAL                : TokenType
-    keyword_GLOBAL_METHODS        : TokenType
-    keyword_GLOBAL_PROPERTIES     : TokenType
-    keyword_macro                 : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType
     keyword_nativeCode            : TokenType
@@ -192,6 +189,7 @@ class TokenType
   PROPERTIES
     name           : String
     is_end_command : Logical
+    is_non_method  : Logical
 
   METHODS
     method init( name )
@@ -226,6 +224,9 @@ class TokenType
     method is_directive->Logical
       return false
 
+    method is_method_content->Logical [macro]
+      not is_non_method
+
     method is_op_with_assign->Logical
       return false
 
@@ -234,6 +235,10 @@ class TokenType
 
     method mark_end_command->this
       is_end_command = true
+      return this
+
+    method mark_non_method->this
+      is_non_method = true
       return this
 
     method quoted_name->String
