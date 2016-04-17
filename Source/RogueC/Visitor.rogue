@@ -338,7 +338,7 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
-    method visit( cmd:CmdFlagArg )
+    method visit( cmd:CmdNamedArg )
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -370,7 +370,7 @@ class Visitor
     method on_enter( cmd:CmdCreateOptionalValue )
     method on_enter( cmd:CmdElementAccess )
     method on_enter( cmd:CmdEscape )
-    method on_enter( cmd:CmdFlagArg )
+    method on_enter( cmd:CmdNamedArg )
     method on_enter( cmd:CmdForEach )
     method on_enter( cmd:CmdFormattedString )
     method on_enter( cmd:CmdGenericLoop )
@@ -443,7 +443,7 @@ class Visitor
     method on_leave( cmd:CmdCreateOptionalValue )
     method on_leave( cmd:CmdElementAccess )
     method on_leave( cmd:CmdEscape )
-    method on_leave( cmd:CmdFlagArg )
+    method on_leave( cmd:CmdNamedArg )
     method on_leave( cmd:CmdForEach )
     method on_leave( cmd:CmdFormattedString )
     method on_leave( cmd:CmdGenericLoop )
@@ -605,8 +605,8 @@ class Visitor
     method dispatch( cmd:CmdAccess )
       if (cmd.context)   cmd.context.dispatch( this )
       if (cmd.args)      cmd.args.dispatch( this )
-      if (cmd.flag_args)
-        forEach (arg in cmd.flag_args) arg.dispatch( this )
+      if (cmd.named_args)
+        forEach (arg in cmd.named_args) arg.dispatch( this )
       endIf
 
     method dispatch( cmd:CmdCreateObject )
@@ -665,8 +665,8 @@ class Visitor
 
     method dispatch( cmd:CmdCallPriorMethod )
       if (cmd.args) cmd.args.dispatch( this )
-      if (cmd.flag_args)
-        forEach (arg in cmd.flag_args) arg.dispatch( this )
+      if (cmd.named_args)
+        forEach (arg in cmd.named_args) arg.dispatch( this )
       endIf
 
     method dispatch( cmd:CmdRange )
@@ -760,7 +760,7 @@ class Visitor
       endIf
       cmd.value.dispatch( this )
 
-    method dispatch( cmd:CmdFlagArg )
+    method dispatch( cmd:CmdNamedArg )
       noAction
 
 endClass

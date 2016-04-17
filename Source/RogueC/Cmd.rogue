@@ -1509,17 +1509,27 @@ class CmdFormattedString : Cmd
       return Program.type_String
 endClass
 
-class CmdFlagArg : Cmd
+class CmdNamedArg : Cmd
   PROPERTIES
-    name        : String
-    value       : Cmd
-    is_negative : Logical
+    name           : String
+    value          : Cmd
+    is_negative    : Logical
+    inferred_index : Int32?
 
   METHODS
     method init( t, name, value=null, is_negative=false )
 
-    method clone( clone_args=null:CloneArgs )->CmdFlagArg
-      return CmdFlagArg( t, name, clone(value), is_negative )
+    method clone( clone_args=null:CloneArgs )->CmdNamedArg
+      return CmdNamedArg( t, name, clone(value), is_negative )
+
+    method to_value->Cmd
+      if (value)
+        if (is_negative) throw t.error( "Invalid negation of a named parameter with a supplied value." )
+        return value
+      else
+        if (is_negative) return CmdLiteralLogical( t, false )
+        else             return CmdLiteralLogical( t, true )
+      endIf
 endClass
 
 #------------------------------------------------------------------------------
@@ -1530,7 +1540,7 @@ class CmdAccess : Cmd
     context    : Cmd
     name       : String
     args       : CmdArgs
-    flag_args  : CmdFlagArg[]
+    named_args  : CmdNamedArg[]
     #debug : Logical
 
   METHODS
@@ -1538,13 +1548,13 @@ class CmdAccess : Cmd
 
     method init( t, name, args )
 
-    method init( t, name, args, flag_args )
+    method init( t, name, args, named_args )
 
     method init( t, context, name )
 
     method init( t, context, name, args )
 
-    method init( t, context, name, args, flag_args )
+    method init( t, context, name, args, named_args )
 
     method init( t, context, name, arg:Cmd )
       args = CmdArgs()
@@ -1553,9 +1563,9 @@ class CmdAccess : Cmd
     method clone( clone_args=null:CloneArgs )->Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
 
-      if (flag_args)
-        result.flag_args = CmdFlagArg[]( flag_args.count )
-        forEach (flag_arg in flag_args) result.flag_args.add( flag_arg.clone )
+      if (named_args)
+        result.named_args = CmdNamedArg[]( named_args.count )
+        forEach (flag_arg in named_args) result.named_args.add( flag_arg.clone )
       endIf
 
       local macro_args = (clone_args as MacroArgs)
@@ -1616,7 +1626,7 @@ class CmdAccess : Cmd
               endIf
             else
               local cmd = CmdAccess( t, CmdThisContext(t,new_type), "call", args )
-              cmd.flag_args = flag_args
+              cmd.named_args = named_args
               return cmd.resolve( scope )
             endIf
           endIf
@@ -1644,7 +1654,7 @@ class CmdAccess : Cmd
           endIf
 
           if (new_type.is_compound)
-            local cmd = scope.resolve_call( new_type, CmdAccess(t,"create",args,flag_args), true )
+            local cmd = scope.resolve_call( new_type, CmdAccess(t,"create",args,named_args), true )
             local cmd_call = cmd as CmdCall
             if (cmd_call and cmd_call.method_info.is_generated)
               # Calling the core compound creation routine
@@ -1662,9 +1672,9 @@ class CmdAccess : Cmd
           local cmd_call : Cmd
           if (new_type.is_native)
             cmd_call = scope.resolve_call( new_type,
-                CmdAccess(t,CmdAccess(t,new_type.name),"create",args,flag_args), true )
+            CmdAccess(t,CmdAccess(t,new_type.name),"create",args,named_args), true )
           else
-            cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,flag_args), true, true )
+            cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,named_args), true, true )
           endIf
 
           if (cmd_call)
@@ -2403,21 +2413,21 @@ class CmdCallPriorMethod : Cmd
   PROPERTIES
     name       : String
     args       : CmdArgs
-    flag_args  : CmdFlagArg[]
+    named_args  : CmdNamedArg[]
 
   METHODS
-    method init( t, name, args, flag_args )
+    method init( t, name, args, named_args )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      local cloned_flag_args : CmdFlagArg[]
-      if (flag_args)
-        cloned_flag_args = CmdFlagArg[]( flag_args.count )
-        forEach (flag_arg in flag_args) cloned_flag_args.add( flag_arg.clone )
+      local cloned_named_args : CmdNamedArg[]
+      if (named_args)
+        cloned_named_args = CmdNamedArg[]( named_args.count )
+        forEach (flag_arg in named_args) cloned_named_args.add( flag_arg.clone )
       endIf
-      return CmdCallPriorMethod( t, name, args.clone(clone_args), cloned_flag_args )
+      return CmdCallPriorMethod( t, name, args.clone(clone_args), cloned_named_args )
 
     method resolve( scope:Scope )->Cmd
-      return CmdAccess( t, name, args, flag_args ).resolve( scope ).call_prior( scope )
+      return CmdAccess( t, name, args, named_args ).resolve( scope ).call_prior( scope )
 endClass
 
 

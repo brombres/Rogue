@@ -88,36 +88,26 @@ class Scope
         local param = m.parameters[ args.count ]
 
         # try to find a named arg for this position
-        local flag_arg : CmdFlagArg
-        if (access.flag_args)
-          forEach (arg in access.flag_args)
+        local named_arg : CmdNamedArg
+        if (access.named_args)
+          forEach (arg in access.named_args)
             if (arg.name == param.original_name)
-              flag_arg = arg
-              access.flag_args.remove( arg )
+              named_arg = arg
+              access.named_args.remove( arg )
               escapeForEach
             endIf
           endForEach
         endIf
 
-        if (flag_arg)
-          if (flag_arg.value)
-            args.add( flag_arg.value )
-          else
-            if (param.type is Program.type_Logical)
-              if (flag_arg.is_negative) args.add( CmdLiteralLogical(flag_arg.t,false) )
-              else                      args.add( CmdLiteralLogical(flag_arg.t,true) )
-            else
-              if (flag_arg.is_negative) args.add( CmdLiteralInt32(flag_arg.t,0) )
-              else                      args.add( CmdLiteralInt32(flag_arg.t,1) )
-            endIf
-          endIf
+        if (named_arg)
+          args.add( named_arg.to_value )
         else
           args.add( param.initial_value.clone )
         endIf
       endWhile
 
-      if (access.flag_args and access.flag_args.count)
-        local arg = access.flag_args.first
+      if (access.named_args and access.named_args.count)
+        local arg = access.named_args.first
         throw arg.t.error( ''Called method does not have a parameter named '$'.'' (arg.name) )
       endIf
 
@@ -279,14 +269,19 @@ class Scope
       endForEach
       if (not candidates.update_matches) return null
 
-      if (access.flag_args)
+      if (access.named_args)
         # Throw out any method that does not have one of the supplied named parameters
         forEach (m in candidates.available)
           contingent
-            forEach (arg in access.flag_args)
+            forEach (arg in access.named_args)
               block
-                forEach (param in m.parameters)
+                forEach (param at index in m.parameters)
                   if (param.original_name == arg.name)
+                    if (not arg.inferred_index.exists)
+                      arg.inferred_index = index
+                    elseIf (arg.inferred_index.value != index)
+                      arg.inferred_index = -1
+                    endIf
                     escapeBlock
                   endIf
                 endForEach
@@ -297,6 +292,22 @@ class Scope
           endContingent
         endForEach
         if (not candidates.update_matches) return null
+
+        # Go ahead and place any named args that we've been able to infer the index of.
+        # This only works if the arg belongs in the middle or at the end of existing
+        # args - otherwise we have to wait until the end of the method so that default
+        # parameter values can be filled in correctly.
+        local named_args = access.named_args.remove( function(arg)=arg.inferred_index.exists and arg.inferred_index.value != -1 )
+        named_args.sort( function(a,b)=a.inferred_index.value < b.inferred_index.value )
+        forEach (named_arg in named_args)
+          local index = named_arg.inferred_index.value
+          if (index <= args.count)
+            args.insert( named_arg.to_value.resolve(this), index )
+          else
+            access.named_args.add( named_arg )
+          endIf
+        endForEach
+
       endIf
 
       if (arg_count)

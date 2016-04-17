@@ -249,6 +249,17 @@ class List<<$DataType>> : GenericList
         return zero_value
       endIf
 
+    method remove( fn:Function($DataType)->Logical )->$DataType[]
+      # Returns the list of items that pass the test function while removing
+      # them from this list.
+      local result = $DataType[]
+      local rewriter = this.rebuilder
+      forEach (value in rewriter)
+        if (fn(value)) result.add( value )
+        else           rewriter.write( value )
+      endForEach
+      return result
+
     method remove_at( index:Int32 )->$DataType
       local result = this[ index ]
       data.set( index, data, index+1 )

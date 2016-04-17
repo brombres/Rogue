@@ -2099,14 +2099,14 @@ class Parser
       local access = CmdAccess( t, parse_possible_type(true) )
       if (next_is(TokenType.symbol_open_paren))
         access.args = CmdArgs()
-        access.flag_args = parse_args( access.args )
+        access.named_args = parse_args( access.args )
       endIf
       access.context = context
       return access
 
     # TODO: Add multi-line handling
-    method parse_args( args:CmdArgs )->CmdFlagArg[]
-      local flag_args : CmdFlagArg[]
+    method parse_args( args:CmdArgs )->CmdNamedArg[]
+      local named_args : CmdNamedArg[]
       local end_type   = TokenType.symbol_close_paren
 
       consume( TokenType.symbol_open_paren )
@@ -2118,12 +2118,12 @@ class Parser
           first = false
           consume_eols
           if (consume(TokenType.symbol_ampersand))
-            if (not flag_args) flag_args = CmdFlagArg[]
+            if (not named_args) named_args = CmdNamedArg[]
             local is_negative = consume( TokenType.symbol_exclamation_point )
             local arg_t = peek
-            local arg = CmdFlagArg( arg_t, read_identifier )
+            local arg = CmdNamedArg( arg_t, read_identifier )
             arg.is_negative = is_negative
-            flag_args.add( arg )
+            named_args.add( arg )
             if (consume(TokenType.symbol_equals))
               arg.value = parse_expression
             endIf
@@ -2135,7 +2135,7 @@ class Parser
         must_consume( end_type )
       endIf
 
-      return flag_args
+      return named_args
 
 
     method parse_specialization_string->String
@@ -2327,12 +2327,12 @@ class Parser
         consume_eols
         local name = read_identifier
         local args : CmdArgs
-        local flag_args : CmdFlagArg[]
+        local named_args : CmdNamedArg[]
         if (next_is(TokenType.symbol_open_paren))
           args = CmdArgs()
-          flag_args = parse_args( args )
+          named_args = parse_args( args )
         endIf
-        return CmdCallPriorMethod( t, name, args, flag_args )
+        return CmdCallPriorMethod( t, name, args, named_args )
 
       elseIf (consume(TokenType.keyword_await))
         # Insert a local result declaration and a statement list to hold the
