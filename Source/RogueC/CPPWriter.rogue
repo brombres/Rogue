@@ -2767,9 +2767,13 @@ endAugment
 augment CmdCastToType
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "((" ).print( target_type ).print( ")(" )
-      operand.write_cpp( writer )
-      writer.print( "))" )
+      if (is_statement)
+        operand.write_cpp( writer )
+      else
+        writer.print( "((" ).print( target_type ).print( ")(" )
+        operand.write_cpp( writer )
+        writer.print( "))" )
+      endIf
 endAugment
 
 augment CmdConvertToPrimitiveType
