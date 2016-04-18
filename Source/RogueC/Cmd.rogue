@@ -1980,6 +1980,9 @@ class CmdElementAccess : Cmd
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
       return clone.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
 
+    method to->String
+      return "$[$]" (context,index)
+
 endClass
 
 
@@ -4708,5 +4711,32 @@ class CmdSelectCase : Cmd
 
     method type->Type
       return value.type
+endClass
+
+
+class CmdEnsure : Cmd
+  PROPERTIES
+    access : CmdAccess
+
+  METHODS
+    method init( t, access )
+
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdEnsure( t, require(access.clone(clone_args) as CmdAccess) )
+
+    method implicit_type( scope:Scope )->Type
+      return access.implicit_type( scope )
+
+    method resolve( scope:Scope )->Cmd
+      local args = access.args
+      access.args = null
+
+      local cmd_read = access.clone.resolve( scope ).require_value
+
+      local cmd_if = CmdIf( t, CmdLogicalNot(t,cmd_read) )
+      cmd_if.statements.add( CmdAssign( t, access, CmdAccess(t,cmd_read.type.name,args) ) )
+
+      return cmd_if.resolve( scope )
+
 endClass
 

@@ -68,6 +68,7 @@ class TokenType
     keyword_await                 : TokenType
     keyword_block                 : TokenType
     keyword_contingent            : TokenType
+    keyword_ensure                : TokenType
     keyword_escapeBlock           : TokenType
     keyword_escapeContingent      : TokenType
     keyword_escapeForEach         : TokenType

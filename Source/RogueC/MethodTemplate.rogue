@@ -9,6 +9,9 @@ class MethodTemplate
     type_parameters    = TypeParameter[]
     template_tokens    = Token[]
 
+    overridden_m       : MethodTemplate
+    has_overrides      : Logical
+
     instantiated_m     : Method
 
   METHODS
@@ -37,4 +40,10 @@ class MethodTemplate
     method to->String
       return "$.$" (type_context.name,signature)
 
+endClass
+
+
+class MethodTemplates : Table<<String,Table<<Int32,MethodTemplate[]>>>>
+  # A table of method names to lookup-by-specializer-count to list of templates.
+  METHODS
 endClass

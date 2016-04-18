@@ -2600,6 +2600,16 @@ class Parser
         cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
         return CmdRequire(t, expr, message, temp_var)
 
+      elseIf (consume(TokenType.keyword_ensure))
+        local expr = parse_expression
+        local access = expr as CmdAccess
+        if (not access)
+trace expr
+trace peek
+          throw expr.t.error( ''Missing arguments "(...)" on 'ensure' operand.'' )
+        endIf
+        return CmdEnsure( t, access )
+
       else
 @trace this_type.name
 println StackTrace()

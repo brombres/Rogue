@@ -58,6 +58,7 @@ syn match   rogueNumber       "\<0x\x\+\(\.\x\+\)\=\>"
 "syn match   rogueUserLabelRef  ".\k\+"
 
 syn keyword rogueStatement    require assert
+syn keyword rogueStatement    ensure
 syn keyword rogueOperator     and or xor not
 syn keyword rogueOperator     instanceOf is isNot notInstanceOf
 "syn match   rogueOperator     "\.\.\<"

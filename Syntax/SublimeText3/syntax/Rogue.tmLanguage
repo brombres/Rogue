@@ -109,6 +109,12 @@
 			<string>support.function.rogue</string>
 		</dict>
 		<dict>
+			<key>match</key>
+			<string>\b(ensure)\b</string>
+			<key>name</key>
+			<string>support.function.rogue</string>
+		</dict>
+		<dict>
 			<key>include</key>
 			<string>#comments</string>
 		</dict>
