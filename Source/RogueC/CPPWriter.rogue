@@ -1764,7 +1764,7 @@ augment CmdLocalDeclaration
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (local_info.type.is_reference)
         if (skip_initialization)
-          writer.print("ROGUE_DEF_LOCAL_REF_NULL(").print(local_info.type).print(",").print(local_info.cpp_name).println(")")
+          writer.print("ROGUE_DEF_LOCAL_REF_NULL(").print(local_info.type).print(",").print(local_info.cpp_name).print(")")
         elseIf
           writer.print("ROGUE_DEF_LOCAL_REF(").print(local_info.type).print(",").print(local_info.cpp_name).print(",")
           if (local_info.initial_value)
@@ -2961,3 +2961,16 @@ augment CmdRequire
       writer.print( ")" )
 endAugment
 
+
+#{
+augment CmdEnsure
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "(" ).print( local_info.cpp_name ).print( "=" )
+      cmd_read.write_cpp( writer )
+      writer.print( ") ? " ).print( local_info.cpp_name ).print( " : (" )
+      cmd_write.write_cpp( writer )
+      writer.print( ")" )
+
+endAugment
+}#

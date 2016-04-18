@@ -1097,6 +1097,10 @@ class Parser
         statements.add( CmdAssert(t, expr, message, temp_var) )
         return
 
+      elseIf (next_is(TokenType.keyword_ensure))
+        statements.add( parse_ensure )
+        return
+
         #{
       elseIf (consume(TokenType.keyword_tron))
         statements.add( CmdTron(t) )
@@ -2600,44 +2604,59 @@ class Parser
         cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
         return CmdRequire(t, expr, message, temp_var)
 
-      elseIf (consume(TokenType.keyword_ensure))
-        local cmd_block = CmdBlock( t )
-
-        local first = true
-        while (first or consume(TokenType.symbol_double_ampersand))
-          first = false
-
-          local expr = parse_expression
-
-          if (next_is(TokenType.symbol_open_paren))
-            # The args are still out there because they're invalid outside the context of this
-            # ensure command.
-            local args = CmdArgs()
-            local named_args = parse_args( args )
-            cmd_block.statements.add( CmdEnsure( t, expr, args, named_args ) )
-
-          else
-            local access = expr as CmdAccess
-            if (not access)
-              throw expr.t.error( ''Missing initializer arguments "(...)" on 'ensure' operand.'' )
-            endIf
-            local args = access.args
-            local named_args = access.named_args
-            access.args = null
-            access.named_args = null
-            cmd_block.statements.add( CmdEnsure( t, access, args, named_args ) )
-          endIf
-
-        endWhile
-
-        if (cmd_block.statements.count == 1) return cmd_block.statements.first
-        else                                 return cmd_block
-
       else
 @trace this_type.name
 println StackTrace()
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
+
+    method parse_ensure->Cmd
+      local t = read  # 'ensure'
+
+      local has_parens = consume( TokenType.symbol_open_paren )
+      local cmd_block = CmdBlock( t )
+
+      local first = true
+      while (first or consume(TokenType.symbol_double_ampersand))
+        first = false
+
+        local expr = parse_expression
+
+        local cmd_ensure : CmdEnsure
+        if (next_is(TokenType.symbol_open_paren))
+          # The args haven't been parsed yet because they're invalid outside the context
+          # of this ensure command.
+          local args = CmdArgs()
+          local named_args = parse_args( args )
+          cmd_ensure = CmdEnsure( t, expr, args, named_args )
+
+        else
+          local access = expr as CmdAccess
+          if (access)
+            local args = access.args
+            if (not args) args = CmdArgs()
+            local named_args = access.named_args
+            access.args = null
+            access.named_args = null
+            cmd_ensure = CmdEnsure( t, access, args, named_args )
+          else
+            cmd_ensure = CmdEnsure( t, expr, CmdArgs() )
+          endIf
+        endIf
+
+        cmd_block.statements.add( cmd_ensure )
+
+        #local temp_var = this_method.add_local( t, Program.create_unique_id )
+        #cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
+        #temp_var.initial_value = cmd_ensure.operand.clone
+        #cmd_ensure.local_info = temp_var
+
+      endWhile
+
+      if (has_parens) must_consume( TokenType.symbol_close_paren )
+
+      if (cmd_block.statements.count == 1) return cmd_block.statements.first
+      else                                 return cmd_block
 
     method parse_property_table( t:Token )->Cmd
       # '{' already consumed

@@ -1,9 +1,10 @@
 class Scope
   PROPERTIES
-    this_type     : Type
-    this_method   : Method
-    this_body     : CmdStatementList
-    implicit_type : Type
+    this_type      : Type
+    this_method    : Method
+    this_body      : CmdStatementList
+    this_statement : Cmd
+    implicit_type  : Type
 
     local_list = Local[]
 

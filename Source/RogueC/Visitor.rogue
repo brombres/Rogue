@@ -93,6 +93,11 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdEnsure )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdForEach )
       on_enter( cmd )
       dispatch( cmd )
@@ -369,6 +374,7 @@ class Visitor
     method on_enter( cmd:CmdCreateObject )
     method on_enter( cmd:CmdCreateOptionalValue )
     method on_enter( cmd:CmdElementAccess )
+    method on_enter( cmd:CmdEnsure )
     method on_enter( cmd:CmdEscape )
     method on_enter( cmd:CmdNamedArg )
     method on_enter( cmd:CmdForEach )
@@ -442,6 +448,7 @@ class Visitor
     method on_leave( cmd:CmdCreateObject )
     method on_leave( cmd:CmdCreateOptionalValue )
     method on_leave( cmd:CmdElementAccess )
+    method on_leave( cmd:CmdEnsure )
     method on_leave( cmd:CmdEscape )
     method on_leave( cmd:CmdNamedArg )
     method on_leave( cmd:CmdForEach )
@@ -584,6 +591,11 @@ class Visitor
     method dispatch( cmd:CmdElementAccess )
       cmd.index.dispatch( this )
       cmd.context.dispatch( this )
+
+    method dispatch( cmd:CmdEnsure )
+      cmd.local_info.type.dispatch( this )
+      cmd.cmd_read.dispatch( this )
+      cmd.cmd_write.dispatch( this )
 
     method dispatch( cmd:CmdEscape )
       noAction
