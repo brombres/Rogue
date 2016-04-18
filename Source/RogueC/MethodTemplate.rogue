@@ -1,13 +1,40 @@
 class MethodTemplate
   PROPERTIES
-    t               : Token
-    type_context    : Type
-    name            : String
+    t                  : Token
+    type_context       : Type
+    name               : String
+    is_global          : Logical
+    signature          : String
 
-    type_parameters = TypeParameter[]
-    template_tokens = Token[]
+    type_parameters    = TypeParameter[]
+    template_tokens    = Token[]
+
+    instantiated_m     : Method
 
   METHODS
-    method init( t, type_context, name )
+    method init( t, type_context, name, is_global )
+
+    method instantiate( ref_t:Token, ref_name:String )
+      local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
+
+      parser.read  # '<<'
+
+      local specializer_tokens = Token[][]()
+      local buffer = StringBuilder()
+      local first = true
+      while (first or parser.consume(TokenType.symbol_comma))
+        first = false
+        specializer_tokens.add( Token[] )
+        parser.parse_specializer( buffer.clear, specializer_tokens.last )
+      endWhile
+
+      # Instantiate this method and any overrides throughout this type and all
+      # extended types.
+      forEach (type in Program.type_list)
+        type.instantiate_method_template( name, signature, ref_name, specializer_tokens )
+      endForEach
+
+    method to->String
+      return "$.$" (type_context.name,signature)
 
 endClass

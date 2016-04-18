@@ -12,10 +12,9 @@ class Type
 
     defined           : Logical
     organized         : Logical
+    organizing        : Logical
     resolved          : Logical
     culled            : Logical
-
-    reinherit_methods : Logical
 
     base_class : Type
     base_types = Type[]
@@ -56,6 +55,9 @@ class Type
     callback_parameter_types : Type[]
     callback_return_type     : Type
 
+    method_templates : Table<<String,Table<<String,MethodTemplate>>>>
+    # First by name, then by signature
+
   METHODS
     method init( t, name )
 
@@ -63,6 +65,8 @@ class Type
       return add_method( Method(m_t, this, m_name) )
 
     method add_method( m:Method )->Method
+      if (organized and not organizing) inject_method( m ); return m
+
       method_list.add( m )
       local list = method_lookup_by_name[ m.name ]
       if (not list)
@@ -85,18 +89,20 @@ class Type
     method add_global_method( r_t:Token, r_name:String )->Method
       return add_global_method( Method(r_t, this, r_name) )
 
-    method add_global_method( r:Method )->Method
-      r.attributes.add( Attribute.is_global )
+    method add_global_method( m:Method )->Method
+      m.attributes.add( Attribute.is_global )
 
-      global_method_list.add( r )
-      local list = global_method_lookup_by_name[ r.name ]
+      if (organized and not organizing) inject_global_method( m ); return m
+
+      global_method_list.add( m )
+      local list = global_method_lookup_by_name[ m.name ]
       if (not list)
         list = Method[]
-        global_method_lookup_by_name[ r.name ] = list
+        global_method_lookup_by_name[ m.name ] = list
       endIf
-      list.add( r )
+      list.add( m )
 
-      return r
+      return m
 
     method add_global( s_t:Token, s_name:String )->Property
       local s = Property( s_t, this, s_name )
@@ -287,6 +293,7 @@ class Type
     method organize( scope=null:Scope )->Type
       if (organized) return this
       organized = true
+      organizing = true
 
       index = Program.type_list.count
       Program.type_list.add( this )
@@ -493,6 +500,8 @@ class Type
       index_and_move_inline_to_end( global_method_list )
       index_and_move_inline_to_end( method_list )
 
+      organizing = false
+
       return this
 
     method primitive_rank->Int32
@@ -656,6 +665,26 @@ class Type
       endIf
 
     method inherit_methods( scope=null:Scope )
+      # Inherit method templates
+      forEach (base_type in base_types)
+        if (base_type.method_templates)
+          if (not this.method_templates)
+            method_templates = Table<<String,Table<<String,MethodTemplate>>>>()
+          endIf
+          forEach (name in base_type.method_templates.keys)
+            local this_by_sig = method_templates[name]
+            if (not this_by_sig)
+              this_by_sig = Table<<String,MethodTemplate>>()
+              method_templates[name] = this_by_sig
+            endIf
+            local base_by_sig = base_type.method_templates[ name ]
+            forEach (sig in base_by_sig.keys)
+              if (not this_by_sig[sig]) this_by_sig[sig] = base_by_sig[sig]
+            endForEach
+          endForEach
+        endIf
+      endForEach
+
       # Organize methods and create signatures
       forEach (m in global_method_list)
         m.organize( scope )
@@ -694,7 +723,6 @@ class Type
         endIf
         list.add( m )
       endForEach
-
 
     method inherit_methods( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
@@ -839,7 +867,10 @@ class Type
       endIf
 
     method inject_global_method( m:Method, at_index=null:Int32? )
-      if (not organized) add_global_method( m ); return
+      if (not organized or organizing) add_global_method( m ); return
+
+      m.assign_signature
+println "Injecting $.$" (m.type_context,m.signature)
 
       if (at_index.exists)
         inherit_method( m, global_method_list, global_method_lookup_by_signature )
@@ -859,9 +890,18 @@ class Type
         endIf
       endIf
 
+      local list = global_method_lookup_by_name[m.name]
+      if (not list)
+        list = Method[]
+        global_method_lookup_by_name[m.name] = list
+      endIf
+      list.add( m )
+
     method inject_method( m:Method, at_index=null:Int32? )
       if (m.is_global) inject_global_method( m, at_index ); return
-      if (not organized) add_method( m ); return
+      if (not organized or organizing) add_method( m ); return
+
+      m.assign_signature
 
       if (at_index.exists)
         inherit_method( m, method_list, method_lookup_by_signature )
@@ -879,6 +919,13 @@ class Type
           endForEach
         endIf
       endIf
+
+      local list = method_lookup_by_name[m.name]
+      if (not list)
+        list = Method[]
+        method_lookup_by_name[m.name] = list
+      endIf
+      list.add( m )
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )
       # Apply augment to existing method
@@ -912,6 +959,48 @@ class Type
         m.index = i
         ++i
       endForEach
+
+    method instantiate_method_template( t_name:String, t_sig:String, ref_name:String, specializer_tokens:Token[][] )
+      # Called on every class when method templates are in play - ignored if not applicable.
+      if (not organized) return
+
+      if (not method_templates) return
+
+      local by_name = method_templates[ t_name ]
+      if (not by_name) return
+
+      local m = by_name[ t_sig ]
+      if (not m or m.type_context isNot this) return
+
+      # It's happening
+      local mappings = Table<<String,Token[]>>()
+      forEach (type_param at i in m.type_parameters)
+        mappings[ type_param.name ] = specializer_tokens[i]
+      endForEach
+
+      local tokens = Token[]( specializer_tokens.count+10 )
+      tokens.add( TokenType.keyword_method.create_token( m.t ) )
+      tokens.add( TokenType.identifier.create_token( m.t, ref_name ) )
+      forEach (mt in m.template_tokens)
+        if (mt.type is TokenType.placeholder_id)
+          local mapping = mappings[ mt->String ]
+          if (mapping)
+            # Insert template copy of tokens
+            forEach (specializer_t in mapping)
+              tokens.add( specializer_t )
+            endForEach
+          else
+            tokens.add( mt )
+          endIf
+        else
+          tokens.add( mt )
+        endIf
+      endForEach
+
+      local parser = Parser( tokens )
+      parser.this_type = this
+      parser.parse_method( m.is_global )  # Adds or injects method to type
+      m.instantiated_m = parser.this_method
 
     method omit_output->Logical
       return is_native or not is_used

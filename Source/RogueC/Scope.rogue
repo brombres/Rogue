@@ -231,6 +231,22 @@ class Scope
         endForEach
       endIf
 
+      if (candidates.available.count == 0 and access.name.contains('<') and type_context.method_templates)
+        local base_name = access.name.before_first( '<' )
+        local templates = type_context.method_templates[ base_name ]
+        if (templates)
+          local specializer_count = Parser(access.t,access.name,access.name.from_first('<')).parse_specializer_count()
+          local sig = "$<<$>>" (base_name,specializer_count)
+          local m = templates[ sig ]
+          if (m)
+            m.instantiate( access.t, access.name )
+
+            # Try again now that a new method's been added
+            return find_method( type_context, access, error_on_fail, suppress_inherited )
+          endIf
+        endIf
+      endIf
+
       if (not candidates.update_available) return null
 
       if (suppress_inherited)
@@ -533,7 +549,7 @@ class CandidateMethods
           if (not error_on_fail) return false
 
           local call_sig_buffer = StringBuilder()
-          call_sig_buffer.print( type_context.name ).print( "::" )
+          call_sig_buffer.print( type_context.name ).print( "." )
           call_sig_buffer.print( access.name ).print( "(" )
           if (access.args)
             forEach (index of access.args)
@@ -551,7 +567,7 @@ class CandidateMethods
             buffer.print( "Call to $ has arguments that are incompatible with the best candidate:\n\n" (call_sig) )
           endIf
           forEach (m in available)
-            buffer.print("  ").print(m.type_context.name).print("::").println(m.signature)
+            buffer.print("  ").print(m.type_context.name).print(".").println(m.signature)
           endForEach
           throw access.t.error( buffer->String )
 

@@ -55,7 +55,7 @@ class Cmd
       #endIf
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      throw t.error( "[INTERNAL] $::clone() is not implemented." (type_name) )
+      throw t.error( "[INTERNAL] $.clone() is not implemented." (type_name) )
 
     method clone( other:Cmd, clone_args=null:CloneArgs )->Cmd
       if (other) return other.clone( clone_args )
@@ -155,7 +155,7 @@ class Cmd
       return true
 
     method resolve( scope:Scope )->Cmd
-      throw t.error( "[INTERNAL] $::resolve() is not defined." (type_name) )
+      throw t.error( "[INTERNAL] $.resolve() is not defined." (type_name) )
       return this
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
@@ -171,7 +171,7 @@ class Cmd
       dispatch( TraceUsedCodeVisitor )
 
     method type->Type
-      throw t.error( "[INTERNAL] $::type() is not defined." (type_name) )
+      throw t.error( "[INTERNAL] $.type() is not defined." (type_name) )
 
 endClass
 
@@ -1933,7 +1933,7 @@ class CmdAccess : Cmd
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
     method type->Type
-      local err = t.error( "[INTERNAL] $::type() is not defined (access name '$')." (type_name,name) )
+      local err = t.error( "[INTERNAL] $.type() is not defined (access name '$')." (type_name,name) )
       #println err.stack_trace
       throw err
 endClass
@@ -2675,7 +2675,7 @@ class CmdBinary : Cmd
     method init( t, left, right )
 
     method fn_name->String
-      throw t.error( "[INTERNAL] $::fn_name() is not defined." (type_name) )
+      throw t.error( "[INTERNAL] $.fn_name() is not defined." (type_name) )
 
     method requires_parens->Logical
       return true
@@ -2719,7 +2719,7 @@ class CmdBinary : Cmd
       endIf
 
     method symbol->String
-      throw t.error( "[INTERNAL] $::symbol() is not defined." (type_name) )
+      throw t.error( "[INTERNAL] $.symbol() is not defined." (type_name) )
 
     method type->Type
       return find_operation_result_type( left.require_type, right.require_type )
@@ -2876,7 +2876,7 @@ endClass
 class CmdBinaryLogical : CmdBinary
   METHODS
     method combine_literal_operands( a:Logical, b:Logical )->Logical
-      throw t.error( "[INTERNAL] $::combine_literal_operands(Logical,Logical) is not defined." (type_name) )
+      throw t.error( "[INTERNAL] $.combine_literal_operands(Logical,Logical) is not defined." (type_name) )
 
     method resolve( scope:Scope )->Cmd
       left = left.resolve( scope ).require_logical( scope )
@@ -2973,7 +2973,7 @@ class CmdComparison : CmdBinary
       return false
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      throw t.error( "[INTERNAL] $::resolve_for_reference() is undefined." )
+      throw t.error( "[INTERNAL] $.resolve_for_reference() is undefined." )
 
     method type->Type
       return Program.type_Logical
