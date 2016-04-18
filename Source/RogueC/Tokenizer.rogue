@@ -205,6 +205,7 @@ class Tokenizer
 
       TokenType.symbol_ampersand             = define( TokenType("&") )
       TokenType.symbol_ampersand_equals      = define( ModifyAndAssignTokenType("&=") )
+      TokenType.symbol_double_ampersand      = define( TokenType("&&") )
       TokenType.symbol_arrow                 = define( TokenType("->") )
       TokenType.symbol_at                    = define( TokenType("@") )
       TokenType.symbol_at_brace              = define( TokenType("@{") )
@@ -313,7 +314,7 @@ class Tokenizer
 
 
       elseIf (ch == '&' )
-        if     (consume('&')) throw error( "Use 'and' instead of '&&'." )
+        if     (consume('&')) return TokenType.symbol_double_ampersand
         elseIf (consume('=')) return TokenType.symbol_ampersand_equals
         else                  return TokenType.symbol_ampersand
 

@@ -134,6 +134,7 @@ class TokenType
 
     symbol_ampersand              : TokenType
     symbol_ampersand_equals       : TokenType
+    symbol_double_ampersand       : TokenType
     symbol_arrow                  : TokenType
     symbol_at                     : TokenType
     symbol_at_brace               : TokenType

@@ -1540,7 +1540,7 @@ class CmdAccess : Cmd
     context    : Cmd
     name       : String
     args       : CmdArgs
-    named_args  : CmdNamedArg[]
+    named_args : CmdNamedArg[]
     #debug : Logical
 
   METHODS
@@ -1565,7 +1565,7 @@ class CmdAccess : Cmd
 
       if (named_args)
         result.named_args = CmdNamedArg[]( named_args.count )
-        forEach (flag_arg in named_args) result.named_args.add( flag_arg.clone )
+        forEach (named_arg in named_args) result.named_args.add( named_arg.clone )
       endIf
 
       local macro_args = (clone_args as MacroArgs)
@@ -2425,7 +2425,7 @@ class CmdCallPriorMethod : Cmd
       local cloned_named_args : CmdNamedArg[]
       if (named_args)
         cloned_named_args = CmdNamedArg[]( named_args.count )
-        forEach (flag_arg in named_args) cloned_named_args.add( flag_arg.clone )
+        forEach (named_arg in named_args) cloned_named_args.add( named_arg.clone )
       endIf
       return CmdCallPriorMethod( t, name, args.clone(clone_args), cloned_named_args )
 
@@ -4716,25 +4716,33 @@ endClass
 
 class CmdEnsure : Cmd
   PROPERTIES
-    access : CmdAccess
+    operand    : Cmd
+    args       : CmdArgs
+    named_args : CmdNamedArg[]
 
   METHODS
-    method init( t, access )
+    method init( t, operand, args, named_args=null )
 
     method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdEnsure( t, require(access.clone(clone_args) as CmdAccess) )
+      local result = CmdEnsure( t, operand.clone(clone_args), clone(args,clone_args) )
+
+      if (named_args)
+        result.named_args = CmdNamedArg[]( named_args.count )
+        forEach (named_arg in named_args) result.named_args.add( named_arg.clone )
+      endIf
+
+      return result
 
     method implicit_type( scope:Scope )->Type
-      return access.implicit_type( scope )
+      return operand.implicit_type( scope )
 
     method resolve( scope:Scope )->Cmd
-      local args = access.args
-      access.args = null
-
-      local cmd_read = access.clone.resolve( scope ).require_value
+      local cmd_read = operand.clone.resolve( scope ).require_value
 
       local cmd_if = CmdIf( t, CmdLogicalNot(t,cmd_read) )
-      cmd_if.statements.add( CmdAssign( t, access, CmdAccess(t,cmd_read.type.name,args) ) )
+      local cmd_new = CmdAccess( t, cmd_read.type.name, args )
+      cmd_new.named_args = named_args
+      cmd_if.statements.add( CmdAssign( t, operand, cmd_new ) )
 
       return cmd_if.resolve( scope )
 
