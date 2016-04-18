@@ -28,7 +28,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.55 - April 15, 2016
+###v1.0.55 - April 18, 2016
+- [Rogue] Added `ensure` statement.  `ensure x` is convenience syntax for `if (not x) x = TypeOfX()`, `ensure y(a,b)` is equivalent to `if (not y) y = TypeOfY(a,b)`, and `ensure x && y(a,b)` performs both checks in consecutive order.
 - [RogueC] Made named args more robust.  While the compiler used to wait until a method was selected before adding the named args back in, it now inserts them at the beginning of call resolution if it can infer their location (i.e. two overloads don't contain the same parameter name at different positions).
 - [API] Made functional programming more flexible.  In addition to the in-place list modification methods `apply()`, `filter()`, `modify()`, and `sort()`, there are now versions of those methods that return a modified list instead: `applying()`, `filtered()`, `modified()`, and `sorted()`.  Note: `filtered()` is functionally equivalent to `choose()` and so the latter method has been removed.
 - [API] Added `List.remove(Function(T)->Logical)->List` that removes and returns the list of values passing the test function.
