@@ -4,20 +4,45 @@ class MethodTemplate
     type_context       : Type
     name               : String
     is_global          : Logical
-    signature          : String
 
     type_parameters    = TypeParameter[]
     template_tokens    = Token[]
 
-    overridden_m       : MethodTemplate
-    has_overrides      : Logical
+    is_override        : Logical
+    is_overridden      : Logical
 
-    instantiated_m     : Method
+    is_instantiating   : Logical
 
   METHODS
     method init( t, type_context, name, is_global )
 
     method instantiate( ref_t:Token, ref_name:String )
+      if (is_instantiating) return
+      is_instantiating = true
+
+      # Instantiate base refs first
+      if (is_override)
+        forEach (base_type in type_context.base_types)
+          if (base_type.method_templates)
+            if (not base_type.has_method_named(ref_name))
+              base_type.method_templates.instantiate( name, type_parameters.count, ref_t, ref_name )
+            endIf
+          endIf
+        endForEach
+      endIf
+
+      if (is_overridden)
+        forEach (type in Program.type_list)
+          if (type.organized and not type.organizing and type isNot type_context and type.instance_of(type_context))
+            if (type.method_templates)
+              if (not type.has_method_named(ref_name))
+                type.method_templates.instantiate( name, type_parameters.count, ref_t, ref_name )
+              endIf
+            endIf
+          endIf
+        endForEach
+      endIf
+
       local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
 
       parser.read  # '<<'
@@ -31,19 +56,91 @@ class MethodTemplate
         parser.parse_specializer( buffer.clear, specializer_tokens.last )
       endWhile
 
-      # Instantiate this method and any overrides throughout this type and all
-      # extended types.
-      forEach (type in Program.type_list)
-        type.instantiate_method_template( name, signature, ref_name, specializer_tokens )
+      local mappings = Table<<String,Token[]>>()
+      forEach (type_param at i in type_parameters)
+        mappings[ type_param.name ] = specializer_tokens[i]
       endForEach
 
+      local tokens = Token[]( specializer_tokens.count+10 )
+      tokens.add( TokenType.keyword_method.create_token( t ) )
+      tokens.add( TokenType.identifier.create_token( t, ref_name ) )
+      forEach (mt in template_tokens)
+        if (mt.type is TokenType.placeholder_id)
+          local mapping = mappings[ mt->String ]
+          if (mapping)
+            # Insert template copy of tokens
+            forEach (specializer_t in mapping)
+              tokens.add( specializer_t )
+            endForEach
+          else
+            tokens.add( mt )
+          endIf
+        else
+          tokens.add( mt )
+        endIf
+      endForEach
+
+      parser = Parser( tokens )
+      parser.this_type = type_context
+      parser.parse_method( is_global, &use_injection )
+      local m = parser.this_method
+      m.source_template = this
+      m.assign_signature
+
+      is_instantiating = false
+
     method to->String
-      return "$.$" (type_context.name,signature)
+      return "$.$<<$>>" (type_context.name,name,type_parameters.count)
 
 endClass
 
 
-class MethodTemplates : Table<<String,Table<<Int32,MethodTemplate[]>>>>
+class MethodTemplates( type_context:Type )
   # A table of method names to lookup-by-specializer-count to list of templates.
+  PROPERTIES
+    templates = MethodTemplate[]
+
   METHODS
+    method add( m:MethodTemplate )
+      templates.add( m )
+
+    method has_templates_named( name:String )->Logical
+      forEach (m in templates)
+        if (not m.is_instantiating and m.name == name) return true
+      endForEach
+
+      return false
+
+    method inherit( other:MethodTemplates )
+      if (not other) return
+
+      forEach (other_m in other.templates)
+        local name = other_m.name
+        local type_parameter_count = other_m.type_parameters.count
+        forEach (m in templates)
+          if (m.type_parameters.count == type_parameter_count and m.name == name)
+            # m overrides other_m.  Note there can be multiple overrides of the same
+            # method template and vice versa.
+            m.is_override = true
+            other_m.is_overridden = true
+          else
+            templates.add( other_m )
+          endIf
+        endForEach
+      endForEach
+
+    method instantiate( name:String, type_parameter_count:Int32, t:Token, specialized_name:String )->Logical
+      local found_any = false
+
+      forEach (m in templates)
+        if (not m.is_instantiating and m.type_parameters.count == type_parameter_count and m.name == name)
+          found_any = true
+          if (type_context is m.type_context)
+            m.instantiate( t, specialized_name )
+          endIf
+        endIf
+      endForEach
+
+      return found_any
+
 endClass

@@ -39,6 +39,8 @@ class Method
     label_lookup = Table<<String,CmdLabel>>()
     cur_label    : CmdLabel
 
+    source_template : MethodTemplate
+
   METHODS
     method init( t, type_context, name )
 
@@ -432,7 +434,7 @@ class Method
       return this
 
     method to->String
-      return signature
+      return "$.$" (type_context.name,signature)
 
     method trace_used_code
       if (is_used) return   # Already traced

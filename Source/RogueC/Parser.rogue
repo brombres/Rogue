@@ -142,7 +142,6 @@ class Parser
 
       if (reader.has_another)
         local t = peek
-@trace this_type.name
         throw t.error( "Syntax error: unexpected $." (t.quoted_name) )
       endIf
 
@@ -642,7 +641,7 @@ class Parser
 
       return true
 
-    method parse_method( as_global=false:Logical )->Logical
+    method parse_method( as_global=false:Logical, &use_injection )->Logical
       consume_eols
 
       if (not next_is(TokenType.keyword_method)) return false
@@ -715,8 +714,13 @@ class Parser
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
 
-      if (as_global) this_type.add_global_method( this_method )
-      else            this_type.add_method( this_method )
+      if (use_injection)
+        if (as_global) this_type.inject_global_method( this_method )
+        else           this_type.inject_method( this_method )
+      else
+        if (as_global) this_type.add_global_method( this_method )
+        else           this_type.add_method( this_method )
+      endIf
 
       consume( TokenType.symbol_colon )
 
@@ -781,21 +785,13 @@ class Parser
       endWhile
       must_consume( TokenType.symbol_close_specialize )
 
-      m.signature = "$<<$>>" (name,m.type_parameters.count)
-
       local tokens = m.template_tokens
       while (reader.has_another and peek.type.is_method_content)
         tokens.add( reader.read )
       endWhile
 
-      if (not this_type.method_templates)
-        this_type.method_templates = Table<<String,Table<<String,MethodTemplate>>>>()
-      endIf
-      if (not this_type.method_templates[name])
-        this_type.method_templates[name] = Table<<String,MethodTemplate>>()
-      endIf
-      this_type.method_templates[name][m.signature] = m
-
+      ensure this_type.method_templates( this_type )
+      this_type.method_templates.add( m )
 
     method parse_single_or_multi_line_statements( statements:CmdStatementList, end_type:TokenType )
       if (consume_eols)

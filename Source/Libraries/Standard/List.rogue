@@ -169,6 +169,11 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
+    method mapped<<$ToType>>( map_fn:Function($DataType)->$ToType )->$ToType[]
+      local result = $ToType[]( capacity )
+      forEach (element in this) result.add( map_fn(element) )
+      return result
+
     method modify( fn:Function($DataType)->$DataType )->this
       forEach (index of this) this[index] = fn(this[index])
       return this
@@ -223,6 +228,13 @@ class List<<$DataType>> : GenericList
 
     method rebuilder->ListRebuilder<<$DataType>>
       return ListRebuilder<<$DataType>>( this )
+
+    method reduced<<$ToType>>( reduce_fn:Function(Int32,$DataType,$ToType)->$ToType )->$ToType
+      local result : $ToType
+      forEach (index of this)
+        result = reduce_fn( index, this[index], result )
+      endForEach
+      return result
 
     method reserve( additional_count:Int32 )->$DataType[]
       local required_capacity = count + additional_count
@@ -445,24 +457,6 @@ augment String[]
 
       return builder->String
 endAugment
-
-class ListMap<<$FromType,$ToType>>
-  GLOBAL METHODS
-    method convert( list:$FromType[], map_fn:Function($FromType)->$ToType )->$ToType[]
-      local result = $ToType[]( list.capacity )
-      forEach (element in list) result.add( map_fn(element) )
-      return result
-endClass
-
-class ListReduce<<$FromType,$ToType>>
-  GLOBAL METHODS
-    method convert( list:$FromType[], reduce_fn:Function(Int32,$FromType,$ToType)->$ToType )->$ToType
-      local result : $ToType
-      forEach (index of list)
-        result = reduce_fn( index, list[index], result )
-      endForEach
-      return result
-endClass
 
 class ListRebuilder<<$DataType>>
   PROPERTIES

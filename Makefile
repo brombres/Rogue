@@ -1,7 +1,7 @@
 .PHONY: test
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
-ROGUEC_ROGUE_FLAGS =
+ROGUEC_ROGUE_FLAGS = --debug
 ROGUEC_CPP_FLAGS = -std=c++11 -fno-strict-aliasing
 
 all: roguec
