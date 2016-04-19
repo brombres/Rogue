@@ -17,6 +17,7 @@ if !exists("main_syntax")
 endif
 
 " keyword definitions
+syn keyword rogueClassDecl   module
 syn keyword rogueClassDecl   class endClass routine endRoutine aspect
 syn keyword rogueClassDecl   function endFunction
 syn keyword rogueClassDecl   with endWith
@@ -43,13 +44,15 @@ syn keyword rogueConstant     null void gt lt eq infinity NaN
 syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield
-syn keyword rogueType         Real64 Real32 Int64 Int32 Character Byte Logical String
+syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
+syn region  rogueType         start="Function(" end=")"
+syn region  rogueType         start="Function(" end=")->"
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro requisite abstract final compound propagated foreign
 syn keyword rogueExceptions   throw try catch endTry
 "syn match  roguegPreProc      "^\[.*]"
-syn region  roguePreProc      start="\$\[" end="[\n\]]"
+"syn region  roguePreProc      start="\$\[" end="[\n\]]"
 syn match   rogueNumber       "\<\d\+\(\.\d\+\)\=\>"
 syn match   rogueNumber       "\<0b[01]\+\(\.[01]\+\)\=\>"
 syn match   rogueNumber       "\<0x\x\+\(\.\x\+\)\=\>"
