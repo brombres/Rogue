@@ -9,7 +9,7 @@ class RogueError : Error
 
     method to->String
       local builder = StringBuilder()
-      local m = message.word_wrapped(79).joined
+      local m = message.word_wrapped(79,",").joined
       if (filepath)
         builder.println( "===============================================================================" )
         builder.print( ''ERROR in "'' ).print( File.filename(filepath) )

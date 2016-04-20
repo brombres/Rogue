@@ -4609,8 +4609,8 @@ RogueString* RogueString__rightmost__Int32( RogueString* THIS, RogueInt32 n_0 );
 RogueString_List* RogueString__split__Character( RogueString* THIS, RogueCharacter separator_0 );
 RogueString* RogueString__to_lowercase( RogueString* THIS );
 RogueString* RogueString__trimmed( RogueString* THIS );
-RogueString_List* RogueString__word_wrapped__Int32( RogueString* THIS, RogueInt32 width_0 );
-RogueStringBuilder* RogueString__word_wrapped__Int32_StringBuilder( RogueString* THIS, RogueInt32 width_0, RogueStringBuilder* buffer_1 );
+RogueString_List* RogueString__word_wrapped__Int32_String( RogueString* THIS, RogueInt32 width_0, RogueString* allow_break_after_1 );
+RogueStringBuilder* RogueString__word_wrapped__Int32_StringBuilder_String( RogueString* THIS, RogueInt32 width_0, RogueStringBuilder* buffer_1, RogueString* allow_break_after_2 );
 RogueString* RogueStackTrace__to_String( RogueClassStackTrace* THIS );
 RogueString* RogueStackTrace__type_name( RogueClassStackTrace* THIS );
 RogueClassStackTrace* RogueStackTrace__init__Int32( RogueClassStackTrace* THIS, RogueInt32 omit_count_0 );
@@ -6824,6 +6824,7 @@ RogueLogical RogueCandidateMethods__refine_matches( RogueClassCandidateMethods* 
 RogueLogical RogueCandidateMethods__update_available( RogueClassCandidateMethods* THIS );
 RogueLogical RogueCandidateMethods__update_matches( RogueClassCandidateMethods* THIS );
 RogueLogical RogueCandidateMethods__update__Logical( RogueClassCandidateMethods* THIS, RogueLogical require_compatible_0 );
+RogueString* RogueCandidateMethods__remove_module_names__String( RogueClassCandidateMethods* THIS, RogueString* sig_0 );
 RogueClassCandidateMethods* RogueCandidateMethods__init_object( RogueClassCandidateMethods* THIS );
 RogueString* RogueFunction_1409__type_name( RogueClassFunction_1409* THIS );
 RogueLogical RogueFunction_1409__call__CmdNamedArg( RogueClassFunction_1409* THIS, RogueClassCmdNamedArg* arg_0 );

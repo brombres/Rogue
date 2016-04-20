@@ -564,13 +564,16 @@ class CandidateMethods
 
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( "No exact match for ambiguous call to $:\n\n" (call_sig) )
+            buffer.print( "No exact match for ambiguous call to $.  Candidates:\n\n" (remove_module_names(call_sig)) )
           else
-            buffer.print( "Call to $ has arguments that are incompatible with the best candidate:\n\n" (call_sig) )
+            buffer.print( "Call to $ has arguments that are incompatible with the best candidate:\n\n"...
+                (remove_module_names(call_sig)) )
           endIf
+          buffer.indent += 2
           forEach (m in available)
-            buffer.print("  ").print(m.type_context.name).print(".").println(m.signature)
+            buffer.println( remove_module_names("$.$" (m.type_context.name,m.signature)) )
           endForEach
+          buffer.indent -= 2
           throw access.t.error( buffer->String )
 
         endIf
@@ -585,4 +588,16 @@ class CandidateMethods
       compatible.clear
 
       return true
+
+    method remove_module_names( sig:String )->String
+      # Module names generally make signatures too cumbersome.  Strip them out for error messages so
+      # that e.g. Plasmacore::Box becomes Box, etc.
+      local pos = sig.locate( "::" )
+      while (pos.exists)
+        local i = pos.value
+        while (i > 0 and sig[i-1].is_alphanumeric) --i
+        sig = sig.leftmost( i ) + sig.from( pos.value + 2 )
+        pos = sig.locate( "::" )
+      endWhile
+      return sig
 endClass

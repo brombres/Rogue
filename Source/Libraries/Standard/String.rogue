@@ -674,14 +674,14 @@ class String
       if (i.exists) return from( 0, i.value )
       else          return this
 
-    method word_wrapped( width:Int32 )->String[]
+    method word_wrapped( width:Int32, allow_break_after=null:String )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin
       # immediately.  Spaces immediately following existing newline
       # characters are preserved.
-      return word_wrapped( width, StringBuilder() )->String.split('\n')
+      return word_wrapped( width, StringBuilder(), allow_break_after )->String.split('\n')
 
-    method word_wrapped( width:Int32, buffer:StringBuilder )->StringBuilder
+    method word_wrapped( width:Int32, buffer:StringBuilder, allow_break_after=null:String )->StringBuilder
       # Prints a word-wrapped version of this string to the given
       # StringBuilder.  Existing newlines characters will cause a new line to
       # begin immediately.  Spaces immediately following existing newline
@@ -694,15 +694,30 @@ class String
       local needs_newline = false
       while (i2 < len)
 
-        # find last space or first \n
+        # find first \n, last space, or last break-after character
         while ((i2-i1) < width and i2 < len and this[i2] != '\n') i2++
 
         if ((i2-i1) == width)
+          # No \n in allowed width
           if (i2 >= len)
+            # The rest of the text will fit as-is.
             i2 = len
-          else
-            while (this[i2]!=' ' and this[i2]!='\n' and i2>i1) i2--
-            if (i2 == i1) i2 = i1 + width
+          elseIf (this[i2] != '\n')
+            # Look for the last space within the given width
+            while (this[i2]!=' ' and i2>i1) i2--
+
+            if (i2 == i1)
+              # Not found - move cursor to end and look for the last break-after
+              # character.
+              i2 = i1 + width
+              if (allow_break_after)
+                while (i2 > i1 and not allow_break_after.contains(this[i2-1]) and i2>i1) i2--
+                if (i2 == i1)
+                  # Could not find a break - just use the first 'width' characters.
+                  i2 = i1 + width
+                endIf
+              endIf
+            endIf
           endIf
         endIf
 
@@ -717,7 +732,9 @@ class String
         else
           which (this[i2])
             case ' ':
+              # Discard trailing spaces
               while (i2<len and this[i2]==' ') i2++
+
               if (i2<len and this[i2]=='\n') i2++
 
             case '\n':
