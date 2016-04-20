@@ -45,8 +45,7 @@ syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield
 syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
-syn region  rogueType         start="Function(" end=")"
-syn region  rogueType         start="Function(" end=")->"
+syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro requisite abstract final compound propagated foreign

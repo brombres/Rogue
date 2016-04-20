@@ -29,7 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.56 - April 19, 2016
-- [API]    Added an optional `allow_break_after:String` parameter to `String.word_wrapped()`.  If a line can't be broken on a newline or space it will be broken after any one of the supplied characters.
+- [API] Added an optional `allow_break_after:String` parameter to `String.word_wrapped()`.  If a line can't be broken on a newline or space it will be broken after any one of the supplied characters.
 - [RogueC] Improved formatting of error messages in several ways, including that "method not found" errors now strip package names from signature to avoid bloat.
 
 ###v1.0.55 - April 18, 2016
