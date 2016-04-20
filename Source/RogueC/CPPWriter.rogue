@@ -659,6 +659,24 @@ augment Program
       writer.println( "};" )
       writer.println
 
+      # Attributes table
+      writer.print(   "int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
+      writer.println "{"
+      writer.indent += 2
+
+      first = true
+      forEach (type in type_list)
+        if (first) first = false
+        else       writer.println ","
+
+        writer.print( type.attributes.flags )
+      endForEach
+
+      if (items > 0) writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
       # Allocators
       writer.print( "int Rogue_allocator_count = " ).print( 1 ).println( ";" )
       writer.print( "RogueAllocator Rogue_allocators[" ).print( 1 ).println( "];" )

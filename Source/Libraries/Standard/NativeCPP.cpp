@@ -1073,6 +1073,7 @@ void Rogue_configure_types()
     type->index = i;
     type->name_index = Rogue_type_name_index_table[i];
     type->object_size = Rogue_object_size_table[i];
+    //type->attributes = Rogue_attributes_table[i];
     type->allocator = &Rogue_allocators[ *(++type_info) ];
     type->methods = Rogue_dynamic_method_table + *(++type_info);
     type->base_type_count = *(++type_info);

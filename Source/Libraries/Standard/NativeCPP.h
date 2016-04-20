@@ -98,6 +98,34 @@ extern void Rogue_configure_gc();
   #define ROGUE_ARG(_a_) rogue_ptr(_a_)
 #endif
 
+#define ROGUE_ATTRIBUTE_IS_CLASS            0
+#define ROGUE_ATTRIBUTE_IS_PRIMITIVE        1
+#define ROGUE_ATTRIBUTE_IS_ASPECT           2
+#define ROGUE_ATTRIBUTE_IS_COMPOUND         3
+#define ROGUE_ATTRIBUTE_TYPE_MASK           7
+
+#define ROGUE_ATTRIBUTE_IS_REFERENCE        8
+
+#define ROGUE_ATTRIBUTE_IS_FOREIGN          16
+#define ROGUE_ATTRIBUTE_IS_NATIVE           32
+#define ROGUE_ATTRIBUTE_IS_MACRO            64
+#define ROGUE_ATTRIBUTE_IS_INITIALIZER      128
+#define ROGUE_ATTRIBUTE_IS_IMMUTABLE        256
+#define ROGUE_ATTRIBUTE_IS_GLOBAL           512
+#define ROGUE_ATTRIBUTE_IS_SINGLETON        1024
+#define ROGUE_ATTRIBUTE_IS_DYNAMIC          2048
+#define ROGUE_ATTRIBUTE_IS_OVERRIDDEN       4096
+#define ROGUE_ATTRIBUTE_IS_INCORPORATED     8192
+#define ROGUE_ATTRIBUTE_IS_GENERATED        16384
+#define ROGUE_ATTRIBUTE_IS_REQUISITE        32768
+#define ROGUE_ATTRIBUTE_IS_TASK             65536
+#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION  131072
+#define ROGUE_ATTRIBUTE_IS_AUGMENT          262144
+#define ROGUE_ATTRIBUTE_IS_ABSTRACT         524288
+#define ROGUE_ATTRIBUTE_IS_ROUTINE          1048576
+#define ROGUE_ATTRIBUTE_IS_FALLBACK         2097152
+#define ROGUE_ATTRIBUTE_IS_SPECIAL          4194304
+#define ROGUE_ATTRIBUTE_IS_PROPAGATED       8388608
 
 template <class T>
 struct RoguePtr
@@ -312,6 +340,7 @@ struct RogueType
 
   int          index;  // used for aspect call dispatch
   int          object_size;
+  int          attributes;
 
   RogueObject* _singleton;
   void**       methods;
@@ -510,6 +539,7 @@ extern int                Rogue_type_count;
 extern RogueType          Rogue_types[];
 extern int                Rogue_type_info_table[];
 extern int                Rogue_object_size_table[];
+extern int                Rogue_attributes_table[];
 extern void*              Rogue_dynamic_method_table[];
 extern int                Rogue_type_name_index_table[];
 extern RogueInitFn        Rogue_init_object_fn_table[];
