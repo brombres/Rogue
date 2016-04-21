@@ -18,7 +18,6 @@ class Type
 
     base_class         : Type
     base_types         = Type[]
-    has_extended_class : Logical
     extended_types     = Type[]
 
     is_array     : Logical
@@ -176,6 +175,9 @@ class Type
     method find_global( s_name:String )->Property
       if (s_name[0] == '@') s_name = s_name.rightmost(-1)
       return global_lookup[s_name]
+
+    method has_extended_class->Logical
+      return extended_types.count?
 
     method has_method_named( m_name:String )->Logical
       local list = method_lookup_by_name[m_name]
@@ -349,7 +351,6 @@ class Type
 
       # Mark classes that are extended
       forEach (base_type in base_types)
-        base_type.has_extended_class = true
         base_type.extended_types.add( this )
       endForEach
 
@@ -677,6 +678,8 @@ class Type
       forEach (p_type in property_types)
         local m_name = "get<<$>>" (p_type)
         local m = add_method( t, m_name )
+        m.specializer_count = 1
+        m.specialized_name = m_name
         m.add_parameter( t, ".name", Program.type_String )
         m.return_type = p_type
 
@@ -756,7 +759,7 @@ class Type
           if (m.type_context isNot this)
             local st = m.source_template
             if (st)
-              method_templates.instantiate( st.name, st.type_parameters.count, st.parameter_count, st.t, m.name )
+              method_templates.instantiate( st.name, st.type_parameters.count, st.parameter_count, st.t, m.name, &found_root )
             endIf
           endIf
         endForEach
@@ -937,13 +940,20 @@ class Type
       if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
 
-      m.assign_signature
+      m.organize
 
       ensure method_lookup_by_name[m.name]
 
       local existing_m = find_method( m.signature )
       if (existing_m)
+        local overrides = existing_m.overriding_methods
+        existing_m.overriding_methods = Method[]
+
         inherit_method( m, method_list, method_lookup_by_signature )
+
+        m.overriding_methods = overrides
+        forEach (overriding_m in overrides) overriding_m.overridden_method = m
+
         method_lookup_by_name[m.name].remove( existing_m )
         method_lookup_by_name[m.name].add( m )
 

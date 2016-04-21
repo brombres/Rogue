@@ -11,42 +11,13 @@ class MethodTemplate
     parameter_count    : Int32
     # Regular parameters, not type parameters
 
-    is_override        : Logical
-    is_overridden      : Logical
-
-    is_instantiating   : Logical
+    overridden_m       : MethodTemplate
+    overrides          = MethodTemplate[]
 
   METHODS
     method init( t, type_context, name, is_global )
 
     method instantiate( ref_t:Token, ref_name:String )
-      if (is_instantiating) return
-      is_instantiating = true
-
-      #trace "Instantiating $.$ from ref $" (type_context,name,ref_name)
-      # Instantiate base refs first
-      if (is_override)
-        if (type_context.base_class)
-          if (type_context.base_class.method_templates)
-            if (not type_context.base_class.has_method_named(ref_name))
-              type_context.base_class.method_templates.instantiate( name, type_parameters.count, parameter_count, ref_t, ref_name )
-            endIf
-          endIf
-        endIf
-      endIf
-
-      if (is_overridden)
-        forEach (type in Program.type_list)
-          if (type.organized and not type.organizing and type isNot type_context and type.instance_of(type_context))
-            if (type.method_templates)
-              if (not type.has_method_named(ref_name))
-                type.method_templates.instantiate( name, type_parameters.count, parameter_count, ref_t, ref_name )
-              endIf
-            endIf
-          endIf
-        endForEach
-      endIf
-
       local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
 
       parser.read  # '<<'
@@ -88,33 +59,14 @@ class MethodTemplate
       parser.this_type = type_context
       parser.parse_method( is_global, &skip_add_to_type )
       local m = parser.this_method
-      m.organize
-
-      #@trace m.signature
-      local existing_m = type_context.find_method( m.signature )
-      if (existing_m)
-        if (existing_m.type_context is type_context and not existing_m.overridden_method)
-          # A specialized method may have been organized before the base method template
-          # was instantiated.  Hook up the override info if so.
-          if (type_context.base_class)
-            local base_m = type_context.base_class.find_method( m.signature )
-            if (base_m)
-              base_m.overriding_methods.add( m )
-              m.overridden_method = base_m
-            endIf
-          endIf
-        endIf
-      else
-        #@trace "Adding"
-        type_context.inject_method( m )
-      endIf
-
       m.source_template = this
-
-      is_instantiating = false
+      m.specializer_count = type_parameters.count
+      m.specialized_name = ref_name
+      m.organize
+      type_context.inject_method( m )
 
     method to->String
-      return "$.$<<$>>" (type_context.name,name,type_parameters.count)
+      return "$.$<<{$}>>({$})" (type_context.name,name,type_parameters.count,parameter_count)
 
 endClass
 
@@ -122,15 +74,30 @@ endClass
 class MethodTemplates( type_context:Type )
   # A table of method names to lookup-by-specializer-count to list of templates.
   PROPERTIES
-    templates = MethodTemplate[]
+    template_list = MethodTemplate[]
 
   METHODS
     method add( m:MethodTemplate )
-      templates.add( m )
+      if (has_template(m.name,m.type_parameters.count,m.parameter_count))
+        throw m.t.error( "Method template $<<{$}>>({$}) is already defined." (m.name,m.type_parameters.count,m.parameter_count) )
+      endIf
+      template_list.add( m )
+
+    method find( name:String, specializer_count:Int32, parameter_count:Int32 )->MethodTemplate
+      forEach (template in template_list)
+        if (template.type_parameters.count == specializer_count and template.parameter_count == parameter_count...
+            and template.name == name)
+          return template
+        endIf
+      endForEach
+      return null
+
+    method has_template( name:String, specializer_count:Int32, parameter_count:Int32 )->Logical
+      return find(name,specializer_count,parameter_count)?
 
     method has_templates_named( name:String )->Logical
-      forEach (m in templates)
-        if (not m.is_instantiating and m.name == name) return true
+      forEach (m in template_list)
+        if (m.name == name) return true
       endForEach
 
       return false
@@ -138,48 +105,67 @@ class MethodTemplates( type_context:Type )
     method inherit( other:MethodTemplates )
       if (not other) return
 
-      forEach (other_m in other.templates)
-        local name = other_m.name
-        local type_parameter_count = other_m.type_parameters.count
-        local parameter_count = other_m.parameter_count
-
-        block
-          forEach (m in templates)
-            if (m.type_parameters.count==type_parameter_count and m.parameter_count==parameter_count and m.name==name)
-              # m overrides other_m
-              m.is_override = true
-              other_m.is_overridden = true
-              escapeBlock
-            endIf
-          endForEach
-
-          # No overrides found, just inherit other_m
-          templates.add( other_m )
-        endBlock
+      forEach (base_m in other.template_list)
+        local m = find( base_m.name, base_m.type_parameters.count, base_m.parameter_count )
+        if (m)
+          m.overridden_m = base_m
+          base_m.overrides.add( m )
+        else
+          # No overrides found, just inherit base_m
+          template_list.add( base_m )
+        endIf
 
       endForEach
 
-    method instantiate( name:String, type_parameter_count:Int32, parameter_count:Int32?, t:Token, specialized_name:String )->Logical
+    method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String )->Logical
+      # This version with no parameter count is used during call resolution and only called when
+      # no methods matching the specialized name (such as `get_property<<Int32>>`) are found.
+      # The possibility of default args or a wrong number of args means we instantiate all templates
+      # matching the name and number of specializers.
       local found_any = false
-@trace name, specialized_name, type_parameter_count, parameter_count
 
-      forEach (m in templates)
-        if (not m.is_instantiating and m.type_parameters.count == type_parameter_count...
-            and (not parameter_count.exists or m.parameter_count == parameter_count.value) and m.name == name)
-@trace
-
+      forEach (m in template_list)
+        if (m.type_parameters.count == specializer_count and m.name == name)
           found_any = true
-          if (type_context is m.type_context or not parameter_count.exists)
-@trace
-            # Note: if parameter_count does not exist then we're getting called from Scope's call resolution,
-            # which means we have to instantiate and provide a new candidate or else the resolution will get
-            # stuck in an infinite loop.  When called from elsewhere we only need to instantiate method templates
-            # defined in this class.
-            m.instantiate( t, specialized_name )
-          endIf
+          m.instantiate( t, specialized_name )
         endIf
       endForEach
 
       return found_any
+
+    method instantiate( name:String, specializer_count:Int32, parameter_count:Int32, t:Token, specialized_name:String,
+        &found_root )
+      #@trace name, specialized_name, specializer_count, parameter_count
+      if (not type_context.organized) return
+
+      local m = find( name, specializer_count, parameter_count )
+
+      if (m)
+        if (found_root or not m.overridden_m)
+          if (m.type_context is type_context)
+            # First make sure a specialized method of this name doesn't exist in the type already.
+            local possible_existing = type_context.method_lookup_by_name[ specialized_name ]
+            forEach (existing_m in possible_existing)
+              if (existing_m.parameters.count == parameter_count) return  # already exists
+            endForEach
+            m.instantiate( t, specialized_name )
+          endIf
+
+          # Instantiate overrides in extended classes
+          if (m.overrides.count)
+            forEach (override_m in m.overrides)
+              override_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
+                t, specialized_name, &found_root )
+            endForEach
+          endIf
+
+        elseIf (m.overridden_m)
+          # Skip this class for now and travel down to find the root method template of this line.
+          # We'll hit this class again on the way up.
+          m.overridden_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
+            t, specialized_name )
+        endIf
+
+      endIf
 
 endClass

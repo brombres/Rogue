@@ -672,7 +672,10 @@ class Parser
 
       this_method = Method( t, this_type, name )
       this_method.return_type = return_type
-      if (specialization_info) this_method.specializer_count = specialization_info.get_int32( "count" )
+      if (specialization_info)
+        this_method.specializer_count = specialization_info.get_int32( "count" )
+        this_method.specialized_name = name
+      endIf
 
       # Parse parameters
       if (consume(TokenType.symbol_open_paren))

@@ -32,8 +32,6 @@ class Method
     resolved  : Logical
     index     : Int32
 
-    specializer_count : Int32
-
     is_used            : Logical
     called_dynamically : Logical
 
@@ -41,7 +39,9 @@ class Method
     label_lookup = Table<<String,CmdLabel>>()
     cur_label    : CmdLabel
 
-    source_template : MethodTemplate
+    source_template   : MethodTemplate
+    specializer_count : Int32
+    specialized_name  : String
 
   METHODS
     method init( t, type_context, name )
@@ -54,7 +54,9 @@ class Method
       result.attributes = attributes.clone
       result.return_type = return_type
       result.task_result_type = task_result_type
+      result.source_template = this.source_template
       result.specializer_count = this.specializer_count
+      result.specialized_name = this.specialized_name
 
       result.locals = Local[]
       forEach (v in locals) result.locals.add( v.clone )
@@ -295,12 +297,16 @@ class Method
         --min_args
       endWhile
 
-      if (specializer_count)
-        # This is a specialized method designed to override a method template.  Go ahead
-        # and instantiate the corresponding method template in this line of the hierarchy.
+      if (specializer_count and not source_template)
+        @trace
+        # This is a dev-supplied specialized method designed to override a method template.
+        # Instantiate the corresponding method template in this line of the hierarchy.
+        # Calling this type's method_templates.instantiate() method will automatically
+        # handle base and extended classes.
         if (type_context.method_templates)
-          type_context.method_templates.instantiate( name.after_any("<>").before_first('<'),
-              specializer_count, parameters.count, t, name )
+        @trace
+          type_context.method_templates.instantiate( specialized_name, specializer_count,
+              parameters.count, t, name )
         endIf
       endIf
 
