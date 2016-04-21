@@ -2395,7 +2395,7 @@ class CmdCallMethod : CmdCall
       endIf
 
       if (not method_info.overridden_method)
-        throw t.error( "$ is not an override - no prior version of it exists." (method_info.signature) )
+        throw t.error( "Cannot call prior.$ from class $ because the method is not an override - no prior version of it exists." (method_info.signature,method_info.type_context) )
       endIf
 
       return CmdCallStaticMethod( t, context, method_info.overridden_method, args )

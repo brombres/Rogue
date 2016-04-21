@@ -32,6 +32,8 @@ class Method
     resolved  : Logical
     index     : Int32
 
+    specializer_count : Int32
+
     is_used            : Logical
     called_dynamically : Logical
 
@@ -52,6 +54,7 @@ class Method
       result.attributes = attributes.clone
       result.return_type = return_type
       result.task_result_type = task_result_type
+      result.specializer_count = this.specializer_count
 
       result.locals = Local[]
       forEach (v in locals) result.locals.add( v.clone )
@@ -291,6 +294,15 @@ class Method
       while (min_args >= 1 and parameters[min_args-1].initial_value)
         --min_args
       endWhile
+
+      if (specializer_count)
+        # This is a specialized method designed to override a method template.  Go ahead
+        # and instantiate the corresponding method template in this line of the hierarchy.
+        if (type_context.method_templates)
+          type_context.method_templates.instantiate( name.after_any("<>").before_first('<'),
+              specializer_count, parameters.count, t, name )
+        endIf
+      endIf
 
       return this
 

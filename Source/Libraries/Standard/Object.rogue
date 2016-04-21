@@ -4,7 +4,6 @@ class Object [native]
       noAction
 
     method get<<$PropertyType>>( name:String )->$PropertyType
-      println "getting $" (name)
       local default_value : $PropertyType
       return default_value
 
@@ -20,7 +19,6 @@ class Object [native]
       return this is other
 
     method set<<$PropertyType>>( name:String, value:$PropertyType )
-      println "setting $" (name)
       noAction
 
     method to->String

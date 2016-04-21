@@ -16,9 +16,10 @@ class Type
     resolved          : Logical
     culled            : Logical
 
-    base_class : Type
-    base_types = Type[]
+    base_class         : Type
+    base_types         = Type[]
     has_extended_class : Logical
+    extended_types     = Type[]
 
     is_array     : Logical
     is_list      : Logical
@@ -348,7 +349,8 @@ class Type
 
       # Mark classes that are extended
       forEach (base_type in base_types)
-        base_type.mark_extended_types
+        base_type.has_extended_class = true
+        base_type.extended_types.add( this )
       endForEach
 
       # Inherit definitions
@@ -367,7 +369,6 @@ class Type
       m_type_name.return_type = Program.type_String
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
-      create_introspection_methods
       inherit_methods( scope )
 
       # Mark any existing init_class() as requisite
@@ -516,14 +517,7 @@ class Type
       if (this is Program.type_Logical)   return 1
       return 0
 
-    method mark_extended_types
-      has_extended_class = true
-      forEach (base_type in base_types)
-        base_type.mark_extended_types
-      endForEach
-
     method collect_base_types( list:Type[] )
-      has_extended_class = true
       if (list.contains(this)) return
       list.add( this )
       forEach (base_type in base_types)
@@ -667,8 +661,9 @@ class Type
       endIf
 
     method create_introspection_methods
-      if (not is_reference) return
-      if (property_list.count == 0 and this isNot Program.type_Object) return
+      if (not is_class) return
+      if (property_list.count == 0) return
+      if (name != "Test") return
 
       local property_types = Type[]
       forEach (p in property_list)
@@ -677,8 +672,33 @@ class Type
         endIf
       endForEach
 
-      if (property_types.count == 0 and this isNot Program.type_Object) return
-      #get<<Int32>>(
+      if (property_types.count == 0) return
+
+      forEach (p_type in property_types)
+        local m_name = "get<<$>>" (p_type)
+        local m = add_method( t, m_name )
+        m.add_parameter( t, ".name", Program.type_String )
+        m.return_type = p_type
+
+        local cmd_which = CmdWhich( t, CmdAccess(t,".name") )
+        m.statements.add( cmd_which )
+
+        forEach (p in property_list)
+          if (p.type is p_type)
+            local cmd_case = cmd_which.add_case( t )
+            cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
+            cmd_case.statements.add( CmdReturn(t,CmdAccess(p.t,p.name)) )
+          endIf
+        endForEach
+
+        local cmd_others = cmd_which.add_case_others( t )
+        if (this is Program.type_Object)
+          cmd_others.statements.add( CmdReturn(t,p_type.create_default_value(t)) )
+        else
+          cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
+        endIf
+
+      endForEach
 
     method inherit_methods( scope=null:Scope )
       # Inherit method templates
@@ -688,6 +708,8 @@ class Type
           method_templates.inherit( base_type.method_templates )
         endIf
       endForEach
+
+      create_introspection_methods
 
       # Organize methods and create signatures
       forEach (m in global_method_list)

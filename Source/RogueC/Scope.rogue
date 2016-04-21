@@ -240,7 +240,7 @@ class Scope
       if (candidates.available.count == 0 and access.name.contains('<') and type_context.method_templates)
         local base_name = access.name.before_first( '<' )
         if (type_context.method_templates.has_templates_named(base_name))
-          local specializer_count = Parser(access.t,access.name,access.name.from_first('<')).parse_specializer_count()
+          local specializer_count = Parser(access.t,access.name,access.name.from_first('<')).parse_specializer_count
           if (type_context.method_templates.instantiate( base_name, specializer_count, null, access.t, access.name ))
             # Try again now that one or more new methods have been added
             return find_method( type_context, access, error_on_fail, suppress_inherited )

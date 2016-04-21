@@ -23,16 +23,16 @@ class MethodTemplate
       if (is_instantiating) return
       is_instantiating = true
 
-#trace "Instantiating $.$ from ref $" (type_context,name,ref_name)
+      #trace "Instantiating $.$ from ref $" (type_context,name,ref_name)
       # Instantiate base refs first
       if (is_override)
-        forEach (base_type in type_context.base_types)
-          if (base_type.method_templates)
-            if (not base_type.has_method_named(ref_name))
-              base_type.method_templates.instantiate( name, type_parameters.count, parameter_count, ref_t, ref_name )
+        if (type_context.base_class)
+          if (type_context.base_class.method_templates)
+            if (not type_context.base_class.has_method_named(ref_name))
+              type_context.base_class.method_templates.instantiate( name, type_parameters.count, parameter_count, ref_t, ref_name )
             endIf
           endIf
-        endForEach
+        endIf
       endIf
 
       if (is_overridden)
@@ -86,10 +86,30 @@ class MethodTemplate
 
       parser = Parser( tokens )
       parser.this_type = type_context
-      parser.parse_method( is_global, &use_injection )
+      parser.parse_method( is_global, &skip_add_to_type )
       local m = parser.this_method
+      m.organize
+
+      #@trace m.signature
+      local existing_m = type_context.find_method( m.signature )
+      if (existing_m)
+        if (existing_m.type_context is type_context and not existing_m.overridden_method)
+          # A specialized method may have been organized before the base method template
+          # was instantiated.  Hook up the override info if so.
+          if (type_context.base_class)
+            local base_m = type_context.base_class.find_method( m.signature )
+            if (base_m)
+              base_m.overriding_methods.add( m )
+              m.overridden_method = base_m
+            endIf
+          endIf
+        endIf
+      else
+        #@trace "Adding"
+        type_context.inject_method( m )
+      endIf
+
       m.source_template = this
-      m.assign_signature
 
       is_instantiating = false
 
@@ -141,13 +161,16 @@ class MethodTemplates( type_context:Type )
 
     method instantiate( name:String, type_parameter_count:Int32, parameter_count:Int32?, t:Token, specialized_name:String )->Logical
       local found_any = false
+@trace name, specialized_name, type_parameter_count, parameter_count
 
       forEach (m in templates)
         if (not m.is_instantiating and m.type_parameters.count == type_parameter_count...
             and (not parameter_count.exists or m.parameter_count == parameter_count.value) and m.name == name)
+@trace
 
           found_any = true
           if (type_context is m.type_context or not parameter_count.exists)
+@trace
             # Note: if parameter_count does not exist then we're getting called from Scope's call resolution,
             # which means we have to instantiate and provide a new candidate or else the resolution will get
             # stuck in an infinite loop.  When called from elsewhere we only need to instantiate method templates
