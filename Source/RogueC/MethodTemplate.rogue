@@ -34,7 +34,6 @@ class MethodTemplate
           endIf
         endForEach
       endIf
-trace
 
       if (is_overridden)
         forEach (type in Program.type_list)
@@ -47,7 +46,6 @@ trace
           endIf
         endForEach
       endIf
-trace
 
       local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
 

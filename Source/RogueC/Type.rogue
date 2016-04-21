@@ -883,21 +883,25 @@ class Type
       endIf
 
     method inject_global_method( m:Method, at_index=null:Int32? )
+      if (this.is_aspect) return
       m.assign_signature
 
       local existing_m = find_global_method( m.signature )
       if (existing_m)
         inherit_global_method( m, method_list, global_method_lookup_by_signature )
         global_method_lookup_by_name[m.name].remove( existing_m )
+        global_method_lookup_by_name[m.name].add( m )
 
       elseIf (at_index.exists)
         inherit_global_method( m, method_list, global_method_lookup_by_signature )
         method_list.insert( method_list.remove_last, at_index.value )
+        global_method_lookup_by_name[m.name].add( m )
 
       else
         m.organize( &!add_to_lookup )
         local index = method_list.count
         inherit_global_method( m, method_list, global_method_lookup_by_signature )
+        global_method_lookup_by_name[m.name].add( m )
         if (has_extended_class)
           forEach (type in Program.type_list)
             if (type.organized and type isNot this and type.instance_of(this))
@@ -907,9 +911,8 @@ class Type
         endIf
       endIf
 
-      global_method_lookup_by_name[m.name].add( m )
-
     method inject_method( m:Method, at_index=null:Int32? )
+      if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
 
       m.assign_signature
@@ -920,15 +923,18 @@ class Type
       if (existing_m)
         inherit_method( m, method_list, method_lookup_by_signature )
         method_lookup_by_name[m.name].remove( existing_m )
+        method_lookup_by_name[m.name].add( m )
 
       elseIf (at_index.exists)
         inherit_method( m, method_list, method_lookup_by_signature )
         method_list.insert( method_list.remove_last, at_index.value )
+        method_lookup_by_name[m.name].add( m )
 
       else
         m.organize( &!add_to_lookup )
         local index = method_list.count
         inherit_method( m, method_list, method_lookup_by_signature )
+        method_lookup_by_name[m.name].add( m )
         if (has_extended_class)
           forEach (type in Program.type_list)
             if (type.organized and type isNot this and type.instance_of(this))
@@ -937,8 +943,6 @@ class Type
           endForEach
         endIf
       endIf
-
-      method_lookup_by_name[m.name].add( m )
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )
       # Apply augment to existing method
