@@ -99,12 +99,13 @@ extern void Rogue_configure_gc();
 #endif
 
 #define ROGUE_ATTRIBUTE_IS_CLASS            0
-#define ROGUE_ATTRIBUTE_IS_PRIMITIVE        1
-#define ROGUE_ATTRIBUTE_IS_ASPECT           2
+#define ROGUE_ATTRIBUTE_IS_ASPECT           1
+#define ROGUE_ATTRIBUTE_IS_PRIMITIVE        2
 #define ROGUE_ATTRIBUTE_IS_COMPOUND         3
 #define ROGUE_ATTRIBUTE_TYPE_MASK           7
 
-#define ROGUE_ATTRIBUTE_IS_REFERENCE        8
+// AKA by-value type; not a reference type
+#define ROGUE_ATTRIBUTE_IS_DIRECT           2
 
 #define ROGUE_ATTRIBUTE_IS_FOREIGN          16
 #define ROGUE_ATTRIBUTE_IS_NATIVE           32

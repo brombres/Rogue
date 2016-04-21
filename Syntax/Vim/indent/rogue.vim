@@ -22,6 +22,7 @@ setlocal indentexpr=GetRogueIndent(v:lnum)
 setlocal indentkeys&
 setlocal indentkeys+=forEach,=endForEach,=while,=endWhile,=nextIteration,=escapeForEach,=escapeWhile
 setlocal indentkeys+=if,=elseIf,=endIf
+setlocal indentkeys+=block,=endBlock
 setlocal indentkeys+=which,=case,=others,=endWhich
 setlocal indentkeys+=method\ ,=class,=endClass,=augment,=endAugment
 setlocal indentkeys+=CLASS,=GLOBAL,=DEFINITIONS,=ENUMERATE,=PROPERTIES,=METHODS\>
@@ -157,6 +158,27 @@ function! FindIndentOfPrevTry(startline)
       let s:depth=s:depth + 1
     endif
     if getline(s:lnum) =~ '\C^\s*try\>'
+      if(s:depth>0)
+        let s:depth= s:depth-1
+        let s:lnum=s:lnum-1
+      else
+        return indent(s:lnum)
+      endif
+    else
+      let s:lnum=s:lnum-1
+    endif
+  endwhile
+  return 0
+endfunction
+
+function! FindIndentOfPrevBlock(startline)
+  let s:lnum = a:startline
+  let s:depth=0
+  while s:lnum > 1
+    if getline(s:lnum) =~ '\C^\s*endBlock\>'  "we found a nested block
+      let s:depth=s:depth + 1
+    endif
+    if getline(s:lnum) =~ '\C^\s*block\>'
       if(s:depth>0)
         let s:depth= s:depth-1
         let s:lnum=s:lnum-1
@@ -442,6 +464,10 @@ function! GetRogueIndent( line_num )
     return FindIndentOfPrevContingent(a:line_num-1)
   endif
 
+  if s:this_codeline =~ '\C^\s*\(endBlock\)\>'
+    return FindIndentOfPrevBlock(a:line_num-1)
+  endif
+
   if s:this_codeline =~ '\C^\s*\(endLoop\)\>'
     return FindIndentOfPrevLoop(a:line_num-1)
   endif
@@ -450,7 +476,7 @@ function! GetRogueIndent( line_num )
     return s:indnt + s:sw
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(if\|while\|forEach\|loop\|else\|elseIf\|try\|catch\)\>'
+  if s:prev_codeline =~ '\C^\s*\(block\|if\|while\|forEach\|loop\|else\|elseIf\|try\|catch\)\>'
       "echo('Previous is conditional')
     if IsSingleLineCond(s:prev_codeline)>0
       "echo('Prev is Single line cond')

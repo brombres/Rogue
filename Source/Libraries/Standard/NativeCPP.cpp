@@ -1022,6 +1022,7 @@ void Rogue_print_stack_trace ( bool leading_newline )
 
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
+  printf("SEG FAULT****\n");
     if (si->si_addr < (void*)4096)
     {
       // Probably a null pointer dereference.
@@ -1073,7 +1074,7 @@ void Rogue_configure_types()
     type->index = i;
     type->name_index = Rogue_type_name_index_table[i];
     type->object_size = Rogue_object_size_table[i];
-    //type->attributes = Rogue_attributes_table[i];
+    type->attributes = Rogue_attributes_table[i];
     type->allocator = &Rogue_allocators[ *(++type_info) ];
     type->methods = Rogue_dynamic_method_table + *(++type_info);
     type->base_type_count = *(++type_info);
@@ -1217,7 +1218,7 @@ void Rogue_Boehm_DecRef (RogueObject* o)
 //-----------------------------------------------------------------------------
 //  Exception handling
 //-----------------------------------------------------------------------------
-void Rogue_terminate_handler ()
+void Rogue_terminate_handler()
 {
   if (Rogue_error_object && Rogue_error_object->type)
   {

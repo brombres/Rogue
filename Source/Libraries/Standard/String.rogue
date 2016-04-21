@@ -468,10 +468,11 @@ class String
     method replacing( look_for:String, replace_with:String )->String
       # Returns a modified string where all instances of
       # ''look_for'' are replaced with ''replace_with''.
-      local buffer = StringBuilder( count*2 )
       local st = this
       local i = st.locate(look_for)
       if (not i.exists) return st
+
+      local buffer = StringBuilder( count*2 )
       while (i.exists)
         buffer.print( st.before(i.value) )
         buffer.print( replace_with )

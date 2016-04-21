@@ -367,6 +367,7 @@ class Type
       m_type_name.return_type = Program.type_String
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
+      create_introspection_methods
       inherit_methods( scope )
 
       # Mark any existing init_class() as requisite
@@ -665,6 +666,20 @@ class Type
         lookup[p.name] = p
       endIf
 
+    method create_introspection_methods
+      if (not is_reference) return
+      if (property_list.count == 0 and this isNot Program.type_Object) return
+
+      local property_types = Type[]
+      forEach (p in property_list)
+        if (p.type_context is this and not property_types.contains(p.type))
+          property_types.add( p.type )
+        endIf
+      endForEach
+
+      if (property_types.count == 0 and this isNot Program.type_Object) return
+      #get<<Int32>>(
+
     method inherit_methods( scope=null:Scope )
       # Inherit method templates
       forEach (base_type in base_types)
@@ -719,7 +734,7 @@ class Type
           if (m.type_context isNot this)
             local st = m.source_template
             if (st)
-              method_templates.instantiate( st.name, st.type_parameters.count, st.t, m.name )
+              method_templates.instantiate( st.name, st.type_parameters.count, st.parameter_count, st.t, m.name )
             endIf
           endIf
         endForEach

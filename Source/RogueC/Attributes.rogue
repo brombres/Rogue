@@ -1,13 +1,13 @@
 class Attribute
   ENUMERATE
     is_class            = 0
-    is_primitive        = 1
-    is_aspect           = 2
+    is_aspect           = 1
+    is_primitive        = 2
     is_compound         = 3
     type_mask           = 7
 
-    is_direct           = 0  # !is_reference
-    is_reference        = 8
+    is_direct           = 2
+    # AKA by-value type; not a reference type
 
     is_foreign          = 16
 

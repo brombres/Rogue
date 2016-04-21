@@ -3,6 +3,11 @@ class Object [native]
     method init
       noAction
 
+    method get<<$PropertyType>>( name:String )->$PropertyType
+      println "getting $" (name)
+      local default_value : $PropertyType
+      return default_value
+
     method hash_code->Int32
       return object_id->Int32
 
@@ -13,6 +18,10 @@ class Object [native]
 
     method operator==( other:Object )->Logical
       return this is other
+
+    method set<<$PropertyType>>( name:String, value:$PropertyType )
+      println "setting $" (name)
+      noAction
 
     method to->String
       return "($ 0x$)" (type_name, object_id.to_hex_string)

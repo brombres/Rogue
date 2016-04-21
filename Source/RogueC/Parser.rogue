@@ -401,7 +401,7 @@ class Parser
       must_consume( TokenType.symbol_close_bracket )
 
     method ensure_unspecialized_element_type( t:Token, attributes:Attributes )
-      if ((attributes.flags & Attribute.type_mask))
+      if ((attributes.flags & Attribute.type_mask) != Attribute.is_class)
         throw t.error( "A class cannot be both '$' and '$'." (t->String,attributes.element_type_name) )
       endIf
 
@@ -790,8 +790,53 @@ class Parser
         tokens.add( reader.read )
       endWhile
 
+      # Replace all placeholder id's with "Object" just so we can parse out
+      # the method signature and get a parameter count.
+      local temp_tokens = Token[]( tokens.count )
+      forEach (t2 in tokens)
+        if (t2.type is TokenType.placeholder_id)
+          temp_tokens.add( TokenType.identifier.create_token(t2,"Object") )
+        else
+          temp_tokens.add( t2 )
+        endIf
+      endForEach
+      m.parameter_count = Parser( temp_tokens ).parse_method_template_parameter_count
+
       ensure this_type.method_templates( this_type )
       this_type.method_templates.add( m )
+
+    method parse_method_template_parameter_count->Int32
+      if (not consume(TokenType.symbol_open_paren)) return 0
+      if (consume(TokenType.symbol_close_paren)) return 0
+
+      local parameter_count = 0
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        ++parameter_count
+
+        consume( TokenType.symbol_ampersand )  # flag parameter
+
+        # identifier
+        read_identifier(true)
+
+        if (consume(TokenType.symbol_equals))
+          # = default_value
+          parse_expression
+        endIf
+
+        if (consume(TokenType.symbol_colon))
+          # : Type
+          parse_type
+        endIf
+
+      endWhile
+
+      must_consume( TokenType.symbol_close_paren )
+      return parameter_count
 
     method parse_single_or_multi_line_statements( statements:CmdStatementList, end_type:TokenType )
       if (consume_eols)
@@ -1040,7 +1085,13 @@ class Parser
               parse_reader.seek_location( start_t.line, start_t.column )
               while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
                      (parse_reader.line == end_t.line and parse_reader.column < end_t.column)))
-                buffer.print( parse_reader.read )
+                local ch = parse_reader.read
+                if (ch=="$")
+                  # Have to hanlde any existing dollar signs by replacing them with additional args
+                  # that are also dollar signs.
+                  args.add( CmdLiteralString(t,"$") )
+                endIf
+                buffer.print( ch )
               endWhile
               buffer.print( ":$" )
               args.add( expr )

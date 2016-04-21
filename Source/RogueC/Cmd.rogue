@@ -1495,7 +1495,7 @@ class CmdFormattedString : Cmd
       local fmt = format
       forEach (arg in args)
         arg = arg.resolve(scope).require_value
-        local i = fmt.locate( '$' )
+        local i = locate_marker( fmt )
         if (not i) throw t.error( "More arguments than format markers ('$') in formatted string." )
         if (i.value > 0)
           cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt.leftmost(i.value))) )
@@ -1506,13 +1506,16 @@ class CmdFormattedString : Cmd
         cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdAdd(t,CmdLiteralString(t,""),arg)) )
       endForEach
       if (fmt.count)
-        if (fmt.locate('$'))
+        if (locate_marker(fmt))
           throw t.error( "More format markers ('$') than arguments in formatted string." )
         endIf
         cmd = CmdAccess( t, cmd, "print", CmdArgs(CmdLiteralString(t,fmt)) )
       endIf
 
       return cmd.resolve( scope ).cast_to( Program.type_String, scope ).resolve( scope )
+
+    method locate_marker( fmt:String )->Int32?
+      return fmt.locate( '$' )
 
     method type->Type
       return Program.type_String

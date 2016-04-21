@@ -8,5 +8,23 @@ class TypeInfo [requisite]
 
     method create_object->Object
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
+
+    method is_aspect->Logical
+      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_ASPECT" )->Logical
+
+    method is_class->Logical
+      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_CLASS" )->Logical
+
+    method is_compound->Logical
+      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_COMPOUND" )->Logical
+
+    method is_direct->Logical
+      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT" )->Logical
+
+    method is_primitive->Logical
+      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_PRIMITIVE" )->Logical
+
+    method is_reference->Logical
+      return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
 endClass
 
