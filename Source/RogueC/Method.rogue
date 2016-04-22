@@ -297,18 +297,6 @@ class Method
         --min_args
       endWhile
 
-      if (specializer_count and not source_template)
-        # This is a compiler-generated or dev-supplied specialized method designed to
-        # override a method template.  Instantiate the corresponding method template
-        # in this line of the hierarchy.  Calling this type's
-        # method_templates.instantiate() method will automatically handle base and
-        # extended classes.
-        if (type_context.method_templates)
-          type_context.method_templates.instantiate( unspecialized_name, specializer_count,
-              parameters.count, t, name )
-        endIf
-      endIf
-
       return this
 
 

@@ -45,8 +45,11 @@ class Scope
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Cmd
       local m = find_method( type_context, access, error_on_fail and access.context, suppress_inherited )
       if (not m and not access.context)
-        # No context specified; try Global context
-        m = find_method( Program.type_Global, access, false, suppress_inherited )
+        # No context specified; try Global context if error_on_fail is true, which means that we've
+        # tried and failed to find locals and properties.
+        if (error_on_fail)
+          m = find_method( Program.type_Global, access, false, suppress_inherited )
+        endIf
         if (m)
           type_context = Program.type_Global
           access.context = CmdReadSingleton( access.t, Program.type_Global )

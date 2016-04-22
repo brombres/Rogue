@@ -667,7 +667,7 @@ class Parser
           return true
         else
           specialization_info = parse_specialization_info
-          name += specialization_info.get_string( "name" )
+          name += specialization_info.get_string( "string" )
         endIf
       endIf
 
@@ -2412,6 +2412,7 @@ class Parser
         must_consume( TokenType.symbol_dot )
         consume_eols
         local name = read_identifier
+        if (next_is(TokenType.symbol_open_specialize)) name += parse_specialization_string
         local args : CmdArgs
         local named_args : CmdNamedArg[]
         if (next_is(TokenType.symbol_open_paren))

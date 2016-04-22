@@ -2395,7 +2395,17 @@ class CmdCallMethod : CmdCall
       endIf
 
       if (not method_info.overridden_method)
-        throw t.error( "Cannot call prior.$ from class $ because the method is not an override - no prior version of it exists." (method_info.signature,method_info.type_context) )
+        if (method_info.specializer_count and method_info.type_context.base_class)
+          # This method conforms to a method template syntax.  Attempt to instantiate
+          # the corresponding method template in the base class.  If successful it
+          # will change method_info.overridden_method.
+          @trace method_info.type_context.base_class.method_templates.instantiate( method_info.unspecialized_name,
+              method_info.specializer_count, t, method_info.name )
+        endIf
+
+        if (not method_info.overridden_method)
+          throw t.error( "Cannot call prior.$ from class $ because the method is not an override - no prior version of it exists." (method_info.signature,method_info.type_context) )
+        endIf
       endIf
 
       return CmdCallStaticMethod( t, context, method_info.overridden_method, args )

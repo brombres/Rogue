@@ -63,11 +63,11 @@ class MethodTemplate
       m.specializer_count = type_parameters.count
       m.unspecialized_name = name
       m.assign_signature
-      if (type_context.organizing)
-        type_context.add_method( m )
-      else
-        type_context.inject_method( m )
-      endIf
+      #if (type_context.organizing)
+      #type_context.add_method( m )
+      #else
+      type_context.inject_method( m )
+      #endIf
 
     method to->String
       return "$.$<<{$}>>({$})" (type_context.name,name,type_parameters.count,parameter_count)
@@ -137,49 +137,29 @@ class MethodTemplates( type_context:Type )
 
       return found_any
 
-    method instantiate( name:String, specializer_count:Int32, parameter_count:Int32, t:Token, specialized_name:String,
-        &found_root )
+    method instantiate( name:String, specializer_count:Int32, parameter_count:Int32, t:Token, specialized_name:String )
       #@trace name, specialized_name, specializer_count, parameter_count
       if (not type_context.organized) return
 
       local m = find( name, specializer_count, parameter_count )
 
       if (m)
-        if (found_root)
-          if (m.type_context is type_context)
-            # First make sure a specialized method of this name doesn't exist in the type already.
-            local possible_existing = type_context.method_lookup_by_name[ specialized_name ]
-            if (possible_existing)
-              forEach (existing_m in possible_existing)
-                if (existing_m.parameters.count == parameter_count) return  # already exists
-              endForEach
-            endIf
-            m.instantiate( t, specialized_name )
-          endIf
-
-          # Instantiate overrides in extended classes
-          if (m.overrides.count)
-            forEach (override_m in m.overrides)
-              override_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
-                t, specialized_name, &found_root )
-            endForEach
-          endIf
-
-        elseIf (m.overridden_m)
-          # Skip this class for now and travel down to find the root method template of this line.
-          # We'll hit this class again on the way up.
-          m.overridden_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
-            t, specialized_name )
-
-        elseIf (m.type_context isNot type_context)
-          # The template method isn't an override but it's inherited from a base class.
-          m.type_context.method_templates.instantiate( name, specializer_count, parameter_count, t, specialized_name )
-
-        else
-          # We've reached the root - stop the search, turn around, and start instantiating down the hierarchy
-          instantiate( name, specializer_count, parameter_count, t, specialized_name, &found_root )
+        # First make sure a specialized method of this name doesn't exist in the type already.
+        local possible_existing = type_context.method_lookup_by_name[ specialized_name ]
+        if (possible_existing)
+          forEach (existing_m in possible_existing)
+            if (existing_m.parameters.count == parameter_count) return  # already exists
+          endForEach
         endIf
+        m.instantiate( t, specialized_name )
 
+        # Instantiate overrides in extended classes
+        if (m.overrides.count)
+          forEach (override_m in m.overrides)
+            override_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
+              t, specialized_name )
+          endForEach
+        endIf
       endIf
 
 endClass

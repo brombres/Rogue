@@ -664,7 +664,7 @@ class Type
     method create_introspection_methods
       if (not is_class) return
       if (property_list.count == 0) return
-      if (name != "Test") return
+      #if (name != "Test") return
 
       local property_types = Type[]
       forEach (p in property_list)
@@ -676,10 +676,10 @@ class Type
       if (property_types.count == 0) return
 
       forEach (p_type in property_types)
-        local m_name = "get<<$>>" (p_type)
+        local m_name = "get_property<<$>>" (p_type)
         local m = add_method( t, m_name )
         m.specializer_count = 1
-        m.unspecialized_name = "get"
+        m.unspecialized_name = "get_property"
         m.add_parameter( t, ".name", Program.type_String )
         m.return_type = p_type
 
@@ -695,11 +695,13 @@ class Type
         endForEach
 
         local cmd_others = cmd_which.add_case_others( t )
-        if (this is Program.type_Object)
+        #if (this is Program.type_Object)
           cmd_others.statements.add( CmdReturn(t,p_type.create_default_value(t)) )
+          #{
         else
           cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
         endIf
+        }#
 
       endForEach
 
@@ -759,7 +761,7 @@ class Type
           if (m.type_context isNot this)
             local st = m.source_template
             if (st)
-              method_templates.instantiate( st.name, st.type_parameters.count, st.parameter_count, st.t, m.name, &found_root )
+              method_templates.instantiate( st.name, st.type_parameters.count, st.parameter_count, st.t, m.name )
             endIf
           endIf
         endForEach
@@ -778,7 +780,6 @@ class Type
 
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
       local existing_m = lookup[ m.signature ]
-
       if (existing_m)
         if (m.return_type isNot existing_m.return_type)
           if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
@@ -959,6 +960,7 @@ class Type
       if (existing_m)
         # Make sure we're not trying to replace an override with a base method.
         if (m.type_context.instance_of(existing_m.type_context))
+          # Our injected method overrides the existing one
           local overrides = existing_m.overriding_methods
           existing_m.overriding_methods = Method[]
 
@@ -969,6 +971,11 @@ class Type
 
           method_lookup_by_name[m.name].remove( existing_m )
           method_lookup_by_name[m.name].add( m )
+        else
+          # The existing method overrides the one we're trying to inject - leave
+          # the existing one but set up the links.
+          existing_m.overridden_method = m
+          m.overriding_methods.add( existing_m )
         endIf
 
       elseIf (at_index.exists)
