@@ -121,6 +121,15 @@ class MethodTemplates( type_context:Type )
 
       endForEach
 
+    method instantiate( t:Token, specialized_name:String )->Logical
+      if (not specialized_name.contains("<<")) return false
+
+      local base_name = specialized_name.before_first( "<<" )
+      if (not has_templates_named(base_name)) return false
+
+      local specializer_count = Parser(t,specialized_name,specialized_name.from_first("<<")).parse_specializer_count
+      return instantiate( base_name, specializer_count, t, specialized_name )
+
     method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String )->Logical
       # This version with no parameter count is used during call resolution and only called when
       # no methods matching the specialized name (such as `get_property<<Int32>>`) are found.

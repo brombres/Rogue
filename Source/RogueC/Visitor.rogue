@@ -770,7 +770,7 @@ class Visitor
       if (cmd.conditions)
         forEach (c in cmd.conditions) c.dispatch( this )
       endIf
-      cmd.value.dispatch( this )
+      if (cmd.value) cmd.value.dispatch( this )
 
     method dispatch( cmd:CmdNamedArg )
       noAction

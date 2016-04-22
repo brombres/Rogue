@@ -127,19 +127,17 @@ extern void Rogue_configure_gc();
 #define ROGUE_ATTRIBUTE_IS_IMMUTABLE        256
 #define ROGUE_ATTRIBUTE_IS_GLOBAL           512
 #define ROGUE_ATTRIBUTE_IS_SINGLETON        1024
-#define ROGUE_ATTRIBUTE_IS_DYNAMIC          2048
-#define ROGUE_ATTRIBUTE_IS_OVERRIDDEN       4096
-#define ROGUE_ATTRIBUTE_IS_INCORPORATED     8192
-#define ROGUE_ATTRIBUTE_IS_GENERATED        16384
-#define ROGUE_ATTRIBUTE_IS_REQUISITE        32768
-#define ROGUE_ATTRIBUTE_IS_TASK             65536
-#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION  131072
-#define ROGUE_ATTRIBUTE_IS_AUGMENT          262144
-#define ROGUE_ATTRIBUTE_IS_ABSTRACT         524288
-#define ROGUE_ATTRIBUTE_IS_ROUTINE          1048576
-#define ROGUE_ATTRIBUTE_IS_FALLBACK         2097152
-#define ROGUE_ATTRIBUTE_IS_SPECIAL          4194304
-#define ROGUE_ATTRIBUTE_IS_PROPAGATED       8388608
+#define ROGUE_ATTRIBUTE_IS_INCORPORATED     2048
+#define ROGUE_ATTRIBUTE_IS_GENERATED        4096
+#define ROGUE_ATTRIBUTE_IS_REQUISITE        8192
+#define ROGUE_ATTRIBUTE_IS_TASK             16384
+#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION  32768
+#define ROGUE_ATTRIBUTE_IS_AUGMENT          65536
+#define ROGUE_ATTRIBUTE_IS_ABSTRACT         131072
+#define ROGUE_ATTRIBUTE_IS_ROUTINE          262144
+#define ROGUE_ATTRIBUTE_IS_FALLBACK         524288
+#define ROGUE_ATTRIBUTE_IS_SPECIAL          1048576
+#define ROGUE_ATTRIBUTE_IS_PROPAGATED       2097152
 
 template <class T>
 struct RoguePtr
@@ -4684,12 +4682,14 @@ RogueString* RogueString__before_last__String( RogueString* THIS, RogueString* s
 RogueLogical RogueString__begins_with__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueLogical RogueString__begins_with__String( RogueString* THIS, RogueString* other_0 );
 RogueLogical RogueString__contains__Character( RogueString* THIS, RogueCharacter ch_0 );
+RogueLogical RogueString__contains__String( RogueString* THIS, RogueString* substring_0 );
 RogueLogical RogueString__contains_at__String_Int32( RogueString* THIS, RogueString* substring_0, RogueInt32 at_index_1 );
 RogueLogical RogueString__ends_with__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueLogical RogueString__ends_with__String( RogueString* THIS, RogueString* other_0 );
 RogueString* RogueString__from__Int32( RogueString* THIS, RogueInt32 i1_0 );
 RogueString* RogueString__from__Int32_Int32( RogueString* THIS, RogueInt32 i1_0, RogueInt32 i2_1 );
 RogueString* RogueString__from_first__Character( RogueString* THIS, RogueCharacter ch_0 );
+RogueString* RogueString__from_first__String( RogueString* THIS, RogueString* st_0 );
 RogueCharacter RogueString__last( RogueString* THIS );
 RogueString* RogueString__left_justified__Int32( RogueString* THIS, RogueInt32 spaces_0 );
 RogueString* RogueString__leftmost__Int32( RogueString* THIS, RogueInt32 n_0 );
@@ -6656,6 +6656,7 @@ RogueClassMethodTemplate* RogueMethodTemplates__find__String_Int32_Int32( RogueC
 RogueLogical RogueMethodTemplates__has_template__String_Int32_Int32( RogueClassMethodTemplates* THIS, RogueString* name_0, RogueInt32 specializer_count_1, RogueInt32 parameter_count_2 );
 RogueLogical RogueMethodTemplates__has_templates_named__String( RogueClassMethodTemplates* THIS, RogueString* name_0 );
 void RogueMethodTemplates__inherit__MethodTemplates( RogueClassMethodTemplates* THIS, RogueClassMethodTemplates* other_0 );
+RogueLogical RogueMethodTemplates__instantiate__Token_String( RogueClassMethodTemplates* THIS, RogueClassToken* t_0, RogueString* specialized_name_1 );
 RogueLogical RogueMethodTemplates__instantiate__String_Int32_Token_String( RogueClassMethodTemplates* THIS, RogueString* name_0, RogueInt32 specializer_count_1, RogueClassToken* t_2, RogueString* specialized_name_3 );
 void RogueMethodTemplates__instantiate__String_Int32_Int32_Token_String( RogueClassMethodTemplates* THIS, RogueString* name_0, RogueInt32 specializer_count_1, RogueInt32 parameter_count_2, RogueClassToken* t_3, RogueString* specialized_name_4 );
 RogueClassMethodTemplates* RogueMethodTemplates__init_object( RogueClassMethodTemplates* THIS );

@@ -4,6 +4,7 @@ class Object [native]
       noAction
 
     method get_property<<$PropertyType>>( name:String )->$PropertyType
+      println "getting $" (name)
       local default_value : $PropertyType
       return default_value
 
@@ -18,7 +19,8 @@ class Object [native]
     method operator==( other:Object )->Logical
       return this is other
 
-    method set<<$PropertyType>>( name:String, value:$PropertyType )
+    method set_property<<$PropertyType>>( name:String, value:$PropertyType )
+      println "setting $" (name)
       noAction
 
     method to->String

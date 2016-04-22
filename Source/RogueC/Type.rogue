@@ -55,7 +55,7 @@ class Type
     callback_parameter_types : Type[]
     callback_return_type     : Type
 
-    method_templates : MethodTemplates
+    method_templates = MethodTemplates(this)
 
   METHODS
     method init( t, name )
@@ -412,9 +412,6 @@ class Type
           m = add_method( t, "init_object" ).organize( scope )
           m.make_requisite
           if (prior_m)
-            prior_m.attributes.add( Attribute.is_dynamic )
-            prior_m.attributes.add( Attribute.is_overridden )
-            m.attributes.add( Attribute.is_dynamic )
             method_list.remove( m )
             method_list[ method_list.locate( prior_m ).value ] = m
           endIf
@@ -809,12 +806,6 @@ class Type
         elseIf (m.is_augment)
           m.convert_augment_to_standalone
 
-        endIf
-
-        if (not existing_m.type_context.is_aspect)
-          existing_m.attributes.add( Attribute.is_dynamic )
-          existing_m.attributes.add( Attribute.is_overridden )
-          m.attributes.add( Attribute.is_dynamic )
         endIf
 
         m.overridden_method = existing_m

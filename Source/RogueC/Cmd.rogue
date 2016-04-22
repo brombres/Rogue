@@ -2399,7 +2399,7 @@ class CmdCallMethod : CmdCall
           # This method conforms to a method template syntax.  Attempt to instantiate
           # the corresponding method template in the base class.  If successful it
           # will change method_info.overridden_method.
-          @trace method_info.type_context.base_class.method_templates.instantiate( method_info.unspecialized_name,
+          method_info.type_context.base_class.method_templates.instantiate( method_info.unspecialized_name,
               method_info.specializer_count, t, method_info.name )
         endIf
 
@@ -4523,6 +4523,11 @@ class CmdMakeRequisite : Cmd
 
         elseIf (sig.contains('('))
           local m = req_type.find_method( sig )
+          if (not m and req_type.method_templates.instantiate(t,sig.before_first('(')))
+            # Try again after instantiating new method templates
+            m = req_type.find_method( sig )
+          endIf
+
           if (m) m.make_requisite
           else   throw t.error( "No such method $ in type $." (sig,req_type.name) )
 

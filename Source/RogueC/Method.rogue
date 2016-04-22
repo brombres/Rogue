@@ -159,7 +159,7 @@ class Method
       return (attributes.flags & Attribute.is_augment)
 
     method is_dynamic->Logical
-      return (attributes.flags & Attribute.is_dynamic)
+      return (overridden_method or overriding_methods.count)
 
     method is_fallback->Logical
       return (attributes.flags & Attribute.is_fallback)
@@ -180,7 +180,7 @@ class Method
       return (attributes.flags & Attribute.is_native)
 
     method is_overridden->Logical
-      return (attributes.flags & Attribute.is_overridden)
+      return overriding_methods.count
 
     method is_requisite->Logical
       return (attributes.flags & Attribute.is_requisite)
@@ -251,7 +251,6 @@ class Method
               param.name = new_name
               param.type = property.type
             elseIf (property.type_context is type_context and property.is_incorporated == this.is_incorporated)
-              trace property.type_context, type_context, is_incorporated
               throw param.t.error( ''A property named "$" already exists.'' (param.name) )
             endIf
           endIf

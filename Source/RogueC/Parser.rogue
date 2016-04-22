@@ -303,7 +303,6 @@ class Parser
         template.tokens.add( t )
       endWhile
 
-      trace end_type
       throw reader.error( "$ expected, found end of file." (end_type.quoted_name) )
 
     method parse_augment
