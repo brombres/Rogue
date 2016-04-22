@@ -61,9 +61,13 @@ class MethodTemplate
       local m = parser.this_method
       m.source_template = this
       m.specializer_count = type_parameters.count
-      m.specialized_name = ref_name
-      m.organize
-      type_context.inject_method( m )
+      m.unspecialized_name = name
+      m.assign_signature
+      if (type_context.organizing)
+        type_context.add_method( m )
+      else
+        type_context.inject_method( m )
+      endIf
 
     method to->String
       return "$.$<<{$}>>({$})" (type_context.name,name,type_parameters.count,parameter_count)
@@ -74,17 +78,17 @@ endClass
 class MethodTemplates( type_context:Type )
   # A table of method names to lookup-by-specializer-count to list of templates.
   PROPERTIES
-    template_list = MethodTemplate[]
+    templates = MethodTemplate[]
 
   METHODS
     method add( m:MethodTemplate )
       if (has_template(m.name,m.type_parameters.count,m.parameter_count))
         throw m.t.error( "Method template $<<{$}>>({$}) is already defined." (m.name,m.type_parameters.count,m.parameter_count) )
       endIf
-      template_list.add( m )
+      templates.add( m )
 
     method find( name:String, specializer_count:Int32, parameter_count:Int32 )->MethodTemplate
-      forEach (template in template_list)
+      forEach (template in templates)
         if (template.type_parameters.count == specializer_count and template.parameter_count == parameter_count...
             and template.name == name)
           return template
@@ -96,7 +100,7 @@ class MethodTemplates( type_context:Type )
       return find(name,specializer_count,parameter_count)?
 
     method has_templates_named( name:String )->Logical
-      forEach (m in template_list)
+      forEach (m in templates)
         if (m.name == name) return true
       endForEach
 
@@ -105,14 +109,14 @@ class MethodTemplates( type_context:Type )
     method inherit( other:MethodTemplates )
       if (not other) return
 
-      forEach (base_m in other.template_list)
+      forEach (base_m in other.templates)
         local m = find( base_m.name, base_m.type_parameters.count, base_m.parameter_count )
         if (m)
           m.overridden_m = base_m
           base_m.overrides.add( m )
         else
           # No overrides found, just inherit base_m
-          template_list.add( base_m )
+          templates.add( base_m )
         endIf
 
       endForEach
@@ -124,7 +128,7 @@ class MethodTemplates( type_context:Type )
       # matching the name and number of specializers.
       local found_any = false
 
-      forEach (m in template_list)
+      forEach (m in templates)
         if (m.type_parameters.count == specializer_count and m.name == name)
           found_any = true
           m.instantiate( t, specialized_name )
@@ -141,13 +145,15 @@ class MethodTemplates( type_context:Type )
       local m = find( name, specializer_count, parameter_count )
 
       if (m)
-        if (found_root or not m.overridden_m)
+        if (found_root)
           if (m.type_context is type_context)
             # First make sure a specialized method of this name doesn't exist in the type already.
             local possible_existing = type_context.method_lookup_by_name[ specialized_name ]
-            forEach (existing_m in possible_existing)
-              if (existing_m.parameters.count == parameter_count) return  # already exists
-            endForEach
+            if (possible_existing)
+              forEach (existing_m in possible_existing)
+                if (existing_m.parameters.count == parameter_count) return  # already exists
+              endForEach
+            endIf
             m.instantiate( t, specialized_name )
           endIf
 
@@ -164,6 +170,14 @@ class MethodTemplates( type_context:Type )
           # We'll hit this class again on the way up.
           m.overridden_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
             t, specialized_name )
+
+        elseIf (m.type_context isNot type_context)
+          # The template method isn't an override but it's inherited from a base class.
+          m.type_context.method_templates.instantiate( name, specializer_count, parameter_count, t, specialized_name )
+
+        else
+          # We've reached the root - stop the search, turn around, and start instantiating down the hierarchy
+          instantiate( name, specializer_count, parameter_count, t, specialized_name, &found_root )
         endIf
 
       endIf

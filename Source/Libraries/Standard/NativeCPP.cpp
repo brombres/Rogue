@@ -1022,7 +1022,6 @@ void Rogue_print_stack_trace ( bool leading_newline )
 
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
-  printf("SEG FAULT****\n");
     if (si->si_addr < (void*)4096)
     {
       // Probably a null pointer dereference.

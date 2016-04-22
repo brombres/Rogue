@@ -660,6 +660,7 @@ class Parser
       endWhich
 
       local specialization_info : PropertyTable
+      local unspecialized_name = name
       if (next_is(TokenType.symbol_open_specialize))
         if (reader.peek(1).type is TokenType.placeholder_id)
           parse_method_template( t, name, as_global )
@@ -674,7 +675,7 @@ class Parser
       this_method.return_type = return_type
       if (specialization_info)
         this_method.specializer_count = specialization_info.get_int32( "count" )
-        this_method.specialized_name = name
+        this_method.unspecialized_name = unspecialized_name
       endIf
 
       # Parse parameters
@@ -2678,8 +2679,6 @@ class Parser
         return CmdRequire(t, expr, message, temp_var)
 
       else
-@trace this_type.name
-println StackTrace()
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
 

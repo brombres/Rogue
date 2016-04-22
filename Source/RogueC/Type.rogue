@@ -679,7 +679,7 @@ class Type
         local m_name = "get<<$>>" (p_type)
         local m = add_method( t, m_name )
         m.specializer_count = 1
-        m.specialized_name = m_name
+        m.unspecialized_name = "get"
         m.add_parameter( t, ".name", Program.type_String )
         m.return_type = p_type
 
@@ -913,24 +913,34 @@ class Type
 
       local existing_m = find_global_method( m.signature )
       if (existing_m)
-        inherit_global_method( m, method_list, global_method_lookup_by_signature )
-        global_method_lookup_by_name[m.name].remove( existing_m )
-        global_method_lookup_by_name[m.name].add( m )
+        # Make sure we're not trying to replace an override with a base method.
+        if (m.type_context.instance_of(existing_m.type_context))
+          local overrides = existing_m.overriding_methods
+          existing_m.overriding_methods = Method[]
+
+          inherit_method( m, global_method_list, global_method_lookup_by_signature )
+
+          m.overriding_methods = overrides
+          forEach (overriding_m in overrides) overriding_m.overridden_method = m
+
+          global_method_lookup_by_name[m.name].remove( existing_m )
+          global_method_lookup_by_name[m.name].add( m )
+        endIf
 
       elseIf (at_index.exists)
-        inherit_global_method( m, method_list, global_method_lookup_by_signature )
-        method_list.insert( method_list.remove_last, at_index.value )
+        inherit_global_method( m, global_method_list, global_method_lookup_by_signature )
+        global_method_list.insert( global_method_list.remove_last, at_index.value )
         global_method_lookup_by_name[m.name].add( m )
 
       else
         m.organize( &!add_to_lookup )
-        local index = method_list.count
-        inherit_global_method( m, method_list, global_method_lookup_by_signature )
+        local index = global_method_list.count
+        inherit_global_method( m, global_method_list, global_method_lookup_by_signature )
         global_method_lookup_by_name[m.name].add( m )
-        if (has_extended_class)
-          forEach (type in Program.type_list)
-            if (type.organized and type isNot this and type.instance_of(this))
-              type.inject_method( m, index )
+        if (extended_types.count)
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_global_method( m, index )
             endIf
           endForEach
         endIf
@@ -940,22 +950,26 @@ class Type
       if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
 
-      m.organize
+      m.assign_signature
+      #@trace "Injecting ", m, " into ", name
 
       ensure method_lookup_by_name[m.name]
 
       local existing_m = find_method( m.signature )
       if (existing_m)
-        local overrides = existing_m.overriding_methods
-        existing_m.overriding_methods = Method[]
+        # Make sure we're not trying to replace an override with a base method.
+        if (m.type_context.instance_of(existing_m.type_context))
+          local overrides = existing_m.overriding_methods
+          existing_m.overriding_methods = Method[]
 
-        inherit_method( m, method_list, method_lookup_by_signature )
+          inherit_method( m, method_list, method_lookup_by_signature )
 
-        m.overriding_methods = overrides
-        forEach (overriding_m in overrides) overriding_m.overridden_method = m
+          m.overriding_methods = overrides
+          forEach (overriding_m in overrides) overriding_m.overridden_method = m
 
-        method_lookup_by_name[m.name].remove( existing_m )
-        method_lookup_by_name[m.name].add( m )
+          method_lookup_by_name[m.name].remove( existing_m )
+          method_lookup_by_name[m.name].add( m )
+        endIf
 
       elseIf (at_index.exists)
         inherit_method( m, method_list, method_lookup_by_signature )
@@ -967,10 +981,10 @@ class Type
         local index = method_list.count
         inherit_method( m, method_list, method_lookup_by_signature )
         method_lookup_by_name[m.name].add( m )
-        if (has_extended_class)
-          forEach (type in Program.type_list)
-            if (type.organized and type isNot this and type.instance_of(this))
-              type.inject_method( m, index )
+        if (extended_types.count)
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_method( m, index )
             endIf
           endForEach
         endIf
