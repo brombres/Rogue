@@ -103,9 +103,15 @@ x3:
 	sleep 1
 	make remake
 
-revert:
+revert: revert_cpp_source libraries
+	@echo -------------------------------------------------------------------------------
+	@echo "Recompiling RogueC.cpp -> Programs/RogueC/roguec..."
+	@echo -------------------------------------------------------------------------------
+	mkdir -p Programs
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+
+revert_cpp_source:
 	git checkout Source/RogueC/Build && rm -f Programs/RogueC/roguec
-	make
 
 clean:
 	rm -rf Programs/RogueC
