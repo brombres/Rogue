@@ -946,6 +946,9 @@ class Type
     method inject_method( m:Method, at_index=null:Int32? )
       if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
+      #if ((name == "Cmd" or name == "CmdAccess"))
+      #@trace "Injecting ", m, at_index, " into ", name
+      #endIf
 
       #m.organize( &!add_to_lookup )
       m.assign_signature
@@ -954,13 +957,29 @@ class Type
 
       local existing_m = find_method( m.signature )
       if (existing_m)
-        # Make sure we're not trying to replace an override with a base method.
         if (m is existing_m)
-          return
+          if (at_index.value)
+            method_list.remove( m )
+            method_list.insert( m, at_index.value )
+            forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
+
+            forEach (extended_class in extended_types)
+              if (extended_class.organized)
+                extended_class.inject_method( m, at_index )
+              endIf
+            endForEach
+          endIf
+
         elseIf (m.type_context.instance_of(existing_m.type_context))
           # Our injected method overrides the existing one
           local overrides = existing_m.overriding_methods
           existing_m.overriding_methods = Method[]
+
+          if (at_index.value)
+            method_list.remove( existing_m )
+            method_list.insert( existing_m, at_index.value )
+            forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
+          endIf
 
           inherit_method( m, method_list, method_lookup_by_signature )
 
@@ -969,16 +988,36 @@ class Type
 
           method_lookup_by_name[m.name].remove( existing_m )
           method_lookup_by_name[m.name].add( m )
+
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_method( m, at_index )
+            endIf
+          endForEach
+
         else
           # The existing method overrides the one we're trying to inject - leave
-          # the existing one but set up the links.
+          # the existing one but set up the links and ensure the indices are correct.
           existing_m.overridden_method = m
           m.overriding_methods.add( existing_m )
+
+          if (at_index.value)
+            method_list.remove( existing_m )
+            method_list.insert( existing_m, at_index.value )
+            forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
+          endIf
+
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_method( existing_m, at_index )
+            endIf
+          endForEach
         endIf
 
       elseIf (at_index.exists)
         inherit_method( m, method_list, method_lookup_by_signature )
         method_list.insert( method_list.remove_last, at_index.value )
+        forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
         method_lookup_by_name[m.name].add( m )
 
         if (extended_types.count)
@@ -990,6 +1029,7 @@ class Type
         endIf
       else
         m.organize( &!add_to_lookup )
+        m.index = method_list.count
         at_index = method_list.count
         inherit_method( m, method_list, method_lookup_by_signature )
         method_lookup_by_name[m.name].add( m )
@@ -1100,5 +1140,9 @@ class Type
       forEach (m in method_list)
         if (m.is_requisite) m.trace_used_code
       endForEach
+
+    method validate
+      # Perform miscellaneous validation
+      forEach (m in method_list) m.validate
 
 endClass

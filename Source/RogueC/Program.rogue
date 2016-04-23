@@ -349,6 +349,12 @@ class Program [requisite singleton]
 
       reorder_compounds
 
+      validate
+
+    method validate
+      # Perform miscellaneous program structure validation
+      forEach (type in type_list) type.validate
+
     method reorder_compounds
       # Source code for compounds and exception types is generated in the same order that they
       # appear in the type_list.  If compound B is defined before A *and* B has properties of
