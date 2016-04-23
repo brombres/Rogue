@@ -3934,9 +3934,12 @@ class CmdAs : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
+      local operand_type = operand.require_type
       target_type.organize(scope)
-      if (not (type and type.is_reference and target_type.is_reference))
-        throw t.error( "'as' can only be used to reinterpret references." )
+      if (operand_type is target_type) return operand
+
+      if (not (operand_type.is_reference and target_type.is_reference))
+        return target_type.create_default_value( t )
       endIf
       return this
 endClass

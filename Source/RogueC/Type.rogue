@@ -666,35 +666,48 @@ class Type
     method create_introspection_methods
       if (not is_class) return
       if (property_list.count == 0) return
-      #if (name != "Test") return
-      if (true) return  # FIXME
 
       local property_types = Type[]
       forEach (p in property_list)
-        if (p.type_context is this and not property_types.contains(p.type))
-          property_types.add( p.type )
+        local getter_type = p.type
+        if (getter_type.is_reference and getter_type isNot Program.type_String) getter_type = Program.type_Object
+        if (p.type_context is this and not property_types.contains(getter_type))
+          property_types.add( getter_type )
         endIf
       endForEach
 
       if (property_types.count == 0) return
 
+      # "Get" methods
       forEach (p_type in property_types)
+        # Getter
         local m_name = "get_property<<$>>" (p_type)
-        local m = add_method( t, m_name )
-        m.specializer_count = 1
-        m.unspecialized_name = "get_property"
-        m.add_parameter( t, ".name", Program.type_String )
-        m.return_type = p_type
+        local m = find_method( m_name + "(String)" )
+        if (m and m.type_context is this)
+          # We're in class Object
+          return
+        else
+          m = add_method( t, m_name )
+          m.specializer_count = 1
+          m.unspecialized_name = "get_property"
+          m.add_parameter( t, ".name", Program.type_String )
+          m.return_type = p_type
+        endIf
 
         local cmd_which = CmdWhich( t, CmdAccess(t,".name") )
         m.statements.add( cmd_which )
 
         forEach (p in property_list)
-          if (p.type is p_type)
+          contingent
+            sufficient (p.type is p_type)
+            sufficient (p.type.is_reference and p_type.is_reference ...
+                and p.type isNot Program.type_String and p_type isNot Program.type_String)
+            nextIteration
+          satisfied
             local cmd_case = cmd_which.add_case( t )
             cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
             cmd_case.statements.add( CmdReturn(t,CmdAccess(p.t,p.name)) )
-          endIf
+          endContingent
         endForEach
 
         local cmd_others = cmd_which.add_case_others( t )
@@ -702,6 +715,41 @@ class Type
           cmd_others.statements.add( CmdReturn(t,p_type.create_default_value(t)) )
         else
           cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
+        endIf
+
+        # Setter
+        m_name = "set_property<<$>>" (p_type)
+        m = find_method( "$(String,$)" (m_name,p_type) )
+        if (m and m.type_context is this)
+          # We're in class Object
+          return
+        else
+          m = add_method( t, m_name )
+          m.specializer_count = 1
+          m.unspecialized_name = "set_property"
+          m.add_parameter( t, ".name", Program.type_String )
+          m.add_parameter( t, ".value", p_type )
+        endIf
+
+        cmd_which = CmdWhich( t, CmdAccess(t,".name") )
+        m.statements.add( cmd_which )
+
+        forEach (p in property_list)
+          contingent
+            sufficient (p.type is p_type)
+            sufficient (p.type.is_reference and p_type.is_reference ...
+                and p.type isNot Program.type_String and p_type isNot Program.type_String)
+            nextIteration
+          satisfied
+            local cmd_case = cmd_which.add_case( t )
+            cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
+            cmd_case.statements.add( CmdAssign(t,CmdAccess(p.t,p.name),CmdAccess(p.t,".value")) )
+          endContingent
+        endForEach
+
+        cmd_others = cmd_which.add_case_others( t )
+        if (this isNot Program.type_Object)
+          cmd_others.statements.add( CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name"),CmdAccess(t,".value")),null) )
         endIf
 
       endForEach

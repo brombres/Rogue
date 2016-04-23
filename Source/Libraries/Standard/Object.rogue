@@ -4,9 +4,39 @@ class Object [native]
       noAction
 
     method get_property<<$PropertyType>>( name:String )->$PropertyType
-      println "getting $" (name)
-      local default_value : $PropertyType
-      return default_value
+      if (this instanceOf Object and this.type_name != "Object")
+        return get_property<<Object>>( name ) as $PropertyType
+      else
+        local default_value : $PropertyType
+        return default_value
+      endIf
+
+    method get_property<<Object>>( name:String )->Object
+      return null
+
+    method get_property<<String>>( name:String )->String
+      return null
+
+    method get_property<<Real64>>( name:String )->Real64
+      return 0
+
+    method get_property<<Real32>>( name:String )->Real32
+      return 0
+
+    method get_property<<Int64>>( name:String )->Int64
+      return 0
+
+    method get_property<<Int32>>( name:String )->Int32
+      return 0
+
+    method get_property<<Character>>( name:String )->Character
+      return 0
+
+    method get_property<<Byte>>( name:String )->Byte
+      return 0
+
+    method get_property<<Logical>>( name:String )->Logical
+      return false
 
     method hash_code->Int32
       return object_id->Int32
@@ -20,7 +50,35 @@ class Object [native]
       return this is other
 
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )
-      println "setting $" (name)
+      if (this instanceOf Object and this.type_name != "Object")
+        set_property<<Object>>( name, value as Object )
+      endIf
+
+    method set_property<<Object>>( name:String, value:Object )
+      noAction
+
+    method set_property<<String>>( name:String, value:String )
+      noAction
+
+    method set_property<<Real64>>( name:String, value:Real64 )
+      noAction
+
+    method set_property<<Real32>>( name:String, value:Real32 )
+      noAction
+
+    method set_property<<Int64>>( name:String, value:Int64 )
+      noAction
+
+    method set_property<<Int32>>( name:String, value:Int32 )
+      noAction
+
+    method set_property<<Character>>( name:String, value:Character )
+      noAction
+
+    method set_property<<Byte>>( name:String, value:Byte )
+      noAction
+
+    method set_property<<Logical>>( name:String, value:Logical )
       noAction
 
     method to->String
