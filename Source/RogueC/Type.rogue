@@ -411,6 +411,11 @@ class Type
         else
           m = add_method( t, "init_object" ).organize( scope )
           m.make_requisite
+
+          # Using the regular system we can't figure out that init_object() is
+          # dynamically called so give it a flag.
+          m.attributes.add( Attribute.is_dynamic )
+
           if (prior_m)
             method_list.remove( m )
             method_list[ method_list.locate( prior_m ).value ] = m
@@ -662,6 +667,7 @@ class Type
       if (not is_class) return
       if (property_list.count == 0) return
       #if (name != "Test") return
+if (true) return # FIXME
 
       local property_types = Type[]
       forEach (p in property_list)
@@ -692,13 +698,11 @@ class Type
         endForEach
 
         local cmd_others = cmd_which.add_case_others( t )
-        #if (this is Program.type_Object)
+        if (this is Program.type_Object)
           cmd_others.statements.add( CmdReturn(t,p_type.create_default_value(t)) )
-          #{
         else
           cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
         endIf
-        }#
 
       endForEach
 
@@ -974,6 +978,13 @@ class Type
         method_list.insert( method_list.remove_last, at_index.value )
         method_lookup_by_name[m.name].add( m )
 
+        if (extended_types.count)
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_method( m, index )
+            endIf
+          endForEach
+        endIf
       else
         m.organize( &!add_to_lookup )
         local index = method_list.count

@@ -4156,6 +4156,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
 
         local base_type = Program.get_callback_type_reference( t, parameter_types, m.return_type )
         callback_type.base_types.add( base_type )
+        base_type.extended_types.add( callback_type )
 
         local m_call = callback_type.add_method( t, "call" )
         local args = CmdArgs()
@@ -4227,6 +4228,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
 
       local base_type = Program.get_callback_type_reference( t, parameter_types, return_type )
       fn_type.base_types.add( base_type )
+      base_type.extended_types.add( fn_type )
 
       local m_call = fn_type.add_method( t, "call" )
       if (parameters)

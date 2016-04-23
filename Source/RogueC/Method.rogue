@@ -159,7 +159,7 @@ class Method
       return (attributes.flags & Attribute.is_augment)
 
     method is_dynamic->Logical
-      return (overridden_method or overriding_methods.count)
+      return (overridden_method or overriding_methods.count or (attributes.flags & Attribute.is_dynamic))
 
     method is_fallback->Logical
       return (attributes.flags & Attribute.is_fallback)

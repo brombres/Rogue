@@ -28,9 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.56 - April 22, 2016
-- [API] Added an optional `allow_break_after:String` parameter to `String.word_wrapped()`.  If a line can't be broken on a newline or space it will be broken after any one of the supplied characters.
+###v1.0.56 - April 23, 2016
 - [RogueC] Revamped method template system to be more robust and flexible, including: classes can now override specific versions of method templates as well as using specialized template syntax in method names even when no such template exists.  For instance, `method frobozz<<Int32>>(...)` overrides any inherited definition of template `method frobozz<<$DataType>>`.
+- [API] Added an optional `allow_break_after:String` parameter to `String.word_wrapped()`.  If a line can't be broken on a newline or space it will be broken after any one of the supplied characters.
 - [RogueC] Improved formatting of error messages in several ways, including that "method not found" errors now strip package names from signature to avoid bloat.
 - [Rogue] `trace` can now be used with formatted strings, e.g. `@trace "sum=$" (x+y)`.
 

@@ -1564,6 +1564,15 @@ augment Type
         --i2
       endWhile
 
+      #{
+if (name=="Function_86")
+  @trace "method table index ", at_index, method_list.count, i2
+  forEach (m at i in method_list)
+    trace i, m, m.is_macro, m.is_dynamic, m.is_used
+  endForEach
+endIf
+}#
+
       local print_type_name = true
       forEach (i in 0..i2)
         local m = method_list[i]
