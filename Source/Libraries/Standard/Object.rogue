@@ -87,6 +87,10 @@ class Object [native]
     method type_info->TypeInfo
       native @|return RogueType_type_info( $this->type );
 
+    method type_properties->PropertyInfo[]
+      trace "HEYA"
+      return PropertyInfo[]
+
 endClass
 
 

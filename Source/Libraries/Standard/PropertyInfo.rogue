@@ -1,0 +1,9 @@
+class PropertyInfo
+  PROPERTIES
+    name       : String
+    class_name : String
+
+  METHODS
+    method init( name, class_name )
+endClass
+

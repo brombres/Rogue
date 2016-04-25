@@ -667,6 +667,27 @@ class Type
       if (not is_class) return
       if (property_list.count == 0) return
 
+      trace name
+      # "type_properties()" method
+      block
+        local m = find_method( "type_properties()" )
+        if (m and m.type_context is this)
+          # We're in class Object
+          return
+        else
+          m = add_method( t, "type_properties()" )
+          m.return_type = Program.get_type_reference( t, "PropertyInfo[]" )
+        endIf
+
+        local cmd = CmdAccess( t, "PropertyInfo[]", CmdArgs() ) : Cmd
+        forEach (p in property_list)
+          local cmd_info = CmdAccess( t, "PropertyInfo", CmdArgs(CmdLiteralString(t,p.name),CmdLiteralString(t,p.type.name)) )
+          cmd = CmdAccess( t, cmd, "add", CmdArgs(cmd_info) )
+        endForEach
+
+        m.statements.add( CmdReturn(t,cmd) )
+      endBlock
+
       local property_types = Type[]
       forEach (p in property_list)
         local getter_type = p.type
