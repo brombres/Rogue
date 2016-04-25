@@ -64,8 +64,6 @@ class Type
       return add_method( Method(m_t, this, m_name) )
 
     method add_method( m:Method )->Method
-      #if (organized and not organizing) inject_method( m ); return m
-
       method_list.add( m )
       local list = method_lookup_by_name[ m.name ]
       if (not list)
@@ -367,11 +365,6 @@ class Type
 
       create_introspection_methods( scope )
 
-      # Create type_name() method
-      local m_type_name = add_method( t, "type_name" )
-      m_type_name.return_type = Program.type_String
-      m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
-
       inherit_methods( scope )
 
       # Mark any existing init_class() as requisite
@@ -435,6 +428,8 @@ class Type
           endIf
           --i
         endWhile
+
+        m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
       endIf
 
       # Mark any clean_up() method as requisite
@@ -666,20 +661,23 @@ class Type
       endIf
 
     method create_introspection_methods( scope:Scope )
-      if (not is_class) return
-      if (property_list.count == 0) return
+      # Create type_name() method
+      local m_type_name = add_method( t, "type_name" )
+      m_type_name.return_type = Program.type_String
+      m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
+
+      if (not (is_class or is_compound)) return
+      if (property_list.count == 0 and is_class) return  # let the inherited method stand
 
       # "type_properties()" method
       block
         local m = find_method( "type_properties()" )
         if (m and m.type_context is this)
           # We're in class Object
-          trace
           return
         else
-          m = add_method( t, "type_properties()" )
+          m = add_method( t, "type_properties" )
           m.return_type = Program.get_type_reference( t, "PropertyInfo[]" )
-          m.make_requisite
         endIf
 
         local cmd = CmdAccess( t, "PropertyInfo[]", CmdArgs() ) : Cmd
@@ -737,7 +735,7 @@ class Type
         endForEach
 
         local cmd_others = cmd_which.add_case_others( t )
-        if (this is Program.type_Object)
+        if (this is Program.type_Object or this.is_compound)
           cmd_others.statements.add( CmdReturn(t,p_type.create_default_value(t)) )
         else
           cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
@@ -748,20 +746,28 @@ class Type
 
         # 'set_property<<Type>>(name,value)' methods.
         m_name = "set_property<<$>>" (p_type)
-        m = find_method( "$(String,$)" (m_name,p_type) )
+        if (is_class) m = find_method( "$(String,$)" (m_name,p_type) )
+        else          m = find_global_method( "$($,String,$)" (this.name,m_name,p_type) )
         if (m and m.type_context is this)
           # We're in class Object
           return
         else
-          m = add_method( t, m_name )
+          if (is_class) m = add_method( t, m_name )
+          else          m = add_global_method( t, m_name )
           m.specializer_count = 1
           m.unspecialized_name = "set_property"
+          if (is_compound)
+            m.add_parameter( t, ".context", this )
+            m.return_type = this
+          endIf
           m.add_parameter( t, ".name", Program.type_String )
           m.add_parameter( t, ".value", p_type )
         endIf
 
         cmd_which = CmdWhich( t, CmdAccess(t,".name") )
         m.statements.add( cmd_which )
+
+        local cmd_context = select{ is_compound:CmdAccess(t,".context") as Cmd || CmdThisContext(t,this) as Cmd }
 
         forEach (p in property_list)
           contingent
@@ -772,17 +778,19 @@ class Type
           satisfied
             local cmd_case = cmd_which.add_case( t )
             cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
-            cmd_case.statements.add( CmdAssign(t,CmdAccess(p.t,p.name),CmdAccess(p.t,".value")) )
+            cmd_case.statements.add( CmdAssign(t,CmdAccess(p.t,cmd_context.clone,p.name),CmdAccess(p.t,".value")) )
+            if (this.is_compound) cmd_case.statements.add( CmdReturn(t,cmd_context) )
           endContingent
         endForEach
 
         cmd_others = cmd_which.add_case_others( t )
-        if (this isNot Program.type_Object)
+        if (this.is_class and this isNot Program.type_Object)
           cmd_others.statements.add( CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name"),CmdAccess(t,".value")),null) )
+        else
+          cmd_others.statements.add( CmdReturn(t,cmd_context.clone) )
         endIf
 
         m.organize( scope )
-        method_lookup_by_signature[ m.signature ] = m
 
       endForEach
 
@@ -834,8 +842,6 @@ class Type
         list.add( m )
       endForEach
 
-      #create_introspection_methods( scope )
-
       # Attempt to instantiate our own overrides of any method templates.
       if (method_templates)
         forEach (m in method_list)
@@ -876,7 +882,6 @@ class Type
               apply_augment_labels( m, existing_m )
               return
             else
-@trace StackTrace() # FIXME
               throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
             endIf
           endIf
@@ -908,6 +913,10 @@ class Type
         if (m.overridden_method)
           m.overridden_method.overriding_methods.add( m )
         endIf
+
+        # Inherit select attributes
+        if (existing_m.is_requisite) m.make_requisite
+
         list[i] = m
         lookup[m.signature] = m
         override_inherited_propagated_method( m, list, lookup )
@@ -990,10 +999,29 @@ class Type
 
       local existing_m = find_global_method( m.signature )
       if (existing_m)
-        # Make sure we're not trying to replace an override with a base method.
-        if (m.type_context.instance_of(existing_m.type_context))
+        if (m is existing_m)
+          if (at_index.value)
+            global_method_list.remove( m )
+            global_method_list.insert( m, at_index.value )
+            forEach (adjust_i in at_index.value..<global_method_list.count) global_method_list[ adjust_i ].index = adjust_i
+
+            forEach (extended_class in extended_types)
+              if (extended_class.organized)
+                extended_class.inject_global_method( m, at_index )
+              endIf
+            endForEach
+          endIf
+
+        elseIf (m.type_context.instance_of(existing_m.type_context))
+          # Our injected method overrides the existing one
           local overrides = existing_m.overriding_methods
           existing_m.overriding_methods = Method[]
+
+          if (at_index.value)
+            global_method_list.remove( existing_m )
+            global_method_list.insert( existing_m, at_index.value )
+            forEach (adjust_i in at_index.value..<global_method_list.count) global_method_list[ adjust_i ].index = adjust_i
+          endIf
 
           inherit_method( m, global_method_list, global_method_lookup_by_signature )
 
@@ -1002,22 +1030,55 @@ class Type
 
           global_method_lookup_by_name[m.name].remove( existing_m )
           global_method_lookup_by_name[m.name].add( m )
+
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_global_method( m, at_index )
+            endIf
+          endForEach
+
+        else
+          # The existing method overrides the one we're trying to inject - leave
+          # the existing one but set up the links and ensure the indices are correct.
+          existing_m.overridden_method = m
+          m.overriding_methods.add( existing_m )
+
+          if (at_index.value)
+            global_method_list.remove( existing_m )
+            global_method_list.insert( existing_m, at_index.value )
+            forEach (adjust_i in at_index.value..<global_method_list.count) global_method_list[ adjust_i ].index = adjust_i
+          endIf
+
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_global_method( existing_m, at_index )
+            endIf
+          endForEach
         endIf
 
       elseIf (at_index.exists)
-        inherit_global_method( m, global_method_list, global_method_lookup_by_signature )
+        inherit_method( m, global_method_list, global_method_lookup_by_signature )
         global_method_list.insert( global_method_list.remove_last, at_index.value )
+        forEach (adjust_i in at_index.value..<global_method_list.count) global_method_list[ adjust_i ].index = adjust_i
         global_method_lookup_by_name[m.name].add( m )
 
+        if (extended_types.count)
+          forEach (extended_class in extended_types)
+            if (extended_class.organized)
+              extended_class.inject_global_method( m, at_index )
+            endIf
+          endForEach
+        endIf
       else
         m.organize( &!add_to_lookup )
-        local index = global_method_list.count
-        inherit_global_method( m, global_method_list, global_method_lookup_by_signature )
+        m.index = global_method_list.count
+        at_index = global_method_list.count
+        inherit_method( m, global_method_list, global_method_lookup_by_signature )
         global_method_lookup_by_name[m.name].add( m )
         if (extended_types.count)
           forEach (extended_class in extended_types)
             if (extended_class.organized)
-              extended_class.inject_global_method( m, index )
+              extended_class.inject_global_method( m, at_index )
             endIf
           endForEach
         endIf

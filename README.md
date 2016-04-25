@@ -28,11 +28,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.56 - April 23, 2016
+###v1.0.56 - April 25, 2016
+- [Rogue] Added property introspection.  `obj.type_properties()->PropertyInfo[]` returns a list of property info objects.  For any given property info object one can access `info.property_name->String`, `info.property_type_name->String`, and `info.property_type_info->TypeInfo`.  To get and set class object properties through introspection, use `obj.get_property<<DataType>>(name:String)->DataType` and `obj.set_property<<DataType>>(name:String,new_value:DataType)`.  Due to the nature of compounds they use a different setter mechanism: write `compound_value = CompoundType.set_property<<PropertyType>>( compound_value, "property_name", new_property_value )`.
 - [RogueC] Revamped method template system to be more robust and flexible, including: classes can now override specific versions of method templates as well as using specialized template syntax in method names even when no such template exists.  For instance, `method frobozz<<Int32>>(...)` overrides any inherited definition of template `method frobozz<<$DataType>>`.
-- [API] Added an optional `allow_break_after:String` parameter to `String.word_wrapped()`.  If a line can't be broken on a newline or space it will be broken after any one of the supplied characters.
+- [API] Added an optional `allow_break_after:String` parameter to `String.word_wrapped()`.  If a line can't be broken on a newline or space it will be broken after any one of the supplied characters - the Rogue compiler specifies "," to break up long signature names.
 - [RogueC] Improved formatting of error messages in several ways, including that "method not found" errors now strip package names from signature to avoid bloat.
 - [Rogue] `trace` can now be used with formatted strings, e.g. `@trace "sum=$" (x+y)`.
+- [Rogue] Any methods overriding `requisite` methods now inherit the `requisite` attribute.
 
 ###v1.0.55 - April 18, 2016
 - [Rogue] Added method templates.  These operate as you might expect: method templates are defined with `method name<<$Type1,...>>(...)` and called with e.g. `obj.name<<Int32>>(...)`.

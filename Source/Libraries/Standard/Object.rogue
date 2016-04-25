@@ -1,7 +1,13 @@
 class Object [native]
   METHODS
+    method init_object
+      noAction
+
     method init
       noAction
+
+    method to->String
+      return "($ 0x$)" (type_name, object_id.to_hex_string)
 
     method get_property<<$PropertyType>>( name:String )->$PropertyType
       if (this instanceOf Object and this.type_name != "Object")
@@ -81,14 +87,10 @@ class Object [native]
     method set_property<<Logical>>( name:String, value:Logical )
       noAction
 
-    method to->String
-      return "($ 0x$)" (type_name, object_id.to_hex_string)
-
     method type_info->TypeInfo
       native @|return RogueType_type_info( $this->type );
 
     method type_properties->PropertyInfo[]
-      trace "HEYA"
       return PropertyInfo[]
 
 endClass
