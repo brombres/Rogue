@@ -64,7 +64,7 @@ class Type
       return add_method( Method(m_t, this, m_name) )
 
     method add_method( m:Method )->Method
-      if (organized and not organizing) inject_method( m ); return m
+      #if (organized and not organizing) inject_method( m ); return m
 
       method_list.add( m )
       local list = method_lookup_by_name[ m.name ]
@@ -365,6 +365,8 @@ class Type
       inherit_properties( full_property_list, property_lookup )
       property_list = full_property_list
 
+      create_introspection_methods( scope )
+
       # Create type_name() method
       local m_type_name = add_method( t, "type_name" )
       m_type_name.return_type = Program.type_String
@@ -663,20 +665,21 @@ class Type
         lookup[p.name] = p
       endIf
 
-    method create_introspection_methods
+    method create_introspection_methods( scope:Scope )
       if (not is_class) return
       if (property_list.count == 0) return
 
-      trace name
       # "type_properties()" method
       block
         local m = find_method( "type_properties()" )
         if (m and m.type_context is this)
           # We're in class Object
+          trace
           return
         else
           m = add_method( t, "type_properties()" )
           m.return_type = Program.get_type_reference( t, "PropertyInfo[]" )
+          m.make_requisite
         endIf
 
         local cmd = CmdAccess( t, "PropertyInfo[]", CmdArgs() ) : Cmd
@@ -686,6 +689,8 @@ class Type
         endForEach
 
         m.statements.add( CmdReturn(t,cmd) )
+        m.organize( scope )
+        method_lookup_by_signature[ m.signature ] = m
       endBlock
 
       local property_types = Type[]
@@ -699,7 +704,7 @@ class Type
 
       if (property_types.count == 0) return
 
-      # "Get" methods
+      # 'get_property<<Type>>(name)' methods
       forEach (p_type in property_types)
         # Getter
         local m_name = "get_property<<$>>" (p_type)
@@ -738,7 +743,10 @@ class Type
           cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
         endIf
 
-        # Setter
+        m.organize( scope )
+        method_lookup_by_signature[ m.signature ] = m
+
+        # 'set_property<<Type>>(name,value)' methods.
         m_name = "set_property<<$>>" (p_type)
         m = find_method( "$(String,$)" (m_name,p_type) )
         if (m and m.type_context is this)
@@ -773,6 +781,9 @@ class Type
           cmd_others.statements.add( CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name"),CmdAccess(t,".value")),null) )
         endIf
 
+        m.organize( scope )
+        method_lookup_by_signature[ m.signature ] = m
+
       endForEach
 
     method inherit_methods( scope=null:Scope )
@@ -783,8 +794,6 @@ class Type
           method_templates.inherit( base_type.method_templates )
         endIf
       endForEach
-
-      create_introspection_methods
 
       # Organize methods and create signatures
       forEach (m in global_method_list)
@@ -824,6 +833,8 @@ class Type
         endIf
         list.add( m )
       endForEach
+
+      #create_introspection_methods( scope )
 
       # Attempt to instantiate our own overrides of any method templates.
       if (method_templates)
