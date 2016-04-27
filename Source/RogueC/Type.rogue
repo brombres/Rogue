@@ -735,6 +735,7 @@ class Type
 
         forEach (p in property_list)
           contingent
+            necessary (p.type_context is this)
             sufficient (p.type is p_type)
             sufficient (p.type.is_reference and p_type.is_reference ...
                 and p.type isNot Program.type_String and p_type isNot Program.type_String)
@@ -778,6 +779,7 @@ class Type
 
         forEach (p in property_list)
           contingent
+            necessary (p.type_context is this)
             sufficient (p.type is p_type)
             sufficient (p.type.is_reference and p_type.is_reference ...
                 and p.type isNot Program.type_String and p_type isNot Program.type_String)
