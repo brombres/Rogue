@@ -743,31 +743,29 @@ class Type
 
         m.organize( scope )
         method_lookup_by_signature[ m.signature ] = m
+        if(true) return
 
         # 'set_property<<Type>>(name,value)' methods.
         m_name = "set_property<<$>>" (p_type)
-        if (is_class) m = find_method( "$(String,$)" (m_name,p_type) )
-        else          m = find_global_method( "$($,String,$)" (this.name,m_name,p_type) )
+        m = find_method( "$(String,$)" (m_name,p_type) )
         if (m and m.type_context is this)
+if (this.is_compound) @trace name
           # We're in class Object
           return
         else
-          if (is_class) m = add_method( t, m_name )
-          else          m = add_global_method( t, m_name )
+if (this.is_compound) @trace name
+          m = add_method( t, m_name )
           m.specializer_count = 1
           m.unspecialized_name = "set_property"
-          if (is_compound)
-            m.add_parameter( t, ".context", this )
-            m.return_type = this
-          endIf
           m.add_parameter( t, ".name", Program.type_String )
           m.add_parameter( t, ".value", p_type )
+          m.return_type = this
         endIf
 
         cmd_which = CmdWhich( t, CmdAccess(t,".name") )
         m.statements.add( cmd_which )
 
-        local cmd_context = select{ is_compound:CmdAccess(t,".context") as Cmd || CmdThisContext(t,this) as Cmd }
+        local cmd_context = CmdThisContext( t, this )
 
         forEach (p in property_list)
           contingent
@@ -779,13 +777,14 @@ class Type
             local cmd_case = cmd_which.add_case( t )
             cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
             cmd_case.statements.add( CmdAssign(t,CmdAccess(p.t,cmd_context.clone,p.name),CmdAccess(p.t,".value")) )
-            if (this.is_compound) cmd_case.statements.add( CmdReturn(t,cmd_context) )
+            cmd_case.statements.add( CmdReturn(t,cmd_context.clone) )
           endContingent
         endForEach
 
         cmd_others = cmd_which.add_case_others( t )
         if (this.is_class and this isNot Program.type_Object)
-          cmd_others.statements.add( CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name"),CmdAccess(t,".value")),null) )
+          cmd_others.statements.add(
+              CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name"),CmdAccess(t,".value")),null) ) )
         else
           cmd_others.statements.add( CmdReturn(t,cmd_context.clone) )
         endIf

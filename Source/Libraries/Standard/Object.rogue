@@ -55,36 +55,36 @@ class Object [native]
     method operator==( other:Object )->Logical
       return this is other
 
-    method set_property<<$PropertyType>>( name:String, value:$PropertyType )
+    method set_property<<$PropertyType>>( name:String, value:$PropertyType )->$PropertyType
       if (this instanceOf Object and this.type_name != "Object")
         set_property<<Object>>( name, value as Object )
       endIf
 
-    method set_property<<Object>>( name:String, value:Object )
+    method set_property<<Object>>( name:String, value:Object )->Object
       noAction
 
-    method set_property<<String>>( name:String, value:String )
+    method set_property<<String>>( name:String, value:String )->String
       noAction
 
-    method set_property<<Real64>>( name:String, value:Real64 )
+    method set_property<<Real64>>( name:String, value:Real64 )->Real64
       noAction
 
-    method set_property<<Real32>>( name:String, value:Real32 )
+    method set_property<<Real32>>( name:String, value:Real32 )->Real32
       noAction
 
-    method set_property<<Int64>>( name:String, value:Int64 )
+    method set_property<<Int64>>( name:String, value:Int64 )->Int64
       noAction
 
-    method set_property<<Int32>>( name:String, value:Int32 )
+    method set_property<<Int32>>( name:String, value:Int32 )->Int32
       noAction
 
-    method set_property<<Character>>( name:String, value:Character )
+    method set_property<<Character>>( name:String, value:Character )->Character
       noAction
 
-    method set_property<<Byte>>( name:String, value:Byte )
+    method set_property<<Byte>>( name:String, value:Byte )->Byte
       noAction
 
-    method set_property<<Logical>>( name:String, value:Logical )
+    method set_property<<Logical>>( name:String, value:Logical )->Logical
       noAction
 
     method type_info->TypeInfo
