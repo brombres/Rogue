@@ -31,6 +31,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.58 - April 27, 2016
 - [RogueC] Fixed order-of-compilation bug relating to property types not being `organize()d` before property introspection methods were generated.
 - [RogueC] Property introspection access methods now only handle properties defined in the current class and call the prior base class method to access any inherited properties.
+- [Rogue] Each class's implicit `init_object()` method now calls `prior.init_object()` as its first step.  Inherited properties are now initialized by the prior method call and are not initialized in the extended class's `init_object()` method.
 
 ###v1.0.57 - April 26, 2016
 - [Rogue] Changed property introspection setters to return `this` instead of nil.

@@ -421,23 +421,30 @@ class Type
           m = add_method( t, "init_object" ).organize( scope )
           m.make_requisite
 
-          # Using the regular system we can't figure out that init_object() is
+          # The regular system won't figure out that init_object() is
           # dynamically called so give it a flag.
           m.attributes.add( Attribute.is_dynamic )
 
           if (prior_m)
             method_list.remove( m )
             method_list[ method_list.locate( prior_m ).value ] = m
+            method_lookup_by_name[ m.name ].remove( prior_m )
+            method_lookup_by_signature[ m.signature ] = m
+            m.overridden_method = prior_m
+            prior_m.overriding_methods.add( m )
           endIf
         endIf
         m.return_type = this
+        if (m.overridden_method)
+          m.statements.insert( CmdCallPriorMethod(t, "init_object", null, null) )
+        endIf
         m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
         # Insert property initializations
         local i = property_list.count - 1
         while (i >= 0)
           local p = property_list[i]
-          if (p.initial_value)
+          if (p.initial_value and p.type_context is this)
             m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.clone) )
           endIf
           --i

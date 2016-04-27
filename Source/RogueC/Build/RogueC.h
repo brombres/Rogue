@@ -4663,6 +4663,7 @@ RogueClassException* RogueException__init_object( RogueClassException* THIS );
 RogueString* RogueException__to_String( RogueClassException* THIS );
 RogueString* RogueException__type_name( RogueClassException* THIS );
 RogueClassException* RogueException__init__String( RogueClassException* THIS, RogueString* _auto_13_0 );
+void RogueObject__init_object( RogueObject* THIS );
 RogueObject* RogueObject__init( RogueObject* THIS );
 RogueString* RogueObject__to_String( RogueObject* THIS );
 RogueInt64 RogueObject__object_id( RogueObject* THIS );
