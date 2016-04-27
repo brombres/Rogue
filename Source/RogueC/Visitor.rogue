@@ -163,7 +163,17 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdCreateCallback )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdCreateCompound )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
+    method visit( cmd:CmdCreateFunction )
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -370,7 +380,9 @@ class Visitor
     method on_enter( cmd:CmdCatch )
     method on_enter( cmd:CmdContingent )
     method on_enter( cmd:CmdCreateArray )
+    method on_enter( cmd:CmdCreateCallback )
     method on_enter( cmd:CmdCreateCompound )
+    method on_enter( cmd:CmdCreateFunction )
     method on_enter( cmd:CmdCreateObject )
     method on_enter( cmd:CmdCreateOptionalValue )
     method on_enter( cmd:CmdElementAccess )
@@ -444,7 +456,9 @@ class Visitor
     method on_leave( cmd:CmdCatch )
     method on_leave( cmd:CmdContingent )
     method on_leave( cmd:CmdCreateArray )
+    method on_leave( cmd:CmdCreateCallback )
     method on_leave( cmd:CmdCreateCompound )
+    method on_leave( cmd:CmdCreateFunction )
     method on_leave( cmd:CmdCreateObject )
     method on_leave( cmd:CmdCreateOptionalValue )
     method on_leave( cmd:CmdElementAccess )
@@ -624,9 +638,26 @@ class Visitor
     method dispatch( cmd:CmdCreateObject )
       cmd.of_type.dispatch( this )
 
+    method dispatch( cmd:CmdCreateCallback )
+      if (cmd.context) cmd.context.dispatch( this )
+      if (cmd.return_type) cmd.return_type.dispatch( this )
+
     method dispatch( cmd:CmdCreateCompound )
       cmd.of_type.dispatch( this )
       forEach (arg in cmd.args) arg.dispatch( this )
+
+    method dispatch( cmd:CmdCreateFunction )
+      if (cmd.parameters)
+        forEach (param in cmd.parameters) param.type.dispatch( this )
+      endIf
+      if (cmd.return_type) cmd.return_type.dispatch( this )
+      if (cmd.with_args)
+        forEach (arg in cmd.with_args)
+          if (arg.value) arg.value.dispatch( this )
+          if (arg.type) arg.type.dispatch( this )
+        endForEach
+      endIf
+      cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdThisContext )
       noAction

@@ -352,6 +352,16 @@ class Type
         base_type.extended_types.add( this )
       endForEach
 
+      # Organize properties
+      if (element_type) element_type.organize
+
+      forEach (s in global_list) s.type.organize
+
+      forEach (p in property_list)
+        p.type.organize
+      endForEach
+
+
       # Inherit definitions
       forEach (base_type in base_types)
         inherit_definitions( base_type )
@@ -1222,14 +1232,6 @@ class Type
       resolved = true
 
       organize
-
-      if (element_type) element_type.organize
-
-      forEach (s in global_list) s.type.organize
-
-      forEach (p in property_list)
-        p.type.organize
-      endForEach
 
       forEach (r in global_method_list)
         r.resolve

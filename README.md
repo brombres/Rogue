@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.58 - April 27, 2016
+- [RogueC] Fixed order-of-compilation bug relating to property types not being `organize()d` before property introspection methods were generated.
+
 ###v1.0.57 - April 26, 2016
 - [Rogue] Changed property introspection setters to return `this` instead of nil.
 - [Rogue] Compound property introspection setters now have the same signature as regular class setters.  However, the result must be reassigned to permanently change the compound.  For example, `local xy = XY(3,4); xy = xy.set_property<<Real64>>("y",6); println xy  # prints (3,6)`
