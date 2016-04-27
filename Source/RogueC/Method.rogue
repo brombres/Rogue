@@ -329,6 +329,9 @@ class Method
         statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
       endIf
 
+    method returns_this->Logical
+      return (attributes.flags & Attribute.returns_this)
+
     method convert_augment_to_standalone
       attributes.flags &= !Attribute.is_augment
       if (not native_code)

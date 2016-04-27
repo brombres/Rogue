@@ -29,6 +29,7 @@ class Attribute
     is_special          = 1048576
     is_propagated       = 2097152
     is_dynamic          = 4194304
+    returns_this        = 8388608
 endClass
 
 

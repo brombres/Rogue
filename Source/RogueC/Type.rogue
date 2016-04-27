@@ -367,6 +367,10 @@ class Type
 
       inherit_methods( scope )
 
+      # Clear base_types list for compounds - they can incorporate aspects for
+      # modularization but compounds are not polymorphic.
+      if (this.is_compound) base_types.clear
+
       # Mark any existing init_class() as requisite
       local m_init_class = find_global_method( "init_class()" )
       if (m_init_class)
@@ -459,8 +463,6 @@ class Type
           m.organize( scope )
         endIf
       endIf
-
-      # Have aspects generate getters and setters for aspect properties
 
       # Add a default to->Object to compounds, primitives, and functional types
       if (is_aspect)
@@ -743,17 +745,14 @@ class Type
 
         m.organize( scope )
         method_lookup_by_signature[ m.signature ] = m
-        if(true) return
 
         # 'set_property<<Type>>(name,value)' methods.
         m_name = "set_property<<$>>" (p_type)
         m = find_method( "$(String,$)" (m_name,p_type) )
         if (m and m.type_context is this)
-if (this.is_compound) @trace name
           # We're in class Object
           return
         else
-if (this.is_compound) @trace name
           m = add_method( t, m_name )
           m.specializer_count = 1
           m.unspecialized_name = "set_property"

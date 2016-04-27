@@ -4968,6 +4968,7 @@ RogueClassMethod* RogueMethod__make_requisite( RogueClassMethod* THIS );
 RogueLogical RogueMethod__omit_output( RogueClassMethod* THIS );
 RogueClassMethod* RogueMethod__organize__Scope_Logical( RogueClassMethod* THIS, RogueClassScope* scope_0, RogueLogical add_to_lookup_1 );
 void RogueMethod__resolve( RogueClassMethod* THIS );
+RogueLogical RogueMethod__returns_this( RogueClassMethod* THIS );
 void RogueMethod__convert_augment_to_standalone( RogueClassMethod* THIS );
 void RogueMethod__convert_to_task( RogueClassMethod* THIS );
 RogueClassMethod* RogueMethod__set_incorporated( RogueClassMethod* THIS );

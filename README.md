@@ -28,6 +28,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.57 - April 26, 2016
+- [Rogue] Changed property introspection setters to return `this` instead of nil.
+- [Rogue] Compound property introspection setters now have the same signature as regular class setters.  However, the result must be reassigned to permanently change the compound.  For example, `local xy = XY(3,4); xy = xy.set_property<<Real64>>("y",6); println xy  # prints (3,6)`
+- [RogueC] Compounds may incorporate aspects (as before) but now the compiler does not consider them polymorphically compatible with those aspect types.
+- [RogueC] When a method specifies `this` as its return type, the method gains `Attribute.returns_this`.  References to `this` in aspects, including return values, are now converted into the incorporating type instead of remaining as the aspect type.
+
 ###v1.0.56 - April 25, 2016
 - [Rogue] Added property introspection.  `obj.type_properties()->PropertyInfo[]` returns a list of property info objects.  For any given property info object one can access `info.property_name->String`, `info.property_type_name->String`, and `info.property_type_info->TypeInfo`.  To get and set class object properties through introspection, use `obj.get_property<<DataType>>(name:String)->DataType` and `obj.set_property<<DataType>>(name:String,new_value:DataType)`.  Due to the nature of compounds they use a different setter mechanism: write `compound_value = CompoundType.set_property<<PropertyType>>( compound_value, "property_name", new_property_value )`.
 - [RogueC] Revamped method template system to be more robust and flexible, including: classes can now override specific versions of method templates as well as using specialized template syntax in method names even when no such template exists.  For instance, `method frobozz<<Int32>>(...)` overrides any inherited definition of template `method frobozz<<$DataType>>`.

@@ -1,5 +1,14 @@
-class UpdateThisTypeVisitor( this_type:Type, this_method:Method ) : Visitor
+class UpdateThisTypeVisitor : Visitor
+  PROPERTIES
+    this_type   : Type
+    this_method : Method
+
   METHODS
+    method init( this_type, this_method )
+      if (this_method.returns_this)
+        this_method.return_type = this_type
+      endIf
+
     method on_enter( cmd:CmdThisContext )
       cmd.this_type = this_type
 endClass

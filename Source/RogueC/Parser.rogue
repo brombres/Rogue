@@ -466,10 +466,13 @@ class Parser
         endIf
       endIf
 
-      if (this_type.is_compound and not compound_has_create)
-        local m = this_type.add_global_method( t, "create" )
-        m.attributes.add( Attribute.is_generated )
-        m.return_type = this_type
+      if (this_type.is_compound)
+        this_type.base_types.add( Program.get_type_reference(t,"CompoundIntrospection") )
+        if (not compound_has_create)
+          local m = this_type.add_global_method( t, "create" )
+          m.attributes.add( Attribute.is_generated )
+          m.return_type = this_type
+        endIf
       endIf
 
       if (consume(TokenType.symbol_colon))
@@ -715,6 +718,7 @@ class Parser
         if (consume(TokenType.symbol_arrow))
           if (consume(TokenType.keyword_this))
             this_method.return_type = this_type
+            this_method.attributes.add( Attribute.returns_this )
           else
             this_method.return_type = parse_type
           endIf
