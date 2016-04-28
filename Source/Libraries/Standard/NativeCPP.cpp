@@ -133,9 +133,8 @@ RogueTypeInfo* RogueType_type_info( RogueType* THIS )
 
     for (int i=0; i<THIS->property_count; ++i)
     {
-      RogueTypeInfo__add_property_info__String_String( THIS->type_info,
-          Rogue_literal_strings[ THIS->property_name_indices[i] ],
-          RogueType_name( &Rogue_types[THIS->property_type_indices[i]] ) );
+      RogueTypeInfo__add_property_info__Int32_Int32( THIS->type_info,
+          THIS->property_name_indices[i], THIS->property_type_indices[i] );
     }
   }
 

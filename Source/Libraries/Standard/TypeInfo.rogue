@@ -7,8 +7,8 @@ class TypeInfo [requisite]
   METHODS
     method init( index, name ) [requisite]
 
-    method add_property_info( property_name:String, property_type_name:String ) [requisite]
-      properties.add( PropertyInfo(property_name, property_type_name) )
+    method add_property_info( property_name_index:Int32, property_type_index:Int32 ) [requisite]
+      properties.add( PropertyInfo(property_name_index, property_type_index) )
 
     method create_object->Object
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
@@ -32,21 +32,25 @@ class TypeInfo [requisite]
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
 
     method to->String
-      return "@" + name
+      return name
 endClass
 
 class PropertyInfo
   PROPERTIES
-    property_name      : String
-    property_type_name : String
+    property_name_index : Int32
+    property_type_index : Int32
 
   METHODS
-    method init( property_name, property_type_name )
+    method init( property_name_index, property_type_index )
 
-    method to->String
-      return "$:$" (property_name,property_type_name)
+    method property_name->String
+      return System.literal_string( property_name_index )
 
     method property_type_info->TypeInfo
-      return System.type_info( property_type_name )
+      return System.type_info( property_type_index )
+
+    method to->String
+      return "$:$" (property_name,property_type_info.name)
+
 endClass
 

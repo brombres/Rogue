@@ -1261,7 +1261,7 @@ extern RogueClassCmdStatementList* RogueCmdStatementList_current;
 extern RogueString_List* RogueSystem_command_line_arguments;
 extern RogueString* RogueSystem_executable_filepath;
 extern RogueClassSystemEnvironment RogueSystem_environment;
-extern RogueClassTable_String_TypeInfo_* RogueSystem_classes;
+extern RogueClassTable_String_TypeInfo_* RogueSystem_type_info_lookup;
 extern RogueClassTable_String_Token_List_* RoguePreprocessor_definitions;
 extern RogueClassStringProperty* RogueStringProperty_empty_string;
 
@@ -1395,8 +1395,8 @@ struct RoguePropertyInfo_List : RogueObject
 struct RogueClassPropertyInfo : RogueObject
 {
   // PROPERTIES
-  RogueString* property_name;
-  RogueString* property_type_name;
+  RogueInt32 property_name_index;
+  RogueInt32 property_type_index;
 
 };
 
@@ -4664,7 +4664,10 @@ RogueInt32 RogueMath__shift_right__Int32_Int32( RogueInt32 value_0, RogueInt32 b
 void RogueSystem__init_class();
 void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
 RogueInt32 RogueSystem__run__String( RogueString* command_0 );
+RogueString* RogueSystem__literal_string__Int32( RogueInt32 string_index_0 );
+RogueInt32 RogueSystem__literal_string_count();
 void RogueSystem__set_gc_threshold__Int32( RogueInt32 value_0 );
+RogueTypeInfo* RogueSystem__type_info__Int32( RogueInt32 type_index_0 );
 RogueReal64 RogueSystem__time();
 RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 );
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 );
@@ -4871,7 +4874,7 @@ RogueTypeInfo* RogueTypeInfo__init_object( RogueTypeInfo* THIS );
 RogueString* RogueTypeInfo__to_String( RogueTypeInfo* THIS );
 RogueString* RogueTypeInfo__type_name( RogueTypeInfo* THIS );
 RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_78_0, RogueString* _auto_79_1 );
-void RogueTypeInfo__add_property_info__String_String( RogueTypeInfo* THIS, RogueString* property_name_0, RogueString* property_type_name_1 );
+void RogueTypeInfo__add_property_info__Int32_Int32( RogueTypeInfo* THIS, RogueInt32 property_name_index_0, RogueInt32 property_type_index_1 );
 RoguePropertyInfo_List* RoguePropertyInfo_List__init_object( RoguePropertyInfo_List* THIS );
 RoguePropertyInfo_List* RoguePropertyInfo_List__init( RoguePropertyInfo_List* THIS );
 RogueString* RoguePropertyInfo_List__to_String( RoguePropertyInfo_List* THIS );
@@ -4883,7 +4886,9 @@ RoguePropertyInfo_List* RoguePropertyInfo_List__reserve__Int32( RoguePropertyInf
 RogueClassPropertyInfo* RoguePropertyInfo__init_object( RogueClassPropertyInfo* THIS );
 RogueString* RoguePropertyInfo__to_String( RogueClassPropertyInfo* THIS );
 RogueString* RoguePropertyInfo__type_name( RogueClassPropertyInfo* THIS );
-RogueClassPropertyInfo* RoguePropertyInfo__init__String_String( RogueClassPropertyInfo* THIS, RogueString* _auto_72_0, RogueString* _auto_73_1 );
+RogueClassPropertyInfo* RoguePropertyInfo__init__Int32_Int32( RogueClassPropertyInfo* THIS, RogueInt32 _auto_72_0, RogueInt32 _auto_73_1 );
+RogueString* RoguePropertyInfo__property_name( RogueClassPropertyInfo* THIS );
+RogueTypeInfo* RoguePropertyInfo__property_type_info( RogueClassPropertyInfo* THIS );
 RogueString* RogueArray_PropertyInfo___type_name( RogueArray* THIS );
 RogueClassGlobal* RogueGlobal__init_object( RogueClassGlobal* THIS );
 RogueClassGlobal* RogueGlobal__init( RogueClassGlobal* THIS );
