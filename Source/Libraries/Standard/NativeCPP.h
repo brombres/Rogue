@@ -341,6 +341,10 @@ struct RogueType
   int          object_size;
   int          attributes;
 
+  int          property_count;
+  int*         property_name_indices;
+  int*         property_type_indices;
+
   RogueObject* _singleton;
   void**       methods;
 

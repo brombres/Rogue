@@ -1047,7 +1047,7 @@ void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 void Rogue_configure_types()
 {
   int i;
-  int* type_info = Rogue_type_info_table - 1;
+  int* type_info = Rogue_type_info_table;
 
   // Install seg fault handler
   struct sigaction sa;
@@ -1074,9 +1074,9 @@ void Rogue_configure_types()
     type->name_index = Rogue_type_name_index_table[i];
     type->object_size = Rogue_object_size_table[i];
     type->attributes = Rogue_attributes_table[i];
-    type->allocator = &Rogue_allocators[ *(++type_info) ];
-    type->methods = Rogue_dynamic_method_table + *(++type_info);
-    type->base_type_count = *(++type_info);
+    type->allocator = &Rogue_allocators[ *(type_info++) ];
+    type->methods = Rogue_dynamic_method_table + *(type_info++);
+    type->base_type_count = *(type_info++);
     if (type->base_type_count)
     {
 #if ROGUE_GC_MODE_BOEHM
@@ -1086,10 +1086,15 @@ void Rogue_configure_types()
 #endif
       for (j=0; j<type->base_type_count; ++j)
       {
-        type->base_types[j] = &Rogue_types[ *(++type_info) ];
+        type->base_types[j] = &Rogue_types[ *(type_info++) ];
       }
     }
-    ++(type_info);  // property count
+
+    type->property_count = *(type_info++);
+    type->property_name_indices = type_info;
+    type_info += type->property_count;
+    type->property_type_indices = type_info;
+    type_info += type->property_count;
 
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
