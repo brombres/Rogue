@@ -1,11 +1,15 @@
 class TypeInfo [requisite]
   PROPERTIES
-    index      : Int32
-    name       : String
-    properties = PropertyInfo[]
+    index             : Int32
+    name              : String
+    global_properties = PropertyInfo[]
+    properties        = PropertyInfo[]
 
   METHODS
     method init( index, name ) [requisite]
+
+    method add_global_property_info( global_property_name_index:Int32, global_property_type_index:Int32 ) [requisite]
+      global_properties.add( PropertyInfo(global_property_name_index, global_property_type_index) )
 
     method add_property_info( property_name_index:Int32, property_type_index:Int32 ) [requisite]
       properties.add( PropertyInfo(property_name_index, property_type_index) )

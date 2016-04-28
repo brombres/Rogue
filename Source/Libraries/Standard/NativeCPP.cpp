@@ -131,6 +131,12 @@ RogueTypeInfo* RogueType_type_info( RogueType* THIS )
     THIS->type_info = RogueTypeInfo__init__Int32_String( (RogueTypeInfo*)ROGUE_CREATE_OBJECT(TypeInfo),
         THIS->index, Rogue_literal_strings[ THIS->name_index ] );
 
+    for (int i=0; i<THIS->global_property_count; ++i)
+    {
+      RogueTypeInfo__add_global_property_info__Int32_Int32( THIS->type_info,
+          THIS->global_property_name_indices[i], THIS->global_property_type_indices[i] );
+    }
+
     for (int i=0; i<THIS->property_count; ++i)
     {
       RogueTypeInfo__add_property_info__Int32_Int32( THIS->type_info,
@@ -1100,6 +1106,12 @@ void Rogue_configure_types()
         type->base_types[j] = &Rogue_types[ *(type_info++) ];
       }
     }
+
+    type->global_property_count = *(type_info++);
+    type->global_property_name_indices = type_info;
+    type_info += type->global_property_count;
+    type->global_property_type_indices = type_info;
+    type_info += type->global_property_count;
 
     type->property_count = *(type_info++);
     type->property_name_indices = type_info;
