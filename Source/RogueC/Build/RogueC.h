@@ -4837,12 +4837,13 @@ RogueClassStringReader* RogueStringReader__init_object( RogueClassStringReader* 
 RogueString* RogueStringReader__type_name( RogueClassStringReader* THIS );
 RogueLogical RogueStringReader__has_another( RogueClassStringReader* THIS );
 RogueCharacter RogueStringReader__read( RogueClassStringReader* THIS );
-RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_39_0 );
+RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_45_0 );
 RogueLogical RogueReader_Character___has_another( RogueObject* THIS );
 RogueCharacter RogueReader_Character___read( RogueObject* THIS );
 RogueTypeInfo* RogueTypeInfo__init_object( RogueTypeInfo* THIS );
+RogueString* RogueTypeInfo__to_String( RogueTypeInfo* THIS );
 RogueString* RogueTypeInfo__type_name( RogueTypeInfo* THIS );
-RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_72_0, RogueString* _auto_73_1 );
+RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_78_0, RogueString* _auto_79_1 );
 RogueClassGlobal* RogueGlobal__init_object( RogueClassGlobal* THIS );
 RogueClassGlobal* RogueGlobal__init( RogueClassGlobal* THIS );
 RogueString* RogueGlobal__type_name( RogueClassGlobal* THIS );

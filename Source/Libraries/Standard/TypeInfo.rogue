@@ -26,5 +26,8 @@ class TypeInfo [requisite]
 
     method is_reference->Logical
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
+
+    method to->String
+      return "@" + name
 endClass
 

@@ -690,12 +690,12 @@ class Type
 
       # "type_properties()" method
       block
-        local m = find_method( "type_properties()" )
+        local m = find_global_method( "type_properties()" )
         if (m and m.type_context is this)
           # We're in class Object
           return
         else
-          m = add_method( t, "type_properties" )
+          m = add_global_method( t, "type_properties" )
           m.return_type = Program.get_type_reference( t, "PropertyInfo[]" )
         endIf
 
@@ -707,9 +707,10 @@ class Type
 
         m.statements.add( CmdReturn(t,cmd) )
         m.organize( scope )
-        method_lookup_by_signature[ m.signature ] = m
+        global_method_lookup_by_signature[ m.signature ] = m
       endBlock
 
+      # Collect distinct property types to determine what getters and setters we need.
       local property_types = Type[]
       forEach (p in property_list)
         local getter_type = p.type

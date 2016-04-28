@@ -28,6 +28,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.59 - April 28, 2016
+- [Rogue] `type_properties()->TypeProperty[]` is now a global method.
+
 ###v1.0.58 - April 27, 2016
 - [RogueC] Fixed order-of-compilation bug relating to property types not being `organize()d` before property introspection methods were generated.
 - [RogueC] Property introspection access methods now only handle properties defined in the current class and call the prior base class method to access any inherited properties.
