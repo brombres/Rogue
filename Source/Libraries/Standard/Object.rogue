@@ -91,11 +91,6 @@ class Object [native]
     method type_info->TypeInfo
       native @|return RogueType_type_info( $this->type );
 
-  GLOBAL METHODS
-    method type_properties->PropertyInfo[]
-      return PropertyInfo[]
-
-
 endClass
 
 

@@ -409,6 +409,29 @@ augment Program
       writer.indent -= 2
       writer.println "};"
 
+# Property info table
+#{
+      writer.println "int Rogue_property_info_table[][] ="
+      writer.println "{"
+      writer.indent += 2
+
+      forEach (type at i in type_list)
+        if (i > 0) println ","
+        writer.print( "{" ).print( type.property_list.count )
+        forEach (p in type.property_list)
+          writer.print ","
+          writer.print( add_literal_string(p.name) )
+          writer.print ","
+          writer.print( p.type.index )
+        endForEach
+        writer.print( "}" )
+      endForEach
+
+      writer.println
+      writer.indent -= 2
+      writer.println "};"
+      }#
+
       # Init Object Fn Table
       writer.println "RogueInitFn Rogue_init_object_fn_table[] ="
       writer.println "{"

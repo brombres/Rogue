@@ -133,6 +133,8 @@ class Type
       info.add( flat_base_types.count )
       forEach (base_type in flat_base_types) info.add( base_type.index )
 
+      info.add( 0 )  # property count
+
     method compile_type->Type
       return this
 
@@ -686,9 +688,9 @@ class Type
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
       if (not (is_class or is_compound)) return
-      if (property_list.count == 0 and is_class) return  # let the inherited method stand
 
       # "type_properties()" method
+      #{
       block
         local m = find_global_method( "type_properties()" )
         if (m and m.type_context is this)
@@ -699,16 +701,24 @@ class Type
           m.return_type = Program.get_type_reference( t, "PropertyInfo[]" )
         endIf
 
-        local cmd = CmdAccess( t, "PropertyInfo[]", CmdArgs() ) : Cmd
+        local cmd : Cmd
+        if (base_class)
+          cmd = CmdAccess( t, CmdAccess(t,base_class.name), "type_properties", CmdArgs() )
+        else
+          cmd = CmdAccess( t, "PropertyInfo[]", CmdArgs() )
+        endIf
         forEach (p in property_list)
-          local cmd_info = CmdAccess( t, "PropertyInfo", CmdArgs(CmdLiteralString(t,p.name),CmdLiteralString(t,p.type.name)) )
-          cmd = CmdAccess( t, cmd, "add", CmdArgs(cmd_info) )
+          if (p is this)
+            local cmd_info = CmdAccess( t, "PropertyInfo", CmdArgs(CmdLiteralString(t,p.name),CmdLiteralString(t,p.type.name)) )
+            cmd = CmdAccess( t, cmd, "add", CmdArgs(cmd_info) )
+          endIf
         endForEach
 
         m.statements.add( CmdReturn(t,cmd) )
         m.organize( scope )
         global_method_lookup_by_signature[ m.signature ] = m
       endBlock
+      }#
 
       # Collect distinct property types to determine what getters and setters we need.
       local property_types = Type[]
