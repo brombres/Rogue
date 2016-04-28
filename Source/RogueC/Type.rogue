@@ -134,10 +134,8 @@ class Type
       forEach (base_type in flat_base_types) info.add( base_type.index )
 
       info.add( property_list.count )
-      forEach (p in property_list)
-        info.add( Program.add_literal_string(p.name) )
-        info.add( p.type.index )
-      endForEach
+      forEach (p in property_list) info.add( Program.add_literal_string(p.name) )
+      forEach (p in property_list) info.add( p.type.index )
 
     method compile_type->Type
       return this

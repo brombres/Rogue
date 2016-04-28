@@ -130,6 +130,13 @@ RogueTypeInfo* RogueType_type_info( RogueType* THIS )
   {
     THIS->type_info = RogueTypeInfo__init__Int32_String( (RogueTypeInfo*)ROGUE_CREATE_OBJECT(TypeInfo),
         THIS->index, Rogue_literal_strings[ THIS->name_index ] );
+
+    for (int i=0; i<THIS->property_count; ++i)
+    {
+      RogueTypeInfo__add_property_info__String_String( THIS->type_info,
+          Rogue_literal_strings[ THIS->property_name_indices[i] ],
+          RogueType_name( &Rogue_types[THIS->property_type_indices[i]] ) );
+    }
   }
 
   return THIS->type_info;
@@ -144,6 +151,11 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 
   if ((fn = THIS->init_object_fn)) return fn( obj );
   else                             return obj;
+}
+
+RogueString* RogueType_name( RogueType* THIS )
+{
+  return Rogue_literal_strings[ THIS->name_index ];
 }
 
 bool RogueType_name_equals( RogueType* THIS, const char* name )
