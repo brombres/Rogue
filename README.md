@@ -30,7 +30,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.59 - April 28, 2016
 - [Rogue] Reworked introspection so that lists of properties and global properties are stored in TypeInfo objects instead of being obtained from instanced objects.  For example, `@Alpha.properties` and `@Alpha.global_properties` access corresponding `PropertyInfo[]` lists.
-- [Rogue] `PropertyInfo` objects now contain `property_name_index:Int32` and `property_type_index:Int32` as their core data and call `System.literal_string(index:Int32)` and `System.type_info(index:Int32)` to obtain property name strings and type info objects.
+- [API] Shifted `collect_garbage()` and all introspection-related methods out of System class and into the Runtime class.
+- [Rogue] `PropertyInfo` objects now contain `property_name_index:Int32` and `property_type_index:Int32` as their core data and call `Runtime.literal_string(index:Int32)` and `Runtime.type_info(index:Int32)` to obtain property name strings and type info objects.
 
 ###v1.0.58 - April 27, 2016
 - [RogueC] Fixed order-of-compilation bug relating to property types not being `organize()d` before property introspection methods were generated.

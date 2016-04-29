@@ -1,0 +1,71 @@
+class Runtime [requisite]
+  GLOBAL PROPERTIES
+    type_info_lookup = Table<<String,TypeInfo>>()
+
+  GLOBAL METHODS
+    method init_class
+      local value = System.environment["ROGUE_GC_THRESHOLD"]
+      if (value isNot null)
+        local n = value->Real64
+        if (value.ends_with('M') or value.ends_with("MB")) n *= 1024*1024
+        elseIf (value.ends_with('K') or value.ends_with("KB")) n *= 1024
+        gc_threshold = n->Int32
+      endIf
+
+    method gc_threshold->Int32
+      # Returns the current GC threshold in bytes
+      local n : Int32
+      native "$n = Rogue_gc_threshold;"
+      return n
+
+    method literal_string( string_index:Int32 )->String
+      if (string_index < 0 or string_index >= literal_string_count) return null
+      return native("Rogue_literal_strings[$string_index]")->String
+
+    method literal_string_count->Int32
+      return native("Rogue_literal_string_count")->Int32
+
+    method set_gc_threshold( value:Int32 )
+      if (value <= 0) value = 0x7fffffff
+      # We might want -1 to mean max value and 0 to mean never,
+      # but for now, just have anything strange mean max value.
+
+      native "Rogue_gc_threshold = $value;"
+
+    method type_info( name:String )->TypeInfo
+      local result = type_info_lookup[ name ]
+      if (result) return result
+
+      native @|for (int i=Rogue_type_count; --i>=0; )
+              |{
+              |  RogueType* cur_type = &Rogue_types[ i ];
+              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
+              |  {
+              |    $result = RogueType_type_info( cur_type );
+              |    break;
+              |  }
+              |}
+
+      if (result) type_info_lookup[ name ] = result
+      return result
+
+    method type_info( type_index:Int32 )->TypeInfo
+      native @|if ($type_index < 0 || $type_index >= Rogue_type_count) return 0;
+              |return RogueType_type_info( &Rogue_types[$type_index] );
+
+    method collect_garbage ( force=false:Logical )->Logical
+      # Runs the garbage collector if possible
+      #
+      # "force" tries harder to run the GC.
+      # Returns true if the collector ran.
+
+      local result = false
+      $if ("C++")
+        native @|#if ROGUE_GC_MODE_AUTO
+                |$result = Rogue_collect_garbage($force);
+                |#endif
+      $endIf
+      return result
+
+endClass
+

@@ -693,6 +693,7 @@ class Type
       m_type_name.return_type = Program.type_String
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
+      #{
       if (not (is_class or is_compound)) return
 
       # Collect distinct property types to determine what getters and setters we need.
@@ -796,6 +797,7 @@ class Type
         m.organize( scope )
 
       endForEach
+      }#
 
     method inherit_methods( scope=null:Scope )
       # Inherit method templates

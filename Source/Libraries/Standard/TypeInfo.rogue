@@ -48,10 +48,10 @@ class PropertyInfo
     method init( property_name_index, property_type_index )
 
     method property_name->String
-      return System.literal_string( property_name_index )
+      return Runtime.literal_string( property_name_index )
 
     method property_type_info->TypeInfo
-      return System.type_info( property_type_index )
+      return Runtime.type_info( property_type_index )
 
     method to->String
       return "$:$" (property_name,property_type_info.name)
