@@ -2077,6 +2077,8 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
+      elseIf (consume(TokenType.keyword_isReference))
+        return parse_post_unary( CmdIsReference(t,operand) )
       endIf
       return operand
 
@@ -2224,6 +2226,25 @@ class Parser
       string_buffer.print( ">>" )
 
       return string_buffer->String
+
+    method parse_specialization_type( index:Int32 )->Type
+      read   # '<<'
+
+      local i = index
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        if (first) first = false
+        else       string_buffer.print(',')
+
+        local t = peek
+        parse_specializer( string_buffer.clear )
+
+        if (i == 0) return Program.get_type_reference( t, string_buffer->String )
+        --i
+      endWhile
+
+      @trace
+      throw peek.error( "[INTERNAL] Invalid specializer index: $." (index) )
 
     method parse_specialization_info->PropertyTable
       local count = 0

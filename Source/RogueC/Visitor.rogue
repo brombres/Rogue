@@ -108,6 +108,11 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdIsReference )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdTry )
       on_enter( cmd )
       dispatch( cmd )
@@ -394,6 +399,7 @@ class Visitor
     method on_enter( cmd:CmdGenericLoop )
     method on_enter( cmd:CmdIf )
     method on_enter( cmd:CmdInlineNative )
+    method on_enter( cmd:CmdIsReference )
     method on_enter( cmd:CmdLabel )
     method on_enter( cmd:CmdLiteral )
     method on_enter( cmd:CmdLiteralString )
@@ -470,6 +476,7 @@ class Visitor
     method on_leave( cmd:CmdGenericLoop )
     method on_leave( cmd:CmdIf )
     method on_leave( cmd:CmdInlineNative )
+    method on_leave( cmd:CmdIsReference )
     method on_leave( cmd:CmdLabel )
     method on_leave( cmd:CmdLiteral )
     method on_leave( cmd:CmdLiteralString )
@@ -805,6 +812,9 @@ class Visitor
 
     method dispatch( cmd:CmdNamedArg )
       noAction
+
+    method dispatch( cmd:CmdIsReference )
+      cmd.operand.dispatch( this )
 
 endClass
 

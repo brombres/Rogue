@@ -3950,10 +3950,25 @@ class CmdInstanceOf : CmdTypeOperator
       return CmdInstanceOf( t, operand.clone(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
-      operand = operand.resolve( scope )
+      operand = operand.resolve( scope ).require_value
       target_type.organize(scope)
-
       return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+
+class CmdIsReference( t, operand:Cmd ) : Cmd
+  METHODS
+    method clone( clone_args=null:CloneArgs )->Cmd
+      return CmdIsReference( t, operand.clone(clone_args) )
+
+    method implicit_type->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_reference )
 
     method type->Type
       return Program.type_Logical

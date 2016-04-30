@@ -62,7 +62,7 @@ syn match   rogueNumber       "\<0x\x\+\(\.\x\+\)\=\>"
 syn keyword rogueStatement    require assert
 syn keyword rogueStatement    ensure
 syn keyword rogueOperator     and or xor not
-syn keyword rogueOperator     instanceOf is isNot notInstanceOf
+syn keyword rogueOperator     instanceOf is isNot notInstanceOf isReference
 "syn match   rogueOperator     "\.\.\<"
 "syn match   rogueOperator     "\.\.\>"
 "syn match   rogueOperator     "\.\."

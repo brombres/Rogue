@@ -10,39 +10,18 @@ class Object [native]
       return "($ 0x$)" (type_name, object_id.to_hex_string)
 
     method get_property<<$PropertyType>>( name:String )->$PropertyType
-      if (this instanceOf Object and this.type_name != "Object")
-        return get_property<<Object>>( name ) as $PropertyType
-      else
-        local default_value : $PropertyType
-        return default_value
-      endIf
+      forEach (i in 0..<property_count)
+        if (property_name(i) == name)
+          if ($PropertyType isReference)
+            return native( "*((RogueObject**)(((RogueByte*)$this) + $this->type->property_offsets[$i]))" )->Object as $PropertyType
+          else
+            return native( "*(($($PropertyType)*)(((RogueByte*)$this) + $this->type->property_offsets[$i]))" )->$PropertyType
+          endIf
+        endIf
+      endForEach
 
-    method get_property<<Object>>( name:String )->Object
-      return null
-
-    method get_property<<String>>( name:String )->String
-      return null
-
-    method get_property<<Real64>>( name:String )->Real64
-      return 0
-
-    method get_property<<Real32>>( name:String )->Real32
-      return 0
-
-    method get_property<<Int64>>( name:String )->Int64
-      return 0
-
-    method get_property<<Int32>>( name:String )->Int32
-      return 0
-
-    method get_property<<Character>>( name:String )->Character
-      return 0
-
-    method get_property<<Byte>>( name:String )->Byte
-      return 0
-
-    method get_property<<Logical>>( name:String )->Logical
-      return false
+      local default_value : $PropertyType
+      return default_value
 
     method hash_code->Int32
       return object_id->Int32
@@ -54,6 +33,12 @@ class Object [native]
 
     method operator==( other:Object )->Logical
       return this is other
+
+    method property_count->Int32
+      return native( "$this->type->property_count" )->Int32
+
+    method property_name( index:Int32 )->String
+      return native( "Rogue_literal_strings[$this->type->property_name_indices[$index]]" )->String
 
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
       if (this instanceOf Object and this.type_name != "Object")

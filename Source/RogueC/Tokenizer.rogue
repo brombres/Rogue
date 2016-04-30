@@ -153,6 +153,7 @@ class Tokenizer
       TokenType.keyword_in               = define( TokenType("in") )
       TokenType.keyword_is               = define( TokenType("is") )
       TokenType.keyword_isNot            = define( TokenType("isNot") )
+      TokenType.keyword_isReference      = define( TokenType("isReference") )
       TokenType.keyword_local            = define( TokenType("local") )
       TokenType.keyword_loop             = define( TokenType("loop") )
       TokenType.keyword_native           = define( TokenType("native") )

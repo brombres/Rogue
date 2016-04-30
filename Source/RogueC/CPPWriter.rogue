@@ -663,6 +663,51 @@ augment Program
       writer.println( "};" )
       writer.println
 
+      # Global property pointers
+      writer.println(  "void* Rogue_global_property_pointers[] =" )
+      writer.println "{"
+      writer.indent += 2
+
+      first = true
+      forEach (type in type_list)
+        if (type.is_class)
+          forEach (p in type.global_list)
+            if (first) first = false
+            else       writer.println ","
+            if (p.is_native) writer.print "0"
+            else             writer.print( "(void*) &Rogue" ).print( p.type_context.cpp_name ).print( "_" )
+            writer.print( p.cpp_name )
+          endForEach
+        endIf
+      endForEach
+
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
+      # Property offsets
+      writer.println(  "int Rogue_property_offsets[] =" )
+      writer.println "{"
+      writer.indent += 2
+
+      first = true
+      forEach (type in type_list)
+        if (type.is_class)
+          forEach (p in type.property_list)
+            if (first) first = false
+            else       writer.println ","
+            if (p.is_native) writer.print( "0" )
+            else             writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
+          endForEach
+        endIf
+      endForEach
+
+      writer.println
+      writer.indent -= 2
+      writer.println( "};" )
+      writer.println
+
 
       # Object size table
       writer.print(   "int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
@@ -1124,6 +1169,14 @@ class CPPWriter
       return this
 
     method print_native_code( t:Token, type_context:Type, method_context:Method, code:String, result_type=null:Type )->this
+      # $a is a convenience for $(a) with the latter being more flexible
+      #
+      # $local_var_name
+      # $property_name
+      # $this
+      # $($TypeSpecializer)
+      # $retain
+      # $release
       forEach (line in LineReader(code))
         local original_indent = indent
         if (line.begins_with('#')) indent = 0
@@ -1186,13 +1239,25 @@ class CPPWriter
                     case ""
                       local type = Parser(specializer.tokens).parse_type.organize
                       print( type )
-                    others
-                      throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
+                      return this
                   endWhich
-                  escapeWhich
                 endIf
               endForEach
             endIf
+            if (method_context.source_template)
+              forEach (specializer at i in method_context.source_template.type_parameters)
+                if (specializer.name == name)
+                  which (operation)
+                    case ""
+                      local type = Parser(t,method_context.name,method_context.name.from_first("<<"))...
+                        .parse_specialization_type(i).organize
+                      print( type )
+                      return this
+                  endWhich
+                endIf
+              endForEach
+            endIf
+            throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
           endIf
 
           if (method_context)

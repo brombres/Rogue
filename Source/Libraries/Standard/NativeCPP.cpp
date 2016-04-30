@@ -1079,6 +1079,9 @@ void Rogue_configure_types()
   // Initialize allocators
   memset( Rogue_allocators, 0, sizeof(RogueAllocator)*Rogue_allocator_count );
 
+  int global_property_pointer_cursor = 0;
+  int property_offset_cursor = 0;
+
   // Initialize types
   for (i=0; i<Rogue_type_count; ++i)
   {
@@ -1118,6 +1121,14 @@ void Rogue_configure_types()
     type_info += type->property_count;
     type->property_type_indices = type_info;
     type_info += type->property_count;
+
+    if ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
+    {
+      type->global_property_pointers = Rogue_global_property_pointers + global_property_pointer_cursor;
+      global_property_pointer_cursor += type->global_property_count;
+      type->property_offsets = Rogue_property_offsets + property_offset_cursor;
+      property_offset_cursor += type->property_count;
+    }
 
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];

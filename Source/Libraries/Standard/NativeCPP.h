@@ -344,10 +344,12 @@ struct RogueType
   int          global_property_count;
   int*         global_property_name_indices;
   int*         global_property_type_indices;
+  void**       global_property_pointers;
 
   int          property_count;
   int*         property_name_indices;
   int*         property_type_indices;
+  int*         property_offsets;
 
   RogueObject* _singleton;
   void**       methods;
@@ -548,6 +550,8 @@ extern RogueType          Rogue_types[];
 extern int                Rogue_type_info_table[];
 extern int                Rogue_type_name_index_table[];
 extern int                Rogue_object_size_table[];
+extern void*              Rogue_global_property_pointers[];
+extern int                Rogue_property_offsets[];
 extern int                Rogue_attributes_table[];
 extern void*              Rogue_dynamic_method_table[];
 //extern int                Rogue_property_info_table[][];

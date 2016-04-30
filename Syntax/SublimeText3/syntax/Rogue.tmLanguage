@@ -393,7 +393,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(and|or|xor|not|instanceOf|is|isNot|notInstanceOf|duplicate)\b</string>
+					<string>\b(and|or|xor|not|instanceOf|is|isNot|notInstanceOf|isReference)\b</string>
 					<key>name</key>
 					<string>keyword.operator.rogue</string>
 				</dict>
