@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.58
-- April 27, 2016
+- v1.0.59
+- April 30, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -19,8 +19,6 @@ Rogue
         echo println '"Hello World!"' > Hello.rogue
         roguec Hello.rogue --execute
 
-## About
-The Rogue programming language is the successor to Slag (active years 2008-2011) and Bard (never released; multiple internal versions made in 2011-2014).
 
 ## License
 Rogue is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
