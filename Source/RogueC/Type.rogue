@@ -693,118 +693,19 @@ class Type
       m_type_name.return_type = Program.type_String
       m_type_name.statements.add( CmdReturn( t, CmdLiteralString(t,name) ) )
 
-      #{
-      if (not (is_class or is_compound)) return
-
-      # Collect distinct property types to determine what getters and setters we need.
-      local property_types = Type[]
-      forEach (p in property_list)
-        local getter_type = p.type
-        if (getter_type.is_reference and getter_type isNot Program.type_String) getter_type = Program.type_Object
-        if (p.type_context is this and not property_types.contains(getter_type))
-          property_types.add( getter_type )
-        endIf
-      endForEach
-
-      if (property_types.count == 0) return
-
-      # 'get_property<<Type>>(name)' methods
-      forEach (p_type in property_types)
-        # Getter
-        local m_name = "get_property<<$>>" (p_type)
-        local m = find_method( m_name + "(String)" )
-        if (m and m.type_context is this)
-          # We're in class Object
-          return
-        else
-          m = add_method( t, m_name )
-          m.specializer_count = 1
-          m.unspecialized_name = "get_property"
-          m.add_parameter( t, ".name", Program.type_String )
-          m.return_type = p_type
-        endIf
-
-        local cmd_which = CmdWhich( t, CmdAccess(t,".name") )
-        m.statements.add( cmd_which )
-
-        forEach (p in property_list)
-          contingent
-            necessary (p.type_context is this)
-            sufficient (p.type is p_type)
-            sufficient (p.type.is_reference and p_type.is_reference ...
-                and p.type isNot Program.type_String and p_type isNot Program.type_String)
-            nextIteration
-          satisfied
-            local cmd_case = cmd_which.add_case( t )
-            cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
-            cmd_case.statements.add( CmdReturn(t,CmdAccess(p.t,p.name)) )
-          endContingent
-        endForEach
-
-        local cmd_others = cmd_which.add_case_others( t )
-        if (this is Program.type_Object or this.is_compound)
-          cmd_others.statements.add( CmdReturn(t,p_type.create_default_value(t)) )
-        else
-          cmd_others.statements.add( CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name")),null)) )
-        endIf
-
-        m.organize( scope )
-        method_lookup_by_signature[ m.signature ] = m
-
-        # 'set_property<<Type>>(name,value)' methods.
-        m_name = "set_property<<$>>" (p_type)
-        m = find_method( "$(String,$)" (m_name,p_type) )
-        if (m and m.type_context is this)
-          # We're in class Object
-          return
-        else
-          m = add_method( t, m_name )
-          m.specializer_count = 1
-          m.unspecialized_name = "set_property"
-          m.add_parameter( t, ".name", Program.type_String )
-          m.add_parameter( t, ".value", p_type )
-          m.return_type = this
-        endIf
-
-        cmd_which = CmdWhich( t, CmdAccess(t,".name") )
-        m.statements.add( cmd_which )
-
-        local cmd_context = CmdThisContext( t, this )
-
-        forEach (p in property_list)
-          contingent
-            necessary (p.type_context is this)
-            sufficient (p.type is p_type)
-            sufficient (p.type.is_reference and p_type.is_reference ...
-                and p.type isNot Program.type_String and p_type isNot Program.type_String)
-            nextIteration
-          satisfied
-            local cmd_case = cmd_which.add_case( t )
-            cmd_case.conditions.add( CmdLiteralString(p.t,p.name) )
-            cmd_case.statements.add( CmdAssign(t,CmdAccess(p.t,cmd_context.clone,p.name),CmdAccess(p.t,".value")) )
-            cmd_case.statements.add( CmdReturn(t,cmd_context.clone) )
-          endContingent
-        endForEach
-
-        cmd_others = cmd_which.add_case_others( t )
-        if (this.is_class and this isNot Program.type_Object)
-          cmd_others.statements.add(
-              CmdReturn(t,CmdCallPriorMethod(t,m_name,CmdArgs(CmdAccess(t,".name"),CmdAccess(t,".value")),null) ) )
-        else
-          cmd_others.statements.add( CmdReturn(t,cmd_context.clone) )
-        endIf
-
-        m.organize( scope )
-
-      endForEach
-      }#
+      if (this.is_compound or this.is_primitive)
+        local m_type_info = add_method( t, "type_info" )
+        m_type_info.return_type = Program.get_type_reference( t, "TypeInfo" )
+        m_type_info.statements.add( CmdReturn( t, CmdAccess( t, CmdAccess(t,"Runtime"), "type_info",
+          CmdArgs(CmdLiteralString(t,name)) ) ) )
+      endIf
 
     method inherit_methods( scope=null:Scope )
       # Inherit method templates
       forEach (base_type in base_types)
         if (base_type.method_templates)
           ensure this.method_templates( this )
-          method_templates.inherit( base_type.method_templates )
+          method_templates.inherit( base_type.method_templates, this )
         endIf
       endForEach
 

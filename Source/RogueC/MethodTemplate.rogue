@@ -17,6 +17,13 @@ class MethodTemplate
   METHODS
     method init( t, type_context, name, is_global )
 
+    method clone->MethodTemplate
+      local result = MethodTemplate( t, type_context, name, is_global )
+      result.type_parameters = type_parameters
+      result.template_tokens = template_tokens
+      result.parameter_count = parameter_count
+      return result
+
     method instantiate( ref_t:Token, ref_name:String )
       local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
 
@@ -106,14 +113,22 @@ class MethodTemplates( type_context:Type )
 
       return false
 
-    method inherit( other:MethodTemplates )
+    method inherit( other:MethodTemplates, extended_type:Type )
       if (not other) return
 
       forEach (base_m in other.templates)
         local m = find( base_m.name, base_m.type_parameters.count, base_m.parameter_count )
+
+        if (not m and base_m.type_context.is_aspect and not extended_type.is_aspect)
+          # We have to clone aspect method templates for non-aspects
+          m = base_m.clone
+          m.type_context = extended_type
+        endIf
+
         if (m)
           m.overridden_m = base_m
           base_m.overrides.add( m )
+          templates.add( m )
         else
           # No overrides found, just inherit base_m
           templates.add( base_m )

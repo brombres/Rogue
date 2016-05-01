@@ -41,36 +41,17 @@ class Object [native]
       return native( "Rogue_literal_strings[$this->type->property_name_indices[$index]]" )->String
 
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
-      if (this instanceOf Object and this.type_name != "Object")
-        set_property<<Object>>( name, value as Object )
-      endIf
-      return this
+      forEach (i in 0..<property_count)
+        if (property_name(i) == name)
+          if ($PropertyType isReference)
+            native( "*((RogueObject**)(((RogueByte*)$this) + $this->type->property_offsets[$i])) = $value;" )
+          else
+            native( "*(($($PropertyType)*)(((RogueByte*)$this) + $this->type->property_offsets[$i])) = $value;" )
+          endIf
+          return this
+        endIf
+      endForEach
 
-    method set_property<<Object>>( name:String, value:Object )->this
-      return this
-
-    method set_property<<String>>( name:String, value:String )->this
-      return this
-
-    method set_property<<Real64>>( name:String, value:Real64 )->this
-      return this
-
-    method set_property<<Real32>>( name:String, value:Real32 )->this
-      return this
-
-    method set_property<<Int64>>( name:String, value:Int64 )->this
-      return this
-
-    method set_property<<Int32>>( name:String, value:Int32 )->this
-      return this
-
-    method set_property<<Character>>( name:String, value:Character )->this
-      return this
-
-    method set_property<<Byte>>( name:String, value:Byte )->this
-      return this
-
-    method set_property<<Logical>>( name:String, value:Logical )->this
       return this
 
     method type_info->TypeInfo

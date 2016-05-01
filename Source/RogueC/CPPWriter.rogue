@@ -670,7 +670,7 @@ augment Program
 
       first = true
       forEach (type in type_list)
-        if (type.is_class)
+        if (type.is_class or type.is_compound)
           forEach (p in type.global_list)
             if (first) first = false
             else       writer.println ","
@@ -693,7 +693,7 @@ augment Program
 
       first = true
       forEach (type in type_list)
-        if (type.is_class)
+        if (type.is_class or type.is_compound)
           forEach (p in type.property_list)
             if (first) first = false
             else       writer.println ","

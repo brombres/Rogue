@@ -1122,7 +1122,8 @@ void Rogue_configure_types()
     type->property_type_indices = type_info;
     type_info += type->property_count;
 
-    if ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
+    if (((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
+      || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND))
     {
       type->global_property_pointers = Rogue_global_property_pointers + global_property_pointer_cursor;
       global_property_pointer_cursor += type->global_property_count;

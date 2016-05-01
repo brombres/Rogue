@@ -167,6 +167,9 @@ class Cmd
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
 
+    method to->Logical
+      return false
+
     method trace_used_code
       dispatch( TraceUsedCodeVisitor )
 
@@ -523,6 +526,14 @@ class CmdIf : CmdControlStructure
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
       condition = condition.require_logical( scope )
+
+      if (condition instanceOf CmdLiteral)
+        # If the condition is a literal true or false, clear the statements
+        # in the false or true section.  We can't get rid of the 'if' entirely
+        # because there might be an escapeIf directive in the remaining code.
+        if (condition->Logical) else_statements = null
+        else                    statements.clear
+      endIf
 
       scope.control_stack.add( this )
       statements.resolve( scope )
@@ -1364,6 +1375,9 @@ class CmdLiteralReal64 : CmdLiteral
     method resolve( scope:Scope )->Cmd
       return this
 
+    method to->Logical
+      return value?
+
     method type->Type
       return Program.type_Real64
 endClass
@@ -1391,6 +1405,9 @@ class CmdLiteralInt64 : CmdLiteral
     method resolve( scope:Scope )->Cmd
       return this
 
+    method to->Logical
+      return value?
+
     method type->Type
       return Program.type_Int64
 endClass
@@ -1416,6 +1433,9 @@ class CmdLiteralInt32 : CmdLiteral
     method resolve( scope:Scope )->Cmd
       return this
 
+    method to->Logical
+      return value?
+
     method type->Type
       return Program.type_Int32
 endClass
@@ -1434,6 +1454,9 @@ class CmdLiteralCharacter : CmdLiteral
     method resolve( scope:Scope )->Cmd
       return this
 
+    method to->Logical
+      return value?
+
     method type->Type
       return Program.type_Character
 endClass
@@ -1451,6 +1474,9 @@ class CmdLiteralLogical : CmdLiteral
 
     method resolve( scope:Scope )->Cmd
       return this
+
+    method to->Logical
+      return value?
 
     method type->Type
       return Program.type_Logical
@@ -1471,6 +1497,9 @@ class CmdLiteralString : CmdLiteral
     method resolve( scope:Scope )->Cmd
       Program.type_String.resolve
       return this
+
+    method to->Logical
+      return value?
 
     method type->Type
       return Program.type_String
