@@ -39,8 +39,8 @@ syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
 syn keyword rogueBranch       escapeTry
 syn keyword rogueBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
 syn keyword rogueBranch       nextIteration
-syn keyword rogueBoolean      true false
-syn keyword rogueConstant     null void gt lt eq infinity NaN
+syn keyword rogueBoolean      true false pi
+syn keyword rogueConstant     null infinity NaN
 syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield

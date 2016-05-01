@@ -29,8 +29,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.59 - April 28, 2016
-- [Rogue] Reworked introspection setters and getters to use runtime data rather than generating new methods Rogue-side.
 - [Rogue] Reworked introspection so that lists of properties and global properties are stored in TypeInfo objects instead of being obtained from instanced objects.  For example, `@Alpha.properties` and `@Alpha.global_properties` access corresponding `PropertyInfo[]` lists.
+- [Rogue] Reworked introspection setters and getters to use runtime data rather than generating new methods Rogue-side.
+- [Rogue] Global properties now have getters and setters via `TypeInfo` objects that behave like object introspection methods.  For instance, `@SomeClass.set_global_property<<Int32>>("x",3)`.
 - [API] Shifted `collect_garbage()` and all introspection-related methods out of System class and into the Runtime class.
 - [Rogue] Added new postfix unary operator `isReference` that returns true if its operand type is a class or aspect reference type and false if it is a compound or primitive value type.  Useful in type and method template definitions.  Example: `logical result = $DataType isReference`
 - [Rogue] 'if' statement conditions that resolve to a literal `true` or `false` now clear the statement list of the opposing section, both as an optimization and as a way to write template code where `C++` would be unable to compile both sections of an type-based `if` statement.  Note that elseIfs are automatically converted to nested if/else blocks.  Also note that `if` statements in tasks may not receive this optimization.

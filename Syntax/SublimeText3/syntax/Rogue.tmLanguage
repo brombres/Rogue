@@ -211,7 +211,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(true|false|null|void|gt|lt|eq|infinity|NaN)\b</string>
+					<string>\b(true|false|null|pi|infinity|NaN)\b</string>
 					<key>name</key>
 					<string>constant.language.rogue</string>
 				</dict>

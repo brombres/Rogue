@@ -17,6 +17,28 @@ class TypeInfo [requisite]
     method create_object->Object
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
 
+    method get_global_property<<$PropertyType>>( property_name:String )->$PropertyType
+      forEach (i in 0..<global_property_count)
+        if (global_property_name(i) == property_name)
+          if ($PropertyType isReference)
+            return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object as $PropertyType
+          else
+            return native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i]))" )->$PropertyType
+          endIf
+        endIf
+      endForEach
+
+      local default_value : $PropertyType
+      return default_value
+
+    method global_property_count->Int32
+      # Convenience method to provide symmetric interface with per-object `property_count` methods.
+      return global_properties.count
+
+    method global_property_name( global_property_index:Int32 )->String
+      # Convenience method to provide symmetric interface with per-object `property_name` methods.
+      return global_properties[ global_property_index ].property_name
+
     method is_aspect->Logical
       return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_ASPECT" )->Logical
 
@@ -34,6 +56,20 @@ class TypeInfo [requisite]
 
     method is_reference->Logical
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
+
+    method set_global_property<<$PropertyType>>( property_name:String, value:$PropertyType )->this
+      forEach (i in 0..<global_property_count)
+        if (global_property_name(i) == property_name)
+          if ($PropertyType isReference)
+            native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $value;" )
+          else
+            native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i])) = $value;" )
+          endIf
+          return this
+        endIf
+      endForEach
+
+      return this
 
     method to->String
       return name
