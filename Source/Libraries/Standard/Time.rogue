@@ -3,12 +3,19 @@ class Stopwatch
     start_time = System.time: Real64
 
   METHODS
+    method add( delta_time:Real64 )->this
+      start_time -= delta_time
+      return this
+
     method elapsed->Real64
       return (System.time - start_time)
 
     method restart->this
       start_time = System.time
       return this
+
+    method subtract( delta_time:Real64 )->this
+      return add( -delta_time )
 
     method to->String
       return StringBuilder().print( elapsed, 2 ).print( " seconds" )->String
@@ -23,6 +30,10 @@ class Timer
   METHODS
     method init( duration )
 
+    method add( delta_time:Real64 )->this
+      start_time += delta_time
+      return this
+
     method elapsed->Real64
       return (System.time - start_time)
 
@@ -35,6 +46,9 @@ class Timer
     method restart->this
       start_time = System.time
       return this
+
+    method subtract( delta_time:Real64 )->this
+      return add( -delta_time )
 
     method to->String
       return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
