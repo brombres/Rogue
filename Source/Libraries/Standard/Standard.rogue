@@ -34,6 +34,7 @@ $include "Task.rogue"
 $include "Time.rogue"
 $include "TypeInfo.rogue"
 $include "UTF8.rogue"
+$include "WeakReference.rogue"
 $include "Writer.rogue"
 
 $if ("C++")

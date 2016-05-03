@@ -62,7 +62,9 @@ class Runtime [requisite]
       local result = false
       $if ("C++")
         native @|#if ROGUE_GC_MODE_AUTO
-                |$result = Rogue_collect_garbage($force);
+                |  $result = Rogue_collect_garbage($force);
+                |#else
+                |  Rogue_gc_requested = true;
                 |#endif
       $endIf
       return result

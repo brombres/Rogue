@@ -62,15 +62,20 @@
 //  GLOBAL PROPERTIES
 //-----------------------------------------------------------------------------
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
+bool               Rogue_gc_requested = false;
 RogueLogical       Rogue_configured = 0;
 RogueObject*       Rogue_error_object  = 0;
 int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
 RogueDebugTrace*   Rogue_call_stack = 0;
-RogueCallbackInfo  Rogue_on_begin_gc;
-RogueCallbackInfo  Rogue_on_end_gc;
+RogueCallbackInfo  Rogue_on_gc_begin;
+RogueCallbackInfo  Rogue_on_gc_trace_finished;
+RogueCallbackInfo  Rogue_on_gc_end;
 char               RogueDebugTrace::buffer[120];
+
+struct RogueWeakReference;
+RogueWeakReference* Rogue_weak_references = 0;
 
 //-----------------------------------------------------------------------------
 //  RogueDebugTrace
@@ -977,6 +982,9 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   }
   THIS->objects_requiring_cleanup = survivors;
 
+  // All objects are in a state where a non-negative size means that the object is
+  // due to be deleted.
+  Rogue_on_gc_trace_finished.call();
 
   // Reset or delete each general object
   cur = THIS->objects;
@@ -1061,6 +1069,22 @@ void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
     exit(1);
 }
 
+void Rogue_update_weak_references_during_gc()
+{
+  RogueWeakReference* cur = Rogue_weak_references;
+  while (cur)
+  {
+    if (cur->value && cur->value->object_size >= 0)
+    {
+      // The value held by this weak reference is about to be deleted by the
+      // GC system; null out the value.
+      cur->value = 0;
+    }
+    cur = cur->next_weak_reference;
+  }
+}
+
+
 void Rogue_configure_types()
 {
   int i;
@@ -1137,6 +1161,8 @@ void Rogue_configure_types()
     type->clean_up_fn    = Rogue_clean_up_fn_table[i];
     type->to_string_fn   = Rogue_to_string_fn_table[i];
   }
+
+  Rogue_on_gc_trace_finished.add( Rogue_update_weak_references_during_gc );
 }
 
 #if ROGUE_GC_MODE_BOEHM
@@ -1151,11 +1177,11 @@ static void Rogue_Boehm_on_collection_event( GC_EventType event )
 {
   if (event == GC_EVENT_START)
   {
-    Rogue_on_begin_gc.call();
+    Rogue_on_gc_begin.call();
   }
   else if (event == GC_EVENT_END)
   {
-    Rogue_on_end_gc.call();
+    Rogue_on_gc_end.call();
   }
 }
 
@@ -1190,9 +1216,10 @@ bool Rogue_collect_garbage( bool forced )
 {
   int i;
 
-  if (Rogue_allocation_bytes_until_gc > 0 && !forced) return false;
+  if (Rogue_allocation_bytes_until_gc > 0 && !forced && !Rogue_gc_requested) return false;
+  Rogue_gc_requested = false;
 
-  Rogue_on_begin_gc.call();
+  Rogue_on_gc_begin.call();
 
 //printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
   Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
@@ -1204,7 +1231,7 @@ bool Rogue_collect_garbage( bool forced )
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
   }
 
-  Rogue_on_end_gc.call();
+  Rogue_on_gc_end.call();
 
   return true;
 }

@@ -26,9 +26,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.60 - May 1, 2016
+###v1.0.60 - May 3, 2016
+- [Rogue] Added weak references (note: only tested in manual GC mode).  Create a `WeakReference<<$DataType>>(obj)` and then access
+its `value` as desired.  The weak reference does not prevent the contained object from being collected and, if it is, the weak reference's `value` will be set to `null`.
 - [Time] Added `add(delta_time:Real64)` and `subtract(delta_time:Real64)` methods to classes `Stopwatch` and `Timer`.  Adding a positive value to a Stopwatch increases the `elapsed` time while adding a positive value to a Timer increases the `remaining` time.
 - [Introspection] Added method template `TypeInfo.create_object<<X>>()->X` which is equivalent to calling `some_type.create_object as X`.
+- [API] `Runtime.collect_garbage()` now sets a flag in manual GC mode to force a GC after the current update (the `force` flag is ignored in manual GC mode).
+- [Vim Syntax] Improved auto-indenting for verbatim strings (`@|Line 1\n  |Line 2\n  ...`) as well as routines.
 
 ###v1.0.59 - April 30, 2016
 - [Rogue] Reworked introspection so that lists of properties and global properties are stored in TypeInfo objects instead of being obtained from instanced objects.  For example, `@Alpha.properties` and `@Alpha.global_properties` access corresponding `PropertyInfo[]` lists.

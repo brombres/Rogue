@@ -24,8 +24,10 @@ setlocal indentkeys+=forEach,=endForEach,=while,=endWhile,=nextIteration,=escape
 setlocal indentkeys+=if,=elseIf,=endIf
 setlocal indentkeys+=block,=endBlock
 setlocal indentkeys+=which,=case,=others,=endWhich
-setlocal indentkeys+=method\ ,=class,=endClass,=augment,=endAugment
-setlocal indentkeys+=CLASS,=GLOBAL,=DEFINITIONS,=ENUMERATE,=PROPERTIES,=METHODS\>
+setlocal indentkeys+==method,=class,=endClass,=augment,=endAugment
+setlocal indentkeys+==routine,=endRoutine
+setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=ENUMERATE,=PROPERTIES,=METHODS\>
+setlocal indentkeys+=0\|
 
 function! GetPrevNonBlank(startline)
   let s:lnum = a:startline
@@ -239,7 +241,7 @@ function! FindIndentBeforeVerbatimLiteralString(startline)
   let s:lnum = a:startline
   while s:lnum >= 1
     let s:line = getline(s:lnum)
-    if s:line !~ '^.*|'
+    if s:line =~ '@|' || s:line !~ '^.*|'
       return GetRogueIndent(s:lnum)
     else
       let s:lnum=s:lnum-1
@@ -399,14 +401,31 @@ function! GetRogueIndent( line_num )
     return 6
   endif
 
+  if s:this_codeline =~ '\C^\s*\(routine \)'
+    return 0
+  endif
+
+  if s:this_codeline =~ '\C^\s*\(endRoutine\)'
+    return 0
+  endif
+
+  if s:prev_codeline =~ '\C^\s*\(routine \)'
+    return 2
+  endif
+
   if s:this_codeline =~ '\C^\s*|'
     return FindIndentOfVerbatimLiteralString(a:line_num-1)
   endif
 
-  if s:prev_codeline =~ '\C^\s*|'
-    " Next line after end of verbatim string - need to search back to find
-    " original indent.
-    return FindIndentBeforeVerbatimLiteralString(a:line_num-1)
+  if s:prev_codeline =~ '\C^\s*|' || s:prev_codeline =~ '@|'
+    if s:this_codeline =~ '^\s*$'
+      " Empty line so far - set the indent to match the previous vertical bar
+      return FindIndentOfVerbatimLiteralString(a:line_num-1)
+    else
+      " Next line after end of verbatim string - need to search back to find
+      " original indent.
+      return FindIndentBeforeVerbatimLiteralString(a:line_num-1)
+    endif
   endif
 
   if s:this_codeline =~# '^\s*endWhich'

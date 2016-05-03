@@ -581,8 +581,13 @@ extern int                Rogue_argc;
 extern const char**       Rogue_argv;
 extern int                Rogue_allocation_bytes_until_gc;
 extern int                Rogue_gc_threshold;
-extern RogueCallbackInfo  Rogue_on_begin_gc;
-extern RogueCallbackInfo  Rogue_on_end_gc;
+extern bool               Rogue_gc_requested;
+extern RogueCallbackInfo  Rogue_on_gc_begin;
+extern RogueCallbackInfo  Rogue_on_gc_trace_finished;
+extern RogueCallbackInfo  Rogue_on_gc_end;
+
+struct RogueWeakReference;
+extern RogueWeakReference* Rogue_weak_references;
 
 void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );
@@ -787,6 +792,7 @@ struct RogueClassFunction_384;
 struct RogueClassCPPWriter;
 struct RogueClassSystem;
 struct RogueClassMath;
+struct RogueWeakReference;
 struct RogueClassReader_Byte_;
 struct RogueClassWriter_Byte_;
 struct RogueClassFile;
@@ -2196,6 +2202,7 @@ struct RogueClassProgram : RogueObject
   RogueClassType* type_GenericList;
   RogueClassType* type_Global;
   RogueClassType* type_Exception;
+  RogueClassType* type_WeakReference;
   RogueClassType* type_StringBuilder;
   RogueClassType* type_TypeInfo;
   RogueClassTable_String_Int32_* literal_string_lookup;
@@ -2518,6 +2525,14 @@ struct RogueClassSystem : RogueObject
 struct RogueClassMath : RogueObject
 {
   // PROPERTIES
+
+};
+
+struct RogueWeakReference : RogueObject
+{
+  // PROPERTIES
+  RogueWeakReference* next_weak_reference;
+  RogueObject* value;
 
 };
 
@@ -4477,6 +4492,7 @@ extern RogueType* RogueTypeFunction_384;
 extern RogueType* RogueTypeCPPWriter;
 extern RogueType* RogueTypeSystem;
 extern RogueType* RogueTypeMath;
+extern RogueType* RogueTypeWeakReference;
 extern RogueType* RogueTypeReader_Byte_;
 extern RogueType* RogueTypeWriter_Byte_;
 extern RogueType* RogueTypeFile;
@@ -6078,6 +6094,9 @@ RogueClassSystem* RogueSystem__init_object( RogueClassSystem* THIS );
 RogueString* RogueSystem__type_name( RogueClassSystem* THIS );
 RogueClassMath* RogueMath__init_object( RogueClassMath* THIS );
 RogueString* RogueMath__type_name( RogueClassMath* THIS );
+RogueWeakReference* RogueWeakReference__init_object( RogueWeakReference* THIS );
+RogueString* RogueWeakReference__type_name( RogueWeakReference* THIS );
+void RogueWeakReference__clean_up( RogueWeakReference* THIS );
 RogueLogical RogueReader_Byte___has_another( RogueObject* THIS );
 RogueByte RogueReader_Byte___read( RogueObject* THIS );
 RogueClassFile* RogueFile__init_object( RogueClassFile* THIS );

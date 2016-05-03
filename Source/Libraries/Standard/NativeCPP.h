@@ -568,8 +568,13 @@ extern int                Rogue_argc;
 extern const char**       Rogue_argv;
 extern int                Rogue_allocation_bytes_until_gc;
 extern int                Rogue_gc_threshold;
-extern RogueCallbackInfo  Rogue_on_begin_gc;
-extern RogueCallbackInfo  Rogue_on_end_gc;
+extern bool               Rogue_gc_requested;
+extern RogueCallbackInfo  Rogue_on_gc_begin;
+extern RogueCallbackInfo  Rogue_on_gc_trace_finished;
+extern RogueCallbackInfo  Rogue_on_gc_end;
+
+struct RogueWeakReference;
+extern RogueWeakReference* Rogue_weak_references;
 
 void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );

@@ -45,6 +45,7 @@ class Program [requisite singleton]
     type_GenericList : Type
     type_Global      : Type
     type_Exception   : Type
+    type_WeakReference : Type
 
     type_StringBuilder : Type
     type_TypeInfo      : Type
@@ -131,11 +132,13 @@ class Program [requisite singleton]
       type_GenericList   = create_built_in_type( "GenericList", Attribute.is_class )
       type_Global        = create_built_in_type( "Global", Attribute.is_class )
       type_Exception     = create_built_in_type( "Exception", Attribute.is_class )
+      type_WeakReference = create_built_in_type( "WeakReference", Attribute.is_class )
 
       type_Object.simplify_name = true
       type_String.simplify_name = true
       type_StringBuilder.simplify_name = true
       type_TypeInfo.simplify_name = true
+      type_WeakReference.simplify_name = true
 
       type_null.organized = true
       type_null.defined   = true
