@@ -26,7 +26,7 @@ setlocal indentkeys+=block,=endBlock
 setlocal indentkeys+=which,=case,=others,=endWhich
 setlocal indentkeys+==method,=class,=endClass,=augment,=endAugment
 setlocal indentkeys+==routine,=endRoutine
-setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=ENUMERATE,=PROPERTIES,=METHODS\>
+setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=ENUMERATE,=PROPERTIES,=METHODS
 setlocal indentkeys+=0\|
 
 function! GetPrevNonBlank(startline)
