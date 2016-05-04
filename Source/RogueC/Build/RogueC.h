@@ -7091,6 +7091,7 @@ void RogueVisitor__visit__CmdCreateObject( RogueClassVisitor* THIS, RogueClassCm
 void RogueVisitor__visit__CmdCreateCallback( RogueClassVisitor* THIS, RogueClassCmdCreateCallback* cmd_0 );
 void RogueVisitor__visit__CmdCreateCompound( RogueClassVisitor* THIS, RogueClassCmdCreateCompound* cmd_0 );
 void RogueVisitor__visit__CmdCreateFunction( RogueClassVisitor* THIS, RogueClassCmdCreateFunction* cmd_0 );
+void RogueVisitor__visit__CmdTypedLiteralList( RogueClassVisitor* THIS, RogueClassCmdTypedLiteralList* cmd_0 );
 void RogueVisitor__visit__CmdThisContext( RogueClassVisitor* THIS, RogueClassCmdThisContext* cmd_0 );
 void RogueVisitor__visit__CmdReadSingleton( RogueClassVisitor* THIS, RogueClassCmdReadSingleton* cmd_0 );
 void RogueVisitor__visit__CmdWriteSingleton( RogueClassVisitor* THIS, RogueClassCmdWriteSingleton* cmd_0 );
@@ -7189,6 +7190,7 @@ void RogueVisitor__on_enter__CmdThrow( RogueClassVisitor* THIS, RogueClassCmdThr
 void RogueVisitor__on_enter__CmdTrace( RogueClassVisitor* THIS, RogueClassCmdTrace* cmd_0 );
 void RogueVisitor__on_enter__CmdTry( RogueClassVisitor* THIS, RogueClassCmdTry* cmd_0 );
 void RogueVisitor__on_enter__CmdTypeOperator( RogueClassVisitor* THIS, RogueClassCmdTypeOperator* cmd_0 );
+void RogueVisitor__on_enter__CmdTypedLiteralList( RogueClassVisitor* THIS, RogueClassCmdTypedLiteralList* cmd_0 );
 void RogueVisitor__on_enter__CmdUnary( RogueClassVisitor* THIS, RogueClassCmdUnary* cmd_0 );
 void RogueVisitor__on_enter__CmdWhich( RogueClassVisitor* THIS, RogueClassCmdWhich* cmd_0 );
 void RogueVisitor__on_enter__CmdWhichCase( RogueClassVisitor* THIS, RogueClassCmdWhichCase* cmd_0 );
@@ -7260,6 +7262,7 @@ void RogueVisitor__on_leave__CmdThrow( RogueClassVisitor* THIS, RogueClassCmdThr
 void RogueVisitor__on_leave__CmdTrace( RogueClassVisitor* THIS, RogueClassCmdTrace* cmd_0 );
 void RogueVisitor__on_leave__CmdTry( RogueClassVisitor* THIS, RogueClassCmdTry* cmd_0 );
 void RogueVisitor__on_leave__CmdTypeOperator( RogueClassVisitor* THIS, RogueClassCmdTypeOperator* cmd_0 );
+void RogueVisitor__on_leave__CmdTypedLiteralList( RogueClassVisitor* THIS, RogueClassCmdTypedLiteralList* cmd_0 );
 void RogueVisitor__on_leave__CmdUnary( RogueClassVisitor* THIS, RogueClassCmdUnary* cmd_0 );
 void RogueVisitor__on_leave__CmdWhich( RogueClassVisitor* THIS, RogueClassCmdWhich* cmd_0 );
 void RogueVisitor__on_leave__CmdWhichCase( RogueClassVisitor* THIS, RogueClassCmdWhichCase* cmd_0 );
@@ -7329,6 +7332,7 @@ void RogueVisitor__dispatch__CmdReadArrayElement( RogueClassVisitor* THIS, Rogue
 void RogueVisitor__dispatch__CmdReadArrayCount( RogueClassVisitor* THIS, RogueClassCmdReadArrayCount* cmd_0 );
 void RogueVisitor__dispatch__CmdWriteArrayElement( RogueClassVisitor* THIS, RogueClassCmdWriteArrayElement* cmd_0 );
 void RogueVisitor__dispatch__CmdTypeOperator( RogueClassVisitor* THIS, RogueClassCmdTypeOperator* cmd_0 );
+void RogueVisitor__dispatch__CmdTypedLiteralList( RogueClassVisitor* THIS, RogueClassCmdTypedLiteralList* cmd_0 );
 void RogueVisitor__dispatch__CmdTaskControl( RogueClassVisitor* THIS, RogueClassCmdTaskControl* cmd_0 );
 void RogueVisitor__dispatch__CmdTrace( RogueClassVisitor* THIS, RogueClassCmdTrace* cmd_0 );
 void RogueVisitor__dispatch__CmdLabel( RogueClassVisitor* THIS, RogueClassCmdLabel* cmd_0 );

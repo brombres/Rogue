@@ -183,6 +183,11 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdTypedLiteralList )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdThisContext )
       on_enter( cmd )
       dispatch( cmd )
@@ -431,6 +436,7 @@ class Visitor
     method on_enter( cmd:CmdTrace )
     method on_enter( cmd:CmdTry )
     method on_enter( cmd:CmdTypeOperator )
+    method on_enter( cmd:CmdTypedLiteralList )
     method on_enter( cmd:CmdUnary )
     method on_enter( cmd:CmdWhich )
     method on_enter( cmd:CmdWhichCase )
@@ -508,6 +514,7 @@ class Visitor
     method on_leave( cmd:CmdTrace )
     method on_leave( cmd:CmdTry )
     method on_leave( cmd:CmdTypeOperator )
+    method on_leave( cmd:CmdTypedLiteralList )
     method on_leave( cmd:CmdUnary )
     method on_leave( cmd:CmdWhich )
     method on_leave( cmd:CmdWhichCase )
@@ -779,6 +786,9 @@ class Visitor
     method dispatch( cmd:CmdTypeOperator )
       cmd.operand.dispatch( this )
       cmd.target_type.dispatch( this )
+
+    method dispatch( cmd:CmdTypedLiteralList )
+      cmd.elements.dispatch( this )
 
     method dispatch( cmd:CmdTaskControl )
       forEach (section in cmd.sections) section.statements.dispatch( this )
