@@ -1808,7 +1808,9 @@ class CmdAccess : Cmd
     method check_for_recursive_getter( scope:Scope )
       local this_type = scope.this_type
       if (name != scope.this_method.name) return
-      if (args and args.count > 0)  return
+
+      local arg_count = select{ args:args.count || 0 }
+      if (arg_count != scope.this_method.parameters.count) return
       if (not (this_type.find_property(name) or this_type.find_global(name))) return
 
       throw t.error( "Recursive call to getter " + name + "() - write @" + name + " instead." )
