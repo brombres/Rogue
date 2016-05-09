@@ -257,8 +257,7 @@ class List<<$DataType>> : GenericList
       if (index)
         return remove_at( index.value )
       else
-        local zero_value : $DataType
-        return zero_value
+        return value
       endIf
 
     method remove( fn:Function($DataType)->Logical )->$DataType[]

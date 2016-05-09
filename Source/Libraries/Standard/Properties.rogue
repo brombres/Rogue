@@ -164,7 +164,7 @@ class PropertyValue
       return null
 
     method remove( value:PropertyValue )->PropertyValue
-      return null
+      return value
 
     method remove_at( index:Int32 )->PropertyValue
       return null
