@@ -15,7 +15,7 @@ class Parser
     parsing_augment : Logical
 
     used_modules    = String[]
-    module_id_map   : Table<<String,String>>
+    module_id_map   : StringTable<<String>>
 
     inserted_module_prefixes : Logical
 
@@ -37,12 +37,32 @@ class Parser
       if (used_modules.contains(module_name)) return
       used_modules.add( module_name )
 
+      # Add module name (e.g. A, A::B) to all IDs in that module (e.g. x, y)
+      # to get e.g. A::x, A::y, A::B::x, A::B::y, etc.
       local module_ids = Program.ids_by_module[ module_name ]
       if (module_ids)
-        if (not module_id_map) module_id_map = Table<<String,String>>()
+        ensure module_id_map
         forEach (m_id in module_ids)
           module_id_map[ m_id ] = "$::$" (module_name,m_id)
         endForEach
+      endIf
+
+      # Find modules that contain this module name as a subset and add
+      # in relative mappings.  So for used module A, find A::B containing
+      # x and y and create mappings B::y and B::y.
+      forEach (submodule_name in Program.ids_by_module.keys)
+        if (submodule_name.begins_with(module_name) and submodule_name != module_name)
+          local relative_path = submodule_name.rightmost( -(module_name.count + 2) ) + "::"
+          ensure module_id_map
+          forEach (m_id in Program.ids_by_module[submodule_name])
+            module_id_map[ relative_path + m_id ] = "$::$" (submodule_name,m_id)
+          endForEach
+        endIf
+      endForEach
+
+      if (module_name.contains("::"))
+        # module A::B implicitly uses module A as well
+        add_used_module( module_name.before_last("::") )
       endIf
 
     method consume( type:TokenType )->Logical

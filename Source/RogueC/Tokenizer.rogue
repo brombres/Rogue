@@ -302,8 +302,6 @@ class Tokenizer
           case "else":                add_new_token( TokenType.directive_else )
           case "endIf":               add_new_token( TokenType.directive_endIf )
           case "requisite":           scan_requisite_directive; return null
-            #case "module":              add_new_token( TokenType.directive_module )
-            #case "using":               add_new_token( TokenType.directive_using )
           others
             add_new_token( TokenType.placeholder_id, "$" + id )
         endWhich
