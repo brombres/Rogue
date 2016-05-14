@@ -1,15 +1,15 @@
 class FileOptions( flags=0:Int32 ) [compound]
   ENUMERATE
-    FLAG_RECURSIVE     = 1
-    FLAG_ABSOLUTE      = 2
-    FLAG_FILES         = 4
-    FLAG_FOLDERS       = 8
-    FLAG_BOTH          = 12
-    FLAG_IGNORE_HIDDEN = 16
+    FLAG_RECURSIVE          = 1
+    FLAG_ABSOLUTE_FILEPATHS = 2
+    FLAG_FILES              = 4
+    FLAG_FOLDERS            = 8
+    FLAG_BOTH               = 12
+    FLAG_IGNORE_HIDDEN      = 16
 
   METHODS
-    method absolute->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
+    method absolute_filepaths->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE_FILEPATHS )
 
     method ignore_hidden->FileOptions [macro]
       FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
@@ -33,9 +33,6 @@ class FileOptions( flags=0:Int32 ) [compound]
     method folders->FileOptions [macro]
       FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
 
-    method is_absolute->Logical [macro]
-      (this.flags & FileOptions.FLAG_ABSOLUTE)
-
     method is_limited->Logical [macro]
       (not (this.flags & FileOptions.FLAG_RECURSIVE))
 
@@ -43,13 +40,13 @@ class FileOptions( flags=0:Int32 ) [compound]
       (this.flags & FileOptions.FLAG_RECURSIVE)
 
     method is_relative->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_ABSOLUTE))
+      (not (this.flags & FileOptions.FLAG_ABSOLUTE_FILEPATHS))
 
     method limited->FileOptions [macro]
       FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
 
     method relative->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
+      FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE_FILEPATHS )
 
     method recursive->FileOptions [macro]
       FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
@@ -59,6 +56,10 @@ class FileOptions( flags=0:Int32 ) [compound]
 
     method shows_hidden->Logical [macro]
       (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
+
+    method uses_absolute_filepaths->Logical [macro]
+      (this.flags & FileOptions.FLAG_ABSOLUTE_FILEPATHS)
+
 endClass
 
 class File
@@ -234,8 +235,18 @@ class File
               |  return 1;
               |#endif
 
-    method listing( folder:String, options=FileOptions():FileOptions, filepath="":String, result=String[]:String[] )->String[]
-      if (options.is_absolute)
+    method listing( folder:String, &ignore_hidden, &recursive, &absolute_filepaths )->String[]
+      local options = FileOptions()
+      if (ignore_hidden)      options = options.ignore_hidden
+      if (recursive)          options = options.recursive
+      if (absolute_filepaths) options = options.absolute_filepaths
+      return listing( folder, options )
+
+    method listing( folder:String, options:FileOptions )->String[]
+      return listing( folder, options, "", String[] )
+
+    method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
+      if (options.uses_absolute_filepaths)
         filepath = File.absolute_filepath( folder )  # add absolute path to every entry
         folder = ""
         options = options.relative
@@ -396,8 +407,11 @@ class File
     method is_folder->Logical [macro]
       File.is_folder( this.filepath )
 
-    method listing->String[] [macro]
-      File.listing( this.filepath )
+    method listing( &ignore_hidden, &recursive, &absolute_filepaths )->String[] [macro]
+      File.listing( this.filepath, ignore_hidden, recursive, absolute_filepaths )
+
+    method listing( options:FileOptions )->String[] [macro]
+      File.listing( this.filepath, options )
 
     method load_as_bytes->Byte[] [macro]
       File.load_as_bytes( this.filepath )

@@ -957,7 +957,9 @@ class CPPWriter
     method init( filepath )
 
     method close
-      File(filepath).save( buffer->String )
+      local path = File.path( filepath )
+      if (path.count) File.create_folder( path )
+      File.save( filepath, buffer->String )
 
     method print_indent
       if (needs_indent)

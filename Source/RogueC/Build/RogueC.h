@@ -4726,6 +4726,7 @@ RogueInt64 RogueMath__mod__Int64_Int64( RogueInt64 a_0, RogueInt64 b_1 );
 RogueReal64 RogueMath__mod__Real64_Real64( RogueReal64 a_0, RogueReal64 b_1 );
 RogueInt32 RogueMath__shift_right__Int32_Int32( RogueInt32 value_0, RogueInt32 bits_1 );
 RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 );
+RogueLogical RogueFile__create_folder__String( RogueString* filepath_0 );
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 );
 RogueString* RogueFile__filename__String( RogueString* filepath_0 );
 RogueLogical RogueFile__is_folder__String( RogueString* filepath_0 );

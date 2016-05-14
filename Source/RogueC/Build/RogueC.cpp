@@ -20160,6 +20160,22 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
   return (RogueString*)(return_value_2);
 }
 
+RogueLogical RogueFile__create_folder__String( RogueString* filepath_0 )
+{
+  filepath_0 = ((RogueString*)(RogueFile__absolute_filepath__String( filepath_0 )));
+  if ((RogueFile__exists__String( filepath_0 )))
+  {
+    return (RogueLogical)((RogueFile__is_folder__String( filepath_0 )));
+  }
+  ROGUE_DEF_LOCAL_REF(RogueString*,parent_1,((RogueFile__path__String( filepath_0 ))));
+  if (!((RogueFile__create_folder__String( parent_1 ))))
+  {
+    return (RogueLogical)(false);
+  }
+  return (0 == mkdir((char*)filepath_0->utf8, 0777));
+
+}
+
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 )
 {
   if ( !filepath_0 ) return false;
@@ -42381,7 +42397,12 @@ RogueClassCPPWriter* RogueCPPWriter__init__String( RogueClassCPPWriter* THIS, Ro
 
 void RogueCPPWriter__close( RogueClassCPPWriter* THIS )
 {
-  RogueFile__save__String_String( ROGUE_ARG(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), ROGUE_ARG(THIS->filepath) )))->filepath), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(THIS->buffer) )))) );
+  ROGUE_DEF_LOCAL_REF(RogueString*,path_0,((RogueFile__path__String( ROGUE_ARG(THIS->filepath) ))));
+  if (!!(path_0->character_count))
+  {
+    RogueFile__create_folder__String( path_0 );
+  }
+  RogueFile__save__String_String( ROGUE_ARG(THIS->filepath), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(THIS->buffer) )))) );
 }
 
 void RogueCPPWriter__print_indent( RogueClassCPPWriter* THIS )
@@ -59070,8 +59091,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[42] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.60.5", 8 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 11, 2016", 12 ) ); 
+  Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.60.6", 8 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 14, 2016", 12 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1424 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 
