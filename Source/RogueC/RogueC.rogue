@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.60.6"
+$define RELEASE_VERSION "1.0.60.7"
 $define RELEASE_DATE    "May 14, 2016"
 
 $include "Attributes.rogue"
@@ -53,6 +53,7 @@ class RogueC [singleton]
     # If true everything is requisite
     all_requisite = false
 
+    compile_output    : Logical
     execute_args      : String
 
     package_name      : String
@@ -109,6 +110,10 @@ class RogueC [singleton]
                    |OPTIONS
                    |  --main
                    |    Include a main() function in the output file.
+                   |
+                   |  --compile
+                   |    Use command line directives to compile the output of the
+                   |    compiled .rogue program.  Automatically enables the --main option.
                    |
                    |  --debug
                    |    Enables exception stack traces.
@@ -328,8 +333,13 @@ class RogueC [singleton]
               if (value.count == 0) throw RogueError( ''Output filepath expected after "--output=".'' )
               output_filepath = value
 
+            case "--compile"
+              generate_main = true
+              compile_output = true
+
             case "--execute"
               generate_main = true
+              compile_output = true
               execute_args = value
 
             case "--debug"

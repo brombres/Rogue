@@ -39,6 +39,7 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [RogueC] Improved logic that guards against recursive getters to prevent false positives - previously only the calling argument count was checked, now the callee parameter count is checked as well.
 - [RogueC] `File.listing()` is now overloaded with a flag arguments variant that accepts `(&ignore_hidden,&recursive,&absolute_filepaths)`.
 - [RogueC] If the directive `--output=folder/filename` is given, `folder` will automatically be created if it does not exist.
+- [RogueC] Added `--compile` directive that compiles the RogueC output but does not execute it.  Automatically enables the `--main` option.
 
 
 ###v1.0.59 - April 30, 2016

@@ -1417,14 +1417,15 @@ augment RogueC
       Program.write_cpp( output_filepath )
       RogueC.on_compile_finished
 
-      if (execute_args)
+      if (compile_output)
         local exe = output_filepath
         if (exe.contains('/'))
           exe = File.path(exe) + "/" + File.filename(exe).to_lowercase
         else
           exe = exe.to_lowercase
         endIf
-        local cmd = "clang++ -std=c++11 -fno-strict-aliasing $.cpp -o $ && ./$ $" (output_filepath,exe,exe,execute_args)
+        local cmd = "clang++ -std=c++11 -fno-strict-aliasing $.cpp -o $" (output_filepath,exe)
+        if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println
         System.run( cmd )

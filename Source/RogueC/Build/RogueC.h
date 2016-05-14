@@ -1525,6 +1525,7 @@ struct RogueClassRogueC : RogueObject
   RogueString_List* supported_targets;
   RogueString_List* requisite_declarations;
   RogueLogical all_requisite;
+  RogueLogical compile_output;
   RogueString* execute_args;
   RogueString* package_name;
   RogueLogical debug_mode;
