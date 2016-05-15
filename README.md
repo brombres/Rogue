@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.60 - May 14, 2016
+###v1.0.60 - May 15, 2016
 - [Rogue] Added weak references (note: only tested in manual GC mode).  Create a `WeakReference<<$DataType>>(obj)` and then access
 its `value` as desired.  The weak reference does not prevent the contained object from being collected and, if it is, the weak reference's `value` will be set to `null`.
 - [Rogue] Improved module namespacing.  When you write `module A::B`, all identifiers from modules `A` and `A::B` become visible (previously only identifiers from `A::B` become visible).  If you are working in `module A` that includes files from `module A::B`, you can now write relative scope qualifiers such as `B::xyz` instead of having to write the full `A::B::xyz`.
@@ -34,12 +34,14 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [Introspection] Added method template `TypeInfo.create_object<<X>>()->X` which is equivalent to calling `some_type.create_object as X`.
 - [API] `Runtime.collect_garbage()` now sets a flag in manual GC mode to force a GC after the current update (the `force` flag is ignored in manual GC mode).
 - [API] `List.remove(value:$DataType)->$DataType` now returns `value` instead of `null` if the value is not found in the list.
-- [Vim Syntax] Improved auto-indenting for verbatim strings (`@|Line 1\n  |Line 2\n  ...`) as well as routines.
+- [API] PropertyValue types now implement clone() and various operator methods.
+- [RogueC] Fixed `++` and `--` to work on objects that are accessed through a get/set interface - `++list[i]` becomes `list.set( i, list.get(i) + 1 )`.
 - [RogueC] Fixed typed literal lists to work again (the newish visitor system did not yet support them).
 - [RogueC] Improved logic that guards against recursive getters to prevent false positives - previously only the calling argument count was checked, now the callee parameter count is checked as well.
 - [RogueC] `File.listing()` is now overloaded with a flag arguments variant that accepts `(&ignore_hidden,&recursive,&absolute_filepaths)`.
 - [RogueC] If the directive `--output=folder/filename` is given, `folder` will automatically be created if it does not exist.
 - [RogueC] Added `--compile` directive that compiles the RogueC output but does not execute it.  Automatically enables the `--main` option.
+- [Vim Syntax] Improved auto-indenting for verbatim strings (`@|Line 1\n  |Line 2\n  ...`) as well as routines.
 
 
 ###v1.0.59 - April 30, 2016

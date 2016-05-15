@@ -4,7 +4,7 @@ class PropertyValue
       return Int32Property( value )
 
     method create( value:Logical )->PropertyValue
-      return LogicalProperty( value )
+      return select{ value:LogicalProperty.true_value || LogicalProperty.false_value }
 
     method create( value:Real64 )->PropertyValue
       return Real64Property( value )
@@ -38,6 +38,9 @@ class PropertyValue
       return this
 
     method clear->PropertyValue
+      return this
+
+    method clone->PropertyValue
       return this
 
     method contains( key:String )->Logical
@@ -163,6 +166,45 @@ class PropertyValue
     method last->PropertyValue
       return null
 
+    method operator-()->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator+( other:PropertyValue )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator-( other:PropertyValue )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator*( other:PropertyValue )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator/( other:PropertyValue )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator%( other:PropertyValue )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator+( other:Real64 )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator-( other:Real64 )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator*( other:Real64 )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator/( other:Real64 )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator%( other:Real64 )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator+( other:String )->PropertyValue
+      return PropertyValue( 0 )
+
+    method operator*( other:String )->PropertyValue
+      return PropertyValue( 0 )
+
     method remove( value:PropertyValue )->PropertyValue
       return value
 
@@ -241,6 +283,57 @@ class Int32Property( value:Int32 ) : PropertyValue
     method is_number->Logical
       return true
 
+    method operator-()->PropertyValue
+      return Int32Property( -value )
+
+    method operator+( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value + other->Int32 )
+
+    method operator-( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value - other->Int32 )
+
+    method operator*( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value * other->Int32 )
+
+    method operator/( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value / other->Int32 )
+
+    method operator%( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value % other->Int32 )
+
+    method operator+( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value + other )
+
+    method operator-( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value + other )
+
+    method operator*( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value + other )
+
+    method operator/( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value + other )
+
+    method operator%( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Int32Property( value + other )
+
+    method operator+( other:String )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value + other )
+
+    method operator*( other:String )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value * other )
+
     method to->Int32
       return value
 
@@ -284,6 +377,57 @@ class Real64Property( value:Real64 ) : PropertyValue
     method is_real64->Logical
       return true
 
+    method operator-()->PropertyValue
+      return Real64Property( -value )
+
+    method operator+( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value + other->Real64 )
+
+    method operator-( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value - other->Real64 )
+
+    method operator*( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value * other->Real64 )
+
+    method operator/( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value / other->Real64 )
+
+    method operator%( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value % other->Real64 )
+
+    method operator+( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value + other )
+
+    method operator-( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value + other )
+
+    method operator*( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value + other )
+
+    method operator/( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value + other )
+
+    method operator%( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return Real64Property( value + other )
+
+    method operator+( other:String )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value + other )
+
+    method operator*( other:String )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( Int32(value) * other )
+
     method to->Int32
       return value
 
@@ -321,6 +465,22 @@ class StringProperty( value:String ) : PropertyValue
   METHODS
     method is_string->Logical
       return true
+
+    method operator+( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value + other->String )
+
+    method operator*( other:PropertyValue )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value * other->Int32 )
+
+    method operator+( other:Real64 )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value + other )
+
+    method operator+( other:String )->PropertyValue
+      if (not other) return PropertyValue(0)
+      return StringProperty( value + other )
 
     method to->Character
       if (value.count > 0) return value[0]
@@ -515,6 +675,9 @@ class PropertyTable : PropertyValue
     method clear->this
       values.clear
       return this
+
+    method clone->PropertyTable
+      return PropertyTable( values.clone )
 
     method contains( key:String )->Logical
       return values.contains( key )

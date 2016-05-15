@@ -280,7 +280,12 @@ class CmdArgs : Cmd[]
       init
       add( arg1 ).add( arg2 ).add( arg3 )
 
-    method clone( clone_args=null:CloneArgs )->CmdArgs
+    method clone->CmdArgs
+      # Need two clone() overloads here because this one overrides the base class
+      # clone().
+      return clone( null )
+
+    method clone( clone_args:CloneArgs )->CmdArgs
       local result = CmdArgs( count )
       forEach (cmd in this) result.add( cmd.clone(clone_args) )
       return result
@@ -1335,6 +1340,9 @@ class CmdLiteralNull : CmdLiteral
     method resolve( scope:Scope )->this
       return this
 
+    method to->String
+      return "null"
+
     method type->Type
       return Program.type_null
 endClass
@@ -1378,6 +1386,9 @@ class CmdLiteralReal64 : CmdLiteral
     method to->Logical
       return value?
 
+    method to->String
+      return value
+
     method type->Type
       return Program.type_Real64
 endClass
@@ -1408,6 +1419,9 @@ class CmdLiteralInt64 : CmdLiteral
     method to->Logical
       return value?
 
+    method to->String
+      return value
+
     method type->Type
       return Program.type_Int64
 endClass
@@ -1436,6 +1450,9 @@ class CmdLiteralInt32 : CmdLiteral
     method to->Logical
       return value?
 
+    method to->String
+      return value
+
     method type->Type
       return Program.type_Int32
 endClass
@@ -1457,6 +1474,9 @@ class CmdLiteralCharacter : CmdLiteral
     method to->Logical
       return value?
 
+    method to->String
+      return value
+
     method type->Type
       return Program.type_Character
 endClass
@@ -1477,6 +1497,9 @@ class CmdLiteralLogical : CmdLiteral
 
     method to->Logical
       return value?
+
+    method to->String
+      return value
 
     method type->Type
       return Program.type_Logical
@@ -1500,6 +1523,9 @@ class CmdLiteralString : CmdLiteral
 
     method to->Logical
       return value?
+
+    method to->String
+      return value
 
     method type->Type
       return Program.type_String
@@ -2387,11 +2413,26 @@ class CmdCall : Cmd
         throw t.error( "Method '$' does not return a value." (method_info.signature) )
       endIf
 
-      if (context)
-        return CmdAccess( t, context.clone, "set_" + method_info.name,
-                          CmdArgs(CmdAdd(t,this,CmdLiteralInt32(t,delta))) ).resolve(scope)
+      if (method_info.name == "get")
+        # Pass back the same args plus our new value
+        ensure args
+        local setter_args = args.clone
+        setter_args.add( CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
+        if (context)
+          return CmdAccess( t, context.clone, "set", setter_args ).resolve(scope)
+        else
+          return CmdAccess( t, "set", setter_args ).resolve(scope)
+        endIf
       else
-        return CmdAccess( t, "set_" + method_info.name, CmdArgs(CmdAdd(t,this,CmdLiteralInt32(t,delta))) ).resolve(scope)
+        # Transform get_name() into set_name(new_value)
+        local setter_name = "set_" + method_info.name
+        local setter_args = select{ args:args.clone || CmdArgs() }
+        setter_args.add( CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
+        if (context)
+          return CmdAccess( t, context.clone, setter_name, setter_args ).resolve(scope)
+        else
+          return CmdAccess( t, setter_name, setter_args ).resolve(scope)
+        endIf
       endIf
 
     method type->Type
@@ -2630,6 +2671,9 @@ class CmdUnary : Cmd
     method suffix_symbol->String
       return ""
 
+    method to->String
+      return "$($)" (type_name,operand)
+
     method type->Type
       return operand.type
 endClass
@@ -2776,6 +2820,9 @@ class CmdBinary : Cmd
 
     method symbol->String
       throw t.error( "[INTERNAL] $.symbol() is not defined." (type_name) )
+
+    method to->String
+      return "$($,$)" (type_name,left,right)
 
     method type->Type
       return find_operation_result_type( left.require_type, right.require_type )
@@ -3494,7 +3541,7 @@ class CmdAdjust : Cmd
     method init( t, operand, delta )
 
     method resolve( scope:Scope )->Cmd
-      operand = operand.resolve( scope )
+      operand = operand.resolve( scope ).require_value
       return operand.resolve_adjust( scope, delta )
 endClass
 
