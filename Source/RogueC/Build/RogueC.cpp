@@ -38758,7 +38758,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
     for (;_auto_496_166 < _auto_495_165->count;++_auto_496_166)
     {
       ROGUE_DEF_LOCAL_REF(RogueClassType*,type_167,(((RogueClassType*)(_auto_495_165->data->objects[_auto_496_166]))));
-      if ((!(((RogueType__omit_output( type_167 )))) && ((RogueType__is_singleton( type_167 )))))
+      if (((!(((RogueType__omit_output( type_167 )))) && ((RogueType__is_singleton( type_167 )))) && ((RogueType__is_requisite( type_167 )))))
       {
         RogueCPPWriter__println__String( ROGUE_ARG(((RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( writer_1, Rogue_literal_strings[722] )))), ROGUE_ARG(type_167->cpp_name) )))), Rogue_literal_strings[627] );
       }
@@ -59251,7 +59251,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.60.8", 8 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.60.9", 8 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 15, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
@@ -61021,16 +61021,7 @@ void Rogue_launch()
 
   // Instantiate requisite singletons
   ROGUE_SINGLETON( Global );
-  ROGUE_SINGLETON( Console );
-  ROGUE_SINGLETON( Function_95 );
-  ROGUE_SINGLETON( RogueC );
   ROGUE_SINGLETON( Program );
-  ROGUE_SINGLETON( Function_383 );
-  ROGUE_SINGLETON( Function_384 );
-  ROGUE_SINGLETON( Function_798 );
-  ROGUE_SINGLETON( TraceUsedCodeVisitor );
-  ROGUE_SINGLETON( Function_2633 );
-  ROGUE_SINGLETON( Function_2634 );
 
   RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );
   Rogue_collect_garbage();

@@ -30,6 +30,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Added weak references (note: only tested in manual GC mode).  Create a `WeakReference<<$DataType>>(obj)` and then access
 its `value` as desired.  The weak reference does not prevent the contained object from being collected and, if it is, the weak reference's `value` will be set to `null`.
 - [Rogue] Improved module namespacing.  When you write `module A::B`, all identifiers from modules `A` and `A::B` become visible (previously only identifiers from `A::B` become visible).  If you are working in `module A` that includes files from `module A::B`, you can now write relative scope qualifiers such as `B::xyz` instead of having to write the full `A::B::xyz`.
+- [Rogue] Bug fix: only requisite singletons are instantiated on program launch.  Other singletons are instantiated on first access.
 - [Time] Added `add(delta_time:Real64)` and `subtract(delta_time:Real64)` methods to classes `Stopwatch` and `Timer`.  Adding a positive value to a Stopwatch increases the `elapsed` time while adding a positive value to a Timer increases the `remaining` time.
 - [Introspection] Added method template `TypeInfo.create_object<<X>>()->X` which is equivalent to calling `some_type.create_object as X`.
 - [API] `Runtime.collect_garbage()` now sets a flag in manual GC mode to force a GC after the current update (the `force` flag is ignored in manual GC mode).
