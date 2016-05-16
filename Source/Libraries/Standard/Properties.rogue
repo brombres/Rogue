@@ -611,7 +611,7 @@ class PropertyList : PropertyValue
     method remove_last->PropertyValue
       return values.remove_last
 
-    method set( index:Int32, new_value:PropertyValue )->PropertyValue
+    method set( index:Int32, new_value:PropertyValue )->this
       if (index < 0) return this
 
       while (index >= values.count) add( null as PropertyValue )

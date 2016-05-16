@@ -17,7 +17,7 @@ class JSON
       return PropertyTable()
 
     method parse_value( reader:ParseReader )->PropertyValue
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       local ch = reader.peek
       if (ch == '{') return parse_table( reader )
@@ -52,11 +52,11 @@ class JSON
       endIf
 
     method parse_table( reader:ParseReader )->PropertyTable
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       if (not reader.consume('{')) return null
 
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       local table = PropertyTable()
       if (reader.consume('}')) return table
@@ -65,18 +65,20 @@ class JSON
       while (first or reader.consume( ',' ))
         first = false
 
+        consume_spaces_and_eols( reader )
+
         local key = parse_identifier( reader )
-        reader.consume_spaces
+        consume_spaces_and_eols( reader )
 
         if (reader.consume(':'))
-          reader.consume_spaces
+          consume_spaces_and_eols( reader )
           local value = parse_value( reader )
           table.set( key, value )
         else
           table.set( key, true )
         endIf
 
-        reader.consume_spaces
+        consume_spaces_and_eols( reader )
       endWhile
 
       if (not reader.consume('}')) return null
@@ -84,11 +86,11 @@ class JSON
       return table
 
     method parse_list( reader:ParseReader )->PropertyList
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       if (not reader.consume('[')) return null
 
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       local list = PropertyList()
       if (reader.consume(']')) return list
@@ -96,8 +98,9 @@ class JSON
       local first = true
       while (first or reader.consume(','))
         first = false
+        consume_spaces_and_eols( reader )
         list.add( parse_value( reader ) )
-        reader.consume_spaces
+        consume_spaces_and_eols( reader )
       endWhile
 
       if (not reader.consume(']')) return null
@@ -105,7 +108,7 @@ class JSON
       return list
 
     method parse_string( reader:ParseReader )->String
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       local terminator = '"'
       if     (reader.consume( '"' ))  terminator = '"'
@@ -146,7 +149,7 @@ class JSON
       return code->Character
 
     method parse_identifier( reader:ParseReader )->String
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       local ch = reader.peek
       if (ch == '"' or ch == '\'')
@@ -168,12 +171,12 @@ class JSON
       endIf
 
     method parse_number( reader:ParseReader )->PropertyValue
-      reader.consume_spaces
+      consume_spaces_and_eols( reader )
 
       local sign = 1.0
       if (reader.consume( '-' ))
         sign = -1.0
-        reader.consume_spaces
+        consume_spaces_and_eols( reader )
       endIf
 
       local n = 0.0
@@ -220,6 +223,10 @@ class JSON
 
       if (is_real or n != n->Int32) return Real64Property( n )
       return Int32Property( n->Int32 )
+
+    method consume_spaces_and_eols( reader:ParseReader )->ParseReader
+      while (reader.consume_spaces or reader.consume_eols) noAction
+      return reader
 
 endClass
 

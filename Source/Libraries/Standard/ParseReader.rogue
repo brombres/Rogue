@@ -82,6 +82,11 @@ class ParseReader : Reader<<Character>>
       if (ch.is_alphanumeric or ch == '_') return false  # not end of identifier
       return consume( text )
 
+    method consume_eols->Logical
+      local found = false
+      while (consume('\n')) found = true
+      return found
+
     method consume_spaces->Logical
       local found = false
       while (consume(' ')) found = true
