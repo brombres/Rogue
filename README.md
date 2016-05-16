@@ -44,6 +44,7 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [RogueC] `File.listing()` is now overloaded with a flag arguments variant that accepts `(&ignore_hidden,&recursive,&absolute_filepaths)`.
 - [RogueC] If the directive `--output=folder/filename` is given, `folder` will automatically be created if it does not exist.
 - [RogueC] Added `--compile` directive that compiles the RogueC output but does not execute it.  Automatically enables the `--main` option.
+- [RogueC] Implicit narrowing reference casts are now illegal - the 'as' command must be used instead.
 - [Vim Syntax] Improved auto-indenting for verbatim strings (`@|Line 1\n  |Line 2\n  ...`) as well as routines.
 
 

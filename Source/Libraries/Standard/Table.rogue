@@ -269,7 +269,8 @@ class StringTable<<$ValueType>> : Table<<String,$ValueType>>
     method set( key:StringBuilder, value:$ValueType )->this
       local key_string = find_key( key )
       if (not key_string) return this
-      return set( key_string, value )
+      set( key_string, value )
+      return this
 
 endClass
 

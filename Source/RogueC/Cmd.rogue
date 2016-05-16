@@ -13,7 +13,7 @@ class Cmd
     method call_prior( scope:Scope )->Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
-    method cast_to( target_type:Type, scope:Scope )->Cmd
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing )->Cmd
       local this_type = require_type
       if (this_type is target_type) return this
 
@@ -21,8 +21,16 @@ class Cmd
       this_type.organize(scope)
       target_type.organize(scope)
 
-      if (this_type.instance_of(target_type) or target_type.instance_of(this_type))
+      if (this_type.instance_of(target_type))
+        # Widening cast okay
         return CmdCastToType( t, this, target_type )
+      elseIf (target_type.instance_of(this_type))
+        # Narrowing cast - cannot be implicit normally
+        if (allow_implicit_narrowing)
+          return CmdCastToType( t, this, target_type )
+        else
+          throw t.error( '$ cannot be automatically cast to $ - use "<expression> as $" instead.' (this_type,target_type,target_type) )
+        endIf
       else
         if (this_type.is_primitive and target_type.is_primitive)
           if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
@@ -1327,7 +1335,7 @@ class CmdLiteralNull : CmdLiteral
   METHODS
     method init( t )
 
-    method cast_to( target_type:Type, scope:Scope )->Cmd
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing )->Cmd
       if (target_type.is_optional)
         return CmdAccess( t, "$?"(target_type.element_type.name), CmdArgs() )
       else
@@ -1404,7 +1412,7 @@ class CmdLiteralInt64 : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInt64( t, value )
 
-    method cast_to( target_type:Type, scope:Scope )->Cmd
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing )->Cmd
       if (target_type is Program.type_Real64)
         return CmdLiteralReal64( t, value )
       elseIf (target_type is Program.type_Int32)
@@ -1437,7 +1445,7 @@ class CmdLiteralInt32 : CmdLiteral
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInt32( t, value )
 
-    method cast_to( target_type:Type, scope:Scope )->Cmd
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing )->Cmd
       if (target_type is Program.type_Real64)
         return CmdLiteralReal64( t, value )
       else
@@ -1745,7 +1753,7 @@ class CmdAccess : Cmd
           endIf
 
           if (cmd_call)
-            return cmd_call.cast_to( new_type, scope ).resolve( scope )
+            return cmd_call.cast_to( new_type, scope, &allow_implicit_narrowing ).resolve( scope )
           else
             return cmd_new.resolve(scope)
           endIf
