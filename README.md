@@ -36,7 +36,8 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [API] `Runtime.collect_garbage()` now sets a flag in manual GC mode to force a GC after the current update (the `force` flag is ignored in manual GC mode).
 - [API] `List.remove(value:$DataType)->$DataType` now returns `value` instead of `null` if the value is not found in the list.
 - [API] PropertyValue types now implement clone() and various operator methods.
-- [API] Fixed PropertyValue loading and parsing to treat EOLs as whitespace.
+- [API] Fixed JSON loading and parsing to treat EOLs as whitespace.
+- [API] Improved JSON parsing so that a nested syntax error returns `null` at the top level instead of at the nested level.
 - [RogueC] Fixed `++` and `--` to work on objects that are accessed through a get/set interface - `++list[i]` becomes `list.set( i, list.get(i) + 1 )`.
 - [RogueC] Fixed typed literal lists to work again (the newish visitor system did not yet support them).
 - [RogueC] Improved logic that guards against recursive getters to prevent false positives - previously only the calling argument count was checked, now the callee parameter count is checked as well.

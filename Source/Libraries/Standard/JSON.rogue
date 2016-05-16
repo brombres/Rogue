@@ -4,7 +4,11 @@ class JSON
 
   GLOBAL METHODS
     method parse( json:String )->PropertyValue
-      return parse_value( ParseReader(json) )
+      try
+        return parse_value( ParseReader(json) )
+      catch (err:JSONParseError)
+        return null
+      endTry
 
     method parse_list( json:String )->PropertyList
       local list = parse(json) as PropertyList
@@ -18,6 +22,8 @@ class JSON
 
     method parse_value( reader:ParseReader )->PropertyValue
       consume_spaces_and_eols( reader )
+
+      if (not reader.has_another) return null
 
       local ch = reader.peek
       if (ch == '{') return parse_table( reader )
@@ -81,7 +87,7 @@ class JSON
         consume_spaces_and_eols( reader )
       endWhile
 
-      if (not reader.consume('}')) return null
+      if (not reader.consume('}')) throw JSONParseError( "'}' expected." )
 
       return table
 
@@ -103,7 +109,7 @@ class JSON
         consume_spaces_and_eols( reader )
       endWhile
 
-      if (not reader.consume(']')) return null
+      if (not reader.consume(']')) throw JSONParseError( "']' expected." )
 
       return list
 
@@ -167,6 +173,7 @@ class JSON
           endIf
         endWhile
 
+        if (buffer.count == 0) throw JSONParseError( "Identifier expected." )
         return buffer->String
       endIf
 
@@ -230,3 +237,4 @@ class JSON
 
 endClass
 
+class JSONParseError( message ) : Error;
