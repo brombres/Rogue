@@ -4913,7 +4913,7 @@ RogueCharacter_List* RogueCharacter_List__add__Character( RogueCharacter_List* T
 RogueInt32 RogueCharacter_List__capacity( RogueCharacter_List* THIS );
 RogueCharacter_List* RogueCharacter_List__reserve__Int32( RogueCharacter_List* THIS, RogueInt32 additional_count_0 );
 RogueLogical RogueCharacter__is_alphanumeric( RogueCharacter THIS );
-RogueLogical RogueCharacter__is_identifier( RogueCharacter THIS );
+RogueLogical RogueCharacter__is_identifier__Logical_Logical( RogueCharacter THIS, RogueLogical start_0, RogueLogical allow_dollar_1 );
 RogueLogical RogueCharacter__is_letter( RogueCharacter THIS );
 RogueLogical RogueCharacter__is_number__Int32( RogueCharacter THIS, RogueInt32 base_0 );
 RogueString* RogueCharacter__to_String( RogueCharacter THIS );

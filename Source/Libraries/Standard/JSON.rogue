@@ -43,7 +43,7 @@ class JSON
 
         return StringProperty( result )
 
-      elseIf ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch == '_' or ch == '$'))
+      elseIf (ch.is_identifier(&start,&allow_dollar))
         local result = parse_identifier( reader )
         if (result.count == 0) return StringProperty.empty_string
 
@@ -67,24 +67,29 @@ class JSON
       local table = PropertyTable()
       if (reader.consume('}')) return table
 
+      local prev_pos = reader.position
       local first = true
-      while (first or reader.consume( ',' ))
+      while (first or reader.consume(',') or (reader.has_another and reader.peek!='}' and reader.position>prev_pos))
         first = false
+        prev_pos = reader.position
 
         consume_spaces_and_eols( reader )
 
-        local key = parse_identifier( reader )
-        consume_spaces_and_eols( reader )
-
-        if (reader.consume(':'))
+        if (reader.peek.is_identifier(&start,&allow_dollar))
+          local key = parse_identifier( reader )
           consume_spaces_and_eols( reader )
-          local value = parse_value( reader )
-          table.set( key, value )
-        else
-          table.set( key, true )
-        endIf
 
-        consume_spaces_and_eols( reader )
+          if (key.count)
+            if (reader.consume(':'))
+              consume_spaces_and_eols( reader )
+              local value = parse_value( reader )
+              table.set( key, value )
+            else
+              table.set( key, true )
+            endIf
+            consume_spaces_and_eols( reader )
+          endIf
+        endIf
       endWhile
 
       if (not reader.consume('}')) throw JSONParseError( "'}' expected." )
@@ -101,10 +106,13 @@ class JSON
       local list = PropertyList()
       if (reader.consume(']')) return list
 
+      local prev_pos = reader.position
       local first = true
-      while (first or reader.consume(','))
+      while (first or reader.consume(',') or (reader.has_another and reader.peek!=']' and reader.position>prev_pos))
         first = false
+        prev_pos = reader.position
         consume_spaces_and_eols( reader )
+        if (reader.peek == ']') escapeWhile
         list.add( parse_value( reader ) )
         consume_spaces_and_eols( reader )
       endWhile
@@ -164,7 +172,7 @@ class JSON
         buffer.clear
         local finished = false
         while (not finished and reader.has_another)
-          if ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_' or ch == '$')
+          if (ch.is_identifier(&allow_dollar))
             reader.read
             buffer.print( ch->Character )
             ch = reader.peek

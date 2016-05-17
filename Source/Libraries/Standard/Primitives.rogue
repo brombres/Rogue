@@ -349,11 +349,11 @@ class Character [primitive]
              (this >= 'a' and this <= 'z') or
              (this >= 'A' and this <= 'Z')
 
-    method is_identifier->Logical
-      return (this >= 'a' and this <= 'z') or
-             (this >= 'A' and this <= 'Z') or
-             (this == '_')                 or
-             (this >= '0' and this <= '9')
+    method is_identifier( &start, &allow_dollar )->Logical
+      if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
+      if (not start and (this >= '0' and this <= '9')) return true
+      if (allow_dollar and this == '$') return true
+      return false
 
     method is_letter->Logical
       return (this >= 'a' and this <= 'z') or

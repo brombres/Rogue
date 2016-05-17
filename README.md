@@ -38,6 +38,7 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [API] PropertyValue types now implement clone() and various operator methods.
 - [API] Fixed JSON loading and parsing to treat EOLs as whitespace.
 - [API] Improved JSON parsing so that a nested syntax error returns `null` at the top level instead of at the nested level.
+- [API] Improved JSON parsing to not require commas after table mappings or list items.  Extra commas are ignored in tables and at the end of lists.  Extra commas within lists imply null elements - so `[1,,3]` parses as `[1,null,3]`.
 - [RogueC] Fixed `++` and `--` to work on objects that are accessed through a get/set interface - `++list[i]` becomes `list.set( i, list.get(i) + 1 )`.
 - [RogueC] Fixed typed literal lists to work again (the newish visitor system did not yet support them).
 - [RogueC] Improved logic that guards against recursive getters to prevent false positives - previously only the calling argument count was checked, now the callee parameter count is checked as well.
