@@ -36,16 +36,20 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [API] `Runtime.collect_garbage()` now sets a flag in manual GC mode to force a GC after the current update (the `force` flag is ignored in manual GC mode).
 - [API] `List.remove(value:$DataType)->$DataType` now returns `value` instead of `null` if the value is not found in the list.
 - [API] PropertyValue types now implement clone() and various operator methods.
+- [API] PropertyValue types now have methods `ensure_list(key:String)->PropertyList` and `ensure_table(key:String)->PropertyTable`. When called on a PropertyTable they find or create the required collection and return it.  When called on any other PropertyValue type they return an empty collection of the appropriate type but do not (and cannot) store it.
 - [API] Fixed JSON loading and parsing to treat EOLs as whitespace.
 - [API] Improved JSON parsing so that a nested syntax error returns `null` at the top level instead of at the nested level.
 - [API] Improved JSON parsing to not require commas after table mappings or list items.  Extra commas are ignored in tables and at the end of lists.  Extra commas within lists imply null elements - so `[1,,3]` parses as `[1,null,3]`.
+- [API] `File.listing()` is now overloaded with a flag arguments variant that accepts `(&ignore_hidden,&recursive,&absolute_filepaths)`.
+- [API] Added `File.ends_with_separator()->Logical` that returns `true` if a `/` or `\' is at the end of the filepath.
+- [API] Added `File.ensure_ends_with_separator()`.
 - [RogueC] Fixed `++` and `--` to work on objects that are accessed through a get/set interface - `++list[i]` becomes `list.set( i, list.get(i) + 1 )`.
 - [RogueC] Fixed typed literal lists to work again (the newish visitor system did not yet support them).
 - [RogueC] Improved logic that guards against recursive getters to prevent false positives - previously only the calling argument count was checked, now the callee parameter count is checked as well.
-- [RogueC] `File.listing()` is now overloaded with a flag arguments variant that accepts `(&ignore_hidden,&recursive,&absolute_filepaths)`.
 - [RogueC] If the directive `--output=folder/filename` is given, `folder` will automatically be created if it does not exist.
 - [RogueC] Added `--compile` directive that compiles the RogueC output but does not execute it.  Automatically enables the `--main` option.
 - [RogueC] Implicit narrowing reference casts are now illegal - the 'as' command must be used instead.
+- [RogueC] Code generated for contingents now includes additional braces to scope local variables and prevent C++ warnings regarding jumping over local variable initializations.
 - [Vim Syntax] Improved auto-indenting for verbatim strings (`@|Line 1\n  |Line 2\n  ...`) as well as routines.
 
 

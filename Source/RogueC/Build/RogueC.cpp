@@ -10584,6 +10584,8 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
+  0,
   (void*) (ROGUEM403) RoguePropertyTable__get__String,
   0,
   0,
@@ -10641,6 +10643,8 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM407) RoguePropertyValue__type_name,
+  0,
+  0,
   0,
   0,
   0,
@@ -17001,6 +17005,8 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
+  0,
   (void*) (ROGUEM408) RoguePropertyValue__get__String,
   0,
   0,
@@ -17058,6 +17064,8 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM1256) RogueStringProperty__type_name,
+  0,
+  0,
   0,
   0,
   0,
@@ -17351,106 +17359,106 @@ int Rogue_type_info_table[5370] =
   1710,55,2,8,8,2,0,1833,3,199,80,1,0,2,1560,1076,54,9,0,1875,2,80,1,0,1,
   1560,54,0,1917,3,199,80,1,0,2,1560,1076,54,8,0,1959,1,1,0,0,0,1970,3,203,80,
   1,0,3,1560,1711,1712,54,80,80,0,2020,2,80,1,0,3,1560,1711,1712,54,80,80,0,2070,2,
-  205,1,0,1,1713,206,0,2135,1,1,0,0,0,2200,1,1,0,3,1333,1334,1335,8,207,4,0,
-  2210,2,5,1,0,2,1320,420,209,8,0,2220,1,1,0,4,1336,1076,1337,1338,2,205,208,8,0,
-  0,2,7,1,0,0,0,2230,2,80,1,0,2,1560,88,54,2,0,2272,2,80,1,0,2,1560,
-  88,54,2,0,2314,4,169,166,80,1,0,11,1560,1614,1682,1683,1684,1685,1686,1687,1688,1714,1715,54,98,
-  8,9,2,2,170,170,169,80,98,0,2358,4,169,166,80,1,0,12,1560,1614,1682,1683,1684,1685,1686,
-  1687,1688,1604,1716,1717,54,98,8,9,2,2,170,170,169,80,214,215,0,2402,2,5,1,0,2,1320,
-  420,216,8,0,2412,2,80,1,0,3,1560,1718,1614,54,161,98,0,0,2,7,1,0,0,0,2454,
+  205,1,0,1,1713,206,0,2137,1,1,0,0,0,2204,1,1,0,3,1333,1334,1335,8,207,4,0,
+  2214,2,5,1,0,2,1320,420,209,8,0,2224,1,1,0,4,1336,1076,1337,1338,2,205,208,8,0,
+  0,2,7,1,0,0,0,2234,2,80,1,0,2,1560,88,54,2,0,2276,2,80,1,0,2,1560,
+  88,54,2,0,2318,4,169,166,80,1,0,11,1560,1614,1682,1683,1684,1685,1686,1687,1688,1714,1715,54,98,
+  8,9,2,2,170,170,169,80,98,0,2362,4,169,166,80,1,0,12,1560,1614,1682,1683,1684,1685,1686,
+  1687,1688,1604,1716,1717,54,98,8,9,2,2,170,170,169,80,214,215,0,2406,2,5,1,0,2,1320,
+  420,216,8,0,2416,2,80,1,0,3,1560,1718,1614,54,161,98,0,0,2,7,1,0,0,0,2458,
   4,169,166,80,1,0,9,1560,1614,1682,1683,1684,1685,1686,1687,1688,54,98,8,9,2,2,170,170,169,
-  0,2498,4,169,166,80,1,0,15,1560,1614,1682,1683,1684,1685,1686,1687,1688,1719,1720,1721,1722,1723,1724,54,
-  98,8,9,2,2,170,170,169,98,98,2,2,170,170,0,2542,4,169,166,80,1,0,12,1560,1614,
-  1682,1683,1684,1685,1686,1687,1688,1725,1714,1726,54,98,8,9,2,2,170,170,169,98,80,98,0,2586,4,
+  0,2502,4,169,166,80,1,0,15,1560,1614,1682,1683,1684,1685,1686,1687,1688,1719,1720,1721,1722,1723,1724,54,
+  98,8,9,2,2,170,170,169,98,98,2,2,170,170,0,2546,4,169,166,80,1,0,12,1560,1614,
+  1682,1683,1684,1685,1686,1687,1688,1725,1714,1726,54,98,8,9,2,2,170,170,169,98,80,98,0,2590,4,
   169,166,80,1,0,10,1560,1614,1682,1683,1684,1685,1686,1687,1688,1727,54,98,8,9,2,2,170,170,169,
-  221,0,2630,2,5,1,0,2,1320,420,223,8,0,2640,2,80,1,0,3,1560,1728,1614,54,96,98,
-  0,0,2,7,1,0,0,0,2682,2,80,1,0,4,1560,1604,1729,1730,54,80,98,96,0,2724,2,
-  80,1,0,1,1560,54,0,2766,2,80,1,0,2,1560,1604,54,80,0,2808,3,199,80,1,0,3,
-  1560,1076,1321,54,2,8,0,2850,2,80,1,0,3,1560,1731,1673,54,2,161,0,2892,2,80,1,0,
-  2,1560,1732,54,80,0,2934,3,166,80,1,0,3,1560,1733,1734,54,96,9,0,2976,2,80,1,0,
-  5,1560,1714,1316,1735,1733,54,80,80,80,96,0,3018,2,80,1,0,3,1560,1682,1736,54,8,169,0,
-  3060,2,80,1,0,2,1560,1736,54,169,0,3102,2,80,1,0,3,1560,1736,1714,54,218,80,0,3144,
-  2,80,1,0,3,1560,1736,1714,54,218,80,0,3186,2,80,1,0,3,1560,1737,1738,54,80,8,0,
-  3228,2,80,1,0,3,1560,1739,1740,54,80,80,0,3270,2,80,1,0,4,1560,1739,1741,1740,54,80,
-  55,80,0,3312,2,80,1,0,3,1560,1733,1738,54,96,8,0,3354,2,80,1,0,2,1560,1733,54,
-  96,0,3396,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,3447,3,203,80,1,0,
-  4,1560,1711,1712,1567,54,80,80,9,0,3498,2,80,1,0,4,1560,1742,1743,1744,54,80,80,80,0,
-  3542,3,245,80,1,0,4,1560,1741,1740,1733,54,55,80,96,0,3584,2,80,1,0,3,1560,1741,1740,
-  54,55,80,0,3626,3,243,80,1,0,4,1560,1742,1743,1744,54,80,80,80,0,3670,3,243,80,1,
-  0,4,1560,1742,1743,1744,54,80,80,80,0,3714,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,
-  80,9,0,3765,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,3816,4,169,166,80,
+  221,0,2634,2,5,1,0,2,1320,420,223,8,0,2644,2,80,1,0,3,1560,1728,1614,54,96,98,
+  0,0,2,7,1,0,0,0,2686,2,80,1,0,4,1560,1604,1729,1730,54,80,98,96,0,2728,2,
+  80,1,0,1,1560,54,0,2770,2,80,1,0,2,1560,1604,54,80,0,2812,3,199,80,1,0,3,
+  1560,1076,1321,54,2,8,0,2854,2,80,1,0,3,1560,1731,1673,54,2,161,0,2896,2,80,1,0,
+  2,1560,1732,54,80,0,2938,3,166,80,1,0,3,1560,1733,1734,54,96,9,0,2980,2,80,1,0,
+  5,1560,1714,1316,1735,1733,54,80,80,80,96,0,3022,2,80,1,0,3,1560,1682,1736,54,8,169,0,
+  3064,2,80,1,0,2,1560,1736,54,169,0,3106,2,80,1,0,3,1560,1736,1714,54,218,80,0,3148,
+  2,80,1,0,3,1560,1736,1714,54,218,80,0,3190,2,80,1,0,3,1560,1737,1738,54,80,8,0,
+  3232,2,80,1,0,3,1560,1739,1740,54,80,80,0,3274,2,80,1,0,4,1560,1739,1741,1740,54,80,
+  55,80,0,3316,2,80,1,0,3,1560,1733,1738,54,96,8,0,3358,2,80,1,0,2,1560,1733,54,
+  96,0,3400,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,3451,3,203,80,1,0,
+  4,1560,1711,1712,1567,54,80,80,9,0,3502,2,80,1,0,4,1560,1742,1743,1744,54,80,80,80,0,
+  3546,3,245,80,1,0,4,1560,1741,1740,1733,54,55,80,96,0,3588,2,80,1,0,3,1560,1741,1740,
+  54,55,80,0,3630,3,243,80,1,0,4,1560,1742,1743,1744,54,80,80,80,0,3674,3,243,80,1,
+  0,4,1560,1742,1743,1744,54,80,80,80,0,3718,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,
+  80,9,0,3769,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,3820,4,169,166,80,
   1,0,13,1560,1614,1682,1683,1684,1685,1686,1687,1688,1745,1746,1747,1748,54,98,8,9,2,2,170,170,169,
-  2,2,80,80,0,3860,3,243,80,1,0,4,1560,1742,1743,1744,54,80,80,80,0,3904,4,253,203,
-  80,1,0,3,1560,1711,1712,54,80,80,0,3955,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,
-  4006,4,253,203,80,1,0,3,1560,1711,1712,54,80,80,0,4057,4,253,203,80,1,0,3,1560,1711,
-  1712,54,80,80,0,4108,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4159,4,242,
-  203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4210,4,242,203,80,1,0,4,1560,1711,1712,
-  1567,54,80,80,9,0,4261,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4312,4,
-  242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4363,3,262,80,1,0,3,1560,1737,1749,
-  54,80,61,0,4405,2,80,1,0,3,1560,1737,1749,54,80,61,0,4447,3,264,80,1,0,2,1560,
-  1737,54,80,0,4497,2,80,1,0,2,1560,1737,54,80,0,4547,4,266,203,80,1,0,3,1560,1711,
-  1712,54,80,80,0,4597,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,4647,4,266,203,80,1,
-  0,3,1560,1711,1712,54,80,80,0,4697,4,266,203,80,1,0,3,1560,1711,1712,54,80,80,0,4747,
-  4,266,203,80,1,0,3,1560,1711,1712,54,80,80,0,4797,4,266,203,80,1,0,3,1560,1711,1712,
-  54,80,80,0,4847,4,266,203,80,1,0,3,1560,1711,1712,54,80,80,0,4897,3,203,80,1,0,
-  3,1560,1711,1712,54,80,80,0,4947,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,4997,3,203,
-  80,1,0,3,1560,1711,1712,54,80,80,0,5047,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,
-  5097,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,5147,3,264,80,1,0,2,1560,1737,54,80,
-  0,5197,3,264,80,1,0,2,1560,1737,54,80,0,5247,3,264,80,1,0,2,1560,1737,54,80,0,
-  5297,2,80,1,0,2,1560,1737,54,80,0,5339,2,80,1,0,3,1560,464,1321,54,80,80,0,5381,
-  2,80,1,0,4,1560,1750,1751,1752,54,80,61,80,0,5423,3,262,80,1,0,3,1560,1737,1749,54,
-  80,61,0,5465,2,80,1,0,5,1560,464,1322,1608,1609,54,80,2,2,61,0,5507,3,262,80,1,
-  0,3,1560,1737,1749,54,80,61,0,5549,3,199,80,1,0,2,1560,1753,54,61,0,5591,3,199,80,
-  1,0,1,1560,54,0,5633,3,199,80,1,0,2,1560,1076,54,22,0,5675,3,199,80,1,0,2,
-  1560,1076,54,10,0,5717,3,199,80,1,0,2,1560,1076,54,20,0,5759,3,292,80,1,0,2,1560,
-  1371,54,61,0,5801,2,80,1,0,2,1560,1371,54,61,0,5843,2,80,1,0,3,1560,1673,1754,54,
-  161,61,0,5885,2,80,1,0,4,1560,1322,1673,1674,54,2,161,162,0,5927,2,5,1,0,2,1320,
-  420,297,8,0,5937,1,1,0,2,1322,528,2,61,0,0,2,7,1,0,0,0,5947,2,5,1,
-  0,2,1320,420,300,8,0,5957,1,1,0,3,1322,1076,528,2,80,61,0,0,2,7,1,0,0,
-  0,5967,2,80,1,0,6,1560,1611,1609,1755,1614,1756,54,295,61,298,98,9,0,6009,2,80,1,0,
-  7,1560,88,1372,1757,1758,1759,1740,54,2,94,61,55,8,80,0,6051,2,80,1,0,5,1560,1733,1604,
-  1716,1760,54,96,80,304,61,0,6093,2,5,1,0,2,1320,420,306,8,0,6103,2,80,1,0,3,
-  1560,1718,1076,54,99,80,0,0,2,7,1,0,0,0,6145,2,80,1,0,5,1560,1714,1316,1735,1733,
-  54,80,80,80,96,0,6187,2,80,1,0,7,1560,1737,1673,1674,1733,1761,1762,54,80,161,162,96,80,
-  80,0,6229,2,80,1,0,3,1560,1763,1764,54,2,161,0,6271,1,1,0,3,1750,1765,1766,53,8,
-  8,0,6281,2,80,1,0,3,1560,1753,1673,54,61,161,0,6323,1,1,0,0,0,6496,4,169,166,
+  2,2,80,80,0,3864,3,243,80,1,0,4,1560,1742,1743,1744,54,80,80,80,0,3908,4,253,203,
+  80,1,0,3,1560,1711,1712,54,80,80,0,3959,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,
+  4010,4,253,203,80,1,0,3,1560,1711,1712,54,80,80,0,4061,4,253,203,80,1,0,3,1560,1711,
+  1712,54,80,80,0,4112,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4163,4,242,
+  203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4214,4,242,203,80,1,0,4,1560,1711,1712,
+  1567,54,80,80,9,0,4265,4,242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4316,4,
+  242,203,80,1,0,4,1560,1711,1712,1567,54,80,80,9,0,4367,3,262,80,1,0,3,1560,1737,1749,
+  54,80,61,0,4409,2,80,1,0,3,1560,1737,1749,54,80,61,0,4451,3,264,80,1,0,2,1560,
+  1737,54,80,0,4501,2,80,1,0,2,1560,1737,54,80,0,4551,4,266,203,80,1,0,3,1560,1711,
+  1712,54,80,80,0,4601,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,4651,4,266,203,80,1,
+  0,3,1560,1711,1712,54,80,80,0,4701,4,266,203,80,1,0,3,1560,1711,1712,54,80,80,0,4751,
+  4,266,203,80,1,0,3,1560,1711,1712,54,80,80,0,4801,4,266,203,80,1,0,3,1560,1711,1712,
+  54,80,80,0,4851,4,266,203,80,1,0,3,1560,1711,1712,54,80,80,0,4901,3,203,80,1,0,
+  3,1560,1711,1712,54,80,80,0,4951,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,5001,3,203,
+  80,1,0,3,1560,1711,1712,54,80,80,0,5051,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,
+  5101,3,203,80,1,0,3,1560,1711,1712,54,80,80,0,5151,3,264,80,1,0,2,1560,1737,54,80,
+  0,5201,3,264,80,1,0,2,1560,1737,54,80,0,5251,3,264,80,1,0,2,1560,1737,54,80,0,
+  5301,2,80,1,0,2,1560,1737,54,80,0,5343,2,80,1,0,3,1560,464,1321,54,80,80,0,5385,
+  2,80,1,0,4,1560,1750,1751,1752,54,80,61,80,0,5427,3,262,80,1,0,3,1560,1737,1749,54,
+  80,61,0,5469,2,80,1,0,5,1560,464,1322,1608,1609,54,80,2,2,61,0,5511,3,262,80,1,
+  0,3,1560,1737,1749,54,80,61,0,5553,3,199,80,1,0,2,1560,1753,54,61,0,5595,3,199,80,
+  1,0,1,1560,54,0,5637,3,199,80,1,0,2,1560,1076,54,22,0,5679,3,199,80,1,0,2,
+  1560,1076,54,10,0,5721,3,199,80,1,0,2,1560,1076,54,20,0,5763,3,292,80,1,0,2,1560,
+  1371,54,61,0,5805,2,80,1,0,2,1560,1371,54,61,0,5847,2,80,1,0,3,1560,1673,1754,54,
+  161,61,0,5889,2,80,1,0,4,1560,1322,1673,1674,54,2,161,162,0,5931,2,5,1,0,2,1320,
+  420,297,8,0,5941,1,1,0,2,1322,528,2,61,0,0,2,7,1,0,0,0,5951,2,5,1,
+  0,2,1320,420,300,8,0,5961,1,1,0,3,1322,1076,528,2,80,61,0,0,2,7,1,0,0,
+  0,5971,2,80,1,0,6,1560,1611,1609,1755,1614,1756,54,295,61,298,98,9,0,6013,2,80,1,0,
+  7,1560,88,1372,1757,1758,1759,1740,54,2,94,61,55,8,80,0,6055,2,80,1,0,5,1560,1733,1604,
+  1716,1760,54,96,80,304,61,0,6097,2,5,1,0,2,1320,420,306,8,0,6107,2,80,1,0,3,
+  1560,1718,1076,54,99,80,0,0,2,7,1,0,0,0,6149,2,80,1,0,5,1560,1714,1316,1735,1733,
+  54,80,80,80,96,0,6191,2,80,1,0,7,1560,1737,1673,1674,1733,1761,1762,54,80,161,162,96,80,
+  80,0,6233,2,80,1,0,3,1560,1763,1764,54,2,161,0,6275,1,1,0,3,1750,1765,1766,53,8,
+  8,0,6285,2,80,1,0,3,1560,1753,1673,54,61,161,0,6327,1,1,0,0,0,6500,4,169,166,
   80,1,0,12,1560,1614,1682,1683,1684,1685,1686,1687,1688,1604,1716,1717,54,98,8,9,2,2,170,170,169,
-  80,214,215,0,6540,2,80,1,0,2,1560,1753,54,61,0,6582,2,80,1,0,2,1560,1753,54,61,
-  0,6624,2,80,1,0,3,1560,1753,1740,54,61,80,0,6666,2,80,1,0,3,1560,1733,1740,54,96,
-  80,0,6708,2,80,1,0,2,1560,1767,54,87,0,6750,2,80,1,0,3,1560,1767,1740,54,87,80,
-  0,6792,2,80,1,0,3,1560,464,1768,54,80,87,0,6834,2,80,1,0,4,1560,464,1768,1740,54,
-  80,87,80,0,6876,2,80,1,0,4,1560,464,1769,1673,54,80,94,161,0,6918,4,324,322,80,1,
-  0,4,1560,464,1769,1673,54,80,94,161,0,6960,3,322,80,1,0,4,1560,464,1769,1673,54,80,94,
-  161,0,7002,2,80,1,0,4,1560,464,1768,1738,54,80,87,8,0,7044,2,80,1,0,3,1560,1767,
-  1738,54,87,8,0,7086,3,245,80,1,0,4,1560,1741,1740,1767,54,55,80,87,0,7128,3,245,80,
-  1,0,5,1560,1741,1740,464,1768,54,55,80,80,87,0,7170,2,80,1,0,3,1560,1770,1771,54,61,
-  80,0,7212,2,80,1,0,4,1560,464,1770,1321,54,80,61,80,0,7254,2,80,1,0,3,1560,464,
-  1770,54,80,61,0,7296,2,80,1,0,5,1560,464,1770,1321,1740,54,80,61,80,80,0,7338,2,80,
-  1,0,3,1560,1772,1773,54,334,170,0,7380,2,5,1,0,2,1320,420,335,8,0,0,2,7,1,
-  0,0,0,7390,2,80,1,0,1,1560,54,0,7432,2,312,1,0,2,1371,1372,61,94,0,7605,1,
-  1,0,3,1333,1334,1335,8,339,4,0,7615,2,5,1,0,2,1320,420,341,8,0,7625,1,1,0,
-  4,1336,1076,1337,1338,2,76,340,8,0,0,2,7,1,0,0,0,7635,3,262,80,1,0,3,1560,
-  1737,1749,54,80,61,0,7677,2,312,1,0,0,0,7850,2,201,1,0,1,1774,94,0,7861,2,201,
-  1,0,7,1775,1776,1777,1778,1779,1780,1781,61,94,61,94,333,87,87,0,7872,3,158,0,1,0,2,
-  1316,1317,2,3,0,7883,2,5,1,0,2,1320,420,348,8,0,0,2,7,1,0,0,0,7893,2,
-  201,1,0,3,1782,1769,1783,80,94,350,0,7904,1,1,0,3,1333,1334,1335,8,351,4,0,7914,2,
-  5,1,0,2,1320,420,353,8,0,7924,1,1,0,4,1336,1076,1337,1338,2,80,352,8,0,0,2,
-  7,1,0,0,0,7934,1,1,0,0,0,7945,1,1,0,3,1750,1765,1766,162,8,8,0,7955,1,
-  1,0,0,0,7966,1,1,0,0,0,7976,4,359,322,80,1,0,5,1560,464,1769,1673,1759,54,80,
-  94,161,8,0,8020,3,322,80,1,0,5,1560,464,1769,1673,1759,54,80,94,161,8,0,8064,3,322,
-  80,1,0,4,1560,464,1769,1673,54,80,94,161,0,8106,3,322,80,1,0,4,1560,464,1769,1673,54,
-  80,94,161,0,8148,4,359,322,80,1,0,5,1560,464,1769,1673,1759,54,80,94,161,8,0,8192,3,
-  322,80,1,0,4,1560,464,1769,1673,54,80,94,161,0,8234,3,322,80,1,0,4,1560,464,1769,1673,
-  54,80,94,161,0,8276,1,1,0,5,1606,1784,1785,1786,1787,61,160,93,93,9,0,8286,2,354,1,
-  0,0,0,8297,2,356,1,0,0,0,8308,3,158,0,1,0,2,1316,1317,2,3,0,8319,2,1,
-  179,0,6,1339,1370,420,1788,1689,1789,8,2,8,8,16,10,0,8329,2,1,180,0,5,1339,1370,1735,
-  1689,1789,8,2,9,16,10,0,8339,2,1,29,0,3,1339,1790,1701,8,179,388,0,8349,2,55,1,
-  0,3,1322,1558,1559,2,9,9,0,8372,2,55,1,0,3,1322,1558,1559,2,9,9,0,8395,2,55,
-  1,0,3,1322,1558,1559,2,9,9,0,8418,2,55,1,0,3,1322,1558,1559,2,9,9,0,8441,2,
-  55,1,0,3,1322,1558,1559,2,9,9,0,8464,2,55,1,0,3,1322,1558,1559,2,9,9,0,8487,
-  2,205,1,0,1,1076,8,0,8552,2,205,1,1,1791,379,1,1076,2,0,8617,4,283,262,80,1,
-  0,3,1560,1737,1749,54,80,61,0,8659,2,1,382,0,4,1339,1750,1792,1793,8,304,8,9,0,8669,
-  0,0,1,1339,8,0,8670,4,324,322,80,1,0,4,1560,464,1769,1673,54,80,94,161,0,8712,2,
+  80,214,215,0,6544,2,80,1,0,2,1560,1753,54,61,0,6586,2,80,1,0,2,1560,1753,54,61,
+  0,6628,2,80,1,0,3,1560,1753,1740,54,61,80,0,6670,2,80,1,0,3,1560,1733,1740,54,96,
+  80,0,6712,2,80,1,0,2,1560,1767,54,87,0,6754,2,80,1,0,3,1560,1767,1740,54,87,80,
+  0,6796,2,80,1,0,3,1560,464,1768,54,80,87,0,6838,2,80,1,0,4,1560,464,1768,1740,54,
+  80,87,80,0,6880,2,80,1,0,4,1560,464,1769,1673,54,80,94,161,0,6922,4,324,322,80,1,
+  0,4,1560,464,1769,1673,54,80,94,161,0,6964,3,322,80,1,0,4,1560,464,1769,1673,54,80,94,
+  161,0,7006,2,80,1,0,4,1560,464,1768,1738,54,80,87,8,0,7048,2,80,1,0,3,1560,1767,
+  1738,54,87,8,0,7090,3,245,80,1,0,4,1560,1741,1740,1767,54,55,80,87,0,7132,3,245,80,
+  1,0,5,1560,1741,1740,464,1768,54,55,80,80,87,0,7174,2,80,1,0,3,1560,1770,1771,54,61,
+  80,0,7216,2,80,1,0,4,1560,464,1770,1321,54,80,61,80,0,7258,2,80,1,0,3,1560,464,
+  1770,54,80,61,0,7300,2,80,1,0,5,1560,464,1770,1321,1740,54,80,61,80,80,0,7342,2,80,
+  1,0,3,1560,1772,1773,54,334,170,0,7384,2,5,1,0,2,1320,420,335,8,0,0,2,7,1,
+  0,0,0,7394,2,80,1,0,1,1560,54,0,7436,2,312,1,0,2,1371,1372,61,94,0,7609,1,
+  1,0,3,1333,1334,1335,8,339,4,0,7619,2,5,1,0,2,1320,420,341,8,0,7629,1,1,0,
+  4,1336,1076,1337,1338,2,76,340,8,0,0,2,7,1,0,0,0,7639,3,262,80,1,0,3,1560,
+  1737,1749,54,80,61,0,7681,2,312,1,0,0,0,7854,2,201,1,0,1,1774,94,0,7865,2,201,
+  1,0,7,1775,1776,1777,1778,1779,1780,1781,61,94,61,94,333,87,87,0,7876,3,158,0,1,0,2,
+  1316,1317,2,3,0,7887,2,5,1,0,2,1320,420,348,8,0,0,2,7,1,0,0,0,7897,2,
+  201,1,0,3,1782,1769,1783,80,94,350,0,7908,1,1,0,3,1333,1334,1335,8,351,4,0,7918,2,
+  5,1,0,2,1320,420,353,8,0,7928,1,1,0,4,1336,1076,1337,1338,2,80,352,8,0,0,2,
+  7,1,0,0,0,7938,1,1,0,0,0,7949,1,1,0,3,1750,1765,1766,162,8,8,0,7959,1,
+  1,0,0,0,7970,1,1,0,0,0,7980,4,359,322,80,1,0,5,1560,464,1769,1673,1759,54,80,
+  94,161,8,0,8024,3,322,80,1,0,5,1560,464,1769,1673,1759,54,80,94,161,8,0,8068,3,322,
+  80,1,0,4,1560,464,1769,1673,54,80,94,161,0,8110,3,322,80,1,0,4,1560,464,1769,1673,54,
+  80,94,161,0,8152,4,359,322,80,1,0,5,1560,464,1769,1673,1759,54,80,94,161,8,0,8196,3,
+  322,80,1,0,4,1560,464,1769,1673,54,80,94,161,0,8238,3,322,80,1,0,4,1560,464,1769,1673,
+  54,80,94,161,0,8280,1,1,0,5,1606,1784,1785,1786,1787,61,160,93,93,9,0,8290,2,354,1,
+  0,0,0,8301,2,356,1,0,0,0,8312,3,158,0,1,0,2,1316,1317,2,3,0,8323,2,1,
+  179,0,6,1339,1370,420,1788,1689,1789,8,2,8,8,16,10,0,8333,2,1,180,0,5,1339,1370,1735,
+  1689,1789,8,2,9,16,10,0,8343,2,1,29,0,3,1339,1790,1701,8,179,388,0,8353,2,55,1,
+  0,3,1322,1558,1559,2,9,9,0,8376,2,55,1,0,3,1322,1558,1559,2,9,9,0,8399,2,55,
+  1,0,3,1322,1558,1559,2,9,9,0,8422,2,55,1,0,3,1322,1558,1559,2,9,9,0,8445,2,
+  55,1,0,3,1322,1558,1559,2,9,9,0,8468,2,55,1,0,3,1322,1558,1559,2,9,9,0,8491,
+  2,205,1,0,1,1076,8,0,8558,2,205,1,1,1791,379,1,1076,2,0,8625,4,283,262,80,1,
+  0,3,1560,1737,1749,54,80,61,0,8667,2,1,382,0,4,1339,1750,1792,1793,8,304,8,9,0,8677,
+  0,0,1,1339,8,0,8678,4,324,322,80,1,0,4,1560,464,1769,1673,54,80,94,161,0,8720,2,
   54,1,0,5,528,1370,1383,1384,1076,55,2,8,8,2,0,0,0,0,2,1076,483,8,9,0,0,
   0,0,0,0,0,0,0,2,1076,483,17,9,0,0,0,0,2,1076,483,20,9
 };
@@ -36903,34 +36911,40 @@ void RogueProgram__add_template__Template( RogueClassProgram* THIS, RogueClassTe
   ROGUE_DEF_LOCAL_REF(RogueClassTemplate*,existing_template_1,(((RogueTable_String_Template___get__String( ROGUE_ARG(THIS->template_lookup), ROGUE_ARG(template_0->name) )))));
   {
     {
-      RogueInt32 param_count_2 = (((RogueTemplate__type_parameter_count( template_0 ))));
-      if (!(!!(existing_template_1))) goto _auto_289;
-      if ( !(param_count_2 != ((RogueTemplate__type_parameter_count( existing_template_1 )))) ) goto _auto_290;
-      if (!(!!(existing_template_1->alternates_by_param_count)))
       {
-        existing_template_1->alternates_by_param_count = ((RogueTable_Int32_Template___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_Int32_Template_*,ROGUE_CREATE_OBJECT(Table_Int32_Template_))) )));
-      }
-      if ( !(!(((RogueTable_Int32_Template___contains__Int32( ROGUE_ARG(existing_template_1->alternates_by_param_count), param_count_2 ))))) ) goto _auto_290;
-      RogueTable_Int32_Template___set__Int32_Template( ROGUE_ARG(existing_template_1->alternates_by_param_count), param_count_2, template_0 );
-      goto _auto_288;
+        RogueInt32 param_count_2 = (((RogueTemplate__type_parameter_count( template_0 ))));
+        if (!(!!(existing_template_1))) goto _auto_289;
+        if ( !(param_count_2 != ((RogueTemplate__type_parameter_count( existing_template_1 )))) ) goto _auto_290;
+        if (!(!!(existing_template_1->alternates_by_param_count)))
+        {
+          existing_template_1->alternates_by_param_count = ((RogueTable_Int32_Template___init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTable_Int32_Template_*,ROGUE_CREATE_OBJECT(Table_Int32_Template_))) )));
+        }
+        if ( !(!(((RogueTable_Int32_Template___contains__Int32( ROGUE_ARG(existing_template_1->alternates_by_param_count), param_count_2 ))))) ) goto _auto_290;
+        RogueTable_Int32_Template___set__Int32_Template( ROGUE_ARG(existing_template_1->alternates_by_param_count), param_count_2, template_0 );
+        goto _auto_288;
+        }
       _auto_289:;
-      RogueTemplate_List__add__Template( ROGUE_ARG(THIS->template_list), template_0 );
-      RogueTable_String_Template___set__String_Template( ROGUE_ARG(THIS->template_lookup), ROGUE_ARG(template_0->name), template_0 );
+      {
+        RogueTemplate_List__add__Template( ROGUE_ARG(THIS->template_list), template_0 );
+        RogueTable_String_Template___set__String_Template( ROGUE_ARG(THIS->template_lookup), ROGUE_ARG(template_0->name), template_0 );
+        }
       goto _auto_288;
     }
     _auto_290:;
-    if ((!!((template_0->attributes->flags & 262144)) && !!((existing_template_1->attributes->flags & 262144))))
     {
-      RogueToken_List__add__Token_List( ROGUE_ARG(existing_template_1->tokens), ROGUE_ARG(template_0->tokens) );
-    }
-    else if (!!((existing_template_1->attributes->flags & 262144)))
-    {
-      ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(template_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[354] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(template_0->name) )))) )))), Rogue_literal_strings[355] )))) )))) ))));
-    }
-    else
-    {
-      ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(template_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[356] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(template_0->name) )))) )))), Rogue_literal_strings[355] )))) )))) ))));
-    }
+      if ((!!((template_0->attributes->flags & 262144)) && !!((existing_template_1->attributes->flags & 262144))))
+      {
+        RogueToken_List__add__Token_List( ROGUE_ARG(existing_template_1->tokens), ROGUE_ARG(template_0->tokens) );
+      }
+      else if (!!((existing_template_1->attributes->flags & 262144)))
+      {
+        ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(template_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[354] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(template_0->name) )))) )))), Rogue_literal_strings[355] )))) )))) ))));
+      }
+      else
+      {
+        ROGUE_THROW(((RogueToken__error__String( ROGUE_ARG(template_0->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[356] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(template_0->name) )))) )))), Rogue_literal_strings[355] )))) )))) ))));
+      }
+      }
   }
   _auto_288:;
 }
@@ -41901,38 +41915,40 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Logical( Rogue
         {
           {
             {
-              ROGUE_DEF_LOCAL_REF(RogueCmdNamedArg_List*,_auto_2628_64,(access_1->named_args));
-              RogueInt32 _auto_2629_65 = (0);
-              for (;_auto_2629_65 < _auto_2628_64->count;++_auto_2629_65)
               {
-                ROGUE_DEF_LOCAL_REF(RogueClassCmdNamedArg*,arg_66,(((RogueClassCmdNamedArg*)(_auto_2628_64->data->objects[_auto_2629_65]))));
+                ROGUE_DEF_LOCAL_REF(RogueCmdNamedArg_List*,_auto_2628_64,(access_1->named_args));
+                RogueInt32 _auto_2629_65 = (0);
+                for (;_auto_2629_65 < _auto_2628_64->count;++_auto_2629_65)
                 {
+                  ROGUE_DEF_LOCAL_REF(RogueClassCmdNamedArg*,arg_66,(((RogueClassCmdNamedArg*)(_auto_2628_64->data->objects[_auto_2629_65]))));
                   {
-                    ROGUE_DEF_LOCAL_REF(RogueLocal_List*,_auto_2630_67,(m_63->parameters));
-                    RogueInt32 index_68 = (0);
-                    for (;index_68 < _auto_2630_67->count;++index_68)
                     {
-                      ROGUE_DEF_LOCAL_REF(RogueClassLocal*,param_69,(((RogueClassLocal*)(_auto_2630_67->data->objects[index_68]))));
-                      if (((RogueString__operatorEQUALSEQUALS__String( ROGUE_ARG(param_69->original_name), ROGUE_ARG(arg_66->name) ))))
+                      ROGUE_DEF_LOCAL_REF(RogueLocal_List*,_auto_2630_67,(m_63->parameters));
+                      RogueInt32 index_68 = (0);
+                      for (;index_68 < _auto_2630_67->count;++index_68)
                       {
-                        if (!(arg_66->inferred_index.exists))
+                        ROGUE_DEF_LOCAL_REF(RogueClassLocal*,param_69,(((RogueClassLocal*)(_auto_2630_67->data->objects[index_68]))));
+                        if (((RogueString__operatorEQUALSEQUALS__String( ROGUE_ARG(param_69->original_name), ROGUE_ARG(arg_66->name) ))))
                         {
-                          arg_66->inferred_index = RogueOptionalInt32( index_68, true );
+                          if (!(arg_66->inferred_index.exists))
+                          {
+                            arg_66->inferred_index = RogueOptionalInt32( index_68, true );
+                          }
+                          else if (arg_66->inferred_index.value != index_68)
+                          {
+                            arg_66->inferred_index = RogueOptionalInt32( -1, true );
+                          }
+                          goto _auto_2631;
                         }
-                        else if (arg_66->inferred_index.value != index_68)
-                        {
-                          arg_66->inferred_index = RogueOptionalInt32( -1, true );
-                        }
-                        goto _auto_2631;
                       }
                     }
+                    if ( !(false) ) goto _auto_2632;
                   }
-                  if ( !(false) ) goto _auto_2632;
+                  _auto_2631:;
                 }
-                _auto_2631:;
               }
-            }
-            RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_63 );
+              RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_63 );
+              }
             goto _auto_2627;
           }
           _auto_2632:;
@@ -41975,16 +41991,20 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Logical( Rogue
         {
           {
             {
-              ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2640_76,(args_5));
-              RogueInt32 index_77 = (0);
-              for (;index_77 < _auto_2640_76->count;++index_77)
               {
-                ROGUE_DEF_LOCAL_REF(RogueClassType*,arg_type_12,((call_ROGUEM131( 40, ROGUE_ARG(((RogueClassCmd*)(args_5->data->objects[index_77]))) ))));
-                ROGUE_DEF_LOCAL_REF(RogueClassType*,param_type_13,(((RogueClassLocal*)(m_75->parameters->data->objects[index_77]))->_type));
-                if ( !(((void*)arg_type_12) == ((void*)param_type_13)) ) goto _auto_2641;
+                ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2640_76,(args_5));
+                RogueInt32 index_77 = (0);
+                for (;index_77 < _auto_2640_76->count;++index_77)
+                {
+                  ROGUE_DEF_LOCAL_REF(RogueClassType*,arg_type_12,((call_ROGUEM131( 40, ROGUE_ARG(((RogueClassCmd*)(args_5->data->objects[index_77]))) ))));
+                  ROGUE_DEF_LOCAL_REF(RogueClassType*,param_type_13,(((RogueClassLocal*)(m_75->parameters->data->objects[index_77]))->_type));
+                  if ( !(((void*)arg_type_12) == ((void*)param_type_13)) ) goto _auto_2641;
+                }
               }
-            }
-            RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_75 );
+              }
+            {
+              RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_75 );
+              }
             goto _auto_2639;
           }
           _auto_2641:;
@@ -42023,35 +42043,39 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Logical( Rogue
           {
             {
               {
-                ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2648_84,(args_5));
-                RogueInt32 index_85 = (0);
-                for (;index_85 < _auto_2648_84->count;++index_85)
                 {
-                  ROGUE_DEF_LOCAL_REF(RogueClassCmd*,arg_16,(((RogueClassCmd*)(args_5->data->objects[index_85]))));
-                  if ((call_ROGUEM128( 24, arg_16 )))
+                  ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2648_84,(args_5));
+                  RogueInt32 index_85 = (0);
+                  for (;index_85 < _auto_2648_84->count;++index_85)
                   {
-                    if (!(!!(first_generic_fn_t_15)))
+                    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,arg_16,(((RogueClassCmd*)(args_5->data->objects[index_85]))));
+                    if ((call_ROGUEM128( 24, arg_16 )))
                     {
-                      first_generic_fn_t_15 = ((RogueClassToken*)arg_16->t);
+                      if (!(!!(first_generic_fn_t_15)))
+                      {
+                        first_generic_fn_t_15 = ((RogueClassToken*)arg_16->t);
+                      }
+                      ROGUE_DEF_LOCAL_REF(RogueClassCmdCreateFunction*,fn_17,(((RogueClassCmdCreateFunction*)(RogueObject_as(arg_16,RogueTypeCmdCreateFunction)))));
+                      ROGUE_DEF_LOCAL_REF(RogueClassType*,param_type_18,(((RogueClassLocal*)(m_83->parameters->data->objects[index_85]))->_type));
+                      if ( !(((RogueString__begins_with__String( ROGUE_ARG(param_type_18->name), Rogue_literal_strings[497] )))) ) goto _auto_2649;
+                      RogueInt32 callback_param_count_19 = (0);
+                      if (!!(param_type_18->callback_parameter_types))
+                      {
+                        callback_param_count_19 = ((RogueInt32)param_type_18->callback_parameter_types->count);
+                      }
+                      RogueInt32 fn_param_count_20 = (0);
+                      if (!!(fn_17->parameters))
+                      {
+                        fn_param_count_20 = ((RogueInt32)fn_17->parameters->count);
+                      }
+                      if ( !(fn_param_count_20 == callback_param_count_19) ) goto _auto_2649;
                     }
-                    ROGUE_DEF_LOCAL_REF(RogueClassCmdCreateFunction*,fn_17,(((RogueClassCmdCreateFunction*)(RogueObject_as(arg_16,RogueTypeCmdCreateFunction)))));
-                    ROGUE_DEF_LOCAL_REF(RogueClassType*,param_type_18,(((RogueClassLocal*)(m_83->parameters->data->objects[index_85]))->_type));
-                    if ( !(((RogueString__begins_with__String( ROGUE_ARG(param_type_18->name), Rogue_literal_strings[497] )))) ) goto _auto_2649;
-                    RogueInt32 callback_param_count_19 = (0);
-                    if (!!(param_type_18->callback_parameter_types))
-                    {
-                      callback_param_count_19 = ((RogueInt32)param_type_18->callback_parameter_types->count);
-                    }
-                    RogueInt32 fn_param_count_20 = (0);
-                    if (!!(fn_17->parameters))
-                    {
-                      fn_param_count_20 = ((RogueInt32)fn_17->parameters->count);
-                    }
-                    if ( !(fn_param_count_20 == callback_param_count_19) ) goto _auto_2649;
                   }
                 }
-              }
-              RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_83 );
+                }
+              {
+                RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_83 );
+                }
               goto _auto_2647;
             }
             _auto_2649:;
@@ -42121,16 +42145,20 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Logical( Rogue
         {
           {
             {
-              ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2655_93,(args_5));
-              RogueInt32 index_94 = (0);
-              for (;index_94 < _auto_2655_93->count;++index_94)
               {
-                ROGUE_DEF_LOCAL_REF(RogueClassType*,arg_type_26,((call_ROGUEM131( 40, ROGUE_ARG(((RogueClassCmd*)(args_5->data->objects[index_94]))) ))));
-                ROGUE_DEF_LOCAL_REF(RogueClassType*,param_type_27,(((RogueClassLocal*)(m_92->parameters->data->objects[index_94]))->_type));
-                if ( !(((RogueType__is_compatible_with__Type( arg_type_26, param_type_27 )))) ) goto _auto_2656;
+                ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2655_93,(args_5));
+                RogueInt32 index_94 = (0);
+                for (;index_94 < _auto_2655_93->count;++index_94)
+                {
+                  ROGUE_DEF_LOCAL_REF(RogueClassType*,arg_type_26,((call_ROGUEM131( 40, ROGUE_ARG(((RogueClassCmd*)(args_5->data->objects[index_94]))) ))));
+                  ROGUE_DEF_LOCAL_REF(RogueClassType*,param_type_27,(((RogueClassLocal*)(m_92->parameters->data->objects[index_94]))->_type));
+                  if ( !(((RogueType__is_compatible_with__Type( arg_type_26, param_type_27 )))) ) goto _auto_2656;
+                }
               }
-            }
-            RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_92 );
+              }
+            {
+              RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m_92 );
+              }
             goto _auto_2654;
           }
           _auto_2656:;
@@ -42168,33 +42196,37 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Logical( Rogue
           {
             {
               {
-                ROGUE_DEF_LOCAL_REF(RogueMethod_List*,_auto_2660_98,(candidates_4->available));
-                RogueInt32 _auto_2661_99 = (0);
-                for (;_auto_2661_99 < _auto_2660_98->count;++_auto_2661_99)
                 {
-                  ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m2_100,(((RogueClassMethod*)(_auto_2660_98->data->objects[_auto_2661_99]))));
-                  if (((void*)m1_97) != ((void*)m2_100))
+                  ROGUE_DEF_LOCAL_REF(RogueMethod_List*,_auto_2660_98,(candidates_4->available));
+                  RogueInt32 _auto_2661_99 = (0);
+                  for (;_auto_2661_99 < _auto_2660_98->count;++_auto_2661_99)
                   {
-                    RogueLogical m2_is_better_28 = (true);
+                    ROGUE_DEF_LOCAL_REF(RogueClassMethod*,m2_100,(((RogueClassMethod*)(_auto_2660_98->data->objects[_auto_2661_99]))));
+                    if (((void*)m1_97) != ((void*)m2_100))
                     {
-                      ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2662_101,(args_5));
-                      RogueInt32 index_102 = (0);
-                      for (;index_102 < _auto_2662_101->count;++index_102)
+                      RogueLogical m2_is_better_28 = (true);
                       {
-                        ROGUE_DEF_LOCAL_REF(RogueClassType*,m1_arg_type_29,(((RogueClassLocal*)(m1_97->parameters->data->objects[index_102]))->_type));
-                        ROGUE_DEF_LOCAL_REF(RogueClassType*,m2_arg_type_30,(((RogueClassLocal*)(m2_100->parameters->data->objects[index_102]))->_type));
-                        if ( !(((RogueType__is_equivalent_or_more_specific_than__Type( m2_arg_type_30, m1_arg_type_29 )))) ) goto _auto_2663;
+                        ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,_auto_2662_101,(args_5));
+                        RogueInt32 index_102 = (0);
+                        for (;index_102 < _auto_2662_101->count;++index_102)
+                        {
+                          ROGUE_DEF_LOCAL_REF(RogueClassType*,m1_arg_type_29,(((RogueClassLocal*)(m1_97->parameters->data->objects[index_102]))->_type));
+                          ROGUE_DEF_LOCAL_REF(RogueClassType*,m2_arg_type_30,(((RogueClassLocal*)(m2_100->parameters->data->objects[index_102]))->_type));
+                          if ( !(((RogueType__is_equivalent_or_more_specific_than__Type( m2_arg_type_30, m1_arg_type_29 )))) ) goto _auto_2663;
+                        }
                       }
+                      if (true) goto _auto_2664;
                     }
-                    if (true) goto _auto_2664;
                   }
                 }
-              }
+                }
               _auto_2664:;
               goto _auto_2659;
             }
             _auto_2663:;
-            RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m1_97 );
+            {
+              RogueMethod_List__add__Method( ROGUE_ARG(candidates_4->compatible), m1_97 );
+              }
           }
           _auto_2659:;
         }
@@ -46189,17 +46221,17 @@ RogueClassPropertyValue* RoguePropertyValue__get__String( RogueClassPropertyValu
 
 RogueInt32 RoguePropertyValue__get_int32__String( RogueClassPropertyValue* THIS, RogueString* key_0 )
 {
-  ROGUE_DEF_LOCAL_REF(RogueClassPropertyValue*,value_1,((call_ROGUEM408( 18, ROGUE_ARG(THIS), key_0 ))));
+  ROGUE_DEF_LOCAL_REF(RogueClassPropertyValue*,value_1,((call_ROGUEM408( 20, ROGUE_ARG(THIS), key_0 ))));
   if (!(!!(value_1)))
   {
     return (RogueInt32)(0);
   }
-  return (RogueInt32)((call_ROGUEM405( 64, value_1 )));
+  return (RogueInt32)((call_ROGUEM405( 66, value_1 )));
 }
 
 RogueString* RoguePropertyValue__get_string__String( RogueClassPropertyValue* THIS, RogueString* key_0 )
 {
-  ROGUE_DEF_LOCAL_REF(RogueClassPropertyValue*,value_1,((call_ROGUEM408( 18, ROGUE_ARG(THIS), key_0 ))));
+  ROGUE_DEF_LOCAL_REF(RogueClassPropertyValue*,value_1,((call_ROGUEM408( 20, ROGUE_ARG(THIS), key_0 ))));
   if (!(!!(value_1)))
   {
     return (RogueString*)(Rogue_literal_strings[0]);
@@ -47228,14 +47260,22 @@ void RogueCmdContingent__write_cpp__CPPWriter_Logical( RogueClassCmdContingent* 
   writer_0->indent += 2;
   RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[234] );
   writer_0->indent += 2;
+  RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[234] );
+  writer_0->indent += 2;
   RogueCmdStatementList__write_cpp__CPPWriter_Logical_Logical( ROGUE_ARG(THIS->statements), writer_0, false, false );
+  RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[143] );
+  writer_0->indent -= 2;
   if (!!(THIS->satisfied_label))
   {
     RogueCPPWriter__println__String( ROGUE_ARG(((RogueCPPWriter__print__String( writer_0, ROGUE_ARG(THIS->satisfied_label) )))), Rogue_literal_strings[1106] );
   }
   if (!!(THIS->satisfied_statements))
   {
+    RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[234] );
+    writer_0->indent += 2;
     RogueCmdStatementList__write_cpp__CPPWriter_Logical_Logical( ROGUE_ARG(THIS->satisfied_statements), writer_0, false, false );
+    RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[143] );
+    writer_0->indent -= 2;
   }
   RogueCPPWriter__println__String( ROGUE_ARG(((RogueCPPWriter__print__String( ROGUE_ARG(((RogueCPPWriter__print__String( writer_0, Rogue_literal_strings[1107] )))), ROGUE_ARG(THIS->escape_label) )))), Rogue_literal_strings[243] );
   writer_0->indent -= 2;
@@ -47246,7 +47286,11 @@ void RogueCmdContingent__write_cpp__CPPWriter_Logical( RogueClassCmdContingent* 
   }
   if (!!(THIS->unsatisfied_statements))
   {
+    RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[234] );
+    writer_0->indent += 2;
     RogueCmdStatementList__write_cpp__CPPWriter_Logical_Logical( ROGUE_ARG(THIS->unsatisfied_statements), writer_0, false, false );
+    RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[143] );
+    writer_0->indent -= 2;
   }
   writer_0->indent -= 2;
   RogueCPPWriter__println__String( writer_0, Rogue_literal_strings[143] );
@@ -59274,8 +59318,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.60.14", 9 ) ); 
-  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 16, 2016", 12 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.60.15", 9 ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 17, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 

@@ -49,6 +49,20 @@ class PropertyValue
     method count->Int32
       return 0
 
+    method ensure_list( key:String )->PropertyList
+      # When called on a PropertyTable, ensures that the table contains a list
+      # with the given key, creating it if necessary, and returns that list.
+      # When called on any other type of PropertyValue, a new PropertyList
+      # will be returned but it won't be stored in a table.
+      return @[]
+
+    method ensure_table( key:String )->PropertyTable
+      # When called on a PropertyTable, ensures that the table contains a table
+      # with the given key, creating it if necessary, and returns that table.
+      # When called on any other type of PropertyValue, a new PropertyTable
+      # will be returned but it won't be stored in a table.
+      return @{}
+
     method first->PropertyValue
       return null
 
@@ -684,6 +698,24 @@ class PropertyTable : PropertyValue
 
     method count->Int32
       return values.count
+
+    method ensure_list( key:String )->PropertyList
+      # Ensures that this table contains a list with the given key, creating
+      # it if necessary, and returns that list.
+      local list = this[ key ] as PropertyList
+      if (list) return list
+      list = @[]
+      this[ key ] = list
+      return list
+
+    method ensure_table( key:String )->PropertyTable
+      # Ensures that this table contains a table with the given key, creating
+      # it if necessary, and returns that table.
+      local table = this[ key ] as PropertyTable
+      if (table) return table
+      table = @{}
+      this[ key ] = table
+      return table
 
     method get( index:Int32 )->PropertyValue
       if (index < 0 or index >= count) return null

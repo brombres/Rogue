@@ -2006,22 +2006,30 @@ endAugment
 augment CmdContingent
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.println( "{" )
-      writer.indent += 2
-      writer.println( "{" )
-      writer.indent += 2
+      writer.println( "{" ); writer.indent += 2
+      writer.println( "{" ); writer.indent += 2
 
+      writer.println( "{" ); writer.indent += 2
       statements.write_cpp( writer )
+      writer.println( "}" ); writer.indent -= 2
 
       if (satisfied_label)   writer.print( satisfied_label ).println( ":;" )
-      if (satisfied_statements) satisfied_statements.write_cpp( writer )
+      if (satisfied_statements)
+        writer.println( "{" ); writer.indent += 2
+        satisfied_statements.write_cpp( writer )
+        writer.println( "}" ); writer.indent -= 2
+      endIf
       writer.print( "goto " ).print( escape_label ).println( ";" )
 
       writer.indent -= 2
       writer.println( "}" )
 
       if (unsatisfied_label)      writer.print( unsatisfied_label ).println( ":;" )
-      if (unsatisfied_statements) unsatisfied_statements.write_cpp( writer )
+      if (unsatisfied_statements)
+        writer.println( "{" ); writer.indent += 2
+        unsatisfied_statements.write_cpp( writer )
+        writer.println( "}" ); writer.indent -= 2
+      endIf
 
       writer.indent -= 2
       writer.println( "}" )

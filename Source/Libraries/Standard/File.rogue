@@ -179,6 +179,13 @@ class File
       # Note: 0777 is a permission mask rather than the actual permission setting.
       native @|return (0 == mkdir((char*)$filepath->utf8, 0777));
 
+    method ends_with_separator( filepath:String )->Logical
+      return (filepath.ends_with('/') or filepath.ends_with('\\'))
+
+    method ensure_ends_with_separator( filepath:String )->String
+      if (ends_with_separator(filepath)) return filepath
+      return filepath + '/'
+
     method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
               |
@@ -394,6 +401,13 @@ class File
 
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )
+
+    method ends_with_separator->Logical
+      File.ends_with_separator( this.filepath )
+
+    method ensure_ends_with_separator->this
+      if (not ends_with_separator) filepath += '/'
+      return this
 
     method exists->Logical [macro]
       File.exists( this.filepath )
