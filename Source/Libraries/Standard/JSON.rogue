@@ -43,7 +43,7 @@ class JSON
 
         return StringProperty( result )
 
-      elseIf (ch.is_identifier(&start,&allow_dollar))
+      elseIf (next_is_identifier(reader))
         local result = parse_identifier( reader )
         if (result.count == 0) return StringProperty.empty_string
 
@@ -75,7 +75,7 @@ class JSON
 
         consume_spaces_and_eols( reader )
 
-        if (reader.peek.is_identifier(&start,&allow_dollar))
+        if (next_is_identifier(reader))
           local key = parse_identifier( reader )
           consume_spaces_and_eols( reader )
 
@@ -184,6 +184,11 @@ class JSON
         if (buffer.count == 0) throw JSONParseError( "Identifier expected." )
         return buffer->String
       endIf
+
+    method next_is_identifier( reader:ParseReader )->Logical
+      local ch = reader.peek
+      if (ch.is_identifier(&start,&allow_dollar)) return true
+      return (ch == '"' or ch == '\'')
 
     method parse_number( reader:ParseReader )->PropertyValue
       consume_spaces_and_eols( reader )
