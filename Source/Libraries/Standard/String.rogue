@@ -174,8 +174,8 @@ class String
     method get( index:Int32 )->Character [macro]
       $if ("C++") native 'RogueString_character_at($this,$index)'
 
-    method hash_code->Int32 [macro]
-      $if ("C++") native '$this->hash_code'
+    method hash_code->Int32
+      $if ("C++") return native('$this->hash_code')->Int32
 
     method indented( spaces:Int32 )->String
       local lines = split( '\n' )

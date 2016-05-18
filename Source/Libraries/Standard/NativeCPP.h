@@ -107,7 +107,6 @@ extern void Rogue_configure_gc();
 // AKA by-value type; not a reference type
 #define ROGUE_ATTRIBUTE_IS_DIRECT           2
 
-#define ROGUE_ATTRIBUTE_IS_FOREIGN          16
 #define ROGUE_ATTRIBUTE_IS_NATIVE           32
 #define ROGUE_ATTRIBUTE_IS_MACRO            64
 #define ROGUE_ATTRIBUTE_IS_INITIALIZER      128

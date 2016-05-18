@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.60 - May 15, 2016
+###v1.0.60 - May 18, 2016
 - [Rogue] Added weak references (note: only tested in manual GC mode).  Create a `WeakReference<<$DataType>>(obj)` and then access
 its `value` as desired.  The weak reference does not prevent the contained object from being collected and, if it is, the weak reference's `value` will be set to `null`.
 - [Rogue] Improved module namespacing.  When you write `module A::B`, all identifiers from modules `A` and `A::B` become visible (previously only identifiers from `A::B` become visible).  If you are working in `module A` that includes files from `module A::B`, you can now write relative scope qualifiers such as `B::xyz` instead of having to write the full `A::B::xyz`.
@@ -50,6 +50,7 @@ its `value` as desired.  The weak reference does not prevent the contained objec
 - [RogueC] Added `--compile` directive that compiles the RogueC output but does not execute it.  Automatically enables the `--main` option.
 - [RogueC] Implicit narrowing reference casts are now illegal - the 'as' command must be used instead.
 - [RogueC] Code generated for contingents now includes additional braces to scope local variables and prevent C++ warnings regarding jumping over local variable initializations.
+- [RogueC] Dynamic method tables (vtables) are now generated for native classes (classes predefined in the Rogue runtime framework).
 - [Vim Syntax] Improved auto-indenting for verbatim strings (`@|Line 1\n  |Line 2\n  ...`) as well as routines.
 
 

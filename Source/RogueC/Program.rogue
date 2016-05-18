@@ -115,17 +115,17 @@ class Program [requisite singleton]
 
 
     method configure
-      type_null          = create_built_in_type( "null",      Attribute.is_native | Attribute.is_class )
-      type_Real64        = create_built_in_type( "Real64",      Attribute.is_primitive )
-      type_Real32        = create_built_in_type( "Real32",     Attribute.is_primitive )
-      type_Int64         = create_built_in_type( "Int64",      Attribute.is_primitive )
-      type_Int32         = create_built_in_type( "Int32",   Attribute.is_primitive )
+      type_null          = create_built_in_type( "null",      Attribute.is_class )
+      type_Real64        = create_built_in_type( "Real64",    Attribute.is_primitive )
+      type_Real32        = create_built_in_type( "Real32",    Attribute.is_primitive )
+      type_Int64         = create_built_in_type( "Int64",     Attribute.is_primitive )
+      type_Int32         = create_built_in_type( "Int32",     Attribute.is_primitive )
       type_Character     = create_built_in_type( "Character", Attribute.is_primitive )
       type_Byte          = create_built_in_type( "Byte",      Attribute.is_primitive )
       type_Logical       = create_built_in_type( "Logical",   Attribute.is_primitive )
 
       type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
-      type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class | Attribute.is_foreign )
+      type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class )
       type_StringBuilder = create_built_in_type( "StringBuilder", Attribute.is_class )
       type_TypeInfo      = create_built_in_type( "TypeInfo", Attribute.is_class )
       type_NativeArray   = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )

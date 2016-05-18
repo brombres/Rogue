@@ -462,7 +462,7 @@ class Method
       if (is_used and not is_macro)
         if (overridden_method)
           if( index != overridden_method.index )
-            trace this, index, overridden_method, overridden_method.index
+            @trace this, index, overridden_method, overridden_method.index
           endIf
           require( index == overridden_method.index )
         endIf

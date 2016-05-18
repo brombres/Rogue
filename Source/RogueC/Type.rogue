@@ -198,7 +198,7 @@ class Type
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
       if (this is Program.type_null and ancestor_type.is_reference) return true
-      if (this.is_reference and ancestor_type is Program.type_Object and not this.is_foreign) return true
+      if (this.is_reference and ancestor_type is Program.type_Object) return true
 
       forEach (base_type in base_types)
         if (base_type.instance_of(ancestor_type)) return true
@@ -239,7 +239,7 @@ class Type
         if (base_type.instance_of(other)) return 1 + base_type.widening_distance_to( other )
       endForEach
 
-      if (this.is_reference and other is Program.type_Object and not this.is_foreign) return 1
+      if (this.is_reference and other is Program.type_Object) return 1
 
       return -10
 
@@ -263,9 +263,6 @@ class Type
 
     method is_compound->Logical
       return (attributes.flags & Attribute.type_mask) == Attribute.is_compound
-
-    method is_foreign->Logical
-      return (attributes.flags & Attribute.is_foreign)
 
     method is_immutable->Logical
       return (attributes.flags & Attribute.is_immutable)
@@ -346,7 +343,7 @@ class Type
           endIf
         endForEach
 
-        if (not base_class and not is_foreign and this isNot Program.type_Object)
+        if (not base_class and this isNot Program.type_Object)
           Program.type_Object.organize
           base_class = Program.type_Object
           base_types.insert( base_class )
@@ -479,7 +476,7 @@ class Type
       endIf
 
       # Add a default to->String to compounds
-      if (is_compound or is_primitive or is_foreign)
+      if (is_compound or is_primitive)
         local m = find_method( "to_String()" )
         if (not m)
           m = add_method( t, "to_String" )
@@ -779,6 +776,9 @@ class Type
             throw m.t.error( "In $::$ the overridden return type ($) is not compatible with the prior definition return type ($)." (m.type_context.name, m.signature,m.return_type,existing_m.return_type) )
           endIf
         endIf
+
+        if (existing_m.is_macro) throw existing_m.t.error( "Macro methods cannot be overridden." )
+        if (m.is_macro) throw existing_m.t.error( "A macro method cannot override an existing method." )
 
         local i = list.locate( existing_m ).value
 

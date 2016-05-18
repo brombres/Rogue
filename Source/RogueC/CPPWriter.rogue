@@ -574,7 +574,7 @@ augment Program
           forEach (g in type.global_list)
             if (g.type.is_reference or g.type.has_object_references)
 
-              if (g.type.is_reference and not g.type.is_foreign and not g.type.is_array)
+              if (g.type.is_reference and not g.type.is_array)
                 writer.print( "if ((link=Rogue" ).print( type.cpp_name ).print( "_" ).print( g.cpp_name )
                 writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
 
@@ -626,7 +626,7 @@ augment Program
       writer.indent += 2
       local table_index = 0
       forEach (type in type_list)
-        if (not type.omit_output)
+        if (type.is_used)
           table_index = type.print_dynamic_method_table_entries( table_index, writer )
         endIf
       endForEach
@@ -903,7 +903,7 @@ augment Program
 
         if (p.type.is_reference or p.type.has_object_references)
 
-          if (p.type.is_reference and not p.type.is_foreign and not p.type.is_array)
+          if (p.type.is_reference and not p.type.is_array)
             writer.print( "if ((link=((" ).print( type.cpp_class_name ).print( "*)obj)->" ).print( p.cpp_name )
             writer.println( ")) ((RogueObject*)link)->type->trace_fn( link );" )
 

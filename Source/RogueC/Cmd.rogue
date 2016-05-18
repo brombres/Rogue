@@ -21,46 +21,41 @@ class Cmd
       this_type.organize(scope)
       target_type.organize(scope)
 
-      if (this_type.instance_of(target_type))
-        # Widening cast okay
+      if (this_type.instance_of(target_type) or (target_type.instance_of(this_type) and allow_implicit_narrowing))
         return CmdCastToType( t, this, target_type )
-      elseIf (target_type.instance_of(this_type))
-        # Narrowing cast - cannot be implicit normally
-        if (allow_implicit_narrowing)
-          return CmdCastToType( t, this, target_type )
-        else
-          throw t.error( '$ cannot be automatically cast to $ - use "<expression> as $" instead.' (this_type,target_type,target_type) )
-        endIf
-      else
-        if (this_type.is_primitive and target_type.is_primitive)
-          if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
-            return CmdCastToType( t, this, target_type )
-          endIf
-        endIf
-
-        local m_name = "to_" + target_type.name
-        if (this_type.has_method_named(m_name))
-          return CmdAccess( t, this, m_name )
-        endIf
-
-        if (target_type.find_method( "init($)"(this_type.name) )...
-            or target_type.find_global_method( "create($)"(this_type.name)))
-          return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
-        endIf
-
-        if (target_type is Program.type_Logical) return CmdLogicalize(t,this)
-
-        if (target_type.is_optional)
-          if (this_type is target_type.element_type)
-            return CmdAccess( t, "$?"(this_type.name), CmdArgs(this) )
-          elseIf (this_type is Program.type_null)
-            return CmdAccess( t, "$?"(this_type.name), CmdArgs() )
-          endIf
-        endIf
-
-        throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
       endIf
-      #endIf
+
+      if (this_type.is_primitive and target_type.is_primitive)
+        if (not (this_type is Program.type_Logical or target_type is Program.type_Logical))
+          return CmdCastToType( t, this, target_type )
+        endIf
+      endIf
+
+      local m_name = "to_" + target_type.name
+      if (this_type.has_method_named(m_name))
+        return CmdAccess( t, this, m_name )
+      endIf
+
+      if (target_type.find_method( "init($)"(this_type.name) )...
+          or target_type.find_global_method( "create($)"(this_type.name)))
+        return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
+      endIf
+
+      if (target_type is Program.type_Logical) return CmdLogicalize(t,this)
+
+      if (target_type.is_optional)
+        if (this_type is target_type.element_type)
+          return CmdAccess( t, "$?"(this_type.name), CmdArgs(this) )
+        elseIf (this_type is Program.type_null)
+          return CmdAccess( t, "$?"(this_type.name), CmdArgs() )
+        endIf
+      endIf
+
+      if (target_type.instance_of(this_type))
+        throw t.error( 'No conversion from base class $ to extended class $ exists - use "<expression> as $" instead.' (this_type,target_type,target_type) )
+      endIf
+
+      throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
 
     method clone( clone_args=null:CloneArgs )->Cmd
       throw t.error( "[INTERNAL] $.clone() is not implemented." (type_name) )
@@ -3990,6 +3985,9 @@ class CmdConvertToType : CmdTypeOperator
       return CmdConvertToType( t, operand.clone(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_value
+      return operand.cast_to( target_type, scope ).resolve( scope )
+      #{
       operand = operand.resolve( scope )
       local operand_type = operand.require_type
       target_type.organize(scope)
@@ -4000,9 +3998,10 @@ class CmdConvertToType : CmdTypeOperator
       else
         return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
       endIf
+      }#
 endClass
 
-
+#{
 class CmdConvertToPrimitiveType : CmdConvertToType
   METHODS
     method clone( clone_args=null:CloneArgs )->Cmd
@@ -4012,6 +4011,7 @@ class CmdConvertToPrimitiveType : CmdConvertToType
       operand = operand.resolve(scope).require_value
       return this
 endClass
+}#
 
 class CmdAs : CmdTypeOperator
   METHODS

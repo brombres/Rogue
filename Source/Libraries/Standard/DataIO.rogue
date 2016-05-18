@@ -94,10 +94,12 @@ class DataReader : Reader<<Byte>>
       return this
 
     method seek( pos:Int32 )->this
-      return source.seek( pos )
+      source.seek( pos )
+      return this
 
     method skip( n:Int32 )->this
-      return source.skip( n )
+      source.skip( n )
+      return this
 
 endClass
 
@@ -144,10 +146,12 @@ class DataWriter : Writer<<Byte>>
       return this
 
     method seek_end()->this
-      return output.seek_end
+      output.seek_end
+      return this
 
     method skip( n:Int32 )->this
-      return output.skip( n )
+      output.skip( n )
+      return this
 
     method write( value:Byte )->this
       output.write( value )
