@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.59
-- April 30, 2016
+- v1.0.60
+- May 19, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
