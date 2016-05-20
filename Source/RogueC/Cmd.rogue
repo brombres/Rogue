@@ -2355,6 +2355,12 @@ class CmdReadProperty : Cmd
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
+      local setter_name = "set_" + property_info.name
+      local getter_name = property_info.name
+      local context_type = context.type
+      if (context_type.has_method_named(setter_name) or context_type.has_method_named(getter_name))
+        return CmdAssign( t, CmdAccess(t,context,property_info.name), CmdAdd(t,CmdAccess(t,context.clone,property_info.name),CmdLiteralInt32(t,delta)) ).resolve( scope )
+      endIf
       return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
     method type->Type

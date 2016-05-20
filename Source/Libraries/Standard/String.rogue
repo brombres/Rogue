@@ -194,12 +194,12 @@ class String
     method last->Character
       return this[ count-1 ]
 
-    method left_justified( spaces:Int32 )->String
+    method left_justified( spaces:Int32, fill=' ':Character )->String
       if (count >= spaces) return this
 
       local buffer = StringBuilder( spaces )
       buffer.print( this )
-      forEach (count..spaces) buffer.print( ' ' )
+      forEach (count..<spaces) buffer.print( fill )
 
       return buffer->String
 
@@ -489,11 +489,11 @@ class String
       endForEach
       return buffer->String
 
-    method right_justified( spaces:Int32 )->String
+    method right_justified( spaces:Int32, fill=' ':Character )->String
       if (count >= spaces) return this
 
       local buffer = StringBuilder( spaces )
-      forEach (count..spaces) buffer.print( ' ' )
+      forEach (count..<spaces) buffer.print( fill )
       buffer.print( this )
 
       return buffer->String

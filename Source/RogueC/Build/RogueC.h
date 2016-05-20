@@ -31,6 +31,7 @@
 #  define ROGUE_PLATFORM_WINDOWS 1
 #elif defined(__APPLE__)
 #  define ROGUE_PLATFORM_MAC 1
+#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
 #elif defined(__ANDROID__)
 #  define ROGUE_PLATFORM_ANDROID 1
 #else
@@ -4771,7 +4772,7 @@ RogueString* RogueString__from__Int32_Int32( RogueString* THIS, RogueInt32 i1_0,
 RogueString* RogueString__from_first__Character( RogueString* THIS, RogueCharacter ch_0 );
 RogueString* RogueString__from_first__String( RogueString* THIS, RogueString* st_0 );
 RogueCharacter RogueString__last( RogueString* THIS );
-RogueString* RogueString__left_justified__Int32( RogueString* THIS, RogueInt32 spaces_0 );
+RogueString* RogueString__left_justified__Int32_Character( RogueString* THIS, RogueInt32 spaces_0, RogueCharacter fill_1 );
 RogueString* RogueString__leftmost__Int32( RogueString* THIS, RogueInt32 n_0 );
 RogueOptionalInt32 RogueString__locate__Character_OptionalInt32( RogueString* THIS, RogueCharacter ch_0, RogueOptionalInt32 optional_i1_1 );
 RogueOptionalInt32 RogueString__locate__String_OptionalInt32( RogueString* THIS, RogueString* other_0, RogueOptionalInt32 optional_i1_1 );

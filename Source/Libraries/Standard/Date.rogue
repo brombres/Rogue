@@ -1,0 +1,146 @@
+class Date
+  PROPERTIES
+    timestamp : Real64
+    # The date in seconds.
+
+    year, month, day, hour, minute, second, millisecond : Int32
+    # The date in individual units.
+
+    is_relative : Logical
+
+  GLOBAL METHODS
+    method hms( hours:Int32, minutes:Int32, seconds:Int32, ms=0:Int32 )->Date
+      return Date( (hours*3600 + minutes*60 + seconds)->Real64 + ms, &is_relative )
+
+    method now->Date
+      return Date()
+
+    method ymd( year:Int32, month:Int32, day:Int32 )->Date
+      return Date( year, month, day )
+
+  METHODS
+    method init
+      # Initializes with current date.
+      init( System.time )
+
+    method init( timestamp, is_relative=false )
+      if (is_relative)
+        local is_negative = (timestamp < 0)
+        local seconds = timestamp->Int32
+        if (is_negative)
+          seconds = -seconds
+          millisecond = (-timestamp * 1000) % 1000
+        else
+          millisecond = (timestamp * 1000) % 1000
+        endIf
+        day = seconds / 86400
+        seconds %= 86400
+        hour = seconds / 3600
+        seconds %= 3600
+        minute = seconds / 60
+        second = seconds % 60
+
+      else
+        native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+                |tm* date = localtime( &cur_seconds );
+                |$year        = date->tm_year + 1900;
+                |$month       = date->tm_mon + 1;
+                |$day         = date->tm_mday;
+                |$hour        = date->tm_hour;
+                |$minute      = date->tm_min;
+                |$second      = date->tm_sec;
+        @millisecond = (timestamp * 1000) % 1000;
+      endIf
+
+    method init( year, month, day, hour=0, minute=0, second=0, millisecond=0 )
+      native @|time_t cur_seconds = 0;
+              |tm* zero_date = localtime( &cur_seconds );
+              |
+              |tm cur_date;
+              |memcpy( &cur_date, zero_date, sizeof(tm) );
+              |
+              |cur_date.tm_year = $year - 1900;
+              |cur_date.tm_mon  = $month - 1;
+              |cur_date.tm_mday = $day;
+              |cur_date.tm_hour = $hour;
+              |cur_date.tm_min  = $minute;
+              |cur_date.tm_sec  = $second;
+              |cur_date.tm_isdst = -1;
+              |
+              |$timestamp = ((RogueReal64)mktime(&cur_date)) + $millisecond;
+
+    method hour12->Int32
+      local h = hour
+      if (h == 0) return 12
+      if (h <= 12) return h
+      return (h - 12)
+
+    method is_am->Logical
+      return (hour < 12)
+
+    method is_pm->Logical
+      return (hour >= 12)
+
+    method operator+( other:Date )->Date
+      return Date( timestamp + other.timestamp )
+
+    method operator-( other:Date )->Date
+      return Date( timestamp - other.timestamp, &is_relative )
+
+    method operator<( other:Date )->Logical
+      return (timestamp < other.timestamp)
+
+    method operator==( other:Date )->Logical
+      return (timestamp == other.timestamp)
+
+    method to->String
+      if (is_relative)
+        local buffer = StringBuilder()
+        if (timestamp < 0) buffer.print( '-' )
+
+        local needs_comma = false
+        if (day)  buffer.print( day ).print( " day".pluralized(day) ); needs_comma = true
+        if (hour)
+          if (needs_comma) buffer.print( ", " ); needs_comma = false
+          buffer.print( hour ).print( " hour".pluralized(hour) ); needs_comma = true
+        endIf
+        if (minute)
+          if (needs_comma) buffer.print( ", " ); needs_comma = false
+          buffer.print( minute ).print( " minute".pluralized(minute) ); needs_comma = true
+        endIf
+        if (second)
+          if (needs_comma) buffer.print( ", " ); needs_comma = false
+          buffer.print( second ).print( " second".pluralized(second) ); needs_comma = true
+        endIf
+        if (millisecond)
+          if (needs_comma) buffer.print( ", " ); needs_comma = false
+          buffer.print( millisecond ).print( " millisecond".pluralized(millisecond) ); needs_comma = true
+        endIf
+        return buffer->String
+
+      else
+        return to_string( &ymd, &hms, &ms )
+      endIf
+
+    method to_string( &ymd, &hms, &ms )->String
+      local buffer = StringBuilder()
+
+      if (ymd)
+        buffer.print( year.right_justified(4,'0') ).print('.')
+        buffer.print( month.right_justified(2,'0') ).print('.')
+        buffer.print( day.right_justified(2,'0') )
+        if (hms or ms) buffer.print( ' ' )
+      endIf
+      if (hms)
+        buffer.print( hour.right_justified(2,'0') ).print(':')
+        buffer.print( minute.right_justified(2,'0') ).print(':')
+        buffer.print( second.right_justified(2,'0') )
+        if (ms) buffer.print( '.' )
+      endIf
+      if (ms)
+        buffer.print( millisecond.right_justified(3,'0') )
+      endIf
+      return buffer->String
+
+endClass
+

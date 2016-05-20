@@ -381,6 +381,55 @@ class File
               |
               |return size;
 
+    method timestamp( filepath:String )->Real64
+      # Returns the last modified time since Jan 1, 1970
+      native @|#if defined(_WIN32)
+              |  HANDLE handle = CreateFile( (const char*)$filepath->utf8, 0, 0, NULL, OPEN_EXISTING,
+              |      FILE_ATTRIBUTE_NORMAL, NULL );
+              |  if (handle != INVALID_HANDLE_VALUE)
+              |  {
+              |    BY_HANDLE_FILE_INFORMATION info;
+              |    if (GetFileInformationByHandle( handle, &info ))
+              |    {
+              |      RogueInt64 result = info.ftLastWriteTime.dwHighDateTime;
+              |      result <<= 32;
+              |      result |= info.ftLastWriteTime.dwLowDateTime;
+              |      result /= 10000; // convert from Crazyseconds to Milliseconds
+              |      result -= 11644473600000;  // base on Jan 1, 1970 instead of Jan 1, 1601 (?!)
+              |      CloseHandle(handle);
+              |      return (RogueReal64) result;
+              |    }
+              |    CloseHandle(handle);
+              |  }
+              |
+              |#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
+              |  int file_id = open( (const char*)$filepath->utf8, O_RDONLY );
+              |  if (file_id >= 0)
+              |  {
+              |    struct stat info;
+              |    if (0 == fstat(file_id, &info))
+              |    {
+              |#if defined(__APPLE__)
+              |      RogueInt64 result = info.st_mtimespec.tv_sec;
+              |      result *= 1000000000;
+              |      result += info.st_mtimespec.tv_nsec;
+              |      result /= 1000000;  // convert to milliseconds
+              |#else
+              |      RogueInt64 result = (RogueInt64) info.st_mtime;
+              |      result *= 1000;  // convert to ms
+              |#endif
+              |      close(file_id);
+              |      return (RogueReal64) result;
+              |    }
+              |    close(file_id);
+              |  }
+              |
+              |#else
+              |# error Must define bard_file_timestamp() for this OS.
+              |#endif
+              |return 0.0;
+
+
     method writer( filepath:String )->FileWriter
       return FileWriter( filepath )
 

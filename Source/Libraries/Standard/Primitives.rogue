@@ -75,6 +75,12 @@ class Real64 [primitive]
     method is_number->Logical
       return (this == this) and (this - this == 0)
 
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
     method to->Object
       return Boxed<<Real64>>(this)
 
@@ -148,6 +154,12 @@ class Real32 [primitive]
     method is_number->Logical
       return (this == this) and (this - this == 0)
 
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
     method to->Object
       return Boxed<<Real32>>(this)
 
@@ -202,6 +214,9 @@ class Int64 [primitive]
     method hash_code->Int32
       return this
 
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
     method print_in_power2_base( base:Int32, digits=16:Int32, buffer:StringBuilder )->StringBuilder
       local bits = 0
       local temp = base
@@ -210,6 +225,9 @@ class Int64 [primitive]
       if (digits > 1) (this:>>>:bits).print_in_power2_base( base, digits-1, buffer )
       buffer.print( (this & (base-1)).to_digit )
       return buffer
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
 
     method to->Object
       return Boxed<<Int64>>(this)
@@ -279,6 +297,12 @@ class Int32 [primitive]
 
     method hash_code->Int32
       return this
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
 
     method to->Int64 [macro]
       $if ("C++") native "((RogueInt64)$this)"
@@ -362,6 +386,12 @@ class Character [primitive]
     method is_number( base=10:Int32 )->Logical
       return to_number(base) != -1
 
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
     method to->Object
       return Boxed<<Character>>(this)
 
@@ -418,6 +448,12 @@ class Byte [primitive]
 
     method hash_code->Int32
       return this->Int32
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
 
     method signed->Int32
       if (this <= 127) return this
