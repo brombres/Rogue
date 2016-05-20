@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.60
+- v1.0.61
 - May 19, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -25,6 +25,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.0.61 - May 19, 2016
+- [Rogue] Macro methods are now `[propagated]` automatically so that they resolve in the most specific object context before being substituted in place of the call.
 
 ###v1.0.60 - May 19, 2016
 - [Rogue] Added weak references (note: only tested in manual GC mode).  Create a `WeakReference<<$DataType>>(obj)` and then access

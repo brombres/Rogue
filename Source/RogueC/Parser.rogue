@@ -390,6 +390,7 @@ class Parser
           attributes.add( Attribute.is_immutable )
         elseIf (consume("macro"))
           attributes.add( Attribute.is_macro )
+          attributes.add( Attribute.is_propagated )
         elseIf (consume("primitive"))
           ensure_unspecialized_element_type( t, attributes )
           attributes.add( Attribute.is_primitive )

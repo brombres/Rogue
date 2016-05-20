@@ -52,7 +52,7 @@ class Cmd
       endIf
 
       if (target_type.instance_of(this_type))
-        throw t.error( 'No conversion from base class $ to extended class $ exists - use "<expression> as $" instead.' (this_type,target_type,target_type) )
+        throw t.error( 'No $.to->$() conversion method exists - use "<expression> as $" instead.' (this_type,target_type,target_type) )
       endIf
 
       throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
@@ -2004,6 +2004,15 @@ class CmdAccess : Cmd
 
       throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
+    method to->String
+      local buffer = StringBuilder()
+      buffer.print( "CmdAccess(" )
+      if (context) buffer.print( context ).print( "," )
+      buffer.print( '"' ).print( name ).print( '"' )
+      if (args) buffer.print( args )
+      if (named_args) buffer.print( '&' ).print( named_args )
+      return buffer->String
+
     method type->Type
       local err = t.error( "[INTERNAL] $.type() is not defined (access name '$')." (type_name,name) )
       #println err.stack_trace
@@ -2074,6 +2083,9 @@ class CmdCreateObject : Cmd
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
       return this
+
+    method to->String
+      return of_type + "()"
 
     method type->Type
       return of_type
@@ -2189,6 +2201,9 @@ class CmdLiteralThis : CmdThisContext
         throw t.error( "Invalid reference to 'this' object - global methods have no object context." )
       endIf
       return this
+
+    method to->String
+      return "this<<$>>" (this_type)
 endClass
 
 
@@ -2260,6 +2275,9 @@ class CmdReadLocal : Cmd
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
       return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
+
+    method to->String
+      return 'CmdReadLocal("$")' (local_info.name)
 
     method type->Type
       return local_info.type
@@ -2456,6 +2474,8 @@ class CmdCallRoutine : CmdCall
     method clone( clone_args=null:CloneArgs )->Cmd
       return CmdCallRoutine( t, method_info, args.clone(clone_args) )
 
+    method to->String
+      return "CmdCallRoutine($.$,$)" (method_info.type_context,method_info.signature,args)
 endClass
 
 class CmdCallAspectMethod : CmdCall
@@ -2499,7 +2519,7 @@ class CmdCallDynamicMethod : CmdCallMethod
 
 
     method to->String
-      return "CmdCallDynamicMethod($.$,$)" (method_info.type_context,method_info.signature,args)
+      return "CmdCallDynamicMethod($.$,$,$)->$" (method_info.type_context,method_info.signature,context,args,method_info.return_type)
 endClass
 
 
@@ -2512,6 +2532,8 @@ class CmdCallStaticMethod : CmdCallMethod
       if (not context) context = CmdThisContext(t,method_info.type_context)
       return prior.resolve( scope )
 
+    method to->String
+      return "CmdCallStaticMethod($.$,$)" (method_info.type_context,method_info.signature,args)
 endClass
 
 
@@ -4005,6 +4027,9 @@ class CmdConvertToType : CmdTypeOperator
         return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
       endIf
       }#
+
+    method to->String
+      return "CmdConvertToType($,$)" (operand,target_type)
 endClass
 
 #{

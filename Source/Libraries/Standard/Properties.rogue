@@ -234,40 +234,40 @@ class PropertyValue
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
 
-    method set( index:Int32, value:Int32 )->PropertyValue [macro]
+    method set( index:Int32, value:Int32 )->this [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Int32, value:Logical )->PropertyValue [macro]
+    method set( index:Int32, value:Logical )->this [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Int32, value:Real64 )->PropertyValue [macro]
+    method set( index:Int32, value:Real64 )->this [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Int32, value:Object )->PropertyValue [macro]
+    method set( index:Int32, value:Object )->this [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Int32, value:String )->PropertyValue [macro]
+    method set( index:Int32, value:String )->this [macro]
       this.set( index, PropertyValue(value) )
 
-    method set( index:Int32, value:PropertyValue )->PropertyValue
+    method set( index:Int32, value:PropertyValue )->this
       return this
 
-    method set( key:String, value:Int32 )->PropertyValue [macro]
+    method set( key:String, value:Int32 )->this [macro]
       this.set( key, PropertyValue(value) )
 
-    method set( key:String, value:Logical )->PropertyValue [macro]
+    method set( key:String, value:Logical )->this [macro]
       this.set( key, PropertyValue(value) )
 
-    method set( key:String, value:Real64 )->PropertyValue [macro]
+    method set( key:String, value:Real64 )->this [macro]
       this.set( key, PropertyValue(value) )
 
-    method set( key:String, value:Object )->PropertyValue [macro]
+    method set( key:String, value:Object )->this [macro]
       this.set( key, PropertyValue(value) )
 
-    method set( key:String, value:String )->PropertyValue [macro]
+    method set( key:String, value:String )->this [macro]
       this.set( key, PropertyValue(value) )
 
-    method set( key:String, value:PropertyValue )->PropertyValue
+    method set( key:String, value:PropertyValue )->this
       return this
 
     method to->Int32
@@ -625,7 +625,7 @@ class PropertyList : PropertyValue
     method remove_last->PropertyValue
       return values.remove_last
 
-    method set( index:Int32, new_value:PropertyValue )->this
+    method set( index:Int32, new_value:PropertyValue )->PropertyValue
       if (index < 0) return this
 
       while (index >= values.count) add( null as PropertyValue )

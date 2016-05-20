@@ -1428,7 +1428,7 @@ augment RogueC
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println
-        System.run( cmd )
+        if (System.run(cmd)) System.exit( 1 )
       endIf
 
 endAugment

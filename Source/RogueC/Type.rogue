@@ -777,8 +777,10 @@ class Type
           endIf
         endIf
 
-        if (existing_m.is_macro) throw existing_m.t.error( "Macro methods cannot be overridden." )
-        if (m.is_macro) throw existing_m.t.error( "A macro method cannot override an existing method." )
+        if (existing_m.is_macro xor m.is_macro)
+          if (m.is_macro) throw existing_m.t.error( "A macro method cannot override an existing non-macro method." )
+          else            throw existing_m.t.error( "Macro methods cannot be overridden by a non-macro method." )
+        endIf
 
         local i = list.locate( existing_m ).value
 
