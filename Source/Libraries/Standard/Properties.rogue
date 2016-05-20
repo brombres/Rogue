@@ -16,28 +16,28 @@ class PropertyValue
       return StringProperty( value )
 
   METHODS
-    method add( value:Int32 )->PropertyValue [macro]
+    method add( value:Int32 )->this [macro]
       this.add( PropertyValue(value) )
 
-    method add( value:Logical )->PropertyValue [macro]
+    method add( value:Logical )->this [macro]
       this.add( PropertyValue(value) )
 
-    method add( value:Real64 )->PropertyValue [macro]
+    method add( value:Real64 )->this [macro]
       this.add( PropertyValue(value) )
 
-    method add( value:Object )->PropertyValue [macro]
+    method add( value:Object )->this [macro]
       this.add( PropertyValue(value) )
 
-    method add( value:String )->PropertyValue [macro]
+    method add( value:String )->this [macro]
       this.add( PropertyValue(value) )
 
-    method add( value:PropertyValue )->PropertyValue
+    method add( value:PropertyValue )->this
       return this
 
-    method add( other:PropertyValue[] )->PropertyValue
+    method add( other:PropertyValue[] )->this
       return this
 
-    method clear->PropertyValue
+    method clear->this
       return this
 
     method clone->PropertyValue
@@ -581,11 +581,11 @@ class PropertyList : PropertyValue
     method clone->PropertyList
       return PropertyList( values.clone )
 
-    method add( value:PropertyValue )->PropertyList
+    method add( value:PropertyValue )->this
       values.add( value )
       return this
 
-    method add( other:PropertyValue[] )->PropertyList
+    method add( other:PropertyValue[] )->this
       values.reserve(other.count)
       forEach (value in other) values.add( value )
       return this
