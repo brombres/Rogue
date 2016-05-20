@@ -1429,11 +1429,16 @@ class Parser
         consume_eols
         must_consume( TokenType.symbol_open_paren )
         local error_t = peek
-        local error_name = read_identifier
+        local error_name = parse_possible_type
+        local error_type : Type
+        local no_name = false
         consume_eols
-        must_consume( TokenType.symbol_colon )
-        consume_eols
-        cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
+        if (consume(TokenType.symbol_colon))
+          cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
+          consume_eols
+        else
+          cmd_catch.error_type = Program.get_type_reference( t, error_name )
+        endIf
         consume_eols
         must_consume( TokenType.symbol_close_paren )
         parse_multi_line_statements( cmd_catch.statements )

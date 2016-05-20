@@ -1424,7 +1424,7 @@ augment RogueC
         else
           exe = exe.to_lowercase
         endIf
-        local cmd = "clang++ -std=c++11 -fno-strict-aliasing $.cpp -o $" (output_filepath,exe)
+        local cmd = "clang++ -Wall -std=c++11 -fno-strict-aliasing $.cpp -o $" (output_filepath,exe)
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println
@@ -2104,6 +2104,8 @@ augment CmdTry
         c.write_cpp( writer )
       endForEach
 
+      writer.println( "ROGUE_END_TRY" )
+
       if (escape_label)
         writer.print( escape_label ).println( ":;" )
       endIf
@@ -2113,19 +2115,22 @@ augment CmdCatch
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       #writer.print( "catch ( " ).print( error_var.type ).print( " " ).print( error_var.cpp_name ).println( " )" )
-      writer.print( "ROGUE_CATCH( " ).print( error_var.cpp_name ).print( "," ).print( error_var.type ).println( " )" )
+      if (error_var)
+        writer.print( "ROGUE_CATCH( " ).print( error_var.type.cpp_class_name ).print( "," ).print( error_var.cpp_name ).println( " )" )
+      else
+        writer.print( "ROGUE_CATCH_NO_VAR(" ).print( error_type.cpp_class_name ).println( ")" )
+      endIf
       writer.println( "{" )
       writer.indent += 2
       statements.write_cpp( writer )
       writer.indent -= 2
       writer.println( "}" )
-      writer.println( "ROGUE_END_TRY" )
 endAugment
 
 augment CmdThrow
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "ROGUE_THROW(" )
+      writer.print( "ROGUE_THROW(" ).print( expression.type.cpp_class_name ).print( "," )
       expression.write_cpp( writer )
       writer.print( ")" )
 endAugment

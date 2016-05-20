@@ -1105,24 +1105,37 @@ endClass
 
 class CmdCatch : Cmd
   PROPERTIES
-    error_var  : Local
+    # One of the following two will be non-null and the other will be null.
+    error_var  : Local # catch(err:Error)
+    error_type : Type  # catch(Error)
+
     statements : CmdStatementList
 
   METHODS
-    method init( t, error_var=null, statements=CmdStatementList() )
+    method init( t, error_var=null, error_type=null, statements=CmdStatementList() )
 
     method clone( clone_args:CloneArgs )->CmdCatch
-      return CmdCatch( t, error_var, statements.clone(clone_args) )
+      return CmdCatch( t, error_var, error_type, statements.clone(clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      error_var.type.organize(scope)
-      if (not error_var.type.instance_of(Program.type_Exception))
+      local err_type : Type
+      if (error_var)
+        err_type = error_var.type.organize( scope )
+      else
+        err_type = error_type.organize( scope )
+      endIf
+
+      if (not err_type.instance_of(Program.type_Exception))
         throw t.error( "Caught value must be instanceOf class Error." )
       endIf
 
-      scope.push_local( error_var )
-      statements.resolve( scope )
-      scope.pop_local
+      if (error_var)
+        scope.push_local( error_var )
+        statements.resolve( scope )
+        scope.pop_local
+      else
+        statements.resolve( scope )
+      endIf
 
       return this
 

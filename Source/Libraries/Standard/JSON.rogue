@@ -6,7 +6,7 @@ class JSON
     method parse( json:String )->PropertyValue
       try
         return parse_value( ParseReader(json) )
-      catch (err:JSONParseError)
+      catch (JSONParseError)
         return null
       endTry
 

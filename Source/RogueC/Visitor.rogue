@@ -611,6 +611,8 @@ class Visitor
       forEach (c in cmd.catches) c.dispatch( this )
 
     method dispatch( cmd:CmdCatch )
+      if (cmd.error_var)  cmd.error_var.type.dispatch( this )
+      if (cmd.error_type) cmd.error_type.dispatch( this )
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdThrow )

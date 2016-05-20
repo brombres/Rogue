@@ -28,7 +28,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.61 - May 20, 2016
 - [Rogue] Macro methods are now `[propagated]` automatically so that they resolve in the most specific object context before being substituted in place of the call.
+- [Rogue] `catch` can now omit the variable name if the variable isn't used and just specify an exception type.  For example, `catch (err:Error)` can be written `catch(Error)`.
+- [Rogue] Improved generated code of try/catch system to handle multiple 'catch' levels.
 - [API] Fixed PropertyValue add() macro methods to return 'this' instead of PropertyValue so that they have the correct return type when called on PropertyList.
+- [RogueC] Exception types specified in `catch` are now marked as 'used' types in the event that those types aren't referenced anywhere else.
+- [RogueC] Added `-Wall` (enable all warnings) option to clang when roguec is run with `--compile`.
 
 ###v1.0.60 - May 19, 2016
 - [Rogue] Added weak references (note: only tested in manual GC mode).  Create a `WeakReference<<$DataType>>(obj)` and then access
