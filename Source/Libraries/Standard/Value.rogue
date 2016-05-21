@@ -72,72 +72,72 @@ class Value
     method get( key:String )->Value
       return null
 
-    method get_int32( index:Int32 )->Int32
+    method int32( index:Int32 )->Int32
       local value = get( index )
       if (not value) return 0
       return value->Int32
 
-    method get_logical( index:Int32 )->Logical
+    method logical( index:Int32 )->Logical
       local value = get( index )
       if (not value) return false
       return value->Logical
 
-    method get_real64( index:Int32 )->Real64
+    method real64( index:Int32 )->Real64
       local value = get( index )
       if (not value) return 0.0
       return value->Real64
 
-    method get_object( index:Int32 )->Object
+    method object( index:Int32 )->Object
       local value = get( index )
       if (not value) return null
       return value->Object
 
-    method get_string( index:Int32 )->String
+    method string( index:Int32 )->String
       local value = get( index )
       if (not value) return ""
       return value->String
 
-    method get_list( index:Int32 )->ValueList
+    method list( index:Int32 )->ValueList
       local value = get( index ) as ValueList
       if (value) return value
       else       return ValueList()
 
-    method get_table( index:Int32 )->ValueTable
+    method table( index:Int32 )->ValueTable
       local value = get( index ) as ValueTable
       if (value) return value
       else       return ValueTable()
 
-    method get_int32( key:String )->Int32
+    method int32( key:String )->Int32
       local value = get( key )
       if (not value) return 0
       return value->Int32
 
-    method get_list( key:String )->ValueList
+    method list( key:String )->ValueList
       local value = get( key ) as ValueList
       if (value) return value
       else       return ValueList()
 
-    method get_logical( key:String )->Logical
+    method logical( key:String )->Logical
       local value = get( key )
       if (not value) return false
       return value->Logical
 
-    method get_real64( key:String )->Real64
+    method real64( key:String )->Real64
       local value = get( key )
       if (not value) return 0.0
       return value->Real64
 
-    method get_object( key:String )->Object
+    method object( key:String )->Object
       local value = get( key )
       if (not value) return null
       return value->Object
 
-    method get_string( key:String )->String
+    method string( key:String )->String
       local value = get( key )
       if (not value) return ""
       return value->String
 
-    method get_table( key:String )->ValueTable
+    method table( key:String )->ValueTable
       local value = get( key ) as ValueTable
       if (value) return value
       else       return ValueTable()

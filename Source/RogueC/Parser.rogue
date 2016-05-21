@@ -683,14 +683,14 @@ class Parser
           return true
         else
           specialization_info = parse_specialization_info
-          name += specialization_info.get_string( "string" )
+          name += specialization_info.string( "string" )
         endIf
       endIf
 
       this_method = Method( t, this_type, name )
       this_method.return_type = return_type
       if (specialization_info)
-        this_method.specializer_count = specialization_info.get_int32( "count" )
+        this_method.specializer_count = specialization_info.int32( "count" )
         this_method.unspecialized_name = unspecialized_name
       endIf
 

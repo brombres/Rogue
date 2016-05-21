@@ -6321,8 +6321,8 @@ RogueClassValueTable* RogueValueTable__set__String_Value( RogueClassValueTable* 
 RogueClassValue* RogueValue__init_object( RogueClassValue* THIS );
 RogueString* RogueValue__type_name( RogueClassValue* THIS );
 RogueClassValue* RogueValue__get__String( RogueClassValue* THIS, RogueString* key_0 );
-RogueInt32 RogueValue__get_int32__String( RogueClassValue* THIS, RogueString* key_0 );
-RogueString* RogueValue__get_string__String( RogueClassValue* THIS, RogueString* key_0 );
+RogueInt32 RogueValue__int32__String( RogueClassValue* THIS, RogueString* key_0 );
+RogueString* RogueValue__string__String( RogueClassValue* THIS, RogueString* key_0 );
 RogueInt32 RogueValue__to_Int32( RogueClassValue* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init_object( RogueClassTable_String_Value_* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init( RogueClassTable_String_Value_* THIS );

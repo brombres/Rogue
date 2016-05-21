@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.62 - May 21, 2016
+- [API] Renamed `get_int32()` etc. to be `int32()` for Value types (Value, ValueList, ValueTable).
+
 ###v1.0.61 - May 21, 2016
 - [API] Renamed JSON-style data `PropertyValue`, `PropertyList`, and `PropertyTable` to be `Value`, `ValueList`, and `ValueTable` instead.
 - [Rogue] The symbols `@[]` (ValueList) and `@{}` (ValueTable) can now be used as types.  For example, declaring a property `table : @{}` is equivalent to `table : ValueTable`, while `table = @{}` is equivalent to `table = ValueTable()`.
