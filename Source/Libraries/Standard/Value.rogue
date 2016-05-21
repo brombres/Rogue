@@ -1,46 +1,46 @@
-class PropertyValue
+class Value
   GLOBAL METHODS
-    method create( value:Int32 )->PropertyValue
-      return Int32Property( value )
+    method create( value:Int32 )->Value
+      return Int32Value( value )
 
-    method create( value:Logical )->PropertyValue
-      return select{ value:LogicalProperty.true_value || LogicalProperty.false_value }
+    method create( value:Logical )->Value
+      return select{ value:LogicalValue.true_value || LogicalValue.false_value }
 
-    method create( value:Real64 )->PropertyValue
-      return Real64Property( value )
+    method create( value:Real64 )->Value
+      return Real64Value( value )
 
-    method create( value:Object )->PropertyValue
-      return ObjectProperty( value )
+    method create( value:Object )->Value
+      return ObjectValue( value )
 
-    method create( value:String )->PropertyValue
-      return StringProperty( value )
+    method create( value:String )->Value
+      return StringValue( value )
 
   METHODS
     method add( value:Int32 )->this [macro]
-      this.add( PropertyValue(value) )
+      this.add( Value(value) )
 
     method add( value:Logical )->this [macro]
-      this.add( PropertyValue(value) )
+      this.add( Value(value) )
 
     method add( value:Real64 )->this [macro]
-      this.add( PropertyValue(value) )
+      this.add( Value(value) )
 
     method add( value:Object )->this [macro]
-      this.add( PropertyValue(value) )
+      this.add( Value(value) )
 
     method add( value:String )->this [macro]
-      this.add( PropertyValue(value) )
+      this.add( Value(value) )
 
-    method add( value:PropertyValue )->this
+    method add( value:Value )->this
       return this
 
-    method add( other:PropertyValue[] )->this
+    method add( other:Value[] )->this
       return this
 
     method clear->this
       return this
 
-    method clone->PropertyValue
+    method clone->Value
       return this
 
     method contains( key:String )->Logical
@@ -49,27 +49,27 @@ class PropertyValue
     method count->Int32
       return 0
 
-    method ensure_list( key:String )->PropertyList
-      # When called on a PropertyTable, ensures that the table contains a list
+    method ensure_list( key:String )->ValueList
+      # When called on a ValueTable, ensures that the table contains a list
       # with the given key, creating it if necessary, and returns that list.
-      # When called on any other type of PropertyValue, a new PropertyList
+      # When called on any other type of Value, a new ValueList
       # will be returned but it won't be stored in a table.
       return @[]
 
-    method ensure_table( key:String )->PropertyTable
-      # When called on a PropertyTable, ensures that the table contains a table
+    method ensure_table( key:String )->ValueTable
+      # When called on a ValueTable, ensures that the table contains a table
       # with the given key, creating it if necessary, and returns that table.
-      # When called on any other type of PropertyValue, a new PropertyTable
+      # When called on any other type of Value, a new ValueTable
       # will be returned but it won't be stored in a table.
       return @{}
 
-    method first->PropertyValue
+    method first->Value
       return null
 
-    method get( index:Int32 )->PropertyValue
+    method get( index:Int32 )->Value
       return null
 
-    method get( key:String )->PropertyValue
+    method get( key:String )->Value
       return null
 
     method get_int32( index:Int32 )->Int32
@@ -97,25 +97,25 @@ class PropertyValue
       if (not value) return ""
       return value->String
 
-    method get_list( index:Int32 )->PropertyList
-      local value = get( index ) as PropertyList
+    method get_list( index:Int32 )->ValueList
+      local value = get( index ) as ValueList
       if (value) return value
-      else       return PropertyList()
+      else       return ValueList()
 
-    method get_table( index:Int32 )->PropertyTable
-      local value = get( index ) as PropertyTable
+    method get_table( index:Int32 )->ValueTable
+      local value = get( index ) as ValueTable
       if (value) return value
-      else       return PropertyTable()
+      else       return ValueTable()
 
     method get_int32( key:String )->Int32
       local value = get( key )
       if (not value) return 0
       return value->Int32
 
-    method get_list( key:String )->PropertyList
-      local value = get( key ) as PropertyList
+    method get_list( key:String )->ValueList
+      local value = get( key ) as ValueList
       if (value) return value
-      else       return PropertyList()
+      else       return ValueList()
 
     method get_logical( key:String )->Logical
       local value = get( key )
@@ -137,10 +137,10 @@ class PropertyValue
       if (not value) return ""
       return value->String
 
-    method get_table( key:String )->PropertyTable
-      local value = get( key ) as PropertyTable
+    method get_table( key:String )->ValueTable
+      local value = get( key ) as ValueTable
       if (value) return value
-      else       return PropertyTable()
+      else       return ValueTable()
 
     method is_collection->Logical
       return false
@@ -177,97 +177,97 @@ class PropertyValue
     method is_table->Logical
       return false
 
-    method last->PropertyValue
+    method last->Value
       return null
 
-    method operator-()->PropertyValue
-      return PropertyValue( 0 )
+    method operator-()->Value
+      return Value( 0 )
 
-    method operator+( other:PropertyValue )->PropertyValue
-      return PropertyValue( 0 )
+    method operator+( other:Value )->Value
+      return Value( 0 )
 
-    method operator-( other:PropertyValue )->PropertyValue
-      return PropertyValue( 0 )
+    method operator-( other:Value )->Value
+      return Value( 0 )
 
-    method operator*( other:PropertyValue )->PropertyValue
-      return PropertyValue( 0 )
+    method operator*( other:Value )->Value
+      return Value( 0 )
 
-    method operator/( other:PropertyValue )->PropertyValue
-      return PropertyValue( 0 )
+    method operator/( other:Value )->Value
+      return Value( 0 )
 
-    method operator%( other:PropertyValue )->PropertyValue
-      return PropertyValue( 0 )
+    method operator%( other:Value )->Value
+      return Value( 0 )
 
-    method operator+( other:Real64 )->PropertyValue
-      return PropertyValue( 0 )
+    method operator+( other:Real64 )->Value
+      return Value( 0 )
 
-    method operator-( other:Real64 )->PropertyValue
-      return PropertyValue( 0 )
+    method operator-( other:Real64 )->Value
+      return Value( 0 )
 
-    method operator*( other:Real64 )->PropertyValue
-      return PropertyValue( 0 )
+    method operator*( other:Real64 )->Value
+      return Value( 0 )
 
-    method operator/( other:Real64 )->PropertyValue
-      return PropertyValue( 0 )
+    method operator/( other:Real64 )->Value
+      return Value( 0 )
 
-    method operator%( other:Real64 )->PropertyValue
-      return PropertyValue( 0 )
+    method operator%( other:Real64 )->Value
+      return Value( 0 )
 
-    method operator+( other:String )->PropertyValue
-      return PropertyValue( 0 )
+    method operator+( other:String )->Value
+      return Value( 0 )
 
-    method operator*( other:String )->PropertyValue
-      return PropertyValue( 0 )
+    method operator*( other:String )->Value
+      return Value( 0 )
 
-    method remove( value:PropertyValue )->PropertyValue
+    method remove( value:Value )->Value
       return value
 
-    method remove_at( index:Int32 )->PropertyValue
+    method remove_at( index:Int32 )->Value
       return null
 
-    method remove_first->PropertyValue
+    method remove_first->Value
       return null
 
-    method remove_last->PropertyValue
+    method remove_last->Value
       return null
 
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
 
     method set( index:Int32, value:Int32 )->this [macro]
-      this.set( index, PropertyValue(value) )
+      this.set( index, Value(value) )
 
     method set( index:Int32, value:Logical )->this [macro]
-      this.set( index, PropertyValue(value) )
+      this.set( index, Value(value) )
 
     method set( index:Int32, value:Real64 )->this [macro]
-      this.set( index, PropertyValue(value) )
+      this.set( index, Value(value) )
 
     method set( index:Int32, value:Object )->this [macro]
-      this.set( index, PropertyValue(value) )
+      this.set( index, Value(value) )
 
     method set( index:Int32, value:String )->this [macro]
-      this.set( index, PropertyValue(value) )
+      this.set( index, Value(value) )
 
-    method set( index:Int32, value:PropertyValue )->this
+    method set( index:Int32, value:Value )->this
       return this
 
     method set( key:String, value:Int32 )->this [macro]
-      this.set( key, PropertyValue(value) )
+      this.set( key, Value(value) )
 
     method set( key:String, value:Logical )->this [macro]
-      this.set( key, PropertyValue(value) )
+      this.set( key, Value(value) )
 
     method set( key:String, value:Real64 )->this [macro]
-      this.set( key, PropertyValue(value) )
+      this.set( key, Value(value) )
 
     method set( key:String, value:Object )->this [macro]
-      this.set( key, PropertyValue(value) )
+      this.set( key, Value(value) )
 
     method set( key:String, value:String )->this [macro]
-      this.set( key, PropertyValue(value) )
+      this.set( key, Value(value) )
 
-    method set( key:String, value:PropertyValue )->this
+    method set( key:String, value:Value )->this
       return this
 
     method to->Int32
@@ -289,7 +289,7 @@ class PropertyValue
       return buffer
 endClass
 
-class Int32Property( value:Int32 ) : PropertyValue
+class Int32Value( value:Int32 ) : Value
   METHODS
     method is_int32->Logical
       return true
@@ -297,56 +297,56 @@ class Int32Property( value:Int32 ) : PropertyValue
     method is_number->Logical
       return true
 
-    method operator-()->PropertyValue
-      return Int32Property( -value )
+    method operator-()->Value
+      return Int32Value( -value )
 
-    method operator+( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value + other->Int32 )
+    method operator+( other:Value )->Value
+      if (not other) return Value(0)
+      return Int32Value( value + other->Int32 )
 
-    method operator-( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value - other->Int32 )
+    method operator-( other:Value )->Value
+      if (not other) return Value(0)
+      return Int32Value( value - other->Int32 )
 
-    method operator*( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value * other->Int32 )
+    method operator*( other:Value )->Value
+      if (not other) return Value(0)
+      return Int32Value( value * other->Int32 )
 
-    method operator/( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value / other->Int32 )
+    method operator/( other:Value )->Value
+      if (not other) return Value(0)
+      return Int32Value( value / other->Int32 )
 
-    method operator%( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value % other->Int32 )
+    method operator%( other:Value )->Value
+      if (not other) return Value(0)
+      return Int32Value( value % other->Int32 )
 
-    method operator+( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value + other )
+    method operator+( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Int32Value( value + other )
 
-    method operator-( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value + other )
+    method operator-( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Int32Value( value + other )
 
-    method operator*( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value + other )
+    method operator*( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Int32Value( value + other )
 
-    method operator/( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value + other )
+    method operator/( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Int32Value( value + other )
 
-    method operator%( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Int32Property( value + other )
+    method operator%( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Int32Value( value + other )
 
-    method operator+( other:String )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value + other )
+    method operator+( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
 
-    method operator*( other:String )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value * other )
+    method operator*( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( value * other )
 
     method to->Int32
       return value
@@ -359,10 +359,10 @@ class Int32Property( value:Int32 ) : PropertyValue
       return buffer
 endClass
 
-class LogicalProperty( value:Logical ) : PropertyValue
+class LogicalValue( value:Logical ) : Value
   GLOBAL PROPERTIES
-    true_value  = LogicalProperty( true )
-    false_value = LogicalProperty( false )
+    true_value  = LogicalValue( true )
+    false_value = LogicalValue( false )
 
   METHODS
     method is_logical->Logical
@@ -383,7 +383,7 @@ class LogicalProperty( value:Logical ) : PropertyValue
       return buffer
 endClass
 
-class Real64Property( value:Real64 ) : PropertyValue
+class Real64Value( value:Real64 ) : Value
   METHODS
     method is_number->Logical
       return true
@@ -391,56 +391,56 @@ class Real64Property( value:Real64 ) : PropertyValue
     method is_real64->Logical
       return true
 
-    method operator-()->PropertyValue
-      return Real64Property( -value )
+    method operator-()->Value
+      return Real64Value( -value )
 
-    method operator+( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value + other->Real64 )
+    method operator+( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other->Real64 )
 
-    method operator-( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value - other->Real64 )
+    method operator-( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value - other->Real64 )
 
-    method operator*( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value * other->Real64 )
+    method operator*( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value * other->Real64 )
 
-    method operator/( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value / other->Real64 )
+    method operator/( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value / other->Real64 )
 
-    method operator%( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value % other->Real64 )
+    method operator%( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value % other->Real64 )
 
-    method operator+( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value + other )
+    method operator+( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
 
-    method operator-( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value + other )
+    method operator-( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
 
-    method operator*( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value + other )
+    method operator*( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
 
-    method operator/( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value + other )
+    method operator/( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
 
-    method operator%( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return Real64Property( value + other )
+    method operator%( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value + other )
 
-    method operator+( other:String )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value + other )
+    method operator+( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
 
-    method operator*( other:String )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( Int32(value) * other )
+    method operator*( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( Int32(value) * other )
 
     method to->Int32
       return value
@@ -456,7 +456,7 @@ class Real64Property( value:Real64 ) : PropertyValue
       return buffer
 endClass
 
-class ObjectProperty( value:Object ) : PropertyValue
+class ObjectValue( value:Object ) : Value
   METHODS
     method is_object->Logical
       return true
@@ -472,29 +472,29 @@ class ObjectProperty( value:Object ) : PropertyValue
       return buffer
 endClass
 
-class StringProperty( value:String ) : PropertyValue
+class StringValue( value:String ) : Value
   GLOBAL PROPERTIES
-    empty_string = StringProperty( "" )
+    empty_string = StringValue( "" )
 
   METHODS
     method is_string->Logical
       return true
 
-    method operator+( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value + other->String )
+    method operator+( other:Value )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other->String )
 
-    method operator*( other:PropertyValue )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value * other->Int32 )
+    method operator*( other:Value )->Value
+      if (not other) return Value(0)
+      return StringValue( value * other->Int32 )
 
-    method operator+( other:Real64 )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value + other )
+    method operator+( other:Real64 )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
 
-    method operator+( other:String )->PropertyValue
-      if (not other) return PropertyValue(0)
-      return StringProperty( value + other )
+    method operator+( other:String )->Value
+      if (not other) return Value(0)
+      return StringValue( value + other )
 
     method to->Character
       if (value.count > 0) return value[0]
@@ -565,42 +565,42 @@ class StringProperty( value:String ) : PropertyValue
       return buffer
 endClass
 
-class PropertyList : PropertyValue
+class ValueList : Value
   PROPERTIES
-    values : PropertyValue[]
+    values : Value[]
 
   METHODS
     method init
       init( 10 )
 
     method init( initial_capacity:Int32 )
-      values = PropertyValue[]( initial_capacity )
+      values = Value[]( initial_capacity )
 
     method init( values )
 
-    method clone->PropertyList
-      return PropertyList( values.clone )
+    method clone->ValueList
+      return ValueList( values.clone )
 
-    method add( value:PropertyValue )->this
+    method add( value:Value )->this
       values.add( value )
       return this
 
-    method add( other:PropertyValue[] )->this
+    method add( other:Value[] )->this
       values.reserve(other.count)
       forEach (value in other) values.add( value )
       return this
 
-    method clear->PropertyList
+    method clear->ValueList
       values.clear
       return this
 
     method count->Int32
       return values.count
 
-    method first->PropertyValue
+    method first->Value
       return this.get(0)
 
-    method get( index:Int32 )->PropertyValue
+    method get( index:Int32 )->Value
       if (index < 0 or index >= values.count) return null
       return values[ index ]
 
@@ -610,25 +610,25 @@ class PropertyList : PropertyValue
     method is_list->Logical
       return true
 
-    method last->PropertyValue
+    method last->Value
       return this.get( values.count - 1 )
 
-    method remove( value:PropertyValue )->PropertyValue
+    method remove( value:Value )->Value
       return values.remove( value )
 
-    method remove_at( index:Int32 )->PropertyValue
+    method remove_at( index:Int32 )->Value
       return values.remove_at( index )
 
-    method remove_first->PropertyValue
+    method remove_first->Value
       return values.remove_first
 
-    method remove_last->PropertyValue
+    method remove_last->Value
       return values.remove_last
 
-    method set( index:Int32, new_value:PropertyValue )->PropertyValue
+    method set( index:Int32, new_value:Value )->Value
       if (index < 0) return this
 
-      while (index >= values.count) add( null as PropertyValue )
+      while (index >= values.count) add( null as Value )
       values.set( index, new_value )
 
       return this
@@ -668,21 +668,21 @@ class PropertyList : PropertyValue
       return buffer
 
     GLOBAL METHODS
-      method load( file:File )->PropertyList
-        if (not file.exists) return PropertyList()
+      method load( file:File )->ValueList
+        if (not file.exists) return ValueList()
         return JSON.parse_list( file.load_as_string )
 
-      method parse( json:String )->PropertyList
+      method parse( json:String )->ValueList
         return JSON.parse_list( json )
 endClass
 
-class PropertyTable : PropertyValue
+class ValueTable : Value
   PROPERTIES
-    values    : Table<<String,PropertyValue>>
+    values    : Table<<String,Value>>
 
   METHODS
     method init
-      values = Table<<String,PropertyValue>>()
+      values = Table<<String,Value>>()
 
     method init( values )
 
@@ -690,8 +690,8 @@ class PropertyTable : PropertyValue
       values.clear
       return this
 
-    method clone->PropertyTable
-      return PropertyTable( values.clone )
+    method clone->ValueTable
+      return ValueTable( values.clone )
 
     method contains( key:String )->Logical
       return values.contains( key )
@@ -699,29 +699,29 @@ class PropertyTable : PropertyValue
     method count->Int32
       return values.count
 
-    method ensure_list( key:String )->PropertyList
+    method ensure_list( key:String )->ValueList
       # Ensures that this table contains a list with the given key, creating
       # it if necessary, and returns that list.
-      local list = this[ key ] as PropertyList
+      local list = this[ key ] as ValueList
       if (list) return list
       list = @[]
       this[ key ] = list
       return list
 
-    method ensure_table( key:String )->PropertyTable
+    method ensure_table( key:String )->ValueTable
       # Ensures that this table contains a table with the given key, creating
       # it if necessary, and returns that table.
-      local table = this[ key ] as PropertyTable
+      local table = this[ key ] as ValueTable
       if (table) return table
       table = @{}
       this[ key ] = table
       return table
 
-    method get( index:Int32 )->PropertyValue
+    method get( index:Int32 )->Value
       if (index < 0 or index >= count) return null
       return values[ keys[index] ]
 
-    method get( key:String )->PropertyValue
+    method get( key:String )->Value
       return values[ key ]
 
     method is_collection->Logical
@@ -733,14 +733,14 @@ class PropertyTable : PropertyValue
     method keys->String[] [macro]
       values.keys
 
-    method remove( key:String )->PropertyValue
+    method remove( key:String )->Value
       return values.remove( key )
 
-    method remove_at( index:Int32 )->PropertyValue
+    method remove_at( index:Int32 )->Value
       if (index < 0 or index >= count) return null
       return values.remove( values.keys[index] )
 
-    method set( key:String, new_value:PropertyValue )->this
+    method set( key:String, new_value:Value )->this
       values.set( key, new_value )
       return this
 
@@ -766,7 +766,7 @@ class PropertyTable : PropertyValue
           if (pretty_print) buffer.println
         endIf
 
-        StringProperty.to_json( key, buffer, formatted )
+        StringValue.to_json( key, buffer, formatted )
         buffer.print( ':' )
 
         local value = values[key]
@@ -782,11 +782,11 @@ class PropertyTable : PropertyValue
       return buffer
 
     GLOBAL METHODS
-      method load( file:File )->PropertyTable
-        if (not file.exists) return PropertyTable()
+      method load( file:File )->ValueTable
+        if (not file.exists) return ValueTable()
         return JSON.parse_table( file.load_as_string )
 
-      method parse( json:String )->PropertyTable
+      method parse( json:String )->ValueTable
         return JSON.parse_table( json )
 endClass
 

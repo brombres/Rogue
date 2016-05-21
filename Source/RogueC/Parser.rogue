@@ -675,7 +675,7 @@ class Parser
         others
       endWhich
 
-      local specialization_info : PropertyTable
+      local specialization_info : ValueTable
       local unspecialized_name = name
       if (next_is(TokenType.symbol_open_specialize))
         if (reader.peek(1).type is TokenType.placeholder_id)
@@ -2265,7 +2265,7 @@ class Parser
       @trace
       throw peek.error( "[INTERNAL] Invalid specializer index: $." (index) )
 
-    method parse_specialization_info->PropertyTable
+    method parse_specialization_info->ValueTable
       local count = 0
       string_buffer.clear
       read   # '<<'
@@ -2445,10 +2445,10 @@ class Parser
         return parse_property_list( t )
 
       elseIf (consume(TokenType.symbol_empty_braces))
-        return CmdAccess( t, "PropertyTable", CmdArgs() )
+        return CmdAccess( t, "ValueTable", CmdArgs() )
 
       elseIf (consume(TokenType.symbol_empty_brackets))
-        return CmdAccess( t, "PropertyList",  CmdArgs() )
+        return CmdAccess( t, "ValueList",  CmdArgs() )
 
       elseIf (consume(TokenType.keyword_prior))
         consume_eols
@@ -2776,7 +2776,7 @@ class Parser
 
     method parse_property_table( t:Token )->Cmd
       # '{' already consumed
-      local table = CmdAccess( t, "PropertyTable", CmdArgs() ) : Cmd
+      local table = CmdAccess( t, "ValueTable", CmdArgs() ) : Cmd
       consume_eols
       if (consume(TokenType.symbol_close_brace)) return table
 
@@ -2819,7 +2819,7 @@ class Parser
 
     method parse_property_list( t:Token )->Cmd
       # '[' already consumed
-      local list = CmdAccess( t, "PropertyList", CmdArgs() ) : Cmd
+      local list = CmdAccess( t, "ValueList", CmdArgs() ) : Cmd
       consume_eols
       if (consume(TokenType.symbol_close_bracket)) return list
 

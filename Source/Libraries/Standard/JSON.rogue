@@ -3,24 +3,24 @@ class JSON
     buffer = StringBuilder()
 
   GLOBAL METHODS
-    method parse( json:String )->PropertyValue
+    method parse( json:String )->Value
       try
         return parse_value( ParseReader(json) )
       catch (JSONParseError)
         return null
       endTry
 
-    method parse_list( json:String )->PropertyList
-      local list = parse(json) as PropertyList
+    method parse_list( json:String )->ValueList
+      local list = parse(json) as ValueList
       if (list) return list
-      return PropertyList()
+      return ValueList()
 
-    method parse_table( json:String )->PropertyTable
-      local table = parse(json) as PropertyTable
+    method parse_table( json:String )->ValueTable
+      local table = parse(json) as ValueTable
       if (table) return table
-      return PropertyTable()
+      return ValueTable()
 
-    method parse_value( reader:ParseReader )->PropertyValue
+    method parse_value( reader:ParseReader )->Value
       consume_spaces_and_eols( reader )
 
       if (not reader.has_another) return null
@@ -34,37 +34,37 @@ class JSON
 
       if (ch == '"' or ch == '\'')
         local result = parse_string( reader )
-        if (result.count == 0) return StringProperty.empty_string
+        if (result.count == 0) return StringValue.empty_string
 
         local first_ch = result[ 0 ]
-        if (first_ch == 't' and result == "true")  return LogicalProperty.true_value
-        if (first_ch == 'f' and result == "false") return LogicalProperty.false_value
+        if (first_ch == 't' and result == "true")  return LogicalValue.true_value
+        if (first_ch == 'f' and result == "false") return LogicalValue.false_value
         if (first_ch == 'n' and result == "null")  return null
 
-        return StringProperty( result )
+        return StringValue( result )
 
       elseIf (next_is_identifier(reader))
         local result = parse_identifier( reader )
-        if (result.count == 0) return StringProperty.empty_string
+        if (result.count == 0) return StringValue.empty_string
 
         local first_ch = result[ 0 ]
-        if (first_ch == 't' and result == "true")  return LogicalProperty.true_value
-        if (first_ch == 'f' and result == "false") return LogicalProperty.false_value
+        if (first_ch == 't' and result == "true")  return LogicalValue.true_value
+        if (first_ch == 'f' and result == "false") return LogicalValue.false_value
         if (first_ch == 'n' and result == "null")  return null
 
-        return StringProperty( result )
+        return StringValue( result )
       else
         return null
       endIf
 
-    method parse_table( reader:ParseReader )->PropertyTable
+    method parse_table( reader:ParseReader )->ValueTable
       consume_spaces_and_eols( reader )
 
       if (not reader.consume('{')) return null
 
       consume_spaces_and_eols( reader )
 
-      local table = PropertyTable()
+      local table = ValueTable()
       if (reader.consume('}')) return table
 
       local prev_pos = reader.position
@@ -96,14 +96,14 @@ class JSON
 
       return table
 
-    method parse_list( reader:ParseReader )->PropertyList
+    method parse_list( reader:ParseReader )->ValueList
       consume_spaces_and_eols( reader )
 
       if (not reader.consume('[')) return null
 
       consume_spaces_and_eols( reader )
 
-      local list = PropertyList()
+      local list = ValueList()
       if (reader.consume(']')) return list
 
       local prev_pos = reader.position
@@ -190,7 +190,7 @@ class JSON
       if (ch.is_identifier(&start,&allow_dollar)) return true
       return (ch == '"' or ch == '\'')
 
-    method parse_number( reader:ParseReader )->PropertyValue
+    method parse_number( reader:ParseReader )->Value
       consume_spaces_and_eols( reader )
 
       local sign = 1.0
@@ -241,8 +241,8 @@ class JSON
 
       n = n * sign
 
-      if (is_real or n != n->Int32) return Real64Property( n )
-      return Int32Property( n->Int32 )
+      if (is_real or n != n->Int32) return Real64Value( n )
+      return Int32Value( n->Int32 )
 
     method consume_spaces_and_eols( reader:ParseReader )->ParseReader
       while (reader.consume_spaces or reader.consume_eols) noAction
