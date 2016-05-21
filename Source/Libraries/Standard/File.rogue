@@ -397,7 +397,7 @@ class File
               |      result /= 10000; // convert from Crazyseconds to Milliseconds
               |      result -= 11644473600000;  // base on Jan 1, 1970 instead of Jan 1, 1601 (?!)
               |      CloseHandle(handle);
-              |      return (RogueReal64) result;
+              |      return result / 1000.0;
               |    }
               |    CloseHandle(handle);
               |  }
@@ -419,13 +419,13 @@ class File
               |      result *= 1000;  // convert to ms
               |#endif
               |      close(file_id);
-              |      return (RogueReal64) result;
+              |      return result / 1000.0;
               |    }
               |    close(file_id);
               |  }
               |
               |#else
-              |# error Must define bard_file_timestamp() for this OS.
+              |# error Must define File.timestamp() for this OS.
               |#endif
               |return 0.0;
 
