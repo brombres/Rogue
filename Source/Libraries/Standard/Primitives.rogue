@@ -78,6 +78,18 @@ class Real64 [primitive]
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
+    method or_at_least( other:Real64 )->Real64
+      return select{ this>=other:this || other }
+
+    method or_at_most( other:Real64 )->Real64
+      return select{ this<=other:this || other }
+
+    method or_larger( other:Real64 )->Real64
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Real64 )->Real64
+      return select{ this<=other:this || other }
+
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
@@ -157,6 +169,18 @@ class Real32 [primitive]
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
+    method or_at_least( other:Real32 )->Real32
+      return select{ this>=other:this || other }
+
+    method or_at_most( other:Real32 )->Real32
+      return select{ this<=other:this || other }
+
+    method or_larger( other:Real32 )->Real32
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Real32 )->Real32
+      return select{ this<=other:this || other }
+
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
@@ -216,6 +240,18 @@ class Int64 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
+
+    method or_at_least( other:Int64 )->Int64
+      return select{ this>=other:this || other }
+
+    method or_at_most( other:Int64 )->Int64
+      return select{ this<=other:this || other }
+
+    method or_larger( other:Int64 )->Int64
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Int64 )->Int64
+      return select{ this<=other:this || other }
 
     method print_in_power2_base( base:Int32, digits=16:Int32, buffer:StringBuilder )->StringBuilder
       local bits = 0
@@ -300,6 +336,18 @@ class Int32 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
+
+    method or_at_least( other:Int32 )->Int32
+      return select{ this>=other:this || other }
+
+    method or_at_most( other:Int32 )->Int32
+      return select{ this<=other:this || other }
+
+    method or_larger( other:Int32 )->Int32
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Int32 )->Int32
+      return select{ this<=other:this || other }
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
@@ -389,6 +437,18 @@ class Character [primitive]
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
+    method or_at_least( other:Character )->Character
+      return select{ this>=other:this || other }
+
+    method or_at_most( other:Character )->Character
+      return select{ this<=other:this || other }
+
+    method or_larger( other:Character )->Character
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Character )->Character
+      return select{ this<=other:this || other }
+
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
@@ -451,6 +511,18 @@ class Byte [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
+
+    method or_at_least( other:Byte )->Byte
+      return select{ this>=other:this || other }
+
+    method or_at_most( other:Byte )->Byte
+      return select{ this<=other:this || other }
+
+    method or_larger( other:Byte )->Byte
+      return select{ this>=other:this || other }
+
+    method or_smaller( other:Byte )->Byte
+      return select{ this<=other:this || other }
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
