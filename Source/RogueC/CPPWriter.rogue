@@ -1273,7 +1273,11 @@ class CPPWriter
 
           local p = type_context.property_lookup[ name ]
           if (p)
-            print_native_code_marker_value( t, name, operation, "THIS->" + p.cpp_name, p.type )
+            if (type_context.is_reference)
+              print_native_code_marker_value( t, name, operation, "THIS->" + p.cpp_name, p.type )
+            else
+              print_native_code_marker_value( t, name, operation, "THIS." + p.cpp_name, p.type )
+            endIf
             escapeWhich
           endIf
 

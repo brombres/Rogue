@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.62 - May 21, 2016
 - [API] Renamed `get_int32()` etc. to be `int32()` for Value types (Value, ValueList, ValueTable).
 - [API] Fixed `File.timestamp()` - was returning value in milliseconds instead of real seconds.
+- [API] Added class `TimeInterval` that can be added to a Date value or obtained by subtracting two Date values.
 - [API] Added `or_at_least(other)`/`or_larger(other)` and `or_at_most(other)`/`or_smaller(other)` to numerical primitives.  `a = a.or_at_least(b)` and `a = a.or_larger(b)` are both equivalent to `a = Math.max(a,b)`, likewise for `or_at_most/or_smaller` and `Math.min`.
 
 ###v1.0.61 - May 21, 2016
