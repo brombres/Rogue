@@ -685,6 +685,7 @@ struct RogueClassTableEntry_String_String_;
 struct RogueClassStringReader;
 struct RogueClassReader_Character_;
 struct RogueClassReader_String_;
+struct RogueClassMath;
 struct RogueClassRuntime;
 struct RogueClassTable_String_TypeInfo_;
 struct RogueTableEntry_String_TypeInfo__List;
@@ -797,7 +798,6 @@ struct RogueClassFunction_383;
 struct RogueClassFunction_384;
 struct RogueClassCPPWriter;
 struct RogueClassSystem;
-struct RogueClassMath;
 struct RogueWeakReference;
 struct RogueClassReader_Byte_;
 struct RogueClassWriter_Byte_;
@@ -1430,6 +1430,12 @@ struct RogueClassReader_Character_ : RogueObject
 
 struct RogueClassReader_String_ : RogueObject
 {
+};
+
+struct RogueClassMath : RogueObject
+{
+  // PROPERTIES
+
 };
 
 struct RogueClassRuntime : RogueObject
@@ -2532,12 +2538,6 @@ struct RogueClassCPPWriter : RogueObject
 };
 
 struct RogueClassSystem : RogueObject
-{
-  // PROPERTIES
-
-};
-
-struct RogueClassMath : RogueObject
 {
   // PROPERTIES
 
@@ -4387,6 +4387,7 @@ extern RogueType* RogueTypeTableEntry_String_String_;
 extern RogueType* RogueTypeStringReader;
 extern RogueType* RogueTypeReader_Character_;
 extern RogueType* RogueTypeReader_String_;
+extern RogueType* RogueTypeMath;
 extern RogueType* RogueTypeRuntime;
 extern RogueType* RogueTypeTable_String_TypeInfo_;
 extern RogueType* RogueTypeTableEntry_String_TypeInfo__List;
@@ -4499,7 +4500,6 @@ extern RogueType* RogueTypeFunction_383;
 extern RogueType* RogueTypeFunction_384;
 extern RogueType* RogueTypeCPPWriter;
 extern RogueType* RogueTypeSystem;
-extern RogueType* RogueTypeMath;
 extern RogueType* RogueTypeWeakReference;
 extern RogueType* RogueTypeReader_Byte_;
 extern RogueType* RogueTypeWriter_Byte_;
@@ -4704,6 +4704,11 @@ extern RogueType* RogueTypeOptionalCharacter;
 RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 );
 void RogueStringBuilder__init_class();
 RogueCharacter RogueCharacter__create__Int32( RogueInt32 value_0 );
+RogueInt32 RogueMath__max__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
+RogueInt32 RogueMath__mod__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
+RogueInt64 RogueMath__mod__Int64_Int64( RogueInt64 a_0, RogueInt64 b_1 );
+RogueReal64 RogueMath__mod__Real64_Real64( RogueReal64 a_0, RogueReal64 b_1 );
+RogueInt32 RogueMath__shift_right__Int32_Int32( RogueInt32 value_0, RogueInt32 bits_1 );
 void RogueRuntime__init_class();
 RogueString* RogueRuntime__literal_string__Int32( RogueInt32 string_index_0 );
 RogueInt32 RogueRuntime__literal_string_count();
@@ -4716,11 +4721,6 @@ void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
 RogueInt32 RogueSystem__run__String( RogueString* command_0 );
 RogueReal64 RogueSystem__time();
 void RogueSystem__init_class();
-RogueInt32 RogueMath__max__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
-RogueInt32 RogueMath__mod__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
-RogueInt64 RogueMath__mod__Int64_Int64( RogueInt64 a_0, RogueInt64 b_1 );
-RogueReal64 RogueMath__mod__Real64_Real64( RogueReal64 a_0, RogueReal64 b_1 );
-RogueInt32 RogueMath__shift_right__Int32_Int32( RogueInt32 value_0, RogueInt32 bits_1 );
 RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 );
 RogueLogical RogueFile__create_folder__String( RogueString* filepath_0 );
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 );
@@ -4952,6 +4952,8 @@ RogueCharacter RogueStringReader__read( RogueClassStringReader* THIS );
 RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_47_0 );
 RogueLogical RogueReader_Character___has_another( RogueObject* THIS );
 RogueCharacter RogueReader_Character___read( RogueObject* THIS );
+RogueClassMath* RogueMath__init_object( RogueClassMath* THIS );
+RogueString* RogueMath__type_name( RogueClassMath* THIS );
 RogueClassRuntime* RogueRuntime__init_object( RogueClassRuntime* THIS );
 RogueString* RogueRuntime__type_name( RogueClassRuntime* THIS );
 RogueClassTable_String_TypeInfo_* RogueTable_String_TypeInfo___init_object( RogueClassTable_String_TypeInfo_* THIS );
@@ -6108,8 +6110,6 @@ void RogueCPPWriter__mark_routine_end( RogueClassCPPWriter* THIS );
 void RogueCPPWriter__update_trace_info__Token( RogueClassCPPWriter* THIS, RogueClassToken* t_0 );
 RogueClassSystem* RogueSystem__init_object( RogueClassSystem* THIS );
 RogueString* RogueSystem__type_name( RogueClassSystem* THIS );
-RogueClassMath* RogueMath__init_object( RogueClassMath* THIS );
-RogueString* RogueMath__type_name( RogueClassMath* THIS );
 RogueWeakReference* RogueWeakReference__init_object( RogueWeakReference* THIS );
 RogueString* RogueWeakReference__type_name( RogueWeakReference* THIS );
 void RogueWeakReference__clean_up( RogueWeakReference* THIS );

@@ -56,6 +56,9 @@ class Real64 [primitive]
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
 
+    method floor->Real64
+      return Math.floor( this )
+
     method hash_code->Int32
       return integer_bits->Int32
 
@@ -149,6 +152,9 @@ class Real32 [primitive]
 
     method decimal_digit_count->Int32
       return this->Real64.decimal_digit_count
+
+    method floor->Real32
+      return Real32( Math.floor(this) )
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
