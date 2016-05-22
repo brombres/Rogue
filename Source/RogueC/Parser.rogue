@@ -1824,9 +1824,8 @@ class Parser
           last_var.initial_value = range.last
 
           local step_cmd : Cmd
-          if (consume(TokenType.keyword_step))
-            local step_value = parse_expression
-            step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, step_value )
+          if (range.step_size)
+            step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, range.step_size )
           else
             if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
               step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
@@ -1845,7 +1844,6 @@ class Parser
           endIf
 
           local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach, compare_cmd )
-
           cmd_for_each.add_control_var( control_var )
           cmd_for_each.add_control_var( last_var )
           cmd_for_each.add_upkeep( step_cmd )
