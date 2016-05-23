@@ -28,10 +28,11 @@ class Real64 [primitive]
       if (this >= 0) return this
       else           return -this
 
-    method integer_bits->Int64
-      $if ("C++")
-        native "return *((RogueInt64*)&$this);"
-      $endIf
+    method at_least( other:Real64 )->Real64
+      return select{ this>=other:this || other }
+
+    method at_most( other:Real64 )->Real64
+      return select{ this<=other:this || other }
 
     method clamped( low:Real64, high:Real64 )->Real64
       if (this < low)  return low
@@ -59,8 +60,17 @@ class Real64 [primitive]
     method floor->Real64
       return Math.floor( this )
 
+    method format( decimal_digits=null:Int32? )->String
+      local digits = select{ decimal_digits || decimal_digit_count.at_most(4) }
+      return StringBuilder().print( this, digits )->String
+
     method hash_code->Int32
       return integer_bits->Int32
+
+    method integer_bits->Int64
+      $if ("C++")
+        native "return *((RogueInt64*)&$this);"
+      $endIf
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -80,12 +90,6 @@ class Real64 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
-
-    method or_at_least( other:Real64 )->Real64
-      return select{ this>=other:this || other }
-
-    method or_at_most( other:Real64 )->Real64
-      return select{ this<=other:this || other }
 
     method or_larger( other:Real64 )->Real64
       return select{ this>=other:this || other }
@@ -137,10 +141,11 @@ class Real32 [primitive]
       if (this >= 0) return this
       else           return -this
 
-    method integer_bits->Int32
-      $if ("C++")
-        native "return *((RogueInt32*)&$this);"
-      $endIf
+    method at_least( other:Real32 )->Real32
+      return select{ this>=other:this || other }
+
+    method at_most( other:Real32 )->Real32
+      return select{ this<=other:this || other }
 
     method clamped( low:Real32, high:Real32 )->Real32
       if (this < low)  return low
@@ -155,6 +160,14 @@ class Real32 [primitive]
 
     method floor->Real32
       return Real32( Math.floor(this) )
+
+    method format( decimal_digits=null:Int32? )->String
+      return Real64(this).format( decimal_digits )
+
+    method integer_bits->Int32
+      $if ("C++")
+        native "return *((RogueInt32*)&$this);"
+      $endIf
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -174,12 +187,6 @@ class Real32 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
-
-    method or_at_least( other:Real32 )->Real32
-      return select{ this>=other:this || other }
-
-    method or_at_most( other:Real32 )->Real32
-      return select{ this<=other:this || other }
 
     method or_larger( other:Real32 )->Real32
       return select{ this>=other:this || other }
@@ -228,6 +235,12 @@ class Int64 [primitive]
       if (this >= 0) return this
       else           return -this
 
+    method at_least( other:Int64 )->Int64
+      return select{ this>=other:this || other }
+
+    method at_most( other:Int64 )->Int64
+      return select{ this<=other:this || other }
+
     method real_bits->Real64
       $if ("C++")
         native "return *((RogueReal64*)&$this);"
@@ -246,12 +259,6 @@ class Int64 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
-
-    method or_at_least( other:Int64 )->Int64
-      return select{ this>=other:this || other }
-
-    method or_at_most( other:Int64 )->Int64
-      return select{ this<=other:this || other }
 
     method or_larger( other:Int64 )->Int64
       return select{ this>=other:this || other }
@@ -324,6 +331,12 @@ class Int32 [primitive]
       if (this >= 0) return this
       else           return -this
 
+    method at_least( other:Int32 )->Int32
+      return select{ this>=other:this || other }
+
+    method at_most( other:Int32 )->Int32
+      return select{ this<=other:this || other }
+
     method real_bits->Real32
       $if ("C++")
         native "return *((RogueReal32*)&$this);"
@@ -342,12 +355,6 @@ class Int32 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
-
-    method or_at_least( other:Int32 )->Int32
-      return select{ this>=other:this || other }
-
-    method or_at_most( other:Int32 )->Int32
-      return select{ this<=other:this || other }
 
     method or_larger( other:Int32 )->Int32
       return select{ this>=other:this || other }
@@ -410,7 +417,14 @@ class Character [primitive]
 
     method create( value:Logical )->Character
       return value->Character
+
   METHODS
+    method at_least( other:Character )->Character
+      return select{ this>=other:this || other }
+
+    method at_most( other:Character )->Character
+      return select{ this<=other:this || other }
+
     method clamped( low:Character, high:Character )->Character
       if (this < low)  return low
       if (this > high) return high
@@ -442,12 +456,6 @@ class Character [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
-
-    method or_at_least( other:Character )->Character
-      return select{ this>=other:this || other }
-
-    method or_at_most( other:Character )->Character
-      return select{ this<=other:this || other }
 
     method or_larger( other:Character )->Character
       return select{ this>=other:this || other }
@@ -504,6 +512,12 @@ class Byte [primitive]
       return value->Byte
 
   METHODS
+    method at_least( other:Byte )->Byte
+      return select{ this>=other:this || other }
+
+    method at_most( other:Byte )->Byte
+      return select{ this<=other:this || other }
+
     method clamped( low:Byte, high:Byte )->Byte
       if (this < low)  return low
       if (this > high) return high
@@ -517,12 +531,6 @@ class Byte [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
-
-    method or_at_least( other:Byte )->Byte
-      return select{ this>=other:this || other }
-
-    method or_at_most( other:Byte )->Byte
-      return select{ this<=other:this || other }
 
     method or_larger( other:Byte )->Byte
       return select{ this>=other:this || other }

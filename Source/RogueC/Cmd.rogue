@@ -4866,7 +4866,7 @@ class CmdSelectCase : Cmd
       endForEach
 
     method implicit_type( scope:Scope )->Type
-      return value.implicit_type( scope )
+      return select { value:value.implicit_type(scope) || null }
 
     method resolve( scope:Scope )->Cmd
       if (not value) value = conditions.first.clone

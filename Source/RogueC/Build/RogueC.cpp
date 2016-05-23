@@ -53372,7 +53372,7 @@ void RogueCmdSelectCase__dispatch__Visitor( RogueClassCmdSelectCase* THIS, Rogue
 
 RogueClassType* RogueCmdSelectCase__implicit_type__Scope( RogueClassCmdSelectCase* THIS, RogueClassScope* scope_0 )
 {
-  return (RogueClassType*)((call_ROGUEM133( 26, ROGUE_ARG(THIS->value), scope_0 )));
+  return (RogueClassType*)(((((THIS->value))) ? ((call_ROGUEM133( 26, ROGUE_ARG(THIS->value), scope_0 ))) : ((RogueClassType*)(NULL))));
 }
 
 RogueClassCmd* RogueCmdSelectCase__resolve__Scope( RogueClassCmdSelectCase* THIS, RogueClassScope* scope_0 )
