@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.62 - May 23, 2016
+###v1.0.62 - May 24, 2016
 - [API] Renamed `get_int32()` etc. to be `int32()` for Value types (Value, ValueList, ValueTable).
 - [API] Fixed `File.timestamp()` - was returning value in milliseconds instead of real seconds.
 - [API] Added class `TimeInterval` that can be added to a Date value or obtained by subtracting two Date values.
@@ -34,7 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `.floor()` to primitives `Real64` and `Real32`.
 - [API] Added `.format([decimal_digit_count])->String` to Real64 and Real32 that returns a string representation with no more than 4 decimal digits if `decimal_digit_count` is omitted or else the exact number of decimal digits specified.
 - [API] Renamed `List.filter()` and `List.filtered()` to `List.keep()` and `List.keeping()`.  The original names are still available as macros for developer convenience.
-- [RogueC] Fixed step size to have an effect in "anonymous" forEach loops that don't have a control variable, e.g. `forEach (1..x step 2)`.
+- [RogueC] Fixed step size to have an effect again in two forEach loop variants... had been broken since 'step' started being parsed as part of a range.
 - [RogueC] Now supporting operator methods for binary operators (`&`, `|`, `~`, `:<<:`, `:>>:`, `:>>>:`).
 
 ###v1.0.61 - May 21, 2016

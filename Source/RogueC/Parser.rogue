@@ -1745,9 +1745,8 @@ class Parser
               last_var.initial_value = range.last
 
               local step_cmd = null : Cmd
-              if (consume(TokenType.keyword_step))
-                local step_value = parse_expression
-                step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, step_value )
+              if (range.step_size)
+                step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, range.step_size )
               else
                 if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
                   step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
