@@ -3436,9 +3436,6 @@ class CmdBitwiseOp : CmdBinary
       endIf
 
       throw t.error( "The '$' operator cannot be applied to type $." (symbol,common_type) )
-
-    method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
-      return null
 endClass
 
 class CmdBitwiseAnd : CmdBitwiseOp
@@ -3454,6 +3451,9 @@ class CmdBitwiseAnd : CmdBitwiseOp
       else
         return this
       endIf
+
+    method fn_name->String
+      return "operator&"
 
     method symbol->String
       return "&"
@@ -3473,6 +3473,9 @@ class CmdBitwiseOr : CmdBitwiseOp
         return this
       endIf
 
+    method fn_name->String
+      return "operator|"
+
     method symbol->String
       return "|"
 endClass
@@ -3491,6 +3494,9 @@ class CmdBitwiseXor : CmdBitwiseOp
         return this
       endIf
 
+    method fn_name->String
+      return "operator~"
+
     method symbol->String
       return "~"
 endClass
@@ -3507,6 +3513,9 @@ class CmdBitwiseShiftLeft : CmdBitwiseOp
         return this
       endIf
 
+    method fn_name->String
+      return "operator:<<:"
+
     method symbol->String
       return ":<<:"
 endClass
@@ -3522,6 +3531,9 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
       else
         return this
       endIf
+
+    method fn_name->String
+      return "operator:>>:"
 
     method resolve( scope:Scope )->Cmd
       local result = prior.resolve( scope )
@@ -3545,6 +3557,9 @@ class CmdBitwiseShiftRightX : CmdBitwiseOp
       else
         return this
       endIf
+
+    method fn_name->String
+      return "operator:>>>:"
 
     method symbol->String
       return ":>>>:"

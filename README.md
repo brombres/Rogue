@@ -35,6 +35,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `.format([decimal_digit_count])->String` to Real64 and Real32 that returns a string representation with no more than 4 decimal digits if `decimal_digit_count` is omitted or else the exact number of decimal digits specified.
 - [API] Renamed `List.filter()` and `List.filtered()` to `List.keep()` and `List.keeping()`.  The original names are still available as macros for developer convenience.
 - [RogueC] Fixed step size to have an effect in "anonymous" forEach loops that don't have a control variable, e.g. `forEach (1..x step 2)`.
+- [RogueC] Now supporting operator methods for binary operators (`&`, `|`, `~`, `:<<:`, `:>>:`, `:>>>:`).
 
 ###v1.0.61 - May 21, 2016
 - [API] Renamed JSON-style data `PropertyValue`, `PropertyList`, and `PropertyTable` to be `Value`, `ValueList`, and `ValueTable` instead.
