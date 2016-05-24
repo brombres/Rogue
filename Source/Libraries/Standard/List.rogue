@@ -76,7 +76,7 @@ class List<<$DataType>> : GenericList
       return ListReader<<$DataType>>( this, i1 )
 
     method from( i1:Int32, i2:Int32 )->ListReader<<$DataType>>
-      return ListReader<<$DataType>>( this, i1, i2 )
+      return ListReader<<$DataType>>( this, i1, i2+1 )
 
     method discard( i1:Int32, n=1:Int32 )
       local i2 = i1 + n

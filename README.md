@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `.floor()` to primitives `Real64` and `Real32`.
 - [API] Added `.format([decimal_digit_count])->String` to Real64 and Real32 that returns a string representation with no more than 4 decimal digits if `decimal_digit_count` is omitted or else the exact number of decimal digits specified.
 - [API] Renamed `List.filter()` and `List.filtered()` to `List.keep()` and `List.keeping()`.  The original names are still available as macros for developer convenience.
+- [API] Fixed an off-by-one error in `List.from(i1,i2)` where `i2` was not being included.  This also fixes InsertionSort, which was leaving out the last element every time a sort was performed.
 - [RogueC] Fixed step size to have an effect again in two forEach loop variants... had been broken since 'step' started being parsed as part of a range.
 - [RogueC] Now supporting operator methods for binary operators (`&`, `|`, `~`, `:<<:`, `:>>:`, `:>>>:`).
 
