@@ -5380,9 +5380,9 @@ RogueType_List* RogueType_List__add__Type( RogueType_List* THIS, RogueClassType*
 RogueInt32 RogueType_List__capacity( RogueType_List* THIS );
 RogueType_List* RogueType_List__clear( RogueType_List* THIS );
 void RogueType_List__discard_from__Int32( RogueType_List* THIS, RogueInt32 index_0 );
-RogueType_List* RogueType_List__filter__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 );
-RogueType_List* RogueType_List__filtered__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 );
 RogueType_List* RogueType_List__insert__Type_Int32( RogueType_List* THIS, RogueClassType* value_0, RogueInt32 before_index_1 );
+RogueType_List* RogueType_List__keep__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 );
+RogueType_List* RogueType_List__keeping__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 );
 RogueOptionalInt32 RogueType_List__locate__Type( RogueType_List* THIS, RogueClassType* value_0 );
 RogueType_List* RogueType_List__reserve__Int32( RogueType_List* THIS, RogueInt32 additional_count_0 );
 RogueClassType* RogueType_List__remove__Type( RogueType_List* THIS, RogueClassType* value_0 );

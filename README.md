@@ -33,6 +33,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `at_least(other)`/`or_larger(other)` and `at_most(other)`/`or_smaller(other)` to numerical primitives.  `a = a.at_least(b)` and `a = a.or_larger(b)` are both equivalent to `a = Math.max(a,b)`, likewise for `at_most/or_smaller` and `Math.min`.
 - [API] Added `.floor()` to primitives `Real64` and `Real32`.
 - [API] Added `.format([decimal_digit_count])->String` to Real64 and Real32 that returns a string representation with no more than 4 decimal digits if `decimal_digit_count` is omitted or else the exact number of decimal digits specified.
+- [API] Renamed `List.filter()` and `List.filtered()` to `List.keep()` and `List.keeping()`.  The original names are still available as macros for developer convenience.
 - [RogueC] Fixed step size to have an effect in "anonymous" forEach loops that don't have a control variable, e.g. `forEach (1..x step 2)`.
 
 ###v1.0.61 - May 21, 2016

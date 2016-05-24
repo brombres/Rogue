@@ -32423,31 +32423,6 @@ void RogueType_List__discard_from__Int32( RogueType_List* THIS, RogueInt32 index
   THIS->count = c_2;
 }
 
-RogueType_List* RogueType_List__filter__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 )
-{
-  RogueInt32 write_pos_1 = (0);
-  {
-    ROGUE_DEF_LOCAL_REF(RogueType_List*,_auto_1607_3,(THIS));
-    RogueInt32 i_4 = (0);
-    for (;i_4 < _auto_1607_3->count;++i_4)
-    {
-      ROGUE_DEF_LOCAL_REF(RogueClassType*,value_2,(((RogueClassType*)(THIS->data->objects[i_4]))));
-      if ((call_ROGUEM304( 10, fn_0, value_2 )))
-      {
-        THIS->data->objects[write_pos_1] = value_2;
-        ++write_pos_1;
-      }
-    }
-  }
-  RogueType_List__discard_from__Int32( ROGUE_ARG(THIS), write_pos_1 );
-  return (RogueType_List*)(THIS);
-}
-
-RogueType_List* RogueType_List__filtered__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 )
-{
-  return (RogueType_List*)(((RogueType_List__filter__Function_Type_RETURNSLogical( ROGUE_ARG(((RogueType_List__clone( ROGUE_ARG(THIS) )))), fn_0 ))));
-}
-
 RogueType_List* RogueType_List__insert__Type_Int32( RogueType_List* THIS, RogueClassType* value_0, RogueInt32 before_index_1 )
 {
   if (before_index_1 < 0)
@@ -32466,6 +32441,31 @@ RogueType_List* RogueType_List__insert__Type_Int32( RogueType_List* THIS, RogueC
     THIS->data->objects[before_index_1] = value_0;
   }
   return (RogueType_List*)(THIS);
+}
+
+RogueType_List* RogueType_List__keep__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 )
+{
+  RogueInt32 write_pos_1 = (0);
+  {
+    ROGUE_DEF_LOCAL_REF(RogueType_List*,_auto_1609_3,(THIS));
+    RogueInt32 i_4 = (0);
+    for (;i_4 < _auto_1609_3->count;++i_4)
+    {
+      ROGUE_DEF_LOCAL_REF(RogueClassType*,value_2,(((RogueClassType*)(THIS->data->objects[i_4]))));
+      if ((call_ROGUEM304( 10, fn_0, value_2 )))
+      {
+        THIS->data->objects[write_pos_1] = value_2;
+        ++write_pos_1;
+      }
+    }
+  }
+  RogueType_List__discard_from__Int32( ROGUE_ARG(THIS), write_pos_1 );
+  return (RogueType_List*)(THIS);
+}
+
+RogueType_List* RogueType_List__keeping__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 )
+{
+  return (RogueType_List*)(((RogueType_List__keep__Function_Type_RETURNSLogical( ROGUE_ARG(((RogueType_List__clone( ROGUE_ARG(THIS) )))), fn_0 ))));
 }
 
 RogueOptionalInt32 RogueType_List__locate__Type( RogueType_List* THIS, RogueClassType* value_0 )
@@ -38022,8 +38022,8 @@ void RogueProgram__trace_overridden_methods( RogueClassProgram* THIS )
       }
     }
   }
-  ROGUE_DEF_LOCAL_REF(RogueType_List*,class_list_2,(((RogueType_List__filtered__Function_Type_RETURNSLogical( ROGUE_ARG(THIS->type_list), ROGUE_ARG(((RogueClassFunction_Type_RETURNSLogical*)(((RogueClassFunction_383*)ROGUE_SINGLETON(Function_383))))) )))));
-  ROGUE_DEF_LOCAL_REF(RogueType_List*,aspect_list_3,(((RogueType_List__filtered__Function_Type_RETURNSLogical( ROGUE_ARG(THIS->type_list), ROGUE_ARG(((RogueClassFunction_Type_RETURNSLogical*)(((RogueClassFunction_384*)ROGUE_SINGLETON(Function_384))))) )))));
+  ROGUE_DEF_LOCAL_REF(RogueType_List*,class_list_2,(((RogueType_List__keeping__Function_Type_RETURNSLogical( ROGUE_ARG(THIS->type_list), ROGUE_ARG(((RogueClassFunction_Type_RETURNSLogical*)(((RogueClassFunction_383*)ROGUE_SINGLETON(Function_383))))) )))));
+  ROGUE_DEF_LOCAL_REF(RogueType_List*,aspect_list_3,(((RogueType_List__keeping__Function_Type_RETURNSLogical( ROGUE_ARG(THIS->type_list), ROGUE_ARG(((RogueClassFunction_Type_RETURNSLogical*)(((RogueClassFunction_384*)ROGUE_SINGLETON(Function_384))))) )))));
   {
     ROGUE_DEF_LOCAL_REF(RogueType_List*,_auto_385_20,(aspect_list_3));
     RogueInt32 _auto_386_21 = (0);
@@ -59848,8 +59848,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.62.5", 8 ) ); 
-  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 21, 2016", 12 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.62.7", 8 ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 23, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 

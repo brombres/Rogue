@@ -92,20 +92,11 @@ class List<<$DataType>> : GenericList
       endWhile
       count = c
 
-    method filter( fn:Function($DataType)->Logical )->this
-      local write_pos = 0
-      forEach (i of this)
-        local value = this[i]
-        if (fn(value))
-          this[write_pos] = value
-          ++write_pos
-        endIf
-      endForEach
-      discard_from( write_pos )
-      return this
+    method filter( fn:Function($DataType)->Logical )->this [macro]
+      this.keep( fn )
 
-    method filtered( fn:Function($DataType)->Logical )->$DataType[]
-      return clone.filter( fn )
+    method filtered( fn:Function($DataType)->Logical )->$DataType[] [macro]
+      this.keeping( fn )
 
     method get( index:Int32 )->$DataType [macro]
       this.data[index]
@@ -153,6 +144,21 @@ class List<<$DataType>> : GenericList
 
     method insertion_sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       InsertionSort<<$DataType>>.sort( this, compare_fn )
+
+    method keep( fn:Function($DataType)->Logical )->this
+      local write_pos = 0
+      forEach (i of this)
+        local value = this[i]
+        if (fn(value))
+          this[write_pos] = value
+          ++write_pos
+        endIf
+      endForEach
+      discard_from( write_pos )
+      return this
+
+    method keeping( fn:Function($DataType)->Logical )->$DataType[]
+      return clone.keep( fn )
 
     method last->$DataType
       return this.data[ count - 1 ]
