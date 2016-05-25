@@ -132,6 +132,12 @@ class Value
       if (not value) return null
       return value->Object
 
+    method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
+      return this
+
+    method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->Value
+      return clone
+
     method string( key:String )->String
       local value = get( key )
       if (not value) return ""
@@ -632,6 +638,13 @@ class ValueList : Value
       values.set( index, new_value )
 
       return this
+
+    method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
+      values.sort( compare_fn )
+      return this
+
+    method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->ValueList
+      return clone.sort( compare_fn ) as ValueList
 
     method to->String
       return values->String

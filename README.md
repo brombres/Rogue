@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.63 - May 25, 2016
+- [API] Added `Value.sort(compare_fn:Function(a:Value,b:Value))` that sorts ValueList types into order based on an arbitrary comparison function.
+
 ###v1.0.62 - May 24, 2016
 - [API] Renamed `get_int32()` etc. to be `int32()` for Value types (Value, ValueList, ValueTable).
 - [API] Fixed `File.timestamp()` - was returning value in milliseconds instead of real seconds.
