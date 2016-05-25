@@ -30,7 +30,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Renamed `get_int32()` etc. to be `int32()` for Value types (Value, ValueList, ValueTable).
 - [API] Fixed `File.timestamp()` - was returning value in milliseconds instead of real seconds.
 - [API] Added class `TimeInterval` that can be added to a Date value or obtained by subtracting two Date values.
-- [API] Added `at_least(other)`/`or_larger(other)` and `at_most(other)`/`or_smaller(other)` to numerical primitives.  `a = a.at_least(b)` and `a = a.or_larger(b)` are both equivalent to `a = Math.max(a,b)`, likewise for `at_most/or_smaller` and `Math.min`.
+- [API] Adjusted numerical primitive method `clamped(low,high)` to have use optional named parameters: `clamped(&low=null,&high=null)`.
+- [API] Added `or_larger(other)` and `or_smaller(other)` to numerical primitives.  `a = a.or_larger(b)` is equivalent to `a = Math.max(a,b)`, likewise for `or_smaller` and `Math.min`.
 - [API] Added `.floor()` to primitives `Real64` and `Real32`.
 - [API] Added `.format([decimal_digit_count])->String` to Real64 and Real32 that returns a string representation with no more than 4 decimal digits if `decimal_digit_count` is omitted or else the exact number of decimal digits specified.
 - [API] Renamed `List.filter()` and `List.filtered()` to `List.keep()` and `List.keeping()`.  The original names are still available as macros for developer convenience.

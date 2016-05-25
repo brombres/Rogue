@@ -28,15 +28,9 @@ class Real64 [primitive]
       if (this >= 0) return this
       else           return -this
 
-    method at_least( other:Real64 )->Real64
-      return select{ this>=other:this || other }
-
-    method at_most( other:Real64 )->Real64
-      return select{ this<=other:this || other }
-
-    method clamped( low:Real64, high:Real64 )->Real64
-      if (this < low)  return low
-      if (this > high) return high
+    method clamped( &low=null:Real64?, &high=null:Real64? )->Real64
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
       return this
 
     method decimal_digit_count->Int32
@@ -61,7 +55,7 @@ class Real64 [primitive]
       return Math.floor( this )
 
     method format( decimal_digits=null:Int32? )->String
-      local digits = select{ decimal_digits || decimal_digit_count.at_most(4) }
+      local digits = select{ decimal_digits || decimal_digit_count.clamped(&high=4) }
       return StringBuilder().print( this, digits )->String
 
     method hash_code->Int32
@@ -141,15 +135,9 @@ class Real32 [primitive]
       if (this >= 0) return this
       else           return -this
 
-    method at_least( other:Real32 )->Real32
-      return select{ this>=other:this || other }
-
-    method at_most( other:Real32 )->Real32
-      return select{ this<=other:this || other }
-
-    method clamped( low:Real32, high:Real32 )->Real32
-      if (this < low)  return low
-      if (this > high) return high
+    method clamped( &low=null:Real32?, &high=null:Real32? )->Real32
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
       return this
 
     method digit_count->Int32
@@ -235,20 +223,14 @@ class Int64 [primitive]
       if (this >= 0) return this
       else           return -this
 
-    method at_least( other:Int64 )->Int64
-      return select{ this>=other:this || other }
-
-    method at_most( other:Int64 )->Int64
-      return select{ this<=other:this || other }
-
     method real_bits->Real64
       $if ("C++")
         native "return *((RogueReal64*)&$this);"
       $endIf
 
-    method clamped( low:Int64, high:Int64 )->Int64
-      if (this < low)  return low
-      if (this > high) return high
+    method clamped( &low=null:Int64?, &high=null:Int64? )->Int64
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
       return this
 
     method digit_count->Int32
@@ -331,20 +313,14 @@ class Int32 [primitive]
       if (this >= 0) return this
       else           return -this
 
-    method at_least( other:Int32 )->Int32
-      return select{ this>=other:this || other }
-
-    method at_most( other:Int32 )->Int32
-      return select{ this<=other:this || other }
-
     method real_bits->Real32
       $if ("C++")
         native "return *((RogueReal32*)&$this);"
       $endIf
 
-    method clamped( low:Int32, high:Int32 )->Int32
-      if (this < low)  return low
-      if (this > high) return high
+    method clamped( &low=null:Int32?, &high=null:Int32? )->Int32
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
       return this
 
     method digit_count->Int32
@@ -419,15 +395,9 @@ class Character [primitive]
       return value->Character
 
   METHODS
-    method at_least( other:Character )->Character
-      return select{ this>=other:this || other }
-
-    method at_most( other:Character )->Character
-      return select{ this<=other:this || other }
-
-    method clamped( low:Character, high:Character )->Character
-      if (this < low)  return low
-      if (this > high) return high
+    method clamped( &low=null:Character?, &high=null:Character? )->Character
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
       return this
 
     method digit_count->Int32
@@ -512,15 +482,9 @@ class Byte [primitive]
       return value->Byte
 
   METHODS
-    method at_least( other:Byte )->Byte
-      return select{ this>=other:this || other }
-
-    method at_most( other:Byte )->Byte
-      return select{ this<=other:this || other }
-
-    method clamped( low:Byte, high:Byte )->Byte
-      if (this < low)  return low
-      if (this > high) return high
+    method clamped( &low=null:Byte?, &high=null:Byte? )->Byte
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
       return this
 
     method digit_count->Int32

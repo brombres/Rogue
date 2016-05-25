@@ -17813,7 +17813,7 @@ int Rogue_type_info_table[5358] =
   1847,3,167,81,1,0,9,1576,1630,1698,1699,1700,1701,1702,1703,1704,55,99,8,9,2,2,171,171,170,
   0,1891,1,1,0,2,469,1630,8,99,0,1901,2,7,1,0,0,0,1911,1,1,0,0,0,1922,
   2,173,1,0,0,0,1933,2,173,1,0,0,0,1944,1,1,0,7,1386,1705,1345,1706,1707,1708,1709,
-  2,15,8,9,8,55,15,0,1954,1,1,3,1710,1711,1712,4,2,385,0,0,1964,1,1,0,2,
+  2,15,8,9,8,55,15,0,1954,1,1,3,1710,1711,1712,4,2,387,0,0,1964,1,1,0,2,
   1713,1714,178,10,0,1974,0,0,1,1355,8,0,1975,0,0,1,1355,8,0,1976,1,1,0,1,1386,
   2,0,1986,2,81,1,0,2,1576,1715,55,2,0,2028,2,1,30,0,5,1355,1716,1717,1705,1718,8,
   29,2,15,20,0,2038,2,131,1,0,0,0,2049,1,1,0,7,1386,1385,1397,1705,1719,1720,1721,2,
@@ -17920,15 +17920,15 @@ int Rogue_type_info_table[5358] =
   465,1786,1689,55,81,95,162,0,8810,1,1,0,5,1622,1801,1802,1803,1804,62,161,94,94,9,0,8820,
   2,354,1,0,0,0,8831,2,356,1,0,0,0,8842,3,159,0,1,0,2,1332,1333,2,3,0,
   8853,2,1,179,0,6,1355,1386,421,1805,1705,1806,8,2,8,8,16,10,0,8863,2,1,180,0,5,
-  1355,1386,1752,1705,1806,8,2,9,16,10,0,8873,2,1,29,0,3,1355,1807,1717,8,179,387,0,8883,
+  1355,1386,1752,1705,1806,8,2,9,16,10,0,8873,2,1,29,0,3,1355,1807,1717,8,179,385,0,8883,
   2,56,1,0,3,1338,1574,1575,2,9,9,0,8906,2,56,1,0,3,1338,1574,1575,2,9,9,0,
   8929,2,56,1,0,3,1338,1574,1575,2,9,9,0,8952,2,56,1,0,3,1338,1574,1575,2,9,9,
   0,8975,2,56,1,0,3,1338,1574,1575,2,9,9,0,8998,2,56,1,0,3,1338,1574,1575,2,9,
   9,0,9021,2,205,1,0,1,1085,8,0,9088,2,205,1,1,1808,379,1,1085,2,0,9155,2,1,
   381,0,4,1355,1767,1809,1810,8,304,8,9,0,9165,0,0,1,1355,8,0,9166,4,324,322,81,1,
   0,4,1576,465,1786,1689,55,81,95,162,0,9208,2,55,1,0,5,529,1386,1399,1400,1085,56,2,8,
-  8,2,0,0,0,0,2,1085,481,8,9,0,0,0,0,0,0,0,0,0,2,1085,481,17,9,
-  0,0,0,0,2,1085,481,20,9
+  8,2,0,0,0,0,2,1085,481,8,9,0,0,0,0,2,1085,481,20,9,0,0,0,0,2,
+  1085,481,17,9,0,0,0,0,0
 };
 
 void* Rogue_global_property_pointers[] =
@@ -19261,10 +19261,10 @@ int Rogue_property_offsets[] =
   (int)(intptr_t)&((RogueClassNativeCodeToken*)0)->value,
   (int)(intptr_t)&((RogueOptionalInt32*)0)->value,
   (int)(intptr_t)&((RogueOptionalInt32*)0)->exists,
-  (int)(intptr_t)&((RogueOptionalByte*)0)->value,
-  (int)(intptr_t)&((RogueOptionalByte*)0)->exists,
   (int)(intptr_t)&((RogueOptionalCharacter*)0)->value,
-  (int)(intptr_t)&((RogueOptionalCharacter*)0)->exists
+  (int)(intptr_t)&((RogueOptionalCharacter*)0)->exists,
+  (int)(intptr_t)&((RogueOptionalByte*)0)->value,
+  (int)(intptr_t)&((RogueOptionalByte*)0)->exists
 };
 
 int Rogue_object_size_table[388] =
@@ -19654,9 +19654,9 @@ int Rogue_object_size_table[388] =
   (int) sizeof(RogueClassCmdCallStaticMethod),
   (int) sizeof(RogueClassNativeCodeToken),
   (int) sizeof(RogueOptionalInt32),
-  (int) sizeof(RogueClassSystemEnvironment),
+  (int) sizeof(RogueOptionalCharacter),
   (int) sizeof(RogueOptionalByte),
-  (int) sizeof(RogueOptionalCharacter)
+  (int) sizeof(RogueClassSystemEnvironment)
 };
 
 int Rogue_attributes_table[388] =
@@ -20392,9 +20392,9 @@ RogueType* RogueTypeReader_CmdSelectCase_;
 RogueType* RogueTypeCmdCallStaticMethod;
 RogueType* RogueTypeNativeCodeToken;
 RogueType* RogueTypeOptionalInt32;
-RogueType* RogueTypeSystemEnvironment;
-RogueType* RogueTypeOptionalByte;
 RogueType* RogueTypeOptionalCharacter;
+RogueType* RogueTypeOptionalByte;
+RogueType* RogueTypeSystemEnvironment;
 
 int Rogue_literal_string_count = 1811;
 RogueString* Rogue_literal_strings[1811];
@@ -59821,9 +59821,9 @@ void Rogue_configure( int argc, const char* argv[] )
   RogueTypeCmdCallStaticMethod = &Rogue_types[ 382 ];
   RogueTypeNativeCodeToken = &Rogue_types[ 383 ];
   RogueTypeOptionalInt32 = &Rogue_types[ 384 ];
-  RogueTypeSystemEnvironment = &Rogue_types[ 385 ];
+  RogueTypeOptionalCharacter = &Rogue_types[ 385 ];
   RogueTypeOptionalByte = &Rogue_types[ 386 ];
-  RogueTypeOptionalCharacter = &Rogue_types[ 387 ];
+  RogueTypeSystemEnvironment = &Rogue_types[ 387 ];
 
   Rogue_literal_strings[0] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "", 0 ) ); 
   Rogue_literal_strings[1] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "null", 4 ) ); 
@@ -59871,7 +59871,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.62.10", 9 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.62.11", 9 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 24, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
@@ -61154,9 +61154,9 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1326] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Writer<<Byte>>", 14 ) ); 
   Rogue_literal_strings[1327] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Reader<<CmdSelectCase>>", 23 ) ); 
   Rogue_literal_strings[1328] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Int32?", 6 ) ); 
-  Rogue_literal_strings[1329] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "SystemEnvironment", 17 ) ); 
+  Rogue_literal_strings[1329] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Character?", 10 ) ); 
   Rogue_literal_strings[1330] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Byte?", 5 ) ); 
-  Rogue_literal_strings[1331] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Character?", 10 ) ); 
+  Rogue_literal_strings[1331] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "SystemEnvironment", 17 ) ); 
   Rogue_literal_strings[1332] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "message", 7 ) ); 
   Rogue_literal_strings[1333] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "stack_trace", 11 ) ); 
   Rogue_literal_strings[1334] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "entries", 7 ) ); 

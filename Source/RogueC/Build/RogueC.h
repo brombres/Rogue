@@ -994,9 +994,9 @@ struct RogueClassReader_CmdSelectCase_;
 struct RogueClassCmdCallStaticMethod;
 struct RogueClassNativeCodeToken;
 struct RogueOptionalInt32;
-struct RogueClassSystemEnvironment;
-struct RogueOptionalByte;
 struct RogueOptionalCharacter;
+struct RogueOptionalByte;
+struct RogueClassSystemEnvironment;
 
 // COMPOUND DEFINITIONS
 struct RogueOptionalInt32
@@ -1028,16 +1028,30 @@ struct RogueOptionalInt32
   }
 };
 
-struct RogueClassSystemEnvironment
+struct RogueOptionalCharacter
 {
   // PROPERTIES
+  RogueCharacter value;
+  RogueLogical exists;
 
-  bool operator==( const RogueClassSystemEnvironment &other ) const
+  RogueOptionalCharacter() : value(0), exists(0) {}
+
+  RogueOptionalCharacter( RogueCharacter value, bool exists=true ) : value(value), exists(exists) {}
+  bool operator==( const RogueOptionalCharacter &other ) const
   {
-    return true;
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
   }
 
-  bool operator!=( const RogueClassSystemEnvironment &other ) const
+  bool operator!=( const RogueOptionalCharacter &other ) const
   {
     return !(*this == other);
   }
@@ -1072,30 +1086,16 @@ struct RogueOptionalByte
   }
 };
 
-struct RogueOptionalCharacter
+struct RogueClassSystemEnvironment
 {
   // PROPERTIES
-  RogueCharacter value;
-  RogueLogical exists;
 
-  RogueOptionalCharacter() : value(0), exists(0) {}
-
-  RogueOptionalCharacter( RogueCharacter value, bool exists=true ) : value(value), exists(exists) {}
-  bool operator==( const RogueOptionalCharacter &other ) const
+  bool operator==( const RogueClassSystemEnvironment &other ) const
   {
-    if (exists)
-    {
-      if (other.exists) return value == other.value;
-      else              return false;
-    }
-    else
-    {
-      if (other.exists) return false;
-      else              return true;
-    }
+    return true;
   }
 
-  bool operator!=( const RogueOptionalCharacter &other ) const
+  bool operator!=( const RogueClassSystemEnvironment &other ) const
   {
     return !(*this == other);
   }
@@ -4696,9 +4696,9 @@ extern RogueType* RogueTypeReader_CmdSelectCase_;
 extern RogueType* RogueTypeCmdCallStaticMethod;
 extern RogueType* RogueTypeNativeCodeToken;
 extern RogueType* RogueTypeOptionalInt32;
-extern RogueType* RogueTypeSystemEnvironment;
-extern RogueType* RogueTypeOptionalByte;
 extern RogueType* RogueTypeOptionalCharacter;
+extern RogueType* RogueTypeOptionalByte;
+extern RogueType* RogueTypeSystemEnvironment;
 
 // ROUTINE PROTOTYPES
 RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 );
