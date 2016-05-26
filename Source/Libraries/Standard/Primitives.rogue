@@ -100,8 +100,8 @@ class Real64 [primitive]
     method to->String
       return "" + this
 
-    method to_power_of_2->Real64
-      return this->Int64.to_power_of_2->Real64
+    method to_power_of_two->Real64
+      return this->Int64.to_power_of_two->Real64
 
     method whole_digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).locate( '.' ).value
@@ -188,8 +188,8 @@ class Real32 [primitive]
     method to->Object
       return Boxed<<Real32>>(this)
 
-    method to_power_of_2->Real32
-      return this->Int64.to_power_of_2->Real32
+    method to_power_of_two->Real32
+      return this->Int64.to_power_of_two->Real32
 
     method whole_digit_count->Int32
       return this->Real64.whole_digit_count
@@ -278,7 +278,7 @@ class Int64 [primitive]
     method to_octal_string( digits=22:Int32 )->String
       return print_in_power2_base( 8, digits, StringBuilder() )->String
 
-    method to_power_of_2->Int64
+    method to_power_of_two->Int64
       if (this & 0xC000000000000000 or not this) return this
       local p2 = 1 : Int64
       while (p2 < this) p2 = p2 :<<: 1
@@ -364,7 +364,7 @@ class Int32 [primitive]
     method to_octal_string( digits=11:Int32 )->String
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
 
-    method to_power_of_2->Int32
+    method to_power_of_two->Int32
       if (this & 0xC0000000 or not this) return this
       local p2 = 1
       while (p2 < this) p2 = p2 :<<: 1

@@ -26,10 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.63 - May 25, 2016
+###v1.0.63 - May 26, 2016
 - [API] Added `Value.sort(compare_fn:Function(a:Value,b:Value))` that sorts ValueList types into order based on an arbitrary comparison function.
 - [API] Added `List.discard(Function(value:$DataType))->this` that discards items identified by the supplied function.
-- [API] Improved no-parens args parsing.
+- [API] Renamed integer primitive method `to_power_of_2()` to `to_power_of_two()`.
+- [RogueC] Improved no-parens args parsing.
 
 ###v1.0.62 - May 24, 2016
 - [API] Renamed `get_int32()` etc. to be `int32()` for Value types (Value, ValueList, ValueTable).
