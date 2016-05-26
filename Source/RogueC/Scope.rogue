@@ -540,6 +540,7 @@ class CandidateMethods
         if (available.count == 0)
           if (not error_on_fail) return false
           if (access.name.begins_with("set_"))
+println StackTrace()
             local base_name = access.name.after_first( "set_" )
             throw access.t.error( ''No such variable "$" or method "$" exists in current scope of type $.''...
                 (base_name,access.name,type_context) )

@@ -1302,7 +1302,7 @@ class Parser
       endIf
 
       # No-parens args can follow an initial expression
-      if (not next_is_end_command)
+      if (not next_is_end_command and next_is_statement)
         local access = expression as CmdAccess
         if (access and access.args is null)
           local args = CmdArgs()

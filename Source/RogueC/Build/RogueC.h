@@ -6024,6 +6024,7 @@ RogueClassCmdNamedArg* RogueCmdNamedArg__init__Token_String_Cmd_Logical( RogueCl
 RogueClassCmd* RogueCmdNamedArg__to_value( RogueClassCmdNamedArg* THIS );
 RogueString* RogueArray_CmdNamedArg___type_name( RogueArray* THIS );
 RogueClassCmdReturn* RogueCmdReturn__init_object( RogueClassCmdReturn* THIS );
+RogueString* RogueCmdReturn__to_String( RogueClassCmdReturn* THIS );
 RogueString* RogueCmdReturn__type_name( RogueClassCmdReturn* THIS );
 RogueClassCmd* RogueCmdReturn__clone__CloneArgs( RogueClassCmdReturn* THIS, RogueClassCloneArgs* clone_args_0 );
 void RogueCmdReturn__dispatch__Visitor( RogueClassCmdReturn* THIS, RogueClassVisitor* v_0 );

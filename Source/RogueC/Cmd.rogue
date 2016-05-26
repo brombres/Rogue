@@ -387,6 +387,10 @@ class CmdReturn : CmdStatement
       endIf
       return this
 
+    method to->String
+      if (value) return "CmdReturn($)" (value)
+      else       return "CmdReturn(nil)"
+
     method type->Type
       return value.type
 endClass
@@ -2024,6 +2028,7 @@ class CmdAccess : Cmd
       buffer.print( '"' ).print( name ).print( '"' )
       if (args) buffer.print( args )
       if (named_args) buffer.print( '&' ).print( named_args )
+      buffer.print( ")" )
       return buffer->String
 
     method type->Type
