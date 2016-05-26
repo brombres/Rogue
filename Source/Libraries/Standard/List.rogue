@@ -83,6 +83,14 @@ class List<<$DataType>> : GenericList
       data.set( i1, data, i2, (count-i2) )
       discard_from( count-n )
 
+    method discard( fn:Function($DataType)->Logical )->this
+      # Discards any item that passes the test function.
+      local rewriter = this.rebuilder
+      forEach (value in rewriter)
+        if (not fn(value)) rewriter.write( value )
+      endForEach
+      return this
+
     method discard_from( index:Int32 )
       local zero_value : $DataType
       local c = count
