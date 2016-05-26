@@ -228,6 +228,9 @@ class Value
     method remove( value:Value )->Value
       return value
 
+    method remove( key:String )->Value
+      return null
+
     method remove_at( index:Int32 )->Value
       return null
 
