@@ -21,7 +21,7 @@ class Real64 [primitive]
       return value->Real64
 
     method create( value:Logical )->Real64
-      return value->Real64
+      return select{ value:1 || 0 }
 
   METHODS
     method abs->Real64
@@ -128,7 +128,7 @@ class Real32 [primitive]
       return value->Real32
 
     method create( value:Logical )->Real32
-      return value->Real32
+      return select{ value:1 || 0 }
 
   METHODS
     method abs->Real32
@@ -216,7 +216,7 @@ class Int64 [primitive]
       return value->Int64
 
     method create( value:Logical )->Int64
-      return value->Int64
+      return select{ value:1 || 0 }
 
   METHODS
     method abs->Int64
@@ -266,6 +266,12 @@ class Int64 [primitive]
     method to->String
       return StringBuilder().print( this )->String
 
+    method to->String( &digits=0, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||16} )
+      if (octal)  return to_octal_string( select{digits||22} )
+      if (binary) return to_binary_string( select{digits||64} )
+      return this
+
     method to_digit->Character [macro]
       (this->Int32).to_digit
 
@@ -306,7 +312,7 @@ class Int32 [primitive]
       return value->Int32
 
     method create( value:Logical )->Int32
-      return value->Int32
+      return select{ value:1 || 0 }
 
   METHODS
     method abs->Int32
@@ -350,6 +356,12 @@ class Int32 [primitive]
     method to->String
       return "" + this
 
+    method to->String( &digits=0, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||8} )
+      if (octal)  return to_octal_string( select{digits||11} )
+      if (binary) return to_binary_string( select{digits||32} )
+      return this
+
     method to_digit->Character
       if (this >= 0 and this <= 9)   return (this + '0')->Character
       if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
@@ -392,7 +404,7 @@ class Character [primitive]
       return value->Character
 
     method create( value:Logical )->Character
-      return value->Character
+      return select{ value:1 || 0 }
 
   METHODS
     method clamped( &low=null:Character?, &high=null:Character? )->Character
@@ -442,6 +454,12 @@ class Character [primitive]
     method to->String
       return "" + this
 
+    method to->String( &digits=0, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||4} )
+      if (octal)  return to_octal_string( select{digits||6} )
+      if (binary) return to_binary_string( select{digits||16} )
+      return this
+
     method to_binary_string( digits=16:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
 
@@ -479,7 +497,7 @@ class Byte [primitive]
       return value
 
     method create( value:Logical )->Byte
-      return value->Byte
+      return select{ value:1 || 0 }
 
   METHODS
     method clamped( &low=null:Byte?, &high=null:Byte? )->Byte
@@ -514,6 +532,12 @@ class Byte [primitive]
 
     method to->String
       return "" + this
+
+    method to->String( &digits=0, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( select{digits||2} )
+      if (octal)  return to_octal_string( select{digits||3} )
+      if (binary) return to_binary_string( select{digits||8} )
+      return this
 
     method to_binary_string( digits=8:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String

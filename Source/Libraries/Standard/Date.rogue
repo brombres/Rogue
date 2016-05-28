@@ -85,9 +85,14 @@ class Date( timestamp=System.time:Real64 ) [compound]
       return (timestamp == other.timestamp)
 
     method to->String
-      return to_string( &ymd, &hms, &ms )
+      return this->String( &ymd, &hms, &ms )
 
-    method to_string( &ymd, &hms, &ms )->String
+    method to->String( &ymd, &hms, &ms, &format=24:Int32 )
+      which (format)
+        case 12, 24: hms = true
+        others: println "*** ERROR calling Date->String() - &format should be 12 or 24 ***"
+      endWhich
+
       local buffer = StringBuilder()
 
       if (ymd)
@@ -97,10 +102,18 @@ class Date( timestamp=System.time:Real64 ) [compound]
         if (hms or ms) buffer.print( ' ' )
       endIf
       if (hms)
-        buffer.print( hour.right_justified(2,'0') ).print(':')
+        if (format == 12)
+          buffer.print( hour12 ).print( ':' )
+        else
+          buffer.print( hour.right_justified(2,'0') ).print(':')
+        endIf
         buffer.print( minute.right_justified(2,'0') ).print(':')
         buffer.print( second.right_justified(2,'0') )
         if (ms) buffer.print( '.' )
+        if (format == 12)
+          if (is_am) buffer.print " AM"
+          else       buffer.print " PM"
+        endIf
       endIf
       if (ms)
         buffer.print( millisecond.right_justified(3,'0') )

@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.63 - May 28, 2016
+- [Rogue] Conversion methods (`method to->String`) can now accept parameters on definition (`method to->String(arg:Int32)`) and on call (`st = obj->String(x)`).
+- [API] Added integer primitive `to->String(&digits:Int32,&hex,&octal,&binary)` conversion methods.
+- [API] Added `Date.to->String(&ymd,&hms,&s,&ms,&format=24)` conversion method.  Specifying `&format=12` or `&format=24` automatically sets the `&hms` flag to include Hours, Minutes, and Seconds in the output.
 - [API] Added `Value.sort(compare_fn:Function(a:Value,b:Value))` that sorts ValueList types into order based on an arbitrary comparison function.
 - [API] Added `Value.remove(key:String)->Value` to base class `Value`.  This method is overridden by `ValueTable`.
 - [API] Added `List.discard(Function(value:$DataType))->this` that discards items identified by the supplied function.

@@ -2134,13 +2134,11 @@ class Parser
         # Conversion operation e.g. value->Int32
         consume_eols
         local to_type = parse_type
-        if (consume(TokenType.symbol_open_paren))
-          if (next_is(TokenType.symbol_close_paren))
-            throw peek.error( "List conversion function expected." )
-          endIf
-          local convert_fn = parse_expression
-          must_consume( TokenType.symbol_close_paren )
-          return parse_member_access( CmdListConvert(t, context, to_type, convert_fn) )
+
+        if (next_is(TokenType.symbol_open_paren))
+          local access = CmdAccess( t, context, "to_" + to_type.name, CmdArgs() )
+          access.named_args = parse_args( access.args )
+          return parse_member_access( access )
         endIf
         return parse_member_access( CmdConvertToType(t,context,to_type) )
 
