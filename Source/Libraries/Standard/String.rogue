@@ -641,19 +641,24 @@ class String
     method to_utf8->Byte[] [macro]
       this->Byte[]
 
-    method trimmed->String
-      local i1 = 0
-      local i2 = count - 1
+    method trimmed( &left=0:Int32, &right=0:Int32 )->String
+      if (left or right)
+        return from( left, count-(right+1) )
+      else
+        # Trim white spaces on both ends
+        local i1 = 0
+        local i2 = count - 1
 
-      while (i1 <= i2)
-        if     (this[i1] <= ' ') ++i1
-        elseIf (this[i2] <= ' ') --i2
-        else                     escapeWhile
-      endWhile
+        while (i1 <= i2)
+          if     (this[i1] <= ' ') ++i1
+          elseIf (this[i2] <= ' ') --i2
+          else                     escapeWhile
+        endWhile
 
-      if (i1 > i2) return ""
-      if (i1 == 0 and i2 == count-1) return this
-      return from( i1, i2 )
+        if (i1 > i2) return ""
+        if (i1 == 0 and i2 == count-1) return this
+        return from( i1, i2 )
+      endIf
 
     method up_to_first( ch:Character )->String
       local i = locate( ch )
