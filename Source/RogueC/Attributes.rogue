@@ -43,7 +43,7 @@ class Attributes
 
     method init( flags )
 
-    method clone->Attributes
+    method cloned->Attributes
       local result = Attributes( flags )
       if (tags)
         forEach (tag in tags)

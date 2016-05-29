@@ -106,7 +106,7 @@ class Scope
         if (named_arg)
           args.add( named_arg.to_value )
         else
-          args.add( param.initial_value.clone )
+          args.add( param.initial_value.cloned )
         endIf
       endWhile
 
@@ -137,7 +137,7 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local inline_statement = statement.clone( macro_args )
+            local inline_statement = statement.cloned( macro_args )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
@@ -181,7 +181,7 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local inline_statement = statement.clone( macro_args )
+            local inline_statement = statement.cloned( macro_args )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
@@ -375,7 +375,7 @@ class Scope
             forEach (index of args)
               local arg = args[index]
               if (arg.is_generic_function)
-                local fn = (arg as CmdCreateFunction).clone( null as CloneArgs )
+                local fn = (arg as CmdCreateFunction).cloned( null as CloneArgs )
                 fn.is_generic = false
                 args[index] = fn
                 local callback_type = m.parameters[index].type

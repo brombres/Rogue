@@ -24,9 +24,9 @@ class List<<$DataType>> : GenericList
       return this
 
     method applying( fn:Function($DataType) )->$DataType[]
-      return clone.apply( fn )
+      return cloned.apply( fn )
 
-    method clone->$DataType[]
+    method cloned->$DataType[]
       local result = $DataType[]( count )
       forEach (value in this)
         result.add( value )
@@ -166,7 +166,7 @@ class List<<$DataType>> : GenericList
       return this
 
     method keeping( fn:Function($DataType)->Logical )->$DataType[]
-      return clone.keep( fn )
+      return cloned.keep( fn )
 
     method last->$DataType
       return this.data[ count - 1 ]
@@ -193,7 +193,7 @@ class List<<$DataType>> : GenericList
       return this
 
     method modified( fn:Function($DataType)->$DataType )->$DataType[]
-      return clone.modify( fn )
+      return cloned.modify( fn )
 
     method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
       # n           - A value between 0 and (permutation_count-1).  0 gives the
@@ -346,13 +346,13 @@ class List<<$DataType>> : GenericList
       return this
 
     method shuffled->$DataType[]
-      return clone.shuffle
+      return cloned.shuffle
 
     method sort( compare_fn:Function($DataType,$DataType)->Logical )->this
       return this.quicksort( compare_fn )
 
     method sorted( compare_fn:Function($DataType,$DataType)->Logical )->$DataType[]
-      return clone.sorted( compare_fn )
+      return cloned.sorted( compare_fn )
 
     method subset( i1:Int32 )->$DataType[]
       return subset( i1, count-i1 )

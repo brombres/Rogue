@@ -1704,7 +1704,7 @@ augment Method
     cpp_typedef  : String
 
   METHODS
-    method clone->Method
+    method cloned->Method
       <<initialize_result>>
       result.cpp_name = cpp_name
       result.cpp_typedef = cpp_typedef
@@ -1822,7 +1822,7 @@ augment Property
     cpp_name      : String
 
   METHODS
-    method clone->Property
+    method cloned->Property
       <<init_result>>
       result.cpp_name = cpp_name
 endAugment
@@ -1835,7 +1835,7 @@ augment Local
     _cpp_name     : String
 
   METHODS
-    method clone( clone_args=null:CloneArgs )->Local
+    method cloned( clone_args=null:CloneArgs )->Local
       <<init_result>>
       result._cpp_name = _cpp_name
 

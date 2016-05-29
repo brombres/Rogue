@@ -28,6 +28,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.63 - May 28, 2016
 - [Rogue] Conversion methods (`method to->String`) can now accept parameters on definition (`method to->String(arg:Int32)`) and on call (`st = obj->String(x)`).
+- [API] Renamed `clone()` methods to be called `cloned()` instead to fit with the general Rogue convention of verbs mutating and returning `this` object and adjectives returning a mutated copy.
 - [API] Added integer primitive `to->String(&digits:Int32,&hex,&octal,&binary)` conversion methods.
 - [API] Added `Date.to->String(&ymd,&hms,&s,&ms,&format=24)` conversion method.  Specifying `&format=12` or `&format=24` automatically sets the `&hms` flag to include Hours, Minutes, and Seconds in the output.
 - [API] Added `Value.sort(compare_fn:Function(a:Value,b:Value))` that sorts ValueList types into order based on an arbitrary comparison function.

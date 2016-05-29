@@ -40,7 +40,7 @@ class Value
     method clear->this
       return this
 
-    method clone->Value
+    method cloned->Value
       return this
 
     method contains( key:String )->Logical
@@ -136,7 +136,7 @@ class Value
       return this
 
     method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->Value
-      return clone
+      return cloned
 
     method string( key:String )->String
       local value = get( key )
@@ -587,8 +587,8 @@ class ValueList : Value
 
     method init( values )
 
-    method clone->ValueList
-      return ValueList( values.clone )
+    method cloned->ValueList
+      return ValueList( values.cloned )
 
     method add( value:Value )->this
       values.add( value )
@@ -647,7 +647,7 @@ class ValueList : Value
       return this
 
     method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->ValueList
-      return clone.sort( compare_fn ) as ValueList
+      return cloned.sort( compare_fn ) as ValueList
 
     method to->String
       return values->String
@@ -706,8 +706,8 @@ class ValueTable : Value
       values.clear
       return this
 
-    method clone->ValueTable
-      return ValueTable( values.clone )
+    method cloned->ValueTable
+      return ValueTable( values.cloned )
 
     method contains( key:String )->Logical
       return values.contains( key )

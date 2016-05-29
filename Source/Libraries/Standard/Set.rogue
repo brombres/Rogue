@@ -17,7 +17,7 @@ class Set<<$T>>
       _t = Table<<$T,Logical>>()
 
     method init (other : Set<<$T>>)
-      _t = other._t.clone()
+      _t = other._t.cloned()
 
     method init (other : $T[])
       _t = Table<<$T,Logical>>()
@@ -52,13 +52,13 @@ class Set<<$T>>
       return discard_all(missing)
 
     method union (r : Set<<$T>>) -> Set<<$T>>
-      return clone().union_update(r)
+      return cloned().union_update(r)
 
     method difference (r : Set<<$T>>) -> Set<<$T>>
-      return clone().difference_update(r)
+      return cloned().difference_update(r)
 
     method intersection (r : Set<<$T>>) -> Set<<$T>>
-      return clone().intersection_update(r)
+      return cloned().intersection_update(r)
 
     method discard (v : $T)
       if (contains(v)) remove(v)
@@ -74,7 +74,7 @@ class Set<<$T>>
       forEach (value in v) remove(value)
       return this
 
-    method clone -> Set<<$T>>
+    method cloned -> Set<<$T>>
       return Set<<$T>>( this )
 
     method count -> Int32

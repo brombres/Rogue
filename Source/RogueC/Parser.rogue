@@ -582,7 +582,7 @@ class Parser
         endIf
       else
         if (this_type.prev_enum_cmd)
-          value = CmdAdd( t, this_type.prev_enum_cmd.clone, CmdLiteralInt32(t,this_type.next_enum_offset) )
+          value = CmdAdd( t, this_type.prev_enum_cmd.cloned, CmdLiteralInt32(t,this_type.next_enum_offset) )
         else
           value = CmdLiteralInt32( t, this_type.next_enum_offset )
         endIf
@@ -1277,7 +1277,7 @@ class Parser
           if (operand is null) throw access.operand.t.error( "Property access or method call expected." )
           access = operand
         endWhile
-        access.operand = expression.clone
+        access.operand = expression.cloned
         statements.add( CmdAssign(t,expression,access) )
       endIf
       }#
@@ -2772,7 +2772,7 @@ class Parser
 
         #local temp_var = this_method.add_local( t, Program.create_unique_id )
         #cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
-        #temp_var.initial_value = cmd_ensure.operand.clone
+        #temp_var.initial_value = cmd_ensure.operand.cloned
         #cmd_ensure.local_info = temp_var
 
       endWhile

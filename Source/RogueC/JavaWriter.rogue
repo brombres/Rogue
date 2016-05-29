@@ -1062,7 +1062,7 @@ augment Method
     java_typedef  : String
 
   METHODS
-    method clone->Method
+    method cloned->Method
       <<initialize_result>>
       result.java_name = java_name
       result.java_typedef = java_typedef
@@ -1166,7 +1166,7 @@ augment Property
     java_name      : String
 
   METHODS
-    method clone->Property
+    method cloned->Property
       <<init_result>>
       result.java_name = java_name
 endAugment
@@ -1179,7 +1179,7 @@ augment Local
     _java_name     : String
 
   METHODS
-    method clone( clone_args=null:CloneArgs )->Local
+    method cloned( clone_args=null:CloneArgs )->Local
       <<init_result>>
       result._java_name = _java_name
 

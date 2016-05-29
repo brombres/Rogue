@@ -12,14 +12,14 @@ class Local
     method init( t, name )
       original_name = name
 
-    method clone( clone_args=null:CloneArgs )->Local
+    method cloned( clone_args=null:CloneArgs )->Local
       local result = Local( t, name )
       result.original_name = original_name
 
       <<init_result>>
       result.type = type
       result.index = index
-      if (initial_value) result.initial_value = initial_value.clone( clone_args )
+      if (initial_value) result.initial_value = initial_value.cloned( clone_args )
 
       return result
 

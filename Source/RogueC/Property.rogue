@@ -10,13 +10,13 @@ class Property
   METHODS
     method init( t, type_context, name, type=null, initial_value=null )
 
-    method clone->Property
+    method cloned->Property
       local result = Property( t, type_context, name )
 
       <<init_result>>
       result.type = type
       result.attributes = attributes
-      if (initial_value) result.initial_value = initial_value.clone
+      if (initial_value) result.initial_value = initial_value.cloned
       return result
 
     method is_incorporated->Logical

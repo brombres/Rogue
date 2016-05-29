@@ -11,8 +11,8 @@ class Token
   METHODS
     method init( type )
 
-    method clone->Token
-      throw RogueError( "clone() not implemented for type $." (type_name) )
+    method cloned->Token
+      throw RogueError( "cloned() not implemented for type $." (type_name) )
 
     method error( message:String )->RogueError
       return RogueError( message, filepath, line, column )

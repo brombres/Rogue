@@ -57,19 +57,19 @@ class Cmd
 
       throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      throw t.error( "[INTERNAL] $.clone() is not implemented." (type_name) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      throw t.error( "[INTERNAL] $.cloned() is not implemented." (type_name) )
 
-    method clone( other:Cmd, clone_args=null:CloneArgs )->Cmd
-      if (other) return other.clone( clone_args )
+    method cloned( other:Cmd, clone_args=null:CloneArgs )->Cmd
+      if (other) return other.cloned( clone_args )
       return null
 
-    method clone( args:CmdArgs, clone_args=null:CloneArgs )->CmdArgs
-      if (args) return args.clone( clone_args )
+    method cloned( args:CmdArgs, clone_args=null:CloneArgs )->CmdArgs
+      if (args) return args.cloned( clone_args )
       return null
 
-    method clone( statements:CmdStatementList, clone_args=null:CloneArgs )->CmdStatementList
-      if (statements) return statements.clone( clone_args )
+    method cloned( statements:CmdStatementList, clone_args=null:CloneArgs )->CmdStatementList
+      if (statements) return statements.cloned( clone_args )
       return null
 
     method combine_literal_operands( common_type:Type )->Cmd
@@ -213,10 +213,10 @@ class CmdStatementList : Cmd[]
       return false
       }#
 
-    method clone( clone_args:CloneArgs )->CmdStatementList
+    method cloned( clone_args:CloneArgs )->CmdStatementList
       local result = CmdStatementList( count )
       forEach (cmd in this)
-        cmd = cmd.clone( clone_args )
+        cmd = cmd.cloned( clone_args )
         if (cmd ) result.add( cmd )
       endForEach
       return result
@@ -283,14 +283,14 @@ class CmdArgs : Cmd[]
       init
       add( arg1 ).add( arg2 ).add( arg3 )
 
-    method clone->CmdArgs
-      # Need two clone() overloads here because this one overrides the base class
-      # clone().
-      return clone( null )
+    method cloned->CmdArgs
+      # Need two cloned() overloads here because this one overrides the base class
+      # cloned().
+      return cloned( null )
 
-    method clone( clone_args:CloneArgs )->CmdArgs
+    method cloned( clone_args:CloneArgs )->CmdArgs
       local result = CmdArgs( count )
-      forEach (cmd in this) result.add( cmd.clone(clone_args) )
+      forEach (cmd in this) result.add( cmd.cloned(clone_args) )
       return result
 
     method dispatch( v:Visitor ) [propagated]
@@ -323,11 +323,11 @@ class CmdLocalDeclaration : CmdStatement
   METHODS
     method init( t, local_info, skip_initialization=false )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
         local new_value = local_info.initial_value
-        if (new_value) new_value = new_value.clone( clone_args )
+        if (new_value) new_value = new_value.cloned( clone_args )
         return task_args.replace_write_local( t, local_info, new_value )
       else
         return CmdLocalDeclaration( t, local_info, skip_initialization )
@@ -366,12 +366,12 @@ class CmdReturn : CmdStatement
   METHODS
     method init( t, value=null )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
-        return task_args.create_return( t, clone(value,clone_args) )
+        return task_args.create_return( t, cloned(value,clone_args) )
       else
-        return CmdReturn( t, clone(value,clone_args) )
+        return CmdReturn( t, cloned(value,clone_args) )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -456,18 +456,18 @@ class CmdBlock : CmdControlStructure
       statements = CmdStatementList( cmd )
       control_type = CmdControlStructure.type_block
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args and this.contains_yield)
         forEach (statement in statements)
-          task_args.add( statement.clone(task_args) )
+          task_args.add( statement.cloned(task_args) )
         endForEach
         return null
       else
         local result = CmdBlock( t, null )
         result.set_control_logic( this )
         cloned_command = result
-        result.statements = statements.clone( clone_args )
+        result.statements = statements.cloned( clone_args )
         return result
       endIf
 
@@ -496,22 +496,22 @@ class CmdIf : CmdControlStructure
 
     method init( t, condition, statements, control_type=CmdControlStructure.type_if )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args and this.contains_yield)
         local next_section = task_args.create_section
         local end_section = task_args.create_section
         task_escape_section = end_section
-        task_args.add_conditional_jump( CmdLogicalNot(t,condition.clone(clone_args)), next_section )
+        task_args.add_conditional_jump( CmdLogicalNot(t,condition.cloned(clone_args)), next_section )
         forEach (statement in statements)
-          task_args.add( statement.clone(task_args) )
+          task_args.add( statement.cloned(task_args) )
         endForEach
         task_args.add_jump( t, end_section )
         task_args.begin_section( next_section )
 
         if (else_statements)
           forEach (statement in else_statements)
-            task_args.add( statement.clone(task_args) )
+            task_args.add( statement.cloned(task_args) )
           endForEach
         endIf
 
@@ -524,12 +524,12 @@ class CmdIf : CmdControlStructure
         return null
 
       else
-        local result = CmdIf( t, condition.clone(clone_args), control_type )
+        local result = CmdIf( t, condition.cloned(clone_args), control_type )
         result.set_control_logic( this )
         cloned_command = result
-        result.statements = statements.clone( clone_args )
+        result.statements = statements.cloned( clone_args )
 
-        result.else_statements = clone( else_statements, clone_args )
+        result.else_statements = cloned( else_statements, clone_args )
 
         return result
 
@@ -566,16 +566,16 @@ class CmdWhich : CmdControlStructure
   METHODS
     method init( t, expression, cases=CmdWhichCase[], case_others=null, control_type=CmdControlStructure.type_which )
 
-    method clone( clone_args:CloneArgs )->CmdWhich
-      local result = CmdWhich( t, expression.clone(clone_args), null )
+    method cloned( clone_args:CloneArgs )->CmdWhich
+      local result = CmdWhich( t, expression.cloned(clone_args), null )
       result.set_control_logic( this )
       cloned_command = result
 
       local cloned_cases = CmdWhichCase[]( cases.count )
-      forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
+      forEach (c in cases) cloned_cases.add( c.cloned(clone_args) )
       result.cases = cloned_cases
 
-      if (case_others) result.case_others = case_others.clone( clone_args )
+      if (case_others) result.case_others = case_others.cloned( clone_args )
       return result
 
     method add_case( case_t:Token )->CmdWhichCase
@@ -683,16 +683,16 @@ class CmdSwitch : CmdControlStructure
   METHODS
     method init( t, expression, cases=CmdWhichCase[], case_others=null, control_type=CmdControlStructure.type_which )
 
-    method clone( clone_args:CloneArgs )->CmdSwitch
-      local result = CmdSwitch( t, expression.clone(clone_args), null )
+    method cloned( clone_args:CloneArgs )->CmdSwitch
+      local result = CmdSwitch( t, expression.cloned(clone_args), null )
       result.set_control_logic( this )
       cloned_command = result
 
       local cloned_cases = CmdWhichCase[]( cases.count )
-      forEach (c in cases) cloned_cases.add( c.clone(clone_args) )
+      forEach (c in cases) cloned_cases.add( c.cloned(clone_args) )
       result.cases = cloned_cases
 
-      if (case_others) result.case_others = case_others.clone( clone_args )
+      if (case_others) result.case_others = case_others.cloned( clone_args )
       return result
 
     method resolve( scope:Scope )->Cmd
@@ -721,8 +721,8 @@ class CmdWhichCase : Cmd
   METHODS
     method init( t, conditions=CmdArgs(), statements=CmdStatementList() )
 
-    method clone( clone_args:CloneArgs )->CmdWhichCase
-      return CmdWhichCase( t, conditions.clone(clone_args), statements.clone(clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdWhichCase
+      return CmdWhichCase( t, conditions.cloned(clone_args), statements.cloned(clone_args) )
 
     method as_conditional( expression_var_name:String )->Cmd
       local cmd : Cmd
@@ -753,7 +753,7 @@ class CmdContingent : CmdControlStructure
     method init( t, statements=CmdStatementList() )
       control_type = CmdControlStructure.type_contingent
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args and this.contains_yield)
         satisfied_section = task_args.create_section
@@ -762,14 +762,14 @@ class CmdContingent : CmdControlStructure
         task_escape_section = end_section
 
         forEach (statement in statements)
-          task_args.add( statement.clone(task_args) )
+          task_args.add( statement.cloned(task_args) )
         endForEach
         task_args.add_jump( t, satisfied_section )
 
         task_args.begin_section( satisfied_section )
         if (satisfied_statements)
           forEach (statement in satisfied_statements)
-            task_args.add( statement.clone(task_args) )
+            task_args.add( statement.cloned(task_args) )
           endForEach
         endIf
         task_args.add_jump( t, end_section )
@@ -777,7 +777,7 @@ class CmdContingent : CmdControlStructure
         task_args.begin_section( unsatisfied_section )
         if (unsatisfied_statements)
           forEach (statement in unsatisfied_statements)
-            task_args.add( statement.clone(task_args) )
+            task_args.add( statement.cloned(task_args) )
           endForEach
         endIf
         task_args.add_jump( t, end_section )
@@ -794,9 +794,9 @@ class CmdContingent : CmdControlStructure
         result.set_control_logic( this )
         cloned_command = result
 
-        result.statements = statements.clone( clone_args )
-        result.satisfied_statements = clone( satisfied_statements, clone_args )
-        result.unsatisfied_statements = clone( unsatisfied_statements, clone_args )
+        result.statements = statements.cloned( clone_args )
+        result.satisfied_statements = cloned( satisfied_statements, clone_args )
+        result.unsatisfied_statements = cloned( unsatisfied_statements, clone_args )
 
         return result
       endIf
@@ -840,13 +840,13 @@ class CmdGenericLoop : CmdControlStructure
         upkeep.add( upkeep_cmd )
       endIf
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args and this.contains_yield)
         # Control variable initialization
         if (control_statements)
           forEach (statement in control_statements)
-            task_args.add( statement.clone(task_args) )
+            task_args.add( statement.cloned(task_args) )
           endForEach
         endIf
 
@@ -856,12 +856,12 @@ class CmdGenericLoop : CmdControlStructure
         task_escape_section = after_section
         task_upkeep_section = task_args.create_section
         if (condition)
-          task_args.add_conditional_jump( CmdLogicalNot(t,clone(condition,clone_args)), after_section )
+          task_args.add_conditional_jump( CmdLogicalNot(t,cloned(condition,clone_args)), after_section )
         endIf
 
         # Main Body
         forEach (statement in statements)
-          task_args.add( statement.clone(task_args) )
+          task_args.add( statement.cloned(task_args) )
         endForEach
 
         task_args.add_jump( t, task_upkeep_section )
@@ -870,7 +870,7 @@ class CmdGenericLoop : CmdControlStructure
         # Upkeep
         if (upkeep)
           forEach (statement in upkeep)
-            task_args.add( statement.clone(task_args) )
+            task_args.add( statement.cloned(task_args) )
           endForEach
         endIf
 
@@ -886,14 +886,14 @@ class CmdGenericLoop : CmdControlStructure
         return null
 
       else
-        local result = CmdGenericLoop( t, control_type, clone(condition,clone_args), null )
+        local result = CmdGenericLoop( t, control_type, cloned(condition,clone_args), null )
         result.set_control_logic( this )
         cloned_command = result
 
-        result.statements = statements.clone( clone_args )
-        result.upkeep = clone( upkeep, clone_args )
+        result.statements = statements.cloned( clone_args )
+        result.upkeep = cloned( upkeep, clone_args )
 
-        result.control_statements = clone( control_statements, clone_args )
+        result.control_statements = cloned( control_statements, clone_args )
         return result
       endIf
 
@@ -938,12 +938,12 @@ class CmdForEach : CmdControlStructure
     method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
       control_type = CmdControlStructure.type_forEach
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      local result = CmdForEach( t, control_var_name, index_var_name, collection.clone(clone_args), clone(step_cmd,clone_args), null )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      local result = CmdForEach( t, control_var_name, index_var_name, collection.cloned(clone_args), cloned(step_cmd,clone_args), null )
       result.set_control_logic( this )
       cloned_command = result
 
-      result.statements = statements.clone(clone_args)
+      result.statements = statements.cloned(clone_args)
       return result
 
     method resolve( scope:Scope )->Cmd
@@ -1073,15 +1073,15 @@ class CmdTry : CmdControlStructure
     method init( t, statements=CmdStatementList(), catches=CmdCatch[] )
       control_type = type_try
 
-    method clone( clone_args:CloneArgs )->CmdTry
+    method cloned( clone_args:CloneArgs )->CmdTry
       local result = CmdTry( t, null, null )
       result.set_control_logic( this )
       cloned_command = result
 
-      result.statements = statements.clone( clone_args )
+      result.statements = statements.cloned( clone_args )
 
       local new_catches = CmdCatch[]
-      forEach (c in catches) new_catches.add( c.clone(clone_args) )
+      forEach (c in catches) new_catches.add( c.cloned(clone_args) )
       result.catches = new_catches
 
       return result
@@ -1118,8 +1118,8 @@ class CmdCatch : Cmd
   METHODS
     method init( t, error_var=null, error_type=null, statements=CmdStatementList() )
 
-    method clone( clone_args:CloneArgs )->CmdCatch
-      return CmdCatch( t, error_var, error_type, statements.clone(clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdCatch
+      return CmdCatch( t, error_var, error_type, statements.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       local err_type : Type
@@ -1152,8 +1152,8 @@ class CmdThrow : Cmd
   METHODS
     method init( t, expression )
 
-    method clone( clone_args:CloneArgs )->CmdThrow
-      return CmdThrow( t, expression.clone(clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdThrow
+      return CmdThrow( t, expression.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       expression = expression.resolve( scope )
@@ -1178,7 +1178,7 @@ class CmdEscape : Cmd
   METHODS
     method init( t, control_type, target_cmd=null )
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       if (target_cmd.task_escape_section)
         local task_args = (clone_args as TaskArgs)
         return task_args.create_escape( t, target_cmd.task_escape_section )
@@ -1213,7 +1213,7 @@ class CmdNextIteration : Cmd
   METHODS
     method init( t, target_cmd=null )
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       if (target_cmd.task_upkeep_section)
         local task_args = (clone_args as TaskArgs)
         return task_args.create_escape( t, target_cmd.task_upkeep_section )
@@ -1249,19 +1249,19 @@ class CmdNecessary : Cmd
   METHODS
     method init( t, condition, target_cmd=null )
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       if (target_cmd.unsatisfied_section)
         local task_args = (clone_args as TaskArgs)
         local cmd_jump = task_args.create_escape( t, target_cmd.unsatisfied_section )
         if (condition)
-          return CmdIf( t, CmdLogicalNot(t,condition.clone(task_args)), CmdStatementList(cmd_jump) )
+          return CmdIf( t, CmdLogicalNot(t,condition.cloned(task_args)), CmdStatementList(cmd_jump) )
         else
           return cmd_jump
         endIf
       else
         local new_target = target_cmd : CmdControlStructure
         while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdNecessary( t, clone(condition,clone_args), new_target as CmdContingent )
+        return CmdNecessary( t, cloned(condition,clone_args), new_target as CmdContingent )
       endIf
 
 
@@ -1294,19 +1294,19 @@ class CmdSufficient : Cmd
   METHODS
     method init( t, condition, target_cmd=null )
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       if (target_cmd.satisfied_section)
         local task_args = (clone_args as TaskArgs)
         local cmd_jump = task_args.create_escape( t, target_cmd.satisfied_section )
         if (condition)
-          return CmdIf( t, condition.clone(task_args), CmdStatementList(cmd_jump) )
+          return CmdIf( t, condition.cloned(task_args), CmdStatementList(cmd_jump) )
         else
           return cmd_jump
         endIf
       else
         local new_target = target_cmd : CmdControlStructure
         while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdSufficient( t, clone(condition,clone_args), new_target as CmdContingent )
+        return CmdSufficient( t, cloned(condition,clone_args), new_target as CmdContingent )
       endIf
 
 
@@ -1354,7 +1354,7 @@ class CmdLiteralNull : CmdLiteral
         return prior.cast_to( target_type, scope )
       endIf
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralNull( t )
 
     method resolve( scope:Scope )->this
@@ -1374,7 +1374,7 @@ class CmdDefaultValue : CmdLiteral
   METHODS
     method init( t, of_type )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdDefaultValue( t, of_type )
 
     method resolve( scope:Scope )->Cmd
@@ -1397,7 +1397,7 @@ class CmdLiteralReal64 : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralReal64( t, value )
 
     method resolve( scope:Scope )->Cmd
@@ -1421,7 +1421,7 @@ class CmdLiteralInt64 : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInt64( t, value )
 
     method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing )->Cmd
@@ -1454,7 +1454,7 @@ class CmdLiteralInt32 : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralInt32( t, value )
 
     method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing )->Cmd
@@ -1485,7 +1485,7 @@ class CmdLiteralCharacter : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralCharacter( t, value )
 
     method resolve( scope:Scope )->Cmd
@@ -1509,7 +1509,7 @@ class CmdLiteralLogical : CmdLiteral
   METHODS
     method init( t, value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralLogical( t, value )
 
     method resolve( scope:Scope )->Cmd
@@ -1534,7 +1534,7 @@ class CmdLiteralString : CmdLiteral
   METHODS
     method init( t, value, index=0 )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralString( t, value, index )
 
     method resolve( scope:Scope )->Cmd
@@ -1559,8 +1559,8 @@ class CmdFormattedString : Cmd
   METHODS
     method init( t, format, args )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdFormattedString( t, format, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdFormattedString( t, format, args.cloned(clone_args) )
 
     method implicit_type( scope:Scope )->Type
       return Program.type_String
@@ -1606,8 +1606,8 @@ class CmdNamedArg : Cmd
   METHODS
     method init( t, name, value=null, is_negative=false )
 
-    method clone( clone_args=null:CloneArgs )->CmdNamedArg
-      return CmdNamedArg( t, name, clone(value), is_negative )
+    method cloned( clone_args=null:CloneArgs )->CmdNamedArg
+      return CmdNamedArg( t, name, cloned(value), is_negative )
 
     method to_value->Cmd
       if (value)
@@ -1647,12 +1647,12 @@ class CmdAccess : Cmd
       args = CmdArgs()
       args.add( arg )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      local result = CmdAccess( t, cloned(context,clone_args), name, cloned(args,clone_args) )
 
       if (named_args)
         result.named_args = CmdNamedArg[]( named_args.count )
-        forEach (named_arg in named_args) result.named_args.add( named_arg.clone )
+        forEach (named_arg in named_args) result.named_args.add( named_arg.cloned )
       endIf
 
       local macro_args = (clone_args as MacroArgs)
@@ -1807,7 +1807,7 @@ class CmdAccess : Cmd
         if (not args)
           local def = scope.this_type.definition_lookup[ name ]
           if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
-          if (def) return def.expression.clone.resolve( scope )
+          if (def) return def.expression.cloned.resolve( scope )
 
           p = Program.type_Global.find_property( name )
           if (p)
@@ -1842,7 +1842,7 @@ class CmdAccess : Cmd
         local def = context_type.definition_lookup[ name ]
         if (def)
           local old_implicit_type = scope.set_implicit_type( context_type )
-          local def_result = def.expression.clone.resolve( scope )
+          local def_result = def.expression.cloned.resolve( scope )
           scope.set_implicit_type( old_implicit_type )
           return def_result
         endIf
@@ -1892,7 +1892,7 @@ class CmdAccess : Cmd
 
         local def = scope.this_type.definition_lookup[ name ]
         if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
-        if (def) return def.expression.clone.resolve_assignment( scope, new_value )
+        if (def) return def.expression.cloned.resolve_assignment( scope, new_value )
 
         local p = scope.this_method.type_context.find_global( name )
         if (p) return CmdWriteGlobal( t, p, new_value ).resolve( scope )
@@ -1932,7 +1932,7 @@ class CmdAccess : Cmd
 
       local def = context_type.definition_lookup[ name ]
       if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
-      if (def) return def.expression.clone.resolve_assignment( scope, new_value )
+      if (def) return def.expression.cloned.resolve_assignment( scope, new_value )
 
       if (setter_name)
         local setter = scope.resolve_call( context_type, CmdAccess(t,context,setter_name,CmdArgs(new_value)), true )
@@ -1965,7 +1965,7 @@ class CmdAccess : Cmd
           @trace
           throw t.error( "[INTERNAL]" )
       endWhich
-      return CmdAssign( t, this.clone, cmd )
+      return CmdAssign( t, this.cloned, cmd )
 
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       local context_type : Type
@@ -2012,7 +2012,7 @@ class CmdAccess : Cmd
 
       local def = context_type.definition_lookup[ name ]
       if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
-      if (def) return def.expression.clone.resolve_modify_and_assign( scope, op, new_value )
+      if (def) return def.expression.cloned.resolve_modify_and_assign( scope, op, new_value )
 
       if (setter_name)
         local setter = scope.resolve_call( context_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), true )
@@ -2046,8 +2046,8 @@ class CmdElementAccess : Cmd
   METHODS
     method init( t, context, index )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdElementAccess( t, context.clone(clone_args), index.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdElementAccess( t, context.cloned(clone_args), index.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope )
@@ -2077,7 +2077,7 @@ class CmdElementAccess : Cmd
       endIf
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
-      return clone.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
+      return cloned.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
 
     method to->String
       return "$[$]" (context,index)
@@ -2095,7 +2095,7 @@ class CmdCreateObject : Cmd
   METHODS
     method init( t, of_type )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdCreateObject( t, of_type )
 
     method resolve( scope:Scope )->Cmd
@@ -2118,8 +2118,8 @@ class CmdCreateCompound : Cmd
   METHODS
     method init( t, of_type, args )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCreateCompound( t, of_type, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateCompound( t, of_type, args.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
@@ -2127,7 +2127,7 @@ class CmdCreateCompound : Cmd
       while (args.count < of_type.property_list.count)
         local p = of_type.property_list[args.count]
         if (p.initial_value)
-          args.add( p.initial_value.clone.resolve(scope) )
+          args.add( p.initial_value.cloned.resolve(scope) )
         else
           args.add( p.type.create_default_value(t) )
         endIf
@@ -2151,8 +2151,8 @@ class CmdAssign : Cmd
   METHODS
     method init( t, target, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdAssign( t, target.clone(clone_args), new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdAssign( t, target.cloned(clone_args), new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
@@ -2169,7 +2169,7 @@ class CmdThisContext : Cmd
   METHODS
     method init( t, this_type )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local macro_args = (clone_args as MacroArgs)
       if (macro_args) return macro_args.inline_this
 
@@ -2199,7 +2199,7 @@ class CmdLiteralThis : CmdThisContext
     this_type : Type
 
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local macro_args = (clone_args as MacroArgs)
       if (macro_args) return macro_args.inline_this
 
@@ -2232,7 +2232,7 @@ class CmdReadSingleton : Cmd
   METHODS
     method init( t, of_type )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdReadSingleton( t, of_type )
 
     method require_type_context
@@ -2255,8 +2255,8 @@ class CmdWriteSingleton : Cmd
   METHODS
     method init( t, of_type, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdWriteSingleton( t, of_type, new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteSingleton( t, of_type, new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
@@ -2273,7 +2273,7 @@ class CmdReadLocal : Cmd
   METHODS
     method init( t, local_info )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local macro_args = (clone_args as MacroArgs)
       if (macro_args)
         return macro_args.inline_read_local( this )
@@ -2311,17 +2311,17 @@ class CmdWriteLocal : Cmd
   METHODS
     method init( t, local_info, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local macro_args = (clone_args as MacroArgs)
       if (macro_args)
         return macro_args.inline_write_local( this )
       else
         local task_args = (clone_args as TaskArgs)
         if (task_args)
-          return task_args.cmd_write( t,local_info, new_value.clone(clone_args) )
+          return task_args.cmd_write( t,local_info, new_value.cloned(clone_args) )
         endIf
       endIf
-      return CmdWriteLocal( t, local_info, clone(new_value,clone_args) )
+      return CmdWriteLocal( t, local_info, cloned(new_value,clone_args) )
 
     method resolve( scope:Scope )->Cmd
       local_info.type.organize(scope)
@@ -2339,7 +2339,7 @@ class CmdReadGlobal : Cmd
   METHODS
     method init( t, global_info )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdReadGlobal( t, global_info )
 
     method resolve( scope:Scope )->Cmd
@@ -2362,8 +2362,8 @@ class CmdWriteGlobal : Cmd
   METHODS
     method init( t, global_info, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdWriteGlobal( t, global_info, new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteGlobal( t, global_info, new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       new_value = new_value.resolve(scope).cast_to( global_info.type, scope ).resolve( scope )
@@ -2379,8 +2379,8 @@ class CmdReadProperty : Cmd
   METHODS
     method init( t, context, property_info )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdReadProperty( t, context.clone(clone_args), property_info )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdReadProperty( t, context.cloned(clone_args), property_info )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
@@ -2395,7 +2395,7 @@ class CmdReadProperty : Cmd
       local getter_name = property_info.name
       local context_type = context.type
       if (context_type.has_method_named(setter_name) or context_type.has_method_named(getter_name))
-        return CmdAssign( t, CmdAccess(t,context,property_info.name), CmdAdd(t,CmdAccess(t,context.clone,property_info.name),CmdLiteralInt32(t,delta)) ).resolve( scope )
+        return CmdAssign( t, CmdAccess(t,context,property_info.name), CmdAdd(t,CmdAccess(t,context.cloned,property_info.name),CmdLiteralInt32(t,delta)) ).resolve( scope )
       endIf
       return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
@@ -2413,8 +2413,8 @@ class CmdWriteProperty : Cmd
   METHODS
     method init( t, context, property_info, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdWriteProperty( t, context.clone(clone_args), property_info, new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteProperty( t, context.cloned(clone_args), property_info, new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value
@@ -2461,20 +2461,20 @@ class CmdCall : Cmd
       if (method_info.name == "get")
         # Pass back the same args plus our new value
         ensure args
-        local setter_args = args.clone
+        local setter_args = args.cloned
         setter_args.add( CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
         if (context)
-          return CmdAccess( t, context.clone, "set", setter_args ).resolve(scope)
+          return CmdAccess( t, context.cloned, "set", setter_args ).resolve(scope)
         else
           return CmdAccess( t, "set", setter_args ).resolve(scope)
         endIf
       else
         # Transform get_name() into set_name(new_value)
         local setter_name = "set_" + method_info.name
-        local setter_args = select{ args:args.clone || CmdArgs() }
+        local setter_args = select{ args:args.cloned || CmdArgs() }
         setter_args.add( CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
         if (context)
-          return CmdAccess( t, context.clone, setter_name, setter_args ).resolve(scope)
+          return CmdAccess( t, context.cloned, setter_name, setter_args ).resolve(scope)
         else
           return CmdAccess( t, setter_name, setter_args ).resolve(scope)
         endIf
@@ -2489,8 +2489,8 @@ class CmdCallRoutine : CmdCall
   METHODS
     method init( t, method_info, args )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallRoutine( t, method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallRoutine( t, method_info, args.cloned(clone_args) )
 
     method to->String
       return "CmdCallRoutine($.$,$)" (method_info.type_context,method_info.signature,args)
@@ -2498,8 +2498,8 @@ endClass
 
 class CmdCallAspectMethod : CmdCall
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallAspectMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallAspectMethod( t, cloned(context,clone_args), method_info, args.cloned(clone_args) )
 
 endClass
 
@@ -2532,8 +2532,8 @@ endClass
 
 class CmdCallDynamicMethod : CmdCallMethod
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallDynamicMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallDynamicMethod( t, cloned(context,clone_args), method_info, args.cloned(clone_args) )
 
 
     method to->String
@@ -2543,8 +2543,8 @@ endClass
 
 class CmdCallStaticMethod : CmdCallMethod
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallStaticMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallStaticMethod( t, cloned(context,clone_args), method_info, args.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       if (not context) context = CmdThisContext(t,method_info.type_context)
@@ -2564,13 +2564,13 @@ class CmdCallPriorMethod : Cmd
   METHODS
     method init( t, name, args, named_args )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local cloned_named_args : CmdNamedArg[]
       if (named_args)
         cloned_named_args = CmdNamedArg[]( named_args.count )
-        forEach (named_arg in named_args) cloned_named_args.add( named_arg.clone )
+        forEach (named_arg in named_args) cloned_named_args.add( named_arg.cloned )
       endIf
-      return CmdCallPriorMethod( t, name, args.clone(clone_args), cloned_named_args )
+      return CmdCallPriorMethod( t, name, args.cloned(clone_args), cloned_named_args )
 
     method resolve( scope:Scope )->Cmd
       return CmdAccess( t, name, args, named_args ).resolve( scope ).call_prior( scope )
@@ -2581,15 +2581,15 @@ class CmdCallNativeRoutine : CmdCall
   METHODS
     method init( t, method_info, args )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallNativeRoutine( t, method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallNativeRoutine( t, method_info, args.cloned(clone_args) )
 
 endClass
 
 class CmdCallNativeMethod : CmdCall
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallNativeMethod( t, cloned(context,clone_args), method_info, args.cloned(clone_args) )
 
 endClass
 
@@ -2609,8 +2609,8 @@ class CmdCallInlineNativeRoutine : CmdCallInlineNative
   METHODS
     method init( t, method_info, args )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallInlineNativeRoutine( t, method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallInlineNativeRoutine( t, method_info, args.cloned(clone_args) )
 
     method type->Type
       return method_info.return_type
@@ -2618,8 +2618,8 @@ endClass
 
 class CmdCallInlineNativeMethod : CmdCallInlineNative
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCallInlineNativeMethod( t, clone(context,clone_args), method_info, args.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCallInlineNativeMethod( t, cloned(context,clone_args), method_info, args.cloned(clone_args) )
 
     method type->Type
       return method_info.return_type
@@ -2659,20 +2659,20 @@ endClass
 
 class CmdRangeUpTo : CmdRange
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdRangeUpTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeUpTo( t, first.cloned(clone_args), last.cloned(clone_args), cloned(step_size,clone_args) )
 endClass
 
 class CmdRangeUpToLessThan : CmdRange
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdRangeUpToLessThan( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeUpToLessThan( t, first.cloned(clone_args), last.cloned(clone_args), cloned(step_size,clone_args) )
 endClass
 
 class CmdRangeDownTo : CmdRange
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdRangeDownTo( t, first.clone(clone_args), last.clone(clone_args), clone(step_size,clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdRangeDownTo( t, first.cloned(clone_args), last.cloned(clone_args), cloned(step_size,clone_args) )
 
     method default_step_size->Int32
       return -1
@@ -2729,8 +2729,8 @@ endClass
 
 class CmdLogicalize : CmdUnary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLogicalize( t, operand.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalize( t, operand.cloned(clone_args) )
 
     method fn_name->String
       return "operator?"
@@ -2760,8 +2760,8 @@ endClass
 
 class CmdLogicalNot : CmdUnary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLogicalNot( t, operand.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalNot( t, operand.cloned(clone_args) )
 
     method prefix_symbol->String
       return "not "
@@ -2787,8 +2787,8 @@ endClass
 
 class CmdNegate : CmdUnary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdNegate( t, operand.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdNegate( t, operand.cloned(clone_args) )
 
     method fn_name->String
       return "operator-"
@@ -2879,8 +2879,8 @@ endClass
 
 class CmdAdd : CmdBinary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdAdd( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdAdd( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -2909,8 +2909,8 @@ endClass
 
 class CmdSubtract : CmdBinary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdSubtract( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdSubtract( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -2930,8 +2930,8 @@ endClass
 
 class CmdMultiply : CmdBinary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdMultiply( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdMultiply( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -2952,8 +2952,8 @@ endClass
 
 class CmdDivide : CmdBinary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdDivide( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdDivide( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -2974,8 +2974,8 @@ endClass
 
 class CmdMod : CmdBinary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdMod( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdMod( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3005,8 +3005,8 @@ endClass
 
 class CmdPower : CmdBinary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdPower( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdPower( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3053,8 +3053,8 @@ endClass
 
 class CmdLogicalAnd : CmdBinaryLogical
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLogicalAnd( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalAnd( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a and b)
@@ -3066,8 +3066,8 @@ endClass
 
 class CmdLogicalOr : CmdBinaryLogical
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLogicalOr( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalOr( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a or b)
@@ -3080,8 +3080,8 @@ endClass
 
 class CmdLogicalXor : CmdBinaryLogical
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdLogicalXor( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLogicalXor( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a xor b)
@@ -3133,8 +3133,8 @@ endClass
 
 class CmdCompareEQ : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareEQ( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareEQ( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3175,8 +3175,8 @@ endClass
 
 class CmdCompareNE : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareNE( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareNE( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3214,8 +3214,8 @@ endClass
 
 class CmdCompareLT : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareLT( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareLT( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3253,8 +3253,8 @@ endClass
 
 class CmdCompareLE : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareLE( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareLE( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3292,8 +3292,8 @@ endClass
 
 class CmdCompareGT : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareGT( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareGT( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3331,8 +3331,8 @@ endClass
 
 class CmdCompareGE : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareGE( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareGE( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
@@ -3370,8 +3370,8 @@ endClass
 
 class CmdCompareIs : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareIs( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareIs( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       if (left_type.is_reference and right_type.is_reference)
@@ -3394,8 +3394,8 @@ endClass
 
 class CmdCompareIsNot : CmdComparison
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCompareIsNot( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCompareIsNot( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       if (left_type.is_reference and right_type.is_reference)
@@ -3445,8 +3445,8 @@ endClass
 
 class CmdBitwiseAnd : CmdBitwiseOp
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseAnd( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseAnd( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
@@ -3466,8 +3466,8 @@ endClass
 
 class CmdBitwiseOr : CmdBitwiseOp
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseOr( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseOr( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
@@ -3487,8 +3487,8 @@ endClass
 
 class CmdBitwiseXor : CmdBitwiseOp
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseXor( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseXor( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
@@ -3508,8 +3508,8 @@ endClass
 
 class CmdBitwiseShiftLeft : CmdBitwiseOp
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseShiftLeft( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftLeft( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
@@ -3527,8 +3527,8 @@ endClass
 
 class CmdBitwiseShiftRight : CmdBitwiseOp
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseShiftRight( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftRight( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
@@ -3553,8 +3553,8 @@ endClass
 
 class CmdBitwiseShiftRightX : CmdBitwiseOp
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseShiftRightX( t, left.clone(clone_args), right.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseShiftRightX( t, left.cloned(clone_args), right.cloned(clone_args) )
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
@@ -3573,8 +3573,8 @@ endClass
 
 class CmdBitwiseNot : CmdUnary
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdBitwiseNot( t, operand.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdBitwiseNot( t, operand.cloned(clone_args) )
 
     method fn_name->String
       return "operator!"
@@ -3617,7 +3617,7 @@ class CmdAdjustLocal : Cmd
   METHODS
     method init( t, local_info, delta )
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
         return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
@@ -3651,13 +3651,13 @@ class CmdAdjustProperty : Cmd
   METHODS
     method init( t, context, property_info, delta )
 
-    method clone( clone_args:CloneArgs )->Cmd
-      return CmdAdjustProperty( t, context.clone(clone_args), property_info, delta )
+    method cloned( clone_args:CloneArgs )->Cmd
+      return CmdAdjustProperty( t, context.cloned(clone_args), property_info, delta )
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
       if (property_info.type.is_compound)
-        return CmdWriteProperty( t, context.clone, property_info,
+        return CmdWriteProperty( t, context.cloned, property_info,
           CmdAccess( t,
                      CmdReadProperty(t,context,property_info),
                      "operator+",
@@ -3680,7 +3680,7 @@ class CmdAdjustGlobal : Cmd
   METHODS
     method init( t, global_info, delta )
 
-    method clone( clone_args:CloneArgs )->Cmd
+    method cloned( clone_args:CloneArgs )->Cmd
       return CmdAdjustGlobal( t, global_info, delta )
 
     method resolve( scope:Scope )->Cmd
@@ -3712,8 +3712,8 @@ class CmdModifyAndAssign : Cmd
   METHODS
     method init( t, target, op, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdModifyAndAssign( t, target.clone(clone_args), op, new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdModifyAndAssign( t, target.cloned(clone_args), op, new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_modify_and_assign( scope, op, new_value )
@@ -3738,12 +3738,12 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
   METHODS
     method init( t, local_info, op, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
-        return CmdModifyAndAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.clone(task_args) )
+        return CmdModifyAndAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.cloned(task_args) )
       else
-        return CmdModifyAndAssignLocal( t, local_info, op, new_value.clone(clone_args) )
+        return CmdModifyAndAssignLocal( t, local_info, op, new_value.cloned(clone_args) )
       endIf
 
 
@@ -3800,8 +3800,8 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
   METHODS
     method init( t, global_info, op, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdModifyAndAssignGlobal( t, global_info, op, new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdModifyAndAssignGlobal( t, global_info, op, new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       local m_name = "operator" + op->String
@@ -3857,8 +3857,8 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
   METHODS
     method init( t, context, property_info, op, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdModifyAndAssignProperty( t, context.clone(clone_args), property_info, op, new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdModifyAndAssignProperty( t, context.cloned(clone_args), property_info, op, new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       local m_name = "operator" + op->String
@@ -3869,7 +3869,7 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
           if (property_info.type.method_lookup_by_name[m_name])
             return CmdWriteProperty( t, context, property_info,
-              CmdAccess(t, CmdReadProperty(t,clone(context),property_info), m_name, new_value) ).resolve( scope )
+              CmdAccess(t, CmdReadProperty(t,cloned(context),property_info), m_name, new_value) ).resolve( scope )
           else
             local arg_type = new_value.type.name
             throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (property_info.type,m_name,arg_type,m_name,arg_type) )
@@ -3877,25 +3877,25 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
         endIf
 
       elseIf (property_info.type.is_compound)
-        return CmdWriteProperty( t, clone(context), property_info,
+        return CmdWriteProperty( t, cloned(context), property_info,
           CmdAccess( t, CmdReadProperty(t,context,property_info), m_name.leftmost(-1), new_value ) ).resolve( scope )
       endIf
 
       which (op)
         case TokenType.symbol_caret_equals
           #if (RogueC.compile_targets["C++"])
-          return CmdWriteProperty( t, context, property_info, CmdPower(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
+          return CmdWriteProperty( t, context, property_info, CmdPower(t,CmdReadProperty(t,cloned(context),property_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_percent_equals
           # Mod has be be expanded because Rogue uses a special mod function
           #if (RogueC.compile_targets["C++"])
-          return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
+          return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,cloned(context),property_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
           local access = new_value as CmdAccess
           if (not access) throw new_value.t.error( "Property or method name expected." )
           if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
-          access.context = CmdReadProperty( t, clone(context), property_info )
+          access.context = CmdReadProperty( t, cloned(context), property_info )
           return CmdWriteProperty( t, context, property_info, access ).resolve( scope )
       endWhich
 
@@ -3924,8 +3924,8 @@ class CmdCreateArray : Cmd
 
     method init( t, array_type, count_cmd )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCreateArray( t, array_type, count_cmd.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateArray( t, array_type, count_cmd.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       array_type.organize(scope)
@@ -3945,8 +3945,8 @@ class CmdReadArrayElement : Cmd
   METHODS
     method init( t, context, index )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdReadArrayElement( t, context.clone(clone_args), index.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdReadArrayElement( t, context.cloned(clone_args), index.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       if (array_type) return this
@@ -3957,7 +3957,7 @@ class CmdReadArrayElement : Cmd
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
-      return CmdWriteArrayElement( t, context, index.clone, CmdAdd(t,this,CmdLiteralInt32(t,delta)) ).resolve( scope )
+      return CmdWriteArrayElement( t, context, index.cloned, CmdAdd(t,this,CmdLiteralInt32(t,delta)) ).resolve( scope )
 
     method type->Type
       return array_type.element_type
@@ -3971,8 +3971,8 @@ class CmdReadArrayCount : Cmd
   METHODS
     method init( t, context )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdReadArrayCount( t, context.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdReadArrayCount( t, context.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       if (array_type) return this
@@ -3995,8 +3995,8 @@ class CmdWriteArrayElement : Cmd
   METHODS
     method init( t, context, index, new_value )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdWriteArrayElement( t, context.clone(clone_args), index.clone(clone_args), new_value.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdWriteArrayElement( t, context.cloned(clone_args), index.cloned(clone_args), new_value.cloned(clone_args) )
 
     method resolve( scope:Scope )->Cmd
       if (array_type) return this
@@ -4030,8 +4030,8 @@ endClass
 
 class CmdCastToType : CmdTypeOperator
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCastToType( t, operand.clone(clone_args), target_type )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCastToType( t, operand.cloned(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
@@ -4042,8 +4042,8 @@ endClass
 
 class CmdConvertToType : CmdTypeOperator
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdConvertToType( t, operand.clone(clone_args), target_type )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdConvertToType( t, operand.cloned(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
@@ -4068,8 +4068,8 @@ endClass
 #{
 class CmdConvertToPrimitiveType : CmdConvertToType
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdConvertToPrimitiveType( t, operand.clone(clone_args), target_type )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdConvertToPrimitiveType( t, operand.cloned(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve(scope).require_value
@@ -4079,8 +4079,8 @@ endClass
 
 class CmdAs : CmdTypeOperator
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdAs( t, operand.clone(clone_args), target_type )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdAs( t, operand.cloned(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
@@ -4096,8 +4096,8 @@ endClass
 
 class CmdInstanceOf : CmdTypeOperator
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdInstanceOf( t, operand.clone(clone_args), target_type )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdInstanceOf( t, operand.cloned(clone_args), target_type )
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
@@ -4111,8 +4111,8 @@ endClass
 
 class CmdIsReference( t, operand:Cmd ) : Cmd
   METHODS
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdIsReference( t, operand.clone(clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdIsReference( t, operand.cloned(clone_args) )
 
     method implicit_type->Type
       return Program.type_Logical
@@ -4136,8 +4136,8 @@ class CmdCreateList : Cmd
   METHODS
     method init( t, args=CmdArgs(), list_type=null )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCreateList( t, clone(args,clone_args), list_type )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateList( t, cloned(args,clone_args), list_type )
 
     method resolve( scope:Scope )->Cmd
       args.resolve( scope )
@@ -4184,12 +4184,12 @@ class CmdAwait : Cmd
   METHODS
     method init( t, expression, statement_list, result_var=null )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
         throw t.error( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." )
       else
-        return CmdAwait( t, expression.clone(task_args), statement_list.clone(task_args), result_var )
+        return CmdAwait( t, expression.cloned(task_args), statement_list.cloned(task_args), result_var )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -4229,7 +4229,7 @@ class CmdYield : Cmd
   METHODS
     method init( t )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
+    method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
         task_args.add_yield( t )
@@ -4290,8 +4290,8 @@ endClass
 #------------------------------------------------------------------------------
 class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_type:Type ) : Cmd
   METHODS
-    method clone( clone_args:CloneArgs )->CmdCreateCallback
-      return CmdCreateCallback( t, context.clone(clone_args), name, signature, return_type )
+    method cloned( clone_args:CloneArgs )->CmdCreateCallback
+      return CmdCreateCallback( t, context.cloned(clone_args), name, signature, return_type )
 
     method resolve( scope:Scope )->Cmd
       if (name == "to" and return_type) name = "to_" + return_type.name
@@ -4366,15 +4366,15 @@ endClass
 
 class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:FnArg[], statements:CmdStatementList, is_generic:Logical ) : Cmd
   METHODS
-    method clone( clone_args:CloneArgs )->CmdCreateFunction
+    method cloned( clone_args:CloneArgs )->CmdCreateFunction
       local args2 : FnArg[]
       if (with_args)
         args2 = FnArg[]
         forEach (arg in with_args)
-          args2.add( FnArg( arg.name, arg.value.clone(clone_args) ).set_type( arg.type ) )
+          args2.add( FnArg( arg.name, arg.value.cloned(clone_args) ).set_type( arg.type ) )
         endForEach
       endIf
-      return CmdCreateFunction( t, parameters, return_type, args2, statements.clone(clone_args), is_generic )
+      return CmdCreateFunction( t, parameters, return_type, args2, statements.cloned(clone_args), is_generic )
 
     method is_generic_function->Logical
       return is_generic
@@ -4446,8 +4446,8 @@ class CmdCreateOptionalValue : Cmd
   METHODS
     method init( t, of_type, value=null )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      return CmdCreateOptionalValue( t, of_type, clone(value,clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdCreateOptionalValue( t, of_type, cloned(value,clone_args) )
 
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
@@ -4473,8 +4473,8 @@ class CmdAssert : Cmd
   METHODS
     method init( t, condition, message, local_info=null )
 
-    method clone( clone_args:CloneArgs )->CmdAssert
-      return CmdAssert( t, condition.clone(clone_args), message.clone(clone_args), local_info )
+    method cloned( clone_args:CloneArgs )->CmdAssert
+      return CmdAssert( t, condition.cloned(clone_args), message.cloned(clone_args), local_info )
 
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
@@ -4499,8 +4499,8 @@ class CmdRequire : Cmd
   METHODS
     method init( t, condition, message, local_info=null )
 
-    method clone( clone_args:CloneArgs )->CmdRequire
-      return CmdRequire( t, condition.clone(clone_args), message.clone(clone_args), local_info )
+    method cloned( clone_args:CloneArgs )->CmdRequire
+      return CmdRequire( t, condition.cloned(clone_args), message.cloned(clone_args), local_info )
 
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
@@ -4523,8 +4523,8 @@ class CmdTrace : Cmd
   METHODS
     method init( t, info )
 
-    method clone( clone_args:CloneArgs )->CmdTrace
-      return CmdTrace( t, clone(info,clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdTrace
+      return CmdTrace( t, cloned(info,clone_args) )
 
     method resolve( scope:Scope )->Cmd
       return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(info) ).resolve( scope )
@@ -4540,8 +4540,8 @@ class CmdLabel : Cmd
   METHODS
     method init( t, name, statements=CmdStatementList() )
 
-    method clone( clone_args:CloneArgs )->CmdLabel
-      local result = CmdLabel( t, name, statements.clone(clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdLabel
+      local result = CmdLabel( t, name, statements.cloned(clone_args) )
       if (clone_args) clone_args.register_label( result )
       return result
 
@@ -4567,7 +4567,7 @@ class CmdNativeHeader : Cmd
   METHODS
     method init( t, code )
 
-    method clone( clone_args:CloneArgs )->CmdNativeHeader
+    method cloned( clone_args:CloneArgs )->CmdNativeHeader
       return CmdNativeHeader( t, code )
 
     method requires_semicolon->Logical
@@ -4590,7 +4590,7 @@ class CmdNativeCode : Cmd
   METHODS
     method init( t, code )
 
-    method clone( clone_args:CloneArgs )->CmdNativeCode
+    method cloned( clone_args:CloneArgs )->CmdNativeCode
       return CmdNativeCode( t, code )
 
     method requires_semicolon->Logical
@@ -4617,7 +4617,7 @@ class CmdInlineNative : Cmd
   METHODS
     method init( t, code, result_type=null )
 
-    method clone( clone_args:CloneArgs )->CmdInlineNative
+    method cloned( clone_args:CloneArgs )->CmdInlineNative
       local result = CmdInlineNative( t, code, result_type )
       result.modify_op = modify_op
       result.adjust_delta = adjust_delta
@@ -4675,7 +4675,7 @@ class CmdMakeRequisite : Cmd
   METHODS
     method init( t, pattern )
 
-    method clone( clone_args:CloneArgs )->CmdMakeRequisite
+    method cloned( clone_args:CloneArgs )->CmdMakeRequisite
       return CmdMakeRequisite( t, pattern )
 
     method requires_semicolon->Logical
@@ -4724,7 +4724,7 @@ class CmdNoAction : Cmd
   METHODS
     method init( t )
 
-    method clone( clone_args:CloneArgs )->CmdNoAction
+    method cloned( clone_args:CloneArgs )->CmdNoAction
       return CmdNoAction( t )
 
     method add_to( statements:CmdStatementList )
@@ -4755,8 +4755,8 @@ class CmdTypedLiteralList : Cmd
       elements.add( element )
       return this
 
-    method clone( clone_args:CloneArgs )->CmdTypedLiteralList
-      return CmdTypedLiteralList( t, list_type_name, elements.clone(clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdTypedLiteralList
+      return CmdTypedLiteralList( t, list_type_name, elements.cloned(clone_args) )
 
     method implicit_type( scope:Scope )->Type
       return type
@@ -4793,9 +4793,9 @@ class CmdSelect : Cmd
   METHODS
     method init( t, local_info=null, expression=null, cases=CmdSelectCase[] )
 
-    method clone( clone_args:CloneArgs )->CmdSelect
-      local result = CmdSelect( t, local_info, clone(expression,clone_args), CmdSelectCase[](cases.count) )
-      forEach (c in cases) result.cases.add( c.clone(clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdSelect
+      local result = CmdSelect( t, local_info, cloned(expression,clone_args), CmdSelectCase[](cases.count) )
+      forEach (c in cases) result.cases.add( c.cloned(clone_args) )
       return result
 
     method implicit_type( scope:Scope )->Type
@@ -4846,10 +4846,10 @@ class CmdSelectCase : Cmd
   METHODS
     method init( t, conditions=Cmd[](1), value=null )
 
-    method clone( clone_args:CloneArgs )->CmdSelectCase
-      local result = CmdSelectCase( t, null, clone(value,clone_args) )
+    method cloned( clone_args:CloneArgs )->CmdSelectCase
+      local result = CmdSelectCase( t, null, cloned(value,clone_args) )
       result.conditions = Cmd[]( conditions.count )
-      forEach (c in conditions) result.conditions.add( c.clone(clone_args) )
+      forEach (c in conditions) result.conditions.add( c.cloned(clone_args) )
       return result
 
     method cast_conditions( to_type:Type, scope:Scope )
@@ -4861,7 +4861,7 @@ class CmdSelectCase : Cmd
       return select { value:value.implicit_type(scope) || null }
 
     method resolve( scope:Scope )->Cmd
-      if (not value) value = conditions.first.clone
+      if (not value) value = conditions.first.cloned
 
       forEach (condition at i in conditions)
         condition = conditions[i].resolve( scope ).require_value
@@ -4897,12 +4897,12 @@ class CmdEnsure : Cmd
   METHODS
     method init( t, operand, args, named_args=null )
 
-    method clone( clone_args=null:CloneArgs )->Cmd
-      local result = CmdEnsure( t, operand.clone(clone_args), clone(args,clone_args) )
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      local result = CmdEnsure( t, operand.cloned(clone_args), cloned(args,clone_args) )
 
       if (named_args)
         result.named_args = CmdNamedArg[]( named_args.count )
-        forEach (named_arg in named_args) result.named_args.add( named_arg.clone )
+        forEach (named_arg in named_args) result.named_args.add( named_arg.cloned )
       endIf
 
       return result
@@ -4911,7 +4911,7 @@ class CmdEnsure : Cmd
       return operand.implicit_type( scope )
 
     method resolve( scope:Scope )->Cmd
-      cmd_read = operand.clone.resolve( scope ).require_value
+      cmd_read = operand.cloned.resolve( scope ).require_value
       if (not cmd_read.type.is_reference) throw t.error( "'ensure' can only be used with reference-type variables." )
 
       local cmd_new = CmdAccess( t, cmd_read.type.name, args )
@@ -4928,7 +4928,7 @@ class CmdEnsure : Cmd
       }#
 
       # We can convert this statement-level ensure into a simple 'if'.
-      local cmd_read = operand.clone.resolve( scope ).require_value
+      local cmd_read = operand.cloned.resolve( scope ).require_value
 
       local cmd_if = CmdIf( t, CmdLogicalNot(t,cmd_read) )
       cmd_if.statements.add( CmdAssign( t, operand, cmd_new ) )

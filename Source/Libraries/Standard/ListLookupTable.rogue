@@ -7,7 +7,7 @@ class ListLookupTable<<$KeyType,$ValueType>> : Table<<$KeyType,$ValueType[]>>
       endForEach
       return this
 
-    method clone->ListLookupTable<<$KeyType,$ValueType>>
+    method cloned->ListLookupTable<<$KeyType,$ValueType>>
       return ListLookupTable<<$KeyType,$ValueType>>( this )
 
     method contains( key:$KeyType )->Logical

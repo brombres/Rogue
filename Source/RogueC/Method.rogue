@@ -46,12 +46,12 @@ class Method
   METHODS
     method init( t, type_context, name )
 
-    method clone->Method
+    method cloned->Method
       local result = Method( t, type_context, name )
 
       <<initialize_result>>
       result.signature = signature
-      result.attributes = attributes.clone
+      result.attributes = attributes.cloned
       result.return_type = return_type
       result.task_result_type = task_result_type
       result.source_template = this.source_template
@@ -59,7 +59,7 @@ class Method
       result.unspecialized_name = this.unspecialized_name
 
       result.locals = Local[]
-      forEach (v in locals) result.locals.add( v.clone )
+      forEach (v in locals) result.locals.add( v.cloned )
       result.parameters = Local[]
       forEach (i of parameters) result.parameters.add( locals[i] )
 
@@ -69,7 +69,7 @@ class Method
       result.label_lookup = Table<<String,CmdLabel>>()
 
       result.min_args = min_args
-      result.statements = statements.clone( CloneMethodArgs(result) )
+      result.statements = statements.cloned( CloneMethodArgs(result) )
       result.native_code = native_code
       result.index = index
 
@@ -79,15 +79,15 @@ class Method
       v.visit( this )
 
     method incorporate( into_type:Type )->Method
-      local m = clone.set_type_context( into_type ).set_incorporated
+      local m = cloned.set_type_context( into_type ).set_incorporated
 
       <<initialize_m>>
       if (aspect_statements)
         # If aspect_statements is non-null then the aspect method was already resolved
-        # prior to the clone() above and we need to copy the statements.
-        # If it's null then we've already cloned the statement list when we clone()d
+        # prior to the cloned() above and we need to copy the statements.
+        # If it's null then we've already cloned the statement list when we cloned()d
         # the method above.
-        m.statements = aspect_statements.clone( null as CloneArgs )
+        m.statements = aspect_statements.cloned( null as CloneArgs )
       endIf
 
       if (incorporating_classes is null) incorporating_classes = Type[]
@@ -422,7 +422,7 @@ class Method
       task_args.ip_property = task_type.add_property( t, "ip", Program.type_Int32 )
 
       forEach (statement in m_temp.statements)
-        statement = statement.clone( task_args )
+        statement = statement.cloned( task_args )
         if (statement) task_args.add( statement )
       endForEach
       if (task_args.cmd_task_control.current_section.statements.count == 0)

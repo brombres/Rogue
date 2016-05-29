@@ -19,8 +19,8 @@ class Table<<$KeyType,$ValueType>>
 
     method init( other:Table<<$KeyType,$ValueType>> )
       bin_mask = other.bin_mask
-      bins = other.bins.clone
-      keys = other.keys.clone
+      bins = other.bins.cloned
+      keys = other.keys.cloned
 
     method add( other:Table<<$KeyType,$ValueType>> )->Table<<$KeyType,$ValueType>>
       forEach (key in other.keys) this[key] = other[key]
@@ -33,7 +33,7 @@ class Table<<$KeyType,$ValueType>>
       forEach (i of bins) bins[i] = null
       keys.clear
 
-    method clone->Table<<$KeyType,$ValueType>>
+    method cloned->Table<<$KeyType,$ValueType>>
       return Table<<$KeyType,$ValueType>>( this )
 
     method contains( key:$KeyType )->Logical

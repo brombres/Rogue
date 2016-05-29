@@ -17,7 +17,7 @@ class MethodTemplate
   METHODS
     method init( t, type_context, name, is_global )
 
-    method clone->MethodTemplate
+    method cloned->MethodTemplate
       local result = MethodTemplate( t, type_context, name, is_global )
       result.type_parameters = type_parameters
       result.template_tokens = template_tokens
@@ -121,7 +121,7 @@ class MethodTemplates( type_context:Type )
 
         if (not m and base_m.type_context.is_aspect and not extended_type.is_aspect)
           # We have to clone aspect method templates for non-aspects
-          m = base_m.clone
+          m = base_m.cloned
           m.type_context = extended_type
         endIf
 
