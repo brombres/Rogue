@@ -33,12 +33,12 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method add( value:$DataType )->$DataType[]
+    method add( value:$DataType )->this
       reserve(1)[count] = value
       ++count
       return this
 
-    method add( other:$DataType[] )->$DataType[]
+    method add( other:$DataType[] )->this
       reserve(other.count)
       forEach (value in other) add( value )
       return this
@@ -47,7 +47,7 @@ class List<<$DataType>> : GenericList
       if (not data) return 0
       return data.count
 
-    method clear->$DataType[]
+    method clear->this
       discard_from( 0 )
       return this
 
@@ -353,6 +353,14 @@ class List<<$DataType>> : GenericList
 
     method sorted( compare_fn:Function($DataType,$DataType)->Logical )->$DataType[]
       return clone.sorted( compare_fn )
+
+    method subset( i1:Int32 )->$DataType[]
+      return subset( i1, count-i1 )
+
+    method subset( i1:Int32, n:Int32 )->$DataType[]
+      local result = $DataType[]( n )
+      forEach (i in i1..<i1+n) result.add( this[i] )
+      return result
 
     method swap( i1:Int32, i2:Int32 )->this
       local temp = data[i1]
