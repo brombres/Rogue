@@ -1,4 +1,4 @@
-class Console : PrintWriterAspect<<Console,output_buffer>> [singleton]
+class Console : PrintWriterAspect<<output_buffer>> [singleton]
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush

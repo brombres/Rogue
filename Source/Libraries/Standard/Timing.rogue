@@ -3,10 +3,6 @@ class Stopwatch
     start_time = System.time: Real64
 
   METHODS
-    method add( delta_time:Real64 )->this
-      start_time -= delta_time
-      return this
-
     method elapsed->Real64
       return (System.time - start_time)
 
@@ -14,11 +10,42 @@ class Stopwatch
       start_time = System.time
       return this
 
-    method subtract( delta_time:Real64 )->this
-      return add( -delta_time )
+    method operator+( delta_time:Real64 )->this
+      # Increase the elapsed interval of this stopwatch.
+      start_time -= delta_time
+      return this
+
+    method operator-( delta_time:Real64 )->this
+      # Decrease the elapsed interval of this stopwatch.
+      start_time += delta_time
+      return this
 
     method to->String
       return StringBuilder().print( elapsed, 2 ).print( " seconds" )->String
+
+  GLOBAL PROPERTIES
+    stopwatches : StringTable<<Stopwatch>>
+
+  GLOBAL METHODS
+    method finish( key:String )->Stopwatch
+      return select{ stopwatches:stopwatches.remove(key) || Stopwatch() }
+
+    method get( key:String )->Stopwatch
+      ensure( stopwatches )
+      local stopwatch = stopwatches[ key ]
+      if (stopwatch) return stopwatch
+      ensure stopwatch
+      stopwatches[ key ] = stopwatch
+      return stopwatch
+
+    method report( key:String )
+      print   key
+      print   ": "
+      println Stopwatch[ key ]
+      stopwatches.remove( key )
+
+    method start( key:String )->Stopwatch
+      return Stopwatch[ key ].restart
 endClass
 
 
@@ -30,15 +57,21 @@ class Timer
   METHODS
     method init( duration )
 
-    method add( delta_time:Real64 )->this
-      start_time += delta_time
-      return this
-
     method elapsed->Real64
       return (System.time - start_time)
 
     method is_expired->Logical
       return elapsed >= duration
+
+    method operator+( delta_time:Real64 )->this
+      # Increase the elapsed interval of this timer.
+      start_time += delta_time
+      return this
+
+    method operator-( delta_time:Real64 )->this
+      # Decrease the elapsed interval of this timer.
+      start_time -= delta_time
+      return this
 
     method remaining->Real64
       return duration - elapsed
@@ -47,10 +80,32 @@ class Timer
       start_time = System.time
       return this
 
-    method subtract( delta_time:Real64 )->this
-      return add( -delta_time )
-
     method to->String
       return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
+
+  GLOBAL PROPERTIES
+    timers : StringTable<<Timer>>
+
+  GLOBAL METHODS
+    method finish( key:String )->Timer
+      return select{ timers:timers.remove(key) || Timer() }
+
+    method get( key:String )->Timer
+      ensure( timers )
+      local timer = timers[ key ]
+      if (timer) return timer
+      ensure timer
+      timers[ key ] = timer
+      return timer
+
+    method report( key:String )
+      print   key
+      print   ": "
+      println Timer[ key ]
+      timers.remove( key )
+
+    method start( key:String )->Timer
+      return Timer[ key ].restart
+
 endClass
 

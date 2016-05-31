@@ -1,106 +1,115 @@
 class PrintWriter [aspect]
   METHODS
-    method flush->PrintWriter                         [abstract]
-    method print( value:Byte )->PrintWriter           [abstract]
-    method print( value:Character )->PrintWriter      [abstract]
-    method print( value:Int32 )->PrintWriter          [abstract]
-    method print( value:Logical )->PrintWriter        [abstract]
-    method print( value:Int64 )->PrintWriter          [abstract]
-    method print( value:Object )->PrintWriter         [abstract]
-    method print( value:Real64 )->PrintWriter         [abstract]
-    method print( value:Real32 )->PrintWriter         [abstract]
-    method print( value:String )->PrintWriter         [abstract]
-    method println->PrintWriter                       [abstract]
-    method println( value:Byte )->PrintWriter         [abstract]
-    method println( value:Character )->PrintWriter    [abstract]
-    method println( value:Int32 )->PrintWriter        [abstract]
-    method println( value:Logical )->PrintWriter      [abstract]
-    method println( value:Int64 )->PrintWriter        [abstract]
-    method println( value:Real64 )->PrintWriter       [abstract]
-    method println( value:Real32 )->PrintWriter       [abstract]
-    method println( value:Object )->PrintWriter       [abstract]
-    method println( value:String )->PrintWriter       [abstract]
-    method write( buffer:StringBuilder )->PrintWriter [abstract]
+    method flush->this                                         [abstract]
+    method print( value:Byte )->this                           [abstract]
+    method print( value:Character )->this                      [abstract]
+    method print( value:Int32 )->this                          [abstract]
+    method print( value:Logical )->this                        [abstract]
+    method print( value:Int64 )->this                          [abstract]
+    method print( value:Object )->this                         [abstract]
+    method print( value:Real64 )->this                         [abstract]
+    method print( value:Real64, decimal_places:Int32 )->this   [abstract]
+    method print( value:Real32 )->this                         [abstract]
+    method print( value:String )->this                         [abstract]
+    method println->this                                       [abstract]
+    method println( value:Byte )->this                         [abstract]
+    method println( value:Character )->this                    [abstract]
+    method println( value:Int32 )->this                        [abstract]
+    method println( value:Logical )->this                      [abstract]
+    method println( value:Int64 )->this                        [abstract]
+    method println( value:Real64 )->this                       [abstract]
+    method println( value:Real64, decimal_places:Int32 )->this [abstract]
+    method println( value:Real32 )->this                       [abstract]
+    method println( value:Object )->this                       [abstract]
+    method println( value:String )->this                       [abstract]
+    method write( buffer:StringBuilder )->this                 [abstract]
 endClass
 
-class PrintWriterAspect<<$WriterType,$buffer>> : PrintWriter [aspect]
+class PrintWriterAspect<<$buffer>> : PrintWriter [aspect]
   METHODS
-    method flush->$WriterType
+    method flush->this
       if ($buffer.count)
         write( $buffer )
         $buffer.clear
       endIf
       return this
 
-    method print( value:Byte )->$WriterType
+    method print( value:Byte )->this
       $buffer.print( value )
       return this
 
-    method print( value:Character )->$WriterType
+    method print( value:Character )->this
       $buffer.print( value )
       if (value == '\n') return flush
       return this
 
-    method print( value:Int32 )->$WriterType
+    method print( value:Int32 )->this
       $buffer.print( value )
       return this
 
-    method print( value:Logical )->$WriterType
+    method print( value:Logical )->this
       $buffer.print( value )
       return this
 
-    method print( value:Int64 )->$WriterType
+    method print( value:Int64 )->this
       $buffer.print( value )
       return this
 
-    method print( value:Object )->$WriterType
+    method print( value:Real64, decimal_places:Int32 )->this
+      $buffer.print( value, decimal_places )
+      return this
+
+    method print( value:Object )->this
       $buffer.print( value )
       return this
 
-    method print( value:Real64 )->$WriterType
+    method print( value:Real64 )->this
       $buffer.print( value )
       return this
 
-    method print( value:Real32 )->$WriterType
+    method print( value:Real32 )->this
       $buffer.print( value->Real64 )
       return this
 
-    method print( value:String )->$WriterType
+    method print( value:String )->this
       $buffer.print( value )
       if ($buffer.count > 1024) flush
       return this
 
-    method println->$WriterType
+    method println->this
       $buffer.print( '\n' )
       return flush
 
-    method println( value:Byte )->$WriterType
+    method println( value:Byte )->this
       return print( value ).println
 
-    method println( value:Character )->$WriterType
+    method println( value:Character )->this
       return print( value ).println
 
-    method println( value:Int32 )->$WriterType
+    method println( value:Int32 )->this
       return print( value ).println
 
-    method println( value:Logical )->$WriterType
+    method println( value:Logical )->this
       return print( value ).println
 
-    method println( value:Int64 )->$WriterType
+    method println( value:Int64 )->this
       return print( value ).println
 
-    method println( value:Real64 )->$WriterType
+    method println( value:Real64 )->this
       return print( value ).println
 
-    method println( value:Real32 )->$WriterType
+    method println( value:Real64, decimal_places:Int32 )->this
+      return print( value, decimal_places ).println
+
+    method println( value:Real32 )->this
       return print( value ).println
 
-    method println( value:Object )->$WriterType
+    method println( value:Object )->this
       return print( value ).println
 
-    method println( value:String )->$WriterType
+    method println( value:String )->this
       return print( value ).println
 
-    method write( buffer:StringBuilder )->$WriterType [abstract]
+    method write( buffer:StringBuilder )->this [abstract]
 endClass
 

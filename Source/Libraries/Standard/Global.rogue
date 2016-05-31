@@ -1,4 +1,4 @@
-class Global : PrintWriterAspect<<Global,global_output_buffer>> [requisite singleton]
+class Global : PrintWriterAspect<<global_output_buffer>> [requisite singleton]
   PROPERTIES
     standard_output = Console : PrintWriter
     global_output_buffer      = StringBuilder()

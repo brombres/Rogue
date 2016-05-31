@@ -26,8 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.64 - May 30, 2016
+###v1.0.64 - May 31, 2016
 - [API] Improved `create()` and `to->String()` methods of `TimeInterval` class.
+- [API] Added an optional global interface to Stopwatch and Timer.  `Stopwatch.start(key:String)` creates and starts a global stopwatch,`Stopwatch.report(key:String)` prints the key and the elapsed time, removing the stopwatch, and `Stopwatch.finish(key:String)->Stopwatch` removes and returns the stopwatch without printing the elapsed time.  `Timer` has corresponding global methods.
+- [API] Simplified `PrintWriterAspect` now that aspect method return types of `this` are converted into the type of the incorporating class.
 
 ###v1.0.63 - May 28, 2016
 - [Rogue] Conversion methods (`method to->String`) can now accept parameters on definition (`method to->String(arg:Int32)`) and on call (`st = obj->String(x)`).
