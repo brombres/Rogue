@@ -23534,55 +23534,15 @@ RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__init__
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_String_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_39_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_39_3;++i_2)
+      for (;i_2 < _auto_39_3;++i_2)
       {
-        RogueTableEntry_String_String__List__add__TableEntry_String_String_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_String__List*)(THIS);
-}
-
-RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__add__TableEntry_String_String_( RogueTableEntry_String_String__List* THIS, RogueClassTableEntry_String_String_* value_0 )
-{
-  ((RogueTableEntry_String_String__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_String__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_String__List__capacity( RogueTableEntry_String_String__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__reserve__Int32( RogueTableEntry_String_String__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_String__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_String__List*)(THIS);
 }
@@ -23849,55 +23809,15 @@ RogueTableEntry_String_TypeInfo__List* RogueTableEntry_String_TypeInfo__List__in
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_TypeInfo_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_86_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_86_3;++i_2)
+      for (;i_2 < _auto_86_3;++i_2)
       {
-        RogueTableEntry_String_TypeInfo__List__add__TableEntry_String_TypeInfo_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_TypeInfo__List*)(THIS);
-}
-
-RogueTableEntry_String_TypeInfo__List* RogueTableEntry_String_TypeInfo__List__add__TableEntry_String_TypeInfo_( RogueTableEntry_String_TypeInfo__List* THIS, RogueClassTableEntry_String_TypeInfo_* value_0 )
-{
-  ((RogueTableEntry_String_TypeInfo__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_TypeInfo__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_TypeInfo__List__capacity( RogueTableEntry_String_TypeInfo__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_TypeInfo__List* RogueTableEntry_String_TypeInfo__List__reserve__Int32( RogueTableEntry_String_TypeInfo__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_TypeInfo_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_TypeInfo__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_TypeInfo_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_TypeInfo__List*)(THIS);
 }
@@ -24959,55 +24879,15 @@ RogueTableEntry_String_Logical__List* RogueTableEntry_String_Logical__List__init
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Logical_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_103_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_103_3;++i_2)
+      for (;i_2 < _auto_103_3;++i_2)
       {
-        RogueTableEntry_String_Logical__List__add__TableEntry_String_Logical_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Logical__List*)(THIS);
-}
-
-RogueTableEntry_String_Logical__List* RogueTableEntry_String_Logical__List__add__TableEntry_String_Logical_( RogueTableEntry_String_Logical__List* THIS, RogueClassTableEntry_String_Logical_* value_0 )
-{
-  ((RogueTableEntry_String_Logical__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Logical__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Logical__List__capacity( RogueTableEntry_String_Logical__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Logical__List* RogueTableEntry_String_Logical__List__reserve__Int32( RogueTableEntry_String_Logical__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Logical_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Logical__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Logical_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Logical__List*)(THIS);
 }
@@ -29271,55 +29151,15 @@ RogueTableEntry_String_TokenType__List* RogueTableEntry_String_TokenType__List__
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_TokenType_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_108_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_108_3;++i_2)
+      for (;i_2 < _auto_108_3;++i_2)
       {
-        RogueTableEntry_String_TokenType__List__add__TableEntry_String_TokenType_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_TokenType__List*)(THIS);
-}
-
-RogueTableEntry_String_TokenType__List* RogueTableEntry_String_TokenType__List__add__TableEntry_String_TokenType_( RogueTableEntry_String_TokenType__List* THIS, RogueClassTableEntry_String_TokenType_* value_0 )
-{
-  ((RogueTableEntry_String_TokenType__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_TokenType__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_TokenType__List__capacity( RogueTableEntry_String_TokenType__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_TokenType__List* RogueTableEntry_String_TokenType__List__reserve__Int32( RogueTableEntry_String_TokenType__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_TokenType_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_TokenType__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_TokenType_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_TokenType__List*)(THIS);
 }
@@ -32227,55 +32067,15 @@ RogueTableEntry_Int32_Template__List* RogueTableEntry_Int32_Template__List__init
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_Int32_Template_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_141_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_141_3;++i_2)
+      for (;i_2 < _auto_141_3;++i_2)
       {
-        RogueTableEntry_Int32_Template__List__add__TableEntry_Int32_Template_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_Int32_Template__List*)(THIS);
-}
-
-RogueTableEntry_Int32_Template__List* RogueTableEntry_Int32_Template__List__add__TableEntry_Int32_Template_( RogueTableEntry_Int32_Template__List* THIS, RogueClassTableEntry_Int32_Template_* value_0 )
-{
-  ((RogueTableEntry_Int32_Template__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_Int32_Template__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_Int32_Template__List__capacity( RogueTableEntry_Int32_Template__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_Int32_Template__List* RogueTableEntry_Int32_Template__List__reserve__Int32( RogueTableEntry_Int32_Template__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_Int32_Template_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_Int32_Template__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_Int32_Template_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_Int32_Template__List*)(THIS);
 }
@@ -33368,55 +33168,15 @@ RogueTableEntry_String_Definition__List* RogueTableEntry_String_Definition__List
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Definition_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_174_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_174_3;++i_2)
+      for (;i_2 < _auto_174_3;++i_2)
       {
-        RogueTableEntry_String_Definition__List__add__TableEntry_String_Definition_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Definition__List*)(THIS);
-}
-
-RogueTableEntry_String_Definition__List* RogueTableEntry_String_Definition__List__add__TableEntry_String_Definition_( RogueTableEntry_String_Definition__List* THIS, RogueClassTableEntry_String_Definition_* value_0 )
-{
-  ((RogueTableEntry_String_Definition__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Definition__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Definition__List__capacity( RogueTableEntry_String_Definition__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Definition__List* RogueTableEntry_String_Definition__List__reserve__Int32( RogueTableEntry_String_Definition__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Definition_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Definition__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Definition_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Definition__List*)(THIS);
 }
@@ -33839,55 +33599,15 @@ RogueTableEntry_String_Property__List* RogueTableEntry_String_Property__List__in
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Property_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_190_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_190_3;++i_2)
+      for (;i_2 < _auto_190_3;++i_2)
       {
-        RogueTableEntry_String_Property__List__add__TableEntry_String_Property_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Property__List*)(THIS);
-}
-
-RogueTableEntry_String_Property__List* RogueTableEntry_String_Property__List__add__TableEntry_String_Property_( RogueTableEntry_String_Property__List* THIS, RogueClassTableEntry_String_Property_* value_0 )
-{
-  ((RogueTableEntry_String_Property__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Property__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Property__List__capacity( RogueTableEntry_String_Property__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Property__List* RogueTableEntry_String_Property__List__reserve__Int32( RogueTableEntry_String_Property__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Property_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Property__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Property_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Property__List*)(THIS);
 }
@@ -35760,55 +35480,15 @@ RogueTableEntry_String_CmdLabel__List* RogueTableEntry_String_CmdLabel__List__in
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_CmdLabel_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_217_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_217_3;++i_2)
+      for (;i_2 < _auto_217_3;++i_2)
       {
-        RogueTableEntry_String_CmdLabel__List__add__TableEntry_String_CmdLabel_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_CmdLabel__List*)(THIS);
-}
-
-RogueTableEntry_String_CmdLabel__List* RogueTableEntry_String_CmdLabel__List__add__TableEntry_String_CmdLabel_( RogueTableEntry_String_CmdLabel__List* THIS, RogueClassTableEntry_String_CmdLabel_* value_0 )
-{
-  ((RogueTableEntry_String_CmdLabel__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_CmdLabel__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_CmdLabel__List__capacity( RogueTableEntry_String_CmdLabel__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_CmdLabel__List* RogueTableEntry_String_CmdLabel__List__reserve__Int32( RogueTableEntry_String_CmdLabel__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_CmdLabel_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_CmdLabel__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_CmdLabel_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_CmdLabel__List*)(THIS);
 }
@@ -36241,55 +35921,15 @@ RogueTableEntry_String_Method_List__List* RogueTableEntry_String_Method_List__Li
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Method_List_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_240_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_240_3;++i_2)
+      for (;i_2 < _auto_240_3;++i_2)
       {
-        RogueTableEntry_String_Method_List__List__add__TableEntry_String_Method_List_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Method_List__List*)(THIS);
-}
-
-RogueTableEntry_String_Method_List__List* RogueTableEntry_String_Method_List__List__add__TableEntry_String_Method_List_( RogueTableEntry_String_Method_List__List* THIS, RogueClassTableEntry_String_Method_List_* value_0 )
-{
-  ((RogueTableEntry_String_Method_List__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Method_List__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Method_List__List__capacity( RogueTableEntry_String_Method_List__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Method_List__List* RogueTableEntry_String_Method_List__List__reserve__Int32( RogueTableEntry_String_Method_List__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Method_List_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Method_List__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Method_List_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Method_List__List*)(THIS);
 }
@@ -36506,55 +36146,15 @@ RogueTableEntry_String_Method__List* RogueTableEntry_String_Method__List__init__
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Method_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_245_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_245_3;++i_2)
+      for (;i_2 < _auto_245_3;++i_2)
       {
-        RogueTableEntry_String_Method__List__add__TableEntry_String_Method_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Method__List*)(THIS);
-}
-
-RogueTableEntry_String_Method__List* RogueTableEntry_String_Method__List__add__TableEntry_String_Method_( RogueTableEntry_String_Method__List* THIS, RogueClassTableEntry_String_Method_* value_0 )
-{
-  ((RogueTableEntry_String_Method__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Method__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Method__List__capacity( RogueTableEntry_String_Method__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Method__List* RogueTableEntry_String_Method__List__reserve__Int32( RogueTableEntry_String_Method__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Method_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Method__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Method_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Method__List*)(THIS);
 }
@@ -36936,55 +36536,15 @@ RogueTableEntry_String_ParseReader__List* RogueTableEntry_String_ParseReader__Li
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_ParseReader_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_271_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_271_3;++i_2)
+      for (;i_2 < _auto_271_3;++i_2)
       {
-        RogueTableEntry_String_ParseReader__List__add__TableEntry_String_ParseReader_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_ParseReader__List*)(THIS);
-}
-
-RogueTableEntry_String_ParseReader__List* RogueTableEntry_String_ParseReader__List__add__TableEntry_String_ParseReader_( RogueTableEntry_String_ParseReader__List* THIS, RogueClassTableEntry_String_ParseReader_* value_0 )
-{
-  ((RogueTableEntry_String_ParseReader__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_ParseReader__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_ParseReader__List__capacity( RogueTableEntry_String_ParseReader__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_ParseReader__List* RogueTableEntry_String_ParseReader__List__reserve__Int32( RogueTableEntry_String_ParseReader__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_ParseReader_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_ParseReader__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_ParseReader_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_ParseReader__List*)(THIS);
 }
@@ -37438,55 +36998,15 @@ RogueTableEntry_String_Stopwatch__List* RogueTableEntry_String_Stopwatch__List__
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Stopwatch_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_276_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_276_3;++i_2)
+      for (;i_2 < _auto_276_3;++i_2)
       {
-        RogueTableEntry_String_Stopwatch__List__add__TableEntry_String_Stopwatch_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Stopwatch__List*)(THIS);
-}
-
-RogueTableEntry_String_Stopwatch__List* RogueTableEntry_String_Stopwatch__List__add__TableEntry_String_Stopwatch_( RogueTableEntry_String_Stopwatch__List* THIS, RogueClassTableEntry_String_Stopwatch_* value_0 )
-{
-  ((RogueTableEntry_String_Stopwatch__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Stopwatch__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Stopwatch__List__capacity( RogueTableEntry_String_Stopwatch__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Stopwatch__List* RogueTableEntry_String_Stopwatch__List__reserve__Int32( RogueTableEntry_String_Stopwatch__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Stopwatch_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Stopwatch__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Stopwatch_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Stopwatch__List*)(THIS);
 }
@@ -39973,55 +39493,15 @@ RogueTableEntry_String_Template__List* RogueTableEntry_String_Template__List__in
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Template_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_298_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_298_3;++i_2)
+      for (;i_2 < _auto_298_3;++i_2)
       {
-        RogueTableEntry_String_Template__List__add__TableEntry_String_Template_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Template__List*)(THIS);
-}
-
-RogueTableEntry_String_Template__List* RogueTableEntry_String_Template__List__add__TableEntry_String_Template_( RogueTableEntry_String_Template__List* THIS, RogueClassTableEntry_String_Template_* value_0 )
-{
-  ((RogueTableEntry_String_Template__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Template__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Template__List__capacity( RogueTableEntry_String_Template__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Template__List* RogueTableEntry_String_Template__List__reserve__Int32( RogueTableEntry_String_Template__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Template_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Template__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Template_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Template__List*)(THIS);
 }
@@ -40225,55 +39705,15 @@ RogueTableEntry_String_Augment_List__List* RogueTableEntry_String_Augment_List__
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Augment_List_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_310_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_310_3;++i_2)
+      for (;i_2 < _auto_310_3;++i_2)
       {
-        RogueTableEntry_String_Augment_List__List__add__TableEntry_String_Augment_List_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Augment_List__List*)(THIS);
-}
-
-RogueTableEntry_String_Augment_List__List* RogueTableEntry_String_Augment_List__List__add__TableEntry_String_Augment_List_( RogueTableEntry_String_Augment_List__List* THIS, RogueClassTableEntry_String_Augment_List_* value_0 )
-{
-  ((RogueTableEntry_String_Augment_List__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Augment_List__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Augment_List__List__capacity( RogueTableEntry_String_Augment_List__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Augment_List__List* RogueTableEntry_String_Augment_List__List__reserve__Int32( RogueTableEntry_String_Augment_List__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Augment_List_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Augment_List__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Augment_List_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Augment_List__List*)(THIS);
 }
@@ -40612,55 +40052,15 @@ RogueTableEntry_String_Type__List* RogueTableEntry_String_Type__List__init__Int3
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Type_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_315_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_315_3;++i_2)
+      for (;i_2 < _auto_315_3;++i_2)
       {
-        RogueTableEntry_String_Type__List__add__TableEntry_String_Type_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Type__List*)(THIS);
-}
-
-RogueTableEntry_String_Type__List* RogueTableEntry_String_Type__List__add__TableEntry_String_Type_( RogueTableEntry_String_Type__List* THIS, RogueClassTableEntry_String_Type_* value_0 )
-{
-  ((RogueTableEntry_String_Type__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Type__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Type__List__capacity( RogueTableEntry_String_Type__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Type__List* RogueTableEntry_String_Type__List__reserve__Int32( RogueTableEntry_String_Type__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Type_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Type__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Type_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Type__List*)(THIS);
 }
@@ -40864,55 +40264,15 @@ RogueTableEntry_String_Int32__List* RogueTableEntry_String_Int32__List__init__In
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Int32_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_320_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_320_3;++i_2)
+      for (;i_2 < _auto_320_3;++i_2)
       {
-        RogueTableEntry_String_Int32__List__add__TableEntry_String_Int32_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Int32__List*)(THIS);
-}
-
-RogueTableEntry_String_Int32__List* RogueTableEntry_String_Int32__List__add__TableEntry_String_Int32_( RogueTableEntry_String_Int32__List* THIS, RogueClassTableEntry_String_Int32_* value_0 )
-{
-  ((RogueTableEntry_String_Int32__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Int32__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Int32__List__capacity( RogueTableEntry_String_Int32__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Int32__List* RogueTableEntry_String_Int32__List__reserve__Int32( RogueTableEntry_String_Int32__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Int32_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Int32__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Int32_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Int32__List*)(THIS);
 }
@@ -41116,55 +40476,15 @@ RogueTableEntry_String_String_List__List* RogueTableEntry_String_String_List__Li
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_String_List_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_325_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_325_3;++i_2)
+      for (;i_2 < _auto_325_3;++i_2)
       {
-        RogueTableEntry_String_String_List__List__add__TableEntry_String_String_List_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_String_List__List*)(THIS);
-}
-
-RogueTableEntry_String_String_List__List* RogueTableEntry_String_String_List__List__add__TableEntry_String_String_List_( RogueTableEntry_String_String_List__List* THIS, RogueClassTableEntry_String_String_List_* value_0 )
-{
-  ((RogueTableEntry_String_String_List__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_String_List__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_String_List__List__capacity( RogueTableEntry_String_String_List__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_String_List__List* RogueTableEntry_String_String_List__List__reserve__Int32( RogueTableEntry_String_String_List__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_List_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_String_List__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_List_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_String_List__List*)(THIS);
 }
@@ -46271,55 +45591,15 @@ RogueTableEntry_String_Token_List__List* RogueTableEntry_String_Token_List__List
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Token_List_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_945_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_945_3;++i_2)
+      for (;i_2 < _auto_945_3;++i_2)
       {
-        RogueTableEntry_String_Token_List__List__add__TableEntry_String_Token_List_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Token_List__List*)(THIS);
-}
-
-RogueTableEntry_String_Token_List__List* RogueTableEntry_String_Token_List__List__add__TableEntry_String_Token_List_( RogueTableEntry_String_Token_List__List* THIS, RogueClassTableEntry_String_Token_List_* value_0 )
-{
-  ((RogueTableEntry_String_Token_List__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Token_List__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Token_List__List__capacity( RogueTableEntry_String_Token_List__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Token_List__List* RogueTableEntry_String_Token_List__List__reserve__Int32( RogueTableEntry_String_Token_List__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Token_List_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Token_List__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Token_List_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Token_List__List*)(THIS);
 }
@@ -47292,55 +46572,15 @@ RogueTableEntry_String_Value__List* RogueTableEntry_String_Value__List__init__In
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Value_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_986_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_986_3;++i_2)
+      for (;i_2 < _auto_986_3;++i_2)
       {
-        RogueTableEntry_String_Value__List__add__TableEntry_String_Value_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Value__List*)(THIS);
-}
-
-RogueTableEntry_String_Value__List* RogueTableEntry_String_Value__List__add__TableEntry_String_Value_( RogueTableEntry_String_Value__List* THIS, RogueClassTableEntry_String_Value_* value_0 )
-{
-  ((RogueTableEntry_String_Value__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Value__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Value__List__capacity( RogueTableEntry_String_Value__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Value__List* RogueTableEntry_String_Value__List__reserve__Int32( RogueTableEntry_String_Value__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Value_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Value__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Value_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Value__List*)(THIS);
 }
@@ -57741,55 +56981,15 @@ RogueTableEntry_String_TypeSpecializer__List* RogueTableEntry_String_TypeSpecial
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_TypeSpecializer_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_1531_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_1531_3;++i_2)
+      for (;i_2 < _auto_1531_3;++i_2)
       {
-        RogueTableEntry_String_TypeSpecializer__List__add__TableEntry_String_TypeSpecializer_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_TypeSpecializer__List*)(THIS);
-}
-
-RogueTableEntry_String_TypeSpecializer__List* RogueTableEntry_String_TypeSpecializer__List__add__TableEntry_String_TypeSpecializer_( RogueTableEntry_String_TypeSpecializer__List* THIS, RogueClassTableEntry_String_TypeSpecializer_* value_0 )
-{
-  ((RogueTableEntry_String_TypeSpecializer__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_TypeSpecializer__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_TypeSpecializer__List__capacity( RogueTableEntry_String_TypeSpecializer__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_TypeSpecializer__List* RogueTableEntry_String_TypeSpecializer__List__reserve__Int32( RogueTableEntry_String_TypeSpecializer__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_TypeSpecializer_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_TypeSpecializer__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_TypeSpecializer_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_TypeSpecializer__List*)(THIS);
 }
@@ -58465,55 +57665,15 @@ RogueTableEntry_String_Cmd__List* RogueTableEntry_String_Cmd__List__init__Int32_
   if (!!(initial_capacity_0))
   {
     THIS->data = RogueType_create_array( initial_capacity_0, sizeof(RogueClassTableEntry_String_Cmd_*), true );
+    THIS->count = initial_capacity_0;
     {
-      RogueInt32 i_2 = (1);
+      RogueInt32 i_2 = (0);
       RogueInt32 _auto_2692_3 = (initial_capacity_0);
-      for (;i_2 <= _auto_2692_3;++i_2)
+      for (;i_2 < _auto_2692_3;++i_2)
       {
-        RogueTableEntry_String_Cmd__List__add__TableEntry_String_Cmd_( ROGUE_ARG(THIS), initial_value_1 );
+        THIS->data->objects[i_2] = initial_value_1;
       }
     }
-  }
-  return (RogueTableEntry_String_Cmd__List*)(THIS);
-}
-
-RogueTableEntry_String_Cmd__List* RogueTableEntry_String_Cmd__List__add__TableEntry_String_Cmd_( RogueTableEntry_String_Cmd__List* THIS, RogueClassTableEntry_String_Cmd_* value_0 )
-{
-  ((RogueTableEntry_String_Cmd__List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->objects[THIS->count] = value_0;
-  ++THIS->count;
-  return (RogueTableEntry_String_Cmd__List*)(THIS);
-}
-
-RogueInt32 RogueTableEntry_String_Cmd__List__capacity( RogueTableEntry_String_Cmd__List* THIS )
-{
-  if (!(!!(THIS->data)))
-  {
-    return (RogueInt32)(0);
-  }
-  return (RogueInt32)(THIS->data->count);
-}
-
-RogueTableEntry_String_Cmd__List* RogueTableEntry_String_Cmd__List__reserve__Int32( RogueTableEntry_String_Cmd__List* THIS, RogueInt32 additional_count_0 )
-{
-  RogueInt32 required_capacity_1 = ((THIS->count + additional_count_0));
-  if (!(!!(THIS->data)))
-  {
-    if (required_capacity_1 < 10)
-    {
-      required_capacity_1 = ((RogueInt32)10);
-    }
-    THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Cmd_*), true );
-  }
-  else if (required_capacity_1 > THIS->data->count)
-  {
-    RogueInt32 cap_2 = (((RogueTableEntry_String_Cmd__List__capacity( ROGUE_ARG(THIS) ))));
-    if (required_capacity_1 < (cap_2 + cap_2))
-    {
-      required_capacity_1 = ((RogueInt32)(cap_2 + cap_2));
-    }
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_Cmd_*), true )));
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
-    THIS->data = new_data_3;
   }
   return (RogueTableEntry_String_Cmd__List*)(THIS);
 }
@@ -60186,7 +59346,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.1", 8 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.2", 8 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 31, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 

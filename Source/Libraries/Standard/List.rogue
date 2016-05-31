@@ -16,7 +16,8 @@ class List<<$DataType>> : GenericList
     method init( initial_capacity:Int32, initial_value:$DataType )
       if (initial_capacity)
         data = Array<<$DataType>>( initial_capacity )
-        forEach (i in 1..initial_capacity) add( initial_value )
+        count = initial_capacity
+        forEach (i in 0..<initial_capacity) data[i] = initial_value
       endIf
 
     method apply( fn:Function($DataType) )->this
