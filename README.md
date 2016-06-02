@@ -32,6 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added an optional global interface to Stopwatch.  `Stopwatch.start(key:String)` creates and starts a global stopwatch,`Stopwatch.finish(key:String)` prints the key and the elapsed time, removing the stopwatch, and `Stopwatch.remove(key:String)->Stopwatch` removes and returns the stopwatch without printing the elapsed time (you can print the elapsed time yourself if desired).
 - [API] Simplified `PrintWriterAspect` now that aspect method return types of `this` are converted into the type of the incorporating class.
 - [API] Added `clamped(Int32?,Int32?)` to `Real64` and `Real32` since `Int32` parameters cannot be automatically cast to `Real64?`.
+- [API] `File` tweaks - primarily renamed `absolute_filepaths` for `listing()` to be `absolute` instead etc.
 - [C++] Further modified C++ try/catch macros to allow polymorphically compatible catches.
 
 ###v1.0.63 - May 28, 2016
