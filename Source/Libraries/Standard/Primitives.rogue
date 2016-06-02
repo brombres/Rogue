@@ -33,6 +33,11 @@ class Real64 [primitive]
       if (high.exists and this > high.value) return high.value
       return this
 
+    method clamped( &low=null:Int32?, &high=null:Int32? )->Real64
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
     method decimal_digit_count->Int32
       PrimitiveWorkBuffer.clear.print( this )
       local dot = PrimitiveWorkBuffer.locate( '.' )
@@ -136,6 +141,11 @@ class Real32 [primitive]
       else           return -this
 
     method clamped( &low=null:Real32?, &high=null:Real32? )->Real32
+      if (low.exists and this < low.value)  return low.value
+      if (high.exists and this > high.value) return high.value
+      return this
+
+    method clamped( &low=null:Int32?, &high=null:Int32? )->Real32
       if (low.exists and this < low.value)  return low.value
       if (high.exists and this > high.value) return high.value
       return this

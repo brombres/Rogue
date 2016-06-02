@@ -629,31 +629,30 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
 #define ROGUE_END_TRY \
   }
 
+#define ROGUE_THROW(_ErrorType,_error_object) \
+  throw _error_object
+
 #define ROGUE_CATCH(_ErrorType,local_error_object) \
   } \
-  catch (const RogueCPPException<_ErrorType>& caught_error) \
+  catch (_ErrorType* local_error_object) \
   { \
-    _ErrorType* local_error_object = (_ErrorType*) caught_error.err;
+    RogueCPPException _internal_exception_reference( local_error_object );
 
 #define ROGUE_CATCH_NO_VAR(_ErrorType) \
   } \
-  catch (const RogueCPPException<_ErrorType>& caught_error) \
+  catch (_ErrorType* caught_error) \
   {
 
-#define ROGUE_THROW(_ErrorType,_error_object) \
-  throw RogueCPPException<_ErrorType>( _error_object )
-
-template <class ErrorType>
 struct RogueCPPException
 {
   RogueObject * err;
-  RogueCPPException<ErrorType> ( RogueObject * err )
+  RogueCPPException( RogueObject * err )
   : err(err)
   {
     Rogue_error_object = err;
     RogueObject_retain( err );
   }
-  ~RogueCPPException<ErrorType> ()
+  ~RogueCPPException()
   {
     RogueObject_release( err );
   }
