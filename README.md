@@ -35,6 +35,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] `File` tweaks - primarily renamed `absolute_filepaths` for `listing()` to be `absolute` instead etc.
 - [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to include native headers IF the currrent class is used in the program.
 - [RogueC] Fixed method template bug - methods added to already resolved classes are now resolved as well.
+- [RogueC] An unresolved method call involving named args now prints out the candidate method parameter names.
 - [C++] Further modified C++ try/catch macros to allow polymorphically compatible catches.
 
 ###v1.0.63 - May 28, 2016

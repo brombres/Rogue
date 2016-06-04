@@ -213,8 +213,9 @@ class Scope
 
       local args = access.args
 
-      local arg_count = 0
-      if (args) arg_count = args.count
+      local arg_count = select{ args:args.count || 0 }
+      local named_arg_count = select{ access.named_args:access.named_args.count || 0 }
+      local total_arg_count = arg_count + named_arg_count
 
       local list = type_context.global_method_lookup_by_name[ access.name ]
       if (list)
@@ -277,7 +278,7 @@ class Scope
 
       forEach (m in candidates.available)
         forEach (param in m.parameters) param.type.organize
-        if (m.accepts_arg_count(arg_count)) candidates.compatible.add( m )
+        if (m.accepts_arg_count(total_arg_count)) candidates.compatible.add( m )
       endForEach
       if (not candidates.update_matches) return null
 
@@ -470,7 +471,7 @@ class Scope
       # If two or more candidate functions are available and the caller is
       # sending zero arguments, keep only the zero-parameter candidate
       # and discard the candidates with all optional args.
-      if (arg_count == 0)
+      if (total_arg_count == 0)
         forEach (m in candidates.available)
           if (m.parameters.count == 0)
             candidates.compatible.add( m )
@@ -506,7 +507,7 @@ class Scope
           endIf
         endForEach
 
-        # 3. Try candidate(arg) -> candidate(arg->toParameterType)
+        # 3. Try candidate(arg) -> candidate(arg->to<ParameterType>)
         forEach (m in candidates.available)
           local arg_type = args.first.type
           local param_type = m.parameters.first.type
@@ -518,7 +519,6 @@ class Scope
         endForEach
 
       endIf
-
 
       candidates.update_matches  # Force error if required
       return null
@@ -571,10 +571,19 @@ println StackTrace()
           local call_sig_buffer = StringBuilder()
           call_sig_buffer.print( type_context.name ).print( "." )
           call_sig_buffer.print( access.name ).print( "(" )
+          local printed_arg = false
           if (access.args)
-            forEach (index of access.args)
-              if (index > 0) call_sig_buffer.print(',')
-              call_sig_buffer.print( access.args[index].require_type.name )
+            forEach (arg in access.args)
+              if (printed_arg) call_sig_buffer.print(',')
+              call_sig_buffer.print( arg.require_type.name )
+              printed_arg = true
+            endForEach
+          endIf
+          if (access.named_args)
+            forEach (arg in access.named_args)
+              if (printed_arg) call_sig_buffer.print(',')
+              call_sig_buffer.print( '&' ).print( arg.name )
+              printed_arg = true
             endForEach
           endIf
           call_sig_buffer.print( ")" )
@@ -584,12 +593,15 @@ println StackTrace()
           if (available.count > 1)
             buffer.print( "No exact match for ambiguous call to $.  Candidates:\n\n" (remove_module_names(call_sig)) )
           else
-            buffer.print( "Call to $ has arguments that are incompatible with the best candidate:\n\n"...
+            buffer.print( "Call to $ has arguments that are incompatible with the best candidate"...
                 (remove_module_names(call_sig)) )
+            if (access.named_args) buffer.print( " (possible incorrect parameter name)" )
+            buffer.print( ":\n\n" )
           endIf
           buffer.indent += 2
           forEach (m in available)
-            buffer.println( remove_module_names("$.$" (m.type_context.name,m.signature)) )
+            local sig = select{ access.named_args:m.signature_with_named_args || m.signature }
+            buffer.println( remove_module_names("$.$" (m.type_context.name,sig)) )
           endForEach
           buffer.indent -= 2
           throw access.t.error( buffer->String )

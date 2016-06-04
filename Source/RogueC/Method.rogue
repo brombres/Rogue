@@ -457,6 +457,19 @@ class Method
     method address->Int64 [macro]
       native "(RogueInt64)(intptr_t)$this"
 
+    method signature_with_named_args->String
+      local buffer = StringBuilder()
+      buffer.print name
+      buffer.print "("
+      local first = true
+      forEach (param in parameters)
+        if (first) first = false
+        else       buffer.print( "," )
+        buffer.print( param.original_name ).print( ':' ).print( param.type.name )
+      endForEach
+      buffer.print ")"
+      return buffer->String
+
     method validate
       # Perform miscellaneous validation
       if (is_used and not is_macro)
