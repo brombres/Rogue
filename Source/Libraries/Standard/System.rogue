@@ -12,6 +12,7 @@ class System [requisite]
       $endIf
 
     method run( command:String )->Int32
+      # TODO: http://stackoverflow.com/questions/27046728/how-do-you-use-posix-spawn-to-replace-the-deprecated-system-to-launch-opendiff
       local return_val = 0
       native @|$return_val = system( (char*)$command->utf8 );
       if (return_val == -1) throw Error("Process was not created")

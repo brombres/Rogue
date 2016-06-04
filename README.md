@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.64 - June 3, 2016
+###v1.0.64 - June 4, 2016
 - [API] Reworked `List(initial_capacity:Int32,initial_value:$DataType)` to be much faster by copying the initial value directly into the backing array instead of repeatedly adding it.
 - [API] Improved `create()` and `to->String()` methods of `TimeInterval` class.
 - [API] Added an optional global interface to Stopwatch.  `Stopwatch.start(key:String)` creates and starts a global stopwatch,`Stopwatch.finish(key:String)` prints the key and the elapsed time, removing the stopwatch, and `Stopwatch.remove(key:String)->Stopwatch` removes and returns the stopwatch without printing the elapsed time (you can print the elapsed time yourself if desired).

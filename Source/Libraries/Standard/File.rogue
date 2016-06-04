@@ -296,7 +296,6 @@ class File
               |      }
               |      if (keep)
               |      {
-
                        local entry = native("RogueString_create_from_utf8(entry->d_name,-1)")->String
                        local is_hidden = entry.begins_with('.')
                        entry = filepath + entry
@@ -308,7 +307,7 @@ class File
                            result.add( entry )
                          endIf
 
-                         if (_is_folder and options.is_recursive)
+                         if (_is_folder and options.is_recursive and entry.count)
                            listing( folder, options, entry, result )
                          endIf
 

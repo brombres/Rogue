@@ -587,6 +587,7 @@ RogueString* RogueString_validate( RogueString* THIS )
     printf( "%02x\n", utf8[0] );
     printf( "%s\n", utf8 );
     utf8[ i ] = 0;
+    Rogue_print_stack_trace();
   }
 
   THIS->byte_count = i;
