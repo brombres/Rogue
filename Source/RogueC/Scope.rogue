@@ -591,12 +591,14 @@ println StackTrace()
 
           local buffer = StringBuilder()
           if (available.count > 1)
-            buffer.print( "No exact match for ambiguous call to $.  Candidates:\n\n" (remove_module_names(call_sig)) )
+            buffer.print( "No exact match for ambiguous call to $" (remove_module_names(call_sig)) )
+            if (access.named_args) buffer.print( " - possible incorrect parameter name" )
+            buffer.print( ".  Candidates:\n\n" )
           else
             buffer.print( "Call to $ has arguments that are incompatible with the best candidate"...
                 (remove_module_names(call_sig)) )
-            if (access.named_args) buffer.print( " (possible incorrect parameter name)" )
-            buffer.print( ":\n\n" )
+            if (access.named_args) buffer.print( " - possible incorrect parameter name.  Candidate:\n\n" )
+            else                   buffer.print( ":\n\n" )
           endIf
           buffer.indent += 2
           forEach (m in available)
