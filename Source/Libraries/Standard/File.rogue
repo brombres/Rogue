@@ -63,7 +63,7 @@ class FileOptions( flags=0:Int32 ) [compound]
 endClass
 
 class File
-  CLASS
+  DEPENDENCIES
     nativeHeader #include <cstdio>
 
   GLOBAL METHODS

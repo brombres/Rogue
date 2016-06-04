@@ -510,7 +510,7 @@ class Parser
     method parse_section->Logical
       consume_eols
 
-      if (consume(TokenType.keyword_CLASS))
+      if (consume(TokenType.keyword_DEPENDENCIES))
         while (parse_class_level_element) noAction
         return true
       endIf

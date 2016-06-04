@@ -22,9 +22,9 @@ class TokenType
     keyword_augment               : TokenType
     keyword_case                  : TokenType
     keyword_catch                 : TokenType
-    keyword_CLASS                 : TokenType
     keyword_class                 : TokenType
     keyword_DEFINITIONS           : TokenType
+    keyword_DEPENDENCIES          : TokenType
     keyword_else                  : TokenType
     keyword_elseIf                : TokenType
     keyword_endAugment            : TokenType
