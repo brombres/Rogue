@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `clamped(Int32?,Int32?)` to `Real64` and `Real32` since `Int32` parameters cannot be automatically cast to `Real64?`.
 - [API] `File` tweaks - primarily renamed `absolute_filepaths` for `listing()` to be `absolute` instead etc.
 - [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to include native headers IF the currrent class is used in the program.
+- [RogueC] Fixed method template bug - methods added to already resolved classes are now resolved as well.
 - [C++] Further modified C++ try/catch macros to allow polymorphically compatible catches.
 
 ###v1.0.63 - May 28, 2016

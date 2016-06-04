@@ -70,11 +70,7 @@ class MethodTemplate
       m.specializer_count = type_parameters.count
       m.unspecialized_name = name
       m.assign_signature
-      #if (type_context.organizing)
-      #type_context.add_method( m )
-      #else
       type_context.inject_method( m )
-      #endIf
 
     method to->String
       return "$.$<<{$}>>({$})" (type_context.name,name,type_parameters.count,parameter_count)

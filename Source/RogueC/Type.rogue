@@ -992,14 +992,12 @@ class Type
         endIf
       endIf
 
+      if (resolved) m.resolve
+
     method inject_method( m:Method, at_index=null:Int32? )
       if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
-      #if ((name == "Cmd" or name == "CmdAccess"))
-      #@trace "Injecting ", m, at_index, " into ", name
-      #endIf
 
-      #m.organize( &!add_to_lookup )
       m.assign_signature
 
       ensure method_lookup_by_name[m.name]
@@ -1090,6 +1088,8 @@ class Type
           endForEach
         endIf
       endIf
+
+      if (resolved) m.resolve
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )
       # Apply augment to existing method
