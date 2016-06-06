@@ -451,10 +451,11 @@ struct RogueArray : RogueObject
     RogueByte      logicals[];
     RogueByte      bytes[];
     RogueCharacter characters[];
-    RogueInt32   integers[];
-    RogueInt64      longs[];
-    RogueReal32     floats[];
-    RogueReal64      reals[];
+
+    RogueInt32     int32_values[];
+    RogueInt64     int64_values[];
+    RogueReal32    real32_values[];
+    RogueReal64    real64_values[];
   };
 };
 

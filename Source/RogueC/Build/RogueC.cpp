@@ -32002,7 +32002,7 @@ RogueStringBuilder* RogueTable_Int32_Template___print_to__StringBuilder( RogueCl
     {
       RogueStringBuilder__print__Character_Logical( buffer_0, (RogueCharacter)',', true );
     }
-    RogueInt32 key_2 = (THIS->keys->data->integers[i_1]);
+    RogueInt32 key_2 = (THIS->keys->data->int32_values[i_1]);
     RogueStringBuilder__print__Int32( buffer_0, key_2 );
     RogueStringBuilder__print__Character_Logical( buffer_0, (RogueCharacter)':', true );
     RogueStringBuilder__print__Object( buffer_0, ROGUE_ARG(((RogueObject*)(((RogueTable_Int32_Template___get__Int32( ROGUE_ARG(THIS), key_2 )))))) );
@@ -32140,7 +32140,7 @@ RogueString* RogueInt32_List__to_String( RogueInt32_List* THIS )
     RogueInt32 _auto_1627_3 = (0);
     for (;_auto_1627_3 < _auto_1626_2->count;++_auto_1627_3)
     {
-      RogueInt32 value_4 = (_auto_1626_2->data->integers[_auto_1627_3]);
+      RogueInt32 value_4 = (_auto_1626_2->data->int32_values[_auto_1627_3]);
       if (first_1)
       {
         first_1 = ((RogueLogical)false);
@@ -32178,7 +32178,7 @@ RogueInt32_List* RogueInt32_List__init__Int32( RogueInt32_List* THIS, RogueInt32
 
 RogueInt32_List* RogueInt32_List__add__Int32( RogueInt32_List* THIS, RogueInt32 value_0 )
 {
-  ((RogueInt32_List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->integers[THIS->count] = value_0;
+  ((RogueInt32_List__reserve__Int32( ROGUE_ARG(THIS), 1 )))->data->int32_values[THIS->count] = value_0;
   ++THIS->count;
   return (RogueInt32_List*)(THIS);
 }
@@ -38903,7 +38903,7 @@ void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* file
     RogueInt32 _auto_515_128 = (0);
     for (;_auto_515_128 < _auto_514_127->count;++_auto_515_128)
     {
-      RogueInt32 n_129 = (_auto_514_127->data->integers[_auto_515_128]);
+      RogueInt32 n_129 = (_auto_514_127->data->int32_values[_auto_515_128]);
       if (first_12)
       {
         first_12 = ((RogueLogical)false);
@@ -59414,8 +59414,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.10", 9 ) ); 
-  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "June 4, 2016", 12 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.11", 9 ) ); 
+  Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "June 6, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 
@@ -60531,10 +60531,10 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1160] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ", true", 6 ) ); 
   Rogue_literal_strings[1161] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "->objects[", 10 ) ); 
   Rogue_literal_strings[1162] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]))", 3 ) ); 
-  Rogue_literal_strings[1163] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "reals[", 6 ) ); 
-  Rogue_literal_strings[1164] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "floats[", 7 ) ); 
-  Rogue_literal_strings[1165] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "longs[", 6 ) ); 
-  Rogue_literal_strings[1166] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "integers[", 9 ) ); 
+  Rogue_literal_strings[1163] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "real64_values[", 14 ) ); 
+  Rogue_literal_strings[1164] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "real32_values[", 14 ) ); 
+  Rogue_literal_strings[1165] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "int64_values[", 13 ) ); 
+  Rogue_literal_strings[1166] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "int32_values[", 13 ) ); 
   Rogue_literal_strings[1167] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "characters[", 11 ) ); 
   Rogue_literal_strings[1168] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "bytes[", 6 ) ); 
   Rogue_literal_strings[1169] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "logicals[", 9 ) ); 
