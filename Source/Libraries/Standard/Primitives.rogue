@@ -198,6 +198,9 @@ class Real32 [primitive]
     method to->Object
       return Boxed<<Real32>>(this)
 
+    method to->String
+      return "" + this
+
     method to_power_of_two->Real32
       return this->Int64.to_power_of_two->Real32
 
