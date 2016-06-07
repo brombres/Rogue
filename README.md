@@ -39,7 +39,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [RogueC] Fixed method template bug - methods added to already resolved classes are now resolved as well.
 - [RogueC] An unresolved method call involving named args now prints out the candidate method parameter names.
 - [C++] Further modified C++ try/catch macros to allow polymorphically compatible catches.
-- [C++] Renamed native array data pointers from `reals/floats/longs/integers` to `real64_values/real32_values/int64_values/int32_values`.
+- [C++] Renamed native array data pointers from `reals/floats/longs/integers/characters/bytes/logicals/objects` to `as_real64s/as_real32s/as_int64s/as_int32s/as_characters/as_bytes/as_logicals/as_objects`.
 - [C++] Added typedef for `RogueWord` as a 16-bit unsigned integer.
 
 ###v1.0.63 - May 28, 2016

@@ -360,7 +360,7 @@ augment Program
                             |
                             |count = array->count;
 
-            writer.print( "cur = ((" ).print( type.element_type.cpp_class_name ).println( "*)(array->bytes)) - 1;" )
+            writer.print( "cur = ((" ).print( type.element_type.cpp_class_name ).println( "*)(array->as_bytes)) - 1;" )
 
             writer.println( "while (--count >= 0)" )
             writer.println( "{" )
@@ -2812,7 +2812,7 @@ augment CmdReadArrayElement
         writer.print( element_type )
         writer.print( ")(" )
         context.write_cpp( writer )
-        writer.print( "->objects[" )
+        writer.print( "->as_objects[" )
         index.write_cpp( writer )
         writer.print( "]))" )
 
@@ -2820,13 +2820,13 @@ augment CmdReadArrayElement
         context.write_cpp( writer )
         writer.print( "->" )
         which (element_type)
-          case Program.type_Real64:      writer.print( "real64_values[" )
-          case Program.type_Real32:     writer.print( "real32_values[" )
-          case Program.type_Int64:      writer.print( "int64_values[" )
-          case Program.type_Int32:   writer.print( "int32_values[" )
-          case Program.type_Character: writer.print( "characters[" )
-          case Program.type_Byte:      writer.print( "bytes[" )
-          case Program.type_Logical:   writer.print( "logicals[" )
+          case Program.type_Real64:      writer.print( "as_real64s[" )
+          case Program.type_Real32:     writer.print( "as_real32s[" )
+          case Program.type_Int64:      writer.print( "as_int64s[" )
+          case Program.type_Int32:   writer.print( "as_int32s[" )
+          case Program.type_Character: writer.print( "as_characters[" )
+          case Program.type_Byte:      writer.print( "as_bytes[" )
+          case Program.type_Logical:   writer.print( "as_logicals[" )
           others
             throw t.error( "[INTERNAL] Unhandled type in CmdReadArrayElement." )
         endWhich
@@ -2837,7 +2837,7 @@ augment CmdReadArrayElement
         # Compound
         writer.print( "((" ).print( element_type ).print( "*)(" )
         context.write_cpp( writer )
-        writer.print( "->bytes))[" )
+        writer.print( "->as_bytes))[" )
         index.write_cpp( writer )
         writer.print( "]" )
 
@@ -2860,13 +2860,13 @@ augment CmdWriteArrayElement
         context.write_cpp( writer )
         writer.print( "->" )
         which (element_type)
-          case Program.type_Real64:      writer.print( "real64_values[" )
-          case Program.type_Real32:     writer.print( "real32_values[" )
-          case Program.type_Int64:      writer.print( "int64_values[" )
-          case Program.type_Int32:   writer.print( "int32_values[" )
-          case Program.type_Character: writer.print( "characters[" )
-          case Program.type_Byte:      writer.print( "bytes[" )
-          case Program.type_Logical:   writer.print( "logicals[" )
+          case Program.type_Real64:      writer.print( "as_real64s[" )
+          case Program.type_Real32:     writer.print( "as_real32s[" )
+          case Program.type_Int64:      writer.print( "as_int64s[" )
+          case Program.type_Int32:   writer.print( "as_int32s[" )
+          case Program.type_Character: writer.print( "as_characters[" )
+          case Program.type_Byte:      writer.print( "as_bytes[" )
+          case Program.type_Logical:   writer.print( "as_logicals[" )
         endWhich
         index.write_cpp( writer )
         writer.print( "] = " )
@@ -2876,7 +2876,7 @@ augment CmdWriteArrayElement
       elseIf (element_type.is_reference)
         context.write_cpp( writer )
         writer.print( "->" )
-        writer.print( "objects[" )
+        writer.print( "as_objects[" )
         index.write_cpp( writer )
         writer.print( "] = " )
         new_value.write_cpp( writer )
@@ -2884,7 +2884,7 @@ augment CmdWriteArrayElement
       else
         writer.print( "((" ).print( element_type ).print( "*)(" )
         context.write_cpp( writer )
-        writer.print( "->bytes))[" )
+        writer.print( "->as_bytes))[" )
         index.write_cpp( writer )
         writer.print( "] = " )
         new_value.write_cpp( writer )

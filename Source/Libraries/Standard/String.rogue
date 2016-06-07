@@ -1,10 +1,10 @@
 class String
   GLOBAL METHODS
     method create( utf8:Byte[] )->String [macro]
-      $if ("C++") native 'RogueString_create_from_utf8( (char*)$utf8->data->bytes, $utf8->count )'
+      $if ("C++") native 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )'
 
     method create( utf8:Byte[], i1:Int32, count:Int32 )->String [macro]
-      $if ("C++") native 'RogueString_create_from_utf8( (char*)($utf8->data->bytes+$i1), $count )'
+      $if ("C++") native 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )'
 
     method create( characters:Character[] )->String [macro]
       $if ("C++") native 'RogueString_create_from_characters( $characters )'

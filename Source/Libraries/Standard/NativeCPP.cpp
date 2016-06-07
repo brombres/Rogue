@@ -121,7 +121,7 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
 
   RogueArray* array = (RogueArray*) RogueAllocator_allocate_object( RogueTypeArray->allocator, RogueTypeArray, total_size );
 
-  memset( array->bytes, 0, data_size );
+  memset( array->as_bytes, 0, data_size );
   array->count = count;
   array->element_size = element_size;
   array->is_reference_array = is_reference_array;
@@ -299,7 +299,7 @@ void RogueArray_trace( void* obj )
   if ( !array->is_reference_array ) return;
 
   count = array->count;
-  src = array->objects + count;
+  src = array->as_objects + count;
   while (--count >= 0)
   {
     RogueObject* cur = *(--src);
@@ -338,7 +338,7 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
 {
   if ( !characters ) return RogueString_create_with_byte_count(0);
 
-  RogueCharacter* data = characters->data->characters;
+  RogueCharacter* data = characters->data->as_characters;
   int count = characters->count;
   int utf8_count = 0;
   for (int i=count; --i>=0; )
@@ -642,8 +642,8 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* sr
   if (THIS != src_array || dest_i1 >= src_i1 + copy_count || (src_i1 + copy_count) <= dest_i1 || dest_i1 < src_i1)
   {
     // no overlap
-    RogueObject** src  = src_array->objects + src_i1 - 1;
-    RogueObject** dest = THIS->objects + dest_i1 - 1;
+    RogueObject** src  = src_array->as_objects + src_i1 - 1;
+    RogueObject** dest = THIS->as_objects + dest_i1 - 1;
     while (--copy_count >= 0)
     {
       RogueObject* src_obj, dest_obj;
@@ -661,8 +661,8 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* sr
     // avoid accidental overwriting
     if (dest_i1 > src_i1)  // if they're equal then we don't need to copy anything!
     {
-      RogueObject** src  = src_array->objects + src_i2 + 1;
-      RogueObject** dest = THIS->objects + dest_i2 + 1;
+      RogueObject** src  = src_array->as_objects + src_i2 + 1;
+      RogueObject** dest = THIS->as_objects + dest_i2 + 1;
       while (--copy_count >= 0)
       {
         RogueObject* src_obj, dest_obj;
@@ -679,8 +679,8 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 dest_i1, RogueArray* sr
 #endif
 
   element_size = THIS->element_size;
-  RogueByte* src = src_array->bytes + src_i1 * element_size;
-  RogueByte* dest = THIS->bytes + (dest_i1 * element_size);
+  RogueByte* src = src_array->as_bytes + src_i1 * element_size;
+  RogueByte* dest = THIS->as_bytes + (dest_i1 * element_size);
   int copy_bytes = copy_count * element_size;
 
   if (src == dest) return THIS;

@@ -450,7 +450,7 @@ class File
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )
 
-    method ends_with_separator->Logical
+    method ends_with_separator->Logical [macro]
       File.ends_with_separator( this.filepath )
 
     method ensure_ends_with_separator->this
@@ -553,7 +553,7 @@ class FileReader : Reader<<Byte>>
       if (position == count) return 0
 
       if (buffer_position == buffer.count)
-        native @|$buffer->count = (RogueInt32) fread( $buffer->data->bytes, 1, 1024, $this->fp );
+        native @|$buffer->count = (RogueInt32) fread( $buffer->data->as_bytes, 1, 1024, $this->fp );
         buffer_position = 0
       endIf
 
@@ -616,7 +616,7 @@ class FileWriter : Writer<<Byte>>
     method flush->this
       if (buffer.count == 0 or not fp) return this
 
-      native @|fwrite( $buffer->data->bytes, 1, $buffer->count, $this->fp );
+      native @|fwrite( $buffer->data->as_bytes, 1, $buffer->count, $this->fp );
       native @|fflush( $this->fp );
 
       buffer.clear

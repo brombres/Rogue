@@ -441,15 +441,14 @@ struct RogueArray : RogueObject
 
   union
   {
-    RogueObject*   objects[];
-    RogueByte      logicals[];
-    RogueByte      bytes[];
-    RogueCharacter characters[];
-
-    RogueInt32     int32_values[];
-    RogueInt64     int64_values[];
-    RogueReal32    real32_values[];
-    RogueReal64    real64_values[];
+    RogueObject*   as_objects[];
+    RogueByte      as_logicals[];
+    RogueByte      as_bytes[];
+    RogueCharacter as_characters[];
+    RogueInt32     as_int32s[];
+    RogueInt64     as_int64s[];
+    RogueReal32    as_real32s[];
+    RogueReal64    as_real64s[];
   };
 };
 
