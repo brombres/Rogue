@@ -79,10 +79,10 @@ class List<<$DataType>> : GenericList
     method from( i1:Int32, i2:Int32 )->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, i1, i2+1 )
 
-    method discard( i1:Int32, n=1:Int32 )
+    method discard( i1:Int32, n=1:Int32 )->this
       local i2 = i1 + n
       data.set( i1, data, i2, (count-i2) )
-      discard_from( count-n )
+      return discard_from( count-n )
 
     method discard( fn:Function($DataType)->Logical )->this
       # Discards any item that passes the test function.
@@ -92,7 +92,7 @@ class List<<$DataType>> : GenericList
       endForEach
       return this
 
-    method discard_from( index:Int32 )
+    method discard_from( index:Int32 )->this
       local zero_value : $DataType
       local c = count
       while (c > index)
@@ -100,6 +100,7 @@ class List<<$DataType>> : GenericList
         data[c] = zero_value
       endWhile
       count = c
+      return this
 
     method filter( fn:Function($DataType)->Logical )->this [macro]
       this.keep( fn )

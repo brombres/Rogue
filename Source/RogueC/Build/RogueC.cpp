@@ -22119,7 +22119,7 @@ RogueString_List* RogueString_List__clear( RogueString_List* THIS )
   return (RogueString_List*)(THIS);
 }
 
-void RogueString_List__discard_from__Int32( RogueString_List* THIS, RogueInt32 index_0 )
+RogueString_List* RogueString_List__discard_from__Int32( RogueString_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueString*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -22129,6 +22129,7 @@ void RogueString_List__discard_from__Int32( RogueString_List* THIS, RogueInt32 i
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueString_List*)(THIS);
 }
 
 RogueOptionalInt32 RogueString_List__locate__String( RogueString_List* THIS, RogueString* value_0 )
@@ -23025,7 +23026,7 @@ RogueByte_List* RogueByte_List__expand_to_include__Int32( RogueByte_List* THIS, 
   return (RogueByte_List*)(((RogueByte_List__expand_to_count__Int32( ROGUE_ARG(THIS), ROGUE_ARG((index_0 + 1)) ))));
 }
 
-void RogueByte_List__discard_from__Int32( RogueByte_List* THIS, RogueInt32 index_0 )
+RogueByte_List* RogueByte_List__discard_from__Int32( RogueByte_List* THIS, RogueInt32 index_0 )
 {
   RogueByte zero_value_1 = 0;
   RogueInt32 c_2 = (THIS->count);
@@ -23035,6 +23036,7 @@ void RogueByte_List__discard_from__Int32( RogueByte_List* THIS, RogueInt32 index
     THIS->data->bytes[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueByte_List*)(THIS);
 }
 
 RogueByte_List* RogueByte_List__insert__Byte_Int32( RogueByte_List* THIS, RogueByte value_0, RogueInt32 before_index_1 )
@@ -28722,7 +28724,7 @@ RogueInt32 RogueToken_List__capacity( RogueToken_List* THIS )
   return (RogueInt32)(THIS->data->count);
 }
 
-void RogueToken_List__discard_from__Int32( RogueToken_List* THIS, RogueInt32 index_0 )
+RogueToken_List* RogueToken_List__discard_from__Int32( RogueToken_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassToken*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -28732,6 +28734,7 @@ void RogueToken_List__discard_from__Int32( RogueToken_List* THIS, RogueInt32 ind
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueToken_List*)(THIS);
 }
 
 RogueClassToken* RogueToken_List__last( RogueToken_List* THIS )
@@ -32318,7 +32321,7 @@ RogueType_List* RogueType_List__clear( RogueType_List* THIS )
   return (RogueType_List*)(THIS);
 }
 
-void RogueType_List__discard_from__Int32( RogueType_List* THIS, RogueInt32 index_0 )
+RogueType_List* RogueType_List__discard_from__Int32( RogueType_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassType*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -32328,6 +32331,7 @@ void RogueType_List__discard_from__Int32( RogueType_List* THIS, RogueInt32 index
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueType_List*)(THIS);
 }
 
 RogueType_List* RogueType_List__insert__Type_Int32( RogueType_List* THIS, RogueClassType* value_0, RogueInt32 before_index_1 )
@@ -33300,7 +33304,7 @@ RogueProperty_List* RogueProperty_List__clear( RogueProperty_List* THIS )
   return (RogueProperty_List*)(THIS);
 }
 
-void RogueProperty_List__discard_from__Int32( RogueProperty_List* THIS, RogueInt32 index_0 )
+RogueProperty_List* RogueProperty_List__discard_from__Int32( RogueProperty_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassProperty*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -33310,6 +33314,7 @@ void RogueProperty_List__discard_from__Int32( RogueProperty_List* THIS, RogueInt
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueProperty_List*)(THIS);
 }
 
 RogueOptionalInt32 RogueProperty_List__locate__Property( RogueProperty_List* THIS, RogueClassProperty* value_0 )
@@ -33746,7 +33751,7 @@ RogueMethod_List* RogueMethod_List__clear( RogueMethod_List* THIS )
   return (RogueMethod_List*)(THIS);
 }
 
-void RogueMethod_List__discard_from__Int32( RogueMethod_List* THIS, RogueInt32 index_0 )
+RogueMethod_List* RogueMethod_List__discard_from__Int32( RogueMethod_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassMethod*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -33756,6 +33761,7 @@ void RogueMethod_List__discard_from__Int32( RogueMethod_List* THIS, RogueInt32 i
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueMethod_List*)(THIS);
 }
 
 RogueMethod_List* RogueMethod_List__insert__Method_Int32( RogueMethod_List* THIS, RogueClassMethod* value_0, RogueInt32 before_index_1 )
@@ -34720,7 +34726,7 @@ RogueLocal_List* RogueLocal_List__clear( RogueLocal_List* THIS )
   return (RogueLocal_List*)(THIS);
 }
 
-void RogueLocal_List__discard_from__Int32( RogueLocal_List* THIS, RogueInt32 index_0 )
+RogueLocal_List* RogueLocal_List__discard_from__Int32( RogueLocal_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassLocal*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -34730,6 +34736,7 @@ void RogueLocal_List__discard_from__Int32( RogueLocal_List* THIS, RogueInt32 ind
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueLocal_List*)(THIS);
 }
 
 RogueLocal_List* RogueLocal_List__reserve__Int32( RogueLocal_List* THIS, RogueInt32 additional_count_0 )
@@ -35054,14 +35061,14 @@ RogueCmd_List* RogueCmd_List__clear( RogueCmd_List* THIS )
   return (RogueCmd_List*)(THIS);
 }
 
-void RogueCmd_List__discard__Int32_Int32( RogueCmd_List* THIS, RogueInt32 i1_0, RogueInt32 n_1 )
+RogueCmd_List* RogueCmd_List__discard__Int32_Int32( RogueCmd_List* THIS, RogueInt32 i1_0, RogueInt32 n_1 )
 {
   RogueInt32 i2_2 = ((i1_0 + n_1));
   RogueArray_set(THIS->data,i1_0,((RogueArray*)(THIS->data)),i2_2,(THIS->count - i2_2));
-  RogueCmd_List__discard_from__Int32( ROGUE_ARG(THIS), ROGUE_ARG((THIS->count - n_1)) );
+  return (RogueCmd_List*)(((RogueCmd_List__discard_from__Int32( ROGUE_ARG(THIS), ROGUE_ARG((THIS->count - n_1)) ))));
 }
 
-void RogueCmd_List__discard_from__Int32( RogueCmd_List* THIS, RogueInt32 index_0 )
+RogueCmd_List* RogueCmd_List__discard_from__Int32( RogueCmd_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassCmd*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -35071,6 +35078,7 @@ void RogueCmd_List__discard_from__Int32( RogueCmd_List* THIS, RogueInt32 index_0
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueCmd_List*)(THIS);
 }
 
 RogueCmd_List* RogueCmd_List__insert__Cmd_Int32( RogueCmd_List* THIS, RogueClassCmd* value_0, RogueInt32 before_index_1 )
@@ -35219,7 +35227,7 @@ RogueCmdLabel_List* RogueCmdLabel_List__clear( RogueCmdLabel_List* THIS )
   return (RogueCmdLabel_List*)(THIS);
 }
 
-void RogueCmdLabel_List__discard_from__Int32( RogueCmdLabel_List* THIS, RogueInt32 index_0 )
+RogueCmdLabel_List* RogueCmdLabel_List__discard_from__Int32( RogueCmdLabel_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassCmdLabel*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -35229,6 +35237,7 @@ void RogueCmdLabel_List__discard_from__Int32( RogueCmdLabel_List* THIS, RogueInt
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueCmdLabel_List*)(THIS);
 }
 
 RogueCmdLabel_List* RogueCmdLabel_List__reserve__Int32( RogueCmdLabel_List* THIS, RogueInt32 additional_count_0 )
@@ -41412,7 +41421,7 @@ RogueInt32 RogueCmdNamedArg_List__capacity( RogueCmdNamedArg_List* THIS )
   return (RogueInt32)(THIS->data->count);
 }
 
-void RogueCmdNamedArg_List__discard_from__Int32( RogueCmdNamedArg_List* THIS, RogueInt32 index_0 )
+RogueCmdNamedArg_List* RogueCmdNamedArg_List__discard_from__Int32( RogueCmdNamedArg_List* THIS, RogueInt32 index_0 )
 {
   ROGUE_DEF_LOCAL_REF(RogueClassCmdNamedArg*,zero_value_1,0);
   RogueInt32 c_2 = (THIS->count);
@@ -41422,6 +41431,7 @@ void RogueCmdNamedArg_List__discard_from__Int32( RogueCmdNamedArg_List* THIS, Ro
     THIS->data->objects[c_2] = zero_value_1;
   }
   THIS->count = c_2;
+  return (RogueCmdNamedArg_List*)(THIS);
 }
 
 RogueOptionalInt32 RogueCmdNamedArg_List__locate__CmdNamedArg( RogueCmdNamedArg_List* THIS, RogueClassCmdNamedArg* value_0 )
@@ -59414,7 +59424,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.12", 9 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.13", 9 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "June 6, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
