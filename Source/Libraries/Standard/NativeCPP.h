@@ -234,27 +234,21 @@ T rogue_ptr (T p)
 //  Basics (Primitive types, macros, etc.)
 //-----------------------------------------------------------------------------
 #if defined(ROGUE_PLATFORM_WINDOWS)
-  typedef double           RogueReal;
-  typedef float            RogueFloat;
-  typedef __int64          RogueLong;
-  typedef __int32          RogueInt32;
   typedef double           RogueReal64;
   typedef float            RogueReal32;
   typedef __int64          RogueInt64;
   typedef __int32          RogueInt32;
   typedef unsigned __int32 RogueCharacter;
+  typedef unsigned __int16 RogueWord;
   typedef unsigned char    RogueByte;
   typedef bool             RogueLogical;
 #else
-  typedef double           RogueReal;
-  typedef float            RogueFloat;
-  typedef int64_t          RogueLong;
-  typedef int32_t          RogueInt32;
   typedef double           RogueReal64;
   typedef float            RogueReal32;
   typedef int64_t          RogueInt64;
   typedef int32_t          RogueInt32;
   typedef uint32_t         RogueCharacter;
+  typedef uint16_t         RogueWord;
   typedef uint8_t          RogueByte;
   typedef bool             RogueLogical;
 #endif

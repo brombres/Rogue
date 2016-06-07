@@ -40,6 +40,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [RogueC] An unresolved method call involving named args now prints out the candidate method parameter names.
 - [C++] Further modified C++ try/catch macros to allow polymorphically compatible catches.
 - [C++] Renamed native array data pointers from `reals/floats/longs/integers` to `real64_values/real32_values/int64_values/int32_values`.
+- [C++] Added typedef for `RogueWord` as a 16-bit unsigned integer.
 
 ###v1.0.63 - May 28, 2016
 - [Rogue] Conversion methods (`method to->String`) can now accept parameters on definition (`method to->String(arg:Int32)`) and on call (`st = obj->String(x)`).
