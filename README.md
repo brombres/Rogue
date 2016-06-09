@@ -26,7 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.64 - June 6, 2016
+###v1.0.64 - June 8, 2016
+- [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to include native headers IF the currrent class is used in the program.
+- [Rogue] Modify and assign operator (example: `+=`) now work on list and array element accesses.  Note that the element access is cloned, so `list[i] += x` becomes `list[i] = list[i] + x` and ultimately `list.set( i, list.get(i) + x )`.
 - [API] Reworked `List(initial_capacity:Int32,initial_value:$DataType)` to be much faster by copying the initial value directly into the backing array instead of repeatedly adding it.
 - [API] All List `discard` methods now return `this` list.
 - [API] Improved `create()` and `to->String()` methods of `TimeInterval` class.
@@ -35,7 +37,6 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `clamped(Int32?,Int32?)` to `Real64` and `Real32` since `Int32` parameters cannot be automatically cast to `Real64?`.
 - [API] Added `Real32.to->String`.
 - [API] `File` tweaks - primarily renamed `absolute_filepaths` for `listing()` to be `absolute` instead etc.
-- [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to include native headers IF the currrent class is used in the program.
 - [RogueC] Fixed method template bug - methods added to already resolved classes are now resolved as well.
 - [RogueC] An unresolved method call involving named args now prints out the candidate method parameter names.
 - [C++] Further modified C++ try/catch macros to allow polymorphically compatible catches.

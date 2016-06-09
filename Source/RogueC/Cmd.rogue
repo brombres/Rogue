@@ -2076,6 +2076,25 @@ class CmdElementAccess : Cmd
         return result
       endIf
 
+    method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
+      local cmd : Cmd
+      which (op)
+        case TokenType.symbol_ampersand_equals:    cmd = CmdBitwiseAnd( t, this, new_value )
+        case TokenType.symbol_caret_equals:        cmd = CmdPower( t, this, new_value )
+        #case TokenType.symbol_dot_equals:          cmd = CmdAccess( t, this, name, new_value )
+        case TokenType.symbol_minus_equals:        cmd = CmdSubtract( t, this, new_value )
+        case TokenType.symbol_percent_equals:      cmd = CmdMod( t, this, new_value )
+        case TokenType.symbol_plus_equals:         cmd = CmdAdd( t, this, new_value )
+        case TokenType.symbol_slash_equals:        cmd = CmdDivide( t, this, new_value )
+        case TokenType.symbol_tilde_equals:        cmd = CmdBitwiseXor( t, this, new_value )
+        case TokenType.symbol_times_equals:        cmd = CmdMultiply( t, this, new_value )
+        case TokenType.symbol_vertical_bar_equals: cmd = CmdBitwiseOr( t, this, new_value )
+        others
+          @trace
+          throw t.error( "[INTERNAL]" )
+      endWhich
+      return CmdAssign( t, this.cloned, cmd ).resolve( scope )
+
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
       return cloned.resolve_assignment( scope, CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
 
