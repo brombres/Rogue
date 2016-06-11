@@ -346,9 +346,11 @@ class Program [requisite singleton]
         forEach (plugin in RogueC.plugins)
           if (plugin.generate_additional_types) resolve_types = true
         endForEach
-      endWhile
 
-      cull_unused_code
+        if (not resolve_types)
+          if (not cull_unused_code) resolve_types = true
+        endIf
+      endWhile
 
       reorder_compounds
 
@@ -408,12 +410,25 @@ class Program [requisite singleton]
       endForEach
       compounds.add( type )
 
-    method cull_unused_code
+    method cull_unused_code->Logical
+      # Returns true if culling complete or false if a new dependency injection means
+      # we need to go back and resolve new types.
       forEach (type in type_list)
         if (type.is_requisite) type.trace_used_code
       endForEach
 
       trace_overridden_methods
+
+      # Activate any dependencies - native code, requisites
+      local injected_dependencies = false
+      forEach (type in type_list)
+        if (type.is_used and type.dependencies)
+          injected_dependencies = true
+          type.dependencies.resolve( Scope(type,null) )
+          type.dependencies = null
+        endIf
+      endForEach
+      if (injected_dependencies) return false
 
       forEach (type in type_list)
         type.cull_unused_methods
@@ -429,6 +444,8 @@ class Program [requisite singleton]
         endIf
       endForEach
       type_list.discard_from( write_i )
+
+      return true
 
     method trace_overridden_methods
       # When we have "s = Circle() : Shape; println s.area()", only Shape.area()

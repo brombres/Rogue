@@ -57,6 +57,8 @@ class Type
 
     method_templates = MethodTemplates(this)
 
+    dependencies : CmdStatementList
+
   METHODS
     method init( t, name )
 

@@ -26,8 +26,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.64 - June 8, 2016
-- [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to include native headers IF the currrent class is used in the program.
+###v1.0.64 - June 11, 2016
+- [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to inject native code and mark classes and methods as requisite IF the currrent class is used in the program.
 - [Rogue] Modify and assign operator (example: `+=`) now work on list and array element accesses.  Note that the element access is cloned, so `list[i] += x` becomes `list[i] = list[i] + x` and ultimately `list.set( i, list.get(i) + x )`.
 - [API] Reworked `List(initial_capacity:Int32,initial_value:$DataType)` to be much faster by copying the initial value directly into the backing array instead of repeatedly adding it.
 - [API] All List `discard` methods now return `this` list.

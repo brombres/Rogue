@@ -511,7 +511,7 @@ class Parser
       consume_eols
 
       if (consume(TokenType.keyword_DEPENDENCIES))
-        while (parse_class_level_element) noAction
+        while (parse_dependency) noAction
         return true
       endIf
 
@@ -1344,9 +1344,22 @@ class Parser
       must_consume( TokenType.keyword_endWhich )
       return cmd_which
 
-    method parse_class_level_element->Logical
+    method parse_dependency->Logical
       if (parse_unit_test) return true
-      return parse_native_element
+
+      consume_eols
+
+      if (next_is(TokenType.keyword_nativeHeader) or
+          next_is(TokenType.keyword_nativeCode) or
+          next_is(TokenType.directive_requisite))
+        ensure this_type.dependencies
+        parse_statement( this_type.dependencies, false )
+        return true
+
+      else
+        return false
+      endIf
+
 
     method parse_unit_test->Logical
       consume_eols
@@ -1376,7 +1389,6 @@ class Parser
 
     method parse_native_element->Logical
       consume_eols
-
       local t = peek
 
       if (consume(TokenType.keyword_nativeHeader))
