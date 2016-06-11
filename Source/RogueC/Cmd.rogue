@@ -2149,8 +2149,9 @@ class CmdCreateCompound : Cmd
         if (not p.is_native) ++non_native_property_count
       endForEach
 
+      local i = args.count
       while (args.count < non_native_property_count)
-        local p = of_type.property_list[args.count]
+        local p = of_type.property_list[i]
         if (not p.is_native)
           if (p.initial_value)
             args.add( p.initial_value.cloned.resolve(scope) )
@@ -2158,6 +2159,7 @@ class CmdCreateCompound : Cmd
             args.add( p.type.create_default_value(t) )
           endIf
         endIf
+        ++i
       endWhile
 
       args.resolve( scope )

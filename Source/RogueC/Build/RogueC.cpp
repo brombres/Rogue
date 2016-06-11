@@ -53476,31 +53476,33 @@ RogueClassCmd* RogueCmdCreateCompound__resolve__Scope( RogueClassCmdCreateCompou
   }
   RogueInt32 non_native_property_count_1 = (0);
   {
-    ROGUE_DEF_LOCAL_REF(RogueProperty_List*,_auto_3418_3,(THIS->_of_type->property_list));
-    RogueInt32 _auto_3419_4 = (0);
-    for (;_auto_3419_4 < _auto_3418_3->count;++_auto_3419_4)
+    ROGUE_DEF_LOCAL_REF(RogueProperty_List*,_auto_3418_4,(THIS->_of_type->property_list));
+    RogueInt32 _auto_3419_5 = (0);
+    for (;_auto_3419_5 < _auto_3418_4->count;++_auto_3419_5)
     {
-      ROGUE_DEF_LOCAL_REF(RogueClassProperty*,p_5,(((RogueClassProperty*)(_auto_3418_3->data->as_objects[_auto_3419_4]))));
-      if (!(((RogueProperty__is_native( p_5 )))))
+      ROGUE_DEF_LOCAL_REF(RogueClassProperty*,p_6,(((RogueClassProperty*)(_auto_3418_4->data->as_objects[_auto_3419_5]))));
+      if (!(((RogueProperty__is_native( p_6 )))))
       {
         ++non_native_property_count_1;
       }
     }
   }
+  RogueInt32 i_2 = (THIS->args->count);
   while (THIS->args->count < non_native_property_count_1)
   {
-    ROGUE_DEF_LOCAL_REF(RogueClassProperty*,p_2,(((RogueClassProperty*)(THIS->_of_type->property_list->data->as_objects[THIS->args->count]))));
-    if (!(((RogueProperty__is_native( p_2 )))))
+    ROGUE_DEF_LOCAL_REF(RogueClassProperty*,p_3,(((RogueClassProperty*)(THIS->_of_type->property_list->data->as_objects[i_2]))));
+    if (!(((RogueProperty__is_native( p_3 )))))
     {
-      if (!!(p_2->initial_value))
+      if (!!(p_3->initial_value))
       {
-        RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->args)), ROGUE_ARG((call_ROGUEM126( 34, ROGUE_ARG((call_ROGUEM128( 13, ROGUE_ARG(p_2->initial_value), ROGUE_ARG(((RogueClassCloneArgs*)(NULL))) ))), scope_0 ))) );
+        RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->args)), ROGUE_ARG((call_ROGUEM126( 34, ROGUE_ARG((call_ROGUEM128( 13, ROGUE_ARG(p_3->initial_value), ROGUE_ARG(((RogueClassCloneArgs*)(NULL))) ))), scope_0 ))) );
       }
       else
       {
-        RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->args)), ROGUE_ARG(((RogueType__create_default_value__Token( ROGUE_ARG(p_2->_type), ROGUE_ARG(THIS->t) )))) );
+        RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->args)), ROGUE_ARG(((RogueType__create_default_value__Token( ROGUE_ARG(p_3->_type), ROGUE_ARG(THIS->t) )))) );
       }
     }
+    ++i_2;
   }
   RogueCmdArgs__resolve__Scope( ROGUE_ARG(THIS->args), scope_0 );
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
@@ -59574,7 +59576,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.18", 9 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.64.19", 9 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "June 11, 2016", 13 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
