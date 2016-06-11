@@ -1518,14 +1518,7 @@ augment Type
       if (is_compound)
         if (property_list.count)
           # Default Constructor
-          writer.print( this ).print( "() : " )
-          local first = true
-          forEach (p in property_list)
-            if (first) first = false
-            else       writer.print( ", " )
-            writer.print( p.cpp_name ).print("(").print_default_value(p.type).print(")")
-          endForEach
-          writer.println( " {}" )
+          writer.print( this ).print( "() { memset( this, 0, sizeof(" ).print( this ).println( ") ); }" )
           writer.println
 
           if (is_optional)
@@ -1534,22 +1527,62 @@ augment Type
             writer.println( " value, bool exists=true ) : value(value), exists(exists) {}" )
           else
             # Standard Constructor
-            writer.print( this ).print( "( " )
-            first = true
-            forEach (p in property_list)
-              if (first) first = false
-              else       writer.print( ", " )
-              writer.print( p.type ).print(" ").print( p.cpp_name )
-            endForEach
-            writer.print( " ) : " )
-            first = true
-            forEach (p in property_list)
-              if (first) first = false
-              else       writer.print( ", " )
-              writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
-            endForEach
-            writer.println( " {}" )
-            writer.println
+            local native_property_count = 0
+            contingent
+              forEach (p in property_list)
+                if (p.is_native) ++native_property_count
+              endForEach
+              necessary (native_property_count == 0)
+
+            satisfied
+              # No native properties - use property initializer syntax
+              writer.print( this ).print( "( " )
+              local first = true
+              forEach (p in property_list)
+                if (first) first = false
+                else       writer.print( ", " )
+                writer.print( p.type ).print(" ").print( p.cpp_name )
+              endForEach
+              writer.print( " ) : " )
+              first = true
+              forEach (p in property_list)
+                if (first) first = false
+                else       writer.print( ", " )
+                writer.print( p.cpp_name ).print("(").print( p.cpp_name ).print(")")
+              endForEach
+              writer.println( " {}" )
+              writer.println
+
+            unsatisfied
+              # Native properties - start with a memset and then assign non-native properties individually.
+              # If there are no non-native properties then just skip this entirely.
+              if (native_property_count != property_list.count)
+                writer.print( this ).print( "( " )
+                local first = true
+                forEach (p in property_list)
+                  if (not p.is_native)
+                    if (first) first = false
+                    else       writer.print( ", " )
+                    writer.print( p.type ).print(" ").print( p.cpp_name )
+                  endIf
+                endForEach
+                writer.println( " )" )
+                writer.println( "{" )
+                writer.indent += 2
+
+                writer.print( "memset( this, 0, sizeof(" ).print( this ).println( ") );" )
+
+                forEach (p in property_list)
+                  if (not p.is_native)
+                    writer.print( "this->" ).print( p.cpp_name ).print(" = ").print( p.cpp_name ).println(";")
+                  endIf
+                endForEach
+
+                writer.indent -= 2
+                writer.println( "}" )
+                writer.println
+              endIf
+            endContingent
           endIf
         endIf
 
@@ -1557,8 +1590,8 @@ augment Type
           # Default operator== and operator!=
           writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
           writer.println( "{" )
+          writer.indent += 2
           if (is_optional)
-            writer.indent += 2
             writer.println @|if (exists)
                             |{
                             |  if (other.exists) return value == other.value;
@@ -1569,13 +1602,10 @@ augment Type
                             |  if (other.exists) return false;
                             |  else              return true;
                             |}
-            writer.indent -= 2
           else
-            forEach (p in property_list)
-              writer.print( "  if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
-            endForEach
-            writer.println( "  return true;" )
+            writer.print( "return (0 == memcmp(this,&other,sizeof(" ).print( this ).println( ")));" )
           endIf
+          writer.indent -= 2
           writer.println( "}" )
           writer.println
 

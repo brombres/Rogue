@@ -2142,15 +2142,24 @@ class CmdCreateCompound : Cmd
 
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
-      if (args is null) args = CmdArgs()
-      while (args.count < of_type.property_list.count)
+      ensure args
+
+      local non_native_property_count = 0
+      forEach (p in of_type.property_list)
+        if (not p.is_native) ++non_native_property_count
+      endForEach
+
+      while (args.count < non_native_property_count)
         local p = of_type.property_list[args.count]
-        if (p.initial_value)
-          args.add( p.initial_value.cloned.resolve(scope) )
-        else
-          args.add( p.type.create_default_value(t) )
+        if (not p.is_native)
+          if (p.initial_value)
+            args.add( p.initial_value.cloned.resolve(scope) )
+          else
+            args.add( p.type.create_default_value(t) )
+          endIf
         endIf
       endWhile
+
       args.resolve( scope )
       return this
 
