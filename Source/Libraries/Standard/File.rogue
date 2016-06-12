@@ -496,6 +496,9 @@ class File
     method size->Int32 [macro]
       File.size( this.filepath )
 
+    method timestamp->Real64 [macro]
+      File.timestamp( this.filepath )
+
     method writer->FileWriter [macro]
       File.writer( this.filepath )
 

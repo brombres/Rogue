@@ -4872,12 +4872,13 @@ class CmdSelectCase : Cmd
   PROPERTIES
     conditions : Cmd[]
     value      : Cmd
+    local_info : Local
 
   METHODS
-    method init( t, conditions=Cmd[](1), value=null )
+    method init( t, conditions=Cmd[](1), value=null, local_info=null )
 
     method cloned( clone_args:CloneArgs )->CmdSelectCase
-      local result = CmdSelectCase( t, null, cloned(value,clone_args) )
+      local result = CmdSelectCase( t, null, cloned(value,clone_args), local_info )
       result.conditions = Cmd[]( conditions.count )
       forEach (c in conditions) result.conditions.add( c.cloned(clone_args) )
       return result

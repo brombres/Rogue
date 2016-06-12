@@ -2666,6 +2666,19 @@ class Parser
           endIf
         endWhile
 
+        # Convert any `select{ x || z }` to `local temp=x; select{ x:x || z }`
+        forEach (i in 0..<cmd_select.cases.count - 1)
+          local select_case = cmd_select.cases[i]
+          if (not select_case.value)
+            local temp_var = this_method.add_local( t, Program.create_unique_id )
+            temp_var.initial_value = select_case.conditions.remove_last
+            cur_statement_list.add( CmdLocalDeclaration(t,temp_var) )
+            select_case.local_info = temp_var
+            select_case.conditions.add( CmdReadLocal(t,temp_var) )
+            select_case.value = CmdReadLocal(t,temp_var)
+          endIf
+        endForEach
+
         if (cmd_select.cases.last.conditions.count > 1)
           throw t.error( "The last part of a select{} must be a single expression." )
         elseIf (cmd_select.cases.last.value)
