@@ -43,7 +43,10 @@ class Value
     method cloned->Value
       return this
 
-    method contains( key:String )->Logical
+    method contains( table_key_or_list_value:String )->Logical
+      return false
+
+    method contains( table_key_or_list_value:Value )->Logical
       return false
 
     method count->Int32
@@ -186,6 +189,12 @@ class Value
     method last->Value
       return null
 
+    method operator==( other:Value )->Logical
+      return this is other
+
+    method operator<( other:Value )->Logical
+      return object_id < other.object_id
+
     method operator-()->Value
       return Value( 0 )
 
@@ -306,6 +315,14 @@ class Int32Value( value:Int32 ) : Value
     method is_number->Logical
       return true
 
+    method operator==( other:Value )->Logical
+      if (other.is_number) return (value == other->Real64)
+      else                 return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_number) return (value < other->Real64)
+      else                 return object_id < other.object_id
+
     method operator-()->Value
       return Int32Value( -value )
 
@@ -400,6 +417,14 @@ class Real64Value( value:Real64 ) : Value
     method is_real64->Logical
       return true
 
+    method operator==( other:Value )->Logical
+      if (other.is_number) return (value == other->Real64)
+      else                 return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_number) return (value < other->Real64)
+      else                 return object_id < other.object_id
+
     method operator-()->Value
       return Real64Value( -value )
 
@@ -488,6 +513,14 @@ class StringValue( value:String ) : Value
   METHODS
     method is_string->Logical
       return true
+
+    method operator==( other:Value )->Logical
+      if (other.is_string) return (value == other->String)
+      else                 return false
+
+    method operator<( other:Value )->Logical
+      if (other.is_string) return (value < other->String)
+      else                 return object_id < other.object_id
 
     method operator+( other:Value )->Value
       if (not other) return Value(0)
@@ -603,6 +636,24 @@ class ValueList : Value
       values.clear
       return this
 
+    method contains( value:String )->Logical
+      forEach (existing in values)
+        if (existing and existing.is_string and existing->String == value) return true
+      endForEach
+      return false
+
+    method contains( value:Value )->Logical
+      if (value isNot null)
+        forEach (existing in values)
+          if (existing and existing == value) return true
+        endForEach
+      else
+        forEach (existing in values)
+          if (existing is null) return true
+        endForEach
+      endIf
+      return false
+
     method count->Int32
       return values.count
 
@@ -711,6 +762,10 @@ class ValueTable : Value
 
     method contains( key:String )->Logical
       return values.contains( key )
+
+    method contains( key:Value )->Logical
+      if (not key or not key.is_string) return false
+      return contains( key->String )
 
     method count->Int32
       return values.count
