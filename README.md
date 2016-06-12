@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.65 - June 12, 2016
 - [Rogue] A `select` value that is both condition and result is now only evaluated once.  For example, if some sequence counter will give a next value of `1`, then `select{counter.next:counter.next || -1}` will result in `2` but `select{counter.next || -1}` will result in 1.
 - [API] Added comparison operators for `Value` types and implemented `ValueList.contains(String|Value)`.
+- [API] `ValueList/ValueTable.load(File)` now accepts a null file.
 
 ###v1.0.64 - June 11, 2016
 - [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to inject native code and mark classes and methods as requisite IF the currrent class is used in the program.

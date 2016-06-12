@@ -736,7 +736,7 @@ class ValueList : Value
 
     GLOBAL METHODS
       method load( file:File )->ValueList
-        if (not file.exists) return ValueList()
+        if (not file or not file.exists) return ValueList()
         return JSON.parse_list( file.load_as_string )
 
       method parse( json:String )->ValueList
@@ -854,7 +854,7 @@ class ValueTable : Value
 
     GLOBAL METHODS
       method load( file:File )->ValueTable
-        if (not file.exists) return ValueTable()
+        if (not file or not file.exists) return ValueTable()
         return JSON.parse_table( file.load_as_string )
 
       method parse( json:String )->ValueTable
