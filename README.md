@@ -32,6 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [RogueC] Fixed extended classes to call `prior.init_object()` before instead of after assigning their own initial property values.  This allows initial property values to be overridden in extended classes.
 - [API] Added comparison operators for `Value` types and implemented `ValueList.contains(String|Value)`.
 - [API] `ValueList/ValueTable.load(File)` now accepts a null file.
+- [API] Renamed introspection methods `PropertyInfo.property_name()` and `PropertyInfo.property_type_info()` to be `name()` and `type()` instead.
 
 ###v1.0.64 - June 11, 2016
 - [Rogue] Renamed `CLASS` section to `DEPENDENCIES`.  Use to inject native code and mark classes and methods as requisite IF the currrent class is used in the program.

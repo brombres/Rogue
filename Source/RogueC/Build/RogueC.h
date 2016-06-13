@@ -4881,8 +4881,8 @@ RogueClassPropertyInfo* RoguePropertyInfo__init_object( RogueClassPropertyInfo* 
 RogueString* RoguePropertyInfo__to_String( RogueClassPropertyInfo* THIS );
 RogueString* RoguePropertyInfo__type_name( RogueClassPropertyInfo* THIS );
 RogueClassPropertyInfo* RoguePropertyInfo__init__Int32_Int32( RogueClassPropertyInfo* THIS, RogueInt32 _auto_21_0, RogueInt32 _auto_22_1 );
-RogueString* RoguePropertyInfo__property_name( RogueClassPropertyInfo* THIS );
-RogueTypeInfo* RoguePropertyInfo__property_type_info( RogueClassPropertyInfo* THIS );
+RogueString* RoguePropertyInfo__name( RogueClassPropertyInfo* THIS );
+RogueTypeInfo* Rogue_PropertyInfo__type( RogueClassPropertyInfo* THIS );
 RogueString* RogueArray_PropertyInfo___type_name( RogueArray* THIS );
 RogueStringBuilder* RogueStringBuilder__init_object( RogueStringBuilder* THIS );
 RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS );

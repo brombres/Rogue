@@ -40,7 +40,7 @@ class TypeInfo [requisite]
 
     method global_property_name( global_property_index:Int32 )->String
       # Convenience method to provide symmetric interface with per-object `property_name` methods.
-      return global_properties[ global_property_index ].property_name
+      return global_properties[ global_property_index ].name
 
     method is_aspect->Logical
       return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_ASPECT" )->Logical
@@ -86,14 +86,14 @@ class PropertyInfo
   METHODS
     method init( property_name_index, property_type_index )
 
-    method property_name->String
+    method name->String
       return Runtime.literal_string( property_name_index )
 
-    method property_type_info->TypeInfo
+    method type->TypeInfo
       return Runtime.type_info( property_type_index )
 
     method to->String
-      return "$:$" (property_name,property_type_info.name)
+      return "$:$" (name,type.name)
 
 endClass
 

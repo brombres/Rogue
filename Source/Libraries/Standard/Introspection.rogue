@@ -15,7 +15,7 @@ class CompoundIntrospection [aspect]
       return type_info.properties.count
 
     method property_name( index:Int32 )->String
-      return type_info.properties[ index ].property_name
+      return type_info.properties[ index ].name
 
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
       forEach (i in 0..<property_count)
