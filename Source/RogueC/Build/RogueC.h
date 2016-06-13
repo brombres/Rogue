@@ -1194,7 +1194,7 @@ extern RogueClassTokenType* RogueTokenType_keyword_step;
 extern RogueClassTokenType* RogueTokenType_keyword_sufficient;
 extern RogueClassTokenType* RogueTokenType_keyword_throw;
 extern RogueClassTokenType* RogueTokenType_keyword_trace;
-extern RogueClassTokenType* RogueTokenType_keyword_trace_position;
+extern RogueClassTokenType* RogueTokenType_keyword_trace_args_only;
 extern RogueClassTokenType* RogueTokenType_keyword_try;
 extern RogueClassTokenType* RogueTokenType_keyword_unitTest;
 extern RogueClassTokenType* RogueTokenType_keyword_which;

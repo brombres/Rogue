@@ -2976,7 +2976,7 @@ RogueClassTokenType* RogueTokenType_keyword_step = 0;
 RogueClassTokenType* RogueTokenType_keyword_sufficient = 0;
 RogueClassTokenType* RogueTokenType_keyword_throw = 0;
 RogueClassTokenType* RogueTokenType_keyword_trace = 0;
-RogueClassTokenType* RogueTokenType_keyword_trace_position = 0;
+RogueClassTokenType* RogueTokenType_keyword_trace_args_only = 0;
 RogueClassTokenType* RogueTokenType_keyword_try = 0;
 RogueClassTokenType* RogueTokenType_keyword_unitTest = 0;
 RogueClassTokenType* RogueTokenType_keyword_which = 0;
@@ -8431,7 +8431,7 @@ void Rogue_trace()
   if ((link=RogueTokenType_keyword_sufficient)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_throw)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_trace)) ((RogueObject*)link)->type->trace_fn( link );
-  if ((link=RogueTokenType_keyword_trace_position)) ((RogueObject*)link)->type->trace_fn( link );
+  if ((link=RogueTokenType_keyword_trace_args_only)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_try)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_unitTest)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_which)) ((RogueObject*)link)->type->trace_fn( link );
@@ -18117,7 +18117,7 @@ void* Rogue_global_property_pointers[] =
   (void*) &RogueTokenType_keyword_sufficient,
   (void*) &RogueTokenType_keyword_throw,
   (void*) &RogueTokenType_keyword_trace,
-  (void*) &RogueTokenType_keyword_trace_position,
+  (void*) &RogueTokenType_keyword_trace_args_only,
   (void*) &RogueTokenType_keyword_try,
   (void*) &RogueTokenType_keyword_unitTest,
   (void*) &RogueTokenType_keyword_which,
@@ -26359,9 +26359,9 @@ void RogueParser__parse_statement__CmdStatementList_Logical( RogueClassParser* T
   {
     return;
   }
-  else if ((((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_trace) ))) || ((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_trace_position) )))))
+  else if ((((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_trace) ))) || ((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_trace_args_only) )))))
   {
-    RogueLogical include_position_4 = (((void*)t_2->_type) == ((void*)RogueTokenType_keyword_trace_position));
+    RogueLogical exclude_position_4 = (((void*)t_2->_type) == ((void*)RogueTokenType_keyword_trace_args_only));
     ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,buffer_5,(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))));
     RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__Character_Logical( buffer_5, (RogueCharacter)'[', true )))), ROGUE_ARG(THIS->_this_type->name) );
     if (!!(THIS->this_method))
@@ -26378,13 +26378,13 @@ void RogueParser__parse_statement__CmdStatementList_Logical( RogueClassParser* T
     {
       if (first_9)
       {
-        if (include_position_4)
+        if (exclude_position_4)
         {
-          RogueStringBuilder__print__String( buffer_5, Rogue_literal_strings[329] );
+          RogueStringBuilder__clear( buffer_5 );
         }
         else
         {
-          RogueStringBuilder__clear( buffer_5 );
+          RogueStringBuilder__print__String( buffer_5, Rogue_literal_strings[329] );
         }
       }
       first_9 = ((RogueLogical)false);
@@ -26421,7 +26421,7 @@ void RogueParser__parse_statement__CmdStatementList_Logical( RogueClassParser* T
         }
       }
     }
-    if ((include_position_4 && !!(args_7->count)))
+    if ((!(exclude_position_4) && !!(args_7->count)))
     {
       RogueStringBuilder__insert_spaces__Int32_Int32( buffer_5, data_pos_6, ROGUE_ARG((((data_pos_6 + 3) & -4) - data_pos_6)) );
     }
@@ -44032,7 +44032,7 @@ void RogueTokenizer__configure_token_types( RogueClassTokenizer* THIS )
   RogueTokenType_keyword_sufficient = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[180] )))) )));
   RogueTokenType_keyword_throw = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[181] )))) )));
   RogueTokenType_keyword_trace = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[182] )))) )));
-  RogueTokenType_keyword_trace_position = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[183] )))) )));
+  RogueTokenType_keyword_trace_args_only = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[183] )))) )));
   RogueTokenType_keyword_try = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[184] )))) )));
   RogueTokenType_keyword_unitTest = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[185] )))) )));
   RogueTokenType_keyword_which = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTokenType*,ROGUE_CREATE_OBJECT(TokenType))), Rogue_literal_strings[186] )))) )));
@@ -44440,7 +44440,7 @@ RogueClassTokenType* Rogue_Tokenizer__get_symbol_token_type( RogueClassTokenizer
   {
     if (((RogueTokenizer__consume_id__String( ROGUE_ARG(THIS), Rogue_literal_strings[182] ))))
     {
-      return (RogueClassTokenType*)(RogueTokenType_keyword_trace_position);
+      return (RogueClassTokenType*)(RogueTokenType_keyword_trace_args_only);
     }
     if (((RogueTokenizer__consume__Character( ROGUE_ARG(THIS), (RogueCharacter)'{' ))))
     {
@@ -59613,7 +59613,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.65.2", 8 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.65.3", 8 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "June 12, 2016", 13 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
@@ -60089,7 +60089,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[519] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>.", 81 ) ); 
   Rogue_literal_strings[520] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Array<<", 7 ) ); 
   Rogue_literal_strings[521] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "init()", 6 ) ); 
-  Rogue_literal_strings[522] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Method.validate() Method.rogue:478]    this:", 45 ) ); 
+  Rogue_literal_strings[522] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "this:", 5 ) ); 
   Rogue_literal_strings[523] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( " index:", 7 ) ); 
   Rogue_literal_strings[524] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( " overridden_method:", 19 ) ); 
   Rogue_literal_strings[525] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( " overridden_method.index:", 25 ) ); 
@@ -60758,7 +60758,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1188] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( " because the method is not an override - no prior version of it exists.", 71 ) ); 
   Rogue_literal_strings[1189] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "StringTable<<Stopwatch>>", 24 ) ); 
   Rogue_literal_strings[1190] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Function_866", 12 ) ); 
-  Rogue_literal_strings[1191] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[RogueC.process_command_line_arguments() RogueC.rogue:416]  All types resolved - generate additional types?", 107 ) ); 
+  Rogue_literal_strings[1191] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "All types resolved - generate additional types?", 47 ) ); 
   Rogue_literal_strings[1192] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Alpha", 5 ) ); 
   Rogue_literal_strings[1193] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "class Alpha [requisite singleton]\n  METHODS\n    method init\n      @trace \"Alpha singleton instantiated!\"\nendClass", 113 ) ); 
   Rogue_literal_strings[1194] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Yes - compiling type Alpha:", 27 ) ); 
@@ -61067,7 +61067,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1497] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_sufficient", 18 ) ); 
   Rogue_literal_strings[1498] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_throw", 13 ) ); 
   Rogue_literal_strings[1499] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_trace", 13 ) ); 
-  Rogue_literal_strings[1500] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_trace_position", 22 ) ); 
+  Rogue_literal_strings[1500] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_trace_args_only", 23 ) ); 
   Rogue_literal_strings[1501] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_try", 11 ) ); 
   Rogue_literal_strings[1502] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_unitTest", 16 ) ); 
   Rogue_literal_strings[1503] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_which", 13 ) ); 

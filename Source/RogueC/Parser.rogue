@@ -1074,8 +1074,8 @@ class Parser
         noAction
         return
 
-      elseIf (consume(TokenType.keyword_trace) or consume(TokenType.keyword_trace_position))
-        local include_position = (t.type is TokenType.keyword_trace_position)
+      elseIf (consume(TokenType.keyword_trace) or consume(TokenType.keyword_trace_args_only))
+        local exclude_position = (t.type is TokenType.keyword_trace_args_only)
 
         local buffer = StringBuilder()
         buffer.print('[').print( this_type.name )
@@ -1089,10 +1089,10 @@ class Parser
         local first = true
         while (reader.has_another and not next_is_end_command and (first or consume(TokenType.symbol_comma)))
           if (first)
-            if (include_position)
-              buffer.print( "  " )
-            else
+            if (exclude_position)
               buffer.clear
+            else
+              buffer.print( "  " )
             endIf
           endIf
           first = false
@@ -1125,7 +1125,7 @@ class Parser
           endIf
         endWhile
 
-        if (include_position and args.count)
+        if (not exclude_position and args.count)
           buffer.insert_spaces( data_pos, ((data_pos+3)&!3)-data_pos )
         endIf
 
