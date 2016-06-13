@@ -26,9 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.65 - June 12, 2016
+###v1.0.65 - June 13, 2016
 - [Rogue] A `select` value that is both condition and result is now only evaluated once.  For example, if some sequence counter will give a next value of `1`, then `select{counter.next:counter.next || -1}` will result in `2` but `select{counter.next || -1}` will result in 1.
 - [Rogue] Reversed the meaning of `trace` and `@trace`.  `trace` now includes the method signature, filename, and line number while `@trace` omits them.  Think Makefiles with `@` omitting output.  A trace without any arguments still prints out the location whether or not it has an `@`, just as before.
+- [RogueC] Fixed extended classes to call `prior.init_object()` before instead of after assigning their own initial property values.  This allows initial property values to be overridden in extended classes.
 - [API] Added comparison operators for `Value` types and implemented `ValueList.contains(String|Value)`.
 - [API] `ValueList/ValueTable.load(File)` now accepts a null file.
 

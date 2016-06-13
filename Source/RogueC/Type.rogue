@@ -442,10 +442,6 @@ class Type
           endIf
         endIf
         m.return_type = this
-        if (m.overridden_method)
-          m.statements.insert( CmdCallPriorMethod(t, "init_object", null, null) )
-        endIf
-        m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
         # Insert property initializations
         local i = property_list.count - 1
@@ -456,6 +452,14 @@ class Type
           endIf
           --i
         endWhile
+
+        # Insert prior.init_object()
+        if (m.overridden_method)
+          m.statements.insert( CmdCallPriorMethod(t, "init_object", null, null) )
+        endIf
+
+        # Append return this
+        m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
         m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
       endIf
