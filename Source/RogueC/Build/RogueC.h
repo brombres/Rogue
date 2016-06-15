@@ -993,6 +993,9 @@ struct RogueOptionalInt32;
 struct RogueOptionalCharacter;
 struct RogueOptionalByte;
 struct RogueClassSystemEnvironment;
+struct RogueOptionalType;
+struct RogueOptionalMethod;
+struct RogueOptionalCmd;
 
 // COMPOUND DEFINITIONS
 struct RogueOptionalInt32
@@ -1092,6 +1095,90 @@ struct RogueClassSystemEnvironment
   }
 
   bool operator!=( const RogueClassSystemEnvironment &other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+struct RogueOptionalType
+{
+  // PROPERTIES
+  ROGUE_DEF_COMPOUND_REF_PROP(RogueClassType*,value);RogueLogical exists;
+
+  RogueOptionalType() { memset( this, 0, sizeof(RogueOptionalType) ); }
+
+  RogueOptionalType( RogueClassType* value, bool exists=true ) : value(value), exists(exists) {}
+  bool operator==( const RogueOptionalType &other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalType &other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+struct RogueOptionalMethod
+{
+  // PROPERTIES
+  ROGUE_DEF_COMPOUND_REF_PROP(RogueClassMethod*,value);RogueLogical exists;
+
+  RogueOptionalMethod() { memset( this, 0, sizeof(RogueOptionalMethod) ); }
+
+  RogueOptionalMethod( RogueClassMethod* value, bool exists=true ) : value(value), exists(exists) {}
+  bool operator==( const RogueOptionalMethod &other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalMethod &other ) const
+  {
+    return !(*this == other);
+  }
+};
+
+struct RogueOptionalCmd
+{
+  // PROPERTIES
+  ROGUE_DEF_COMPOUND_REF_PROP(RogueClassCmd*,value);RogueLogical exists;
+
+  RogueOptionalCmd() { memset( this, 0, sizeof(RogueOptionalCmd) ); }
+
+  RogueOptionalCmd( RogueClassCmd* value, bool exists=true ) : value(value), exists(exists) {}
+  bool operator==( const RogueOptionalCmd &other ) const
+  {
+    if (exists)
+    {
+      if (other.exists) return value == other.value;
+      else              return false;
+    }
+    else
+    {
+      if (other.exists) return false;
+      else              return true;
+    }
+  }
+
+  bool operator!=( const RogueOptionalCmd &other ) const
   {
     return !(*this == other);
   }
@@ -4727,6 +4814,9 @@ extern RogueType* RogueTypeOptionalInt32;
 extern RogueType* RogueTypeOptionalCharacter;
 extern RogueType* RogueTypeOptionalByte;
 extern RogueType* RogueTypeSystemEnvironment;
+extern RogueType* RogueTypeOptionalType;
+extern RogueType* RogueTypeOptionalMethod;
+extern RogueType* RogueTypeOptionalCmd;
 
 // ROUTINE PROTOTYPES
 RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 );
@@ -4769,6 +4859,10 @@ void RogueQuicksort_CmdNamedArg___sort__Array_Function_CmdNamedArg_CmdNamedArg_R
 void RogueStringValue__init_class();
 RogueOptionalInt32 RogueOptionalInt32__create();
 RogueOptionalCharacter RogueOptionalCharacter__create();
+RogueOptionalByte RogueOptionalByte__create();
+RogueOptionalType RogueOptionalType__create();
+RogueOptionalMethod RogueOptionalMethod__create();
+RogueOptionalCmd RogueOptionalCmd__create();
 
 // METHOD PROTOTYPES
 RogueClassException* RogueException__init_object( RogueClassException* THIS );
@@ -5393,6 +5487,9 @@ RogueType_List* RogueType_List__cloned( RogueType_List* THIS );
 RogueType_List* RogueType_List__add__Type( RogueType_List* THIS, RogueClassType* value_0 );
 RogueInt32 RogueType_List__capacity( RogueType_List* THIS );
 RogueType_List* RogueType_List__clear( RogueType_List* THIS );
+RogueType_List* RogueType_List__ensure_capacity__Int32( RogueType_List* THIS, RogueInt32 desired_capacity_0 );
+RogueType_List* RogueType_List__expand_to_count__Int32( RogueType_List* THIS, RogueInt32 minimum_count_0 );
+RogueType_List* RogueType_List__expand_to_include__Int32( RogueType_List* THIS, RogueInt32 index_0 );
 RogueType_List* RogueType_List__discard_from__Int32( RogueType_List* THIS, RogueInt32 index_0 );
 RogueType_List* RogueType_List__insert__Type_Int32( RogueType_List* THIS, RogueClassType* value_0, RogueInt32 before_index_1 );
 RogueType_List* RogueType_List__keep__Function_Type_RETURNSLogical( RogueType_List* THIS, RogueClassFunction_Type_RETURNSLogical* fn_0 );
@@ -5401,6 +5498,7 @@ RogueOptionalInt32 RogueType_List__locate__Type( RogueType_List* THIS, RogueClas
 RogueType_List* RogueType_List__reserve__Int32( RogueType_List* THIS, RogueInt32 additional_count_0 );
 RogueClassType* RogueType_List__remove__Type( RogueType_List* THIS, RogueClassType* value_0 );
 RogueClassType* RogueType_List__remove_at__Int32( RogueType_List* THIS, RogueInt32 index_0 );
+RogueType_List* RogueType_List__shift__Int32_OptionalInt32_Int32_OptionalType( RogueType_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalType fill_3 );
 RogueType_List* RogueType_List__swap__Int32_Int32( RogueType_List* THIS, RogueInt32 i1_0, RogueInt32 i2_1 );
 RogueString* RogueArray_Type___type_name( RogueArray* THIS );
 RogueTypeSpecializer_List* RogueTypeSpecializer_List__init_object( RogueTypeSpecializer_List* THIS );
@@ -5532,6 +5630,9 @@ RogueMethod_List* RogueMethod_List__add__Method( RogueMethod_List* THIS, RogueCl
 RogueMethod_List* RogueMethod_List__add__Method_List( RogueMethod_List* THIS, RogueMethod_List* other_0 );
 RogueInt32 RogueMethod_List__capacity( RogueMethod_List* THIS );
 RogueMethod_List* RogueMethod_List__clear( RogueMethod_List* THIS );
+RogueMethod_List* RogueMethod_List__ensure_capacity__Int32( RogueMethod_List* THIS, RogueInt32 desired_capacity_0 );
+RogueMethod_List* RogueMethod_List__expand_to_count__Int32( RogueMethod_List* THIS, RogueInt32 minimum_count_0 );
+RogueMethod_List* RogueMethod_List__expand_to_include__Int32( RogueMethod_List* THIS, RogueInt32 index_0 );
 RogueMethod_List* RogueMethod_List__discard_from__Int32( RogueMethod_List* THIS, RogueInt32 index_0 );
 RogueMethod_List* RogueMethod_List__insert__Method_Int32( RogueMethod_List* THIS, RogueClassMethod* value_0, RogueInt32 before_index_1 );
 RogueOptionalInt32 RogueMethod_List__locate__Method( RogueMethod_List* THIS, RogueClassMethod* value_0 );
@@ -5539,6 +5640,7 @@ RogueMethod_List* RogueMethod_List__reserve__Int32( RogueMethod_List* THIS, Rogu
 RogueClassMethod* RogueMethod_List__remove__Method( RogueMethod_List* THIS, RogueClassMethod* value_0 );
 RogueClassMethod* RogueMethod_List__remove_at__Int32( RogueMethod_List* THIS, RogueInt32 index_0 );
 RogueClassMethod* RogueMethod_List__remove_last( RogueMethod_List* THIS );
+RogueMethod_List* RogueMethod_List__shift__Int32_OptionalInt32_Int32_OptionalMethod( RogueMethod_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalMethod fill_3 );
 RogueClassMethod* RogueMethod__init_object( RogueClassMethod* THIS );
 RogueString* RogueMethod__to_String( RogueClassMethod* THIS );
 RogueString* RogueMethod__type_name( RogueClassMethod* THIS );
@@ -5619,6 +5721,9 @@ RogueCmd_List* RogueCmd_List__add__Cmd( RogueCmd_List* THIS, RogueClassCmd* valu
 RogueCmd_List* RogueCmd_List__add__Cmd_List( RogueCmd_List* THIS, RogueCmd_List* other_0 );
 RogueInt32 RogueCmd_List__capacity( RogueCmd_List* THIS );
 RogueCmd_List* RogueCmd_List__clear( RogueCmd_List* THIS );
+RogueCmd_List* RogueCmd_List__ensure_capacity__Int32( RogueCmd_List* THIS, RogueInt32 desired_capacity_0 );
+RogueCmd_List* RogueCmd_List__expand_to_count__Int32( RogueCmd_List* THIS, RogueInt32 minimum_count_0 );
+RogueCmd_List* RogueCmd_List__expand_to_include__Int32( RogueCmd_List* THIS, RogueInt32 index_0 );
 RogueCmd_List* RogueCmd_List__discard__Int32_Int32( RogueCmd_List* THIS, RogueInt32 i1_0, RogueInt32 n_1 );
 RogueCmd_List* RogueCmd_List__discard_from__Int32( RogueCmd_List* THIS, RogueInt32 index_0 );
 RogueCmd_List* RogueCmd_List__insert__Cmd_Int32( RogueCmd_List* THIS, RogueClassCmd* value_0, RogueInt32 before_index_1 );
@@ -5626,6 +5731,7 @@ RogueClassCmd* RogueCmd_List__last( RogueCmd_List* THIS );
 RogueCmd_List* RogueCmd_List__reserve__Int32( RogueCmd_List* THIS, RogueInt32 additional_count_0 );
 RogueClassCmd* RogueCmd_List__remove_at__Int32( RogueCmd_List* THIS, RogueInt32 index_0 );
 RogueClassCmd* RogueCmd_List__remove_last( RogueCmd_List* THIS );
+RogueCmd_List* RogueCmd_List__shift__Int32_OptionalInt32_Int32_OptionalCmd( RogueCmd_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalCmd fill_3 );
 RogueString* RogueArray_Cmd___type_name( RogueArray* THIS );
 RogueCmdLabel_List* RogueCmdLabel_List__init_object( RogueCmdLabel_List* THIS );
 RogueCmdLabel_List* RogueCmdLabel_List__init( RogueCmdLabel_List* THIS );

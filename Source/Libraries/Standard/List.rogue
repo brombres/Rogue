@@ -122,9 +122,7 @@ class List<<$DataType>> : GenericList
       else
         reserve( 1 )
 
-        # Shift everything over
-        data.set( before_index+1, data, before_index, (count-before_index) )
-        ++count
+        shift( &i1=before_index, &delta=1 )
 
         # Copy in the new value
         data[ before_index ] = value
@@ -133,19 +131,20 @@ class List<<$DataType>> : GenericList
 
     method insert( other:$DataType[], before_index=0:Int32 )->this
       if (before_index < 0) before_index = 0
-      if (other.count == 0) return this
+
+      local n = other.count
+      if (n == 0) return this
 
       if (before_index >= count)
         return add( other )
       else
-        reserve( other.count )
+        reserve( n )
 
         # Shift everything over
-        data.set( before_index+other.count, data, before_index, (count-before_index) )
-        count += other.count
+        shift( &i1=before_index, &delta=n )
 
         # Copy in the new values
-        forEach (value in other.data)
+        forEach (value in other)
           data[ before_index ] = value
           ++before_index
         endForEach
