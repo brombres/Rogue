@@ -26,9 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.65 - June 14, 2016
+###v1.0.65 - June 16, 2016
 - [Rogue] A `select` value that is both condition and result is now only evaluated once.  For example, if some sequence counter will give a next value of `1`, then `select{counter.next:counter.next || -1}` will result in `2` but `select{counter.next || -1}` will result in 1.
 - [Rogue] Reversed the meaning of `trace` and `@trace`.  `trace` now includes the method signature, filename, and line number while `@trace` omits them.  Think Makefiles with `@` omitting output.  A trace without any arguments still prints out the location whether or not it has an `@`, just as before.
+- [Rogue] Classes can now have a global method `operator?( obj:<ObjectType> )->Logical`.  The default behavior when an object is logicalized is to convert `if (obj)` to be `if (obj isNot null)`.  If you provide that method, however, it will convert to `if (<ObjectType>.operator?(obj))`.
 - [RogueC] Fixed extended classes to call `prior.init_object()` before instead of after assigning their own initial property values.  This allows initial property values to be overridden in extended classes.
 - [API] Fixed bug `List.insert(other:List,before_index=0:Int32)->this`.  The entire contents of the `other` list's backing array were being addd to the current list.
 - [API] Added comparison operators for `Value` types and implemented `ValueList.contains(String|Value)`.
