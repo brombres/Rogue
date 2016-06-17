@@ -32,6 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Classes can now have a global method `operator?( obj:<ObjectType> )->Logical`.  The default behavior when an object is logicalized is to convert `if (obj)` to be `if (obj isNot null)`.  If you provide that method, however, it will convert to `if (<ObjectType>.operator?(obj))`.
 - [RogueC] Fixed extended classes to call `prior.init_object()` before instead of after assigning their own initial property values.  This allows initial property values to be overridden in extended classes.
 - [API] Fixed bug `List.insert(other:List,before_index=0:Int32)->this`.  The entire contents of the `other` list's backing array were being addd to the current list.
+- [API] The Value system now uses a NullValue singleton instead of actual null values.  All Value types returned collection accesses will be non-null (but may be NullValue instead).  `value.is_null` and `value.is_not_null` can be used to check value's nullness.
 - [API] Added comparison operators for `Value` types and implemented `ValueList.contains(String|Value)`.
 - [API] `ValueList/ValueTable.load(File)` now accepts a null file.
 - [API] Renamed introspection methods `PropertyInfo.property_name()` and `PropertyInfo.property_type_info()` to be `name()` and `type()` instead.

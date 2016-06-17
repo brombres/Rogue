@@ -15,6 +15,9 @@ class Value
     method create( value:String )->Value
       return StringValue( value )
 
+    method operator?( value:Value )->Logical
+      return (value isNot null and value.is_non_null)
+
   METHODS
     method add( value:Int32 )->this [macro]
       this.add( Value(value) )
@@ -67,18 +70,60 @@ class Value
       return @{}
 
     method first->Value
-      return null
+      return NullValue
 
     method get( index:Int32 )->Value
-      return null
+      return NullValue
 
     method get( key:String )->Value
-      return null
+      return NullValue
 
     method int32( index:Int32 )->Int32
       local value = get( index )
       if (not value) return 0
       return value->Int32
+
+    method is_collection->Logical
+      return false
+
+    method is_complex->Logical
+      if (not is_collection) return false
+      if (count > 1)         return true
+      forEach (value in this)
+        if (value and value.is_complex) return true
+      endForEach
+      return false
+
+    method is_int32->Logical
+      return false
+
+    method is_list->Logical
+      return false
+
+    method is_logical->Logical
+      return false
+
+    method is_null->Logical
+      return false
+
+    method is_non_null->Logical
+      return true
+
+    method is_number->Logical
+      return false
+
+    method is_object->Logical
+      return false
+
+    method is_real64->Logical
+      return false
+
+    method is_string->Logical
+      return false
+
+    method is_table->Logical
+      return false
+
 
     method logical( index:Int32 )->Logical
       local value = get( index )
@@ -92,7 +137,7 @@ class Value
 
     method object( index:Int32 )->Object
       local value = get( index )
-      if (not value) return null
+      if (not value) return NullValue
       return value->Object
 
     method string( index:Int32 )->String
@@ -135,6 +180,10 @@ class Value
       if (not value) return null
       return value->Object
 
+    method object<<$OfType>>( key_or_index:Value )->$OfType
+      if (key_or_index.is_int32) return object( key_or_index->Int32 ) as $OfType
+      else                       return object( key_or_index->String ) as $OfType
+
     method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
       return this
 
@@ -151,43 +200,8 @@ class Value
       if (value) return value
       else       return ValueTable()
 
-    method is_collection->Logical
-      return false
-
-    method is_complex->Logical
-      if (not is_collection) return false
-      if (count > 1)         return true
-      forEach (value in this)
-        if (value and value.is_complex) return true
-      endForEach
-      return false
-
-    method is_int32->Logical
-      return false
-
-    method is_list->Logical
-      return false
-
-    method is_logical->Logical
-      return false
-
-    method is_number->Logical
-      return false
-
-    method is_object->Logical
-      return false
-
-    method is_real64->Logical
-      return false
-
-    method is_string->Logical
-      return false
-
-    method is_table->Logical
-      return false
-
     method last->Value
-      return null
+      return NullValue
 
     method operator==( other:Value )->Logical
       return this is other
@@ -238,16 +252,16 @@ class Value
       return value
 
     method remove( key:String )->Value
-      return null
+      return NullValue
 
     method remove_at( index:Int32 )->Value
-      return null
+      return NullValue
 
     method remove_first->Value
-      return null
+      return NullValue
 
     method remove_last->Value
-      return null
+      return NullValue
 
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
@@ -305,6 +319,30 @@ class Value
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer
+endClass
+
+class NullValue : Value [singleton]
+  METHODS
+    method is_non_null->Logical
+      return false
+
+    method is_null->Logical
+      return true
+
+    method operator==( other:Value )->Logical
+      return  (other is null or other.is_null)
+
+    method operator<( other:Value )->Logical
+      return (other and other.is_non_null)
+
+    method to->Int32
+      return 0
+
+    method to->String
+      return "null"
+
+    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+      return buffer.print( "null" )
 endClass
 
 class Int32Value( value:Int32 ) : Value
@@ -643,15 +681,9 @@ class ValueList : Value
       return false
 
     method contains( value:Value )->Logical
-      if (value isNot null)
-        forEach (existing in values)
-          if (existing and existing == value) return true
-        endForEach
-      else
-        forEach (existing in values)
-          if (existing is null) return true
-        endForEach
-      endIf
+      forEach (existing in values)
+        if (existing and existing == value) return true
+      endForEach
       return false
 
     method count->Int32
@@ -661,8 +693,8 @@ class ValueList : Value
       return this.get(0)
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= values.count) return null
-      return values[ index ]
+      if (index < 0 or index >= values.count) return NullValue
+      return select{ values[index] || NullValue }
 
     method is_collection->Logical
       return true
@@ -789,11 +821,11 @@ class ValueTable : Value
       return table
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= count) return null
-      return values[ keys[index] ]
+      if (index < 0 or index >= count) return NullValue
+      return select{ values[ keys[index] ] || NullValue }
 
     method get( key:String )->Value
-      return values[ key ]
+      return select{ values[ key ] || NullValue }
 
     method is_collection->Logical
       return true
@@ -808,7 +840,7 @@ class ValueTable : Value
       return values.remove( key )
 
     method remove_at( index:Int32 )->Value
-      if (index < 0 or index >= count) return null
+      if (index < 0 or index >= count) return NullValue
       return values.remove( values.keys[index] )
 
     method set( key:String, new_value:Value )->this
