@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.65 - June 16, 2016
+###v1.0.65 - June 17, 2016
 - [Rogue] A `select` value that is both condition and result is now only evaluated once.  For example, if some sequence counter will give a next value of `1`, then `select{counter.next:counter.next || -1}` will result in `2` but `select{counter.next || -1}` will result in 1.
 - [Rogue] Reversed the meaning of `trace` and `@trace`.  `trace` now includes the method signature, filename, and line number while `@trace` omits them.  Think Makefiles with `@` omitting output.  A trace without any arguments still prints out the location whether or not it has an `@`, just as before.
 - [Rogue] Classes can now have a global method `operator?( obj:<ObjectType> )->Logical`.  The default behavior when an object is logicalized is to convert `if (obj)` to be `if (obj isNot null)`.  If you provide that method, however, it will convert to `if (<ObjectType>.operator?(obj))`.
@@ -35,6 +35,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] The Value system now uses a NullValue singleton instead of actual null values.  All Value types returned collection accesses will be non-null (but may be NullValue instead).  `value.is_null` and `value.is_not_null` can be used to check value's nullness.
 - [API] Added comparison operators for `Value` types and implemented `ValueList.contains(String|Value)`.
 - [API] `ValueList/ValueTable.load(File)` now accepts a null file.
+- [API] JSON loading now consolidates strings and identifiers.
 - [API] Renamed introspection methods `PropertyInfo.property_name()` and `PropertyInfo.property_type_info()` to be `name()` and `type()` instead.
 
 ###v1.0.64 - June 11, 2016

@@ -148,7 +148,7 @@ class JSON
         ch = reader.read
       endWhile
 
-      return buffer->String
+      return buffer->String.consolidated
 
     method hex_character_to_value( ch:Character )->Int32 [macro]
       ch.to_number
@@ -182,7 +182,7 @@ class JSON
         endWhile
 
         if (buffer.count == 0) throw JSONParseError( "Identifier expected." )
-        return buffer->String
+        return buffer->String.consolidated
       endIf
 
     method next_is_identifier( reader:ParseReader )->Logical
