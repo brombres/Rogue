@@ -669,9 +669,10 @@ class Parser
         case "operator"
           name += reader.read->String
         case "to"
-          must_consume( TokenType.symbol_arrow )
-          return_type = parse_type
-          name = "to_" + return_type.name
+          if (consume(TokenType.symbol_arrow))
+            return_type = parse_type
+            name = "to_" + return_type.name
+          endIf
         others
       endWhich
 
@@ -683,14 +684,14 @@ class Parser
           return true
         else
           specialization_info = parse_specialization_info
-          name += specialization_info.string( "string" )
+          name += specialization_info[ "string" ]->String
         endIf
       endIf
 
       this_method = Method( t, this_type, name )
       this_method.return_type = return_type
       if (specialization_info)
-        this_method.specializer_count = specialization_info.int32( "count" )
+        this_method.specializer_count = specialization_info[ "count" ]->Int32
         this_method.unspecialized_name = unspecialized_name
       endIf
 

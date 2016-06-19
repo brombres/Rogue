@@ -78,11 +78,6 @@ class Value
     method get( key:String )->Value
       return NullValue
 
-    method int32( index:Int32 )->Int32
-      local value = get( index )
-      if (not value) return 0
-      return value->Int32
-
     method is_collection->Logical
       return false
 
@@ -123,82 +118,6 @@ class Value
 
     method is_table->Logical
       return false
-
-
-    method logical( index:Int32 )->Logical
-      local value = get( index )
-      if (not value) return false
-      return value->Logical
-
-    method real64( index:Int32 )->Real64
-      local value = get( index )
-      if (not value) return 0.0
-      return value->Real64
-
-    method object( index:Int32 )->Object
-      local value = get( index )
-      if (not value) return NullValue
-      return value->Object
-
-    method string( index:Int32 )->String
-      local value = get( index )
-      if (not value) return ""
-      return value->String
-
-    method list( index:Int32 )->ValueList
-      local value = get( index ) as ValueList
-      if (value) return value
-      else       return ValueList()
-
-    method table( index:Int32 )->ValueTable
-      local value = get( index ) as ValueTable
-      if (value) return value
-      else       return ValueTable()
-
-    method int32( key:String )->Int32
-      local value = get( key )
-      if (not value) return 0
-      return value->Int32
-
-    method list( key:String )->ValueList
-      local value = get( key ) as ValueList
-      if (value) return value
-      else       return ValueList()
-
-    method logical( key:String )->Logical
-      local value = get( key )
-      if (not value) return false
-      return value->Logical
-
-    method real64( key:String )->Real64
-      local value = get( key )
-      if (not value) return 0.0
-      return value->Real64
-
-    method object( key:String )->Object
-      local value = get( key )
-      if (not value) return null
-      return value->Object
-
-    method object<<$OfType>>( key_or_index:Value )->$OfType
-      if (key_or_index.is_int32) return object( key_or_index->Int32 ) as $OfType
-      else                       return object( key_or_index->String ) as $OfType
-
-    method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
-      return this
-
-    method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->Value
-      return cloned
-
-    method string( key:String )->String
-      local value = get( key )
-      if (not value) return ""
-      return value->String
-
-    method table( key:String )->ValueTable
-      local value = get( key ) as ValueTable
-      if (value) return value
-      else       return ValueTable()
 
     method last->Value
       return NullValue
@@ -302,6 +221,12 @@ class Value
     method set( key:String, value:Value )->this
       return this
 
+    method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
+      return this
+
+    method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->Value
+      return cloned
+
     method to->Int32
       return 0
 
@@ -313,6 +238,15 @@ class Value
 
     method to->Object
       return null
+
+    method to->ValueList
+      return select{ this.is_list:this as ValueList || @[] }
+
+    method to->ValueTable
+      return select{ this.is_table:this as ValueTable || @{} }
+
+    method to<<$AsType>>()->$AsType [macro]
+      (this->Object as $AsType)
 
     method to_json( formatted=false:Logical )->String
       return to_json( StringBuilder(), formatted )->String
@@ -339,7 +273,7 @@ class NullValue : Value [singleton]
       return 0
 
     method to->String
-      return "null"
+      return ""
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer.print( "null" )
