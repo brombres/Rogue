@@ -1355,6 +1355,7 @@ extern RogueClassTokenType* RogueTokenType_symbol_shift_right;
 extern RogueClassTokenType* RogueTokenType_symbol_shift_right_x;
 extern RogueClassTokenType* RogueTokenType_symbol_slash;
 extern RogueClassTokenType* RogueTokenType_symbol_slash_equals;
+extern RogueClassTokenType* RogueTokenType_symbol_slash_slash;
 extern RogueClassTokenType* RogueTokenType_symbol_tilde;
 extern RogueClassTokenType* RogueTokenType_symbol_tilde_equals;
 extern RogueClassTokenType* RogueTokenType_symbol_times;

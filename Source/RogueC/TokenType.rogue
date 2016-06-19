@@ -179,6 +179,7 @@ class TokenType
     symbol_shift_right_x          : TokenType
     symbol_slash                  : TokenType
     symbol_slash_equals           : TokenType
+    symbol_slash_slash            : TokenType
     symbol_tilde                  : TokenType
     symbol_tilde_equals           : TokenType
     symbol_times                  : TokenType

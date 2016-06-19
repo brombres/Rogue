@@ -250,6 +250,7 @@ class Tokenizer
       TokenType.symbol_shift_right_x         = define( TokenType(":>>>:") )
       TokenType.symbol_slash                 = define( TokenType("/") )
       TokenType.symbol_slash_equals          = define( ModifyAndAssignTokenType("/=") )
+      TokenType.symbol_slash_slash           = define( TokenType("//") )
       TokenType.symbol_tilde                 = define( TokenType("~") )
       TokenType.symbol_tilde_equals          = define( ModifyAndAssignTokenType("~=") )
       TokenType.symbol_times                 = define( TokenType("*") )
@@ -363,7 +364,9 @@ class Tokenizer
         endIf
 
       elseIf (ch == '/')
-        if (consume('='))
+        if (consume('/'))
+          return TokenType.symbol_slash_slash
+        elseIf (consume('='))
           return TokenType.symbol_slash_equals
         else
           return TokenType.symbol_slash

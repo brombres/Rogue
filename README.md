@@ -27,6 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.66 - June 19, 2016
+- [Rogue] Added `//` convenience operator that converts `obj//key` into an element access `obj["key"]`.
 - [API] Simplified type conversion in Value classes - `table.string["key"]` is now `table["key"]->String` etc.
 
 ###v1.0.65 - June 17, 2016

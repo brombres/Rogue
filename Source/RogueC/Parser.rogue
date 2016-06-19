@@ -2135,6 +2135,11 @@ class Parser
         local access = parse_access( t, context )
         return parse_member_access( access )
 
+      elseIf (consume(TokenType.symbol_slash_slash))
+        # Identifier access, e.g. table//key -> table["key"]
+        local name = read_identifier
+        return parse_member_access( CmdElementAccess(t, context, CmdLiteralString(t,name)) )
+
       elseIf (consume(TokenType.symbol_open_bracket))
         # Parse obj[index]
         consume_eols
