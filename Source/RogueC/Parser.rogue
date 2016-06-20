@@ -1031,7 +1031,7 @@ class Parser
         return
 
       elseIf (consume(TokenType.keyword_return))
-        if (this_method.is_macro and this_method.return_type?)
+        if (this_method and this_method.is_macro and this_method.return_type?)
           throw t.error( "Omit the 'return' in a macro method with a return type." )
         endIf
 
