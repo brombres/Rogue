@@ -118,6 +118,11 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdTryExpression )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdCatch )
       on_enter( cmd )
       dispatch( cmd )
@@ -435,6 +440,7 @@ class Visitor
     method on_enter( cmd:CmdThrow )
     method on_enter( cmd:CmdTrace )
     method on_enter( cmd:CmdTry )
+    method on_enter( cmd:CmdTryExpression )
     method on_enter( cmd:CmdTypeOperator )
     method on_enter( cmd:CmdTypedLiteralList )
     method on_enter( cmd:CmdUnary )
@@ -513,6 +519,7 @@ class Visitor
     method on_leave( cmd:CmdThrow )
     method on_leave( cmd:CmdTrace )
     method on_leave( cmd:CmdTry )
+    method on_leave( cmd:CmdTryExpression )
     method on_leave( cmd:CmdTypeOperator )
     method on_leave( cmd:CmdTypedLiteralList )
     method on_leave( cmd:CmdUnary )
@@ -609,6 +616,10 @@ class Visitor
     method dispatch( cmd:CmdTry )
       cmd.statements.dispatch( this )
       forEach (c in cmd.catches) c.dispatch( this )
+
+    method dispatch( cmd:CmdTryExpression )
+      cmd.try_expression.dispatch( this )
+      cmd.else_expression.dispatch( this )
 
     method dispatch( cmd:CmdCatch )
       if (cmd.error_var)  cmd.error_var.type.dispatch( this )

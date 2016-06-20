@@ -1166,6 +1166,42 @@ class CmdThrow : Cmd
 
 endClass
 
+class CmdTryExpression : Cmd
+  PROPERTIES
+    try_expression  : Cmd
+    else_expression : Cmd
+    result_var      : Local
+
+  METHODS
+    method init( t, try_expression, else_expression, result_var )
+
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdTryExpression( t, try_expression.cloned(clone_args), else_expression.cloned(clone_args), result_var )
+
+    method implicit_type( scope:Scope )->Type
+      return try_expression.implicit_type( scope )
+
+    method resolve( scope:Scope )->Cmd
+      try_expression = try_expression.resolve( scope ).require_value
+      else_expression = else_expression.resolve( scope ).require_value
+
+      local try_type = try_expression.type
+
+      if (else_expression.type isNot try_type)
+        else_expression = else_expression.cast_to( try_type, scope ).resolve( scope )
+      endIf
+
+      result_var.type = try_type
+
+      local cmd_try = CmdTry( t )
+      cmd_try.statements.add( CmdWriteLocal(t, result_var, try_expression) )
+
+      local cmd_catch = cmd_try.add_catch( t )
+      cmd_catch.error_type = Program.type_Exception
+      cmd_catch.statements.add( CmdWriteLocal(t, result_var, else_expression) )
+
+      return cmd_try.resolve( scope )
+endClass
 
 #------------------------------------------------------------------------------
 # escape and nextIteration

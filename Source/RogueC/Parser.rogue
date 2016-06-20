@@ -1010,7 +1010,7 @@ class Parser
           return
 
         elseIf (next_is(TokenType.keyword_try))
-          statements.add( parse_try )
+          statements.add( parse_try_statement )
           return
 
         endIf
@@ -1433,32 +1433,59 @@ class Parser
       must_consume( TokenType.keyword_endContingent )
       return cmd_contingent
 
-    method parse_try->CmdTry
+    method parse_try_statement->CmdTry
       local t = read  # 'try'
       local cmd_try = CmdTry( t )
-      parse_multi_line_statements( cmd_try.statements )
-      while (next_is(TokenType.keyword_catch))
-        local cmd_catch = cmd_try.add_catch( read )
-        consume_eols
-        must_consume( TokenType.symbol_open_paren )
-        local error_t = peek
-        local error_name = parse_possible_type
-        local error_type : Type
-        local no_name = false
-        consume_eols
-        if (consume(TokenType.symbol_colon))
-          cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
+      if (consume_eols)
+        # try
+        #   multi-line commands
+        # catch ([var_name:]ExceptionType)
+        #   multi-line commands
+        # [catch ...]*
+        # endTry
+        parse_multi_line_statements( cmd_try.statements )
+        while (next_is(TokenType.keyword_catch))
+          local cmd_catch = cmd_try.add_catch( read )
           consume_eols
-        else
-          cmd_catch.error_type = Program.get_type_reference( t, error_name )
-        endIf
-        consume_eols
-        must_consume( TokenType.symbol_close_paren )
-        parse_multi_line_statements( cmd_catch.statements )
-      endWhile
-      must_consume( TokenType.keyword_endTry )
+          must_consume( TokenType.symbol_open_paren )
+          local error_t = peek
+          local error_name = parse_possible_type
+          local error_type : Type
+          local no_name = false
+          consume_eols
+          if (consume(TokenType.symbol_colon))
+            cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
+            consume_eols
+          else
+            cmd_catch.error_type = Program.get_type_reference( t, error_name )
+          endIf
+          consume_eols
+          must_consume( TokenType.symbol_close_paren )
+          parse_multi_line_statements( cmd_catch.statements )
+        endWhile
+        must_consume( TokenType.keyword_endTry )
+
+      else
+        # try single; line; commands
+        parse_single_line_statements( cmd_try.statements )
+        local cmd_catch = cmd_try.add_catch( t )
+        cmd_catch.error_type = Program.type_Exception
+      endIf
 
       return cmd_try
+
+    method parse_try_expression->Cmd
+      # try expression else expression
+      local t = read  # 'try'
+      local try_expression = parse_expression
+      must_consume( TokenType.keyword_else )
+      local else_expression = parse_expression
+
+      # type_Object here is a placeholder to prevent an error message
+      local result_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
+      cur_statement_list.add( CmdLocalDeclaration(t,result_var) )
+      cur_statement_list.add( CmdTryExpression( t, try_expression, else_expression, result_var ) )
+      return CmdReadLocal( t, result_var )
 
     method parse_local_or_global( statements:CmdStatementList )
       local_declarations.clear
@@ -2697,6 +2724,9 @@ class Parser
         must_consume( TokenType.symbol_close_brace )
 
         return cmd_select
+
+      elseIf (next_is(TokenType.keyword_try))
+        return parse_try_expression
 
       elseIf (consume(TokenType.keyword_assert))
         consume_eols
