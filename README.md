@@ -31,6 +31,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Added two shorthand versions of `try`: the statement `try single; line; commands` runs the given commands while silently catching and ignoring any thrown exception.  The expression `try <try-expression> else <else-expression>` evaluates to the result of `<try-expression>` unless that expression throws an error, in which case the result of evaluation is `<else-expression>`.
 - [API] Simplified type conversion in Value classes - `table.string["key"]` is now `table["key"]->String` etc.
 - [RogueC] Fixed a crash bug when parsing `return` outside of a method definition.
+- [RogueC] Non-generic function definitions now have an implicit type for type inferencing.
 
 ###v1.0.65 - June 17, 2016
 - [Rogue] A `select` value that is both condition and result is now only evaluated once.  For example, if some sequence counter will give a next value of `1`, then `select{counter.next:counter.next || -1}` will result in `2` but `select{counter.next || -1}` will result in 1.

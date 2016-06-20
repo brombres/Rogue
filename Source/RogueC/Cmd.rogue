@@ -4449,6 +4449,17 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       endIf
       return CmdCreateFunction( t, parameters, return_type, args2, statements.cloned(clone_args), is_generic )
 
+    method implicit_type( scope:Scope )->Type
+      if (is_generic_function) return null
+
+      local parameter_types : Type[]
+      if (parameters and parameters.count)
+        parameter_types = Type[]
+        forEach (param in parameters) parameter_types.add( param.type )
+      endIf
+
+      return Program.get_callback_type_reference( t, parameter_types, return_type )
+
     method is_generic_function->Logical
       return is_generic
 
@@ -4501,10 +4512,13 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       endIf
 
     method type->Type
-      # Necessary for generic funtcions to avoid triggering a "value expected" error
-      # before being able to match the generic function to a method's expected callback
-      # type.
-      return Program.type_Object
+      if (is_generic_function)
+        # Some type is necessary for generic funtcions to avoid triggering a "value expected" error
+        # before being able to match the generic function to a method's expected callback type.
+        return Program.type_Object
+      else
+        return implicit_type( null )
+      endIf
 
 endClass
 
