@@ -138,7 +138,7 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
-    method visit( cmd:CmdNextIteration )
+    method visit( cmd:CmdSkipIteration )
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -419,7 +419,7 @@ class Visitor
     method on_enter( cmd:CmdModifyAndAssignLocal )
     method on_enter( cmd:CmdModifyAndAssignProperty )
     method on_enter( cmd:CmdNecessary )
-    method on_enter( cmd:CmdNextIteration )
+    method on_enter( cmd:CmdSkipIteration )
     method on_enter( cmd:CmdNoAction )
     method on_enter( cmd:CmdRange )
     method on_enter( cmd:CmdReadArrayCount )
@@ -498,7 +498,7 @@ class Visitor
     method on_leave( cmd:CmdModifyAndAssignLocal )
     method on_leave( cmd:CmdModifyAndAssignProperty )
     method on_leave( cmd:CmdNecessary )
-    method on_leave( cmd:CmdNextIteration )
+    method on_leave( cmd:CmdSkipIteration )
     method on_leave( cmd:CmdNoAction )
     method on_leave( cmd:CmdRange )
     method on_leave( cmd:CmdReadArrayCount )
@@ -641,7 +641,7 @@ class Visitor
     method dispatch( cmd:CmdEscape )
       noAction
 
-    method dispatch( cmd:CmdNextIteration )
+    method dispatch( cmd:CmdSkipIteration )
       noAction
 
     method dispatch( cmd:CmdNecessary )

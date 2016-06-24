@@ -422,7 +422,7 @@ class CmdControlStructure : CmdStatement
     task_escape_section : CmdTaskControlSection
     task_upkeep_section : CmdTaskControlSection
     cloned_command      : CmdControlStructure
-      # Allows escape and nextIteration commands to update their target
+    # Allows escape and skipIteration commands to update their target
 
   METHODS
     method init( t )
@@ -1204,7 +1204,7 @@ class CmdTryExpression : Cmd
 endClass
 
 #------------------------------------------------------------------------------
-# escape and nextIteration
+# escape and skipIteration
 #------------------------------------------------------------------------------
 class CmdEscape : Cmd
   PROPERTIES
@@ -1242,7 +1242,7 @@ class CmdEscape : Cmd
 endClass
 
 
-class CmdNextIteration : Cmd
+class CmdSkipIteration : Cmd
   PROPERTIES
     target_cmd   : CmdControlStructure
 
@@ -1256,7 +1256,7 @@ class CmdNextIteration : Cmd
       else
         local new_target = target_cmd
         while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdNextIteration( t, new_target )
+        return CmdSkipIteration( t, new_target )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -1272,7 +1272,7 @@ class CmdNextIteration : Cmd
         endIf
       endWhile
 
-      throw t.error( "No enclosing loop for 'nextIteration' to affect." )
+      throw t.error( "No enclosing loop for 'skipIteration' to affect." )
 
 endClass
 

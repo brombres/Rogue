@@ -41,7 +41,7 @@ class Preprocessor
               defined_tokens.add( def_t )
             endWhile
             if (keep_tokens) definitions[defined_word] = defined_tokens
-            nextIteration
+            skipIteration
 
           elseIf (t.type is TokenType.directive_include)
             local filepath_t = reader.read
@@ -51,7 +51,7 @@ class Preprocessor
               endIf
               RogueC.include_source( t, filepath_t->String )
             endIf
-            nextIteration
+            skipIteration
 
           elseIf (t.type is TokenType.directive_includeNativeCode)
             local filepath_t = reader.read
@@ -61,7 +61,7 @@ class Preprocessor
               endIf
               RogueC.include_native( t, filepath_t->String, "code" )
             endIf
-            nextIteration
+            skipIteration
 
           elseIf (t.type is TokenType.directive_includeNativeHeader)
             local filepath_t = reader.read
@@ -71,7 +71,7 @@ class Preprocessor
               endIf
               RogueC.include_native( t, filepath_t->String, "header" )
             endIf
-            nextIteration
+            skipIteration
 
           elseIf (t.type is TokenType.directive_elseIf)
             if (depth == 1) throw t.error( "Syntax error - $elseIf does not match any previous $if." )
@@ -118,7 +118,7 @@ class Preprocessor
             endIf
 
             if (not single_line) must_consume( TokenType.directive_endIf )
-            nextIteration
+            skipIteration
 
           elseIf (t.type is TokenType.directive_module)
             if (keep_tokens)
@@ -126,7 +126,7 @@ class Preprocessor
               tokens.add( reader.peek )
             endIf
             cur_module = reader.read_identifier
-            nextIteration
+            skipIteration
           endIf
         endIf
 
@@ -139,7 +139,7 @@ class Preprocessor
             if (keep_tokens)
               tokens.add( t.type.create_token(t,"$::$"(cur_module,class_name)) )
             endIf
-            nextIteration
+            skipIteration
           endIf
         endIf
 
@@ -210,7 +210,7 @@ class Preprocessor
               local def = Keywords.definitions[ t->String ]
               if (def is null) return false
               reader.push( def )
-              nextIteration
+              skipIteration
           endWhich
         endIf
         }#

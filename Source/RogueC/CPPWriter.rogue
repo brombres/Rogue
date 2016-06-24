@@ -2177,7 +2177,7 @@ augment CmdEscape
 endAugment
 
 
-augment CmdNextIteration
+augment CmdSkipIteration
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print "continue"

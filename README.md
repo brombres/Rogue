@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.67 - June 24, 2016
+- [Rogue] Renamed `nextIteration` to `skipIteration`.  Functionally equivalent to C-family `continue`.
+
 ###v1.0.66 - June 19, 2016
 - [Rogue] Added `//` convenience operator that converts `obj//key` into an element access `obj["key"]`.
 - [Rogue] Added two shorthand versions of `try`: the statement `try single; line; commands` runs the given commands while silently catching and ignoring any thrown exception.  The expression `try <try-expression> else <else-expression>` evaluates to the result of `<try-expression>` unless that expression throws an error, in which case the result of evaluation is `<else-expression>`.

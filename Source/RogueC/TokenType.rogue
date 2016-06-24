@@ -91,13 +91,13 @@ class TokenType
     keyword_NaN                   : TokenType
     keyword_native                : TokenType
     keyword_necessary             : TokenType
-    keyword_nextIteration         : TokenType
     keyword_noAction              : TokenType
     keyword_null                  : TokenType
     keyword_of                    : TokenType
     keyword_require               : TokenType
     keyword_return                : TokenType
     keyword_select                : TokenType
+    keyword_skipIteration         : TokenType
     keyword_step                  : TokenType
     keyword_sufficient            : TokenType
     keyword_throw                 : TokenType
