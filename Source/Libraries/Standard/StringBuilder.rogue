@@ -397,5 +397,12 @@ class StringBuilder [requisite]
 
     method to->String
       return String( utf8 )
+
+    method write( byte:Byte )->this
+      # Writes the given raw byte to this StringBuilder.  Any sequence of bytes written
+      # must be valid UTF-8.
+      utf8.add( byte )
+      if ((byte & 0xC0) != 0x80) ++count
+      return this
 endClass
 

@@ -28,6 +28,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.67 - June 24, 2016
 - [Rogue] Renamed `nextIteration` to `skipIteration`.  Functionally equivalent to C-family `continue`.
+- [API] `Console` now incorporates the `Reader<<Byte>>` aspect for reading from standard in (`has_another->Logical`, `read->Byte`).  Also added `Console.read_line->String` that returns the next line after stripping the newline character.  All calls are blocking.
 
 ###v1.0.66 - June 19, 2016
 - [Rogue] Added `//` convenience operator that converts `obj//key` into an element access `obj["key"]`.

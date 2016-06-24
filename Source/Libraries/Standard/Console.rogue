@@ -1,4 +1,4 @@
-class Console : PrintWriterAspect<<output_buffer>> [singleton]
+class Console : Reader<<Byte>>, PrintWriterAspect<<output_buffer>> [singleton]
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
@@ -13,9 +13,29 @@ class Console : PrintWriterAspect<<output_buffer>> [singleton]
               |return RogueString_create_from_utf8( st, len );
 
   PROPERTIES
-    output_buffer = StringBuilder()
+    output_buffer   = StringBuilder()
+    input_buffer    = StringBuilder()
+    next_input_byte : Int32?
 
   METHODS
+    method has_another->Logical
+      if (not next_input_byte.exists) next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
+      return (next_input_byte.value != -1)
+
+    method read->Byte
+      if (not has_another) return 0
+      local result = next_input_byte.value
+      next_input_byte = null
+      return result
+
+    method read_line->String
+      input_buffer.clear
+      forEach (byte in this)
+        if (byte == 10) escapeForEach
+        input_buffer.write( byte )
+      endForEach
+      return input_buffer->String
+
     method write( characters:Character[] )->this
       native_print( characters )
       return this

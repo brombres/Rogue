@@ -38,7 +38,7 @@ syn keyword rogueLoop         loop endLoop
 syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
 syn keyword rogueBranch       escapeTry
 syn keyword rogueBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
-syn keyword rogueBranch       nextIteration
+syn keyword rogueBranch       skipIteration
 syn keyword rogueBoolean      true false pi
 syn keyword rogueConstant     null infinity NaN
 syn keyword rogueTypedef      this prior

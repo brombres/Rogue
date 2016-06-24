@@ -309,7 +309,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(escapeWhich|escapeWhichIs|escapeIf|escapeContingent|escapeBlock|nextIteration)\b</string>
+					<string>\b(escapeWhich|escapeWhichIs|escapeIf|escapeContingent|escapeBlock|skipIteration)\b</string>
 					<key>name</key>
 					<string>keyword.other.rogue</string>
 				</dict>
