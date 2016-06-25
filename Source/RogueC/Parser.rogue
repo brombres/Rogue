@@ -908,7 +908,7 @@ class Parser
           cur_statement_list = cur_label.statements
           must_consume( TokenType.symbol_close_specialize )
           consume_end_commands
-          skipIteration
+          nextIteration
         endIf
 
         parse_statement( cur_label.statements, true )
@@ -1229,8 +1229,8 @@ class Parser
         return
       endIf
 
-      if (consume(TokenType.keyword_skipIteration))
-        statements.add( CmdSkipIteration(t) )
+      if (consume(TokenType.keyword_nextIteration))
+        statements.add( CmdNextIteration(t) )
         return
       endIf
 

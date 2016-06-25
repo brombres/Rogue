@@ -846,7 +846,7 @@ struct RogueClassCmdTrace;
 struct RogueClassCmdLocalDeclaration;
 struct RogueClassCmdAssert;
 struct RogueClassCmdEscape;
-struct RogueClassCmdSkipIteration;
+struct RogueClassCmdNextIteration;
 struct RogueClassCmdNecessary;
 struct RogueClassCmdSufficient;
 struct RogueClassCmdAdjust;
@@ -1278,7 +1278,7 @@ extern RogueClassTokenType* RogueTokenType_keyword_of;
 extern RogueClassTokenType* RogueTokenType_keyword_require;
 extern RogueClassTokenType* RogueTokenType_keyword_return;
 extern RogueClassTokenType* RogueTokenType_keyword_select;
-extern RogueClassTokenType* RogueTokenType_keyword_skipIteration;
+extern RogueClassTokenType* RogueTokenType_keyword_nextIteration;
 extern RogueClassTokenType* RogueTokenType_keyword_step;
 extern RogueClassTokenType* RogueTokenType_keyword_sufficient;
 extern RogueClassTokenType* RogueTokenType_keyword_throw;
@@ -3167,7 +3167,7 @@ struct RogueClassCmdEscape : RogueObject
 
 };
 
-struct RogueClassCmdSkipIteration : RogueObject
+struct RogueClassCmdNextIteration : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
@@ -4689,7 +4689,7 @@ extern RogueType* RogueTypeCmdTrace;
 extern RogueType* RogueTypeCmdLocalDeclaration;
 extern RogueType* RogueTypeCmdAssert;
 extern RogueType* RogueTypeCmdEscape;
-extern RogueType* RogueTypeCmdSkipIteration;
+extern RogueType* RogueTypeCmdNextIteration;
 extern RogueType* RogueTypeCmdNecessary;
 extern RogueType* RogueTypeCmdSufficient;
 extern RogueType* RogueTypeCmdAdjust;
@@ -6640,13 +6640,13 @@ void RogueCmdEscape__dispatch__Visitor( RogueClassCmdEscape* THIS, RogueClassVis
 RogueClassCmd* RogueCmdEscape__resolve__Scope( RogueClassCmdEscape* THIS, RogueClassScope* scope_0 );
 void RogueCmdEscape__write_cpp__CPPWriter_Logical( RogueClassCmdEscape* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 RogueClassCmdEscape* RogueCmdEscape__init__Token_Int32_CmdControlStructure( RogueClassCmdEscape* THIS, RogueClassToken* _auto_1092_0, RogueInt32 _auto_1093_1, RogueClassCmdControlStructure* _auto_1094_2 );
-RogueClassCmdSkipIteration* RogueCmdSkipIteration__init_object( RogueClassCmdSkipIteration* THIS );
-RogueString* RogueCmdSkipIteration__type_name( RogueClassCmdSkipIteration* THIS );
-RogueClassCmd* RogueCmdSkipIteration__cloned__CloneArgs( RogueClassCmdSkipIteration* THIS, RogueClassCloneArgs* clone_args_0 );
-void RogueCmdSkipIteration__dispatch__Visitor( RogueClassCmdSkipIteration* THIS, RogueClassVisitor* v_0 );
-RogueClassCmd* RogueCmdSkipIteration__resolve__Scope( RogueClassCmdSkipIteration* THIS, RogueClassScope* scope_0 );
-void RogueCmdSkipIteration__write_cpp__CPPWriter_Logical( RogueClassCmdSkipIteration* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdSkipIteration* RogueCmdSkipIteration__init__Token_CmdControlStructure( RogueClassCmdSkipIteration* THIS, RogueClassToken* _auto_1095_0, RogueClassCmdControlStructure* _auto_1096_1 );
+RogueClassCmdNextIteration* RogueCmdNextIteration__init_object( RogueClassCmdNextIteration* THIS );
+RogueString* RogueCmdNextIteration__type_name( RogueClassCmdNextIteration* THIS );
+RogueClassCmd* RogueCmdNextIteration__cloned__CloneArgs( RogueClassCmdNextIteration* THIS, RogueClassCloneArgs* clone_args_0 );
+void RogueCmdNextIteration__dispatch__Visitor( RogueClassCmdNextIteration* THIS, RogueClassVisitor* v_0 );
+RogueClassCmd* RogueCmdNextIteration__resolve__Scope( RogueClassCmdNextIteration* THIS, RogueClassScope* scope_0 );
+void RogueCmdNextIteration__write_cpp__CPPWriter_Logical( RogueClassCmdNextIteration* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmdNextIteration* RogueCmdNextIteration__init__Token_CmdControlStructure( RogueClassCmdNextIteration* THIS, RogueClassToken* _auto_1095_0, RogueClassCmdControlStructure* _auto_1096_1 );
 RogueClassCmdNecessary* RogueCmdNecessary__init_object( RogueClassCmdNecessary* THIS );
 RogueString* RogueCmdNecessary__type_name( RogueClassCmdNecessary* THIS );
 RogueClassCmd* RogueCmdNecessary__cloned__CloneArgs( RogueClassCmdNecessary* THIS, RogueClassCloneArgs* clone_args_0 );
@@ -7247,7 +7247,7 @@ void RogueVisitor__visit__CmdTryExpression( RogueClassVisitor* THIS, RogueClassC
 void RogueVisitor__visit__CmdCatch( RogueClassVisitor* THIS, RogueClassCmdCatch* cmd_0 );
 void RogueVisitor__visit__CmdThrow( RogueClassVisitor* THIS, RogueClassCmdThrow* cmd_0 );
 void RogueVisitor__visit__CmdEscape( RogueClassVisitor* THIS, RogueClassCmdEscape* cmd_0 );
-void RogueVisitor__visit__CmdSkipIteration( RogueClassVisitor* THIS, RogueClassCmdSkipIteration* cmd_0 );
+void RogueVisitor__visit__CmdNextIteration( RogueClassVisitor* THIS, RogueClassCmdNextIteration* cmd_0 );
 void RogueVisitor__visit__CmdNecessary( RogueClassVisitor* THIS, RogueClassCmdNecessary* cmd_0 );
 void RogueVisitor__visit__CmdSufficient( RogueClassVisitor* THIS, RogueClassCmdSufficient* cmd_0 );
 void RogueVisitor__visit__CmdLiteral( RogueClassVisitor* THIS, RogueClassCmdLiteral* cmd_0 );
@@ -7334,7 +7334,7 @@ void RogueVisitor__on_enter__CmdModifyAndAssignGlobal( RogueClassVisitor* THIS, 
 void RogueVisitor__on_enter__CmdModifyAndAssignLocal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignLocal* cmd_0 );
 void RogueVisitor__on_enter__CmdModifyAndAssignProperty( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignProperty* cmd_0 );
 void RogueVisitor__on_enter__CmdNecessary( RogueClassVisitor* THIS, RogueClassCmdNecessary* cmd_0 );
-void RogueVisitor__on_enter__CmdSkipIteration( RogueClassVisitor* THIS, RogueClassCmdSkipIteration* cmd_0 );
+void RogueVisitor__on_enter__CmdNextIteration( RogueClassVisitor* THIS, RogueClassCmdNextIteration* cmd_0 );
 void RogueVisitor__on_enter__CmdNoAction( RogueClassVisitor* THIS, RogueClassCmdNoAction* cmd_0 );
 void RogueVisitor__on_enter__CmdRange( RogueClassVisitor* THIS, RogueClassCmdRange* cmd_0 );
 void RogueVisitor__on_enter__CmdReadArrayCount( RogueClassVisitor* THIS, RogueClassCmdReadArrayCount* cmd_0 );
@@ -7407,7 +7407,7 @@ void RogueVisitor__on_leave__CmdModifyAndAssignGlobal( RogueClassVisitor* THIS, 
 void RogueVisitor__on_leave__CmdModifyAndAssignLocal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignLocal* cmd_0 );
 void RogueVisitor__on_leave__CmdModifyAndAssignProperty( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignProperty* cmd_0 );
 void RogueVisitor__on_leave__CmdNecessary( RogueClassVisitor* THIS, RogueClassCmdNecessary* cmd_0 );
-void RogueVisitor__on_leave__CmdSkipIteration( RogueClassVisitor* THIS, RogueClassCmdSkipIteration* cmd_0 );
+void RogueVisitor__on_leave__CmdNextIteration( RogueClassVisitor* THIS, RogueClassCmdNextIteration* cmd_0 );
 void RogueVisitor__on_leave__CmdNoAction( RogueClassVisitor* THIS, RogueClassCmdNoAction* cmd_0 );
 void RogueVisitor__on_leave__CmdRange( RogueClassVisitor* THIS, RogueClassCmdRange* cmd_0 );
 void RogueVisitor__on_leave__CmdReadArrayCount( RogueClassVisitor* THIS, RogueClassCmdReadArrayCount* cmd_0 );
@@ -7465,7 +7465,7 @@ void RogueVisitor__dispatch__CmdThrow( RogueClassVisitor* THIS, RogueClassCmdThr
 void RogueVisitor__dispatch__CmdElementAccess( RogueClassVisitor* THIS, RogueClassCmdElementAccess* cmd_0 );
 void RogueVisitor__dispatch__CmdEnsure( RogueClassVisitor* THIS, RogueClassCmdEnsure* cmd_0 );
 void RogueVisitor__dispatch__CmdEscape( RogueClassVisitor* THIS, RogueClassCmdEscape* cmd_0 );
-void RogueVisitor__dispatch__CmdSkipIteration( RogueClassVisitor* THIS, RogueClassCmdSkipIteration* cmd_0 );
+void RogueVisitor__dispatch__CmdNextIteration( RogueClassVisitor* THIS, RogueClassCmdNextIteration* cmd_0 );
 void RogueVisitor__dispatch__CmdNecessary( RogueClassVisitor* THIS, RogueClassCmdNecessary* cmd_0 );
 void RogueVisitor__dispatch__CmdSufficient( RogueClassVisitor* THIS, RogueClassCmdSufficient* cmd_0 );
 void RogueVisitor__dispatch__CmdLiteral( RogueClassVisitor* THIS, RogueClassCmdLiteral* cmd_0 );
