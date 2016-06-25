@@ -2604,11 +2604,11 @@ class Parser
 
         if (not parsed_arrow)
           t2 = peek
-          if (consume(TokenType.symbol_equals))
+          if (consume(TokenType.symbol_equals) or consume(TokenType.symbol_fat_arrow))
             if (parameters and parameters.count and not is_generic)
               # Note: if there are no parameters then 'is_generic' is not valid and we can accept
               # the generic arrow
-              throw t2.error( "A function with typed parameters must use '->' to define its return type (if desired) and cannot use the generic function definition symbol '='." )
+              throw t2.error( "A function with typed parameters must use '->' to define its return type (if desired) and cannot use the generic function definition symbol '=>'." )
             endIf
 
             is_generic = true

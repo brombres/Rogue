@@ -28479,7 +28479,7 @@ RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS )
     if (!(parsed_arrow_24))
     {
       t2_25 = ((RogueClassToken*)((RogueParser__peek( ROGUE_ARG(THIS) ))));
-      if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_equals) ))))
+      if ((((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_equals) ))) || ((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_fat_arrow) )))))
       {
         if (((!!(parameters_17) && !!(parameters_17->count)) && !(is_generic_19)))
         {
@@ -60191,7 +60191,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.67.2", 8 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.67.3", 8 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "June 25, 2016", 13 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
@@ -60462,7 +60462,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[314] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "_auto_", 6 ) ); 
   Rogue_literal_strings[315] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "function parameters must all be typed or all be generic.", 56 ) ); 
   Rogue_literal_strings[316] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "A function with generic parameters must use '=>' to define its body.", 68 ) ); 
-  Rogue_literal_strings[317] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "A function with typed parameters must use '->' to define its return type (if desired) and cannot use the generic function definition symbol '='.", 144 ) ); 
+  Rogue_literal_strings[317] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "A function with typed parameters must use '->' to define its return type (if desired) and cannot use the generic function definition symbol '=>'.", 145 ) ); 
   Rogue_literal_strings[318] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Single identifier expected for control variable name.", 53 ) ); 
   Rogue_literal_strings[319] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "at", 2 ) ); 
   Rogue_literal_strings[320] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Missing element name before 'at'.", 33 ) ); 
