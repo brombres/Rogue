@@ -2072,7 +2072,7 @@ class CmdAccess : Cmd
 
     method type->Type
       local err = t.error( "[INTERNAL] $.type() is not defined (access name '$')." (type_name,name) )
-      #println err.stack_trace
+      println err.stack_trace
       throw err
 endClass
 
@@ -3940,9 +3940,16 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
           return CmdAccess( t, CmdReadProperty(t,context,property_info), m_name, new_value ).resolve( scope )
         else
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
+          new_value = new_value.resolve( scope ).require_value
           if (property_info.type.method_lookup_by_name[m_name])
             return CmdWriteProperty( t, context, property_info,
               CmdAccess(t, CmdReadProperty(t,cloned(context),property_info), m_name, new_value) ).resolve( scope )
+          elseIf (property_info.type.has_global_method_named(m_name))
+            return CmdWriteProperty( t, context, property_info,
+            CmdAccess(t, CmdAccess(t,property_info.type.name), m_name, CmdArgs(CmdReadProperty(t,cloned(context),property_info), new_value)) ).resolve( scope )
+          elseIf (new_value.type.has_global_method_named(m_name))
+            return CmdWriteProperty( t, context, property_info,
+            CmdAccess(t, CmdAccess(t,new_value.type.name), m_name, CmdArgs(CmdReadProperty(t,cloned(context),property_info), new_value)) ).resolve( scope )
           else
             local arg_type = new_value.type.name
             throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (property_info.type,m_name,arg_type,m_name,arg_type) )
