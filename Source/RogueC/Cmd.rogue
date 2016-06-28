@@ -4654,7 +4654,30 @@ class CmdLabel : Cmd
 
 endClass
 
-class CmdNativeHeader : Cmd
+class CmdNativeSource : Cmd
+  METHODS
+    method requires_semicolon->Logical
+      return false
+endClass
+
+class CmdIncludeNative : CmdNativeSource
+  PROPERTIES
+    filepath  : String
+    file_type : String
+
+  METHODS
+    method init( t, filepath, file_type )
+      require (file_type == "code" or file_type == "header")
+
+    method cloned( clone_args:CloneArgs )->CmdIncludeNative
+      return CmdIncludeNative( t, filepath, file_type )
+
+    method resolve( scope:Scope )->Cmd
+      RogueC.include_native( t, filepath, file_type )
+      return CmdNoAction(t)
+endClass
+
+class CmdNativeHeader : CmdNativeSource
   PROPERTIES
     code        : String
 
@@ -4663,9 +4686,6 @@ class CmdNativeHeader : Cmd
 
     method cloned( clone_args:CloneArgs )->CmdNativeHeader
       return CmdNativeHeader( t, code )
-
-    method requires_semicolon->Logical
-      return false
 
     method resolve( scope:Scope )->Cmd
       if (code)
@@ -4677,7 +4697,7 @@ class CmdNativeHeader : Cmd
       return CmdNoAction(t)
 endClass
 
-class CmdNativeCode : Cmd
+class CmdNativeCode : CmdNativeSource
   PROPERTIES
     code        : String
 
@@ -4686,9 +4706,6 @@ class CmdNativeCode : Cmd
 
     method cloned( clone_args:CloneArgs )->CmdNativeCode
       return CmdNativeCode( t, code )
-
-    method requires_semicolon->Logical
-      return false
 
     method resolve( scope:Scope )->Cmd
       if (code)

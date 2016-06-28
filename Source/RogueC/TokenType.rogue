@@ -5,8 +5,6 @@ class TokenType
     # Directives
     directive_define              : TokenType
     directive_include             : TokenType
-    directive_includeNativeCode   : TokenType
-    directive_includeNativeHeader : TokenType
     directive_if                  : TokenType
     directive_elseIf              : TokenType
     directive_else                : TokenType
@@ -42,6 +40,8 @@ class TokenType
     keyword_endWhile              : TokenType
     keyword_ENUMERATE             : TokenType
     keyword_GLOBAL                : TokenType
+    keyword_includeNativeCode     : TokenType
+    keyword_includeNativeHeader   : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType
     keyword_nativeCode            : TokenType
