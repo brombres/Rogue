@@ -355,7 +355,11 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
   for (int i=0; i<count; ++i)
   {
     RogueCharacter ch = data[i];
-    if (ch <= 0x7F)
+    if (ch < 0)
+    {
+      *(dest++) = 0;
+    }
+    else if (ch <= 0x7F)
     {
       *(dest++) = (RogueByte) ch;
     }
@@ -408,7 +412,11 @@ void RogueString_print_characters( RogueCharacter* characters, int count )
     {
       int ch = *(++src);
 
-      if (ch < 0x80)
+      if (ch < 0)
+      {
+        putchar( 0 );
+      }
+      else if (ch < 0x80)
       {
         // %0xxxxxxx
         putchar( ch );

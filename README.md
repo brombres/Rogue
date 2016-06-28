@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.67 - June 28, 2016
 - [Rogue] Changed generic function result definition symbol from `=` to `=>`.  Example: `list.sort( function(a,b) => a < b )`.
 - [Rogue] Changed directives `$includeNativeHeader` and `$includeNativeCode` into dependency statements `includeNativeHeader` and `includeNativeCode`.  Consequently native includes happen during analysis rather than parsing.
+- [Rogue] Changed `Character` to be a signed instead of unsigned 32-bit signed integer to simplify mixed Int32/Character operations and make Rogue code more portable (e.g. to Java/JavaScript someday).  The supported range of characters remains 0..0x10FFFF (21 bits).
 - [RogueC] Compiler now correctly finds global method `operator+(Type,Type)` as well as regular method `operator+(Type)`.
 - [API] `Console` now incorporates the `Reader<<Byte>>` aspect for reading from standard in (`has_another->Logical`, `read->Byte`).  Also added `Console.read_line->String` that returns the next line after stripping the newline character.  All calls are blocking.
 

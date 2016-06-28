@@ -251,7 +251,7 @@ T rogue_ptr (T p)
   typedef float            RogueReal32;
   typedef __int64          RogueInt64;
   typedef __int32          RogueInt32;
-  typedef unsigned __int32 RogueCharacter;
+  typedef __int32          RogueCharacter;
   typedef unsigned __int16 RogueWord;
   typedef unsigned char    RogueByte;
   typedef bool             RogueLogical;
@@ -260,7 +260,7 @@ T rogue_ptr (T p)
   typedef float            RogueReal32;
   typedef int64_t          RogueInt64;
   typedef int32_t          RogueInt32;
-  typedef uint32_t         RogueCharacter;
+  typedef int32_t          RogueCharacter;
   typedef uint16_t         RogueWord;
   typedef uint8_t          RogueByte;
   typedef bool             RogueLogical;

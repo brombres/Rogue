@@ -541,8 +541,8 @@ class Type
       if (this is Program.type_Real64)    return 7
       if (this is Program.type_Real32)    return 6
       if (this is Program.type_Int64)     return 5
-      if (this is Program.type_Character) return 4
-      if (this is Program.type_Int32)     return 3
+      if (this is Program.type_Int32)     return 4
+      if (this is Program.type_Character) return 3
       if (this is Program.type_Byte)      return 2
       if (this is Program.type_Logical)   return 1
       return 0

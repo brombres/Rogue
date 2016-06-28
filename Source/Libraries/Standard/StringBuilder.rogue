@@ -141,7 +141,9 @@ class StringBuilder [requisite]
       endIf
 
       ++count
-      if (value <= Character(0x7F))
+      if (value < 0)
+        utf8.add( 0 )
+      elseIf (value <= Character(0x7F))
         utf8.add( value )
       elseIf (value <= Character(0x7FF))
         utf8.add( 0xC0 | (value:>>>:6) ).add( 0x80 | (value & 0x3F) )
@@ -378,7 +380,9 @@ class StringBuilder [requisite]
 
     method set( index:Int32, ch:Character )->this
       this[ index ]  # position cursor
-      if (ch <= 0x7F)
+      if (ch < 0)
+        utf8[ cursor_offset ] = 0
+      elseIf (ch <= 0x7F)
         utf8[ cursor_offset ] = ch
       elseIf (ch <= 0x7FF)
         utf8[ cursor_offset ]     = ( 0xC0 | (ch:>>>:6) )

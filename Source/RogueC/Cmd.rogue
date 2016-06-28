@@ -101,8 +101,8 @@ class Cmd
           if (left_type is Program.type_Real64 or right_type is Program.type_Real64) return Program.type_Real64
           if (left_type is Program.type_Real32 or right_type is Program.type_Real32) return Program.type_Real32
           if (left_type is Program.type_Int64 or right_type is Program.type_Int64) return Program.type_Int64
-          if (left_type is Program.type_Character or right_type is Program.type_Character) return Program.type_Character
           if (left_type is Program.type_Int32 or right_type is Program.type_Int32) return Program.type_Int32
+          if (left_type is Program.type_Character or right_type is Program.type_Character) return Program.type_Character
         endIf
       endIf
 
