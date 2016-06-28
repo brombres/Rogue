@@ -191,7 +191,7 @@ class Type
       local list = method_lookup_by_name[m_name]
       if (list and list.count) return true
 
-      return has_global_method_named( m_name )
+      return false
 
     method has_global_method_named( m_name:String )->Logical
       local list = global_method_lookup_by_name[m_name]

@@ -4878,7 +4878,6 @@ RogueClassFileWriter* RogueFile__writer__String( RogueString* filepath_0 );
 void RoguePreprocessor__init_class();
 RogueClassValue* RogueValue__create__Int32( RogueInt32 value_0 );
 RogueClassValue* RogueValue__create__String( RogueString* value_0 );
-RogueLogical RogueOptionalValue__operator__Value( RogueClassValue* value_0 );
 RogueCmdNamedArg_List* RogueQuicksort_CmdNamedArg___sort__CmdNamedArg_List_Function_CmdNamedArg_CmdNamedArg_RETURNSLogical( RogueCmdNamedArg_List* list_0, RogueClassFunction_CmdNamedArg_CmdNamedArg_RETURNSLogical* compare_fn_1 );
 void RogueQuicksort_CmdNamedArg___sort__Array_Function_CmdNamedArg_CmdNamedArg_RETURNSLogical_Int32_Int32( RogueArray* data_0, RogueClassFunction_CmdNamedArg_CmdNamedArg_RETURNSLogical* compare_fn_1, RogueInt32 i1_2, RogueInt32 i2_3 );
 void RogueStringValue__init_class();
@@ -6456,7 +6455,6 @@ RogueClassValue* RogueValueTable__get__String( RogueClassValueTable* THIS, Rogue
 RogueClassValueTable* RogueValueTable__set__String_Value( RogueClassValueTable* THIS, RogueString* key_0, RogueClassValue* new_value_1 );
 RogueClassValue* RogueValue__init_object( RogueClassValue* THIS );
 RogueString* RogueValue__type_name( RogueClassValue* THIS );
-RogueLogical RogueValue__is_non_null( RogueClassValue* THIS );
 RogueInt32 RogueValue__to_Int32( RogueClassValue* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init_object( RogueClassTable_String_Value_* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init( RogueClassTable_String_Value_* THIS );
@@ -7928,7 +7926,6 @@ RogueClassStringValue* RogueStringValue__init__String( RogueClassStringValue* TH
 RogueClassNullValue* RogueNullValue__init_object( RogueClassNullValue* THIS );
 RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS );
 RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS );
-RogueLogical RogueNullValue__is_non_null( RogueClassNullValue* THIS );
 RogueInt32 RogueNullValue__to_Int32( RogueClassNullValue* THIS );
 RogueClassListReader_CmdSelectCase_* RogueListReader_CmdSelectCase___init_object( RogueClassListReader_CmdSelectCase_* THIS );
 RogueString* RogueListReader_CmdSelectCase___type_name( RogueClassListReader_CmdSelectCase_* THIS );
