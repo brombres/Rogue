@@ -167,6 +167,17 @@ class Type
     method extends_object->Logical
       return instance_of( Program.type_Object )
 
+    method collect_aspect_base_classes( for_type:Type )
+      if (aspect_base_class)
+        if (not for_type.base_types.contains(aspect_base_class))
+          for_type.base_types.add( aspect_base_class )
+        endIf
+      endIf
+
+      forEach (base_type in base_types)
+        base_type.collect_aspect_base_classes( for_type )
+      endForEach
+
     method find_method( signature:String )->Method
       local m = method_lookup_by_signature[signature]
       if (m) return m
@@ -320,16 +331,23 @@ class Type
         endIf
       endIf
 
-      forEach (base_type in base_types)
+      forEach (base_type in rewriter=base_types.rewriter)
         base_type.organize( scope )
 
         if (not base_type.is_aspect)
-          # TODO
           if (is_aspect)
-            throw t.error( "Aspects can only extend other aspects." )
+            if (aspect_base_class)
+              throw t.error( "An aspect can only specify one base class ($ and $ are both specified)." (base_type,aspect_base_class))
+            else
+              aspect_base_class = base_type
+            endIf
           elseIf (is_compound)
             throw t.error( "Compounds can only extend aspects." )
+          else
+            rewriter.write( base_type )
           endIf
+        else
+          rewriter.write( base_type )
         endIf
 
         if (base_type.instance_of(this))
@@ -339,6 +357,8 @@ class Type
       endForEach
 
       if (is_class)
+        collect_aspect_base_classes( this )
+
         forEach (base_type in base_types)
           if (base_type.is_class)
             if (base_class and base_class isNot base_type)
@@ -350,6 +370,7 @@ class Type
         endForEach
 
         if (not base_class and this isNot Program.type_Object)
+          # Use Object
           Program.type_Object.organize
           base_class = Program.type_Object
           base_types.insert( base_class )
