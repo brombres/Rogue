@@ -175,26 +175,6 @@ class Preprocessor
           return RogueC.compile_targets[target]
         endIf
 
-        #{
-        if (t.type is TokenType.identifier)
-          which (t->String)
-            case "defined"
-              reader.read
-              must_consume( TokenType.symbol_open_paren )
-              local id = read_identifier
-              must_consume( TokenType.symbol_close_paren )
-              return Keywords.definitions.contains( id )
-
-            others
-              reader.read
-              local def = Keywords.definitions[ t->String ]
-              if (def is null) return false
-              reader.push( def )
-              nextIteration
-          endWhich
-        endIf
-        }#
-
         if (consume(TokenType.keyword_true))  return true
         if (consume(TokenType.keyword_false)) return false
         throw reader.peek.error( "Syntax error in directive: '$'." (reader.peek) )

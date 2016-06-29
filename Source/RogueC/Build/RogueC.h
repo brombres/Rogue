@@ -7302,6 +7302,7 @@ void RogueVisitor__visit__CmdBinary( RogueClassVisitor* THIS, RogueClassCmdBinar
 void RogueVisitor__visit__CmdAdjustLocal( RogueClassVisitor* THIS, RogueClassCmdAdjustLocal* cmd_0 );
 void RogueVisitor__visit__CmdAdjustProperty( RogueClassVisitor* THIS, RogueClassCmdAdjustProperty* cmd_0 );
 void RogueVisitor__visit__CmdAdjustGlobal( RogueClassVisitor* THIS, RogueClassCmdAdjustGlobal* cmd_0 );
+void RogueVisitor__visit__CmdModifyAndAssign( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssign* cmd_0 );
 void RogueVisitor__visit__CmdModifyAndAssignLocal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignLocal* cmd_0 );
 void RogueVisitor__visit__CmdModifyAndAssignGlobal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignGlobal* cmd_0 );
 void RogueVisitor__visit__CmdModifyAndAssignProperty( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignProperty* cmd_0 );
@@ -7357,6 +7358,7 @@ void RogueVisitor__on_enter__CmdLiteral( RogueClassVisitor* THIS, RogueClassCmdL
 void RogueVisitor__on_enter__CmdLiteralString( RogueClassVisitor* THIS, RogueClassCmdLiteralString* cmd_0 );
 void RogueVisitor__on_enter__CmdLocalDeclaration( RogueClassVisitor* THIS, RogueClassCmdLocalDeclaration* cmd_0 );
 void RogueVisitor__on_enter__CmdMakeRequisite( RogueClassVisitor* THIS, RogueClassCmdMakeRequisite* cmd_0 );
+void RogueVisitor__on_enter__CmdModifyAndAssign( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssign* cmd_0 );
 void RogueVisitor__on_enter__CmdModifyAndAssignGlobal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignGlobal* cmd_0 );
 void RogueVisitor__on_enter__CmdModifyAndAssignLocal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignLocal* cmd_0 );
 void RogueVisitor__on_enter__CmdModifyAndAssignProperty( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignProperty* cmd_0 );
@@ -7431,6 +7433,7 @@ void RogueVisitor__on_leave__CmdLiteral( RogueClassVisitor* THIS, RogueClassCmdL
 void RogueVisitor__on_leave__CmdLiteralString( RogueClassVisitor* THIS, RogueClassCmdLiteralString* cmd_0 );
 void RogueVisitor__on_leave__CmdLocalDeclaration( RogueClassVisitor* THIS, RogueClassCmdLocalDeclaration* cmd_0 );
 void RogueVisitor__on_leave__CmdMakeRequisite( RogueClassVisitor* THIS, RogueClassCmdMakeRequisite* cmd_0 );
+void RogueVisitor__on_leave__CmdModifyAndAssign( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssign* cmd_0 );
 void RogueVisitor__on_leave__CmdModifyAndAssignGlobal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignGlobal* cmd_0 );
 void RogueVisitor__on_leave__CmdModifyAndAssignLocal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignLocal* cmd_0 );
 void RogueVisitor__on_leave__CmdModifyAndAssignProperty( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignProperty* cmd_0 );
@@ -7523,6 +7526,7 @@ void RogueVisitor__dispatch__CmdBinary( RogueClassVisitor* THIS, RogueClassCmdBi
 void RogueVisitor__dispatch__CmdAdjustLocal( RogueClassVisitor* THIS, RogueClassCmdAdjustLocal* cmd_0 );
 void RogueVisitor__dispatch__CmdAdjustProperty( RogueClassVisitor* THIS, RogueClassCmdAdjustProperty* cmd_0 );
 void RogueVisitor__dispatch__CmdAdjustGlobal( RogueClassVisitor* THIS, RogueClassCmdAdjustGlobal* cmd_0 );
+void RogueVisitor__dispatch__CmdModifyAndAssign( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssign* cmd_0 );
 void RogueVisitor__dispatch__CmdModifyAndAssignLocal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignLocal* cmd_0 );
 void RogueVisitor__dispatch__CmdModifyAndAssignGlobal( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignGlobal* cmd_0 );
 void RogueVisitor__dispatch__CmdModifyAndAssignProperty( RogueClassVisitor* THIS, RogueClassCmdModifyAndAssignProperty* cmd_0 );

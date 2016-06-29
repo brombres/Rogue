@@ -283,6 +283,11 @@ class Visitor
       dispatch( cmd )
       on_leave( cmd )
 
+    method visit( cmd:CmdModifyAndAssign )
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+
     method visit( cmd:CmdModifyAndAssignLocal )
       on_enter( cmd )
       dispatch( cmd )
@@ -419,6 +424,7 @@ class Visitor
     method on_enter( cmd:CmdLiteralString )
     method on_enter( cmd:CmdLocalDeclaration )
     method on_enter( cmd:CmdMakeRequisite )
+    method on_enter( cmd:CmdModifyAndAssign )
     method on_enter( cmd:CmdModifyAndAssignGlobal )
     method on_enter( cmd:CmdModifyAndAssignLocal )
     method on_enter( cmd:CmdModifyAndAssignProperty )
@@ -499,6 +505,7 @@ class Visitor
     method on_leave( cmd:CmdLiteralString )
     method on_leave( cmd:CmdLocalDeclaration )
     method on_leave( cmd:CmdMakeRequisite )
+    method on_leave( cmd:CmdModifyAndAssign )
     method on_leave( cmd:CmdModifyAndAssignGlobal )
     method on_leave( cmd:CmdModifyAndAssignLocal )
     method on_leave( cmd:CmdModifyAndAssignProperty )
@@ -771,6 +778,10 @@ class Visitor
     method dispatch( cmd:CmdAdjustGlobal )
       cmd.global_info.type_context.dispatch( this )
       cmd.global_info.type.dispatch( this )
+
+    method dispatch( cmd:CmdModifyAndAssign )
+      cmd.new_value.dispatch( this )
+      cmd.target.dispatch( this )
 
     method dispatch( cmd:CmdModifyAndAssignLocal )
       cmd.local_info.type.dispatch( this )

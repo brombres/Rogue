@@ -2261,7 +2261,7 @@ class Parser
       if (consume(TokenType.keyword_meta))
         local context_type : Type
         if (context) context_type = context.implicit_type( Scope(this_type,null) )
-        else          context_type = this_type
+        else         context_type = this_type
         if (not context_type) throw t.error( "Unable to determine type for metadata access." )
 
         must_consume( TokenType.symbol_dot )

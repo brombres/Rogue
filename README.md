@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.68 - June 29, 2016
+- [RogueC] Fixed issue causing error message "<VisitorType> does not overload method visit(CmdModifyAndAssign)."
+
 ###v1.0.67 - June 28, 2016
 - [Rogue] Changed generic function result definition symbol from `=` to `=>`.  Example: `list.sort( function(a,b) => a < b )`.
 - [Rogue] Changed directives `$includeNativeHeader` and `$includeNativeCode` into dependency statements `includeNativeHeader` and `includeNativeCode`.  Consequently native includes happen during analysis rather than parsing.
