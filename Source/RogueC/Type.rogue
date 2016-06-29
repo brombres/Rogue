@@ -20,6 +20,9 @@ class Type
     base_types         = Type[]
     extended_types     = Type[]
 
+    aspect_base_class  : Type
+    # This aspect specifies a base class for incorporating classes to adopt.
+
     is_array     : Logical
     is_list      : Logical
     is_optional  : Logical
@@ -321,6 +324,7 @@ class Type
         base_type.organize( scope )
 
         if (not base_type.is_aspect)
+          # TODO
           if (is_aspect)
             throw t.error( "Aspects can only extend other aspects." )
           elseIf (is_compound)

@@ -188,13 +188,13 @@ class Preprocessor
     method reprocess( tokens )->Token[]
       # All the heavy lifting has been done.  Just join any string literals that may now be
       # adjacent after a new template instance.
-      local rebuilder = tokens.rebuilder
-      while (rebuilder.has_another)
-        local t = rebuilder.read
-        while (t.type is TokenType.literal_string and rebuilder.has_another and rebuilder.peek.type is TokenType.literal_string)
-          t = t.type.create_token( t, t->String + rebuilder.read->String )
+      local rewriter = tokens.rewriter
+      while (rewriter.has_another)
+        local t = rewriter.read
+        while (t.type is TokenType.literal_string and rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
+          t = t.type.create_token( t, t->String + rewriter.read->String )
         endWhile
-        rebuilder.write( t )
+        rewriter.write( t )
       endWhile
 
       return tokens

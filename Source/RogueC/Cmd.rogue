@@ -929,10 +929,11 @@ endClass
 
 class CmdForEach : CmdControlStructure
   PROPERTIES
-    control_var_name : String
-    index_var_name   : String
-    collection       : Cmd
-    step_cmd         : Cmd
+    control_var_name    : String
+    index_var_name      : String
+    collection_var_name : String
+    collection          : Cmd
+    step_cmd            : Cmd
 
   METHODS
     method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
@@ -944,6 +945,8 @@ class CmdForEach : CmdControlStructure
       cloned_command = result
 
       result.statements = statements.cloned(clone_args)
+      result.collection_var_name = collection_var_name
+
       return result
 
     method resolve( scope:Scope )->Cmd
@@ -968,11 +971,13 @@ class CmdForEach : CmdControlStructure
         endIf
       endIf
 
+      if (not collection_var_name) collection_var_name = Program.create_unique_id
+
       if (has_count and has_get)
         if (m_at) m_get = m_at  # prefer at(Int32) over get(Int32)
 
         collection = collection.resolve( scope )
-        local collection_var = scope.this_method.add_local( t, Program.create_unique_id, collection.require_type, collection )
+        local collection_var = scope.this_method.add_local( t, collection_var_name, collection.require_type, collection )
 
         if (not index_var_name) index_var_name = Program.create_unique_id
         local index_var = scope.this_method.add_local( t, index_var_name, Program.type_Int32 )
@@ -1033,7 +1038,7 @@ class CmdForEach : CmdControlStructure
           throw step_cmd.t.error( "Cannot specify a step size for a reader - only for an indexed collection." )
         endIf
 
-        local reader_var = scope.this_method.add_local( t, Program.create_unique_id, collection_type, collection  )
+        local reader_var = scope.this_method.add_local( t, collection_var_name, collection_type, collection  )
         local index_var : Local
         if (index_var_name)
           index_var = scope.this_method.add_local( t, index_var_name, Program.type_Int32, CmdLiteralInt32(t,0) )

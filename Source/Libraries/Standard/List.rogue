@@ -86,7 +86,7 @@ class List<<$DataType>> : GenericList
 
     method discard( fn:Function($DataType)->Logical )->this
       # Discards any item that passes the test function.
-      local rewriter = this.rebuilder
+      local rewriter = this.rewriter
       forEach (value in rewriter)
         if (not fn(value)) rewriter.write( value )
       endForEach
@@ -241,8 +241,8 @@ class List<<$DataType>> : GenericList
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, 0 )
 
-    method rebuilder->ListRebuilder<<$DataType>>
-      return ListRebuilder<<$DataType>>( this )
+    method rebuilder->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this )
 
     method reduced<<$ToType>>( reduce_fn:Function(Int32,$DataType,$ToType)->$ToType )->$ToType
       local result : $ToType
@@ -279,7 +279,7 @@ class List<<$DataType>> : GenericList
       # Returns the list of items that pass the test function while removing
       # them from this list.
       local result = $DataType[]
-      local rewriter = this.rebuilder
+      local rewriter = this.rewriter
       forEach (value in rewriter)
         if (fn(value)) result.add( value )
         else           rewriter.write( value )
@@ -317,6 +317,9 @@ class List<<$DataType>> : GenericList
       endWhile
 
       return this
+
+    method rewriter->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this )
 
     method set( index:Int32, new_value:$DataType ) [macro]
       this.data[ index ] = new_value
@@ -480,7 +483,7 @@ augment String[]
       return builder->String
 endAugment
 
-class ListRebuilder<<$DataType>>
+class ListRewriter<<$DataType>>
   PROPERTIES
     list        : $DataType[]
     read_index  : Int32

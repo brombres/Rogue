@@ -27,6 +27,20 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.68 - June 29, 2016
+- [Rogue]  Added new `forEach` option that allows a local variable name to be specified for the collection being iterated over.
+
+    # Old Code
+    local rewriter = list.rewriter
+    forEach (value in rewriter)
+      if (passes_test(value)) rewriter.write( value )
+    endForEach
+
+    # New Code
+    forEach (value in rewriter=list.rewriter)
+      if (passes_test(value)) rewriter.write( value )
+    endForEach
+
+- [API]  Renamed `List.rebuilder()->ListRebuilder<<$DataType>>` to `List.rewriter()->ListRewriter<<$DataType>>`.
 - [RogueC] Fixed issue causing error message "<VisitorType> does not overload method visit(CmdModifyAndAssign)."
 
 ###v1.0.67 - June 28, 2016
