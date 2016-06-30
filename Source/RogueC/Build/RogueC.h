@@ -5424,7 +5424,7 @@ RogueClassProperty* RogueType__add_property__Property( RogueClassType* THIS, Rog
 void RogueType__collect_type_info__Int32_List( RogueClassType* THIS, RogueInt32_List* info_0 );
 RogueClassCmd* RogueType__create_default_value__Token( RogueClassType* THIS, RogueClassToken* _t_0 );
 void RogueType__dispatch__Visitor( RogueClassType* THIS, RogueClassVisitor* v_0 );
-void RogueType__collect_aspect_base_classes__Type( RogueClassType* THIS, RogueClassType* for_type_0 );
+void RogueType__collect_aspect_base_classes( RogueClassType* THIS );
 RogueClassMethod* RogueType__find_method__String( RogueClassType* THIS, RogueString* signature_0 );
 RogueClassMethod* RogueType__find_global_method__String( RogueClassType* THIS, RogueString* signature_0 );
 RogueClassProperty* RogueType__find_property__String( RogueClassType* THIS, RogueString* p_name_0 );

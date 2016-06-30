@@ -167,15 +167,13 @@ class Type
     method extends_object->Logical
       return instance_of( Program.type_Object )
 
-    method collect_aspect_base_classes( for_type:Type )
-      if (aspect_base_class)
-        if (not for_type.base_types.contains(aspect_base_class))
-          for_type.base_types.add( aspect_base_class )
-        endIf
-      endIf
-
+    method collect_aspect_base_classes
       forEach (base_type in base_types)
-        base_type.collect_aspect_base_classes( for_type )
+        if (base_type.aspect_base_class)
+          if (not base_types.contains(base_type.aspect_base_class))
+            base_types.add( base_type.aspect_base_class )
+          endIf
+        endIf
       endForEach
 
     method find_method( signature:String )->Method
@@ -357,7 +355,7 @@ class Type
       endForEach
 
       if (is_class)
-        collect_aspect_base_classes( this )
+        collect_aspect_base_classes
 
         forEach (base_type in base_types)
           if (base_type.is_class)
