@@ -42,6 +42,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 - [Rogue] Aspects can now specify a base class.  When a class incorporates an aspect with a base class it is as if the class directly extends the base class.
 - [API]  Renamed `List.rebuilder()->ListRebuilder<<$DataType>>` to `List.rewriter()->ListRewriter<<$DataType>>`.
+- [API]  `Degrees` and `Radians` compounds now implement relational operators (`==`, `<`, etc.).
 - [RogueC] Fixed issue causing error message "<VisitorType> does not overload method visit(CmdModifyAndAssign)."
 
 ###v1.0.67 - June 28, 2016
