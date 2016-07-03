@@ -2774,6 +2774,7 @@ class Parser
             select_case.local_info = temp_var
             select_case.conditions.add( CmdReadLocal(t,temp_var) )
             select_case.value = CmdReadLocal(t,temp_var)
+            select_case.condition_is_value = true
           endIf
         endForEach
 

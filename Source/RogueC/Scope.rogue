@@ -42,7 +42,7 @@ class Scope
       @implicit_type = new_implicit_type
       return result
 
-    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Cmd
+    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, &suppress_inherited )->Cmd
       local m = find_method( type_context, access, error_on_fail and access.context, suppress_inherited )
       if (not m and not access.context)
         # No context specified; try Global context if error_on_fail is true, which means that we've
@@ -562,6 +562,7 @@ println StackTrace()
             throw access.t.error( ''No such variable "$" or method "$" exists in current scope of type $.''...
                 (base_name,access.name,type_context) )
           else
+println StackTrace()
             throw access.t.error( ''No such method or variable "$" exists in current scope of type $.'' (access.name,type_context) )
           endIf
 

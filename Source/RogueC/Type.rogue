@@ -222,14 +222,25 @@ class Type
 
     method is_compatible_with( other:Type )->Logical
       if (this is other) return true
+
       if (this.is_primitive and other.is_primitive)
         if (this is Program.type_Logical xor other is Program.type_Logical) return false
         return true
       endIf
+
       if (other.is_optional)
         if (other.element_type is this) return true
         if (this is Program.type_null) return true
+
+        if (other.element_type.is_primitive)
+          if (this.is_primitive)
+            return not (this is Program.type_Logical xor other.element_type is Program.type_Logical)
+          elseIf (this.is_optional and this.element_type.is_primitive)
+            return not (this.element_type is Program.type_Logical xor other.element_type is Program.type_Logical)
+          endIf
+        endIf
       endIf
+
       if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
 

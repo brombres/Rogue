@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.68 - June 29, 2016
+###v1.0.68 - July 2, 2016
 - [Rogue]  Added new `forEach` option that allows a local variable name to be specified for the collection being iterated over.
 
     # Old Code
@@ -41,6 +41,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
     endForEach
 
 - [Rogue] Aspects can now specify a base class.  When a class incorporates an aspect with a base class it is as if the class directly extends the base class.
+- [Rogue] Optional primitive types are now compatible with other optional primitive types.  In other words an `Int32?` can be passed in for a `Real64?` parameter.
 - [API]  Renamed `List.rebuilder()->ListRebuilder<<$DataType>>` to `List.rewriter()->ListRewriter<<$DataType>>`.
 - [API]  `Degrees` and `Radians` compounds now implement relational operators (`==`, `<`, etc.).
 - [RogueC] Fixed issue causing error message "<VisitorType> does not overload method visit(CmdModifyAndAssign)."

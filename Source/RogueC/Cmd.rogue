@@ -33,7 +33,7 @@ class Cmd
 
       local m_name = "to_" + target_type.name
       if (this_type.has_method_named(m_name))
-        return CmdAccess( t, this, m_name )
+        return scope.resolve_call( this_type, CmdAccess(t,this,m_name), true )
       endIf
 
       if (target_type.find_method( "init($)"(this_type.name) )...
@@ -48,6 +48,8 @@ class Cmd
           return CmdAccess( t, "$?"(this_type.name), CmdArgs(this) )
         elseIf (this_type is Program.type_null)
           return CmdAccess( t, "$?"(this_type.name), CmdArgs() )
+        elseIf (this_type.is_primitive)
+          return cast_to( target_type.element_type, scope, allow_implicit_narrowing ).resolve(scope).cast_to( target_type, scope, allow_implicit_narrowing )
         endIf
       endIf
 
@@ -95,6 +97,19 @@ class Cmd
       if (right_type is null) return left_type
 
       if (left_type is right_type) return left_type
+
+      if (left_type.is_optional)
+        if (right_type.is_optional)
+          local common_type = must_find_common_type( left_type.element_type, right_type.element_type )
+          return Program.get_type_reference( t, "$?"(common_type.name) ).organize
+        else
+          must_find_common_type( left_type.element_type, right_type )  # Just make sure it's possible
+          return left_type
+        endIf
+      elseIf (right_type.is_optional)
+        must_find_common_type( left_type, right_type.element_type )
+        return right_type
+      endIf
 
       if (left_type.is_primitive)
         if (right_type.is_primitive)
@@ -1990,7 +2005,7 @@ class CmdAccess : Cmd
         endIf
       endIf
 
-      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
+      throw t.error( ''No such method or variable "$" exists in the current scope [1].'' (name) )
 
     method expand_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       local cmd : Cmd
@@ -2063,7 +2078,7 @@ class CmdAccess : Cmd
         if (setter) return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
       endIf
 
-      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
+      throw t.error( ''No such method or variable "$" exists in the current scope. [2]'' (name) )
 
     method to->String
       local buffer = StringBuilder()
@@ -4937,7 +4952,7 @@ class CmdSelect : Cmd
       endForEach
 
       forEach (c in cases)
-        c.value = c.value.cast_to( value_type, scope ).resolve( scope ).require_value
+        c.cast_value( value_type, scope )
       endForEach
 
       if (expression)
@@ -4959,6 +4974,7 @@ class CmdSelectCase : Cmd
     conditions : Cmd[]
     value      : Cmd
     local_info : Local
+    condition_is_value : Logical
 
   METHODS
     method init( t, conditions=Cmd[](1), value=null, local_info=null )
@@ -4967,6 +4983,7 @@ class CmdSelectCase : Cmd
       local result = CmdSelectCase( t, null, cloned(value,clone_args), local_info )
       result.conditions = Cmd[]( conditions.count )
       forEach (c in conditions) result.conditions.add( c.cloned(clone_args) )
+      result.condition_is_value = condition_is_value
       return result
 
     method cast_conditions( to_type:Type, scope:Scope )
@@ -4974,12 +4991,18 @@ class CmdSelectCase : Cmd
         conditions[i] = conditions[i].cast_to( to_type, scope ).resolve( scope ).require_value
       endForEach
 
+    method cast_value( to_type:Type, scope:Scope )
+      # Value has been resolved; cast to final type
+      local value_type = value.type
+      if (value_type.is_optional and not to_type.is_optional)
+        value = CmdAccess(value.t,value,"value").resolve( scope )
+      endIf
+      value = value.cast_to( to_type, scope ).resolve( scope ).require_value
+
     method implicit_type( scope:Scope )->Type
       return select { value:value.implicit_type(scope) || null }
 
     method resolve( scope:Scope )->Cmd
-      if (not value) value = conditions.first.cloned
-
       forEach (condition at i in conditions)
         condition = conditions[i].resolve( scope ).require_value
         if (condition.type.is_optional)
@@ -4988,8 +5011,10 @@ class CmdSelectCase : Cmd
         conditions[i] = condition
       endForEach
 
+      if (not value) value = conditions.first.cloned
       value = value.resolve( scope ).require_value
-      if (value.type.is_optional)
+
+      if (value.type.is_optional and condition_is_value)
         value = CmdAccess(value.t,value,"value").resolve( scope )
       endIf
 

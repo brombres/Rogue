@@ -9,3 +9,112 @@ class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
       if (exists) return value->String
       else        return "null"
 endClass
+
+augment Real64?
+  METHODS
+    method to->Real32?
+      return select{ this|| Real32?() }
+
+    method to->Int64?
+      return select{ this || Int64?() }
+
+    method to->Int32?
+      return select{ this || Int32?() }
+
+    method to->Character?
+      return select{ this || Character?() }
+
+    method to->Byte?
+      return select{ this || Byte?() }
+endAugment
+
+augment Real32?
+  METHODS
+    method to->Real64?
+      return select{ this|| Real64?() }
+
+    method to->Int64?
+      return select{ this || Int64?() }
+
+    method to->Int32?
+      return select{ this || Int32?() }
+
+    method to->Character?
+      return select{ this || Character?() }
+
+    method to->Byte?
+      return select{ this || Byte?() }
+endAugment
+
+augment Int64?
+  METHODS
+    method to->Real64?
+      return select{ this|| Real64?() }
+
+    method to->Real32?
+      return select{ this || Real32?() }
+
+    method to->Int32?
+      return select{ this || Int32?() }
+
+    method to->Character?
+      return select{ this || Character?() }
+
+    method to->Byte?
+      return select{ this || Byte?() }
+endAugment
+
+augment Int32?
+  METHODS
+    method to->Real64?
+      return select{ this|| Real64?() }
+
+    method to->Real32?
+      return select{ this || Real32?() }
+
+    method to->Int64?
+      return select{ this || Int64?() }
+
+    method to->Character?
+      return select{ this || Character?() }
+
+    method to->Byte?
+      return select{ this || Byte?() }
+endAugment
+
+augment Character?
+  METHODS
+    method to->Real64?
+      return select{ this|| Real64?() }
+
+    method to->Real32?
+      return select{ this || Real32?() }
+
+    method to->Int64?
+      return select{ this || Int64?() }
+
+    method to->Int32?
+      return select{ this || Int32?() }
+
+    method to->Byte?
+      return select{ this || Byte?() }
+endAugment
+
+augment Byte?
+  METHODS
+    method to->Real64?
+      return select{ this|| Real64?() }
+
+    method to->Real32?
+      return select{ this || Real32?() }
+
+    method to->Int64?
+      return select{ this || Int64?() }
+
+    method to->Int32?
+      return select{ this || Int32?() }
+
+    method to->Character?
+      return select{ this || Character?() }
+endAugment
+
