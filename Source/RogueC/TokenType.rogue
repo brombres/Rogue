@@ -34,6 +34,7 @@ class TokenType
     keyword_endIf                 : TokenType
     keyword_endLoop               : TokenType
     keyword_endRoutine            : TokenType
+    keyword_endSubclass           : TokenType
     keyword_endTry                : TokenType
     keyword_endUnitTest           : TokenType
     keyword_endWhich              : TokenType
@@ -50,6 +51,7 @@ class TokenType
     keyword_PROPERTIES            : TokenType
     keyword_routine               : TokenType
     keyword_satisfied             : TokenType
+    keyword_subclass              : TokenType
     keyword_unsatisfied           : TokenType
     keyword_with                  : TokenType
 

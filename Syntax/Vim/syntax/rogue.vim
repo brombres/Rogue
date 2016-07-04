@@ -20,7 +20,8 @@ endif
 syn keyword rogueClassDecl   module
 syn keyword rogueClassDecl   class endClass routine endRoutine aspect
 syn keyword rogueClassDecl   function endFunction
-syn keyword rogueClassDecl   with endWith
+syn keyword rogueClassDecl   with
+syn keyword rogueClassDecl   subclass endSubclass
 syn keyword rogueClassDecl   augment endAugment
 syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHeader
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES

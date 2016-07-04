@@ -86,7 +86,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(with|endWith)\b</string>
+			<string>\b(with|subclass|endSubclass)\b</string>
 			<key>name</key>
 			<string>storage.type.rogue</string>
 		</dict>

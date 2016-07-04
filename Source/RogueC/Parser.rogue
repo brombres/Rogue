@@ -2310,7 +2310,19 @@ class Parser
         access.args = CmdArgs()
         access.named_args = parse_args( access.args )
       endIf
-      access.context = context
+
+      if (context)
+        access.context = context
+      elseIf (access.args and consume(TokenType.keyword_subclass))
+        # In-line class definition
+        local type_name = "$_$" (access.name,Program.create_unique_id)
+        local inline_type = Program.get_type_reference( t, type_name )
+        local template = Template( t, type_name, Attribute.is_class )
+        parse_template_tokens( template, TokenType.keyword_endSubclass )
+        inline_type.base_types.add( Program.get_type_reference(t,access.name) )
+        access.name = type_name
+      endIf
+
       return access
 
     # TODO: Add multi-line handling
@@ -2484,10 +2496,6 @@ class Parser
         if (access and access.name.ends_with(']') and not access.args)
           if (next_is(TokenType.symbol_open_bracket)) return parse_typed_literal_list( access.t, access.name )
         endIf
-        return result
-
-      elseIf (next_is(TokenType.type_identifier))
-        local result = parse_access( t )
         return result
 
       elseIf (consume(TokenType.literal_string))
