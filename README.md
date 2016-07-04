@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.69 - July 4, 2016
+- [RogueC] Added some kludgy code to get rid of C++ "unreachable code" warnings when all control paths in a `contingent` return a value.
+
+
 ###v1.0.68 - July 3, 2016
 - [Rogue]  Added ability to define anonymous inline classes:
 

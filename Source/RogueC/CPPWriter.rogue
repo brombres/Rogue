@@ -2047,13 +2047,21 @@ augment CmdContingent
       statements.write_cpp( writer )
       writer.println( "}" ); writer.indent -= 2
 
+      # 'satisfied_returns' and 'body_returns' are pretty kludgy ways to get rid of
+      # some C++ warnings for now... need to replace with a more robust control path
+      # tracing system at some point.
+
       if (satisfied_label)   writer.print( satisfied_label ).println( ":;" )
       if (satisfied_statements)
         writer.println( "{" ); writer.indent += 2
         satisfied_statements.write_cpp( writer )
+        local satisfied_returns = (satisfied_statements.count and satisfied_statements.last instanceOf CmdReturn)
         writer.println( "}" ); writer.indent -= 2
+        if (not satisfied_returns) writer.print( "goto " ).print( escape_label ).println( ";" )
+      else
+        local body_returns = (statements.count and statements.last instanceOf CmdReturn)
+        if (not body_returns) writer.print( "goto " ).print( escape_label ).println( ";" )
       endIf
-      writer.print( "goto " ).print( escape_label ).println( ";" )
 
       writer.indent -= 2
       writer.println( "}" )
