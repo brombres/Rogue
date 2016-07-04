@@ -29,13 +29,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.68 - July 3, 2016
 - [Rogue]  Added ability to define anonymous inline classes:
 
-    local obj = SomeClass() subclass
+    local obj = SomeClass() instance
       # PROPERTIES, METHODS, ...
-    endSubclass
+    endInstance
 
-    local obj = SomeClass(initializer-args) subclass(initializer-parameters)
+    local obj = SomeClass(initializer-args) instance(initializer-parameters)
       # PROPERTIES, METHODS, ...
-    endSubclass
+    endInstance
 
 - [Rogue]  Added new `forEach` option that allows a local variable name to be specified for the collection being iterated over.
 

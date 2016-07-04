@@ -2932,9 +2932,9 @@ RogueClassTokenType* RogueTokenType_keyword_endContingent = 0;
 RogueClassTokenType* RogueTokenType_keyword_endForEach = 0;
 RogueClassTokenType* RogueTokenType_keyword_endFunction = 0;
 RogueClassTokenType* RogueTokenType_keyword_endIf = 0;
+RogueClassTokenType* RogueTokenType_keyword_endInstance = 0;
 RogueClassTokenType* RogueTokenType_keyword_endLoop = 0;
 RogueClassTokenType* RogueTokenType_keyword_endRoutine = 0;
-RogueClassTokenType* RogueTokenType_keyword_endSubclass = 0;
 RogueClassTokenType* RogueTokenType_keyword_endTry = 0;
 RogueClassTokenType* RogueTokenType_keyword_endUnitTest = 0;
 RogueClassTokenType* RogueTokenType_keyword_endWhich = 0;
@@ -2943,6 +2943,7 @@ RogueClassTokenType* RogueTokenType_keyword_ENUMERATE = 0;
 RogueClassTokenType* RogueTokenType_keyword_GLOBAL = 0;
 RogueClassTokenType* RogueTokenType_keyword_includeNativeCode = 0;
 RogueClassTokenType* RogueTokenType_keyword_includeNativeHeader = 0;
+RogueClassTokenType* RogueTokenType_keyword_instance = 0;
 RogueClassTokenType* RogueTokenType_keyword_method = 0;
 RogueClassTokenType* RogueTokenType_keyword_METHODS = 0;
 RogueClassTokenType* RogueTokenType_keyword_nativeCode = 0;
@@ -2951,7 +2952,6 @@ RogueClassTokenType* RogueTokenType_keyword_others = 0;
 RogueClassTokenType* RogueTokenType_keyword_PROPERTIES = 0;
 RogueClassTokenType* RogueTokenType_keyword_routine = 0;
 RogueClassTokenType* RogueTokenType_keyword_satisfied = 0;
-RogueClassTokenType* RogueTokenType_keyword_subclass = 0;
 RogueClassTokenType* RogueTokenType_keyword_unsatisfied = 0;
 RogueClassTokenType* RogueTokenType_keyword_with = 0;
 RogueClassTokenType* RogueTokenType_symbol_close_brace = 0;
@@ -8495,9 +8495,9 @@ void Rogue_trace()
   if ((link=RogueTokenType_keyword_endForEach)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endFunction)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endIf)) ((RogueObject*)link)->type->trace_fn( link );
+  if ((link=RogueTokenType_keyword_endInstance)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endLoop)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endRoutine)) ((RogueObject*)link)->type->trace_fn( link );
-  if ((link=RogueTokenType_keyword_endSubclass)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endTry)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endUnitTest)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_endWhich)) ((RogueObject*)link)->type->trace_fn( link );
@@ -8506,6 +8506,7 @@ void Rogue_trace()
   if ((link=RogueTokenType_keyword_GLOBAL)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_includeNativeCode)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_includeNativeHeader)) ((RogueObject*)link)->type->trace_fn( link );
+  if ((link=RogueTokenType_keyword_instance)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_method)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_METHODS)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_nativeCode)) ((RogueObject*)link)->type->trace_fn( link );
@@ -8514,7 +8515,6 @@ void Rogue_trace()
   if ((link=RogueTokenType_keyword_PROPERTIES)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_routine)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_satisfied)) ((RogueObject*)link)->type->trace_fn( link );
-  if ((link=RogueTokenType_keyword_subclass)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_unsatisfied)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_keyword_with)) ((RogueObject*)link)->type->trace_fn( link );
   if ((link=RogueTokenType_symbol_close_brace)) ((RogueObject*)link)->type->trace_fn( link );
@@ -18355,9 +18355,9 @@ void* Rogue_global_property_pointers[] =
   (void*) &RogueTokenType_keyword_endForEach,
   (void*) &RogueTokenType_keyword_endFunction,
   (void*) &RogueTokenType_keyword_endIf,
+  (void*) &RogueTokenType_keyword_endInstance,
   (void*) &RogueTokenType_keyword_endLoop,
   (void*) &RogueTokenType_keyword_endRoutine,
-  (void*) &RogueTokenType_keyword_endSubclass,
   (void*) &RogueTokenType_keyword_endTry,
   (void*) &RogueTokenType_keyword_endUnitTest,
   (void*) &RogueTokenType_keyword_endWhich,
@@ -18366,6 +18366,7 @@ void* Rogue_global_property_pointers[] =
   (void*) &RogueTokenType_keyword_GLOBAL,
   (void*) &RogueTokenType_keyword_includeNativeCode,
   (void*) &RogueTokenType_keyword_includeNativeHeader,
+  (void*) &RogueTokenType_keyword_instance,
   (void*) &RogueTokenType_keyword_method,
   (void*) &RogueTokenType_keyword_METHODS,
   (void*) &RogueTokenType_keyword_nativeCode,
@@ -18374,7 +18375,6 @@ void* Rogue_global_property_pointers[] =
   (void*) &RogueTokenType_keyword_PROPERTIES,
   (void*) &RogueTokenType_keyword_routine,
   (void*) &RogueTokenType_keyword_satisfied,
-  (void*) &RogueTokenType_keyword_subclass,
   (void*) &RogueTokenType_keyword_unsatisfied,
   (void*) &RogueTokenType_keyword_with,
   (void*) &RogueTokenType_symbol_close_brace,
@@ -28299,12 +28299,12 @@ RogueClassCmd* RogueParser__parse_access__Token_Cmd( RogueClassParser* THIS, Rog
   {
     access_4->context = context_1;
   }
-  else if ((!!(access_4->args) && ((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_subclass) )))))
+  else if ((!!(access_4->args) && ((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_instance) )))))
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,type_name_5,(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(access_4->name) )))) )))), Rogue_literal_strings[308] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) )))) )))) )))) )))));
     ROGUE_DEF_LOCAL_REF(RogueClassType*,inline_type_6,(((RogueProgram__get_type_reference__Token_String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), t_0, type_name_5 )))));
     ROGUE_DEF_LOCAL_REF(RogueClassTemplate*,template_7,(((RogueTemplate__init__Token_String_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassTemplate*,ROGUE_CREATE_OBJECT(Template))), t_0, type_name_5, 0 )))));
-    RogueParser__parse_template_tokens__Template_TokenType( ROGUE_ARG(THIS), template_7, ROGUE_ARG(RogueTokenType_keyword_endSubclass) );
+    RogueParser__parse_template_tokens__Template_TokenType( ROGUE_ARG(THIS), template_7, ROGUE_ARG(RogueTokenType_keyword_endInstance) );
     RogueType_List__add__Type( ROGUE_ARG(inline_type_6->base_types), ROGUE_ARG(((RogueProgram__get_type_reference__Token_String( ((RogueClassProgram*)ROGUE_SINGLETON(Program)), t_0, ROGUE_ARG(access_4->name) )))) );
     access_4->name = type_name_5;
   }
@@ -44777,22 +44777,22 @@ void RogueTokenizer__configure_token_types( RogueClassTokenizer* THIS )
   RogueTokenType_keyword_endForEach = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[118] )))))))) )));
   RogueTokenType_keyword_endFunction = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[119] )))))))) )));
   RogueTokenType_keyword_endIf = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[120] )))))))) )));
-  RogueTokenType_keyword_endLoop = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[121] )))))))) )));
-  RogueTokenType_keyword_endRoutine = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[122] ))))))) )))) )));
-  RogueTokenType_keyword_endSubclass = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[123] )))))))) )));
+  RogueTokenType_keyword_endInstance = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[121] )))))))) )));
+  RogueTokenType_keyword_endLoop = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[122] )))))))) )));
+  RogueTokenType_keyword_endRoutine = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[123] ))))))) )))) )));
   RogueTokenType_keyword_endTry = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[124] )))))))) )));
   RogueTokenType_keyword_endUnitTest = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[125] )))))))) )));
   RogueTokenType_keyword_endWhich = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[126] )))))))) )));
   RogueTokenType_keyword_endWhile = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[127] )))))))) )));
   RogueTokenType_keyword_ENUMERATE = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[128] ))))))) )))) )));
   RogueTokenType_keyword_GLOBAL = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[129] ))))))) )))) )));
-  RogueTokenType_keyword_method = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[130] ))))))) )))) )));
-  RogueTokenType_keyword_METHODS = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[131] ))))))) )))) )));
-  RogueTokenType_keyword_others = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[132] )))))))) )));
-  RogueTokenType_keyword_PROPERTIES = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[133] ))))))) )))) )));
-  RogueTokenType_keyword_routine = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[134] ))))))) )))) )));
-  RogueTokenType_keyword_satisfied = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[135] )))))))) )));
-  RogueTokenType_keyword_subclass = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[136] )))))))) )));
+  RogueTokenType_keyword_instance = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[130] )))))))) )));
+  RogueTokenType_keyword_method = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[131] ))))))) )))) )));
+  RogueTokenType_keyword_METHODS = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[132] ))))))) )))) )));
+  RogueTokenType_keyword_others = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[133] )))))))) )));
+  RogueTokenType_keyword_PROPERTIES = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[134] ))))))) )))) )));
+  RogueTokenType_keyword_routine = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueTokenType__mark_non_method( ROGUE_ARG(((RogueClassTokenType*)((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[135] ))))))) )))) )));
+  RogueTokenType_keyword_satisfied = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[136] )))))))) )));
   RogueTokenType_keyword_unsatisfied = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[137] )))))))) )));
   RogueTokenType_keyword_with = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[138] )))))))) )));
   RogueTokenType_symbol_close_brace = ((RogueTokenizer__define__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassTokenType*)(((RogueClassStructureTokenType*)(((RogueTokenType__init__String( ROGUE_ARG(((RogueClassTokenType*)ROGUE_CREATE_REF(RogueClassStructureTokenType*,ROGUE_CREATE_OBJECT(StructureTokenType)))), Rogue_literal_strings[139] )))))))) )));
@@ -60690,7 +60690,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[43] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[44] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[45] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.68.7", 8 ) ); 
+  Rogue_literal_strings[46] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.68.8", 8 ) ); 
   Rogue_literal_strings[47] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 3, 2016", 12 ) ); 
   Rogue_literal_strings[48] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[49] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
@@ -60765,22 +60765,22 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[118] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endForEach", 10 ) ); 
   Rogue_literal_strings[119] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endFunction", 11 ) ); 
   Rogue_literal_strings[120] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endIf", 5 ) ); 
-  Rogue_literal_strings[121] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endLoop", 7 ) ); 
-  Rogue_literal_strings[122] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endRoutine", 10 ) ); 
-  Rogue_literal_strings[123] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endSubclass", 11 ) ); 
+  Rogue_literal_strings[121] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endInstance", 11 ) ); 
+  Rogue_literal_strings[122] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endLoop", 7 ) ); 
+  Rogue_literal_strings[123] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endRoutine", 10 ) ); 
   Rogue_literal_strings[124] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endTry", 6 ) ); 
   Rogue_literal_strings[125] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endUnitTest", 11 ) ); 
   Rogue_literal_strings[126] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endWhich", 8 ) ); 
   Rogue_literal_strings[127] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "endWhile", 8 ) ); 
   Rogue_literal_strings[128] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "ENUMERATE", 9 ) ); 
   Rogue_literal_strings[129] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "GLOBAL", 6 ) ); 
-  Rogue_literal_strings[130] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "method", 6 ) ); 
-  Rogue_literal_strings[131] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "METHODS", 7 ) ); 
-  Rogue_literal_strings[132] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "others", 6 ) ); 
-  Rogue_literal_strings[133] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "PROPERTIES", 10 ) ); 
-  Rogue_literal_strings[134] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "routine", 7 ) ); 
-  Rogue_literal_strings[135] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "satisfied", 9 ) ); 
-  Rogue_literal_strings[136] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "subclass", 8 ) ); 
+  Rogue_literal_strings[130] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "instance", 8 ) ); 
+  Rogue_literal_strings[131] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "method", 6 ) ); 
+  Rogue_literal_strings[132] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "METHODS", 7 ) ); 
+  Rogue_literal_strings[133] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "others", 6 ) ); 
+  Rogue_literal_strings[134] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "PROPERTIES", 10 ) ); 
+  Rogue_literal_strings[135] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "routine", 7 ) ); 
+  Rogue_literal_strings[136] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "satisfied", 9 ) ); 
   Rogue_literal_strings[137] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "unsatisfied", 11 ) ); 
   Rogue_literal_strings[138] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "with", 4 ) ); 
   Rogue_literal_strings[139] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "}", 1 ) ); 
@@ -62097,9 +62097,9 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1450] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endForEach", 18 ) ); 
   Rogue_literal_strings[1451] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endFunction", 19 ) ); 
   Rogue_literal_strings[1452] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endIf", 13 ) ); 
-  Rogue_literal_strings[1453] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endLoop", 15 ) ); 
-  Rogue_literal_strings[1454] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endRoutine", 18 ) ); 
-  Rogue_literal_strings[1455] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endSubclass", 19 ) ); 
+  Rogue_literal_strings[1453] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endInstance", 19 ) ); 
+  Rogue_literal_strings[1454] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endLoop", 15 ) ); 
+  Rogue_literal_strings[1455] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endRoutine", 18 ) ); 
   Rogue_literal_strings[1456] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endTry", 14 ) ); 
   Rogue_literal_strings[1457] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endUnitTest", 19 ) ); 
   Rogue_literal_strings[1458] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_endWhich", 16 ) ); 
@@ -62108,15 +62108,15 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1461] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_GLOBAL", 14 ) ); 
   Rogue_literal_strings[1462] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_includeNativeCode", 25 ) ); 
   Rogue_literal_strings[1463] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_includeNativeHeader", 27 ) ); 
-  Rogue_literal_strings[1464] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_method", 14 ) ); 
-  Rogue_literal_strings[1465] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_METHODS", 15 ) ); 
-  Rogue_literal_strings[1466] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_nativeCode", 18 ) ); 
-  Rogue_literal_strings[1467] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_nativeHeader", 20 ) ); 
-  Rogue_literal_strings[1468] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_others", 14 ) ); 
-  Rogue_literal_strings[1469] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_PROPERTIES", 18 ) ); 
-  Rogue_literal_strings[1470] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_routine", 15 ) ); 
-  Rogue_literal_strings[1471] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_satisfied", 17 ) ); 
-  Rogue_literal_strings[1472] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_subclass", 16 ) ); 
+  Rogue_literal_strings[1464] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_instance", 16 ) ); 
+  Rogue_literal_strings[1465] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_method", 14 ) ); 
+  Rogue_literal_strings[1466] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_METHODS", 15 ) ); 
+  Rogue_literal_strings[1467] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_nativeCode", 18 ) ); 
+  Rogue_literal_strings[1468] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_nativeHeader", 20 ) ); 
+  Rogue_literal_strings[1469] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_others", 14 ) ); 
+  Rogue_literal_strings[1470] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_PROPERTIES", 18 ) ); 
+  Rogue_literal_strings[1471] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_routine", 15 ) ); 
+  Rogue_literal_strings[1472] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_satisfied", 17 ) ); 
   Rogue_literal_strings[1473] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_unsatisfied", 19 ) ); 
   Rogue_literal_strings[1474] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "keyword_with", 12 ) ); 
   Rogue_literal_strings[1475] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "symbol_close_brace", 18 ) ); 

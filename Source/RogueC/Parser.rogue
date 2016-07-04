@@ -2313,12 +2313,12 @@ class Parser
 
       if (context)
         access.context = context
-      elseIf (access.args and consume(TokenType.keyword_subclass))
+      elseIf (access.args and consume(TokenType.keyword_instance))
         # In-line class definition
         local type_name = "$_$" (access.name,Program.create_unique_id)
         local inline_type = Program.get_type_reference( t, type_name )
         local template = Template( t, type_name, Attribute.is_class )
-        parse_template_tokens( template, TokenType.keyword_endSubclass )
+        parse_template_tokens( template, TokenType.keyword_endInstance )
         inline_type.base_types.add( Program.get_type_reference(t,access.name) )
         access.name = type_name
       endIf
