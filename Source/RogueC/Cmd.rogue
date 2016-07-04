@@ -3846,13 +3846,22 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
         if (local_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ).resolve( scope )
         else
+          new_value = new_value.resolve( scope ).require_value
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
           if (local_info.type.method_lookup_by_name[m_name])
             return CmdWriteLocal( t, local_info,
             CmdAccess( t, CmdReadLocal(t,local_info), m_name, new_value ) ).resolve( scope )
+          elseIf (local_info.type.global_method_lookup_by_name[m_name])
+            return CmdWriteLocal( t, local_info,
+              CmdAccess( t, CmdAccess(t,local_info.type.name), m_name,
+                CmdArgs( CmdReadLocal(t,local_info), new_value ) ) ).resolve( scope )
+          elseIf (new_value.type.global_method_lookup_by_name[m_name])
+            return CmdWriteLocal( t, local_info,
+                CmdAccess( t, CmdAccess(t,new_value.type.name), m_name,
+                CmdArgs( CmdReadLocal(t,local_info), new_value ) ) ).resolve( scope )
           else
-            local arg_type = new_value.type.name
-            throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (local_info.type,m_name,arg_type,m_name,arg_type) )
+            local arg_type = new_value.require_type
+            throw t.error( "No suitable operator method found; type $ implements neither $()($), $=($), nor global method $()(2)." (local_info.type,m_name,arg_type.name,m_name,arg_type.name,m_name) )
           endIf
         endIf
       elseIf (local_info.type.is_compound)
@@ -3902,10 +3911,19 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
         if (global_info.type.method_lookup_by_name[m_name])
           return CmdAccess( t, CmdReadGlobal(t,global_info), m_name, new_value ).resolve( scope )
         else
+          new_value = new_value.resolve( scope ).require_value
           m_name = m_name.leftmost(-1)  # operator+= -> operator+
           if (global_info.type.method_lookup_by_name[m_name])
             return CmdWriteGlobal( t, global_info,
               CmdAccess(t, CmdReadGlobal(t,global_info), m_name, new_value) ).resolve( scope )
+          elseIf (global_info.type.global_method_lookup_by_name[m_name])
+            return CmdWriteGlobal( t, global_info,
+              CmdAccess( t, CmdAccess(t,global_info.type.name), m_name,
+              CmdArgs( CmdReadGlobal(t,global_info), new_value ) ) ).resolve( scope )
+          elseIf (new_value.type.global_method_lookup_by_name[m_name])
+            return CmdWriteGlobal( t, global_info,
+              CmdAccess( t, CmdAccess(t,new_value.type.name), m_name,
+              CmdArgs( CmdReadGlobal(t,global_info), new_value ) ) ).resolve( scope )
           else
             local arg_type = new_value.type.name
             throw t.error( "No suitable operator method found; type $ implements neither $()($) nor $=($)." (global_info.type,m_name,arg_type,m_name,arg_type) )
