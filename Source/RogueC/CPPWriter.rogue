@@ -1465,6 +1465,7 @@ augment Type
 
   METHODS
     method assign_cpp_name
+      if (cpp_name) return
       cpp_name = Program.validate_cpp_name( name )
 
       if (is_array or this is Program.type_NativeArray)
