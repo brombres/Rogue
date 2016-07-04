@@ -180,7 +180,7 @@ augment Program
       writer.println "// FORWARD DECLARATIONS"
       forEach (type in type_list)
         if (not type.omit_output and not type.is_primitive)
-          writer.print( "struct " ).print( type.cpp_class_name ).println( ";" );
+          writer.print( "struct " ).print( type.cpp_class_name ).print("; // ").println( type.name )
         endIf
       endForEach
       writer.println
