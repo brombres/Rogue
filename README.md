@@ -26,6 +26,23 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.70 - July 4, 2016
+- Merge pull request #7 from `MurphyMc/misc_work_march2016`
+    - Misc work March 2016 by MurphyMc
+    - Add additional plugin hooks 42813c4
+    - Type: Add `is_function` tag 4493e0e
+    - stdlib: Remove unused RogueException    fe76c01
+    - stdlib.Exception: Add .format() 6bdf367
+    - CPPWriter: Generate debug trace info more robustly    41633e5
+    - primitives: Add .minimum and .maximum for Int32 / Suggest this is done for all primitive numeric types.  839bde3
+    - Add/improve a couple useful `to->Strings`    0a3ea9d
+    - CPPWriter: Don't `assign_cpp_name` more than once    3d9bfd1
+    - CPPWriter: Include original type name as a comment aa6ccc7
+    - Exception: Set Exception message by default 0aa84a3
+    - Parser: Add templates to Program earlier 4a9db80
+    - Ability to generate virtual/dynamic calls for all methods de94726
+
+
 ###v1.0.69 - July 4, 2016
 - [RogueC] Added some kludgy code to get rid of C++ "unreachable code" warnings when all control paths in a `contingent` return a value.
 
