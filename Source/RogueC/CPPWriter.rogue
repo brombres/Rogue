@@ -240,6 +240,32 @@ augment Program
       writer.println( "void Rogue_trace();" )
       writer.println
 
+      # typedef each unique method signature
+      local native_method_signature_list   = String[]
+      local native_method_signature_lookup = Table<<String,Method>>()
+      forEach (type in type_list)
+        if (type.is_used)
+          type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
+        endIf
+      endForEach
+
+      # write dynamic dispatch method prototypes
+      if (RogueC.all_methods_callable_dynamically)
+        forEach (sig in native_method_signature_list)
+          local m = native_method_signature_lookup[sig]  # one of the methods using this signature
+          if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
+            writer.print( "extern ").print( m.return_type ).print( " Rogue_call_" ).print( m.cpp_typedef )
+            writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+            forEach (i of m.parameters)
+              local p = m.parameters[i]
+              writer.print( ", " ).print(p.type).print( " p" ).print( i )
+            endForEach
+            writer.println( " );" )
+          endIf
+        endForEach
+        writer.println
+      endIf
+
       forEach (plugin in RogueC.plugins)
         plugin.finish_header_file( writer )
       endForEach
@@ -265,15 +291,6 @@ augment Program
         plugin.start_code_file( writer )
       endForEach
 
-      # typedef each unique method signature
-      local native_method_signature_list   = String[]
-      local native_method_signature_lookup = Table<<String,Method>>()
-      forEach (type in type_list)
-        if (type.is_used)
-          type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
-        endIf
-      endForEach
-
       forEach (sig in native_method_signature_list)
         writer.print( "typedef " ).print( sig.before_first("(*)") ).print( "(*" )
         writer.print( native_method_signature_lookup[sig].cpp_typedef ).print(")")
@@ -284,8 +301,8 @@ augment Program
       # write dynamic dipatch methods
       forEach (sig in native_method_signature_list)
         local m = native_method_signature_lookup[sig]  # one of the methods using this signature
-        if (m.called_dynamically)
-          writer.print( m.return_type ).print( " call_" ).print( m.cpp_typedef )
+        if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
+          writer.print( m.return_type ).print( " Rogue_call_" ).print( m.cpp_typedef )
           writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
           forEach (i of m.parameters)
             local p = m.parameters[i]
@@ -2484,7 +2501,7 @@ augment CmdCallDynamicMethod
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       if (method_info.is_overridden)
-        writer.print( "call_" ).print( method_info.cpp_typedef )
+        writer.print( "Rogue_call_" ).print( method_info.cpp_typedef )
         writer.print( "( " )
         writer.print( method_info.index ).print( ", " )
         writer.print_arg( context, &cast_to = method_info.type_context )

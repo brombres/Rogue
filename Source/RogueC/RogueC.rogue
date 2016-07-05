@@ -50,8 +50,11 @@ class RogueC [singleton]
     supported_targets      = String[]
     requisite_declarations = String[]
 
-    # If true everything is requisite
     all_requisite = false
+    # If true everything is requisite
+
+    all_methods_callable_dynamically = false
+    # When true, all methods can be called dynamically
 
     compile_output    : Logical
     execute_args      : String
