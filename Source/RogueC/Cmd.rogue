@@ -429,11 +429,12 @@ class CmdControlStructure : CmdStatement
     type_forEach
 
   PROPERTIES
-    statements       : CmdStatementList
-    control_type     : Int32
-    contains_yield   : Logical
-    escape_label     : String
-    upkeep_label     : String
+    statements          : CmdStatementList
+    control_type        : Int32
+    contains_yield      : Logical
+    escape_label        : String
+    escape_label_used   : Logical
+    upkeep_label        : String
     task_escape_section : CmdTaskControlSection
     task_upkeep_section : CmdTaskControlSection
     cloned_command      : CmdControlStructure
@@ -1251,7 +1252,10 @@ class CmdEscape : Cmd
         local cmd = scope.control_stack[i]
         if (cmd.control_type == control_type)
           while (cmd.cloned_command) cmd = cmd.cloned_command
-          if (not cmd.escape_label) cmd.escape_label = Program.create_unique_id
+          if (not cmd.escape_label)
+            cmd.escape_label = Program.create_unique_id
+            cmd.escape_label_used = true
+          endIf
           target_cmd = cmd
           return this
         endIf

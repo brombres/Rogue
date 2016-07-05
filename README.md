@@ -28,6 +28,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.71 - July 5, 2016
 - [RogueC] Fixed bug in overloaded routine mechanism.
+- [RogueC] CmdContingent now omits unused escape label to fix unused label warning.
 
 ###v1.0.70 - July 4, 2016
 - Merge pull request #7 from `MurphyMc/misc_work_march2016`

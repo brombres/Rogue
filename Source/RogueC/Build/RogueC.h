@@ -2643,6 +2643,7 @@ struct RogueClassCmdControlStructure : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -2992,6 +2993,7 @@ struct RogueClassCmdIf : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3009,6 +3011,7 @@ struct RogueClassCmdWhich : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3044,6 +3047,7 @@ struct RogueClassCmdBlock : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3059,6 +3063,7 @@ struct RogueClassCmdContingent : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3080,6 +3085,7 @@ struct RogueClassCmdGenericLoop : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3098,6 +3104,7 @@ struct RogueClassCmdTry : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3382,6 +3389,7 @@ struct RogueClassCmdForEach : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;
@@ -3929,6 +3937,7 @@ struct RogueClassCmdSwitch : RogueObject
   RogueInt32 _control_type;
   RogueLogical contains_yield;
   RogueString* escape_label;
+  RogueLogical escape_label_used;
   RogueString* upkeep_label;
   RogueClassCmdTaskControlSection* task_escape_section;
   RogueClassCmdTaskControlSection* task_upkeep_section;

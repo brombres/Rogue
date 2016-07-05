@@ -2091,10 +2091,16 @@ augment CmdContingent
         satisfied_statements.write_cpp( writer )
         local satisfied_returns = (satisfied_statements.count and satisfied_statements.last instanceOf CmdReturn)
         writer.println( "}" ); writer.indent -= 2
-        if (not satisfied_returns) writer.print( "goto " ).print( escape_label ).println( ";" )
+        if (not satisfied_returns)
+          escape_label_used = true
+          writer.print( "goto " ).print( escape_label ).println( ";" )
+        endIf
       else
         local body_returns = (statements.count and statements.last instanceOf CmdReturn)
-        if (not body_returns) writer.print( "goto " ).print( escape_label ).println( ";" )
+        if (not body_returns)
+          escape_label_used = true
+          writer.print( "goto " ).print( escape_label ).println( ";" )
+        endIf
       endIf
 
       writer.indent -= 2
@@ -2110,7 +2116,7 @@ augment CmdContingent
       writer.indent -= 2
       writer.println( "}" )
 
-      writer.print( escape_label ).println( ":;" )
+      if (escape_label_used) writer.print( escape_label ).println( ":;" )
 endAugment
 
 
