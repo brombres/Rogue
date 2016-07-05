@@ -307,6 +307,9 @@ class Type
           return false
       endWhich
 
+    method is_api->Logical
+      return (attributes.flags & Attribute.is_api)
+
     method is_requisite->Logical
       return (attributes.flags & Attribute.is_requisite)
 
@@ -318,6 +321,10 @@ class Type
 
     method is_special->Logical
       return (attributes.flags & Attribute.is_special)
+
+    method make_api->this
+      attributes.add( Attribute.is_api )
+      return this
 
     method make_requisite->this
       attributes.add( Attribute.is_requisite )

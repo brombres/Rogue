@@ -35,7 +35,8 @@ endClass
 
 class RogueC [singleton]
   PROPERTIES
-    included_files     = String[]
+    included_files              = String[]
+    manually_included_files     = Set<<String>>() # Full paths of files that were on commandline
     prefix_path_list   = String[]
     prefix_path_lookup = Table<<String,Logical>>()
     compile_targets    = Table<<String,Logical>>()
@@ -52,6 +53,12 @@ class RogueC [singleton]
 
     all_requisite = false
     # If true everything is requisite
+
+    requisite_files        = Set<<String>>()
+    # Everything in these files will be requisite
+
+    manual_files_requisite = false
+    # If true, all files in commandline will be requisite
 
     all_methods_callable_dynamically = false
     # When true, all methods can be called dynamically
@@ -192,7 +199,7 @@ class RogueC [singleton]
           Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,declaration) )
         endForEach
 
-        if (all_requisite) Program.all_requisite = true
+        if (manual_files_requisite) requisite_files.union_update( manually_included_files )
 
         Program.resolve
 
@@ -210,12 +217,7 @@ class RogueC [singleton]
     method on_compile_finished
       println "SUCCESS ($)" (stopwatch)
 
-    method include_source( filepath:String )
-      if (not first_filepath) first_filepath = filepath
-      include_source( null, filepath )
-
-    method include_source( t:Token, filepath:String )
-      # Preemptively (immediately) parses the given file.
+    method find_source_file ( filepath:String )->File
       local file = File(filepath)
 
       if (File.exists(filepath+".rogue"))
@@ -240,18 +242,14 @@ class RogueC [singleton]
       endIf
 
       if (not file.exists)
-        local mesg = ''No such file "$".'' (filepath)
-        if (t) throw t.error( mesg )
-        else   throw RogueError( mesg )
+        return null
       endIf
 
       if (file.is_folder)
         local path2 = "$/$.rogue" (filepath,file.filename)
         local file2 = File( path2 )
         if (not file2.exists or file2.is_folder)
-          local mesg = ''Can not find "$" to include.'' (path2)
-          if (t) throw t.error( mesg )
-          else    throw RogueError( mesg )
+          return null
         else
           if (not prefix_path_lookup.contains(file.filepath))
             prefix_path_lookup[file.filepath] = true
@@ -262,12 +260,29 @@ class RogueC [singleton]
         endIf
       endIf
 
+      return file
+
+    method include_source( filepath:String )->String
+      if (not first_filepath) first_filepath = filepath
+      include_source( null, filepath )
+
+    method include_source( t:Token, filepath:String )
+      # Preemptively (immediately) parses the given file.
+      local file = find_source_file(filepath)
+
+      if (file is null)
+        local mesg = ''No such file "$".'' (filepath)
+        if (t) throw t.error( mesg )
+        else   throw RogueError( mesg )
+      endIf
+
       filepath = file.absolute_filepath
       if (included_files.contains(filepath)) return
 
       if (included_files.count == 0) Program.first_filepath = filepath
 
       included_files.add( filepath )
+      if (t is null) manually_included_files.add( filepath )
 
       local prefix = filepath.before_last('/') + "/"
       if (not prefix_path_lookup.contains(prefix))
@@ -380,6 +395,18 @@ class RogueC [singleton]
                 requisite_declarations.add( value.split(',') )
               else
                 all_requisite = true
+              endIf
+
+            case "--requisite-file"
+              if (value.count)
+                local file = find_source_file(value)
+                if (file is null)
+                  throw RogueError( ''Can not find file "$" for "--requisite-file".'' (value) )
+                endIf
+                requisite_files.add( file.absolute_filepath )
+                source_files.add( file.absolute_filepath )
+              else
+                manual_files_requisite = true
               endIf
 
             case "--target"

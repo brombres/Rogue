@@ -15,8 +15,6 @@ class Program [requisite singleton]
     augment_lookup = Table<<String,Augment[]>>()
     #requisite_list = RequisiteItem[]
 
-    all_requisite = false # Make everything requisite
-
     first_filepath           = ""
     m_on_launch              : Method
     m_run_tests              : Method
@@ -263,6 +261,37 @@ class Program [requisite singleton]
       type.attributes.add( attributes )
       return type
 
+    method make_fully_requisite( m:Method )->Logical
+      local r = m.is_requisite == false
+      if (m.is_api and not m.type_context.is_requisite)
+        r = true
+        make_fully_requisite(m.type_context)
+      endIf
+      m.attributes.add( Attribute.is_requisite )
+      if (m.return_type and make_fully_requisite( m.return_type ) )
+        r = true
+      endIf
+      forEach (p in m.parameters)
+        if (make_fully_requisite( p.type ))
+          r = true
+        endIf
+      endForEach
+      return r
+
+    method make_fully_requisite( methods:Method[] )->Logical
+      local r = false
+      forEach (m in methods)
+        if (make_fully_requisite( m ))
+          r = true
+        endIf
+      endForEach
+      return r
+
+    method make_fully_requisite( t:Type )->Logical
+      local r = t.is_requisite == false
+      t.attributes.add( Attribute.is_requisite )
+      return r
+
     method resolve
       type_Global.add_method( get_on_launch_method(type_Global.t) )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
@@ -300,16 +329,14 @@ class Program [requisite singleton]
       type_GenericList.resolve
       type_String.resolve
 
-      if (all_requisite)
+      if (RogueC.all_requisite)
         forEach (t in type_lookup)
           t.resolve
-          t.attributes.add( Attribute.is_requisite )
           forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
           forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
         endForEach
         forEach (templ in template_list)
           if (not templ.type_parameters)
-            templ.attributes.add( Attribute.is_requisite )
             local t = get_type_reference( templ.t, templ.name )
             t.resolve
             forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
@@ -331,7 +358,22 @@ class Program [requisite singleton]
 
         local i = 0
         while (i < type_list.count)
-          type_list[i].resolve
+          local t  = type_list[i]
+          t.resolve
+
+          if ( t.is_api or (t.t and RogueC.requisite_files.contains( t.t.filepath )) )
+            if ( make_fully_requisite( type_list[i]) ) resolve_types = true
+
+            if (make_fully_requisite( t.global_method_list )) resolve_types = true
+            if (make_fully_requisite( t.method_list )) resolve_types = true
+
+            forEach (p in t.property_list)
+              if (make_fully_requisite( p.type )) resolve_types = true
+            endForEach
+            forEach (p in t.global_list)
+              if (make_fully_requisite( p.type )) resolve_types = true
+            endForEach
+          endIf
           ++i
           if (i == type_list.count)
             # Re-resolve Global.run_tests() as the last thing since various methods add unit
