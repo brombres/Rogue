@@ -41,6 +41,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
     - Exception: Set Exception message by default 0aa84a3
     - Parser: Add templates to Program earlier 4a9db80
     - Ability to generate virtual/dynamic calls for all methods de94726
+    - Requisite rework and api attribute
 
 
 ###v1.0.69 - July 4, 2016
