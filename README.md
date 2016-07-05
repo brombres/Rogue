@@ -26,6 +26,17 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.72 - July 5, 2016
+- [Rogue]  A `loop` with a specific number of iterations now has a single-line variant:
+
+    # Multi-line
+    loop (2)
+      println "pizza"
+    endLoop
+
+    # Single-line
+    loop (2) println "good"
+
 ###v1.0.71 - July 5, 2016
 - [RogueC] Fixed bug in overloaded routine mechanism.
 - [RogueC] CmdContingent now omits unused escape label to fix unused label warning.

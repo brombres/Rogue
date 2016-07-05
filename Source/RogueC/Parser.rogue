@@ -1751,7 +1751,6 @@ class Parser
 
         local last_var = this_method.add_local( t, Program.create_unique_id )
         last_var.initial_value = parse_expression
-        must_consume_eols
 
         local step_cmd = CmdAdjustLocal( t, control_var, 1 )
 
@@ -1760,6 +1759,11 @@ class Parser
         cmd_loop.add_control_var( control_var )
         cmd_loop.add_control_var( last_var )
         cmd_loop.add_upkeep( step_cmd )
+
+        if (not consume_eols)
+          parse_single_line_statements( cmd_loop.statements )
+          return cmd_loop
+        endIf
       endIf
 
       parse_multi_line_statements( cmd_loop.statements )
