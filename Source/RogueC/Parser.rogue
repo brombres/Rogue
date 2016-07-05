@@ -404,6 +404,8 @@ class Parser
           attributes.add( Attribute.is_special )
         elseIf (consume("task"))
           attributes.add( Attribute.is_task )
+        elseIf (consume("api"))
+          attributes.add( Attribute.is_api )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else

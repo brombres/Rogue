@@ -182,8 +182,11 @@ class Method
     method is_overridden->Logical
       return overriding_methods.count
 
+    method is_api->Logical
+      return (attributes.flags & Attribute.is_api)
+
     method is_requisite->Logical
-      return (attributes.flags & Attribute.is_requisite)
+      return (attributes.flags & Attribute.is_requisite) or is_api
 
     method is_global->Logical
       return (attributes.flags & Attribute.is_global)
