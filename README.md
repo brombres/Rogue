@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.0.69
+- v1.0.70
 - July 4, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -42,6 +42,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
     - Parser: Add templates to Program earlier 4a9db80
     - Ability to generate virtual/dynamic calls for all methods de94726
     - Requisite rework and api attribute
+    - Removed odd (accidental?) `->String` return type on `RogueC.include_source()`
 
 
 ###v1.0.69 - July 4, 2016

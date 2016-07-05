@@ -24875,7 +24875,7 @@ RogueClassFile* RogueRogueC__find_source_file__String( RogueClassRogueC* THIS, R
   return (RogueClassFile*)(file_1);
 }
 
-RogueString* RogueRogueC__include_source__String( RogueClassRogueC* THIS, RogueString* filepath_0 )
+void RogueRogueC__include_source__String( RogueClassRogueC* THIS, RogueString* filepath_0 )
 {
   if (!(!!(THIS->first_filepath)))
   {

@@ -262,7 +262,7 @@ class RogueC [singleton]
 
       return file
 
-    method include_source( filepath:String )->String
+    method include_source( filepath:String )
       if (not first_filepath) first_filepath = filepath
       include_source( null, filepath )
 

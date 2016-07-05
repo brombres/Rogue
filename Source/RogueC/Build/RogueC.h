@@ -5218,7 +5218,7 @@ void RogueRogueC__launch( RogueClassRogueC* THIS );
 void RogueRogueC__write_output( RogueClassRogueC* THIS );
 void RogueRogueC__on_compile_finished( RogueClassRogueC* THIS );
 RogueClassFile* RogueRogueC__find_source_file__String( RogueClassRogueC* THIS, RogueString* filepath_0 );
-RogueString* RogueRogueC__include_source__String( RogueClassRogueC* THIS, RogueString* filepath_0 );
+void RogueRogueC__include_source__String( RogueClassRogueC* THIS, RogueString* filepath_0 );
 void RogueRogueC__include_source__Token_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* filepath_1 );
 void RogueRogueC__include_native__Token_String_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* filepath_1, RogueString* native_type_2 );
 void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS );
