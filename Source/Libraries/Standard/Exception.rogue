@@ -6,8 +6,16 @@ class Exception [requisite]
   METHODS
     method init( message )
 
+    method init
+      message = type_name
+
     method to->String
       return message
+
+    method format->String
+      local st = stack_trace->String.trimmed
+      if (st.count) st = "\n" + st
+      return "$$" (this, st)
 endClass
 
 class Error : Exception;

@@ -239,6 +239,7 @@ class Program [requisite singleton]
       type.defined = true
       type.callback_parameter_types = parameter_types
       type.callback_return_type = return_type
+      type.is_function = true
       type.attributes.add( Attribute.is_class )
       local m_call = type.add_method( t, "call" )
       if (parameter_types)

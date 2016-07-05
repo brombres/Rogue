@@ -384,6 +384,12 @@ class Int32 [primitive]
       local p2 = 1
       while (p2 < this) p2 = p2 :<<: 1
       return p2
+
+    method maximum->Int32 [macro]
+      2147483647
+
+    method minimum->Int32 [macro]
+      native "(-2147483647 - 1)"
 endClass
 
 class Character [primitive]

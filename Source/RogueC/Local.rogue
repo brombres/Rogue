@@ -23,4 +23,6 @@ class Local
 
       return result
 
+    method to->String
+      return "($ $:$)" (type_name, name, type.name)
 endClass

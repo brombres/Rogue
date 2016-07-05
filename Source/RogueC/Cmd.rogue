@@ -2384,7 +2384,7 @@ class CmdReadLocal : Cmd
       return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
 
     method to->String
-      return 'CmdReadLocal("$")' (local_info.name)
+      return 'CmdReadLocal("$":"$")' (local_info.original_name, local_info.type.name)
 
     method type->Type
       return local_info.type
