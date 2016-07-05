@@ -292,7 +292,6 @@ class Parser
         template.tokens.add( EOLToken(first_t) )
         template.tokens.add( TokenType.keyword_method.create_token(first_t) )
         template.tokens.add( TokenType.identifier.create_token(first_t,"call") )
-        Program.add_template( template )
 
       else
         reader.position = starting_pos
@@ -300,11 +299,11 @@ class Parser
 
         # Parse out attributes
         parse_attributes( template.attributes )
-        Program.add_template( template )
 
         local semi_t = peek
         if (consume(TokenType.symbol_semicolon))
           if (template.tokens.count == 0) template.tokens.add( TokenType.eol.create_token(semi_t) )
+          Program.add_template( template )
           return
         endIf
 
@@ -313,6 +312,9 @@ class Parser
       while (reader.has_another)
         local t = reader.read
         if (t.type is end_type)
+          # Must wait to add_template() until finished collecting tokens because overloaded routines
+          # just append their tokens to the template generated from the original routines.
+          Program.add_template( template )
           return
         endIf
         template.tokens.add( t )
