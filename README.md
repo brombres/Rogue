@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.71
-- July 5, 2016
+- v1.0.72
+- July 6, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.72 - July 5, 2016
+###v1.0.72 - July 6, 2016
 - [Rogue]  A `loop` with a specific number of iterations now has a single-line variant:
 
     # Multi-line
