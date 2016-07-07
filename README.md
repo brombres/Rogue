@@ -27,6 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.73 - July 7, 2016
+- [RogueC] Improved `prior.init` call resolution.
 - [RogueC] The compiler now performs an internal `$include "Standard"` first rather than last, ensuring that the code in `NativeCPP.h` always comes first in the output C++.
 
 

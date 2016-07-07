@@ -1824,7 +1824,7 @@ class CmdAccess : Cmd
             cmd_call = scope.resolve_call( new_type,
             CmdAccess(t,CmdAccess(t,new_type.name),"create",args,named_args), true )
           else
-            cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,named_args), true, true )
+            cmd_call = scope.resolve_call( new_type, CmdAccess(t,cmd_new,"init",args,named_args), true, Scope.SUPPRESS_INHERITED )
           endIf
 
           if (cmd_call)
@@ -2652,7 +2652,7 @@ class CmdCallPriorMethod : Cmd
   PROPERTIES
     name       : String
     args       : CmdArgs
-    named_args  : CmdNamedArg[]
+    named_args : CmdNamedArg[]
 
   METHODS
     method init( t, name, args, named_args )
@@ -2666,7 +2666,20 @@ class CmdCallPriorMethod : Cmd
       return CmdCallPriorMethod( t, name, args.cloned(clone_args), cloned_named_args )
 
     method resolve( scope:Scope )->Cmd
-      return CmdAccess( t, name, args, named_args ).resolve( scope ).call_prior( scope )
+      local access = CmdAccess( t, name, args, named_args )
+      if (name == "init")
+        # This handles situations where the prior.init() variation WAS NOT overridden in the current context.
+        local call = scope.resolve_call( scope.this_type, access, &!error_on_fail, Scope.CALLING_PRIOR_INIT )
+        if (call) return call
+
+        # This handles situations where the prior.init() variation WAS overridden in the current context.
+        call = scope.resolve_call( scope.this_type, access, &!error_on_fail, Scope.SUPPRESS_INHERITED )
+        return call.call_prior( scope )
+
+      else
+        local call = scope.resolve_call( scope.this_type, access, &error_on_fail )
+        return call.call_prior( scope )
+      endIf
 endClass
 
 

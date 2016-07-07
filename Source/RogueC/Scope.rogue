@@ -1,4 +1,8 @@
 class Scope
+  ENUMERATE
+    SUPPRESS_INHERITED  = 1
+    CALLING_PRIOR_INIT  = 2
+
   PROPERTIES
     this_type      : Type
     this_method    : Method
@@ -42,23 +46,25 @@ class Scope
       @implicit_type = new_implicit_type
       return result
 
-    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, &suppress_inherited )->Cmd
-      local m = find_method( type_context, access, error_on_fail and access.context, suppress_inherited )
+    method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, flags=0:Int32 )->Cmd
+      local is_initializer = (access.name == "init")
+
+      local m = find_method( type_context, access, error_on_fail and access.context, flags )
       if (not m and not access.context)
         # No context specified; try Global context if error_on_fail is true, which means that we've
         # tried and failed to find locals and properties.
-        if (error_on_fail)
-          m = find_method( Program.type_Global, access, false, suppress_inherited )
+        if (error_on_fail and not is_initializer)
+          m = find_method( Program.type_Global, access, false, flags )
         endIf
         if (m)
           type_context = Program.type_Global
           access.context = CmdReadSingleton( access.t, Program.type_Global )
         elseIf (error_on_fail)
           # Create an error message with the most appropriate context
-          if (Program.type_Global.has_method_named(access.name))
-            find_method( Program.type_Global, access, true, suppress_inherited )
+          if (not is_initializer and Program.type_Global.has_method_named(access.name))
+            find_method( Program.type_Global, access, true, flags )
           else
-            find_method( type_context, access, true, suppress_inherited )
+            find_method( type_context, access, true, flags )
           endIf
         endIf
       endIf
@@ -208,7 +214,11 @@ class Scope
 
       return cmd.resolve( this )
 
-    method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical, suppress_inherited=false:Logical )->Method
+    method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical, flags=0:Int32 )->Method
+      local is_initializer = (access.name == "init")
+      local suppress_inherited  = (flags & SUPPRESS_INHERITED)?
+      local calling_prior_init  = (flags & CALLING_PRIOR_INIT)?
+
       local candidates = CandidateMethods( type_context, access, error_on_fail )
 
       local args = access.args
@@ -224,7 +234,7 @@ class Scope
         endForEach
       endIf
 
-      if (suppress_inherited and access.name == "init")
+      if (suppress_inherited and is_initializer)
         # Object constructor.  Also add global create() methods.
         list = type_context.global_method_lookup_by_name[ "create" ]
         if (list)
@@ -244,13 +254,13 @@ class Scope
       if (candidates.available.count == 0)
         if (type_context.method_templates.instantiate(access.t, access.name))
           # Try again now that one or more new methods have been added
-          return find_method( type_context, access, error_on_fail, suppress_inherited )
+          return find_method( type_context, access, error_on_fail, flags )
         endIf
       endIf
 
       if (not candidates.update_available) return null
 
-      if (suppress_inherited)
+      if (suppress_inherited or calling_prior_init)
         # Find method with most specific type context
         local most_specific_type : Type
         forEach (m in candidates.available)
@@ -263,12 +273,23 @@ class Scope
         endForEach
 
         if (most_specific_type)
-          # Keep only the initializer methods defined in the most specific type
-          forEach (m in candidates.available)
-            if (m.type_context is most_specific_type) candidates.compatible.add( m )
-          endForEach
-          if (not candidates.update_matches) return null
+          if (suppress_inherited)
+            # Keep only the initializer methods defined in the most specific type
+            forEach (m in candidates.available)
+              if (m.type_context is most_specific_type) candidates.compatible.add( m )
+            endForEach
+            if (not candidates.update_matches) return null
+
+          else
+            # Discard initializers of the most specific type
+            forEach (m in candidates.available)
+              if (m.type_context isNot most_specific_type) candidates.compatible.add( m )
+            endForEach
+            if (not candidates.update_matches) return null
+
+          endIf
         endIf
+
       endIf
 
       if (args)
@@ -398,7 +419,7 @@ class Scope
             endForEach
 
             # Restart find_method() with the specialized function
-            return find_method( type_context, access, error_on_fail, suppress_inherited )
+            return find_method( type_context, access, error_on_fail, flags )
 
           else
             if (candidates.available.count == 0)
