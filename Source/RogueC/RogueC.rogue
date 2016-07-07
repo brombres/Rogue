@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.73.1"
+$define RELEASE_VERSION "1.0.74.0"
 $define RELEASE_DATE    "July 7, 2016"
 
 $include "Attributes.rogue"
@@ -186,10 +186,11 @@ class RogueC [singleton]
         stopwatch = Stopwatch()
 
         first_filepath = source_files.first
-        include_source( "Standard" )
+        include_source( "Standard/NativeCode.rogue", &do_not_save_prefix )
         forEach (filepath in source_files)
           include_source( filepath )
         endForEach
+        include_source( "Standard" )
 
         forEach (parser in parsers) parser.insert_module_prefixes
         forEach (parser in parsers) parser.parse_elements
@@ -263,10 +264,10 @@ class RogueC [singleton]
 
       return file
 
-    method include_source( filepath:String )
-      include_source( null, filepath )
+    method include_source( filepath:String, &do_not_save_prefix )
+      include_source( null, filepath, do_not_save_prefix )
 
-    method include_source( t:Token, filepath:String )
+    method include_source( t:Token, filepath:String, &do_not_save_prefix )
       # Preemptively (immediately) parses the given file.
       local file = find_source_file(filepath)
 
@@ -282,10 +283,12 @@ class RogueC [singleton]
       included_files.add( filepath )
       if (t is null) manually_included_files.add( filepath )
 
-      local prefix = filepath.before_last('/') + "/"
-      if (not prefix_path_lookup.contains(prefix))
-        prefix_path_lookup[prefix] = true
-        prefix_path_list.add( prefix )
+      if (not do_not_save_prefix)
+        local prefix = filepath.before_last('/') + "/"
+        if (not prefix_path_lookup.contains(prefix))
+          prefix_path_lookup[prefix] = true
+          prefix_path_list.add( prefix )
+        endIf
       endIf
 
       parsers.add( Parser( filepath ) )

@@ -1,0 +1,9 @@
+# This file is included by the compiler first, before the other Standard library files,
+# in order to ensure that NativeCPP.h/.cpp come first in the output.
+$if ("C++")
+  includeNativeHeader "NativeCPP.h"
+  includeNativeCode   "NativeCPP.cpp"
+$elseIf ("Java")
+  includeNativeCode   "NativeJava.java"
+$endIf
+

@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.74 - July 7, 2016
+- [RogueC] Changed initial, automatic include of the Standard Library to only include the single new file "NativeCode.rogue", which in turn decides which native files to include.  The full standard library include then happens at the end, as in pre-v1.0.72.  This prevents "Standard/" from being added to the default filename search path so that a project attempting to include its own source file won't accidentally get the Standard Library version of the file if they happen to have the same name.
+- [Standard] Removed vestigial "Event.rogue" which exposed the "same filename, wrong library" bug mentioned above.
+- [Standard]  Made the Standard Library includes more explicit: "Standard/List.rogue" instead of just "List.rogue", etc.
+
 ###v1.0.73 - July 7, 2016
 - [RogueC] Improved `prior.init` call resolution.
 - [RogueC] The compiler now performs an internal `$include "Standard"` first rather than last, ensuring that the code in `NativeCPP.h` always comes first in the output C++.
