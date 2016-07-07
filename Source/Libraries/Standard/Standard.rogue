@@ -1,3 +1,10 @@
+$if ("C++")
+  includeNativeHeader "NativeCPP.h"
+  includeNativeCode   "NativeCPP.cpp"
+$elseIf ("Java")
+  includeNativeCode   "NativeJava.java"
+$endIf
+
 $include "Array.rogue"
 $include "Boxed.rogue"
 $include "Console.rogue"
@@ -37,13 +44,6 @@ $include "UTF8.rogue"
 $include "Value.rogue"
 $include "WeakReference.rogue"
 $include "Writer.rogue"
-
-$if ("C++")
-  includeNativeHeader "NativeCPP.h"
-  includeNativeCode   "NativeCPP.cpp"
-$elseIf ("Java")
-  includeNativeCode   "NativeJava.java"
-$endIf
 
 # Ensure String[] exists so that command line arguments may be set by native code.
 $requisite String[].add(String)

@@ -15,7 +15,6 @@ class Program [requisite singleton]
     augment_lookup = Table<<String,Augment[]>>()
     #requisite_list = RequisiteItem[]
 
-    first_filepath           = ""
     m_on_launch              : Method
     m_run_tests              : Method
     global_properties        = Property[]

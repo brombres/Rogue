@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.0.72.0"
-$define RELEASE_DATE    "July 6, 2016"
+$define RELEASE_VERSION "1.0.73.0"
+$define RELEASE_DATE    "July 7, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
@@ -185,10 +185,11 @@ class RogueC [singleton]
 
         stopwatch = Stopwatch()
 
+        first_filepath = source_files.first
+        include_source( "Standard" )
         forEach (filepath in source_files)
           include_source( filepath )
         endForEach
-        include_source( "Standard" )
 
         forEach (parser in parsers) parser.insert_module_prefixes
         forEach (parser in parsers) parser.parse_elements
@@ -263,7 +264,6 @@ class RogueC [singleton]
       return file
 
     method include_source( filepath:String )
-      if (not first_filepath) first_filepath = filepath
       include_source( null, filepath )
 
     method include_source( t:Token, filepath:String )
@@ -278,8 +278,6 @@ class RogueC [singleton]
 
       filepath = file.absolute_filepath
       if (included_files.contains(filepath)) return
-
-      if (included_files.count == 0) Program.first_filepath = filepath
 
       included_files.add( filepath )
       if (t is null) manually_included_files.add( filepath )
