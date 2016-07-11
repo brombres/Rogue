@@ -21,6 +21,8 @@
 #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
 #elif defined(__ANDROID__)
 #  define ROGUE_PLATFORM_ANDROID 1
+#elif defined(__linux__)
+#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
 #else
 #  define ROGUE_PLATFORM_GENERIC 1
 #endif
