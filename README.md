@@ -26,6 +26,16 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.76 - July 11, 2016
+- Integrated changes from MurphyMC
+    - Standard.Set: Add `is_empty()`
+    - CPPWriter: normalize select expressions
+    - Makefile: Changes (mostly for installation)
+    - NativeCPP: Set platform macro on Linux
+    - RogueC: More `--requisite*` help text
+    - Exception: Make base methods requisite
+    - NativeCPP: Fix exceptions with `--gc=auto`
+
 ###v1.0.75 - July 11, 2016
 - [Rogue] Removed `isNot` operator in favor of two-word operator `is not`.
 - [Rogue] Removed `notInstanceOf` operator in favor of two-word operator `not instanceOf`.

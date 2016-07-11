@@ -34,6 +34,8 @@
 #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
 #elif defined(__ANDROID__)
 #  define ROGUE_PLATFORM_ANDROID 1
+#elif defined(__linux__)
+#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
 #else
 #  define ROGUE_PLATFORM_GENERIC 1
 #endif
@@ -616,7 +618,7 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
   }
 
 #define ROGUE_THROW(_ErrorType,_error_object) \
-  throw _error_object
+  throw (_ErrorType*)_error_object
 
 #define ROGUE_CATCH(_ErrorType,local_error_object) \
   } \
@@ -4953,6 +4955,7 @@ RogueClassException* RogueException__init( RogueClassException* THIS );
 RogueString* RogueException__to_String( RogueClassException* THIS );
 RogueString* RogueException__type_name( RogueClassException* THIS );
 RogueClassException* RogueException__init__String( RogueClassException* THIS, RogueString* _auto_17_0 );
+RogueString* RogueException__format( RogueClassException* THIS );
 void RogueObject__init_object( RogueObject* THIS );
 RogueObject* RogueObject__init( RogueObject* THIS );
 RogueString* RogueObject__to_String( RogueObject* THIS );

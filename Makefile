@@ -6,9 +6,9 @@ ROGUEC_CPP_FLAGS = -std=c++11 -fno-strict-aliasing
 
 BINDIR = /usr/local/bin
 
--include Local.mk
-
 all: roguec
+
+-include Local.mk
 
 remake: libraries touch_roguec roguec
 
@@ -126,7 +126,7 @@ publish:
 	git push
 	git checkout develop
 	git push
-	@[ -f Local.mk ] && make -f Local.mk publish || true
+	@[ -f Local.mk ] && make -f Local.mk local_publish || true
 
 docs:
 	cd Source/DocGen && make
