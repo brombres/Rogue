@@ -22269,42 +22269,35 @@ RogueString* RogueString__to_lowercase( RogueString* THIS )
   return (RogueString*)(((RogueStringBuilder__to_String( result_1 ))));
 }
 
-RogueString* RogueString__trimmed__Int32_Int32( RogueString* THIS, RogueInt32 left_0, RogueInt32 right_1 )
+RogueString* RogueString__trimmed( RogueString* THIS )
 {
-  if ((!!(left_0) || !!(right_1)))
+  RogueInt32 i1_0 = (0);
+  RogueInt32 i2_1 = ((THIS->character_count - 1));
+  while (i1_0 <= i2_1)
   {
-    return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), left_0, ROGUE_ARG((THIS->character_count - (right_1 + 1))) ))));
+    if (RogueString_character_at(THIS,i1_0) <= (RogueCharacter)' ')
+    {
+      ++i1_0;
+    }
+    else if (RogueString_character_at(THIS,i2_1) <= (RogueCharacter)' ')
+    {
+      --i2_1;
+    }
+    else
+    {
+      goto _auto_102;
+    }
   }
-  else
+  _auto_102:;
+  if (i1_0 > i2_1)
   {
-    RogueInt32 i1_2 = (0);
-    RogueInt32 i2_3 = ((THIS->character_count - 1));
-    while (i1_2 <= i2_3)
-    {
-      if (RogueString_character_at(THIS,i1_2) <= (RogueCharacter)' ')
-      {
-        ++i1_2;
-      }
-      else if (RogueString_character_at(THIS,i2_3) <= (RogueCharacter)' ')
-      {
-        --i2_3;
-      }
-      else
-      {
-        goto _auto_102;
-      }
-    }
-    _auto_102:;
-    if (i1_2 > i2_3)
-    {
-      return (RogueString*)(Rogue_literal_strings[0]);
-    }
-    if ((i1_2 == 0 && i2_3 == (THIS->character_count - 1)))
-    {
-      return (RogueString*)(THIS);
-    }
-    return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), i1_2, i2_3 ))));
+    return (RogueString*)(Rogue_literal_strings[0]);
   }
+  if ((i1_0 == 0 && i2_1 == (THIS->character_count - 1)))
+  {
+    return (RogueString*)(THIS);
+  }
+  return (RogueString*)(((RogueString__from__Int32_Int32( ROGUE_ARG(THIS), i1_0, i2_1 ))));
 }
 
 RogueString_List* RogueString__word_wrapped__Int32_String( RogueString* THIS, RogueInt32 width_0, RogueString* allow_break_after_1 )
@@ -46457,7 +46450,7 @@ RogueLogical RogueTokenizer__scan_requisite_directive( RogueClassTokenizer* THIS
     RogueStringBuilder__print__Character_Logical( buffer_0, ROGUE_ARG(((RogueParseReader__read( ROGUE_ARG(THIS->reader) )))), true );
   }
   _auto_3101:;
-  return (RogueLogical)(((RogueTokenizer__add_new_token__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_directive_requisite), ROGUE_ARG(((RogueString__trimmed__Int32_Int32( ROGUE_ARG(((RogueStringBuilder__to_String( buffer_0 )))), 0, 0 )))) ))));
+  return (RogueLogical)(((RogueTokenizer__add_new_token__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_directive_requisite), ROGUE_ARG(((RogueString__trimmed( ROGUE_ARG(((RogueStringBuilder__to_String( buffer_0 )))) )))) ))));
 }
 
 RogueLogical RogueTokenizer__tokenize_string__Character( RogueClassTokenizer* THIS, RogueCharacter terminator_0 )
@@ -61176,7 +61169,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[50] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[51] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[52] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[53] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.75.0", 8 ) ); 
+  Rogue_literal_strings[53] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.75.2", 8 ) ); 
   Rogue_literal_strings[54] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 11, 2016", 13 ) ); 
   Rogue_literal_strings[55] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[56] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n\n  --target=", 1569 ) ); 
