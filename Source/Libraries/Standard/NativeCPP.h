@@ -605,7 +605,7 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
   }
 
 #define ROGUE_THROW(_ErrorType,_error_object) \
-  throw _error_object
+  throw (_ErrorType*)_error_object
 
 #define ROGUE_CATCH(_ErrorType,local_error_object) \
   } \
