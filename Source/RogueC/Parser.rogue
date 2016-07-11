@@ -72,7 +72,7 @@ class Parser
 
     method consume( identifier:String )->Logical
       local t = reader.peek
-      if (t.type isNot TokenType.identifier) return false
+      if (t.type is not TokenType.identifier) return false
       if (t->String != identifier) return false
       read
       return true
@@ -134,7 +134,7 @@ class Parser
 
     method must_read( type:TokenType )->Token
       local t = reader.peek
-      if (t.type isNot type) must_consume(type)
+      if (t.type is not type) must_consume(type)
       return reader.read
 
     method next_is( type:TokenType )->Logical
@@ -1729,7 +1729,7 @@ class Parser
           t = peek
         endWhile
 
-        if (next_is(TokenType.keyword_else) and reader.peek(1).type isNot TokenType.eol)
+        if (next_is(TokenType.keyword_else) and reader.peek(1).type is not TokenType.eol)
           read
           cur_if.else_statements = CmdStatementList()
           parse_single_line_statements( cur_if.else_statements )
@@ -2072,13 +2072,13 @@ class Parser
         return parse_comparison( CmdCompareEQ(t, lhs, parse_bitwise_xor) )
       elseIf (consume(TokenType.keyword_is))
         consume_eols
+        if (consume(TokenType.keyword_not))
+          return parse_comparison( CmdCompareIsNot(t, lhs, parse_bitwise_xor) )
+        endIf
         return parse_comparison( CmdCompareIs(t, lhs, parse_bitwise_xor) )
       elseIf (consume(TokenType.symbol_ne))
         consume_eols
         return parse_comparison( CmdCompareNE(t, lhs, parse_bitwise_xor) )
-      elseIf (consume(TokenType.keyword_isNot))
-        consume_eols
-        return parse_comparison( CmdCompareIsNot(t, lhs, parse_bitwise_xor) )
       elseIf (consume(TokenType.symbol_lt))
         consume_eols
         return parse_comparison( CmdCompareLT(t, lhs, parse_bitwise_xor) )

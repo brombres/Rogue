@@ -867,9 +867,9 @@ struct RogueClassCmdBinaryLogical; // CmdBinaryLogical
 struct RogueClassCmdLogicalOr; // CmdLogicalOr
 struct RogueClassCmdLogicalAnd; // CmdLogicalAnd
 struct RogueClassCmdCompareEQ; // CmdCompareEQ
+struct RogueClassCmdCompareIsNot; // CmdCompareIsNot
 struct RogueClassCmdCompareIs; // CmdCompareIs
 struct RogueClassCmdCompareNE; // CmdCompareNE
-struct RogueClassCmdCompareIsNot; // CmdCompareIsNot
 struct RogueClassCmdCompareGT; // CmdCompareGT
 struct RogueClassCmdInstanceOf; // CmdInstanceOf
 struct RogueClassCmdTypeOperator; // CmdTypeOperator
@@ -1264,7 +1264,6 @@ extern RogueClassTokenType* RogueTokenType_keyword_if;
 extern RogueClassTokenType* RogueTokenType_keyword_in;
 extern RogueClassTokenType* RogueTokenType_keyword_infinity;
 extern RogueClassTokenType* RogueTokenType_keyword_is;
-extern RogueClassTokenType* RogueTokenType_keyword_isNot;
 extern RogueClassTokenType* RogueTokenType_keyword_isReference;
 extern RogueClassTokenType* RogueTokenType_keyword_local;
 extern RogueClassTokenType* RogueTokenType_keyword_loop;
@@ -3457,6 +3456,16 @@ struct RogueClassCmdCompareEQ : RogueObject
 
 };
 
+struct RogueClassCmdCompareIsNot : RogueObject
+{
+  // PROPERTIES
+  RogueClassToken* t;
+  RogueClassCmd* left;
+  RogueClassCmd* right;
+  RogueLogical resolved;
+
+};
+
 struct RogueClassCmdCompareIs : RogueObject
 {
   // PROPERTIES
@@ -3468,16 +3477,6 @@ struct RogueClassCmdCompareIs : RogueObject
 };
 
 struct RogueClassCmdCompareNE : RogueObject
-{
-  // PROPERTIES
-  RogueClassToken* t;
-  RogueClassCmd* left;
-  RogueClassCmd* right;
-  RogueLogical resolved;
-
-};
-
-struct RogueClassCmdCompareIsNot : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
@@ -4774,9 +4773,9 @@ extern RogueType* RogueTypeCmdBinaryLogical;
 extern RogueType* RogueTypeCmdLogicalOr;
 extern RogueType* RogueTypeCmdLogicalAnd;
 extern RogueType* RogueTypeCmdCompareEQ;
+extern RogueType* RogueTypeCmdCompareIsNot;
 extern RogueType* RogueTypeCmdCompareIs;
 extern RogueType* RogueTypeCmdCompareNE;
-extern RogueType* RogueTypeCmdCompareIsNot;
 extern RogueType* RogueTypeCmdCompareGT;
 extern RogueType* RogueTypeCmdInstanceOf;
 extern RogueType* RogueTypeCmdTypeOperator;
@@ -6900,6 +6899,14 @@ void RogueCmdCompareEQ__dispatch__Visitor( RogueClassCmdCompareEQ* THIS, RogueCl
 RogueLogical RogueCmdCompareEQ__requires_parens( RogueClassCmdCompareEQ* THIS );
 RogueString* RogueCmdCompareEQ__symbol( RogueClassCmdCompareEQ* THIS );
 RogueClassCmd* RogueCmdCompareEQ__resolve_for_reference__Scope_Type_Type_Logical( RogueClassCmdCompareEQ* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2, RogueLogical force_error_3 );
+RogueClassCmdCompareIsNot* RogueCmdCompareIsNot__init_object( RogueClassCmdCompareIsNot* THIS );
+RogueString* RogueCmdCompareIsNot__type_name( RogueClassCmdCompareIsNot* THIS );
+RogueClassCmd* RogueCmdCompareIsNot__cloned__CloneArgs( RogueClassCmdCompareIsNot* THIS, RogueClassCloneArgs* clone_args_0 );
+void RogueCmdCompareIsNot__dispatch__Visitor( RogueClassCmdCompareIsNot* THIS, RogueClassVisitor* v_0 );
+void RogueCmdCompareIsNot__write_cpp__CPPWriter_Logical( RogueClassCmdCompareIsNot* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmd* RogueCmdCompareIsNot__resolve_for_types__Scope_Type_Type( RogueClassCmdCompareIsNot* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2 );
+RogueString* RogueCmdCompareIsNot__symbol( RogueClassCmdCompareIsNot* THIS );
+RogueString* RogueCmdCompareIsNot__cpp_symbol( RogueClassCmdCompareIsNot* THIS );
 RogueClassCmdCompareIs* RogueCmdCompareIs__init_object( RogueClassCmdCompareIs* THIS );
 RogueString* RogueCmdCompareIs__type_name( RogueClassCmdCompareIs* THIS );
 RogueClassCmd* RogueCmdCompareIs__cloned__CloneArgs( RogueClassCmdCompareIs* THIS, RogueClassCloneArgs* clone_args_0 );
@@ -6915,14 +6922,6 @@ RogueClassCmd* RogueCmdCompareNE__combine_literal_operands__Type( RogueClassCmdC
 void RogueCmdCompareNE__dispatch__Visitor( RogueClassCmdCompareNE* THIS, RogueClassVisitor* v_0 );
 RogueString* RogueCmdCompareNE__symbol( RogueClassCmdCompareNE* THIS );
 RogueClassCmd* RogueCmdCompareNE__resolve_for_reference__Scope_Type_Type_Logical( RogueClassCmdCompareNE* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2, RogueLogical force_error_3 );
-RogueClassCmdCompareIsNot* RogueCmdCompareIsNot__init_object( RogueClassCmdCompareIsNot* THIS );
-RogueString* RogueCmdCompareIsNot__type_name( RogueClassCmdCompareIsNot* THIS );
-RogueClassCmd* RogueCmdCompareIsNot__cloned__CloneArgs( RogueClassCmdCompareIsNot* THIS, RogueClassCloneArgs* clone_args_0 );
-void RogueCmdCompareIsNot__dispatch__Visitor( RogueClassCmdCompareIsNot* THIS, RogueClassVisitor* v_0 );
-void RogueCmdCompareIsNot__write_cpp__CPPWriter_Logical( RogueClassCmdCompareIsNot* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmd* RogueCmdCompareIsNot__resolve_for_types__Scope_Type_Type( RogueClassCmdCompareIsNot* THIS, RogueClassScope* scope_0, RogueClassType* left_type_1, RogueClassType* right_type_2 );
-RogueString* RogueCmdCompareIsNot__symbol( RogueClassCmdCompareIsNot* THIS );
-RogueString* RogueCmdCompareIsNot__cpp_symbol( RogueClassCmdCompareIsNot* THIS );
 RogueClassCmdCompareGT* RogueCmdCompareGT__init_object( RogueClassCmdCompareGT* THIS );
 RogueString* RogueCmdCompareGT__type_name( RogueClassCmdCompareGT* THIS );
 RogueClassCmd* RogueCmdCompareGT__cloned__CloneArgs( RogueClassCmdCompareGT* THIS, RogueClassCloneArgs* clone_args_0 );

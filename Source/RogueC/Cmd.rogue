@@ -149,13 +149,13 @@ class Cmd
 
     method require_integer->Cmd
       local _type = type
-      if (_type is null or _type isNot Program.type_Int32)
+      if (_type is null or _type is not Program.type_Int32)
         throw t.error( "Int32 value expected." )
       endIf
       return this
 
     method require_logical( scope:Scope )->Cmd
-      if (require_type isNot Program.type_Logical)
+      if (require_type is not Program.type_Logical)
         return CmdLogicalize( t, this ).resolve( scope )
       endIf
       return this
@@ -616,7 +616,7 @@ class CmdWhich : CmdControlStructure
       local all_literal_cases = true
 
       local expression_type = expression.require_type
-      if (expression_type isNot Program.type_Int32 and expression_type isNot Program.type_Character)
+      if (expression_type is not Program.type_Int32 and expression_type is not Program.type_Character)
         if (expression_type is Program.type_Byte)
           expression = expression.cast_to(Program.type_Int32,scope).resolve( scope )
         else
@@ -1208,7 +1208,7 @@ class CmdTryExpression : Cmd
 
       local try_type = try_expression.type
 
-      if (else_expression.type isNot try_type)
+      if (else_expression.type is not try_type)
         else_expression = else_expression.cast_to( try_type, scope ).resolve( scope )
       endIf
 
@@ -2002,7 +2002,7 @@ class CmdAccess : Cmd
         if (setter) return setter
       endIf
 
-      if (context_was_null and scope.this_type isNot Program.type_Global)
+      if (context_was_null and scope.this_type is not Program.type_Global)
         p = Program.type_Global.find_property( name )
         if (p)
           return CmdWriteProperty( t, CmdReadSingleton(t,Program.type_Global), p, new_value ).resolve( scope )
@@ -2600,7 +2600,7 @@ endClass
 class CmdCallMethod : CmdCall
   METHODS
     method call_prior( scope:Scope )->Cmd
-      if (method_info.is_initializer and method_info.type_context isNot scope.this_type)
+      if (method_info.is_initializer and method_info.type_context is not scope.this_type)
         # Calling a prior initializer with a different signature that was hidden by
         # an extended class initializer.
         return CmdCallStaticMethod( t, context, method_info, args )
@@ -3005,7 +3005,7 @@ class CmdAdd : CmdBinary
       return "operator+"
 
     method resolve_operator_method( scope:Scope, left_type:Type, right_type:Type )->Cmd
-      if (left_type isNot Program.type_String and right_type is Program.type_String)
+      if (left_type is not Program.type_String and right_type is Program.type_String)
         # non-string + string -> ("" + non-string) + string
         left = CmdAdd( t, CmdLiteralString(t,""), left ).resolve( scope )
         left_type = left.require_type
@@ -3518,12 +3518,12 @@ class CmdCompareIsNot : CmdComparison
         throw t.error( "[INTERNAL] TODO: 'is' for compounds." )
 
       else
-        throw t.error( "Cannot use 'isNot' between mixed type categories $ and $." (left_type,right_type) )
+        throw t.error( "Cannot use 'is not' between mixed type categories $ and $." (left_type,right_type) )
 
       endIf
 
     method symbol->String
-      return "isNot"
+      return "is not"
 endClass
 
 #------------------------------------------------------------------------------
@@ -4969,7 +4969,7 @@ class CmdSelect : Cmd
       forEach (c in cases)
         local case_type = c.implicit_type( scope )
         if (not common_type) common_type = case_type
-        elseIf (common_type isNot case_type) return null
+        elseIf (common_type is not case_type) return null
       endForEach
       return common_type
 

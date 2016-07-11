@@ -431,7 +431,7 @@ class Program [requisite singleton]
 
       # Exceptions
       forEach (type in type_list)
-        if (type.instance_of(Program.type_Exception) and type isNot Program.type_Exception)
+        if (type.instance_of(Program.type_Exception) and type is not Program.type_Exception)
           if (type.base_class.index > type.index)
             local i1 = type.base_class.index
             local i2 = type.index

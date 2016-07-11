@@ -283,7 +283,7 @@ class Scope
           else
             # Discard initializers of the most specific type
             forEach (m in candidates.available)
-              if (m.type_context isNot most_specific_type) candidates.compatible.add( m )
+              if (m.type_context is not most_specific_type) candidates.compatible.add( m )
             endForEach
             if (not candidates.update_matches) return null
 
@@ -463,7 +463,7 @@ class Scope
           forEach (m1 in candidates.available)
             contingent
               forEach (m2 in candidates.available)
-                if (m1 isNot m2)
+                if (m1 is not m2)
                   local m2_is_better = true
                   forEach (index of args)
                     local m1_arg_type = m1.parameters[index].type

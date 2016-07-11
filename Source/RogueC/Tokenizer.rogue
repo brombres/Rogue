@@ -29,7 +29,7 @@ class Tokenizer
 
       if (tokens.count == 0)
         # Ensure there's an EOL token at the end.
-        if (tokens.count == 0 or tokens.last.type isNot TokenType.eol)
+        if (tokens.count == 0 or tokens.last.type is not TokenType.eol)
           add_new_token( TokenType.eol )
         endIf
       endIf
@@ -154,7 +154,6 @@ class Tokenizer
       TokenType.keyword_includeNativeCode   = define( TokenType("includeNativeCode") )
       TokenType.keyword_includeNativeHeader = define( TokenType("includeNativeHeader") )
       TokenType.keyword_is                  = define( TokenType("is") )
-      TokenType.keyword_isNot               = define( TokenType("isNot") )
       TokenType.keyword_isReference         = define( TokenType("isReference") )
       TokenType.keyword_local               = define( TokenType("local") )
       TokenType.keyword_loop                = define( TokenType("loop") )

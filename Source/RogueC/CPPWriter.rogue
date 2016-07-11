@@ -727,7 +727,8 @@ augment Program
             if (first) first = false
             else       writer.println ","
             if (p.is_native) writer.print( "0" )
-            else             writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
+            else writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
+            #writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print( ")" )
           endForEach
         endIf
       endForEach
@@ -1376,7 +1377,7 @@ class CPPWriter
 
     if (cast_to)
       print_cast( arg.type, cast_to, arg )
-    elseIf (arg.type isNot param_type)
+    elseIf (arg.type is not param_type)
       print_cast( arg.type, param_type, arg )
     else
       arg.write_cpp( this )
@@ -1409,7 +1410,7 @@ class CPPWriter
 
   method update_trace_info( t:Token )
     if (trace_token and t and t.filepath)
-      if (t.filepath isNot trace_token.filepath)
+      if (t.filepath is not trace_token.filepath)
         if (RogueC.debug_mode)
           print( ";__trace.filename = \"" ).print( t.filename ).println( "\";" )
           print( ";__trace.line = " ).print( t.line ).println( ";" )
@@ -1839,7 +1840,7 @@ augment Method
                 writer.print("case ").print(ic.index).println(":")
                 if (return_type)
                   writer.print( "  return " )
-                  if (return_type isNot m.return_type)
+                  if (return_type is not m.return_type)
                     # Manual widening cast
                     writer.print( "(" ).print( return_type ).print( ")" )
                   endIf
@@ -2388,7 +2389,7 @@ augment CmdWriteSingleton
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
       writer.print( "RogueType" ).print( of_type.cpp_name ).print( "->_singleton = " )
-      if (new_value.type isNot of_type) writer.print_cast( new_value.type, of_type )
+      if (new_value.type is not of_type) writer.print_cast( new_value.type, of_type )
       new_value.write_cpp( writer )
       writer.println( ";" )
 endAugment
@@ -2948,7 +2949,7 @@ augment CmdWriteArrayElement
         endWhich
         index.write_cpp( writer )
         writer.print( "] = " )
-        if (new_value.type isNot element_type) writer.print_cast( new_value.type, element_type )
+        if (new_value.type is not element_type) writer.print_cast( new_value.type, element_type )
         new_value.write_cpp( writer )
 
       elseIf (element_type.is_reference)

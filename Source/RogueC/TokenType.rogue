@@ -86,7 +86,6 @@ class TokenType
     keyword_in                    : TokenType
     keyword_infinity              : TokenType
     keyword_is                    : TokenType
-    keyword_isNot                 : TokenType
     keyword_isReference           : TokenType
     keyword_local                 : TokenType
     keyword_loop                  : TokenType

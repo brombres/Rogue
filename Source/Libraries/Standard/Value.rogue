@@ -16,7 +16,7 @@ class Value
       return StringValue( value )
 
     method operator?( value:Value )->Logical
-      return (value isNot null and value.is_non_null)
+      return (value is not null and value.is_non_null)
 
   METHODS
     method add( value:Int32 )->this [macro]

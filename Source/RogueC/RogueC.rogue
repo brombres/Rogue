@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.0.74.0"
-$define RELEASE_DATE    "July 7, 2016"
+$define RELEASE_VERSION "1.0.75.0"
+$define RELEASE_DATE    "July 11, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
