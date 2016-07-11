@@ -29,7 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.75 - July 11, 2016
 - [Rogue] Removed `isNot` operator in favor of two-word operator `is not`.
 - [Rogue] Removed `notInstanceOf` operator in favor of two-word operator `not instanceOf`.
-- [API] Renamed `trimmed(left=0:Int32,right=0:Int32)->String` to `clipped(left=0:Int32,right=0:Int32)->String`.  `trimmed()->String` sitll exists and behaves similarly to Java's `trim()`.
+- [API] Renamed `trimmed(left=0:Int32,right=0:Int32)->String` to `clipped(left=0:Int32,right=0:Int32)->String`.  `trimmed()->String` still exists and behaves similarly to Java's `trim()`.
 
 
 ###v1.0.74 - July 7, 2016
