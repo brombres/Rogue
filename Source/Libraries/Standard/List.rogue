@@ -410,6 +410,14 @@ class List<<$DataType>> : GenericList
 
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
+
+$if ("Cython")
+    method _get_element( index:Int32 )->$DataType [requisite]
+      return get(index)
+
+    method _set_element( index:Int32, new_value:$DataType ) [requisite]
+      set(index, new_value)
+$endIf
 endClass
 
 class ListReader<<$DataType>> : Reader<<$DataType>>

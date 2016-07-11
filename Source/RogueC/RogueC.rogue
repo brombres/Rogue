@@ -3,6 +3,7 @@ $define RELEASE_DATE    "August 4, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
+$include "CythonPlugin.rogue"
 $include "CloneArgs.rogue"
 $include "Cmd.rogue"
 #$include "JavaWriter.rogue"
