@@ -156,6 +156,12 @@ class RogueC [singleton]
                    |    output.
                    |
                    |  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
+                   |    Makes the given class/method requisite.  With no argument, everything
+                   |    becomes requisite.
+                   |
+                   |  --requisite-file[=file.rogue]
+                   |    With an argument, makes the entire file requisite.  With no argument,
+                   |    all files explicitly listed on the commandline become requisite.
                    |
                    |  --target=
 

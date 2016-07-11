@@ -3103,7 +3103,9 @@ augment CmdSelect
 
       if (not reader.has_another)
         # Final value
+        if (value_type.is_reference) writer.print("ROGUE_ARG(")
         select_case.value.write_cpp( writer )
+        if (value_type.is_reference) writer.print(")")
         return
       endIf
 
@@ -3135,7 +3137,9 @@ augment CmdSelect
 
       writer.print( ") ? (" )
 
+      if (value_type.is_reference) writer.print("ROGUE_ARG(")
       select_case.value.write_cpp( writer )
+      if (value_type.is_reference) writer.print(")")
 
       writer.print( ") : " )
 

@@ -5,7 +5,7 @@
 #
 # A generic "Set" container Class
 # It's backed by a Table for simplicity, though this is somewhat
-# wasteful.  Removing the table dependency is a rainy day projects.
+# wasteful.  Removing the table dependency is a rainy day project.
 #==================================================================
 
 class Set<<$T>>
@@ -79,6 +79,9 @@ class Set<<$T>>
 
     method count -> Int32
       return _t.count
+
+    method is_empty -> Logical
+      return _t.count == 0
 
     method as_array -> $T[]
       return _t.keys
