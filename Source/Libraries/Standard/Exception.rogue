@@ -4,15 +4,15 @@ class Exception [requisite]
     stack_trace = StackTrace(1)
 
   METHODS
-    method init( message )
+    method init( message ) [requisite]
 
-    method init
+    method init [requisite]
       message = type_name
 
-    method to->String
+    method to->String [requisite]
       return message
 
-    method format->String
+    method format->String [requisite]
       local st = stack_trace->String.trimmed
       if (st.count) st = "\n" + st
       return "$$" (this, st)
