@@ -1301,7 +1301,6 @@ extern RogueClassTokenType* RogueTokenType_keyword_false;
 extern RogueClassTokenType* RogueTokenType_keyword_instanceOf;
 extern RogueClassTokenType* RogueTokenType_keyword_meta;
 extern RogueClassTokenType* RogueTokenType_keyword_not;
-extern RogueClassTokenType* RogueTokenType_keyword_notInstanceOf;
 extern RogueClassTokenType* RogueTokenType_keyword_or;
 extern RogueClassTokenType* RogueTokenType_keyword_pi;
 extern RogueClassTokenType* RogueTokenType_keyword_prior;

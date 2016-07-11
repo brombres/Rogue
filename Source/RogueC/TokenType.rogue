@@ -126,7 +126,6 @@ class TokenType
     keyword_instanceOf            : TokenType
     keyword_meta                  : TokenType
     keyword_not                   : TokenType
-    keyword_notInstanceOf         : TokenType
     keyword_or                    : TokenType
     keyword_pi                    : TokenType
     keyword_prior                 : TokenType

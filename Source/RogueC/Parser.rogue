@@ -2094,9 +2094,14 @@ class Parser
       elseIf (consume(TokenType.keyword_instanceOf))
         consume_eols
         return CmdInstanceOf( t, lhs, parse_type )
-      elseIf (consume(TokenType.keyword_notInstanceOf))
-        consume_eols
-        return CmdLogicalNot( t, CmdInstanceOf( t, lhs, parse_type ) )
+      elseIf (next_is(TokenType.keyword_not))
+        local t2 = reader.peek(1)
+        if (t2 and t2.type is TokenType.keyword_instanceOf)
+          read
+          read
+          consume_eols
+          return CmdLogicalNot( t, CmdInstanceOf( t, lhs, parse_type ) )
+        endIf
       endIf
       return lhs
 

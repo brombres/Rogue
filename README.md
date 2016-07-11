@@ -28,6 +28,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.75 - July 11, 2016
 - [Rogue] Removed `isNot` operator in favor of two-word operator `is not`.
+- [Rogue] Removed `notInstanceOf` operator in favor of two-word operator `not instanceOf`.
+
 
 ###v1.0.74 - July 7, 2016
 - [RogueC] Changed initial, automatic include of the Standard Library to only include the single new file "NativeCode.rogue", which in turn decides which native files to include.  The full standard library include then happens at the end, as in pre-v1.0.72.  This prevents "Standard/" from being added to the default filename search path so that a project attempting to include its own source file won't accidentally get the Standard Library version of the file if they happen to have the same name.

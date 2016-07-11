@@ -411,7 +411,7 @@ class Scope
 
                 if (fn.return_type and fn.statements.count)
                   local last_expression = fn.statements.last
-                  if (last_expression notInstanceOf CmdReturn)
+                  if (last_expression not instanceOf CmdReturn)
                     fn.statements[fn.statements.count-1] = CmdReturn( last_expression.t, last_expression )
                   endIf
                 endIf
