@@ -378,6 +378,10 @@ struct RogueObjectType : RogueType
 
 struct RogueObject
 {
+#if defined(ROGUE_CUSTOM_OBJECT_PROPERTY)
+ROGUE_CUSTOM_OBJECT_PROPERTY
+#endif
+
   RogueObject* next_object;
   // Used to keep track of this allocation so that it can be freed when no
   // longer referenced.

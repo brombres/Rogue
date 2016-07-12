@@ -391,6 +391,10 @@ struct RogueObjectType : RogueType
 
 struct RogueObject
 {
+#if defined(ROGUE_CUSTOM_OBJECT_PROPERTY)
+ROGUE_CUSTOM_OBJECT_PROPERTY
+#endif
+
   RogueObject* next_object;
   // Used to keep track of this allocation so that it can be freed when no
   // longer referenced.
@@ -5635,7 +5639,7 @@ RogueClassCmd* RogueCmd__init_object( RogueClassCmd* THIS );
 RogueString* RogueCmd__type_name( RogueClassCmd* THIS );
 void RogueCmd__add_to__CmdStatementList( RogueClassCmd* THIS, RogueClassCmdStatementList* statements_0 );
 RogueClassCmd* RogueCmd__call_prior__Scope( RogueClassCmd* THIS, RogueClassScope* scope_0 );
-RogueClassCmd* RogueCmd__cast_to__Type_Scope_Logical( RogueClassCmd* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 );
+RogueClassCmd* RogueCmd__cast_to__Type_Scope_Logical_Logical( RogueClassCmd* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 );
 RogueClassCmd* RogueCmd__cloned__CloneArgs( RogueClassCmd* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmd__cloned__Cmd_CloneArgs( RogueClassCmd* THIS, RogueClassCmd* other_0, RogueClassCloneArgs* clone_args_1 );
 RogueClassCmdArgs* RogueCmd__cloned__CmdArgs_CloneArgs( RogueClassCmd* THIS, RogueClassCmdArgs* args_0, RogueClassCloneArgs* clone_args_1 );
@@ -6503,7 +6507,7 @@ RogueLogical RogueCmdLiteral__is_literal( RogueClassCmdLiteral* THIS );
 RogueClassCmdLiteralInt32* RogueCmdLiteralInt32__init_object( RogueClassCmdLiteralInt32* THIS );
 RogueString* RogueCmdLiteralInt32__to_String( RogueClassCmdLiteralInt32* THIS );
 RogueString* RogueCmdLiteralInt32__type_name( RogueClassCmdLiteralInt32* THIS );
-RogueClassCmd* RogueCmdLiteralInt32__cast_to__Type_Scope_Logical( RogueClassCmdLiteralInt32* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 );
+RogueClassCmd* RogueCmdLiteralInt32__cast_to__Type_Scope_Logical_Logical( RogueClassCmdLiteralInt32* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 );
 RogueClassCmd* RogueCmdLiteralInt32__cloned__CloneArgs( RogueClassCmdLiteralInt32* THIS, RogueClassCloneArgs* clone_args_0 );
 void RogueCmdLiteralInt32__dispatch__Visitor( RogueClassCmdLiteralInt32* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdLiteralInt32__resolve__Scope( RogueClassCmdLiteralInt32* THIS, RogueClassScope* scope_0 );
@@ -7129,7 +7133,7 @@ RogueClassCmdDefaultValue* RogueCmdDefaultValue__init__Token_Type( RogueClassCmd
 RogueClassCmdLiteralNull* RogueCmdLiteralNull__init_object( RogueClassCmdLiteralNull* THIS );
 RogueString* RogueCmdLiteralNull__to_String( RogueClassCmdLiteralNull* THIS );
 RogueString* RogueCmdLiteralNull__type_name( RogueClassCmdLiteralNull* THIS );
-RogueClassCmd* RogueCmdLiteralNull__cast_to__Type_Scope_Logical( RogueClassCmdLiteralNull* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 );
+RogueClassCmd* RogueCmdLiteralNull__cast_to__Type_Scope_Logical_Logical( RogueClassCmdLiteralNull* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 );
 RogueClassCmd* RogueCmdLiteralNull__cloned__CloneArgs( RogueClassCmdLiteralNull* THIS, RogueClassCloneArgs* clone_args_0 );
 void RogueCmdLiteralNull__dispatch__Visitor( RogueClassCmdLiteralNull* THIS, RogueClassVisitor* v_0 );
 RogueClassCmdLiteralNull* RogueCmdLiteralNull__resolve__Scope( RogueClassCmdLiteralNull* THIS, RogueClassScope* scope_0 );
@@ -7149,7 +7153,7 @@ RogueClassCmdLiteralReal64* RogueCmdLiteralReal64__init__Token_Real64( RogueClas
 RogueClassCmdLiteralInt64* RogueCmdLiteralInt64__init_object( RogueClassCmdLiteralInt64* THIS );
 RogueString* RogueCmdLiteralInt64__to_String( RogueClassCmdLiteralInt64* THIS );
 RogueString* RogueCmdLiteralInt64__type_name( RogueClassCmdLiteralInt64* THIS );
-RogueClassCmd* RogueCmdLiteralInt64__cast_to__Type_Scope_Logical( RogueClassCmdLiteralInt64* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 );
+RogueClassCmd* RogueCmdLiteralInt64__cast_to__Type_Scope_Logical_Logical( RogueClassCmdLiteralInt64* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 );
 RogueClassCmd* RogueCmdLiteralInt64__cloned__CloneArgs( RogueClassCmdLiteralInt64* THIS, RogueClassCloneArgs* clone_args_0 );
 void RogueCmdLiteralInt64__dispatch__Visitor( RogueClassCmdLiteralInt64* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdLiteralInt64__resolve__Scope( RogueClassCmdLiteralInt64* THIS, RogueClassScope* scope_0 );

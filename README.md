@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.77 - July 12, 2016
+- [RogueC] C++ definition of base `struct RogueObject` now injects preprocessor value `ROGUE_CUSTOM_OBJECT_PROPERTY` if it's defined, allowing for one or more custom properties per object.
+- [RogueC] Fixed object conversions between related classes to look for `CurType.to->NewType` and then `NewType.init(CurType)` methods before defaulting to typecasts.  The bug was introduced when the code for handling conversions was merged with the code for handling typecasts some time ago.
+
 ###v1.0.76 - July 11, 2016
 - Integrated changes from MurphyMC
     - Standard.Set: Add `is_empty()`

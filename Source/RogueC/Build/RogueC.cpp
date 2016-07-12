@@ -1449,7 +1449,7 @@ typedef RogueClassCmd*(*ROGUEM125)(RogueClassCmd*);
 typedef RogueString*(*ROGUEM126)(RogueClassCmd*);
 typedef void(*ROGUEM127)(RogueClassCmd*,RogueClassCmdStatementList*);
 typedef RogueClassCmd*(*ROGUEM128)(RogueClassCmd*,RogueClassScope*);
-typedef RogueClassCmd*(*ROGUEM129)(RogueClassCmd*,RogueClassType*,RogueClassScope*,RogueLogical);
+typedef RogueClassCmd*(*ROGUEM129)(RogueClassCmd*,RogueClassType*,RogueClassScope*,RogueLogical,RogueLogical);
 typedef RogueClassCmd*(*ROGUEM130)(RogueClassCmd*,RogueClassCloneArgs*);
 typedef RogueClassCmd*(*ROGUEM131)(RogueClassCmd*,RogueClassType*);
 typedef void(*ROGUEM132)(RogueClassCmd*,RogueClassVisitor*);
@@ -1710,7 +1710,7 @@ typedef RogueString*(*ROGUEM386)(RogueClassCmdLiteral*);
 typedef void(*ROGUEM387)(RogueClassCmdLiteral*,RogueClassVisitor*);
 typedef RogueClassCmdLiteralInt32*(*ROGUEM388)(RogueClassCmdLiteralInt32*);
 typedef RogueString*(*ROGUEM389)(RogueClassCmdLiteralInt32*);
-typedef RogueClassCmd*(*ROGUEM390)(RogueClassCmdLiteralInt32*,RogueClassType*,RogueClassScope*,RogueLogical);
+typedef RogueClassCmd*(*ROGUEM390)(RogueClassCmdLiteralInt32*,RogueClassType*,RogueClassScope*,RogueLogical,RogueLogical);
 typedef RogueClassCmd*(*ROGUEM391)(RogueClassCmdLiteralInt32*,RogueClassCloneArgs*);
 typedef void(*ROGUEM392)(RogueClassCmdLiteralInt32*,RogueClassVisitor*);
 typedef RogueClassCmd*(*ROGUEM393)(RogueClassCmdLiteralInt32*,RogueClassScope*);
@@ -2179,7 +2179,7 @@ typedef RogueClassCmd*(*ROGUEM855)(RogueClassCmdDefaultValue*,RogueClassScope*);
 typedef RogueClassType*(*ROGUEM856)(RogueClassCmdDefaultValue*);
 typedef RogueClassCmdLiteralNull*(*ROGUEM857)(RogueClassCmdLiteralNull*);
 typedef RogueString*(*ROGUEM858)(RogueClassCmdLiteralNull*);
-typedef RogueClassCmd*(*ROGUEM859)(RogueClassCmdLiteralNull*,RogueClassType*,RogueClassScope*,RogueLogical);
+typedef RogueClassCmd*(*ROGUEM859)(RogueClassCmdLiteralNull*,RogueClassType*,RogueClassScope*,RogueLogical,RogueLogical);
 typedef RogueClassCmd*(*ROGUEM860)(RogueClassCmdLiteralNull*,RogueClassCloneArgs*);
 typedef void(*ROGUEM861)(RogueClassCmdLiteralNull*,RogueClassVisitor*);
 typedef RogueClassCmdLiteralNull*(*ROGUEM862)(RogueClassCmdLiteralNull*,RogueClassScope*);
@@ -2195,7 +2195,7 @@ typedef RogueClassType*(*ROGUEM871)(RogueClassCmdLiteralReal64*);
 typedef void(*ROGUEM872)(RogueClassCmdLiteralReal64*,RogueClassCPPWriter*,RogueLogical);
 typedef RogueClassCmdLiteralInt64*(*ROGUEM873)(RogueClassCmdLiteralInt64*);
 typedef RogueString*(*ROGUEM874)(RogueClassCmdLiteralInt64*);
-typedef RogueClassCmd*(*ROGUEM875)(RogueClassCmdLiteralInt64*,RogueClassType*,RogueClassScope*,RogueLogical);
+typedef RogueClassCmd*(*ROGUEM875)(RogueClassCmdLiteralInt64*,RogueClassType*,RogueClassScope*,RogueLogical,RogueLogical);
 typedef RogueClassCmd*(*ROGUEM876)(RogueClassCmdLiteralInt64*,RogueClassCloneArgs*);
 typedef void(*ROGUEM877)(RogueClassCmdLiteralInt64*,RogueClassVisitor*);
 typedef RogueClassCmd*(*ROGUEM878)(RogueClassCmdLiteralInt64*,RogueClassScope*);
@@ -2709,9 +2709,9 @@ RogueClassCmd* Rogue_call_ROGUEM128( int i, RogueClassCmd* THIS, RogueClassScope
   return ((ROGUEM128)(THIS->type->methods[i]))( THIS, p0 );
 }
 
-RogueClassCmd* Rogue_call_ROGUEM129( int i, RogueClassCmd* THIS, RogueClassType* p0, RogueClassScope* p1, RogueLogical p2 )
+RogueClassCmd* Rogue_call_ROGUEM129( int i, RogueClassCmd* THIS, RogueClassType* p0, RogueClassScope* p1, RogueLogical p2, RogueLogical p3 )
 {
-  return ((ROGUEM129)(THIS->type->methods[i]))( THIS, p0, p1, p2 );
+  return ((ROGUEM129)(THIS->type->methods[i]))( THIS, p0, p1, p2, p3 );
 }
 
 RogueClassCmd* Rogue_call_ROGUEM130( int i, RogueClassCmd* THIS, RogueClassCloneArgs* p0 )
@@ -9471,7 +9471,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM126) RogueCmd__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -9725,7 +9725,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM175) RogueCmdLabel__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM176) RogueCmdLabel__cloned__CloneArgs,
   0,
   0,
@@ -10400,7 +10400,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM275) RogueCmdAccess__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM276) RogueCmdAccess__cloned__CloneArgs,
   0,
   0,
@@ -10467,7 +10467,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM290) RogueCmdNamedArg__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM291) RogueCmdNamedArg__cloned__CloneArgs,
   0,
   0,
@@ -10519,7 +10519,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM294) RogueCmdReturn__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM295) RogueCmdReturn__cloned__CloneArgs,
   0,
   0,
@@ -10561,7 +10561,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM301) RogueCmdStatement__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -10623,7 +10623,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM308) RogueCmdControlStructure__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -10761,7 +10761,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM332) RogueCmdMakeRequisite__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM333) RogueCmdMakeRequisite__cloned__CloneArgs,
   0,
   0,
@@ -11038,7 +11038,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM376) RogueCmdLiteralLogical__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM377) RogueCmdLiteralLogical__cloned__CloneArgs,
   0,
   0,
@@ -11080,7 +11080,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM386) RogueCmdLiteral__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -11122,7 +11122,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM389) RogueCmdLiteralInt32__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM390) RogueCmdLiteralInt32__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM390) RogueCmdLiteralInt32__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM391) RogueCmdLiteralInt32__cloned__CloneArgs,
   0,
   0,
@@ -11175,7 +11175,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM402) RogueCmdAdd__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM403) RogueCmdAdd__cloned__CloneArgs,
   0,
   0,
@@ -11225,7 +11225,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM401) RogueCmdBinary__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -11437,7 +11437,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM429) RogueCmdNativeHeader__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM430) RogueCmdNativeHeader__cloned__CloneArgs,
   0,
   0,
@@ -11479,7 +11479,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM435) RogueCmdNativeSource__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -11521,7 +11521,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM438) RogueCmdNativeCode__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM439) RogueCmdNativeCode__cloned__CloneArgs,
   0,
   0,
@@ -11563,7 +11563,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM443) RogueCmdIncludeNative__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM444) RogueCmdIncludeNative__cloned__CloneArgs,
   0,
   0,
@@ -11605,7 +11605,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM448) RogueCmdIf__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM449) RogueCmdIf__cloned__CloneArgs,
   0,
   0,
@@ -11649,7 +11649,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM454) RogueCmdWhich__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM455) RogueCmdWhich__cloned__CloneArgs,
   0,
   0,
@@ -11703,7 +11703,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM461) RogueCmdWhichCase__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM462) RogueCmdWhichCase__cloned__CloneArgs,
   0,
   0,
@@ -11755,7 +11755,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM465) RogueCmdBlock__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM466) RogueCmdBlock__cloned__CloneArgs,
   0,
   0,
@@ -11799,7 +11799,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM472) RogueCmdContingent__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM473) RogueCmdContingent__cloned__CloneArgs,
   0,
   0,
@@ -11843,7 +11843,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM479) RogueCmdGenericLoop__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM480) RogueCmdGenericLoop__cloned__CloneArgs,
   0,
   0,
@@ -11887,7 +11887,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM485) RogueCmdTry__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM486) RogueCmdTry__cloned__CloneArgs,
   0,
   0,
@@ -11941,7 +11941,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM493) RogueCmdCatch__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM494) RogueCmdCatch__cloned__CloneArgs,
   0,
   0,
@@ -11993,7 +11993,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM499) RogueCmdAwait__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM500) RogueCmdAwait__cloned__CloneArgs,
   0,
   0,
@@ -12035,7 +12035,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM504) RogueCmdYield__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM505) RogueCmdYield__cloned__CloneArgs,
   0,
   0,
@@ -12077,7 +12077,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM509) RogueCmdThrow__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM510) RogueCmdThrow__cloned__CloneArgs,
   0,
   0,
@@ -12119,7 +12119,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM515) RogueCmdLiteralString__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM516) RogueCmdLiteralString__cloned__CloneArgs,
   0,
   0,
@@ -12161,7 +12161,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM523) RogueCmdFormattedString__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM524) RogueCmdFormattedString__cloned__CloneArgs,
   0,
   0,
@@ -12203,7 +12203,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM530) RogueCmdTrace__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM531) RogueCmdTrace__cloned__CloneArgs,
   0,
   0,
@@ -12245,7 +12245,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM535) RogueCmdLocalDeclaration__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM536) RogueCmdLocalDeclaration__cloned__CloneArgs,
   0,
   0,
@@ -12287,7 +12287,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM542) RogueCmdAssert__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM543) RogueCmdAssert__cloned__CloneArgs,
   0,
   0,
@@ -12329,7 +12329,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM549) RogueCmdEscape__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM550) RogueCmdEscape__cloned__CloneArgs,
   0,
   0,
@@ -12371,7 +12371,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM555) RogueCmdNextIteration__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM556) RogueCmdNextIteration__cloned__CloneArgs,
   0,
   0,
@@ -12413,7 +12413,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM561) RogueCmdNecessary__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM562) RogueCmdNecessary__cloned__CloneArgs,
   0,
   0,
@@ -12455,7 +12455,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM567) RogueCmdSufficient__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM568) RogueCmdSufficient__cloned__CloneArgs,
   0,
   0,
@@ -12497,7 +12497,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM573) RogueCmdAdjust__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -12539,7 +12539,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM577) RogueCmdAssign__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM578) RogueCmdAssign__cloned__CloneArgs,
   0,
   0,
@@ -12581,7 +12581,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM582) RogueCmdModifyAndAssign__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM583) RogueCmdModifyAndAssign__cloned__CloneArgs,
   0,
   0,
@@ -12623,7 +12623,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM587) RogueCmdTryExpression__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM588) RogueCmdTryExpression__cloned__CloneArgs,
   0,
   0,
@@ -12665,7 +12665,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM593) RogueCmdReadLocal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM594) RogueCmdReadLocal__cloned__CloneArgs,
   0,
   0,
@@ -12707,7 +12707,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM601) RogueCmdAdjustLocal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM602) RogueCmdAdjustLocal__cloned__CloneArgs,
   0,
   0,
@@ -12749,7 +12749,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM608) RogueCmdCompareLE__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM609) RogueCmdCompareLE__cloned__CloneArgs,
   0,
   0,
@@ -12800,7 +12800,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM617) RogueCmdComparison__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -12851,7 +12851,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM621) RogueCmdRange__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -12895,7 +12895,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM626) RogueCmdModifyAndAssignLocal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM627) RogueCmdModifyAndAssignLocal__cloned__CloneArgs,
   0,
   0,
@@ -12937,7 +12937,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM633) RogueCmdResolvedModifyAndAssign__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -12979,7 +12979,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM636) RogueCmdRangeUpTo__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM637) RogueCmdRangeUpTo__cloned__CloneArgs,
   0,
   0,
@@ -13023,7 +13023,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM640) RogueCmdRangeUpToLessThan__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM641) RogueCmdRangeUpToLessThan__cloned__CloneArgs,
   0,
   0,
@@ -13067,7 +13067,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM644) RogueCmdCompareLT__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM645) RogueCmdCompareLT__cloned__CloneArgs,
   0,
   0,
@@ -13118,7 +13118,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM650) RogueCmdCompareGE__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM651) RogueCmdCompareGE__cloned__CloneArgs,
   0,
   0,
@@ -13169,7 +13169,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM656) RogueCmdForEach__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM657) RogueCmdForEach__cloned__CloneArgs,
   0,
   0,
@@ -13213,7 +13213,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM661) RogueCmdRangeDownTo__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM662) RogueCmdRangeDownTo__cloned__CloneArgs,
   0,
   0,
@@ -13257,7 +13257,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM666) RogueCmdLogicalXor__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM667) RogueCmdLogicalXor__cloned__CloneArgs,
   0,
   0,
@@ -13308,7 +13308,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM674) RogueCmdBinaryLogical__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -13359,7 +13359,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM678) RogueCmdLogicalOr__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM679) RogueCmdLogicalOr__cloned__CloneArgs,
   0,
   0,
@@ -13410,7 +13410,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM683) RogueCmdLogicalAnd__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM684) RogueCmdLogicalAnd__cloned__CloneArgs,
   0,
   0,
@@ -13461,7 +13461,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM688) RogueCmdCompareEQ__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM689) RogueCmdCompareEQ__cloned__CloneArgs,
   0,
   0,
@@ -13512,7 +13512,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM695) RogueCmdCompareIsNot__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM696) RogueCmdCompareIsNot__cloned__CloneArgs,
   0,
   0,
@@ -13563,7 +13563,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM701) RogueCmdCompareIs__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM702) RogueCmdCompareIs__cloned__CloneArgs,
   0,
   0,
@@ -13614,7 +13614,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM707) RogueCmdCompareNE__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM708) RogueCmdCompareNE__cloned__CloneArgs,
   0,
   0,
@@ -13665,7 +13665,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM713) RogueCmdCompareGT__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM714) RogueCmdCompareGT__cloned__CloneArgs,
   0,
   0,
@@ -13716,7 +13716,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM719) RogueCmdInstanceOf__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM720) RogueCmdInstanceOf__cloned__CloneArgs,
   0,
   0,
@@ -13758,7 +13758,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM726) RogueCmdTypeOperator__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -13800,7 +13800,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM731) RogueCmdLogicalNot__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM732) RogueCmdLogicalNot__cloned__CloneArgs,
   0,
   0,
@@ -13850,7 +13850,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM730) RogueCmdUnary__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -13900,7 +13900,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM742) RogueCmdBitwiseXor__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM743) RogueCmdBitwiseXor__cloned__CloneArgs,
   0,
   0,
@@ -13950,7 +13950,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM748) RogueCmdBitwiseOp__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -14000,7 +14000,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM751) RogueCmdBitwiseOr__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM752) RogueCmdBitwiseOr__cloned__CloneArgs,
   0,
   0,
@@ -14050,7 +14050,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM756) RogueCmdBitwiseAnd__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM757) RogueCmdBitwiseAnd__cloned__CloneArgs,
   0,
   0,
@@ -14100,7 +14100,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM761) RogueCmdBitwiseShiftLeft__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM762) RogueCmdBitwiseShiftLeft__cloned__CloneArgs,
   0,
   0,
@@ -14150,7 +14150,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM766) RogueCmdBitwiseShiftRight__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM767) RogueCmdBitwiseShiftRight__cloned__CloneArgs,
   0,
   0,
@@ -14200,7 +14200,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM772) RogueCmdBitwiseShiftRightX__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM773) RogueCmdBitwiseShiftRightX__cloned__CloneArgs,
   0,
   0,
@@ -14250,7 +14250,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM777) RogueCmdSubtract__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM778) RogueCmdSubtract__cloned__CloneArgs,
   0,
   0,
@@ -14300,7 +14300,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM782) RogueCmdMultiply__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM783) RogueCmdMultiply__cloned__CloneArgs,
   0,
   0,
@@ -14350,7 +14350,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM787) RogueCmdDivide__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM788) RogueCmdDivide__cloned__CloneArgs,
   0,
   0,
@@ -14400,7 +14400,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM792) RogueCmdMod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM793) RogueCmdMod__cloned__CloneArgs,
   0,
   0,
@@ -14450,7 +14450,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM798) RogueCmdPower__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM799) RogueCmdPower__cloned__CloneArgs,
   0,
   0,
@@ -14500,7 +14500,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM804) RogueCmdNegate__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM805) RogueCmdNegate__cloned__CloneArgs,
   0,
   0,
@@ -14550,7 +14550,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM810) RogueCmdBitwiseNot__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM811) RogueCmdBitwiseNot__cloned__CloneArgs,
   0,
   0,
@@ -14600,7 +14600,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM816) RogueCmdLogicalize__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM817) RogueCmdLogicalize__cloned__CloneArgs,
   0,
   0,
@@ -14650,7 +14650,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM822) RogueCmdIsReference__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM823) RogueCmdIsReference__cloned__CloneArgs,
   0,
   0,
@@ -14692,7 +14692,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM828) RogueCmdElementAccess__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM829) RogueCmdElementAccess__cloned__CloneArgs,
   0,
   0,
@@ -14734,7 +14734,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM836) RogueCmdConvertToType__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM837) RogueCmdConvertToType__cloned__CloneArgs,
   0,
   0,
@@ -14776,7 +14776,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM841) RogueCmdCreateCallback__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM842) RogueCmdCreateCallback__cloned__CloneArgs,
   0,
   0,
@@ -14818,7 +14818,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM846) RogueCmdAs__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM847) RogueCmdAs__cloned__CloneArgs,
   0,
   0,
@@ -14860,7 +14860,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM852) RogueCmdDefaultValue__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM853) RogueCmdDefaultValue__cloned__CloneArgs,
   0,
   0,
@@ -14902,7 +14902,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM858) RogueCmdLiteralNull__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM859) RogueCmdLiteralNull__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM859) RogueCmdLiteralNull__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM860) RogueCmdLiteralNull__cloned__CloneArgs,
   0,
   0,
@@ -14944,7 +14944,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM866) RogueCmdLiteralReal64__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM867) RogueCmdLiteralReal64__cloned__CloneArgs,
   0,
   0,
@@ -14986,7 +14986,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM874) RogueCmdLiteralInt64__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM875) RogueCmdLiteralInt64__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM875) RogueCmdLiteralInt64__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM876) RogueCmdLiteralInt64__cloned__CloneArgs,
   0,
   0,
@@ -15028,7 +15028,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM883) RogueCmdLiteralCharacter__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM884) RogueCmdLiteralCharacter__cloned__CloneArgs,
   0,
   0,
@@ -15070,7 +15070,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM891) RogueCmdLiteralThis__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM892) RogueCmdLiteralThis__cloned__CloneArgs,
   0,
   0,
@@ -15112,7 +15112,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM900) RogueCmdThisContext__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM901) RogueCmdThisContext__cloned__CloneArgs,
   0,
   0,
@@ -15154,7 +15154,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM906) RogueCmdCreateList__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM907) RogueCmdCreateList__cloned__CloneArgs,
   0,
   0,
@@ -15196,7 +15196,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM911) RogueCmdCallPriorMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM912) RogueCmdCallPriorMethod__cloned__CloneArgs,
   0,
   0,
@@ -15298,7 +15298,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM924) RogueCmdCreateFunction__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM925) RogueCmdCreateFunction__cloned__CloneArgs,
   0,
   0,
@@ -15340,7 +15340,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM932) RogueCmdInlineNative__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM933) RogueCmdInlineNative__cloned__CloneArgs,
   0,
   0,
@@ -15382,7 +15382,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM943) RogueCmdSelect__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM944) RogueCmdSelect__cloned__CloneArgs,
   0,
   0,
@@ -15434,7 +15434,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM953) RogueCmdSelectCase__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM954) RogueCmdSelectCase__cloned__CloneArgs,
   0,
   0,
@@ -15486,7 +15486,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM960) RogueCmdRequire__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM961) RogueCmdRequire__cloned__CloneArgs,
   0,
   0,
@@ -15528,7 +15528,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM967) RogueCmdEnsure__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM968) RogueCmdEnsure__cloned__CloneArgs,
   0,
   0,
@@ -15570,7 +15570,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM974) RogueCmdTypedLiteralList__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM975) RogueCmdTypedLiteralList__cloned__CloneArgs,
   0,
   0,
@@ -15622,7 +15622,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM983) RogueCmdCreateCompound__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM984) RogueCmdCreateCompound__cloned__CloneArgs,
   0,
   0,
@@ -15843,7 +15843,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM997) RogueCmdSwitch__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM998) RogueCmdSwitch__cloned__CloneArgs,
   0,
   0,
@@ -15887,7 +15887,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1003) RogueCmdCreateObject__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1004) RogueCmdCreateObject__cloned__CloneArgs,
   0,
   0,
@@ -15929,7 +15929,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1010) RogueCmdReadSingleton__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1011) RogueCmdReadSingleton__cloned__CloneArgs,
   0,
   0,
@@ -15971,7 +15971,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1018) RogueCmdWriteSingleton__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1019) RogueCmdWriteSingleton__cloned__CloneArgs,
   0,
   0,
@@ -16013,7 +16013,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1024) RogueCmdWriteLocal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1025) RogueCmdWriteLocal__cloned__CloneArgs,
   0,
   0,
@@ -16055,7 +16055,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1030) RogueCmdReadGlobal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1031) RogueCmdReadGlobal__cloned__CloneArgs,
   0,
   0,
@@ -16097,7 +16097,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1038) RogueCmdWriteGlobal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1039) RogueCmdWriteGlobal__cloned__CloneArgs,
   0,
   0,
@@ -16139,7 +16139,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1044) RogueCmdReadProperty__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1045) RogueCmdReadProperty__cloned__CloneArgs,
   0,
   0,
@@ -16181,7 +16181,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1052) RogueCmdWriteProperty__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1053) RogueCmdWriteProperty__cloned__CloneArgs,
   0,
   0,
@@ -16223,7 +16223,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1058) RogueCmdCall__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -16265,7 +16265,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1064) RogueCmdCallDynamicMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM1065) RogueCmdCallMethod__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1066) RogueCmdCallDynamicMethod__cloned__CloneArgs,
   0,
   0,
@@ -16307,7 +16307,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1070) RogueCmdCallMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM1065) RogueCmdCallMethod__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -16349,7 +16349,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1073) RogueCmdAdjustProperty__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1074) RogueCmdAdjustProperty__cloned__CloneArgs,
   0,
   0,
@@ -16391,7 +16391,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1080) RogueCmdAdjustGlobal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1081) RogueCmdAdjustGlobal__cloned__CloneArgs,
   0,
   0,
@@ -16433,7 +16433,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1087) RogueCmdModifyAndAssignGlobal__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1088) RogueCmdModifyAndAssignGlobal__cloned__CloneArgs,
   0,
   0,
@@ -16475,7 +16475,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1094) RogueCmdModifyAndAssignProperty__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1095) RogueCmdModifyAndAssignProperty__cloned__CloneArgs,
   0,
   0,
@@ -16517,7 +16517,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1101) RogueCmdCreateArray__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1102) RogueCmdCreateArray__cloned__CloneArgs,
   0,
   0,
@@ -16559,7 +16559,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1108) RogueCmdReadArrayElement__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1109) RogueCmdReadArrayElement__cloned__CloneArgs,
   0,
   0,
@@ -16601,7 +16601,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1116) RogueCmdReadArrayCount__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1117) RogueCmdReadArrayCount__cloned__CloneArgs,
   0,
   0,
@@ -16643,7 +16643,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1123) RogueCmdWriteArrayElement__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1124) RogueCmdWriteArrayElement__cloned__CloneArgs,
   0,
   0,
@@ -16685,7 +16685,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1130) RogueCmdTaskControl__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -16747,7 +16747,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1138) RogueCmdNoAction__type_name,
   (void*) (ROGUEM1139) RogueCmdNoAction__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1140) RogueCmdNoAction__cloned__CloneArgs,
   0,
   0,
@@ -17018,7 +17018,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1158) RogueCmdCastToType__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1159) RogueCmdCastToType__cloned__CloneArgs,
   0,
   0,
@@ -17385,7 +17385,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1199) RogueCmdCallInlineNativeRoutine__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1200) RogueCmdCallInlineNativeRoutine__cloned__CloneArgs,
   0,
   0,
@@ -17429,7 +17429,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1198) RogueCmdCallInlineNative__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM130) RogueCmd__cloned__CloneArgs,
   0,
   0,
@@ -17473,7 +17473,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1209) RogueCmdCallNativeRoutine__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1210) RogueCmdCallNativeRoutine__cloned__CloneArgs,
   0,
   0,
@@ -17515,7 +17515,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1214) RogueCmdCallRoutine__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1215) RogueCmdCallRoutine__cloned__CloneArgs,
   0,
   0,
@@ -17557,7 +17557,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1219) RogueCmdCallInlineNativeMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1220) RogueCmdCallInlineNativeMethod__cloned__CloneArgs,
   0,
   0,
@@ -17601,7 +17601,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1225) RogueCmdCallNativeMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1226) RogueCmdCallNativeMethod__cloned__CloneArgs,
   0,
   0,
@@ -17643,7 +17643,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1230) RogueCmdCallAspectMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM128) RogueCmd__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1231) RogueCmdCallAspectMethod__cloned__CloneArgs,
   0,
   0,
@@ -18090,7 +18090,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM1286) RogueCmdCallStaticMethod__type_name,
   (void*) (ROGUEM127) RogueCmd__add_to__CmdStatementList,
   (void*) (ROGUEM1065) RogueCmdCallMethod__call_prior__Scope,
-  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical,
+  (void*) (ROGUEM129) RogueCmd__cast_to__Type_Scope_Logical_Logical,
   (void*) (ROGUEM1287) RogueCmdCallStaticMethod__cloned__CloneArgs,
   0,
   0,
@@ -33687,34 +33687,44 @@ RogueClassCmd* RogueCmd__call_prior__Scope( RogueClassCmd* THIS, RogueClassScope
   ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), Rogue_literal_strings[1105] ))));
 }
 
-RogueClassCmd* RogueCmd__cast_to__Type_Scope_Logical( RogueClassCmd* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 )
+RogueClassCmd* RogueCmd__cast_to__Type_Scope_Logical_Logical( RogueClassCmd* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 )
 {
-  ROGUE_DEF_LOCAL_REF(RogueClassType*,this_type_3,((Rogue_call_ROGUEM137( 31, ROGUE_ARG(THIS) ))));
-  if (((void*)this_type_3) == ((void*)target_type_0))
+  ROGUE_DEF_LOCAL_REF(RogueClassType*,this_type_4,((Rogue_call_ROGUEM137( 31, ROGUE_ARG(THIS) ))));
+  if (((void*)this_type_4) == ((void*)target_type_0))
   {
     return (RogueClassCmd*)(THIS);
   }
-  RogueType__organize__Scope( this_type_3, scope_1 );
+  RogueType__organize__Scope( this_type_4, scope_1 );
   RogueType__organize__Scope( target_type_0, scope_1 );
-  if ((((RogueType__instance_of__Type( this_type_3, target_type_0 ))) || (((RogueType__instance_of__Type( target_type_0, this_type_3 ))) && allow_implicit_narrowing_2)))
+  if (!(is_conversion_3))
   {
-    return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdCastToType*)(((RogueCmdTypeOperator__init__Token_Cmd_Type( ROGUE_ARG(((RogueClassCmdTypeOperator*)ROGUE_CREATE_REF(RogueClassCmdCastToType*,ROGUE_CREATE_OBJECT(CmdCastToType)))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), target_type_0 ))))))));
-  }
-  if ((((RogueType__is_primitive( this_type_3 ))) && ((RogueType__is_primitive( target_type_0 )))))
-  {
-    if (!((((void*)this_type_3) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical) || ((void*)target_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical))))
+    if ((((RogueType__instance_of__Type( this_type_4, target_type_0 ))) || (((RogueType__instance_of__Type( target_type_0, this_type_4 ))) && allow_implicit_narrowing_2)))
     {
       return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdCastToType*)(((RogueCmdTypeOperator__init__Token_Cmd_Type( ROGUE_ARG(((RogueClassCmdTypeOperator*)ROGUE_CREATE_REF(RogueClassCmdCastToType*,ROGUE_CREATE_OBJECT(CmdCastToType)))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), target_type_0 ))))))));
     }
   }
-  ROGUE_DEF_LOCAL_REF(RogueString*,m_name_4,(((RogueString__operatorPLUS__String( Rogue_literal_strings[310], ROGUE_ARG(target_type_0->name) )))));
-  if (((RogueType__has_method_named__String( this_type_3, m_name_4 ))))
+  if ((((RogueType__is_primitive( this_type_4 ))) && ((RogueType__is_primitive( target_type_0 )))))
   {
-    return (RogueClassCmd*)(((RogueScope__resolve_call__Type_CmdAccess_Logical_Int32( scope_1, this_type_3, ROGUE_ARG(((RogueCmdAccess__init__Token_Cmd_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), m_name_4 )))), true, 0 ))));
+    if (!((((void*)this_type_4) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical) || ((void*)target_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical))))
+    {
+      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdCastToType*)(((RogueCmdTypeOperator__init__Token_Cmd_Type( ROGUE_ARG(((RogueClassCmdTypeOperator*)ROGUE_CREATE_REF(RogueClassCmdCastToType*,ROGUE_CREATE_OBJECT(CmdCastToType)))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), target_type_0 ))))))));
+    }
   }
-  if ((!!(((RogueType__find_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[461] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_3->name) )))) )))), Rogue_literal_strings[10] )))) )))) )))) || !!(((RogueType__find_global_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[462] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_3->name) )))) )))), Rogue_literal_strings[10] )))) )))) ))))))
+  ROGUE_DEF_LOCAL_REF(RogueString*,m_name_5,(((RogueString__operatorPLUS__String( Rogue_literal_strings[310], ROGUE_ARG(target_type_0->name) )))));
+  if (((RogueType__has_method_named__String( this_type_4, m_name_5 ))))
+  {
+    return (RogueClassCmd*)(((RogueScope__resolve_call__Type_CmdAccess_Logical_Int32( scope_1, this_type_4, ROGUE_ARG(((RogueCmdAccess__init__Token_Cmd_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), m_name_5 )))), true, 0 ))));
+  }
+  if ((!!(((RogueType__find_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[461] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_4->name) )))) )))), Rogue_literal_strings[10] )))) )))) )))) || !!(((RogueType__find_global_method__String( target_type_0, ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[462] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_4->name) )))) )))), Rogue_literal_strings[10] )))) )))) ))))))
   {
     return (RogueClassCmd*)(((RogueCmdAccess__resolve__Scope( ROGUE_ARG(((RogueCmdAccess__init__Token_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(target_type_0->name), ROGUE_ARG(((RogueCmdArgs__init__Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))), ROGUE_ARG(THIS) )))) )))), scope_1 ))));
+  }
+  if (is_conversion_3)
+  {
+    if ((((RogueType__instance_of__Type( this_type_4, target_type_0 ))) || (((RogueType__instance_of__Type( target_type_0, this_type_4 ))) && allow_implicit_narrowing_2)))
+    {
+      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueClassCmdCastToType*)(((RogueCmdTypeOperator__init__Token_Cmd_Type( ROGUE_ARG(((RogueClassCmdTypeOperator*)ROGUE_CREATE_REF(RogueClassCmdCastToType*,ROGUE_CREATE_OBJECT(CmdCastToType)))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS), target_type_0 ))))))));
+    }
   }
   if (((void*)target_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Logical))
   {
@@ -33722,24 +33732,24 @@ RogueClassCmd* RogueCmd__cast_to__Type_Scope_Logical( RogueClassCmd* THIS, Rogue
   }
   if (target_type_0->is_optional)
   {
-    if (((void*)this_type_3) == ((void*)target_type_0->_element_type))
+    if (((void*)this_type_4) == ((void*)target_type_0->_element_type))
     {
-      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_3->name) )))) )))), Rogue_literal_strings[239] )))) )))), ROGUE_ARG(((RogueCmdArgs__init__Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))), ROGUE_ARG(THIS) )))) ))))));
+      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_4->name) )))) )))), Rogue_literal_strings[239] )))) )))), ROGUE_ARG(((RogueCmdArgs__init__Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))), ROGUE_ARG(THIS) )))) ))))));
     }
-    else if (((void*)this_type_3) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_null))
+    else if (((void*)this_type_4) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_null))
     {
-      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_3->name) )))) )))), Rogue_literal_strings[239] )))) )))), ROGUE_ARG(((RogueCmdArgs__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))) )))) ))))));
+      return (RogueClassCmd*)(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(this_type_4->name) )))) )))), Rogue_literal_strings[239] )))) )))), ROGUE_ARG(((RogueCmdArgs__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))) )))) ))))));
     }
-    else if (((RogueType__is_primitive( this_type_3 ))))
+    else if (((RogueType__is_primitive( this_type_4 ))))
     {
-      return (RogueClassCmd*)((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS), ROGUE_ARG(target_type_0->_element_type), scope_1, allow_implicit_narrowing_2 ))), scope_1 ))), target_type_0, scope_1, allow_implicit_narrowing_2 )));
+      return (RogueClassCmd*)((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS), ROGUE_ARG(target_type_0->_element_type), scope_1, allow_implicit_narrowing_2, false ))), scope_1 ))), target_type_0, scope_1, allow_implicit_narrowing_2, false )));
     }
   }
-  if (((RogueType__instance_of__Type( target_type_0, this_type_3 ))))
+  if (((RogueType__instance_of__Type( target_type_0, this_type_4 ))))
   {
-    ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[375] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(this_type_3))) )))) )))), Rogue_literal_strings[479] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(target_type_0))) )))) )))), Rogue_literal_strings[480] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(target_type_0))) )))) )))), Rogue_literal_strings[481] )))) )))) ))));
+    ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[375] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(this_type_4))) )))) )))), Rogue_literal_strings[479] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(target_type_0))) )))) )))), Rogue_literal_strings[480] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(target_type_0))) )))) )))), Rogue_literal_strings[481] )))) )))) ))));
   }
-  ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[391] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(this_type_3))) )))) )))), Rogue_literal_strings[482] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(target_type_0))) )))) )))), Rogue_literal_strings[36] )))) )))) ))));
+  ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[391] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(this_type_4))) )))) )))), Rogue_literal_strings[482] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(target_type_0))) )))) )))), Rogue_literal_strings[36] )))) )))) ))));
 }
 
 RogueClassCmd* RogueCmd__cloned__CloneArgs( RogueClassCmd* THIS, RogueClassCloneArgs* clone_args_0 )
@@ -42458,7 +42468,7 @@ RogueClassCmd* RogueCmdAccess__resolve__Scope_Logical( RogueClassCmdAccess* THIS
       }
       if (!!(cmd_call_15))
       {
-        return (RogueClassCmd*)((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, cmd_call_15, new_type_3, scope_0, true ))), scope_0 )));
+        return (RogueClassCmd*)((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, cmd_call_15, new_type_3, scope_0, true, false ))), scope_0 )));
       }
       else
       {
@@ -43003,7 +43013,7 @@ RogueClassCmd* RogueCmdReturn__resolve__Scope( RogueClassCmdReturn* THIS, RogueC
     {
       ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(scope_0->this_method->signature) )))) )))), Rogue_literal_strings[423] )))) )))) ))));
     }
-    THIS->value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->value), scope_0 ))), ROGUE_ARG(scope_0->this_method->_return_type), scope_0, false ))), scope_0 ));
+    THIS->value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->value), scope_0 ))), ROGUE_ARG(scope_0->this_method->_return_type), scope_0, false, false ))), scope_0 ));
   }
   else if (((RogueMethod__is_initializer( ROGUE_ARG(scope_0->this_method) ))))
   {
@@ -43218,7 +43228,7 @@ RogueClassCmd* RogueScope__resolve_call__Type_CmdAccess_Logical_Int32( RogueClas
     RogueInt32 i_23 = (0);
     for (;i_23 < _auto_2843_22->count;++i_23)
     {
-      args_8->data->as_objects[i_23] = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[i_23]))), ROGUE_ARG(((RogueClassLocal*)(m_5->parameters->data->as_objects[i_23]))->_type), ROGUE_ARG(THIS), false ))), ROGUE_ARG(THIS) ));
+      args_8->data->as_objects[i_23] = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[i_23]))), ROGUE_ARG(((RogueClassLocal*)(m_5->parameters->data->as_objects[i_23]))->_type), ROGUE_ARG(THIS), false, false ))), ROGUE_ARG(THIS) ));
     }
   }
   ROGUE_DEF_LOCAL_REF(RogueClassCmd*,cmd_12,0);
@@ -43902,7 +43912,7 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Int32( RogueCl
         RogueType__organize__Scope( param_type_37, ROGUE_ARG(((RogueClassScope*)(NULL))) );
         if ((((void*)param_type_37) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object) && ((RogueType__has_method_named__String( arg_type_36, Rogue_literal_strings[452] )))))
         {
-          args_8->data->as_objects[0] = (Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[0]))), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object), ROGUE_ARG(THIS), false ));
+          args_8->data->as_objects[0] = (Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[0]))), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object), ROGUE_ARG(THIS), false, false ));
           return (RogueClassMethod*)(m_116);
         }
       }
@@ -43918,7 +43928,7 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Int32( RogueCl
         RogueType__organize__Scope( param_type_39, ROGUE_ARG(((RogueClassScope*)(NULL))) );
         if ((((void*)param_type_39) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_String) && ((RogueType__has_method_named__String( arg_type_38, Rogue_literal_strings[453] )))))
         {
-          args_8->data->as_objects[0] = (Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[0]))), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_String), ROGUE_ARG(THIS), false ));
+          args_8->data->as_objects[0] = (Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[0]))), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_String), ROGUE_ARG(THIS), false, false ));
           return (RogueClassMethod*)(m_119);
         }
       }
@@ -43934,7 +43944,7 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Int32( RogueCl
         RogueType__organize__Scope( param_type_41, ROGUE_ARG(((RogueClassScope*)(NULL))) );
         if ((((void*)param_type_41) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Object) && ((RogueType__has_method_named__String( arg_type_40, ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[310], ROGUE_ARG(param_type_41->name) )))) )))))
         {
-          args_8->data->as_objects[0] = (Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[0]))), param_type_41, ROGUE_ARG(THIS), false ));
+          args_8->data->as_objects[0] = (Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(args_8->data->as_objects[0]))), param_type_41, ROGUE_ARG(THIS), false, false ));
           return (RogueClassMethod*)(m_122);
         }
       }
@@ -47462,7 +47472,7 @@ RogueString* RogueCmdLiteralInt32__type_name( RogueClassCmdLiteralInt32* THIS )
   return (RogueString*)(Rogue_literal_strings[1231]);
 }
 
-RogueClassCmd* RogueCmdLiteralInt32__cast_to__Type_Scope_Logical( RogueClassCmdLiteralInt32* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 )
+RogueClassCmd* RogueCmdLiteralInt32__cast_to__Type_Scope_Logical_Logical( RogueClassCmdLiteralInt32* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 )
 {
   if (((void*)target_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real64))
   {
@@ -47470,7 +47480,7 @@ RogueClassCmd* RogueCmdLiteralInt32__cast_to__Type_Scope_Logical( RogueClassCmdL
   }
   else
   {
-    return (RogueClassCmd*)((RogueCmd__cast_to__Type_Scope_Logical( ROGUE_ARG(((RogueClassCmd*)THIS)), target_type_0, scope_1, false )));
+    return (RogueClassCmd*)((RogueCmd__cast_to__Type_Scope_Logical_Logical( ROGUE_ARG(((RogueClassCmd*)THIS)), target_type_0, scope_1, false, false )));
   }
 }
 
@@ -47661,8 +47671,8 @@ RogueClassCmd* RogueCmdBinary__resolve_for_types__Scope_Type_Type( RogueClassCmd
     return (RogueClassCmd*)(operator_method_call_3);
   }
   ROGUE_DEF_LOCAL_REF(RogueClassType*,common_type_4,(((RogueCmd__must_find_common_type__Type_Type( ROGUE_ARG(((RogueClassCmd*)THIS)), left_type_1, right_type_2 )))));
-  THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), common_type_4, scope_0, false ))), scope_0 ));
-  THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), common_type_4, scope_0, false ))), scope_0 ));
+  THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), common_type_4, scope_0, false, false ))), scope_0 ));
+  THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), common_type_4, scope_0, false, false ))), scope_0 ));
   if (((Rogue_call_ROGUEM134( 27, ROGUE_ARG(THIS->left) )) && (Rogue_call_ROGUEM134( 27, ROGUE_ARG(THIS->right) ))))
   {
     return (RogueClassCmd*)((Rogue_call_ROGUEM131( 17, ROGUE_ARG(((RogueClassCmd*)THIS)), common_type_4 )));
@@ -48318,7 +48328,7 @@ RogueClassCmd* RogueCmdWhich__resolve__Scope( RogueClassCmdWhich* THIS, RogueCla
   {
     if (((void*)expression_type_2) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte))
     {
-      THIS->expression = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->expression), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0, false ))), scope_0 ));
+      THIS->expression = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->expression), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0, false, false ))), scope_0 ));
     }
     else
     {
@@ -49659,7 +49669,7 @@ RogueClassCmd* RogueCmdFormattedString__resolve__Scope( RogueClassCmdFormattedSt
     }
     cmd_1 = ((RogueClassCmdAccess*)((RogueCmdAccess__init__Token_Cmd_String_CmdArgs( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueClassCmd*)(cmd_1))), Rogue_literal_strings[1064], ROGUE_ARG(((RogueCmdArgs__init__Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdLiteralString__init__Token_String_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLiteralString*,ROGUE_CREATE_OBJECT(CmdLiteralString))), ROGUE_ARG(THIS->t), fmt_2, 0 )))))) )))) ))));
   }
-  return (RogueClassCmd*)((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueCmdAccess__resolve__Scope( cmd_1, scope_0 )))), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_String), scope_0, false ))), scope_0 )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueCmdAccess__resolve__Scope( cmd_1, scope_0 )))), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_String), scope_0, false, false ))), scope_0 )));
 }
 
 RogueClassType* Rogue_CmdFormattedString__type( RogueClassCmdFormattedString* THIS )
@@ -49769,7 +49779,7 @@ RogueClassCmd* RogueCmdLocalDeclaration__resolve__Scope( RogueClassCmdLocalDecla
   }
   if (!!(THIS->local_info->initial_value))
   {
-    THIS->local_info->initial_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->local_info->initial_value), ROGUE_ARG(THIS->local_info->_type), scope_0, false ))), scope_0 ));
+    THIS->local_info->initial_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->local_info->initial_value), ROGUE_ARG(THIS->local_info->_type), scope_0, false, false ))), scope_0 ));
   }
   RogueType__organize__Scope( ROGUE_ARG(THIS->local_info->_type), scope_0 );
   RogueScope__push_local__Local_Logical( scope_0, ROGUE_ARG(THIS->local_info), true );
@@ -50327,7 +50337,7 @@ RogueClassCmd* RogueCmdTryExpression__resolve__Scope( RogueClassCmdTryExpression
   ROGUE_DEF_LOCAL_REF(RogueClassType*,try_type_1,((Rogue_call_ROGUEM137( 40, ROGUE_ARG(THIS->try_expression) ))));
   if (((void*)(Rogue_call_ROGUEM137( 40, ROGUE_ARG(THIS->else_expression) ))) != ((void*)try_type_1))
   {
-    THIS->else_expression = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->else_expression), try_type_1, scope_0, false ))), scope_0 ));
+    THIS->else_expression = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->else_expression), try_type_1, scope_0, false, false ))), scope_0 ));
   }
   THIS->result_var->_type = try_type_1;
   ROGUE_DEF_LOCAL_REF(RogueClassCmdTry*,cmd_try_2,(((RogueCmdTry__init__Token_CmdStatementList_CmdCatch_List( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdTry*,ROGUE_CREATE_OBJECT(CmdTry))), ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueCmdStatementList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdStatementList*,ROGUE_CREATE_OBJECT(CmdStatementList))) )))), ROGUE_ARG(((RogueCmdCatch_List__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueCmdCatch_List*,ROGUE_CREATE_OBJECT(CmdCatch_List))) )))) )))));
@@ -50601,8 +50611,8 @@ RogueClassCmd* RogueCmdComparison__resolve_for_types__Scope_Type_Type( RogueClas
     return (RogueClassCmd*)((Rogue_call_ROGUEM619( 50, ROGUE_ARG(THIS), scope_0, left_type_1, right_type_2, true )));
   }
   ROGUE_DEF_LOCAL_REF(RogueClassType*,common_type_4,(((RogueCmd__must_find_common_type__Type_Type( ROGUE_ARG(((RogueClassCmd*)THIS)), left_type_1, right_type_2 )))));
-  THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), common_type_4, scope_0, false ))), scope_0 ));
-  THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), common_type_4, scope_0, false ))), scope_0 ));
+  THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), common_type_4, scope_0, false, false ))), scope_0 ));
+  THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), common_type_4, scope_0, false, false ))), scope_0 ));
   if (((Rogue_call_ROGUEM134( 27, ROGUE_ARG(THIS->left) )) && (Rogue_call_ROGUEM134( 27, ROGUE_ARG(THIS->right) ))))
   {
     return (RogueClassCmd*)((Rogue_call_ROGUEM131( 17, ROGUE_ARG(((RogueClassCmd*)THIS)), common_type_4 )));
@@ -50643,7 +50653,7 @@ RogueClassCmd* RogueCmdRange__resolve__Scope( RogueClassCmdRange* THIS, RogueCla
   }
   else
   {
-    THIS->step_size = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(((RogueCmdLiteralInt32__cast_to__Type_Scope_Logical( ROGUE_ARG(((RogueCmdLiteralInt32__init__Token_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLiteralInt32*,ROGUE_CREATE_OBJECT(CmdLiteralInt32))), ROGUE_ARG(THIS->t), ROGUE_ARG((Rogue_call_ROGUEM624( 43, ROGUE_ARG(THIS) ))) )))), range_type_1, scope_0, false )))), scope_0 ))) )));
+    THIS->step_size = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(((RogueCmdLiteralInt32__cast_to__Type_Scope_Logical_Logical( ROGUE_ARG(((RogueCmdLiteralInt32__init__Token_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLiteralInt32*,ROGUE_CREATE_OBJECT(CmdLiteralInt32))), ROGUE_ARG(THIS->t), ROGUE_ARG((Rogue_call_ROGUEM624( 43, ROGUE_ARG(THIS) ))) )))), range_type_1, scope_0, false, false )))), scope_0 ))) )));
   }
   ROGUE_DEF_LOCAL_REF(RogueString*,name_2,(Rogue_literal_strings[1076]));
   if (RogueObject_instance_of(THIS,RogueTypeCmdRangeUpToLessThan))
@@ -50757,7 +50767,7 @@ RogueClassCmd* RogueCmdModifyAndAssignLocal__resolve__Scope( RogueClassCmdModify
       return (RogueClassCmd*)(((RogueCmdWriteLocal__resolve__Scope( ROGUE_ARG(((RogueCmdWriteLocal__init__Token_Local_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdWriteLocal*,ROGUE_CREATE_OBJECT(CmdWriteLocal))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS->local_info), ROGUE_ARG(((RogueClassCmd*)(access_3))) )))), scope_0 ))));
     }
   }
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->local_info->_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->local_info->_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -52011,20 +52021,20 @@ RogueClassCmd* RogueCmdBitwiseOp__resolve_for_common_type__Scope_Type( RogueClas
 {
   if ((((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Byte) || ((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32)))
   {
-    THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0, false ))), scope_0 ));
-    THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0, false ))), scope_0 ));
+    THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0, false, false ))), scope_0 ));
+    THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int32), scope_0, false, false ))), scope_0 ));
     return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
   }
   if (((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character))
   {
-    THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character), scope_0, false ))), scope_0 ));
-    THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character), scope_0, false ))), scope_0 ));
+    THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character), scope_0, false, false ))), scope_0 ));
+    THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Character), scope_0, false, false ))), scope_0 ));
     return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
   }
   if (((void*)common_type_1) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64))
   {
-    THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64), scope_0, false ))), scope_0 ));
-    THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64), scope_0, false ))), scope_0 ));
+    THIS->left = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->left), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64), scope_0, false, false ))), scope_0 ));
+    THIS->right = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->right), ROGUE_ARG(((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Int64), scope_0, false, false ))), scope_0 ));
     return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
   }
   ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[1252] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG((Rogue_call_ROGUEM401( 48, ROGUE_ARG(((RogueClassCmdBinary*)THIS)) ))) )))) )))), Rogue_literal_strings[1253] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)(common_type_1))) )))) )))), Rogue_literal_strings[36] )))) )))) ))));
@@ -52902,7 +52912,7 @@ void RogueCmdConvertToType__dispatch__Visitor( RogueClassCmdConvertToType* THIS,
 RogueClassCmd* RogueCmdConvertToType__resolve__Scope( RogueClassCmdConvertToType* THIS, RogueClassScope* scope_0 )
 {
   THIS->operand = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->operand), scope_0 ))) )));
-  return (RogueClassCmd*)((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->operand), ROGUE_ARG(THIS->_target_type), scope_0, false ))), scope_0 )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->operand), ROGUE_ARG(THIS->_target_type), scope_0, false, true ))), scope_0 )));
 }
 
 RogueClassCmdCreateCallback* RogueCmdCreateCallback__init_object( RogueClassCmdCreateCallback* THIS )
@@ -53140,7 +53150,7 @@ RogueString* RogueCmdLiteralNull__type_name( RogueClassCmdLiteralNull* THIS )
   return (RogueString*)(Rogue_literal_strings[1234]);
 }
 
-RogueClassCmd* RogueCmdLiteralNull__cast_to__Type_Scope_Logical( RogueClassCmdLiteralNull* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 )
+RogueClassCmd* RogueCmdLiteralNull__cast_to__Type_Scope_Logical_Logical( RogueClassCmdLiteralNull* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 )
 {
   if (target_type_0->is_optional)
   {
@@ -53148,7 +53158,7 @@ RogueClassCmd* RogueCmdLiteralNull__cast_to__Type_Scope_Logical( RogueClassCmdLi
   }
   else
   {
-    return (RogueClassCmd*)((RogueCmd__cast_to__Type_Scope_Logical( ROGUE_ARG(((RogueClassCmd*)THIS)), target_type_0, scope_1, false )));
+    return (RogueClassCmd*)((RogueCmd__cast_to__Type_Scope_Logical_Logical( ROGUE_ARG(((RogueClassCmd*)THIS)), target_type_0, scope_1, false, false )));
   }
 }
 
@@ -53270,7 +53280,7 @@ RogueString* RogueCmdLiteralInt64__type_name( RogueClassCmdLiteralInt64* THIS )
   return (RogueString*)(Rogue_literal_strings[1236]);
 }
 
-RogueClassCmd* RogueCmdLiteralInt64__cast_to__Type_Scope_Logical( RogueClassCmdLiteralInt64* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2 )
+RogueClassCmd* RogueCmdLiteralInt64__cast_to__Type_Scope_Logical_Logical( RogueClassCmdLiteralInt64* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 )
 {
   if (((void*)target_type_0) == ((void*)((RogueClassProgram*)ROGUE_SINGLETON(Program))->type_Real64))
   {
@@ -53282,7 +53292,7 @@ RogueClassCmd* RogueCmdLiteralInt64__cast_to__Type_Scope_Logical( RogueClassCmdL
   }
   else
   {
-    return (RogueClassCmd*)((RogueCmd__cast_to__Type_Scope_Logical( ROGUE_ARG(((RogueClassCmd*)THIS)), target_type_0, scope_1, false )));
+    return (RogueClassCmd*)((RogueCmd__cast_to__Type_Scope_Logical_Logical( ROGUE_ARG(((RogueClassCmd*)THIS)), target_type_0, scope_1, false, false )));
   }
 }
 
@@ -53574,7 +53584,7 @@ RogueClassCmd* RogueCmdCreateList__resolve__Scope( RogueClassCmdCreateList* THIS
       RogueInt32 index_9 = (0);
       for (;index_9 < _auto_3339_8->count;++index_9)
       {
-        THIS->args->data->as_objects[index_9] = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(((RogueClassCmd*)(THIS->args->data->as_objects[index_9]))), scope_0 ))), element_type_2, scope_0, false ))), scope_0 ));
+        THIS->args->data->as_objects[index_9] = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(((RogueClassCmd*)(THIS->args->data->as_objects[index_9]))), scope_0 ))), element_type_2, scope_0, false, false ))), scope_0 ));
       }
     }
   }
@@ -54136,7 +54146,7 @@ RogueClassCmd* RogueCmdInlineNative__resolve_assignment__Scope_Cmd( RogueClassCm
   {
     ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[1119] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)((Rogue_call_ROGUEM137( 40, ROGUE_ARG(THIS->new_value) ))))) )))) )))) )))) ))));
   }
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->new_value), ROGUE_ARG(THIS->_result_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->new_value), ROGUE_ARG(THIS->_result_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -54169,7 +54179,7 @@ RogueClassCmd* RogueCmdInlineNative__resolve_modify_and_assign__Scope_TokenType_
   {
     ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[1129] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( Rogue_literal_strings[0], ROGUE_ARG(((RogueObject*)((Rogue_call_ROGUEM137( 40, ROGUE_ARG(THIS->new_value) ))))) )))) )))) )))) ))));
   }
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->new_value), ROGUE_ARG(THIS->_result_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->new_value), ROGUE_ARG(THIS->_result_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -54611,7 +54621,7 @@ void RogueCmdSelectCase__cast_conditions__Type_Scope( RogueClassCmdSelectCase* T
     RogueInt32 i_3 = (0);
     for (;i_3 < _auto_3471_2->count;++i_3)
     {
-      THIS->conditions->data->as_objects[i_3] = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(THIS->conditions->data->as_objects[i_3]))), to_type_0, scope_1, false ))), scope_1 ))) )));
+      THIS->conditions->data->as_objects[i_3] = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueClassCmd*)(THIS->conditions->data->as_objects[i_3]))), to_type_0, scope_1, false, false ))), scope_1 ))) )));
     }
   }
 }
@@ -54623,7 +54633,7 @@ void RogueCmdSelectCase__cast_value__Type_Scope( RogueClassCmdSelectCase* THIS, 
   {
     THIS->value = ((RogueCmdAccess__resolve__Scope( ROGUE_ARG(((RogueCmdAccess__init__Token_Cmd_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), ROGUE_ARG(THIS->value->t), ROGUE_ARG(THIS->value), Rogue_literal_strings[1106] )))), scope_1 )));
   }
-  THIS->value = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->value), to_type_0, scope_1, false ))), scope_1 ))) )));
+  THIS->value = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->value), to_type_0, scope_1, false, false ))), scope_1 ))) )));
 }
 
 RogueString* RogueArray_CmdSelectCase___type_name( RogueArray* THIS )
@@ -57138,7 +57148,7 @@ RogueClassCmd* RogueCmdWriteLocal__resolve__Scope( RogueClassCmdWriteLocal* THIS
 {
   RogueType__organize__Scope( ROGUE_ARG(THIS->local_info->_type), scope_0 );
   THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ));
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->new_value), ROGUE_ARG(THIS->local_info->_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(THIS->new_value), ROGUE_ARG(THIS->local_info->_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -57239,7 +57249,7 @@ void RogueCmdWriteGlobal__dispatch__Visitor( RogueClassCmdWriteGlobal* THIS, Rog
 
 RogueClassCmd* RogueCmdWriteGlobal__resolve__Scope( RogueClassCmdWriteGlobal* THIS, RogueClassScope* scope_0 )
 {
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->global_info->_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->global_info->_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -57366,7 +57376,7 @@ RogueClassCmd* RogueCmdWriteProperty__resolve__Scope( RogueClassCmdWriteProperty
   {
     ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[1110], ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[1111] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(THIS->property_info->name) )))) )))), Rogue_literal_strings[1112] )))), ROGUE_ARG(((RogueString__operatorPLUS__String( Rogue_literal_strings[0], ROGUE_ARG(THIS->property_info->name) )))) )))), Rogue_literal_strings[1113] )))) )))) )))) ))));
   }
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))) )))), ROGUE_ARG(THIS->property_info->_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))) )))), ROGUE_ARG(THIS->property_info->_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -57782,7 +57792,7 @@ RogueClassCmd* RogueCmdModifyAndAssignGlobal__resolve__Scope( RogueClassCmdModif
       return (RogueClassCmd*)(((RogueCmdWriteGlobal__resolve__Scope( ROGUE_ARG(((RogueCmdWriteGlobal__init__Token_Property_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdWriteGlobal*,ROGUE_CREATE_OBJECT(CmdWriteGlobal))), ROGUE_ARG(THIS->t), ROGUE_ARG(THIS->global_info), ROGUE_ARG(((RogueClassCmd*)(access_3))) )))), scope_0 ))));
     }
   }
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->global_info->_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->global_info->_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -57890,7 +57900,7 @@ RogueClassCmd* RogueCmdModifyAndAssignProperty__resolve__Scope( RogueClassCmdMod
     }
   }
   THIS->context = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->context), scope_0 ))) )));
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->property_info->_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))), ROGUE_ARG(THIS->property_info->_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -58185,7 +58195,7 @@ RogueClassCmd* RogueCmdWriteArrayElement__resolve__Scope( RogueClassCmdWriteArra
   THIS->context = (Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->context), scope_0 ));
   THIS->_array_type = (Rogue_call_ROGUEM137( 31, ROGUE_ARG(THIS->context) ));
   THIS->index = ((RogueCmd__require_integer( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->index), scope_0 ))) )));
-  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))) )))), ROGUE_ARG(THIS->_array_type->_element_type), scope_0, false ))), scope_0 ));
+  THIS->new_value = (Rogue_call_ROGUEM128( 34, ROGUE_ARG((Rogue_call_ROGUEM129( 12, ROGUE_ARG(((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM128( 34, ROGUE_ARG(THIS->new_value), scope_0 ))) )))), ROGUE_ARG(THIS->_array_type->_element_type), scope_0, false, false ))), scope_0 ));
   return (RogueClassCmd*)(((RogueClassCmd*)(THIS)));
 }
 
@@ -61199,8 +61209,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[54] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[55] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[56] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[57] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.76.0", 8 ) ); 
-  Rogue_literal_strings[58] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 11, 2016", 13 ) ); 
+  Rogue_literal_strings[57] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.77.0", 8 ) ); 
+  Rogue_literal_strings[58] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 12, 2016", 13 ) ); 
   Rogue_literal_strings[59] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[60] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class/method requisite.  With no argument, everything\n    becomes requisite.\n\n  --requisite-file[=file.rogue]\n    With an argument, makes the entire file requisite.  With no argument,\n    all files explicitly listed on the commandline become requisite.\n\n  --target=", 1842 ) ); 
   Rogue_literal_strings[61] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 
@@ -62266,11 +62276,11 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1121] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Method '", 8 ) ); 
   Rogue_literal_strings[1122] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Local variable '", 16 ) ); 
   Rogue_literal_strings[1123] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "' cannot be called like a method.", 33 ) ); 
-  Rogue_literal_strings[1124] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[CmdAccess.expand_modify_and_assign() Cmd.rogue:2028]", 53 ) ); 
+  Rogue_literal_strings[1124] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[CmdAccess.expand_modify_and_assign() Cmd.rogue:2036]", 53 ) ); 
   Rogue_literal_strings[1125] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[INTERNAL]", 10 ) ); 
   Rogue_literal_strings[1126] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ") nor ", 6 ) ); 
   Rogue_literal_strings[1127] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\" exists in the current scope. [2]", 34 ) ); 
-  Rogue_literal_strings[1128] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[CmdElementAccess.resolve_modify_and_assign() Cmd.rogue:2156]", 61 ) ); 
+  Rogue_literal_strings[1128] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[CmdElementAccess.resolve_modify_and_assign() Cmd.rogue:2164]", 61 ) ); 
   Rogue_literal_strings[1129] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cannot modify-and-assign inline native code without specifying its type.  For example, native(\"...\")->", 102 ) ); 
   Rogue_literal_strings[1130] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ".type() is not defined (access name '", 37 ) ); 
   Rogue_literal_strings[1131] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "').", 3 ) ); 
