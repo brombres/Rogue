@@ -891,6 +891,8 @@ augment Program
                       |      if type(arg) is str: return _M_PERFECT
                       |    elif issubclass(param_type, _PyDelegate):
                       |      if hasattr(arg, '__call__'): return _M_PERFECT
+                      |    elif arg is None and issubclass(param_type, PyRogueBase):
+                      |      return _M_PERFECT
                       |    return False
                       |  def format (self):
                       |    r = []
