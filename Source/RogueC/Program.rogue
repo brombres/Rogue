@@ -369,6 +369,9 @@ class Program [requisite singleton]
       while (not types_resolved)
         # Reference and resolve all requisite type templates
         forEach (templ in template_list)
+          if (RogueC.all_api)
+            templ.attributes.add( Attribute.is_api )
+          endIf
           if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
             get_type_reference( templ.t, templ.name ).resolve
           endIf
