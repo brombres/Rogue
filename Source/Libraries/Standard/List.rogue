@@ -417,6 +417,9 @@ $if ("Cython")
 
     method _set_element( index:Int32, new_value:$DataType ) [requisite]
       set(index, new_value)
+
+    method _get_base_address()->PointerInt [requisite]
+      return native("&($this->data->as_bytes)")->PointerInt
 $endIf
 endClass
 
