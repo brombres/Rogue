@@ -826,6 +826,9 @@ augment Program
                       |    d._callable = <intptr_t>fo
                       |    return d
                       |
+                      |def _objptr(o):
+                      |  return <long>((<PyRogueBase>o).thisptr)
+                      |
                       |cdef object _NOTHING
                       |cdef object _NO_DEFAULT
                       |cdef object _PYROGUE_ACCESS
