@@ -6058,7 +6058,7 @@ RogueClassType* RogueProgram__find_type__String( RogueClassProgram* THIS, RogueS
 RogueClassType* RogueProgram__get_type_reference__Token_String( RogueClassProgram* THIS, RogueClassToken* t_0, RogueString* name_1 );
 RogueString* RogueProgram__get_callback_type_signature__Type_List( RogueClassProgram* THIS, RogueType_List* parameter_types_0 );
 RogueClassType* RogueProgram__get_callback_type_reference__Token_Type_List_Type( RogueClassProgram* THIS, RogueClassToken* t_0, RogueType_List* parameter_types_1, RogueClassType* return_type_2 );
-RogueLogical RogueProgram__is_type_defined__String( RogueClassProgram* THIS, RogueString* name_0 );
+RogueLogical RogueProgram__is_type_used__String( RogueClassProgram* THIS, RogueString* name_0 );
 RogueClassType* RogueProgram__create_built_in_type__String_Int32( RogueClassProgram* THIS, RogueString* name_0, RogueInt32 attributes_1 );
 RogueLogical RogueProgram__make_fully_requisite__Method( RogueClassProgram* THIS, RogueClassMethod* m_0 );
 RogueLogical RogueProgram__make_fully_requisite__Method_List( RogueClassProgram* THIS, RogueMethod_List* methods_0 );

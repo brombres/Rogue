@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.78 - July 15, 2016
+- [RogueC] Renamed `Program.is_type_defined()` check to `Program.is_type_used()` (when deciding whether or not to inject code referencing class `TaskManager`) to work correctly if the type has been defined and then culled.
+- [RogueC] Fixed check for attempting to compare two compounds (with `==`, `<`, etc.) to require an `operator<(CompoundType)` method if the operator is not `==` or `!=` (an `operator==()` comparison is built-in to compounds).
+- [API] Added `Console.peek()->Byte` to implement missing abstract method incorporated from `Reader<<Byte>>`.
+
 ###v1.0.77 - July 12, 2016
 - [RogueC] C++ definition of base `struct RogueObject` now injects preprocessor value `ROGUE_CUSTOM_OBJECT_PROPERTY` if it's defined, allowing for one or more custom properties per object.
 - [RogueC] Fixed object conversions between related classes to look for `CurType.to->NewType` and then `NewType.init(CurType)` methods before defaulting to typecasts.  The bug was introduced when the code for handling conversions was merged with the code for handling typecasts some time ago.

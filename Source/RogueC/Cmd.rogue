@@ -3224,8 +3224,15 @@ class CmdComparison : CmdBinary
         local result = resolve_for_reference( scope, left_type, right_type, false )
         if (result) return result
 
-        if (left_type is right_type) return this
-        throw t.error( "Incompatible types for comparison: $ and $." (left_type,right_type) )
+        if (left_type is right_type)
+          if (this instanceOf CmdCompareEQ or this instanceOf CmdCompareNE)
+            # Compounds have a built-in == and !=
+            return this
+          endIf
+          throw t.error( "Compounds of type $ cannot be compared without an operator<($) method." (left_type,left_type) )
+        else
+          throw t.error( "Incompatible types for comparison: $ and $." (left_type,right_type) )
+        endIf
 
       elseIf (left_type.is_reference or right_type.is_reference)
         return resolve_for_reference( scope, left_type, right_type, true )

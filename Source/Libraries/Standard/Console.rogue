@@ -22,6 +22,10 @@ class Console : Reader<<Byte>>, PrintWriterAspect<<output_buffer>> [singleton]
       if (not next_input_byte.exists) next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
       return (next_input_byte.value != -1)
 
+    method peek->Byte
+      if (has_another) return next_input_byte.value
+      else             return 0
+
     method read->Byte
       if (not has_another) return 0
       local result = next_input_byte.value

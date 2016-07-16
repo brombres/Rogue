@@ -895,7 +895,7 @@ augment Program
                       |{
                       |  // Returns true if any tasks are still active
 
-      if (Program.is_type_defined("TaskManager"))
+      if (Program.is_type_used("TaskManager"))
         writer.println @|  RogueClassTaskManager* task_manager = (RogueClassTaskManager*) ROGUE_SINGLETON(TaskManager);
                         |  bool result = RogueTaskManager__update( task_manager );
                         |  Rogue_collect_garbage();
