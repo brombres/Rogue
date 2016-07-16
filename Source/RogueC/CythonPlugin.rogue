@@ -299,8 +299,9 @@ class CyClass
         return "pyrogue_get_string(%)"
       endIf
       if (t.is_reference)
-        local tn = get_p_type(t)
-        return tn + '(__pyrogue_new_instance=<intptr_t>%)'
+        #local tn = get_p_type(t)
+        #return tn + '(__pyrogue_new_instance=<intptr_t>%)'
+        return "get_wrapper(<intptr_t>%)"
       endIf
       return '%'
 
@@ -704,9 +705,9 @@ augment Program
                       |    int hash_code
                       |    int utf8[]
                       |  cdef cppclass RogueType:
-                      |    pass
+                      |    int index
                       |  cdef cppclass RogueObject:
-                      |    pass
+                      |    RogueType * type
                       |  cdef cppclass RogueArray:
                       |    pass
                       |
@@ -803,6 +804,12 @@ augment Program
                       |cdef RogueObject * check_type (PyRogueBase o, t):
                       |  if isinstance(o, t): return o.thisptr
                       |  raise RuntimeError("Object %s is not of type %s" % (o, t))
+                      |
+                      |cdef object _rogue_type_index_to_pyclass = {}
+                      |cdef object get_wrapper (intptr_t native_object_ptr):
+                      |  cdef RogueObject * thisptr = <RogueObject*>native_object_ptr
+                      |  cls = _rogue_type_index_to_pyclass[thisptr.type.index]
+                      |  return cls(__pyrogue_new_instance=native_object_ptr)
                       |
                       |cdef void * cast_object (python_object, t) except <void*>-1:
                       |  """Cast a Python object to Rogue type t"""
@@ -1496,6 +1503,7 @@ augment Program
           writer.println "$ = $()" (cyclass.pytype, cyclass.pytype)
         endIf
 
+        writer.println "_rogue_type_index_to_pyclass[$] = $" (cyclass.type.index, cyclass.pytype)
       endForEach
 
       # Now we write the table full of overload information used by _call_overload()
