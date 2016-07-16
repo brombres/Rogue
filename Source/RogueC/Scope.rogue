@@ -258,7 +258,7 @@ class Scope
         endIf
       endIf
 
-      if (not candidates.update_available) return null
+      if (not candidates.refine_matches) return null
 
       if (suppress_inherited or calling_prior_init)
         # Find method with most specific type context
@@ -342,6 +342,28 @@ class Scope
           endIf
         endForEach
 
+        arg_count = select{ args:args.count || 0 }
+        named_arg_count = select{ access.named_args:access.named_args.count || 0 }
+        total_arg_count = arg_count + named_arg_count
+
+        # Throw out any method that has a non-default parameter that does not have either a regular
+        # argument or a named argument.
+        forEach (m in candidates.available)
+          contingent
+            forEach (param at index in m.parameters)
+              sufficient (index < arg_count)
+              sufficient (param.initial_value?)
+              forEach (arg in access.named_args)
+                sufficient (param.original_name == arg.name)
+              endForEach
+              escapeContingent
+            endForEach
+
+          satisfied
+            candidates.compatible.add( m )
+          endContingent
+        endForEach
+        if (not candidates.update_matches) return null
       endIf
 
       if (arg_count)
@@ -564,12 +586,11 @@ class CandidateMethods
       return available[0]
 
     method refine_matches->Logical
-      return update( false )
-
-    method update_available->Logical
+      # If no compatible methods have been added, keeps old set
       return update( false )
 
     method update_matches->Logical
+      # Error if no compatible methods have been added
       return update( true )
 
     method update( require_compatible:Logical )->Logical

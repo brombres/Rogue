@@ -26,6 +26,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.79 - July 16, 2016
+- [API] `Real64Value` objects now omit ".0" when printing their value or converting it to a string.
+- [API] Added `Real64`/`Real32` methods `whole_part()->RealX` and `fractional_part()->RealX`.
+- [API] Added `Real64`/`Real32` method `ceiling()->RealX`.
+- [API] `Real64`/`Real32` method `format([decimal_digits])->String` now allows an unlimited number of decimal digits (0+) when no argument is passed instead of the previous cap of 4 digits.
+- [RogueC] Improved method call resolution.
+
 ###v1.0.78 - July 15, 2016
 - [RogueC] Renamed `Program.is_type_defined()` check to `Program.is_type_used()` (when deciding whether or not to inject code referencing class `TaskManager`) to work correctly if the type has been defined and then culled.
 - [RogueC] Fixed check for attempting to compare two compounds (with `==`, `<`, etc.) to require an `operator<(CompoundType)` method if the operator is not `==` or `!=` (an `operator==()` comparison is built-in to compounds).

@@ -1677,6 +1677,9 @@ class CmdNamedArg : Cmd
     method cloned( clone_args=null:CloneArgs )->CmdNamedArg
       return CmdNamedArg( t, name, cloned(value), is_negative )
 
+    method to->String
+      return name
+
     method to_value->Cmd
       if (value)
         if (is_negative) throw t.error( "Invalid negation of a named parameter with a supplied value." )

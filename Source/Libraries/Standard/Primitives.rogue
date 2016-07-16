@@ -28,6 +28,9 @@ class Real64 [primitive]
       if (this >= 0) return this
       else           return -this
 
+    method ceiling->Real64 [macro]
+      Math.ceiling( this )
+
     method clamped( &low=null:Real64?, &high=null:Real64? )->Real64
       if (low.exists and this < low.value)  return low.value
       if (high.exists and this > high.value) return high.value
@@ -51,12 +54,16 @@ class Real64 [primitive]
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
 
-    method floor->Real64
-      return Math.floor( this )
+    method floor->Real64 [macro]
+      Math.floor( this )
 
     method format( decimal_digits=null:Int32? )->String
-      local digits = select{ decimal_digits || decimal_digit_count.clamped(&high=4) }
+      local digits = select{ decimal_digits || decimal_digit_count }
       return StringBuilder().print( this, digits )->String
+
+    method fractional_part->Real64
+      if (this >= 0) return this - whole_part
+      else           return whole_part - this
 
     method hash_code->Int32
       return integer_bits->Int32
@@ -105,6 +112,10 @@ class Real64 [primitive]
 
     method whole_digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).locate( '.' ).value
+
+    method whole_part->Real64
+      if (this >= 0) return floor
+      else           return ceiling
 endClass
 
 class Real32 [primitive]
@@ -135,6 +146,9 @@ class Real32 [primitive]
       if (this >= 0) return this
       else           return -this
 
+    method ceiling->Real32 [macro]
+      Real32( Math.ceiling(this) )
+
     method clamped( &low=null:Real32?, &high=null:Real32? )->Real32
       if (low.exists and this < low.value)  return low.value
       if (high.exists and this > high.value) return high.value
@@ -146,11 +160,15 @@ class Real32 [primitive]
     method decimal_digit_count->Int32
       return this->Real64.decimal_digit_count
 
-    method floor->Real32
-      return Real32( Math.floor(this) )
+    method floor->Real32 [macro]
+      Real32( Math.floor(this) )
 
     method format( decimal_digits=null:Int32? )->String
       return Real64(this).format( decimal_digits )
+
+    method fractional_part->Real32
+      if (this >= 0) return this - whole_part
+      else           return whole_part - this
 
     method integer_bits->Int32
       $if ("C++")
@@ -196,6 +214,10 @@ class Real32 [primitive]
 
     method whole_digit_count->Int32
       return this->Real64.whole_digit_count
+
+    method whole_part->Real32
+      if (this >= 0) return floor
+      else           return ceiling
 endClass
 
 class Int64 [primitive]

@@ -455,10 +455,11 @@ class Real64Value( value:Real64 ) : Value
       return value
 
     method to->String
-      return value->String
+      return value.format()
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
-      buffer.print( value )
+      if (value.fractional_part) buffer.print( value )
+      else                       buffer.print( value, 0 )  # omit the ".0"
       return buffer
 endClass
 
