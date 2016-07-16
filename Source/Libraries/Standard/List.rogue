@@ -413,9 +413,15 @@ class List<<$DataType>> : GenericList
 
 $if ("Cython")
     method _get_element( index:Int32 )->$DataType [requisite]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
       return get(index)
 
     method _set_element( index:Int32, new_value:$DataType ) [requisite]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
       set(index, new_value)
 
     method _get_base_address()->PointerInt [requisite]
