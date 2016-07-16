@@ -241,8 +241,7 @@ class JSON
 
       n = n * sign
 
-      if (is_real or n != n->Int32) return Real64Value( n )
-      return Int32Value( n->Int32 )
+      return Real64Value( n )
 
     method consume_spaces_and_eols( reader:ParseReader )->ParseReader
       while (reader.consume_spaces or reader.consume_eols) noAction

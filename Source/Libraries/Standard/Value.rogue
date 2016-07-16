@@ -1,8 +1,5 @@
 class Value
   GLOBAL METHODS
-    method create( value:Int32 )->Value
-      return Int32Value( value )
-
     method create( value:Logical )->Value
       return select{ value:LogicalValue.true_value || LogicalValue.false_value }
 
@@ -277,84 +274,6 @@ class NullValue : Value [singleton]
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer.print( "null" )
-endClass
-
-class Int32Value( value:Int32 ) : Value
-  METHODS
-    method is_int32->Logical
-      return true
-
-    method is_number->Logical
-      return true
-
-    method operator==( other:Value )->Logical
-      if (other.is_number) return (value == other->Real64)
-      else                 return false
-
-    method operator<( other:Value )->Logical
-      if (other.is_number) return (value < other->Real64)
-      else                 return object_id < other.object_id
-
-    method operator-()->Value
-      return Int32Value( -value )
-
-    method operator+( other:Value )->Value
-      if (not other) return Value(0)
-      return Int32Value( value + other->Int32 )
-
-    method operator-( other:Value )->Value
-      if (not other) return Value(0)
-      return Int32Value( value - other->Int32 )
-
-    method operator*( other:Value )->Value
-      if (not other) return Value(0)
-      return Int32Value( value * other->Int32 )
-
-    method operator/( other:Value )->Value
-      if (not other) return Value(0)
-      return Int32Value( value / other->Int32 )
-
-    method operator%( other:Value )->Value
-      if (not other) return Value(0)
-      return Int32Value( value % other->Int32 )
-
-    method operator+( other:Real64 )->Value
-      if (not other) return Value(0)
-      return Int32Value( value + other )
-
-    method operator-( other:Real64 )->Value
-      if (not other) return Value(0)
-      return Int32Value( value + other )
-
-    method operator*( other:Real64 )->Value
-      if (not other) return Value(0)
-      return Int32Value( value + other )
-
-    method operator/( other:Real64 )->Value
-      if (not other) return Value(0)
-      return Int32Value( value + other )
-
-    method operator%( other:Real64 )->Value
-      if (not other) return Value(0)
-      return Int32Value( value + other )
-
-    method operator+( other:String )->Value
-      if (not other) return Value(0)
-      return StringValue( value + other )
-
-    method operator*( other:String )->Value
-      if (not other) return Value(0)
-      return StringValue( value * other )
-
-    method to->Int32
-      return value
-
-    method to->String
-      return value->String
-
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
-      buffer.print( value )
-      return buffer
 endClass
 
 class LogicalValue( value:Logical ) : Value

@@ -31,6 +31,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `Real64`/`Real32` methods `whole_part()->RealX` and `fractional_part()->RealX`.
 - [API] Added `Real64`/`Real32` method `ceiling()->RealX`.
 - [API] `Real64`/`Real32` method `format([decimal_digits])->String` now allows an unlimited number of decimal digits (0+) when no argument is passed instead of the previous cap of 4 digits.
+- [API] In the JSON-style Value system, removed class `Int32Value` so that all numbers are stored as `Real64Value` objects.
 - [RogueC] Improved method call resolution.
 
 ###v1.0.78 - July 15, 2016
