@@ -42,6 +42,9 @@ class Table<<$KeyType,$ValueType>>
     method count->Int32
       return keys.count
 
+    method is_empty->Logical
+      return count == 0
+
     method find( key:$KeyType )->TableEntry<<$KeyType,$ValueType>>
       local hash = key.hash_code
       local entry = bins[ hash & bin_mask ]

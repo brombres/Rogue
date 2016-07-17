@@ -48,6 +48,9 @@ class List<<$DataType>> : GenericList
       if (not data) return 0
       return data.count
 
+    method is_empty->Logical
+      return count == 0
+
     method clear->this
       discard_from( 0 )
       return this
