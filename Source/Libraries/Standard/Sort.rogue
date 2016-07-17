@@ -1,3 +1,24 @@
+class BubbleSort<<$DataType>>
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:Function(a:$DataType,b:$DataType)->Logical )->$DataType[]
+      local n = list.count
+      if (n <= 1) return list
+
+      forEach (pass in 1..n)
+        local is_sorted = true
+        forEach (i in 0..<n-pass)
+          if (compare_fn(list[i+1],list[i]))
+            list.swap( i, i+1 )
+            is_sorted = false
+          endIf
+        endForEach
+        if (is_sorted) return list
+      endForEach
+
+      return list
+endClass
+
+
 class InsertionSort<<$DataType>>
   GLOBAL METHODS
     method sort( list:$DataType[], compare_fn:Function(a:$DataType,b:$DataType)->Logical )->$DataType[]
@@ -6,10 +27,11 @@ class InsertionSort<<$DataType>>
       local original_count = list.count
       list.count = 1
 
-      forEach (new_value in list.from(1,original_count-1))
-        local i = list.count
-        while (i > 0 and compare_fn(new_value,list[i-1])) --i
-        list.insert( new_value, i )
+      forEach (i in 1..(original_count-1))
+        local new_value = list[ i ]
+        local insert_i = list.count
+        while (insert_i > 0 and compare_fn(new_value,list[insert_i-1])) --insert_i
+        list.insert( new_value, insert_i )
       endForEach
 
       return list

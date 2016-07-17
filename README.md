@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.80 - July 17, 2016
+- [API] `InsertionSort` no longer creates a new reader object every time it is called.
+- [API] Added `BubbleSort` (`BubbleSort<<T>>.sort(list:T[], compare_fn:Function(T,T)->Logical)->T[]`).
+
 ###v1.0.79 - July 16, 2016
 - [API] `Real64Value` objects now omit ".0" when printing their value or converting it to a string.
 - [API] Added `Real64`/`Real32` methods `whole_part()->RealX` and `fractional_part()->RealX`.
