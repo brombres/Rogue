@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.79
-- July 16, 2016
+- v1.0.80
+- July 17, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [C++] Added `RogueException__display(RogueException*)` (requisite Rogue method) as a simple way of displaying a caught error and the accompanying stack trace if present.
 - [C++] Removed vestigial `Rogue_error_object` from runtime framework.
 - [C++] In C++, base class `Exception` is now `RogueException` rather than `RogueClassException`.
-- [API] `sign` to `Real` and `Int` types that returns `-1`, `0`, or `1` of the appropriate type.
+- [API] Added `sign()` to `Real` and `Int` types that returns `-1`, `0`, or `1` of the appropriate type.
 - [API] `InsertionSort` no longer creates a new reader object every time it is called.
 - [API] Added `BubbleSort` (`BubbleSort<<T>>.sort(list:T[], compare_fn:Function(T,T)->Logical)->T[]`).
 
