@@ -894,16 +894,25 @@ augment Program
       writer.println @|bool Rogue_update_tasks()
                       |{
                       |  // Returns true if any tasks are still active
+                      |  try
+                      |  {
 
-      if (Program.is_type_used("TaskManager"))
+      local uses_tasks = Program.is_type_used("TaskManager")
+      if (uses_tasks)
         writer.println @|  RogueClassTaskManager* task_manager = (RogueClassTaskManager*) ROGUE_SINGLETON(TaskManager);
                         |  bool result = RogueTaskManager__update( task_manager );
-                        |  Rogue_collect_garbage();
-                        |  return result;
-      else
-        writer.println @|  Rogue_collect_garbage();
-                        |  return false;
       endIf
+
+      writer.println @|  Rogue_collect_garbage();
+                      |}
+                      |catch (RogueException* err)
+                      |{
+                      |  printf( "Uncaught exception\n" );
+                      |  RogueException__display( err );
+                      |}
+
+      if (uses_tasks) writer.println @|  return result;
+      else            writer.println @|  return false;
 
       writer.println @|}
                       |
@@ -914,12 +923,20 @@ augment Program
         writer.println
         writer.println( @|int main( int argc, const char* argv[] )
                          |{
-                         |  Rogue_configure( argc, argv );
-                         |  Rogue_launch();
+                         |  try
+                         |  {
+                         |    Rogue_configure( argc, argv );
+                         |    Rogue_launch();
                          |
-                         |  while (Rogue_update_tasks()) {}
+                         |    while (Rogue_update_tasks()) {}
                          |
-                         |  Rogue_quit();
+                         |    Rogue_quit();
+                         |  }
+                         |  catch (RogueException* err)
+                         |  {
+                         |    printf( "Uncaught exception\n" );
+                         |    RogueException__display( err );
+                         |  }
                          |
                          |  return 0;
                          |}

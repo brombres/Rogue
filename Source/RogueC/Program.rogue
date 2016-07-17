@@ -131,6 +131,8 @@ class Program [requisite singleton]
       type_Exception     = create_built_in_type( "Exception", Attribute.is_class )
       type_WeakReference = create_built_in_type( "WeakReference", Attribute.is_class )
 
+      # `simplify_name` means e.g. `RogueObject` instead of `RogueClassObject`.
+      type_Exception.simplify_name = true
       type_Object.simplify_name = true
       type_String.simplify_name = true
       type_StringBuilder.simplify_name = true
@@ -313,6 +315,7 @@ class Program [requisite singleton]
       endForEach
 
       type_null.resolve
+      type_Global.organize
       type_Exception.resolve
       type_Real64.resolve
       type_Real32.resolve

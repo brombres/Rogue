@@ -567,7 +567,6 @@ extern RogueCleanUpFn     Rogue_clean_up_fn_table[];
 extern RogueToStringFn    Rogue_to_string_fn_table[];
 extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];
-extern RogueObject*       Rogue_error_object;
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
@@ -641,7 +640,6 @@ struct RogueCPPException
   RogueCPPException( RogueObject * err )
   : err(err)
   {
-    Rogue_error_object = err;
     RogueObject_retain( err );
   }
   ~RogueCPPException()
@@ -659,15 +657,20 @@ extern "C" char **environ;
 #include <cmath>
 
 // FORWARD DECLARATIONS
-struct RogueClassException; // Exception
+struct RogueClassGlobal; // Global
+struct RogueClassPrintWriterAspect_global_output_buffer_; // PrintWriterAspect<<global_output_buffer>>
+struct RogueClassPrintWriter; // PrintWriter
+struct RogueStringBuilder; // StringBuilder
+struct RogueByte_List; // Byte[]
+struct RogueClassGenericList; // GenericList
+struct RogueFunction___List; // Function()[]
+struct RogueClassFunction__; // Function()
+struct RogueException; // Exception
 struct RogueClassStackTrace; // StackTrace
 struct RogueString_List; // String[]
-struct RogueClassGenericList; // GenericList
 struct RogueTypeInfo; // TypeInfo
 struct RoguePropertyInfo_List; // PropertyInfo[]
 struct RogueClassPropertyInfo; // PropertyInfo
-struct RogueStringBuilder; // StringBuilder
-struct RogueByte_List; // Byte[]
 struct RogueCharacter_List; // Character[]
 struct RogueClassStringTable_String_; // StringTable<<String>>
 struct RogueClassTable_String_String_; // Table<<String,String>>
@@ -682,11 +685,6 @@ struct RogueClassRuntime; // Runtime
 struct RogueClassTable_String_TypeInfo_; // Table<<String,TypeInfo>>
 struct RogueTableEntry_String_TypeInfo__List; // TableEntry<<String,TypeInfo>>[]
 struct RogueClassTableEntry_String_TypeInfo_; // TableEntry<<String,TypeInfo>>
-struct RogueClassGlobal; // Global
-struct RogueClassPrintWriterAspect_global_output_buffer_; // PrintWriterAspect<<global_output_buffer>>
-struct RogueClassPrintWriter; // PrintWriter
-struct RogueFunction___List; // Function()[]
-struct RogueClassFunction__; // Function()
 struct RogueClassConsole; // Console
 struct RogueClassReader_Byte_; // Reader<<Byte>>
 struct RogueClassPrintWriterAspect_output_buffer_; // PrintWriterAspect<<output_buffer>>
@@ -1379,7 +1377,67 @@ extern RogueClassTable_String_Token_List_* RoguePreprocessor_definitions;
 extern RogueClassStringValue* RogueStringValue_empty_string;
 
 // CLASS DEFINITIONS
-struct RogueClassException : RogueObject
+struct RogueClassGlobal : RogueObject
+{
+  // PROPERTIES
+  RogueClassPrintWriter* standard_output;
+  RogueStringBuilder* global_output_buffer;
+  RogueFunction___List* exit_functions;
+
+};
+
+struct RogueClassPrintWriterAspect_global_output_buffer_ : RogueObject
+{
+};
+
+struct RogueClassPrintWriter : RogueObject
+{
+};
+
+struct RogueStringBuilder : RogueObject
+{
+  // PROPERTIES
+  RogueByte_List* utf8;
+  RogueInt32 count;
+  RogueInt32 indent;
+  RogueInt32 cursor_offset;
+  RogueInt32 cursor_index;
+  RogueLogical at_newline;
+
+};
+
+struct RogueByte_List : RogueObject
+{
+  // PROPERTIES
+  RogueArray* data;
+  RogueInt32 count;
+
+};
+
+
+struct RogueClassGenericList : RogueObject
+{
+  // PROPERTIES
+
+};
+
+
+
+struct RogueFunction___List : RogueObject
+{
+  // PROPERTIES
+  RogueArray* data;
+  RogueInt32 count;
+
+};
+
+struct RogueClassFunction__ : RogueObject
+{
+  // PROPERTIES
+
+};
+
+struct RogueException : RogueObject
 {
   // PROPERTIES
   RogueString* message;
@@ -1403,14 +1461,6 @@ struct RogueString_List : RogueObject
   RogueInt32 count;
 
 };
-
-struct RogueClassGenericList : RogueObject
-{
-  // PROPERTIES
-
-};
-
-
 
 
 struct RogueTypeInfo : RogueObject
@@ -1438,27 +1488,6 @@ struct RogueClassPropertyInfo : RogueObject
   RogueInt32 property_type_index;
 
 };
-
-struct RogueStringBuilder : RogueObject
-{
-  // PROPERTIES
-  RogueByte_List* utf8;
-  RogueInt32 count;
-  RogueInt32 indent;
-  RogueInt32 cursor_offset;
-  RogueInt32 cursor_index;
-  RogueLogical at_newline;
-
-};
-
-struct RogueByte_List : RogueObject
-{
-  // PROPERTIES
-  RogueArray* data;
-  RogueInt32 count;
-
-};
-
 
 struct RogueCharacter_List : RogueObject
 {
@@ -1571,37 +1600,6 @@ struct RogueClassTableEntry_String_TypeInfo_ : RogueObject
   RogueTypeInfo* value;
   RogueClassTableEntry_String_TypeInfo_* next_entry;
   RogueInt32 hash;
-
-};
-
-struct RogueClassGlobal : RogueObject
-{
-  // PROPERTIES
-  RogueClassPrintWriter* standard_output;
-  RogueStringBuilder* global_output_buffer;
-  RogueFunction___List* exit_functions;
-
-};
-
-struct RogueClassPrintWriterAspect_global_output_buffer_ : RogueObject
-{
-};
-
-struct RogueClassPrintWriter : RogueObject
-{
-};
-
-struct RogueFunction___List : RogueObject
-{
-  // PROPERTIES
-  RogueArray* data;
-  RogueInt32 count;
-
-};
-
-struct RogueClassFunction__ : RogueObject
-{
-  // PROPERTIES
 
 };
 
@@ -2562,7 +2560,7 @@ struct RogueClassTableEntry_String_String_List_ : RogueObject
 
 };
 
-struct RogueClassError : RogueClassException
+struct RogueClassError : RogueException
 {
   // PROPERTIES
 
@@ -4568,22 +4566,27 @@ struct RogueClassNativeCodeToken : RogueObject
 
 
 // ROGUE TYPES
-extern RogueType* RogueTypeException;
+extern RogueType* RogueTypeGlobal;
+extern RogueType* RogueTypePrintWriterAspect_global_output_buffer_;
+extern RogueType* RogueTypePrintWriter;
 extern RogueType* RogueTypeObject;
-extern RogueType* RogueTypeString;
-extern RogueType* RogueTypeStackTrace;
-extern RogueType* RogueTypeString_List;
+extern RogueType* RogueTypeStringBuilder;
+extern RogueType* RogueTypeByte_List;
+extern RogueType* RogueTypeByte;
 extern RogueType* RogueTypeGenericList;
 extern RogueType* RogueTypeArray;
 extern RogueType* RogueTypeInt32;
 extern RogueType* RogueTypeLogical;
+extern RogueType* RogueTypeFunction___List;
+extern RogueType* RogueTypeFunction__;
+extern RogueType* RogueTypeException;
+extern RogueType* RogueTypeString;
+extern RogueType* RogueTypeStackTrace;
+extern RogueType* RogueTypeString_List;
 extern RogueType* RogueTypeInt64;
 extern RogueType* RogueTypeTypeInfo;
 extern RogueType* RogueTypePropertyInfo_List;
 extern RogueType* RogueTypePropertyInfo;
-extern RogueType* RogueTypeStringBuilder;
-extern RogueType* RogueTypeByte_List;
-extern RogueType* RogueTypeByte;
 extern RogueType* RogueTypeCharacter_List;
 extern RogueType* RogueTypeCharacter;
 extern RogueType* RogueTypeReal64;
@@ -4600,11 +4603,6 @@ extern RogueType* RogueTypeRuntime;
 extern RogueType* RogueTypeTable_String_TypeInfo_;
 extern RogueType* RogueTypeTableEntry_String_TypeInfo__List;
 extern RogueType* RogueTypeTableEntry_String_TypeInfo_;
-extern RogueType* RogueTypeGlobal;
-extern RogueType* RogueTypePrintWriterAspect_global_output_buffer_;
-extern RogueType* RogueTypePrintWriter;
-extern RogueType* RogueTypeFunction___List;
-extern RogueType* RogueTypeFunction__;
 extern RogueType* RogueTypeConsole;
 extern RogueType* RogueTypeReader_Byte_;
 extern RogueType* RogueTypePrintWriterAspect_output_buffer_;
@@ -4922,8 +4920,8 @@ extern RogueType* RogueTypeOptionalMethod;
 extern RogueType* RogueTypeOptionalCmd;
 
 // ROUTINE PROTOTYPES
-RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 );
 void RogueStringBuilder__init_class();
+RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 );
 RogueCharacter RogueCharacter__create__Int32( RogueInt32 value_0 );
 RogueInt32 RogueMath__max__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
 RogueInt32 RogueMath__mod__Int32_Int32( RogueInt32 a_0, RogueInt32 b_1 );
@@ -4968,18 +4966,103 @@ RogueOptionalMethod RogueOptionalMethod__create();
 RogueOptionalCmd RogueOptionalCmd__create();
 
 // METHOD PROTOTYPES
-RogueClassException* RogueException__init_object( RogueClassException* THIS );
-RogueClassException* RogueException__init( RogueClassException* THIS );
-RogueString* RogueException__to_String( RogueClassException* THIS );
-RogueString* RogueException__type_name( RogueClassException* THIS );
-RogueClassException* RogueException__init__String( RogueClassException* THIS, RogueString* _auto_17_0 );
-RogueString* RogueException__format( RogueClassException* THIS );
+RogueClassGlobal* RogueGlobal__init_object( RogueClassGlobal* THIS );
+RogueClassGlobal* RogueGlobal__init( RogueClassGlobal* THIS );
+RogueString* RogueGlobal__type_name( RogueClassGlobal* THIS );
+RogueClassGlobal* RogueGlobal__flush( RogueClassGlobal* THIS );
+RogueClassGlobal* RogueGlobal__print__Character( RogueClassGlobal* THIS, RogueCharacter value_0 );
+RogueClassGlobal* RogueGlobal__print__Object( RogueClassGlobal* THIS, RogueObject* value_0 );
+RogueClassGlobal* RogueGlobal__print__String( RogueClassGlobal* THIS, RogueString* value_0 );
+RogueClassGlobal* RogueGlobal__println( RogueClassGlobal* THIS );
+RogueClassGlobal* RogueGlobal__println__Object( RogueClassGlobal* THIS, RogueObject* value_0 );
+RogueClassGlobal* RogueGlobal__println__String( RogueClassGlobal* THIS, RogueString* value_0 );
+RogueClassGlobal* RogueGlobal__write__StringBuilder( RogueClassGlobal* THIS, RogueStringBuilder* buffer_0 );
+void RogueGlobal__on_launch( RogueClassGlobal* THIS );
+void RogueGlobal__run_tests( RogueClassGlobal* THIS );
+void RogueGlobal__call_exit_functions( RogueClassGlobal* THIS );
+void RogueGlobal__on_exit__Function__( RogueClassGlobal* THIS, RogueClassFunction__* fn_0 );
+RogueClassPrintWriterAspect_global_output_buffer_* RoguePrintWriterAspect_global_output_buffer___write__StringBuilder( RogueObject* THIS, RogueStringBuilder* buffer_0 );
+RogueClassPrintWriter* RoguePrintWriter__write__StringBuilder( RogueObject* THIS, RogueStringBuilder* buffer_0 );
 void RogueObject__init_object( RogueObject* THIS );
 RogueObject* RogueObject__init( RogueObject* THIS );
 RogueString* RogueObject__to_String( RogueObject* THIS );
 RogueInt64 RogueObject__object_id( RogueObject* THIS );
 RogueLogical RogueObject__operatorEQUALSEQUALS__Object( RogueObject* THIS, RogueObject* other_0 );
 RogueString* RogueObject__type_name( RogueObject* THIS );
+RogueStringBuilder* RogueStringBuilder__init_object( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS );
+RogueString* RogueStringBuilder__to_String( RogueStringBuilder* THIS );
+RogueString* RogueStringBuilder__type_name( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__init__Int32( RogueStringBuilder* THIS, RogueInt32 initial_capacity_0 );
+RogueStringBuilder* RogueStringBuilder__clear( RogueStringBuilder* THIS );
+RogueCharacter RogueStringBuilder__get__Int32( RogueStringBuilder* THIS, RogueInt32 index_0 );
+RogueStringBuilder* RogueStringBuilder__insert_spaces__Int32_Int32( RogueStringBuilder* THIS, RogueInt32 index_0, RogueInt32 spaces_1 );
+RogueOptionalInt32 RogueStringBuilder__locate__Character( RogueStringBuilder* THIS, RogueCharacter ch_0 );
+RogueLogical RogueStringBuilder__needs_indent( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__print__Character_Logical( RogueStringBuilder* THIS, RogueCharacter value_0, RogueLogical formatted_1 );
+RogueStringBuilder* RogueStringBuilder__print__Int32( RogueStringBuilder* THIS, RogueInt32 value_0 );
+RogueStringBuilder* RogueStringBuilder__print__Logical( RogueStringBuilder* THIS, RogueLogical value_0 );
+RogueStringBuilder* RogueStringBuilder__print__Int64( RogueStringBuilder* THIS, RogueInt64 value_0 );
+RogueStringBuilder* RogueStringBuilder__print__Object( RogueStringBuilder* THIS, RogueObject* value_0 );
+RogueStringBuilder* RogueStringBuilder__print__Real64( RogueStringBuilder* THIS, RogueReal64 value_0 );
+RogueStringBuilder* RogueStringBuilder__print__Real64_Int32( RogueStringBuilder* THIS, RogueReal64 value_0, RogueInt32 decimal_places_1 );
+RogueStringBuilder* RogueStringBuilder__print__String( RogueStringBuilder* THIS, RogueString* value_0 );
+void RogueStringBuilder__print_indent( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__print_to_work_bytes__Real64_Int32( RogueStringBuilder* THIS, RogueReal64 value_0, RogueInt32 decimal_places_1 );
+void RogueStringBuilder__print_work_bytes( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS );
+RogueStringBuilder* RogueStringBuilder__println__Int32( RogueStringBuilder* THIS, RogueInt32 value_0 );
+RogueStringBuilder* RogueStringBuilder__println__String( RogueStringBuilder* THIS, RogueString* value_0 );
+RogueStringBuilder* RogueStringBuilder__reserve__Int32( RogueStringBuilder* THIS, RogueInt32 additional_bytes_0 );
+void RogueStringBuilder__round_off_work_bytes( RogueStringBuilder* THIS );
+RogueReal64 RogueStringBuilder__scan_work_bytes( RogueStringBuilder* THIS );
+RogueByte_List* RogueByte_List__init_object( RogueByte_List* THIS );
+RogueByte_List* RogueByte_List__init( RogueByte_List* THIS );
+RogueString* RogueByte_List__to_String( RogueByte_List* THIS );
+RogueString* RogueByte_List__type_name( RogueByte_List* THIS );
+RogueByte_List* RogueByte_List__init__Int32( RogueByte_List* THIS, RogueInt32 initial_capacity_0 );
+RogueByte_List* RogueByte_List__add__Byte( RogueByte_List* THIS, RogueByte value_0 );
+RogueInt32 RogueByte_List__capacity( RogueByte_List* THIS );
+RogueByte_List* RogueByte_List__clear( RogueByte_List* THIS );
+RogueByte_List* RogueByte_List__ensure_capacity__Int32( RogueByte_List* THIS, RogueInt32 desired_capacity_0 );
+RogueByte_List* RogueByte_List__expand_to_count__Int32( RogueByte_List* THIS, RogueInt32 minimum_count_0 );
+RogueByte_List* RogueByte_List__expand_to_include__Int32( RogueByte_List* THIS, RogueInt32 index_0 );
+RogueByte_List* RogueByte_List__discard_from__Int32( RogueByte_List* THIS, RogueInt32 index_0 );
+RogueByte_List* RogueByte_List__insert__Byte_Int32( RogueByte_List* THIS, RogueByte value_0, RogueInt32 before_index_1 );
+RogueByte_List* RogueByte_List__reserve__Int32( RogueByte_List* THIS, RogueInt32 additional_count_0 );
+RogueByte RogueByte_List__remove_at__Int32( RogueByte_List* THIS, RogueInt32 index_0 );
+RogueByte RogueByte_List__remove_last( RogueByte_List* THIS );
+RogueByte_List* RogueByte_List__reverse( RogueByte_List* THIS );
+RogueByte_List* RogueByte_List__reverse__Int32_Int32( RogueByte_List* THIS, RogueInt32 i1_0, RogueInt32 i2_1 );
+RogueByte_List* RogueByte_List__shift__Int32_OptionalInt32_Int32_OptionalByte( RogueByte_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalByte fill_3 );
+RogueString* RogueByte__to_String( RogueByte THIS );
+RogueClassGenericList* RogueGenericList__init_object( RogueClassGenericList* THIS );
+RogueString* RogueGenericList__type_name( RogueClassGenericList* THIS );
+RogueString* RogueArray_Byte___type_name( RogueArray* THIS );
+RogueString* RogueNativeArray__type_name( RogueArray* THIS );
+RogueInt32 RogueInt32__hash_code( RogueInt32 THIS );
+RogueString* RogueInt32__to_String( RogueInt32 THIS );
+RogueCharacter RogueInt32__to_digit( RogueInt32 THIS );
+RogueString* RogueLogical__to_String( RogueLogical THIS );
+RogueFunction___List* RogueFunction___List__init_object( RogueFunction___List* THIS );
+RogueFunction___List* RogueFunction___List__init( RogueFunction___List* THIS );
+RogueString* RogueFunction___List__to_String( RogueFunction___List* THIS );
+RogueString* RogueFunction___List__type_name( RogueFunction___List* THIS );
+RogueFunction___List* RogueFunction___List__init__Int32( RogueFunction___List* THIS, RogueInt32 initial_capacity_0 );
+RogueFunction___List* RogueFunction___List__add__Function__( RogueFunction___List* THIS, RogueClassFunction__* value_0 );
+RogueInt32 RogueFunction___List__capacity( RogueFunction___List* THIS );
+RogueFunction___List* RogueFunction___List__reserve__Int32( RogueFunction___List* THIS, RogueInt32 additional_count_0 );
+RogueClassFunction__* RogueFunction____init_object( RogueClassFunction__* THIS );
+RogueString* RogueFunction____type_name( RogueClassFunction__* THIS );
+void RogueFunction____call( RogueClassFunction__* THIS );
+RogueString* RogueArray_Function_____type_name( RogueArray* THIS );
+RogueException* RogueException__init_object( RogueException* THIS );
+RogueException* RogueException__init( RogueException* THIS );
+RogueString* RogueException__to_String( RogueException* THIS );
+RogueString* RogueException__type_name( RogueException* THIS );
+RogueException* RogueException__init__String( RogueException* THIS, RogueString* _auto_35_0 );
+void RogueException__display( RogueException* THIS );
+RogueString* RogueException__format( RogueException* THIS );
 RogueString* RogueString__to_String( RogueString* THIS );
 RogueInt32 RogueString__hash_code( RogueString* THIS );
 RogueString* RogueString__type_name( RogueString* THIS );
@@ -5051,21 +5134,14 @@ RogueString_List* RogueString_List__discard_from__Int32( RogueString_List* THIS,
 RogueOptionalInt32 RogueString_List__locate__String( RogueString_List* THIS, RogueString* value_0 );
 RogueString_List* RogueString_List__reserve__Int32( RogueString_List* THIS, RogueInt32 additional_count_0 );
 RogueString* RogueString_List__joined__String( RogueString_List* THIS, RogueString* separator_0 );
-RogueClassGenericList* RogueGenericList__init_object( RogueClassGenericList* THIS );
-RogueString* RogueGenericList__type_name( RogueClassGenericList* THIS );
 RogueString* RogueArray_String___type_name( RogueArray* THIS );
-RogueString* RogueNativeArray__type_name( RogueArray* THIS );
-RogueInt32 RogueInt32__hash_code( RogueInt32 THIS );
-RogueString* RogueInt32__to_String( RogueInt32 THIS );
-RogueCharacter RogueInt32__to_digit( RogueInt32 THIS );
-RogueString* RogueLogical__to_String( RogueLogical THIS );
 RogueStringBuilder* RogueInt64__print_in_power2_base__Int32_Int32_StringBuilder( RogueInt64 THIS, RogueInt32 base_0, RogueInt32 digits_1, RogueStringBuilder* buffer_2 );
 RogueString* RogueInt64__to_String( RogueInt64 THIS );
 RogueString* RogueInt64__to_hex_string__Int32( RogueInt64 THIS, RogueInt32 digits_0 );
 RogueTypeInfo* RogueTypeInfo__init_object( RogueTypeInfo* THIS );
 RogueString* RogueTypeInfo__to_String( RogueTypeInfo* THIS );
 RogueString* RogueTypeInfo__type_name( RogueTypeInfo* THIS );
-RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_28_0, RogueString* _auto_29_1 );
+RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_46_0, RogueString* _auto_47_1 );
 void RogueTypeInfo__add_global_property_info__Int32_Int32( RogueTypeInfo* THIS, RogueInt32 global_property_name_index_0, RogueInt32 global_property_type_index_1 );
 void RogueTypeInfo__add_property_info__Int32_Int32( RogueTypeInfo* THIS, RogueInt32 property_name_index_0, RogueInt32 property_type_index_1 );
 RoguePropertyInfo_List* RoguePropertyInfo_List__init_object( RoguePropertyInfo_List* THIS );
@@ -5079,58 +5155,10 @@ RoguePropertyInfo_List* RoguePropertyInfo_List__reserve__Int32( RoguePropertyInf
 RogueClassPropertyInfo* RoguePropertyInfo__init_object( RogueClassPropertyInfo* THIS );
 RogueString* RoguePropertyInfo__to_String( RogueClassPropertyInfo* THIS );
 RogueString* RoguePropertyInfo__type_name( RogueClassPropertyInfo* THIS );
-RogueClassPropertyInfo* RoguePropertyInfo__init__Int32_Int32( RogueClassPropertyInfo* THIS, RogueInt32 _auto_21_0, RogueInt32 _auto_22_1 );
+RogueClassPropertyInfo* RoguePropertyInfo__init__Int32_Int32( RogueClassPropertyInfo* THIS, RogueInt32 _auto_39_0, RogueInt32 _auto_40_1 );
 RogueString* RoguePropertyInfo__name( RogueClassPropertyInfo* THIS );
 RogueTypeInfo* Rogue_PropertyInfo__type( RogueClassPropertyInfo* THIS );
 RogueString* RogueArray_PropertyInfo___type_name( RogueArray* THIS );
-RogueStringBuilder* RogueStringBuilder__init_object( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__init( RogueStringBuilder* THIS );
-RogueString* RogueStringBuilder__to_String( RogueStringBuilder* THIS );
-RogueString* RogueStringBuilder__type_name( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__init__Int32( RogueStringBuilder* THIS, RogueInt32 initial_capacity_0 );
-RogueStringBuilder* RogueStringBuilder__clear( RogueStringBuilder* THIS );
-RogueCharacter RogueStringBuilder__get__Int32( RogueStringBuilder* THIS, RogueInt32 index_0 );
-RogueStringBuilder* RogueStringBuilder__insert_spaces__Int32_Int32( RogueStringBuilder* THIS, RogueInt32 index_0, RogueInt32 spaces_1 );
-RogueOptionalInt32 RogueStringBuilder__locate__Character( RogueStringBuilder* THIS, RogueCharacter ch_0 );
-RogueLogical RogueStringBuilder__needs_indent( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__print__Character_Logical( RogueStringBuilder* THIS, RogueCharacter value_0, RogueLogical formatted_1 );
-RogueStringBuilder* RogueStringBuilder__print__Int32( RogueStringBuilder* THIS, RogueInt32 value_0 );
-RogueStringBuilder* RogueStringBuilder__print__Logical( RogueStringBuilder* THIS, RogueLogical value_0 );
-RogueStringBuilder* RogueStringBuilder__print__Int64( RogueStringBuilder* THIS, RogueInt64 value_0 );
-RogueStringBuilder* RogueStringBuilder__print__Object( RogueStringBuilder* THIS, RogueObject* value_0 );
-RogueStringBuilder* RogueStringBuilder__print__Real64( RogueStringBuilder* THIS, RogueReal64 value_0 );
-RogueStringBuilder* RogueStringBuilder__print__Real64_Int32( RogueStringBuilder* THIS, RogueReal64 value_0, RogueInt32 decimal_places_1 );
-RogueStringBuilder* RogueStringBuilder__print__String( RogueStringBuilder* THIS, RogueString* value_0 );
-void RogueStringBuilder__print_indent( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__print_to_work_bytes__Real64_Int32( RogueStringBuilder* THIS, RogueReal64 value_0, RogueInt32 decimal_places_1 );
-void RogueStringBuilder__print_work_bytes( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__println( RogueStringBuilder* THIS );
-RogueStringBuilder* RogueStringBuilder__println__Int32( RogueStringBuilder* THIS, RogueInt32 value_0 );
-RogueStringBuilder* RogueStringBuilder__println__String( RogueStringBuilder* THIS, RogueString* value_0 );
-RogueStringBuilder* RogueStringBuilder__reserve__Int32( RogueStringBuilder* THIS, RogueInt32 additional_bytes_0 );
-void RogueStringBuilder__round_off_work_bytes( RogueStringBuilder* THIS );
-RogueReal64 RogueStringBuilder__scan_work_bytes( RogueStringBuilder* THIS );
-RogueByte_List* RogueByte_List__init_object( RogueByte_List* THIS );
-RogueByte_List* RogueByte_List__init( RogueByte_List* THIS );
-RogueString* RogueByte_List__to_String( RogueByte_List* THIS );
-RogueString* RogueByte_List__type_name( RogueByte_List* THIS );
-RogueByte_List* RogueByte_List__init__Int32( RogueByte_List* THIS, RogueInt32 initial_capacity_0 );
-RogueByte_List* RogueByte_List__add__Byte( RogueByte_List* THIS, RogueByte value_0 );
-RogueInt32 RogueByte_List__capacity( RogueByte_List* THIS );
-RogueByte_List* RogueByte_List__clear( RogueByte_List* THIS );
-RogueByte_List* RogueByte_List__ensure_capacity__Int32( RogueByte_List* THIS, RogueInt32 desired_capacity_0 );
-RogueByte_List* RogueByte_List__expand_to_count__Int32( RogueByte_List* THIS, RogueInt32 minimum_count_0 );
-RogueByte_List* RogueByte_List__expand_to_include__Int32( RogueByte_List* THIS, RogueInt32 index_0 );
-RogueByte_List* RogueByte_List__discard_from__Int32( RogueByte_List* THIS, RogueInt32 index_0 );
-RogueByte_List* RogueByte_List__insert__Byte_Int32( RogueByte_List* THIS, RogueByte value_0, RogueInt32 before_index_1 );
-RogueByte_List* RogueByte_List__reserve__Int32( RogueByte_List* THIS, RogueInt32 additional_count_0 );
-RogueByte RogueByte_List__remove_at__Int32( RogueByte_List* THIS, RogueInt32 index_0 );
-RogueByte RogueByte_List__remove_last( RogueByte_List* THIS );
-RogueByte_List* RogueByte_List__reverse( RogueByte_List* THIS );
-RogueByte_List* RogueByte_List__reverse__Int32_Int32( RogueByte_List* THIS, RogueInt32 i1_0, RogueInt32 i2_1 );
-RogueByte_List* RogueByte_List__shift__Int32_OptionalInt32_Int32_OptionalByte( RogueByte_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalByte fill_3 );
-RogueString* RogueByte__to_String( RogueByte THIS );
-RogueString* RogueArray_Byte___type_name( RogueArray* THIS );
 RogueCharacter_List* RogueCharacter_List__init_object( RogueCharacter_List* THIS );
 RogueCharacter_List* RogueCharacter_List__init( RogueCharacter_List* THIS );
 RogueString* RogueCharacter_List__to_String( RogueCharacter_List* THIS );
@@ -5177,7 +5205,7 @@ RogueClassStringReader* RogueStringReader__init_object( RogueClassStringReader* 
 RogueString* RogueStringReader__type_name( RogueClassStringReader* THIS );
 RogueLogical RogueStringReader__has_another( RogueClassStringReader* THIS );
 RogueCharacter RogueStringReader__read( RogueClassStringReader* THIS );
-RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_70_0 );
+RogueClassStringReader* RogueStringReader__init__String( RogueClassStringReader* THIS, RogueString* _auto_75_0 );
 RogueLogical RogueReader_Character___has_another( RogueObject* THIS );
 RogueCharacter RogueReader_Character___read( RogueObject* THIS );
 RogueClassPrimitiveWorkBuffer* RoguePrimitiveWorkBuffer__init_object( RogueClassPrimitiveWorkBuffer* THIS );
@@ -5204,35 +5232,6 @@ RogueClassTableEntry_String_TypeInfo_* RogueTableEntry_String_TypeInfo___init_ob
 RogueString* RogueTableEntry_String_TypeInfo___to_String( RogueClassTableEntry_String_TypeInfo_* THIS );
 RogueString* RogueTableEntry_String_TypeInfo___type_name( RogueClassTableEntry_String_TypeInfo_* THIS );
 RogueString* RogueArray_TableEntry_String_TypeInfo____type_name( RogueArray* THIS );
-RogueClassGlobal* RogueGlobal__init_object( RogueClassGlobal* THIS );
-RogueClassGlobal* RogueGlobal__init( RogueClassGlobal* THIS );
-RogueString* RogueGlobal__type_name( RogueClassGlobal* THIS );
-RogueClassGlobal* RogueGlobal__flush( RogueClassGlobal* THIS );
-RogueClassGlobal* RogueGlobal__print__Character( RogueClassGlobal* THIS, RogueCharacter value_0 );
-RogueClassGlobal* RogueGlobal__print__Object( RogueClassGlobal* THIS, RogueObject* value_0 );
-RogueClassGlobal* RogueGlobal__print__String( RogueClassGlobal* THIS, RogueString* value_0 );
-RogueClassGlobal* RogueGlobal__println( RogueClassGlobal* THIS );
-RogueClassGlobal* RogueGlobal__println__Object( RogueClassGlobal* THIS, RogueObject* value_0 );
-RogueClassGlobal* RogueGlobal__println__String( RogueClassGlobal* THIS, RogueString* value_0 );
-RogueClassGlobal* RogueGlobal__write__StringBuilder( RogueClassGlobal* THIS, RogueStringBuilder* buffer_0 );
-void RogueGlobal__on_launch( RogueClassGlobal* THIS );
-void RogueGlobal__run_tests( RogueClassGlobal* THIS );
-void RogueGlobal__call_exit_functions( RogueClassGlobal* THIS );
-void RogueGlobal__on_exit__Function__( RogueClassGlobal* THIS, RogueClassFunction__* fn_0 );
-RogueClassPrintWriterAspect_global_output_buffer_* RoguePrintWriterAspect_global_output_buffer___write__StringBuilder( RogueObject* THIS, RogueStringBuilder* buffer_0 );
-RogueClassPrintWriter* RoguePrintWriter__write__StringBuilder( RogueObject* THIS, RogueStringBuilder* buffer_0 );
-RogueFunction___List* RogueFunction___List__init_object( RogueFunction___List* THIS );
-RogueFunction___List* RogueFunction___List__init( RogueFunction___List* THIS );
-RogueString* RogueFunction___List__to_String( RogueFunction___List* THIS );
-RogueString* RogueFunction___List__type_name( RogueFunction___List* THIS );
-RogueFunction___List* RogueFunction___List__init__Int32( RogueFunction___List* THIS, RogueInt32 initial_capacity_0 );
-RogueFunction___List* RogueFunction___List__add__Function__( RogueFunction___List* THIS, RogueClassFunction__* value_0 );
-RogueInt32 RogueFunction___List__capacity( RogueFunction___List* THIS );
-RogueFunction___List* RogueFunction___List__reserve__Int32( RogueFunction___List* THIS, RogueInt32 additional_count_0 );
-RogueClassFunction__* RogueFunction____init_object( RogueClassFunction__* THIS );
-RogueString* RogueFunction____type_name( RogueClassFunction__* THIS );
-void RogueFunction____call( RogueClassFunction__* THIS );
-RogueString* RogueArray_Function_____type_name( RogueArray* THIS );
 RogueClassConsole* RogueConsole__init_object( RogueClassConsole* THIS );
 RogueString* RogueConsole__type_name( RogueClassConsole* THIS );
 RogueLogical RogueConsole__has_another( RogueClassConsole* THIS );

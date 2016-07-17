@@ -27,6 +27,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.80 - July 17, 2016
+- [RogueC] Fixed order-of-evaluation bug where type `Global` was not necessarily `organize`d before resolving code that implicitly uses the `Global` context.  Example: a call to `println` in class `Exception` or one of the primitives would not resolve and only an explicit `Global.println` would work.
+- [RogueC] Generated C++ code now wraps `Rogue_launch()` and `Rogue_update_tasks()` in `try/catch(RogueException)/RogueException__display()` handlers.
+- [C++] Added `RogueException__display(RogueException*)` (requisite Rogue method) as a simple way of displaying a caught error and the accompanying stack trace if present.
+- [C++] Removed vestigial `Rogue_error_object` from runtime framework.
+- [C++] In C++, base class `Exception` is now `RogueException` rather than `RogueClassException`.
+- [API] `sign` to `Real` and `Int` types that returns `-1`, `0`, or `1` of the appropriate type.
 - [API] `InsertionSort` no longer creates a new reader object every time it is called.
 - [API] Added `BubbleSort` (`BubbleSort<<T>>.sort(list:T[], compare_fn:Function(T,T)->Logical)->T[]`).
 

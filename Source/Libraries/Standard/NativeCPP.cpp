@@ -64,7 +64,6 @@
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 bool               Rogue_gc_requested = false;
 RogueLogical       Rogue_configured = 0;
-RogueObject*       Rogue_error_object  = 0;
 int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
@@ -1297,23 +1296,6 @@ void Rogue_Boehm_DecRef (RogueObject* o)
 //-----------------------------------------------------------------------------
 void Rogue_terminate_handler()
 {
-  if (Rogue_error_object && Rogue_error_object->type)
-  {
-    printf( "*** Uncaught " );
-    RogueType_print_name( Rogue_error_object->type );
-    printf( ":\n\n" );
-
-    RogueString* message = RogueObject_to_string( Rogue_error_object );
-    if (message)
-    {
-      printf( "%s\n\n", message->utf8 );
-    }
-
-    RogueStackTrace__print( ((RogueClassException*)Rogue_error_object)->stack_trace );
-  }
-  else
-  {
-    printf( "Uncaught error.\n" );
-  }
+  printf( "Uncaught exception.\n" );
   exit(1);
 }

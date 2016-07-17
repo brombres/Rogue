@@ -9,6 +9,18 @@ class Exception [requisite]
     method init [requisite]
       message = type_name
 
+    method display [requisite]
+      local builder = StringBuilder()
+      builder.println @|===============================================================================
+      builder.println type_name
+      builder.println message.word_wrapped(79,",").joined
+      if (stack_trace.entries.count)
+        builder.println
+        builder.println stack_trace->String.trimmed
+      endIf
+      builder.println @|===============================================================================
+      println builder
+
     method to->String [requisite]
       return message
 

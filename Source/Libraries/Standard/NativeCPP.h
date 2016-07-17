@@ -554,7 +554,6 @@ extern RogueCleanUpFn     Rogue_clean_up_fn_table[];
 extern RogueToStringFn    Rogue_to_string_fn_table[];
 extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];
-extern RogueObject*       Rogue_error_object;
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
@@ -628,7 +627,6 @@ struct RogueCPPException
   RogueCPPException( RogueObject * err )
   : err(err)
   {
-    Rogue_error_object = err;
     RogueObject_retain( err );
   }
   ~RogueCPPException()
