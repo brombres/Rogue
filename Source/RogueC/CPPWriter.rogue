@@ -899,22 +899,23 @@ augment Program
 
       local uses_tasks = Program.is_type_used("TaskManager")
       if (uses_tasks)
-        writer.println @|  RogueClassTaskManager* task_manager = (RogueClassTaskManager*) ROGUE_SINGLETON(TaskManager);
-                        |  bool result = RogueTaskManager__update( task_manager );
+        writer.println @|    RogueClassTaskManager* task_manager = (RogueClassTaskManager*) ROGUE_SINGLETON(TaskManager);
+                        |    bool result = RogueTaskManager__update( task_manager );
+                        |    Rogue_collect_garbage();
+                        |    return result;
+      else
+        writer.println @|    Rogue_collect_garbage();
+                        |    return false;
       endIf
 
-      writer.println @|  Rogue_collect_garbage();
+      writer.println @|  }
+                      |  catch (RogueException* err)
+                      |  {
+                      |    printf( "Uncaught exception\n" );
+                      |    RogueException__display( err );
+                      |    return false;
+                      |  }
                       |}
-                      |catch (RogueException* err)
-                      |{
-                      |  printf( "Uncaught exception\n" );
-                      |  RogueException__display( err );
-                      |}
-
-      if (uses_tasks) writer.println @|  return result;
-      else            writer.println @|  return false;
-
-      writer.println @|}
                       |
 
 

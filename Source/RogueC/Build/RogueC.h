@@ -55,6 +55,7 @@
 //-----------------------------------------------------------------------------
 #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
 #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) _t_ _n_ = 0
+#define ROGUE_RETAIN_CATCH_VAR(_t_,_n_,_v_)
 #define ROGUE_CREATE_REF(_t_,_n_) ((_t_)_n_)
 #define ROGUE_ARG(_a_) _a_
 #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) RoguePtr<_t_> _n_
@@ -110,6 +111,8 @@ extern void Rogue_configure_gc();
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
   #undef ROGUE_DEF_LOCAL_REF
   #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) RoguePtr<_t_> _n_(_v_);
+  #undef ROGUE_RETAIN_CATCH_VAR
+  #define ROGUE_RETAIN_CATCH_VAR(_t_,_n_,_v_) RoguePtr<_t_> _n_(_v_);
   #undef ROGUE_ARG
   #define ROGUE_ARG(_a_) rogue_ptr(_a_)
 #endif
@@ -627,26 +630,12 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
   } \
   catch (_ErrorType* local_error_object) \
   { \
-    RogueCPPException _internal_exception_reference( local_error_object );
+    ROGUE_RETAIN_CATCH_VAR( _ErrorType*, _internal_exception_reference, local_error_object );
 
 #define ROGUE_CATCH_NO_VAR(_ErrorType) \
   } \
   catch (_ErrorType* caught_error) \
   {
-
-struct RogueCPPException
-{
-  RogueObject * err;
-  RogueCPPException( RogueObject * err )
-  : err(err)
-  {
-    RogueObject_retain( err );
-  }
-  ~RogueCPPException()
-  {
-    RogueObject_release( err );
-  }
-};
 
 extern void Rogue_terminate_handler ();
 

@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.81 - July 17, 2016
+- [RogueC] Fixed try/catch scoping error in generated C++ code when it makes use of tasks (broken in v1.0.80).
+- [C++] Replaced RogueCPPException with `ROGUE_RETAIN_CATCH_VAR()` macro.
+
 ###v1.0.80 - July 17, 2016
 - [RogueC] Fixed order-of-evaluation bug where type `Global` was not necessarily `organize`d before resolving code that implicitly uses the `Global` context.  Example: a call to `println` in class `Exception` or one of the primitives would not resolve and only an explicit `Global.println` would work.
 - [RogueC] Generated C++ code now wraps `Rogue_launch()` and `Rogue_update_tasks()` in `try/catch(RogueException)/RogueException__display()` handlers.
