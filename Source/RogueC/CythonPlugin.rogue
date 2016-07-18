@@ -468,7 +468,7 @@ augment Program
                       |  {
                       |    throw;
                       |  }
-                      |  catch (RogueClassException * e)
+                      |  catch (RogueException * e)
                       |  {
                       |    RogueString * msg = RogueException__format(e);
                       |    char buf[2048];
