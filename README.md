@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.82 - July 18, 2016
+- [Rogue] Generic functions definitions must now use `=>` rather than `=`, e.g. `list.sort( function(a,b)=>(a<b) )`.  `=>` has been the official symbol for some time now; `=` was unintentially left in.
+
 ###v1.0.81 - July 17, 2016
 - [RogueC] Fixed try/catch scoping error in generated C++ code when it makes use of tasks (broken in v1.0.80).
 - [C++] Replaced RogueCPPException with `ROGUE_RETAIN_CATCH_VAR()` macro.

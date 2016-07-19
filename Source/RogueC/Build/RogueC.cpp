@@ -29041,7 +29041,7 @@ RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS )
     if (!(parsed_arrow_23))
     {
       t2_24 = ((RogueClassToken*)((RogueParser__peek( ROGUE_ARG(THIS) ))));
-      if ((((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_equals) ))) || ((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_fat_arrow) )))))
+      if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_fat_arrow) ))))
       {
         if (((!!(parameters_16) && !!(parameters_16->count)) && !(is_generic_18)))
         {
@@ -61350,8 +61350,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[54] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[55] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'.", 2 ) ); 
   Rogue_literal_strings[56] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[57] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.81.0", 8 ) ); 
-  Rogue_literal_strings[58] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 17, 2016", 13 ) ); 
+  Rogue_literal_strings[57] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.82.0", 8 ) ); 
+  Rogue_literal_strings[58] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 18, 2016", 13 ) ); 
   Rogue_literal_strings[59] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[60] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class/method requisite.  With no argument, everything\n    becomes requisite.\n\n  --requisite-file[=file.rogue]\n    With an argument, makes the entire file requisite.  With no argument,\n    all files explicitly listed on the commandline become requisite.\n\n  --target=", 1842 ) ); 
   Rogue_literal_strings[61] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "]", 1 ) ); 
