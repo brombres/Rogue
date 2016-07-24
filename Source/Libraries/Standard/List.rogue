@@ -55,6 +55,14 @@ class List<<$DataType>> : GenericList
     method contains( value:$DataType )->Logical [macro]
       this.locate( value )?
 
+    method count( fn:Function($DataType)->Logical )->Int32
+      # Counts the number of items that pass the test function.
+      local result = 0
+      forEach (value in this)
+        if (fn(value)) ++result
+      endForEach
+      return result
+
     method ensure_capacity( desired_capacity:Int32 )->this
       return reserve( desired_capacity - count )
 
