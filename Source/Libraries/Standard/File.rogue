@@ -438,6 +438,9 @@ class File
     method writer( filepath:String )->FileWriter
       return FileWriter( filepath )
 
+    method append_writer( filepath:String )->FileWriter
+      return FileWriter( filepath, &append=true )
+
   PROPERTIES
     filepath : String
 
@@ -510,6 +513,9 @@ class File
 
     method writer->FileWriter [macro]
       File.writer( this.filepath )
+
+    method append_writer->FileWriter [macro]
+      File.append_writer( this.filepath )
 
     method to->String
       return filepath
@@ -616,8 +622,8 @@ class FileWriter : Writer<<Byte>>
     native "FILE* fp;"
 
   METHODS
-    method init( _filepath:String )
-      open( _filepath )
+    method init( _filepath:String, append=false:Logical )
+      open( _filepath, append )
 
     method clean_up
       close
@@ -643,14 +649,19 @@ class FileWriter : Writer<<Byte>>
     method fp->Int32 [macro]
       native( "$this->fp" )
 
-    method open( filepath )->Logical
+    method open( filepath, append=false:Logical )->Logical
       close
       error = false
 
-      native @|$this->fp = fopen( (char*)$filepath->utf8, "wb" );
-              |$this->error = !($this->fp);
-              |
-              |return !$this->error;
+      if (append)
+        native @|$this->fp = fopen( (char*)$filepath->utf8, "ab" );
+      else
+        native @|$this->fp = fopen( (char*)$filepath->utf8, "wb" );
+      endIf
+
+      native "$this->error = !($this->fp);"
+
+      return error
 
     method reset->this
       if (not fp) return this
@@ -712,4 +723,3 @@ class FileWriter : Writer<<Byte>>
     method write( builder:StringBuilder )->this
       return write( builder.utf8 )
 endClass
-
