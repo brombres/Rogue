@@ -311,7 +311,7 @@ class Method
       endForEach
       if (return_type) return_type.organize
 
-      if (type_context.is_aspect)
+      if (type_context.is_aspect and not is_global)
         aspect_statements = statements
         statements = CmdStatementList()
       endIf
@@ -444,7 +444,7 @@ class Method
       return this
 
     method to->String
-      return "$.$" (type_context.name,signature)
+      return "$.$" (type_context.name,select{signature||name})
 
     method trace_used_code
       if (is_used) return   # Already traced

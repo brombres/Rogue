@@ -1846,7 +1846,7 @@ augment Method
       writer.println
       writer.println "{"
       writer.indent += 2
-      if (type_context.is_aspect)
+      if (type_context.is_aspect and not is_global)
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
         writer.indent += 2

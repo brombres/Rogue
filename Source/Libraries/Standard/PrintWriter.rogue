@@ -1,4 +1,8 @@
 class PrintWriter [aspect]
+  GLOBAL METHODS
+    method create( writer:Writer<<Byte>> )->PrintWriter
+      return PrintWriterAdapter( writer )
+
   METHODS
     method flush->this                                         [abstract]
     method print( value:Byte )->this                           [abstract]
@@ -25,7 +29,7 @@ class PrintWriter [aspect]
     method write( buffer:StringBuilder )->this                 [abstract]
 endClass
 
-class PrintWriterAspect<<$buffer>> : PrintWriter [aspect]
+class PrintWriter<<$buffer>> : PrintWriter [aspect]
   METHODS
     method flush->this
       if ($buffer.count)
@@ -111,5 +115,18 @@ class PrintWriterAspect<<$buffer>> : PrintWriter [aspect]
       return print( value ).println
 
     method write( buffer:StringBuilder )->this [abstract]
+endClass
+
+class PrintWriterAdapter : PrintWriter<<buffer>>
+  PROPERTIES
+    output : Writer<<Byte>>
+    buffer = StringBuilder()
+
+  METHODS
+    method init( output )
+
+    method write( _buffer:StringBuilder )->this
+      output.write( _buffer.utf8 )
+      return this
 endClass
 

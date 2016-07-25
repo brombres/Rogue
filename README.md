@@ -26,6 +26,14 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.83 - July 24, 2016
+- [Rogue] Global aspect methods now work again.
+- [Rogue] When a class and an aspect the class incorporates both define the same method and the aspect method's return type is `this`, the class method trumps the aspect method (as before) but now the aspect method return type can be more general than the class method return type (as you would expect).
+- [API] Added efficient implementations of `FileWriter.write(String)`, `FileWriter.write(StringBuilder)`, and `File.save(StringBuilder)`.
+- [API] Made implementations of `File.save(String)` and `File.save(Byte[])` more efficient.
+- [API] `PrintWriter(Writer<<Byte>>)->PrintWriter` can be used to create an object that wraps the given writer in a PrintWriter object.
+- [API] Tweaked PrintWriter implementation.
+
 ###v1.0.82 - July 24, 2016
 - [Rogue] Generic functions definitions must now use `=>` rather than `=`, e.g. `list.sort( function(a,b)=>(a<b) )`.  `=>` has been the official symbol for some time now; `=` was unintentially left in.
 - [API] Added `List.count(Function($DataType)->Logical)->Int32` that counts the number of items that pass the test function.

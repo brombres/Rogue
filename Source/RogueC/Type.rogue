@@ -281,6 +281,9 @@ class Type
     method is_direct->Logical
       return not is_reference
 
+    method is_abstract->Logical
+      return (attributes.flags & Attribute.is_abstract)
+
     method is_aspect->Logical
       return (attributes.flags & Attribute.type_mask) == Attribute.is_aspect
 
@@ -768,7 +771,7 @@ class Type
       method_lookup_by_signature.clear
       method_lookup_by_name.clear
 
-      # Inherit routines and methods
+      # Inherit global methdos and methods
       local full_routine_list = Method[]
       inherit_global_methods( full_routine_list, global_method_lookup_by_signature )
       global_method_list = full_routine_list
@@ -805,6 +808,18 @@ class Type
         endForEach
       endIf
 
+      # Ensure that non-abstract classes do not contain abstract methods
+      check_abstract_methods( method_list )
+      check_abstract_methods( global_method_list )
+
+    method check_abstract_methods( list:Method[] )
+      if (is_abstract or is_aspect) return
+      forEach (m in list)
+        if (m.is_abstract)
+          throw t.error( "Class $ does not supply a concrete definition for abstract method $." (name,m.signature) )
+        endIf
+      endForEach
+
     method inherit_methods( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
         forEach (base_m in base_type.method_list)
@@ -820,9 +835,22 @@ class Type
       local existing_m = lookup[ m.signature ]
       if (existing_m)
         if (m.return_type is not existing_m.return_type)
-          if (m.return_type is null or existing_m.return_type is null or not m.return_type.instance_of(existing_m.return_type))
+          contingent
+            necessary (m.return_type)
+            necessary (existing_m.return_type)
+
+            sufficient (m.return_type.instance_of(existing_m.return_type))
+
+            # An aspect method returning this that is apparently overriding a this-type method
+            # will ultimately be treated as an overridden method instead.
+            sufficient (m.type_context.is_aspect and m.returns_this and
+              existing_m.return_type.instance_of(m.return_type) and existing_m.type_context is this)
+
+            necessary (false)
+
+          unsatisfied
             throw m.t.error( "In $::$ the overridden return type ($) is not compatible with the prior definition return type ($)." (m.type_context.name, m.signature,m.return_type,existing_m.return_type) )
-          endIf
+          endContingent
         endIf
 
         if (existing_m.is_macro xor m.is_macro)
@@ -926,8 +954,8 @@ class Type
 
         local i = list.locate( existing_m ).value
 
-        # Global aspect methods are not incorporated
-        if (m.type_context.is_aspect) return
+        # Global aspect methods can only be incorporated into the aspects themselves
+        if (m.type_context.is_aspect and m.type_context is not this) return
 
         if (m.is_augment)
           m.convert_augment_to_standalone
@@ -938,8 +966,8 @@ class Type
         lookup[m.signature] = m
 
       else
-        # Global aspect methods are not incorporated
-        if (m.type_context.is_aspect) return
+        # Global aspect methods can only be incorporated into the aspects themselves
+        if (m.type_context.is_aspect and m.type_context is not this) return
 
         if (m.is_augment)
           m.convert_augment_to_standalone

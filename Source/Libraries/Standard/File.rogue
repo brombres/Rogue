@@ -358,13 +358,19 @@ class File
 
     method save( filepath:String, data:Byte[] )->Logical
       local outfile = writer( filepath )
-      forEach (ch in data) outfile.write( ch )
+      outfile.write( data )
       outfile.close
       return not outfile.error
 
     method save( filepath:String, data:String )->Logical
       local outfile = writer( filepath )
-      forEach (i in 0..<data.byte_count) outfile.write( data.byte(i) )
+      outfile.write( data )
+      outfile.close
+      return not outfile.error
+
+    method save( filepath:String, data:StringBuilder )->Logical
+      local outfile = writer( filepath )
+      outfile.write( data )
       outfile.close
       return not outfile.error
 
@@ -493,6 +499,9 @@ class File
     method save( data:String )->Logical [macro]
       File.save( this.filepath, data )
 
+    method save( data:StringBuilder )->Logical [macro]
+      File.save( this.filepath, data )
+
     method size->Int32 [macro]
       File.size( this.filepath )
 
@@ -518,6 +527,9 @@ class FileReader : Reader<<Byte>>
   METHODS
     method init( _filepath:String )
       open( _filepath )
+
+    method clean_up
+      close
 
     method close->this
       if (fp)
@@ -607,6 +619,9 @@ class FileWriter : Writer<<Byte>>
     method init( _filepath:String )
       open( _filepath )
 
+    method clean_up
+      close
+
     method close->this
       flush
 
@@ -620,7 +635,7 @@ class FileWriter : Writer<<Byte>>
       if (buffer.count == 0 or not fp) return this
 
       native @|fwrite( $buffer->data->as_bytes, 1, $buffer->count, $this->fp );
-      native @|fflush( $this->fp );
+              |fflush( $this->fp );
 
       buffer.clear
       return this
@@ -669,5 +684,32 @@ class FileWriter : Writer<<Byte>>
       if (buffer.count == 1024) return flush
 
       return this
+
+    method write( bytes:Byte[] )->this
+      if (not fp) return this
+
+      if (bytes.count < 1024)
+        forEach (byte in bytes) write( byte )
+      else
+        flush
+        position += bytes.count
+        native @|fwrite( $bytes->data->as_bytes, 1, $bytes->count, $this->fp );
+      endIf
+      return this
+
+    method write( data:String )->this
+      if (not fp) return this
+
+      if (data.count < 1024)
+        forEach (i in 0..<data.byte_count) write( data.byte(i) )
+      else
+        flush
+        position += data.byte_count
+        native @|fwrite( $data->utf8, 1, $data->byte_count, $this->fp );
+      endIf
+      return this
+
+    method write( builder:StringBuilder )->this
+      return write( builder.utf8 )
 endClass
 

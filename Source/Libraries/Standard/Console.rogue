@@ -1,4 +1,4 @@
-class Console : Reader<<Byte>>, PrintWriterAspect<<output_buffer>> [singleton]
+class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
