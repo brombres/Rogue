@@ -6075,6 +6075,7 @@ RogueLogical RogueProgram__make_fully_requisite__Method( RogueClassProgram* THIS
 RogueLogical RogueProgram__make_fully_requisite__Method_List( RogueClassProgram* THIS, RogueMethod_List* methods_0 );
 RogueLogical RogueProgram__make_fully_requisite__Type( RogueClassProgram* THIS, RogueClassType* t_0 );
 void RogueProgram__resolve( RogueClassProgram* THIS );
+RogueLogical RogueProgram__resolve_types( RogueClassProgram* THIS );
 void RogueProgram__validate( RogueClassProgram* THIS );
 void RogueProgram__reorder_compounds( RogueClassProgram* THIS );
 void RogueProgram__collect_compound_dependencies__Type_Type_List( RogueClassProgram* THIS, RogueClassType* type_0, RogueType_List* compounds_1 );

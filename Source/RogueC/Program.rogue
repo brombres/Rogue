@@ -349,24 +349,22 @@ class Program [requisite singleton]
 
       if (RogueC.all_requisite)
         forEach (t in type_lookup)
-          t.resolve
+          t.configure
           forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
           forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
         endForEach
         forEach (templ in template_list)
           if (not templ.type_parameters)
             local t = get_type_reference( templ.t, templ.name )
-            t.resolve
+            t.configure
             forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
             forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
           endIf
         endForEach
       endIf
 
-      local resolve_types = true
-      while (resolve_types)
-        resolve_types = false
-
+      local types_resolved = false
+      while (not types_resolved)
         # Reference and resolve all requisite type templates
         forEach (templ in template_list)
           if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
@@ -374,48 +372,64 @@ class Program [requisite singleton]
           endIf
         endForEach
 
-        local i = 0
-        while (i < type_list.count)
-          local t  = type_list[i]
-          t.resolve
-
-          if ( t.is_api or (t.t and RogueC.requisite_files.contains( t.t.filepath )) )
-            if ( make_fully_requisite( type_list[i]) ) resolve_types = true
-
-            if (make_fully_requisite( t.global_method_list )) resolve_types = true
-            if (make_fully_requisite( t.method_list )) resolve_types = true
-
-            forEach (p in t.property_list)
-              if (make_fully_requisite( p.type )) resolve_types = true
-            endForEach
-            forEach (p in t.global_list)
-              if (make_fully_requisite( p.type )) resolve_types = true
-            endForEach
-          endIf
-          ++i
-          if (i == type_list.count)
-            # Re-resolve Global.run_tests() as the last thing since various methods add unit
-            # tests and such to it.
-            if (m_run_tests)
-              m_run_tests.resolved = false
-              m_run_tests.resolve
-            endIf
-          endIf
-        endWhile
+        types_resolved = resolve_types
 
         # Give plug-ins a chance to generate new classes before we're done
         forEach (plugin in RogueC.plugins)
-          if (plugin.generate_additional_types) resolve_types = true
+          if (plugin.generate_additional_types) types_resolved = false
         endForEach
 
-        if (not resolve_types)
-          if (not cull_unused_code) resolve_types = true
+        if (types_resolved)
+          if (not cull_unused_code) types_resolved = false
         endIf
       endWhile
 
       reorder_compounds
 
       validate
+
+    method resolve_types->Logical
+      local types_resolved = true
+
+      # Organize non-extended types
+      local i = 0
+      #{
+      i = 0
+      while (i < type_list.count)
+        local t  = type_list[i]
+      endWhile
+      }#
+
+      i = 0
+      while (i < type_list.count)
+        local t  = type_list[i]
+        t.resolve
+
+        if ( t.is_api or (t.t and RogueC.requisite_files.contains( t.t.filepath )) )
+          if ( make_fully_requisite( type_list[i]) ) types_resolved = false
+
+          if (make_fully_requisite( t.global_method_list )) types_resolved = false
+          if (make_fully_requisite( t.method_list )) types_resolved = false
+
+          forEach (p in t.property_list)
+            if (make_fully_requisite( p.type )) types_resolved = false
+          endForEach
+          forEach (p in t.global_list)
+            if (make_fully_requisite( p.type )) types_resolved = false
+          endForEach
+        endIf
+        ++i
+        if (i == type_list.count)
+          # Re-resolve Global.run_tests() as the last thing since various methods add unit
+          # tests and such to it.
+          if (m_run_tests)
+            m_run_tests.resolved = false
+            m_run_tests.resolve
+          endIf
+        endIf
+      endWhile
+
+      return types_resolved
 
     method validate
       # Perform miscellaneous program structure validation
