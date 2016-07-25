@@ -90,7 +90,7 @@ class Template
 
     method instantiate_list( type:Type, augmented_tokens:Token[] )
       type.is_list = true
-      type.element_type = Program.get_type_reference( t, type.name.leftmost(-2) ).organize
+      type.element_type = Program.get_type_reference( t, type.name.leftmost(-2) )
 
       local instance_tokens = Token[]( augmented_tokens.count )
       forEach (template_t in augmented_tokens)
@@ -109,7 +109,7 @@ class Template
 
     method instantiate_optional( type:Type, augmented_tokens:Token[] )
       type.is_optional = true
-      type.element_type = Program.get_type_reference( t, type.name.leftmost(-1) ).organize
+      type.element_type = Program.get_type_reference( t, type.name.leftmost(-1) )
 
       local instance_tokens = Token[]( augmented_tokens.count )
       forEach (template_t in augmented_tokens)

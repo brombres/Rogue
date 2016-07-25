@@ -314,6 +314,22 @@ class Program [requisite singleton]
         type_Global.add_property( p )
       endForEach
 
+      type_null.configure
+      type_Global.configure
+      type_Exception.configure
+      type_Real64.configure
+      type_Real32.configure
+      type_Int64.configure
+      type_Int32.configure
+      type_Character.configure
+      type_Byte.configure
+      type_Logical.configure
+      type_Global.configure
+      type_Object.configure
+      type_NativeArray.configure
+      type_GenericList.configure
+      type_String.configure
+
       type_null.resolve
       type_Global.organize
       type_Exception.resolve

@@ -11,6 +11,7 @@ class Type
     specializers    : TypeSpecializer[]
 
     defined           : Logical
+    configured        : Logical
     organized         : Logical
     organizing        : Logical
     resolved          : Logical
@@ -333,10 +334,9 @@ class Type
       attributes.add( Attribute.is_requisite )
       return this
 
-    method organize( scope=null:Scope )->Type
-      if (organized) return this
-      organized = true
-      organizing = true
+    method configure( scope=null:Scope )->Type
+      if (configured) return this
+      configured = true
 
       index = Program.type_list.count
       Program.type_list.add( this )
@@ -352,7 +352,7 @@ class Type
       endIf
 
       forEach (base_type in rewriter=base_types.rewriter)
-        base_type.organize( scope )
+        base_type.configure( scope )
 
         if (not base_type.is_aspect)
           if (is_aspect)
@@ -391,28 +391,42 @@ class Type
 
         if (not base_class and this is not Program.type_Object)
           # Use Object
-          Program.type_Object.organize
+          Program.type_Object.configure
           base_class = Program.type_Object
           base_types.insert( base_class )
         endIf
-      endIf
 
-      if (base_class) base_types.insert( base_types.remove(base_class) )
+        if (base_class) base_types.insert( base_types.remove(base_class) )
+      endIf
 
       # Mark classes that are extended
       forEach (base_type in base_types)
         base_type.extended_types.add( this )
       endForEach
 
-      # Organize properties
-      if (element_type) element_type.organize
+      if (element_type)            element_type.configure
+      forEach (p in global_list)   p.type.configure
+      forEach (p in property_list) p.type.configure
 
-      forEach (s in global_list) s.type.organize
+      return this
 
-      forEach (p in property_list)
-        p.type.organize
+    method organize( scope=null:Scope )->Type
+      if (organized) return this
+      organized = true
+      organizing = true
+
+      configure
+
+      forEach (base_type in base_types)
+        base_type.organize( scope )
       endForEach
 
+      if (this is not Program.type_Object) Program.type_Object.organize
+
+      # Organize properties
+      if (element_type)            element_type.organize
+      forEach (p in global_list)   p.type.organize
+      forEach (p in property_list) p.type.organize
 
       # Inherit definitions
       forEach (base_type in base_types)
