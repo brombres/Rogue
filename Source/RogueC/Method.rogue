@@ -233,12 +233,12 @@ class Method
 
         task_result_type = return_type
         if (return_type)
-          return_type.organize
+          return_type.configure
           return_type = Program.get_type_reference( t, "TaskWithResult<<$>>"(return_type.name) )
         else
           return_type = Program.get_type_reference( t, "Task" )
         endIf
-        return_type.organize
+        return_type.configure
       endIf
 
       forEach (param in parameters)
@@ -307,9 +307,9 @@ class Method
       resolved = true
 
       forEach (param in parameters)
-        param.type.organize
+        param.type.configure
       endForEach
-      if (return_type) return_type.organize
+      if (return_type) return_type.configure
 
       if (type_context.is_aspect and not is_global)
         aspect_statements = statements
@@ -434,7 +434,7 @@ class Method
 
       m_execute.statements.add( task_args.cmd_task_control )
 
-      task_type.organize
+      task_type.configure
 
     method set_incorporated->Method
       attributes.add( Attribute.is_incorporated )

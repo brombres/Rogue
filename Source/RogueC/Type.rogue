@@ -423,11 +423,6 @@ class Type
 
       if (this is not Program.type_Object) Program.type_Object.organize
 
-      # Organize properties
-      if (element_type)            element_type.organize
-      forEach (p in global_list)   p.type.organize
-      forEach (p in property_list) p.type.organize
-
       # Inherit definitions
       forEach (base_type in base_types)
         inherit_definitions( base_type )
