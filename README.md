@@ -26,8 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.84 - July 24, 2016
+###v1.0.84 - July 25, 2016
 - [RogueC] Improved call resolution with named arguments.  If there are still multiple candidates after the previously existing method selection logic, the candidate list is refined by keeping only methods that have enough non-default parameters without counting named arguments.  For instance, a call "fn(true,&flag)" would previously have matched both `fn(Logical,&flag)` and `fn(Logical,Logical,&flag)` since both methods accept two arguments, but when `&flag` is removed from consideration there is only one method that accepts a single argument.
+- [RogueC] Significant change to the ordering of type evaluation after discovering that base classes containing extended class properties (e.g. `Class Pet / PROPERTIES / cat : Cat`) could easily cause compiler crashes (if `Pet` happened to be processed before `Cat` in the code).  Now all types are recursively `configure()`d as a first step, which instantiates templates and creates type hierarchies for all properties and methods.  Then all terminal (unextended) classes are `organize()`d, which recursively organizes base types and builds method tables.  Finally all classes are `resolve()`d, which evaluates method body statements.  The whole process is repeated if new classes are introduced along the way.
 
 ###v1.0.83 - July 24, 2016
 - [Rogue] Global aspect methods now work again.

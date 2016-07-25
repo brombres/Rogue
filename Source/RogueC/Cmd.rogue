@@ -65,6 +65,10 @@ class Cmd
         throw t.error( 'No $.to->$() conversion method exists - use "<expression> as $" instead.' (this_type,target_type,target_type) )
       endIf
 
+println StackTrace()
+trace Type.configure_chain
+trace Type.organize_chain
+trace Type.resolve_chain
       throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
 
     method cloned( clone_args=null:CloneArgs )->Cmd

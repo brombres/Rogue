@@ -246,7 +246,7 @@ class Program [requisite singleton]
       endIf
       if (return_type)
         m_call.return_type = return_type
-        m_call.statements.add( CmdReturn(t,return_type.create_default_value(t)) )
+        m_call.statements.add( CmdReturn(t,CmdDefaultValue(t,return_type)) )
       endIf
 
       return type
@@ -391,14 +391,13 @@ class Program [requisite singleton]
     method resolve_types->Logical
       local types_resolved = true
 
-      # Organize non-extended types
+      # Organize non-extended types which in turn will organize all base types
       local i = 0
-      #{
-      i = 0
       while (i < type_list.count)
-        local t  = type_list[i]
+        local t = type_list[i]
+        if (t.extended_types.count == 0) t.organize
+        ++i
       endWhile
-      }#
 
       i = 0
       while (i < type_list.count)

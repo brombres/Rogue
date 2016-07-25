@@ -1,6 +1,12 @@
 $include "Definition.rogue"
 
 class Type
+  GLOBAL PROPERTIES
+    # Useful for printing out to help debug compiler crashes
+    configure_chain = Type[]
+    organize_chain = Type[]
+    resolve_chain = Type[]
+
   PROPERTIES
     t               : Token
     name            : String
@@ -337,6 +343,7 @@ class Type
     method configure( scope=null:Scope )->Type
       if (configured) return this
       configured = true
+      configure_chain.add( this )
 
       index = Program.type_list.count
       Program.type_list.add( this )
@@ -408,10 +415,12 @@ class Type
       forEach (p in global_list)   p.type.configure
       forEach (p in property_list) p.type.configure
 
+      configure_chain.remove_last
       return this
 
     method organize( scope=null:Scope )->Type
       if (organized) return this
+      organize_chain.add( this )
       organized = true
       organizing = true
 
@@ -589,6 +598,7 @@ class Type
 
       organizing = false
 
+      organize_chain.remove_last
       return this
 
     method primitive_rank->Int32
@@ -1215,6 +1225,7 @@ class Type
     method resolve->Type
       if (resolved) return this
       resolved = true
+      resolve_chain.add( this )
 
       organize
 
@@ -1226,6 +1237,7 @@ class Type
         m.resolve
       endForEach
 
+      resolve_chain.remove_last
       return this
 
     method should_cull->Logical
