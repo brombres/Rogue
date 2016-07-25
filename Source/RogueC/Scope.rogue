@@ -510,6 +510,16 @@ class Scope
 
       endIf
 
+      # If multiple methods match and named arguments are present, keep only methods
+      # that have enough non-default parameters without counting named arguments.
+      if (access.named_args)
+        forEach (m in candidates.available)
+          if (m.accepts_arg_count(arg_count)) candidates.compatible.add( m )
+        endForEach
+        if (not candidates.refine_matches) return null
+        if (candidates.has_match) return candidates.match
+      endIf
+
       # No args -> no params check
       # If two or more candidate functions are available and the caller is
       # sending zero arguments, keep only the zero-parameter candidate

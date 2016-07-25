@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.84 - July 24, 2016
+- [RogueC] Improved call resolution with named arguments.  If there are still multiple candidates after the previously existing method selection logic, the candidate list is refined by keeping only methods that have enough non-default parameters without counting named arguments.  For instance, a call "fn(true,&flag)" would previously have matched both `fn(Logical,&flag)` and `fn(Logical,Logical,&flag)` since both methods accept two arguments, but when `&flag` is removed from consideration there is only one method that accepts a single argument.
+
 ###v1.0.83 - July 24, 2016
 - [Rogue] Global aspect methods now work again.
 - [Rogue] When a class and an aspect the class incorporates both define the same method and the aspect method's return type is `this`, the class method trumps the aspect method (as before) but now the aspect method return type can be more general than the class method return type (as you would expect).
