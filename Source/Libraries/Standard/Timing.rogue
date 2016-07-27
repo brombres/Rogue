@@ -80,6 +80,10 @@ class Timer
       start_time = System.time
       return this
 
+    method restart( duration )->this
+      start_time = System.time
+      return this
+
     method to->String
       return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
 
