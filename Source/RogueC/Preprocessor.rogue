@@ -2,6 +2,13 @@ class Preprocessor
   GLOBAL PROPERTIES
     definitions = Table<<String,Token[]>>()
 
+  GLOBAL METHODS
+    method define( name:String, definition:String )
+      define( name, Tokenizer().tokenize("[Command Line]",definition) )
+
+    method define( name:String, tokens:Token[] )
+      definitions[ name ] = tokens
+
   PROPERTIES
     parser : Parser  # the parser that will be parsing these tokens later
     reader : PreprocessorTokenReader
@@ -40,7 +47,7 @@ class Preprocessor
               if (def_t.type is TokenType.eol) escapeWhile
               defined_tokens.add( def_t )
             endWhile
-            if (keep_tokens) definitions[defined_word] = defined_tokens
+            if (keep_tokens) define( defined_word, defined_tokens )
             nextIteration
 
           elseIf (t.type is TokenType.directive_include)
@@ -173,6 +180,11 @@ class Preprocessor
         if (t.type is TokenType.literal_string)
           local target = reader.read->String
           return RogueC.compile_targets[target]
+        endIf
+
+        if (consume(TokenType.identifier))
+          # If the parser finds an identifier here it means it's undefined.
+          return false
         endIf
 
         if (consume(TokenType.keyword_true))  return true

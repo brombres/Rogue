@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.86 - July 29, 2016
+- [Rogue] Added `--define="name:value"` compiler directive.  Example: `--define="PI:Math.acos(-1)"`
+- [Rogue] An undefined identifier in a conditional compilation `$if` now counts as false.
+- [RogueC] Fixed compiler crash when a generic function specifies the wrong number of parameters compared to the specific function it's matched to.
+
 ###v1.0.85 - July 26, 2016
 - [API] Added `Timer.restart(new_duration:Real64)` in addition to existing `Timer.restart()`.
 
