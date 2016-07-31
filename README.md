@@ -26,7 +26,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.87 - July 30, 2016
+###v1.0.87 - July 31, 2016
+- [Rogue] Added alternate syntax for defining setter methods: `method set-x(...)` is an alternate form of `method set_x(...)`.  In both cases the true name of the method is `set_x`.  The purpose of the hyphenated syntax is to keep `x` visible to search-and-replace.  For example, if you renamed a property from `alpha` to `opacity`, it's easy to miss `set_alpha`.
 - [API] Fixed logical error in `Character.to_number(base=10:Int32)->Int32`.
 - [API] JSON-style Value types can now be compared with String types and all primitive types.
 

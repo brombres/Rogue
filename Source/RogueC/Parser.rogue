@@ -218,6 +218,9 @@ class Parser
     method parse_routine
       local t = read  # 'routine'
       local name = read_identifier
+      if (name == "set" and consume(TokenType.symbol_minus))
+        name = "set_" + read_identifier
+      endIf
       local template = Template( t, name, Attribute.is_class | Attribute.is_routine )
       parse_template_tokens( template, TokenType.keyword_endRoutine )
 
@@ -672,6 +675,11 @@ class Parser
       which (name)
         case "operator"
           name += reader.read->String
+        case "set"
+          # Convert set-name into set_name
+          if (consume(TokenType.symbol_minus))
+            name = "set_" + read_identifier
+          endIf
         case "to"
           if (consume(TokenType.symbol_arrow))
             return_type = parse_type
