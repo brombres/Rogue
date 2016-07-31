@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.87 - July 30, 2016
+- [API] JSON-style Value types can now be compared with String types and all primitive types.
+
 ###v1.0.86 - July 29, 2016
 - [Rogue] Added `--define="name:value"` compiler directive.  Example: `--define="PI:Math.acos(-1)"`
 - [Rogue] An undefined identifier in a conditional compilation `$if` now counts as false.

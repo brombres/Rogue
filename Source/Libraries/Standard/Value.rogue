@@ -122,8 +122,62 @@ class Value
     method operator==( other:Value )->Logical
       return this is other
 
+    method operator==( other:Byte )->Logical
+      return this == Value( other )
+
+    method operator==( other:Character )->Logical
+      return this == Value( ""+other )
+
+    method operator==( other:Int64 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Int32 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Logical )->Logical
+      return this == Value( other )
+
+    method operator==( other:Real64 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Real32 )->Logical
+      return this == Value( other )
+
+    method operator==( other:Object )->Logical
+      return this == Value( other )
+
+    method operator==( other:String )->Logical
+      return this == Value( other )
+
     method operator<( other:Value )->Logical
       return object_id < other.object_id
+
+    method operator<( other:Byte )->Logical
+      return this < Value( other )
+
+    method operator<( other:Character )->Logical
+      return this < Value( ""+other )
+
+    method operator<( other:Int64 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Int32 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Logical )->Logical
+      return this < Value( other )
+
+    method operator<( other:Real64 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Real32 )->Logical
+      return this < Value( other )
+
+    method operator<( other:Object )->Logical
+      return this < Value( other )
+
+    method operator<( other:String )->Logical
+      return this < Value( other )
 
     method operator-()->Value
       return Value( 0 )

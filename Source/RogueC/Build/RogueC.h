@@ -976,6 +976,7 @@ struct RogueClassStructureTokenType; // StructureTokenType
 struct RogueClassNativeCodeTokenType; // NativeCodeTokenType
 struct RogueClassModifyAndAssignTokenType; // ModifyAndAssignTokenType
 struct RogueClassReal64Value; // Real64Value
+struct RogueClassObjectValue; // ObjectValue
 struct RogueClassStringValue; // StringValue
 struct RogueClassNullValue; // NullValue
 struct RogueClassListReader_CmdSelectCase_; // ListReader<<CmdSelectCase>>
@@ -4509,6 +4510,13 @@ struct RogueClassReal64Value : RogueObject
 
 };
 
+struct RogueClassObjectValue : RogueObject
+{
+  // PROPERTIES
+  RogueObject* value;
+
+};
+
 struct RogueClassStringValue : RogueObject
 {
   // PROPERTIES
@@ -4898,6 +4906,7 @@ extern RogueType* RogueTypeStructureTokenType;
 extern RogueType* RogueTypeNativeCodeTokenType;
 extern RogueType* RogueTypeModifyAndAssignTokenType;
 extern RogueType* RogueTypeReal64Value;
+extern RogueType* RogueTypeObjectValue;
 extern RogueType* RogueTypeStringValue;
 extern RogueType* RogueTypeNullValue;
 extern RogueType* RogueTypeListReader_CmdSelectCase_;
@@ -4950,6 +4959,7 @@ void RoguePreprocessor__define__String_String( RogueString* name_0, RogueString*
 void RoguePreprocessor__define__String_Token_List( RogueString* name_0, RogueToken_List* tokens_1 );
 void RoguePreprocessor__init_class();
 RogueClassValue* RogueValue__create__Real64( RogueReal64 value_0 );
+RogueClassValue* RogueValue__create__Object( RogueObject* value_0 );
 RogueClassValue* RogueValue__create__String( RogueString* value_0 );
 RogueCmdNamedArg_List* RogueQuicksort_CmdNamedArg___sort__CmdNamedArg_List_Function_CmdNamedArg_CmdNamedArg_RETURNSLogical( RogueCmdNamedArg_List* list_0, RogueClassFunction_CmdNamedArg_CmdNamedArg_RETURNSLogical* compare_fn_1 );
 void RogueQuicksort_CmdNamedArg___sort__Array_Function_CmdNamedArg_CmdNamedArg_RETURNSLogical_Int32_Int32( RogueArray* data_0, RogueClassFunction_CmdNamedArg_CmdNamedArg_RETURNSLogical* compare_fn_1, RogueInt32 i1_2, RogueInt32 i2_3 );
@@ -6575,8 +6585,14 @@ RogueString* RogueValueTable__type_name( RogueClassValueTable* THIS );
 RogueClassValue* RogueValueTable__get__String( RogueClassValueTable* THIS, RogueString* key_0 );
 RogueClassValueTable* RogueValueTable__set__String_Value( RogueClassValueTable* THIS, RogueString* key_0, RogueClassValue* new_value_1 );
 RogueClassValue* RogueValue__init_object( RogueClassValue* THIS );
+RogueLogical RogueValue__operatorEQUALSEQUALS__Object( RogueClassValue* THIS, RogueObject* other_0 );
 RogueString* RogueValue__type_name( RogueClassValue* THIS );
+RogueLogical RogueValue__is_null( RogueClassValue* THIS );
+RogueLogical RogueValue__is_number( RogueClassValue* THIS );
+RogueLogical RogueValue__is_string( RogueClassValue* THIS );
+RogueLogical RogueValue__operatorEQUALSEQUALS__Value( RogueClassValue* THIS, RogueClassValue* other_0 );
 RogueInt32 RogueValue__to_Int32( RogueClassValue* THIS );
+RogueReal64 RogueValue__to_Real64( RogueClassValue* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init_object( RogueClassTable_String_Value_* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init( RogueClassTable_String_Value_* THIS );
 RogueString* RogueTable_String_Value___to_String( RogueClassTable_String_Value_* THIS );
@@ -8056,16 +8072,28 @@ RogueLogical RogueModifyAndAssignTokenType__is_op_with_assign( RogueClassModifyA
 RogueClassReal64Value* RogueReal64Value__init_object( RogueClassReal64Value* THIS );
 RogueString* RogueReal64Value__to_String( RogueClassReal64Value* THIS );
 RogueString* RogueReal64Value__type_name( RogueClassReal64Value* THIS );
+RogueLogical RogueReal64Value__is_number( RogueClassReal64Value* THIS );
+RogueLogical RogueReal64Value__operatorEQUALSEQUALS__Value( RogueClassReal64Value* THIS, RogueClassValue* other_0 );
 RogueInt32 RogueReal64Value__to_Int32( RogueClassReal64Value* THIS );
+RogueReal64 RogueReal64Value__to_Real64( RogueClassReal64Value* THIS );
 RogueClassReal64Value* RogueReal64Value__init__Real64( RogueClassReal64Value* THIS, RogueReal64 _auto_3290_0 );
+RogueClassObjectValue* RogueObjectValue__init_object( RogueClassObjectValue* THIS );
+RogueString* RogueObjectValue__to_String( RogueClassObjectValue* THIS );
+RogueString* RogueObjectValue__type_name( RogueClassObjectValue* THIS );
+RogueClassObjectValue* RogueObjectValue__init__Object( RogueClassObjectValue* THIS, RogueObject* _auto_3291_0 );
 RogueClassStringValue* RogueStringValue__init_object( RogueClassStringValue* THIS );
 RogueString* RogueStringValue__to_String( RogueClassStringValue* THIS );
 RogueString* RogueStringValue__type_name( RogueClassStringValue* THIS );
+RogueLogical RogueStringValue__is_string( RogueClassStringValue* THIS );
+RogueLogical RogueStringValue__operatorEQUALSEQUALS__Value( RogueClassStringValue* THIS, RogueClassValue* other_0 );
 RogueInt32 RogueStringValue__to_Int32( RogueClassStringValue* THIS );
+RogueReal64 RogueStringValue__to_Real64( RogueClassStringValue* THIS );
 RogueClassStringValue* RogueStringValue__init__String( RogueClassStringValue* THIS, RogueString* _auto_3293_0 );
 RogueClassNullValue* RogueNullValue__init_object( RogueClassNullValue* THIS );
 RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS );
 RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS );
+RogueLogical RogueNullValue__is_null( RogueClassNullValue* THIS );
+RogueLogical RogueNullValue__operatorEQUALSEQUALS__Value( RogueClassNullValue* THIS, RogueClassValue* other_0 );
 RogueInt32 RogueNullValue__to_Int32( RogueClassNullValue* THIS );
 RogueClassListReader_CmdSelectCase_* RogueListReader_CmdSelectCase___init_object( RogueClassListReader_CmdSelectCase_* THIS );
 RogueString* RogueListReader_CmdSelectCase___type_name( RogueClassListReader_CmdSelectCase_* THIS );
