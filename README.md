@@ -27,6 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.87 - July 30, 2016
+- [API] Fixed logical error in `Character.to_number(base=10:Int32)->Int32`.
 - [API] JSON-style Value types can now be compared with String types and all primitive types.
 
 ###v1.0.86 - July 29, 2016

@@ -529,10 +529,14 @@ class Character [primitive]
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
 
     method to_number( base=10:Int32 )->Int32
-      if (this >= '0' and this < '0'+base)      return (this - '0')
-      if (this >= 'a' and this < 'a'+(base-10)) return (this - 'a') + 10
-      if (this >= 'A' and this < 'A'+(base-10)) return (this - 'A') + 10
-      return -1
+      local value : Int32
+      if (this >= '0' and this <= '9')     value = this - '0'
+      elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
+      elseIf (this >= 'a' and this <= 'z') value = 10 + (this - 'a')
+      else return -1
+
+      if (value < base) return value
+      else              return -1
 endClass
 
 class Byte [primitive]

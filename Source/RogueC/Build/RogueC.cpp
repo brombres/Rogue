@@ -24120,19 +24120,31 @@ RogueString* RogueCharacter__to_String( RogueCharacter THIS )
 
 RogueInt32 RogueCharacter__to_number__Int32( RogueCharacter THIS, RogueInt32 base_0 )
 {
-  if ((THIS >= (RogueCharacter)'0' && ((RogueInt32)(THIS)) < (((RogueInt32)((RogueCharacter)'0')) + base_0)))
+  RogueInt32 value_1 = 0;
+  if ((THIS >= (RogueCharacter)'0' && THIS <= (RogueCharacter)'9'))
   {
-    return (RogueInt32)(((RogueInt32)((THIS - (RogueCharacter)'0'))));
+    value_1 = ((RogueInt32)((RogueInt32)((THIS - (RogueCharacter)'0'))));
   }
-  if ((THIS >= (RogueCharacter)'a' && ((RogueInt32)(THIS)) < (((RogueInt32)((RogueCharacter)'a')) + (base_0 - 10))))
+  else if ((THIS >= (RogueCharacter)'A' && THIS <= (RogueCharacter)'Z'))
   {
-    return (RogueInt32)((((RogueInt32)((THIS - (RogueCharacter)'a'))) + 10));
+    value_1 = ((RogueInt32)(10 + ((RogueInt32)((THIS - (RogueCharacter)'A')))));
   }
-  if ((THIS >= (RogueCharacter)'A' && ((RogueInt32)(THIS)) < (((RogueInt32)((RogueCharacter)'A')) + (base_0 - 10))))
+  else if ((THIS >= (RogueCharacter)'a' && THIS <= (RogueCharacter)'z'))
   {
-    return (RogueInt32)((((RogueInt32)((THIS - (RogueCharacter)'A'))) + 10));
+    value_1 = ((RogueInt32)(10 + ((RogueInt32)((THIS - (RogueCharacter)'a')))));
   }
-  return (RogueInt32)(-1);
+  else
+  {
+    return (RogueInt32)(-1);
+  }
+  if (value_1 < base_0)
+  {
+    return (RogueInt32)(value_1);
+  }
+  else
+  {
+    return (RogueInt32)(-1);
+  }
 }
 
 RogueTypeInfo* RogueTypeInfo__init_object( RogueTypeInfo* THIS )
@@ -62110,8 +62122,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[257] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unexpected argument to --version option.", 40 ) ); 
   Rogue_literal_strings[258] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[259] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
-  Rogue_literal_strings[260] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.87.0", 8 ) ); 
-  Rogue_literal_strings[261] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 30, 2016", 13 ) ); 
+  Rogue_literal_strings[260] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.87.1", 8 ) ); 
+  Rogue_literal_strings[261] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "July 31, 2016", 13 ) ); 
   Rogue_literal_strings[262] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[263] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class/method requisite.  With no argument, everything\n    becomes requisite.\n\n  --requisite-file[=file.rogue]\n    With an argument, makes the entire file requisite.  With no argument,\n    all files explicitly listed on the commandline become requisite.\n\n  --target=", 2033 ) ); 
   Rogue_literal_strings[264] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ",Mac,Windows,iOS,Android,...]\n", 30 ) ); 
