@@ -1,14 +1,15 @@
 class Introspector
   PROPERTIES
+    context : Object
     address : Int64
     info    : TypeInfo
 
   METHODS
-    method init( object:Object )
-      address = native( "((RogueInt64)(intptr_t)$object)" )->Int64
-      info = object.type_info
+    method init( context )
+      address = native( "((RogueInt64)(intptr_t)$context)" )->Int64
+      info = context.type_info
 
-    method init( address, info )
+    method init( context, address, info )
 
     method get( name:String )->Value
       local property_info = info.property_info( name )
@@ -42,7 +43,7 @@ class Introspector
 
         others
           # Must be a compound
-          return Introspector( native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])" )->Int64, property_info.type )->Value
+          return Introspector( context, native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])" )->Int64, property_info.type )->Value
       endWhich
 
     method set( name:String, new_value:Value )->this
@@ -86,7 +87,7 @@ class Introspector
 
         others
           # Must be a compound
-          Introspector( native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])" )->Int64, property_info.type ).set( new_value )
+          Introspector( context, native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])" )->Int64, property_info.type ).set( new_value )
       endWhich
 
       return this
@@ -144,16 +145,16 @@ endClass
 
 class ValueTypeIntrospector<<$ValueType>> : Introspector
   PROPERTIES
-    context : $ValueType
+    value_context : $ValueType
 
   METHODS
-    method init( context )
-      address = native( "(RogueInt64)(intptr_t)&$context" )->Int64
-      info = context.type_info
+    method init( value_context )
+      address = native( "(RogueInt64)(intptr_t)&$value_context" )->Int64
+      info = value_context.type_info
 
     method to->Value
       if (info.is_compound) return prior.to_Value
-      else                  return Value( context )
+      else                  return Value( value_context )
 endClass
 
 

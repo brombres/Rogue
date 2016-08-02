@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.89 - August 2, 2016
+- [API] For GC safety, introspectors now retain references to objects they were created from (instead of only having the raw memory address).
+- [API] Value types now have two kinds of null Value.  `NullValue` is what is stored when a `null` is stored, retrieved, or parsed and its `to->String` is `"null"`.  `NullResult` extends `NullValue`, is what is returned when an element cannot be found, and its `to->String` is `""`.
+
+
 ###v1.0.88 - August 1, 2016
 - [API]  A new class "Introspector" provides the ability to get and set object value using introspection and JSON-style `Value` types.
     - Obtain an introspector from any by-reference or by-value type by accessing `.introspector` on the value.

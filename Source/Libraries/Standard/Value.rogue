@@ -7,9 +7,11 @@ class Value
       return Real64Value( value )
 
     method create( value:Object )->Value
+      if (value is null) return NullValue
       return ObjectValue( value )
 
     method create( value:String )->Value
+      if (value is null) return NullValue
       return StringValue( value )
 
     method operator?( value:Value )->Logical
@@ -67,13 +69,13 @@ class Value
       return @{}
 
     method first->Value
-      return NullValue
+      return NullResult
 
     method get( index:Int32 )->Value
-      return NullValue
+      return NullResult
 
     method get( key:String )->Value
-      return NullValue
+      return NullResult
 
     method is_collection->Logical
       return false
@@ -117,7 +119,7 @@ class Value
       return false
 
     method last->Value
-      return NullValue
+      return NullResult
 
     method operator==( other:Value )->Logical
       return this is other
@@ -222,16 +224,16 @@ class Value
       return value
 
     method remove( key:String )->Value
-      return NullValue
+      return NullResult
 
     method remove_at( index:Int32 )->Value
-      return NullValue
+      return NullResult
 
     method remove_first->Value
-      return NullValue
+      return NullResult
 
     method remove_last->Value
-      return NullValue
+      return NullResult
 
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
@@ -345,6 +347,12 @@ class NullValue : Value [singleton]
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer.print( "null" )
+endClass
+
+class NullResult : NullValue [singleton]
+  METHODS
+    method to->String
+      return ""
 endClass
 
 class LogicalValue( value:Logical ) : Value
@@ -618,8 +626,8 @@ class ValueList : Value
       return this.get(0)
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= values.count) return NullValue
-      return select{ values[index] || NullValue }
+      if (index < 0 or index >= values.count) return NullResult
+      return select{ values[index] || NullResult }
 
     method is_collection->Logical
       return true
@@ -746,11 +754,11 @@ class ValueTable : Value
       return table
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= count) return NullValue
-      return select{ values[ keys[index] ] || NullValue }
+      if (index < 0 or index >= count) return NullResult
+      return select{ values[ keys[index] ] || NullResult }
 
     method get( key:String )->Value
-      return select{ values[ key ] || NullValue }
+      return select{ values[ key ] || NullResult }
 
     method is_collection->Logical
       return true
@@ -765,7 +773,7 @@ class ValueTable : Value
       return values.remove( key )
 
     method remove_at( index:Int32 )->Value
-      if (index < 0 or index >= count) return NullValue
+      if (index < 0 or index >= count) return NullResult
       return values.remove( values.keys[index] )
 
     method set( key:String, new_value:Value )->this
