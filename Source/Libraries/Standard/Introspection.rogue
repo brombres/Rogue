@@ -1,4 +1,163 @@
-class CompoundIntrospection [aspect]
+class Introspector
+  PROPERTIES
+    address : Int64
+    info    : TypeInfo
+
+  METHODS
+    method init( object:Object )
+      address = native( "((RogueInt64)(intptr_t)$object)" )->Int64
+      info = object.type_info
+
+    method init( address, info )
+
+    method get( name:String )->Value
+      local property_info = info.property_info( name )
+      if (not property_info) return NullValue
+
+      if (property_info.type.is_reference)
+        return Value( native( "*((RogueObject**)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Object->Value )
+      endIf
+
+      which (property_info.type.name)
+        case "Real64"
+          return Value( native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Real64 )
+
+        case "Real32"
+          return Value( native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Real32 )
+
+        case "Int64"
+          return Value( native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int64->Real64 )
+
+        case "Int32"
+          return Value( native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int32 )
+
+        case "Character"
+          return Value( native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Character + "" )
+
+        case "Byte"
+          return Value( native( "*((RogueByte*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Byte )
+
+        case "Logical"
+          return Value( native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Logical )
+
+        others
+          # Must be a compound
+          return Introspector( native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])" )->Int64, property_info.type )->Value
+      endWhich
+
+    method set( name:String, new_value:Value )->this
+      local property_info = info.property_info( name )
+      if (not property_info) return this
+
+      if (property_info.type.is_reference)
+        local value = new_value->Object
+        native( "*((RogueObject**)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+        return this
+      endIf
+
+      which (property_info.type.name)
+        case "Real64"
+          local value = new_value->Real64
+          native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        case "Real32"
+          local value = new_value->Real32
+          native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        case "Int64"
+          local value = new_value->Int64
+          native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        case "Int32"
+          local value = new_value->Int32
+          native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        case "Character"
+          local value = new_value->Character
+          native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        case "Byte"
+          local value = new_value->Byte
+          native( "*((RogueByte*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        case "Logical"
+          local value = new_value->Logical
+          native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])) = $value;" )
+
+        others
+          # Must be a compound
+          Introspector( native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index])" )->Int64, property_info.type ).set( new_value )
+      endWhich
+
+      return this
+
+    method set( new_value:Value )->this
+      if (new_value.is_table)
+        forEach (key in (new_value as ValueTable).keys)
+          set( key, new_value[key] )
+        endForEach
+        return this
+      endIf
+
+      if (info.is_reference)
+        native( "*(RogueObject**)((RogueByte*)(intptr_t)$address)" )->Object = new_value->Object
+        return this
+      endIf
+
+      which (info.name)
+        case "Real64"
+          native( "*(RogueReal64*)((RogueByte*)(intptr_t)$address)" )->Real64 = new_value->Real64
+
+        case "Real32"
+          native( "*(RogueReal32*)((RogueByte*)(intptr_t)$address)" )->Real32 = new_value->Real32
+
+        case "Int64"
+          native( "*(RogueInt64*)((RogueByte*)(intptr_t)$address)" )->Int64 = new_value->Int64
+
+        case "Int32"
+          native( "*(RogueInt32*)((RogueByte*)(intptr_t)$address)" )->Int32 = new_value->Int32
+
+        case "Character"
+          native( "*(RogueCharacter*)((RogueByte*)(intptr_t)$address)" )->Character = new_value->Character
+
+        case "Byte"
+          native( "*(RogueByte*)((RogueByte*)(intptr_t)$address)" )->Byte = new_value->Byte
+
+        case "Logical"
+          native( "*(RogueLogical*)((RogueByte*)(intptr_t)$address)" )->Logical = new_value->Logical
+
+      endWhich
+
+      return this
+
+    method to->String
+      return this->Value->String
+
+    method to->Value
+      local result = @{}
+      forEach (p in info.properties)
+        result[ p.name ] = this[ p.name ]
+      endForEach
+      return result
+endClass
+
+
+class ValueTypeIntrospector<<$ValueType>> : Introspector
+  PROPERTIES
+    context : $ValueType
+
+  METHODS
+    method init( context )
+      address = native( "(RogueInt64)(intptr_t)&$context" )->Int64
+      info = context.type_info
+
+    method to->Value
+      if (info.is_compound) return prior.to_Value
+      else                  return Value( context )
+endClass
+
+
+class CompoundIntrospection<<$ValueType>> [aspect]
   METHODS
     method get_property<<$PropertyType>>( name:String )->$PropertyType
       forEach (i in 0..<property_count)
@@ -10,6 +169,9 @@ class CompoundIntrospection [aspect]
 
       local default_value : $PropertyType
       return default_value
+
+    method introspector->Introspector
+      return ValueTypeIntrospector<<$ValueType>>( this )
 
     method property_count->Int32
       return type_info.properties.count
@@ -28,4 +190,6 @@ class CompoundIntrospection [aspect]
 
       return this
 
+    method to->Value
+      return introspector->Value
 endClass

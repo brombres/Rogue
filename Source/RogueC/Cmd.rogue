@@ -14,10 +14,11 @@ class Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
     method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
-      local this_type = require_type
+      return cast_to( require_type, target_type, scope, allow_implicit_narrowing, is_conversion )
+
+    method cast_to( this_type:Type, target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
       if (this_type is target_type) return this
 
-      # this is a reference type
       this_type.organize(scope)
       target_type.organize(scope)
 
@@ -65,10 +66,15 @@ class Cmd
         throw t.error( 'No $.to->$() conversion method exists - use "<expression> as $" instead.' (this_type,target_type,target_type) )
       endIf
 
+      #{
 println StackTrace()
 trace Type.configure_chain
 trace Type.organize_chain
 trace Type.resolve_chain
+      }#
+
+      if (this_type.is_aspect) return cast_to( Program.type_Object, target_type, scope, allow_implicit_narrowing, is_conversion )
+
       throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
 
     method cloned( clone_args=null:CloneArgs )->Cmd
@@ -4801,6 +4807,7 @@ class CmdInlineNative : Cmd
     modify_op    : TokenType
     adjust_delta : Int32
     new_value    : Cmd
+    local_list   : Local[]
 
   METHODS
     method init( t, code, result_type=null )
@@ -4816,11 +4823,13 @@ class CmdInlineNative : Cmd
       return false
 
     method resolve( scope:Scope )->Cmd
+      local_list = scope.local_list.cloned
       this_method = scope.this_method
       if (result_type) result_type.organize(scope)
       return this
 
     method resolve_assignment( scope:Scope, new_value )->Cmd
+      local_list = scope.local_list.cloned
       this_method = scope.this_method
       new_value = new_value.resolve( scope ).require_value
       if (result_type)
@@ -4832,6 +4841,7 @@ class CmdInlineNative : Cmd
       return this
 
     method resolve_modify_and_assign( scope:Scope, modify_op, new_value )->Cmd
+      local_list = scope.local_list.cloned
       this_method = scope.this_method
       new_value = new_value.resolve( scope ).require_value
       if (result_type)
@@ -4843,6 +4853,7 @@ class CmdInlineNative : Cmd
       return this
 
     method resolve_adjust( scope:Scope, adjust_delta )->Cmd
+      local_list = scope.local_list.cloned
       this_method = scope.this_method
       if (result_type)
         result_type.organize(scope)

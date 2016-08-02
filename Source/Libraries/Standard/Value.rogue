@@ -278,6 +278,17 @@ class Value
     method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->Value
       return cloned
 
+    method to->Byte
+      return this->Int32->Byte
+
+    method to->Character
+      local st = this->String
+      if (st.count) return st[0]
+      return Character(0)
+
+    method to->Int64
+      return this->Real64->Int64
+
     method to->Int32
       return 0
 
@@ -287,8 +298,14 @@ class Value
     method to->Real64
       return this->Int32->Real64
 
+    method to->Real32
+      return this->Real64->Real32
+
     method to->Object
       return null
+
+    method to->Value
+      return this
 
     method to->ValueList
       return select{ this.is_list:this as ValueList || @[] }
@@ -324,7 +341,7 @@ class NullValue : Value [singleton]
       return 0
 
     method to->String
-      return ""
+      return "null"
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer.print( "null" )
@@ -742,7 +759,7 @@ class ValueTable : Value
       return true
 
     method keys->String[] [macro]
-      values.keys
+      this.values.keys
 
     method remove( key:String )->Value
       return values.remove( key )

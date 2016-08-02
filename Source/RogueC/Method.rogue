@@ -75,6 +75,10 @@ class Method
 
       return result
 
+    method add_incorporating_class( incorporating_class:Type )
+      ensure incorporating_classes
+      incorporating_classes.add( incorporating_class )
+
     method dispatch( v:Visitor )
       v.visit( this )
 
@@ -89,9 +93,6 @@ class Method
         # the method above.
         m.statements = aspect_statements.cloned( null as CloneArgs )
       endIf
-
-      if (incorporating_classes is null) incorporating_classes = Type[]
-      incorporating_classes.add( into_type )
 
       m.signature = null
       m.assign_signature

@@ -26,6 +26,22 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.88 - August 1, 2016
+- [API]  A new class "Introspector" provides the ability to get and set object value using introspection and JSON-style `Value` types.
+    - Obtain an introspector from any by-reference or by-value type by accessing `.introspector` on the value.
+    - `Introspector.get(name:String)->Value` returns the `Value` representation of the specified property.
+    - `Introspector.set(name:String,new_value:Value)->this` sets the specified property, if found, to be the new value.
+    - `Introspector.set(new_value:Value)->this` can be used to set any or all properties of an object if `new_value` is a `ValueTable` specification of new values.
+    - `Introspector.to->Value` returns a `ValueTable` containing all properties.
+- [API] Added `Object.get_property(name:String)->Value`.
+- [API] Added `Object.set_property(name:String,new_value:Value)->this`.
+- [API] Added `Object.set_properties(new_values:Value)->this` (`new_values` should be a ValueTable).
+- [API] Added `.to->Value` conversion to `Object`, `String`, `List`, and `Table` as well as all primitives and compounds.  Lists convert into `ValueList` objects while objects and tables convert into `ValueTable` objects.
+- [Rogue] Any `Object` method such as `object_id()->Int64` can now be called on any aspect reference.
+- [Rogue] Any `Object` conversions such as `->String` can now be performed on any aspect reference.
+- [RogueC] Fixed bug calling methods on aspect references when the methods are declared `[abstract]` in the aspect.
+- [RogueC] Fixed bug resolving escaped local variable names in inline native code when there are multiple locals with the same name.
+
 ###v1.0.87 - July 31, 2016
 - [Rogue] Added alternate syntax for defining setter methods: `method set-x(...)` is an alternate form of `method set_x(...)`.  In both cases the true name of the method is `set_x`.  The purpose of the hyphenated syntax is to keep `x` visible to search-and-replace.  For example, if you renamed a property from `alpha` to `opacity`, it's easy to miss `set_alpha`.
 - [API] Fixed logical error in `Character.to_number(base=10:Int32)->Int32`.

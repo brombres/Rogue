@@ -393,6 +393,14 @@ class List<<$DataType>> : GenericList
       buffer.print( ']' )
       return buffer
 
+    method to->Value
+      local result = @[]
+      forEach (item in this) result.add( Value(item) )
+      return result
+
+    method to->ValueList
+      return this->Value
+
     method to_array->Array<<$DataType>>
       local result = Array<<$DataType>>( count )
       forEach (i of this)

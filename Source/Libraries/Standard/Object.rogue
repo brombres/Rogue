@@ -6,8 +6,8 @@ class Object [native]
     method init
       noAction
 
-    method to->String
-      return "($ 0x$)" (type_name, object_id.to_hex_string)
+    method get_property( name:String )->Value
+      return introspector[ name ]
 
     method get_property<<$PropertyType>>( name:String )->$PropertyType
       forEach (i in 0..<property_count)
@@ -26,6 +26,9 @@ class Object [native]
     method hash_code->Int32
       return object_id->Int32
 
+    method introspector->Introspector
+      return Introspector( this )
+
     method object_id->Int64
       local addr : Int64
       native "$addr = (RogueInt64)(intptr_t)$this;"
@@ -39,6 +42,11 @@ class Object [native]
 
     method property_name( index:Int32 )->String
       return native( "Rogue_literal_strings[$this->type->property_name_indices[$index]]" )->String
+
+    method set_properties( value:Value )->this
+      introspector.set( value )
+      return this
+
 
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
       forEach (i in 0..<property_count)
@@ -54,21 +62,24 @@ class Object [native]
 
       return this
 
+    method set_property( name:String, value:Value )->this
+      introspector.set( name, value )
+      return this
+
+    method to->String
+      return "($ 0x$)" (type_name, object_id.to_hex_string)
+
+    method to->Value
+      return introspector->Value
+
+    method to->ValueList
+      return @[ this->Value ]
+
+    method to->ValueTable
+      return introspector->Value
+
     method type_info->TypeInfo
       native @|return RogueType_type_info( $this->type );
 
 endClass
-
-
-class Aspect [aspect]
-  METHODS
-    method operator==( other:Object )->Logical
-      return this is other
-
-    method to->String
-      local addr : Int64
-      native "$addr = (RogueInt64)(intptr_t)$this;"
-      return "($ 0x$)" (type_name,addr.to_hex_string)
-endClass
-
 

@@ -544,7 +544,7 @@ class Type
         if (m) m.make_requisite
       endIf
 
-      # Add a default to->String to compounds
+      # Add a default to->String and to->Value to compounds
       if (is_compound or is_primitive)
         local m = find_method( "to_String()" )
         if (not m)
@@ -553,6 +553,20 @@ class Type
           m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
           m.organize( scope )
         endIf
+
+        #{
+        m = find_method( "to_Value()" )
+        if (not m)
+          m = add_method( t, "to_Value" )
+          m.return_type = Program.get_type_reference( t, "Value" )
+          local result_var = m.add_local( t, Program.create_unique_id )
+          result_var.initial_value = CmdAccess( t, "ValueTable", CmdArgs() )
+          forEach (p in property_list)
+          endForEach
+          m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
+          m.organize( scope )
+        endIf
+        }#
       endIf
 
       # Add a default to->Object to compounds, primitives, and functional types
@@ -892,6 +906,7 @@ class Type
 
         if (m.type_context.is_aspect)
           m.overriding_methods.add( existing_m )
+          m.add_incorporating_class( this )
           if (m.is_abstract) return
 
           m = m.incorporate( this )
@@ -927,6 +942,7 @@ class Type
       else
         # No existing method
         if (m.type_context.is_aspect)
+          m.add_incorporating_class( this )
           m = m.incorporate( this )
           m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
         elseIf (m.is_augment)

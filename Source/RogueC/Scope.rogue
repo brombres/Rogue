@@ -234,6 +234,15 @@ class Scope
         endForEach
       endIf
 
+      if (type_context.is_aspect)
+        list = Program.type_Object.method_lookup_by_name[ access.name ]
+        if (list)
+          forEach (m in list)
+            candidates.available.add( m )
+          endForEach
+        endIf
+      endIf
+
       if (suppress_inherited and is_initializer)
         # Object constructor.  Also add global create() methods.
         list = type_context.global_method_lookup_by_name[ "create" ]
@@ -574,6 +583,17 @@ class Scope
           param_type.organize
           if (param_type is Program.type_Object and arg_type.has_method_named("to_"+param_type.name))
             args[0] = args[0].cast_to( param_type, this )
+            return m
+          endIf
+        endForEach
+
+        # 4. Try candidate(arg) -> candidate(arg->Value)
+        forEach (m in candidates.available)
+          local arg_type = args.first.type
+          local param_type = m.parameters.first.type
+          param_type.organize
+          if (param_type is Program.type_String and arg_type.has_method_named("to_Value"))
+            args[0] = args[0].cast_to( Program.type_Value, this )
             return m
           endIf
         endForEach

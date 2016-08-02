@@ -1222,7 +1222,7 @@ class CPPWriter
 
       return this
 
-    method print_native_code( t:Token, type_context:Type, method_context:Method, code:String, result_type=null:Type )->this
+    method print_native_code( t:Token, type_context:Type, method_context:Method, locals:Local[], code:String, result_type=null:Type )->this
       # $a is a convenience for $(a) with the latter being more flexible
       #
       # $local_var_name
@@ -1257,7 +1257,7 @@ class CPPWriter
             line = line.from( i2 )
           endIf
 
-          print_native_marker( t, type_context, method_context, name )
+          print_native_marker( t, type_context, method_context, locals, name )
 
           marker = line.locate( '$' )
         endWhile
@@ -1271,7 +1271,7 @@ class CPPWriter
       endForEach
       return this
 
-    method print_native_marker( t:Token, type_context:Type, method_context:Method, name:String )->this
+    method print_native_marker( t:Token, type_context:Type, method_context:Method, locals:Local[], name:String )->this
       # name:$(this.type) -> name:this, operation:type
       local operation = name.after_first( '.' )
       name = name.before_first( '.' )
@@ -1314,8 +1314,8 @@ class CPPWriter
             throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
           endIf
 
-          if (method_context)
-            forEach (v in method_context.locals)
+          if (method_context and locals)
+            forEach (v in locals step -1)
               if (v.name == name)
                 print_native_code_marker_value( t, name, operation, v.cpp_name, v.type )
                 escapeWhich
@@ -1559,7 +1559,7 @@ augment Type
               writer.print( p.type ).print(",").print( p.cpp_name )
               writer.print( ");")
             elseIf (p.is_native)
-              writer.print_native_code( p.t, this, null, p.name )
+              writer.print_native_code( p.t, this, null, null, p.name )
             else
               writer.print( p.type ).print(" ").print( p.cpp_name ).println(";")
             endIf
@@ -2650,7 +2650,7 @@ augment CmdCallInlineNative
         if (param)
           args[ param.index ].write_cpp( writer )
         elseIf (name)
-          writer.print_native_marker( t, method_info.type_context, method_info, name )
+          writer.print_native_marker( t, method_info.type_context, method_info, null, name )
         endIf
 
         dollar = st.locate('$')
@@ -3087,7 +3087,7 @@ augment CmdInlineNative
         case  1: writer.print( "++" )
       endWhich
 
-      writer.print_native_code( t, this_method.type_context, this_method, code, result_type )
+      writer.print_native_code( t, this_method.type_context, this_method, local_list, code, result_type )
       if (adjust_delta) writer.println( ";" ); return
 
       if (code.contains('\n') or not result_type) writer.println

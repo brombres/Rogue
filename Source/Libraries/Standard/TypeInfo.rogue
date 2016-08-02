@@ -9,10 +9,10 @@ class TypeInfo [requisite]
     method init( index, name ) [requisite]
 
     method add_global_property_info( global_property_name_index:Int32, global_property_type_index:Int32 ) [requisite]
-      global_properties.add( PropertyInfo(global_property_name_index, global_property_type_index) )
+      global_properties.add( PropertyInfo(global_properties.count,global_property_name_index, global_property_type_index) )
 
     method add_property_info( property_name_index:Int32, property_type_index:Int32 ) [requisite]
-      properties.add( PropertyInfo(property_name_index, property_type_index) )
+      properties.add( PropertyInfo(properties.count,property_name_index, property_type_index) )
 
     method create_object->Object
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
@@ -42,23 +42,39 @@ class TypeInfo [requisite]
       # Convenience method to provide symmetric interface with per-object `property_name` methods.
       return global_properties[ global_property_index ].name
 
+    method global_property_info( property_name:String )->PropertyInfo
+      forEach (i in 0..<global_property_count)
+        if (global_properties[i].name == property_name)
+          return global_properties[ i ]
+        endIf
+      endForEach
+      return null
+
     method is_aspect->Logical
-      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_ASPECT" )->Logical
+      return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_ASPECT" )->Logical
 
     method is_class->Logical
-      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_CLASS" )->Logical
+      return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS" )->Logical
 
     method is_compound->Logical
-      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_COMPOUND" )->Logical
+      return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND" )->Logical
 
     method is_direct->Logical
       return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT" )->Logical
 
     method is_primitive->Logical
-      return native( "Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_PRIMITIVE" )->Logical
+      return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_PRIMITIVE" )->Logical
 
     method is_reference->Logical
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
+
+    method property_info( property_name:String )->PropertyInfo
+      forEach (i in 0..<properties.count)
+        if (properties[i].name == property_name)
+          return properties[ i ]
+        endIf
+      endForEach
+      return null
 
     method set_global_property<<$PropertyType>>( property_name:String, value:$PropertyType )->this
       forEach (i in 0..<global_property_count)
@@ -80,11 +96,12 @@ endClass
 
 class PropertyInfo
   PROPERTIES
+    index               : Int32
     property_name_index : Int32
     property_type_index : Int32
 
   METHODS
-    method init( property_name_index, property_type_index )
+    method init( index, property_name_index, property_type_index )
 
     method name->String
       return Runtime.literal_string( property_name_index )

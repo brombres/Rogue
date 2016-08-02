@@ -73,6 +73,9 @@ class Real64 [primitive]
         native "return *((RogueInt64*)&$this);"
       $endIf
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Real64>>( this )
+
     method is_finite->Logical
       return (this == this) and (this - this == 0)
 
@@ -113,6 +116,9 @@ class Real64 [primitive]
 
     method to->String
       return "" + this
+
+    method to->Value
+      return Value( this )
 
     method to_power_of_two->Real64
       return this->Int64.to_power_of_two->Real64
@@ -182,6 +188,9 @@ class Real32 [primitive]
         native "return *((RogueInt32*)&$this);"
       $endIf
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Real32>>( this )
+
     method is_finite->Logical
       return (this == this) and (this - this == 0)
 
@@ -222,6 +231,9 @@ class Real32 [primitive]
 
     method to->String
       return "" + this
+
+    method to->Value
+      return Value( this )
 
     method to_power_of_two->Real32
       return this->Int64.to_power_of_two->Real32
@@ -278,6 +290,9 @@ class Int64 [primitive]
     method hash_code->Int32
       return this
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Int64>>( this )
+
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
@@ -317,6 +332,9 @@ class Int64 [primitive]
       if (octal)  return to_octal_string( select{digits||22} )
       if (binary) return to_binary_string( select{digits||64} )
       return this
+
+    method to->Value
+      return Value( Real64(this) )
 
     method to_digit->Character [macro]
       (this->Int32).to_digit
@@ -381,6 +399,9 @@ class Int32 [primitive]
     method hash_code->Int32
       return this
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Int32>>( this )
+
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
@@ -407,6 +428,9 @@ class Int32 [primitive]
       if (octal)  return to_octal_string( select{digits||11} )
       if (binary) return to_binary_string( select{digits||32} )
       return this
+
+    method to->Value
+      return Value( this )
 
     method to_digit->Character
       if (this >= 0 and this <= 9)   return (this + '0')->Character
@@ -477,6 +501,9 @@ class Character [primitive]
     method hash_code->Int32
       return this->Int32
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Character>>( this )
+
     method is_alphanumeric->Logical
       return (this >= '0' and this <= '9') or
              (this >= 'a' and this <= 'z') or
@@ -512,6 +539,9 @@ class Character [primitive]
 
     method to->String
       return "" + this
+
+    method to->Value
+      return Value( this->String )
 
     method to->String( &digits=0, &hex, &octal, &binary )
       if (hex)    return to_hex_string( select{digits||4} )
@@ -574,6 +604,9 @@ class Byte [primitive]
     method hash_code->Int32
       return this->Int32
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Byte>>( this )
+
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
@@ -601,6 +634,9 @@ class Byte [primitive]
       if (octal)  return to_octal_string( select{digits||3} )
       if (binary) return to_binary_string( select{digits||8} )
       return this
+
+    method to->Value
+      return Value( this->Int32 )
 
     method to_binary_string( digits=8:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
@@ -644,10 +680,16 @@ class Logical [primitive]
       if (this) return 1
       else      return 0
 
+    method introspector->Introspector
+      return ValueTypeIntrospector<<Logical>>( this )
+
     method to->Object
       return Boxed<<Logical>>(this)
 
     method to->String
       return "" + this
+
+    method to->Value
+      return Value( this )
 endClass
 

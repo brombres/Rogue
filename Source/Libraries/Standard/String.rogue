@@ -611,6 +611,9 @@ class String
     method to->String
       return this
 
+    method to->Value
+      return Value( this )
+
     method to_lowercase->String
       local has_uc = false
       forEach (ch in this)
