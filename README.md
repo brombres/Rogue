@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.0.90 - August 4, 2016
 - [API] Console I/O now goes through `Console.io_handler`.  In addition to the default `BlockingConsoleIOHandler` there is also an `ImmediateConsoleIOHandler` you can instantiate and install - or you can extend your own `ConsoleIOHandler`.
 - [API] Renamed the Value system's `NullResult` to `UndefinedValue`.
+- [Syntax] Fixed `skipIteration` (a briefly considered alternative) to be `nextIteration` in the Vim and Sublime syntax files.
 
 ###v1.0.89 - August 2, 2016
 - [API] For GC safety, introspectors now retain references to objects they were created from (instead of only having the raw memory address).
