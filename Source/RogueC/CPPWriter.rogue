@@ -1746,7 +1746,7 @@ augment Type
       forEach (i in 0..i2)
         local m = method_list[i]
         if (not m.is_macro)
-          if (m.is_dynamic and m.is_used)
+          if (m.is_dynamic and m.is_used and not m.is_abstract)
             # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
           else

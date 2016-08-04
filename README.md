@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.90 - August 4, 2016
+- [API] Console I/O now goes through `Console.io_handler`.  In addition to the default `BlockingConsoleIOHandler` there is also an `ImmediateConsoleIOHandler` you can instantiate and install - or you can extend your own `ConsoleIOHandler`.
+- [API] Renamed the Value system's `NullResult` to `UndefinedValue`.
+
 ###v1.0.89 - August 2, 2016
 - [API] For GC safety, introspectors now retain references to objects they were created from (instead of only having the raw memory address).
 - [API] Value types now have two kinds of null Value.  `NullValue` is what is stored when a `null` is stored, retrieved, or parsed and its `to->String` is `"null"`.  `NullResult` extends `NullValue`, is what is returned when an element cannot be found, and its `to->String` is `""`.

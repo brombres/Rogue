@@ -1,4 +1,8 @@
 class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
+  DEPENDENCIES
+    nativeHeader #include <termios.h>
+    nativeHeader #include <unistd.h>
+
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
@@ -13,14 +17,73 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
               |return RogueString_create_from_utf8( st, len );
 
   PROPERTIES
-    output_buffer   = StringBuilder()
-    input_buffer    = StringBuilder()
-    next_input_byte : Int32?
+    output_buffer     = StringBuilder()
+    input_buffer      = StringBuilder()
+    next_input_byte   : Int32?
+    io_handler        : ConsoleIOHandler
+
+    native "termios original_terminal_settings;"
+
+  METHODS
+    method init
+      native @|tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+
+      on_exit( function with (console=this)
+        native @|tcsetattr( STDIN_FILENO, TCSANOW, &$console->original_terminal_settings );
+      endFunction )
+
+      io_handler = BlockingConsoleIOHandler()
+
+    method has_another->Logical
+      return io_handler.has_another
+
+    method peek->Byte
+      return io_handler.peek
+
+    method read->Byte
+      return io_handler.read
+
+    method read_line->String
+      input_buffer.clear
+      forEach (byte in this)
+        if (byte == 10) escapeForEach
+        input_buffer.write( byte )
+      endForEach
+      return input_buffer->String
+
+    method write( value:String )->this
+      io_handler.write( value )
+      return this
+
+    method write( buffer:StringBuilder )->this
+      io_handler.write( buffer.utf8.data, buffer.utf8.count )
+      return this
+
+endClass
+
+class ConsoleIOHandler [abstract]
+  METHODS
+    method has_another->Logical                      [abstract]
+    method peek->Byte                                [abstract]
+    method read->Byte                                [abstract]
+    method write( value:String )                     [abstract]
+    method write( bytes:Array<<Byte>>, count:Int32 ) [abstract]
+endClass
+
+class BlockingConsoleIOHandler : ConsoleIOHandler
+  PROPERTIES
+    next_input_byte   : Int32?
 
   METHODS
     method has_another->Logical
-      if (not next_input_byte.exists) next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
-      return (next_input_byte.value != -1)
+      if (not next_input_byte.exists)
+        next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
+        if (next_input_byte.value == -1)
+          native @|clearerr( stdin );
+          next_input_byte = null
+        endIf
+      endIf
+      return next_input_byte.exists
 
     method peek->Byte
       if (has_another) return next_input_byte.value
@@ -32,38 +95,61 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       next_input_byte = null
       return result
 
-    method read_line->String
-      input_buffer.clear
-      forEach (byte in this)
-        if (byte == 10) escapeForEach
-        input_buffer.write( byte )
-      endForEach
-      return input_buffer->String
+    method write( value:String )
+      native @|fwrite( $value->utf8, 1, $count, stdout );
 
-    method write( characters:Character[] )->this
-      native_print( characters )
-      return this
+    method write( bytes:Array<<Byte>>, count:Int32 )
+      native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
+endClass
 
-    method write( value:String )->this
-      native_print( value )
-      return this
+class ImmediateConsoleIOHandler : ConsoleIOHandler
+  DEPENDENCIES
+    nativeHeader #include <poll.h>
 
-    method write( buffer:StringBuilder )->this
-      native_print( buffer )
-      return this
+  PROPERTIES
+    next_input_byte   : Int32?
 
-    $if ("C++")
-    method native_print( utf8:Byte[] ) [macro]
-      native 'RogueString_print_utf8( $utf8->data->as_bytes, $utf8->count )'
+  METHODS
+    method init
+      native @|termios new_settings;
+              |tcgetattr( STDIN_FILENO, &new_settings );
+              |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
+              |new_settings.c_cc[VMIN] = 0;
+              |new_settings.c_cc[VTIME] = 0;
+              |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
 
-    method native_print( characters:Character[] ) [macro]
-      native 'RogueString_print_characters( $characters->data->as_characters, $characters->count )'
+    method has_another->Logical
+      if (not next_input_byte.exists)
+        native @|pollfd file_descriptors[1];
+                |file_descriptors[0].fd = STDIN_FILENO;
+                |file_descriptors[0].events = POLLIN;
+                |fflush( stdin );
+        if (native("poll(file_descriptors,1,0)")->Logical)
+          next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
+          if (next_input_byte.value == -1)
+            native @|clearerr( stdin );
+            next_input_byte = null
+          endIf
+        endIf
+      endIf
+      return next_input_byte.exists
 
-    method native_print( value:String ) [macro]
-      native 'RogueString_print_string( $value )'
+    method peek->Byte
+      if (has_another) return next_input_byte.value
+      else             return 0
 
-    method native_print( value:StringBuilder ) [macro]
-      native 'RogueString_print_utf8( $value->utf8->data->as_bytes, $value->utf8->count )'
-    $endIf
+    method read->Byte
+      if (not has_another) return 0
+      local result = next_input_byte.value
+      next_input_byte = null
+      return result
+
+    method write( value:String )
+      native @|fwrite( $value->utf8, 1, $count, stdout );
+              |fflush( stdout );
+
+    method write( bytes:Array<<Byte>>, count:Int32 )
+      native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
+              |fflush( stdout );
 endClass
 

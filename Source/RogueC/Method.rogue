@@ -213,7 +213,9 @@ class Method
       return this
 
     method omit_output->Logical
-      return is_native or is_macro or not is_used or (is_generated and name=="create" and type_context.is_compound)
+      return is_native or is_macro or not is_used or ...
+         (is_abstract and not type_context.is_aspect) or ...
+         (is_generated and name=="create" and type_context.is_compound)
 
     method organize( scope=null:Scope, add_to_lookup=true:Logical )->Method
       if (organized) return this

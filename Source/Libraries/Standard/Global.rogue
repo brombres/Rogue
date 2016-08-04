@@ -2,7 +2,7 @@ class Global : PrintWriter<<global_output_buffer>> [requisite singleton]
   PROPERTIES
     standard_output = Console : PrintWriter
     global_output_buffer      = StringBuilder()
-    exit_functions = Function()[]
+    exit_functions : Function()[]
 
   METHODS
     method init
@@ -14,15 +14,18 @@ class Global : PrintWriter<<global_output_buffer>> [requisite singleton]
 
       # Ensure these functions won't be called multiple times
       local functions = exit_functions
-      exit_functions = Function()[]
+      exit_functions = null
 
-      forEach (fn in functions) fn()
+      if (functions)
+        forEach (fn in functions) fn()
+      endIf
 
     method on_exit( fn:Function() )
+      ensure exit_functions
       exit_functions.add( fn )
 
     method write( buffer:StringBuilder )->this
-      standard_output.write( buffer )
+      standard_output.write( buffer ).flush
       return this
 endClass
 

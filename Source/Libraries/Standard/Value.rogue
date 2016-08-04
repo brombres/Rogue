@@ -69,13 +69,13 @@ class Value
       return @{}
 
     method first->Value
-      return NullResult
+      return UndefinedValue
 
     method get( index:Int32 )->Value
-      return NullResult
+      return UndefinedValue
 
     method get( key:String )->Value
-      return NullResult
+      return UndefinedValue
 
     method is_collection->Logical
       return false
@@ -119,7 +119,7 @@ class Value
       return false
 
     method last->Value
-      return NullResult
+      return UndefinedValue
 
     method operator==( other:Value )->Logical
       return this is other
@@ -224,16 +224,16 @@ class Value
       return value
 
     method remove( key:String )->Value
-      return NullResult
+      return UndefinedValue
 
     method remove_at( index:Int32 )->Value
-      return NullResult
+      return UndefinedValue
 
     method remove_first->Value
-      return NullResult
+      return UndefinedValue
 
     method remove_last->Value
-      return NullResult
+      return UndefinedValue
 
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
@@ -349,7 +349,7 @@ class NullValue : Value [singleton]
       return buffer.print( "null" )
 endClass
 
-class NullResult : NullValue [singleton]
+class UndefinedValue : NullValue [singleton]
   METHODS
     method to->String
       return ""
@@ -626,8 +626,8 @@ class ValueList : Value
       return this.get(0)
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= values.count) return NullResult
-      return select{ values[index] || NullResult }
+      if (index < 0 or index >= values.count) return UndefinedValue
+      return select{ values[index] || UndefinedValue }
 
     method is_collection->Logical
       return true
@@ -754,11 +754,11 @@ class ValueTable : Value
       return table
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= count) return NullResult
-      return select{ values[ keys[index] ] || NullResult }
+      if (index < 0 or index >= count) return UndefinedValue
+      return select{ values[ keys[index] ] || UndefinedValue }
 
     method get( key:String )->Value
-      return select{ values[ key ] || NullResult }
+      return select{ values[ key ] || UndefinedValue }
 
     method is_collection->Logical
       return true
@@ -773,7 +773,7 @@ class ValueTable : Value
       return values.remove( key )
 
     method remove_at( index:Int32 )->Value
-      if (index < 0 or index >= count) return NullResult
+      if (index < 0 or index >= count) return UndefinedValue
       return values.remove( values.keys[index] )
 
     method set( key:String, new_value:Value )->this

@@ -849,7 +849,7 @@ class Type
       if (is_abstract or is_aspect) return
       forEach (m in list)
         if (m.is_abstract)
-          throw t.error( "Class $ does not supply a concrete definition for abstract method $." (name,m.signature) )
+          throw t.error( "Class $ does not supply a concrete definition for abstract method $.  Either mark the class [abstract] or define the method." (name,m.signature) )
         endIf
       endForEach
 
