@@ -184,12 +184,30 @@ class List<<$DataType>> : GenericList
       return this.data[ count - 1 ]
 
     method locate( value:$DataType )->Int32?
+      if ($DataType isReference)
+        if (value is null)
+          forEach (i of this)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
       forEach (i of this)
         if (value == this[i]) return i
       endForEach
       return null
 
     method locate_last( value:$DataType )->Int32?
+      if ($DataType isReference)
+        if (value is null)
+          forEach (i of this step -1)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
       forEach (i of this step -1)
         if (value == this[i]) return i
       endForEach
