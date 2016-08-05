@@ -48,6 +48,9 @@ class List<<$DataType>> : GenericList
       if (not data) return 0
       return data.count
 
+    method is_empty->Logical
+      return count == 0
+
     method clear->this
       discard_from( 0 )
       return this
@@ -181,12 +184,30 @@ class List<<$DataType>> : GenericList
       return this.data[ count - 1 ]
 
     method locate( value:$DataType )->Int32?
+      if ($DataType isReference)
+        if (value is null)
+          forEach (i of this)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
       forEach (i of this)
         if (value == this[i]) return i
       endForEach
       return null
 
     method locate_last( value:$DataType )->Int32?
+      if ($DataType isReference)
+        if (value is null)
+          forEach (i of this step -1)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
       forEach (i of this step -1)
         if (value == this[i]) return i
       endForEach
@@ -410,6 +431,23 @@ class List<<$DataType>> : GenericList
 
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
+
+$if ("Cython")
+    method _get_element( index:Int32 )->$DataType [requisite]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      return get(index)
+
+    method _set_element( index:Int32, new_value:$DataType ) [requisite]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      set(index, new_value)
+
+    method _get_base_address()->PointerInt [requisite]
+      return native("&($this->data->as_bytes)")->PointerInt
+$endIf
 endClass
 
 class ListReader<<$DataType>> : Reader<<$DataType>>

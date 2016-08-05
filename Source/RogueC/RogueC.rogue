@@ -3,6 +3,7 @@ $define RELEASE_DATE    "August 5, 2016"
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
+$include "CythonPlugin.rogue"
 $include "CloneArgs.rogue"
 $include "Cmd.rogue"
 #$include "JavaWriter.rogue"
@@ -53,6 +54,9 @@ class RogueC [singleton]
 
     all_requisite = false
     # If true everything is requisite
+
+    all_api = false
+    # If true everything is marked as an API
 
     requisite_files        = Set<<String>>()
     # Everything in these files will be requisite
@@ -167,6 +171,9 @@ class RogueC [singleton]
                    |  --requisite-file[=file.rogue]
                    |    With an argument, makes the entire file requisite.  With no argument,
                    |    all files explicitly listed on the commandline become requisite.
+                   |
+                   |  --api
+                   |    Mark everything as an API.
                    |
                    |  --target=
 
@@ -410,6 +417,13 @@ class RogueC [singleton]
                 throw RogueError( ''Java package name expected after "--package=" (e.g. "com.developer.app").'' )
               endIf
               package_name = value
+
+            case "--api"
+              if (value.count)
+                throw RogueError( ''"--api" takes no arguments'' )
+              else
+                all_api = true
+              endIf
 
             case "--requisite"
               if (value.count)

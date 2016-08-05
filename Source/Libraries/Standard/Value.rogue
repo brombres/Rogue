@@ -341,6 +341,11 @@ class Value
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer
+
+$if ("Cython")
+    method _get_element( index:Int32 )->Value [requisite]
+      throw Error("This Value is not indexable")
+$endIf
 endClass
 
 class NullValue : Value [singleton]
@@ -754,6 +759,14 @@ class ValueList : Value
       buffer.print( ']' )
       return buffer
 
+$if ("Cython")
+    method _get_element( index:Int32 )->Value [requisite]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      return get(index)
+$endIf
+
     GLOBAL METHODS
       method load( file:File )->ValueList
         if (not file or not file.exists) return ValueList()
@@ -923,6 +936,17 @@ class ValueTable : Value
       buffer.print( '}' )
       return buffer
 
+$if ("Cython")
+    method _get_element( index:Int32 )->Value [requisite]
+      if (index < 0 or index >= count)
+        throw Error("Index out of range")
+      endIf
+      return get(index)
+
+    method _get_element( key:String )->Value [requisite]
+      return get(key)
+$endIf
+
     GLOBAL METHODS
       method load( file:File )->ValueTable
         if (not file or not file.exists) return ValueTable()
@@ -931,4 +955,3 @@ class ValueTable : Value
       method parse( json:String )->ValueTable
         return JSON.parse_table( json )
 endClass
-

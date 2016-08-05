@@ -96,7 +96,7 @@ class BlockingConsoleIOHandler : ConsoleIOHandler
       return result
 
     method write( value:String )
-      native @|fwrite( $value->utf8, 1, $count, stdout );
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
 
     method write( bytes:Array<<Byte>>, count:Int32 )
       native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
@@ -145,7 +145,7 @@ class ImmediateConsoleIOHandler : ConsoleIOHandler
       return result
 
     method write( value:String )
-      native @|fwrite( $value->utf8, 1, $count, stdout );
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
               |fflush( stdout );
 
     method write( bytes:Array<<Byte>>, count:Int32 )
