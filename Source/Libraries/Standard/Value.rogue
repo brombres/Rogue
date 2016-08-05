@@ -71,10 +71,16 @@ class Value
     method first->Value
       return UndefinedValue
 
+    method first( match_fn:Function(Value)->Logical )->Value
+      return UndefinedValue
+
     method get( index:Int32 )->Value
       return UndefinedValue
 
     method get( key:String )->Value
+      return UndefinedValue
+
+    method get( match_fn:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method is_collection->Logical
@@ -118,7 +124,16 @@ class Value
     method is_table->Logical
       return false
 
+    method keys->String[]
+      return String[]
+
+    method keys( match_fn:Function(Value)->Logical )->String[]
+      return String[]
+
     method last->Value
+      return UndefinedValue
+
+    method last( match_fn:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method operator==( other:Value )->Logical
@@ -224,6 +239,9 @@ class Value
       return value
 
     method remove( key:String )->Value
+      return UndefinedValue
+
+    method remove( remove_if:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method remove_at( index:Int32 )->Value
@@ -482,6 +500,13 @@ class StringValue( value:String ) : Value
     empty_string = StringValue( "" )
 
   METHODS
+    method count->Int32
+      return value.count
+
+    method get( index:Int32 )->Value
+      if (index < 0 or index >= value.count) return UndefinedValue
+      return Value( ""+value[index] )
+
     method is_string->Logical
       return true
 
@@ -625,9 +650,26 @@ class ValueList : Value
     method first->Value
       return this.get(0)
 
+    method first( match_fn:Function(Value)->Logical )->Value
+      forEach (v in values)
+        if (match_fn(v)) return v
+      endForEach
+      return UndefinedValue
+
     method get( index:Int32 )->Value
       if (index < 0 or index >= values.count) return UndefinedValue
       return select{ values[index] || UndefinedValue }
+
+    method get( match_fn:Function(Value)->Logical )->Value
+      local results : ValueList
+      forEach (value in this)
+        if (match_fn(value))
+          ensure results
+          results.add( value )
+        endIf
+      endForEach
+      if (results) return results
+      else         return UndefinedValue
 
     method is_collection->Logical
       return true
@@ -638,8 +680,21 @@ class ValueList : Value
     method last->Value
       return this.get( values.count - 1 )
 
+    method last( match_fn:Function(Value)->Logical )->Value
+      forEach (v in values step -1)
+        if (match_fn(v)) return v
+      endForEach
+      return UndefinedValue
+
     method remove( value:Value )->Value
       return values.remove( value )
+
+    method remove( remove_if:Function(Value)->Logical )->Value
+      local results = this[ remove_if ]
+      if (not results) return results
+
+      forEach (v in results) remove( v )
+      return results
 
     method remove_at( index:Int32 )->Value
       return values.remove_at( index )
@@ -753,6 +808,13 @@ class ValueTable : Value
       this[ key ] = table
       return table
 
+    method first( match_fn:Function(Value)->Logical )->Value
+      forEach (key in keys)
+        local v = this[ key ]
+        if (match_fn(v)) return v
+      endForEach
+      return UndefinedValue
+
     method get( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
       return select{ values[ keys[index] ] || UndefinedValue }
@@ -760,17 +822,61 @@ class ValueTable : Value
     method get( key:String )->Value
       return select{ values[ key ] || UndefinedValue }
 
+    method get( match_fn:Function(Value)->Logical )->Value
+      local results : ValueList
+      forEach (key in keys)
+        local value = this[key]
+        if (match_fn(value))
+          ensure results
+          results.add( value )
+        endIf
+      endForEach
+      if (results) return results
+      else         return UndefinedValue
+
     method is_collection->Logical
       return true
 
     method is_table->Logical
       return true
 
-    method keys->String[] [macro]
-      this.values.keys
+    method keys->String[]
+      return values.keys
+
+    method keys( match_fn:Function(Value)->Logical )->String[]
+      local results = String[]
+      forEach (key in keys)
+        if (match_fn(this[key])) results.add( key )
+      endForEach
+      return results
+
+    method last( match_fn:Function(Value)->Logical )->Value
+      forEach (key in keys step -1)
+        local v = this[ key ]
+        if (match_fn(v)) return v
+      endForEach
+      return UndefinedValue
 
     method remove( key:String )->Value
       return values.remove( key )
+
+    method remove( remove_if:Function(Value)->Logical )->Value
+      local remove_keys : String[]
+      local results : @[]
+
+      forEach (key in keys)
+        local v = this[ key ]
+        if (remove_if(v))
+          ensure results
+          ensure remove_keys
+          remove_keys.add( key )
+          results.add( v )
+        endIf
+      endForEach
+
+      if (not remove_keys) return UndefinedValue
+      forEach (key in remove_keys) remove( key )
+      return results
 
     method remove_at( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue

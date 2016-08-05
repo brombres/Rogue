@@ -27,6 +27,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.90 - August 4, 2016
+- [API] Added `Value.get(Function(Value)->Logical)->Value`.  Example: `local teens = people[function(p)=>(p//age>=13 and p//age<=19)]`.
+- [API] Added `Value.remove(Function(Value)->Logical)->Value`.  Example: `local teens = people.remove( function(p)=>(p//age>=13 and p//age<=19) )`.
+- [API] Added `Value.keys(Function(Value)->Logical)->String[]`.  Example: `local teen_ids = people.keys( function(p)=>(p//age>=13 and p//age<=19) )`.
+- [API] Added `Value.first(Function(Value)->Logical)->Value`.  Example: `local first_teen = people.first( function(p)=>(p//age>=13 and p//age<=19) )`.
+- [API] Added `Value.last(Function(Value)->Logical)->Value`.  Example: `local last_teen = people.last( function(p)=>(p//age>=13 and p//age<=19) )`.
 - [API] Console I/O now goes through `Console.io_handler`.  In addition to the default `BlockingConsoleIOHandler` there is also an `ImmediateConsoleIOHandler` you can instantiate and install - or you can extend your own `ConsoleIOHandler`.
 - [API] Renamed the Value system's `NullResult` to `UndefinedValue`.
 - [Syntax] Fixed `skipIteration` (a briefly considered alternative) to be `nextIteration` in the Vim and Sublime syntax files.
