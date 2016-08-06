@@ -4479,7 +4479,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
         forEach (p in m.parameters) parameter_types.add( p.type )
       endIf
 
-      local callback_type_name = context_type.name + "::" + name + Program.get_callback_type_signature(parameter_types)
+      local callback_type_name = context_type.name + "." + name + Program.get_callback_type_signature(parameter_types)
       local callback_type = Program.get_type_reference( t, callback_type_name )
 
       if (not callback_type.defined)

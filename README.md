@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.91 - August 6, 2016
+- [Rogue] Generic functions can now omit the keyword 'function' for brevity and begin with `(args)=>`, `()=>`, or even just `=>`.  For example: `trace [3,1,5,4,2].sort( (a,b)=>(a<b) )`.
+
+
 ###v1.0.90 - August 6, 2016
 - [Rogue]  Renamed `[requisite]` to `[essential]`.
 - [RogueC] Added Python plug-in functionality from Murphy McCauley with `Cython` compile target.

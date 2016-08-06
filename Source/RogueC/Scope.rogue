@@ -653,7 +653,12 @@ class CandidateMethods
           if (access.args)
             forEach (arg in access.args)
               if (printed_arg) call_sig_buffer.print(',')
-              call_sig_buffer.print( arg.require_type.name )
+              local arg_type = arg.require_type
+              while (arg_type.name.begins_with("Function_") and arg_type.base_class)
+                # TODO: FIXME if and when .is_function gets set to true on all extended function types
+                arg_type = arg_type.base_class
+              endWhile
+              call_sig_buffer.print( arg_type.name )
               printed_arg = true
             endForEach
           endIf
