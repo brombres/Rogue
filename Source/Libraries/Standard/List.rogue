@@ -385,7 +385,7 @@ class List<<$DataType>> : GenericList
       return this.quicksort( compare_fn )
 
     method sorted( compare_fn:Function($DataType,$DataType)->Logical )->$DataType[]
-      return cloned.sorted( compare_fn )
+      return cloned.sort( compare_fn )
 
     method subset( i1:Int32 )->$DataType[]
       return subset( i1, count-i1 )

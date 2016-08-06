@@ -349,28 +349,24 @@ class Program [requisite singleton]
       type_GenericList.resolve
       type_String.resolve
 
-      if (RogueC.all_requisite)
-        forEach (t in type_lookup)
-          t.configure
-          forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
-          forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
-        endForEach
-        forEach (templ in template_list)
-          if (not templ.type_parameters)
-            local t = get_type_reference( templ.t, templ.name )
-            t.configure
-            forEach (r in t.global_method_list) r.attributes.add( Attribute.is_requisite )
-            forEach (m in t.method_list)  m.attributes.add( Attribute.is_requisite )
-          endIf
-        endForEach
-      endIf
-
       local types_resolved = false
       while (not types_resolved)
+        if (RogueC.all_requisite)
+          forEach (t in type_lookup) t.configure
+        endIf
+
         # Reference and resolve all requisite type templates
         forEach (templ in template_list)
           if (RogueC.all_api)
             templ.attributes.add( Attribute.is_api )
+          endIf
+          if (RogueC.all_requisite)
+            templ.attributes.add( Attribute.is_api )
+            templ.attributes.add( Attribute.is_requisite )
+            if (not templ.type_parameters)
+              local t = get_type_reference( templ.t, templ.name )
+              t.configure
+            endIf
           endIf
           if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
             get_type_reference( templ.t, templ.name ).resolve

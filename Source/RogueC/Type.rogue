@@ -348,6 +348,11 @@ class Type
       index = Program.type_list.count
       Program.type_list.add( this )
 
+      if (RogueC.all_requisite)
+        attributes.add( Attribute.is_api )
+        attributes.add( Attribute.is_requisite )
+      endIf
+
       if (not defined)
         defined = true
         local template = Program.find_template( name )

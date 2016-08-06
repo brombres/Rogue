@@ -436,6 +436,7 @@ class RogueC [singleton]
                 requisite_declarations.add( value.split(',') )
               else
                 all_requisite = true
+                all_api = true
               endIf
 
             case "--requisite-file"
