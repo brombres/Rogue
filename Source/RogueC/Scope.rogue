@@ -635,12 +635,17 @@ class CandidateMethods
 
         if (available.count == 0)
           if (not error_on_fail) return false
+          local scope_type = type_context
+          while (scope_type.name.begins_with("Function_") and scope_type.base_class)
+            # TODO: FIXME if and when .is_function gets set to true on all extended function types
+            scope_type = scope_type.base_class
+          endWhile
           if (access.name.begins_with("set_"))
             local base_name = access.name.after_first( "set_" )
             throw access.t.error( ''No such variable "$" or method "$" exists in current scope of type $.''...
-                (base_name,access.name,type_context) )
+              (base_name,access.name,scope_type) )
           else
-            throw access.t.error( ''No such method or variable "$" exists in current scope of type $.'' (access.name,type_context) )
+            throw access.t.error( ''No such method or variable "$" exists in current scope of type $.'' (access.name,scope_type) )
           endIf
 
         elseIf (require_compatible)

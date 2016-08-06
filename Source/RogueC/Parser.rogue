@@ -2519,6 +2519,7 @@ class Parser
           sufficient (next_is(TokenType.symbol_comma))
           must_consume( TokenType.symbol_close_paren )
 
+          sufficient (next_is(TokenType.keyword_with))
           sufficient (next_is(TokenType.symbol_fat_arrow))
 
           return result
