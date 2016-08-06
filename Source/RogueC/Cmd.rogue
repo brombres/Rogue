@@ -2867,10 +2867,10 @@ class CmdLogicalize : CmdUnary
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
-      local operand_type = operand.require_type
+      local operand_type = operand.require_type.organize
       if (operand_type.is_optional)
         return CmdAccess( t, operand, "exists" ).resolve( scope )
-      elseIf (operand_type.has_method_named("operator?"))
+      elseIf (operand_type.has_global_method_named("operator?"))
         return CmdAccess( t, CmdAccess(t,operand_type.name),
           "operator?", CmdArgs(operand) ).resolve( scope, &ignore_question_mark )
       else

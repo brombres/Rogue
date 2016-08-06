@@ -31,6 +31,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [RogueC] Added Python plug-in functionality from Murphy McCauley with `Cython` compile target.
 - [RogueC] Added `--exhaustive` option which makes all classes and methods `requisite`.
 - [RogueC] Added `--api` option which adds the `[api]` attribute to every class - if the class is used then all methods are resolved generated even if unused.
+- [RogueC] Fixed logicalize (`?`) to search for a *global method* rather than object method `operator?(operand)->Logical`.  `Type.has_method_named(String)` used to check both object and global methods but for some time now it only checks the former and `Type.has_global_method_named(String)` must be used to check the latter.
 - [API] Added `Value.get(Function(Value)->Logical)->Value`.  Example: `local teens = people[function(p)=>(p//age>=13 and p//age<=19)]`.
 - [API] Added `Value.remove(Function(Value)->Logical)->Value`.  Example: `local teens = people.remove( function(p)=>(p//age>=13 and p//age<=19) )`.
 - [API] Added `Value.keys(Function(Value)->Logical)->String[]`.  Example: `local teen_ids = people.keys( function(p)=>(p//age>=13 and p//age<=19) )`.
