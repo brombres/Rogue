@@ -42,7 +42,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `File.append_writer()`.
 - [API] `ConsoleIO.write(String)` bugfix.
 - [API] `List.locate(null)` is now handled properly
+- [API] `Error.format()->String` is now more cautious.
 - [Syntax] Fixed `skipIteration` (a briefly considered alternative) to be `nextIteration` in the Vim and Sublime syntax files.
+- [Syntax] Renamed `requisite` to `essential`.
 
 ###v1.0.89 - August 2, 2016
 - [API] For GC safety, introspectors now retain references to objects they were created from (instead of only having the raw memory address).
