@@ -6,6 +6,7 @@ class Local
     type          : Type
     index         : Int32
     initial_value : Cmd
+    is_modified   : Logical # set if ever assigned a new value
       # Also serves as default_value for parameters
 
   METHODS

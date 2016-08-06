@@ -1833,7 +1833,11 @@ augment Method
         forEach (param in parameters)
           if (first) writer.print( " " ); first = false
           else       writer.print( ", " )
-          writer.print( param.type ).print( " " ).print( param.cpp_name )
+          if (param.parameter_needs_gc)
+            writer.print( param.type ).print( " " ).print( param.parameter_cpp_name )
+          else
+            writer.print( param.type ).print( " " ).print( param.cpp_name )
+          endIf
         endForEach
       endIf
       if (not first) writer.print( " " )
@@ -1846,6 +1850,11 @@ augment Method
       writer.println
       writer.println "{"
       writer.indent += 2
+      forEach (param in parameters)
+        if (param.parameter_needs_gc)
+          writer.print("ROGUE_DEF_LOCAL_REF(").print(param.type).print(",").print(param.cpp_name).print(",").print(param.parameter_cpp_name).println(");")
+        endIf
+      endForEach
       if (type_context.is_aspect and not is_global)
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
@@ -1915,17 +1924,29 @@ endAugment
 #------------------------------------------------------------------------------
 augment Local
   PROPERTIES
-    _cpp_name     : String
+    _cpp_name           : String
+    _parameter_cpp_name : String
 
   METHODS
     method cloned( clone_args=null:CloneArgs )->Local
       <<init_result>>
       result._cpp_name = _cpp_name
+      result._parameter_cpp_name = _parameter_cpp_name
 
     method cpp_name->String
       if (not _cpp_name) _cpp_name = Program.validate_cpp_name( name + "_" + index );
       return _cpp_name
 
+    method parameter_cpp_name->String
+      if (not _parameter_cpp_name) _parameter_cpp_name = Program.create_unique_id
+      return _parameter_cpp_name
+
+    method parameter_needs_gc->Logical
+      #NOTE: We could always return false here if not in auto GC mode.  This
+      #      might be slightly more efficient (especially if there was no C++
+      #      optimization), but would mean that you couldn't switch GC mode
+      #      by just tweaking defines in the output .h file.
+      return is_modified and type.is_reference
 endAugment
 
 #------------------------------------------------------------------------------
