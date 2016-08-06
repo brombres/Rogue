@@ -25,9 +25,12 @@ class Exception [essential]
       return message
 
     method format->String [essential]
-      local st = stack_trace->String.trimmed
+      local st = stack_trace->String
+      if (st is null) st = "No stack trace"
+      st = st.trimmed
       if (st.count) st = "\n" + st
-      return "$$" (this, st)
+      local self = select{this is null:"Unknown" || this->String}
+      return "$$" (self, st)
 endClass
 
 class Error : Exception;
