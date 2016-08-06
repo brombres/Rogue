@@ -674,12 +674,8 @@ class ValueList : Value
         endIf
       endForEach
 
-      if (results)
-        if (results.count == 1) return results.first
-        else                    return results
-      else
-        return UndefinedValue
-      endIf
+      if (results) return results
+      else         return UndefinedValue
 
     method is_collection->Logical
       return true
@@ -850,12 +846,8 @@ class ValueTable : Value
         endIf
       endForEach
 
-      if (results)
-        if (results.count == 1) return results.first
-        else                    return results
-      else
-        return UndefinedValue
-      endIf
+      if (results) return results
+      else         return UndefinedValue
 
     method is_collection->Logical
       return true
