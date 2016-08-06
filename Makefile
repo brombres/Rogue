@@ -30,6 +30,15 @@ requisite: libraries
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
+api: libraries
+	@echo -------------------------------------------------------------------------------
+	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --api..."
+	@echo -------------------------------------------------------------------------------
+	cd Source/RogueC && mkdir -p Build
+	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --api $(ROGUEC_ROGUE_FLAGS)
+	mkdir -p Programs
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+
 roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/roguec
 
 touch_roguec:

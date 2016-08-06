@@ -27,6 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.90 - August 4, 2016
+- [RogueC] Added Python plug-in functionality from Murphy McCauley with `Cython` compile target.
 - [API] Added `Value.get(Function(Value)->Logical)->Value`.  Example: `local teens = people[function(p)=>(p//age>=13 and p//age<=19)]`.
 - [API] Added `Value.remove(Function(Value)->Logical)->Value`.  Example: `local teens = people.remove( function(p)=>(p//age>=13 and p//age<=19) )`.
 - [API] Added `Value.keys(Function(Value)->Logical)->String[]`.  Example: `local teen_ids = people.keys( function(p)=>(p//age>=13 and p//age<=19) )`.

@@ -12,6 +12,19 @@ TODO
 - Make more useful stuff requisite? (e.g., table.count)
 }#
 
+augment RogueC
+  METHODS
+    method launch
+      <<collect_supported_targets>>
+      supported_targets.add( "Cython" )
+
+      <<validate_target_list>>
+      if (target_list.contains("Cython") and not target_list.contains("C++"))
+        # Automatically add C++ target if Cython target is present.
+        target_list.add( "C++" )
+      endIf
+endAugment
+
 class CyMethod
   PROPERTIES
     cname : String             # True name of C function being wrapped (i.e., includes class name if any, etc.)
