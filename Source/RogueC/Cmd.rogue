@@ -2439,6 +2439,7 @@ class CmdWriteLocal : Cmd
 
     method resolve( scope:Scope )->Cmd
       local_info.type.organize(scope)
+      local_info.is_modified = true
       new_value = new_value.resolve(scope)
       new_value = new_value.cast_to( local_info.type, scope ).resolve( scope )
       return this
