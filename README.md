@@ -27,7 +27,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.90 - August 4, 2016
+- [Rogue]  Renamed `[requisite]` to `[essential]`.
 - [RogueC] Added Python plug-in functionality from Murphy McCauley with `Cython` compile target.
+- [RogueC] Added `--exhaustive` option which makes all classes and methods `requisite`.
+- [RogueC] Added `--api` option which adds the `[api]` attribute to every class - if the class is used then all methods are resolved generated even if unused.
 - [API] Added `Value.get(Function(Value)->Logical)->Value`.  Example: `local teens = people[function(p)=>(p//age>=13 and p//age<=19)]`.
 - [API] Added `Value.remove(Function(Value)->Logical)->Value`.  Example: `local teens = people.remove( function(p)=>(p//age>=13 and p//age<=19) )`.
 - [API] Added `Value.keys(Function(Value)->Logical)->String[]`.  Example: `local teen_ids = people.keys( function(p)=>(p//age>=13 and p//age<=19) )`.
@@ -35,6 +38,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `Value.last(Function(Value)->Logical)->Value`.  Example: `local last_teen = people.last( function(p)=>(p//age>=13 and p//age<=19) )`.
 - [API] Console I/O now goes through `Console.io_handler`.  In addition to the default `BlockingConsoleIOHandler` there is also an `ImmediateConsoleIOHandler` you can instantiate and install - or you can extend your own `ConsoleIOHandler`.
 - [API] Renamed the Value system's `NullResult` to `UndefinedValue`.
+- [API] Added `Math.min/max(Int64)`.
+- [API] Added `File.append_writer()`.
+- [API] `ConsoleIO.write(String)` bugfix.
+- [API] `List.locate(null)` is now handled properly
 - [Syntax] Fixed `skipIteration` (a briefly considered alternative) to be `nextIteration` in the Vim and Sublime syntax files.
 
 ###v1.0.89 - August 2, 2016

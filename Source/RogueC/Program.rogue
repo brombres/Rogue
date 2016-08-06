@@ -2,7 +2,7 @@ $include "Augment.rogue"
 
 class RequisiteItem( t:Token, type:Type, signature=null:String );
 
-class Program [requisite singleton]
+class Program [essential singleton]
   PROPERTIES
     code_prefix  = "Rogue"
     program_name = "Rogue_program"
@@ -13,7 +13,7 @@ class Program [requisite singleton]
     template_lookup = Table<<String,Template>>()
 
     augment_lookup = Table<<String,Augment[]>>()
-    #requisite_list = RequisiteItem[]
+    #essential_list = essentialItem[]
 
     m_on_launch              : Method
     m_run_tests              : Method
@@ -160,7 +160,7 @@ class Program [requisite singleton]
           get_run_tests_method( t )
         endIf
         m_on_launch.statements.add( m_on_launch.begin_label(t,"insert",false) )
-        m_on_launch.make_requisite
+        m_on_launch.make_essential
       endIf
       return m_on_launch
 
@@ -169,7 +169,7 @@ class Program [requisite singleton]
       if (not m_run_tests)
         m_run_tests = Method( t, type_global, "run_tests" )
         m_run_tests.statements.add( m_run_tests.begin_label(t,"insert",false) )
-        m_run_tests.make_requisite
+        m_run_tests.make_essential
       endIf
       return m_run_tests
 
@@ -264,35 +264,35 @@ class Program [requisite singleton]
       type.attributes.add( attributes )
       return type
 
-    method make_fully_requisite( m:Method )->Logical
-      local r = m.is_requisite == false
-      if (m.is_api and not m.type_context.is_requisite)
+    method make_fully_essential( m:Method )->Logical
+      local r = m.is_essential == false
+      if (m.is_api and not m.type_context.is_essential)
         r = true
-        make_fully_requisite(m.type_context)
+        make_fully_essential(m.type_context)
       endIf
-      m.attributes.add( Attribute.is_requisite )
-      if (m.return_type and make_fully_requisite( m.return_type ) )
+      m.attributes.add( Attribute.is_essential )
+      if (m.return_type and make_fully_essential( m.return_type ) )
         r = true
       endIf
       forEach (p in m.parameters)
-        if (make_fully_requisite( p.type ))
+        if (make_fully_essential( p.type ))
           r = true
         endIf
       endForEach
       return r
 
-    method make_fully_requisite( methods:Method[] )->Logical
+    method make_fully_essential( methods:Method[] )->Logical
       local r = false
       forEach (m in methods)
-        if (make_fully_requisite( m ))
+        if (make_fully_essential( m ))
           r = true
         endIf
       endForEach
       return r
 
-    method make_fully_requisite( t:Type )->Logical
-      local r = t.is_requisite == false
-      t.attributes.add( Attribute.is_requisite )
+    method make_fully_essential( t:Type )->Logical
+      local r = t.is_essential == false
+      t.attributes.add( Attribute.is_essential )
       return r
 
     method resolve
@@ -351,24 +351,24 @@ class Program [requisite singleton]
 
       local types_resolved = false
       while (not types_resolved)
-        if (RogueC.all_requisite)
+        if (RogueC.all_essential)
           forEach (t in type_lookup) t.configure
         endIf
 
-        # Reference and resolve all requisite type templates
+        # Reference and resolve all essential type templates
         forEach (templ in template_list)
           if (RogueC.all_api)
             templ.attributes.add( Attribute.is_api )
           endIf
-          if (RogueC.all_requisite)
+          if (RogueC.all_essential)
             templ.attributes.add( Attribute.is_api )
-            templ.attributes.add( Attribute.is_requisite )
+            templ.attributes.add( Attribute.is_essential )
             if (not templ.type_parameters)
               local t = get_type_reference( templ.t, templ.name )
               t.configure
             endIf
           endIf
-          if ((templ.attributes.flags & Attribute.is_requisite) and not templ.type_parameters)
+          if ((templ.attributes.flags & Attribute.is_essential) and not templ.type_parameters)
             get_type_reference( templ.t, templ.name ).resolve
           endIf
         endForEach
@@ -405,17 +405,17 @@ class Program [requisite singleton]
         local t  = type_list[i]
         t.resolve
 
-        if ( t.is_api or (t.t and RogueC.requisite_files.contains( t.t.filepath )) )
-          if ( make_fully_requisite( type_list[i]) ) types_resolved = false
+        if ( t.is_api or (t.t and RogueC.essential_files.contains( t.t.filepath )) )
+          if ( make_fully_essential( type_list[i]) ) types_resolved = false
 
-          if (make_fully_requisite( t.global_method_list )) types_resolved = false
-          if (make_fully_requisite( t.method_list )) types_resolved = false
+          if (make_fully_essential( t.global_method_list )) types_resolved = false
+          if (make_fully_essential( t.method_list )) types_resolved = false
 
           forEach (p in t.property_list)
-            if (make_fully_requisite( p.type )) types_resolved = false
+            if (make_fully_essential( p.type )) types_resolved = false
           endForEach
           forEach (p in t.global_list)
-            if (make_fully_requisite( p.type )) types_resolved = false
+            if (make_fully_essential( p.type )) types_resolved = false
           endForEach
         endIf
         ++i
@@ -489,12 +489,12 @@ class Program [requisite singleton]
       # Returns true if culling complete or false if a new dependency injection means
       # we need to go back and resolve new types.
       forEach (type in type_list)
-        if (type.is_requisite) type.trace_used_code
+        if (type.is_essential) type.trace_used_code
       endForEach
 
       trace_overridden_methods
 
-      # Activate any dependencies - native code, requisites
+      # Activate any dependencies - native code, essentials
       local injected_dependencies = false
       forEach (type in type_list)
         if (type.is_used and type.dependencies)

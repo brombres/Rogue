@@ -50,19 +50,19 @@ class RogueC [singleton]
     output_filepath : String
 
     supported_targets      = String[]
-    requisite_declarations = String[]
+    essential_declarations = String[]
 
-    all_requisite = false
-    # If true everything is requisite
+    all_essential = false
+    # If true everything is essential
 
     all_api = false
     # If true everything is marked as an API
 
-    requisite_files        = Set<<String>>()
-    # Everything in these files will be requisite
+    essential_files        = Set<<String>>()
+    # Everything in these files will be essential
 
-    manual_files_requisite = false
-    # If true, all files in commandline will be requisite
+    manual_files_essential = false
+    # If true, all files in commandline will be essential
 
     all_methods_callable_dynamically = false
     # When true, all methods can be called dynamically
@@ -123,7 +123,8 @@ class RogueC [singleton]
                    |
                    |OPTIONS
                    |  --api
-                   |    Mark everything as an API (all classes and methods `requisite`).
+                   |    Mark all classes as [api] - all methods of any referenced class are included
+                   |    in the compiled program whether they're used or not.
                    |
                    |  --main
                    |    Include a main() function in the output file.
@@ -143,6 +144,9 @@ class RogueC [singleton]
                    |  --execute[="args"]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
+                   |
+                   |  --exhaustive
+                   |    Make every class and method [essential].
                    |
                    |  --gc[=[manual|auto|boehm]]
                    |    Set the garbage collection mode:
@@ -167,13 +171,13 @@ class RogueC [singleton]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
                    |
-                   |  --requisite=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
-                   |    Makes the given class or method requisite ("do not cull if unused").  With
-                   |    no argument, everything becomes requisite (same as `--api`).
+                   |  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
+                   |    Makes the given class or method essential ("do not cull if unused").
+                   |    See also: --exhaustive
                    |
-                   |  --requisite-file[=file.rogue]
-                   |    With an argument, makes the entire file requisite.  With no argument,
-                   |    all files explicitly listed on the commandline become requisite.
+                   |  --essential-file[=file.rogue]
+                   |    With an argument, makes the entire file essential.  With no argument,
+                   |    all files explicitly listed on the commandline become essential.
                    |
                    |  --target=
 
@@ -219,13 +223,13 @@ class RogueC [singleton]
         forEach (parser in parsers) parser.insert_module_prefixes
         forEach (parser in parsers) parser.parse_elements
 
-        # Add requisite declarations to Program's requisite list
+        # Add essential declarations to Program's essential list
         local t = TokenType("Internal").create_token( "[Command Line Arguments]", 0, 0 )
-        forEach (declaration in requisite_declarations)
+        forEach (declaration in essential_declarations)
           Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,declaration) )
         endForEach
 
-        if (manual_files_requisite) requisite_files.union_update( manually_included_files )
+        if (manual_files_essential) essential_files.union_update( manually_included_files )
 
         Program.resolve
 
@@ -397,6 +401,14 @@ class RogueC [singleton]
                 Preprocessor.define( value.before_first(':'), value.after_first(':') )
               endIf
 
+            case "--exhaustive"
+              if (value.count)
+                throw RogueError( ''"--exhaustive" takes no arguments.'' )
+              else
+                all_essential = true
+                all_api = true
+              endIf
+
             case "--libraries"
               if (not value.count) throw RogueError( ''One or more paths expected after "--libraries=".'' )
               forEach (path in value.split(';'))
@@ -426,29 +438,33 @@ class RogueC [singleton]
 
             case "--api"
               if (value.count)
-                throw RogueError( ''"--api" takes no arguments'' )
+                throw RogueError( ''"--api" takes no arguments.'' )
               else
                 all_api = true
               endIf
 
-            case "--requisite"
+            case "--essential"
               if (value.count)
-                requisite_declarations.add( value.split(',') )
+                if (value == "*" or value == "**")
+                  all_essential = true
+                  all_api = true
+                else
+                  essential_declarations.add( value.split(',') )
+                endIf
               else
-                all_requisite = true
-                all_api = true
+                all_essential = true
               endIf
 
-            case "--requisite-file"
+            case "--essential-file"
               if (value.count)
                 local file = find_source_file(value)
                 if (file is null)
-                  throw RogueError( ''Can not find file "$" for "--requisite-file".'' (value) )
+                  throw RogueError( ''Can not find file "$" for "--essential-file".'' (value) )
                 endIf
-                requisite_files.add( file.absolute_filepath )
+                essential_files.add( file.absolute_filepath )
                 source_files.add( file.absolute_filepath )
               else
-                manual_files_requisite = true
+                manual_files_essential = true
               endIf
 
             case "--target"
@@ -487,7 +503,7 @@ class RogueC [singleton]
                   function->Logical
                   @trace "All types resolved - generate additional types?"
                     if (not Program.find_type("Alpha"))
-                      local src = @|class Alpha [requisite singleton]
+                      local src = @|class Alpha [essential singleton]
                                    |  METHODS
                                    |    method init
                                    |      @trace "Alpha singleton instantiated!"

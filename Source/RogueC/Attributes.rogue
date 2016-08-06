@@ -18,7 +18,7 @@ class Attribute
     is_singleton        = 1024
     is_incorporated     = 2048
     is_generated        = 4096
-    is_requisite        = 8192
+    is_essential        = 8192
     is_task             = 16384
     is_task_conversion  = 32768
     is_augment          = 65536

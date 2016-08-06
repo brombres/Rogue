@@ -1,4 +1,4 @@
-class TypeInfo [requisite]
+class TypeInfo [essential]
   PROPERTIES
     index             : Int32
     name              : String
@@ -6,12 +6,12 @@ class TypeInfo [requisite]
     properties        = PropertyInfo[]
 
   METHODS
-    method init( index, name ) [requisite]
+    method init( index, name ) [essential]
 
-    method add_global_property_info( global_property_name_index:Int32, global_property_type_index:Int32 ) [requisite]
+    method add_global_property_info( global_property_name_index:Int32, global_property_type_index:Int32 ) [essential]
       global_properties.add( PropertyInfo(global_properties.count,global_property_name_index, global_property_type_index) )
 
-    method add_property_info( property_name_index:Int32, property_type_index:Int32 ) [requisite]
+    method add_property_info( property_name_index:Int32, property_type_index:Int32 ) [essential]
       properties.add( PropertyInfo(properties.count,property_name_index, property_type_index) )
 
     method create_object->Object

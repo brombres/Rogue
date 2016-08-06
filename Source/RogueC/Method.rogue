@@ -186,8 +186,8 @@ class Method
     method is_api->Logical
       return (attributes.flags & Attribute.is_api)
 
-    method is_requisite->Logical
-      return (attributes.flags & Attribute.is_requisite) or is_api
+    method is_essential->Logical
+      return (attributes.flags & Attribute.is_essential) or is_api
 
     method is_global->Logical
       return (attributes.flags & Attribute.is_global)
@@ -208,8 +208,8 @@ class Method
       attributes.add( Attribute.is_propagated )
       return this
 
-    method make_requisite->this
-      attributes.add( Attribute.is_requisite )
+    method make_essential->this
+      attributes.add( Attribute.is_essential )
       return this
 
     method omit_output->Logical

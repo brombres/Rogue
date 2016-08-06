@@ -1,15 +1,15 @@
-class Exception [requisite]
+class Exception [essential]
   PROPERTIES
     message     : String
     stack_trace = StackTrace(1)
 
   METHODS
-    method init( message ) [requisite]
+    method init( message ) [essential]
 
-    method init [requisite]
+    method init [essential]
       message = type_name
 
-    method display [requisite]
+    method display [essential]
       local builder = StringBuilder()
       builder.println @|===============================================================================
       builder.println type_name
@@ -21,10 +21,10 @@ class Exception [requisite]
       builder.println @|===============================================================================
       println builder
 
-    method to->String [requisite]
+    method to->String [essential]
       return message
 
-    method format->String [requisite]
+    method format->String [essential]
       local st = stack_trace->String.trimmed
       if (st.count) st = "\n" + st
       return "$$" (this, st)

@@ -1,4 +1,4 @@
-class WeakReference [requisite]
+class WeakReference [essential]
   PROPERTIES
     next_weak_reference : WeakReference
     native "RogueObject* value;"

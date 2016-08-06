@@ -3,7 +3,7 @@
 #------------------------------------------------------------------------------
 class Task
   DEPENDENCIES
-    $requisite TaskManager
+    $essential TaskManager
 
   METHODS
     method start->Task
@@ -62,7 +62,7 @@ class TaskManager [singleton]
         if (still_waiting) yield
       endWhile
 
-    method update->Logical [requisite]
+    method update->Logical [essential]
       update_list.add( active_list )
       active_list.clear
       forEach (task at i in update_list)

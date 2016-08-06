@@ -1,4 +1,4 @@
-class StringBuilder [requisite]
+class StringBuilder [essential]
   GLOBAL PROPERTIES
     work_bytes = Byte[]
 
@@ -11,7 +11,7 @@ class StringBuilder [requisite]
     at_newline = true
 
   METHODS
-    method init [requisite]
+    method init [essential]
       init( 40 )
 
     method init( initial_capacity:Int32 )
@@ -27,7 +27,7 @@ class StringBuilder [requisite]
     method capacity->Int32 [macro]
       this.utf8.capacity
 
-    method clear->this [requisite]
+    method clear->this [essential]
       utf8.clear
       count = 0
       at_newline = true
@@ -344,7 +344,7 @@ class StringBuilder [requisite]
     method println( value:String )->this
       return print( value ).print( '\n' )
 
-    method reserve( additional_bytes:Int32 )->this [requisite]
+    method reserve( additional_bytes:Int32 )->this [essential]
       utf8.reserve( additional_bytes )
       return this
 

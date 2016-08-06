@@ -1,4 +1,4 @@
-class Runtime [requisite]
+class Runtime [essential]
   GLOBAL PROPERTIES
     type_info_lookup = Table<<String,TypeInfo>>()
 

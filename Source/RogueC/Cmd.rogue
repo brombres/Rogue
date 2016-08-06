@@ -265,7 +265,7 @@ class CmdStatementList : Cmd[]
 
       if (use_separate_results_list)
         # Necessary for Global.on_launch which can have new statements added
-        # to it (via newly organized classes' $requisite directives) as
+        # to it (via newly organized classes' $essential directives) as
         # it's being iterated through.
         local result = CmdStatementList( count )
         forEach (cmd in this)
@@ -1807,7 +1807,7 @@ class CmdAccess : Cmd
               throw t.error( "Invalid arguments to class selector $." (name) )
             endIf
             local type_name = name.from(1)
-            Program.get_type_reference( t, type_name ).organize( scope ).make_requisite
+            Program.get_type_reference( t, type_name ).organize( scope ).make_essential
             return CmdAccess( t, CmdAccess(t,"Runtime"), "type_info", CmdArgs(CmdLiteralString(t,type_name)) ).resolve( scope )
           endIf
 
@@ -4883,12 +4883,12 @@ class CmdMakeRequisite : Cmd
     method resolve( scope:Scope )->Cmd
       if (pattern.contains('.'))
         local req_type = Program.get_type_reference( t, pattern.before_first('.') )
-        req_type.make_requisite.organize
+        req_type.make_essential.organize
         local sig = pattern.after_first('.')
 
         if (sig == "*")
-          forEach (r in req_type.global_method_list) r.make_requisite
-          forEach (m in req_type.method_list)        m.make_requisite
+          forEach (r in req_type.global_method_list) r.make_essential
+          forEach (m in req_type.method_list)        m.make_essential
 
         elseIf (sig.contains('('))
           local m = req_type.find_method( sig )
@@ -4897,24 +4897,24 @@ class CmdMakeRequisite : Cmd
             m = req_type.find_method( sig )
           endIf
 
-          if (m) m.make_requisite
+          if (m) m.make_essential
           else   throw t.error( "No such method $ in type $." (sig,req_type.name) )
 
         else
           local list = req_type.global_method_lookup_by_name[ sig ]
           if (list)
-            forEach (m in list) m.make_requisite
+            forEach (m in list) m.make_essential
           endIf
 
           list = req_type.method_lookup_by_name[ sig ]
           if (list)
-            forEach (m in list) m.make_requisite
+            forEach (m in list) m.make_essential
           endIf
         endIf
 
       else
         local req_type = Program.get_type_reference( t, pattern )
-        req_type.make_requisite.organize
+        req_type.make_essential.organize
       endIf
       return CmdNoAction(t)
 endClass

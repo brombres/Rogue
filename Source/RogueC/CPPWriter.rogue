@@ -872,10 +872,10 @@ augment Program
                       |}
       writer.println
 
-      # Instantiate all requisite singletons
-      writer.println "// Instantiate requisite singletons"
+      # Instantiate all essential singletons
+      writer.println "// Instantiate essential singletons"
       forEach (type in type_list)
-        if (not type.omit_output and type.is_singleton and type.is_requisite)
+        if (not type.omit_output and type.is_singleton and type.is_essential)
           writer.print( "ROGUE_SINGLETON( " ).print( type.cpp_name ).println( " );" )
         endIf
       endForEach

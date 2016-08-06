@@ -401,8 +401,8 @@ class Parser
           attributes.add( Attribute.is_primitive )
         elseIf (consume("propagated"))
           attributes.add( Attribute.is_propagated )
-        elseIf (consume("requisite"))
-          attributes.add( Attribute.is_requisite )
+        elseIf (consume("essential"))
+          attributes.add( Attribute.is_essential )
         elseIf (consume("singleton"))
           attributes.add( Attribute.is_singleton )
         elseIf (consume("special"))
@@ -997,8 +997,8 @@ class Parser
         return
       endIf
 
-      if (consume(TokenType.directive_requisite))
-        # Turn this $requisite directive into a Cmd node so that it only takes effect
+      if (consume(TokenType.directive_essential))
+        # Turn this $essential directive into a Cmd node so that it only takes effect
         # if the method is actually used in the program.
         statements.add( CmdMakeRequisite(t,t->String) )
         return
@@ -1384,7 +1384,7 @@ class Parser
           next_is(TokenType.keyword_nativeCode) or
           next_is(TokenType.keyword_includeNativeCode) or
           next_is(TokenType.keyword_includeNativeHeader) or
-          next_is(TokenType.directive_requisite))
+          next_is(TokenType.directive_essential))
         ensure this_type.dependencies
         parse_statement( this_type.dependencies, false )
         return true
@@ -1454,7 +1454,7 @@ class Parser
         RogueC.include_native( t, filepath, "header" )
         return true
 
-      elseIf (consume(TokenType.directive_requisite))
+      elseIf (consume(TokenType.directive_essential))
         local pattern = t->String
         Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,pattern) )
         return true

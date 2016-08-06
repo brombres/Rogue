@@ -10,7 +10,7 @@ class TokenType
     directive_else                : TokenType
     directive_endIf               : TokenType
     directive_module              : TokenType
-    directive_requisite           : TokenType
+    directive_essential           : TokenType
     directive_using               : TokenType
 
     placeholder_id                : TokenType

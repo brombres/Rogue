@@ -343,7 +343,7 @@ class Value
       return buffer
 
 $if ("Cython")
-    method _get_element( index:Int32 )->Value [requisite]
+    method _get_element( index:Int32 )->Value [essential]
       throw Error("This Value is not indexable")
 $endIf
 endClass
@@ -760,7 +760,7 @@ class ValueList : Value
       return buffer
 
 $if ("Cython")
-    method _get_element( index:Int32 )->Value [requisite]
+    method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
       endIf
@@ -937,13 +937,13 @@ class ValueTable : Value
       return buffer
 
 $if ("Cython")
-    method _get_element( index:Int32 )->Value [requisite]
+    method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
       endIf
       return get(index)
 
-    method _get_element( key:String )->Value [requisite]
+    method _get_element( key:String )->Value [essential]
       return get(key)
 $endIf
 

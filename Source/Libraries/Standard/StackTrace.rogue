@@ -1,11 +1,11 @@
-class StackTrace [requisite]
+class StackTrace [essential]
   PROPERTIES
     entries      : String[]
     count        : Int32
     is_formatted : Logical
 
   METHODS
-    method init( omit_count=0:Int32 ) [requisite]
+    method init( omit_count=0:Int32 ) [essential]
       ++omit_count
       native @|RogueDebugTrace* current = Rogue_call_stack;
               |while (current && $omit_count > 0)
@@ -38,7 +38,7 @@ class StackTrace [requisite]
         endIf
       endForEach
 
-    method print [requisite]
+    method print [essential]
       print( Global.global_output_buffer )
       Global.flush
 

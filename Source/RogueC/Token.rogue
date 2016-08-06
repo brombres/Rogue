@@ -204,7 +204,7 @@ class StringDataToken : Token
     method init( type, value )
 
     method quoted_name->String
-      if (type is TokenType.directive_requisite) return "$requisite"
+      if (type is TokenType.directive_essential) return "$essential"
       return prior.quoted_name
 
     method to->String

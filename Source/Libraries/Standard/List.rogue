@@ -433,19 +433,19 @@ class List<<$DataType>> : GenericList
       return ListWriter<<$DataType>>( this )
 
 $if ("Cython")
-    method _get_element( index:Int32 )->$DataType [requisite]
+    method _get_element( index:Int32 )->$DataType [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
       endIf
       return get(index)
 
-    method _set_element( index:Int32, new_value:$DataType ) [requisite]
+    method _set_element( index:Int32, new_value:$DataType ) [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
       endIf
       set(index, new_value)
 
-    method _get_base_address()->PointerInt [requisite]
+    method _get_base_address()->PointerInt [essential]
       return native("&($this->data->as_bytes)")->PointerInt
 $endIf
 endClass

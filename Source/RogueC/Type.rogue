@@ -320,8 +320,8 @@ class Type
     method is_api->Logical
       return (attributes.flags & Attribute.is_api)
 
-    method is_requisite->Logical
-      return (attributes.flags & Attribute.is_requisite)
+    method is_essential->Logical
+      return (attributes.flags & Attribute.is_essential)
 
     method is_routine->Logical
       return (attributes.flags & Attribute.is_routine)
@@ -336,8 +336,8 @@ class Type
       attributes.add( Attribute.is_api )
       return this
 
-    method make_requisite->this
-      attributes.add( Attribute.is_requisite )
+    method make_essential->this
+      attributes.add( Attribute.is_essential )
       return this
 
     method configure( scope=null:Scope )->Type
@@ -348,9 +348,9 @@ class Type
       index = Program.type_list.count
       Program.type_list.add( this )
 
-      if (RogueC.all_requisite)
+      if (RogueC.all_essential)
         attributes.add( Attribute.is_api )
-        attributes.add( Attribute.is_requisite )
+        attributes.add( Attribute.is_essential )
       endIf
 
       if (not defined)
@@ -456,11 +456,11 @@ class Type
       # modularization but compounds are not polymorphic.
       if (this.is_compound) base_types.clear
 
-      # Mark any existing init_class() as requisite
+      # Mark any existing init_class() as essential
       local m_init_class = find_global_method( "init_class()" )
       if (m_init_class)
         if (m_init_class.type_context is this)
-          m_init_class.make_requisite
+          m_init_class.make_essential
         endIf
       else
         m_init_class = find_method( "init_class()" )
@@ -473,7 +473,7 @@ class Type
         # Create or locate init_class() to initialize global properties
         local m = find_global_method( "init_class()" )
         if (not m or m.type_context is not this) m = add_global_method( t, "init_class" ).organize( scope )
-        m.make_requisite
+        m.make_essential
 
         # Insert global initializations
         local i = global_list.count - 1
@@ -491,10 +491,10 @@ class Type
         local m = find_method( "init_object()" )
         local prior_m = m
         if (m and m.type_context is this)
-          m.make_requisite
+          m.make_essential
         else
           m = add_method( t, "init_object" ).organize( scope )
-          m.make_requisite
+          m.make_essential
 
           # The regular system won't figure out that init_object() is
           # dynamically called so give it a flag.
@@ -532,21 +532,21 @@ class Type
         m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
       endIf
 
-      # Mark any clean_up() method as requisite
+      # Mark any clean_up() method as essential
       if (is_class and not is_native)
         local m = find_method( "clean_up()" )
         if (m and m.type_context is this)
           if (m.return_type)
             throw m.t.error( "clean_up() cannot return a value." )
           endIf
-          m.make_requisite
+          m.make_essential
         endIf
       endIf
 
-      # to->String is requisite for Exception and extended classes
+      # to->String is essential for Exception and extended classes
       if (is_class and instance_of(Program.type_Exception))
         local m = find_method( "to_String()" )
-        if (m) m.make_requisite
+        if (m) m.make_essential
       endIf
 
       # Add a default to->String and to->Value to compounds
@@ -938,7 +938,7 @@ class Type
         endIf
 
         # Inherit select attributes
-        if (existing_m.is_requisite) m.make_requisite
+        if (existing_m.is_essential) m.make_essential
 
         list[i] = m
         lookup[m.signature] = m
@@ -1274,7 +1274,7 @@ class Type
       if (is_singleton)
         local m = find_method( "init()" )
         if (m)
-          m.make_requisite
+          m.make_essential
         endIf
       endIf
 
@@ -1293,11 +1293,11 @@ class Type
       endForEach
 
       forEach (r in global_method_list)
-        if (r.is_requisite) r.trace_used_code
+        if (r.is_essential) r.trace_used_code
       endForEach
 
       forEach (m in method_list)
-        if (m.is_requisite) m.trace_used_code
+        if (m.is_essential) m.trace_used_code
       endForEach
 
     method validate

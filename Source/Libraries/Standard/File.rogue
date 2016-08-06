@@ -204,7 +204,7 @@ class File
       if (not i?) return filepath
       return filepath.from( i.value+1 )
 
-    method is_folder( filepath:String )->Logical [requisite]
+    method is_folder( filepath:String )->Logical [essential]
       native @|if ( !$filepath ) return false;
               |
               |#if defined(_WIN32)

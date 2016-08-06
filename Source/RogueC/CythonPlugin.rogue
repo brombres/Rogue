@@ -4,12 +4,12 @@ TODO
 - (Optionally?) Put a slot in the RogueObject structure that holds a reference
   to a Python object wrapping it so that we don't need to keep creating new
   wrappers.
-- Force to_Strings to be requisite?
+- Force to_Strings to be essential?
 - Have CyClass gather definitions and enumerations
 - Support compounds
 - Support more types of CmdAccess for default arguments (except just Global)
 - Convert readers to iterators?
-- Make more useful stuff requisite? (e.g., table.count)
+- Make more useful stuff essential? (e.g., table.count)
 }#
 
 augment RogueC
@@ -507,13 +507,13 @@ augment Program
     method cy_inject_rogue_classes
       # We smash in some new Rogue code.  This should probably be included
       # from the Rogue Python library, but that doesn't exist yet. :)
-      local src = @|class PyRogueError : Error [requisite]
+      local src = @|class PyRogueError : Error [essential]
                    |  PROPERTIES
                    |    exc_type : String
                    |    exc_value : String
                    |    exc_traceback : String
                    |  METHODS
-                   |    method init (exc_type, exc_value, exc_traceback) [requisite]
+                   |    method init (exc_type, exc_value, exc_traceback) [essential]
                    |      prior.init("Python $: $" (exc_type, exc_value))
                    |endClass
       Parser( "(compiler-generated-error)", src ).parse_elements
@@ -521,7 +521,7 @@ augment Program
     method cy_create_delegates->Logical
       if cy_delegate_construction_pass == 0
 
-        # Force some things to be requisite/API
+        # Force some things to be essential/API
         Program.type_lookup["Exception"].make_api()
 
         if Preprocessor.definitions.contains("PYROGUEFUNCTYPE")
@@ -555,7 +555,7 @@ augment Program
           if (not ccls.funcs.contains('call')) nextIteration
 
           # Make all functions callable
-          t.method_lookup_by_name["call"][0].make_requisite
+          t.method_lookup_by_name["call"][0].make_essential
 
           # So t here is a Function type in Rogue.  We are going to create a
           # "PyFunction" -- a subclass of the Function type (t) where the call()
@@ -596,12 +596,12 @@ augment Program
 
           thunk_call += ''native("PyRogue_delegate_$($)")$'' (t.cpp_name, ",".join(args), ret)
 
-          local src = "class PyFunction$ : PYROGUEFUNCTYPE [requisite]\n" (t.cpp_type_name)
+          local src = "class PyFunction$ : PYROGUEFUNCTYPE [essential]\n" (t.cpp_type_name)
           src +=      "  PROPERTIES\n"
           #src +=      ''    native "void * _py_callable;"\n'' # Should be a pointer type
           src +=      "    _callable : Int64\n"
           src +=      "  METHODS\n"
-          src +=      "    method call ($)$ [requisite]\n" (",".join(params),ret)
+          src +=      "    method call ($)$ [essential]\n" (",".join(params),ret)
           src +=      "      $" (return_var)
           src +=      "      local _py_callable = _callable\n"
           src +=      "      native \"PyRogueDelegateContext ctxt((void*)(intptr_t)$_py_callable);\"\n"

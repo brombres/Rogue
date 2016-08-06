@@ -1,4 +1,4 @@
-class Global : PrintWriter<<global_output_buffer>> [requisite singleton]
+class Global : PrintWriter<<global_output_buffer>> [essential singleton]
   PROPERTIES
     standard_output = Console : PrintWriter
     global_output_buffer      = StringBuilder()
@@ -8,7 +8,7 @@ class Global : PrintWriter<<global_output_buffer>> [requisite singleton]
     method init
       on_exit( function flush )
 
-    method call_exit_functions [requisite]
+    method call_exit_functions [essential]
       # Called by the native layer when the program is ending normally or exiting
       # due to a System.exit(Int32) call.
 

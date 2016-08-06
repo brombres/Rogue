@@ -1,4 +1,4 @@
-class System [requisite]
+class System [essential]
   GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
