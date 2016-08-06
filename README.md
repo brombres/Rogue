@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.89
-- August 2, 2016
+- v1.0.90
+- August 6, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.90 - August 4, 2016
+###v1.0.90 - August 6, 2016
 - [Rogue]  Renamed `[requisite]` to `[essential]`.
 - [RogueC] Added Python plug-in functionality from Murphy McCauley with `Cython` compile target.
 - [RogueC] Added `--exhaustive` option which makes all classes and methods `requisite`.
