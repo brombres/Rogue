@@ -1,4 +1,5 @@
 $include "Visitor.rogue"
+$include "QueryToGenericFunctionConversionVisitor.rogue"
 $include "TraceUsedCodeVisitor.rogue"
 $include "UpdateThisTypeVisitor.rogue"
 
@@ -98,8 +99,8 @@ trace Type.resolve_chain
     method compile_type->Type
       return type.compile_type
 
-    method dispatch( v:Visitor ) [propagated]
-      v.visit( this )
+    method dispatch( v:Visitor )->Cmd [propagated]
+      return v.visit( this )
 
     method exit_scope( scope:Scope )
 
@@ -157,6 +158,10 @@ trace Type.resolve_chain
 
     method implicit_type( scope:Scope )->Type
       return null
+
+    method is_scoped_read_access->Logical
+      # Access, ReadLocal, ReadProperty, CallX.
+      return false
 
     method is_literal->Logical
       return false
@@ -254,7 +259,7 @@ class CmdStatementList : Cmd[]
       endForEach
       return result
 
-    method dispatch( v:Visitor ) [propagated]
+    method dispatch( v:Visitor )      [propagated]
       v.visit( this )
 
     method resolve( scope:Scope, &use_separate_results_list )
@@ -1752,6 +1757,9 @@ class CmdAccess : Cmd
 
       return null
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       return resolve( scope, false )
 
@@ -2133,6 +2141,9 @@ class CmdElementAccess : Cmd
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdElementAccess( t, context.cloned(clone_args), index.cloned(clone_args) )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope )
 
@@ -2297,6 +2308,10 @@ class CmdThisContext : Cmd
     method implicit_type( scope:Scope )->Type
       return this_type
 
+    method is_scoped_read_access->Logical
+      return true
+
+
     method require_type_context
       noAction
 
@@ -2400,6 +2415,9 @@ class CmdReadLocal : Cmd
 
       return CmdReadLocal( t, local_info )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       #trace local_info.type, local_info.name, scope.this_method.name, scope.this_type.name
       local_info.type.organize(scope)
@@ -2497,6 +2515,9 @@ class CmdReadProperty : Cmd
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdReadProperty( t, context.cloned(clone_args), property_info )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
       if (context.type.is_aspect)
@@ -2555,6 +2576,9 @@ class CmdCall : Cmd
 
   METHODS
     method init( t, context, method_info, args )
+
+    method is_scoped_read_access->Logical
+      return true
 
     method require_type->Type
       local result = type
@@ -2686,6 +2710,9 @@ class CmdCallPriorMethod : Cmd
         forEach (named_arg in named_args) cloned_named_args.add( named_arg.cloned )
       endIf
       return CmdCallPriorMethod( t, name, args.cloned(clone_args), cloned_named_args )
+
+    method is_scoped_read_access->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       local access = CmdAccess( t, name, args, named_args )
@@ -3743,6 +3770,9 @@ class CmdAdjust : Cmd
   METHODS
     method init( t, operand, delta )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
       return operand.resolve_adjust( scope, delta )
@@ -3763,6 +3793,9 @@ class CmdAdjustLocal : Cmd
       else
         return CmdAdjustLocal( t, local_info, delta )
       endIf
+
+    method is_scoped_read_access->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       if (local_info.type.is_compound)
@@ -3792,6 +3825,9 @@ class CmdAdjustProperty : Cmd
 
     method cloned( clone_args:CloneArgs )->Cmd
       return CmdAdjustProperty( t, context.cloned(clone_args), property_info, delta )
+
+    method is_scoped_read_access->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve( scope ).require_value
@@ -3854,6 +3890,9 @@ class CmdModifyAndAssign : Cmd
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdModifyAndAssign( t, target.cloned(clone_args), op, new_value.cloned(clone_args) )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       return target.resolve_modify_and_assign( scope, op, new_value )
 endClass
@@ -3864,6 +3903,9 @@ class CmdResolvedModifyAndAssign : Cmd
     new_value  : Cmd
 
   METHODS
+    method is_scoped_read_access->Logical
+      return true
+
     method symbol->String
       if (op is TokenType.symbol_tilde_equals) return "^="
       return op->String
@@ -3885,6 +3927,8 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
         return CmdModifyAndAssignLocal( t, local_info, op, new_value.cloned(clone_args) )
       endIf
 
+    method is_scoped_read_access->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       local m_name = "operator" + op->String
@@ -4554,6 +4598,9 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
     method is_generic_function->Logical
       return is_generic
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       if (is_generic) return this
 
@@ -4654,6 +4701,9 @@ class CmdAssert : Cmd
     method cloned( clone_args:CloneArgs )->CmdAssert
       return CmdAssert( t, condition.cloned(clone_args), message.cloned(clone_args), local_info )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
       local_info.type = condition.require_type
@@ -4679,6 +4729,9 @@ class CmdRequire : Cmd
 
     method cloned( clone_args:CloneArgs )->CmdRequire
       return CmdRequire( t, condition.cloned(clone_args), message.cloned(clone_args), local_info )
+
+    method is_scoped_read_access->Logical
+      return true
 
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
@@ -4819,6 +4872,9 @@ class CmdInlineNative : Cmd
       result.adjust_delta = adjust_delta
       result.new_value = new_value
       return result
+
+    method is_scoped_read_access->Logical
+      return true
 
     method requires_semicolon->Logical
       return false
@@ -5121,6 +5177,9 @@ class CmdEnsure : Cmd
     method implicit_type( scope:Scope )->Type
       return operand.implicit_type( scope )
 
+    method is_scoped_read_access->Logical
+      return true
+
     method resolve( scope:Scope )->Cmd
       cmd_read = operand.cloned.resolve( scope ).require_value
       if (not cmd_read.type.is_reference) throw t.error( "'ensure' can only be used with reference-type variables." )
@@ -5153,3 +5212,11 @@ class CmdEnsure : Cmd
 
 endClass
 
+class CmdImplicitIdentifierAcccess( t, name:String ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdImplicitIdentifierAcccess( t, name )
+
+    method resolve( scope:Scope )->Cmd
+      throw t.error( "Illegal use of implicit access; can only be used as a call argument." )
+endClass

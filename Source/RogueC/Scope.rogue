@@ -432,9 +432,11 @@ class Scope
                 fn.is_generic = false
                 args[index] = fn
                 local callback_type = m.parameters[index].type
+                if (not callback_type.is_function)
+                  throw fn.t.error( "Incompatible function argument; $ expected." (callback_type) )
+                endIf
 
                 if (fn.parameters)
-
                   local param_types = callback_type.callback_parameter_types
                   if (not param_types or param_types.count != fn.parameters.count)
                     throw fn.t.error( "Incorrect number of parameters in generic function definition - expected $, found $."...

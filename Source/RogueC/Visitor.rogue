@@ -1,6 +1,6 @@
 class Visitor
   METHODS
-    method visit( cmd:Cmd )
+    method visit( cmd:Cmd )->Cmd
       throw RogueError( "$ does not overload method visit($)." (type_name,cmd.type_name) )
 
     method visit( type:Type )
@@ -23,365 +23,443 @@ class Visitor
       dispatch( args )
       on_leave( args )
 
-    method visit( cmd:CmdStatement )
+    method visit( cmd:CmdStatement )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdAssert )
+    method visit( cmd:CmdAssert )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdRequire )
+    method visit( cmd:CmdRequire )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdAssign )
+    method visit( cmd:CmdAssign )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdLocalDeclaration )
+    method visit( cmd:CmdLocalDeclaration )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReturn )
+    method visit( cmd:CmdReturn )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdBlock )
+    method visit( cmd:CmdBlock )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdIf )
+    method visit( cmd:CmdIf )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdSwitch )
+    method visit( cmd:CmdSwitch )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWhich )
+    method visit( cmd:CmdWhich )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWhichCase )
+    method visit( cmd:CmdWhichCase )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdContingent )
+    method visit( cmd:CmdContingent )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdGenericLoop )
+    method visit( cmd:CmdGenericLoop )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdElementAccess )
+    method visit( cmd:CmdElementAccess )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdEnsure )
+    method visit( cmd:CmdEnsure )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdForEach )
+    method visit( cmd:CmdForEach )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdFormattedString )
+    method visit( cmd:CmdFormattedString )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdIsReference )
+    method visit( cmd:CmdIsReference )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdTry )
+    method visit( cmd:CmdTry )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdTryExpression )
+    method visit( cmd:CmdTryExpression )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCatch )
+    method visit( cmd:CmdCatch )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdThrow )
+    method visit( cmd:CmdThrow )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdEscape )
+    method visit( cmd:CmdEscape )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdNextIteration )
+    method visit( cmd:CmdNextIteration )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdNecessary )
+    method visit( cmd:CmdNecessary )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdSufficient )
+    method visit( cmd:CmdSufficient )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdLiteral )
+    method visit( cmd:CmdLiteral )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdLiteralString )
+    method visit( cmd:CmdLiteralString )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdAccess )
+    method visit( cmd:CmdAccess )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCreateObject )
+    method visit( cmd:CmdCreateObject )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCreateCallback )
+    method visit( cmd:CmdCreateCallback )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCreateCompound )
+    method visit( cmd:CmdCreateCompound )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCreateFunction )
+    method visit( cmd:CmdCreateFunction )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdTypedLiteralList )
+    method visit( cmd:CmdTypedLiteralList )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdThisContext )
+    method visit( cmd:CmdThisContext )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReadSingleton )
+    method visit( cmd:CmdReadSingleton )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWriteSingleton )
+    method visit( cmd:CmdWriteSingleton )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReadLocal )
+    method visit( cmd:CmdReadLocal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWriteLocal )
+    method visit( cmd:CmdWriteLocal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReadGlobal )
+    method visit( cmd:CmdReadGlobal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWriteGlobal )
+    method visit( cmd:CmdWriteGlobal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReadProperty )
+    method visit( cmd:CmdReadProperty )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWriteProperty )
+    method visit( cmd:CmdWriteProperty )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCall )
+    method visit( cmd:CmdCall )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCallDynamicMethod )
+    method visit( cmd:CmdCallDynamicMethod )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCallPriorMethod )
+    method visit( cmd:CmdCallPriorMethod )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdRange )
+    method visit( cmd:CmdRange )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdUnary )
+    method visit( cmd:CmdUnary )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdBinary )
+    method visit( cmd:CmdBinary )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdAdjustLocal )
+    method visit( cmd:CmdAdjustLocal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdAdjustProperty )
+    method visit( cmd:CmdAdjustProperty )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdAdjustGlobal )
+    method visit( cmd:CmdAdjustGlobal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdModifyAndAssign )
+    method visit( cmd:CmdModifyAndAssign )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdModifyAndAssignLocal )
+    method visit( cmd:CmdModifyAndAssignLocal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdModifyAndAssignGlobal )
+    method visit( cmd:CmdModifyAndAssignGlobal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdModifyAndAssignProperty )
+    method visit( cmd:CmdModifyAndAssignProperty )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCreateArray )
+    method visit( cmd:CmdCreateArray )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReadArrayElement )
+    method visit( cmd:CmdReadArrayElement )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdReadArrayCount )
+    method visit( cmd:CmdReadArrayCount )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdWriteArrayElement )
+    method visit( cmd:CmdWriteArrayElement )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdTypeOperator )
+    method visit( cmd:CmdTypeOperator )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdTaskControl )
+    method visit( cmd:CmdTaskControl )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdCreateOptionalValue )
+    method visit( cmd:CmdCreateOptionalValue )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdTrace )
+    method visit( cmd:CmdTrace )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdLabel )
+    method visit( cmd:CmdLabel )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdInlineNative )
+    method visit( cmd:CmdImplicitIdentifierAcccess )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdMakeRequisite )
+    method visit( cmd:CmdInlineNative )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdNoAction )
+    method visit( cmd:CmdMakeRequisite )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdSelect )
+    method visit( cmd:CmdNoAction )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdSelectCase )
+    method visit( cmd:CmdSelect )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdNamedArg )
+    method visit( cmd:CmdSelectCase )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
 
-    method visit( cmd:CmdNativeSource )
+    method visit( cmd:CmdNamedArg )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdNativeSource )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
 
     method on_enter( cmd:Cmd )
       throw RogueError( "$ does not overload method on_enter($)." (type_name,cmd.type_name) )
@@ -417,6 +495,7 @@ class Visitor
     method on_enter( cmd:CmdFormattedString )
     method on_enter( cmd:CmdGenericLoop )
     method on_enter( cmd:CmdIf )
+    method on_enter( cmd:CmdImplicitIdentifierAcccess )
     method on_enter( cmd:CmdInlineNative )
     method on_enter( cmd:CmdIsReference )
     method on_enter( cmd:CmdLabel )
@@ -498,6 +577,7 @@ class Visitor
     method on_leave( cmd:CmdFormattedString )
     method on_leave( cmd:CmdGenericLoop )
     method on_leave( cmd:CmdIf )
+    method on_leave( cmd:CmdImplicitIdentifierAcccess )
     method on_leave( cmd:CmdInlineNative )
     method on_leave( cmd:CmdIsReference )
     method on_leave( cmd:CmdLabel )
@@ -554,57 +634,69 @@ class Visitor
       noAction
 
     method dispatch( statements:CmdStatementList )
-      forEach (statement in statements)
-        statement.dispatch( this )
+      forEach (statement at index in statements)
+        statements[ index ] = statement.dispatch( this )
       endForEach
 
     method dispatch( args:CmdArgs )
-      forEach (arg in args) arg.dispatch( this )
+      forEach (arg at index in args)
+        args[ index ] = arg.dispatch( this )
+      endForEach
 
     method dispatch( cmd:CmdStatement )
       noAction
 
     method dispatch( cmd:CmdAssert )
-      cmd.condition.dispatch( this )
-      cmd.message.dispatch( this )
-      if (cmd.error) cmd.error.dispatch( this )
+      cmd.condition = cmd.condition.dispatch( this )
+      cmd.message = cmd.message.dispatch( this )
+      if (cmd.error)
+        cmd.error = cmd.error.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdRequire )
-      cmd.condition.dispatch( this )
-      cmd.message.dispatch( this )
-      if (cmd.error) cmd.error.dispatch( this )
+      cmd.condition = cmd.condition.dispatch( this )
+      cmd.message = cmd.message.dispatch( this )
+      if (cmd.error)
+        cmd.error = cmd.error.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdAssign )
-      cmd.new_value.dispatch( this )
-      cmd.target.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
+      cmd.target = cmd.target.dispatch( this )
 
     method dispatch( cmd:CmdLocalDeclaration )
       cmd.local_info.type.dispatch( this )
-      if (cmd.local_info.initial_value) cmd.local_info.initial_value.dispatch( this )
+      if (cmd.local_info.initial_value)
+        cmd.local_info.initial_value = cmd.local_info.initial_value.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdReturn )
-      if (cmd.value) cmd.value.dispatch( this )
+      if (cmd.value)
+        cmd.value = cmd.value.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdBlock )
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdIf )
-      cmd.condition.dispatch( this )
+      cmd.condition = cmd.condition.dispatch( this )
       cmd.statements.dispatch( this )
       if (cmd.else_statements) cmd.else_statements.dispatch( this )
 
     method dispatch( cmd:CmdSwitch )
-      cmd.expression.dispatch( this )
+      cmd.expression = cmd.expression.dispatch( this )
       forEach (c in cmd.cases) c.dispatch( this )
       if (cmd.case_others) cmd.case_others.dispatch( this )
 
     method dispatch( cmd:CmdWhich )
-      cmd.expression.dispatch( this )
+      cmd.expression = cmd.expression.dispatch( this )
       forEach (c in cmd.cases) c.dispatch( this )
       if (cmd.case_others) cmd.case_others.dispatch( this )
 
     method dispatch( cmd:CmdWhichCase )
-      forEach (condition in cmd.conditions) condition.dispatch( this )
+      forEach (condition at index in cmd.conditions)
+        cmd.conditions[ index ] = condition.dispatch( this )
+      endForEach
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdContingent )
@@ -615,24 +707,30 @@ class Visitor
     method dispatch( cmd:CmdGenericLoop )
       cmd.statements.dispatch( this )
       if (cmd.control_statements) cmd.control_statements.dispatch( this )
-      if (cmd.condition) cmd.condition.dispatch( this )
+      if (cmd.condition)
+        cmd.condition = cmd.condition.dispatch( this )
+      endIf
       if (cmd.upkeep) cmd.upkeep.dispatch( this )
 
     method dispatch( cmd:CmdForEach )
       cmd.statements.dispatch( this )
-      cmd.collection.dispatch( this )
-      if (cmd.step_cmd) cmd.step_cmd.dispatch( this )
+      cmd.collection = cmd.collection.dispatch( this )
+      if (cmd.step_cmd)
+        cmd.step_cmd = cmd.step_cmd.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdFormattedString )
-      forEach (arg in cmd.args) arg.dispatch( this )
+      forEach (arg at index in cmd.args)
+        cmd.args[ index ] = arg.dispatch( this )
+      endForEach
 
     method dispatch( cmd:CmdTry )
       cmd.statements.dispatch( this )
       forEach (c in cmd.catches) c.dispatch( this )
 
     method dispatch( cmd:CmdTryExpression )
-      cmd.try_expression.dispatch( this )
-      cmd.else_expression.dispatch( this )
+      cmd.try_expression = cmd.try_expression.dispatch( this )
+      cmd.else_expression = cmd.else_expression.dispatch( this )
 
     method dispatch( cmd:CmdCatch )
       if (cmd.error_var)  cmd.error_var.type.dispatch( this )
@@ -640,16 +738,16 @@ class Visitor
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdThrow )
-      cmd.expression.dispatch( this )
+      cmd.expression = cmd.expression.dispatch( this )
 
     method dispatch( cmd:CmdElementAccess )
-      cmd.index.dispatch( this )
-      cmd.context.dispatch( this )
+      cmd.index = cmd.index.dispatch( this )
+      cmd.context = cmd.context.dispatch( this )
 
     method dispatch( cmd:CmdEnsure )
       cmd.local_info.type.dispatch( this )
-      cmd.cmd_read.dispatch( this )
-      cmd.cmd_write.dispatch( this )
+      cmd.cmd_read = cmd.cmd_read.dispatch( this )
+      cmd.cmd_write = cmd.cmd_write.dispatch( this )
 
     method dispatch( cmd:CmdEscape )
       noAction
@@ -661,10 +759,14 @@ class Visitor
       noAction
 
     method dispatch( cmd:CmdNecessary )
-      if (cmd.condition) cmd.condition.dispatch( this )
+      if (cmd.condition)
+        cmd.condition = cmd.condition.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdSufficient )
-      if (cmd.condition) cmd.condition.dispatch( this )
+      if (cmd.condition)
+        cmd.condition = cmd.condition.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdLiteral )
       noAction
@@ -672,8 +774,10 @@ class Visitor
     method dispatch( cmd:CmdLiteralString )
 
     method dispatch( cmd:CmdAccess )
-      if (cmd.context)   cmd.context.dispatch( this )
-      if (cmd.args)      cmd.args.dispatch( this )
+      if (cmd.context)
+        cmd.context = cmd.context.dispatch( this )
+      endIf
+      if (cmd.args) cmd.args.dispatch( this )
       if (cmd.named_args)
         forEach (arg in cmd.named_args) arg.dispatch( this )
       endIf
@@ -682,12 +786,16 @@ class Visitor
       cmd.of_type.dispatch( this )
 
     method dispatch( cmd:CmdCreateCallback )
-      if (cmd.context) cmd.context.dispatch( this )
+      if (cmd.context)
+        cmd.context = cmd.context.dispatch( this )
+      endIf
       if (cmd.return_type) cmd.return_type.dispatch( this )
 
     method dispatch( cmd:CmdCreateCompound )
       cmd.of_type.dispatch( this )
-      forEach (arg in cmd.args) arg.dispatch( this )
+      forEach (arg at index in cmd.args)
+        cmd.args[ index ] = arg.dispatch( this )
+      endForEach
 
     method dispatch( cmd:CmdCreateFunction )
       if (cmd.parameters)
@@ -696,7 +804,9 @@ class Visitor
       if (cmd.return_type) cmd.return_type.dispatch( this )
       if (cmd.with_args)
         forEach (arg in cmd.with_args)
-          if (arg.value) arg.value.dispatch( this )
+          if (arg.value)
+            arg.value = arg.value.dispatch( this )
+          endIf
           if (arg.type) arg.type.dispatch( this )
         endForEach
       endIf
@@ -710,14 +820,14 @@ class Visitor
 
     method dispatch( cmd:CmdWriteSingleton )
       cmd.of_type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdReadLocal )
       cmd.local_info.type.dispatch( this )
 
     method dispatch( cmd:CmdWriteLocal )
       cmd.local_info.type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdReadGlobal )
       cmd.global_info.type_context.dispatch( this )
@@ -726,28 +836,38 @@ class Visitor
     method dispatch( cmd:CmdWriteGlobal )
       cmd.global_info.type_context.dispatch( this )
       cmd.global_info.type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdReadProperty )
-      cmd.context.dispatch( this )
+      cmd.context = cmd.context.dispatch( this )
       cmd.property_info.type_context.dispatch( this )
       cmd.property_info.type.dispatch( this )
 
     method dispatch( cmd:CmdWriteProperty )
-      if (cmd.context) cmd.context.dispatch( this )
+      if (cmd.context)
+        cmd.context = cmd.context.dispatch( this )
+      endIf
       cmd.property_info.type_context.dispatch( this )
       cmd.property_info.type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdCall )
-      if (cmd.context) cmd.context.dispatch( this )
+      if (cmd.context)
+        cmd.context = cmd.context.dispatch( this )
+      endIf
       cmd.method_info.dispatch( this )
-      forEach (arg in cmd.args) arg.dispatch( this )
+      forEach (arg at index in cmd.args)
+        cmd.args[ index ] = arg.dispatch( this )
+      endForEach
 
     method dispatch( cmd:CmdCallDynamicMethod )
-      if (cmd.context) cmd.context.dispatch( this )
+      if (cmd.context)
+        cmd.context = cmd.context.dispatch( this )
+      endIf
       cmd.method_info.dispatch( this )
-      forEach (arg in cmd.args) arg.dispatch( this )
+      forEach (arg at index in cmd.args)
+        cmd.args[ index ] = arg.dispatch( this )
+      endForEach
 
     method dispatch( cmd:CmdCallPriorMethod )
       if (cmd.args) cmd.args.dispatch( this )
@@ -756,22 +876,24 @@ class Visitor
       endIf
 
     method dispatch( cmd:CmdRange )
-      cmd.first.dispatch( this )
-      cmd.last.dispatch( this )
-      if (cmd.step_size) cmd.step_size.dispatch( this )
+      cmd.first = cmd.first.dispatch( this )
+      cmd.last = cmd.last.dispatch( this )
+      if (cmd.step_size)
+        cmd.step_size = cmd.step_size.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdUnary )
-      cmd.operand.dispatch( this )
+      cmd.operand = cmd.operand.dispatch( this )
 
     method dispatch( cmd:CmdBinary )
-      cmd.left.dispatch( this )
-      cmd.right.dispatch( this )
+      cmd.left = cmd.left.dispatch( this )
+      cmd.right = cmd.right.dispatch( this )
 
     method dispatch( cmd:CmdAdjustLocal )
       cmd.local_info.type.dispatch( this )
 
     method dispatch( cmd:CmdAdjustProperty )
-      cmd.context.dispatch( this )
+      cmd.context = cmd.context.dispatch( this )
       cmd.property_info.type_context.dispatch( this )
       cmd.property_info.type.dispatch( this )
 
@@ -780,44 +902,44 @@ class Visitor
       cmd.global_info.type.dispatch( this )
 
     method dispatch( cmd:CmdModifyAndAssign )
-      cmd.new_value.dispatch( this )
-      cmd.target.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
+      cmd.target = cmd.target.dispatch( this )
 
     method dispatch( cmd:CmdModifyAndAssignLocal )
       cmd.local_info.type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdModifyAndAssignGlobal )
       cmd.global_info.type_context.dispatch( this )
       cmd.global_info.type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdModifyAndAssignProperty )
       cmd.property_info.type_context.dispatch( this )
       cmd.property_info.type.dispatch( this )
-      cmd.new_value.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
 
     method dispatch( cmd:CmdCreateArray )
       cmd.array_type.dispatch( this )
-      cmd.count_cmd.dispatch( this )
+      cmd.count_cmd = cmd.count_cmd.dispatch( this )
 
     method dispatch( cmd:CmdReadArrayElement )
-      cmd.context.dispatch( this )
+      cmd.context = cmd.context.dispatch( this )
       cmd.array_type.dispatch( this )
-      cmd.index.dispatch( this )
+      cmd.index = cmd.index.dispatch( this )
 
     method dispatch( cmd:CmdReadArrayCount )
-      cmd.context.dispatch( this )
+      cmd.context = cmd.context.dispatch( this )
       cmd.array_type.dispatch( this )
 
     method dispatch( cmd:CmdWriteArrayElement )
-      cmd.context.dispatch( this )
+      cmd.context = cmd.context.dispatch( this )
       cmd.array_type.dispatch( this )
-      cmd.new_value.dispatch( this )
-      cmd.index.dispatch( this )
+      cmd.new_value = cmd.new_value.dispatch( this )
+      cmd.index = cmd.index.dispatch( this )
 
     method dispatch( cmd:CmdTypeOperator )
-      cmd.operand.dispatch( this )
+      cmd.operand = cmd.operand.dispatch( this )
       cmd.target_type.dispatch( this )
 
     method dispatch( cmd:CmdTypedLiteralList )
@@ -828,7 +950,9 @@ class Visitor
 
     method dispatch( cmd:CmdCreateOptionalValue )
       cmd.of_type.dispatch( this )
-      if (cmd.value) cmd.value.dispatch( this )
+      if (cmd.value)
+        cmd.value = cmd.value.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdTrace )
       noAction
@@ -836,28 +960,38 @@ class Visitor
     method dispatch( cmd:CmdLabel )
       cmd.statements.dispatch( this )
 
+    method dispatch( cmd:CmdImplicitIdentifierAcccess )
+
     method dispatch( cmd:CmdInlineNative )
-      if (cmd.new_value) cmd.new_value.dispatch( this )
+      if (cmd.new_value)
+        cmd.new_value = cmd.new_value.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdMakeRequisite )
 
     method dispatch( cmd:CmdNoAction )
 
     method dispatch( cmd:CmdSelect )
-      if (cmd.expression) cmd.expression.dispatch( this )
+      if (cmd.expression)
+        cmd.expression = cmd.expression.dispatch( this )
+      endIf
       forEach (c in cmd.cases) c.dispatch( this )
 
     method dispatch( cmd:CmdSelectCase )
       if (cmd.conditions)
-        forEach (c in cmd.conditions) c.dispatch( this )
+        forEach (c at index in cmd.conditions)
+          cmd.conditions[ index ] = c.dispatch( this )
+        endForEach
       endIf
-      if (cmd.value) cmd.value.dispatch( this )
+      if (cmd.value)
+        cmd.value = cmd.value.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdNamedArg )
       noAction
 
     method dispatch( cmd:CmdIsReference )
-      cmd.operand.dispatch( this )
+      cmd.operand = cmd.operand.dispatch( this )
 
 endClass
 

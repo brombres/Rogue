@@ -19,6 +19,8 @@ class Parser
 
     inserted_module_prefixes : Logical
 
+    implicit_access_used : Logical
+
   METHODS
     method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
@@ -2367,10 +2369,10 @@ class Parser
             arg.is_negative = is_negative
             named_args.add( arg )
             if (consume(TokenType.symbol_equals))
-              arg.value = parse_expression
+              arg.value = parse_expression_converting_implicit_access
             endIf
           else
-            args.add( parse_expression )
+            args.add( parse_expression_converting_implicit_access )
           endIf
         endWhile
         consume_eols
@@ -2378,6 +2380,16 @@ class Parser
       endIf
 
       return named_args
+
+    method parse_expression_converting_implicit_access->Cmd
+      local prior_setting = implicit_access_used
+      implicit_access_used = false
+      local expr = parse_expression
+
+      if (implicit_access_used) trace implicit_access_used
+
+      implicit_access_used = prior_setting
+      return expr
 
 
     method parse_specialization_string->String
@@ -2761,6 +2773,11 @@ class Parser
 
         return cmd_select
 
+      elseIf (consume(TokenType.symbol_slash_slash))
+        # Implicit identifier access for a query
+        implicit_access_used = true
+        return CmdImplicitIdentifierAcccess( t, read_identifier )
+
       elseIf (next_is(TokenType.keyword_try))
         return parse_try_expression
 
@@ -3075,6 +3092,6 @@ class FnArg( name:String, value:Cmd )
     type : Type
 
   METHODS
-    method set_type( @type )->FnArg
+    method set-type( @type )->FnArg
       return this
 endClass

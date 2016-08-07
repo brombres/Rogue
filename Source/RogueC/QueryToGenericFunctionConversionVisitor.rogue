@@ -1,0 +1,2 @@
+class QueryToGenericFunctionConversionVisitor : Visitor [singleton]
+endClass
