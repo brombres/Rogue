@@ -229,7 +229,7 @@ class CmdStatementList : Cmd[]
 
   METHODS
     method init
-      prior.init
+      init( 0 )
 
     method init( initial_capacity:Int32)
       prior.init( initial_capacity )
@@ -2717,12 +2717,7 @@ class CmdCallPriorMethod : Cmd
     method resolve( scope:Scope )->Cmd
       local access = CmdAccess( t, name, args, named_args )
       if (name == "init")
-        # This handles situations where the prior.init() variation WAS NOT overridden in the current context.
-        local call = scope.resolve_call( scope.this_type, access, &!error_on_fail, Scope.CALLING_PRIOR_INIT )
-        if (call) return call
-
-        # This handles situations where the prior.init() variation WAS overridden in the current context.
-        call = scope.resolve_call( scope.this_type, access, &!error_on_fail, Scope.SUPPRESS_INHERITED )
+        local call = scope.resolve_call( scope.this_type, access, &error_on_fail, Scope.CALLING_PRIOR_INIT )
         return call.call_prior( scope )
 
       else

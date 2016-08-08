@@ -6,7 +6,10 @@ class Table<<$KeyType,$ValueType>>
     keys     : $KeyType[]
 
   METHODS
-    method init( &unordered )
+    method init
+      init( 16 )
+
+    method init( unordered:Logical )
       init( 16, unordered )
 
     method init( bin_count:Int32, &unordered )
@@ -48,14 +51,12 @@ class Table<<$KeyType,$ValueType>>
     method contains( key:$KeyType )->Logical
       return find(key)
 
-      #{
     method count( query:Function(Value)->Logical )->Int32
       local result = 0
       forEach (v in value_reader)
         if (query(v)) ++result
       endForEach
       return result
-      }#
 
     method is_empty->Logical
       return count == 0

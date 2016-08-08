@@ -37,6 +37,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Renamed the query method `Table.keys(Function(...))` to `Table.locate(Function(...))`.
 - [API] Added several *query methods* to `List` and `Table`: `.get(query)->$DataType[]`, `.first(query)->$DataType?`, `.locate(query)->$DataType[]/Int32[]`, `.remove(query)->$DataType[]`, and `.count(query)->Int32` (the latter has been added to `Value` as well).`
 - [API] Added `Array<<DataType>>.cloned()->Array<<DataType>>`.
+- [RogueC] Reworked and simplified code handling resolution of `prior.init` calls to fix a new `--exhaustive` compile error that chose now to crop up.
 
 ###v1.0.90 - August 6, 2016
 - [Rogue]  Renamed `[requisite]` to `[essential]`.

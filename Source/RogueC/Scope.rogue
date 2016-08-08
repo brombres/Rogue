@@ -269,6 +269,21 @@ class Scope
 
       if (not candidates.refine_matches) return null
 
+      if (calling_prior_init)
+        # Discard init methods defined in the current type context in favor
+        # of their overridden version
+        forEach (m in candidates.available)
+          if (m.type_context is type_context)
+            if (m.overridden_method and not m.overridden_method.is_abstract)
+              candidates.compatible.add( m.overridden_method )
+            endIf
+          else
+            candidates.compatible.add( m )
+          endIf
+        endForEach
+        if (not candidates.update_matches) return null
+      endIf
+
       if (suppress_inherited or calling_prior_init)
         # Find method with most specific type context
         local most_specific_type : Type
@@ -282,22 +297,11 @@ class Scope
         endForEach
 
         if (most_specific_type)
-          if (suppress_inherited)
-            # Keep only the initializer methods defined in the most specific type
-            forEach (m in candidates.available)
-              if (m.type_context is most_specific_type) candidates.compatible.add( m )
-            endForEach
-            if (not candidates.update_matches) return null
-
-          else
-            # Discard initializers of the most specific type
-            forEach (m in candidates.available)
-              if (m.type_context is not most_specific_type) candidates.compatible.add( m )
-              #elseIf (m.overridden_method) candidates.compatible.add( m.overridden_method )
-            endForEach
-            if (not candidates.update_matches) return null
-
-          endIf
+          # Keep only the initializer methods defined in the most specific type
+          forEach (m in candidates.available)
+            if (m.type_context is most_specific_type) candidates.compatible.add( m )
+          endForEach
+          if (not candidates.update_matches) return null
         endIf
 
       endIf
