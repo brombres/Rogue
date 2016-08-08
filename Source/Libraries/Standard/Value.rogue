@@ -78,7 +78,7 @@ class Value
       return @{}
 
     method first->Value
-      return UndefinedValue
+      return this[ 0 ]
 
     method first( query:Function(Value)->Logical )->Value
       return UndefinedValue
@@ -137,7 +137,7 @@ class Value
       return String[]
 
     method last->Value
-      return UndefinedValue
+      return this[ count - 1 ]
 
     method last( query:Function(Value)->Logical )->Value
       return UndefinedValue
@@ -251,19 +251,19 @@ class Value
       return value
 
     method remove( key:String )->Value
-      return UndefinedValue
+      return remove( Value(key) )
 
     method remove( query:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method remove_at( index:Int32 )->Value
-      return UndefinedValue
+      return remove( this[index] )
 
     method remove_first->Value
-      return UndefinedValue
+      return remove( first )
 
     method remove_last->Value
-      return UndefinedValue
+      return remove( last )
 
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
