@@ -38,6 +38,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Renamed the query method `Table.keys(Function(...))` to `Table.locate(Function(...))`.
 - [API] Added several *query methods* to `List` and `Table`: `.get(query)->$DataType[]`, `.first(query)->$DataType?`, `.locate(query)->$DataType[]/Int32[]`, `.remove(query)->$DataType[]`, and `.count(query)->Int32` (the latter has been added to `Value` as well).`
 - [API] Added `Array<<DataType>>.cloned()->Array<<DataType>>`.
+- [API] Changed `Value.operator?(Value)` to report true for any non-null, non-LogicalValue, or true LogicalValue (and false for any null or Logical false).  Similarly changed ValueList and ValueTable `to->Logical` to always return true.
 - [RogueC] Reworked and simplified code handling resolution of `prior.init` calls to fix a new `--exhaustive` compile error that chose now to crop up.
 
 ###v1.0.90 - August 6, 2016

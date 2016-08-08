@@ -18,7 +18,7 @@ class Value
       return value
 
     method operator?( value:Value )->Logical
-      return (value is not null and value.is_non_null and value->Logical)
+      return (value is not null and value.is_non_null and (not value.is_logical or value->Logical))
 
   METHODS
     method add( value:Int32 )->this [macro]
@@ -755,6 +755,9 @@ class ValueList : Value
     method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->ValueList
       return cloned.sort( compare_fn ) as ValueList
 
+    method to->Logical
+      return true
+
     method to->String
       return values->String
 
@@ -947,6 +950,9 @@ class ValueTable : Value
     method set( key:String, new_value:Value )->this
       values.set( key, new_value )
       return this
+
+    method to->Logical
+      return true
 
     method to->String
       return values->String

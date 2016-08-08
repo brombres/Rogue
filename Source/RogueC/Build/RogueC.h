@@ -5554,6 +5554,7 @@ RogueInt32 RogueCharacter__to_number__Int32( RogueCharacter THIS, RogueInt32 bas
 RogueClassValue* RogueValue__init_object( RogueClassValue* THIS );
 RogueLogical RogueValue__operatorEQUALSEQUALS__Object( RogueClassValue* THIS, RogueObject* other_0 );
 RogueString* RogueValue__type_name( RogueClassValue* THIS );
+RogueLogical RogueValue__is_logical( RogueClassValue* THIS );
 RogueLogical RogueValue__is_null( RogueClassValue* THIS );
 RogueLogical RogueValue__is_non_null( RogueClassValue* THIS );
 RogueLogical RogueValue__is_number( RogueClassValue* THIS );
@@ -5589,6 +5590,7 @@ RogueString* RogueValueTable__to_String( RogueClassValueTable* THIS );
 RogueString* RogueValueTable__type_name( RogueClassValueTable* THIS );
 RogueClassValue* RogueValueTable__get__String( RogueClassValueTable* THIS, RogueString* key_0 );
 RogueClassValueTable* RogueValueTable__set__String_Value( RogueClassValueTable* THIS, RogueString* key_0, RogueClassValue* new_value_1 );
+RogueLogical RogueValueTable__to_Logical( RogueClassValueTable* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init_object( RogueClassTable_String_Value_* THIS );
 RogueClassTable_String_Value_* RogueTable_String_Value___init( RogueClassTable_String_Value_* THIS );
 RogueString* RogueTable_String_Value___to_String( RogueClassTable_String_Value_* THIS );
