@@ -14,8 +14,11 @@ class Value
       if (value is null) return NullValue
       return StringValue( value )
 
+    method create( value:Value )->Value
+      return value
+
     method operator?( value:Value )->Logical
-      return (value is not null and value.is_non_null)
+      return (value is not null and value.is_non_null and value->Logical)
 
   METHODS
     method add( value:Int32 )->this [macro]
@@ -54,6 +57,9 @@ class Value
     method count->Int32
       return 0
 
+    method count( query:Function(Value)->Logical )->Int32
+      return 0
+
     method ensure_list( key:String )->ValueList
       # When called on a ValueTable, ensures that the table contains a list
       # with the given key, creating it if necessary, and returns that list.
@@ -71,7 +77,7 @@ class Value
     method first->Value
       return UndefinedValue
 
-    method first( match_fn:Function(Value)->Logical )->Value
+    method first( query:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method get( index:Int32 )->Value
@@ -80,7 +86,7 @@ class Value
     method get( key:String )->Value
       return UndefinedValue
 
-    method get( match_fn:Function(Value)->Logical )->Value
+    method get( query:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method is_collection->Logical
@@ -127,14 +133,17 @@ class Value
     method keys->String[]
       return String[]
 
-    method keys( match_fn:Function(Value)->Logical )->String[]
-      return String[]
-
     method last->Value
       return UndefinedValue
 
-    method last( match_fn:Function(Value)->Logical )->Value
+    method last( query:Function(Value)->Logical )->Value
       return UndefinedValue
+
+    method locate( value:Value )->Value
+      return Value[]
+
+    method locate( query:Function(Value)->Logical )->Value[]
+      return Value[]
 
     method operator==( other:Value )->Logical
       return this is other
@@ -241,7 +250,7 @@ class Value
     method remove( key:String )->Value
       return UndefinedValue
 
-    method remove( remove_if:Function(Value)->Logical )->Value
+    method remove( query:Function(Value)->Logical )->Value
       return UndefinedValue
 
     method remove_at( index:Int32 )->Value
@@ -652,12 +661,19 @@ class ValueList : Value
     method count->Int32
       return values.count
 
+    method count( query:Function(Value)->Logical )->Int32
+      local result = 0
+      forEach (v in values)
+        if (query(v)) ++result
+      endForEach
+      return result
+
     method first->Value
       return this.get(0)
 
-    method first( match_fn:Function(Value)->Logical )->Value
+    method first( query:Function(Value)->Logical )->Value
       forEach (v in values)
-        if (match_fn(v)) return v
+        if (query(v)) return v
       endForEach
       return UndefinedValue
 
@@ -665,10 +681,10 @@ class ValueList : Value
       if (index < 0 or index >= values.count) return UndefinedValue
       return select{ values[index] || UndefinedValue }
 
-    method get( match_fn:Function(Value)->Logical )->Value
+    method get( query:Function(Value)->Logical )->Value
       local results : ValueList
       forEach (value in this)
-        if (match_fn(value))
+        if (query(value))
           ensure results
           results.add( value )
         endIf
@@ -686,17 +702,30 @@ class ValueList : Value
     method last->Value
       return this.get( values.count - 1 )
 
-    method last( match_fn:Function(Value)->Logical )->Value
+    method last( query:Function(Value)->Logical )->Value
       forEach (v in values step -1)
-        if (match_fn(v)) return v
+        if (query(v)) return v
       endForEach
       return UndefinedValue
+
+    method locate( value:Value )->Value
+      forEach (v at index in this)
+        if (v == value) return index
+      endForEach
+      return UndefinedValue
+
+    method locate( query:Function(Value)->Logical )->Value[]
+      local results = Value[]
+      forEach (value at index in this)
+        if (query(value)) results.add( index )
+      endForEach
+      return results
 
     method remove( value:Value )->Value
       return values.remove( value )
 
-    method remove( remove_if:Function(Value)->Logical )->Value
-      local results = this[ remove_if ]
+    method remove( query:Function(Value)->Logical )->Value
+      local results = this[ query ]
       if (not results) return results
 
       forEach (v in results) remove( v )
@@ -804,6 +833,13 @@ class ValueTable : Value
     method count->Int32
       return values.count
 
+    method count( query:Function(Value)->Logical )->Int32
+      local result = 0
+      forEach (v in values.value_reader)
+        if (query(v)) ++result
+      endForEach
+      return result
+
     method ensure_list( key:String )->ValueList
       # Ensures that this table contains a list with the given key, creating
       # it if necessary, and returns that list.
@@ -822,10 +858,10 @@ class ValueTable : Value
       this[ key ] = table
       return table
 
-    method first( match_fn:Function(Value)->Logical )->Value
+    method first( query:Function(Value)->Logical )->Value
       forEach (key in keys)
         local v = this[ key ]
-        if (match_fn(v)) return v
+        if (query(v)) return v
       endForEach
       return UndefinedValue
 
@@ -836,11 +872,11 @@ class ValueTable : Value
     method get( key:String )->Value
       return select{ values[ key ] || UndefinedValue }
 
-    method get( match_fn:Function(Value)->Logical )->Value
+    method get( query:Function(Value)->Logical )->Value
       local results : ValueList
       forEach (key in keys)
         local value = this[key]
-        if (match_fn(value))
+        if (query(value))
           ensure results
           results.add( value )
         endIf
@@ -858,30 +894,36 @@ class ValueTable : Value
     method keys->String[]
       return values.keys
 
-    method keys( match_fn:Function(Value)->Logical )->String[]
-      local results = String[]
-      forEach (key in keys)
-        if (match_fn(this[key])) results.add( key )
-      endForEach
-      return results
-
-    method last( match_fn:Function(Value)->Logical )->Value
+    method last( query:Function(Value)->Logical )->Value
       forEach (key in keys step -1)
         local v = this[ key ]
-        if (match_fn(v)) return v
+        if (query(v)) return v
       endForEach
       return UndefinedValue
+
+    method locate( value:Value )->Value
+      forEach (entry in values.entry_reader)
+        if (entry.value == value) return entry.key
+      endForEach
+      return UndefinedValue
+
+    method locate( query:Function(Value)->Logical )->Value[]
+      local results = Value[]
+      forEach (key in keys)
+        if (query(this[key])) results.add( key )
+      endForEach
+      return results
 
     method remove( key:String )->Value
       return values.remove( key )
 
-    method remove( remove_if:Function(Value)->Logical )->Value
+    method remove( query:Function(Value)->Logical )->Value
       local remove_keys : String[]
       local results : @[]
 
       forEach (key in keys)
         local v = this[ key ]
-        if (remove_if(v))
+        if (query(v))
           ensure results
           ensure remove_keys
           remove_keys.add( key )
@@ -896,6 +938,9 @@ class ValueTable : Value
     method remove_at( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
       return values.remove( values.keys[index] )
+
+    method set( index:Int32, value:Value )->this
+      return set( ""+index, value )
 
     method set( key:String, new_value:Value )->this
       values.set( key, new_value )

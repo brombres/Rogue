@@ -15,6 +15,11 @@ endClass
 
 class Array<<$DataType>> : NativeArray [native]
   METHODS
+    method cloned->Array<<$DataType>>
+      local result = Array<<$DataType>>( count )
+      forEach (value at index in this) result[ index ] = value
+      return result
+
     method get( index:Int32 )->$DataType [macro]
       this[ index ]
 endClass

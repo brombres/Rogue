@@ -29,8 +29,7 @@ class Exception [essential]
       if (st is null) st = "No stack trace"
       st = st.trimmed
       if (st.count) st = "\n" + st
-      local self = select{this is null:"Unknown" || this->String}
-      return "$$" (self, st)
+      return select{ this:this->String || "Unknown" } + st
 endClass
 
 class Error : Exception;

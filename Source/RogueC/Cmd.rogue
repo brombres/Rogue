@@ -2925,16 +2925,30 @@ class CmdLogicalNot : CmdUnary
     method prefix_symbol->String
       return "not "
 
+    method fn_name->String
+      return "operator_not"
+
     method resolve( scope:Scope )->Cmd
-      operand = operand.resolve( scope ).require_logical( scope )
-      if (operand.is_literal) return resolve_for_literal_operand( scope )
-      else                    return resolve_for_operand_type( scope, operand.require_type )
+      operand = operand.resolve( scope ).require_value
+      if (operand.is_literal)
+        return resolve_for_literal_operand( scope )
+      else
+        local operand_type = operand.require_type
+        if (operand_type.has_method_named(fn_name))
+          return CmdAccess( t, operand, fn_name ).resolve( scope )
+        else
+          operand = operand.require_logical( scope )
+          return this
+        endIf
+      endIf
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal64)
         return CmdLiteralLogical( t, not (operand as CmdLiteralReal64).value )
       elseIf (operand instanceOf CmdLiteralInt32)
         return CmdLiteralLogical( t, not (operand as CmdLiteralInt32).value )
+      else
+        operand = operand.require_logical( scope )
       endIf
       return this
 
@@ -4572,7 +4586,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
 endClass
 
 
-class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:FnArg[], statements:CmdStatementList, is_generic:Logical ) : Cmd
+class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:FnArg[], statements:CmdStatementList, is_generic:Logical, query_cmd=null:Cmd ) : Cmd
   METHODS
     method cloned( clone_args:CloneArgs )->CmdCreateFunction
       local args2 : FnArg[]
@@ -4582,7 +4596,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
           args2.add( FnArg( arg.name, arg.value.cloned(clone_args) ).set_type( arg.type ) )
         endForEach
       endIf
-      return CmdCreateFunction( t, parameters, return_type, args2, statements.cloned(clone_args), is_generic )
+      return CmdCreateFunction( t, parameters, return_type, args2, statements.cloned(clone_args), is_generic, cloned(query_cmd,clone_args) )
 
     method implicit_type( scope:Scope )->Type
       if (is_generic_function) return null
@@ -4602,7 +4616,13 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       return true
 
     method resolve( scope:Scope )->Cmd
-      if (is_generic) return this
+      if (is_generic)
+        if (query_cmd)
+          QueryToGenericFunctionConversionVisitor.convert( query_cmd, this )
+          query_cmd = null
+        endIf
+        return this
+      endIf
 
       local parameter_types : Type[]
       if (parameters and parameters.count)
@@ -5212,11 +5232,35 @@ class CmdEnsure : Cmd
 
 endClass
 
-class CmdImplicitIdentifierAcccess( t, name:String ) : Cmd
+
+class CmdImplicitAccess( t, access:CmdAccess ) : Cmd
+  # Null access signifies "this" access AKA query value
   METHODS
     method cloned( clone_args=null:CloneArgs )->Cmd
-      return CmdImplicitIdentifierAcccess( t, name )
+      return CmdImplicitAccess( t, cloned(access,clone_args) as CmdAccess )
+
+    method convert_to_explicit_access->Cmd
+      if (access)
+        access.context = CmdAccess( t, "value" )
+        return access
+      else
+        return CmdAccess( t, "value" )
+      endIf
 
     method resolve( scope:Scope )->Cmd
-      throw t.error( "Illegal use of implicit access; can only be used as a call argument." )
+      throw t.error( "Illegal use of implicit access; can only be used as a query argument in a call." )
 endClass
+
+
+class CmdImplicitIDAccess( t, name:String ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdImplicitIDAccess( t, name )
+
+    method convert_to_explicit_access->Cmd
+      return CmdElementAccess( t, CmdAccess(t,"value"), CmdLiteralString(t,name) )
+
+    method resolve( scope:Scope )->Cmd
+      throw t.error( "Illegal use of implicit access; can only be used as a query argument in a call." )
+endClass
+

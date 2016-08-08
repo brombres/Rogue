@@ -2258,7 +2258,7 @@ class Parser
       elseIf (consume(TokenType.symbol_open_bracket))
         # Parse obj[index]
         consume_eols
-        local access = CmdElementAccess( t, context, parse_expression )
+        local access = CmdElementAccess( t, context, parse_expression_allowing_query )
         consume_eols
         must_consume( TokenType.symbol_close_bracket )
         return parse_member_access( access )
@@ -2369,10 +2369,10 @@ class Parser
             arg.is_negative = is_negative
             named_args.add( arg )
             if (consume(TokenType.symbol_equals))
-              arg.value = parse_expression_converting_implicit_access
+              arg.value = parse_expression_allowing_query
             endIf
           else
-            args.add( parse_expression_converting_implicit_access )
+            args.add( parse_expression_allowing_query )
           endIf
         endWhile
         consume_eols
@@ -2381,16 +2381,17 @@ class Parser
 
       return named_args
 
-    method parse_expression_converting_implicit_access->Cmd
+    method parse_expression_allowing_query->Cmd
       local prior_setting = implicit_access_used
       implicit_access_used = false
       local expr = parse_expression
 
-      if (implicit_access_used) trace implicit_access_used
+      if (implicit_access_used)
+        expr = CmdCreateFunction( expr.t, FnParam[][FnParam("value")], null, null, CmdStatementList(), &is_generic, &query_cmd=expr )
+      endIf
 
       implicit_access_used = prior_setting
       return expr
-
 
     method parse_specialization_string->String
       string_buffer.clear
@@ -2776,7 +2777,16 @@ class Parser
       elseIf (consume(TokenType.symbol_slash_slash))
         # Implicit identifier access for a query
         implicit_access_used = true
-        return CmdImplicitIdentifierAcccess( t, read_identifier )
+        return CmdImplicitIDAccess( t, read_identifier )
+
+      elseIf (consume(TokenType.symbol_dot))
+        # Implicit access for a query
+        implicit_access_used = true
+        if (consume(TokenType.keyword_this)) return CmdImplicitAccess( t, null )
+        local cmd = parse_access( t )
+        local access = cmd as CmdAccess
+        if (access) return CmdImplicitAccess( t, access )
+        else        return cmd
 
       elseIf (next_is(TokenType.keyword_try))
         return parse_try_expression

@@ -1,37 +1,46 @@
 class Table<<$KeyType,$ValueType>>
   PROPERTIES
     bin_mask : Int32
-    bins     : TableEntry<<$KeyType,$ValueType>>[]
+    bins     : Array<<TableEntry<<$KeyType,$ValueType>>>>
+    count    : Int32
     keys     : $KeyType[]
 
   METHODS
-    method init
-      init( 16 )
+    method init( &unordered )
+      init( 16, unordered )
 
-    method init( bin_count:Int32 )
+    method init( bin_count:Int32, &unordered )
       local bins_power_of_2 = 1
       while (bins_power_of_2 < bin_count) bins_power_of_2 = bins_power_of_2 :<<: 1
       bin_count = bins_power_of_2
       bin_mask = bin_count - 1
 
-      bins = TableEntry<<$KeyType,$ValueType>>[]( bin_count, null )
-      keys = $KeyType[]
+      bins = Array<<TableEntry<<$KeyType,$ValueType>>>>( bin_count )
+      if (not unordered) keys = $KeyType[]
 
     method init( other:Table<<$KeyType,$ValueType>> )
       bin_mask = other.bin_mask
       bins = other.bins.cloned
-      keys = other.keys.cloned
+      if (other.@keys) keys = other.@keys.cloned
+      count = other.count
 
     method add( other:Table<<$KeyType,$ValueType>> )->Table<<$KeyType,$ValueType>>
-      forEach (key in other.keys) this[key] = other[key]
+      forEach (entry in other.entry_reader)
+        this[ entry.key ] = entry.value
+      endForEach
       return this
 
     method at( index:Int32 )->$ValueType
-      return get( keys[index] )
+      if (@keys) return this[ @keys[index] ]
+
+      local reader = value_reader
+      forEach (0..<index) reader.read
+      return reader.read
 
     method clear
       forEach (i of bins) bins[i] = null
-      keys.clear
+      if (@keys) @keys.clear
+      count = 0
 
     method cloned->Table<<$KeyType,$ValueType>>
       return Table<<$KeyType,$ValueType>>( this )
@@ -39,8 +48,14 @@ class Table<<$KeyType,$ValueType>>
     method contains( key:$KeyType )->Logical
       return find(key)
 
-    method count->Int32
-      return keys.count
+      #{
+    method count( query:Function(Value)->Logical )->Int32
+      local result = 0
+      forEach (v in value_reader)
+        if (query(v)) ++result
+      endForEach
+      return result
+      }#
 
     method is_empty->Logical
       return count == 0
@@ -56,6 +71,27 @@ class Table<<$KeyType,$ValueType>>
 
       return null
 
+    method first->$ValueType
+      if (not count)
+        local default_value : $ValueType
+        return default_value
+      endIf
+
+      if (@keys) return this[ @keys[0] ]
+
+      forEach (first_entry in bins)
+        if (first_entry) return first_entry.value
+      endForEach
+
+      local default_value : $ValueType
+      return default_value
+
+    method first( query:Function($ValueType)->Logical )->$ValueType?
+      forEach (value in value_reader)
+        if (query(value)) return value
+      endForEach
+      return null
+
     method get( key:$KeyType )->$ValueType
       local entry = find( key )
       if (entry)
@@ -64,6 +100,39 @@ class Table<<$KeyType,$ValueType>>
         local default_value : $ValueType
         return default_value
       endIf
+
+    method get( query:Function($ValueType)->Logical )->$ValueType[]
+      local result = $ValueType[]
+      forEach (value in value_reader)
+        if (query(value)) result.add( value )
+      endForEach
+      return result
+
+    method keys->$KeyType[]
+      if (@keys) return @keys
+
+      local result = $KeyType[]( count )
+      forEach (key in key_reader)
+        result.add( key )
+      endForEach
+      return result
+
+    method locate( query:Function($ValueType)->Logical )->$KeyType[]
+      local result = $KeyType[]
+      forEach (entry in entry_reader)
+        if (query(entry.value)) result.add( entry.key )
+      endForEach
+      return result
+
+    method remove( query:Function($ValueType)->Logical )->$ValueType[]
+      # Returns the list of values that pass the query function while removing
+      # them from this table.
+      local remove_keys = locate( query )
+      local result = $ValueType[]
+      forEach (k in remove_keys)
+        result.add( remove(k) )
+      endForEach
+      return result
 
     method remove( key:$KeyType )->$ValueType
       local hash = key.hash_code
@@ -75,7 +144,8 @@ class Table<<$KeyType,$ValueType>>
         return default_zero_value
       endIf
 
-      keys.remove( key )
+      --count
+      if (@keys) @keys.remove( key )
 
       if (entry.hash == hash and entry.key == key)
         # First item in hash bin
@@ -87,7 +157,7 @@ class Table<<$KeyType,$ValueType>>
       while (next_entry)
         # Later item in hash bin
         if (next_entry.hash == hash and next_entry.key == key)
-          local result = entry.value
+          local result = next_entry.value
           entry.next_entry = next_entry.next_entry
           return result
         endIf
@@ -111,11 +181,18 @@ class Table<<$KeyType,$ValueType>>
         entry = entry.next_entry
       endWhile
 
+      if (count >= bins.count)
+        _grow()
+        index = hash & bin_mask
+        entry = bins[ index ]
+      endIf
+
       entry = TableEntry<<$KeyType,$ValueType>>( key, value, hash )
       entry.next_entry = bins[ index ]
       bins[index] = entry
 
-      keys.add( key )
+      ++count
+      if (@keys) @keys.add( key )
       return this
 
     method to->String
@@ -123,8 +200,8 @@ class Table<<$KeyType,$ValueType>>
 
     method to->Value
       local result = @{}
-      forEach (key in keys)
-        result[ key->String ] = Value( this[ key ] )
+      forEach (entry in entry_reader)
+        result[ entry.key->String ] = Value( entry.value )
       endForEach
       return result
 
@@ -133,37 +210,56 @@ class Table<<$KeyType,$ValueType>>
 
     method print_to( buffer:StringBuilder )->StringBuilder
       buffer.print( '{' )
-      local i = 0
-      while (i < keys.count)
+      forEach (entry at i in entry_reader)
         if (i > 0) buffer.print( ',' )
-        local key = keys[i]
-        buffer.print( key )
+        buffer.print( entry.key )
         buffer.print( ':' )
-        buffer.print( this[key] )
-        ++i
-      endWhile
+        buffer.print( entry.value )
+      endForEach
       buffer.print( '}' )
       return buffer
 
     method values->$ValueType[]
-      local r = $ValueType[]
-      forEach (k in keys)
-        r.add(get(k))
+      local result = $ValueType[]( count )
+      forEach (value in value_reader)
+        result.add( value )
       endForEach
-      return r
+      return result
 
-    method item_reader->TableReader<<$KeyType,$ValueType>>
-      return TableReader<<$KeyType,$ValueType>>(this)
-
-    method value_reader->TableValueReader<<$KeyType,$ValueType>>
-      return TableValueReader<<$KeyType,$ValueType>>(this)
+    method entry_reader->TableEntryReader<<$KeyType,$ValueType>>
+      if (@keys) return TableEntryReader<<$KeyType,$ValueType>>(this)
+      else       return TableUnsortedEntryReader<<$KeyType,$ValueType>>(this)
 
     method key_reader->TableKeyReader<<$KeyType,$ValueType>>
-      return TableKeyReader<<$KeyType,$ValueType>>(this)
+      if (@keys) return TableKeyReader<<$KeyType,$ValueType>>(this)
+      else       return TableUnsortedKeyReader<<$KeyType,$ValueType>>(this)
+
+    method value_reader->TableValueReader<<$KeyType,$ValueType>>
+      if (@keys) return TableValueReader<<$KeyType,$ValueType>>(this)
+      else       return TableUnsortedValueReader<<$KeyType,$ValueType>>(this)
+
+    method _grow
+      # Grow by a factor of two
+      local old_bins = bins
+      bins = Array<<TableEntry<<$KeyType,$ValueType>>>>( bins.count * 2 )
+      bin_mask = (bin_mask :<<: 1) | 1
+
+      forEach (bin in old_bins)
+        local entry = bin
+        while (entry is not null)
+          local next = entry.next_entry
+
+          local index = entry.hash & bin_mask
+          entry.next_entry = bins[index]
+          bins[index] = entry
+
+          entry = next
+        endWhile
+      endForEach
+
 endClass
 
-
-class TableReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueType>>>>
+class TableEntryReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueType>>>>
   PROPERTIES
     table : Table<<$KeyType,$ValueType>>
 
@@ -175,7 +271,7 @@ class TableReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueTy
       return @position < table.count
 
     method peek->TableEntry<<$KeyType,$ValueType>>
-      return table.find(table.keys[@position])
+      return table.find(table.@keys[@position])
 
     method read->TableEntry<<$KeyType,$ValueType>>
       local r = peek()
@@ -196,7 +292,7 @@ class TableKeyReader<<$KeyType, $ValueType>> : Reader<<$KeyType>>
       return @position < table.count
 
     method peek->$KeyType
-      return table.keys[@position]
+      return table.@keys[@position]
 
     method read->$KeyType
       local r = peek()
@@ -217,12 +313,86 @@ class TableValueReader<<$KeyType, $ValueType>> : Reader<<$ValueType>>
       return @position < table.count
 
     method peek->$ValueType
-      return table.find(table.keys[@position]).value
+      return table.find(table.@keys[@position]).value
 
     method read->$ValueType
       local r = peek()
       @position++
       return r
+endClass
+
+class TableUnsortedEntryReader<<$KeyType,$ValueType>> : TableEntryReader<<$KeyType,$ValueType>>
+  PROPERTIES
+    table      : Table<<$KeyType,$ValueType>>
+    cur_bindex = -1
+    cur_entry  : TableEntry<<$KeyType,$ValueType>>
+
+  METHODS
+    method init (table)
+      advance
+
+    method advance
+      if (cur_entry)
+        cur_entry = cur_entry.next_entry
+        if (cur_entry) return
+      endIf
+
+      forEach (i in cur_bindex+1..<table.bins.count)
+        cur_entry = table.bins[i]
+        if (cur_entry)
+          cur_bindex = i
+          return
+        endIf
+      endForEach
+
+    method has_another->Logical
+      return cur_entry?
+
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return cur_entry
+
+    method read->TableEntry<<$KeyType,$ValueType>>
+      local result = cur_entry
+      advance
+      return result
+endClass
+
+class TableUnsortedKeyReader<<$KeyType, $ValueType>> : TableKeyReader<<$KeyType,$ValueType>>
+  PROPERTIES
+    table        : Table<<$KeyType,$ValueType>>
+    entry_reader : TableUnsortedEntryReader<<$KeyType,$ValueType>>
+
+  METHODS
+    method init( table )
+      ensure entry_reader( table )
+
+    method has_another->Logical
+      return entry_reader.has_another
+
+    method peek->$KeyType
+      return entry_reader.peek.key
+
+    method read->$KeyType
+      return entry_reader.read.key
+endClass
+
+class TableUnsortedValueReader<<$KeyType, $ValueType>> : TableValueReader<<$KeyType,$ValueType>>
+  PROPERTIES
+    table        : Table<<$KeyType,$ValueType>>
+    entry_reader : TableUnsortedEntryReader<<$KeyType,$ValueType>>
+
+  METHODS
+    method init( table )
+      ensure entry_reader( table )
+
+    method has_another->Logical
+      return entry_reader.has_another
+
+    method peek->$ValueType
+      return entry_reader.peek.value
+
+    method read->$ValueType
+      return entry_reader.read.value
 endClass
 
 
@@ -258,7 +428,7 @@ class StringTable<<$ValueType>> : Table<<String,$ValueType>>
     method find_key( key:StringBuilder )->String
       local len  = key.count
       local hash = key.hash_code
-      forEach (k in keys)
+      forEach (k in key_reader)
         if (k.hash_code == hash and k.count == len and k == key) return k
       endForEach
       return null

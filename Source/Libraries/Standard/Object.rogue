@@ -47,7 +47,6 @@ class Object [native]
       introspector.set( value )
       return this
 
-
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
       forEach (i in 0..<property_count)
         if (property_name(i) == name)
