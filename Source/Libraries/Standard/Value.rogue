@@ -902,9 +902,11 @@ class ValueTable : Value
       return UndefinedValue
 
     method locate( value:Value )->Value
-      forEach (entry in values.entry_reader)
-        if (entry.value == value) return entry.key
-      endForEach
+      local cur = values.first_entry
+      while (cur)
+        if (cur.value == value) return cur.key
+        cur = cur.next_entry
+      endWhile
       return UndefinedValue
 
     method locate( query:Function(Value)->Logical )->Value[]
