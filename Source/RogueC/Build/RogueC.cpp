@@ -55232,8 +55232,51 @@ RogueLogical RogueTable_Type_Logical___remove__Type( RogueClassTable_Type_Logica
     RogueLogical default_zero_value_2 = 0;
     return (RogueLogical)(default_zero_value_2);
   }
-  RogueTable_Type_Logical____remove__TableEntry_Type_Logical_( ROGUE_ARG(THIS), entry_1 );
+  RogueTable_Type_Logical___remove__TableEntry_Type_Logical_( ROGUE_ARG(THIS), entry_1 );
   return (RogueLogical)(entry_1->value);
+}
+
+RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical___remove__TableEntry_Type_Logical_( RogueClassTable_Type_Logical_* THIS, RogueClassTableEntry_Type_Logical_* entry_0 )
+{
+  THIS->count = (THIS->count + -1);
+  THIS->cur_entry = ((RogueClassTableEntry_Type_Logical_*)(NULL));
+  RogueInt32 hash_1 = (entry_0->hash);
+  RogueInt32 index_2 = ((hash_1 & THIS->bin_mask));
+  ROGUE_DEF_LOCAL_REF(RogueClassTableEntry_Type_Logical_*,cur_3,(((RogueClassTableEntry_Type_Logical_*)(THIS->bins->as_objects[index_2]))));
+  if (((void*)cur_3) == ((void*)entry_0))
+  {
+    THIS->bins->as_objects[index_2] = cur_3->adjacent_entry;
+  }
+  else
+  {
+    while (((void*)cur_3->adjacent_entry) != ((void*)entry_0))
+    {
+      cur_3 = ((RogueClassTableEntry_Type_Logical_*)cur_3->adjacent_entry);
+    }
+    cur_3->adjacent_entry = cur_3->adjacent_entry->adjacent_entry;
+  }
+  if (((void*)entry_0) == ((void*)THIS->first_entry))
+  {
+    if (((void*)entry_0) == ((void*)THIS->last_entry))
+    {
+      THIS->first_entry = ((RogueClassTableEntry_Type_Logical_*)(NULL));
+      THIS->last_entry = ((RogueClassTableEntry_Type_Logical_*)(NULL));
+    }
+    else
+    {
+      THIS->first_entry = entry_0->next_entry;
+    }
+  }
+  else if (((void*)entry_0) == ((void*)THIS->last_entry))
+  {
+    THIS->last_entry = entry_0->previous_entry;
+  }
+  else
+  {
+    entry_0->previous_entry->next_entry = entry_0->next_entry;
+    entry_0->next_entry->previous_entry = entry_0->previous_entry;
+  }
+  return (RogueClassTableEntry_Type_Logical_*)(entry_0);
 }
 
 RogueClassTable_Type_Logical_* RogueTable_Type_Logical___set__Type_Logical( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0, RogueLogical value_1 )
@@ -55304,49 +55347,6 @@ void RogueTable_Type_Logical____grow( RogueClassTable_Type_Logical_* THIS )
     THIS->bins->as_objects[index_1] = cur_0;
     cur_0 = ((RogueClassTableEntry_Type_Logical_*)cur_0->next_entry);
   }
-}
-
-RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical____remove__TableEntry_Type_Logical_( RogueClassTable_Type_Logical_* THIS, RogueClassTableEntry_Type_Logical_* entry_0 )
-{
-  THIS->count = (THIS->count + -1);
-  THIS->cur_entry = ((RogueClassTableEntry_Type_Logical_*)(NULL));
-  RogueInt32 hash_1 = (entry_0->hash);
-  RogueInt32 index_2 = ((hash_1 & THIS->bin_mask));
-  ROGUE_DEF_LOCAL_REF(RogueClassTableEntry_Type_Logical_*,cur_3,(((RogueClassTableEntry_Type_Logical_*)(THIS->bins->as_objects[index_2]))));
-  if (((void*)cur_3) == ((void*)entry_0))
-  {
-    THIS->bins->as_objects[index_2] = cur_3->adjacent_entry;
-  }
-  else
-  {
-    while (((void*)cur_3->adjacent_entry) != ((void*)entry_0))
-    {
-      cur_3 = ((RogueClassTableEntry_Type_Logical_*)cur_3->adjacent_entry);
-    }
-    cur_3->adjacent_entry = cur_3->adjacent_entry->adjacent_entry;
-  }
-  if (((void*)entry_0) == ((void*)THIS->first_entry))
-  {
-    if (((void*)entry_0) == ((void*)THIS->last_entry))
-    {
-      THIS->first_entry = ((RogueClassTableEntry_Type_Logical_*)(NULL));
-      THIS->last_entry = ((RogueClassTableEntry_Type_Logical_*)(NULL));
-    }
-    else
-    {
-      THIS->first_entry = entry_0->next_entry;
-    }
-  }
-  else if (((void*)entry_0) == ((void*)THIS->last_entry))
-  {
-    THIS->last_entry = entry_0->previous_entry;
-  }
-  else
-  {
-    entry_0->previous_entry->next_entry = entry_0->next_entry;
-    entry_0->next_entry->previous_entry = entry_0->previous_entry;
-  }
-  return (RogueClassTableEntry_Type_Logical_*)(entry_0);
 }
 
 RogueString* RogueArray_TableEntry_Type_Logical____type_name( RogueArray* THIS )
@@ -69782,7 +69782,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[265] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.91.3", 8 ) ); 
+  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.91.4", 8 ) ); 
   Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "August 7, 2016", 14 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2244 ) ); 

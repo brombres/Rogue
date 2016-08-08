@@ -156,7 +156,7 @@ class Table<<$KeyType,$ValueType>>
         local default_zero_value : $ValueType
         return default_zero_value
       endIf
-      _remove( entry )
+      remove( entry )
       return entry.value
 
     method remove( query:Function($ValueType)->Logical )->$ValueType[]
@@ -168,11 +168,48 @@ class Table<<$KeyType,$ValueType>>
         local next_entry = cur.next_entry
         if (query(cur.value))
           result.add( cur.value )
-          _remove( cur )
+          remove( cur )
         endIf
         cur = next_entry
       endWhile
       return result
+
+    method remove( entry:TableEntry<<$KeyType,$ValueType>> )->TableEntry<<$KeyType,$ValueType>>
+      assert (find(entry.key) is entry)
+      --count
+      cur_entry = null
+
+      # Remove from bin
+      local hash = entry.hash
+      local index = hash & bin_mask
+      local cur = bins[ index ]
+      if (cur is entry)
+        bins[ index ] = cur.adjacent_entry
+      else
+        while (cur.adjacent_entry is not entry) cur = cur.adjacent_entry
+        cur.adjacent_entry = cur.adjacent_entry.adjacent_entry
+      endIf
+
+      # Unlink from order list
+      if (entry is first_entry)
+        if (entry is last_entry)
+          first_entry = null
+          last_entry = null
+        else
+          first_entry = entry.next_entry
+        endIf
+
+      elseIf (entry is last_entry)
+        last_entry = entry.previous_entry
+
+      else
+        entry.previous_entry.next_entry = entry.next_entry
+        entry.next_entry.previous_entry = entry.previous_entry
+
+      endIf
+
+      return entry
+
 
     method set( key:$KeyType, value:$ValueType )->this
       local entry = find( key )
@@ -264,42 +301,6 @@ class Table<<$KeyType,$ValueType>>
         bins[index] = cur
         cur = cur.next_entry
       endWhile
-
-    method _remove( entry:TableEntry<<$KeyType,$ValueType>> )->TableEntry<<$KeyType,$ValueType>>
-      assert (find(entry.key) is entry)
-      --count
-      cur_entry = null
-
-      # Remove from bin
-      local hash = entry.hash
-      local index = hash & bin_mask
-      local cur = bins[ index ]
-      if (cur is entry)
-        bins[ index ] = cur.adjacent_entry
-      else
-        while (cur.adjacent_entry is not entry) cur = cur.adjacent_entry
-        cur.adjacent_entry = cur.adjacent_entry.adjacent_entry
-      endIf
-
-      # Unlink from order list
-      if (entry is first_entry)
-        if (entry is last_entry)
-          first_entry = null
-          last_entry = null
-        else
-          first_entry = entry.next_entry
-        endIf
-
-      elseIf (entry is last_entry)
-        last_entry = entry.previous_entry
-
-      else
-        entry.previous_entry.next_entry = entry.next_entry
-        entry.next_entry.previous_entry = entry.previous_entry
-
-      endIf
-
-      return entry
 
 endClass
 

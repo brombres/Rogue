@@ -7041,10 +7041,10 @@ RogueLogical RogueTable_Type_Logical___contains__Type( RogueClassTable_Type_Logi
 RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical___find__Type( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0 );
 RogueType_List* RogueTable_Type_Logical___keys( RogueClassTable_Type_Logical_* THIS );
 RogueLogical RogueTable_Type_Logical___remove__Type( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0 );
+RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical___remove__TableEntry_Type_Logical_( RogueClassTable_Type_Logical_* THIS, RogueClassTableEntry_Type_Logical_* entry_0 );
 RogueClassTable_Type_Logical_* RogueTable_Type_Logical___set__Type_Logical( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0, RogueLogical value_1 );
 RogueStringBuilder* RogueTable_Type_Logical___print_to__StringBuilder( RogueClassTable_Type_Logical_* THIS, RogueStringBuilder* buffer_0 );
 void RogueTable_Type_Logical____grow( RogueClassTable_Type_Logical_* THIS );
-RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical____remove__TableEntry_Type_Logical_( RogueClassTable_Type_Logical_* THIS, RogueClassTableEntry_Type_Logical_* entry_0 );
 RogueString* RogueArray_TableEntry_Type_Logical____type_name( RogueArray* THIS );
 RogueClassTableEntry_Type_Logical_* RogueTableEntry_Type_Logical___init_object( RogueClassTableEntry_Type_Logical_* THIS );
 RogueString* RogueTableEntry_Type_Logical___to_String( RogueClassTableEntry_Type_Logical_* THIS );
