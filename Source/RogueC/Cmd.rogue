@@ -2920,21 +2920,13 @@ class CmdLogicalNot : CmdUnary
     method prefix_symbol->String
       return "not "
 
-    method fn_name->String
-      return "operator_not"
-
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
       if (operand.is_literal)
         return resolve_for_literal_operand( scope )
       else
-        local operand_type = operand.require_type
-        if (operand_type.has_method_named(fn_name))
-          return CmdAccess( t, operand, fn_name ).resolve( scope )
-        else
-          operand = operand.require_logical( scope )
-          return this
-        endIf
+        operand = operand.require_logical( scope )
+        return this
       endIf
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
