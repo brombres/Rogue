@@ -54,6 +54,9 @@ class Value
     method contains( table_key_or_list_value:Value )->Logical
       return false
 
+    method contains( query:Function(Value)->Logical )->Logical
+      return first( query ) not instanceOf UndefinedValue
+
     method count->Int32
       return 0
 

@@ -48,15 +48,15 @@ class List<<$DataType>> : GenericList
       if (not data) return 0
       return data.count
 
-    method is_empty->Logical
-      return count == 0
-
     method clear->this
       discard_from( 0 )
       return this
 
     method contains( value:$DataType )->Logical [macro]
       this.locate( value )?
+
+    method contains( query:Function($DataType)->Logical )->Logical
+      return first( query ).exists
 
     method count( query:Function($DataType)->Logical )->Int32
       # Counts the number of items that pass the query function.
@@ -180,6 +180,9 @@ class List<<$DataType>> : GenericList
 
     method insertion_sort( compare_fn:Function($DataType,$DataType)->Logical )->this [macro]
       InsertionSort<<$DataType>>.sort( this, compare_fn )
+
+    method is_empty->Logical
+      return count == 0
 
     method keep( keep_if:Function($DataType)->Logical )->this
       local write_pos = 0

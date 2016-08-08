@@ -75,6 +75,9 @@ class Table<<$KeyType,$ValueType>>
     method contains( key:$KeyType )->Logical
       return find(key)?
 
+    method contains( query:Function($ValueType)->Logical )->Logical
+      return first( query ).exists
+
     method count( query:Function(Value)->Logical )->Int32
       local result = 0
       local cur = first_entry
