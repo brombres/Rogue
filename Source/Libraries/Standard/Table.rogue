@@ -200,10 +200,12 @@ class Table<<$KeyType,$ValueType>>
           last_entry = null
         else
           first_entry = entry.next_entry
+          first_entry.previous_entry = null
         endIf
 
       elseIf (entry is last_entry)
         last_entry = entry.previous_entry
+        last_entry.next_entry = null
 
       else
         entry.previous_entry.next_entry = entry.next_entry
