@@ -15,6 +15,57 @@ class String
     method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
       return create( characters.utf8, i1, count )
 
+    method operator==( a:String, b:String )->Logical
+      if (a is null) return (b is null)
+      else           return a.operator==( b )
+
+    method operator==( a:String, b:StringBuilder )->Logical
+      if (b is null) return (a is null)
+      else           return b.operator==( a )
+
+    method operator<>( a:String, b:String )->Int32
+      if (a is null)
+        if (b is null) return  0
+        else           return -1
+      else
+        return a.operator<>( b )
+      endIf
+
+    method operator*( count:Int32, string:String )->String
+      if (string is null) return null
+      return string.operator*( count )
+
+    method operator+( st:String, value:Byte )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Character )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Int32 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Logical )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Int64 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Object )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Real64 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:Real32 )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator+( st:String, value:String )->String
+      return select{ st || "null" }.operator+( value )
+
+    method operator*( st:String, value:Int32 )->String
+      if (st is null) return null
+      return st.operator*( value )
+
   METHODS
     method after( index:Int32 )->String
       # Returns the substring of this string that occurs after
@@ -319,13 +370,16 @@ class String
       return StringBuilder().print( this ).print( value )->String
 
     method operator==( value:String )->Logical
+      if (value is null) return false
       if (this.hash_code != value.hash_code or this.count != value.count) return false
       return (native("(0==memcmp($this->utf8,$value->utf8,$this->byte_count))")->Logical)
 
     method operator==( value:StringBuilder )->Logical
-      return (value == this)  # invoke the existing operator== method on value)
+      if (value is null) return false
+      return (value == this)  # invoke the existing operator== method on value
 
     method operator<>( other:String )->Int32
+      if (other is null) return 1
       $if ("C++")
         native @|if ($this == $other) return 0;
                 |
@@ -753,10 +807,6 @@ class String
       endWhile
 
       return buffer
-
-  GLOBAL METHODS
-    method operator*( integer:Int32, string:String  )->String [macro]
-      string.times( integer )
 
 endClass
 

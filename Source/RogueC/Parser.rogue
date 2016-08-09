@@ -1045,6 +1045,14 @@ class Parser
           statements.add( parse_try_statement )
           return
 
+        elseIf (next_is(TokenType.keyword_local))
+          parse_local_or_global( statements )
+          return
+
+        elseIf (next_is(TokenType.keyword_global))
+          parse_local_or_global( null )
+          return
+
         endIf
         #{
       else
@@ -1054,15 +1062,7 @@ class Parser
       }#
       endIf
 
-      if (next_is(TokenType.keyword_local))
-        parse_local_or_global( statements )
-        return
-
-      elseIf (next_is(TokenType.keyword_global))
-        parse_local_or_global( null )
-        return
-
-      elseIf (consume(TokenType.keyword_return))
+      if (consume(TokenType.keyword_return))
         if (this_method and this_method.is_macro and this_method.return_type?)
           throw t.error( "Omit the 'return' in a macro method with a return type." )
         endIf
@@ -1144,8 +1144,8 @@ class Parser
               while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
                      (parse_reader.line == end_t.line and parse_reader.column < end_t.column)))
                 local ch = parse_reader.read
-                if (ch=="$")
-                  # Have to hanlde any existing dollar signs by replacing them with additional args
+                if (ch=='$')
+                  # Have to handle any existing dollar signs by replacing them with additional args
                   # that are also dollar signs.
                   args.add( CmdLiteralString(t,"$") )
                 endIf
@@ -1621,6 +1621,10 @@ class Parser
         must_consume( TokenType.symbol_close_bracket )
       else
         name = read_identifier( allow_at_sign )
+
+        if (name == "operator")
+          name += reader.read->String  # add on next token
+        endIf
 
         if (next_is(TokenType.symbol_open_specialize))
           name += parse_specialization_string
@@ -2101,6 +2105,9 @@ class Parser
       elseIf (consume(TokenType.symbol_ge))
         consume_eols
         return parse_comparison( CmdCompareGE(t, lhs, parse_bitwise_xor) )
+      elseIf (consume(TokenType.symbol_compare))
+        consume_eols
+        return parse_comparison( CmdCompare(t, lhs, parse_bitwise_xor) )
       elseIf (consume(TokenType.keyword_instanceOf))
         consume_eols
         return CmdInstanceOf( t, lhs, parse_type )
@@ -2387,7 +2394,7 @@ class Parser
       local expr = parse_expression
 
       if (implicit_access_used)
-        expr = CmdCreateFunction( expr.t, FnParam[][FnParam("value")], null, null, CmdStatementList(), &is_generic, &query_cmd=expr )
+        expr = CmdCreateFunction( expr.t, FnParam[][FnParam("value")], null, null, CmdStatementList(), null, &is_generic, &query_cmd=expr )
       endIf
 
       implicit_access_used = prior_setting
@@ -2981,15 +2988,31 @@ class Parser
         endIf
       endIf
 
-      local statements = CmdStatementList()
+      local statements : CmdStatementList
+      local tokens : Token[]
       if (not is_generic and consume_eols)
-        parse_multi_line_statements( statements )
-        must_consume( TokenType.keyword_endFunction )
+        ensure tokens
+        local depth = 1
+        while (reader.has_another)
+          t2 = reader.read
+          if (t2.type is TokenType.keyword_endFunction)
+            --depth
+            if (depth == 0) escapeWhile
+            tokens.add( t2 )
+          elseIf (t2.type is TokenType.keyword_function)
+            ++depth
+            tokens.add( t2 )
+          else
+            tokens.add( t2 )
+          endIf
+        endWhile
+        if (depth) throw t.error( "End of file looking for 'endFunction'." )
       else
+        ensure statements
         parse_single_line_statements( statements )
       endIf
 
-      return CmdCreateFunction( t, parameters, return_type, with_args, statements, is_generic )
+      return CmdCreateFunction( t, parameters, return_type, with_args, statements, tokens, is_generic )
 
     method parse_property_table( t:Token )->Cmd
       # '{' already consumed

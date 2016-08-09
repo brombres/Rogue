@@ -118,6 +118,7 @@ class StringBuilder [essential]
       return (at_newline and indent > 0)
 
     method operator==( value:String )->Logical
+      if (value is null) return false
       if (count != value.count) return false
       forEach (i of this)
         if (this[i] != value[i]) return false
@@ -125,6 +126,7 @@ class StringBuilder [essential]
       return true
 
     method operator==( value:StringBuilder )->Logical
+      if (value is null) return false
       if (count != value.count) return false
       forEach (i of this)
         if (this[i] != value[i]) return false

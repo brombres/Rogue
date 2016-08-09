@@ -818,7 +818,7 @@ class Visitor
           if (arg.type) arg.type.dispatch( this )
         endForEach
       endIf
-      cmd.statements.dispatch( this )
+      if (cmd.statements) cmd.statements.dispatch( this )
       if (cmd.query_cmd)
         cmd.query_cmd = cmd.query_cmd.dispatch( this )
       endIf

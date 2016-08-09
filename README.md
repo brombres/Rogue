@@ -30,6 +30,13 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Generic functions can now omit the keyword 'function' for brevity and begin with `(args)=>`, `()=>`, or even just `=>`.  For example: `trace [3,1,5,4,2].sort( (a,b)=>(a<b) )`.
 - [Rogue] Added an *implicit function* convenience syntax that automatically converts expressions into generic single-parameter functions with automatic variable capture when the expression contains terms that begin with `.` or `//`.  For example, `table[//name==player_name]` is equivalent to writing `table[function(value) with(player_name)=>value//name==player_name]` and `list.first(.is_string and .count>3)` is equivalent to writing `list.first(function(value)=>value.is_string and value.count>3)`.  The special keyword `.this` may be used in implicit functions to indicate the value under consideration.  For example, to pull out all the odd numbers in an Int32 list: `list[ .this & 1 ]`.  Methods accepting functions of this form can be called *function methods*.
 - [Rogue] Added an additional refinement to call resolution: if a call would be otherwise ambiguous and any `Value` arguments or parameters exist, keep only candidate methods where there is at least one `Value` type in each argument/parameter pairing.  In other words, a call `m(5)` would match `m(Value)` and not `m(OtherType)`.
+- [Rogue] Explicit calls to operator methods (`a.operator==(b)` etc.) can now be made.
+- [Rogue] Implemented *compare operator* `<>`.  An expression `a <> b` resolves to `-1` if `a < b`, `0` if `a == b`, and `1` if `a > b`. Classes may implement the *compare operator* by defining global methods `method operator<>(TypeA,TypeB)->Int32` and/or instance methods `method operator<>(OtherType)->Int32`.
+- [Rogue] Reworked the operator methods mechanism.  For any general binary operator such as `+` where at least one operand is not a primitive, the expression `a + b` (of types `TypeA` and `TypeB`) is converted to the first of the following expressions that are implemented:
+    1.  Global method `TypeA.operator+( a:TypeA, b:TypeB )`.
+    2.  Global method `TypeB.operator+( a:TypeA, b:TypeB )`.
+    3.  Instance method `TypeA.operator+( b:TypeB )`.
+- [Rogue] 'local' variable declarations are no longer allowed in single-line statement blocks (part of the fix for local variables in multi-line 'function' definitions described below).
 - [API] `Table` has been completely revamped to track the order of its values by implementing a doubly-linked ordering list as part of the `TableEntry` class, making removals O(1) instead of O(n) as before.
 - [API] Renamed `Table._remove(TableEntry)` to `Table.remove(TableEntry)`.
 - [API] `Table` now uses an array of bins instead of a list of bins.
@@ -41,7 +48,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `Array<<DataType>>.cloned()->Array<<DataType>>`.
 - [API] Changed `Value.operator?(Value)` to report true for any non-null, non-LogicalValue, or true LogicalValue (and false for any null or Logical false).  Similarly changed ValueList and ValueTable `to->Logical` to always return true.
 - [API] Fixed `Value.remove(String)` for `ValueList` (the nominal purpose of remove(String) is to remove table values by key but of course it needs to work on lists of strings as well) and added some better default implementations for `Value` methods `.first()`, `.last()`, `.remove_first()`, and `.remove_last()`.
+- [API] Reworked `String` operator methods to prevent null pointer errors.
 - [RogueC] Reworked and simplified code handling resolution of `prior.init` calls to fix a new `--exhaustive` compile error that chose now to crop up.
+- [RogueC] Fixed local variables to work correctly in function definitions.  Multi-line function bodies were being parsed at the same time as function declarations, meaning that the `Parser.this_method` reference while parsing a local was either null or incorrect.  Multiline function definitions now simply collect tokens and wait for the resolve() phase to parse the function bodies.
 
 ###v1.0.90 - August 6, 2016
 - [Rogue]  Renamed `[requisite]` to `[essential]`.

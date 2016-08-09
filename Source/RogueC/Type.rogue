@@ -207,15 +207,60 @@ class Type
     method has_extended_class->Logical
       return extended_types.count?
 
-    method has_method_named( m_name:String )->Logical
+    method has_method_named( m_name:String, arg_count=null:Int32? )->Logical
       local list = method_lookup_by_name[m_name]
-      if (list and list.count) return true
+      if (not list or list.is_empty) return false
+      if (not arg_count.exists) return true
+
+      forEach (m in list)
+        if (m.parameters.count == arg_count.value) return true
+      endForEach
 
       return false
 
-    method has_global_method_named( m_name:String )->Logical
+    method has_compatible_method_named( m_name:String, arg_type:Type )->Logical
+      organize
+      arg_type.organize
+
+      local list = method_lookup_by_name[m_name]
+      if (not list or list.is_empty) return false
+
+      forEach (m in list)
+        if (m.min_args == 1)
+          if (arg_type.is_compatible_with(m.parameters[0].type)) return true
+        endIf
+      endForEach
+
+      return false
+
+    method has_global_method_named( m_name:String, arg_count=null:Int32? )->Logical
       local list = global_method_lookup_by_name[m_name]
-      return (list and list.count)
+      if (not list or list.is_empty) return false
+      if (not arg_count.exists) return true
+
+      forEach (m in list)
+        if (m.parameters.count == arg_count.value) return true
+      endForEach
+
+      return false
+
+    method has_compatible_global_method_named( m_name:String, arg_1_type:Type, arg_2_type:Type )->Logical
+      organize
+      arg_1_type.organize
+      arg_2_type.organize
+
+      local list = global_method_lookup_by_name[m_name]
+      if (not list or list.is_empty) return false
+
+      forEach (m in list)
+        if (m.min_args == 2)
+          if (arg_1_type.is_compatible_with(m.parameters[0].type) and arg_2_type.is_compatible_with(m.parameters[1].type))
+            return true
+          endIf
+        endIf
+      endForEach
+
+      return false
 
     method instance_of( ancestor_type:Type )->Logical
       if (this is ancestor_type) return true
