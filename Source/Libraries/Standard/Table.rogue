@@ -8,6 +8,10 @@ class Table<<$KeyType,$ValueType>>
     last_entry      : TableEntry<<$KeyType,$ValueType>>
     cur_entry       : TableEntry<<$KeyType,$ValueType>>
 
+    sort_function   : Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical
+    # Optional function which, if defined, is used to place each entry into the correct position
+    # as entries are added or redefined.
+
   METHODS
     method init
       init( 16 )
@@ -87,6 +91,19 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
+    method entries( list=null:TableEntry<<$KeyType,$ValueType>>[] )->TableEntry<<$KeyType,$ValueType>>[]
+      # Returns a list of table entries.
+      ensure list( count )
+      list.reserve( count )
+
+      local cur = first_entry
+      while (cur)
+        list.add( cur )
+        cur = cur.next_entry
+      endWhile
+
+      return list
+
     method is_empty->Logical
       return (count == 0)
 
@@ -135,14 +152,18 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
-    method keys->$KeyType[]
-      local result = $KeyType[]( count )
+    method keys( list=null:$KeyType[] )->$KeyType[]
+      # Returns a list of table keys.
+      ensure list( count )
+      list.reserve( count )
+
       local cur = first_entry
       while (cur)
-        result.add( cur.key )
+        list.add( cur.key )
         cur = cur.next_entry
       endWhile
-      return result
+
+      return list
 
     method locate( query:Function($ValueType)->Logical )->$KeyType[]
       local result = $KeyType[]
@@ -152,6 +173,21 @@ class Table<<$KeyType,$ValueType>>
         cur = cur.next_entry
       endWhile
       return result
+
+    method print_to( buffer:StringBuilder )->StringBuilder
+      buffer.print( '{' )
+      local cur = first_entry
+      local i = 0
+      while (cur)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( cur.key )
+        buffer.print( ':' )
+        buffer.print( cur.value )
+        cur = cur.next_entry
+        ++i
+      endWhile
+      buffer.print( '}' )
+      return buffer
 
     method remove( key:$KeyType )->$ValueType
       local entry = find( key )
@@ -193,7 +229,153 @@ class Table<<$KeyType,$ValueType>>
         cur.adjacent_entry = cur.adjacent_entry.adjacent_entry
       endIf
 
-      # Unlink from order list
+      _unlink( entry )
+
+      return entry
+
+
+    method set( key:$KeyType, value:$ValueType )->this
+      local entry = find( key )
+      if (entry)
+        entry.value = value
+        if (sort_function) _adjust_entry_order( entry )
+        return this
+      endIf
+
+      if (count >= bins.count) _grow()
+
+      local hash = key.hash_code
+      local index = hash & bin_mask
+
+      # Add to the correct bin
+      ensure entry( key, value, hash )
+      entry.adjacent_entry = bins[ index ]
+      bins[index] = entry
+
+      _place_entry_in_order( entry )
+
+      ++count
+      return this
+
+    method set-sort_function( @sort_function )->this
+      return sort( sort_function )
+
+    method sort( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical )->this
+      if (count <= 1) return this
+
+      local list = entries
+      list.sort( compare_fn )
+      forEach (i in 0..<(list.count-1))
+        list[i].next_entry       = list[i+1]
+        list[i+1].previous_entry = list[i]
+      endForEach
+      first_entry = list.first
+      last_entry = list.last
+      first_entry.previous_entry = null
+      last_entry.next_entry = null
+
+      return this
+
+    method sorted( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical ) ...
+        ->Table<<$KeyType,$ValueType>>
+      return cloned.sort( compare_fn )
+
+    method to->String
+      return print_to( StringBuilder() )->String
+
+    method to->Value
+      local result = @{}
+      local cur = first_entry
+      while (cur)
+        result[ cur.key->String ] = Value( cur.value )
+        cur = cur.next_entry
+      endWhile
+      return result
+
+    method to->ValueTable
+      return this->Value
+
+    method values( list=null:$ValueType[] )->$ValueType[]
+      # Returns a list of table keys.
+      ensure list( count )
+      list.reserve( count )
+
+      local cur = first_entry
+      while (cur)
+        list.add( cur.value )
+        cur = cur.next_entry
+      endWhile
+
+      return list
+
+    method reader->TableReader<<$KeyType,$ValueType>>
+      return TableReader<<$KeyType,$ValueType>>(this)
+
+    method key_reader->TableKeyReader<<$KeyType,$ValueType>>
+      return TableKeyReader<<$KeyType,$ValueType>>(this)
+
+    method value_reader->TableValueReader<<$KeyType,$ValueType>>
+      return TableValueReader<<$KeyType,$ValueType>>(this)
+
+    method _adjust_entry_order( entry:TableEntry<<$KeyType,$ValueType>> )
+      if (first_entry is last_entry) return # still in order, only one entry
+
+      if (entry is first_entry)
+        if (sort_function(entry,entry.next_entry)) return  # still in order
+      elseIf (entry is last_entry)
+        if (sort_function(entry.previous_entry,entry)) return  # still in order
+      else
+        if (sort_function(entry.previous_entry,entry) and sort_function(entry,entry.next_entry))
+          return  # still in order
+        endIf
+      endIf
+
+      # Not in order - unlink and then re-place
+      _unlink( entry )
+      _place_entry_in_order( entry )
+
+    method _place_entry_in_order( entry:TableEntry<<$KeyType,$ValueType>> )
+      if (first_entry)
+        # Use the sort_function comparator if it exists
+        if (sort_function)
+          if (sort_function(entry,first_entry))
+            # New entry comes before existing first entry
+            entry.next_entry = first_entry
+            first_entry.previous_entry = entry
+            first_entry = entry
+          elseIf (sort_function(last_entry,entry))
+            # New entry goes after existing last entry
+            last_entry.next_entry = entry
+            entry.previous_entry = last_entry
+            last_entry = entry
+          else
+            # New entry goes somewhere in the middle
+            local cur = first_entry
+            while (cur.next_entry)
+              if (sort_function(entry,cur.next_entry))
+                # Insert entry between cur and cur.next_entry
+                entry.previous_entry = cur
+                entry.next_entry = cur.next_entry
+                entry.next_entry.previous_entry = entry
+                cur.next_entry = entry
+                escapeWhile
+              endIf
+              cur = cur.next_entry
+            endWhile
+          endIf
+        else
+          # No sort function; place at the end of the order list
+          last_entry.next_entry = entry
+          entry.previous_entry = last_entry
+          last_entry = entry
+        endIf
+      else
+        # This is the first entry
+        first_entry = entry
+        last_entry = entry
+      endIf
+
+    method _unlink( entry:TableEntry<<$KeyType,$ValueType>> )
       if (entry is first_entry)
         if (entry is last_entry)
           first_entry = null
@@ -212,87 +394,6 @@ class Table<<$KeyType,$ValueType>>
         entry.next_entry.previous_entry = entry.previous_entry
 
       endIf
-
-      return entry
-
-
-    method set( key:$KeyType, value:$ValueType )->this
-      local entry = find( key )
-      if (entry)
-        entry.value = value
-        return this
-      endIf
-
-      if (count >= bins.count) _grow()
-
-      local hash = key.hash_code
-      local index = hash & bin_mask
-
-      # Add to the correct bin
-      ensure entry( key, value, hash )
-      entry.adjacent_entry = bins[ index ]
-      bins[index] = entry
-
-      # Place at the end of the order list
-      if (first_entry)
-        last_entry.next_entry = entry
-        entry.previous_entry = last_entry
-        last_entry = entry
-      else
-        first_entry = entry
-        last_entry = entry
-      endIf
-
-      ++count
-      return this
-
-    method to->String
-      return print_to( StringBuilder() )->String
-
-    method to->Value
-      local result = @{}
-      local cur = first_entry
-      while (cur)
-        result[ cur.key->String ] = Value( cur.value )
-        cur = cur.next_entry
-      endWhile
-      return result
-
-    method to->ValueTable
-      return this->Value
-
-    method print_to( buffer:StringBuilder )->StringBuilder
-      buffer.print( '{' )
-      local cur = first_entry
-      local i = 0
-      while (cur)
-        if (i > 0) buffer.print( ',' )
-        buffer.print( cur.key )
-        buffer.print( ':' )
-        buffer.print( cur.value )
-        cur = cur.next_entry
-        ++i
-      endWhile
-      buffer.print( '}' )
-      return buffer
-
-    method values->$ValueType[]
-      local result = $ValueType[]( count )
-      local cur = first_entry
-      while (cur)
-        result.add( cur.value )
-        cur = cur.next_entry
-      endWhile
-      return result
-
-    method reader->TableReader<<$KeyType,$ValueType>>
-      return TableReader<<$KeyType,$ValueType>>(this)
-
-    method key_reader->TableKeyReader<<$KeyType,$ValueType>>
-      return TableKeyReader<<$KeyType,$ValueType>>(this)
-
-    method value_reader->TableValueReader<<$KeyType,$ValueType>>
-      return TableValueReader<<$KeyType,$ValueType>>(this)
 
     method _grow
       # Grow by a factor of two
