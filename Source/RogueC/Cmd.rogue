@@ -3061,6 +3061,11 @@ class CmdAdd : CmdBinary
       return "operator+"
 
     method resolve_operator_method( method_name:String, scope:Scope, left_type:Type, right_type:Type, &is_optional )->Cmd
+      if (left_type is Program.type_String and right_type is not Program.type_String)
+        # string + non-string -> "" + string.operator+(non_string)
+        return CmdAccess( t, CmdAdd(t,CmdLiteralString(t,""),left), "operator+", CmdArgs(right) ).resolve( scope )
+      endIf
+
       if (left_type is not Program.type_String and right_type is Program.type_String)
         # non-string + string -> ("" + non-string) + string
         left = CmdAdd( t, CmdLiteralString(t,""), left ).resolve( scope )
