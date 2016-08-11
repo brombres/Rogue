@@ -42,6 +42,14 @@ class Value
     method add( other:Value[] )->this
       return this
 
+    method add_all( other:Value )->this
+      if (other.count)
+        forEach (value in other.values) add( value )
+      else
+        add( other )
+      endIf
+      return this
+
     method clear->this
       return this
 
@@ -354,6 +362,14 @@ class Value
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       return buffer
 
+    method values( list=null:Value )->Value
+      if (list)
+        list.add_all( this )
+        return list
+      else
+        return this
+      endIf
+
 $if ("Cython")
     method _get_element( index:Int32 )->Value [essential]
       throw Error("This Value is not indexable")
@@ -622,51 +638,51 @@ endClass
 
 class ValueList : Value
   PROPERTIES
-    values : Value[]
+    data : Value[]
 
   METHODS
     method init
       init( 10 )
 
     method init( initial_capacity:Int32 )
-      values = Value[]( initial_capacity )
+      data = Value[]( initial_capacity )
 
-    method init( values )
+    method init( data )
 
     method cloned->ValueList
-      return ValueList( values.cloned )
+      return ValueList( data.cloned )
 
     method add( value:Value )->this
-      values.add( value )
+      data.add( value )
       return this
 
     method add( other:Value[] )->this
-      values.reserve(other.count)
-      forEach (value in other) values.add( value )
+      data.reserve(other.count)
+      forEach (value in other) data.add( value )
       return this
 
     method clear->ValueList
-      values.clear
+      data.clear
       return this
 
     method contains( value:String )->Logical
-      forEach (existing in values)
+      forEach (existing in data)
         if (existing and existing.is_string and existing->String == value) return true
       endForEach
       return false
 
     method contains( value:Value )->Logical
-      forEach (existing in values)
+      forEach (existing in data)
         if (existing and existing == value) return true
       endForEach
       return false
 
     method count->Int32
-      return values.count
+      return data.count
 
     method count( query:Function(Value)->Logical )->Int32
       local result = 0
-      forEach (v in values)
+      forEach (v in data)
         if (query(v)) ++result
       endForEach
       return result
@@ -675,14 +691,14 @@ class ValueList : Value
       return this.get(0)
 
     method first( query:Function(Value)->Logical )->Value
-      forEach (v in values)
+      forEach (v in data)
         if (query(v)) return v
       endForEach
       return UndefinedValue
 
     method get( index:Int32 )->Value
-      if (index < 0 or index >= values.count) return UndefinedValue
-      return select{ values[index] || UndefinedValue }
+      if (index < 0 or index >= data.count) return UndefinedValue
+      return select{ data[index] || UndefinedValue }
 
     method get( query:Function(Value)->Logical )->Value
       local results : ValueList
@@ -703,10 +719,10 @@ class ValueList : Value
       return true
 
     method last->Value
-      return this.get( values.count - 1 )
+      return this.get( data.count - 1 )
 
     method last( query:Function(Value)->Logical )->Value
-      forEach (v in values step -1)
+      forEach (v in data step -1)
         if (query(v)) return v
       endForEach
       return UndefinedValue
@@ -725,7 +741,7 @@ class ValueList : Value
       return results
 
     method remove( value:Value )->Value
-      return values.remove( value )
+      return data.remove( value )
 
     method remove( query:Function(Value)->Logical )->Value
       local results = this[ query ]
@@ -735,24 +751,24 @@ class ValueList : Value
       return results
 
     method remove_at( index:Int32 )->Value
-      return values.remove_at( index )
+      return data.remove_at( index )
 
     method remove_first->Value
-      return values.remove_first
+      return data.remove_first
 
     method remove_last->Value
-      return values.remove_last
+      return data.remove_last
 
     method set( index:Int32, new_value:Value )->Value
       if (index < 0) return this
 
-      while (index >= values.count) add( null as Value )
-      values.set( index, new_value )
+      while (index >= data.count) add( null as Value )
+      data.set( index, new_value )
 
       return this
 
     method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
-      values.sort( compare_fn )
+      data.sort( compare_fn )
       return this
 
     method sorted( compare_fn:Function(a:Value,b:Value)->Logical )->ValueList
@@ -762,7 +778,7 @@ class ValueList : Value
       return true
 
     method to->String
-      return values->String
+      return data->String
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       local pretty_print = (formatted and is_complex)
@@ -775,7 +791,7 @@ class ValueList : Value
       endIf
 
       local first = true
-      forEach (value in values)
+      forEach (value in data)
         if (first)
           first = false
         else
@@ -814,34 +830,34 @@ endClass
 
 class ValueTable : Value
   PROPERTIES
-    values    : Table<<String,Value>>
+    data    : Table<<String,Value>>
 
   METHODS
     method init
-      values = Table<<String,Value>>()
+      data = Table<<String,Value>>()
 
-    method init( values )
+    method init( data )
 
     method clear->this
-      values.clear
+      data.clear
       return this
 
     method cloned->ValueTable
-      return ValueTable( values.cloned )
+      return ValueTable( data.cloned )
 
     method contains( key:String )->Logical
-      return values.contains( key )
+      return data.contains( key )
 
     method contains( key:Value )->Logical
       if (not key or not key.is_string) return false
       return contains( key->String )
 
     method count->Int32
-      return values.count
+      return data.count
 
     method count( query:Function(Value)->Logical )->Int32
       local result = 0
-      forEach (v in values.value_reader)
+      forEach (v in data.value_reader)
         if (query(v)) ++result
       endForEach
       return result
@@ -873,10 +889,10 @@ class ValueTable : Value
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
-      return select{ values[ keys[index] ] || UndefinedValue }
+      return select{ data[ keys[index] ] || UndefinedValue }
 
     method get( key:String )->Value
-      return select{ values[ key ] || UndefinedValue }
+      return select{ data[ key ] || UndefinedValue }
 
     method get( query:Function(Value)->Logical )->Value
       local results : ValueList
@@ -898,7 +914,7 @@ class ValueTable : Value
       return true
 
     method keys->String[]
-      return values.keys
+      return data.keys
 
     method last( query:Function(Value)->Logical )->Value
       forEach (key in keys step -1)
@@ -908,7 +924,7 @@ class ValueTable : Value
       return UndefinedValue
 
     method locate( value:Value )->Value
-      local cur = values.first_entry
+      local cur = data.first_entry
       while (cur)
         if (cur.value == value) return cur.key
         cur = cur.next_entry
@@ -923,7 +939,7 @@ class ValueTable : Value
       return results
 
     method remove( key:String )->Value
-      return values.remove( key )
+      return data.remove( key )
 
     method remove( query:Function(Value)->Logical )->Value
       local remove_keys : String[]
@@ -945,24 +961,24 @@ class ValueTable : Value
 
     method remove_at( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
-      return values.remove( values.keys[index] )
+      return data.remove( data.keys[index] )
 
     method set( index:Int32, value:Value )->this
       return set( ""+index, value )
 
     method set( key:String, new_value:Value )->this
-      values.set( key, new_value )
+      data.set( key, new_value )
       return this
 
     method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
-      values.sort( function(a,b) with(compare_fn) => compare_fn(a.value,b.value) )
+      data.sort( function(a,b) with(compare_fn) => compare_fn(a.value,b.value) )
       return this
 
     method to->Logical
       return true
 
     method to->String
-      return values->String
+      return data->String
 
     method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
       local pretty_print = (formatted and is_complex)
@@ -975,7 +991,7 @@ class ValueTable : Value
       endIf
 
       local first = true
-      forEach (key in values.keys)
+      forEach (key in data.keys)
         if (first)
           first = false
         else
@@ -986,7 +1002,7 @@ class ValueTable : Value
         StringValue.to_json( key, buffer, formatted )
         buffer.print( ':' )
 
-        local value = values[key]
+        local value = data[key]
         if (pretty_print and value and value.is_complex) buffer.println
 
         if (value) value.to_json( buffer, formatted )
@@ -997,6 +1013,17 @@ class ValueTable : Value
 
       buffer.print( '}' )
       return buffer
+
+    method values( list=null:Value )->Value
+      if (not list) list = @[]( count )
+
+      local cur = data.first_entry
+      while (cur)
+        list.add( cur.value )
+        cur = cur.next_entry
+      endWhile
+
+      return list
 
 $if ("Cython")
     method _get_element( index:Int32 )->Value [essential]
