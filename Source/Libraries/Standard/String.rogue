@@ -31,10 +31,6 @@ class String
         return a.operator<>( b )
       endIf
 
-    method operator*( count:Int32, string:String )->String
-      if (string is null) return null
-      return string.operator*( count )
-
     method operator+( st:String, value:Byte )->String
       return select{ st || "null" }.operator+( value )
 
@@ -65,6 +61,11 @@ class String
     method operator*( st:String, value:Int32 )->String
       if (st is null) return null
       return st.operator*( value )
+
+    method operator*( count:Int32, string:String )->String
+      if (string is null) return null
+      return string.operator*( count )
+
 
   METHODS
     method after( index:Int32 )->String

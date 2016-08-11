@@ -2999,7 +2999,7 @@ class CmdBinary : Cmd
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       if (not (left_type.is_primitive and right_type.is_primitive))
-        return resolve_operator_method( fn_name, scope, left_type, right_type )
+        return resolve_operator_method( fn_name, scope, left, left_type, right, right_type )
       endIf
 
       local common_type = must_find_common_type( left_type, right_type )
@@ -3011,13 +3011,13 @@ class CmdBinary : Cmd
     method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
       return this
 
-    method resolve_operator_method( method_name:String, scope:Scope, left_type:Type, right_type:Type, &is_optional )->Cmd
+    method resolve_operator_method( method_name:String, scope:Scope, lhs:Cmd, left_type:Type, rhs:Cmd, right_type:Type, &is_optional )->Cmd
       if (left_type.has_compatible_global_method_named(method_name,left_type,right_type))
-        return CmdAccess( t, CmdAccess(t,left_type.name), method_name, CmdArgs(left,right) ).resolve( scope )
+        return CmdAccess( t, CmdAccess(t,left_type.name), method_name, CmdArgs(lhs,rhs) ).resolve( scope )
       elseIf (right_type.has_compatible_global_method_named(method_name,left_type,right_type))
-        return CmdAccess( t, CmdAccess(t,right_type.name), method_name, CmdArgs(left,right) ).resolve( scope )
+        return CmdAccess( t, CmdAccess(t,right_type.name), method_name, CmdArgs(lhs,rhs) ).resolve( scope )
       elseIf (left_type.has_compatible_method_named(method_name,right_type))
-        return CmdAccess( t, left, method_name, CmdArgs(right) ).resolve( scope )
+        return CmdAccess( t, lhs, method_name, CmdArgs(rhs) ).resolve( scope )
       elseIf (is_optional)
         return null
       else
@@ -3060,18 +3060,18 @@ class CmdAdd : CmdBinary
     method fn_name->String
       return "operator+"
 
-    method resolve_operator_method( method_name:String, scope:Scope, left_type:Type, right_type:Type, &is_optional )->Cmd
+    method resolve_operator_method( method_name:String, scope:Scope, lhs:Cmd, left_type:Type, rhs:Cmd, right_type:Type, &is_optional )->Cmd
       if (left_type is Program.type_String and right_type is not Program.type_String)
         # string + non-string -> "" + string.operator+(non_string)
-        return CmdAccess( t, CmdAdd(t,CmdLiteralString(t,""),left), "operator+", CmdArgs(right) ).resolve( scope )
+        return CmdAccess( t, CmdAdd(t,CmdLiteralString(t,""),lhs), "operator+", CmdArgs(rhs) ).resolve( scope )
       endIf
 
       if (left_type is not Program.type_String and right_type is Program.type_String)
         # non-string + string -> ("" + non-string) + string
-        left = CmdAdd( t, CmdLiteralString(t,""), left ).resolve( scope )
-        left_type = left.require_type
+        lhs = CmdAdd( t, CmdLiteralString(t,""), lhs ).resolve( scope )
+        left_type = lhs.require_type
       endIf
-      return prior.resolve_operator_method( method_name, scope, left_type, right_type )
+      return prior.resolve_operator_method( method_name, scope, lhs, left_type, rhs, right_type )
 
     method symbol->String
       return "+"
@@ -3324,16 +3324,16 @@ class CmdCompareEQ : CmdComparison
       return false
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      local cmd = resolve_operator_method( "operator==", scope, left_type, right_type, &is_optional )
+      local cmd = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdCompareEQ( t, cmd, CmdLiteralInt32(t,0) ).resolve( scope )
 
-      cmd = resolve_operator_method( "operator!=", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator!=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdLogicalNot( t, cmd )
 
-      if (force_error) resolve_operator_method( "operator==", scope, left_type, right_type )
+      if (force_error) resolve_operator_method( "operator==", scope, left, left_type, right, right_type )
 
       return null
 
@@ -3356,16 +3356,16 @@ class CmdCompareNE : CmdComparison
       endIf
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      local cmd = resolve_operator_method( "operator!=", scope, left_type, right_type, &is_optional )
+      local cmd = resolve_operator_method( "operator!=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator==", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdLogicalNot( t, cmd )
 
-      cmd = resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdCompareNE( t, cmd, CmdLiteralInt32(t,0) ).resolve( scope )
 
-      if (force_error) resolve_operator_method( "operator!=", scope, left_type, right_type )
+      if (force_error) resolve_operator_method( "operator!=", scope, left, left_type, right, right_type )
 
       return null
 
@@ -3388,19 +3388,19 @@ class CmdCompareLT : CmdComparison
       endIf
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      local cmd = resolve_operator_method( "operator<", scope, left_type, right_type, &is_optional )
+      local cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdCompareLT( t, cmd, CmdLiteralInt32(t,0) ).resolve( scope )
 
-      cmd = resolve_operator_method( "operator>=", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator>=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdLogicalNot( t, cmd )
 
-      cmd = resolve_operator_method( "operator>", scope, right_type, left_type, &is_optional )
+      cmd = resolve_operator_method( "operator>", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      if (force_error) resolve_operator_method( "operator<", scope, left_type, right_type )
+      if (force_error) resolve_operator_method( "operator<", scope, left, left_type, right, right_type )
 
       return null
 
@@ -3423,19 +3423,25 @@ class CmdCompareLE : CmdComparison
       endIf
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      local cmd = resolve_operator_method( "operator<=", scope, left_type, right_type, &is_optional=(not force_error) )
+      local cmd = resolve_operator_method( "operator<=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdCompareLE( t, cmd, CmdLiteralInt32(t,0) ).resolve( scope )
 
-      cmd = resolve_operator_method( "operator>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdLogicalNot( t, cmd )
 
-      cmd = resolve_operator_method( "operator>=", scope, right_type, left_type, &is_optional )
+      cmd = resolve_operator_method( "operator>=", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      if (force_error) resolve_operator_method( "operator<=", scope, left_type, right_type )
+      cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional )
+      if (cmd)
+        local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
+        if (cmd2) return CmdLogicalOr( t, cmd, cmd2 ).resolve( scope )
+      endIf
+
+      if (force_error) resolve_operator_method( "operator<=", scope, left, left_type, right, right_type )
 
       return null
 
@@ -3458,19 +3464,19 @@ class CmdCompareGT : CmdComparison
       endIf
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      local cmd = resolve_operator_method( "operator>", scope, left_type, right_type, &is_optional )
+      local cmd = resolve_operator_method( "operator>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdCompareGT( t, cmd, CmdLiteralInt32(t,0) ).resolve( scope )
 
-      cmd = resolve_operator_method( "operator<=", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdLogicalNot( t, cmd )
 
-      cmd = resolve_operator_method( "operator<", scope, right_type, left_type, &is_optional )
+      cmd = resolve_operator_method( "operator<", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      if (force_error) resolve_operator_method( "operator>", scope, left_type, right_type )
+      if (force_error) resolve_operator_method( "operator>", scope, left, left_type, right, right_type )
 
       return null
 
@@ -3494,19 +3500,25 @@ class CmdCompareGE : CmdComparison
       endIf
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      local cmd = resolve_operator_method( "operator>=", scope, left_type, right_type, &is_optional )
+      local cmd = resolve_operator_method( "operator>=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdCompareGE( t, cmd, CmdLiteralInt32(t,0) ).resolve( scope )
 
-      cmd = resolve_operator_method( "operator<", scope, left_type, right_type, &is_optional )
+      cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return CmdLogicalNot( t, cmd )
 
-      cmd = resolve_operator_method( "operator<=", scope, right_type, left_type, &is_optional )
+      cmd = resolve_operator_method( "operator<=", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      if (force_error) resolve_operator_method( "operator>=", scope, left_type, right_type )
+      cmd = resolve_operator_method( "operator>", scope, left, left_type, right, right_type, &is_optional )
+      if (cmd)
+        local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
+        if (cmd2) return CmdLogicalOr( t, cmd, cmd2 ).resolve( scope )
+      endIf
+
+      if (force_error) resolve_operator_method( "operator>=", scope, left, left_type, right, right_type )
 
       return null
 
@@ -3541,7 +3553,7 @@ class CmdCompare : CmdComparison
       endIf
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
-      return resolve_operator_method( "operator<>", scope, left_type, right_type, &is_optional=not force_error )
+      return resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional=not force_error )
 
     method symbol->String
       return "<>"

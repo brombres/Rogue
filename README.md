@@ -52,6 +52,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added `Array<<DataType>>.cloned()->Array<<DataType>>`.
 - [API] Changed `Value.operator?(Value)` to report true for any non-null, non-LogicalValue, or true LogicalValue (and false for any null or Logical false).  Similarly changed ValueList and ValueTable `to->Logical` to always return true.
 - [API] Fixed `Value.remove(String)` for `ValueList` (the nominal purpose of remove(String) is to remove table values by key but of course it needs to work on lists of strings as well) and added some better default implementations for `Value` methods `.first()`, `.last()`, `.remove_first()`, and `.remove_last()`.
+- [API] `Value.sort(compare_fn)->Value` now works on ValueTable as well as ValueList (`compare_fn` receives table values only, not entries or keys).
 - [API] Reworked `String` operator methods to prevent null pointer errors.
 - [RogueC] Reworked and simplified code handling resolution of `prior.init` calls to fix a new `--exhaustive` compile error that chose now to crop up.
 - [RogueC] Fixed local variables to work correctly in function definitions.  Multi-line function bodies were being parsed at the same time as function declarations, meaning that the `Parser.this_method` reference while parsing a local was either null or incorrect.  Multiline function definitions now simply collect tokens and wait for the resolve() phase to parse the function bodies.

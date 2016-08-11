@@ -954,6 +954,10 @@ class ValueTable : Value
       values.set( key, new_value )
       return this
 
+    method sort( compare_fn:Function(a:Value,b:Value)->Logical )->this
+      values.sort( function(a,b) with(compare_fn) => compare_fn(a.value,b.value) )
+      return this
+
     method to->Logical
       return true
 
