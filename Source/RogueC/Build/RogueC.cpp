@@ -1788,10 +1788,10 @@ typedef RogueLogical(*ROGUEM482)(RogueClassStringValue*);
 typedef RogueLogical(*ROGUEM483)(RogueClassStringValue*,RogueClassValue*);
 typedef RogueInt32(*ROGUEM484)(RogueClassStringValue*);
 typedef RogueReal64(*ROGUEM485)(RogueClassStringValue*);
-typedef RogueClassUndefinedValue*(*ROGUEM486)(RogueClassUndefinedValue*);
-typedef RogueString*(*ROGUEM487)(RogueClassUndefinedValue*);
-typedef RogueClassFile*(*ROGUEM488)(RogueClassFile*);
-typedef RogueString*(*ROGUEM489)(RogueClassFile*);
+typedef RogueClassFile*(*ROGUEM486)(RogueClassFile*);
+typedef RogueString*(*ROGUEM487)(RogueClassFile*);
+typedef RogueClassUndefinedValue*(*ROGUEM488)(RogueClassUndefinedValue*);
+typedef RogueString*(*ROGUEM489)(RogueClassUndefinedValue*);
 typedef RogueClassFunction_1173*(*ROGUEM490)(RogueClassFunction_1173*);
 typedef RogueString*(*ROGUEM491)(RogueClassFunction_1173*);
 typedef void(*ROGUEM492)(RogueClassFunction_1173*);
@@ -6933,7 +6933,7 @@ int Rogue_type_name_index_table[] =
   1175,985,1399,1434,1435,1183,1393,1076,1187,1146,989,1443,1185,1451,1186,990,
   1091,1452,1044,1147,1441,1442,992,1080,1107,994,1578,1081,1110,998,1579,1000,
   1580,1083,1109,1304,1001,1045,1148,939,1046,1003,385,1581,1161,1162,1163,1164,
-  1462,1047,1159,1169,1188,1048,1400,1176,1444,1445,1049,1482,940,1502,1189,1503,
+  1047,1462,1159,1169,1188,1048,1400,1176,1444,1445,1049,1482,940,1502,1189,1503,
   1504,1454,1455,1092,1203,1152,1456,1457,1458,1459,1093,1204,1153,1190,1191,1192,
   1446,1193,1194,1453,1195,1196,1197,1198,1199,1200,1201,1202,1205,1206,1207,1508,
   1483,1208,1521,1209,1518,1519,1509,1510,1460,1520,1524,1466,1525,1526,1511,1512,
@@ -7205,8 +7205,8 @@ RogueInitFn Rogue_init_object_fn_table[] =
   (RogueInitFn) RogueNullValue__init_object,
   (RogueInitFn) RogueObjectValue__init_object,
   (RogueInitFn) RogueStringValue__init_object,
-  (RogueInitFn) RogueUndefinedValue__init_object,
   (RogueInitFn) RogueFile__init_object,
+  (RogueInitFn) RogueUndefinedValue__init_object,
   (RogueInitFn) RogueFunction_1173__init_object,
   (RogueInitFn) RogueBlockingConsoleIOHandler__init_object,
   (RogueInitFn) RogueCmdMakeRequisite__init_object,
@@ -8579,8 +8579,8 @@ RogueToStringFn Rogue_to_string_fn_table[] =
   (RogueToStringFn) RogueNullValue__to_String,
   (RogueToStringFn) RogueObjectValue__to_String,
   (RogueToStringFn) RogueStringValue__to_String,
-  (RogueToStringFn) RogueUndefinedValue__to_String,
   (RogueToStringFn) RogueFile__to_String,
+  (RogueToStringFn) RogueUndefinedValue__to_String,
   (RogueToStringFn) RogueObject__to_String,
   (RogueToStringFn) RogueObject__to_String,
   (RogueToStringFn) RogueObject__to_String,
@@ -9037,8 +9037,8 @@ RogueTraceFn Rogue_trace_fn_table[] =
   RogueObject_trace,
   RogueObjectValue_trace,
   RogueStringValue_trace,
-  RogueObject_trace,
   RogueFile_trace,
+  RogueObject_trace,
   RogueFunction_1173_trace,
   RogueObject_trace,
   RogueCmdMakeRequisite_trace,
@@ -14494,7 +14494,24 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM484) RogueStringValue__to_Int32,
   (void*) (ROGUEM482) RogueStringValue__to_Logical,
   (void*) (ROGUEM485) RogueStringValue__to_Real64,
-  (void*) (ROGUEM486) RogueUndefinedValue__init_object, // UndefinedValue
+  (void*) (ROGUEM486) RogueFile__init_object, // File
+  (void*) (ROGUEM1) RogueObject__init,
+  0,
+  (void*) (ROGUEM2) RogueObject__hash_code,
+  0,
+  0,
+  (void*) (ROGUEM3) RogueObject__operatorEQUALSEQUALS__Object,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM487) RogueFile__to_String,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM487) RogueFile__type_name,
+  (void*) (ROGUEM488) RogueUndefinedValue__init_object, // UndefinedValue
   (void*) (ROGUEM1) RogueObject__init,
   0,
   (void*) (ROGUEM2) RogueObject__hash_code,
@@ -14505,12 +14522,12 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM487) RogueUndefinedValue__to_String,
+  (void*) (ROGUEM489) RogueUndefinedValue__to_String,
   0,
   0,
   0,
   0,
-  (void*) (ROGUEM487) RogueUndefinedValue__type_name,
+  (void*) (ROGUEM489) RogueUndefinedValue__type_name,
   0,
   0,
   0,
@@ -14594,23 +14611,6 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM477) RogueNullValue__to_Int32,
   (void*) (ROGUEM32) RogueValue__to_Logical,
   (void*) (ROGUEM35) RogueValue__to_Real64,
-  (void*) (ROGUEM488) RogueFile__init_object, // File
-  (void*) (ROGUEM1) RogueObject__init,
-  0,
-  (void*) (ROGUEM2) RogueObject__hash_code,
-  0,
-  0,
-  (void*) (ROGUEM3) RogueObject__operatorEQUALSEQUALS__Object,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM489) RogueFile__to_String,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM489) RogueFile__type_name,
   (void*) (ROGUEM490) RogueFunction_1173__init_object, // Function_1173
   (void*) (ROGUEM1) RogueObject__init,
   0,
@@ -23626,7 +23626,7 @@ int Rogue_type_info_table[6441] =
   73,11,247,247,247,10,0,4598,1,0,0,0,0,4615,1,0,3,2048,2049,2050,18,16,449,0,0,
   4632,1,0,0,2,2051,2052,250,21,0,4649,0,0,1,1623,10,0,4650,2,23,0,0,1,313,20,
   0,4750,2,23,0,0,0,0,4850,2,23,0,0,1,313,0,0,4950,2,23,0,1,2053,255,1,
-  313,16,0,5050,3,253,23,0,0,0,0,5150,1,0,0,1,1664,16,0,5167,2,13,0,0,1,
+  313,16,0,5050,1,0,0,1,1664,16,0,5067,3,253,23,0,0,0,0,5167,2,13,0,0,1,
   2054,51,0,5185,2,54,0,0,1,1630,446,0,5207,2,90,0,0,2,1859,2055,66,16,0,5258,2,
   0,43,0,5,1623,2056,2057,2019,2058,10,41,16,4,22,0,5275,2,145,0,0,0,0,5293,2,66,
   0,0,5,562,1664,1678,1679,2059,67,16,10,10,16,0,5324,3,220,90,0,0,2,1859,313,66,11,
@@ -25666,8 +25666,8 @@ int Rogue_object_size_table[454] =
   (int) sizeof(RogueClassNullValue),
   (int) sizeof(RogueClassObjectValue),
   (int) sizeof(RogueClassStringValue),
-  (int) sizeof(RogueClassUndefinedValue),
   (int) sizeof(RogueClassFile),
+  (int) sizeof(RogueClassUndefinedValue),
   (int) sizeof(RogueClassFunction_1173),
   (int) sizeof(RogueClassBlockingConsoleIOHandler),
   (int) sizeof(RogueClassCmdMakeRequisite),
@@ -26124,8 +26124,8 @@ int Rogue_attributes_table[454] =
   1024,
   0,
   0,
-  1024,
   0,
+  1024,
   0,
   0,
   0,
@@ -26536,8 +26536,8 @@ RogueType* RogueTypeReal64Value;
 RogueType* RogueTypeNullValue;
 RogueType* RogueTypeObjectValue;
 RogueType* RogueTypeStringValue;
-RogueType* RogueTypeUndefinedValue;
 RogueType* RogueTypeFile;
+RogueType* RogueTypeUndefinedValue;
 RogueType* RogueTypeFunction_1173;
 RogueType* RogueTypeBlockingConsoleIOHandler;
 RogueType* RogueTypeCmdMakeRequisite;
@@ -27328,9 +27328,9 @@ RogueString* RogueFile__load_as_string__String( RogueString* filepath_0 )
   ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,buffer_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), count_1 )))));
   ROGUE_DEF_LOCAL_REF(RogueClassFileReader*,infile_3,((RogueFile__reader__String( filepath_0 ))));
   {
-    RogueInt32 _auto_915_4 = (1);
-    RogueInt32 _auto_916_5 = (count_1);
-    for (;_auto_915_4 <= _auto_916_5;++_auto_915_4)
+    RogueInt32 _auto_911_4 = (1);
+    RogueInt32 _auto_912_5 = (count_1);
+    for (;_auto_911_4 <= _auto_912_5;++_auto_911_4)
     {
       RogueByte b_6 = (((RogueFileReader__read( infile_3 ))));
       RogueByte_List__add__Byte( ROGUE_ARG(buffer_2->utf8), b_6 );
@@ -30174,11 +30174,11 @@ RogueString* RoguePropertyInfo_List__to_String( RoguePropertyInfo_List* THIS )
   RogueStringBuilder__print__Character_Logical( buffer_0, (RogueCharacter)'[', true );
   RogueLogical first_1 = (true);
   {
-    ROGUE_DEF_LOCAL_REF(RoguePropertyInfo_List*,_auto_925_2,(THIS));
-    RogueInt32 _auto_926_3 = (0);
-    for (;_auto_926_3 < _auto_925_2->count;++_auto_926_3)
+    ROGUE_DEF_LOCAL_REF(RoguePropertyInfo_List*,_auto_926_2,(THIS));
+    RogueInt32 _auto_927_3 = (0);
+    for (;_auto_927_3 < _auto_926_2->count;++_auto_927_3)
     {
-      ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,value_4,(((RogueClassPropertyInfo*)(_auto_925_2->data->as_objects[_auto_926_3]))));
+      ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,value_4,(((RogueClassPropertyInfo*)(_auto_926_2->data->as_objects[_auto_927_3]))));
       if (first_1)
       {
         first_1 = ((RogueLogical)false);
@@ -59162,22 +59162,6 @@ RogueClassStringValue* RogueStringValue__init__String( RogueClassStringValue* TH
   return (RogueClassStringValue*)(THIS);
 }
 
-RogueClassUndefinedValue* RogueUndefinedValue__init_object( RogueClassUndefinedValue* THIS )
-{
-  RogueNullValue__init_object( ROGUE_ARG(((RogueClassNullValue*)THIS)) );
-  return (RogueClassUndefinedValue*)(THIS);
-}
-
-RogueString* RogueUndefinedValue__to_String( RogueClassUndefinedValue* THIS )
-{
-  return (RogueString*)(Rogue_literal_strings[0]);
-}
-
-RogueString* RogueUndefinedValue__type_name( RogueClassUndefinedValue* THIS )
-{
-  return (RogueString*)(Rogue_literal_strings[1462]);
-}
-
 RogueClassFile* RogueFile__init_object( RogueClassFile* THIS )
 {
   RogueObject__init_object( ROGUE_ARG(((RogueObject*)THIS)) );
@@ -59194,15 +59178,31 @@ RogueString* RogueFile__type_name( RogueClassFile* THIS )
   return (RogueString*)(Rogue_literal_strings[1047]);
 }
 
-RogueClassFile* RogueFile__init__String( RogueClassFile* THIS, RogueString* _auto_917_0 )
+RogueClassFile* RogueFile__init__String( RogueClassFile* THIS, RogueString* _auto_913_0 )
 {
-  THIS->filepath = _auto_917_0;
+  THIS->filepath = _auto_913_0;
   return (RogueClassFile*)(THIS);
 }
 
 RogueString* RogueFile__filename( RogueClassFile* THIS )
 {
   return (RogueString*)((RogueFile__filename__String( ROGUE_ARG(THIS->filepath) )));
+}
+
+RogueClassUndefinedValue* RogueUndefinedValue__init_object( RogueClassUndefinedValue* THIS )
+{
+  RogueNullValue__init_object( ROGUE_ARG(((RogueClassNullValue*)THIS)) );
+  return (RogueClassUndefinedValue*)(THIS);
+}
+
+RogueString* RogueUndefinedValue__to_String( RogueClassUndefinedValue* THIS )
+{
+  return (RogueString*)(Rogue_literal_strings[0]);
+}
+
+RogueString* RogueUndefinedValue__type_name( RogueClassUndefinedValue* THIS )
+{
+  return (RogueString*)(Rogue_literal_strings[1462]);
 }
 
 RogueClassFunction_1173* RogueFunction_1173__init_object( RogueClassFunction_1173* THIS )
@@ -73193,8 +73193,8 @@ void Rogue_configure( int argc, const char* argv[] )
   RogueTypeNullValue = &Rogue_types[ 253 ];
   RogueTypeObjectValue = &Rogue_types[ 254 ];
   RogueTypeStringValue = &Rogue_types[ 255 ];
-  RogueTypeUndefinedValue = &Rogue_types[ 256 ];
-  RogueTypeFile = &Rogue_types[ 257 ];
+  RogueTypeFile = &Rogue_types[ 256 ];
+  RogueTypeUndefinedValue = &Rogue_types[ 257 ];
   RogueTypeFunction_1173 = &Rogue_types[ 258 ];
   RogueTypeBlockingConsoleIOHandler = &Rogue_types[ 259 ];
   RogueTypeCmdMakeRequisite = &Rogue_types[ 260 ];
@@ -73651,7 +73651,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[265] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.91.14", 9 ) ); 
+  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.91.15", 9 ) ); 
   Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "August 11, 2016", 15 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2244 ) ); 

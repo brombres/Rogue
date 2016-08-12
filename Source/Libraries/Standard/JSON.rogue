@@ -3,11 +3,15 @@ class JSON
     buffer = StringBuilder()
 
   GLOBAL METHODS
+    method load( file:File )->Value
+      if (not file or not file.exists) return UndefinedValue
+      return parse( file.load_as_string )
+
     method parse( json:String )->Value
       try
         return parse_value( ParseReader(json) )
       catch (JSONParseError)
-        return NullValue
+        return UndefinedValue
       endTry
 
     method parse_list( json:String )->ValueList
@@ -21,7 +25,7 @@ class JSON
       return ValueTable()
 
     method parse_value( reader:ParseReader )->Value
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       if (not reader.has_another) return NullValue
 
@@ -58,11 +62,11 @@ class JSON
       endIf
 
     method parse_table( reader:ParseReader )->Value
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       if (not reader.consume('{')) return NullValue
 
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       local table = ValueTable()
       if (reader.consume('}')) return table
@@ -73,21 +77,21 @@ class JSON
         first = false
         prev_pos = reader.position
 
-        consume_spaces_and_eols( reader )
+        _consume_spaces_and_eols( reader )
 
         if (next_is_identifier(reader))
           local key = parse_identifier( reader )
-          consume_spaces_and_eols( reader )
+          _consume_spaces_and_eols( reader )
 
           if (key.count)
             if (reader.consume(':'))
-              consume_spaces_and_eols( reader )
+              _consume_spaces_and_eols( reader )
               local value = parse_value( reader )
               table.set( key, value )
             else
               table.set( key, true )
             endIf
-            consume_spaces_and_eols( reader )
+            _consume_spaces_and_eols( reader )
           endIf
         endIf
       endWhile
@@ -97,11 +101,11 @@ class JSON
       return table
 
     method parse_list( reader:ParseReader )->Value
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       if (not reader.consume('[')) return NullValue
 
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       local list = ValueList()
       if (reader.consume(']')) return list
@@ -111,10 +115,10 @@ class JSON
       while (first or reader.consume(',') or (reader.has_another and reader.peek!=']' and reader.position>prev_pos))
         first = false
         prev_pos = reader.position
-        consume_spaces_and_eols( reader )
+        _consume_spaces_and_eols( reader )
         if (reader.peek == ']') escapeWhile
         list.add( parse_value( reader ) )
-        consume_spaces_and_eols( reader )
+        _consume_spaces_and_eols( reader )
       endWhile
 
       if (not reader.consume(']')) throw JSONParseError( "']' expected." )
@@ -122,7 +126,7 @@ class JSON
       return list
 
     method parse_string( reader:ParseReader )->String
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       local terminator = '"'
       if     (reader.consume( '"' ))  terminator = '"'
@@ -163,7 +167,7 @@ class JSON
       return code->Character
 
     method parse_identifier( reader:ParseReader )->String
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       local ch = reader.peek
       if (ch == '"' or ch == '\'')
@@ -191,12 +195,12 @@ class JSON
       return (ch == '"' or ch == '\'')
 
     method parse_number( reader:ParseReader )->Value
-      consume_spaces_and_eols( reader )
+      _consume_spaces_and_eols( reader )
 
       local sign = 1.0
       if (reader.consume( '-' ))
         sign = -1.0
-        consume_spaces_and_eols( reader )
+        _consume_spaces_and_eols( reader )
       endIf
 
       local n = 0.0
@@ -243,7 +247,10 @@ class JSON
 
       return Real64Value( n )
 
-    method consume_spaces_and_eols( reader:ParseReader )->ParseReader
+    method save( value:Value, file:File, &formatted )->Logical
+      return value.save( file, &formatted )
+
+    method _consume_spaces_and_eols( reader:ParseReader )->ParseReader
       while (reader.consume_spaces or reader.consume_eols) noAction
       return reader
 

@@ -17,6 +17,12 @@ class Value
     method create( value:Value )->Value
       return value
 
+    method load( file:File )->Value
+      return JSON.load( file )
+
+    method parse( json:String )->Value
+      return JSON.parse( json )
+
     method operator?( value:Value )->Logical
       return (value is not null and value.is_non_null and (not value.is_logical or value->Logical))
 

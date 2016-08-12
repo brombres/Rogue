@@ -845,8 +845,8 @@ struct RogueClassReal64Value; // Real64Value
 struct RogueClassNullValue; // NullValue
 struct RogueClassObjectValue; // ObjectValue
 struct RogueClassStringValue; // StringValue
-struct RogueClassUndefinedValue; // UndefinedValue
 struct RogueClassFile; // File
+struct RogueClassUndefinedValue; // UndefinedValue
 struct RogueClassFunction_1173; // Function_1173
 struct RogueClassBlockingConsoleIOHandler; // BlockingConsoleIOHandler
 struct RogueClassCmdMakeRequisite; // CmdMakeRequisite
@@ -3436,16 +3436,16 @@ struct RogueClassStringValue : RogueObject
 
 };
 
-struct RogueClassUndefinedValue : RogueObject
-{
-  // PROPERTIES
-
-};
-
 struct RogueClassFile : RogueObject
 {
   // PROPERTIES
   RogueString* filepath;
+
+};
+
+struct RogueClassUndefinedValue : RogueObject
+{
+  // PROPERTIES
 
 };
 
@@ -5354,8 +5354,8 @@ extern RogueType* RogueTypeReal64Value;
 extern RogueType* RogueTypeNullValue;
 extern RogueType* RogueTypeObjectValue;
 extern RogueType* RogueTypeStringValue;
-extern RogueType* RogueTypeUndefinedValue;
 extern RogueType* RogueTypeFile;
+extern RogueType* RogueTypeUndefinedValue;
 extern RogueType* RogueTypeFunction_1173;
 extern RogueType* RogueTypeBlockingConsoleIOHandler;
 extern RogueType* RogueTypeCmdMakeRequisite;
@@ -7474,14 +7474,14 @@ RogueInt32 RogueStringValue__to_Int32( RogueClassStringValue* THIS );
 RogueLogical RogueStringValue__to_Logical( RogueClassStringValue* THIS );
 RogueReal64 RogueStringValue__to_Real64( RogueClassStringValue* THIS );
 RogueClassStringValue* RogueStringValue__init__String( RogueClassStringValue* THIS, RogueString* _auto_908_0 );
-RogueClassUndefinedValue* RogueUndefinedValue__init_object( RogueClassUndefinedValue* THIS );
-RogueString* RogueUndefinedValue__to_String( RogueClassUndefinedValue* THIS );
-RogueString* RogueUndefinedValue__type_name( RogueClassUndefinedValue* THIS );
 RogueClassFile* RogueFile__init_object( RogueClassFile* THIS );
 RogueString* RogueFile__to_String( RogueClassFile* THIS );
 RogueString* RogueFile__type_name( RogueClassFile* THIS );
-RogueClassFile* RogueFile__init__String( RogueClassFile* THIS, RogueString* _auto_917_0 );
+RogueClassFile* RogueFile__init__String( RogueClassFile* THIS, RogueString* _auto_913_0 );
 RogueString* RogueFile__filename( RogueClassFile* THIS );
+RogueClassUndefinedValue* RogueUndefinedValue__init_object( RogueClassUndefinedValue* THIS );
+RogueString* RogueUndefinedValue__to_String( RogueClassUndefinedValue* THIS );
+RogueString* RogueUndefinedValue__type_name( RogueClassUndefinedValue* THIS );
 RogueClassFunction_1173* RogueFunction_1173__init_object( RogueClassFunction_1173* THIS );
 RogueString* RogueFunction_1173__type_name( RogueClassFunction_1173* THIS );
 void RogueFunction_1173__call( RogueClassFunction_1173* THIS );
