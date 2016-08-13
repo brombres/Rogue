@@ -461,6 +461,7 @@ class Tokenizer
 
         local value : Int32
         if     (consume('b')) value = 8
+        elseIf (consume('e')) value = 27
         elseIf (consume('f')) value = 12
         elseIf (consume('n')) value = '\n'
         elseIf (consume('r')) value = '\r'
@@ -474,7 +475,7 @@ class Tokenizer
         elseIf (consume('x')) value = read_hex_value(2)
         elseIf (consume('u')) value = read_hex_value(4)
         elseIf (consume('[')) read_hex_sequence; return
-        else throw error( "Invalid escape sequence.  Supported: \\n \\r \\s \\t \\0 \\/ \\' \\\\ \\\" \\" + "uXXXX \\" + "xXX." )
+        else throw error( "Invalid escape sequence.  Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\/ \\' \\\\ \\\" \\" + "xHH \\" + "uHHHH \\" + "[H*]." )
 
         buffer.print( value->Character )
 
