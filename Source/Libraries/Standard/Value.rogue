@@ -656,7 +656,11 @@ class ValueList : Value
     method init( data )
 
     method cloned->ValueList
-      return ValueList( data.cloned )
+      local result = ValueList( count )
+      forEach (value in this)
+        if (value) result.add( value.cloned )
+      endForEach
+      return result
 
     method add( value:Value )->this
       data.add( value )
@@ -849,7 +853,15 @@ class ValueTable : Value
       return this
 
     method cloned->ValueTable
-      return ValueTable( data.cloned )
+      local result_data = data.cloned
+
+      local cur = result_data.first_entry
+      while (cur)
+        if (cur.value) cur.value = cur.value.cloned
+        cur = cur.next_entry
+      endWhile
+
+      return ValueTable( result_data )
 
     method contains( key:String )->Logical
       return data.contains( key )

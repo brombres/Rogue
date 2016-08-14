@@ -51,6 +51,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added several *function methods* to `List` and `Table`: `.get(query)->$DataType[]`, `.first(query)->$DataType?`, `.locate(query)->$DataType[]/Int32[]`, `.remove(query)->$DataType[]`, and `.count(query)->Int32` (the latter has been added to `Value` as well).`
 - [API] Added `.contains(query)` to `List`, `Table`, and `Value`.
 - [API] Added `Array<<DataType>>.cloned()->Array<<DataType>>`.
+- [API] `Value.cloned()->Value` now performs a deep clone for `ValueList` and `ValueTable`.
 - [API] Changed `Value.operator?(Value)` to report true for any non-null, non-LogicalValue, or true LogicalValue (and false for any null or Logical false).  Similarly changed ValueList and ValueTable `to->Logical` to always return true.
 - [API] Fixed `Value.remove(String)` for `ValueList` (the nominal purpose of remove(String) is to remove table values by key but of course it needs to work on lists of strings as well) and added some better default implementations for `Value` methods `.first()`, `.last()`, `.remove_first()`, and `.remove_last()`.
 - [API] `Value.sort(compare_fn)->Value` now works on ValueTable as well as ValueList (`compare_fn` receives table values only, not entries or keys).
