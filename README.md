@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.91 - August 14, 2016
+###v1.0.91 - August 15, 2016
 - [Rogue] Generic functions can now omit the keyword 'function' for brevity and begin with `(args)=>`, `()=>`, or even just `=>`.  For example: `trace [3,1,5,4,2].sort( (a,b)=>(a<b) )`.
 - [Rogue] Added an *implicit function* convenience syntax that automatically converts expressions into generic single-parameter functions with automatic variable capture when the expression contains terms that begin with `.` or `//`.  For example, `table[//name==player_name]` is equivalent to writing `table[function(value) with(player_name)=>value//name==player_name]` and `list.first(.is_string and .count>3)` is equivalent to writing `list.first(function(value)=>value.is_string and value.count>3)`.  The special keyword `.this` may be used in implicit functions to indicate the value under consideration.  For example, to pull out all the odd numbers in an Int32 list: `list[ .this & 1 ]`.  Methods accepting functions of this form can be called *function methods*.
 - [Rogue] Added an additional refinement to call resolution: if a call would be otherwise ambiguous and any `Value` arguments or parameters exist, keep only candidate methods where there is at least one `Value` type in each argument/parameter pairing.  In other words, a call `m(5)` would match `m(Value)` and not `m(OtherType)`.
@@ -67,6 +67,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added convenience method `Console.restore_cursor_position`.
 - [API] Added convenience method `Console.save_cursor_position`.
 - [API] Added convenience method `Console.set_cursor(x:Int32,y:Int32)`.
+- [API] Added global method `File.delete(filepath:String)->Logical` and method `File.delete()->Logical`.
 - [RogueC] Reworked and simplified code handling resolution of `prior.init` calls to fix a new `--exhaustive` compile error that chose now to crop up.
 - [RogueC] Fixed local variables to work correctly in function definitions.  Multi-line function bodies were being parsed at the same time as function declarations, meaning that the `Parser.this_method` reference while parsing a local was either null or incorrect.  Multiline function definitions now simply collect tokens and wait for the resolve() phase to parse the function bodies.
 

@@ -2318,10 +2318,14 @@ class Parser
       consume_eols
 
       if (consume(TokenType.keyword_meta))
+        # TODO: need to wrap the following in a Cmd and defer checking for the implicit type until after parsing is over
         local context_type : Type
         if (context) context_type = context.implicit_type( Scope(this_type,null) )
         else         context_type = this_type
-        if (not context_type) throw t.error( "Unable to determine type for metadata access." )
+        if (not context_type)
+          trace context
+          throw t.error( "Unable to determine type for metadata access." )
+        endIf
 
         must_consume( TokenType.symbol_dot )
         t = peek
