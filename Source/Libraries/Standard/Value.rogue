@@ -485,15 +485,15 @@ class Real64Value( value:Real64 ) : Value
 
     method operator*( other:Real64 )->Value
       if (not other) return Value(0)
-      return Real64Value( value + other )
+      return Real64Value( value * other )
 
     method operator/( other:Real64 )->Value
       if (not other) return Value(0)
-      return Real64Value( value + other )
+      return Real64Value( value / other )
 
     method operator%( other:Real64 )->Value
       if (not other) return Value(0)
-      return Real64Value( value + other )
+      return Real64Value( value % other )
 
     method operator+( other:String )->Value
       if (not other) return Value(0)
