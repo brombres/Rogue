@@ -313,8 +313,8 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method reserve( additional_count:Int32 )->$DataType[]
-      local required_capacity = count + additional_count
+    method reserve( additional_elements:Int32 )->$DataType[]
+      local required_capacity = count + additional_elements
 
       if (not data)
         if (required_capacity < 10) required_capacity = 10
@@ -361,6 +361,21 @@ class List<<$DataType>> : GenericList
 
     method remove_last->$DataType
       return remove_at( count - 1 )
+
+    method rest( result_list=null:$DataType[] )->$DataType[]
+      # Returns the "rest" of this list: a list containing all of the items
+      # in this list after the first item.  The `result_list` parameter is
+      # used if it's specified; otherwise a new list is created and returned.
+      #
+      # If this list is empty then an empty list is returned.
+      ensure result_list
+      result_list.reserve( (count-1).clamped(0) )
+
+      forEach (index of this)
+        if (index > 0) result_list.add( this[index] )
+      endForEach
+
+      return result_list
 
     method reverse->this
       return reverse( 0, count-1 )

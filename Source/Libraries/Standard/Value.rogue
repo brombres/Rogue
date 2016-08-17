@@ -279,6 +279,27 @@ class Value
     method remove_last->Value
       return remove( last )
 
+    method reserve( additional_elements:Int32 )->this
+      noAction
+      return this
+
+    method rest( result_list=null:Value )->Value
+      # Returns the "rest" of this collection: a `ValueList` containing all of the items
+      # in this collection after the first item.  The `result_list` parameter is
+      # used if it's specified (a `ValueList` is expected); otherwise a new `ValueList`
+      # is created and returned.
+      #
+      # If this `Value` is not a collection or if it is empty then an empty list is
+      # returned.
+      if (not result_list) result_list = @[]
+      result_list.reserve( (count-1).clamped(0) )
+
+      forEach (index of this)
+        if (index > 0) result_list.add( this[index] )
+      endForEach
+
+      return result_list
+
     method save( file:File, formatted=false:Logical )->Logical
       return file.save( to_json(formatted) )
 
@@ -648,7 +669,7 @@ class ValueList : Value
 
   METHODS
     method init
-      init( 10 )
+      init( 0 )
 
     method init( initial_capacity:Int32 )
       data = Value[]( initial_capacity )
@@ -768,6 +789,10 @@ class ValueList : Value
 
     method remove_last->Value
       return data.remove_last
+
+    method reserve( additional_elements:Int32 )->this
+      data.reserve( additional_elements )
+      return this
 
     method set( index:Int32, new_value:Value )->Value
       if (index < 0) return this

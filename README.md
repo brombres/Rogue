@@ -50,6 +50,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Renamed the function method `Table.keys(Function(...))` to `Table.locate(Function(...))`.
 - [API] Added several *function methods* to `List` and `Table`: `.get(query)->$DataType[]`, `.first(query)->$DataType?`, `.locate(query)->$DataType[]/Int32[]`, `.remove(query)->$DataType[]`, and `.count(query)->Int32` (the latter has been added to `Value` as well).`
 - [API] Added `.contains(query)` to `List`, `Table`, and `Value`.
+- [API] Added `List.rest(result_list=null:List)->List` that returns all elements after the first.
 - [API] Added `Array<<DataType>>.cloned()->Array<<DataType>>`.
 - [API] `Value.cloned()->Value` now performs a deep clone for `ValueList` and `ValueTable`.
 - [API] Fixed several `Value` operator methods to perform the correct operation instead of addition (copy/paste error).
@@ -59,6 +60,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Renamed `values` property of `ValueList` and `ValueTable` to `data`.
 - [API] Added `Value.values(list=null:Value)->Value`.  For tables, returns a ValueList of the table data.  For anything else (including ValueList) returns the value itself.  If a ValueList parameter is provided, values will be added to the list and it will be returned instead of creating and returning a new list.
 - [API] Added `Value.add_all(Value)->this` which adds each item in the parameter to this list if the parameter is a collection or adds just the parameter itself if the parameter is not a collection.
+- [API] Added `Value.rest(result_list=null:Value)->Value` that returns all the elements in a `Value` collection after the first.
+- [API] Added `Value.reserve(additional_elements:Int32)->this`.  If the `Value` is a `ValueList` the call is forwarded to the backing list; otherwise there is no effect.
 - [API] Added global methods `Value.load(File)->Value` and `Value.parse(json:String)->Value`.
 - [API] Added method `Value.save(File,&formatted)->Logical`.
 - [API] Reworked `String` operator methods to prevent null pointer errors.
