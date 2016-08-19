@@ -890,9 +890,6 @@ class Parser
       endIf
 
     method parse_multi_line_statements( statements:CmdStatementList )
-      local prev_statement_list = cur_statement_list
-      cur_statement_list = statements
-
       consume_end_commands
       while (next_is_statement)
         parse_statement( statements, true )
@@ -900,8 +897,6 @@ class Parser
         while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) noAction
         consume_end_commands
       endWhile
-
-      cur_statement_list = prev_statement_list
 
     method parse_augment_statements
       local prev_statement_list = cur_statement_list
@@ -931,18 +926,10 @@ class Parser
         consume_end_commands
       endWhile
 
-      cur_statement_list = prev_statement_list
-
     method parse_single_line_statements( statements:CmdStatementList )
-      local prev_statement_list = cur_statement_list
-      cur_statement_list = statements
-
       while (next_is_statement)
         parse_statement( statements, false )
-        if (not consume(TokenType.symbol_semicolon))
-          cur_statement_list = prev_statement_list
-          return
-        endIf
+        if (not consume(TokenType.symbol_semicolon)) return
         while (consume(TokenType.symbol_semicolon)) noAction
 
         # Don't let a trailing ';' act as a next-line continuation.
@@ -955,10 +942,15 @@ class Parser
         endIf
       endIf
 
+    method parse_statement( statements:CmdStatementList, allow_control_structures:Logical )
+      local prev_statement_list = cur_statement_list
+      cur_statement_list = statements
+
+      parse_statement( allow_control_structures )
+
       cur_statement_list = prev_statement_list
 
-
-    method parse_statement( statements:CmdStatementList, allow_control_structures:Logical )
+    method parse_statement( allow_control_structures:Logical )
       if (parse_unit_test) return
 
       local t = peek
@@ -968,7 +960,7 @@ class Parser
         # directly so that the header is only added if the method is resolved (meaning
         # it's actually used in the program).  This is a way to have classes with native
         # dependencies that don't get pulled in if they're unused.
-        statements.add( CmdNativeHeader(t,t->String) )
+        cur_statement_list.add( CmdNativeHeader(t,t->String) )
         return
       endIf
 
@@ -977,7 +969,7 @@ class Parser
         # directly so that the header is only added if the method is resolved (meaning
         # it's actually used in the program).  This is a way to have classes with native
         # dependencies that don't get pulled in if they're unused.
-        statements.add( CmdNativeCode(t,t->String) )
+        cur_statement_list.add( CmdNativeCode(t,t->String) )
         return
       endIf
 
@@ -986,7 +978,7 @@ class Parser
           throw peek.error( "Filepath expected." )
         endIf
         local filepath = read->String
-        statements.add( CmdIncludeNative(t,filepath,"code") )
+        cur_statement_list.add( CmdIncludeNative(t,filepath,"code") )
         return
       endIf
 
@@ -995,62 +987,62 @@ class Parser
           throw peek.error( "Filepath expected." )
         endIf
         local filepath = read->String
-        statements.add( CmdIncludeNative(t,filepath,"header") )
+        cur_statement_list.add( CmdIncludeNative(t,filepath,"header") )
         return
       endIf
 
       if (consume(TokenType.directive_essential))
         # Turn this $essential directive into a Cmd node so that it only takes effect
         # if the method is actually used in the program.
-        statements.add( CmdMakeRequisite(t,t->String) )
+        cur_statement_list.add( CmdMakeRequisite(t,t->String) )
         return
       endIf
 
       if (allow_control_structures)
         if (next_is(TokenType.keyword_if))
-          statements.add( parse_if )
+          cur_statement_list.add( parse_if )
           return
 
         elseIf (next_is(TokenType.keyword_which))
-          statements.add( parse_which )
+          cur_statement_list.add( parse_which )
           return
 
         #{
         elseIf (next_is(TokenType.keyword_whichIs))
-          statements.add( parse_which( true ) )
+          cur_statement_list.add( parse_which( true ) )
           return
           }#
 
         elseIf (next_is(TokenType.keyword_forEach))
-          statements.add( parse_for_each )
+          cur_statement_list.add( parse_for_each )
           return
 
         elseIf (next_is(TokenType.keyword_block))
-          statements.add( parse_block )
+          cur_statement_list.add( parse_block )
           return
 
         elseIf (next_is(TokenType.keyword_contingent))
-          statements.add( parse_contingent )
+          cur_statement_list.add( parse_contingent )
           return
 
         elseIf (next_is(TokenType.keyword_while))
-          statements.add( parse_while )
+          cur_statement_list.add( parse_while )
           return
 
         elseIf (next_is(TokenType.keyword_loop))
-          statements.add( parse_loop )
+          cur_statement_list.add( parse_loop )
           return
 
         elseIf (next_is(TokenType.keyword_try))
-          statements.add( parse_try_statement )
+          cur_statement_list.add( parse_try_statement )
           return
 
         elseIf (next_is(TokenType.keyword_local))
-          parse_local_or_global( statements )
+          parse_local_or_global( &is_local )
           return
 
         elseIf (next_is(TokenType.keyword_global))
-          parse_local_or_global( null )
+          parse_local_or_global
           return
 
         endIf
@@ -1068,12 +1060,12 @@ class Parser
         endIf
 
         if (next_is_end_command)
-          statements.add( CmdReturn(t) )
+          cur_statement_list.add( CmdReturn(t) )
         else
           #if (not this_method.return_type)
           #throw peek.error( "$()() is not declared as returning a value." (this_method.name) )
           #endIf
-          statements.add( CmdReturn(t,parse_expression) )
+          cur_statement_list.add( CmdReturn(t,parse_expression) )
         endIf
         return
 
@@ -1092,15 +1084,15 @@ class Parser
         #   }
         #
         local statement_list = CmdStatementList()
-        statements.add( CmdAwait(t,parse_expression,statement_list) )
+        cur_statement_list.add( CmdAwait(t,parse_expression,statement_list) )
         return
 
       elseIf (consume(TokenType.keyword_yield))
-        statements.add( CmdYield(t) )
+        cur_statement_list.add( CmdYield(t) )
         return
 
       elseIf (consume(TokenType.keyword_throw))
-        statements.add( CmdThrow(t,parse_expression) )
+        cur_statement_list.add( CmdThrow(t,parse_expression) )
         return
 
       elseIf (consume(TokenType.keyword_noAction))
@@ -1166,7 +1158,7 @@ class Parser
           throw peek.error( "A comma-separated list of values is expected." )
         endIf
 
-        statements.add( CmdTrace( t, CmdFormattedString(t,buffer->String,args) ) )
+        cur_statement_list.add( CmdTrace( t, CmdFormattedString(t,buffer->String,args) ) )
         return
 
       elseIf (consume(TokenType.keyword_assert))
@@ -1198,21 +1190,21 @@ class Parser
 
         local temp_var = this_method.add_local( t, Program.create_unique_id )
         temp_var.type = Program.type_Int32  # temporary placeholder until CmdAssert resolves
-        statements.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
-        statements.add( CmdAssert(t, expr, message, temp_var) )
+        cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
+        cur_statement_list.add( CmdAssert(t, expr, message, temp_var) )
         return
 
       elseIf (next_is(TokenType.keyword_ensure))
-        statements.add( parse_ensure )
+        cur_statement_list.add( parse_ensure )
         return
 
         #{
       elseIf (consume(TokenType.keyword_tron))
-        statements.add( CmdTron(t) )
+        cur_statement_list.add( CmdTron(t) )
         return
 
       elseIf (consume(TokenType.keyword_troff))
-        statements.add( CmdTroff(t) )
+        cur_statement_list.add( CmdTroff(t) )
         return
       }#
 
@@ -1222,67 +1214,67 @@ class Parser
         if (parsing_augment)
           throw t.error( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." )
         else
-          statements.add( this_method.begin_label(t,read_identifier,false) )
+          cur_statement_list.add( this_method.begin_label(t,read_identifier,false) )
         endIf
         must_consume( TokenType.symbol_close_specialize )
         return
       endIf
 
       if (consume(TokenType.keyword_escapeWhile))
-        statements.add( CmdEscape(t,CmdControlStructure.type_while) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_while) )
         return
 
       elseIf (consume(TokenType.keyword_escapeForEach))
-        statements.add( CmdEscape(t,CmdControlStructure.type_forEach) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_forEach) )
         return
 
       elseIf (consume(TokenType.keyword_escapeBlock))
-        statements.add( CmdEscape(t,CmdControlStructure.type_block) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_block) )
         return
 
       elseIf (consume(TokenType.keyword_escapeContingent))
-        statements.add( CmdEscape(t,CmdControlStructure.type_contingent) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_contingent) )
         return
 
       elseIf (consume(TokenType.keyword_escapeLoop))
-        statements.add( CmdEscape(t,CmdControlStructure.type_loop) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_loop) )
         return
 
       elseIf (consume(TokenType.keyword_escapeIf))
-        statements.add( CmdEscape(t,CmdControlStructure.type_if) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_if) )
         return
 
       elseIf (consume(TokenType.keyword_escapeTry))
-        statements.add( CmdEscape(t,CmdControlStructure.type_try) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_try) )
         return
 
       elseIf (consume(TokenType.keyword_escapeWhich))
-        statements.add( CmdEscape(t,CmdControlStructure.type_which) )
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_which) )
         return
       endIf
 
       if (consume(TokenType.keyword_nextIteration))
-        statements.add( CmdNextIteration(t) )
+        cur_statement_list.add( CmdNextIteration(t) )
         return
       endIf
 
       if (consume(TokenType.keyword_necessary))
-        statements.add( CmdNecessary(t, parse_expression))
+        cur_statement_list.add( CmdNecessary(t, parse_expression))
         return
       endIf
 
       if (consume(TokenType.keyword_sufficient))
-        statements.add( CmdSufficient(t, parse_expression))
+        cur_statement_list.add( CmdSufficient(t, parse_expression))
         return
       endIf
 
       if (consume(TokenType.symbol_plus_plus))
-        statements.add( CmdAdjust(t, parse_expression,1) )
+        cur_statement_list.add( CmdAdjust(t, parse_expression,1) )
         return
       endIf
 
       if (consume(TokenType.symbol_minus_minus))
-        statements.add( CmdAdjust(t, parse_expression,-1) )
+        cur_statement_list.add( CmdAdjust(t, parse_expression,-1) )
         return
       endIf
 
@@ -1290,13 +1282,13 @@ class Parser
 
       t = peek
       if (consume(TokenType.symbol_equals))
-        statements.add( CmdAssign(t,expression,parse_expression) )
+        cur_statement_list.add( CmdAssign(t,expression,parse_expression) )
         return
       endIf
 
       if (t.type.is_op_with_assign)
         read
-        statements.add( CmdModifyAndAssign( t, expression, t.type, parse_expression ) )
+        cur_statement_list.add( CmdModifyAndAssign( t, expression, t.type, parse_expression ) )
         return
       endIf
 
@@ -1311,17 +1303,17 @@ class Parser
           access = operand
         endWhile
         access.operand = expression.cloned
-        statements.add( CmdAssign(t,expression,access) )
+        cur_statement_list.add( CmdAssign(t,expression,access) )
       endIf
       }#
 
       if (consume(TokenType.symbol_plus_plus))
-        statements.add( CmdAdjust(t, expression,1) )
+        cur_statement_list.add( CmdAdjust(t, expression,1) )
         return
       endIf
 
       if (consume(TokenType.symbol_minus_minus))
-        statements.add( CmdAdjust(t, expression,-1) )
+        cur_statement_list.add( CmdAdjust(t, expression,-1) )
         return
       endIf
 
@@ -1330,7 +1322,7 @@ class Parser
         read
         local target = expression
         local new_value = parse_expression
-        statements.add( CmdModifyAndAssign( t, target, t_type, new_value) )
+        cur_statement_list.add( CmdModifyAndAssign( t, target, t_type, new_value) )
         return
       endIf
 
@@ -1346,7 +1338,7 @@ class Parser
         endIf
       endIf
 
-      statements.add( expression )
+      cur_statement_list.add( expression )
 
     method parse_which->CmdWhich
       local t = read  # 'which'
@@ -1537,7 +1529,7 @@ class Parser
       cur_statement_list.add( CmdTryExpression( t, try_expression, else_expression, result_var ) )
       return CmdReadLocal( t, result_var )
 
-    method parse_local_or_global( statements:CmdStatementList )
+    method parse_local_or_global( &is_local )
       local_declarations.clear
       local t = read   # "local" or "global"
 
@@ -1565,10 +1557,10 @@ class Parser
       endIf
 
       # Turn each declaration into a separate CmdLocalDeclaration
-      if (statements)
+      if (is_local)
         # locals
         forEach (v in local_declarations)
-          statements.add( CmdLocalDeclaration(v.t,v) )
+          cur_statement_list.add( CmdLocalDeclaration(v.t,v) )
         endForEach
       else
         # global properties
@@ -1850,37 +1842,7 @@ class Parser
             if (range)
               if (index_var_name ) throw range.t.error( "Cannot use 'at' with a range." )
 
-              local control_var = this_method.add_local( t, access.name )
-              control_var.initial_value = range.first
-
-              local last_var = this_method.add_local( t, Program.create_unique_id )
-              last_var.initial_value = range.last
-
-              local step_cmd = null : Cmd
-              if (range.step_size)
-                step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, range.step_size )
-              else
-                if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
-                  step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
-                else
-                  step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
-                endIf
-              endIf
-
-              local compare_cmd : Cmd
-              if (range instanceOf CmdRangeUpTo)
-                compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
-              elseIf (range instanceOf CmdRangeUpToLessThan)
-                compare_cmd = CmdCompareLT( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
-              else
-                compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
-              endIf
-
-              local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach, compare_cmd )
-
-              cmd_for_each.add_control_var( control_var )
-              cmd_for_each.add_control_var( last_var )
-              cmd_for_each.add_upkeep( step_cmd )
+              local cmd_for_each = create_generic_loop_from_range( t, access.name, range )
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
@@ -1943,37 +1905,7 @@ class Parser
         # forEach (expr) e.g. forEach (1..n)
         local range = expr as CmdRange
         if (range)
-          local control_var = this_method.add_local( t, Program.create_unique_id )
-          control_var.initial_value = range.first
-
-          local last_var = this_method.add_local( t, Program.create_unique_id )
-          last_var.initial_value = range.last
-
-          local step_cmd : Cmd
-          if (range.step_size)
-            step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, range.step_size )
-          else
-            if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
-              step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
-            else
-              step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
-            endIf
-          endIf
-
-          local compare_cmd : Cmd
-          if (range instanceOf CmdRangeUpTo)
-            compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
-          elseIf (range instanceOf CmdRangeUpToLessThan)
-            compare_cmd = CmdCompareLT( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
-          else
-            compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
-          endIf
-
-          local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach, compare_cmd )
-          cmd_for_each.add_control_var( control_var )
-          cmd_for_each.add_control_var( last_var )
-          cmd_for_each.add_upkeep( step_cmd )
-
+          local cmd_for_each = create_generic_loop_from_range( t, Program.create_unique_id, range )
           if (has_parens) must_consume( TokenType.symbol_close_paren )
           parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
@@ -1987,6 +1919,41 @@ class Parser
 
       trace
       throw expr.t.error( "[INTERNAL ERROR]" )
+
+    method create_generic_loop_from_range( t:Token, control_var_name:String, range:CmdRange )->CmdGenericLoop
+      local control_var = this_method.add_local( t, control_var_name )
+      control_var.initial_value = range.first
+
+      local last_var = this_method.add_local( t, Program.create_unique_id )
+      last_var.initial_value = range.last
+
+      local step_cmd = null : Cmd
+      if (range.step_size)
+        step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, range.step_size )
+      else
+        if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
+          step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
+        else
+          step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
+        endIf
+      endIf
+
+      local compare_cmd : Cmd
+      if (range instanceOf CmdRangeUpTo)
+        compare_cmd = CmdCompareLE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+      elseIf (range instanceOf CmdRangeUpToLessThan)
+        compare_cmd = CmdCompareLT( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+      else
+        compare_cmd = CmdCompareGE( t, CmdReadLocal(t,control_var), CmdReadLocal(t,last_var) )
+      endIf
+
+      local cmd_for_each = CmdGenericLoop( t, CmdControlStructure.type_forEach, compare_cmd )
+
+      cmd_for_each.add_control_var( control_var )
+      cmd_for_each.add_control_var( last_var )
+      cmd_for_each.add_upkeep( step_cmd )
+      return cmd_for_each
+
 
     method peek->Token
       return reader.peek
@@ -2798,6 +2765,33 @@ class Parser
         local access = cmd as CmdAccess
         if (access) return CmdImplicitAccess( t, access )
         else        return cmd
+
+      elseIf (consume(TokenType.keyword_forEach))
+        # Implicit loop
+        local var_name = Program.create_unique_id
+        local control_var_name, index_var_name : String
+        if (consume(TokenType.keyword_in))     control_var_name = var_name
+        elseIf (consume(TokenType.keyword_of)) index_var_name = var_name
+
+        local collection = parse_expression
+        local range = collection as CmdRange
+        if (range)
+          if (index_var_name) throw t.error( "Illegal use of forEach-of with literal range." )
+          local cmd_for_each = create_generic_loop_from_range( t, var_name, range )
+          cur_statement_list.add( cmd_for_each )
+          cur_statement_list = cmd_for_each.statements
+
+        else
+          local step_cmd : Cmd
+          if (consume(TokenType.keyword_step))
+            step_cmd = parse_expression
+          endIf
+          local cmd_for_each = CmdForEach( t, control_var_name, index_var_name, collection, step_cmd )
+          cur_statement_list.add( cmd_for_each )
+          cur_statement_list = cmd_for_each.statements
+        endIf
+
+        return CmdAccess( t, var_name )
 
       elseIf (next_is(TokenType.keyword_try))
         return parse_try_expression
