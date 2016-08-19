@@ -2772,6 +2772,7 @@ class Parser
         local control_var_name, index_var_name : String
         if (consume(TokenType.keyword_in))     control_var_name = var_name
         elseIf (consume(TokenType.keyword_of)) index_var_name = var_name
+        else throw t.error( "'in' or 'of' expected after 'forEach'." )
 
         local collection = parse_expression
         local range = collection as CmdRange
