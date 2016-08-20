@@ -262,6 +262,14 @@ class String
       if (n >= 0) return from( 0, n-1 )
       else        return from( 0, (count + n) - 1 )
 
+    method leftmost_common_substring_count( other:String )->Int32
+      if (other is null) return false
+      local max = count.or_smaller(other.count)
+      forEach (i in 0..<max)
+        if (this[i] != other[i]) return i
+      endForEach
+      return max
+
     method locate( ch:Character, optional_i1=null:Int32? )->Int32?
       local i = 0
       local limit = count
@@ -560,6 +568,18 @@ class String
       local this_count = count
       if (n < 0) return from( -n, this_count-1 )
       else       return from( this_count-n, this_count-1 )
+
+    method rightmost_common_substring_count( other:String )->Int32
+      if (other is null) return false
+      local max = count.or_smaller(other.count)
+      local this_i =  count - 1
+      local other_i = other.count - 1
+      forEach (i in 0..<max)
+        if (this[this_i] != other[other_i]) return i
+        --this_i
+        --other_i
+      endForEach
+      return max
 
     method split( separator:Character )->String[]
       local result = String[]

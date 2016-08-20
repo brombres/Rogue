@@ -66,6 +66,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [API] Added global methods `Value.load(File)->Value` and `Value.parse(json:String)->Value`.
 - [API] Added method `Value.save(File,&formatted)->Logical`.
 - [API] Reworked `String` operator methods to prevent null pointer errors.
+- [API] Added `String.leftmost_common_substring_count(other:String)->Int32` and `String.rightmost_common_substring_count(other:String)->Int32`
 - [API] Added convenience method `Console.clear`.
 - [API] Added convenience method `Console.clear_to_eol`.
 - [API] Added convenience method `Console.move_cursor(dx:Int32,dy:Int32)`.
