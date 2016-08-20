@@ -27,7 +27,7 @@ class JSON
     method parse_value( reader:ParseReader )->Value
       _consume_spaces_and_eols( reader )
 
-      if (not reader.has_another) return NullValue
+      if (not reader.has_another) return UndefinedValue
 
       local ch = reader.peek
       if (ch == '{') return parse_table( reader )
@@ -58,13 +58,13 @@ class JSON
 
         return StringValue( result )
       else
-        return NullValue
+        return UndefinedValue
       endIf
 
     method parse_table( reader:ParseReader )->Value
       _consume_spaces_and_eols( reader )
 
-      if (not reader.consume('{')) return NullValue
+      if (not reader.consume('{')) return UndefinedValue
 
       _consume_spaces_and_eols( reader )
 
@@ -103,7 +103,7 @@ class JSON
     method parse_list( reader:ParseReader )->Value
       _consume_spaces_and_eols( reader )
 
-      if (not reader.consume('[')) return NullValue
+      if (not reader.consume('[')) return UndefinedValue
 
       _consume_spaces_and_eols( reader )
 

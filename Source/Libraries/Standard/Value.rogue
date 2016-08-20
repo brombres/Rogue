@@ -147,6 +147,9 @@ class Value
     method is_table->Logical
       return false
 
+    method is_undefined->Logical
+      return false
+
     method keys->String[]
       return String[]
 
@@ -429,6 +432,9 @@ endClass
 
 class UndefinedValue : NullValue [singleton]
   METHODS
+    method is_undefined->Logical
+      return true
+
     method to->String
       return ""
 endClass

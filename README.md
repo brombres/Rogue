@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.92 - August 20, 2016
+- [JSON API] JSON parser now returns `UndefinedValue` rather than `NullValue` in syntax error situations.  `NullValue` is only returned when the literal keyword `null` appears in the JSON.
+- [Value API] Added `Value.is_undefined()->Logical` that returns `true` when a value is an `UndefinedValue`.  Note that `UndefinedValue` also returns true for `.is_null()`; an `UndefinedValue` is a `NullValue` but the reverse is not true.
+
 ###v1.0.91 - August 19, 2016
 - [Rogue] Generic functions can now omit the keyword 'function' for brevity and begin with `(args)=>`, `()=>`, or even just `=>`.  For example: `trace [3,1,5,4,2].sort( (a,b)=>(a<b) )`.
 - [Rogue] Added an *implicit function* convenience syntax that automatically converts expressions into generic single-parameter functions with automatic variable capture when the expression contains terms that begin with `.` or `//`.  For example, `table[//name==player_name]` is equivalent to writing `table[function(value) with(player_name)=>value//name==player_name]` and `list.first(.is_string and .count>3)` is equivalent to writing `list.first(function(value)=>value.is_string and value.count>3)`.  The special keyword `.this` may be used in implicit functions to indicate the value under consideration.  For example, to pull out all the odd numbers in an Int32 list: `list[ .this & 1 ]`.  Methods accepting functions of this form can be called *function methods*.
