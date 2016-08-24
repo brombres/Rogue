@@ -20,6 +20,7 @@ class Parser
     inserted_module_prefixes : Logical
 
     implicit_access_used : Logical
+    implicit_loop_stack  = CmdControlStructure[]
 
   METHODS
     method init( filepath )
@@ -899,13 +900,10 @@ class Parser
       endWhile
 
     method parse_augment_statements
-      local prev_statement_list = cur_statement_list
-
       this_method.begin_label( peek, "insert", true )
       this_method.begin_label( peek, "append", true )
 
       local cur_label = this_method.begin_label( peek, "insert", true )
-      cur_statement_list = cur_label.statements
 
       consume_end_commands
       while (next_is_statement)
@@ -946,7 +944,17 @@ class Parser
       local prev_statement_list = cur_statement_list
       cur_statement_list = statements
 
+      local original_statement_count = statements.count
+      local original_implicit_loop_count = implicit_loop_stack.count
+
       parse_statement( allow_control_structures )
+
+      while (implicit_loop_stack.count > original_implicit_loop_count)
+        forEach (original_statement_count..<statements.count)
+          implicit_loop_stack.last.statements.add( statements.remove_at(original_statement_count) )
+        endForEach
+        statements.add( implicit_loop_stack.remove_last )
+      endWhile
 
       cur_statement_list = prev_statement_list
 
@@ -2779,8 +2787,7 @@ class Parser
         if (range)
           if (index_var_name) throw t.error( "Illegal use of forEach-of with literal range." )
           local cmd_for_each = create_generic_loop_from_range( t, var_name, range )
-          cur_statement_list.add( cmd_for_each )
-          cur_statement_list = cmd_for_each.statements
+          implicit_loop_stack.add( cmd_for_each )
 
         else
           local step_cmd : Cmd
@@ -2788,8 +2795,7 @@ class Parser
             step_cmd = parse_expression
           endIf
           local cmd_for_each = CmdForEach( t, control_var_name, index_var_name, collection, step_cmd )
-          cur_statement_list.add( cmd_for_each )
-          cur_statement_list = cmd_for_each.statements
+          implicit_loop_stack.add( cmd_for_each )
         endIf
 
         return CmdAccess( t, var_name )

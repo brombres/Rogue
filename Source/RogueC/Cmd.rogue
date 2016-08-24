@@ -394,6 +394,13 @@ class CmdLocalDeclaration : CmdStatement
 
       return this
 
+    method to->String
+      if (local_info.type)
+        return "CmdLocalDeclaration($:$)" (local_info.name,local_info.type.name)
+      else
+        return "CmdLocalDeclaration($)" (local_info.name)
+      endIf
+
 endClass
 
 
@@ -963,6 +970,9 @@ class CmdGenericLoop : CmdControlStructure
 
       scope.control_stack.remove_last
       return this
+
+    method to->String
+      return "CmdGenericLoop(statements:$ control_statements:$ condition:$ upkeep:$)" (statements,control_statements,condition,upkeep)
 
 endClass
 
@@ -2427,7 +2437,11 @@ class CmdReadLocal : Cmd
       return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
 
     method to->String
-      return 'CmdReadLocal("$":"$")' (local_info.original_name, local_info.type.name)
+      if (local_info.type)
+        return 'CmdReadLocal("$":"$")' (local_info.original_name, local_info.type.name)
+      else
+        return 'CmdReadLocal("$")' (local_info.original_name)
+      endIf
 
     method type->Type
       return local_info.type
@@ -3835,6 +3849,9 @@ class CmdAdjustLocal : Cmd
           ) ).resolve( scope )
       endIf
       return this
+
+    method to->String
+      return "CmdAdjustLocal($)" (local_info.name)
 
     method type->Type
       return local_info.type
