@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.91
-- August 19, 2016
+- v1.0.92
+- August 23, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.92 - August 20, 2016
+###v1.0.92 - August 23, 2016
 - [RogueC] Parsing of implicit `forEach` loops is now more robust.
 - [JSON API] JSON parser now returns `UndefinedValue` rather than `NullValue` in syntax error situations.  `NullValue` is only returned when the literal keyword `null` appears in the JSON.
 - [Value API] Added `Value.is_undefined()->Logical` that returns `true` when a value is an `UndefinedValue`.  Note that `UndefinedValue` also returns true for `.is_null()`; an `UndefinedValue` is a `NullValue` but the reverse is not true.
