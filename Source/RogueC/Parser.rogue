@@ -678,11 +678,6 @@ class Parser
       which (name)
         case "operator"
           name += reader.read->String
-        case "set"
-          # Convert set-name into set_name
-          if (consume(TokenType.symbol_minus))
-            name = "set_" + read_identifier
-          endIf
         case "to"
           if (consume(TokenType.symbol_arrow))
             return_type = parse_type

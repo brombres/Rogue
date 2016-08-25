@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.93 - August 25, 2016
+- [Rogue] All occurrences of the pattern `set-<x>` are now replaced with `set_<x>`.  For instance, `set-value` is shorthand for writing `set_value`.  This is a more complete implementation of an existing mechanism; the purpose is to easily allow pattern searching to find properties, getters, and setters all using the same name (e.g. searching for `\<value\>` in Vim finds property `value`, getter `value()`, and setter `set-value()`).
+
 ###v1.0.92 - August 23, 2016
 - [RogueC] Parsing of implicit `forEach` loops is now more robust.
 - [JSON API] JSON parser now returns `UndefinedValue` rather than `NullValue` in syntax error situations.  `NullValue` is only returned when the literal keyword `null` appears in the JSON.
