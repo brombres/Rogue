@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.94 - August 26, 2016
+- [RogueC] Changed comma from a standard expression token to a "structural" token.  This allows generic functions to be parsed as a middle argument (followed by a comma) rather than inadvertently restricting them to be the final argument as was previously the case (close paren is also a structural token, which stops the parsing in that scenario).  There are no known negative side effects of this change.
+
 ###v1.0.93 - August 25, 2016
 - [Rogue] All occurrences of the pattern `set-<x>` are now replaced with `set_<x>`.  For instance, `set-value` is shorthand for writing `set_value`.  This is a more complete implementation of an existing mechanism; the purpose is to easily allow pattern searching to find properties, getters, and setters all using the same name (e.g. searching for `\<value\>` in Vim finds property `value`, getter `value()`, and setter `set-value()`).
 

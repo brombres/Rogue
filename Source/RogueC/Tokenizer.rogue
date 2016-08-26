@@ -131,6 +131,7 @@ class Tokenizer
       TokenType.symbol_close_comment         = define( StructureTokenType("}#") )
       TokenType.symbol_close_paren           = define( StructureTokenType(")") )
       TokenType.symbol_close_specialize      = define( StructureTokenType(">>") )
+      TokenType.symbol_comma                 = define( StructureTokenType(",") )
 
       # Statement Tokens
       TokenType.keyword_assert              = define( TokenType("assert") )
@@ -215,7 +216,6 @@ class Tokenizer
       TokenType.symbol_caret                 = define( TokenType("^") )
       TokenType.symbol_caret_equals          = define( ModifyAndAssignTokenType("^=") )
       TokenType.symbol_colon                 = define( TokenType(":") )
-      TokenType.symbol_comma                 = define( TokenType(",") )
       TokenType.symbol_compare               = define( TokenType("<>") )
       TokenType.symbol_dot                   = define( TokenType(".") )
       TokenType.symbol_dot_equals            = define( ModifyAndAssignTokenType(".=") )
