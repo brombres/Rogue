@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.95 - August 27, 2016
+- [RogueC] Renamed various `Cmd.cloned(Cmd)` methods to `Cmd.clone(Cmd)`, leaving `Cmd.cloned()` as-is, to have the semantics reflect the behavior of possibly cloning a possibly null reference (`clone()`) versus having an existing object clone itself (`cloned()`).
+- [RogueC] Fixed bug where `CmdCallPrior` nodes were assuming that arguments always existed during cloning.  Changed `args.cloned()` to `clone(args)`.
+
 ###v1.0.94 - August 26, 2016
 - [RogueC] Changed comma from a standard expression token to a "structural" token.  This allows generic functions to be parsed as a middle argument (followed by a comma) rather than inadvertently restricting them to be the final argument as was previously the case (close paren is also a structural token, which stops the parsing in that scenario).  There are no known negative side effects of this change.
 

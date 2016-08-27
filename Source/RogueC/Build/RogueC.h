@@ -6377,10 +6377,10 @@ void RogueCmd__add_to__CmdStatementList( RogueClassCmd* THIS, RogueClassCmdState
 RogueClassCmd* RogueCmd__call_prior__Scope( RogueClassCmd* THIS, RogueClassScope* scope_0 );
 RogueClassCmd* RogueCmd__cast_to__Type_Scope_Logical_Logical( RogueClassCmd* THIS, RogueClassType* target_type_0, RogueClassScope* scope_1, RogueLogical allow_implicit_narrowing_2, RogueLogical is_conversion_3 );
 RogueClassCmd* RogueCmd__cast_to__Type_Type_Scope_Logical_Logical( RogueClassCmd* THIS, RogueClassType* this_type_0, RogueClassType* target_type_1, RogueClassScope* scope_2, RogueLogical allow_implicit_narrowing_3, RogueLogical is_conversion_4 );
+RogueClassCmd* RogueCmd__clone__Cmd_CloneArgs( RogueClassCmd* THIS, RogueClassCmd* other_0, RogueClassCloneArgs* clone_args_1 );
+RogueClassCmdArgs* RogueCmd__clone__CmdArgs_CloneArgs( RogueClassCmd* THIS, RogueClassCmdArgs* args_0, RogueClassCloneArgs* clone_args_1 );
+RogueClassCmdStatementList* RogueCmd__clone__CmdStatementList_CloneArgs( RogueClassCmd* THIS, RogueClassCmdStatementList* statements_0, RogueClassCloneArgs* clone_args_1 );
 RogueClassCmd* RogueCmd__cloned__CloneArgs( RogueClassCmd* THIS, RogueClassCloneArgs* clone_args_0 );
-RogueClassCmd* RogueCmd__cloned__Cmd_CloneArgs( RogueClassCmd* THIS, RogueClassCmd* other_0, RogueClassCloneArgs* clone_args_1 );
-RogueClassCmdArgs* RogueCmd__cloned__CmdArgs_CloneArgs( RogueClassCmd* THIS, RogueClassCmdArgs* args_0, RogueClassCloneArgs* clone_args_1 );
-RogueClassCmdStatementList* RogueCmd__cloned__CmdStatementList_CloneArgs( RogueClassCmd* THIS, RogueClassCmdStatementList* statements_0, RogueClassCloneArgs* clone_args_1 );
 RogueClassCmd* RogueCmd__combine_literal_operands__Type( RogueClassCmd* THIS, RogueClassType* common_type_0 );
 RogueClassCmd* RogueCmd__dispatch__Visitor( RogueClassCmd* THIS, RogueClassVisitor* v_0 );
 void RogueCmd__exit_scope__Scope( RogueClassCmd* THIS, RogueClassScope* scope_0 );
