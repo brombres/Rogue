@@ -166,6 +166,9 @@ trace Type.resolve_chain
     method is_literal->Logical
       return false
 
+    method is_literal_number->Logical
+      return false
+
     method require_type_context
       if (type) throw t.error( ''Type name expected, e.g. "$.".'' (type) )
       else       throw t.error( ''Type name expected.'' )
@@ -207,6 +210,12 @@ trace Type.resolve_chain
 
     method resolve_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       throw t.error( "Invalid assignment." )
+
+    method to->Byte
+      return this->Int32->Byte
+
+    method to->Int32
+      return 0
 
     method to->Logical
       return false
@@ -1470,6 +1479,11 @@ class CmdDefaultValue : CmdLiteral
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdDefaultValue( t, of_type )
 
+    method is_literal_number->Logical
+      if (not of_type.is_primitive) return false
+      if (of_type is Program.type_Logical) return false
+      return true
+
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
       local default_value = of_type.create_default_value( t )
@@ -1483,7 +1497,13 @@ class CmdDefaultValue : CmdLiteral
       return of_type
 endClass
 
-class CmdLiteralReal64 : CmdLiteral
+class CmdLiteralNumber : CmdLiteral
+  METHODS
+    method is_literal_number->Logical
+      return true
+endClass
+
+class CmdLiteralReal64 : CmdLiteralNumber
   PROPERTIES
     value : Real64
 
@@ -1493,8 +1513,26 @@ class CmdLiteralReal64 : CmdLiteral
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralReal64( t, value )
 
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
+      if (target_type is Program.type_Real32)
+        return CmdLiteralReal32( t, value )
+      elseIf (target_type is Program.type_Int64)
+        return CmdLiteralInt64( t, value )
+      elseIf (target_type is Program.type_Int32)
+        return CmdLiteralInt32( t, value )
+      elseIf (target_type is Program.type_Character)
+        return CmdLiteralCharacter( t, value )
+      elseIf (target_type is Program.type_Byte)
+        return CmdLiteralByte( t, value )
+      else
+        return prior.cast_to( target_type, scope )
+      endIf
+
     method resolve( scope:Scope )->Cmd
       return this
+
+    method to->Int32
+      return value->Int32
 
     method to->Logical
       return value?
@@ -1507,7 +1545,49 @@ class CmdLiteralReal64 : CmdLiteral
 endClass
 
 
-class CmdLiteralInt64 : CmdLiteral
+class CmdLiteralReal32 : CmdLiteralNumber
+  PROPERTIES
+    value : Real32
+
+  METHODS
+    method init( t, value )
+
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralReal32( t, value )
+
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
+      if (target_type is Program.type_Real64)
+        return CmdLiteralReal64( t, value )
+      elseIf (target_type is Program.type_Int64)
+        return CmdLiteralInt64( t, value )
+      elseIf (target_type is Program.type_Int32)
+        return CmdLiteralInt32( t, value )
+      elseIf (target_type is Program.type_Character)
+        return CmdLiteralCharacter( t, value )
+      elseIf (target_type is Program.type_Byte)
+        return CmdLiteralByte( t, value )
+      else
+        return prior.cast_to( target_type, scope )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method to->Int32
+      return value->Int32
+
+    method to->Logical
+      return value?
+
+    method to->String
+      return value
+
+    method type->Type
+      return Program.type_Real32
+endClass
+
+
+class CmdLiteralInt64 : CmdLiteralNumber
   PROPERTIES
     value : Int64
 
@@ -1520,14 +1600,23 @@ class CmdLiteralInt64 : CmdLiteral
     method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
       if (target_type is Program.type_Real64)
         return CmdLiteralReal64( t, value )
+      elseIf (target_type is Program.type_Real32)
+        return CmdLiteralReal32( t, value )
       elseIf (target_type is Program.type_Int32)
         return CmdLiteralInt32( t, value )
+      elseIf (target_type is Program.type_Character)
+        return CmdLiteralCharacter( t, value )
+      elseIf (target_type is Program.type_Byte)
+        return CmdLiteralByte( t, value )
       else
         return prior.cast_to( target_type, scope )
       endIf
 
     method resolve( scope:Scope )->Cmd
       return this
+
+    method to->Int32
+      return value->Int32
 
     method to->Logical
       return value?
@@ -1540,7 +1629,7 @@ class CmdLiteralInt64 : CmdLiteral
 endClass
 
 
-class CmdLiteralInt32 : CmdLiteral
+class CmdLiteralInt32 : CmdLiteralNumber
   PROPERTIES
     value : Int32
 
@@ -1553,12 +1642,23 @@ class CmdLiteralInt32 : CmdLiteral
     method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
       if (target_type is Program.type_Real64)
         return CmdLiteralReal64( t, value )
+      elseIf (target_type is Program.type_Real32)
+        return CmdLiteralReal32( t, value )
+      elseIf (target_type is Program.type_Int64)
+        return CmdLiteralInt64( t, value )
+      elseIf (target_type is Program.type_Character)
+        return CmdLiteralCharacter( t, value )
+      elseIf (target_type is Program.type_Byte)
+        return CmdLiteralByte( t, value )
       else
         return prior.cast_to( target_type, scope )
       endIf
 
     method resolve( scope:Scope )->Cmd
       return this
+
+    method to->Int32
+      return value
 
     method to->Logical
       return value?
@@ -1571,7 +1671,7 @@ class CmdLiteralInt32 : CmdLiteral
 endClass
 
 
-class CmdLiteralCharacter : CmdLiteral
+class CmdLiteralCharacter : CmdLiteralNumber
   PROPERTIES
     value : Character
 
@@ -1581,8 +1681,26 @@ class CmdLiteralCharacter : CmdLiteral
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdLiteralCharacter( t, value )
 
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
+      if (target_type is Program.type_Real64)
+        return CmdLiteralReal64( t, value )
+      elseIf (target_type is Program.type_Real32)
+        return CmdLiteralReal32( t, value )
+      elseIf (target_type is Program.type_Int64)
+        return CmdLiteralInt64( t, value )
+      elseIf (target_type is Program.type_Int32)
+        return CmdLiteralInt32( t, value )
+      elseIf (target_type is Program.type_Byte)
+        return CmdLiteralByte( t, value )
+      else
+        return prior.cast_to( target_type, scope )
+      endIf
+
     method resolve( scope:Scope )->Cmd
       return this
+
+    method to->Int32
+      return value->Int32
 
     method to->Logical
       return value?
@@ -1593,6 +1711,48 @@ class CmdLiteralCharacter : CmdLiteral
     method type->Type
       return Program.type_Character
 endClass
+
+class CmdLiteralByte : CmdLiteralNumber
+  PROPERTIES
+    value : Byte
+
+  METHODS
+    method init( t, value )
+
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdLiteralByte( t, value )
+
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
+      if (target_type is Program.type_Real64)
+        return CmdLiteralReal64( t, value )
+      elseIf (target_type is Program.type_Real32)
+        return CmdLiteralReal32( t, value )
+      elseIf (target_type is Program.type_Int64)
+        return CmdLiteralInt64( t, value )
+      elseIf (target_type is Program.type_Int32)
+        return CmdLiteralInt32( t, value )
+      elseIf (target_type is Program.type_Character)
+        return CmdLiteralCharacter( t, value )
+      else
+        return prior.cast_to( target_type, scope )
+      endIf
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method to->Int32
+      return value->Int32
+
+    method to->Logical
+      return value?
+
+    method to->String
+      return value
+
+    method type->Type
+      return Program.type_Byte
+endClass
+
 
 
 class CmdLiteralLogical : CmdLiteral
@@ -1607,6 +1767,9 @@ class CmdLiteralLogical : CmdLiteral
 
     method resolve( scope:Scope )->Cmd
       return this
+
+    method to->Int32
+      return select{ value:1 || 0 }
 
     method to->Logical
       return value?
@@ -5076,6 +5239,18 @@ class CmdTypedLiteralList : Cmd
       return type
 
     method resolve( scope:Scope )->Cmd
+      if (list_type_name == "Byte[]")
+        elements.resolve( scope )
+        contingent
+          necessary ((forEach in elements).is_literal_number)
+        satisfied
+          # Convert Byte[](a,b,c) to Byte[]("AABBCC")
+          local bytes = Byte[]( elements.count )
+          bytes.add( (forEach in elements)->Byte )
+          return CmdAccess( t, list_type_name, CmdArgs(CmdLiteralString(t,bytes.to_hex_string)) ).resolve( scope )
+        endContingent
+      endIf
+
       if (elements.count <= 32)
         local result = CmdAccess( t, list_type_name, CmdArgs() ) : Cmd
         forEach (element in elements)

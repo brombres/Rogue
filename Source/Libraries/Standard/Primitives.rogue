@@ -321,13 +321,16 @@ class Int64 [primitive]
       unitTest assert( Int64(0).sign == Int64(0) )
       unitTest assert( Int64(-5).sign == Int64(-1) )
 
+    method to_hex_character->Character
+      return Int32(this).to_hex_character
+
     method to->Object
       return Boxed<<Int64>>(this)
 
     method to->String
       return StringBuilder().print( this )->String
 
-    method to->String( &digits=0, &hex, &octal, &binary )
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
       if (hex)    return to_hex_string( select{digits||16} )
       if (octal)  return to_octal_string( select{digits||22} )
       if (binary) return to_binary_string( select{digits||64} )
@@ -423,7 +426,7 @@ class Int32 [primitive]
     method to->String
       return "" + this
 
-    method to->String( &digits=0, &hex, &octal, &binary )
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
       if (hex)    return to_hex_string( select{digits||8} )
       if (octal)  return to_octal_string( select{digits||11} )
       if (binary) return to_binary_string( select{digits||32} )
@@ -439,6 +442,11 @@ class Int32 [primitive]
 
     method to_binary_string( digits=32:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_character->Character
+      if (this < 0 or this > 35) return '0'
+      if (this <= 9) return Character( '0' + this )
+      return Character( 'A' + (this-10) )
 
     method to_hex_string( digits=8:Int32 )->String
       return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
@@ -543,7 +551,7 @@ class Character [primitive]
     method to->Value
       return Value( this->String )
 
-    method to->String( &digits=0, &hex, &octal, &binary )
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
       if (hex)    return to_hex_string( select{digits||4} )
       if (octal)  return to_octal_string( select{digits||6} )
       if (binary) return to_binary_string( select{digits||16} )
@@ -629,7 +637,7 @@ class Byte [primitive]
     method to->String
       return "" + this
 
-    method to->String( &digits=0, &hex, &octal, &binary )
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
       if (hex)    return to_hex_string( select{digits||2} )
       if (octal)  return to_octal_string( select{digits||3} )
       if (binary) return to_binary_string( select{digits||8} )
@@ -640,6 +648,9 @@ class Byte [primitive]
 
     method to_binary_string( digits=8:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_character->Character
+      return Int32(this).to_hex_character
 
     method to_hex_string( digits=2:Int32 )->String
       return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String

@@ -1036,6 +1036,11 @@ class CPPWriter
 
       return this
 
+    method print( value:Real32 )->CPPWriter
+      print_indent
+      buffer.print( value )
+      return this
+
     method print( value:Character )->CPPWriter
       # Do we need to check for newlines here?
       print_indent
@@ -1091,6 +1096,13 @@ class CPPWriter
       return this
 
     method println( value:Real64 )->CPPWriter
+      print( value )
+      buffer.print( '\n' )
+      ++line_number
+      needs_indent = true
+      return this
+
+    method println( value:Real32 )->CPPWriter
       print( value )
       buffer.print( '\n' )
       ++line_number
@@ -2312,6 +2324,22 @@ augment CmdLiteralReal64
 endAugment
 
 
+augment CmdLiteralReal32
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (value == value)
+        if (value - value == 0)
+          writer.print( value ).print( 'f' )
+        else
+          if (value > 0) writer.print( "(1.0f/0.0f)" )   #  infinity
+          else           writer.print( "(-1.0f/0.0f)" )  # -infinity
+        endIf
+      else
+        writer.print( "(0.0f/0.0f)" )  # NaN
+      endIf
+endAugment
+
+
 augment CmdLiteralInt64
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
@@ -2342,6 +2370,12 @@ augment CmdLiteralCharacter
       else
         writer.print( value->Int32 )
       endIf
+endAugment
+
+augment CmdLiteralByte
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( Int32(value) )
 endAugment
 
 

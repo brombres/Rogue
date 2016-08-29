@@ -570,6 +570,39 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       return this
 endClass
 
+augment Byte[]
+  METHODS
+    method init( hex:String )
+      add( hex )
+
+    method add( hex:String )->this
+      if (hex.count & 1)
+        println "ERROR: odd number of characters in Byte[].add(hex:String)."
+        return this
+      endIf
+
+      local dest_i = count
+      reserve( hex.count/2 )
+      count += hex.count/2
+
+      forEach (hex_i of hex step 2)
+        data[ dest_i ] = (hex[hex_i].to_number(16) :<<: 4) | hex[hex_i+1].to_number(16)
+        ++dest_i
+      endForEach
+
+      return this
+
+    method to_hex_string->String
+      # Returns a string of hexadecimal digit pairs encoding each byte.
+      #
+      # Example:
+      #
+      #   println Byte[][0,127,160,255].to_hex_string  # "007FA0FF"
+      local buffer = StringBuilder( count*2 )
+      forEach (b in this) buffer.print( ((b:>>:4)&15).to_hex_character ).print( (b&15).to_hex_character )
+      return buffer->String
+endAugment
+
 augment String[]
   METHODS
     method joined( separator="\n":String )->String

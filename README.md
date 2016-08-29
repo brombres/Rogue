@@ -26,6 +26,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.96 - August 29, 2016
+- [API] Added `Byte[](hex:String)` and `Byte[].add(hex:String)->this` that accept strings of hexadecimal pairs and convert them into bytes.  For example, `Byte[]("007fa0FF")` produces a Byte list equivalent to `Byte[][0,127,160,255]`.
+- [API] Added `Byte[].to_hex_string()->String` that returns a string of hexadecimal digit pairs encoding each byte.  For example, `Byte[][0,127,160,255].to_hex_string` returns `"007FA0FF"`.
+- [API] Added `Int64/Int32/Byte.to_hex_character()->Character` that returns characters `0..9` or `A..Z` for values `0..9` or `10..35` ("hex" isn't entirely accurate as this method naturally supports bases 2..36, but hexadecimal is the most likely use case).
+- [RogueC] Literal `Byte[]` lists containing only literal byte values are converted internally to use an efficient `Byte[](hex:String)` constructor rather than generating an `add()` statement for each byte value.
+
 ###v1.0.95 - August 27, 2016
 - [RogueC] Renamed various `Cmd.cloned(Cmd)` methods to `Cmd.clone(Cmd)`, leaving `Cmd.cloned()` as-is, to have the semantics reflect the behavior of possibly cloning a possibly null reference (`clone()`) versus having an existing object clone itself (`cloned()`).
 - [RogueC] Fixed bug where `CmdCallPrior` nodes were assuming that arguments always existed during cloning.  Changed `args.cloned()` to `clone(args)`.
