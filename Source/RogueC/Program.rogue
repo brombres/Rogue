@@ -232,7 +232,7 @@ class Program [essential singleton]
 
     method get_callback_type_reference( t:Token, parameter_types:Type[], return_type:Type )->Type
       local name = "Function" + get_callback_type_signature( parameter_types )
-      if (return_type) name += "->" + return_type.name
+      if (return_type) name += "->($)" (return_type.name)
 
       local type = get_type_reference( t, name )
       if (type.defined) return type

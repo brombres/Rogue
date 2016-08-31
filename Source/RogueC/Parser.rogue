@@ -1603,17 +1603,27 @@ class Parser
 
     method parse_possible_type( allow_at_sign=false:Logical )->String
       local t = peek
-
       local name : String
 
-      # 'allow_at_sign' refers to allowing direct variable access; regardless of
-      # that we still need to check for @{} and @[]
-      if (consume(TokenType.symbol_at_brace))
+      if (consume(TokenType.symbol_open_paren))
+        # Allow parens around everything before '?' and '[]'; necessary to be able to
+        # disambiguate template methods that return optional function types and function
+        # type lists.  For example, in Template<<$X>> with a method m->$X?, if $X is
+        # Function()->Logical, then $X? reads as Function()->(Logical?) when you may
+        # want Function()->(Logical)?.  We can write ->($X)? as an alternative.
+        name = parse_possible_type
+        must_consume( TokenType.symbol_close_paren )
+
+      elseIf (consume(TokenType.symbol_at_brace))
+        # 'allow_at_sign' refers to allowing direct variable access; regardless of
+        # that we still need to check for @{} and @[]
         name = "ValueTable"
         must_consume( TokenType.symbol_close_brace )
+
       elseIf (consume(TokenType.symbol_at_bracket))
         name = "ValueList"
         must_consume( TokenType.symbol_close_bracket )
+
       else
         name = read_identifier( allow_at_sign )
 
@@ -2221,7 +2231,6 @@ class Parser
 
     method parse_member_access( context:Cmd )->Cmd
       local t = peek
-
       if (consume(TokenType.symbol_dot))
         # Part access e.g. obj.value
         local access = parse_access( t, context )
@@ -2233,7 +2242,7 @@ class Parser
         return parse_member_access( CmdElementAccess(t, context, CmdLiteralString(t,name)) )
 
       elseIf (consume(TokenType.symbol_open_bracket))
-        # Parse obj[index]
+        # context[index]
         consume_eols
         local access = CmdElementAccess( t, context, parse_expression_allowing_query )
         consume_eols
@@ -2444,14 +2453,20 @@ class Parser
 
       return num_specializers
 
-    method parse_specializer( buffer=string_buffer:StringBuilder, tokens=null:Token[] )
-      local nesting_level = 1
+    method parse_specializer( buffer=string_buffer:StringBuilder, tokens=null:Token[], depth=1:Int32 )
+      if (not reader.has_another) return
+
+      local t = peek
+      local is_function = (t.type is TokenType.identifier and t->String == "Function")
+      local inject_close_paren = false
+
       while (reader.has_another)
         if (next_is(TokenType.eol))
           throw peek.error( "Closing '>>' expected before end of line." )
         endIf
 
-        local t = peek
+        t = peek
+
         if (consume(TokenType.symbol_backslash))
           buffer.print("\\")
 
@@ -2462,7 +2477,14 @@ class Parser
           if (tokens) tokens.add( t )
 
         elseIf (t.type is TokenType.symbol_comma)
-          if (nesting_level == 1) return
+          if (depth == 1)
+            if (inject_close_paren)
+              if (tokens) tokens.add( TokenType.symbol_close_paren.create_token(t) )
+              buffer.print( ')' )
+            endIf
+            return
+          endIf
+
           read
           if (tokens) tokens.add( t )
           buffer.print(',')
@@ -2470,25 +2492,37 @@ class Parser
         elseIf (consume(TokenType.symbol_open_specialize))
           if (tokens) tokens.add( t )
           buffer.print("<<")
-          ++nesting_level
+          parse_specializer( buffer, tokens, depth+1 )
 
         elseIf (next_is(TokenType.symbol_close_specialize))
-          --nesting_level
-          if (nesting_level == 0)
-            return
-          else
-            read
-            if (tokens) tokens.add( t )
-            buffer.print( ">>" )
+          if (inject_close_paren)
+            if (tokens) tokens.add( TokenType.symbol_close_paren.create_token(t) )
+            buffer.print( ')' )
           endIf
+
+          if (depth == 1) return  # leave >> in reader if it's the last one
+
+          read
+          if (tokens) tokens.add( t )
+          buffer.print( ">>" )
+          return
 
         else
           if (tokens) tokens.add( t )
+
           local st = read->String
           if (t.type is TokenType.literal_string)
             buffer.print( '"' ).print( st ).print( '"' )
           else
             buffer.print( st )
+          endIf
+
+          if (is_function and t.type is TokenType.symbol_arrow)
+            if (reader.peek.type is not TokenType.symbol_open_paren)
+              if (tokens) tokens.add( TokenType.symbol_open_paren.create_token(t) )
+              inject_close_paren = true
+              buffer.print( '(' )
+            endIf
           endIf
         endIf
       endWhile

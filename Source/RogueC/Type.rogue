@@ -52,7 +52,7 @@ class Type
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
 
-    global_method_list          = Method[]                   : Method[]
+    global_method_list                = Method[]                   : Method[]
     global_method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     global_method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
