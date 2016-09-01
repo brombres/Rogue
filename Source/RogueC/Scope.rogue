@@ -642,6 +642,17 @@ class Scope
 
       endIf
 
+      # Check for a null argument and try to find a [nullArgDefault] method
+      if (args)
+        contingent
+          sufficient ((forEach in args) instanceOf CmdLiteralNull)
+        satisfied
+          forEach (m in candidates.available)
+            if (m.is_null_arg_default) return m
+          endForEach
+        endContingent
+      endIf
+
       candidates.update_matches  # Force error if required
       return null
 endClass

@@ -399,6 +399,8 @@ class Parser
         elseIf (consume("macro"))
           attributes.add( Attribute.is_macro )
           attributes.add( Attribute.is_propagated )
+        elseIf (consume("nullArgDefault"))
+          attributes.add( Attribute.is_null_arg_default )
         elseIf (consume("primitive"))
           ensure_unspecialized_element_type( t, attributes )
           attributes.add( Attribute.is_primitive )

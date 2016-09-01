@@ -28,6 +28,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.0.96 - August 31, 2016
 - [Rogue] `Function()` Type declarations and `function()` object declarations now require parens around the return type to solve ambiguity issues.  For instance, existing code containing `Function()->Logical` must now be written `Function()->(Logical)`.
+- [Rogue] Added method attribute `[nullArgDefault]`.  When specified, an ambiguous call with a `null` parameter with multiple candidate methods will now select the method that specifies `[nullArgDefault]`.  For instance, `List.add($DataType)` is now the `[nullArgDefault]` vs. `List.add($DataType[])` and so calling `list.add(null)` will call the first overload.
+- [API] Added `[nullArgDefault]` to `List.add($DataType)` and `List.locate($DataType)`.
 - [API] Added `PrintWriter.close()` that forwards the call to the an writer if it exists.
 
 ###v1.0.95 - August 30, 2016

@@ -180,6 +180,9 @@ class Method
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)
 
+    method is_null_arg_default->Logical
+      return (attributes.flags & Attribute.is_null_arg_default)
+
     method is_overridden->Logical
       return overriding_methods.count
 

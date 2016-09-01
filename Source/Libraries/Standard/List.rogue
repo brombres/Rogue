@@ -34,7 +34,7 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method add( value:$DataType )->this
+    method add( value:$DataType )->this  [nullArgDefault]
       reserve(1)[count] = value
       ++count
       return this
@@ -209,7 +209,7 @@ class List<<$DataType>> : GenericList
 
       return null
 
-    method locate( value:$DataType )->Int32?
+    method locate( value:$DataType )->Int32? [nullArgDefault]
       if ($DataType isReference)
         if (value is null)
           forEach (i of this)
