@@ -79,8 +79,6 @@ trace Type.resolve_chain
 
       if (this_type.is_aspect) return cast_to( Program.type_Object, target_type, scope, allow_implicit_narrowing, is_conversion )
 
-trace scope.this_type
-trace scope.this_method
       throw t.error( "Type $ cannot be cast to required type $." (this_type,target_type) )
 
     method clone( other:Cmd, clone_args=null:CloneArgs )->Cmd

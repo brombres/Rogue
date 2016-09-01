@@ -8,7 +8,7 @@ class Table<<$KeyType,$ValueType>>
     last_entry      : TableEntry<<$KeyType,$ValueType>>
     cur_entry       : TableEntry<<$KeyType,$ValueType>>
 
-    sort_function   : Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical
+    sort_function   : Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical)
     # Optional function which, if defined, is used to place each entry into the correct position
     # as entries are added or redefined.
 
@@ -79,10 +79,10 @@ class Table<<$KeyType,$ValueType>>
     method contains( key:$KeyType )->Logical
       return find(key)?
 
-    method contains( query:Function($ValueType)->Logical )->Logical
+    method contains( query:Function($ValueType)->(Logical) )->Logical
       return first( query ).exists
 
-    method count( query:Function(Value)->Logical )->Int32
+    method count( query:Function(Value)->(Logical) )->Int32
       local result = 0
       local cur = first_entry
       while (cur)
@@ -126,7 +126,7 @@ class Table<<$KeyType,$ValueType>>
         return default_value
       endIf
 
-    method first( query:Function($ValueType)->Logical )->$ValueType?
+    method first( query:Function($ValueType)->(Logical) )->$ValueType?
       local cur = first_entry
       while (cur)
         if (query(cur.value)) return cur.value
@@ -143,7 +143,7 @@ class Table<<$KeyType,$ValueType>>
         return default_value
       endIf
 
-    method get( query:Function($ValueType)->Logical )->$ValueType[]
+    method get( query:Function($ValueType)->(Logical) )->$ValueType[]
       local result = $ValueType[]
       local cur = first_entry
       while (cur)
@@ -165,7 +165,7 @@ class Table<<$KeyType,$ValueType>>
 
       return list
 
-    method locate( query:Function($ValueType)->Logical )->$KeyType[]
+    method locate( query:Function($ValueType)->(Logical) )->$KeyType[]
       local result = $KeyType[]
       local cur = first_entry
       while (cur)
@@ -198,7 +198,7 @@ class Table<<$KeyType,$ValueType>>
       remove( entry )
       return entry.value
 
-    method remove( query:Function($ValueType)->Logical )->$ValueType[]
+    method remove( query:Function($ValueType)->(Logical) )->$ValueType[]
       # Returns the list of values that pass the query function while removing
       # them from this table.
       local result = $ValueType[]
@@ -260,7 +260,7 @@ class Table<<$KeyType,$ValueType>>
     method set-sort_function( @sort_function )->this
       return sort( sort_function )
 
-    method sort( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical )->this
+    method sort( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical) )->this
       if (count <= 1) return this
 
       local list = entries
@@ -276,7 +276,7 @@ class Table<<$KeyType,$ValueType>>
 
       return this
 
-    method sorted( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical ) ...
+    method sorted( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical) ) ...
         ->Table<<$KeyType,$ValueType>>
       return cloned.sort( compare_fn )
 
@@ -600,7 +600,7 @@ class Table<<$KeyType,$ValueType>>
     method contains( key:$KeyType )->Logical
       return find(key)
 
-    method count( query:Function(Value)->Logical )->Int32
+    method count( query:Function(Value)->(Logical) )->Int32
       local result = 0
       forEach (v in value_reader)
         if (query(v)) ++result
@@ -636,7 +636,7 @@ class Table<<$KeyType,$ValueType>>
       local default_value : $ValueType
       return default_value
 
-    method first( query:Function($ValueType)->Logical )->$ValueType?
+    method first( query:Function($ValueType)->(Logical) )->$ValueType?
       forEach (value in value_reader)
         if (query(value)) return value
       endForEach
@@ -651,7 +651,7 @@ class Table<<$KeyType,$ValueType>>
         return default_value
       endIf
 
-    method get( query:Function($ValueType)->Logical )->$ValueType[]
+    method get( query:Function($ValueType)->(Logical) )->$ValueType[]
       local result = $ValueType[]
       forEach (value in value_reader)
         if (query(value)) result.add( value )
@@ -667,14 +667,14 @@ class Table<<$KeyType,$ValueType>>
       endForEach
       return result
 
-    method locate( query:Function($ValueType)->Logical )->$KeyType[]
+    method locate( query:Function($ValueType)->(Logical) )->$KeyType[]
       local result = $KeyType[]
       forEach (entry in entry_reader)
         if (query(entry.value)) result.add( entry.key )
       endForEach
       return result
 
-    method remove( query:Function($ValueType)->Logical )->$ValueType[]
+    method remove( query:Function($ValueType)->(Logical) )->$ValueType[]
       # Returns the list of values that pass the query function while removing
       # them from this table.
       local remove_keys = locate( query )

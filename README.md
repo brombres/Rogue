@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.96 - August 31, 2016
+- [Rogue] `Function()` Type declarations and `function()` object declarations now require parens around the return type to solve ambiguity issues.  For instance, existing code containing `Function()->Logical` must now be written `Function()->(Logical)`.
+- [API] Added `PrintWriter.close()` that forwards the call to the an writer if it exists.
+
 ###v1.0.95 - August 30, 2016
 - [API] Added `Byte[](hex:String)` and `Byte[].add(hex:String)->this` that accept strings of hexadecimal pairs and convert them into bytes.  For example, `Byte[]("007fa0FF")` produces a Byte list equivalent to `Byte[][0,127,160,255]`.
 - [API] Added `Byte[].to_hex_string()->String` that returns a string of hexadecimal digit pairs encoding each byte.  For example, `Byte[][0,127,160,255].to_hex_string` returns `"007FA0FF"`.

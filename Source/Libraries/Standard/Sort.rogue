@@ -1,6 +1,6 @@
 class BubbleSort<<$DataType>>
   GLOBAL METHODS
-    method sort( list:$DataType[], compare_fn:Function(a:$DataType,b:$DataType)->Logical )->$DataType[]
+    method sort( list:$DataType[], compare_fn:Function(a:$DataType,b:$DataType)->(Logical) )->$DataType[]
       local n = list.count
       if (n <= 1) return list
 
@@ -21,7 +21,7 @@ endClass
 
 class InsertionSort<<$DataType>>
   GLOBAL METHODS
-    method sort( list:$DataType[], compare_fn:Function(a:$DataType,b:$DataType)->Logical )->$DataType[]
+    method sort( list:$DataType[], compare_fn:Function(a:$DataType,b:$DataType)->(Logical) )->$DataType[]
       if (list.count <= 1) return list
 
       local original_count = list.count
@@ -39,7 +39,7 @@ endClass
 
 class Heapsort<<$DataType>>
   GLOBAL METHODS
-    method sort( list:$DataType[], compare_fn:Function($DataType,$DataType)->Logical )->$DataType[]
+    method sort( list:$DataType[], compare_fn:Function($DataType,$DataType)->(Logical) )->$DataType[]
       # Sorts 'list' in-place using heapsort.
 
       # Heapify
@@ -95,11 +95,11 @@ endClass
 
 class Quicksort<<$DataType>>
   GLOBAL METHODS
-    method sort( list:$DataType[], compare_fn:Function($DataType,$DataType)->Logical )->$DataType[]
+    method sort( list:$DataType[], compare_fn:Function($DataType,$DataType)->(Logical) )->$DataType[]
       sort( list.data, compare_fn, 0, list.count-1 )
       return list
 
-    method sort( data:Array<<$DataType>>, compare_fn:Function($DataType,$DataType)->Logical, i1:Int32, i2:Int32 )
+    method sort( data:Array<<$DataType>>, compare_fn:Function($DataType,$DataType)->(Logical), i1:Int32, i2:Int32 )
       if (i1 >= i2)
         # Zero or one elements - already sorted
         return

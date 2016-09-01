@@ -4,7 +4,7 @@ class Plugin
     name : String  # Name of this plug-in for debugging purposes
 
     collect_supported_types_callback : Function()
-    generate_additonal_types_callback : Function()->Logical
+    generate_additonal_types_callback : Function()->(Logical)
 
     start_header_file_callback : Function(Object)
     finish_header_file_callback : Function(Object)

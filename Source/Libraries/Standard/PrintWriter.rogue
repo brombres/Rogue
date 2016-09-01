@@ -4,6 +4,7 @@ class PrintWriter [aspect]
       return PrintWriterAdapter( writer )
 
   METHODS
+    method close->this                                         [abstract]
     method flush->this                                         [abstract]
     method print( value:Byte )->this                           [abstract]
     method print( value:Character )->this                      [abstract]
@@ -31,6 +32,10 @@ endClass
 
 class PrintWriter<<$buffer>> : PrintWriter [aspect]
   METHODS
+    method close->this
+      noAction
+      return this
+
     method flush->this
       if ($buffer.count)
         write( $buffer )
@@ -124,6 +129,10 @@ class PrintWriterAdapter : PrintWriter<<buffer>>
 
   METHODS
     method init( output )
+
+    method close->this
+      output.close
+      return this
 
     method write( _buffer:StringBuilder )->this
       output.write( _buffer.utf8 )

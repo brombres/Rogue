@@ -136,7 +136,7 @@ class Template
         throw type.t.error( "Reference to $ is missing required type parameters ($<<...>>)." (type.name,type.name) )
       endIf
 
-      local parser = Parser( t, type.name, type.name.from_first('<') )
+      local parser = Parser( t, type.name, specialization_string, &column_delta=(type.name.count - specialization_string.count) )
       parser.read  # '<<'
 
       local buffer = StringBuilder()
