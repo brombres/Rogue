@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.97 - September 4, 2016
+- [API] Fixed issue with `List.get(Int32)`.  It had been changed from a macro method to a regular method while debugging during the development of v1.0.91 and was inadvertently not changed back into a macro method.  This prevented compound properties from being set directly on a list element since without the macro in place they were being set on a returned compound value rather than on a derferenced compound pointer value.
+
 ###v1.0.96 - August 31, 2016
 - [Rogue] `Function()` Type declarations and `function()` object declarations now require parens around the return type to solve ambiguity issues.  For instance, existing code containing `Function()->Logical` must now be written `Function()->(Logical)`.
 - [Rogue] Added method attribute `[nullArgDefault]`.  When specified, an ambiguous call with a `null` parameter with multiple candidate methods will now select the method that specifies `[nullArgDefault]`.  For instance, `List.add($DataType)` is now the `[nullArgDefault]` vs. `List.add($DataType[])` and so calling `list.add(null)` will call the first overload.
