@@ -642,16 +642,20 @@ class Scope
 
       endIf
 
-      # Check for a null argument and try to find a [nullArgDefault] method
-      if (args)
-        contingent
-          sufficient ((forEach in args) instanceOf CmdLiteralNull)
-        satisfied
-          forEach (m in candidates.available)
-            if (m.is_null_arg_default) return m
-          endForEach
-        endContingent
-      endIf
+      # Choose a [preferred] method if one is available
+      local preferred_m : Method
+      forEach (m in candidates.available)
+        if (m.is_preferred)
+          if (preferred_m)
+            # More than one preferred method; abort
+            preferred_m = null
+            escapeForEach
+          else
+            preferred_m = m
+          endIf
+        endIf
+      endForEach
+      if (preferred_m) return preferred_m
 
       candidates.update_matches  # Force error if required
       return null

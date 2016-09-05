@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.0.98.0"
+$define RELEASE_VERSION "1.0.98.1"
 $define RELEASE_DATE    "September 5, 2016"
 
 # TODO: warn on assignment of intermediate value compound
