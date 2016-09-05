@@ -50,6 +50,7 @@ class Value
 
     method add_all( other:Value )->this
       if (other.count)
+        reserve( other.count )
         forEach (value in other.values) add( value )
       else
         add( other )
@@ -105,6 +106,36 @@ class Value
 
     method get( query:Function(Value)->(Logical) )->Value
       return UndefinedValue
+
+    method insert( value:Int32, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Logical, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Real64, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Object, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:String, before_index=0:Int32 )->this [macro]
+      this.insert( Value(value), before_index )
+
+    method insert( value:Value, before_index=0:Int32 )->this
+      return this
+
+    method insert( other:Value[], before_index=0:Int32 )->this
+      return this
+
+    method insert_all( other:Value, before_index=0:Int32 )->this
+      if (other.count)
+        reserve( other.count )
+        forEach (value in other.values step -1) insert( value, before_index )
+      else
+        insert( other, before_index )
+      endIf
+      return this
 
     method is_collection->Logical
       return false
@@ -694,8 +725,15 @@ class ValueList : Value
       return this
 
     method add( other:Value[] )->this
-      data.reserve(other.count)
-      forEach (value in other) data.add( value )
+      data.add( other )
+      return this
+
+    method insert( value:Value, before_index=0:Int32 )->this
+      data.insert( value, before_index )
+      return this
+
+    method insert( other:Value[], before_index=0:Int32 )->this
+      data.insert( other, before_index )
       return this
 
     method clear->ValueList

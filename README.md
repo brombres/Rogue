@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.98 - September 5, 2016
+- [API] Added `Value.insert(value:Value,before_index=0:Int32)` and `Value.insert_all(value:Value,before_index=0:Int32)` for inserting additional values into lists.
+
 ###v1.0.97 - September 4, 2016
 - [API] Fixed issue with `List.get(Int32)`.  It had been changed from a macro method to a regular method while debugging during the development of v1.0.91 and was inadvertently not changed back into a macro method.  This prevented compound properties from being set directly on a list element since without the macro in place they were being set on a returned compound value rather than on a derferenced compound pointer value.
 
