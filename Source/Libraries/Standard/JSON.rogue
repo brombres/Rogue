@@ -7,6 +7,14 @@ class JSON
       if (not file or not file.exists) return UndefinedValue
       return parse( file.load_as_string )
 
+    method load_list( file:File )->Value
+      if (not file or not file.exists) return @[]
+      return parse_list( file.load_as_string )
+
+    method load_table( file:File )->Value
+      if (not file or not file.exists) return @{}
+      return parse_table( file.load_as_string )
+
     method parse( json:String )->Value
       try
         return parse_value( ParseReader(json) )
