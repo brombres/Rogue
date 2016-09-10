@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.98
-- September 7, 2016
+- v1.0.99
+- September 10, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.99 - September 9, 2016
+###v1.0.99 - September 10, 2016
 - [API] Added `.is_power_of_two()->Logical` to all numerical primitives.
 - [API] Added `.to_power_of_two()` to `Character` and `Byte` types (already exists in all other numerical primitives).
 
