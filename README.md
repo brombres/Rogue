@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.99 - September 9, 2016
+- [API] Added `.is_power_of_two()->Logical` to all numerical primitives.
+- [API] Added `.to_power_of_two()` to `Character` and `Byte` types (already exists in all other numerical primitives).
+
 ###v1.0.98 - September 7, 2016
 - [Rogue] Renamed `[nullArgDefault]` method attribute to `[preferred]` and broadened its effect.  Now, instead of pertaining only to `null` arguments, a `[preferred]` method is chosen over other candidates any time that an ambiguous call is about to generate a compile error.  If an ambiguous call has multiple preferred methods, none of them are chosen and an ambiguous call error is generated.
 - [API] Added `Value.insert(value:Value,before_index=0:Int32)` and `Value.insert_all(value:Value,before_index=0:Int32)` for inserting additional values into lists.

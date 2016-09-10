@@ -83,6 +83,10 @@ class Real64 [primitive]
       # Returns true for positive OR negative infinity
       return (this == this) and (this - this != 0)
 
+    method is_power_of_two->Logical
+      if (this.floor != this) return false
+      return this->Int64.is_power_of_two
+
     method is_NaN->Logical
       return (this != this)
 
@@ -207,6 +211,10 @@ class Real32 [primitive]
     method is_number->Logical
       return (this == this) and (this - this == 0)
 
+    method is_power_of_two->Logical
+      if (this.floor != this) return false
+      return this->Int64.is_power_of_two
+
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
@@ -292,6 +300,9 @@ class Int64 [primitive]
 
     method introspector->Introspector
       return ValueTypeIntrospector<<Int64>>( this )
+
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
@@ -404,6 +415,9 @@ class Int32 [primitive]
 
     method introspector->Introspector
       return ValueTypeIntrospector<<Int32>>( this )
+
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
@@ -530,6 +544,9 @@ class Character [primitive]
     method is_number( base=10:Int32 )->Logical
       return to_number(base) != -1
 
+    method is_power_of_two->Logical
+      return this->Int32.is_power_of_two
+
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
@@ -565,6 +582,9 @@ class Character [primitive]
 
     method to_octal_string( digits=6:Int32 )->String
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Character
+      return this->Int32.to_power_of_two->Character
 
     method to_number( base=10:Int32 )->Int32
       local value : Int32
@@ -615,6 +635,9 @@ class Byte [primitive]
     method introspector->Introspector
       return ValueTypeIntrospector<<Byte>>( this )
 
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
+
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
@@ -657,6 +680,9 @@ class Byte [primitive]
 
     method to_octal_string( digits=3:Int32 )->String
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Byte
+      return this->Int32.to_power_of_two->Byte
 endClass
 
 class Logical [primitive]
