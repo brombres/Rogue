@@ -26,8 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.100 - September 13, 2016
+###v1.0.100 - September 15, 2016
 - [API] Fixed two List method attributes from the out-of-date `[nullArgDefault]` to the current `[preferred]`.
+- [API] Fixed error in `TimeInterval` (`Date.rogue`) `[macro]` methods - the term `total_seconds` should have been `this.total_seconds` in all cases.
 
 ###v1.0.99 - September 10, 2016
 - [API] Added `.is_power_of_two()->Logical` to all numerical primitives.
