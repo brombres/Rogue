@@ -61,6 +61,7 @@
 //-----------------------------------------------------------------------------
 //  GLOBAL PROPERTIES
 //-----------------------------------------------------------------------------
+bool               Rogue_gc_logging   = false;
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 bool               Rogue_gc_requested = false;
 RogueLogical       Rogue_configured = 0;
@@ -1038,6 +1039,35 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     THIS->objects = cur;
 
     cur = next_object;
+  }
+
+  if (Rogue_gc_logging)
+  {
+    int byte_count = 0;
+    int object_count = 0;
+
+    for (int i=0; i<Rogue_allocator_count; ++i)
+    {
+      RogueAllocator* allocator = &Rogue_allocators[i];
+
+      RogueObject* cur = allocator->objects;
+      while (cur)
+      {
+        ++object_count;
+        byte_count += cur->object_size;
+        cur = cur->next_object;
+      }
+
+      cur = allocator->objects_requiring_cleanup;
+      while (cur)
+      {
+        ++object_count;
+        byte_count += cur->object_size;
+        cur = cur->next_object;
+      }
+    }
+
+    printf( "Post-GC: %d objects, %d bytes used.\n", object_count, byte_count );
   }
 }
 

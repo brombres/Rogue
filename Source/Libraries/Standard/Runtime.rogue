@@ -12,6 +12,9 @@ class Runtime [essential]
         gc_threshold = n->Int32
       endIf
 
+    method gc_logging->Logical
+      return native( "Rogue_gc_logging" )->Logical
+
     method gc_threshold->Int32
       # Returns the current GC threshold in bytes
       local n : Int32
@@ -25,12 +28,65 @@ class Runtime [essential]
     method literal_string_count->Int32
       return native("Rogue_literal_string_count")->Int32
 
-    method set_gc_threshold( value:Int32 )
+    method object_count->Int32
+      # Returns number of Rogue objects that currently exist.
+      local result = 0
+
+      native @|for (int i=0; i<Rogue_allocator_count; ++i)
+              |{
+              |  RogueAllocator* allocator = &Rogue_allocators[i];
+              |
+              |  RogueObject* cur = allocator->objects;
+              |  while (cur)
+              |  {
+              |    ++$result;
+              |    cur = cur->next_object;
+              |  }
+              |
+              |  cur = allocator->objects_requiring_cleanup;
+              |  while (cur)
+              |  {
+              |    ++$result;
+              |    cur = cur->next_object;
+              |  }
+              |}
+
+      return result
+
+    method memory_used->Int32
+      # Returns number of bytes used by dynamically allocated Rogue objects
+      local result = 0
+
+      native @|for (int i=0; i<Rogue_allocator_count; ++i)
+              |{
+              |  RogueAllocator* allocator = &Rogue_allocators[i];
+              |
+              |  RogueObject* cur = allocator->objects;
+              |  while (cur)
+              |  {
+              |    $result += cur->object_size;
+              |    cur = cur->next_object;
+              |  }
+              |
+              |  cur = allocator->objects_requiring_cleanup;
+              |  while (cur)
+              |  {
+              |    $result += cur->object_size;
+              |    cur = cur->next_object;
+              |  }
+              |}
+
+      return result
+
+    method set-gc_threshold( value:Int32 )
       if (value <= 0) value = 0x7fffffff
       # We might want -1 to mean max value and 0 to mean never,
       # but for now, just have anything strange mean max value.
 
       native "Rogue_gc_threshold = $value;"
+
+    method set-gc_logging( setting:Logical )
+      native "Rogue_gc_logging = $setting;"
 
     method type_info( name:String )->TypeInfo
       local result = type_info_lookup[ name ]

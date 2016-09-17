@@ -27,6 +27,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.100 - September 15, 2016
+- [API] Added `Runtime.gc_logging:Logical` pseudoproperty.  Defaults to `false`, enable to see used object and byte count after a GC.
+- [API] Added `Runtime.memory_used()->Int32` that returns the number of bytes currently used by Rogue objects.
+- [API] Added `Runtime.object_count()->Int32` that returns the Rogue objects that currently exist.
 - [API] Fixed two List method attributes from the out-of-date `[nullArgDefault]` to the current `[preferred]`.
 - [API] Fixed error in `TimeInterval` (`Date.rogue`) `[macro]` methods - the term `total_seconds` should have been `this.total_seconds` in all cases.
 
