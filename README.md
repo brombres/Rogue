@@ -26,6 +26,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.0.101 - September 23, 2016
+- [API] Changed `File.listing(path:String,[flags])` behavior:
+    - As before, sending the `&absolute` flag returns results that include the absolute path.
+    - Sending the `&omit_path` flag returns results that omit the original path sent to `listing()`.  Previously this was the default behavior.
+    - When neither of the above flags is specified, `listing()` uses "relative" behavior where the results include the original path as well as any folders encountered during `&recursive` descent.
+
 ###v1.0.100 - September 16, 2016
 - [API] Added `Runtime.gc_logging:Logical` pseudoproperty.  Defaults to `false`, enable to see used object and byte count after a GC.
 - [API] Added `Runtime.memory_used()->Int32` that returns the number of bytes currently used by Rogue objects.

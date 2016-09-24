@@ -1,11 +1,12 @@
 class FileOptions( flags=0:Int32 ) [compound]
   ENUMERATE
     FLAG_RECURSIVE          = 1
-    FLAG_ABSOLUTE           = 2
-    FLAG_FILES              = 4
-    FLAG_FOLDERS            = 8
-    FLAG_BOTH               = 12
-    FLAG_IGNORE_HIDDEN      = 16
+    FLAG_OMIT_PATH          = 2
+    FLAG_ABSOLUTE           = 4
+    FLAG_FILES              = 8
+    FLAG_FOLDERS            = 16
+    FLAG_BOTH               = 24
+    FLAG_IGNORE_HIDDEN      = 32
 
   METHODS
     method absolute->FileOptions [macro]
@@ -47,6 +48,12 @@ class FileOptions( flags=0:Int32 ) [compound]
 
     method limited->FileOptions [macro]
       FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
+
+    method omit_path->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
+
+    method omitting_paths->Logical [macro]
+      (this.flags & FileOptions.FLAG_OMIT_PATH)
 
     method relative->FileOptions [macro]
       FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
@@ -246,21 +253,28 @@ class File
               |  return 1;
               |#endif
 
-    method listing( folder:String, &ignore_hidden, &recursive, &absolute )->String[]
+    method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path )->String[]
       local options = FileOptions()
       if (ignore_hidden) options = options.ignore_hidden
       if (recursive)     options = options.recursive
       if (absolute)      options = options.absolute
+      if (omit_path)     options = options.omit_path
       return listing( folder, options )
 
     method listing( folder:String, options:FileOptions )->String[]
       return listing( folder, options, "", String[] )
 
     method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
-      if (options.is_absolute)
-        filepath = File.absolute_filepath( folder )  # add absolute path to every entry
-        folder = ""
-        options = options.relative
+      if (not options.omitting_paths)
+        if (options.is_absolute)
+          filepath = File.absolute_filepath( folder )  # add absolute path to every entry
+          folder = ""
+          options = options.omit_path
+        else
+          filepath = folder
+          folder = ""
+          options = options.omit_path
+        endIf
       endIf
 
       if (folder.count and not (folder.ends_with('/') or folder.ends_with('\\')))
