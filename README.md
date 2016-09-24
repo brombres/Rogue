@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.100
-- September 16, 2016
+- v1.0.101
+- September 24, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.0.101 - September 23, 2016
+###v1.0.101 - September 24, 2016
 - [API] Changed `File.listing(path:String,[flags])` behavior:
     - As before, sending the `&absolute` flag returns results that include the absolute path.
     - Sending the `&omit_path` flag returns results that omit the original path sent to `listing()`.  Previously this was the default behavior.
