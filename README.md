@@ -27,6 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.102 - September 26, 2016
+- [Rogue] Removed ability to write `method set-x` as a shorthand for `method set_x` - was just not feeling natural enough.
 - [RogueC] Fixed some new Xcode weirdness around `std::set_terminate()` by removing `std::` and adding `namespace std{} / using namespace std;` kludge in the generated code... more conventional approaches were failing either on the command line or in Xcode (take out `std::`, add `using namespace std;`, include `<cstdio>`).
 
 

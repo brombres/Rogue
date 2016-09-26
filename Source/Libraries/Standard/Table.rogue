@@ -257,7 +257,7 @@ class Table<<$KeyType,$ValueType>>
       ++count
       return this
 
-    method set-sort_function( @sort_function )->this
+    method set_sort_function( @sort_function )->this
       return sort( sort_function )
 
     method sort( compare_fn:Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->(Logical) )->this

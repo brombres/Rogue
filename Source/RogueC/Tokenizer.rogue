@@ -605,11 +605,13 @@ class Tokenizer
             return add_new_token( keyword_type )
           endIf
         else
+          #{
           if (id == "set" and reader.peek == '-')
             # Convert set-x to set_x
             reader.read
             id += '_' + read_identifier
           endIf
+          }#
           return add_new_token( TokenType.identifier, id )
         endIf
         return true

@@ -78,14 +78,14 @@ class Runtime [essential]
 
       return result
 
-    method set-gc_threshold( value:Int32 )
+    method set_gc_threshold( value:Int32 )
       if (value <= 0) value = 0x7fffffff
       # We might want -1 to mean max value and 0 to mean never,
       # but for now, just have anything strange mean max value.
 
       native "Rogue_gc_threshold = $value;"
 
-    method set-gc_logging( setting:Logical )
+    method set_gc_logging( setting:Logical )
       native "Rogue_gc_logging = $setting;"
 
     method type_info( name:String )->TypeInfo
