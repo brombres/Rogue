@@ -27,7 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.0.102 - September 26, 2016
-- [RogueC] Fixed some new Xcode weirdness by adding `namespace std{} / using namespace std;` kludge in the generated code... more conventional approaches were failing either on the command line or in Xcode (take out `std::`, add `using namespace std;`, include `<cstdio>`).
+- [RogueC] Fixed some new Xcode weirdness around `std::set_terminate()` by removing `std::` and adding `namespace std{} / using namespace std;` kludge in the generated code... more conventional approaches were failing either on the command line or in Xcode (take out `std::`, add `using namespace std;`, include `<cstdio>`).
 
 
 ###v1.0.101 - September 24, 2016
