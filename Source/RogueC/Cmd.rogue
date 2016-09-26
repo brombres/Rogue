@@ -2214,7 +2214,7 @@ class CmdAccess : Cmd
         endIf
       endIf
 
-      throw t.error( ''No such method or variable "$" exists in the current scope [1].'' (name) )
+      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
     method expand_modify_and_assign( scope:Scope, op:TokenType, new_value:Cmd )->Cmd
       local cmd : Cmd
@@ -2287,7 +2287,7 @@ class CmdAccess : Cmd
         if (setter) return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
       endIf
 
-      throw t.error( ''No such method or variable "$" exists in the current scope. [2]'' (name) )
+      throw t.error( ''No such method or variable "$" exists in the current scope.'' (name) )
 
     method to->String
       local buffer = StringBuilder()

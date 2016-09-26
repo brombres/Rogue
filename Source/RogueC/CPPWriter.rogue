@@ -279,6 +279,8 @@ augment Program
       local base_filename = filepath
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
       writer.println "#include <stdio.h>"
+      writer.println "namespace std {}"
+      writer.println "using namespace std;"
       writer.println ''#include "$.h"'' (base_filename)
       writer.println
 
@@ -817,7 +819,7 @@ augment Program
                       |
                       |Rogue_configure_gc();
                       |Rogue_configure_types();
-                      |std::set_terminate( Rogue_terminate_handler );
+                      |set_terminate( Rogue_terminate_handler );
                       |
 
 
