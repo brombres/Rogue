@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.0 - October 4, 2016
+- [Rogue] When `$include`ing a file, RogueC now first tries to find the file in the same folder as the including file, making filename collisions in separate libraries much less likely.  Previously RogueC would just iterate through a list of all folders that had been seen so far, trying each one with no regard to the folder of the including file.
+- [API] Renamed `String[].joined(separator:String)->String` to `String[].join(...)`.  While the `-ed` adjective style indicates a non-mutating call, is is also generally reserved for methods that return the same data type as the context.  Because `join()` does not return `String[]` it is better left as a verb.
+- [API] Fixed bug in `String[].joined()`: if the first list item was an empty string then the separator wasn't being added after it.  This was due to faulty logic that used a non-empty result string as an indicator that the loop was past its first iteration.
+
 ###v1.0.102 - September 27, 2016
 - [Rogue] Removed ability to write `method set-x` as a shorthand for `method set_x` - was just not feeling natural enough.
 - [RogueC] Fixed some new Xcode weirdness around `std::set_terminate()` by removing `std::` and adding `namespace std{} / using namespace std;` kludge in the generated code... more conventional approaches were failing either on the command line or in Xcode (take out `std::`, add `using namespace std;`, include `<cstdio>`).

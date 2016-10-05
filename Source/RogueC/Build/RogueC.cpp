@@ -29491,7 +29491,7 @@ void RogueException__display( RogueException* THIS )
   ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,builder_0,(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))));
   RogueStringBuilder__println__String( builder_0, Rogue_literal_strings[6] );
   RogueStringBuilder__println__String( builder_0, ROGUE_ARG((Rogue_call_ROGUEM21( 16, ROGUE_ARG(THIS) ))) );
-  RogueStringBuilder__println__String( builder_0, ROGUE_ARG(((RogueString_List__joined__String( ROGUE_ARG(((RogueString__word_wrapped__Int32_String( ROGUE_ARG(THIS->message), 79, Rogue_literal_strings[7] )))), Rogue_literal_strings[8] )))) );
+  RogueStringBuilder__println__String( builder_0, ROGUE_ARG(((RogueString_List__join__String( ROGUE_ARG(((RogueString__word_wrapped__Int32_String( ROGUE_ARG(THIS->message), 79, Rogue_literal_strings[7] )))), Rogue_literal_strings[8] )))) );
   if (!!(THIS->stack_trace->entries->count))
   {
     RogueStringBuilder__println( builder_0 );
@@ -30042,6 +30042,32 @@ RogueClassStringReader* RogueString__reader( RogueString* THIS )
   return (RogueClassStringReader*)(((RogueStringReader__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassStringReader*,ROGUE_CREATE_OBJECT(StringReader))), ROGUE_ARG(THIS) ))));
 }
 
+RogueString* RogueString__replacing__Character_Character( RogueString* THIS, RogueCharacter look_for_0, RogueCharacter replace_with_1 )
+{
+  if (!(((RogueString__contains__Character( ROGUE_ARG(THIS), look_for_0 )))))
+  {
+    return (RogueString*)(THIS);
+  }
+  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), ROGUE_ARG(THIS->character_count) )))));
+  {
+    ROGUE_DEF_LOCAL_REF(RogueString*,_auto_99_3,(THIS));
+    RogueInt32 _auto_100_4 = (0);
+    for (;_auto_100_4 < _auto_99_3->character_count;++_auto_100_4)
+    {
+      RogueCharacter ch_5 = (RogueString_character_at(_auto_99_3,_auto_100_4));
+      if (ch_5 == look_for_0)
+      {
+        RogueStringBuilder__print__Character_Logical( result_2, replace_with_1, true );
+      }
+      else
+      {
+        RogueStringBuilder__print__Character_Logical( result_2, ch_5, true );
+      }
+    }
+  }
+  return (RogueString*)(((RogueStringBuilder__to_String( result_2 ))));
+}
+
 RogueString* RogueString__replacing__String_String( RogueString* THIS, RogueString* look_for_0, RogueString* replace_with_1 )
 {
   ROGUE_DEF_LOCAL_REF(RogueString*,st_2,(THIS));
@@ -30562,6 +30588,11 @@ RogueString_List* RogueString_List__insert__String_Int32( RogueString_List* THIS
   return (RogueString_List*)(THIS);
 }
 
+RogueString* RogueString_List__last( RogueString_List* THIS )
+{
+  return (RogueString*)(((RogueString*)(THIS->data->as_objects[(THIS->count - 1)])));
+}
+
 RogueOptionalInt32 RogueString_List__locate__String( RogueString_List* THIS, RogueString* value_0 )
 {
   if (true)
@@ -30636,6 +30667,11 @@ RogueString* RogueString_List__remove_at__Int32( RogueString_List* THIS, RogueIn
   return (RogueString*)(result_1);
 }
 
+RogueString* RogueString_List__remove_last( RogueString_List* THIS )
+{
+  return (RogueString*)(((RogueString_List__remove_at__Int32( ROGUE_ARG(THIS), ROGUE_ARG((THIS->count - 1)) ))));
+}
+
 RogueString_List* RogueString_List__shift__Int32_OptionalInt32_Int32_OptionalString( RogueString_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalString fill_3 )
 {
   if (delta_2 == 0)
@@ -30683,30 +30719,35 @@ RogueString_List* RogueString_List__shift__Int32_OptionalInt32_Int32_OptionalStr
   return (RogueString_List*)(THIS);
 }
 
-RogueString* RogueString_List__joined__String( RogueString_List* THIS, RogueString* separator_0 )
+RogueString* RogueString_List__join__String( RogueString_List* THIS, RogueString* separator_0 )
 {
   RogueInt32 total_count_1 = (0);
   {
-    ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_908_3,(THIS));
-    RogueInt32 _auto_909_4 = (0);
-    for (;_auto_909_4 < _auto_908_3->count;++_auto_909_4)
+    ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_908_4,(THIS));
+    RogueInt32 _auto_909_5 = (0);
+    for (;_auto_909_5 < _auto_908_4->count;++_auto_909_5)
     {
-      ROGUE_DEF_LOCAL_REF(RogueString*,line_5,(((RogueString*)(_auto_908_3->data->as_objects[_auto_909_4]))));
-      total_count_1 += line_5->character_count;
+      ROGUE_DEF_LOCAL_REF(RogueString*,line_6,(((RogueString*)(_auto_908_4->data->as_objects[_auto_909_5]))));
+      total_count_1 += line_6->character_count;
     }
   }
   ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,builder_2,(((RogueStringBuilder__init__Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))), total_count_1 )))));
+  RogueLogical first_3 = (true);
   {
-    ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_910_6,(THIS));
-    RogueInt32 _auto_911_7 = (0);
-    for (;_auto_911_7 < _auto_910_6->count;++_auto_911_7)
+    ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_910_7,(THIS));
+    RogueInt32 _auto_911_8 = (0);
+    for (;_auto_911_8 < _auto_910_7->count;++_auto_911_8)
     {
-      ROGUE_DEF_LOCAL_REF(RogueString*,line_8,(((RogueString*)(_auto_910_6->data->as_objects[_auto_911_7]))));
-      if (!!(builder_2->count))
+      ROGUE_DEF_LOCAL_REF(RogueString*,line_9,(((RogueString*)(_auto_910_7->data->as_objects[_auto_911_8]))));
+      if (first_3)
+      {
+        first_3 = ((RogueLogical)false);
+      }
+      else
       {
         RogueStringBuilder__print__String( builder_2, separator_0 );
       }
-      RogueStringBuilder__print__String( builder_2, line_8 );
+      RogueStringBuilder__print__String( builder_2, line_9 );
     }
   }
   return (RogueString*)(((RogueStringBuilder__to_String( builder_2 ))));
@@ -32327,65 +32368,87 @@ void RogueRogueC__on_compile_finished( RogueClassRogueC* THIS )
   RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[906] )))), ROGUE_ARG(((RogueString__operatorPLUS__Object( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(((RogueObject*)(THIS->stopwatch))) )))) )))), Rogue_literal_strings[12] )))) )))) );
 }
 
-RogueClassFile* RogueRogueC__find_source_file__String( RogueClassRogueC* THIS, RogueString* _auto_5951 )
+RogueClassFile* RogueRogueC__find_source_file__Token_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_5951 )
 {
-  ROGUE_DEF_LOCAL_REF(RogueString*,filepath_0,_auto_5951);
-  ROGUE_DEF_LOCAL_REF(RogueClassFile*,file_1,(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), filepath_0 )))));
-  if ((RogueFile__exists__String( ROGUE_ARG((RogueString__operatorPLUS__String_String( filepath_0, Rogue_literal_strings[246] ))) )))
+  ROGUE_DEF_LOCAL_REF(RogueString*,filepath_1,_auto_5951);
+  if (!!(t_0))
   {
-    filepath_0 = ((RogueString*)((RogueString__operatorPLUS__String( filepath_0, Rogue_literal_strings[246] ))));
-    file_1 = ((RogueClassFile*)((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), filepath_0 ))));
+    ROGUE_DEF_LOCAL_REF(RogueString_List*,context_path_2,(((RogueString__split__Character( ROGUE_ARG(((RogueString__replacing__Character_Character( ROGUE_ARG(t_0->filepath), (RogueCharacter)'\\', (RogueCharacter)'/' )))), (RogueCharacter)'/' )))));
+    RogueString_List__remove_last( context_path_2 );
+    ROGUE_DEF_LOCAL_REF(RogueString_List*,include_path_3,(((RogueString__split__Character( ROGUE_ARG(((RogueString__replacing__Character_Character( filepath_1, (RogueCharacter)'\\', (RogueCharacter)'/' )))), (RogueCharacter)'/' )))));
+    ROGUE_DEF_LOCAL_REF(RogueString*,filename_4,(((RogueString_List__remove_last( include_path_3 )))));
+    ROGUE_DEF_LOCAL_REF(RogueString_List*,new_path_5,(((RogueString_List__cloned( context_path_2 )))));
+    while (((!!(context_path_2->count) && !!(include_path_3->count)) && (RogueString__operatorEQUALSEQUALS__String_String( ROGUE_ARG(((RogueString_List__last( context_path_2 )))), ROGUE_ARG(((RogueString_List__last( include_path_3 )))) ))))
+    {
+      RogueString_List__remove_last( include_path_3 );
+      RogueString_List__remove_last( context_path_2 );
+    }
+    if (include_path_3->count == 0)
+    {
+      RogueString_List__add__String( new_path_5, filename_4 );
+      ROGUE_DEF_LOCAL_REF(RogueString*,new_filepath_6,(((RogueString_List__join__String( new_path_5, ROGUE_ARG(((RogueCharacter__to_String( (RogueCharacter)'/' )))) )))));
+      if ((RogueFile__exists__String( new_filepath_6 )))
+      {
+        filepath_1 = ((RogueString*)new_filepath_6);
+      }
+    }
   }
-  if (!((RogueFile__exists__String( ROGUE_ARG(file_1->filepath) ))))
+  ROGUE_DEF_LOCAL_REF(RogueClassFile*,file_7,(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), filepath_1 )))));
+  if ((RogueFile__exists__String( ROGUE_ARG((RogueString__operatorPLUS__String_String( filepath_1, Rogue_literal_strings[246] ))) )))
+  {
+    filepath_1 = ((RogueString*)((RogueString__operatorPLUS__String( filepath_1, Rogue_literal_strings[246] ))));
+    file_7 = ((RogueClassFile*)((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), filepath_1 ))));
+  }
+  if (!((RogueFile__exists__String( ROGUE_ARG(file_7->filepath) ))))
   {
     {
-      ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_1207_6,(THIS->prefix_path_list));
-      RogueInt32 _auto_1208_7 = (0);
-      for (;_auto_1208_7 < _auto_1207_6->count;++_auto_1208_7)
+      ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_1207_12,(THIS->prefix_path_list));
+      RogueInt32 _auto_1208_13 = (0);
+      for (;_auto_1208_13 < _auto_1207_12->count;++_auto_1208_13)
       {
-        ROGUE_DEF_LOCAL_REF(RogueString*,prefix_8,(((RogueString*)(_auto_1207_6->data->as_objects[_auto_1208_7]))));
-        ROGUE_DEF_LOCAL_REF(RogueString*,prefixed_filepath_2,((RogueString__operatorPLUS__String_String( prefix_8, filepath_0 ))));
-        ROGUE_DEF_LOCAL_REF(RogueClassFile*,prefixed_file_3,(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), prefixed_filepath_2 )))));
-        if ((RogueFile__exists__String( ROGUE_ARG((RogueString__operatorPLUS__String_String( prefixed_filepath_2, Rogue_literal_strings[246] ))) )))
+        ROGUE_DEF_LOCAL_REF(RogueString*,prefix_14,(((RogueString*)(_auto_1207_12->data->as_objects[_auto_1208_13]))));
+        ROGUE_DEF_LOCAL_REF(RogueString*,prefixed_filepath_8,((RogueString__operatorPLUS__String_String( prefix_14, filepath_1 ))));
+        ROGUE_DEF_LOCAL_REF(RogueClassFile*,prefixed_file_9,(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), prefixed_filepath_8 )))));
+        if ((RogueFile__exists__String( ROGUE_ARG((RogueString__operatorPLUS__String_String( prefixed_filepath_8, Rogue_literal_strings[246] ))) )))
         {
-          filepath_0 = ((RogueString*)(RogueString__operatorPLUS__String_String( prefixed_filepath_2, Rogue_literal_strings[246] )));
-          file_1 = ((RogueClassFile*)((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), filepath_0 ))));
+          filepath_1 = ((RogueString*)(RogueString__operatorPLUS__String_String( prefixed_filepath_8, Rogue_literal_strings[246] )));
+          file_7 = ((RogueClassFile*)((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), filepath_1 ))));
           goto _auto_1209;
         }
-        else if ((RogueFile__exists__String( ROGUE_ARG(prefixed_file_3->filepath) )))
+        else if ((RogueFile__exists__String( ROGUE_ARG(prefixed_file_9->filepath) )))
         {
-          filepath_0 = ((RogueString*)prefixed_filepath_2);
-          file_1 = ((RogueClassFile*)prefixed_file_3);
+          filepath_1 = ((RogueString*)prefixed_filepath_8);
+          file_7 = ((RogueClassFile*)prefixed_file_9);
           goto _auto_1209;
         }
       }
     }
     _auto_1209:;
   }
-  if (!((RogueFile__exists__String( ROGUE_ARG(file_1->filepath) ))))
+  if (!((RogueFile__exists__String( ROGUE_ARG(file_7->filepath) ))))
   {
     return (RogueClassFile*)(((RogueClassFile*)(NULL)));
   }
-  if ((RogueFile__is_folder__String( ROGUE_ARG(file_1->filepath) )))
+  if ((RogueFile__is_folder__String( ROGUE_ARG(file_7->filepath) )))
   {
-    ROGUE_DEF_LOCAL_REF(RogueString*,path2_4,(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], filepath_0 ))) )))), Rogue_literal_strings[183] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueFile__filename( file_1 )))) ))) )))), Rogue_literal_strings[246] )))) )))));
-    ROGUE_DEF_LOCAL_REF(RogueClassFile*,file2_5,(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), path2_4 )))));
-    if ((!((RogueFile__exists__String( ROGUE_ARG(file2_5->filepath) ))) || (RogueFile__is_folder__String( ROGUE_ARG(file2_5->filepath) ))))
+    ROGUE_DEF_LOCAL_REF(RogueString*,path2_10,(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], filepath_1 ))) )))), Rogue_literal_strings[183] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueFile__filename( file_7 )))) ))) )))), Rogue_literal_strings[246] )))) )))));
+    ROGUE_DEF_LOCAL_REF(RogueClassFile*,file2_11,(((RogueFile__init__String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFile*,ROGUE_CREATE_OBJECT(File))), path2_10 )))));
+    if ((!((RogueFile__exists__String( ROGUE_ARG(file2_11->filepath) ))) || (RogueFile__is_folder__String( ROGUE_ARG(file2_11->filepath) ))))
     {
       return (RogueClassFile*)(((RogueClassFile*)(NULL)));
     }
     else
     {
-      if (!(((RogueTable_String_Logical___contains__String( ROGUE_ARG(THIS->prefix_path_lookup), ROGUE_ARG(file_1->filepath) )))))
+      if (!(((RogueTable_String_Logical___contains__String( ROGUE_ARG(THIS->prefix_path_lookup), ROGUE_ARG(file_7->filepath) )))))
       {
-        RogueTable_String_Logical___set__String_Logical( ROGUE_ARG(THIS->prefix_path_lookup), ROGUE_ARG(file_1->filepath), true );
-        RogueString_List__add__String( ROGUE_ARG(THIS->prefix_path_list), ROGUE_ARG(file_1->filepath) );
+        RogueTable_String_Logical___set__String_Logical( ROGUE_ARG(THIS->prefix_path_lookup), ROGUE_ARG(file_7->filepath), true );
+        RogueString_List__add__String( ROGUE_ARG(THIS->prefix_path_list), ROGUE_ARG(file_7->filepath) );
       }
-      filepath_0 = ((RogueString*)path2_4);
-      file_1 = ((RogueClassFile*)file2_5);
+      filepath_1 = ((RogueString*)path2_10);
+      file_7 = ((RogueClassFile*)file2_11);
     }
   }
-  return (RogueClassFile*)(file_1);
+  return (RogueClassFile*)(file_7);
 }
 
 void RogueRogueC__include_source__String_Logical( RogueClassRogueC* THIS, RogueString* filepath_0, RogueLogical do_not_save_prefix_1 )
@@ -32396,7 +32459,7 @@ void RogueRogueC__include_source__String_Logical( RogueClassRogueC* THIS, RogueS
 void RogueRogueC__include_source__Token_String_Logical( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_5952, RogueLogical do_not_save_prefix_2 )
 {
   ROGUE_DEF_LOCAL_REF(RogueString*,filepath_1,_auto_5952);
-  ROGUE_DEF_LOCAL_REF(RogueClassFile*,file_3,(((RogueRogueC__find_source_file__String( ROGUE_ARG(THIS), filepath_1 )))));
+  ROGUE_DEF_LOCAL_REF(RogueClassFile*,file_3,(((RogueRogueC__find_source_file__Token_String( ROGUE_ARG(THIS), t_0, filepath_1 )))));
   if (((void*)file_3) == ((void*)NULL))
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,mesg_4,(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[285] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], filepath_1 ))) )))), Rogue_literal_strings[236] )))) )))));
@@ -32664,7 +32727,7 @@ void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS )
           {
             if (!!(value_0->character_count))
             {
-              ROGUE_DEF_LOCAL_REF(RogueClassFile*,file_2,(((RogueRogueC__find_source_file__String( ROGUE_ARG(THIS), value_0 )))));
+              ROGUE_DEF_LOCAL_REF(RogueClassFile*,file_2,(((RogueRogueC__find_source_file__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(((RogueClassToken*)(NULL))), value_0 )))));
               if (((void*)file_2) == ((void*)NULL))
               {
                 ROGUE_THROW(RogueClassRogueError,((RogueRogueError__init__String_String_Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassRogueError*,ROGUE_CREATE_OBJECT(RogueError))), ROGUE_ARG(((RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], value_0 ))) )))), Rogue_literal_strings[248] )))) )))), ROGUE_ARG(((RogueString*)(NULL))), 0, 0 ))));
@@ -53539,7 +53602,7 @@ RogueClassRogueError* RogueRogueError__init_object( RogueClassRogueError* THIS )
 RogueString* RogueRogueError__to_String( RogueClassRogueError* THIS )
 {
   ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,builder_0,(((RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))));
-  ROGUE_DEF_LOCAL_REF(RogueString*,m_1,(((RogueString_List__joined__String( ROGUE_ARG(((RogueString__word_wrapped__Int32_String( ROGUE_ARG(THIS->message), 79, Rogue_literal_strings[7] )))), Rogue_literal_strings[8] )))));
+  ROGUE_DEF_LOCAL_REF(RogueString*,m_1,(((RogueString_List__join__String( ROGUE_ARG(((RogueString__word_wrapped__Int32_String( ROGUE_ARG(THIS->message), 79, Rogue_literal_strings[7] )))), Rogue_literal_strings[8] )))));
   if (!!(THIS->filepath))
   {
     RogueStringBuilder__println__String( builder_0, Rogue_literal_strings[6] );
@@ -74914,8 +74977,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.0.102.1", 9 ) ); 
-  Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "September 27, 2016", 18 ) ); 
+  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.0.0", 7 ) ); 
+  Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "October 4, 2016", 15 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2244 ) ); 
   Rogue_literal_strings[273] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ",...]\n", 6 ) ); 
@@ -74949,7 +75012,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[301] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "append", 6 ) ); 
   Rogue_literal_strings[302] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "All methods implicitly define the label <<append>> at the end of the method.  No duplicates are allowed.", 104 ) ); 
   Rogue_literal_strings[303] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( " expected, found ", 17 ) ); 
-  Rogue_literal_strings[304] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_access() Parser.rogue:2308]   context:", 52 ) ); 
+  Rogue_literal_strings[304] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_access() Parser.rogue:2307]   context:", 52 ) ); 
   Rogue_literal_strings[305] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unable to determine type for metadata access.", 45 ) ); 
   Rogue_literal_strings[306] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "default_value", 13 ) ); 
   Rogue_literal_strings[307] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "'default_value' expected after 'meta.'.", 39 ) ); 
@@ -74982,7 +75045,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[334] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Use forEach-in with a literal range instead of forEach-of.", 58 ) ); 
   Rogue_literal_strings[335] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Syntax error in forEach - keyword 'in' or 'of' expected.", 56 ) ); 
   Rogue_literal_strings[336] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Invalid syntax in forEach.", 26 ) ); 
-  Rogue_literal_strings[337] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_for_each() Parser.rogue:1936]", 43 ) ); 
+  Rogue_literal_strings[337] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_for_each() Parser.rogue:1935]", 43 ) ); 
   Rogue_literal_strings[338] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[INTERNAL ERROR]", 16 ) ); 
   Rogue_literal_strings[339] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Omit the 'return' in a macro method with a return type.", 55 ) ); 
   Rogue_literal_strings[340] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "() ", 3 ) ); 
@@ -75268,7 +75331,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[620] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "RogueObject_retain(", 19 ) ); 
   Rogue_literal_strings[621] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unrecognized native code insertion marker: ", 43 ) ); 
   Rogue_literal_strings[622] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "THIS", 4 ) ); 
-  Rogue_literal_strings[623] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_specialization_type() Parser.rogue:2409]", 54 ) ); 
+  Rogue_literal_strings[623] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[Parser.parse_specialization_type() Parser.rogue:2408]", 54 ) ); 
   Rogue_literal_strings[624] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "[INTERNAL] Invalid specializer index: ", 38 ) ); 
   Rogue_literal_strings[625] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "THIS->", 6 ) ); 
   Rogue_literal_strings[626] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "THIS.", 5 ) ); 

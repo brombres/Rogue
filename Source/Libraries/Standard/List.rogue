@@ -605,13 +605,15 @@ endAugment
 
 augment String[]
   METHODS
-    method joined( separator="\n":String )->String
+    method join( separator="\n":String )->String
       local total_count = 0
       forEach (line in this) total_count += line.count
 
       local builder = StringBuilder( total_count )
+      local first = true
       forEach (line in this)
-        if (builder.count) builder.print( separator )
+        if (first) first = false
+        else       builder.print( separator )
         builder.print( line )
       endForEach
 

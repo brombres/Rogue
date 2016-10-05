@@ -1,7 +1,9 @@
-$define RELEASE_VERSION "1.0.102.1"
-$define RELEASE_DATE    "September 27, 2016"
+$define RELEASE_VERSION "1.1.0.0"
+$define RELEASE_DATE    "October 4, 2016"
 
-# TODO: warn on assignment of intermediate value compound
+# TODO:
+# - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
+# - Warn on assignment of intermediate value compound
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
@@ -249,7 +251,25 @@ class RogueC [singleton]
     method on_compile_finished
       println "SUCCESS ($)" (stopwatch)
 
-    method find_source_file ( filepath:String )->File
+    method find_source_file( t:Token, filepath:String )->File
+      if (t)
+        # Try to fit new filepath onto end of context filepath.
+        local context_path = t.filepath.replacing('\\','/').split('/')
+        context_path.remove_last
+        local include_path = filepath.replacing('\\','/').split('/')
+        local filename = include_path.remove_last
+        local new_path = context_path.cloned
+        while (context_path.count and include_path.count and context_path.last == include_path.last)
+          include_path.remove_last
+          context_path.remove_last
+        endWhile
+        if (include_path.count == 0)
+          new_path.add( filename )
+          local new_filepath = new_path.join( '/' )
+          if (File.exists(new_filepath)) filepath = new_filepath
+        endIf
+      endIf
+
       local file = File(filepath)
 
       if (File.exists(filepath+".rogue"))
@@ -299,7 +319,7 @@ class RogueC [singleton]
 
     method include_source( t:Token, filepath:String, &do_not_save_prefix )
       # Preemptively (immediately) parses the given file.
-      local file = find_source_file(filepath)
+      local file = find_source_file(t,filepath)
 
       if (file is null)
         local mesg = ''No such file "$".'' (filepath)
@@ -459,7 +479,7 @@ class RogueC [singleton]
 
             case "--essential-file"
               if (value.count)
-                local file = find_source_file(value)
+                local file = find_source_file(null,value)
                 if (file is null)
                   throw RogueError( ''Can not find file "$" for "--essential-file".'' (value) )
                 endIf
