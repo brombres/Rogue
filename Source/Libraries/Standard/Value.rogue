@@ -1,4 +1,8 @@
 class Value
+  ENUMERATE
+    FORMATTED = 1
+    OMIT_COMMAS = 2
+
   GLOBAL METHODS
     method create( value:Logical )->Value
       return select{ value:LogicalValue.true_value || LogicalValue.false_value }
@@ -334,8 +338,8 @@ class Value
 
       return result_list
 
-    method save( file:File, formatted=false:Logical )->Logical
-      return file.save( to_json(formatted) )
+    method save( file:File, &formatted, &omit_commas )->Logical
+      return file.save( to_json(formatted,omit_commas) )
 
     method set( index:Int32, value:Int32 )->this [macro]
       this.set( index, Value(value) )
@@ -417,10 +421,19 @@ class Value
     method to<<$AsType>>()->$AsType [macro]
       (this->Object as $AsType)
 
-    method to_json( formatted=false:Logical )->String
-      return to_json( StringBuilder(), formatted )->String
+    method to_json( flags=0:Int32 )->String
+      return to_json( StringBuilder(), flags )->String
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+    method to_json( &formatted, &omit_commas )->String
+      return to_json( StringBuilder(), formatted, omit_commas )->String
+
+    method to_json( buffer:StringBuilder, &formatted, &omit_commas )->StringBuilder
+      local flags = 0
+      if (formatted)   flags |= FORMATTED
+      if (omit_commas) flags |= FORMATTED | OMIT_COMMAS
+      return to_json( buffer, flags )
+
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       return buffer
 
     method values( list=null:Value )->Value
@@ -457,7 +470,7 @@ class NullValue : Value [singleton]
     method to->String
       return "null"
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       return buffer.print( "null" )
 endClass
 
@@ -489,7 +502,7 @@ class LogicalValue( value:Logical ) : Value
     method to->String
       return value->String
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       buffer.print( value )
       return buffer
 endClass
@@ -570,7 +583,7 @@ class Real64Value( value:Real64 ) : Value
     method to->String
       return value.format()
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       if (value.fractional_part) buffer.print( value )
       else                       buffer.print( value, 0 )  # omit the ".0"
       return buffer
@@ -587,7 +600,7 @@ class ObjectValue( value:Object ) : Value
     method to->String
       return value->String
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       buffer.print( value->String )
       return buffer
 endClass
@@ -647,11 +660,11 @@ class StringValue( value:String ) : Value
     method to->String
       return value
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
-      return to_json( value, buffer, formatted )
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
+      return to_json( value, buffer, flags )
 
   GLOBAL METHODS
-    method to_json( value:String, buffer:StringBuilder, formatted=false:Logical )->StringBuilder
+    method to_json( value:String, buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       if (value)
         buffer.print '"'
         forEach (ch in value)
@@ -859,8 +872,8 @@ class ValueList : Value
     method to->String
       return data->String
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
-      local pretty_print = (formatted and is_complex)
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
+      local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
 
       buffer.print( '[' )
 
@@ -874,11 +887,11 @@ class ValueList : Value
         if (first)
           first = false
         else
-          buffer.print( ',' )
+          if (not (flags & OMIT_COMMAS)) buffer.print( ',' )
           if (pretty_print) buffer.println
         endIf
 
-        if (value) value.to_json( buffer, formatted )
+        if (value) value.to_json( buffer, flags )
         else       buffer.print( "null" )
       endForEach
 
@@ -1067,8 +1080,8 @@ class ValueTable : Value
     method to->String
       return data->String
 
-    method to_json( buffer:StringBuilder, formatted=false:Logical )->StringBuilder
-      local pretty_print = (formatted and is_complex)
+    method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
+      local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
 
       buffer.print( '{' )
 
@@ -1082,18 +1095,23 @@ class ValueTable : Value
         if (first)
           first = false
         else
-          buffer.print( ',' )
+          if (not (flags & OMIT_COMMAS)) buffer.print( ',' )
           if (pretty_print) buffer.println
         endIf
 
-        StringValue.to_json( key, buffer, formatted )
+        StringValue.to_json( key, buffer, flags )
         buffer.print( ':' )
 
         local value = data[key]
-        if (pretty_print and value and value.is_complex) buffer.println
+        if (pretty_print and value and (value.is_complex or (flags & OMIT_COMMAS))) buffer.println
 
-        if (value) value.to_json( buffer, formatted )
+        local indent = (value is null) or (not value.is_collection)
+        if (indent) buffer.indent += 2
+
+        if (value) value.to_json( buffer, flags )
         else       buffer.print( "null" )
+
+        if (indent) buffer.indent -= 2
       endForEach
 
       if (pretty_print) buffer.println; buffer.indent -= 2

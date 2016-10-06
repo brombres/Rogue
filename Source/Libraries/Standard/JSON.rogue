@@ -255,8 +255,8 @@ class JSON
 
       return Real64Value( n )
 
-    method save( value:Value, file:File, &formatted )->Logical
-      return value.save( file, &formatted )
+    method save( value:Value, file:File, &formatted, &omit_commas )->Logical
+      return value.save( file, formatted, omit_commas  )
 
     method _consume_spaces_and_eols( reader:ParseReader )->ParseReader
       while (reader.consume_spaces or reader.consume_eols) noAction
