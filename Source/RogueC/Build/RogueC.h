@@ -642,9 +642,10 @@ extern void Rogue_terminate_handler ();
 
 
 //=============================================================================
+#include <sys/ioctl.h>
+#include <unistd.h>
 extern "C" char **environ;
 #include <termios.h>
-#include <unistd.h>
 #include <cstdio>
 #include <cmath>
 

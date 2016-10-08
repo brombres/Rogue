@@ -1102,11 +1102,13 @@ class ValueTable : Value
         StringValue.to_json( key, buffer, flags )
         buffer.print( ':' )
 
+        local indent = false
         local value = data[key]
-        if (pretty_print and value and (value.is_complex or (flags & OMIT_COMMAS))) buffer.println
-
-        local indent = (value is null) or (not value.is_collection)
-        if (indent) buffer.indent += 2
+        if (pretty_print and ((value and value.is_complex) or (flags & OMIT_COMMAS)))
+          buffer.println
+          indent = (value is null) or (not value.is_collection)
+          if (indent) buffer.indent += 2
+        endIf
 
         if (value) value.to_json( buffer, flags )
         else       buffer.print( "null" )

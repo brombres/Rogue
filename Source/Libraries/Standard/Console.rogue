@@ -43,6 +43,15 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
     method has_another->Logical
       return io_handler.has_another
 
+    method height->Int32
+      nativeHeader #include <sys/ioctl.h>
+      nativeHeader #include <unistd.h>
+
+      native @|struct winsize sz;
+              |ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+              |
+              |return sz.ws_row;
+
     method move_cursor( dx:Int32, dy:Int32 )
       if (dx)
         if (dx > 0) print( "\e[" ).print(  dx ).print( 'C' )
@@ -76,6 +85,15 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
 
     method set_cursor( x:Int32, y:Int32 )
       print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
+
+    method width->Int32
+      nativeHeader #include <sys/ioctl.h>
+      nativeHeader #include <unistd.h>
+
+      native @|struct winsize sz;
+              |ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+              |
+              |return sz.ws_col;
 
     method write( value:String )->this
       io_handler.write( value )
