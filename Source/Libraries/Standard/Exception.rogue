@@ -13,7 +13,7 @@ class Exception [essential]
       local builder = StringBuilder()
       builder.println @|===============================================================================
       builder.println type_name
-      builder.println message.word_wrapped(79,",").join
+      builder.println message.word_wrap(79,",").join
       if (stack_trace.entries.count)
         builder.println
         builder.println stack_trace->String.trimmed
