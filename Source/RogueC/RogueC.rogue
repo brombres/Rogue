@@ -1,7 +1,8 @@
-$define RELEASE_VERSION "1.1.0.4"
-$define RELEASE_DATE    "October 8, 2016"
+$define RELEASE_VERSION "1.1.0.5"
+$define RELEASE_DATE    "October 9, 2016"
 
 # TODO:
+# - Switch default GC model to 'auto'
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
 # - Warn on assignment of intermediate value compound
 

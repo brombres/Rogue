@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [String] All word-wrapping methods now preserve any initial indentation on successive lines.
 - [String] Fixed bug in `String[].joined()`: if the first list item was an empty string then the separator wasn't being added after it.  This was due to faulty logic that used a non-empty result string as an indicator that the loop was past its first iteration.
 - [JSON/Value] Added `&omit_commas` flag parameter to `save()` and `to_json()`.  Passing it automatically sets the `&formatted` flag as well.  Rogue is capable of reading the non-standard JSON that is produced with `&omit_commas`; the format is useful for allowing concurrent changes to the same JSON data file to be merged with less chance of a conflict.
+- [Value] Fixed `Value.to_json()` call to work with no arguments - problem was that two overloads would both accept zero arguments.
 - [Console] Added `Console.width()->Int32` and `Console.height()->Int32` that return the size of the console in characters.
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 

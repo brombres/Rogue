@@ -421,7 +421,7 @@ class Value
     method to<<$AsType>>()->$AsType [macro]
       (this->Object as $AsType)
 
-    method to_json( flags=0:Int32 )->String
+    method to_json( flags:Int32 )->String
       return to_json( StringBuilder(), flags )->String
 
     method to_json( &formatted, &omit_commas )->String
