@@ -37,10 +37,8 @@ class PrintWriter<<$buffer>> : PrintWriter [aspect]
       return this
 
     method flush->this
-      if ($buffer.count)
-        write( $buffer )
-        $buffer.clear
-      endIf
+      write( $buffer )
+      $buffer.clear
       return this
 
     method print( value:Byte )->this
@@ -132,6 +130,12 @@ class PrintWriterAdapter : PrintWriter<<buffer>>
 
     method close->this
       output.close
+      return this
+
+    method flush->this
+      write( buffer )
+      buffer.clear
+      output.flush
       return this
 
     method write( _buffer:StringBuilder )->this
