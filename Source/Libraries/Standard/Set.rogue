@@ -33,6 +33,10 @@ class Set<<$T>>
       # Just so that it can be iterated
       return _t.keys[index]
 
+    method get (index : Int32) -> $T
+      # So that array-style access works.
+      return _t.keys[index]
+
     method add (v : $T) -> this
       _t[v] = true
       return this

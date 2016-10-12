@@ -37,6 +37,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Value] Fixed `Value.to_json()` call to work with no arguments - problem was that two overloads would both accept zero arguments.
 - [Console] Added `Console.width()->Int32` and `Console.height()->Int32` that return the size of the console in characters.
 - [PrintWriter<<...>>>] Calling `flush()` on a PrintWriter aspect template now invokes the PrintWriter's `write()` method even if the StringBuilder buffer is empty.
+- [Set] Added `get(Int32)->$T` so that array-style access works.
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 
 
