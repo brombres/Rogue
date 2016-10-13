@@ -105,6 +105,14 @@ class String
       if (i.exists) return from( i.value+st.count )
       else          return ""
 
+    method after_prefix( ch:Character )->String
+      if (begins_with(ch)) return after_first( ch ).after_prefix( ch )
+      else                 return this
+
+    method after_prefix( st:String )->String
+      if (begins_with(st)) return after_first( st ).after_prefix( st )
+      else                 return this
+
     method before( index:Int32 )->String
       # Returns the substring of this string that occur before
       # the given index.
@@ -131,6 +139,14 @@ class String
       local i = locate_last( st )
       if (i.exists) return from( 0, i.value-1 )
       else          return this
+
+    method before_suffix( ch:Character )->String
+      if (ends_with(ch)) return before_last( ch ).before_suffix( ch )
+      else               return this
+
+    method before_suffix( st:String )->String
+      if (ends_with(st)) return before_last( st ).before_suffix( st )
+      else               return this
 
     method begins_with( ch:Character )->Logical
       return (count and this[0] == ch)
