@@ -64,15 +64,17 @@ class Set<<$T>>
     method intersection (r : Set<<$T>>) -> Set<<$T>>
       return cloned().intersection_update(r)
 
-    method discard (v : $T)
+    method discard (v : $T) -> $T
       if (contains(v)) remove(v)
+      return v
 
     method discard_all (v : Set<<$T>>) -> this
       forEach (value in v) discard(value)
       return this
 
-    method remove (v : $T)
+    method remove (v : $T) -> $T
       _t.remove(v)
+      return v
 
     method remove_all (v : Set<<$T>>) -> this
       forEach (value in v) remove(value)

@@ -7464,8 +7464,8 @@ RogueClassType* RogueSet_Type___at__Int32( RogueClassSet_Type_* THIS, RogueInt32
 RogueClassSet_Type_* RogueSet_Type___add__Type( RogueClassSet_Type_* THIS, RogueClassType* v_0 );
 RogueClassSet_Type_* RogueSet_Type___difference_update__Set_Type_( RogueClassSet_Type_* THIS, RogueClassSet_Type_* r_0 );
 RogueClassSet_Type_* RogueSet_Type___difference__Set_Type_( RogueClassSet_Type_* THIS, RogueClassSet_Type_* r_0 );
-void RogueSet_Type___discard__Type( RogueClassSet_Type_* THIS, RogueClassType* v_0 );
-void RogueSet_Type___remove__Type( RogueClassSet_Type_* THIS, RogueClassType* v_0 );
+RogueClassType* RogueSet_Type___discard__Type( RogueClassSet_Type_* THIS, RogueClassType* v_0 );
+RogueClassType* RogueSet_Type___remove__Type( RogueClassSet_Type_* THIS, RogueClassType* v_0 );
 RogueClassSet_Type_* RogueSet_Type___cloned( RogueClassSet_Type_* THIS );
 RogueInt32 RogueSet_Type___count( RogueClassSet_Type_* THIS );
 RogueStringBuilder* RogueSet_Type___print_to__StringBuilder( RogueClassSet_Type_* THIS, RogueStringBuilder* buffer_0 );

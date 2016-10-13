@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.0 - October 8, 2016
+###v1.1.0 - October 13, 2016
 - [Rogue] When `$include`ing a file, RogueC now first tries to find the file in the same folder as the including file, making filename collisions across separate libraries much less likely.  Previously RogueC would just iterate through a list of all folders that had been seen so far, trying each one with no regard to the folder of the including file.
 - [String[]] Renamed `String[].joined(separator:String)->String` to `String[].join(...)`.  While the `-ed` adjective style indicates a non-mutating call, is is also generally reserved for methods that return the same data type as the context.  Because `join()` does not return `String[]` it is better left as a verb.
 - [String] Renamed `String.word_wrapped()->String[]` to `String.word_wrap()->String[]` for the same reasons given in the previous bullet point.
@@ -38,6 +38,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Console] Added `Console.width()->Int32` and `Console.height()->Int32` that return the size of the console in characters.
 - [PrintWriter<<...>>>] Calling `flush()` on a PrintWriter aspect template now invokes the PrintWriter's `write()` method even if the StringBuilder buffer is empty.
 - [Set] Added `get(Int32)->$T` so that array-style access works.
+- [Set] `discard(value:$T)` and `remove(value:$Type)` now return the value being removed whether or not it exists in the set (previously no value was returned).  This allows the value to be removed to be computed from an expression, removed, and stored in a local all in one step.
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 
 
