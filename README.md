@@ -40,6 +40,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [PrintWriter<<...>>>] Calling `flush()` on a PrintWriter aspect template now invokes the PrintWriter's `write()` method even if the StringBuilder buffer is empty.
 - [Set] Added `get(Int32)->$T` so that array-style access works.
 - [Set] `discard(value:$T)` and `remove(value:$Type)` now return the value being removed whether or not it exists in the set (previously no value was returned).  This allows the value to be removed to be computed from an expression, removed, and stored in a local all in one step.
+- [Primitives] Added `sqrt()` to all numerical primitives.
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 
 

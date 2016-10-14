@@ -115,6 +115,9 @@ class Real64 [primitive]
       unitTest assert( (0.0).sign == 0.0 )
       unitTest assert( (-5.0).sign == -1.0 )
 
+    method sqrt->Real64 [macro]
+      Math.sqrt( this )
+
     method to->Object
       return Boxed<<Real64>>(this)
 
@@ -234,6 +237,9 @@ class Real32 [primitive]
       unitTest assert( Real32(0.0).sign == Real32(0.0) )
       unitTest assert( Real32(-5.0).sign == Real32(-1.0) )
 
+    method sqrt->Real32 [macro]
+      Real32( Math.sqrt(this) )
+
     method to->Object
       return Boxed<<Real32>>(this)
 
@@ -331,6 +337,9 @@ class Int64 [primitive]
       unitTest assert( Int64(5).sign == Int64(1) )
       unitTest assert( Int64(0).sign == Int64(0) )
       unitTest assert( Int64(-5).sign == Int64(-1) )
+
+    method sqrt->Int64 [macro]
+      Int64( Math.sqrt(this) )
 
     method to_hex_character->Character
       return Int32(this).to_hex_character
@@ -430,6 +439,9 @@ class Int32 [primitive]
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
+
+    method sqrt->Int32 [macro]
+      Int32( Math.sqrt(this) )
 
     method to->Int64 [macro]
       $if ("C++") native "((RogueInt64)$this)"
@@ -559,6 +571,9 @@ class Character [primitive]
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
+    method sqrt->Character [macro]
+      Character( Math.sqrt(this) )
+
     method to->Object
       return Boxed<<Character>>(this)
 
@@ -653,6 +668,9 @@ class Byte [primitive]
     method signed->Int32
       if (this <= 127) return this
       return (this - 256)
+
+    method sqrt->Byte [macro]
+      Byte( Math.sqrt(this) )
 
     method to->Object
       return Boxed<<Byte>>(this)
