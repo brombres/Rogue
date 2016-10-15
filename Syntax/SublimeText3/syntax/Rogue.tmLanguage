@@ -285,7 +285,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(while|endWhile|forEach|endForEach|in|of|step|await)\b</string>
+					<string>\b(while|endWhile|forEach|endForEach|in|of|step|await|downTo)\b</string>
 					<key>name</key>
 					<string>keyword.loop.rogue</string>
 				</dict>

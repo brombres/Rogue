@@ -34,7 +34,7 @@ syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
 syn keyword rogueConditional  block endBlock
 syn keyword rogueConditional  unitTest endUnitTest
 syn keyword rogueLoop         await
-syn keyword rogueLoop         while endWhile forEach endForEach in of step
+syn keyword rogueLoop         while endWhile forEach endForEach in of step downTo
 syn keyword rogueLoop         loop endLoop
 syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
 syn keyword rogueBranch       escapeTry
