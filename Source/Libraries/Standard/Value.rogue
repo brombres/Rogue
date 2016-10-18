@@ -374,6 +374,9 @@ class Value
     method set( key:String, value:String )->this [macro]
       this.set( key, Value(value) )
 
+    method set( key:Value, value:Value )->this [macro]
+      this.set( key->String, value )
+
     method set( key:String, value:Value )->this
       return this
 

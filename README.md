@@ -36,6 +36,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [String] Added `after_prefix(Character/String)->String` and `before_suffix(Character/String)->String`.
 - [String] Altered wildcard behavior in `String.matches_wildcard_pattern(String)->Logical`: `**` matches any sequence of characters, `*` matches any characters except `/` or `\`, and `?` matches any single character except '/' or '\'.
 - [JSON/Value] Added `&omit_commas` flag parameter to `save()` and `to_json()`.  Passing it automatically sets the `&formatted` flag as well.  Rogue is capable of reading the non-standard JSON that is produced with `&omit_commas`; the format is useful for allowing concurrent changes to the same JSON data file to be merged with less chance of a conflict.
+- [Value] Added `Value.set(Value,Value)` which forwards to `Value.set(String,Value)`.
 - [Value] Fixed `Value.to_json()` call to work with no arguments - problem was that two overloads would both accept zero arguments.
 - [Console] Added `Console.width()->Int32` and `Console.height()->Int32` that return the size of the console in characters.
 - [PrintWriter<<...>>>] Calling `flush()` on a PrintWriter aspect template now invokes the PrintWriter's `write()` method even if the StringBuilder buffer is empty.
