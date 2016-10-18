@@ -29,6 +29,7 @@ class ParseReader : Reader<<Character>>
       count = data.count
       line = 1
       column = 1
+      position = 0
 
     method init( file:File, spaces_per_tab=0 )
       init( file.load_as_string, spaces_per_tab )
@@ -54,6 +55,7 @@ class ParseReader : Reader<<Character>>
       count = data.count
       line = 1
       column = 1
+      position = 0
 
     method consume( ch:Character )->Logical
       if (peek != ch) return false
