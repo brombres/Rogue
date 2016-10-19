@@ -169,6 +169,21 @@ class File
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter [macro]
       CharacterToUTF8ByteWriter( File.writer(filepath) )
 
+    method copy( from_filepath:String, to_filepath:String )
+      if (File.is_folder(to_filepath))
+        to_filepath += "/" + File.filename(from_filepath)
+      else
+        local folder = File.folder( to_filepath )
+        File.create_folder( folder )
+      endIf
+
+      local reader = File.reader( from_filepath )
+      local writer = File.writer( to_filepath )
+
+      while (reader.has_another) writer.write( reader.read )
+
+      writer.close
+
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
       # if necessary.  Returns 'true' on success or if the filepath
@@ -476,6 +491,9 @@ class File
 
     method character_writer->CharacterToUTF8ByteWriter [macro]
       CharacterToUTF8ByteWriter( this.writer )
+
+    method copy( to_filepath:String ) [macro]
+      File.copy( this.filepath, to_filepath )
 
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )

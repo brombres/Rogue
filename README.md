@@ -45,6 +45,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Primitives] Added `sqrt()` to all numerical primitives.
 - [ParseReader] All init() methods now reset 'position' to 0, allowing a `ParseReader` object to be reinitialized multiple times.
 - [File] Added `File.folder(...)` that is equivalent to `File.path(...)`; the older method still exists (continuing terminology shift of "path"/"directory" to "folder").
+- [File] Added `File.copy(to_filepath:String)` and `File.copy(from_filepath:String,to_filepath:String)`.
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 - [Syntax] Added keyword `downTo` to syntax highlighting files.
 
