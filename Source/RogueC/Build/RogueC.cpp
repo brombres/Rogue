@@ -27936,7 +27936,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 )
   }
   if (!((RogueFile__exists__String( filepath_0 ))))
   {
-    ROGUE_DEF_LOCAL_REF(RogueString*,parent_1,((RogueFile__path__String( filepath_0 ))));
+    ROGUE_DEF_LOCAL_REF(RogueString*,parent_1,((RogueFile__folder__String( filepath_0 ))));
     if (parent_1->character_count == 0)
     {
       parent_1 = ((RogueString*)Rogue_literal_strings[154]);
@@ -28024,7 +28024,7 @@ RogueLogical RogueFile__create_folder__String( RogueString* _auto_5962 )
   {
     return (RogueLogical)((RogueFile__is_folder__String( filepath_0 )));
   }
-  ROGUE_DEF_LOCAL_REF(RogueString*,parent_1,((RogueFile__path__String( filepath_0 ))));
+  ROGUE_DEF_LOCAL_REF(RogueString*,parent_1,((RogueFile__folder__String( filepath_0 ))));
   if (!((RogueFile__create_folder__String( parent_1 ))))
   {
     return (RogueLogical)(false);
@@ -28055,6 +28055,20 @@ RogueString* RogueFile__filename__String( RogueString* filepath_0 )
     return (RogueString*)(filepath_0);
   }
   return (RogueString*)(((RogueString__from__Int32( filepath_0, ROGUE_ARG((i_1.value + 1)) ))));
+}
+
+RogueString* RogueFile__folder__String( RogueString* filepath_0 )
+{
+  RogueOptionalInt32 i_1 = (((RogueString__locate_last__Character_OptionalInt32( filepath_0, (RogueCharacter)'/', ROGUE_ARG((RogueOptionalInt32__create())) ))));
+  if (!(i_1.exists))
+  {
+    i_1 = ((RogueOptionalInt32)((RogueString__locate_last__Character_OptionalInt32( filepath_0, (RogueCharacter)'\\', ROGUE_ARG((RogueOptionalInt32__create())) ))));
+  }
+  if (!(i_1.exists))
+  {
+    return (RogueString*)(Rogue_literal_strings[0]);
+  }
+  return (RogueString*)(((RogueString__from__Int32_Int32( filepath_0, 0, ROGUE_ARG((i_1.value - 1)) ))));
 }
 
 RogueLogical RogueFile__is_folder__String( RogueString* filepath_0 )
@@ -28116,16 +28130,7 @@ RogueString* RogueFile__load_as_string__String( RogueString* filepath_0 )
 
 RogueString* RogueFile__path__String( RogueString* filepath_0 )
 {
-  RogueOptionalInt32 i_1 = (((RogueString__locate_last__Character_OptionalInt32( filepath_0, (RogueCharacter)'/', ROGUE_ARG((RogueOptionalInt32__create())) ))));
-  if (!(i_1.exists))
-  {
-    i_1 = ((RogueOptionalInt32)((RogueString__locate_last__Character_OptionalInt32( filepath_0, (RogueCharacter)'\\', ROGUE_ARG((RogueOptionalInt32__create())) ))));
-  }
-  if (!(i_1.exists))
-  {
-    return (RogueString*)(Rogue_literal_strings[0]);
-  }
-  return (RogueString*)(((RogueString__from__Int32_Int32( filepath_0, 0, ROGUE_ARG((i_1.value - 1)) ))));
+  return (RogueString*)((RogueFile__folder__String( filepath_0 )));
 }
 
 RogueClassFileReader* RogueFile__reader__String( RogueString* filepath_0 )
@@ -75098,7 +75103,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[265] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.0.13", 8 ) ); 
+  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.0.14", 8 ) ); 
   Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "October 18, 2016", 16 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=[manual|auto|boehm]]\n    Set the garbage collection mode:\n      (no --gc)   - Manual GC mode, the default (see below).\n      --gc        - Auto GC mode (see below).\n      --gc=manual - Rogue_collect_garbage() must be called in-between calls\n                    into the Rogue runtime.\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2244 ) ); 

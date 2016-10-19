@@ -78,7 +78,7 @@ class File
       if (not filepath) return null
 
       if (not exists(filepath))
-        local parent = path( filepath )
+        local parent = folder( filepath )
         if (parent.count == 0) parent = "."
         return "$/$" (absolute_filepath(parent),filename(filepath))
       endIf
@@ -180,7 +180,7 @@ class File
 
       # Check for the parent folder's existence and recursively create
       # that if necessary.
-      local parent = File.path( filepath )
+      local parent = File.folder( filepath )
       if (not create_folder(parent)) return false
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
@@ -214,6 +214,12 @@ class File
       if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return filepath
       return filepath.from( i.value+1 )
+
+    method folder( filepath:String )->String
+      local i = filepath.locate_last( '/' )
+      if (not i?) i = filepath.locate_last( '\\' )
+      if (not i?) return ""
+      return filepath.from( 0, i.value-1 )
 
     method is_folder( filepath:String )->Logical [essential]
       native @|if ( !$filepath ) return false;
@@ -366,10 +372,7 @@ class File
       FileOptions()
 
     method path( filepath:String )->String
-      local i = filepath.locate_last( '/' )
-      if (not i?) i = filepath.locate_last( '\\' )
-      if (not i?) return ""
-      return filepath.from( 0, i.value-1 )
+      return folder( filepath )
 
     method reader( filepath:String )->FileReader
       return FileReader( filepath )
@@ -496,6 +499,9 @@ class File
     method filename->String
       return filename( filepath )
 
+    method folder->String [macro]
+      File.folder( this.filepath )
+
     method is_folder->Logical [macro]
       File.is_folder( this.filepath )
 
@@ -512,7 +518,7 @@ class File
       File.load_as_string( this.filepath )
 
     method path->String [macro]
-      File.path( this.filepath )
+      File.folder( this.filepath )
 
     method reader->FileReader [macro]
       File.reader( this.filepath )

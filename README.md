@@ -44,6 +44,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Set] `discard(value:$T)` and `remove(value:$Type)` now return the value being removed whether or not it exists in the set (previously no value was returned).  This allows the value to be removed to be computed from an expression, removed, and stored in a local all in one step.
 - [Primitives] Added `sqrt()` to all numerical primitives.
 - [ParseReader] All init() methods now reset 'position' to 0, allowing a `ParseReader` object to be reinitialized multiple times.
+- [File] Added `File.folder(...)` that is equivalent to `File.path(...)`; the older method still exists (continuing terminology shift of "path"/"directory" to "folder").
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 - [Syntax] Added keyword `downTo` to syntax highlighting files.
 

@@ -5624,6 +5624,7 @@ RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 );
 RogueLogical RogueFile__create_folder__String( RogueString* _auto_5962 );
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 );
 RogueString* RogueFile__filename__String( RogueString* filepath_0 );
+RogueString* RogueFile__folder__String( RogueString* filepath_0 );
 RogueLogical RogueFile__is_folder__String( RogueString* filepath_0 );
 RogueString* RogueFile__load_as_string__String( RogueString* filepath_0 );
 RogueString* RogueFile__path__String( RogueString* filepath_0 );
