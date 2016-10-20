@@ -37,6 +37,12 @@ class FileOptions( flags=0:Int32 ) [compound]
     method folders->FileOptions [macro]
       FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
 
+    method include_path->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
+
+    method includes_path->Logical [macro]
+      ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
+
     method is_limited->Logical [macro]
       (not (this.flags & FileOptions.FLAG_RECURSIVE))
 
@@ -289,7 +295,30 @@ class File
       return listing( folder, options )
 
     method listing( folder:String, options:FileOptions )->String[]
-      return listing( folder, options, "", String[] )
+      if (folder.contains('*') or folder.contains('?'))
+        local pattern = folder
+        folder = File.before_wildcard_pattern( folder )
+        if (folder == "") folder = "."; pattern = "./" + pattern
+        if (pattern.contains("**")) options = options.recursive
+        local filepaths = listing( folder, options.relative.include_path )
+        local filtered = String[]
+        forEach (filepath in filepaths)
+          if (File.matches_wildcard_pattern(filepath,pattern))
+            if (options.omitting_paths)
+              filtered.add( filepath.after_first(folder) )
+            elseIf (options.is_absolute)
+              filtered.add( File.absolute_filepath( filepath ) )
+            else
+              filtered.add( filepath )
+            endIf
+          endIf
+        endForEach
+        return filtered
+
+      else
+        return listing( folder, options, "", String[] )
+
+      endIf
 
     method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
       if (not options.omitting_paths)

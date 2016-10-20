@@ -38,6 +38,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [File] Added `File.folder(...)` that is equivalent to `File.path(...)`; the older method still exists (continuing terminology shift of "path"/"directory" to "folder").
 - [File] Added `File.before_wildcard_pattern()->String`.
 - [File] Added `File.copy(to_filepath:String)` and `File.copy(from_filepath:String,to_filepath:String)`.
+- [File] `File.listing(...)` can now handle wildcard patterns - `**` implies recursive, `*` matches any character except slash, and `?` matches any single character.
 - [JSON/Value] Added `&omit_commas` flag parameter to `save()` and `to_json()`.  Passing it automatically sets the `&formatted` flag as well.  Rogue is capable of reading the non-standard JSON that is produced with `&omit_commas`; the format is useful for allowing concurrent changes to the same JSON data file to be merged with less chance of a conflict.
 - [Value] Added `Value.set(Value,Value)` which forwards to `Value.set(String,Value)`.
 - [Value] Fixed `Value.to_json()` call to work with no arguments - problem was that two overloads would both accept zero arguments.
