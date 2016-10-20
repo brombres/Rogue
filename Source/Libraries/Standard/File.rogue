@@ -163,6 +163,12 @@ class File
       endIf
       return return_value
 
+    method before_wildcard_pattern( filepath:String )->String
+      while (filepath.contains('?') or filepath.contains('*'))
+        filepath = File.folder( filepath )
+      endWhile
+      return filepath
+
     method character_reader( filepath:String )->UTF8Reader [macro]
       UTF8Reader( File.reader(filepath) )
 
@@ -383,6 +389,52 @@ class File
       infile.close
       return buffer->String
 
+    method matches_wildcard_pattern( filepath:String, pattern:String )->Logical
+      # Determines whether or not the given filepath matches the given
+      # semi-Unix/Dos-style 'wildcard pattern'.  'pattern' is a
+      # regular text string that may contain the following special
+      # characters:
+      #
+      # *  - Matches any number of characters but does not match '/' or '\'
+      # ** - Matches any number of characters including slashes
+      # ?  - Matches any one character except '/' and '\'
+      local c = filepath.count
+      if (pattern.count == 0) return (c == 0)
+
+      local remaining_pattern = pattern.from( 1 )
+      local ch = pattern[0]
+      which (ch)
+        case '*':
+          if (remaining_pattern.count and remaining_pattern[0] == '*')
+            # Double asterisk - match all characters including '/' and '\'
+            remaining_pattern = remaining_pattern.from( 1 )
+            forEach (n in 0..c)
+              if (matches_wildcard_pattern(filepath.from(n),remaining_pattern)) return true
+            endForEach
+          else
+            # Single asterisk - match any characters except '/' and '\'
+            forEach (n in 0..<c)
+              ch = filepath[ n ]
+              if (matches_wildcard_pattern(filepath.from(n),remaining_pattern)) return true
+              if (ch == '/' or ch == '\\') return false
+            endForEach
+            return matches_wildcard_pattern( "", remaining_pattern )
+          endIf
+
+        case '?':
+          if (c == 0) return false
+          ch = filepath[ 0 ]
+          if (ch == '/' or ch == '\\') return false
+          return matches_wildcard_pattern( filepath.from(1), remaining_pattern )
+
+        others:
+          if (c == 0) return false
+          if (ch == filepath[0])
+            return matches_wildcard_pattern( filepath.from(1), remaining_pattern )
+          endIf
+      endWhich
+      return false
+
     method options->FileOptions [macro]
       FileOptions()
 
@@ -486,6 +538,9 @@ class File
     method absolute_filepath->String [macro]
       File.absolute_filepath( this.filepath )
 
+    method before_wildcard_pattern->String [macro]
+      File.before_wildcard_pattern( this.filepath )
+
     method character_reader->UTF8Reader [macro]
       UTF8Reader( this.reader )
 
@@ -534,6 +589,9 @@ class File
 
     method load_as_string->String [macro]
       File.load_as_string( this.filepath )
+
+    method matches_wildcard_pattern( pattern:String )->Logical [macro]
+      File.matches_wildcard_pattern( this.filepath, pattern )
 
     method path->String [macro]
       File.folder( this.filepath )

@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.0 - October 13, 2016
+###v1.1.0 - October 19, 2016
 - [Rogue] When `$include`ing a file, RogueC now first tries to find the file in the same folder as the including file, making filename collisions across separate libraries much less likely.  Previously RogueC would just iterate through a list of all folders that had been seen so far, trying each one with no regard to the folder of the including file.
 - [String[]] Renamed `String[].joined(separator:String)->String` to `String[].join(...)`.  While the `-ed` adjective style indicates a non-mutating call, is is also generally reserved for methods that return the same data type as the context.  Because `join()` does not return `String[]` it is better left as a verb.
 - [String] Renamed `String.word_wrapped()->String[]` to `String.word_wrap()->String[]` for the same reasons given in the previous bullet point.
@@ -34,7 +34,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [String] All word-wrapping methods now preserve any initial indentation on successive lines.
 - [String] Fixed bug in `String[].joined()`: if the first list item was an empty string then the separator wasn't being added after it.  This was due to faulty logic that used a non-empty result string as an indicator that the loop was past its first iteration.
 - [String] Added `after_prefix(Character/String)->String` and `before_suffix(Character/String)->String`.
-- [String] Altered wildcard behavior in `String.matches_wildcard_pattern(String)->Logical`: `**` matches any sequence of characters, `*` matches any characters except `/` or `\`, and `?` matches any single character except '/' or '\'.
+- [String/File] Moved `String.matches_wildcard_pattern()` to class `File` and altered wildcard behavior: `**` matches any sequence of characters, `*` matches any characters except `/` or `\`, and `?` matches any single character except '/' or '\'.
+- [File] Added `File.folder(...)` that is equivalent to `File.path(...)`; the older method still exists (continuing terminology shift of "path"/"directory" to "folder").
+- [File] Added `File.before_wildcard_pattern()->String`.
+- [File] Added `File.copy(to_filepath:String)` and `File.copy(from_filepath:String,to_filepath:String)`.
 - [JSON/Value] Added `&omit_commas` flag parameter to `save()` and `to_json()`.  Passing it automatically sets the `&formatted` flag as well.  Rogue is capable of reading the non-standard JSON that is produced with `&omit_commas`; the format is useful for allowing concurrent changes to the same JSON data file to be merged with less chance of a conflict.
 - [Value] Added `Value.set(Value,Value)` which forwards to `Value.set(String,Value)`.
 - [Value] Fixed `Value.to_json()` call to work with no arguments - problem was that two overloads would both accept zero arguments.
@@ -44,8 +47,6 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Set] `discard(value:$T)` and `remove(value:$Type)` now return the value being removed whether or not it exists in the set (previously no value was returned).  This allows the value to be removed to be computed from an expression, removed, and stored in a local all in one step.
 - [Primitives] Added `sqrt()` to all numerical primitives.
 - [ParseReader] All init() methods now reset 'position' to 0, allowing a `ParseReader` object to be reinitialized multiple times.
-- [File] Added `File.folder(...)` that is equivalent to `File.path(...)`; the older method still exists (continuing terminology shift of "path"/"directory" to "folder").
-- [File] Added `File.copy(to_filepath:String)` and `File.copy(from_filepath:String,to_filepath:String)`.
 - [RogueC] Top and bottom bars around error messages (`======`) now scale with the width of the console up to 79 characters max.
 - [Syntax] Added keyword `downTo` to syntax highlighting files.
 
