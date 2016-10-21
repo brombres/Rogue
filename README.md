@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.0.102
-- September 27, 2016
+- v1.1.0
+- October 20, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.0 - October 19, 2016
+###v1.1.0 - October 20, 2016
 - [Rogue] When `$include`ing a file, RogueC now first tries to find the file in the same folder as the including file, making filename collisions across separate libraries much less likely.  Previously RogueC would just iterate through a list of all folders that had been seen so far, trying each one with no regard to the folder of the including file.
 - [String[]] Renamed `String[].joined(separator:String)->String` to `String[].join(...)`.  While the `-ed` adjective style indicates a non-mutating call, is is also generally reserved for methods that return the same data type as the context.  Because `join()` does not return `String[]` it is better left as a verb.
 - [String] Renamed `String.word_wrapped()->String[]` to `String.word_wrap()->String[]` for the same reasons given in the previous bullet point.
