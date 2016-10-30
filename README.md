@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.2 - October 30, 2016
+- [RogueC] Changed default gc mode to `auto`.  Pass `--gc=manual` to `roguec` to specify the previous default.
+
 ###v1.1.1 - October 29, 2016
 - [File] Improved wildcard behavior, e.g. `File.listing("A/*/*.txt")` will list out files ending with `.txt` in folders `A/B`, `A/C`, etc.
 - [File] `File.listing(folder,...)` can now specify a specific non-folder file as its "folder" argument and that filepath will be returned in the results list.  For example, `File.listing("text.txt")` now returns the `String[]` list `["test.txt"]` if the file exists.

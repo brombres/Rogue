@@ -17,7 +17,7 @@ debug: libraries
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --debug..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
-	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --debug $(ROGUEC_ROGUE_FLAGS)
+	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --debug $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
@@ -26,7 +26,7 @@ exhaustive: libraries
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --exhaustive..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
-	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS)
+	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
@@ -51,7 +51,7 @@ Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
-	cd Source/RogueC && roguec RogueC.rogue --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
+	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
 Programs/RogueC/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
