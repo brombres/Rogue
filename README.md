@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.1 - October 29, 2016
+- [File] Improved wildcard behavior, e.g. `File.listing("A/*/*.txt")` will list out files ending with `.txt` in folders `A/B`, `A/C`, etc.
+- [File] `File.listing(folder,...)` can now specify a specific non-folder file as its "folder" argument and that filepath will be returned in the results list.  For example, `File.listing("text.txt")` now returns the `String[]` list `["test.txt"]` if the file exists.
+- [File] Renamed `FileOptions.omitting_paths()` to `.omitting_path()` to match singular name of related methods and variables.
+
 ###v1.1.0 - October 20, 2016
 - [Rogue] When `$include`ing a file, RogueC now first tries to find the file in the same folder as the including file, making filename collisions across separate libraries much less likely.  Previously RogueC would just iterate through a list of all folders that had been seen so far, trying each one with no regard to the folder of the including file.
 - [String[]] Renamed `String[].joined(separator:String)->String` to `String[].join(...)`.  While the `-ed` adjective style indicates a non-mutating call, is is also generally reserved for methods that return the same data type as the context.  Because `join()` does not return `String[]` it is better left as a verb.

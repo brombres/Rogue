@@ -58,7 +58,7 @@ class FileOptions( flags=0:Int32 ) [compound]
     method omit_path->FileOptions [macro]
       FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
 
-    method omitting_paths->Logical [macro]
+    method omitting_path->Logical [macro]
       (this.flags & FileOptions.FLAG_OMIT_PATH)
 
     method relative->FileOptions [macro]
@@ -296,24 +296,60 @@ class File
 
     method listing( folder:String, options:FileOptions )->String[]
       if (folder.contains('*') or folder.contains('?'))
-        local pattern = folder
-        folder = File.before_wildcard_pattern( folder )
-        if (folder == "") folder = "."; pattern = "./" + pattern
-        if (pattern.contains("**")) options = options.recursive
-        local filepaths = listing( folder, options.relative.include_path )
-        local filtered = String[]
-        forEach (filepath in filepaths)
-          if (File.matches_wildcard_pattern(filepath,pattern))
-            if (options.omitting_paths)
-              filtered.add( filepath.after_first(folder) )
-            elseIf (options.is_absolute)
-              filtered.add( File.absolute_filepath( filepath ) )
-            else
-              filtered.add( filepath )
+        local full_pattern = folder
+
+        local parts = folder.replacing('\\','/').split('/')
+        local non_wild_parts = String[]
+        while (not parts.first.contains('*') and not parts.first.contains('?'))
+          non_wild_parts.add( parts.remove_first )
+        endWhile
+
+        local non_wild_path = select{ non_wild_parts.count:non_wild_parts.join('/') || "." }
+        if (parts.first.contains("**"))
+          # Implied recursion
+          local filtered = String[]
+          forEach (filepath in File.listing(non_wild_path, options.recursive.include_path))
+            if (File.matches_wildcard_pattern(filepath,full_pattern))
+              if (options.omitting_path)
+                filtered.add( filepath.after_first(folder) )
+              elseIf (options.is_absolute)
+                filtered.add( File.absolute_filepath( filepath ) )
+              else
+                filtered.add( filepath )
+              endIf
             endIf
-          endIf
-        endForEach
-        return filtered
+          endForEach
+          return filtered
+
+        else
+          # Wildcards are * or ? only
+          local pattern = parts.remove_first
+          local results = String[]
+          forEach (name in File.listing(non_wild_path,options.limited.omit_path))
+            if (name.begins_with('.')) nextIteration
+            if (File.matches_wildcard_pattern(name,pattern))
+              if (non_wild_path == ".")
+                if (File.is_folder(name))
+                  if (parts.count)              results.add( File.listing("$/$"(name,parts.join('/')),options) )
+                  elseIf (options.is_recursive) results.add( File.listing("$"(name),options) )
+                  else                          results.add( name )
+                elseIf (parts.is_empty)
+                  results.add( name )
+                endIf
+              else
+                local subfolder = "$/$" (non_wild_path,name)
+                if (File.is_folder(subfolder))
+                  if (parts.count)              results.add( File.listing("$/$"(subfolder,parts.join('/')),options) )
+                  elseIf (options.is_recursive) results.add( File.listing(subfolder, options) )
+                  else                          results.add( subfolder )
+                elseIf (parts.is_empty)
+                  results.add( subfolder )
+                endIf
+              endIf
+            endIf
+          endForEach
+          return results
+        endIf
 
       else
         return listing( folder, options, "", String[] )
@@ -321,7 +357,9 @@ class File
       endIf
 
     method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
-      if (not options.omitting_paths)
+      if (folder == ".") options = options.omit_path
+
+      if (not options.omitting_path)
         if (options.is_absolute)
           filepath = File.absolute_filepath( folder )  # add absolute path to every entry
           folder = ""
@@ -337,13 +375,24 @@ class File
         folder += '/'
       endIf
 
+      local native_folder = folder + filepath
+
+      if (not is_folder(native_folder))
+        if (File.exists(native_folder))
+          local is_hidden = native_folder.begins_with('.')
+          if (not (is_hidden and options.ignoring_hidden))
+            if (options.is_files)
+              if (native_folder.count > 1 and native_folder.ends_with('/')) native_folder = native_folder.leftmost( -1 )
+              result.add( native_folder )
+            endIf
+          endIf
+        endIf
+        return result
+      endIf
+
       if (filepath.count and not (filepath.ends_with('/') or filepath.ends_with('\\')))
         filepath += '/'
       endIf
-
-      local native_folder = folder + filepath
-
-      if (not is_folder(native_folder)) return result
 
       native @|{
               |  DIR* dir;

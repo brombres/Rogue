@@ -654,7 +654,7 @@ class Parser
           if (p.initial_value)
             p.type = p.initial_value.implicit_type( Scope(this_type,null) )
             if (p.type is null)
-              println p.initial_value.type_name
+              #println p.initial_value.type_name
               throw p.initial_value.t.error(
                 ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" '' (name) )
             endIf
