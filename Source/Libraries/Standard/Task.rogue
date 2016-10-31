@@ -5,9 +5,16 @@ class Task
   DEPENDENCIES
     $essential TaskManager
 
+  PROPERTIES
+    stop_requested : Logical
+
   METHODS
-    method start->Task
+    method start->this
       if (update) TaskManager.add( this )
+      return this
+
+    method stop->this
+      stop_requested = true
       return this
 
     method update->Logical
@@ -51,7 +58,7 @@ class TaskManager [singleton]
           local task = tasks[i]
           local active = false
           try
-            active = task.update
+            active = not task.stop_requested and task.update
           catch (ex:Exception)
             println "Uncaught exception in task: " + ex
           endTry
@@ -67,7 +74,7 @@ class TaskManager [singleton]
       active_list.clear
       forEach (task at i in update_list)
         try
-          if (task.update)
+          if (not task.stop_requested and task.update)
             # Active tasks stay in the list
             active_list.add( task )
           endIf

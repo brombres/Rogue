@@ -29,6 +29,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.1.2 - October 31, 2016
 - [RogueC] Changed default gc mode to `auto`.  Pass `--gc=manual` to `roguec` to specify the previous default.
 - [Rogue]  Renamed `clean_up()` to `on_cleanup()`.  This method can be present in any object and, if it is, will automatically be called when the object goes out of scope.
+- [Task] `Task.stop()` can now be called to stop any task and remove it from the `TaskManager`.
 
 ###v1.1.1 - October 29, 2016
 - [File] Improved wildcard behavior, e.g. `File.listing("A/*/*.txt")` will list out files ending with `.txt` in folders `A/B`, `A/C`, etc.
