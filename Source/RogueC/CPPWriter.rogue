@@ -511,7 +511,7 @@ augment Program
       writer.println
 
       # Cleanup Fn Table
-      writer.println "RogueCleanUpFn Rogue_clean_up_fn_table[] ="
+      writer.println "RogueCleanUpFn Rogue_on_cleanup_fn_table[] ="
       writer.println "{"
       writer.indent += 2
       first = true
@@ -519,7 +519,7 @@ augment Program
         if (first) first = false
         else       writer.println ","
 
-        local m = type.find_method( "clean_up()" )
+        local m = type.find_method( "on_cleanup()" )
         if (m and not type.omit_output and m.is_used and m.statements.count)
           writer.print "(RogueCleanUpFn) "
           writer.print m.cpp_name

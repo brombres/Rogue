@@ -84,7 +84,7 @@ class CyMethod
         pyclass = builder.get_p_type(context)
       endIf
 
-      if (m.name == "init_class" or m.name == "clean_up" or m.name == "init_object")
+      if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object")
         return this # Hide
       endIf
 
@@ -615,7 +615,7 @@ augment Program
                       |      local _py_callable = _callable
                       |      _callable = 0
                       |      native "PyRogue_XDECREF((void*)(intptr_t)$_py_callable);"
-                      |    method clean_up
+                      |    method on_cleanup
                       |      release()
                       |endClass
 

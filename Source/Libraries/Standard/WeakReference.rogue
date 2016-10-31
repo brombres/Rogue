@@ -9,7 +9,7 @@ class WeakReference [essential]
               |$next_weak_reference = Rogue_weak_references;
               |Rogue_weak_references = $this;
 
-    method clean_up
+    method on_cleanup
       native @|if (Rogue_weak_references == $this)
               |{
               |  Rogue_weak_references = $next_weak_reference;

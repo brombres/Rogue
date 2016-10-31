@@ -715,7 +715,7 @@ class FileReader : Reader<<Byte>>
     method init( _filepath:String )
       open( _filepath )
 
-    method clean_up
+    method on_cleanup
       close
 
     method close->this
@@ -806,7 +806,7 @@ class FileWriter : Writer<<Byte>>
     method init( _filepath:String, append=false:Logical )
       open( _filepath, append )
 
-    method clean_up
+    method on_cleanup
       close
 
     method close->this

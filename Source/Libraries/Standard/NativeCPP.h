@@ -358,7 +358,7 @@ struct RogueType
   RogueTraceFn      trace_fn;
   RogueInitFn       init_object_fn;
   RogueInitFn       init_fn;
-  RogueCleanUpFn    clean_up_fn;
+  RogueCleanUpFn    on_cleanup_fn;
   RogueToStringFn   to_string_fn;
 };
 
@@ -553,7 +553,7 @@ extern void*              Rogue_dynamic_method_table[];
 extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];
 extern RogueTraceFn       Rogue_trace_fn_table[];
-extern RogueCleanUpFn     Rogue_clean_up_fn_table[];
+extern RogueCleanUpFn     Rogue_on_cleanup_fn_table[];
 extern RogueToStringFn    Rogue_to_string_fn_table[];
 extern int                Rogue_literal_string_count;
 extern RogueString*       Rogue_literal_strings[];

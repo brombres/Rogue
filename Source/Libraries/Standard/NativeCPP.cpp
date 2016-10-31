@@ -836,7 +836,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 void Rogue_Boehm_Finalizer( void* obj, void* data )
 {
   RogueObject* o = (RogueObject*)obj;
-  o->type->clean_up_fn(o);
+  o->type->on_cleanup_fn(o);
 }
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
@@ -855,7 +855,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
 
-  if (of_type->clean_up_fn)
+  if (of_type->on_cleanup_fn)
   {
     GC_REGISTER_FINALIZER_IGNORE_SELF( obj, Rogue_Boehm_Finalizer, 0, 0, 0 );
   }
@@ -879,7 +879,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 
   memset( obj, 0, size );
 
-  if (of_type->clean_up_fn)
+  if (of_type->on_cleanup_fn)
   {
     obj->next_object = THIS->objects_requiring_cleanup;
     THIS->objects_requiring_cleanup = obj;
@@ -963,11 +963,11 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   // For any unreferenced objects requiring clean-up, we'll:
   //   1.  Reference them and move them to a separate short-term list.
   //   2.  Finish the regular GC.
-  //   3.  Call clean_up() on each of them, which may create new
+  //   3.  Call on_cleanup() on each of them, which may create new
   //       objects (which is why we have to wait until after the GC).
   //   4.  Move them to the list of regular objects.
   cur = THIS->objects_requiring_cleanup;
-  RogueObject* unreferenced_clean_up_objects = 0;
+  RogueObject* unreferenced_on_cleanup_objects = 0;
   RogueObject* survivors = 0;  // local var for speed
   while (cur)
   {
@@ -981,11 +981,11 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     }
     else
     {
-      // Unreferenced - go ahead and trace it since we'll call clean_up
+      // Unreferenced - go ahead and trace it since we'll call on_cleanup
       // on it.
       cur->type->trace_fn( cur );
-      cur->next_object = unreferenced_clean_up_objects;
-      unreferenced_clean_up_objects = cur;
+      cur->next_object = unreferenced_on_cleanup_objects;
+      unreferenced_on_cleanup_objects = cur;
     }
     cur = next_object;
   }
@@ -1022,17 +1022,17 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   THIS->objects = survivors;
 
 
-  // Call clean_up() on unreferenced objects requiring cleanup
+  // Call on_cleanup() on unreferenced objects requiring cleanup
   // and move them to the general objects list so they'll be deleted
-  // the next time they're unreferenced.  Calling clean_up() may
+  // the next time they're unreferenced.  Calling on_cleanup() may
   // create additional objects so THIS->objects may change during a
-  // clean_up() call.
-  cur = unreferenced_clean_up_objects;
+  // on_cleanup() call.
+  cur = unreferenced_on_cleanup_objects;
   while (cur)
   {
     RogueObject* next_object = cur->next_object;
 
-    cur->type->clean_up_fn( cur );
+    cur->type->on_cleanup_fn( cur );
 
     cur->object_size = ~cur->object_size;
     cur->next_object = THIS->objects;
@@ -1196,7 +1196,7 @@ void Rogue_configure_types()
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
     type->init_fn        = Rogue_init_fn_table[i];
-    type->clean_up_fn    = Rogue_clean_up_fn_table[i];
+    type->on_cleanup_fn  = Rogue_on_cleanup_fn_table[i];
     type->to_string_fn   = Rogue_to_string_fn_table[i];
   }
 

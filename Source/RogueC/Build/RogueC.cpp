@@ -841,7 +841,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 void Rogue_Boehm_Finalizer( void* obj, void* data )
 {
   RogueObject* o = (RogueObject*)obj;
-  o->type->clean_up_fn(o);
+  o->type->on_cleanup_fn(o);
 }
 
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
@@ -860,7 +860,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
 
-  if (of_type->clean_up_fn)
+  if (of_type->on_cleanup_fn)
   {
     GC_REGISTER_FINALIZER_IGNORE_SELF( obj, Rogue_Boehm_Finalizer, 0, 0, 0 );
   }
@@ -884,7 +884,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 
   memset( obj, 0, size );
 
-  if (of_type->clean_up_fn)
+  if (of_type->on_cleanup_fn)
   {
     obj->next_object = THIS->objects_requiring_cleanup;
     THIS->objects_requiring_cleanup = obj;
@@ -968,11 +968,11 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   // For any unreferenced objects requiring clean-up, we'll:
   //   1.  Reference them and move them to a separate short-term list.
   //   2.  Finish the regular GC.
-  //   3.  Call clean_up() on each of them, which may create new
+  //   3.  Call on_cleanup() on each of them, which may create new
   //       objects (which is why we have to wait until after the GC).
   //   4.  Move them to the list of regular objects.
   cur = THIS->objects_requiring_cleanup;
-  RogueObject* unreferenced_clean_up_objects = 0;
+  RogueObject* unreferenced_on_cleanup_objects = 0;
   RogueObject* survivors = 0;  // local var for speed
   while (cur)
   {
@@ -986,11 +986,11 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     }
     else
     {
-      // Unreferenced - go ahead and trace it since we'll call clean_up
+      // Unreferenced - go ahead and trace it since we'll call on_cleanup
       // on it.
       cur->type->trace_fn( cur );
-      cur->next_object = unreferenced_clean_up_objects;
-      unreferenced_clean_up_objects = cur;
+      cur->next_object = unreferenced_on_cleanup_objects;
+      unreferenced_on_cleanup_objects = cur;
     }
     cur = next_object;
   }
@@ -1027,17 +1027,17 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   THIS->objects = survivors;
 
 
-  // Call clean_up() on unreferenced objects requiring cleanup
+  // Call on_cleanup() on unreferenced objects requiring cleanup
   // and move them to the general objects list so they'll be deleted
-  // the next time they're unreferenced.  Calling clean_up() may
+  // the next time they're unreferenced.  Calling on_cleanup() may
   // create additional objects so THIS->objects may change during a
-  // clean_up() call.
-  cur = unreferenced_clean_up_objects;
+  // on_cleanup() call.
+  cur = unreferenced_on_cleanup_objects;
   while (cur)
   {
     RogueObject* next_object = cur->next_object;
 
-    cur->type->clean_up_fn( cur );
+    cur->type->on_cleanup_fn( cur );
 
     cur->object_size = ~cur->object_size;
     cur->next_object = THIS->objects;
@@ -1201,7 +1201,7 @@ void Rogue_configure_types()
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
     type->init_fn        = Rogue_init_fn_table[i];
-    type->clean_up_fn    = Rogue_clean_up_fn_table[i];
+    type->on_cleanup_fn  = Rogue_on_cleanup_fn_table[i];
     type->to_string_fn   = Rogue_to_string_fn_table[i];
   }
 
@@ -7969,7 +7969,7 @@ RogueInitFn Rogue_init_fn_table[] =
   0
 };
 
-RogueCleanUpFn Rogue_clean_up_fn_table[] =
+RogueCleanUpFn Rogue_on_cleanup_fn_table[] =
 {
   0,
   0,
@@ -8222,7 +8222,7 @@ RogueCleanUpFn Rogue_clean_up_fn_table[] =
   0,
   0,
   0,
-  (RogueCleanUpFn) RogueWeakReference__clean_up,
+  (RogueCleanUpFn) RogueWeakReference__on_cleanup,
   0,
   0,
   0,
@@ -8410,8 +8410,8 @@ RogueCleanUpFn Rogue_clean_up_fn_table[] =
   0,
   0,
   0,
-  (RogueCleanUpFn) RogueFileReader__clean_up,
-  (RogueCleanUpFn) RogueFileWriter__clean_up,
+  (RogueCleanUpFn) RogueFileReader__on_cleanup,
+  (RogueCleanUpFn) RogueFileWriter__on_cleanup,
   0,
   0,
   0,
@@ -60048,7 +60048,7 @@ RogueString* RogueWeakReference__type_name( RogueWeakReference* THIS )
   return (RogueString*)(Rogue_literal_strings[389]);
 }
 
-void RogueWeakReference__clean_up( RogueWeakReference* THIS )
+void RogueWeakReference__on_cleanup( RogueWeakReference* THIS )
 {
   if (Rogue_weak_references == THIS)
   {
@@ -73786,7 +73786,7 @@ RogueClassFileReader* RogueFileReader__init__String( RogueClassFileReader* THIS,
   return (RogueClassFileReader*)(THIS);
 }
 
-void RogueFileReader__clean_up( RogueClassFileReader* THIS )
+void RogueFileReader__on_cleanup( RogueClassFileReader* THIS )
 {
   RogueFileReader__close( ROGUE_ARG(THIS) );
 }
@@ -73880,7 +73880,7 @@ RogueClassFileWriter* RogueFileWriter__init__String_Logical( RogueClassFileWrite
   return (RogueClassFileWriter*)(THIS);
 }
 
-void RogueFileWriter__clean_up( RogueClassFileWriter* THIS )
+void RogueFileWriter__on_cleanup( RogueClassFileWriter* THIS )
 {
   RogueFileWriter__close( ROGUE_ARG(THIS) );
 }
@@ -75102,8 +75102,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[265] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.2.0", 7 ) ); 
-  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "October 30, 2016", 16 ) ); 
+  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.2.1", 7 ) ); 
+  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "October 31, 2016", 16 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=auto|manual|boehm]\n    Set the garbage collection mode:\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=manual - Rogue_collect_garbage() must be manually called in-between\n                    calls into the Rogue runtime.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2144 ) ); 
   Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ",...]\n", 6 ) ); 
@@ -75308,8 +75308,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[471] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "init_class", 10 ) ); 
   Rogue_literal_strings[472] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "init_object()", 13 ) ); 
   Rogue_literal_strings[473] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "init_object", 11 ) ); 
-  Rogue_literal_strings[474] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "clean_up()", 10 ) ); 
-  Rogue_literal_strings[475] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "clean_up() cannot return a value.", 33 ) ); 
+  Rogue_literal_strings[474] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "on_cleanup()", 12 ) ); 
+  Rogue_literal_strings[475] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "on_cleanup() cannot return a value.", 35 ) ); 
   Rogue_literal_strings[476] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "to_String()", 11 ) ); 
   Rogue_literal_strings[477] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "to_String", 9 ) ); 
   Rogue_literal_strings[478] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "set_", 4 ) ); 
@@ -75535,7 +75535,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[698] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "RogueInitFn Rogue_init_object_fn_table[] =", 42 ) ); 
   Rogue_literal_strings[699] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "(RogueInitFn) ", 14 ) ); 
   Rogue_literal_strings[700] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "RogueInitFn Rogue_init_fn_table[] =", 35 ) ); 
-  Rogue_literal_strings[701] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "RogueCleanUpFn Rogue_clean_up_fn_table[] =", 42 ) ); 
+  Rogue_literal_strings[701] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "RogueCleanUpFn Rogue_on_cleanup_fn_table[] =", 44 ) ); 
   Rogue_literal_strings[702] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "(RogueCleanUpFn) ", 17 ) ); 
   Rogue_literal_strings[703] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "RogueToStringFn Rogue_to_string_fn_table[] =", 44 ) ); 
   Rogue_literal_strings[704] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "(RogueToStringFn) ", 18 ) ); 
@@ -75614,7 +75614,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[777] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "  }\n  catch (RogueException* err)\n  {\n    printf( \"Uncaught exception\\n\" );\n    RogueException__display( err );\n    return false;\n  }\n}\n", 136 ) ); 
   Rogue_literal_strings[778] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "int main( int argc, const char* argv[] )\n{\n  try\n  {\n    Rogue_configure( argc, argv );\n    Rogue_launch();\n\n    while (Rogue_update_tasks()) {}\n\n    Rogue_quit();\n  }\n  catch (RogueException* err)\n  {\n    printf( \"Uncaught exception\\n\" );\n    RogueException__display( err );\n  }\n\n  return 0;\n}", 294 ) ); 
   Rogue_literal_strings[779] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "and       del       from      not       while\nas        elif      global    or        with\nassert    else      if        pass      yield\nbreak     except    import    print\nclass     exec      in        raise\ncontinue  finally   is        return\ndef       for       lambda    try", 279 ) ); 
-  Rogue_literal_strings[780] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "clean_up", 8 ) ); 
+  Rogue_literal_strings[780] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "on_cleanup", 10 ) ); 
   Rogue_literal_strings[781] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "__str__", 7 ) ); 
   Rogue_literal_strings[782] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "operator==", 10 ) ); 
   Rogue_literal_strings[783] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "_eq_", 4 ) ); 
@@ -76278,7 +76278,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1441] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "      native \"PyRogueDelegateContext ctxt((void*)(intptr_t)$_py_callable);\"\n", 76 ) ); 
   Rogue_literal_strings[1442] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "      native(\";\")\n", 18 ) ); 
   Rogue_literal_strings[1443] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "      local err : Error\n      native \"$err = (RogueClassError*)(ctxt.exception);\"\n      if (err is not null) throw err", 118 ) ); 
-  Rogue_literal_strings[1444] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "    method release\n      local _py_callable = _callable\n      _callable = 0\n      native \"PyRogue_XDECREF((void*)(intptr_t)$_py_callable);\"\n    method clean_up\n      release()\nendClass", 184 ) ); 
+  Rogue_literal_strings[1444] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "    method release\n      local _py_callable = _callable\n      _callable = 0\n      native \"PyRogue_XDECREF((void*)(intptr_t)$_py_callable);\"\n    method on_cleanup\n      release()\nendClass", 186 ) ); 
   Rogue_literal_strings[1445] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "(compiler-generated)", 20 ) ); 
   Rogue_literal_strings[1446] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "void*", 5 ) ); 
   Rogue_literal_strings[1447] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "All types resolved - generate additional types?", 47 ) ); 

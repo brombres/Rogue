@@ -577,12 +577,12 @@ class Type
         m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
       endIf
 
-      # Mark any clean_up() method as essential
+      # Mark any on_cleanup() method as essential
       if (is_class and not is_native)
-        local m = find_method( "clean_up()" )
+        local m = find_method( "on_cleanup()" )
         if (m and m.type_context is this)
           if (m.return_type)
-            throw m.t.error( "clean_up() cannot return a value." )
+            throw m.t.error( "on_cleanup() cannot return a value." )
           endIf
           m.make_essential
         endIf
