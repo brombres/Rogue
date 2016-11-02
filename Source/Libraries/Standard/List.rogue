@@ -293,12 +293,12 @@ class List<<$DataType>> : GenericList
     method quicksort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
       Quicksort<<$DataType>>.sort( this, compare_fn )
 
-    method random->$DataType
+    method random( generator=Random:Random )->$DataType
       # Returns an element at random
       local default_value : $DataType
       if (not count) return default_value
 
-      return this[ Random.next_int32(this.count) ]
+      return this[ generator.next_int32(this.count) ]
 
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, 0 )
@@ -421,13 +421,13 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method shuffle->this
+    method shuffle( generator=Random:Random )->this
       local n = count
-      forEach (i of this) swap( i, Random.next_int32(n) )
+      forEach (i of this) swap( i, generator.next_int32(n) )
       return this
 
-    method shuffled->$DataType[]
-      return cloned.shuffle
+    method shuffled( generator=Random:Random )->$DataType[]
+      return cloned.shuffle( generator )
 
     method sort( compare_fn:Function($DataType,$DataType)->(Logical) )->this
       return this.quicksort( compare_fn )
