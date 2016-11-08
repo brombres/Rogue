@@ -224,12 +224,11 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method locate( query:Function($DataType)->(Logical) )->Int32[]
-      local result = Int32[]
+    method locate( query:Function($DataType)->(Logical) )->Int32?
       forEach (value at index in this)
-        if (query(value)) result.add( index )
+        if (query(value)) return index
       endForEach
-      return result
+      return null
 
     method locate_last( value:$DataType )->Int32?
       if ($DataType isReference)
@@ -243,6 +242,12 @@ class List<<$DataType>> : GenericList
 
       forEach (i of this step -1)
         if (value == this[i]) return i
+      endForEach
+      return null
+
+    method locate_last( query:Function($DataType)->(Logical) )->Int32?
+      forEach (value at index in this step -1)
+        if (query(value)) return index
       endForEach
       return null
 

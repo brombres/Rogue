@@ -195,10 +195,16 @@ class Value
       return UndefinedValue
 
     method locate( value:Value )->Value
-      return Value[]
+      return UndefinedValue
 
-    method locate( query:Function(Value)->(Logical) )->Value[]
-      return Value[]
+    method locate( query:Function(Value)->(Logical) )->Value
+      return UndefinedValue
+
+    method locate_last( value:Value )->Value
+      return UndefinedValue
+
+    method locate_last( query:Function(Value)->(Logical) )->Value
+      return UndefinedValue
 
     method operator==( other:Value )->Logical
       return this is other
@@ -824,12 +830,23 @@ class ValueList : Value
       endForEach
       return UndefinedValue
 
-    method locate( query:Function(Value)->(Logical) )->Value[]
-      local results = Value[]
+    method locate( query:Function(Value)->(Logical) )->Value
       forEach (value at index in this)
-        if (query(value)) results.add( index )
+        if (query(value)) return index
       endForEach
-      return results
+      return UndefinedValue
+
+    method locate_last( value:Value )->Value
+      forEach (v at index in this step -1)
+        if (v == value) return index
+      endForEach
+      return UndefinedValue
+
+    method locate_last( query:Function(Value)->(Logical) )->Value
+      forEach (value at index in this step -1)
+        if (query(value)) return index
+      endForEach
+      return UndefinedValue
 
     method remove( value:Value )->Value
       return data.remove( value )
@@ -1034,12 +1051,17 @@ class ValueTable : Value
       endWhile
       return UndefinedValue
 
-    method locate( query:Function(Value)->(Logical) )->Value[]
-      local results = Value[]
+    method locate( query:Function(Value)->(Logical) )->Value
       forEach (key in keys)
-        if (query(this[key])) results.add( key )
+        if (query(this[key])) return key
       endForEach
-      return results
+      return UndefinedValue
+
+    method locate_last( value:Value )->Value
+      return locate( value )
+
+    method locate_last( query:Function(Value)->(Logical) )->Value
+      return locate( query )
 
     method remove( key:String )->Value
       return data.remove( key )

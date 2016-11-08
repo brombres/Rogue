@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.3 - November 8, 2016
+- [Value] Changed behavior of `Value.locate(query:Function(Value)->(Logical))->Value` to return the index or key of the first matching item rather than the indices of all matching items.
+- [Value] Added `Value.locate_last(Value)->Value` and `Value.locate_last(query)->Value`.
+
 ###v1.1.2 - November 2, 2016
 - [RogueC] Changed default gc mode to `auto`.  Pass `--gc=manual` to `roguec` to specify the previous default.
 - [Rogue]  Renamed `clean_up()` to `on_cleanup()`.  This method can be present in any object and, if it is, will automatically be called when the object goes out of scope.
