@@ -84,21 +84,21 @@ class Value
 
     method compressed( &maximum )->Value
       # 'maximum' only saves a bit more space in most situations
-      if (contains("id_list") and contains("indexed_data")) return this
+      if (contains("@id_list") and contains("@indexed_data")) return this
 
       local builder = ValueIDTableBuilder()
       local indexed_data = encode_indexed( builder )
 
-      if (not maximum) return @{ id_list:builder.id_list, indexed_data:indexed_data }
+      if (not maximum) return @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
 
       local fragmenter = ValueIDListFragmenter( builder.id_list )
-      return @{ id_list:fragmenter.output_index_list, id_fragment_list:fragmenter.output_fragment_list, indexed_data:indexed_data }
+      return @{ "@id_list":fragmenter.output_index_list, "@id_fragment_list":fragmenter.output_fragment_list, "@indexed_data":indexed_data }
 
     method decompressed->Value
-      if (not contains("id_list") or not contains("indexed_data")) return this
+      if (not contains("@id_list") or not contains("@indexed_data")) return this
 
       local table = ValueIDLookupTable( this )
-      return this//indexed_data.decode_indexed( table )
+      return this["@indexed_data"].decode_indexed( table )
 
     method decode_indexed( id_table:ValueIDLookupTable )->Value
       return this
@@ -1394,9 +1394,9 @@ class ValueIDLookupTable
 
   METHODS
     method init( info:Value )
-      id_list = info//id_list
+      id_list = info[ "@id_list" ]
 
-      local fragment_list = info//id_fragment_list
+      local fragment_list = info[ "@id_fragment_list" ]
       if (fragment_list)
         forEach (index of fragment_list)
           local fragment = fragment_list[ index ]
