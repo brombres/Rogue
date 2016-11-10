@@ -2598,10 +2598,10 @@ class Parser
         return list
 
       elseIf (consume(TokenType.symbol_at_brace))
-        return parse_property_table( t )
+        return parse_value_table( t )
 
       elseIf (consume(TokenType.symbol_at_bracket))
-        return parse_property_list( t )
+        return parse_value_list( t )
 
       elseIf (consume(TokenType.symbol_empty_braces))
         return CmdAccess( t, "ValueTable", CmdArgs() )
@@ -3017,7 +3017,7 @@ class Parser
 
       return CmdCreateFunction( t, parameters, return_type, with_args, statements, tokens, is_generic )
 
-    method parse_property_table( t:Token )->Cmd
+    method parse_value_table( t:Token )->Cmd
       # '{' already consumed
       local table = CmdAccess( t, "ValueTable", CmdArgs() ) : Cmd
       consume_eols
@@ -3042,9 +3042,9 @@ class Parser
           consume_eols
           t = peek
           if (consume(TokenType.symbol_open_brace))
-            value = parse_property_table( t )
+            value = parse_value_table( t )
           elseIf (consume(TokenType.symbol_open_bracket))
-            value = parse_property_list( t )
+            value = parse_value_list( t )
           else
             value = parse_expression
           endIf
@@ -3060,11 +3060,14 @@ class Parser
       must_consume( TokenType.symbol_close_brace )
       return table
 
-    method parse_property_list( t:Token )->Cmd
+    method parse_value_list( t:Token )->Cmd
       # '[' already consumed
       local list = CmdAccess( t, "ValueList", CmdArgs() ) : Cmd
       consume_eols
       if (consume(TokenType.symbol_close_bracket)) return list
+
+      local list_var = this_method.add_local( t, Program.create_unique_id, Program.get_type_reference(t, "ValueList"), list )
+      cur_statement_list.add( CmdLocalDeclaration(t,list_var) )
 
       local first = true
       while (first or consume(TokenType.symbol_comma))
@@ -3074,20 +3077,20 @@ class Parser
         local value : Cmd
         t = peek
         if (consume(TokenType.symbol_open_brace))
-          value = parse_property_table( t )
+          value = parse_value_table( t )
         elseIf (consume(TokenType.symbol_open_bracket))
-          value = parse_property_list( t )
+          value = parse_value_list( t )
         else
           value = parse_expression
         endIf
 
-        list = CmdAccess( value.t, list, "add", CmdArgs(value) )
+        cur_statement_list.add( CmdAccess(value.t, CmdAccess(t,list_var.name), "add", CmdArgs(value)) )
 
         consume_eols
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
-      return list
+      return CmdAccess( t, list_var.name )
 
     method parse_typed_literal_list( t:Token, list_type_name:String )->Cmd
       local list = CmdTypedLiteralList( t, list_type_name )

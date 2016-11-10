@@ -82,6 +82,16 @@ class Value
     method count( query:Function(Value)->(Logical) )->Int32
       return 0
 
+    method encode_indexed->Value
+      if (contains("id_list") and contains("indexed_data")) return this
+
+      local result = @{ id_list:[] }
+      result//indexed_data = encode_indexed( @{}, result//id_list )
+      return result
+
+    method encode_indexed( id_table:Value, id_list:Value )->Value
+      return this
+
     method ensure_list( key:String )->ValueList
       # When called on a ValueTable, ensures that the table contains a list
       # with the given key, creating it if necessary, and returns that list.
@@ -622,6 +632,21 @@ class StringValue( value:String ) : Value
     method count->Int32
       return value.count
 
+    method encode_indexed( id_table:Value, id_list:Value )->Value
+      local encoded = id_table[ value ]
+      if (encoded) return encoded
+
+      local encoded_value = "@" + id_list.count
+      if (encoded_value.count >= value.count and not value.begins_with('@'))
+        # Not gonna be smaller, leave as is
+        return this
+      else
+        id_list.add( value )
+        encoded = encoded_value
+        id_table[ value ] = encoded_value
+        return encoded_value
+      endIf
+
     method get( index:Int32 )->Value
       if (index < 0 or index >= value.count) return UndefinedValue
       return Value( ""+value[index] )
@@ -734,6 +759,11 @@ class ValueList : Value
       data = Value[]( initial_capacity )
 
     method init( data )
+
+    method encode_indexed( id_table:Value, id_list:Value )->Value
+      local result = ValueList( Value[](count) )
+      result.add( (forEach in data).encode_indexed(id_table,id_list) )
+      return result
 
     method cloned->ValueList
       local result = ValueList( count )
@@ -980,6 +1010,19 @@ class ValueTable : Value
       forEach (v in data.value_reader)
         if (query(v)) ++result
       endForEach
+      return result
+
+    method encode_indexed( id_table:Value, id_list:Value )->Value
+      local result = @{}
+
+      local cur = data.first_entry
+      while (cur)
+        local key = Value( cur.key ).encode_indexed( id_table, id_list )
+        local value = cur.value.encode_indexed( id_table, id_list )
+        result[ key ] = value
+        cur = cur.next_entry
+      endWhile
+
       return result
 
     method ensure_list( key:String )->ValueList
