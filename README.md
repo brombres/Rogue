@@ -28,6 +28,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.3 - November 9, 2016
 - [String] Added optional `max_count` argument to `String.leftmost_common_substring_count(other,[max_count=null:Int32?])->Int32`.
+- [Value] Added `Value.compressed(&maximum)->Value`.  Standard compression collects an ID table and replaces all strings with indices into the ID table.  `&maximum` compression fragments the ID table to factor out common substrings.  `&maximum` results in only a small additional savings in most cases and is optional so that developers can choose to have their compressed values be more human-readable and simpler to decode when `&maximum` is not chosen.
+- [Value] Added `Value.decompressed()->Value` as a corollary to `compressed()`.  `decompressed()` may be safely called on an uncompressed value as long as it is not a table that contains elements `id_list` and `indexed_data`.
 - [Value] Changed behavior of `Value.locate(query:Function(Value)->(Logical))->Value` to return the index or key of the first matching item rather than the indices of all matching items.
 - [Value] Added `Value.locate_last(Value)->Value` and `Value.locate_last(query)->Value`.
 - [RogueC] Literal value lists (`@[ ... ]`) now use a different construction mechanism to prevent a "too many nested elements" error in C++ when dealing with large lists.

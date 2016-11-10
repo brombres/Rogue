@@ -82,12 +82,26 @@ class Value
     method count( query:Function(Value)->(Logical) )->Int32
       return 0
 
-    method encode_indexed->Value
+    method compressed( &maximum )->Value
+      # 'maximum' only saves a bit more space in most situations
       if (contains("id_list") and contains("indexed_data")) return this
 
       local builder = ValueIDTableBuilder()
       local indexed_data = encode_indexed( builder )
-      return @{ id_list:builder.id_list, indexed_data:indexed_data }
+
+      if (not maximum) return @{ id_list:builder.id_list, indexed_data:indexed_data }
+
+      local fragmenter = ValueIDListFragmenter( builder.id_list )
+      return @{ id_list:fragmenter.output_index_list, id_fragment_list:fragmenter.output_fragment_list, indexed_data:indexed_data }
+
+    method decompressed->Value
+      if (not contains("id_list") or not contains("indexed_data")) return this
+
+      local table = ValueIDLookupTable( this )
+      return this//indexed_data.decode_indexed( table )
+
+    method decode_indexed( id_table:ValueIDLookupTable )->Value
+      return this
 
     method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       return this
@@ -632,6 +646,9 @@ class StringValue( value:String ) : Value
     method count->Int32
       return value.count
 
+    method decode_indexed( id_table:ValueIDLookupTable )->Value
+      return id_table[ value ]
+
     method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       return id_table_builder[ this ]
 
@@ -747,6 +764,11 @@ class ValueList : Value
       data = Value[]( initial_capacity )
 
     method init( data )
+
+    method decode_indexed( id_table:ValueIDLookupTable )->Value
+      local result = ValueList( Value[](count) )
+      result.add( (forEach in data).decode_indexed(id_table) )
+      return result
 
     method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       local result = ValueList( Value[](count) )
@@ -1000,6 +1022,19 @@ class ValueTable : Value
       endForEach
       return result
 
+    method decode_indexed( id_table:ValueIDLookupTable )->Value
+      local result = @{}
+
+      local cur = data.first_entry
+      while (cur)
+        local key = Value( cur.key ).decode_indexed( id_table )
+        local value = cur.value.decode_indexed( id_table )
+        result[ key ] = value
+        cur = cur.next_entry
+      endWhile
+
+      return result
+
     method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       local result = @{}
 
@@ -1212,7 +1247,6 @@ class ValueIDTableBuilder
   PROPERTIES
     id_table = @{}
     id_list  = @[]
-    #substring_lookup = @{}
 
   METHODS
     method get( value:Value )->Value
@@ -1230,61 +1264,165 @@ class ValueIDTableBuilder
 
       id_list.add( value )
 
-      #{
-      local base_string_index = find_base_string_index( value )
-      if (base_string_index)
-        local base_string = id_list[ base_string_index.value ]->String
-        #id_list.add( @[ base_string_index.value, value->String.rightmost(-base_string.count) ] )
-        id_list.add( @[ base_string_index.value, "$ $::$->$" (base_string_index,base_string,value,value->String.rightmost(-base_string.count)) ] )
-      else
-        id_list.add( value )
-      endIf
-      }#
-
       return encoded_value
 
+endClass
 
-      #{
-    method find_base_string_index( text:String )->Int32?
-      if (text.count <= 8) return null
+class ValueIDListFragmenter
+  PROPERTIES
+    fragmentation_threshold : Int32
+    index_list  = ValueIDFragment[]
+    list        = ValueIDFragment[]
+    fragments   = ValueIDFragment[]
+    lookup      = Table<<String,ValueIDFragment>>()
 
-      local cur = text
+  METHODS
+    method init( original_list:Value, fragmentation_threshold=8 )
+      forEach (value in original_list)
+        index_list.add( get_entry(value->String) )
+      endForEach
 
-      local power2_rounded_down = 1
-      while (power2_rounded_down*2 < cur.count) power2_rounded_down *= 2
-      cur = cur.leftmost( power2_rounded_down )
+      while (refine_list) noAction
 
-      contingent
-        while (cur.count >= 8)
-          sufficient (substring_lookup.contains(cur))
-          substring_lookup[ cur ] = @[ text ]
-          cur = cur.leftmost( cur.count / 2 )
-        endWhile
-        return null
+      (forEach in index_list).generate_fragment_list
 
-      satisfied
-        local candidates = substring_lookup[ cur ]
-        local best_match : String
-        local best_match_len = 0
-        forEach (candidate in candidates)
-          local candidate_string = candidate->String
-          local match_len = candidate_string.leftmost_common_substring_count( text )
-          if (not best_match or match_len > best_match_len)
-            best_match = candidate_string
-            best_match_len = match_len
+    method output_index_list->@[]
+      local result = @[]
+      result.add( (forEach in index_list).index )
+      return result
+
+    method output_fragment_list->@[]
+      local result = @[]
+      forEach (f in fragments)
+        if (f.left_fragment) result.add( @[ f.left_fragment.index, f.right_fragment.index ] )
+        else                 result.add( f.value )
+      endForEach
+      return result
+
+    method refine_list->Logical
+      # Remove any compound entries
+      list.remove( (entry) => entry.left_fragment? )
+
+      # Sort "leaf" entries
+      list.sort( (a,b) => a.value < b.value )
+
+      local made_changes = false
+
+      local limit = list.count
+      local index = 1
+      while (index < limit)
+        made_changes |= process( list[index-1], list[index] )
+        ++index
+      endWhile
+
+      return made_changes
+
+    method get_entry( value:String )->ValueIDFragment
+      local existing = lookup[ value ]
+      if (existing) return existing
+
+      local entry = ValueIDFragment( this, value )
+      list.add( entry )
+      return entry
+
+    method process( a:ValueIDFragment, b:ValueIDFragment )->Logical
+      if (a.left_fragment or b.left_fragment) return false
+
+      local len = a.value.leftmost_common_substring_count( b.value )
+      if (len <= fragmentation_threshold) return false
+
+      local common = get_entry( a.value.leftmost(len) )
+
+      if (a.value.count > len)
+        a.left_fragment  = common
+        a.right_fragment = get_entry( a.value.rightmost(-len) )
+      endIf
+
+      if (b.value.count > len)
+        b.left_fragment  = common
+        b.right_fragment = get_entry( b.value.rightmost(-len) )
+      endIf
+
+      return true
+endClass
+
+
+class ValueIDFragment
+  PROPERTIES
+    fragmenter     : ValueIDListFragmenter
+    value          : String
+    left_fragment  : ValueIDFragment
+    right_fragment : ValueIDFragment
+
+    index          : Int32
+    is_written     : Logical
+
+  METHODS
+    method init( fragmenter, value )
+      fragmenter.lookup[ value ] = this
+
+    method generate_fragment_list
+      if (is_written)  return
+      is_written = true
+
+      if (left_fragment)  left_fragment.generate_fragment_list
+      if (right_fragment) right_fragment.generate_fragment_list
+
+      index = fragmenter.fragments.count
+      fragmenter.fragments.add( this )
+
+    method to_debug_string->String
+      if (left_fragment)
+        return "$ [$ $]" (this->String,left_fragment.to_debug_string,right_fragment.to_debug_string)
+      else
+        return value
+      endIf
+
+    method to->String
+      if (left_fragment)
+        return left_fragment->String + right_fragment->String
+      else
+        return value
+      endIf
+
+endClass
+
+
+class ValueIDLookupTable
+  PROPERTIES
+    id_list   = @[]
+
+  METHODS
+    method init( info:Value )
+      id_list = info//id_list
+
+      local fragment_list = info//id_fragment_list
+      if (fragment_list)
+        forEach (index of fragment_list)
+          local fragment = fragment_list[ index ]
+          if (fragment.is_list)
+            fragment_list[ index ] = fragment_list[fragment[0]->Int32] + fragment_list[fragment[1]->Int32]
           endIf
         endForEach
 
-        local encoded_value = id_table[ best_match ]
-        if (not encoded_value)
-          encoded_value = "@" + id_list.count
-          id_table[ best_match ] = encoded_value
-          id_list.add( best_match )
-        endIf
-        return encoded_value->String.rightmost(-1)->Int32
+        forEach (value at index in id_list)
+          id_list[ index ] = fragment_list[ value->Int32 ]
+        endForEach
+      endIf
 
-      endContingent
-      }#
+    method get( index_string:String )->Value
+      if (not index_string.begins_with('@')) return index_string
+
+      local index = 0
+      forEach (ch at i in index_string)
+        if (i > 0)
+          index = index * 10 + (ch - '0')
+        endIf
+      endForEach
+
+      if (index < 0 or index >= id_list.count) return "(ERROR)"
+
+      return id_list[ index ]
 
 endClass
 
