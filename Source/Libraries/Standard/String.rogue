@@ -278,9 +278,10 @@ class String
       if (n >= 0) return from( 0, n-1 )
       else        return from( 0, (count + n) - 1 )
 
-    method leftmost_common_substring_count( other:String )->Int32
+    method leftmost_common_substring_count( other:String, max_count=null:Int32? )->Int32
       if (other is null) return false
       local max = count.or_smaller(other.count)
+      if (max_count.exists) max = max.or_smaller( max_count.value )
       forEach (i in 0..<max)
         if (this[i] != other[i]) return i
       endForEach

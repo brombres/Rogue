@@ -26,7 +26,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.3 - November 8, 2016
+###v1.1.3 - November 9, 2016
+- [String] Added optional `max_count` argument to `String.leftmost_common_substring_count(other,[max_count=null:Int32?])->Int32`.
 - [Value] Changed behavior of `Value.locate(query:Function(Value)->(Logical))->Value` to return the index or key of the first matching item rather than the indices of all matching items.
 - [Value] Added `Value.locate_last(Value)->Value` and `Value.locate_last(query)->Value`.
 - [RogueC] Literal value lists (`@[ ... ]`) now use a different construction mechanism to prevent a "too many nested elements" error in C++ when dealing with large lists.

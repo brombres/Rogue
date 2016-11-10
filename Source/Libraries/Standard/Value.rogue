@@ -85,11 +85,11 @@ class Value
     method encode_indexed->Value
       if (contains("id_list") and contains("indexed_data")) return this
 
-      local result = @{ id_list:[] }
-      result//indexed_data = encode_indexed( @{}, result//id_list )
-      return result
+      local builder = ValueIDTableBuilder()
+      local indexed_data = encode_indexed( builder )
+      return @{ id_list:builder.id_list, indexed_data:indexed_data }
 
-    method encode_indexed( id_table:Value, id_list:Value )->Value
+    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       return this
 
     method ensure_list( key:String )->ValueList
@@ -632,20 +632,8 @@ class StringValue( value:String ) : Value
     method count->Int32
       return value.count
 
-    method encode_indexed( id_table:Value, id_list:Value )->Value
-      local encoded = id_table[ value ]
-      if (encoded) return encoded
-
-      local encoded_value = "@" + id_list.count
-      if (encoded_value.count >= value.count and not value.begins_with('@'))
-        # Not gonna be smaller, leave as is
-        return this
-      else
-        id_list.add( value )
-        encoded = encoded_value
-        id_table[ value ] = encoded_value
-        return encoded_value
-      endIf
+    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
+      return id_table_builder[ this ]
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= value.count) return UndefinedValue
@@ -760,9 +748,9 @@ class ValueList : Value
 
     method init( data )
 
-    method encode_indexed( id_table:Value, id_list:Value )->Value
+    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       local result = ValueList( Value[](count) )
-      result.add( (forEach in data).encode_indexed(id_table,id_list) )
+      result.add( (forEach in data).encode_indexed(id_table_builder) )
       return result
 
     method cloned->ValueList
@@ -1012,13 +1000,13 @@ class ValueTable : Value
       endForEach
       return result
 
-    method encode_indexed( id_table:Value, id_list:Value )->Value
+    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
       local result = @{}
 
       local cur = data.first_entry
       while (cur)
-        local key = Value( cur.key ).encode_indexed( id_table, id_list )
-        local value = cur.value.encode_indexed( id_table, id_list )
+        local key = Value( cur.key ).encode_indexed( id_table_builder )
+        local value = cur.value.encode_indexed( id_table_builder )
         result[ key ] = value
         cur = cur.next_entry
       endWhile
@@ -1219,3 +1207,84 @@ $endIf
       method parse( json:String )->ValueTable
         return JSON.parse_table( json )
 endClass
+
+class ValueIDTableBuilder
+  PROPERTIES
+    id_table = @{}
+    id_list  = @[]
+    #substring_lookup = @{}
+
+  METHODS
+    method get( value:Value )->Value
+      local text = value->String
+      local encoded_value = id_table[ text ]
+      if (encoded_value) return encoded_value
+
+      if (id_list.count.digit_count + 1 >= text.count and not text.begins_with('@'))
+        # Encoded ID would be equal to or larger than the original; just leave it as-is.
+        return value
+      endIf
+
+      encoded_value = "@" + id_list.count
+      id_table[ text ] = encoded_value
+
+      id_list.add( value )
+
+      #{
+      local base_string_index = find_base_string_index( value )
+      if (base_string_index)
+        local base_string = id_list[ base_string_index.value ]->String
+        #id_list.add( @[ base_string_index.value, value->String.rightmost(-base_string.count) ] )
+        id_list.add( @[ base_string_index.value, "$ $::$->$" (base_string_index,base_string,value,value->String.rightmost(-base_string.count)) ] )
+      else
+        id_list.add( value )
+      endIf
+      }#
+
+      return encoded_value
+
+
+      #{
+    method find_base_string_index( text:String )->Int32?
+      if (text.count <= 8) return null
+
+      local cur = text
+
+      local power2_rounded_down = 1
+      while (power2_rounded_down*2 < cur.count) power2_rounded_down *= 2
+      cur = cur.leftmost( power2_rounded_down )
+
+      contingent
+        while (cur.count >= 8)
+          sufficient (substring_lookup.contains(cur))
+          substring_lookup[ cur ] = @[ text ]
+          cur = cur.leftmost( cur.count / 2 )
+        endWhile
+        return null
+
+      satisfied
+        local candidates = substring_lookup[ cur ]
+        local best_match : String
+        local best_match_len = 0
+        forEach (candidate in candidates)
+          local candidate_string = candidate->String
+          local match_len = candidate_string.leftmost_common_substring_count( text )
+          if (not best_match or match_len > best_match_len)
+            best_match = candidate_string
+            best_match_len = match_len
+          endIf
+        endForEach
+
+        local encoded_value = id_table[ best_match ]
+        if (not encoded_value)
+          encoded_value = "@" + id_list.count
+          id_table[ best_match ] = encoded_value
+          id_list.add( best_match )
+        endIf
+        return encoded_value->String.rightmost(-1)->Int32
+
+      endContingent
+      }#
+
+endClass
+
