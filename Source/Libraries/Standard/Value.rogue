@@ -82,17 +82,22 @@ class Value
     method count( query:Function(Value)->(Logical) )->Int32
       return 0
 
-    method compressed( &maximum )->Value
-      # 'maximum' only saves a bit more space in most situations
+    method compressed->Value
+      # Returns uncompressed if the compressed value would be smaller.
+
       if (contains("@id_list") and contains("@indexed_data")) return this
 
       local builder = ValueIDTableBuilder()
       local indexed_data = encode_indexed( builder )
 
-      if (not maximum) return @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
+      local result = @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
 
-      local fragmenter = ValueIDListFragmenter( builder.id_list )
-      return @{ "@id_list":fragmenter.output_index_list, "@id_fragment_list":fragmenter.output_fragment_list, "@indexed_data":indexed_data }
+      if (result.to_json.count >= this.to_json.count)
+        # Compressed is actually worse
+        return this
+      else
+        return result
+      endIf
 
     method decompressed->Value
       if (not contains("@id_list") or not contains("@indexed_data")) return this
@@ -1395,20 +1400,6 @@ class ValueIDLookupTable
   METHODS
     method init( info:Value )
       id_list = info[ "@id_list" ]
-
-      local fragment_list = info[ "@id_fragment_list" ]
-      if (fragment_list)
-        forEach (index of fragment_list)
-          local fragment = fragment_list[ index ]
-          if (fragment.is_list)
-            fragment_list[ index ] = fragment_list[fragment[0]->Int32] + fragment_list[fragment[1]->Int32]
-          endIf
-        endForEach
-
-        forEach (value at index in id_list)
-          id_list[ index ] = fragment_list[ value->Int32 ]
-        endForEach
-      endIf
 
     method get( index_string:String )->Value
       if (not index_string.begins_with('@')) return index_string
