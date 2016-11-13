@@ -1,3 +1,4 @@
+Publish.mk
 *.swp
 .DS_Store
 Source/Compiler/Bard/RogueC.bc

@@ -8,8 +8,6 @@ BINDIR = /usr/local/bin
 
 all: roguec
 
--include Local.mk
-
 remake: libraries touch_roguec roguec
 
 debug: libraries
@@ -119,20 +117,6 @@ clean:
 	rm -f ./a.out
 	rm -f ./hello
 
-publish:
-	git checkout master
-	git pull
-	git merge develop
-	git push
-	git checkout develop
-	git push
-	@[ -f Local.mk ] && make -f Local.mk local_publish || true
-
 docs:
 	cd Source/DocGen && make
 
-# Local.mk
-#publish:
-	#cd Wiki && git pull
-	#cd Source/DocGen && make
-	#cd Wiki && git commit -am "Updated documentation" && git push
