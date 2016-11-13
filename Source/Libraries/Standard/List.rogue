@@ -469,7 +469,10 @@ class List<<$DataType>> : GenericList
 
     method to->Value
       local result = @[]
-      forEach (item in this) result.add( Value(item) )
+      forEach (item in this)
+        if (item) result.add( item->Value )
+        else      result.add( NullValue )
+      endForEach
       return result
 
     method to->ValueList

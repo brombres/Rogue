@@ -1803,17 +1803,17 @@ typedef RogueClassSystem*(*ROGUEM465)(RogueClassSystem*);
 typedef RogueString*(*ROGUEM466)(RogueClassSystem*);
 typedef RogueWeakReference*(*ROGUEM467)(RogueWeakReference*);
 typedef RogueString*(*ROGUEM468)(RogueWeakReference*);
-typedef RogueClassReal64Value*(*ROGUEM469)(RogueClassReal64Value*);
-typedef RogueString*(*ROGUEM470)(RogueClassReal64Value*);
-typedef RogueLogical(*ROGUEM471)(RogueClassReal64Value*);
-typedef RogueLogical(*ROGUEM472)(RogueClassReal64Value*,RogueClassValue*);
-typedef RogueInt32(*ROGUEM473)(RogueClassReal64Value*);
-typedef RogueReal64(*ROGUEM474)(RogueClassReal64Value*);
-typedef RogueClassNullValue*(*ROGUEM475)(RogueClassNullValue*);
-typedef RogueString*(*ROGUEM476)(RogueClassNullValue*);
-typedef RogueLogical(*ROGUEM477)(RogueClassNullValue*);
-typedef RogueLogical(*ROGUEM478)(RogueClassNullValue*,RogueClassValue*);
-typedef RogueInt32(*ROGUEM479)(RogueClassNullValue*);
+typedef RogueClassNullValue*(*ROGUEM469)(RogueClassNullValue*);
+typedef RogueString*(*ROGUEM470)(RogueClassNullValue*);
+typedef RogueLogical(*ROGUEM471)(RogueClassNullValue*);
+typedef RogueLogical(*ROGUEM472)(RogueClassNullValue*,RogueClassValue*);
+typedef RogueInt32(*ROGUEM473)(RogueClassNullValue*);
+typedef RogueClassReal64Value*(*ROGUEM474)(RogueClassReal64Value*);
+typedef RogueString*(*ROGUEM475)(RogueClassReal64Value*);
+typedef RogueLogical(*ROGUEM476)(RogueClassReal64Value*);
+typedef RogueLogical(*ROGUEM477)(RogueClassReal64Value*,RogueClassValue*);
+typedef RogueInt32(*ROGUEM478)(RogueClassReal64Value*);
+typedef RogueReal64(*ROGUEM479)(RogueClassReal64Value*);
 typedef RogueClassObjectValue*(*ROGUEM480)(RogueClassObjectValue*);
 typedef RogueString*(*ROGUEM481)(RogueClassObjectValue*);
 typedef RogueClassStringValue*(*ROGUEM482)(RogueClassStringValue*);
@@ -7300,8 +7300,8 @@ RogueInitFn Rogue_init_object_fn_table[] =
   (RogueInitFn) RogueSystem__init_object,
   (RogueInitFn) RogueWeakReference__init_object,
   0,
-  (RogueInitFn) RogueReal64Value__init_object,
   (RogueInitFn) RogueNullValue__init_object,
+  (RogueInitFn) RogueReal64Value__init_object,
   (RogueInitFn) RogueObjectValue__init_object,
   (RogueInitFn) RogueStringValue__init_object,
   (RogueInitFn) RogueFile__init_object,
@@ -8686,8 +8686,8 @@ RogueToStringFn Rogue_to_string_fn_table[] =
   (RogueToStringFn) RogueObject__to_String,
   (RogueToStringFn) RogueObject__to_String,
   0,
-  (RogueToStringFn) RogueReal64Value__to_String,
   (RogueToStringFn) RogueNullValue__to_String,
+  (RogueToStringFn) RogueReal64Value__to_String,
   (RogueToStringFn) RogueObjectValue__to_String,
   (RogueToStringFn) RogueStringValue__to_String,
   (RogueToStringFn) RogueFile__to_String,
@@ -14263,7 +14263,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   (void*) (ROGUEM468) RogueWeakReference__type_name,
   0, // Writer<<Byte>>
-  (void*) (ROGUEM469) RogueReal64Value__init_object, // Real64Value
+  (void*) (ROGUEM469) RogueNullValue__init_object, // NullValue
   (void*) (ROGUEM1) RogueObject__init,
   0,
   (void*) (ROGUEM2) RogueObject__hash_code,
@@ -14274,12 +14274,124 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM470) RogueReal64Value__to_String,
+  (void*) (ROGUEM470) RogueNullValue__to_String,
   0,
   0,
   0,
   0,
-  (void*) (ROGUEM470) RogueReal64Value__type_name,
+  (void*) (ROGUEM470) RogueNullValue__type_name,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM32) RogueValue__is_logical,
+  (void*) (ROGUEM471) RogueNullValue__is_null,
+  (void*) (ROGUEM471) RogueNullValue__is_non_null,
+  (void*) (ROGUEM32) RogueValue__is_number,
+  0,
+  0,
+  (void*) (ROGUEM32) RogueValue__is_string,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM472) RogueNullValue__operatorEQUALSEQUALS__Value,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM473) RogueNullValue__to_Int32,
+  (void*) (ROGUEM32) RogueValue__to_Logical,
+  (void*) (ROGUEM35) RogueValue__to_Real64,
+  (void*) (ROGUEM474) RogueReal64Value__init_object, // Real64Value
+  (void*) (ROGUEM1) RogueObject__init,
+  0,
+  (void*) (ROGUEM2) RogueObject__hash_code,
+  0,
+  0,
+  (void*) (ROGUEM30) RogueValue__operatorEQUALSEQUALS__Object,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM475) RogueReal64Value__to_String,
+  0,
+  0,
+  0,
+  0,
+  (void*) (ROGUEM475) RogueReal64Value__type_name,
   0,
   0,
   0,
@@ -14311,7 +14423,7 @@ void* Rogue_dynamic_method_table[] =
   (void*) (ROGUEM32) RogueValue__is_logical,
   (void*) (ROGUEM32) RogueValue__is_null,
   (void*) (ROGUEM32) RogueValue__is_non_null,
-  (void*) (ROGUEM471) RogueReal64Value__is_number,
+  (void*) (ROGUEM476) RogueReal64Value__is_number,
   0,
   0,
   (void*) (ROGUEM32) RogueValue__is_string,
@@ -14324,7 +14436,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM472) RogueReal64Value__operatorEQUALSEQUALS__Value,
+  (void*) (ROGUEM477) RogueReal64Value__operatorEQUALSEQUALS__Value,
   0,
   0,
   0,
@@ -14372,121 +14484,9 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM473) RogueReal64Value__to_Int32,
+  (void*) (ROGUEM478) RogueReal64Value__to_Int32,
   (void*) (ROGUEM32) RogueValue__to_Logical,
-  (void*) (ROGUEM474) RogueReal64Value__to_Real64,
-  (void*) (ROGUEM475) RogueNullValue__init_object, // NullValue
-  (void*) (ROGUEM1) RogueObject__init,
-  0,
-  (void*) (ROGUEM2) RogueObject__hash_code,
-  0,
-  0,
-  (void*) (ROGUEM30) RogueValue__operatorEQUALSEQUALS__Object,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM476) RogueNullValue__to_String,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM476) RogueNullValue__type_name,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM32) RogueValue__is_logical,
-  (void*) (ROGUEM477) RogueNullValue__is_null,
-  (void*) (ROGUEM477) RogueNullValue__is_non_null,
-  (void*) (ROGUEM32) RogueValue__is_number,
-  0,
-  0,
-  (void*) (ROGUEM32) RogueValue__is_string,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM478) RogueNullValue__operatorEQUALSEQUALS__Value,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  (void*) (ROGUEM479) RogueNullValue__to_Int32,
-  (void*) (ROGUEM32) RogueValue__to_Logical,
-  (void*) (ROGUEM35) RogueValue__to_Real64,
+  (void*) (ROGUEM479) RogueReal64Value__to_Real64,
   (void*) (ROGUEM480) RogueObjectValue__init_object, // ObjectValue
   (void*) (ROGUEM1) RogueObject__init,
   0,
@@ -14774,8 +14774,8 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM32) RogueValue__is_logical,
-  (void*) (ROGUEM477) RogueNullValue__is_null,
-  (void*) (ROGUEM477) RogueNullValue__is_non_null,
+  (void*) (ROGUEM471) RogueNullValue__is_null,
+  (void*) (ROGUEM471) RogueNullValue__is_non_null,
   (void*) (ROGUEM32) RogueValue__is_number,
   0,
   0,
@@ -14789,7 +14789,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM478) RogueNullValue__operatorEQUALSEQUALS__Value,
+  (void*) (ROGUEM472) RogueNullValue__operatorEQUALSEQUALS__Value,
   0,
   0,
   0,
@@ -14837,7 +14837,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
-  (void*) (ROGUEM479) RogueNullValue__to_Int32,
+  (void*) (ROGUEM473) RogueNullValue__to_Int32,
   (void*) (ROGUEM32) RogueValue__to_Logical,
   (void*) (ROGUEM35) RogueValue__to_Real64,
   (void*) (ROGUEM492) RogueFunction_1182__init_object, // Function_1182
@@ -24403,8 +24403,8 @@ int Rogue_type_info_table[6488] =
   1631,1632,1633,1634,1635,10,10,10,247,248,248,248,249,0,4615,2,9,0,0,0,0,4632,1,0,0,
   6,1636,315,1637,1638,1639,1640,74,11,248,248,248,10,0,4649,1,0,0,0,0,4666,1,0,3,2067,
   2068,2069,18,16,453,0,0,4683,1,0,0,2,2070,2071,251,22,0,4700,0,0,1,1641,10,0,4701,
-  2,24,0,0,1,315,20,0,4813,2,24,0,0,0,0,4925,2,24,0,0,1,315,0,0,5037,
-  2,24,0,1,2072,256,1,315,16,0,5149,1,0,0,1,1682,16,0,5166,3,254,24,0,0,0,
+  2,24,0,0,0,0,4813,2,24,0,0,1,315,20,0,4925,2,24,0,0,1,315,0,0,5037,
+  2,24,0,1,2072,256,1,315,16,0,5149,1,0,0,1,1682,16,0,5166,3,253,24,0,0,0,
   0,5278,2,13,0,0,1,2073,45,0,5296,2,48,0,0,1,1647,450,0,5318,2,91,0,0,2,
   1878,2074,67,16,0,5372,2,0,44,0,5,1641,2075,2076,2046,2077,10,42,16,4,23,0,5389,2,151,
   0,0,0,0,5407,2,67,0,0,5,567,1682,1697,1698,2078,68,16,10,10,16,0,5438,3,226,91,
@@ -26449,8 +26449,8 @@ int Rogue_object_size_table[458] =
   (int) sizeof(RogueClassSystem),
   (int) sizeof(RogueWeakReference),
   (int) sizeof(RogueClassWriter_Byte_),
-  (int) sizeof(RogueClassReal64Value),
   (int) sizeof(RogueClassNullValue),
+  (int) sizeof(RogueClassReal64Value),
   (int) sizeof(RogueClassObjectValue),
   (int) sizeof(RogueClassStringValue),
   (int) sizeof(RogueClassFile),
@@ -26911,8 +26911,8 @@ int Rogue_attributes_table[458] =
   8192,
   8192,
   1,
-  0,
   1024,
+  0,
   0,
   0,
   0,
@@ -27327,8 +27327,8 @@ RogueType* RogueTypeFunction_TableEntry_Type_Logical__TableEntry_Type_Logical__R
 RogueType* RogueTypeSystem;
 RogueType* RogueTypeWeakReference;
 RogueType* RogueTypeWriter_Byte_;
-RogueType* RogueTypeReal64Value;
 RogueType* RogueTypeNullValue;
+RogueType* RogueTypeReal64Value;
 RogueType* RogueTypeObjectValue;
 RogueType* RogueTypeStringValue;
 RogueType* RogueTypeFile;
@@ -60110,6 +60110,42 @@ void RogueWeakReference__on_cleanup( RogueWeakReference* THIS )
 
 }
 
+RogueClassNullValue* RogueNullValue__init_object( RogueClassNullValue* THIS )
+{
+  RogueValue__init_object( ROGUE_ARG(((RogueClassValue*)THIS)) );
+  return (RogueClassNullValue*)(THIS);
+}
+
+RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS )
+{
+  return (RogueString*)(Rogue_literal_strings[1]);
+}
+
+RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS )
+{
+  return (RogueString*)(Rogue_literal_strings[1174]);
+}
+
+RogueLogical RogueNullValue__is_null( RogueClassNullValue* THIS )
+{
+  return (RogueLogical)(true);
+}
+
+RogueLogical RogueNullValue__is_non_null( RogueClassNullValue* THIS )
+{
+  return (RogueLogical)(false);
+}
+
+RogueLogical RogueNullValue__operatorEQUALSEQUALS__Value( RogueClassNullValue* THIS, RogueClassValue* other_0 )
+{
+  return (RogueLogical)((((void*)other_0) == ((void*)NULL) || (Rogue_call_ROGUEM32( 46, other_0 ))));
+}
+
+RogueInt32 RogueNullValue__to_Int32( RogueClassNullValue* THIS )
+{
+  return (RogueInt32)(0);
+}
+
 RogueClassReal64Value* RogueReal64Value__init_object( RogueClassReal64Value* THIS )
 {
   RogueValue__init_object( ROGUE_ARG(((RogueClassValue*)THIS)) );
@@ -60123,7 +60159,7 @@ RogueString* RogueReal64Value__to_String( RogueClassReal64Value* THIS )
 
 RogueString* RogueReal64Value__type_name( RogueClassReal64Value* THIS )
 {
-  return (RogueString*)(Rogue_literal_strings[1174]);
+  return (RogueString*)(Rogue_literal_strings[1175]);
 }
 
 RogueLogical RogueReal64Value__is_number( RogueClassReal64Value* THIS )
@@ -60157,42 +60193,6 @@ RogueClassReal64Value* RogueReal64Value__init__Real64( RogueClassReal64Value* TH
 {
   THIS->value = _auto_931_0;
   return (RogueClassReal64Value*)(THIS);
-}
-
-RogueClassNullValue* RogueNullValue__init_object( RogueClassNullValue* THIS )
-{
-  RogueValue__init_object( ROGUE_ARG(((RogueClassValue*)THIS)) );
-  return (RogueClassNullValue*)(THIS);
-}
-
-RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS )
-{
-  return (RogueString*)(Rogue_literal_strings[1]);
-}
-
-RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS )
-{
-  return (RogueString*)(Rogue_literal_strings[1175]);
-}
-
-RogueLogical RogueNullValue__is_null( RogueClassNullValue* THIS )
-{
-  return (RogueLogical)(true);
-}
-
-RogueLogical RogueNullValue__is_non_null( RogueClassNullValue* THIS )
-{
-  return (RogueLogical)(false);
-}
-
-RogueLogical RogueNullValue__operatorEQUALSEQUALS__Value( RogueClassNullValue* THIS, RogueClassValue* other_0 )
-{
-  return (RogueLogical)((((void*)other_0) == ((void*)NULL) || (Rogue_call_ROGUEM32( 46, other_0 ))));
-}
-
-RogueInt32 RogueNullValue__to_Int32( RogueClassNullValue* THIS )
-{
-  return (RogueInt32)(0);
 }
 
 RogueClassObjectValue* RogueObjectValue__init_object( RogueClassObjectValue* THIS )
@@ -74681,8 +74681,8 @@ void Rogue_configure( int argc, const char* argv[] )
   RogueTypeSystem = &Rogue_types[ 250 ];
   RogueTypeWeakReference = &Rogue_types[ 251 ];
   RogueTypeWriter_Byte_ = &Rogue_types[ 252 ];
-  RogueTypeReal64Value = &Rogue_types[ 253 ];
-  RogueTypeNullValue = &Rogue_types[ 254 ];
+  RogueTypeNullValue = &Rogue_types[ 253 ];
+  RogueTypeReal64Value = &Rogue_types[ 254 ];
   RogueTypeObjectValue = &Rogue_types[ 255 ];
   RogueTypeStringValue = &Rogue_types[ 256 ];
   RogueTypeFile = &Rogue_types[ 257 ];
@@ -75146,8 +75146,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[265] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[266] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[267] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.3.6", 7 ) ); 
-  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "November 12, 2016", 17 ) ); 
+  Rogue_literal_strings[268] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.3.7", 7 ) ); 
+  Rogue_literal_strings[269] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "November 13, 2016", 17 ) ); 
   Rogue_literal_strings[270] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[271] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --main\n    Include a main() function in the output file.\n\n  --compile\n    Use command line directives to compile the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=auto|manual|boehm]\n    Set the garbage collection mode:\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=manual - Rogue_collect_garbage() must be manually called in-between\n                    calls into the Rogue runtime.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2144 ) ); 
   Rogue_literal_strings[272] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ",...]\n", 6 ) ); 
@@ -76052,8 +76052,8 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[1171] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Function_189", 12 ) ); 
   Rogue_literal_strings[1172] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Function_1182", 13 ) ); 
   Rogue_literal_strings[1173] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Error", 5 ) ); 
-  Rogue_literal_strings[1174] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Real64Value", 11 ) ); 
-  Rogue_literal_strings[1175] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "NullValue", 9 ) ); 
+  Rogue_literal_strings[1174] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "NullValue", 9 ) ); 
+  Rogue_literal_strings[1175] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Real64Value", 11 ) ); 
   Rogue_literal_strings[1176] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "ObjectValue", 11 ) ); 
   Rogue_literal_strings[1177] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "StringValue", 11 ) ); 
   Rogue_literal_strings[1178] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "TRUE", 4 ) ); 

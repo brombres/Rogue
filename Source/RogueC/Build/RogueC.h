@@ -843,8 +843,8 @@ struct RogueClassFunction_TableEntry_Type_Logical__TableEntry_Type_Logical__RETU
 struct RogueClassSystem; // System
 struct RogueWeakReference; // WeakReference
 struct RogueClassWriter_Byte_; // Writer<<Byte>>
-struct RogueClassReal64Value; // Real64Value
 struct RogueClassNullValue; // NullValue
+struct RogueClassReal64Value; // Real64Value
 struct RogueClassObjectValue; // ObjectValue
 struct RogueClassStringValue; // StringValue
 struct RogueClassFile; // File
@@ -3416,16 +3416,16 @@ struct RogueClassWriter_Byte_ : RogueObject
 {
 };
 
+struct RogueClassNullValue : RogueObject
+{
+  // PROPERTIES
+
+};
+
 struct RogueClassReal64Value : RogueObject
 {
   // PROPERTIES
   RogueReal64 value;
-
-};
-
-struct RogueClassNullValue : RogueObject
-{
-  // PROPERTIES
 
 };
 
@@ -5381,8 +5381,8 @@ extern RogueType* RogueTypeFunction_TableEntry_Type_Logical__TableEntry_Type_Log
 extern RogueType* RogueTypeSystem;
 extern RogueType* RogueTypeWeakReference;
 extern RogueType* RogueTypeWriter_Byte_;
-extern RogueType* RogueTypeReal64Value;
 extern RogueType* RogueTypeNullValue;
+extern RogueType* RogueTypeReal64Value;
 extern RogueType* RogueTypeObjectValue;
 extern RogueType* RogueTypeStringValue;
 extern RogueType* RogueTypeFile;
@@ -7502,6 +7502,13 @@ RogueString* RogueSystem__type_name( RogueClassSystem* THIS );
 RogueWeakReference* RogueWeakReference__init_object( RogueWeakReference* THIS );
 RogueString* RogueWeakReference__type_name( RogueWeakReference* THIS );
 void RogueWeakReference__on_cleanup( RogueWeakReference* THIS );
+RogueClassNullValue* RogueNullValue__init_object( RogueClassNullValue* THIS );
+RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS );
+RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS );
+RogueLogical RogueNullValue__is_null( RogueClassNullValue* THIS );
+RogueLogical RogueNullValue__is_non_null( RogueClassNullValue* THIS );
+RogueLogical RogueNullValue__operatorEQUALSEQUALS__Value( RogueClassNullValue* THIS, RogueClassValue* other_0 );
+RogueInt32 RogueNullValue__to_Int32( RogueClassNullValue* THIS );
 RogueClassReal64Value* RogueReal64Value__init_object( RogueClassReal64Value* THIS );
 RogueString* RogueReal64Value__to_String( RogueClassReal64Value* THIS );
 RogueString* RogueReal64Value__type_name( RogueClassReal64Value* THIS );
@@ -7510,13 +7517,6 @@ RogueLogical RogueReal64Value__operatorEQUALSEQUALS__Value( RogueClassReal64Valu
 RogueInt32 RogueReal64Value__to_Int32( RogueClassReal64Value* THIS );
 RogueReal64 RogueReal64Value__to_Real64( RogueClassReal64Value* THIS );
 RogueClassReal64Value* RogueReal64Value__init__Real64( RogueClassReal64Value* THIS, RogueReal64 _auto_931_0 );
-RogueClassNullValue* RogueNullValue__init_object( RogueClassNullValue* THIS );
-RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS );
-RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS );
-RogueLogical RogueNullValue__is_null( RogueClassNullValue* THIS );
-RogueLogical RogueNullValue__is_non_null( RogueClassNullValue* THIS );
-RogueLogical RogueNullValue__operatorEQUALSEQUALS__Value( RogueClassNullValue* THIS, RogueClassValue* other_0 );
-RogueInt32 RogueNullValue__to_Int32( RogueClassNullValue* THIS );
 RogueClassObjectValue* RogueObjectValue__init_object( RogueClassObjectValue* THIS );
 RogueString* RogueObjectValue__to_String( RogueClassObjectValue* THIS );
 RogueString* RogueObjectValue__type_name( RogueClassObjectValue* THIS );

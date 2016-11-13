@@ -287,7 +287,8 @@ class Table<<$KeyType,$ValueType>>
       local result = @{}
       local cur = first_entry
       while (cur)
-        result[ cur.key->String ] = Value( cur.value )
+        if (cur.value) result[ cur.key->String ] = cur.value->Value
+        else           result[ cur.key->String ] = NullValue
         cur = cur.next_entry
       endWhile
       return result
