@@ -32,6 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Value] Added `Value.decompressed()->Value` as a corollary to `compressed()`.  `decompressed()` may be safely called on an uncompressed value as long as it is not a table that contains elements `@id_list` and `@indexed_data`.
 - [Value] Changed behavior of `Value.locate(query:Function(Value)->(Logical))->Value` to return the index or key of the first matching item rather than the indices of all matching items.
 - [Value] Added `Value.locate_last(Value)->Value` and `Value.locate_last(query)->Value`.
+- [Value] Fixed bugs in `ValueList.to_json()` and `ValueTable.to_json()` that were converting `false` values to `null`.
 - [List] Changed `List.to->Value` to convert non-null elements to values with `element->Value` rather than `Value(element)` - the latter results in values wrapping regular objects while the former converts the objects themselves to values.
 - [Table] Changed `Table.to->Value` to convert non-null elements to values with `element->Value` rather than `Value(element)`.
 - [RogueC] Literal value lists (`@[ ... ]`) now use a different construction mechanism to prevent a "too many nested elements" error in C++ when dealing with large lists.

@@ -948,8 +948,8 @@ class ValueList : Value
           if (pretty_print) buffer.println
         endIf
 
-        if (value) value.to_json( buffer, flags )
-        else       buffer.print( "null" )
+        if (value or value.is_logical) value.to_json( buffer, flags )
+        else                           buffer.print( "null" )
       endForEach
 
       if (pretty_print)
@@ -1198,8 +1198,8 @@ class ValueTable : Value
           if (indent) buffer.indent += 2
         endIf
 
-        if (value) value.to_json( buffer, flags )
-        else       buffer.print( "null" )
+        if (value or value.is_logical) value.to_json( buffer, flags )
+        else                           buffer.print( "null" )
 
         if (indent) buffer.indent -= 2
       endForEach
