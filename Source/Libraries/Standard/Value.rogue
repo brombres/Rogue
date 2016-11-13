@@ -83,21 +83,13 @@ class Value
       return 0
 
     method compressed->Value
-      # Returns uncompressed if the compressed value would be smaller.
-
       if (contains("@id_list") and contains("@indexed_data")) return this
 
       local builder = ValueIDTableBuilder()
       local indexed_data = encode_indexed( builder )
 
       local result = @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
-
-      if (result.to_json.count >= this.to_json.count)
-        # Compressed is actually worse
-        return this
-      else
-        return result
-      endIf
+      return result
 
     method decompressed->Value
       if (not contains("@id_list") or not contains("@indexed_data")) return this
