@@ -287,8 +287,12 @@ class Table<<$KeyType,$ValueType>>
       local result = @{}
       local cur = first_entry
       while (cur)
-        if (cur.value) result[ cur.key->String ] = cur.value->Value
-        else           result[ cur.key->String ] = NullValue
+        if (cur isReference)
+          if (cur.value) result[ cur.key->String ] = cur.value->Value
+          else           result[ cur.key->String ] = NullValue
+        else
+          result[ cur.key->String ] = Value( cur.value )
+        endIf
         cur = cur.next_entry
       endWhile
       return result

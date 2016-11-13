@@ -470,8 +470,12 @@ class List<<$DataType>> : GenericList
     method to->Value
       local result = @[]
       forEach (item in this)
-        if (item) result.add( item->Value )
-        else      result.add( NullValue )
+        if (item isReference)
+          if (item) result.add( item->Value )
+          else      result.add( NullValue )
+        else
+          result.add( Value(item) )
+        endIf
       endForEach
       return result
 
