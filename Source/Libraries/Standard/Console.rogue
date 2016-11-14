@@ -77,6 +77,14 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       endForEach
       return input_buffer->String
 
+    method read_line( prompt:String )->String
+      write prompt
+      return read_line
+
+    method read_line( prompt:StringBuilder )->String
+      write prompt
+      return read_line
+
     method restore_cursor_position
       print( "\e[u" ).flush
 

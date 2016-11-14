@@ -26,6 +26,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.4 - November 14, 2016
+- [Stopwatch] Added `Stopwatch.stop()->this` and `Stopwatch.start()->this`.
+- [Timer] Added `Timer.stop()->this` and `Timer.start()->this`.
+- [Console] Added `Console.read_line(prompt:String)->String` and `Console.read_line(prompt:StringBuilder)->String` in addition to existing `Console.read_line()->String`.
+
 ###v1.1.3 - November 13, 2016
 - [String] Added optional `max_count` argument to `String.leftmost_common_substring_count(other,[max_count=null:Int32?])->Int32`.
 - [Value] Added `Value.compressed()->Value`.  Returns a clone of the value where all identifiers have been replaced by indices into an ID table.
