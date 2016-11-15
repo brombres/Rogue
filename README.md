@@ -1,7 +1,7 @@
 Rogue
 =====
-- v1.1.3
-- November 13, 2016
+- v1.1.4
+- November 15, 2016
 
 ## Installation (Mac, maybe Linux)
     git clone git@github.com:Plasmaworks/Rogue.git
@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.4 - November 14, 2016
+###v1.1.4 - November 15, 2016
 - [Stopwatch] Added `Stopwatch.stop()->this` and `Stopwatch.start()->this`.
 - [Timer] Added `Timer.stop()->this` and `Timer.start()->this`.
 - [Console] Added `Console.read_line(prompt:String)->String` and `Console.read_line(prompt:StringBuilder)->String` in addition to existing `Console.read_line()->String`.
