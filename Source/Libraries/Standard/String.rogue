@@ -654,7 +654,7 @@ class String
       return result
 
     method to->Int32 [macro]
-      native( "strtol( (char*)$this->utf8, 0, 10 )" )
+      native( "(RogueInt32)strtol( (char*)$this->utf8, 0, 10 )" )
 
     method to->Object
       return this
