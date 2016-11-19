@@ -1909,6 +1909,9 @@ class CmdAccess : Cmd
       args = CmdArgs()
       args.add( arg )
 
+    method init( t, local_info:Local )
+      init( t, local_info.name )
+
     method cloned( clone_args=null:CloneArgs )->Cmd
       local result = CmdAccess( t, clone(context,clone_args), name, clone(args,clone_args) )
 
@@ -2451,6 +2454,9 @@ class CmdAssign : Cmd
 
   METHODS
     method init( t, target, new_value )
+
+    method init( t, local_info:Local, new_value )
+      target = CmdAccess( t, local_info.name )
 
     method cloned( clone_args=null:CloneArgs )->Cmd
       return CmdAssign( t, target.cloned(clone_args), new_value.cloned(clone_args) )
@@ -5225,23 +5231,34 @@ endClass
 
 class CmdTypedLiteralList : Cmd
   PROPERTIES
+    list_var       : Local
     list_type_name : String
-    elements  : CmdArgs
+    init_block     : CmdBlock
+    elements       : CmdArgs
 
   METHODS
-    method init( t, list_type_name, elements=CmdArgs() )
+    method init( t, list_var, init_block, elements=CmdArgs() )
+      list_type_name = list_var.type.name
 
     method add( element:Cmd )->CmdTypedLiteralList
       elements.add( element )
       return this
 
     method cloned( clone_args:CloneArgs )->CmdTypedLiteralList
-      return CmdTypedLiteralList( t, list_type_name, elements.cloned(clone_args) )
+      return CmdTypedLiteralList( t, list_var, init_block.cloned(clone_args), elements.cloned(clone_args) )
 
     method implicit_type( scope:Scope )->Type
       return type
 
     method resolve( scope:Scope )->Cmd
+      forEach (element in elements)
+        local item = CmdAccess( t,CmdAccess(t,list_var.name), "add", element )
+        init_block.statements.add( item )
+      endForEach
+      init_block = init_block.resolve( scope )
+
+      return CmdAccess( t, list_var ).resolve( scope )
+      #{
       if (list_type_name == "Byte[]")
         elements.resolve( scope )
         contingent
@@ -5250,7 +5267,8 @@ class CmdTypedLiteralList : Cmd
           # Convert Byte[](a,b,c) to Byte[]("AABBCC")
           local bytes = Byte[]( elements.count )
           bytes.add( (forEach in elements)->Byte )
-          return CmdAccess( t, list_type_name, CmdArgs(CmdLiteralString(t,bytes.to_hex_string)) ).resolve( scope )
+          scope.this_body.add( CmdAssign( t, list_var, CmdAccess( t, list_type_name, CmdArgs(CmdLiteralString(t,bytes.to_hex_string)) ) ).resolve( scope ) )
+          return CmdAccess( t, list_var.name ).resolve( scope )
         endContingent
       endIf
 
@@ -5259,16 +5277,17 @@ class CmdTypedLiteralList : Cmd
         forEach (element in elements)
           result = CmdAccess( t, result, "add", element )
         endForEach
-        return result.resolve( scope )
+        scope.this_body.add( CmdAssign(t,list_var,result).resolve(scope) )
+        return CmdAccess( t, list_var.name ).resolve( scope )
       else
-        local list_var_name = Program.create_unique_id
-        local list_var = scope.this_method.add_local( t, list_var_name, null, CmdAccess(t,list_type_name,CmdArgs()) )
-        scope.this_body.add( CmdLocalDeclaration(t,list_var).resolve(scope) )
+        scope.this_body.add( CmdAssign(t,list_var,CmdAccess(t,list_type_name,CmdArgs(CmdLiteralInt32(t,elements.count)))).resolve(scope) )
         forEach (element in elements)
-          scope.this_body.add( CmdAccess(t,CmdAccess(t,list_var_name),"add",element).resolve(scope) )
+          local item = CmdAccess( t,CmdAccess(t,list_var.name),"add",element ).resolve(scope)
+          scope.this_body.add( item )
         endForEach
-        return CmdAccess(t,list_var_name).resolve(scope)
+        return CmdAccess( t, list_var.name ).resolve( scope )
       endIf
+      }#
 
     method type->Type
       return Program.get_type_reference( t, list_type_name )

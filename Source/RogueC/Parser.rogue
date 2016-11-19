@@ -3093,10 +3093,10 @@ class Parser
       return CmdAccess( t, list_var.name )
 
     method parse_typed_literal_list( t:Token, list_type_name:String )->Cmd
-      local list = CmdTypedLiteralList( t, list_type_name )
-
       must_consume( TokenType.symbol_open_bracket )
       consume_eols
+
+      local elements = CmdArgs()
 
       local first = true
       while (first or consume(TokenType.symbol_comma))
@@ -3107,18 +3107,26 @@ class Parser
           # Nested list - propagate the type
           if (list_type_name.ends_with("[][]"))
             local item = parse_typed_literal_list( t, list_type_name.leftmost(-2) )
-            list.add( item )
+            elements.add( item )
           else
             throw t.error( "Literal list content contains more dimensions than literal list type." )
           endIf
         else
-          list.add( parse_expression )
+          elements.add( parse_expression )
         endIf
         consume_eols
       endWhile
       must_consume( TokenType.symbol_close_bracket )
 
-      return list
+      local list_type = Program.get_type_reference( t, list_type_name )
+      local list_var = this_method.add_local( t, Program.create_unique_id, list_type )
+      list_var.initial_value = CmdAccess( t, list_type_name, CmdArgs(CmdLiteralInt32(t,elements.count)) )
+      cur_statement_list.add( CmdLocalDeclaration(t,list_var) )
+
+      local init_block = CmdBlock( t )
+      cur_statement_list.add( init_block )
+
+      return CmdTypedLiteralList( t, list_var, init_block, elements )
 endClass
 
 class FnParam( name:String )
