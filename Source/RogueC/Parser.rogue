@@ -2584,18 +2584,26 @@ class Parser
 
       elseIf (consume(TokenType.symbol_open_bracket))
         # [ literal, list ]
-        local list = CmdCreateList( t )
+        local elements = CmdArgs()
         consume_eols
         if (not consume(TokenType.symbol_close_bracket))
           local first = true
           while (first or consume(TokenType.symbol_comma))
             first = false
-            list.args.add( parse_expression )
+            elements.add( parse_expression )
             consume_eols
           endWhile
           must_consume( TokenType.symbol_close_bracket )
         endIf
-        return list
+
+        # Placeholder var for list reference - will replace type later when known
+        local list_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
+        cur_statement_list.add( CmdLocalDeclaration(t,list_var,&skip_initialization) )
+
+        local init_block = CmdBlock( t )
+        cur_statement_list.add( init_block )
+
+        return CmdCreateList( t, list_var, init_block, elements )
 
       elseIf (consume(TokenType.symbol_at_brace))
         return parse_value_table( t )

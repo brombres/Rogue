@@ -221,6 +221,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdCreateList )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdTypedLiteralList )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -539,6 +545,7 @@ class Visitor
     method on_enter( cmd:CmdTry )
     method on_enter( cmd:CmdTryExpression )
     method on_enter( cmd:CmdTypeOperator )
+    method on_enter( cmd:CmdCreateList )
     method on_enter( cmd:CmdTypedLiteralList )
     method on_enter( cmd:CmdUnary )
     method on_enter( cmd:CmdWhich )
@@ -622,6 +629,7 @@ class Visitor
     method on_leave( cmd:CmdTry )
     method on_leave( cmd:CmdTryExpression )
     method on_leave( cmd:CmdTypeOperator )
+    method on_leave( cmd:CmdCreateList )
     method on_leave( cmd:CmdTypedLiteralList )
     method on_leave( cmd:CmdUnary )
     method on_leave( cmd:CmdWhich )
@@ -952,6 +960,9 @@ class Visitor
     method dispatch( cmd:CmdTypeOperator )
       cmd.operand = cmd.operand.dispatch( this )
       cmd.target_type.dispatch( this )
+
+    method dispatch( cmd:CmdCreateList )
+      cmd.elements.dispatch( this )
 
     method dispatch( cmd:CmdTypedLiteralList )
       cmd.elements.dispatch( this )

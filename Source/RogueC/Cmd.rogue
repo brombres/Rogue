@@ -4555,20 +4555,23 @@ endClass
 #------------------------------------------------------------------------------
 class CmdCreateList : Cmd
   PROPERTIES
-    args      : CmdArgs
-    list_type : Type
+    list_var   : Local
+    init_block : CmdBlock
+    elements   : CmdArgs
 
   METHODS
-    method init( t, args=CmdArgs(), list_type=null )
+    method init( t, list_var, init_block, elements )
 
     method cloned( clone_args=null:CloneArgs )->Cmd
-      return CmdCreateList( t, clone(args,clone_args), list_type )
+      return CmdCreateList( t, list_var, init_block.cloned(clone_args), clone(elements,clone_args) )
 
     method resolve( scope:Scope )->Cmd
-      args.resolve( scope )
-      if (not list_type and args.count)
-        local common_type = args.first.type
-        forEach (arg in args)
+      local list_type : Type
+
+      elements.resolve( scope )
+      if (not list_type and elements.count)
+        local common_type = elements.first.type
+        forEach (arg in elements)
           common_type = find_common_type( common_type, arg.type )
         endForEach
         list_type = Program.get_type_reference( t, common_type + "[]" )
@@ -4577,22 +4580,17 @@ class CmdCreateList : Cmd
 
       if (list_type)
         local element_type = list_type.element_type
-        forEach (index of args)
-          args[index] = args[index].resolve( scope ).cast_to( element_type, scope ).resolve( scope )
+        forEach (index of elements)
+          elements[index] = elements[index].resolve( scope ).cast_to( element_type, scope ).resolve( scope )
         endForEach
       endIf
 
       if (not list_type) throw t.error( "TODO: [] -> Property[]" )
 
-      local initial_capacity = 10
-      if (args.count) initial_capacity = args.count
+      list_var.type = list_type
+      init_block.statements.add( CmdAssign(t,list_var,CmdAccess(t,list_type.name,CmdArgs(CmdLiteralInt32(t,elements.count)))) )
 
-      local cmd : Cmd
-      cmd = CmdAccess( t, list_type.name, CmdArgs(CmdLiteralInt32(t,initial_capacity)) )
-      forEach (arg in args)
-        cmd = CmdAccess( t, cmd, "add", CmdArgs(arg) )
-      endForEach
-      return cmd.resolve( scope )
+      return CmdTypedLiteralList( t, list_var, init_block, elements ).resolve( scope )
 
 endClass
 
