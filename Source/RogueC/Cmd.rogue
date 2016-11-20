@@ -5251,14 +5251,6 @@ class CmdTypedLiteralList : Cmd
       return type
 
     method resolve( scope:Scope )->Cmd
-      forEach (element in elements)
-        local item = CmdAccess( t,CmdAccess(t,list_var.name), "add", element )
-        init_block.statements.add( item )
-      endForEach
-      init_block = init_block.resolve( scope )
-
-      return CmdAccess( t, list_var ).resolve( scope )
-      #{
       if (list_type_name == "Byte[]")
         elements.resolve( scope )
         contingent
@@ -5267,27 +5259,23 @@ class CmdTypedLiteralList : Cmd
           # Convert Byte[](a,b,c) to Byte[]("AABBCC")
           local bytes = Byte[]( elements.count )
           bytes.add( (forEach in elements)->Byte )
-          scope.this_body.add( CmdAssign( t, list_var, CmdAccess( t, list_type_name, CmdArgs(CmdLiteralString(t,bytes.to_hex_string)) ) ).resolve( scope ) )
-          return CmdAccess( t, list_var.name ).resolve( scope )
+
+          init_block.statements.add(
+              CmdAccess( t,CmdAccess(t,list_var.name), "add",
+                  CmdArgs( CmdLiteralString(t,bytes.to_hex_string) ) ) )
+          init_block = init_block.resolve( scope )
+
+          return CmdAccess( t, list_var ).resolve( scope )
         endContingent
       endIf
 
-      if (elements.count <= 32)
-        local result = CmdAccess( t, list_type_name, CmdArgs() ) : Cmd
-        forEach (element in elements)
-          result = CmdAccess( t, result, "add", element )
-        endForEach
-        scope.this_body.add( CmdAssign(t,list_var,result).resolve(scope) )
-        return CmdAccess( t, list_var.name ).resolve( scope )
-      else
-        scope.this_body.add( CmdAssign(t,list_var,CmdAccess(t,list_type_name,CmdArgs(CmdLiteralInt32(t,elements.count)))).resolve(scope) )
-        forEach (element in elements)
-          local item = CmdAccess( t,CmdAccess(t,list_var.name),"add",element ).resolve(scope)
-          scope.this_body.add( item )
-        endForEach
-        return CmdAccess( t, list_var.name ).resolve( scope )
-      endIf
-      }#
+      forEach (element in elements)
+        local item = CmdAccess( t,CmdAccess(t,list_var.name), "add", element )
+        init_block.statements.add( item )
+      endForEach
+      init_block = init_block.resolve( scope )
+
+      return CmdAccess( t, list_var ).resolve( scope )
 
     method type->Type
       return Program.get_type_reference( t, list_type_name )
