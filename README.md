@@ -26,7 +26,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.5 - November 19, 2016
+###v1.1.5 - November 21, 2016
 - [String] Added explicit `Int32` cast to native implementation of `String.to->Int32`.
 - [RogueC] Reworked implicitly and explicitly typed list construction to avoid exceeding max nesting level in C++.
 
