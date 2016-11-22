@@ -8,6 +8,8 @@ BINDIR = /usr/local/bin
 
 all: roguec
 
+-include Local.mk
+
 remake: libraries touch_roguec roguec
 
 debug: libraries
