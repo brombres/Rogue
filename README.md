@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.7 - November 22, 2016
+- [String] Added `String.to->Int64`.
+
 ###v1.1.6 - November 22, 2016
 - [RogueC] Restored `-include Local.mk`.
 
