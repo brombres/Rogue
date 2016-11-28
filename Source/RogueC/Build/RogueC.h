@@ -518,12 +518,12 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 struct RogueAllocationPage
 {
   // Backs small 0..256-byte allocations.
+  RogueByte  data[ ROGUEMM_PAGE_SIZE ];
+
   RogueAllocationPage* next_page;
 
   RogueByte* cursor;
   int        remaining;
-
-  RogueByte  data[ ROGUEMM_PAGE_SIZE ];
 };
 
 RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page );

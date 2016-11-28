@@ -26,8 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.7 - November 22, 2016
+###v1.1.7 - November 27, 2016
 - [String] Added `String.to->Int64`.
+- [Runtime] Fixed small object allocations to be probably 16 byte-aligned - data array now starts from offset 0 of new allocation rather than offset 20 as before.
 
 ###v1.1.6 - November 22, 2016
 - [RogueC] Restored `-include Local.mk`.
