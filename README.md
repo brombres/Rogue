@@ -28,6 +28,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.7 - November 27, 2016
 - [Socket] Added `Socket(address:String,port:Int32)` in `Source/Libraries/Standard/Sockets.rogue`.
+- [ServerSocket] Added `ServerSocket(port:Int32)`.
 - [String] Added `String.to->Int64`.
 - [Runtime] Fixed small object allocations to be probably 16 byte-aligned - data array now starts from offset 0 of new allocation rather than offset 20 as before.
 
