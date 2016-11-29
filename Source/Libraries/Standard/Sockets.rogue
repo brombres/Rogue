@@ -1,0 +1,275 @@
+class Socket
+  ENUMERATE
+    CONNECTING  # 0
+    CONNECTED   # 1
+    CLOSED      # 2
+
+  DEPENDENCIES
+    nativeHeader
+      #include <netdb.h>
+      #include <pthread.h>
+      #include <sys/socket.h>
+      void* RogueSocket_establish_connection( void* context );
+    endNativeHeader
+
+    nativeCode
+      void* RogueSocket_establish_connection( void* context )
+      {
+        RogueClassSocket* socket_object = (RogueClassSocket*) context;
+
+        socket_object->socket_id = socket( AF_INET, SOCK_STREAM, 0 );
+        if (socket_object->socket_id == -1)
+        {
+          socket_object->state = 2;  // CLOSED
+          --socket_object->reference_count;
+          return 0;
+        }
+
+        char port_string[40];
+        snprintf( port_string, sizeof(port_string), "%d", socket_object->port );
+        addrinfo requirements;
+        memset( &requirements, 0, sizeof(requirements) );
+        requirements.ai_family = AF_INET;
+        requirements.ai_socktype = SOCK_STREAM;
+        requirements.ai_protocol = IPPROTO_TCP;
+
+        addrinfo *info, *cur;
+        if (getaddrinfo( (char*)socket_object->remote_address->utf8, port_string, NULL, &info ) != 0)
+        {
+          pthread_mutex_lock( &socket_object->thread_mutex );
+          if (socket_object->socket_id != -1)
+          {
+            close( socket_object->socket_id );
+            socket_object->socket_id = -1;
+            socket_object->state = 2;  // CLOSED
+          }
+          --socket_object->reference_count;
+          pthread_mutex_unlock( &socket_object->thread_mutex );
+          return 0;
+        }
+
+        bool socket_okay = false;
+
+        strcpy( socket_object->remote_ip_buffer, "0.0.0.0" );
+        cur = info;
+        while (cur)
+        {
+          if (connect(socket_object->socket_id,cur->ai_addr, cur->ai_addrlen) == 0)
+          {
+            socket_okay = true;
+            char sbuf[NI_MAXSERV];
+
+            getnameinfo( cur->ai_addr, cur->ai_addrlen, socket_object->remote_ip_buffer,
+              sizeof(socket_object->remote_ip_buffer), sbuf, sizeof(sbuf),
+                  NI_NUMERICHOST | NI_NUMERICSERV );
+            break;
+          }
+          cur = cur->ai_next;
+        }
+        freeaddrinfo( info );
+
+        pthread_mutex_lock( &socket_object->thread_mutex );
+
+        if (socket_object->socket_id != -1 && socket_object->state == 0)  // not closed() before we get here
+        {
+          if (socket_okay)
+          {
+            fcntl( socket_object->socket_id, F_SETFL, O_NONBLOCK );
+            socket_object->state = 1;  // CONNECTED
+          }
+          else
+          {
+            close( socket_object->socket_id );
+            socket_object->socket_id = -1;
+            socket_object->state = 2;  // CLOSED
+          }
+        }
+        --socket_object->reference_count;
+
+        pthread_mutex_unlock( &socket_object->thread_mutex );
+        return 0;
+      }
+    endNativeCode
+
+  PROPERTIES
+    remote_address   : String
+    remote_ip        : String
+    port             : Int32
+    socket_id        = -1
+    state            : Int32
+    reader           = SocketReader( this )
+    character_reader = UTF8Reader( reader )
+    writer           = SocketWriter( this )
+    printer          = PrintWriterAdapter( writer )
+    native "pthread_t       thread_ref;"
+    native "pthread_mutex_t thread_mutex;"
+    native "char remote_ip_buffer[NI_MAXHOST];"
+
+  METHODS
+    method init( remote_address, port )
+      state = CONNECTING
+
+      native @|// Retain this object until connection thread finishes (thread will reduce count)
+              |++$this->reference_count;
+              |
+              |pthread_mutex_init( &$this->thread_mutex, NULL );
+              |pthread_attr_t attributes;
+              |pthread_attr_init( &attributes );
+              |pthread_attr_setdetachstate( &attributes, PTHREAD_CREATE_DETACHED );
+              |
+              |if (0 != pthread_create( &$this->thread_ref, &attributes, RogueSocket_establish_connection, $this ))
+              |{
+              |  // Error launching thread
+              |  if ($socket_id != -1)
+              |  {
+              |    close( $socket_id );
+              |    $socket_id = -1;
+              |    $state = 2;  // CLOSED
+              |    --$this->reference_count;
+              |  }
+              |}
+
+    method close->this
+      native @|pthread_mutex_lock( &$this->thread_mutex );
+      if (socket_id != -1)
+        native @|close( $socket_id );
+        socket_id = -1
+      endIf
+      state = CLOSED
+      native @|pthread_mutex_unlock( &$this->thread_mutex );
+      return this
+
+    method is_closed->Logical
+      return (state == CLOSED)
+
+    method is_connected->Logical
+      return (state == CONNECTED)
+
+    method is_connecting->Logical
+      return (state == CONNECTING)
+
+    method on_cleanup
+      native @|pthread_mutex_destroy( &$this->thread_mutex );
+      close
+
+    method remote_ip->String
+      if (@remote_ip) return @remote_ip
+      native @|$this->remote_ip = RogueString_create_from_utf8( $this->remote_ip_buffer );
+      return @remote_ip
+
+endClass
+
+
+class SocketReader : Reader<<Byte>>
+  PROPERTIES
+    socket       : Socket
+    buffer_pos   : Int32
+    buffer_count : Int32
+    native "RogueByte read_buffer[1024];"
+
+  METHODS
+    method init( socket )
+
+    method has_another->Logical
+      if (buffer_pos < buffer_count) return true
+      if (not socket.is_connected)   return false
+
+      buffer_pos = 0
+      buffer_count = native( "::read( $socket->socket_id, $this->read_buffer, 1024 )" )->Int32
+      if (buffer_count == -1)
+        if (native("errno != EAGAIN")->Logical)
+          socket.close
+          return false
+        endIf
+        buffer_count = 0
+        return false  # No bytes available
+      endIf
+
+      if (buffer_count == 0)
+        # End of data
+        socket.close
+        return false
+      endIf
+
+      return true
+
+    method peek->Byte
+      if (not has_another) return 0
+      return native( "$this->read_buffer[$this->buffer_pos]" )->Byte
+
+    method position->Int32 [fallback]
+      return @position
+
+    method read->Byte
+      if (not has_another) return 0
+      ++@position
+      return native( "$this->read_buffer[$this->buffer_pos++]" )->Byte
+
+    method reset->this
+      seek( 0 )
+      return this
+
+    method seek( pos:Int32 )->this
+      throw UnsupportedOperationError( "SocketReader.seek()" )
+endClass
+
+
+class SocketWriter : Writer<<Byte>>
+  PROPERTIES
+    socket       : Socket
+    write_buffer = Byte[]
+
+  METHODS
+    method init( socket )
+
+    method close->this
+      socket.close
+      return this
+
+    method flush->this
+      if (write_buffer.count == 0) return this
+
+      local sent : Int32
+
+      native @|
+              |try
+              |{
+              |  $sent = ::send( $socket->socket_id, $write_buffer->data->as_bytes, $write_buffer->count, 0 );
+              |}
+              |catch (...)
+              |{
+                 socket.close
+                 return this
+      native @|}
+
+      if (sent == 0) return this
+
+      if (sent > 0)
+        write_buffer.discard( 0, sent )
+      else
+        if (native("errno != EAGAIN")->Logical) socket.close
+      endIf
+
+      return this
+
+    method reset->this
+      throw UnsupportedOperationError( "SocketWriter.reset()" )
+
+    method seek( pos:Int32 )->this
+      throw UnsupportedOperationError( "SocketWriter.seek()" )
+
+    method seek_end()->this
+      throw UnsupportedOperationError( "SocketWriter.seek_end()" )
+
+    method skip( n:Int32 )->this
+      throw UnsupportedOperationError( "SocketWriter.skip()" )
+
+    method write( value:Byte )->this
+      write_buffer.add( value )
+      return flush
+
+    method write( list:Byte[] )->this
+      forEach (value in list) write( value )
+      return this
+endClass
+
