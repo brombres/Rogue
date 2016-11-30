@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.8 - November 30, 2016
+- [RogueC] Fixed `roguec` compile on Ubuntu by specifying `-std=gnu++11`, which works on Mac, Ubuntu, and Cygwin.
+- [RogueC] Now suppressing "offsetof macro used incorrectly" message which shows up in Ubuntu.
+
 ###v1.1.7 - November 30, 2016
 - [Sockets] Added `Socket(address:String,port:Int32)` and `ServerSocket(port:Int32)` in `Libraries/Standard/Sockets.rogue`.  Sockets are non-blocking and poll-driven.  Once a `Socket.is_connected()` or a non-null Socket is obtained from `ServerSocket.accept_connection()->Socket`, use the Socket `reader()->Reader<<Byte>>`, `character_reader()->Reader<<Character>>`, `writer()->Writer<<Byte>>`, and `printer()->PrintWriter` I/O objects to communicate via the socket.
 - [String] Added `String.to->Int64`.

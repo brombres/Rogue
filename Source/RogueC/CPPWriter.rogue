@@ -729,7 +729,7 @@ augment Program
             if (first) first = false
             else       writer.println ","
             if (p.is_native) writer.print( "0" )
-            else writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
+            else writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print(")")
             #writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print( ")" )
           endForEach
         endIf

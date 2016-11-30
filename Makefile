@@ -2,7 +2,7 @@
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
 ROGUEC_ROGUE_FLAGS =
-ROGUEC_CPP_FLAGS = -std=gnu++14 -fno-strict-aliasing
+ROGUEC_CPP_FLAGS = -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof 
 
 BINDIR = /usr/local/bin
 
@@ -77,8 +77,10 @@ $(BINDIR)/roguec:
 	@echo -------------------------------------------------------------------------------
 	@echo Creating $(BINDIR)/roguec linked to Programs/RogueC/roguec
 	@echo -------------------------------------------------------------------------------
-	printf "%s\nexec \"%s/Programs/RogueC/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > $(BINDIR)/roguec
-	chmod a+x $(BINDIR)/roguec
+	printf "%s\nexec \"%s/Programs/RogueC/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > roguec.script
+	sudo cp roguec.script $(BINDIR)/roguec
+	rm roguec.script
+	sudo chmod a+x $(BINDIR)/roguec
 	@echo
 	@echo You can execute the following as a simple test:
 	@echo

@@ -14,6 +14,7 @@
 #include <time.h>
 #include <inttypes.h>
 #include <exception>
+#include <cstddef>
 
 #if !defined(ROGUE_PLATFORM_WINDOWS)
 #  include <sys/time.h>
