@@ -1,6 +1,6 @@
 Rogue
 =====
-- v1.1.7
+- v1.1.8
 - November 30, 2016
 
 ## Installation (Mac, maybe Linux)
@@ -27,6 +27,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.1.8 - November 30, 2016
+- [RogueC] `roguec` now compiles, installs, and works correctly on Mac, Ubuntu, and Cygwin.
 - [RogueC] Fixed `roguec` compile on Ubuntu by specifying `-std=gnu++11`, which works on Mac, Ubuntu, and Cygwin.
 - [RogueC] Now suppressing "offsetof macro used incorrectly" message which shows up in Ubuntu.
 
