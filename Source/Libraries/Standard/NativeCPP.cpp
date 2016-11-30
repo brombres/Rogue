@@ -1,14 +1,7 @@
 //=============================================================================
-//  Rogue.cpp
+//  NativeCPP.cpp
 //
-//  Rogue runtime.
-//
-//  ---------------------------------------------------------------------------
-//
-//  Created 2015.01.19 by Abe Pralle
-//
-//  This is free and unencumbered software released into the public domain
-//  under the terms of the UNLICENSE ( http://unlicense.org ).
+//  Rogue runtime routines.
 //=============================================================================
 
 #include <fcntl.h>

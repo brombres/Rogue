@@ -32,6 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Runtime] Fixed small object allocations to be probably 16 byte-aligned - data array now starts from offset 0 of new allocation rather than offset 20 as before.
 - [RogueC] Changed Makefile to use `-std=gnu++14` instead of `-std=c++11` to fix a Cygwin issue with sigemptyset.
 - [RogueC] Changed `roguec` `--execute` option to use `g++` instead of `clang++` and changed `-std` to use `gnu++14`.
+- [RogueC] Removed reference to UNLICENSE in embedded Rogue runtime (`NativeCPP.cpp`).
 
 ###v1.1.6 - November 22, 2016
 - [RogueC] Restored `-include Local.mk`.
