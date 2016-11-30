@@ -6,6 +6,12 @@ ROGUEC_CPP_FLAGS = -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
 BINDIR = /usr/local/bin
 
+ifeq ($(OS),Windows_NT)
+  SUDO_CMD =
+else
+  SUDO_CMD = sudo
+endif
+
 all: roguec
 
 -include Local.mk
@@ -79,13 +85,8 @@ $(BINDIR)/roguec:
 	@echo -------------------------------------------------------------------------------
 	printf "%s\nexec \"%s/Programs/RogueC/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > roguec.script
 	@echo Copying roguec.script to $(BINDIR)/roguec
-	@if [[ `uname -s` == "MINGW32_NT"* ]]; then \
-	  cp roguec.script $(BINDIR)/roguec; \
-	  chmod a+x $(BINDIR)/roguec; \
-	else \
-	  sudo cp roguec.script $(BINDIR)/roguec; \
-	  sudo chmod a+x $(BINDIR)/roguec; \
-	fi
+	$(SUDO_CMD) cp roguec.script $(BINDIR)/roguec; \
+	$(SUDO_CMD) chmod a+x $(BINDIR)/roguec; \
 	rm roguec.script
 	@echo
 	@echo You can execute the following as a simple test:
