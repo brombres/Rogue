@@ -79,7 +79,7 @@ $(BINDIR)/roguec:
 	@echo -------------------------------------------------------------------------------
 	printf "%s\nexec \"%s/Programs/RogueC/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > roguec.script
 	@echo Copying roguec.script to $(BINDIR)/roguec
-	@if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then \
+	@if [[ `uname -s` == "MINGW32_NT"* ]]; then \
 	  cp roguec.script $(BINDIR)/roguec; \
 	  chmod a+x $(BINDIR)/roguec; \
 	else \

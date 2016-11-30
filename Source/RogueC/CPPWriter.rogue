@@ -729,7 +729,8 @@ augment Program
             if (first) first = false
             else       writer.println ","
             if (p.is_native) writer.print( "0" )
-            else writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print(")")
+            else writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
+            #else writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print(")")
             #writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print( ")" )
           endForEach
         endIf
@@ -1494,7 +1495,7 @@ augment RogueC
         else
           exe = exe.to_lowercase
         endIf
-        local cmd = "g++ -Wall -std=gnu++14 -fno-strict-aliasing $.cpp -o $" (output_filepath,exe)
+        local cmd = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $.cpp -o $" (output_filepath,exe)
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println
