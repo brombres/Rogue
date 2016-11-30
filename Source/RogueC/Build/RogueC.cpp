@@ -75540,7 +75540,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[903] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "], ", 3 ) ); 
   Rogue_literal_strings[904] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "] )", 3 ) ); 
   Rogue_literal_strings[905] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "SUCCESS (", 9 ) ); 
-  Rogue_literal_strings[906] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "clang++ -Wall -std=c++11 -fno-strict-aliasing ", 46 ) ); 
+  Rogue_literal_strings[906] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "g++ -Wall -std=c++11 -fno-strict-aliasing ", 42 ) ); 
   Rogue_literal_strings[907] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ".cpp -o ", 8 ) ); 
   Rogue_literal_strings[908] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( " && ./", 6 ) ); 
   Rogue_literal_strings[909] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Process was not created", 23 ) ); 

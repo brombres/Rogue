@@ -2,7 +2,7 @@
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
 ROGUEC_ROGUE_FLAGS =
-ROGUEC_CPP_FLAGS = -std=c++11 -fno-strict-aliasing
+ROGUEC_CPP_FLAGS = -std=gnu++14 -fno-strict-aliasing
 
 BINDIR = /usr/local/bin
 
