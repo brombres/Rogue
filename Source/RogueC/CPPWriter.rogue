@@ -1494,7 +1494,7 @@ augment RogueC
         else
           exe = exe.to_lowercase
         endIf
-        local cmd = "clang++ -Wall -std=c++11 -fno-strict-aliasing $.cpp -o $" (output_filepath,exe)
+        local cmd = "g++ -Wall -std=gnu++14 -fno-strict-aliasing $.cpp -o $" (output_filepath,exe)
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println
