@@ -2,7 +2,7 @@
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
 ROGUEC_ROGUE_FLAGS =
-ROGUEC_CPP_FLAGS = -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof 
+ROGUEC_CPP_FLAGS = -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
 BINDIR = /usr/local/bin
 
@@ -78,9 +78,15 @@ $(BINDIR)/roguec:
 	@echo Creating $(BINDIR)/roguec linked to Programs/RogueC/roguec
 	@echo -------------------------------------------------------------------------------
 	printf "%s\nexec \"%s/Programs/RogueC/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > roguec.script
-	sudo cp roguec.script $(BINDIR)/roguec
+	@echo Copying roguec.script to $(BINDIR)/roguec
+	@if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then \
+	  cp roguec.script $(BINDIR)/roguec; \
+	  chmod a+x $(BINDIR)/roguec; \
+	else \
+	  sudo cp roguec.script $(BINDIR)/roguec; \
+	  sudo chmod a+x $(BINDIR)/roguec; \
+	fi
 	rm roguec.script
-	sudo chmod a+x $(BINDIR)/roguec
 	@echo
 	@echo You can execute the following as a simple test:
 	@echo
