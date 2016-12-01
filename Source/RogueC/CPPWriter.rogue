@@ -11,10 +11,9 @@ augment Program
       endIf
 
       # Convert "_*type" to "__*type"
-      local all_underscores = true
       if (name.ends_with("type"))
         forEach (i in 0..(name.count-5))
-          if (name[i] != '_') all_underscores = false; escapeForEach
+          if (name[i] != '_') escapeForEach
         endForEach
         name = "_" + name
       endIf
@@ -2770,11 +2769,13 @@ augment CmdBinary
       return symbol
 
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (requires_parens) writer.print( "(" )
+      if (requires_parens) writer.print( "((" )
       left.write_cpp( writer )
-      writer.print( " " ).print( cpp_symbol ).print( " " )
-      right.write_cpp( writer )
       if (requires_parens) writer.print( ")" )
+      writer.print( " " ).print( cpp_symbol ).print( " " )
+      if (requires_parens) writer.print( "(" )
+      right.write_cpp( writer )
+      if (requires_parens) writer.print( "))" )
 endAugment
 
 #{

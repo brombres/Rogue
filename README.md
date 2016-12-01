@@ -26,6 +26,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.10 - November 30, 2016
+- [RogueC] Fixed up compiler warnings that appear on Cygwin and Linux but not Mac.
+
 ###v1.1.9 - November 30, 2016
 - [RogueC] `roguec` `--execute` and `--compile` options now use the Rogue Makefile default $(CXX) compiler with certain other flags - see `DEFAULT_CXX` in Makefile.
 - [RogueC] `roguec` `--compile=<compiler invocation>` can be used to override the default.
