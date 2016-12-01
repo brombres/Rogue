@@ -26,6 +26,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.9 - November 30, 2016
+- [RogueC] `roguec` `--execute` and `--compile` options now use the Rogue Makefile default $(CXX) compiler with certain other flags - see `DEFAULT_CXX` in Makefile.
+- [RogueC] `roguec` `--compile=<compiler invocation>` can be used to override the default.
+
 ###v1.1.8 - November 30, 2016
 - [RogueC] `roguec` now compiles, installs, and works correctly on Mac, Ubuntu, and Cygwin.
 - [RogueC] Fixed `roguec` compile on Ubuntu by specifying `-std=gnu++11`, which works on Mac, Ubuntu, and Cygwin.

@@ -71,7 +71,7 @@ augment Program
             case '*': string_buffer.print( "TIMES" )
             case '+': string_buffer.print( "PLUS" )
             case '-'
-              if (i+1 < name.count)
+              if (i+1 < count)
                 which (name[i+1])
                   case '>'
                     string_buffer.print( "RETURNS" )
@@ -83,7 +83,7 @@ augment Program
             case '.': string_buffer.print( "_" )
             case '/': string_buffer.print( "SLASH" )
             case '<'
-              if (i+1 < name.count)
+              if (i+1 < count)
                 which (name[i+1])
                   case '='
                     string_buffer.print( "LE" )
@@ -94,7 +94,7 @@ augment Program
               endIf
             case '=': string_buffer.print( "EQUALS" )
             case '>'
-              if (i+1 < name.count)
+              if (i+1 < count)
                 which (name[i+1])
                   case '='
                     string_buffer.print( "GE" )
@@ -837,7 +837,7 @@ augment Program
         writer.print(   "Rogue_literal_strings[" ).print(i)
         writer.print("] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ")
         local st = Program.literal_string_list[i]
-        local encoded_count = writer.print_literal_string( st )
+        writer.print_literal_string( st )
         writer.print( ", " ).print( st.byte_count )
         writer.println( " ) ); " )
       endForEach
@@ -1489,13 +1489,22 @@ augment RogueC
       RogueC.on_compile_finished
 
       if (compile_output)
+        local compiler_name = RogueC.compiler_name
+        if (not compiler_name)
+          native @|#if defined(DEFAULT_CXX)
+                  |  $compiler_name = RogueString_create_from_utf8( DEFAULT_CXX );
+                  |#else
+                  |  $compiler_name = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
+                  |#endif
+        endIf
+
         local exe = output_filepath
         if (exe.contains('/'))
           exe = File.path(exe) + "/" + File.filename(exe).to_lowercase
         else
           exe = exe.to_lowercase
         endIf
-        local cmd = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $.cpp -o $" (output_filepath,exe)
+        local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println

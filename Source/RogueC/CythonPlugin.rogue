@@ -1332,7 +1332,6 @@ augment Program
       # appears as a superclass -- this currently happens with lists).
       local sorted_types = CyClass[]
       local done = Set<<Type>>()
-      local count = -1
       local prev = -1
       while (sorted_types.count < cyclasses.count)
         if (cyclasses.count - sorted_types.count == prev)

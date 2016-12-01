@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.1.8.0"
+$define RELEASE_VERSION "1.1.9.0"
 $define RELEASE_DATE    "November 30, 2016"
 
 # TODO:
@@ -72,6 +72,7 @@ class RogueC [singleton]
     # When true, all methods can be called dynamically
 
     compile_output    : Logical
+    compiler_name     : String
     execute_args      : String
 
     package_name      : String
@@ -94,6 +95,8 @@ class RogueC [singleton]
     plugins = Plugin[]
 
   METHODS
+    method init
+
     method launch
       local libs = File.path(System.executable_filepath) + "/Libraries/"
       if (File.exists(libs))
@@ -133,9 +136,13 @@ class RogueC [singleton]
                    |  --main
                    |    Include a main() function in the output file.
                    |
-                   |  --compile
-                   |    Use command line directives to compile the output of the
-                   |    compiled .rogue program.  Automatically enables the --main option.
+                   |  --compile[=<compiler invocation>]
+                   |    Creates an executable from the compiled .rogue code - for example, compiles
+                   |    and links the .cpp code generated from the .rogue program.  Automatically
+                   |    enables the --main option.  If <compiler invocation> is omitted then a
+                   |    language-specific default is used - for a C++ code target this is the
+                   |    Makefile-default $(CXX) compiler with certain options - see DEFAULT_CXX in
+                   |    the Rogue source folder's Makefile.
                    |
                    |  --debug
                    |    Enables exception stack traces.
@@ -403,6 +410,7 @@ class RogueC [singleton]
             case "--compile"
               generate_main = true
               compile_output = true
+              if (value.count) compiler_name = value
 
             case "--execute"
               generate_main = true

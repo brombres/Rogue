@@ -544,7 +544,6 @@ class Scope
             contingent
               forEach (m2 in candidates.available)
                 if (m1 is not m2)
-                  local m2_is_better = true
                   forEach (index of args)
                     local m1_arg_type = m1.parameters[index].type
                     local m2_arg_type = m2.parameters[index].type

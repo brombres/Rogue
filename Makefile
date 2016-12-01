@@ -2,7 +2,9 @@
 
 ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
 ROGUEC_ROGUE_FLAGS =
-ROGUEC_CPP_FLAGS = -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+ROGUEC_CPP_FLAGS = -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+
+DEFAULT_CXX = \"$(CXX) $(ROGUEC_CPP_FLAGS)\"
 
 BINDIR = /usr/local/bin
 
@@ -25,7 +27,7 @@ debug: libraries
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --debug $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 exhaustive: libraries
 	@echo -------------------------------------------------------------------------------
@@ -34,7 +36,7 @@ exhaustive: libraries
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/roguec
 
@@ -47,9 +49,9 @@ bootstrap_roguec:
 	  echo -------------------------------------------------------------------------------; \
 	  echo Compiling Programs/RogueC/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo $(CXX) -Wall $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
+	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	  mkdir -p Programs/RogueC; \
-	  $(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
+	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec; \
 	fi;
 
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
@@ -64,7 +66,7 @@ Programs/RogueC/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 libraries:
 	@mkdir -p Programs/RogueC
@@ -115,7 +117,7 @@ revert: revert_cpp_source libraries
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/roguec
 
 revert_cpp_source:
 	git checkout Source/RogueC/Build && rm -f Programs/RogueC/roguec

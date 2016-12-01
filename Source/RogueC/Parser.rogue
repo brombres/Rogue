@@ -234,7 +234,7 @@ class Parser
         while (first or consume(TokenType.symbol_comma))
           first = false
           local t = must_read( TokenType.placeholder_id )
-          local param = template.add_type_parameter( t, t->String )
+          template.add_type_parameter( t, t->String )
         endWhile
         must_consume( TokenType.symbol_close_specialize )
       endIf
@@ -816,7 +816,7 @@ class Parser
       while (first or consume(TokenType.symbol_comma))
         first = false
         local t2 = must_read( TokenType.placeholder_id )
-        local param = m.type_parameters.add( TypeParameter(t2,t2->String) )
+        m.type_parameters.add( TypeParameter(t2,t2->String) )
       endWhile
       must_consume( TokenType.symbol_close_specialize )
 
@@ -1494,8 +1494,6 @@ class Parser
           must_consume( TokenType.symbol_open_paren )
           local error_t = peek
           local error_name = parse_possible_type
-          local error_type : Type
-          local no_name = false
           consume_eols
           if (consume(TokenType.symbol_colon))
             cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
@@ -2120,7 +2118,6 @@ class Parser
 
     method parse_bitwise_or( lhs:Cmd )->Cmd
       local t = peek
-      local starting_pos = reader.position
       if (consume(TokenType.symbol_vertical_bar))
         consume_eols
         local rhs = parse_bitwise_and

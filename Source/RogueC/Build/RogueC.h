@@ -1828,6 +1828,7 @@ struct RogueClassRogueC : RogueObject
   RogueLogical manual_files_essential;
   RogueLogical all_methods_callable_dynamically;
   RogueLogical compile_output;
+  RogueString* compiler_name;
   RogueString* execute_args;
   RogueString* package_name;
   RogueLogical debug_mode;
@@ -5970,6 +5971,7 @@ RogueClassFunction_189* RogueFunction_189__init_object( RogueClassFunction_189* 
 RogueString* RogueFunction_189__type_name( RogueClassFunction_189* THIS );
 void RogueFunction_189__call( RogueClassFunction_189* THIS );
 RogueClassRogueC* RogueRogueC__init_object( RogueClassRogueC* THIS );
+RogueClassRogueC* RogueRogueC__init( RogueClassRogueC* THIS );
 RogueString* RogueRogueC__type_name( RogueClassRogueC* THIS );
 void RogueRogueC__launch( RogueClassRogueC* THIS );
 void RogueRogueC__write_output( RogueClassRogueC* THIS );
