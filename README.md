@@ -10,7 +10,7 @@ Platforms | Mac, Linux (Ubuntu+), Cygwin
 
 
 ## Installation
-    git clone git@github.com:Plasmaworks/Rogue.git
+    git clone https://github.com/AbePralle/Rogue.git
     cd Rogue
     make
 
