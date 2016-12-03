@@ -17,6 +17,8 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
               |return RogueString_create_from_utf8( st, len );
 
   PROPERTIES
+    error             = ConsoleErrorPrinter()
+
     output_buffer     = StringBuilder()
     input_buffer      = StringBuilder()
     next_input_byte   : Int32?
@@ -113,6 +115,20 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
 
 endClass
 
+class ConsoleErrorPrinter : PrintWriter<<output_buffer>>
+  PROPERTIES
+    output_buffer = StringBuilder()
+
+  METHODS
+    method write( value:String )->this
+      Console.io_handler.write_error( value )
+      return this
+
+    method write( buffer:StringBuilder )->this
+      Console.io_handler.write_error( buffer.utf8.data, buffer.utf8.count )
+      return this
+endClass
+
 class ConsoleIOHandler [abstract]
   METHODS
     method has_another->Logical                      [abstract]
@@ -120,6 +136,8 @@ class ConsoleIOHandler [abstract]
     method read->Byte                                [abstract]
     method write( value:String )                     [abstract]
     method write( bytes:Array<<Byte>>, count:Int32 ) [abstract]
+    method write_error( value:String )                     [abstract]
+    method write_error( bytes:Array<<Byte>>, count:Int32 ) [abstract]
 endClass
 
 class BlockingConsoleIOHandler : ConsoleIOHandler
@@ -152,6 +170,12 @@ class BlockingConsoleIOHandler : ConsoleIOHandler
 
     method write( bytes:Array<<Byte>>, count:Int32 )
       native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
+
+    method write_error( value:String )
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
+
+    method write_error( bytes:Array<<Byte>>, count:Int32 )
+      native @|fwrite( $bytes->as_bytes, 1, $count, stderr );
 endClass
 
 class ImmediateConsoleIOHandler : ConsoleIOHandler
@@ -203,5 +227,13 @@ class ImmediateConsoleIOHandler : ConsoleIOHandler
     method write( bytes:Array<<Byte>>, count:Int32 )
       native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
               |fflush( stdout );
+
+    method write_error( value:String )
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
+              |fflush( stderr );
+
+    method write_error( bytes:Array<<Byte>>, count:Int32 )
+      native @|fwrite( $bytes->as_bytes, 1, $count, stderr );
+              |fflush( stderr );
 endClass
 

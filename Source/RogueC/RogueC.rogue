@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.1.10.0"
-$define RELEASE_DATE    "November 30, 2016"
+$define RELEASE_VERSION "1.1.11.0"
+$define RELEASE_DATE    "December 3, 2016"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -244,7 +244,13 @@ class RogueC [singleton]
 
         write_output
 
+      catch (err:RogueError)
+        Console.println "$:$: error:$" (err.filepath,err.line,err.message)
+        println err
+        System.exit(1)
+
       catch (err:Error)
+        Console.println err->String
         println err
         System.exit(1)
       endTry

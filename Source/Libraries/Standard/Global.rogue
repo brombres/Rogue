@@ -1,7 +1,7 @@
 class Global : PrintWriter<<global_output_buffer>> [essential singleton]
   PROPERTIES
-    standard_output = Console : PrintWriter
-    global_output_buffer      = StringBuilder()
+    console              = Console : PrintWriter
+    global_output_buffer = StringBuilder()
     exit_functions : Function()[]
 
   METHODS
@@ -25,7 +25,7 @@ class Global : PrintWriter<<global_output_buffer>> [essential singleton]
       exit_functions.add( fn )
 
     method write( buffer:StringBuilder )->this
-      standard_output.write( buffer ).flush
+      console.write( buffer ).flush
       return this
 endClass
 

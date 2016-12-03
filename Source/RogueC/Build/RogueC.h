@@ -683,6 +683,7 @@ struct RogueClassReader_String_; // Reader<<String>>
 struct RogueClassConsole; // Console
 struct RogueClassReader_Byte_; // Reader<<Byte>>
 struct RogueClassPrintWriter_output_buffer_; // PrintWriter<<output_buffer>>
+struct RogueClassConsoleErrorPrinter; // ConsoleErrorPrinter
 struct RogueClassConsoleIOHandler; // ConsoleIOHandler
 struct RogueClassPrimitiveWorkBuffer; // PrimitiveWorkBuffer
 struct RogueClassMath; // Math
@@ -1479,7 +1480,7 @@ extern RogueClassStringValue* RogueStringValue_empty_string;
 struct RogueClassGlobal : RogueObject
 {
   // PROPERTIES
-  RogueClassPrintWriter* standard_output;
+  RogueClassPrintWriter* console;
   RogueStringBuilder* global_output_buffer;
   RogueFunction___List* exit_functions;
 
@@ -1722,6 +1723,7 @@ struct RogueClassConsole : RogueObject
 {
   // PROPERTIES
   RogueInt32 position;
+  RogueClassConsoleErrorPrinter* error;
   RogueStringBuilder* output_buffer;
   RogueStringBuilder* input_buffer;
   RogueOptionalInt32 next_input_byte;
@@ -1736,6 +1738,13 @@ struct RogueClassReader_Byte_ : RogueObject
 
 struct RogueClassPrintWriter_output_buffer_ : RogueObject
 {
+};
+
+struct RogueClassConsoleErrorPrinter : RogueObject
+{
+  // PROPERTIES
+  RogueStringBuilder* output_buffer;
+
 };
 
 struct RogueClassConsoleIOHandler : RogueObject
@@ -5205,6 +5214,7 @@ extern RogueType* RogueTypeReader_String_;
 extern RogueType* RogueTypeConsole;
 extern RogueType* RogueTypeReader_Byte_;
 extern RogueType* RogueTypePrintWriter_output_buffer_;
+extern RogueType* RogueTypeConsoleErrorPrinter;
 extern RogueType* RogueTypeConsoleIOHandler;
 extern RogueType* RogueTypePrimitiveWorkBuffer;
 extern RogueType* RogueTypeMath;
@@ -5941,12 +5951,19 @@ RogueString* RogueConsole__type_name( RogueClassConsole* THIS );
 RogueLogical RogueConsole__has_another( RogueClassConsole* THIS );
 RogueByte RogueConsole__read( RogueClassConsole* THIS );
 RogueClassConsole* RogueConsole__flush( RogueClassConsole* THIS );
+RogueClassConsole* RogueConsole__print__String( RogueClassConsole* THIS, RogueString* value_0 );
+RogueClassConsole* RogueConsole__println( RogueClassConsole* THIS );
+RogueClassConsole* RogueConsole__println__String( RogueClassConsole* THIS, RogueString* value_0 );
 RogueClassConsole* RogueConsole__write__StringBuilder( RogueClassConsole* THIS, RogueStringBuilder* buffer_0 );
 RogueInt32 RogueConsole__width( RogueClassConsole* THIS );
 RogueLogical RogueReader_Byte___has_another( RogueObject* THIS );
 RogueByte RogueReader_Byte___read( RogueObject* THIS );
 RogueClassPrintWriter_output_buffer_* RoguePrintWriter_output_buffer___flush( RogueObject* THIS );
 RogueClassPrintWriter_output_buffer_* RoguePrintWriter_output_buffer___write__StringBuilder( RogueObject* THIS, RogueStringBuilder* buffer_0 );
+RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__init_object( RogueClassConsoleErrorPrinter* THIS );
+RogueString* RogueConsoleErrorPrinter__type_name( RogueClassConsoleErrorPrinter* THIS );
+RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__flush( RogueClassConsoleErrorPrinter* THIS );
+RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__write__StringBuilder( RogueClassConsoleErrorPrinter* THIS, RogueStringBuilder* buffer_0 );
 RogueClassConsoleIOHandler* RogueConsoleIOHandler__init_object( RogueClassConsoleIOHandler* THIS );
 RogueString* RogueConsoleIOHandler__type_name( RogueClassConsoleIOHandler* THIS );
 RogueClassPrimitiveWorkBuffer* RoguePrimitiveWorkBuffer__init_object( RogueClassPrimitiveWorkBuffer* THIS );
@@ -7517,6 +7534,7 @@ RogueString* RogueBlockingConsoleIOHandler__type_name( RogueClassBlockingConsole
 RogueLogical RogueBlockingConsoleIOHandler__has_another( RogueClassBlockingConsoleIOHandler* THIS );
 RogueByte RogueBlockingConsoleIOHandler__read( RogueClassBlockingConsoleIOHandler* THIS );
 void RogueBlockingConsoleIOHandler__write__Array_Int32( RogueClassBlockingConsoleIOHandler* THIS, RogueArray* bytes_0, RogueInt32 count_1 );
+void RogueBlockingConsoleIOHandler__write_error__Array_Int32( RogueClassBlockingConsoleIOHandler* THIS, RogueArray* bytes_0, RogueInt32 count_1 );
 RogueClassCmdMakeRequisite* RogueCmdMakeRequisite__init_object( RogueClassCmdMakeRequisite* THIS );
 RogueString* RogueCmdMakeRequisite__type_name( RogueClassCmdMakeRequisite* THIS );
 RogueClassCmdMakeRequisite* RogueCmdMakeRequisite__cloned__CloneArgs( RogueClassCmdMakeRequisite* THIS, RogueClassCloneArgs* clone_args_0 );
