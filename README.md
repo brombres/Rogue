@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.10
-Date      | November 30, 2016
+Version   | v1.1.11
+Date      | December 3, 2016
 Platforms | Mac, Linux (Ubuntu+), Cygwin
 
 
@@ -34,7 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.11 - December 3, 2016
 - [RogueC] Detailed Rogue error messages now show up in Xcode and can be jumped to by clicking on the error.
-- [RogueC] Any error now prints out in two forms: first the "classic" compiler error format of `filepath:<line>: error <message>` to `stderr` followed by the Rogue standard error format that is more easily readable printed to `stdout`.  Xcode (and perhaps other IDE's) automatically parse and display errors printed to `stderr` in the classic format.
+- [RogueC] Any error now prints out in two forms: first the "classic" compiler error format of `filepath:<line>: error <message>` to `stderr` followed by the Rogue standard error format that is more easily readable printed to `stdout`.  Xcode (and perhaps other IDE's) automatically parse and display errors printed in that classic format.
 - [RogueC] Added `Console.error:PrintWriter`; printing to it prints to `stderr` instead of `stdout`.
 
 ###v1.1.10 - November 30, 2016

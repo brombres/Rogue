@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.1.11.0"
+$define RELEASE_VERSION "1.1.11.1"
 $define RELEASE_DATE    "December 3, 2016"
 
 # TODO:
@@ -245,12 +245,12 @@ class RogueC [singleton]
         write_output
 
       catch (err:RogueError)
-        Console.println "$:$: error:$" (err.filepath,err.line,err.message)
+        Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
         println err
         System.exit(1)
 
       catch (err:Error)
-        Console.println err->String
+        Console.error.println "(Unknown Location):0: error:$" (err.message)
         println err
         System.exit(1)
       endTry
