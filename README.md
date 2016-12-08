@@ -4,7 +4,7 @@ Rogue
           | Current Release
 ----------|-----------------------
 Version   | v1.1.11
-Date      | December 3, 2016
+Date      | December 8, 2016
 Platforms | Mac, Linux (Ubuntu+), Cygwin
 
 
@@ -38,6 +38,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [System] Added `System.sleep(Real64)` that uses `nanosleep()` with nanosecond (1/1,000,000,000 second) precision.
 - [Sockets] Tweaked Socket and ServerSocket class hierarchy in preparation for SecureSocket and SecureServerSocket.
 - [RogueC] Fixed order-of-class-declaration bug where an overridden method's covariant return type would not always be accepted.
+- [RogueC] An unused singleton access (useful to initialze a non-`[essential]` singleton without accessing a specific property or method) now omits the typecast on the result in C++ to avoid an "unused value" error.
 - [Vim] Updated Vim syntax file to support numbers with underscores.
 
 ###v1.1.11 - December 3, 2016

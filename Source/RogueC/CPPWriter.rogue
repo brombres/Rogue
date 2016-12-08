@@ -2461,9 +2461,15 @@ augment CmdReadSingleton
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
-      writer.print( "((" ).print( of_type.cpp_class_name )
-      if (of_type.is_reference) writer.print( "*" )
-      writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
+
+      if (is_statement)
+        # Omit the cast
+        writer.print( "ROGUE_SINGLETON( " ).print( of_type.cpp_name ).print( " )" )
+      else
+        writer.print( "((" ).print( of_type.cpp_class_name )
+        if (of_type.is_reference) writer.print( "*" )
+        writer.print( ")ROGUE_SINGLETON(" ).print( of_type.cpp_name ).print( "))" )
+      endIf
 endAugment
 
 augment CmdWriteSingleton
