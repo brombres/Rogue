@@ -69,6 +69,7 @@ class TokenType
     keyword_assert                : TokenType
     keyword_await                 : TokenType
     keyword_block                 : TokenType
+    keyword_compileError          : TokenType
     keyword_contingent            : TokenType
     keyword_ensure                : TokenType
     keyword_escapeBlock           : TokenType

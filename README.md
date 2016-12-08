@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.12 - December 8, 2016
 - [Rogue] Literal numbers can now contain underscores as visual markers so long as the number does not start with an underscore.  They do not change the value of the number and are intended to be analogous to commas - for example, one million can be written as `1_000_000`.
+- [Rogue] Added new statement `compileError ["optional message"]` that generates a compile error if and when it is parsed.  Useful for informing the developer that a certain API is not implemented for their chosen target.
 - [System] Added `System.sleep(Real64)` that uses `nanosleep()` with nanosecond (1/1,000,000,000 second) precision.
 - [Sockets] Tweaked Socket and ServerSocket class hierarchy in preparation for SecureSocket and SecureServerSocket.
 - [RogueC] Fixed order-of-class-declaration bug where an overridden method's covariant return type would not always be accepted.

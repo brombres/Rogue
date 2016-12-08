@@ -1348,6 +1348,7 @@ extern RogueClassTokenType* RogueTokenType_eoi;
 extern RogueClassTokenType* RogueTokenType_keyword_assert;
 extern RogueClassTokenType* RogueTokenType_keyword_await;
 extern RogueClassTokenType* RogueTokenType_keyword_block;
+extern RogueClassTokenType* RogueTokenType_keyword_compileError;
 extern RogueClassTokenType* RogueTokenType_keyword_contingent;
 extern RogueClassTokenType* RogueTokenType_keyword_ensure;
 extern RogueClassTokenType* RogueTokenType_keyword_escapeBlock;

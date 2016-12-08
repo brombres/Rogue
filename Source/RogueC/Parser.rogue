@@ -1023,6 +1023,13 @@ class Parser
           cur_statement_list.add( parse_block )
           return
 
+        elseIf (consume(TokenType.keyword_compileError))
+          if (next_is(TokenType.literal_string))
+            throw t.error( read->String )
+          else
+            throw t.error( "Missing API implementation for current compile target." )
+          endIf
+
         elseIf (next_is(TokenType.keyword_contingent))
           cur_statement_list.add( parse_contingent )
           return

@@ -137,6 +137,7 @@ class Tokenizer
       TokenType.keyword_assert              = define( TokenType("assert") )
       TokenType.keyword_await               = define( TokenType("await") )
       TokenType.keyword_block               = define( TokenType("block") )
+      TokenType.keyword_compileError        = define( TokenType("compileError") )
       TokenType.keyword_contingent          = define( TokenType("contingent") )
       TokenType.keyword_ensure              = define( TokenType("ensure") )
       TokenType.keyword_escapeBlock         = define( TokenType("escapeBlock") )
@@ -704,15 +705,21 @@ class Tokenizer
       reader.read  # '0'
       reader.read  # [b,c,x] = [2,8,16]
 
+      local allow_underscore = false
       local count = 0
       local n = 0 : Int64
-      local digit = reader.peek.to_number( base )
-      while (reader.has_another and digit != -1)
-        if (digit >= base) throw error( "Digit out of range for base " + base + "." )
-        ++count
-        n = n * base + digit
+      local ch = reader.peek
+      local digit = ch.to_number( base )
+      while (reader.has_another and (digit != -1 or (allow_underscore and ch == '_')))
+        if (ch != '_')
+          if (digit >= base) throw error( "Digit out of range for base " + base + "." )
+          ++count
+          n = n * base + digit
+        endIf
         reader.read
-        digit = reader.peek.to_number( base )
+        ch = reader.peek
+        digit = ch.to_number( base )
+        allow_underscore = true
       endWhile
 
       if (count == 0) throw error( "One or more digits expected." )
