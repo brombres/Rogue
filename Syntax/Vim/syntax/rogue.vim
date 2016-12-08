@@ -2,7 +2,7 @@
 " Language:     Rogue
 " Maintainer:   Abe Pralle <Abe.Pralle@plasmaworks.com>
 " URL:
-" Last Change:  2010.06.03
+" Last Change:  2016.12.08
 
 " Windows: place in c:\Program Files\vim\vimfiles\syntax\
 " MacVim:  place in ~/.vim/syntax/
@@ -53,9 +53,10 @@ syn keyword rogueStorageClass native macro essential abstract final compound pro
 syn keyword rogueExceptions   throw try catch endTry
 "syn match  roguegPreProc      "^\[.*]"
 "syn region  roguePreProc      start="\$\[" end="[\n\]]"
-syn match   rogueNumber       "\<\d\+\(\.\d\+\)\=\>"
-syn match   rogueNumber       "\<0b[01]\+\(\.[01]\+\)\=\>"
-syn match   rogueNumber       "\<0x\x\+\(\.\x\+\)\=\>"
+syn match   rogueNumber       "\<\(\d\|_\)\+\(\.\(\d\|_\)\+\)\=\>"
+syn match   rogueNumber       "\<0b[01_]\+\>"
+syn match   rogueNumber       "\<0x\(\x\|_\)\+\>"
+syn match   rogueNumber       "\<0c[01234567_]\+\(\.[01234567_]\+\)\=\>"
 
 "syn match   rogueIdentifier  "\h\w*"
 "syn match   rogueUserLabelRef  ".\k\+"

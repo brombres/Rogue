@@ -18,6 +18,16 @@ class System [essential]
       if (return_val == -1) throw Error("Process was not created")
       return return_val
 
+    method sleep( seconds:Real64 )
+      # Suspends execution of this program for the specified number of seconds.
+      local nanoseconds = Int32( seconds.fractional_part * 1000000000.0 )
+      seconds = seconds.whole_part
+
+      native @|timespec sleep_time;
+              |sleep_time.tv_sec = (time_t) $seconds;
+              |sleep_time.tv_nsec = (long) $nanoseconds;
+              |nanosleep( &sleep_time, NULL );
+
     method time->Real64
       $if ("C++")
         native @|#if defined(_WIN32)

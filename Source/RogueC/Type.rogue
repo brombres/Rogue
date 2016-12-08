@@ -924,6 +924,13 @@ class Type
 
             sufficient (m.return_type.instance_of(existing_m.return_type))
 
+            # Make sure both return types are organized and try one more time.
+            # We don't do this to begin with to avoid instantiating types that aren't actually
+            # used.
+            m.return_type.organize
+            existing_m.return_type.organize
+            sufficient (m.return_type.instance_of(existing_m.return_type))
+
             # An aspect method returning this that is apparently overriding a this-type method
             # will ultimately be treated as an overridden method instead.
             sufficient (m.type_context.is_aspect and m.returns_this and

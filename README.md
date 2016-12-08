@@ -32,6 +32,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.12 - December 8, 2016
+- [Rogue] Literal numbers can now contain underscores as visual markers so long as the number does not start with an underscore.  They do not change the value of the number and are intended to be analogous to commas - for example, one million can be written as `1_000_000`.
+- [System] Added `System.sleep(Real64)` that uses `nanosleep()` with nanosecond (1/1,000,000,000 second) precision.
+- [RogueC] Fixed order-of-class-declaration bug where an overridden method's covariant return type would not always be accepted.
+- [Vim] Updated Vim syntax file to support numbers with underscores.
+
 ###v1.1.11 - December 3, 2016
 - [RogueC] Detailed Rogue error messages now show up in Xcode and can be jumped to by clicking on the error.
 - [RogueC] Any error now prints out in two forms: first the "classic" compiler error format of `filepath:<line>: error <message>` to `stderr` followed by the Rogue standard error format that is more easily readable printed to `stdout`.  Xcode (and perhaps other IDE's) automatically parse and display errors printed in that classic format.

@@ -728,7 +728,10 @@ class Tokenizer
       local is_negative = consume('-')
 
       local i = 0
-      while (reader.has_another(i+1) and reader.peek(i).is_number()) ++i
+      if (reader.has_another(i+1) and reader.peek(i).is_number())
+        ++i
+        while (reader.has_another(i+1) and (reader.peek(i).is_number() or reader.peek(i) == '_')) ++i
+      endIf
       local ch = reader.peek(i)
       local is_real = ((ch == '.' and reader.peek(i+1).is_number) or ch == 'e' or ch == 'E')
 
@@ -741,9 +744,15 @@ class Tokenizer
           ch = reader.peek(1)
           if (ch >= '0' and ch <= '9')
             reader.read
+            local underscore_count = 0
+            i = 0
+            while (reader.has_another(i+1) and (reader.peek(i).is_number() or reader.peek(i) == '_'))
+              if (reader.peek(i) == '_') ++underscore_count
+              ++i
+            endWhile
             local start_pos = reader.position
             local fraction = scan_real
-            n += fraction / 10.0^(reader.position - start_pos)
+            n += fraction / 10.0^((reader.position - start_pos) - underscore_count)
           elseIf (ch == '.')
             # Start of range
             if (is_negative) n = -n
@@ -782,21 +791,33 @@ class Tokenizer
 
     method scan_real->Real64
       local n = 0.0
+      local allow_underscore = false
       local ch = reader.peek
-      while (ch >= '0' and ch <= '9')
-        local intval = reader.read->Int32 - '0'
-        n = n * 10 + intval
+      while ((ch >= '0' and ch <= '9') or (allow_underscore and ch == '_'))
+        if (ch == '_')
+          reader.read
+        else
+          local intval = reader.read->Int32 - '0'
+          n = n * 10 + intval
+        endIf
         ch = reader.peek
+        allow_underscore = true
       endWhile
       return n
 
     method scan_long->Int64
       local n = 0 : Int64
+      local allow_underscore = false
       local ch = reader.peek
-      while (ch >= '0' and ch <= '9')
-        local intval = reader.read->Int32 - '0'
-        n = n * 10 + intval
+      while ((ch >= '0' and ch <= '9') or (allow_underscore and ch == '_'))
+        if (ch == '_')
+          reader.read
+        else
+          local intval = reader.read->Int32 - '0'
+          n = n * 10 + intval
+        endIf
         ch = reader.peek
+        allow_underscore = true
       endWhile
       return n
 

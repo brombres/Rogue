@@ -1,4 +1,61 @@
-class Socket
+class Socket [abstract]
+  # Abstract base class of BasicSocket and SecureSocket
+  GLOBAL METHODS
+    method create( remote_address:String, port:Int32 )->Socket
+      return BasicSocket( remote_address, port )
+
+    method create( socket_id:Int32 )->Socket
+      # Internal use only - used by BasicServerSocket.
+      return BasicSocket( socket_id )
+
+  PROPERTIES
+
+  METHODS
+    method close->this [abstract]
+
+    method character_reader->Reader<<Character>> [abstract]
+
+    method remote_ip->String
+      return "0.0.0.0"
+
+    method is_closed->Logical     [abstract]
+
+    method is_connected->Logical  [abstract]
+
+    method is_connecting->Logical [abstract]
+
+    method printer->PrintWriter  [abstract]
+
+    method reader->Reader<<Byte>> [abstract]
+
+    method socket_id->Int32       [abstract]
+
+    method writer->Writer<<Byte>> [abstract]
+
+endClass
+
+
+class ServerSocket [abstract]
+  # Abstract base class of BasicServerSocket and SecureServerSocket
+  GLOBAL METHODS
+    method create( port:Int32 )->ServerSocket
+      return BasicServerSocket( port )
+
+  METHODS
+    method accept_connection->Socket [abstract]
+
+    method close->this               [abstract]
+
+    method is_listening->Logical     [abstract]
+
+    method port->Int32               [abstract]
+
+    method socket_id->Int32          [abstract]
+
+endClass
+
+
+class BasicSocket : Socket
   ENUMERATE
     CONNECTING  # 0
     CONNECTED   # 1
@@ -9,13 +66,13 @@ class Socket
       #include <netdb.h>
       #include <pthread.h>
       #include <sys/socket.h>
-      void* RogueSocket_establish_connection( void* context );
+      void* RogueBasicSocket_establish_connection( void* context );
     endNativeHeader
 
     nativeCode
-      void* RogueSocket_establish_connection( void* context )
+      void* RogueBasicSocket_establish_connection( void* context )
       {
-        RogueClassSocket* socket_object = (RogueClassSocket*) context;
+        RogueClassBasicSocket* socket_object = (RogueClassBasicSocket*) context;
 
         socket_object->socket_id = socket( AF_INET, SOCK_STREAM, 0 );
         if (socket_object->socket_id == -1)
@@ -92,14 +149,14 @@ class Socket
     endNativeCode
 
   PROPERTIES
-    remote_address   : String
-    remote_ip        : String
-    port             : Int32
     socket_id        = -1
     state            : Int32
-    reader           = SocketReader( this )
+    remote_ip        : String
+    remote_address   : String
+    port             : Int32
+    reader           = BasicSocketReader( this )
     character_reader = UTF8Reader( reader )
-    writer           = SocketWriter( this )
+    writer           = BasicSocketWriter( this )
     printer          = PrintWriterAdapter( writer )
 
     using_mutex      : Logical
@@ -120,7 +177,7 @@ class Socket
               |pthread_attr_setdetachstate( &attributes, PTHREAD_CREATE_DETACHED );
               |
               |pthread_t thread_ref;
-              |if (0 != pthread_create( &thread_ref, &attributes, RogueSocket_establish_connection, $this ))
+              |if (0 != pthread_create( &thread_ref, &attributes, RogueBasicSocket_establish_connection, $this ))
               |{
               |  // Error launching thread
               |  if ($socket_id != -1)
@@ -132,22 +189,25 @@ class Socket
               |  }
               |}
 
-    method init( socket_id )
-      # Internal use - used by ServerSocket
+    method init( @socket_id )
+      # Internal use - used by BasicServerSocket
       state = CONNECTED
 
     method close->this
       if (using_mutex) native @|pthread_mutex_lock( &$this->thread_mutex );
 
-      if (socket_id != -1)
+      if (@socket_id != -1)
         native @|close( $socket_id );
-        socket_id = -1
+        @socket_id = -1
       endIf
       state = CLOSED
 
       if (using_mutex) native @|pthread_mutex_unlock( &$this->thread_mutex );
 
       return this
+
+    method character_reader->Reader<<Character>>
+      return @character_reader
 
     method is_closed->Logical
       return (state == CLOSED)
@@ -162,15 +222,27 @@ class Socket
       if (using_mutex) native @|pthread_mutex_destroy( &$this->thread_mutex );
       close
 
+    method printer->PrintWriter
+      return @printer
+
+    method reader->Reader<<Byte>>
+      return @reader
+
     method remote_ip->String
       if (@remote_ip) return @remote_ip
       native @|$this->remote_ip = RogueString_create_from_utf8( $this->remote_ip_buffer );
       return @remote_ip
 
+    method socket_id->Int32
+      return @socket_id
+
+    method writer->Writer<<Byte>>
+      return @writer
+
 endClass
 
 
-class ServerSocket
+class BasicServerSocket : ServerSocket
   DEPENDENCIES
     nativeHeader
       #include <netinet/in.h>
@@ -179,14 +251,14 @@ class ServerSocket
     endNativeHeader
 
   PROPERTIES
+    socket_id = -1
     port         : Int32
     is_listening : Logical
-    socket_id = -1
     native    "sockaddr_in address;"
     native    "socklen_t   address_size;"
 
   METHODS
-    method init( port )
+    method init( @port )
       native @|
               |$socket_id = socket( AF_INET, SOCK_STREAM, 0 );
               |if ($socket_id != -1)
@@ -212,11 +284,11 @@ class ServerSocket
               |  }
               |}
 
-      if (not is_listening) close
+      if (not @is_listening) close
 
-    method accept_connection->Socket
+    method accept_connection->BasicSocket
       # Returns null if no connections are being attempted.
-      if (not is_listening) return null
+      if (not @is_listening) return null
 
       local remote_socket_id : Int32
 
@@ -233,25 +305,34 @@ class ServerSocket
               |  return NULL;
               |}
 
-      local result = Socket( remote_socket_id )
+      local result = BasicSocket( remote_socket_id )
       result.remote_ip = native( "RogueString_create_from_utf8( hbuf )" )->String
       return result
+
+    method close->this
+      if (@socket_id != -1)
+        native @|close( $socket_id );
+        @socket_id = -1
+      endIf
+      return this
+
+    method is_listening->Logical
+      return @is_listening
 
     method on_cleanup
       close
 
-    method close->this
-      if (socket_id != -1)
-        native @|close( $socket_id );
-        socket_id = -1
-      endIf
-      return this
+    method port->Int32
+      return @port
+
+    method socket_id->Int32
+      return @socket_id
 endClass
 
 
-class SocketReader : Reader<<Byte>>
+class BasicSocketReader : Reader<<Byte>>
   PROPERTIES
-    socket       : Socket
+    socket       : BasicSocket
     buffer_pos   : Int32
     buffer_count : Int32
     native "RogueByte read_buffer[1024];"
@@ -299,13 +380,13 @@ class SocketReader : Reader<<Byte>>
       return this
 
     method seek( pos:Int32 )->this
-      throw UnsupportedOperationError( "SocketReader.seek()" )
+      throw UnsupportedOperationError( "BasicSocketReader.seek()" )
 endClass
 
 
-class SocketWriter : Writer<<Byte>>
+class BasicSocketWriter : Writer<<Byte>>
   PROPERTIES
-    socket       : Socket
+    socket       : BasicSocket
     write_buffer = Byte[]
 
   METHODS
@@ -342,16 +423,16 @@ class SocketWriter : Writer<<Byte>>
       return this
 
     method reset->this
-      throw UnsupportedOperationError( "SocketWriter.reset()" )
+      throw UnsupportedOperationError( "BasicSocketWriter.reset()" )
 
     method seek( pos:Int32 )->this
-      throw UnsupportedOperationError( "SocketWriter.seek()" )
+      throw UnsupportedOperationError( "BasicSocketWriter.seek()" )
 
     method seek_end()->this
-      throw UnsupportedOperationError( "SocketWriter.seek_end()" )
+      throw UnsupportedOperationError( "BasicSocketWriter.seek_end()" )
 
     method skip( n:Int32 )->this
-      throw UnsupportedOperationError( "SocketWriter.skip()" )
+      throw UnsupportedOperationError( "BasicSocketWriter.skip()" )
 
     method write( value:Byte )->this
       write_buffer.add( value )
