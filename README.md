@@ -3,7 +3,7 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.11
+Version   | v1.1.12
 Date      | December 8, 2016
 Platforms | Mac, Linux (Ubuntu+), Cygwin
 
