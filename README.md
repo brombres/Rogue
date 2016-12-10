@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.13 - December 10, 2016
+- [System] Added `System.os()->String` that returns the one of: `macOS`, `iOS`, `Linux`, `Windows`, `Android`.
+
 ###v1.1.12 - December 8, 2016
 - [Rogue] Literal numbers can now contain underscores as visual markers so long as the number does not start with an underscore.  They do not change the value of the number and are intended to be analogous to commas - for example, one million can be written as `1_000_000`.
 - [Rogue] Added new statement `compileError ["optional message"]` that generates a compile error if and when it is parsed.  Useful for informing the developer that a certain API is not implemented for their chosen target.
@@ -39,7 +42,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Sockets] Tweaked Socket and ServerSocket class hierarchy in preparation for SecureSocket and SecureServerSocket.
 - [RogueC] Fixed order-of-class-declaration bug where an overridden method's covariant return type would not always be accepted.
 - [RogueC] An unused singleton access (useful to initialze a non-`[essential]` singleton without accessing a specific property or method) now omits the typecast on the result in C++ to avoid an "unused value" error.
-- [Vim] Updated Vim syntax file to support numbers with underscores.
+- [Vim] Updated Vim and Sublime syntax files to support numbers with underscores and the new `compileError` statement.
 
 ###v1.1.11 - December 3, 2016
 - [RogueC] Detailed Rogue error messages now show up in Xcode and can be jumped to by clicking on the error.

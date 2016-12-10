@@ -1,4 +1,11 @@
 class System [essential]
+  DEPENDENCIES
+    nativeHeader
+      #if __APPLE__
+        #include "TargetConditionals.h"
+      #endif
+    endNativeHeader
+
   GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
@@ -10,6 +17,28 @@ class System [essential]
         native @|Rogue_quit();
                 |exit( $result_code );
       $endIf
+
+    method os->String
+      # Returns one of:
+      #   macOS
+      #   Windows
+      #   iOS
+      #   Android
+      #   Linux (includes Unix and Posix)
+      native @|#if __APPLE__
+              |  #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+                   return "iOS"
+      native @|  #else
+                   return "macOS"
+      native @|  #endif
+              |#elif _WIN64 || _WIN32
+                 return "Windows"
+      native @|#elif ANDROID
+                 return "Android"
+      native @|#else
+                 return "Linux"
+      native @|#endif
+
 
     method run( command:String )->Int32
       # TODO: http://stackoverflow.com/questions/27046728/how-do-you-use-posix-spawn-to-replace-the-deprecated-system-to-launch-opendiff
