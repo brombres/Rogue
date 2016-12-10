@@ -648,6 +648,9 @@ extern void Rogue_terminate_handler ();
 #include <unistd.h>
 extern "C" char **environ;
 #include <termios.h>
+      #if __APPLE__
+        #include "TargetConditionals.h"
+      #endif
 #include <cstdio>
 #include <cmath>
 

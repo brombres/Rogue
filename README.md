@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.13 - December 10, 2016
 - [System] Added `System.os()->String` that returns the one of: `macOS`, `iOS`, `Linux`, `Windows`, `Android`.
+- [Makefile] Fixed initial roguec build to print out instructions for creating `Hello.rogue` instead of actually creating that file.
 
 ###v1.1.12 - December 8, 2016
 - [Rogue] Literal numbers can now contain underscores as visual markers so long as the number does not start with an underscore.  They do not change the value of the number and are intended to be analogous to commas - for example, one million can be written as `1_000_000`.

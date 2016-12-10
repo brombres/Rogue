@@ -93,8 +93,8 @@ $(BINDIR)/roguec:
 	@echo
 	@echo You can execute the following as a simple test:
 	@echo
-	@echo    println '"Hello World!"' > Hello.rogue
-	@echo    roguec Hello.rogue --execute
+	@echo "    println '\"Hello World!\"' > Hello.rogue"
+	@echo '    roguec Hello.rogue --execute'
 	@echo
 
 test:
