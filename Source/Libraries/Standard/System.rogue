@@ -25,19 +25,19 @@ class System [essential]
       #   iOS
       #   Android
       #   Linux (includes Unix and Posix)
+      local result = "Linux"  # default
       native @|#if __APPLE__
               |  #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-                   return "iOS"
+                   result = "iOS"
       native @|  #else
-                   return "macOS"
+                   result = "macOS"
       native @|  #endif
               |#elif _WIN64 || _WIN32
-                 return "Windows"
+                 result = "Windows"
       native @|#elif ANDROID
-                 return "Android"
-      native @|#else
-                 return "Linux"
+                 result = "Android"
       native @|#endif
+      return result
 
 
     method run( command:String )->Int32
