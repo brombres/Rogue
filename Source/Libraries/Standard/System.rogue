@@ -37,7 +37,7 @@ class System [essential]
                  result = "Windows"
       native @|#elif ANDROID
                  result = "Android"
-      native @|#elif __CYGWIN32__
+      native @|#elif __CYGWIN__
                  result = "Cygwin"
       native @|#endif
       return result
