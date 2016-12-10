@@ -24,6 +24,7 @@ class System [essential]
       #   Windows
       #   iOS
       #   Android
+      #   Cygwin
       #   Linux (includes Unix and Posix)
       local result = "Linux"  # default
       native @|#if __APPLE__
@@ -36,6 +37,8 @@ class System [essential]
                  result = "Windows"
       native @|#elif ANDROID
                  result = "Android"
+      native @|#elif __CYGWIN32__
+                 result = "Cygwin"
       native @|#endif
       return result
 
