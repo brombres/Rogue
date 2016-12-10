@@ -34,6 +34,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.13 - December 10, 2016
 - [System] Added `System.os()->String` that returns the one of: `macOS`, `iOS`, `Linux`, `Windows`, `Android`.
+- [File] Added `File.line_reader()->LineReader`.
+- [Reader] Added `close()->this` to `Reader<<$DataType>>` and appropriate forwarding calls in `LineReader` and `UTF8Reader`.
 - [Makefile] Fixed initial roguec build to print out instructions for creating `Hello.rogue` instead of actually creating that file.
 
 ###v1.1.12 - December 8, 2016

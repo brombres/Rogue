@@ -7,6 +7,10 @@ class UTF8Reader : Reader<<Character>>
     method init( byte_reader )
       next = null
 
+    method close->this
+      byte_reader.close
+      return this
+
     method has_another->Logical
       return next.exists or byte_reader.has_another
 

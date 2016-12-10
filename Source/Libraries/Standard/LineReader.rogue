@@ -15,6 +15,10 @@ class LineReader : Reader<<String>>
     method init( string:String )
       init( string.reader )
 
+    method close->this
+      source.close
+      return this
+
     method has_another->Logical
       return next
 

@@ -286,6 +286,9 @@ class File
               |  return 1;
               |#endif
 
+    method line_reader( filepath:String )->LineReader
+      return LineReader( character_reader(filepath) )
+
     method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path )->String[]
       local options = FileOptions()
       if (ignore_hidden) options = options.ignore_hidden
@@ -655,6 +658,9 @@ class File
 
     method is_folder->Logical [macro]
       File.is_folder( this.filepath )
+
+    method line_reader->LineReader
+      return line_reader( filepath )
 
     method listing( &ignore_hidden, &recursive, &absolute )->String[] [macro]
       File.listing( this.filepath, ignore_hidden, recursive, absolute )

@@ -3,6 +3,9 @@ class Reader<<$DataType>> [aspect]
     position : Int32
 
   METHODS
+    method close->this
+      return this
+
     method has_another->Logical [abstract]
 
     method peek->$DataType [abstract]
