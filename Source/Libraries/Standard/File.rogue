@@ -286,6 +286,11 @@ class File
               |  return 1;
               |#endif
 
+    method is_newer_than( filepath:String, other_filepath:String )->Logical
+      if (not File.exists(other_filepath)) return true
+      if (not File.exists(filepath))       return false
+      return (File.timestamp(filepath) > File.timestamp(other_filepath))
+
     method line_reader( filepath:String )->LineReader
       return LineReader( character_reader(filepath) )
 
@@ -658,6 +663,9 @@ class File
 
     method is_folder->Logical [macro]
       File.is_folder( this.filepath )
+
+    method is_newer_than( other_filepath:String )->Logical [macro]
+      File.is_newer_than( this.filepath, other_filepath )
 
     method line_reader->LineReader
       return line_reader( filepath )

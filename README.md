@@ -32,11 +32,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.13 - December 10, 2016
+###v1.1.13 - December 11, 2016
 - [Rogue] Added `$defined(<identifier>)` directive that returns true if a compiler option `--define=<identifier>[:<value>]` was given or if a prior `$define <identifier> <tokens>` directive was issued.
 - [Rogue] Added metavariables `$sourceFilepath` and `$sourceLine` that can be used in expressions.
 - [Rogue] Now prints out "classic" style error messages if `$defined(IDE)` or Rogue-style error messages if not.  Classic error messages automatically show up in XCode and possibly other IDEs.
 - [System] Added `System.os()->String` that returns the one of: `macOS`, `iOS`, `Linux`, `Windows`, `Android`.
+- [File] Added `File.is_newer_than(other_filepath:String)->Logical` that returns true if the other file does not exist or if this file is newer.  As usual with `File` methods the global method `File.is_newer_than(this_filepath,other_filepath)` may also be called.
 - [File] Added `File.line_reader()->LineReader`.
 - [Reader] Added `close()->this` to `Reader<<$DataType>>` and appropriate forwarding calls in `LineReader` and `UTF8Reader`.
 - [Makefile] Fixed initial roguec build to print out instructions for creating `Hello.rogue` instead of actually creating that file.
