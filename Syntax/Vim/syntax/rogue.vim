@@ -53,7 +53,16 @@ syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro essential abstract final compound propagated foreign preferred
 syn keyword rogueExceptions   throw try catch endTry
 "syn match  roguegPreProc      "^\[.*]"
-"syn region  roguePreProc      start="\$\[" end="[\n\]]"
+syn match   rogueDirective    "\$define\>"
+syn match   rogueDirective    "\$defined\>"
+syn match   rogueDirective    "\$include\>"
+syn match   rogueDirective    "\$if\>"
+syn match   rogueDirective    "\$elseIf\>"
+syn match   rogueDirective    "\$else\>"
+syn match   rogueDirective    "\$endIf\>"
+syn match   rogueDirective    "\$essential\>"
+syn match   rogueDirective    "\<module\>"
+syn match   rogueDirective    "\<using\>"
 syn match   rogueNumber       "\<\(\d\|_\)\+\(\.\(\d\|_\)\+\)\=\>"
 syn match   rogueNumber       "\<0b[01_]\+\>"
 syn match   rogueNumber       "\<0x\(\x\|_\)\+\>"
@@ -126,7 +135,7 @@ hi def link rogueLineComment    Comment
 hi def link rogueConstant    Constant
 hi def link rogueTypedef    Typedef
 hi def link rogueTodo      Todo
-hi def link roguePreProc                PreProc
+hi def link rogueDirective                PreProc
 
 hi def link rogueCommentTitle    SpecialComment
 hi def link rogueDocTags    Special

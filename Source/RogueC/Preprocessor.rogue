@@ -50,6 +50,17 @@ class Preprocessor
             if (keep_tokens) define( defined_word, defined_tokens )
             nextIteration
 
+          elseIf (t.type is TokenType.directive_defined)
+            local defined_word = t->String
+            if (keep_tokens)
+              if (definitions.contains(defined_word))
+                tokens.add( Token(TokenType.keyword_true).set_location(t) )
+              else
+                tokens.add( Token(TokenType.keyword_false).set_location(t) )
+              endIf
+            endIf
+            nextIteration
+
           elseIf (t.type is TokenType.directive_include)
             local filepath_t = reader.read
             if (keep_tokens)

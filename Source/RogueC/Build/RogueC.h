@@ -1294,6 +1294,7 @@ extern RogueClassTable_String_TypeInfo_* RogueRuntime_type_info_lookup;
 extern RogueClassTable_String_String_* RogueToken_filepath_to_filename;
 extern RogueClassTable_String_TokenType_* RogueTokenType_lookup;
 extern RogueClassTokenType* RogueTokenType_directive_define;
+extern RogueClassTokenType* RogueTokenType_directive_defined;
 extern RogueClassTokenType* RogueTokenType_directive_include;
 extern RogueClassTokenType* RogueTokenType_directive_if;
 extern RogueClassTokenType* RogueTokenType_directive_elseIf;

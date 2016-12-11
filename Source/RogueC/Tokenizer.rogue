@@ -77,6 +77,7 @@ class Tokenizer
 
       # Directives
       TokenType.directive_define              = define( DirectiveTokenType("$define") )
+      TokenType.directive_defined             = define( DirectiveTokenType("$defined") )
       TokenType.directive_include             = define( DirectiveTokenType("$include") )
       TokenType.directive_if                  = define( DirectiveTokenType("$if") )
       TokenType.directive_elseIf              = define( DirectiveTokenType("$elseIf") )
@@ -296,6 +297,16 @@ class Tokenizer
         local id = read_identifier
         which (id)
           case "define":              add_new_token( TokenType.directive_define )
+
+          case "defined"
+            consume_spaces
+            local has_parens = consume( '(' )
+            consume_spaces
+            add_new_token( TokenType.directive_defined, read_identifier )
+            consume_spaces
+            if (has_parens and not consume(')')) throw error( "Closing ')' expected." )
+            return null
+
           case "include":             add_new_token( TokenType.directive_include )
           case "if":                  add_new_token( TokenType.directive_if )
           case "elseIf":              add_new_token( TokenType.directive_elseIf )
