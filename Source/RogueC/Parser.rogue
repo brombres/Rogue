@@ -2553,14 +2553,14 @@ class Parser
       elseIf (consume(TokenType.keyword_null))
         return CmdLiteralNull(t)
 
-      elseIf (consume(TokenType.literal_real))
+      elseIf (consume(TokenType.literal_real64))
         return CmdLiteralReal64( t, t->Real64 )
 
-      elseIf (consume(TokenType.literal_integer))
+      elseIf (consume(TokenType.literal_int32))
         local value = t->Int32
         return CmdLiteralInt32( t, value )
 
-      elseIf (consume(TokenType.literal_long))
+      elseIf (consume(TokenType.literal_int64))
         local value = t->Int64
         return CmdLiteralInt64( t, value )
 

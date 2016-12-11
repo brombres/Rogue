@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.1.13.3"
+$define RELEASE_VERSION "1.1.13.4"
 $define RELEASE_DATE    "December 10, 2016"
 
 # TODO:
@@ -199,7 +199,7 @@ class RogueC [singleton]
           usage += @|    Specify one or more compile targets that are used with conditional code
                     |    compilation ('$if ("C++") ...').  C++ is the only supported language
                     |    target.  "Cython" is an optional plug-in target.  Arbitrary platforms
-                    |    may be added at will, e.g. "iOS", "MacOS", etc.
+                    |    may be added at will, e.g. "iOS", "macOS", etc.
                     |
                     |  --test
                     |    Compiled program includes any defined unit tests and runs them on launch.
@@ -245,13 +245,13 @@ class RogueC [singleton]
         write_output
 
       catch (err:RogueError)
-        Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
-        println err
+        if ($defined(IDE)) Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
+        else               println err
         System.exit(1)
 
       catch (err:Error)
-        Console.error.println "(Unknown Location):0: error:$" (err.message)
-        println err
+        if ($defined(IDE)) Console.error.println "(Unknown Location):0: error:$" (err.message)
+        else               println err
         System.exit(1)
       endTry
 
