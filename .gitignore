@@ -3,14 +3,12 @@ Publish.mk
 .DS_Store
 Source/Compiler/Bard/RogueC.bc
 JavaTest
-Programs/Bard/Programs/Mac
-Programs/Bard/Programs/Windows
+Programs
 /Test.rogue
 Test.cpp
 Test.h
 a.out
 RogueProgram.*
-Programs/roguec
 Samples/**/*.h
 Samples/**/*.cpp
 namegenerator
