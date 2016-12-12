@@ -14,6 +14,8 @@ class Scope
 
     control_stack = CmdControlStructure[]
 
+    macro_chain = Method[]
+
   METHODS
     method init( this_type, this_method )
 
@@ -140,7 +142,9 @@ class Scope
           endIf
 
         elseIf (m.is_macro)
-          if (access.source_macro) throw t.error( "Illegal recursive macro definition." )
+          if (macro_chain.contains(m)) throw t.error( "Illegal recursive macro definition." )
+          macro_chain.add( m )
+
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
@@ -149,6 +153,7 @@ class Scope
           endForEach
 
           inline_statements.resolve( this )
+          macro_chain.remove( m )
 
           which (inline_statements.count)
             case 0
@@ -185,7 +190,9 @@ class Scope
           endIf
 
         elseIf (m.is_macro)
-          if (access.source_macro) throw t.error( "Illegal recursive macro definition." )
+          if (macro_chain.contains(m)) throw t.error( "Illegal recursive macro definition." )
+          macro_chain.add( m )
+
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
@@ -194,6 +201,8 @@ class Scope
           endForEach
 
           inline_statements.resolve( this )
+
+          macro_chain.remove( m )
 
           which (inline_statements.count)
             case 0

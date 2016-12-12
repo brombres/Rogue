@@ -3190,7 +3190,6 @@ struct RogueClassCmdAccess : RogueObject
   RogueString* name;
   RogueClassCmdArgs* args;
   RogueCmdNamedArg_List* named_args;
-  RogueClassMethod* source_macro;
 
 };
 
@@ -3260,6 +3259,7 @@ struct RogueClassScope : RogueObject
   RogueClassType* _implicit_type;
   RogueLocal_List* local_list;
   RogueCmdControlStructure_List* control_stack;
+  RogueMethod_List* macro_chain;
 
 };
 

@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.13 - December 11, 2016
+###v1.1.13 - December 12, 2016
 - [Rogue] Moved location of compiled `roguec` executable from `Programs/RogueC/roguec` to `Programs/RogueC/<Platform>/roguec`.  The Makefile will automatically delete the old program and `bin/` link.
 - [Rogue] Added `$defined(<identifier>)` directive that returns true if a compiler option `--define=<identifier>[:<value>]` was given or if a prior `$define <identifier> <tokens>` directive was issued.
 - [Rogue] Added metavariables `$sourceFilepath` and `$sourceLine` that can be used in expressions.

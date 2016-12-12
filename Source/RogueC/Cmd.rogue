@@ -1890,7 +1890,6 @@ class CmdAccess : Cmd
     name         : String
     args         : CmdArgs
     named_args   : CmdNamedArg[]
-    source_macro : Method
     #debug : Logical
 
   METHODS
@@ -1923,7 +1922,6 @@ class CmdAccess : Cmd
 
       local macro_args = (clone_args as MacroArgs)
       if (macro_args)
-        result.source_macro = macro_args.method_info
         return macro_args.inline_access( result )
       endIf
       return result
