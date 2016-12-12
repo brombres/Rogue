@@ -56,7 +56,7 @@ bootstrap_roguec:
 	  if [ -d "Programs/RogueC" ]; \
 	  then \
 	    echo "\nRemoving executable from old location Programs/RogueC"; \
-	    rm -f Programs/RogueC/roguec; \
+	    rm -r Programs/RogueC; \
 	  fi; \
 	  if [ -f "$(BINDIR)/roguec" ]; \
 	  then \
