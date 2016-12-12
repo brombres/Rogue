@@ -792,6 +792,11 @@ class Parser
         else
           # macro this.fn(arg)
           # macro ...
+          if (StackTrace().entries.count > 100)
+            trace
+            println StackTrace()
+            throw RogueError("Recursion limit")
+          endIf
           parse_single_line_statements( this_method.statements )
         endIf
 

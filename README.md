@@ -40,6 +40,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [File] Added `File.is_newer_than(other_filepath:String)->Logical` that returns true if the other file does not exist or if this file is newer.  As usual with `File` methods the global method `File.is_newer_than(this_filepath,other_filepath)` may also be called.
 - [File] Added `File.line_reader()->LineReader`.
 - [Reader] Added `close()->this` to `Reader<<$DataType>>` and appropriate forwarding calls in `LineReader` and `UTF8Reader`.
+- [String] Added `String` methods `is_number()->Logical`, `is_integer()->Logical`, and `is_real()->Logical`.
+- [RogueC] RogueC now detects recursive macro definitions and throws an error instead of crashing.
 - [Makefile] Fixed initial roguec build to print out instructions for creating `Hello.rogue` instead of actually creating that file.
 - [Syntax] Updated Vim Syntax file to include all directives and metavariables.  Did not add to Sublime; not sure on the syntax to include a leading `$`.
 

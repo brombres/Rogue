@@ -1886,10 +1886,11 @@ endClass
 #------------------------------------------------------------------------------
 class CmdAccess : Cmd
   PROPERTIES
-    context    : Cmd
-    name       : String
-    args       : CmdArgs
-    named_args : CmdNamedArg[]
+    context      : Cmd
+    name         : String
+    args         : CmdArgs
+    named_args   : CmdNamedArg[]
+    source_macro : Method
     #debug : Logical
 
   METHODS
@@ -1921,7 +1922,10 @@ class CmdAccess : Cmd
       endIf
 
       local macro_args = (clone_args as MacroArgs)
-      if (macro_args) return macro_args.inline_access( result )
+      if (macro_args)
+        result.source_macro = macro_args.method_info
+        return macro_args.inline_access( result )
+      endIf
       return result
 
     method implicit_type( scope:Scope )->Type
@@ -5490,4 +5494,5 @@ class CmdImplicitIDAccess( t, name:String ) : Cmd
     method resolve( scope:Scope )->Cmd
       throw t.error( "Illegal use of implicit access; can only be used as a query argument in a call." )
 endClass
+
 

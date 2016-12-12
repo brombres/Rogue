@@ -262,6 +262,37 @@ class String
       # Returns 'true' if all character codes in this string are in the range 0..127.
       native( "$this->is_ascii" )
 
+    method is_integer->Logical
+      if (count == 0) return false
+      forEach (ch at index in this)
+        if (ch == '-')
+          if (index > 0) return false
+        elseIf (not ch.is_number)
+          return false
+        endIf
+      endForEach
+      return true
+
+    method is_number->Logical [macro]
+      this.is_real
+
+    method is_real->Logical
+      if (count == 0) return false
+
+      local period_count = 0
+      forEach (ch at index in this)
+        if (ch == '-')
+          if (index > 0) return false
+        elseIf (ch == '.')
+          ++period_count
+          if (period_count == 2) return false
+        elseIf (not ch.is_number)
+          return false
+        endIf
+      endForEach
+
+      return true
+
     method last->Character
       return this[ count-1 ]
 

@@ -140,6 +140,7 @@ class Scope
           endIf
 
         elseIf (m.is_macro)
+          if (access.source_macro) throw t.error( "Illegal recursive macro definition." )
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
@@ -155,7 +156,7 @@ class Scope
               return CmdInlineNative( t, "" ).resolve( this )
             case 1
               return inline_statements.first
-            case 2
+            others
               throw t.error( "Only single line macros are supported." )
           endWhich
 
@@ -184,6 +185,7 @@ class Scope
           endIf
 
         elseIf (m.is_macro)
+          if (access.source_macro) throw t.error( "Illegal recursive macro definition." )
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
@@ -199,7 +201,7 @@ class Scope
               return CmdInlineNative( t, "" ).resolve( this )
             case 1
               return inline_statements.first
-            case 2
+            others
               throw t.error( "Only single line macros are supported." )
           endWhich
 

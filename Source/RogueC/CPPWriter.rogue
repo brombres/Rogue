@@ -3264,6 +3264,12 @@ augment CmdRequire
       writer.print( ")" )
 endAugment
 
+augment CmdMacroGenerated
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      noAction
+endAugment
+
 #{
 augment CmdEnsure
   METHODS
