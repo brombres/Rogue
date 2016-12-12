@@ -34,7 +34,7 @@ debug: libraries
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --debug $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/$(PLATFORM)/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
 exhaustive: libraries
 	@echo -------------------------------------------------------------------------------
@@ -43,19 +43,19 @@ exhaustive: libraries
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/$(PLATFORM)/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
-roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/$(PLATFORM)/roguec
+roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
 
 touch_roguec:
 	touch Source/RogueC/RogueC.rogue
 
 bootstrap_roguec:
-	@if [ ! -f "Programs/$(PLATFORM)/roguec" ]; \
+	@if [ ! -f "Programs/RogueC/$(PLATFORM)/roguec" ]; \
 	then \
-	  if [ -d "Programs/RogueC" ]; \
+	  if [ -f "Programs/RogueC/roguec" ]; \
 	  then \
-	    echo "\nRemoving executable from old location Programs/RogueC"; \
+	    echo "\nRemoving executable from old location Programs/RogueC/roguec"; \
 	    rm -f Programs/RogueC/roguec; \
 	  fi; \
 	  if [ -f "$(BINDIR)/roguec" ]; \
@@ -64,11 +64,11 @@ bootstrap_roguec:
 	    $(SUDO_CMD) rm $(BINDIR)/roguec; \
 	  fi; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo Compiling Programs/$(PLATFORM)/roguec from C++ source...; \
+	  echo Compiling Programs/RogueC/$(PLATFORM)/roguec from C++ source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/$(PLATFORM)/roguec; \
-	  mkdir -p Programs/$(PLATFORM); \
-	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/$(PLATFORM)/roguec; \
+	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
+	  mkdir -p Programs/RogueC/$(PLATFORM); \
+	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
 	fi;
 
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
@@ -78,19 +78,19 @@ Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
-Programs/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
+Programs/RogueC/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
-	@echo "Recompiling RogueC.cpp -> Programs/$(PLATFORM)/roguec..."
+	@echo "Recompiling RogueC.cpp -> Programs/RogueC/$(PLATFORM)/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/$(PLATFORM)/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
 libraries:
-	@mkdir -p Programs/$(PLATFORM)
-	@if [ $$(rsync -rtv --delete --exclude=.*.sw? --dry-run Source/Libraries Programs/$(PLATFORM) | wc -l) -gt 4 ]; \
+	@mkdir -p Programs/RogueC/$(PLATFORM)
+	@if [ $$(rsync -rtv --delete --exclude=.*.sw? --dry-run Source/Libraries Programs/RogueC/$(PLATFORM) | wc -l) -gt 4 ]; \
 	then \
 	  echo "==== Updating Libraries ===="; \
-		rsync -rtv --delete --exclude=.*.sw? Source/Libraries Programs/$(PLATFORM) | tail -n +2 | (tac 2> /dev/null || tail -r) | tail -n +4 | (tac 2> /dev/null || tail -r); \
+		rsync -rtv --delete --exclude=.*.sw? Source/Libraries Programs/RogueC/$(PLATFORM) | tail -n +2 | (tac 2> /dev/null || tail -r) | tail -n +4 | (tac 2> /dev/null || tail -r); \
 	fi
 
 libs: libraries
@@ -100,9 +100,9 @@ if:
 
 $(BINDIR)/roguec:
 	@echo -------------------------------------------------------------------------------
-	@echo Creating $(BINDIR)/roguec linked to Programs/$(PLATFORM)/roguec
+	@echo Creating $(BINDIR)/roguec linked to Programs/RogueC/$(PLATFORM)/roguec
 	@echo -------------------------------------------------------------------------------
-	printf "%s\nexec \"%s/Programs/$(PLATFORM)/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > roguec.script
+	printf "%s\nexec \"%s/Programs/RogueC/$(PLATFORM)/roguec\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > roguec.script
 	@echo Copying roguec.script to $(BINDIR)/roguec
 	$(SUDO_CMD) cp roguec.script $(BINDIR)/roguec; \
 	$(SUDO_CMD) chmod a+x $(BINDIR)/roguec; \
@@ -131,17 +131,17 @@ x3:
 
 revert: revert_cpp_source libraries
 	@echo -------------------------------------------------------------------------------
-	@echo "Recompiling RogueC.cpp -> Programs/$(PLATFORM)/roguec..."
+	@echo "Recompiling RogueC.cpp -> Programs/RogueC/$(PLATFORM)/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/$(PLATFORM)/roguec
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
 revert_cpp_source:
-	git checkout Source/RogueC/Build && rm -f Programs/$(PLATFORM)/roguec
+	git checkout Source/RogueC/Build && rm -f Programs/RogueC/$(PLATFORM)/roguec
 
 .PHONY: clean
 clean:
-	rm -rf Programs/$(PLATFORM)
+	rm -rf Programs/RogueC/$(PLATFORM)
 	rm -f Hello.cpp
 	rm -f Hello.h
 	rm -f ./a.out
