@@ -271,9 +271,11 @@ augment Program
 
       writer.close
 
-      # .CPP implementation ---------------------------------------------------
-      println "Writing $.cpp..." (filepath)
-      writer = CPPWriter( filepath + ".cpp" )
+      # .CPP/.MM implementation ---------------------------------------------------
+      local extension = "cpp"
+      if (RogueC.compile_targets["ObjC"]) extension = "mm"
+      println "Writing $.$..." (filepath,extension)
+      writer = CPPWriter( "$.$" (filepath,extension) )
 
       local base_filename = filepath
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
