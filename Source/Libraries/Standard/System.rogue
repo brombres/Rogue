@@ -25,6 +25,7 @@ class System [essential]
       #   iOS
       #   Android
       #   Cygwin
+      #   emscripten
       #   Linux (includes Unix and Posix)
       local result = "Linux"  # default
       native @|#if __APPLE__
@@ -39,6 +40,8 @@ class System [essential]
                  result = "Android"
       native @|#elif __CYGWIN__
                  result = "Cygwin"
+      native @|#elif defined(EMSCRIPTEN)
+                 result = "emscripten"
       native @|#endif
       return result
 
