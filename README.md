@@ -5,7 +5,7 @@ Rogue
 ----------|-----------------------
 Version   | v1.1.12
 Date      | December 8, 2016
-Platforms | Mac, Linux (Ubuntu+), Cygwin
+Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
 
@@ -45,6 +45,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [RogueC] RogueC now detects recursive macro definitions and throws an error instead of crashing.
 - [Makefile] Fixed initial roguec build to print out instructions for creating `Hello.rogue` instead of actually creating that file.
 - [Syntax] Updated Vim Syntax file to include all directives and metavariables.  Did not add to Sublime; not sure on the syntax to include a leading `$`.
+- [C++] The generated .h file now identifies `ROGUE_PLATFORM_IOS` or `ROGUE_PLATFORM_MACOS` if appropriate.
 
 ###v1.1.12 - December 8, 2016
 - [Rogue] Literal numbers can now contain underscores as visual markers so long as the number does not start with an underscore.  They do not change the value of the number and are intended to be analogous to commas - for example, one million can be written as `1_000_000`.

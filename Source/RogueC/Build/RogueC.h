@@ -32,8 +32,12 @@
 #if defined(_WIN32)
 #  define ROGUE_PLATFORM_WINDOWS 1
 #elif defined(__APPLE__)
-#  define ROGUE_PLATFORM_MAC 1
-#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+  #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+    #define ROGUE_PLATFORM_IOS 1
+  #else
+    #define ROGUE_PLATFORM_MACOS 1
+    #define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+  #endif
 #elif defined(__ANDROID__)
 #  define ROGUE_PLATFORM_ANDROID 1
 #elif defined(__linux__)
