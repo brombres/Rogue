@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.13
-Date      | December 12, 2016
+Version   | v1.1.14
+Date      | December 15, 2016
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.14 - December 13, 2016
+###v1.1.14 - December 15, 2016
 - [RogueC] If `C++` and `ObjC` are both listed as compile targets then the output files are `.h` and `.mm` instead of `.h` and `.cpp`.
 - [RogueC] Added compile flag `--ide[=<IDE Name>` that prints errors in classic C style for IDE's to pick up.  Realized previous approach of using a `--define` wasn't conceptually sound because the define targets the program being compiled rather than the compiler itself.
 - [System] `System.os()` now returns `"emscripten"` if appropriate.
