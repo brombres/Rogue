@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.1.14.1"
-$define RELEASE_DATE    "December 13, 2016"
+$define RELEASE_VERSION "1.1.14.2"
+$define RELEASE_DATE    "December 14, 2016"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -94,6 +94,8 @@ class RogueC [singleton]
 
     plugins = Plugin[]
 
+    using_ide : String
+
   METHODS
     method init
 
@@ -133,9 +135,6 @@ class RogueC [singleton]
                    |    Mark all classes as [api] - all methods of any referenced class are included
                    |    in the compiled program whether they're used or not.
                    |
-                   |  --main
-                   |    Include a main() function in the output file.
-                   |
                    |  --compile[=<compiler invocation>]
                    |    Creates an executable from the compiled .rogue code - for example, compiles
                    |    and links the .cpp code generated from the .rogue program.  Automatically
@@ -173,8 +172,16 @@ class RogueC [singleton]
                    |    Default is 1MB.  If neither MB nor K is specified then the number is
                    |    assumed to be bytes.
                    |
+                   |  --ide[=<IDE Name>]
+                   |    Indicates that roguec is being invoked from an IDE.  Currently this causes
+                   |    error messages to print out in a "classic" C style, which Xcode (and
+                   |    possibly other IDEs') will automatically pick up and display.
+                   |
                    |  --libraries="path1[;path2...]"
                    |    Add one or more additional library folders to the search path.
+                   |
+                   |  --main
+                   |    Include a main() function in the output file.
                    |
                    |  --output=destpath/[filename]
                    |    Specify the destination folder and optionally the base filename for the
@@ -245,13 +252,13 @@ class RogueC [singleton]
         write_output
 
       catch (err:RogueError)
-        if ($defined(IDE)) Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
-        else               println err
+        if (using_ide) Console.error.println "$:$: error:$" (err.filepath,err.line,err.message)
+        else           println err
         System.exit(1)
 
       catch (err:Error)
-        if ($defined(IDE)) Console.error.println "(Unknown Location):0: error:$" (err.message)
-        else               println err
+        if (using_ide) Console.error.println "(Unknown Location):0: error:$" (err.message)
+        else           println err
         System.exit(1)
       endTry
 
@@ -442,6 +449,17 @@ class RogueC [singleton]
                 all_essential = true
                 all_api = true
               endIf
+
+            case "--ide"
+              if (value.count)
+                using_ide = value
+              else
+                using_ide = "Unknown"
+              endIf
+
+            case "--main"
+              if (value.count) throw RogueError( "Unexpected value for '--main' option." )
+              generate_main = true
 
             case "--libraries"
               if (not value.count) throw RogueError( ''One or more paths expected after "--libraries=".'' )

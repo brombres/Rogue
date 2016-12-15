@@ -1858,6 +1858,7 @@ struct RogueClassRogueC : RogueObject
   RogueInt32 gc_mode;
   RogueInt32 gc_threshold;
   RoguePlugin_List* plugins;
+  RogueString* using_ide;
 
 };
 
@@ -5970,6 +5971,9 @@ RogueClassPrintWriter_output_buffer_* RoguePrintWriter_output_buffer___write__St
 RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__init_object( RogueClassConsoleErrorPrinter* THIS );
 RogueString* RogueConsoleErrorPrinter__type_name( RogueClassConsoleErrorPrinter* THIS );
 RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__flush( RogueClassConsoleErrorPrinter* THIS );
+RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__print__String( RogueClassConsoleErrorPrinter* THIS, RogueString* value_0 );
+RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__println( RogueClassConsoleErrorPrinter* THIS );
+RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__println__String( RogueClassConsoleErrorPrinter* THIS, RogueString* value_0 );
 RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__write__StringBuilder( RogueClassConsoleErrorPrinter* THIS, RogueStringBuilder* buffer_0 );
 RogueClassConsoleIOHandler* RogueConsoleIOHandler__init_object( RogueClassConsoleIOHandler* THIS );
 RogueString* RogueConsoleIOHandler__type_name( RogueClassConsoleIOHandler* THIS );
