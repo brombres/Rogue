@@ -63,6 +63,7 @@ syn match   rogueDirective    "\$endIf\>"
 syn match   rogueDirective    "\$essential\>"
 syn match   rogueDirective    "\$sourceFilepath\>"
 syn match   rogueDirective    "\$sourceLine\>"
+syn match   rogueDirective    "\$methodSignature\>"
 syn keyword rogueDirective    module
 syn keyword rogueDirective    using
 syn match   rogueNumber       "\<\(\d\|_\)\+\(\.\(\d\|_\)\+\)\=\>"

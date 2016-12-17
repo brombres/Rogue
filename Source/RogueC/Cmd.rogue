@@ -5494,3 +5494,16 @@ class CmdImplicitIDAccess( t, name:String ) : Cmd
 endClass
 
 
+class CmdMetaMethodSignature( t ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs )->Cmd
+      return CmdMetaMethodSignature( t )
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralString( t, scope.this_method.signature ).resolve( scope )
+
+    method type->Type
+      return Program.type_String
+endClass
+
+

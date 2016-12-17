@@ -2876,6 +2876,9 @@ class Parser
         cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
         return CmdRequire(t, expr, message, temp_var)
 
+      elseIf (consume(TokenType.meta_methodSignature))
+        return CmdMetaMethodSignature( t )
+
       else
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf

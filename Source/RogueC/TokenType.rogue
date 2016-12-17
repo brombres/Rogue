@@ -14,6 +14,9 @@ class TokenType
     directive_essential           : TokenType
     directive_using               : TokenType
 
+    meta_methodSignature          : TokenType
+
+
     placeholder_id                : TokenType
     begin_augment_tokens          : TokenType
 

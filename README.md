@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.15 - December 16, 2016
+- [Rogue] Added meta-variable `$methodSignature`.
+
 ###v1.1.14 - December 15, 2016
 - [RogueC] If `C++` and `ObjC` are both listed as compile targets then the output files are `.h` and `.mm` instead of `.h` and `.cpp`.
 - [RogueC] Added compile flag `--ide[=<IDE Name>` that prints errors in classic C style for IDE's to pick up.  Realized previous approach of using a `--define` wasn't conceptually sound because the define targets the program being compiled rather than the compiler itself.

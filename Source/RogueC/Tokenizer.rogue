@@ -76,20 +76,24 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
-      TokenType.directive_define              = define( DirectiveTokenType("$define") )
-      TokenType.directive_defined             = define( DirectiveTokenType("$defined") )
-      TokenType.directive_include             = define( DirectiveTokenType("$include") )
-      TokenType.directive_if                  = define( DirectiveTokenType("$if") )
-      TokenType.directive_elseIf              = define( DirectiveTokenType("$elseIf") )
-      TokenType.directive_else                = define( DirectiveTokenType("$else") )
-      TokenType.directive_endIf               = define( DirectiveTokenType("$endIf") )
-      TokenType.directive_essential           = define( DirectiveTokenType("$essential") )
-      TokenType.directive_module              = define( StructuralDirectiveTokenType("module") )
-      TokenType.directive_using               = define( StructuralDirectiveTokenType("using") )
+      TokenType.directive_define               = define( DirectiveTokenType("$define") )
+      TokenType.directive_defined              = define( DirectiveTokenType("$defined") )
+      TokenType.directive_include              = define( DirectiveTokenType("$include") )
+      TokenType.directive_if                   = define( DirectiveTokenType("$if") )
+      TokenType.directive_elseIf               = define( DirectiveTokenType("$elseIf") )
+      TokenType.directive_else                 = define( DirectiveTokenType("$else") )
+      TokenType.directive_endIf                = define( DirectiveTokenType("$endIf") )
+      TokenType.directive_essential            = define( DirectiveTokenType("$essential") )
+      TokenType.directive_module               = define( StructuralDirectiveTokenType("module") )
+      TokenType.directive_using                = define( StructuralDirectiveTokenType("using") )
+
+      TokenType.meta_methodSignature           = define( DirectiveTokenType("methodSignature") )
 
       # The following exist but are immediately converted by the tokenizer
-      #TokenType.directive_sourceFilepath      = define( DirectiveTokenType("$sourceFilepath") )
-      #TokenType.directive_sourceLine          = define( DirectiveTokenType("$sourceLine") )
+      # $sourceFilepath
+      # $sourceLine
+      # $sourceMethodName
+      # $sourceMethodSignature
 
       TokenType.placeholder_id       = define( TokenType("$id") )
 
@@ -320,6 +324,7 @@ class Tokenizer
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
           case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
+          case "methodSignature":     add_new_token( TokenType.meta_methodSignature )
           others
             add_new_token( TokenType.placeholder_id, "$" + id )
         endWhich
