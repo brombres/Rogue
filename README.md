@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.15 - December 16, 2016
 - [Rogue] Added meta-variable `$methodSignature`.
+- [UnsupportedOperationError] Constructing an `UnsupportedOperationError()` now prints an error message identifying the caller's class context and method signature.
 
 ###v1.1.14 - December 15, 2016
 - [RogueC] If `C++` and `ObjC` are both listed as compile targets then the output files are `.h` and `.mm` instead of `.h` and `.cpp`.
