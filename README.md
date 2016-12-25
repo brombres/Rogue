@@ -36,6 +36,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Added meta-variable `$methodSignature`.
 - [UnsupportedOperationError] Constructing an `UnsupportedOperationError()` now prints an error message identifying the caller's class context and method signature.
 - [JSONParser] Turned global property `JSONParser.buffer` into singleton `JSONParserBuffer` to avoid order of class initialization issues.
+- [Stopwatch] Added constructor `Stopwatch(&stopped)`.  The Stopwatch will automatically start counting (as before) unless the `&stopped` flag is sent.
 
 ###v1.1.14 - December 15, 2016
 - [RogueC] If `C++` and `ObjC` are both listed as compile targets then the output files are `.h` and `.mm` instead of `.h` and `.cpp`.
