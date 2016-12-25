@@ -36,10 +36,9 @@ endClass
 
 class JSONParseError( message ) : Error;
 
-class JSONParser
-  GLOBAL PROPERTIES
-    buffer = StringBuilder()
+class JSONParserBuffer : StringBuilder [singleton];
 
+class JSONParser
   PROPERTIES
     reader : ParseReader
 
@@ -157,6 +156,7 @@ class JSONParser
 
       if (not reader.has_another) return ""
 
+      local buffer = JSONParserBuffer
       buffer.clear
       local ch = reader.read
       while (reader.has_another and ch != terminator)
@@ -196,6 +196,7 @@ class JSONParser
       if (ch == '"' or ch == '\'')
         return parse_string
       else
+        local buffer = JSONParserBuffer
         buffer.clear
         local finished = false
         while (not finished and reader.has_another)
