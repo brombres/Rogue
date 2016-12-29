@@ -4563,15 +4563,26 @@ endClass
 #------------------------------------------------------------------------------
 class CmdCreateList : Cmd
   PROPERTIES
-    list_var   : Local
-    init_block : CmdBlock
     elements   : CmdArgs
 
   METHODS
-    method init( t, list_var, init_block, elements )
+    method init( t, elements )
 
     method cloned( clone_args=null:CloneArgs )->Cmd
-      return CmdCreateList( t, list_var, init_block.cloned(clone_args), clone(elements,clone_args) )
+      return CmdCreateList( t, clone(elements,clone_args) )
+
+    method implicit_type( scope:Scope )->Type
+      if (elements.count == 0) return Program.get_type_reference( t, "ValueList" )
+
+      local common_type = elements.first.implicit_type( scope )
+      if (not common_type) return null
+
+      forEach (arg in elements)
+        local arg_type = arg.implicit_type( scope )
+        if (arg_type is not common_type) return null
+      endForEach
+
+      return Program.get_type_reference( t, common_type.name + "[]" )
 
     method resolve( scope:Scope )->Cmd
       local list_type : Type
@@ -4595,10 +4606,7 @@ class CmdCreateList : Cmd
 
       if (not list_type) throw t.error( "TODO: [] -> Property[]" )
 
-      list_var.type = list_type
-      init_block.statements.add( CmdAssign(t,list_var,CmdAccess(t,list_type.name,CmdArgs(CmdLiteralInt32(t,elements.count)))) )
-
-      return CmdTypedLiteralList( t, list_var, init_block, elements ).resolve( scope )
+      return CmdTypedLiteralList( t, list_type.name, elements ).resolve( scope )
 
 endClass
 
@@ -5237,26 +5245,31 @@ endClass
 
 class CmdTypedLiteralList : Cmd
   PROPERTIES
-    list_var       : Local
     list_type_name : String
-    init_block     : CmdBlock
     elements       : CmdArgs
 
   METHODS
-    method init( t, list_var, init_block, elements=CmdArgs() )
-      list_type_name = list_var.type.name
+    method init( t, list_type_name, elements=CmdArgs() )
+
+    method cloned( clone_args:CloneArgs )->CmdTypedLiteralList
+      return CmdTypedLiteralList( t, list_type_name, elements.cloned(clone_args) )
 
     method add( element:Cmd )->CmdTypedLiteralList
       elements.add( element )
       return this
 
-    method cloned( clone_args:CloneArgs )->CmdTypedLiteralList
-      return CmdTypedLiteralList( t, list_var, init_block.cloned(clone_args), elements.cloned(clone_args) )
-
     method implicit_type( scope:Scope )->Type
       return type
 
     method resolve( scope:Scope )->Cmd
+      local list_type = Program.get_type_reference( t, list_type_name )
+      local list_var = scope.this_method.add_local( t, Program.create_unique_id, list_type )
+      list_var.initial_value = CmdAccess( t, list_type_name, CmdArgs(CmdLiteralInt32(t,elements.count)) )
+      scope.this_body.add( CmdLocalDeclaration(t,list_var).resolve(scope) )
+
+      local init_block = CmdBlock( t )
+      scope.this_body.add( init_block )
+
       if (list_type_name == "Byte[]")
         elements.resolve( scope )
         contingent
@@ -5285,6 +5298,55 @@ class CmdTypedLiteralList : Cmd
 
     method type->Type
       return Program.get_type_reference( t, list_type_name )
+endClass
+
+
+class CmdTypedLiteralTable : Cmd
+  PROPERTIES
+    table_type_name : String
+    keys            : CmdArgs
+    values          : CmdArgs
+
+  METHODS
+    method init( t, table_type_name, keys=CmdArgs(), values=CmdArgs() )
+
+    method cloned( clone_args:CloneArgs )->CmdTypedLiteralTable
+      return CmdTypedLiteralTable( t, table_type_name, keys.cloned(clone_args), values.cloned(clone_args) )
+
+    method add( key:Cmd, value:Cmd )->CmdTypedLiteralTable
+      keys.add( key )
+      values.add( value )
+      return this
+
+    method add_key( key:Cmd )->CmdTypedLiteralTable
+      keys.add( key )
+      return this
+
+    method add_value( value:Cmd )->CmdTypedLiteralTable
+      values.add( value )
+      return this
+
+    method implicit_type( scope:Scope )->Type
+      return type
+
+    method resolve( scope:Scope )->Cmd
+      local table_var = scope.this_method.add_local( t, Program.create_unique_id, type )
+      table_var.initial_value = CmdAccess( t, table_type_name, CmdArgs() )
+      scope.this_body.add( CmdLocalDeclaration(t,table_var).resolve(scope) )
+
+      local init_block = CmdBlock( t )
+      scope.this_body.add( init_block )
+
+      forEach (key at index in keys)
+        local item = CmdAccess( t,CmdAccess(t,table_var.name), "set", CmdArgs(key,values[index]) )
+        init_block.statements.add( item )
+      endForEach
+      init_block = init_block.resolve( scope )
+
+      return CmdAccess( t, table_var ).resolve( scope )
+
+    method type->Type
+      return Program.get_type_reference( t, table_type_name )
 endClass
 
 

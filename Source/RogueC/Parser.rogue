@@ -2605,14 +2605,7 @@ class Parser
           must_consume( TokenType.symbol_close_bracket )
         endIf
 
-        # Placeholder var for list reference - will replace type later when known
-        local list_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
-        cur_statement_list.add( CmdLocalDeclaration(t,list_var,&skip_initialization) )
-
-        local init_block = CmdBlock( t )
-        cur_statement_list.add( init_block )
-
-        return CmdCreateList( t, list_var, init_block, elements )
+        return CmdCreateList( t, elements )
 
       elseIf (consume(TokenType.symbol_at_brace))
         return parse_value_table( t )
@@ -3039,7 +3032,7 @@ class Parser
 
     method parse_value_table( t:Token )->Cmd
       # '{' already consumed
-      local table = CmdAccess( t, "ValueTable", CmdArgs() ) : Cmd
+      local table = CmdTypedLiteralTable( t, "ValueTable" )
       consume_eols
       if (consume(TokenType.symbol_close_brace)) return table
 
@@ -3072,7 +3065,7 @@ class Parser
           value = CmdLiteralLogical( t, true )
         endIf
 
-        table = CmdAccess( key.t, table, "set", CmdArgs(key,value) )
+        table.add( key, value )
 
         consume_eols
       endWhile
@@ -3082,12 +3075,10 @@ class Parser
 
     method parse_value_list( t:Token )->Cmd
       # '[' already consumed
-      local list = CmdAccess( t, "ValueList", CmdArgs() ) : Cmd
       consume_eols
-      if (consume(TokenType.symbol_close_bracket)) return list
+      if (consume(TokenType.symbol_close_bracket)) return CmdAccess( t, "ValueList", CmdArgs() )
 
-      local list_var = this_method.add_local( t, Program.create_unique_id, Program.get_type_reference(t, "ValueList"), list )
-      cur_statement_list.add( CmdLocalDeclaration(t,list_var) )
+      local elements = CmdArgs()
 
       local first = true
       while (first or consume(TokenType.symbol_comma))
@@ -3104,13 +3095,13 @@ class Parser
           value = parse_expression
         endIf
 
-        cur_statement_list.add( CmdAccess(value.t, CmdAccess(t,list_var.name), "add", CmdArgs(value)) )
+        elements.add( value )
 
         consume_eols
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
-      return CmdAccess( t, list_var.name )
+      return CmdTypedLiteralList( t, "ValueList", elements )
 
     method parse_typed_literal_list( t:Token, list_type_name:String )->Cmd
       must_consume( TokenType.symbol_open_bracket )
@@ -3138,15 +3129,7 @@ class Parser
       endWhile
       must_consume( TokenType.symbol_close_bracket )
 
-      local list_type = Program.get_type_reference( t, list_type_name )
-      local list_var = this_method.add_local( t, Program.create_unique_id, list_type )
-      list_var.initial_value = CmdAccess( t, list_type_name, CmdArgs(CmdLiteralInt32(t,elements.count)) )
-      cur_statement_list.add( CmdLocalDeclaration(t,list_var) )
-
-      local init_block = CmdBlock( t )
-      cur_statement_list.add( init_block )
-
-      return CmdTypedLiteralList( t, list_var, init_block, elements )
+      return CmdTypedLiteralList( t, list_type_name, elements )
 endClass
 
 class FnParam( name:String )

@@ -32,7 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.15 - December 28, 2016
+###v1.1.15 - December 29, 2016
+- [RogueC] Compiler no longer crashes on property declarations initialized to list values, including implicitly and explicitly typed lists as well as ValueList types.
+- [RogueC] Reworked literal ValueTable construction mechanism to be more robust - previously a large number of definitions would exceed the C++ call nesting limit.
+- [RogueC] Reworked declaration of
 - [Rogue] Added meta-variable `$methodSignature`.
 - [UnsupportedOperationError] Constructing an `UnsupportedOperationError()` now prints an error message identifying the caller's class context and method signature.
 - [JSONParser] Turned global property `JSONParser.buffer` into singleton `JSONParserBuffer` to avoid order of class initialization issues.

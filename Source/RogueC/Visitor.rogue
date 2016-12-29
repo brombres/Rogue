@@ -233,6 +233,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdTypedLiteralTable )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdThisContext )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -554,6 +560,7 @@ class Visitor
     method on_enter( cmd:CmdTypeOperator )
     method on_enter( cmd:CmdCreateList )
     method on_enter( cmd:CmdTypedLiteralList )
+    method on_enter( cmd:CmdTypedLiteralTable )
     method on_enter( cmd:CmdUnary )
     method on_enter( cmd:CmdWhich )
     method on_enter( cmd:CmdWhichCase )
@@ -639,6 +646,7 @@ class Visitor
     method on_leave( cmd:CmdTypeOperator )
     method on_leave( cmd:CmdCreateList )
     method on_leave( cmd:CmdTypedLiteralList )
+    method on_leave( cmd:CmdTypedLiteralTable )
     method on_leave( cmd:CmdUnary )
     method on_leave( cmd:CmdWhich )
     method on_leave( cmd:CmdWhichCase )
@@ -974,6 +982,10 @@ class Visitor
 
     method dispatch( cmd:CmdTypedLiteralList )
       cmd.elements.dispatch( this )
+
+    method dispatch( cmd:CmdTypedLiteralTable )
+      cmd.keys.dispatch( this )
+      cmd.values.dispatch( this )
 
     method dispatch( cmd:CmdTaskControl )
       forEach (section in cmd.sections) section.statements.dispatch( this )
