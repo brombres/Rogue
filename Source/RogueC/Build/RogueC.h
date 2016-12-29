@@ -6829,6 +6829,7 @@ RogueLogical RogueFunction_TableEntry_String_ParseReader__TableEntry_String_Pars
 RogueClassStopwatch* RogueStopwatch__init_object( RogueClassStopwatch* THIS );
 RogueString* RogueStopwatch__to_String( RogueClassStopwatch* THIS );
 RogueString* RogueStopwatch__type_name( RogueClassStopwatch* THIS );
+RogueClassStopwatch* RogueStopwatch__init__Logical( RogueClassStopwatch* THIS, RogueLogical stopped_0 );
 RogueReal64 RogueStopwatch__elapsed( RogueClassStopwatch* THIS );
 RoguePlugin_List* RoguePlugin_List__init_object( RoguePlugin_List* THIS );
 RoguePlugin_List* RoguePlugin_List__init( RoguePlugin_List* THIS );

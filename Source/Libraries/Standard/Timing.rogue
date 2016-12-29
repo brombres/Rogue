@@ -61,7 +61,11 @@ class Timer
     stop_time                : Real64?
 
   METHODS
-    method init( duration )
+    method init( duration, &expired )
+      if (expired)
+        stop_time = start_time
+        start_time -= duration
+      endIf
 
     method elapsed->Real64
       if (stop_time.exists)
