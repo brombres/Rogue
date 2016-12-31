@@ -20,7 +20,7 @@ class STLPriorityQueue<<$DataType>>
     method init
       native "$this->_q = new std::priority_queue<$($DataType),std::vector<$($DataType)>,std::function<bool($($DataType),$($DataType))>> ( [] ($($DataType) a,$($DataType) b) -> bool { return " ( native("a")->$DataType < native("b")->$DataType ) native " } );"
 
-    method clean_up
+    method on_cleanup
       while (count) pop() # Probably a faster way...
       native "delete $this->_q;"
 

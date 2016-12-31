@@ -87,13 +87,11 @@ class Tokenizer
       TokenType.directive_module               = define( StructuralDirectiveTokenType("module") )
       TokenType.directive_using                = define( StructuralDirectiveTokenType("using") )
 
-      TokenType.meta_methodSignature           = define( DirectiveTokenType("methodSignature") )
+      TokenType.meta_methodSignature           = define( DirectiveTokenType("$methodSignature") )
 
       # The following exist but are immediately converted by the tokenizer
       # $sourceFilepath
       # $sourceLine
-      # $sourceMethodName
-      # $sourceMethodSignature
 
       TokenType.placeholder_id       = define( TokenType("$id") )
 
