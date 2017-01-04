@@ -329,6 +329,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdAdjust )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdAdjustLocal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -494,6 +500,7 @@ class Visitor
     method on_enter( args:CmdArgs )
     method on_enter( cmd:CmdAccess )
     method on_enter( cmd:CmdAdjustGlobal )
+    method on_enter( cmd:CmdAdjust )
     method on_enter( cmd:CmdAdjustLocal )
     method on_enter( cmd:CmdAdjustProperty )
     method on_enter( cmd:CmdAssert )
@@ -580,6 +587,7 @@ class Visitor
 
     method on_leave( cmd:CmdAccess )
     method on_leave( cmd:CmdAdjustGlobal )
+    method on_leave( cmd:CmdAdjust )
     method on_leave( cmd:CmdAdjustLocal )
     method on_leave( cmd:CmdAdjustProperty )
     method on_leave( cmd:CmdAssert )
@@ -923,6 +931,9 @@ class Visitor
     method dispatch( cmd:CmdBinary )
       cmd.left = cmd.left.dispatch( this )
       cmd.right = cmd.right.dispatch( this )
+
+    method dispatch( cmd:CmdAdjust )
+      cmd.operand.dispatch( this )
 
     method dispatch( cmd:CmdAdjustLocal )
       cmd.local_info.type.dispatch( this )

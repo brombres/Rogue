@@ -3992,6 +3992,9 @@ class CmdAdjust : Cmd
   METHODS
     method init( t, operand, delta )
 
+    method cloned( clone_args:CloneArgs )->Cmd
+      return CmdAdjust( t, operand.cloned(clone_args), delta )
+
     method is_scoped_read_access->Logical
       return true
 

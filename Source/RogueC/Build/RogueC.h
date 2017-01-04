@@ -7837,6 +7837,7 @@ void RogueCmdSufficient__write_cpp__CPPWriter_Logical( RogueClassCmdSufficient* 
 RogueClassCmdSufficient* RogueCmdSufficient__init__Token_Cmd_CmdContingent( RogueClassCmdSufficient* THIS, RogueClassToken* _auto_1451_0, RogueClassCmd* _auto_1452_1, RogueClassCmdContingent* _auto_1453_2 );
 RogueClassCmdAdjust* RogueCmdAdjust__init_object( RogueClassCmdAdjust* THIS );
 RogueString* RogueCmdAdjust__type_name( RogueClassCmdAdjust* THIS );
+RogueClassCmd* RogueCmdAdjust__cloned__CloneArgs( RogueClassCmdAdjust* THIS, RogueClassCloneArgs* clone_args_0 );
 RogueClassCmd* RogueCmdAdjust__dispatch__Visitor( RogueClassCmdAdjust* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdAdjust__resolve__Scope( RogueClassCmdAdjust* THIS, RogueClassScope* scope_0 );
 RogueClassCmdAdjust* RogueCmdAdjust__init__Token_Cmd_Int32( RogueClassCmdAdjust* THIS, RogueClassToken* _auto_1454_0, RogueClassCmd* _auto_1455_1, RogueInt32 _auto_1456_2 );
@@ -8482,6 +8483,7 @@ RogueClassCmd* RogueVisitor__visit__CmdCallPriorMethod( RogueClassVisitor* THIS,
 RogueClassCmd* RogueVisitor__visit__CmdRange( RogueClassVisitor* THIS, RogueClassCmdRange* cmd_0 );
 RogueClassCmd* RogueVisitor__visit__CmdUnary( RogueClassVisitor* THIS, RogueClassCmdUnary* cmd_0 );
 RogueClassCmd* RogueVisitor__visit__CmdBinary( RogueClassVisitor* THIS, RogueClassCmdBinary* cmd_0 );
+RogueClassCmd* RogueVisitor__visit__CmdAdjust( RogueClassVisitor* THIS, RogueClassCmdAdjust* cmd_0 );
 RogueClassCmd* RogueVisitor__visit__CmdAdjustLocal( RogueClassVisitor* THIS, RogueClassCmdAdjustLocal* cmd_0 );
 RogueClassCmd* RogueVisitor__visit__CmdAdjustProperty( RogueClassVisitor* THIS, RogueClassCmdAdjustProperty* cmd_0 );
 RogueClassCmd* RogueVisitor__visit__CmdAdjustGlobal( RogueClassVisitor* THIS, RogueClassCmdAdjustGlobal* cmd_0 );
@@ -8513,6 +8515,7 @@ void RogueVisitor__on_enter__CmdStatementList( RogueClassVisitor* THIS, RogueCla
 void RogueVisitor__on_enter__CmdArgs( RogueClassVisitor* THIS, RogueClassCmdArgs* args_0 );
 void RogueVisitor__on_enter__CmdAccess( RogueClassVisitor* THIS, RogueClassCmdAccess* cmd_0 );
 void RogueVisitor__on_enter__CmdAdjustGlobal( RogueClassVisitor* THIS, RogueClassCmdAdjustGlobal* cmd_0 );
+void RogueVisitor__on_enter__CmdAdjust( RogueClassVisitor* THIS, RogueClassCmdAdjust* cmd_0 );
 void RogueVisitor__on_enter__CmdAdjustLocal( RogueClassVisitor* THIS, RogueClassCmdAdjustLocal* cmd_0 );
 void RogueVisitor__on_enter__CmdAdjustProperty( RogueClassVisitor* THIS, RogueClassCmdAdjustProperty* cmd_0 );
 void RogueVisitor__on_enter__CmdAssert( RogueClassVisitor* THIS, RogueClassCmdAssert* cmd_0 );
@@ -8593,6 +8596,7 @@ void RogueVisitor__on_leave__CmdStatementList( RogueClassVisitor* THIS, RogueCla
 void RogueVisitor__on_leave__CmdArgs( RogueClassVisitor* THIS, RogueClassCmdArgs* args_0 );
 void RogueVisitor__on_leave__CmdAccess( RogueClassVisitor* THIS, RogueClassCmdAccess* cmd_0 );
 void RogueVisitor__on_leave__CmdAdjustGlobal( RogueClassVisitor* THIS, RogueClassCmdAdjustGlobal* cmd_0 );
+void RogueVisitor__on_leave__CmdAdjust( RogueClassVisitor* THIS, RogueClassCmdAdjust* cmd_0 );
 void RogueVisitor__on_leave__CmdAdjustLocal( RogueClassVisitor* THIS, RogueClassCmdAdjustLocal* cmd_0 );
 void RogueVisitor__on_leave__CmdAdjustProperty( RogueClassVisitor* THIS, RogueClassCmdAdjustProperty* cmd_0 );
 void RogueVisitor__on_leave__CmdAssert( RogueClassVisitor* THIS, RogueClassCmdAssert* cmd_0 );
@@ -8719,6 +8723,7 @@ void RogueVisitor__dispatch__CmdCallPriorMethod( RogueClassVisitor* THIS, RogueC
 void RogueVisitor__dispatch__CmdRange( RogueClassVisitor* THIS, RogueClassCmdRange* cmd_0 );
 void RogueVisitor__dispatch__CmdUnary( RogueClassVisitor* THIS, RogueClassCmdUnary* cmd_0 );
 void RogueVisitor__dispatch__CmdBinary( RogueClassVisitor* THIS, RogueClassCmdBinary* cmd_0 );
+void RogueVisitor__dispatch__CmdAdjust( RogueClassVisitor* THIS, RogueClassCmdAdjust* cmd_0 );
 void RogueVisitor__dispatch__CmdAdjustLocal( RogueClassVisitor* THIS, RogueClassCmdAdjustLocal* cmd_0 );
 void RogueVisitor__dispatch__CmdAdjustProperty( RogueClassVisitor* THIS, RogueClassCmdAdjustProperty* cmd_0 );
 void RogueVisitor__dispatch__CmdAdjustGlobal( RogueClassVisitor* THIS, RogueClassCmdAdjustGlobal* cmd_0 );

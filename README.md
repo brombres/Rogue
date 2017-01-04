@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.16 - January 3, 2016
+- [RogueC] Fixed compiler error caused by a pending syntax error when '--' is misused inside functions and possibly other places - CmdAdjust.cloned() was not implemented and the base Visitor class did not accept a generic CmdAdjust.
+
 ###v1.1.15 - December 29, 2016
 - [RogueC] Compiler no longer crashes on property declarations initialized to list values, including implicitly and explicitly typed lists as well as ValueList types.
 - [RogueC] Reworked literal ValueTable construction mechanism to be more robust - previously a large number of definitions would exceed the C++ call nesting limit.
