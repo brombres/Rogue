@@ -855,6 +855,7 @@ struct RogueClassObjectValue; // ObjectValue
 struct RogueClassStringValue; // StringValue
 struct RogueClassFile; // File
 struct RogueClassUndefinedValue; // UndefinedValue
+struct RogueClassListRewriter_Character_; // ListRewriter<<Character>>
 struct RogueClassFunction_1192; // Function_1192
 struct RogueClassBlockingConsoleIOHandler; // BlockingConsoleIOHandler
 struct RogueClassCmdMakeRequisite; // CmdMakeRequisite
@@ -3462,6 +3463,15 @@ struct RogueClassUndefinedValue : RogueObject
 
 };
 
+struct RogueClassListRewriter_Character_ : RogueObject
+{
+  // PROPERTIES
+  RogueCharacter_List* list;
+  RogueInt32 read_index;
+  RogueInt32 write_index;
+
+};
+
 struct RogueClassFunction_1192 : RogueObject
 {
   // PROPERTIES
@@ -5406,6 +5416,7 @@ extern RogueType* RogueTypeObjectValue;
 extern RogueType* RogueTypeStringValue;
 extern RogueType* RogueTypeFile;
 extern RogueType* RogueTypeUndefinedValue;
+extern RogueType* RogueTypeListRewriter_Character_;
 extern RogueType* RogueTypeFunction_1192;
 extern RogueType* RogueTypeBlockingConsoleIOHandler;
 extern RogueType* RogueTypeCmdMakeRequisite;
@@ -5935,7 +5946,9 @@ RogueString* RogueCharacter_List__type_name( RogueCharacter_List* THIS );
 RogueCharacter_List* RogueCharacter_List__init__Int32( RogueCharacter_List* THIS, RogueInt32 initial_capacity_0 );
 RogueCharacter_List* RogueCharacter_List__add__Character( RogueCharacter_List* THIS, RogueCharacter value_0 );
 RogueInt32 RogueCharacter_List__capacity( RogueCharacter_List* THIS );
+RogueCharacter_List* RogueCharacter_List__discard_from__Int32( RogueCharacter_List* THIS, RogueInt32 index_0 );
 RogueCharacter_List* RogueCharacter_List__reserve__Int32( RogueCharacter_List* THIS, RogueInt32 additional_elements_0 );
+RogueClassListRewriter_Character_* RogueCharacter_List__rewriter( RogueCharacter_List* THIS );
 RogueString* RogueArray_Character___type_name( RogueArray* THIS );
 RogueClassStringTable_String_* RogueStringTable_String___init_object( RogueClassStringTable_String_* THIS );
 RogueString* RogueStringTable_String___type_name( RogueClassStringTable_String_* THIS );
@@ -6820,13 +6833,14 @@ RogueString* RogueParseReader__type_name( RogueClassParseReader* THIS );
 RogueLogical RogueParseReader__has_another( RogueClassParseReader* THIS );
 RogueCharacter RogueParseReader__peek( RogueClassParseReader* THIS );
 RogueCharacter RogueParseReader__read( RogueClassParseReader* THIS );
-RogueClassParseReader* RogueParseReader__init__String_Int32( RogueClassParseReader* THIS, RogueString* source_0, RogueInt32 _auto_372_1 );
+RogueClassParseReader* RogueParseReader__init__String_Int32_Logical( RogueClassParseReader* THIS, RogueString* source_0, RogueInt32 _auto_372_1, RogueLogical preserve_crlf_2 );
 RogueClassParseReader* RogueParseReader__init__File_Int32( RogueClassParseReader* THIS, RogueClassFile* file_0, RogueInt32 _auto_373_1 );
-RogueClassParseReader* RogueParseReader__init__Character_List_Int32( RogueClassParseReader* THIS, RogueCharacter_List* source_0, RogueInt32 _auto_374_1 );
+RogueClassParseReader* RogueParseReader__init__Character_List_Int32_Logical( RogueClassParseReader* THIS, RogueCharacter_List* source_0, RogueInt32 _auto_374_1, RogueLogical preserve_crlf_2 );
 RogueLogical RogueParseReader__consume__Character( RogueClassParseReader* THIS, RogueCharacter ch_0 );
 RogueLogical RogueParseReader__consume__String( RogueClassParseReader* THIS, RogueString* text_0 );
 RogueLogical RogueParseReader__consume_id__String( RogueClassParseReader* THIS, RogueString* text_0 );
 RogueLogical RogueParseReader__consume_spaces( RogueClassParseReader* THIS );
+RogueClassParseReader* RogueParseReader__convert_crlf_to_newline( RogueClassParseReader* THIS );
 RogueLogical RogueParseReader__has_another__Int32( RogueClassParseReader* THIS, RogueInt32 n_0 );
 RogueCharacter RogueParseReader__peek__Int32( RogueClassParseReader* THIS, RogueInt32 num_ahead_0 );
 RogueClassParseReader* RogueParseReader__seek_location__Int32_Int32( RogueClassParseReader* THIS, RogueInt32 new_line_0, RogueInt32 new_column_1 );
@@ -7555,6 +7569,12 @@ RogueString* RogueFile__filename( RogueClassFile* THIS );
 RogueClassUndefinedValue* RogueUndefinedValue__init_object( RogueClassUndefinedValue* THIS );
 RogueString* RogueUndefinedValue__to_String( RogueClassUndefinedValue* THIS );
 RogueString* RogueUndefinedValue__type_name( RogueClassUndefinedValue* THIS );
+RogueClassListRewriter_Character_* RogueListRewriter_Character___init_object( RogueClassListRewriter_Character_* THIS );
+RogueString* RogueListRewriter_Character___type_name( RogueClassListRewriter_Character_* THIS );
+RogueClassListRewriter_Character_* RogueListRewriter_Character___init__Character_List( RogueClassListRewriter_Character_* THIS, RogueCharacter_List* _auto_1147_0 );
+RogueLogical RogueListRewriter_Character___has_another( RogueClassListRewriter_Character_* THIS );
+RogueCharacter RogueListRewriter_Character___read( RogueClassListRewriter_Character_* THIS );
+RogueClassListRewriter_Character_* RogueListRewriter_Character___write__Character( RogueClassListRewriter_Character_* THIS, RogueCharacter value_0 );
 RogueClassFunction_1192* RogueFunction_1192__init_object( RogueClassFunction_1192* THIS );
 RogueString* RogueFunction_1192__type_name( RogueClassFunction_1192* THIS );
 void RogueFunction_1192__call( RogueClassFunction_1192* THIS );
