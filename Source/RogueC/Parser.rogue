@@ -1102,7 +1102,12 @@ class Parser
         return
 
       elseIf (consume(TokenType.keyword_yield))
-        cur_statement_list.add( CmdYield(t) )
+        local result : Cmd
+        if (not next_is_end_command)
+          result = parse_expression
+        endIf
+
+        cur_statement_list.add( CmdYield(t,result) )
         return
 
       elseIf (consume(TokenType.keyword_throw))

@@ -4656,7 +4656,7 @@ class CmdAwait : Cmd
       statement_list.add( CmdLocalDeclaration(t, task_var) )
 
       local cmd_while = CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update"))
-      cmd_while.statements.add( CmdYield(t) )
+      cmd_while.statements.add( CmdYield(t,null) )
       statement_list.add( cmd_while )
 
       if (result_var)
@@ -4668,16 +4668,19 @@ class CmdAwait : Cmd
 endClass
 
 class CmdYield : Cmd
+  PROPERTIES
+    return_value : Cmd
+
   METHODS
-    method init( t )
+    method init( t, return_value )
 
     method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
-        task_args.add_yield( t )
+        task_args.add_yield( t, return_value )
         return null
       else
-        return CmdYield( t )
+        return CmdYield( t, clone(return_value,clone_args) )
       endIf
 
     method resolve( scope:Scope )->Cmd

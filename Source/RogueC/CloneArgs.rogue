@@ -121,9 +121,10 @@ class TaskArgs : CloneArgs
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return result
 
-    method add_yield( t:Token )->TaskArgs
+    method add_yield( t:Token, value=null:Cmd )->TaskArgs
       local next_section = create_section
       set_next_ip( t, next_section )
+      if (value) add( CmdAssign( t, CmdAccess(t,"result"), value ) )
       add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       begin_section( next_section )
       return this
@@ -150,6 +151,7 @@ class TaskArgs : CloneArgs
       return CmdThisContext( t, task_type )
 
     method cmd_read_context( t:Token )->Cmd
+      if (original_method.is_global) throw t.error( "Cannot access object properties from a global context." )
       return CmdReadProperty( t, CmdThisContext(t,task_type), context_property )
 
     method convert_local_name( local_info:Local )->String

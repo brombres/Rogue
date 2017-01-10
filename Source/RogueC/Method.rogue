@@ -226,7 +226,7 @@ class Method
 
       if (name == "init")
         if (is_global)
-          throw t.error( "init() methods cannot be global methods.  Rename your method create_class() if you need to perform one-time setup." )
+          throw t.error( "init() methods cannot be global methods.  Rename your method init_class() if you need to perform class setup." )
         elseIf (type_context.is_compound)
           throw t.error( "Compounds cannot have initializers.  Use global create(...) methods instead." )
         endIf
@@ -235,7 +235,7 @@ class Method
       endIf
 
       if (is_task)
-        if (is_global) throw t.error( "Global methods and routines cannot be tasks." )
+        #if (is_global) throw t.error( "Global methods and routines cannot be tasks." )
 
         task_result_type = return_type
         if (return_type)
@@ -374,10 +374,12 @@ class Method
 
       # Add an init method that accepts the original class context as well as all method parameters
       local m_init = task_type.add_method( t, "init" )
-      m_init.add_parameter( t, "context" )
-      forEach (p in parameters)
-        m_init.add_parameter( t, "$_$" (p.name,p.index) )
-      endForEach
+      if (not is_global)
+        m_init.add_parameter( t, "context" )
+        forEach (p in parameters)
+          m_init.add_parameter( t, "$_$" (p.name,p.index) )
+        endForEach
+      endIf
 
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
@@ -416,7 +418,7 @@ class Method
       # Original method gets a "return TaskObjectName()"
       statements = CmdStatementList()
       local args = CmdArgs()
-      args.add( CmdLiteralThis(t,this.type_context) )
+      if (not is_global) args.add( CmdLiteralThis(t,this.type_context) )
       forEach (p in m_temp.parameters) args.add( CmdAccess(t,p.name) )
       statements.add( CmdReturn( t, CmdAccess(t,task_type.name,args) ) )
 
@@ -427,7 +429,7 @@ class Method
       endForEach
 
       local task_args = TaskArgs( task_type, m_execute, this.type_context, this )
-      task_args.context_property = task_type.add_property( t, "context", this.type_context )
+      if (not is_global) task_args.context_property = task_type.add_property( t, "context", this.type_context )
       task_args.ip_property = task_type.add_property( t, "ip", Program.type_Int32 )
 
       forEach (statement in m_temp.statements)

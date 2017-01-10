@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.17 - January 10, 2017
+- [task] Routines and global methods can now be made into tasks with the `[task]` attribute.
+
 ###v1.1.16 - January 8, 2017
 - [ParseReader] Constructors now accept optional flag `&preserve_crlf`.  Unless the flag is set to true then CR characters (Unicode 13) will be stripped.
 - [RogueC] Fixed to work with files containing CRLF (CR characters are stripped).
