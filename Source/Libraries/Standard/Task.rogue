@@ -9,6 +9,11 @@ class Task
     stop_requested : Logical
 
   METHODS
+    method execute->Logical
+      # Execute another task command.  Return true to have another command
+      # execute immediately or false to yield execution.
+      return false
+
     method start->this
       if (update) TaskManager.add( this )
       return this
@@ -18,13 +23,15 @@ class Task
       return this
 
     method update->Logical
-      return false  # return "true" to continue the task next time
+      while (execute) noAction
+      return false  # false stops the task; return "true" to continue the task next time
 endClass
 
 
 class TaskWithResult<<$ResultType>> : Task
   PROPERTIES
-    result : $ResultType
+    result     : $ResultType
+    has_result : Logical  # used by the [task] system
 
   METHODS
     method finish->$ResultType

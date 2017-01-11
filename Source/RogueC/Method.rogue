@@ -383,6 +383,9 @@ class Method
 
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
+      if (task_result_type)
+        m_update.statements.add( CmdAssign( t, CmdAccess(t,"has_result"), CmdLiteralLogical(t,false) ) )
+      endIf
       m_update.statements.add( CmdGenericLoop( t, CmdControlStructure.type_while, CmdAccess(t,"execute",CmdArgs()) ) )
       m_update.statements.add( CmdReturn( t, CmdCompareNE(t,CmdAccess(t,"ip"),CmdLiteralInt32(t,-1)) ) )
 

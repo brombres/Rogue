@@ -1928,10 +1928,12 @@ class CmdAccess : Cmd
 
     method implicit_type( scope:Scope )->Type
       local result = scope.find_type( name )
-      if (not result or not result.is_routine) return result
+      if (not result) return null
+      if (not result.is_routine) return result
 
       local template = Program.find_template( name )
       if (template)
+        if (template.is_task) return null
         if (template.routine_return_type) return template.routine_return_type
         throw t.error( "Routine '$' does not return a value." (name) )
       endIf
@@ -4647,15 +4649,23 @@ class CmdAwait : Cmd
           # Fix up local 'result' type to match task result type
           result_var.type = p_result.type
         else
-          throw expression.t.error( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - remove the call to start()." )
+          throw expression.t.error( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - if so remove the call to start()." )
         endIf
       endIf
 
       local task_var = scope.this_method.add_local( t, Program.create_unique_id )
       task_var.initial_value = expression
       statement_list.add( CmdLocalDeclaration(t, task_var) )
+      local has_result = task_type.find_property( "has_result" )
+      if (has_result)
+        statement_list.add( CmdAssign( t, CmdAccess(t,CmdReadLocal(t,task_var),"has_result"), CmdLiteralLogical(t,false) ) )
+      endIf
 
-      local cmd_while = CmdGenericLoop(t, CmdControlStructure.type_while, CmdAccess(t,CmdReadLocal(t,task_var),"update"))
+      local condition = CmdAccess(t,CmdReadLocal(t,task_var),"execute") : Cmd
+      if (has_result)
+        condition = CmdLogicalOr( t, condition, CmdLogicalNot(t,CmdAccess(t,CmdReadLocal(t,task_var),"has_result")) )
+      endIf
+      local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, condition )
       cmd_while.statements.add( CmdYield(t,null) )
       statement_list.add( cmd_while )
 

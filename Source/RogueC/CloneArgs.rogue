@@ -110,7 +110,10 @@ class TaskArgs : CloneArgs
 
     method create_return( t:Token, value=null:Cmd )->Cmd
       local result = CmdBlock( t )
-      if (value) result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
+      if (value)
+        result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
+        result.statements.add( CmdAssign( t, CmdAccess(t,"has_result"), CmdLiteralLogical(t,true) ) )
+      endIf
       result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,-1) ) )
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       return result
@@ -124,7 +127,10 @@ class TaskArgs : CloneArgs
     method add_yield( t:Token, value=null:Cmd )->TaskArgs
       local next_section = create_section
       set_next_ip( t, next_section )
-      if (value) add( CmdAssign( t, CmdAccess(t,"result"), value ) )
+      if (value)
+        add( CmdAssign( t, CmdAccess(t,"result"), value ) )
+        add( CmdAssign( t, CmdAccess(t,"has_result"), CmdLiteralLogical(t,true) ) )
+      endIf
       add( CmdReturn(t,CmdLiteralLogical(t,false)) )
       begin_section( next_section )
       return this
