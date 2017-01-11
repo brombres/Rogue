@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.16
-Date      | January 8, 2017
+Version   | v1.1.17
+Date      | January 10, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -35,6 +35,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ###v1.1.17 - January 10, 2017
 - [Rogue] Rogue now supports the `yield <value>` command in tasks.  `yield` surrenders execution without returning a value.  `yield <value>` surrenders execution and returns a value.  The command `await <task_name>` waits for a `yield <value>` and is not satisfied by a simple `yield`.
 - [task] Routines and global methods can now be made into tasks with the `[task]` attribute.
+- [Wiki] Added Task system documentation to Wiki: <https://github.com/AbePralle/Rogue/wiki/Tasks>
 
 ###v1.1.16 - January 8, 2017
 - [ParseReader] Constructors now accept optional flag `&preserve_crlf`.  Unless the flag is set to true then CR characters (Unicode 13) will be stripped.
