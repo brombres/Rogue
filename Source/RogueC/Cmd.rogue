@@ -4638,7 +4638,7 @@ class CmdAwait : Cmd
 
     method resolve( scope:Scope )->Cmd
       if (not scope.this_method.is_task_conversion)
-        throw t.error( "The 'await' command can only be used in [task] methods." )
+        throw t.error( "The 'await' command can only be used in [task] methods and routines." )
       endIf
 
       expression = expression.resolve( scope )
@@ -4690,7 +4690,7 @@ class CmdYield : Cmd
 
     method resolve( scope:Scope )->Cmd
       if (not scope.this_method.is_task_conversion)
-        throw t.error( "The 'yield' statement can only be used in [task] methods." )
+        throw t.error( "The 'yield' statement can only be used in [task] methods and routines." )
       endIf
 
       forEach (control_structure in scope.control_stack)
