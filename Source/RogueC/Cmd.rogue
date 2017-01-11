@@ -4649,7 +4649,7 @@ class CmdAwait : Cmd
           # Fix up local 'result' type to match task result type
           result_var.type = p_result.type
         else
-          throw expression.t.error( "Task method does not return a result.  Ensure you are not awaiting a task method that calls start() - if so remove the call to start()." )
+          throw expression.t.error( "Called task does not produce a result." )
         endIf
       endIf
 
