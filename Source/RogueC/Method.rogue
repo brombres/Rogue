@@ -376,10 +376,10 @@ class Method
       local m_init = task_type.add_method( t, "init" )
       if (not is_global)
         m_init.add_parameter( t, "context" )
-        forEach (p in parameters)
-          m_init.add_parameter( t, "$_$" (p.name,p.index) )
-        endForEach
       endIf
+      forEach (p in parameters)
+        m_init.add_parameter( t, "$_$" (p.name,p.index) )
+      endForEach
 
       local m_update = task_type.add_method( t, "update" )
       m_update.return_type = Program.type_Logical
