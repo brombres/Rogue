@@ -113,6 +113,8 @@ class TaskArgs : CloneArgs
       if (value)
         result.statements.add( CmdAssign( t, CmdAccess(t,"result"), value ) )
       endIf
+
+      # Even a nil return counts as having a result
       result.statements.add( CmdAssign( t, CmdAccess(t,"has_result"), CmdLiteralLogical(t,true) ) )
       result.statements.add( CmdWriteProperty( t, CmdThisContext(t,task_type), ip_property, CmdLiteralInt32(t,-1) ) )
       result.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )

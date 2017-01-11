@@ -20940,6 +20940,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
   (void*) (ROGUEM1146) RogueVisitor__visit__CmdAccess,
   0,
   0,
@@ -21030,6 +21031,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM1153) RogueVisitor__on_enter__CmdLiteralString,
+  0,
   0,
   0,
   0,
@@ -22380,6 +22382,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
   (void*) (ROGUEM1146) RogueVisitor__visit__CmdAccess,
   0,
   0,
@@ -22470,6 +22473,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM1153) RogueVisitor__on_enter__CmdLiteralString,
+  0,
   0,
   0,
   0,
@@ -22701,6 +22705,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
   (void*) (ROGUEM1146) RogueVisitor__visit__CmdAccess,
   0,
   0,
@@ -22791,6 +22796,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM1327) RogueTraceUsedCodeVisitor__on_enter__CmdLiteralString,
+  0,
   0,
   0,
   0,
@@ -23920,6 +23926,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
   (void*) (ROGUEM1453) RogueQueryToGenericFunctionConversionVisitor__visit__CmdAccess,
   0,
   0,
@@ -24010,6 +24017,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM1153) RogueVisitor__on_enter__CmdLiteralString,
+  0,
   0,
   0,
   0,
@@ -24222,6 +24230,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   0,
+  0,
   (void*) (ROGUEM1146) RogueVisitor__visit__CmdAccess,
   0,
   0,
@@ -24312,6 +24321,7 @@ void* Rogue_dynamic_method_table[] =
   0,
   0,
   (void*) (ROGUEM1153) RogueVisitor__on_enter__CmdLiteralString,
+  0,
   0,
   0,
   0,
@@ -24594,45 +24604,45 @@ int Rogue_type_info_table[6481] =
   68,92,92,92,108,0,11043,2,92,0,0,1,1903,68,0,11097,2,92,0,0,7,1903,2130,2076,2077,
   2127,2156,2157,68,92,216,217,108,92,92,0,11151,2,92,0,0,4,1903,2158,2159,2160,68,16,216,216,
   0,11205,2,92,0,0,3,1903,2161,2149,68,16,216,0,11259,2,92,0,0,3,1903,2080,2076,68,75,
-  216,0,11313,1,0,0,0,0,11512,4,134,135,92,0,0,13,1903,1960,1985,1986,1987,1988,1989,1990,1991,
-  1992,1950,2108,2109,68,110,10,11,16,11,16,136,136,134,92,274,275,0,11568,2,92,0,0,2,1903,
-  2080,68,75,0,11622,2,92,0,0,2,1903,2080,68,75,0,11676,2,92,0,0,3,1903,2080,2133,68,
-  75,92,0,11730,2,92,0,0,3,1903,2127,2133,68,108,92,0,11784,2,92,0,0,2,1903,2162,68,
-  99,0,11838,2,92,0,0,3,1903,2162,2133,68,99,92,0,11892,2,92,0,0,3,1903,455,2163,68,
-  92,99,0,11946,2,92,0,0,4,1903,455,2163,2133,68,92,99,92,0,12000,2,92,0,0,4,1903,
-  455,2164,2076,68,92,106,216,0,12054,4,387,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,
-  12108,3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,12162,2,92,0,0,4,1903,455,2163,
-  2131,68,92,99,10,0,12216,2,92,0,0,3,1903,2162,2131,68,99,10,0,12270,3,307,92,0,0,
-  4,1903,2134,2133,2162,68,69,92,99,0,12324,3,307,92,0,0,5,1903,2134,2133,455,2163,68,69,92,
-  92,99,0,12378,2,92,0,0,3,1903,2165,2166,68,75,92,0,12432,2,92,0,0,4,1903,455,2165,
-  1642,68,92,75,92,0,12486,2,92,0,0,3,1903,455,2165,68,92,75,0,12540,2,92,0,0,5,
-  1903,455,2165,1642,2133,68,92,75,92,92,0,12594,2,92,0,0,3,1903,2167,2168,68,397,136,0,12648,
-  2,6,0,0,2,1637,449,398,10,0,12665,2,9,0,0,0,0,12682,2,92,0,0,1,1903,68,
-  0,12736,1,0,0,3,1661,2074,2075,76,10,10,0,12753,2,375,0,0,2,1705,1706,75,106,0,12952,
-  1,0,0,8,449,1648,1649,1650,1651,1652,1653,1654,10,10,10,403,404,404,404,405,0,12969,2,9,0,
-  0,0,0,12986,1,0,0,6,1655,324,1656,1657,1658,1659,16,88,404,404,404,10,0,13003,1,0,0,
-  0,0,13020,3,324,92,0,0,3,1903,2130,2145,68,92,75,0,13074,2,375,0,0,0,0,13273,2,
-  265,0,0,1,2169,106,0,13291,2,265,0,0,7,2170,2171,2172,2173,2174,2175,2176,75,106,75,106,396,
-  99,99,0,13309,2,6,0,0,2,1637,449,411,10,0,13326,2,9,0,0,0,0,13343,2,69,0,
-  0,3,1643,1898,1899,16,11,11,0,13373,2,69,0,0,3,1643,1898,1899,16,11,11,0,13403,2,69,
-  0,0,3,1643,1898,1899,16,11,11,0,13433,2,69,0,0,3,1643,1898,1899,16,11,11,0,13463,2,
-  69,0,0,3,1643,1898,1899,16,11,11,0,13493,2,69,0,0,3,1643,1898,1899,16,11,11,0,13523,
-  1,0,0,0,0,13541,2,265,0,0,3,2177,2164,2178,92,106,420,0,13559,1,0,0,8,449,1648,
-  1649,1650,1651,1652,1653,1654,10,10,10,421,422,422,422,423,0,13576,2,9,0,0,0,0,13593,1,0,
-  0,6,1655,324,1656,1657,1658,1659,16,92,422,422,422,10,0,13610,1,0,0,0,0,13627,1,0,0,
-  3,1661,2074,2075,217,10,10,0,13644,1,0,0,0,0,13662,1,0,0,0,0,13679,4,428,385,92,
-  0,0,5,1903,455,2164,2076,2152,68,92,106,216,10,0,13735,3,385,92,0,0,5,1903,455,2164,2076,
-  2152,68,92,106,216,10,0,13791,3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,13845,3,
-  385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,13899,4,428,385,92,0,0,5,1903,455,2164,
-  2076,2152,68,92,106,216,10,0,13955,3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,14009,
-  3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,14063,1,0,0,5,1952,2155,2179,2180,2181,
-  75,215,105,105,11,0,14080,2,418,0,0,0,0,14098,2,425,0,0,0,0,14116,3,197,15,0,
-  0,2,1638,1639,16,17,0,14134,2,0,46,0,6,1660,1704,449,2182,2070,2183,10,16,10,10,5,22,
-  0,14151,2,0,248,0,5,1660,1704,1664,2070,2183,10,16,11,5,22,0,14168,2,0,42,0,3,1660,
-  2184,2100,10,46,451,0,14185,4,264,222,92,0,0,2,1903,324,68,21,0,14239,4,264,222,92,0,
-  0,2,1903,324,68,7,0,14293,2,375,0,0,1,2185,350,0,14492,2,0,445,0,4,1660,1661,1662,
-  1663,10,364,10,11,0,14509,0,0,1,1660,10,0,14510,4,387,385,92,0,0,4,1903,455,2164,2076,
-  68,92,106,216,0,14564,2,68,0,0,5,578,1704,1719,1720,324,69,16,10,10,16,0,14595,2,375,
+  216,0,11313,1,0,0,0,0,11514,4,134,135,92,0,0,13,1903,1960,1985,1986,1987,1988,1989,1990,1991,
+  1992,1950,2108,2109,68,110,10,11,16,11,16,136,136,134,92,274,275,0,11570,2,92,0,0,2,1903,
+  2080,68,75,0,11624,2,92,0,0,2,1903,2080,68,75,0,11678,2,92,0,0,3,1903,2080,2133,68,
+  75,92,0,11732,2,92,0,0,3,1903,2127,2133,68,108,92,0,11786,2,92,0,0,2,1903,2162,68,
+  99,0,11840,2,92,0,0,3,1903,2162,2133,68,99,92,0,11894,2,92,0,0,3,1903,455,2163,68,
+  92,99,0,11948,2,92,0,0,4,1903,455,2163,2133,68,92,99,92,0,12002,2,92,0,0,4,1903,
+  455,2164,2076,68,92,106,216,0,12056,4,387,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,
+  12110,3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,12164,2,92,0,0,4,1903,455,2163,
+  2131,68,92,99,10,0,12218,2,92,0,0,3,1903,2162,2131,68,99,10,0,12272,3,307,92,0,0,
+  4,1903,2134,2133,2162,68,69,92,99,0,12326,3,307,92,0,0,5,1903,2134,2133,455,2163,68,69,92,
+  92,99,0,12380,2,92,0,0,3,1903,2165,2166,68,75,92,0,12434,2,92,0,0,4,1903,455,2165,
+  1642,68,92,75,92,0,12488,2,92,0,0,3,1903,455,2165,68,92,75,0,12542,2,92,0,0,5,
+  1903,455,2165,1642,2133,68,92,75,92,92,0,12596,2,92,0,0,3,1903,2167,2168,68,397,136,0,12650,
+  2,6,0,0,2,1637,449,398,10,0,12667,2,9,0,0,0,0,12684,2,92,0,0,1,1903,68,
+  0,12738,1,0,0,3,1661,2074,2075,76,10,10,0,12755,2,375,0,0,2,1705,1706,75,106,0,12956,
+  1,0,0,8,449,1648,1649,1650,1651,1652,1653,1654,10,10,10,403,404,404,404,405,0,12973,2,9,0,
+  0,0,0,12990,1,0,0,6,1655,324,1656,1657,1658,1659,16,88,404,404,404,10,0,13007,1,0,0,
+  0,0,13024,3,324,92,0,0,3,1903,2130,2145,68,92,75,0,13078,2,375,0,0,0,0,13279,2,
+  265,0,0,1,2169,106,0,13297,2,265,0,0,7,2170,2171,2172,2173,2174,2175,2176,75,106,75,106,396,
+  99,99,0,13315,2,6,0,0,2,1637,449,411,10,0,13332,2,9,0,0,0,0,13349,2,69,0,
+  0,3,1643,1898,1899,16,11,11,0,13379,2,69,0,0,3,1643,1898,1899,16,11,11,0,13409,2,69,
+  0,0,3,1643,1898,1899,16,11,11,0,13439,2,69,0,0,3,1643,1898,1899,16,11,11,0,13469,2,
+  69,0,0,3,1643,1898,1899,16,11,11,0,13499,2,69,0,0,3,1643,1898,1899,16,11,11,0,13529,
+  1,0,0,0,0,13547,2,265,0,0,3,2177,2164,2178,92,106,420,0,13565,1,0,0,8,449,1648,
+  1649,1650,1651,1652,1653,1654,10,10,10,421,422,422,422,423,0,13582,2,9,0,0,0,0,13599,1,0,
+  0,6,1655,324,1656,1657,1658,1659,16,92,422,422,422,10,0,13616,1,0,0,0,0,13633,1,0,0,
+  3,1661,2074,2075,217,10,10,0,13650,1,0,0,0,0,13668,1,0,0,0,0,13685,4,428,385,92,
+  0,0,5,1903,455,2164,2076,2152,68,92,106,216,10,0,13741,3,385,92,0,0,5,1903,455,2164,2076,
+  2152,68,92,106,216,10,0,13797,3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,13851,3,
+  385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,13905,4,428,385,92,0,0,5,1903,455,2164,
+  2076,2152,68,92,106,216,10,0,13961,3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,14015,
+  3,385,92,0,0,4,1903,455,2164,2076,68,92,106,216,0,14069,1,0,0,5,1952,2155,2179,2180,2181,
+  75,215,105,105,11,0,14086,2,418,0,0,0,0,14104,2,425,0,0,0,0,14122,3,197,15,0,
+  0,2,1638,1639,16,17,0,14140,2,0,46,0,6,1660,1704,449,2182,2070,2183,10,16,10,10,5,22,
+  0,14157,2,0,248,0,5,1660,1704,1664,2070,2183,10,16,11,5,22,0,14174,2,0,42,0,3,1660,
+  2184,2100,10,46,451,0,14191,4,264,222,92,0,0,2,1903,324,68,21,0,14245,4,264,222,92,0,
+  0,2,1903,324,68,7,0,14299,2,375,0,0,1,2185,350,0,14500,2,0,445,0,4,1660,1661,1662,
+  1663,10,364,10,11,0,14517,0,0,1,1660,10,0,14518,4,387,385,92,0,0,4,1903,455,2164,2076,
+  68,92,106,216,0,14572,2,68,0,0,5,578,1704,1719,1720,324,69,16,10,10,16,0,14603,2,375,
   0,0,1,2186,11,0,0,0,0,2,324,504,10,11,0,0,0,0,2,324,504,20,11,0,0,
   0,0,2,324,504,23,11,0,0,0,0,2,324,504,7,11,0,0,0,0,0,0,0,0,0,
   2,324,504,16,11,0,0,0,0,2,324,504,75,11,0,0,0,0,2,324,504,106,11,0,0,
@@ -56619,7 +56629,7 @@ RogueClassCmd* RogueCmdAccess__cloned__CloneArgs( RogueClassCmdAccess* THIS, Rog
 
 RogueClassCmd* RogueCmdAccess__dispatch__Visitor( RogueClassCmdAccess* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)((Rogue_call_ROGUEM1146( 50, v_0, ROGUE_ARG(THIS) )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM1146( 51, v_0, ROGUE_ARG(THIS) )));
 }
 
 RogueClassType* RogueCmdAccess__implicit_type__Scope( RogueClassCmdAccess* THIS, RogueClassScope* scope_0 )
@@ -62886,7 +62896,7 @@ RogueClassCmd* RogueCmdYield__cloned__CloneArgs( RogueClassCmdYield* THIS, Rogue
   ROGUE_DEF_LOCAL_REF(RogueClassTaskArgs*,task_args_1,(((RogueClassTaskArgs*)(RogueObject_as(clone_args_0,RogueTypeTaskArgs)))));
   if (!!(task_args_1))
   {
-    RogueTaskArgs__add_yield__Token_Cmd( task_args_1, ROGUE_ARG(THIS->t), ROGUE_ARG(THIS->return_value) );
+    RogueTaskArgs__add_yield__Token_Cmd( task_args_1, ROGUE_ARG(THIS->t), ROGUE_ARG(((RogueCmd__clone__Cmd_CloneArgs( ROGUE_ARG(((RogueClassCmd*)THIS)), ROGUE_ARG(THIS->return_value), clone_args_0 )))) );
     return (RogueClassCmd*)(((RogueClassCmd*)(NULL)));
   }
   else
@@ -62897,7 +62907,7 @@ RogueClassCmd* RogueCmdYield__cloned__CloneArgs( RogueClassCmdYield* THIS, Rogue
 
 RogueClassCmd* RogueCmdYield__dispatch__Visitor( RogueClassCmdYield* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)(((RogueVisitor__visit__Cmd( v_0, ROGUE_ARG(((RogueClassCmd*)(THIS))) ))));
+  return (RogueClassCmd*)(((RogueVisitor__visit__CmdYield( v_0, ROGUE_ARG(THIS) ))));
 }
 
 RogueClassCmd* RogueCmdYield__resolve__Scope( RogueClassCmdYield* THIS, RogueClassScope* scope_0 )
@@ -62905,6 +62915,10 @@ RogueClassCmd* RogueCmdYield__resolve__Scope( RogueClassCmdYield* THIS, RogueCla
   if (!(((RogueMethod__is_task_conversion( ROGUE_ARG(scope_0->this_method) )))))
   {
     ROGUE_THROW(RogueClassRogueError,((RogueToken__error__String( ROGUE_ARG(THIS->t), Rogue_literal_strings[1286] ))));
+  }
+  if (!!(THIS->return_value))
+  {
+    THIS->return_value = ((RogueCmd__require_value( ROGUE_ARG((Rogue_call_ROGUEM159( 44, ROGUE_ARG(THIS->return_value), scope_0 ))) )));
   }
   {
     ROGUE_DEF_LOCAL_REF(RogueCmdControlStructure_List*,_auto_4070_1,(scope_0->control_stack));
@@ -63844,7 +63858,7 @@ RogueClassCmd* RogueCmdReadLocal__cloned__CloneArgs( RogueClassCmdReadLocal* THI
 
 RogueClassCmd* RogueCmdReadLocal__dispatch__Visitor( RogueClassCmdReadLocal* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)((Rogue_call_ROGUEM1148( 61, v_0, ROGUE_ARG(THIS) )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM1148( 62, v_0, ROGUE_ARG(THIS) )));
 }
 
 RogueClassCmd* RogueCmdReadLocal__resolve__Scope( RogueClassCmdReadLocal* THIS, RogueClassScope* scope_0 )
@@ -67421,7 +67435,7 @@ RogueClassCmd* RogueCmdLiteralThis__cloned__CloneArgs( RogueClassCmdLiteralThis*
 
 RogueClassCmd* RogueCmdLiteralThis__dispatch__Visitor( RogueClassCmdLiteralThis* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)((Rogue_call_ROGUEM1147( 58, v_0, ROGUE_ARG(((RogueClassCmdThisContext*)(THIS))) )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM1147( 59, v_0, ROGUE_ARG(((RogueClassCmdThisContext*)(THIS))) )));
 }
 
 void RogueCmdLiteralThis__require_type_context( RogueClassCmdLiteralThis* THIS )
@@ -67470,7 +67484,7 @@ RogueClassCmd* RogueCmdThisContext__cloned__CloneArgs( RogueClassCmdThisContext*
 
 RogueClassCmd* RogueCmdThisContext__dispatch__Visitor( RogueClassCmdThisContext* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)((Rogue_call_ROGUEM1147( 58, v_0, ROGUE_ARG(THIS) )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM1147( 59, v_0, ROGUE_ARG(THIS) )));
 }
 
 RogueClassType* RogueCmdThisContext__implicit_type__Scope( RogueClassCmdThisContext* THIS, RogueClassScope* scope_0 )
@@ -68227,7 +68241,7 @@ RogueClassCmd* RogueCmdImplicitIDAccess__cloned__CloneArgs( RogueClassCmdImplici
 
 RogueClassCmd* RogueCmdImplicitIDAccess__dispatch__Visitor( RogueClassCmdImplicitIDAccess* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)((Rogue_call_ROGUEM1150( 91, v_0, ROGUE_ARG(THIS) )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM1150( 92, v_0, ROGUE_ARG(THIS) )));
 }
 
 RogueClassCmd* RogueCmdImplicitIDAccess__resolve__Scope( RogueClassCmdImplicitIDAccess* THIS, RogueClassScope* scope_0 )
@@ -68265,7 +68279,7 @@ RogueClassCmd* RogueCmdImplicitAccess__cloned__CloneArgs( RogueClassCmdImplicitA
 
 RogueClassCmd* RogueCmdImplicitAccess__dispatch__Visitor( RogueClassCmdImplicitAccess* THIS, RogueClassVisitor* v_0 )
 {
-  return (RogueClassCmd*)((Rogue_call_ROGUEM1149( 90, v_0, ROGUE_ARG(THIS) )));
+  return (RogueClassCmd*)((Rogue_call_ROGUEM1149( 91, v_0, ROGUE_ARG(THIS) )));
 }
 
 RogueClassCmd* RogueCmdImplicitAccess__resolve__Scope( RogueClassCmdImplicitAccess* THIS, RogueClassScope* scope_0 )
@@ -68741,14 +68755,14 @@ RogueClassCmd* RogueVisitor__visit__Cmd( RogueClassVisitor* THIS, RogueClassCmd*
 
 void RogueVisitor__visit__Type( RogueClassVisitor* THIS, RogueClassType* type_0 )
 {
-  Rogue_call_ROGUEM1151( 101, ROGUE_ARG(THIS), type_0 );
+  Rogue_call_ROGUEM1151( 102, ROGUE_ARG(THIS), type_0 );
   RogueVisitor__dispatch__Type( ROGUE_ARG(THIS), type_0 );
   RogueVisitor__on_leave__Type( ROGUE_ARG(THIS), type_0 );
 }
 
 void RogueVisitor__visit__Method( RogueClassVisitor* THIS, RogueClassMethod* m_0 )
 {
-  Rogue_call_ROGUEM1152( 102, ROGUE_ARG(THIS), m_0 );
+  Rogue_call_ROGUEM1152( 103, ROGUE_ARG(THIS), m_0 );
   RogueVisitor__dispatch__Method( ROGUE_ARG(THIS), m_0 );
   RogueVisitor__on_leave__Method( ROGUE_ARG(THIS), m_0 );
 }
@@ -68812,6 +68826,14 @@ RogueClassCmd* RogueVisitor__visit__CmdReturn( RogueClassVisitor* THIS, RogueCla
   RogueVisitor__on_enter__CmdReturn( ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__dispatch__CmdReturn( ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__on_leave__CmdReturn( ROGUE_ARG(THIS), cmd_0 );
+  return (RogueClassCmd*)(((RogueClassCmd*)(cmd_0)));
+}
+
+RogueClassCmd* RogueVisitor__visit__CmdYield( RogueClassVisitor* THIS, RogueClassCmdYield* cmd_0 )
+{
+  RogueVisitor__on_enter__CmdYield( ROGUE_ARG(THIS), cmd_0 );
+  RogueVisitor__dispatch__CmdYield( ROGUE_ARG(THIS), cmd_0 );
+  RogueVisitor__on_leave__CmdYield( ROGUE_ARG(THIS), cmd_0 );
   return (RogueClassCmd*)(((RogueClassCmd*)(cmd_0)));
 }
 
@@ -68985,7 +69007,7 @@ RogueClassCmd* RogueVisitor__visit__CmdLiteral( RogueClassVisitor* THIS, RogueCl
 
 RogueClassCmd* RogueVisitor__visit__CmdLiteralString( RogueClassVisitor* THIS, RogueClassCmdLiteralString* cmd_0 )
 {
-  Rogue_call_ROGUEM1153( 139, ROGUE_ARG(THIS), cmd_0 );
+  Rogue_call_ROGUEM1153( 140, ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__dispatch__CmdLiteralString( ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__on_leave__CmdLiteralString( ROGUE_ARG(THIS), cmd_0 );
   return (RogueClassCmd*)(((RogueClassCmd*)(cmd_0)));
@@ -69057,7 +69079,7 @@ RogueClassCmd* RogueVisitor__visit__CmdTypedLiteralTable( RogueClassVisitor* THI
 
 RogueClassCmd* RogueVisitor__visit__CmdThisContext( RogueClassVisitor* THIS, RogueClassCmdThisContext* cmd_0 )
 {
-  Rogue_call_ROGUEM1154( 166, ROGUE_ARG(THIS), cmd_0 );
+  Rogue_call_ROGUEM1154( 168, ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__dispatch__CmdThisContext( ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__on_leave__CmdThisContext( ROGUE_ARG(THIS), cmd_0 );
   return (RogueClassCmd*)(((RogueClassCmd*)(cmd_0)));
@@ -69139,7 +69161,7 @@ RogueClassCmd* RogueVisitor__visit__CmdCallDynamicMethod( RogueClassVisitor* THI
 {
   RogueVisitor__on_enter__CmdCallDynamicMethod( ROGUE_ARG(THIS), cmd_0 );
   RogueVisitor__dispatch__CmdCallDynamicMethod( ROGUE_ARG(THIS), cmd_0 );
-  Rogue_call_ROGUEM1155( 198, ROGUE_ARG(THIS), cmd_0 );
+  Rogue_call_ROGUEM1155( 200, ROGUE_ARG(THIS), cmd_0 );
   return (RogueClassCmd*)(((RogueClassCmd*)(cmd_0)));
 }
 
@@ -69615,6 +69637,10 @@ void RogueVisitor__on_enter__CmdReturn( RogueClassVisitor* THIS, RogueClassCmdRe
 {
 }
 
+void RogueVisitor__on_enter__CmdYield( RogueClassVisitor* THIS, RogueClassCmdYield* cmd_0 )
+{
+}
+
 void RogueVisitor__on_enter__CmdSelect( RogueClassVisitor* THIS, RogueClassCmdSelect* cmd_0 )
 {
 }
@@ -69939,6 +69965,10 @@ void RogueVisitor__on_leave__CmdReturn( RogueClassVisitor* THIS, RogueClassCmdRe
 {
 }
 
+void RogueVisitor__on_leave__CmdYield( RogueClassVisitor* THIS, RogueClassCmdYield* cmd_0 )
+{
+}
+
 void RogueVisitor__on_leave__CmdSelect( RogueClassVisitor* THIS, RogueClassCmdSelect* cmd_0 )
 {
 }
@@ -70109,6 +70139,14 @@ void RogueVisitor__dispatch__CmdReturn( RogueClassVisitor* THIS, RogueClassCmdRe
   if (!!(cmd_0->value))
   {
     cmd_0->value = (Rogue_call_ROGUEM163( 27, ROGUE_ARG(cmd_0->value), ROGUE_ARG(THIS) ));
+  }
+}
+
+void RogueVisitor__dispatch__CmdYield( RogueClassVisitor* THIS, RogueClassCmdYield* cmd_0 )
+{
+  if (!!(cmd_0->return_value))
+  {
+    cmd_0->return_value = (Rogue_call_ROGUEM163( 27, ROGUE_ARG(cmd_0->return_value), ROGUE_ARG(THIS) ));
   }
 }
 

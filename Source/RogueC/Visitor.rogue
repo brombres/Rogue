@@ -59,6 +59,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdYield )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdBlock )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -553,6 +559,7 @@ class Visitor
     method on_enter( cmd:CmdReadSingleton )
     method on_enter( cmd:CmdRequire )
     method on_enter( cmd:CmdReturn )
+    method on_enter( cmd:CmdYield )
     method on_enter( cmd:CmdSelect )
     method on_enter( cmd:CmdSelectCase )
     method on_enter( cmd:CmdStatement )
@@ -640,6 +647,7 @@ class Visitor
     method on_leave( cmd:CmdReadSingleton )
     method on_leave( cmd:CmdRequire )
     method on_leave( cmd:CmdReturn )
+    method on_leave( cmd:CmdYield )
     method on_leave( cmd:CmdSelect )
     method on_leave( cmd:CmdSelectCase )
     method on_leave( cmd:CmdStatement )
@@ -713,6 +721,11 @@ class Visitor
     method dispatch( cmd:CmdReturn )
       if (cmd.value)
         cmd.value = cmd.value.dispatch( this )
+      endIf
+
+    method dispatch( cmd:CmdYield )
+      if (cmd.return_value)
+        cmd.return_value = cmd.return_value.dispatch( this )
       endIf
 
     method dispatch( cmd:CmdBlock )

@@ -4682,7 +4682,7 @@ class CmdYield : Cmd
     method cloned( clone_args=null:CloneArgs )->Cmd
       local task_args = (clone_args as TaskArgs)
       if (task_args)
-        task_args.add_yield( t, return_value )
+        task_args.add_yield( t, clone(return_value,clone_args) )
         return null
       else
         return CmdYield( t, clone(return_value,clone_args) )
@@ -4692,6 +4692,8 @@ class CmdYield : Cmd
       if (not scope.this_method.is_task_conversion)
         throw t.error( "The 'yield' statement can only be used in [task] methods and routines." )
       endIf
+
+      if (return_value) return_value = return_value.resolve( scope ).require_value
 
       forEach (control_structure in scope.control_stack)
         control_structure.contains_yield = true
