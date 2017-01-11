@@ -4656,15 +4656,10 @@ class CmdAwait : Cmd
       local task_var = scope.this_method.add_local( t, Program.create_unique_id )
       task_var.initial_value = expression
       statement_list.add( CmdLocalDeclaration(t, task_var) )
-      local has_result = task_type.find_property( "has_result" )
-      if (has_result)
-        statement_list.add( CmdAssign( t, CmdAccess(t,CmdReadLocal(t,task_var),"has_result"), CmdLiteralLogical(t,false) ) )
-      endIf
+      statement_list.add( CmdAssign( t, CmdAccess(t,CmdReadLocal(t,task_var),"has_result"), CmdLiteralLogical(t,false) ) )
 
       local condition = CmdAccess(t,CmdReadLocal(t,task_var),"execute") : Cmd
-      if (has_result)
-        condition = CmdLogicalOr( t, condition, CmdLogicalNot(t,CmdAccess(t,CmdReadLocal(t,task_var),"has_result")) )
-      endIf
+      condition = CmdLogicalOr( t, condition, CmdLogicalNot(t,CmdAccess(t,CmdReadLocal(t,task_var),"has_result")) )
       local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, condition )
       cmd_while.statements.add( CmdYield(t,null) )
       statement_list.add( cmd_while )

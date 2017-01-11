@@ -7,6 +7,9 @@ class Task
 
   PROPERTIES
     stop_requested : Logical
+    has_result     : Logical
+      # Used by the [task] system for a 'yield <value>' or a return of any
+      # kind, including nil return.
 
   METHODS
     method execute->Logical
@@ -31,7 +34,6 @@ endClass
 class TaskWithResult<<$ResultType>> : Task
   PROPERTIES
     result     : $ResultType
-    has_result : Logical  # used by the [task] system
 
   METHODS
     method finish->$ResultType

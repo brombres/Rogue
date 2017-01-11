@@ -3118,6 +3118,7 @@ augment CmdTaskControl
       endForEach
       writer.println( "default:" )
       writer.println( "  THIS->ip = -1;" )
+      writer.println( "  THIS->has_result = true;" )   # finished
       writer.println( "  return false;" )
       writer.indent -= 2
       writer.println( "}" )
