@@ -63,8 +63,8 @@ class Timer
   METHODS
     method init( duration, &expired )
       if (expired)
-        stop_time = start_time
         start_time -= duration
+        while (not is_expired) start_time -= (duration - elapsed).or_larger(0.001)
       endIf
 
     method elapsed->Real64

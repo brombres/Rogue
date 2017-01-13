@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.18 - January 13, 2017
+- [Timer] Fixed bug in `Timer(duration,&expired)` when `&expired` flag is true.  Timer was starting out in a stopped state and also reading as non-expired due to roundoff error.  Now timer does not begin in a stopped state AND the start time is adjusted as necessary to ensure that `is_expired()` returns true.
+
 ###v1.1.17 - January 10, 2017
 - [Rogue] Rogue now supports the `yield <value>` command in tasks.  `yield` surrenders execution without returning a value.  `yield <value>` surrenders execution and returns a value.  The command `await <task_name>` waits for a `yield <value>` and is not satisfied by a simple `yield`.
 - [task] Routines and global methods can now be made into tasks with the `[task]` attribute.
