@@ -179,6 +179,7 @@ class Tokenizer
       TokenType.keyword_nextIteration       = define( TokenType("nextIteration") )
       TokenType.keyword_step                = define( TokenType("step") )
       TokenType.keyword_sufficient          = define( TokenType("sufficient") )
+      TokenType.keyword_swapValues          = define( TokenType("swapValues") )
       TokenType.keyword_throw               = define( TokenType("throw") )
       TokenType.keyword_trace               = define( TokenType("trace") )
       TokenType.keyword_trace_args_only     = define( TokenType("@trace") )

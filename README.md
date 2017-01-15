@@ -32,7 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.18 - January 13, 2017
+###v1.1.18 - January 15, 2017
+- [Rogue] Added new macro statement `swapValues(a,b)` which expands to: `local <temp> = a; a = b; b = <temp>`.
 - [Timer] Fixed bug in `Timer(duration,&expired)` when `&expired` flag is true.  Timer was starting out in a stopped state and also reading as non-expired due to roundoff error.  Now timer does not begin in a stopped state AND the start time is adjusted as necessary to ensure that `is_expired()` returns true.
 
 ###v1.1.17 - January 10, 2017

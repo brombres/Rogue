@@ -106,6 +106,7 @@ class TokenType
     keyword_nextIteration         : TokenType
     keyword_step                  : TokenType
     keyword_sufficient            : TokenType
+    keyword_swapValues            : TokenType
     keyword_throw                 : TokenType
     keyword_trace                 : TokenType
     keyword_trace_args_only       : TokenType

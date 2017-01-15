@@ -1287,6 +1287,24 @@ class Parser
         return
       endIf
 
+      if (consume(TokenType.keyword_swapValues))
+        consume_eols
+        must_consume( TokenType.symbol_open_paren )
+        consume_eols
+        local a = parse_expression
+        consume_eols
+        must_consume( TokenType.symbol_comma )
+        consume_eols
+        local b = parse_expression
+        consume_eols
+        must_consume( TokenType.symbol_close_paren )
+        local v = this_method.add_local( t, Program.create_unique_id, null, a )
+        cur_statement_list.add( CmdLocalDeclaration(t,v,a) )
+        cur_statement_list.add( CmdAssign(t,a.cloned,b) )
+        cur_statement_list.add( CmdAssign(t,b.cloned,CmdAccess(t,v.name)) )
+        return
+      endIf
+
       if (consume(TokenType.symbol_plus_plus))
         cur_statement_list.add( CmdAdjust(t, parse_expression,1) )
         return
