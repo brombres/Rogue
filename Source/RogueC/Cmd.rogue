@@ -275,30 +275,19 @@ class CmdStatementList : Cmd[]
       v.visit( this )
 
     method resolve( scope:Scope, &use_separate_results_list )
+      local result = CmdStatementList( count )
+
       local original_body = scope.this_body
-      scope.this_body = this
+      scope.this_body = result
 
       local original_statement = scope.this_statement
 
-      if (use_separate_results_list)
-        # Necessary for Global.on_launch which can have new statements added
-        # to it (via newly organized classes' $essential directives) as
-        # it's being iterated through.
-        local result = CmdStatementList( count )
-        forEach (cmd in this)
-          scope.this_statement = cmd
-          cmd.resolve( scope ).add_to( result )
-        endForEach
-        clear.add( result )
-      else
-        local n = count
-        forEach (i in 0..(n-1))
-          local cmd = this[i]
-          scope.this_statement = cmd
-          cmd.resolve(scope).add_to( this )
-        endForEach
-        this.discard( 0, n )
-      endIf
+      forEach (cmd in this)
+        scope.this_statement = cmd
+        cmd.resolve( scope ).add_to( result )
+      endForEach
+
+      clear.add( result )
 
       forEach (statement in this) statement.exit_scope( scope )
 
@@ -5046,6 +5035,9 @@ class CmdLabel : Cmd
       statements.resolve( scope )
       return this
 
+    method to->String
+      return ''CmdLabel($)'' (name)
+
 endClass
 
 class CmdNativeSource : Cmd
@@ -5278,7 +5270,8 @@ class CmdTypedLiteralList : Cmd
       local list_type = Program.get_type_reference( t, list_type_name )
       local list_var = scope.this_method.add_local( t, Program.create_unique_id, list_type )
       list_var.initial_value = CmdAccess( t, list_type_name, CmdArgs(CmdLiteralInt32(t,elements.count)) )
-      scope.this_body.add( CmdLocalDeclaration(t,list_var).resolve(scope) )
+      local declaration = CmdLocalDeclaration( t, list_var )
+      scope.this_body.add( declaration.resolve(scope) )
 
       local init_block = CmdBlock( t )
       scope.this_body.add( init_block )
@@ -5297,7 +5290,8 @@ class CmdTypedLiteralList : Cmd
                   CmdArgs( CmdLiteralString(t,bytes.to_hex_string) ) ) )
           init_block = init_block.resolve( scope )
 
-          return CmdAccess( t, list_var ).resolve( scope )
+          local result = CmdAccess( t, list_var ).resolve( scope )
+          return result
         endContingent
       endIf
 
@@ -5307,7 +5301,8 @@ class CmdTypedLiteralList : Cmd
       endForEach
       init_block = init_block.resolve( scope )
 
-      return CmdAccess( t, list_var ).resolve( scope )
+      local result = CmdAccess( t, list_var ).resolve( scope )
+      return result
 
     method type->Type
       return Program.get_type_reference( t, list_type_name )

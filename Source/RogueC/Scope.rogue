@@ -36,7 +36,9 @@ class Scope
     method push_local( v:Local, validate_name=true:Logical )
       if (validate_name)
         local existing = find_local( v.name )
-        if (existing) throw v.t.error( ''A local variable named "$" already exists.'' (v.name) )
+        if (existing)
+          throw v.t.error( ''A local variable named "$" already exists.'' (v.name) )
+        endIf
       endIf
       local_list.add( v )
 
