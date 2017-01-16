@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.19 - January 16, 2017
+- [RogueC] Better error message when a function return type is missing its (parens).
+
 ###v1.1.18 - January 16, 2017
 - [RogueC] Reworked CmdStatementList evaluation mechanism to fix literal lists and other commands which add new nodes to the scope's statement list during their resolve phase.
 - [Rogue] Added new macro statement `swapValues(a,b)` which expands to: `local <temp> = a; a = b; b = <temp>`.

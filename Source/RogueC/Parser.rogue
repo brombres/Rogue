@@ -1690,7 +1690,9 @@ class Parser
 
           if (consume(TokenType.symbol_arrow))
             consume_eols
-            must_consume( TokenType.symbol_open_paren )
+            if (not consume(TokenType.symbol_open_paren))
+              throw peek.error( "A function return type must be enclosed in (parens)." )
+            endIf
             consume_eols
             return_type = parse_type
             consume_eols
@@ -2980,7 +2982,9 @@ class Parser
         if (is_generic) throw t2.error( "A function with generic parameters must use '=>' to define its body." )
         parsed_arrow = true
         consume_eols
-        must_consume( TokenType.symbol_open_paren )
+        if (not consume(TokenType.symbol_open_paren))
+          throw peek.error( "A function return type must be enclosed in (parens)." )
+        endIf
         consume_eols
         return_type = parse_type
         consume_eols
