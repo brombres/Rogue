@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.1.19"
-$define RELEASE_DATE    "January 17, 2017"
+$define RELEASE_VERSION "1.1.20.0"
+$define RELEASE_DATE    "January 18, 2017"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -248,6 +248,8 @@ class RogueC [singleton]
         if (manual_files_essential) essential_files.union_update( manually_included_files )
 
         Program.resolve
+        local type_TypeInfo = Program.find_type( "TypeInfo" )
+        if (type_TypeInfo) type_TypeInfo.simplify_name = true  # TODO: add general mechanism for having classes simplify their names
 
         write_output
 

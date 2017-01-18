@@ -1,4 +1,36 @@
-class TypeInfo [essential]
+class TypeInfo
+  DEPENDENCIES
+    nativeHeader
+      struct RogueType;
+      struct RogueTypeInfo;
+      RogueTypeInfo* RogueType_type_info( RogueType* THIS );
+    endNativeHeader
+
+    nativeCode
+      RogueTypeInfo* RogueType_type_info( RogueType* THIS )
+      {
+        if ( !THIS->type_info )
+        {
+          THIS->type_info = RogueTypeInfo__init__Int32_String( (RogueTypeInfo*)ROGUE_CREATE_OBJECT(TypeInfo),
+              THIS->index, Rogue_literal_strings[ THIS->name_index ] );
+
+          for (int i=0; i<THIS->global_property_count; ++i)
+          {
+            RogueTypeInfo__add_global_property_info__Int32_Int32( (RogueTypeInfo*) THIS->type_info,
+                THIS->global_property_name_indices[i], THIS->global_property_type_indices[i] );
+          }
+
+          for (int i=0; i<THIS->property_count; ++i)
+          {
+            RogueTypeInfo__add_property_info__Int32_Int32( (RogueTypeInfo*) THIS->type_info,
+                THIS->property_name_indices[i], THIS->property_type_indices[i] );
+          }
+        }
+
+        return (RogueTypeInfo*) THIS->type_info;
+      }
+    endNativeCode
+
   PROPERTIES
     index             : Int32
     name              : String

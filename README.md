@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.20 - January 18, 2017
+- [RogueC] Made introspection framework more loosely coupled, allowing it to be fully culled out when unused for overall code size savings.
+
 ###v1.1.19 - January 17, 2017
 - [Rogue] Function types are now aspects rather than class types, meaning any class with an appropriate call() method can also incorporate the appropriate Function type.  For example, class X with a method `call(Int32)->Logical` can now be declared as `class X : Base, Function(Int32)->(Logical)` and objects of type X can be passed using `Function(Int32)->(Logical)` parameters.
 - [Rogue] Instantiated tasks can now be called like methods.  Nil-return tasks will continue to the next `yield` and value-return tasks will continue to the next `yield <value>` or `return <value>`.  Ideal for generators.  If `Fibonacci()` is a `[task]` routine, then call `local fib = Fibonacci()` to instantiate the task and then `fib()` to obtain the first number in the sequence.

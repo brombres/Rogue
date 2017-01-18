@@ -123,29 +123,6 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
   return array;
 }
 
-RogueTypeInfo* RogueType_type_info( RogueType* THIS )
-{
-  if ( !THIS->type_info )
-  {
-    THIS->type_info = RogueTypeInfo__init__Int32_String( (RogueTypeInfo*)ROGUE_CREATE_OBJECT(TypeInfo),
-        THIS->index, Rogue_literal_strings[ THIS->name_index ] );
-
-    for (int i=0; i<THIS->global_property_count; ++i)
-    {
-      RogueTypeInfo__add_global_property_info__Int32_Int32( THIS->type_info,
-          THIS->global_property_name_indices[i], THIS->global_property_type_indices[i] );
-    }
-
-    for (int i=0; i<THIS->property_count; ++i)
-    {
-      RogueTypeInfo__add_property_info__Int32_Int32( THIS->type_info,
-          THIS->property_name_indices[i], THIS->property_type_indices[i] );
-    }
-  }
-
-  return THIS->type_info;
-}
-
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 {
   ROGUE_DEF_LOCAL_REF_NULL(RogueObject*, obj);
@@ -1135,8 +1112,10 @@ void Rogue_configure_types()
   // Initialize allocators
   memset( Rogue_allocators, 0, sizeof(RogueAllocator)*Rogue_allocator_count );
 
+#ifdef ROGUE_INTROSPECTION
   int global_property_pointer_cursor = 0;
   int property_offset_cursor = 0;
+#endif
 
   // Initialize types
   for (i=0; i<Rogue_type_count; ++i)
@@ -1149,7 +1128,9 @@ void Rogue_configure_types()
     type->index = i;
     type->name_index = Rogue_type_name_index_table[i];
     type->object_size = Rogue_object_size_table[i];
+#ifdef ROGUE_INTROSPECTION
     type->attributes = Rogue_attributes_table[i];
+#endif
     type->allocator = &Rogue_allocators[ *(type_info++) ];
     type->methods = Rogue_dynamic_method_table + *(type_info++);
     type->base_type_count = *(type_info++);
@@ -1178,6 +1159,7 @@ void Rogue_configure_types()
     type->property_type_indices = type_info;
     type_info += type->property_count;
 
+#ifdef ROGUE_INTROSPECTION
     if (((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
       || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND))
     {
@@ -1186,6 +1168,7 @@ void Rogue_configure_types()
       type->property_offsets = Rogue_property_offsets + property_offset_cursor;
       property_offset_cursor += type->property_count;
     }
+#endif
 
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];

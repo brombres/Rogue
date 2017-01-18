@@ -166,6 +166,12 @@ augment Program
       writer.println "#endif"
       writer.println
 
+      # Enable Introspection?
+      if (Program.using_introspection)
+        writer.println(  "#define ROGUE_INTROSPECTION 1" )
+        writer.println
+      endIf
+
       # Embed nativeHeader
       writer.println "// NATIVE HEADERS"
       forEach (line in native_header)
@@ -637,12 +643,18 @@ augment Program
 
       writer.println
 
+      local using_introspection = Program.using_introspection
+
       writer.println @|// Trace Class objects and singletons
                       |for (i=Rogue_type_count; --i>=0; )
                       |{
                       |  RogueType* type = &Rogue_types[i];
-                      |  if (type->type_info) RogueTypeInfo_trace( type->type_info );
-                      |  if (type->_singleton) type->trace_fn( type->_singleton );
+
+                      if (using_introspection)
+        writer.println @|  if (type->type_info) RogueTypeInfo_trace( type->type_info );
+      endIf
+
+      writer.println @|  if (type->_singleton) type->trace_fn( type->_singleton );
                       |}
 
 
@@ -695,52 +707,52 @@ augment Program
       writer.println( "};" )
       writer.println
 
-      # Global property pointers
-      writer.println(  "void* Rogue_global_property_pointers[] =" )
-      writer.println "{"
-      writer.indent += 2
+      if (Program.using_introspection)
+        # Global property pointers
+        writer.println(  "void* Rogue_global_property_pointers[] =" )
+        writer.println "{"
+        writer.indent += 2
 
-      first = true
-      forEach (type in type_list)
-        if (type.is_class or type.is_compound)
-          forEach (p in type.global_list)
-            if (first) first = false
-            else       writer.println ","
-            if (p.is_native) writer.print "0"
-            else             writer.print( "(void*) &Rogue" ).print( p.type_context.cpp_name ).print( "_" )
-            writer.print( p.cpp_name )
-          endForEach
-        endIf
-      endForEach
+        first = true
+        forEach (type in type_list)
+          if (type.is_class or type.is_compound)
+            forEach (p in type.global_list)
+              if (first) first = false
+              else       writer.println ","
+              if (p.is_native) writer.print "0"
+              else             writer.print( "(void*) &Rogue" ).print( p.type_context.cpp_name ).print( "_" )
+              writer.print( p.cpp_name )
+            endForEach
+          endIf
+        endForEach
 
-      writer.println
-      writer.indent -= 2
-      writer.println( "};" )
-      writer.println
+        writer.println
+        writer.indent -= 2
+        writer.println( "};" )
+        writer.println
 
-      # Property offsets
-      writer.println(  "int Rogue_property_offsets[] =" )
-      writer.println "{"
-      writer.indent += 2
+        # Property offsets
+        writer.println(  "int Rogue_property_offsets[] =" )
+        writer.println "{"
+        writer.indent += 2
 
-      first = true
-      forEach (type in type_list)
-        if (type.is_class or type.is_compound)
-          forEach (p in type.property_list)
-            if (first) first = false
-            else       writer.println ","
-            if (p.is_native) writer.print( "0" )
-            else writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
-            #else writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print(")")
-            #writer.print( "(int)offsetof(" ).print( type.cpp_class_name ).print( "," ).print( p.cpp_name ).print( ")" )
-          endForEach
-        endIf
-      endForEach
+        first = true
+        forEach (type in type_list)
+          if (type.is_class or type.is_compound)
+            forEach (p in type.property_list)
+              if (first) first = false
+              else       writer.println ","
+              if (p.is_native) writer.print( "0" )
+              else writer.print( "(int)(intptr_t)&((" ).print( type.cpp_class_name ).print( "*)0)->" ).print( p.cpp_name )
+            endForEach
+          endIf
+        endForEach
 
-      writer.println
-      writer.indent -= 2
-      writer.println( "};" )
-      writer.println
+        writer.println
+        writer.indent -= 2
+        writer.println( "};" )
+        writer.println
+      endIf
 
 
       # Object size table
@@ -761,23 +773,25 @@ augment Program
       writer.println( "};" )
       writer.println
 
-      # Attributes table
-      writer.print(   "int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
-      writer.println "{"
-      writer.indent += 2
+      if (Program.using_introspection)
+        # Attributes table
+        writer.print(   "int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
+        writer.println "{"
+        writer.indent += 2
 
-      first = true
-      forEach (type in type_list)
-        if (first) first = false
-        else       writer.println ","
+        first = true
+        forEach (type in type_list)
+          if (first) first = false
+          else       writer.println ","
 
-        writer.print( type.attributes.flags )
-      endForEach
+          writer.print( type.attributes.flags )
+        endForEach
 
-      if (items > 0) writer.println
-      writer.indent -= 2
-      writer.println( "};" )
-      writer.println
+        if (items > 0) writer.println
+        writer.indent -= 2
+        writer.println( "};" )
+        writer.println
+      endIf
 
       # Allocators
       writer.print( "int Rogue_allocator_count = " ).print( 1 ).println( ";" )

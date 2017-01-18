@@ -1,7 +1,4 @@
 class Runtime [essential]
-  GLOBAL PROPERTIES
-    type_info_lookup = Table<<String,TypeInfo>>()
-
   GLOBAL METHODS
     method init_class
       local value = System.environment["ROGUE_GC_THRESHOLD"]
@@ -89,7 +86,7 @@ class Runtime [essential]
       native "Rogue_gc_logging = $setting;"
 
     method type_info( name:String )->TypeInfo
-      local result = type_info_lookup[ name ]
+      local result = RuntimeTypeInfoLookup[ name ]
       if (result) return result
 
       native @|for (int i=Rogue_type_count; --i>=0; )
@@ -102,7 +99,7 @@ class Runtime [essential]
               |  }
               |}
 
-      if (result) type_info_lookup[ name ] = result
+      if (result) RuntimeTypeInfoLookup[ name ] = result
       return result
 
     method type_info( type_index:Int32 )->TypeInfo
@@ -126,4 +123,6 @@ class Runtime [essential]
       return result
 
 endClass
+
+class RuntimeTypeInfoLookup : Table<<String,TypeInfo>> [singleton];
 
