@@ -30,12 +30,25 @@ class Task
       return false  # false stops the task; return "true" to continue the task next time
 endClass
 
+class NilTask : Task
+  METHODS
+    method call
+      while (execute) noAction
+
+    method finish
+      while (update) noAction
+endClass
 
 class TaskWithResult<<$ResultType>> : Task
   PROPERTIES
-    result     : $ResultType
+    result : $ResultType
 
   METHODS
+    method call->$ResultType
+      has_result = false
+      while (not has_result) execute
+      return result
+
     method finish->$ResultType
       # Synchronously runs task until completion.  You can call
       # "await task" instead of "task.finish" to allow it to finish

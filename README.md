@@ -32,7 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.19 - January 16, 2017
+###v1.1.19 - January 17, 2017
+- [RogueC] Instantiated tasks can now be called like methods.  Nil-return tasks will continue to the next `yield` and value-return tasks will continue to the next `yield <value>` or `return <value>`.  Ideal for generators.  If `Fibonacci()` is a `[task]` routine, then call `local fib = Fibonacci()` to instantiate the task and then `fib()` to obtain the first number in the sequence.
 - [RogueC] Better error message when a function return type is missing its (parens).
 
 ###v1.1.18 - January 16, 2017

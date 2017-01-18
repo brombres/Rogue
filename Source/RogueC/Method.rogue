@@ -242,7 +242,7 @@ class Method
           return_type.configure
           return_type = Program.get_type_reference( t, "TaskWithResult<<$>>"(return_type.name) )
         else
-          return_type = Program.get_type_reference( t, "Task" )
+          return_type = Program.get_type_reference( t, "NilTask" )
         endIf
         return_type.configure
       endIf
