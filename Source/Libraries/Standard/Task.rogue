@@ -30,7 +30,7 @@ class Task
       return false  # false stops the task; return "true" to continue the task next time
 endClass
 
-class NilTask : Task
+class NilTask : Task, Function()
   METHODS
     method call
       while (execute) noAction
@@ -39,7 +39,7 @@ class NilTask : Task
       while (update) noAction
 endClass
 
-class TaskWithResult<<$ResultType>> : Task
+class TaskWithResult<<$ResultType>> : Task, Function()->($ResultType)
   PROPERTIES
     result : $ResultType
 

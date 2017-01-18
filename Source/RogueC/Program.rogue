@@ -241,7 +241,7 @@ class Program [essential singleton]
       type.callback_parameter_types = parameter_types
       type.callback_return_type = return_type
       type.is_function = true
-      type.attributes.add( Attribute.is_class )
+      type.attributes.add( Attribute.is_aspect )
       local m_call = type.add_method( t, "call" )
       if (parameter_types)
         forEach (i of parameter_types) m_call.add_parameter( t, "param"+(i+1), parameter_types[i] )

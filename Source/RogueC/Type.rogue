@@ -223,15 +223,16 @@ class Type
       arg_type.organize
 
       local list = method_lookup_by_name[m_name]
-      if (not list or list.is_empty) return false
+      if (list and list.count)
+        forEach (m in list)
+          if (m.min_args == 1)
+            if (arg_type.is_compatible_with(m.parameters[0].type)) return true
+          endIf
+        endForEach
+      endIf
 
-      forEach (m in list)
-        if (m.min_args == 1)
-          if (arg_type.is_compatible_with(m.parameters[0].type)) return true
-        endIf
-      endForEach
-
-      return false
+      if (is_aspect) return Program.type_Object.has_compatible_method_named( m_name, arg_type )
+      else           return false
 
     method has_global_method_named( m_name:String, arg_count=null:Int32? )->Logical
       local list = global_method_lookup_by_name[m_name]

@@ -22,6 +22,8 @@ class Parser
     implicit_access_used : Logical
     implicit_loop_stack  = CmdControlStructure[]
 
+    allow_placeholder_ids : Logical
+
   METHODS
     method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
@@ -243,6 +245,7 @@ class Parser
       #   (autoinit) : BaseType, ... [attributes] \n
       #   ^^^^^^^^^^^^^^ leave       ^parse       ^leave
       local starting_pos = reader.position
+      allow_placeholder_ids = true
 
       if (consume(TokenType.symbol_open_paren))
         # ( name1[=value1][:Type1] [, ...] )
@@ -272,6 +275,7 @@ class Parser
       endIf
 
       local final_pos = reader.position
+      allow_placeholder_ids = false
 
       if (is_routine)
         # routine MyRoutine<<type>>(args)...
@@ -1691,7 +1695,7 @@ class Parser
           if (consume(TokenType.symbol_arrow))
             consume_eols
             if (not consume(TokenType.symbol_open_paren))
-              throw peek.error( "A function return type must be enclosed in (parens)." )
+              throw peek.error( "A Function return type must be enclosed in (parens)." )
             endIf
             consume_eols
             return_type = parse_type
@@ -2020,6 +2024,11 @@ class Parser
           local result = read->Type.name
           if (direct_access) result = "@" + result
           return result
+        endIf
+        if (peek.type is TokenType.placeholder_id and allow_placeholder_ids)
+          # Template tokens are being searched through; allow placeholder ids
+          # to act as regular ids for now
+          return read->String
         endIf
         throw error( "Identifier expected, found $." (peek.quoted_name) )
       endIf
@@ -2983,7 +2992,7 @@ class Parser
         parsed_arrow = true
         consume_eols
         if (not consume(TokenType.symbol_open_paren))
-          throw peek.error( "A function return type must be enclosed in (parens)." )
+          throw peek.error( "A Function return type must be enclosed in (parens)." )
         endIf
         consume_eols
         return_type = parse_type
