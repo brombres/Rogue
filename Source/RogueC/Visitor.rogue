@@ -798,9 +798,11 @@ class Visitor
       cmd.context = cmd.context.dispatch( this )
 
     method dispatch( cmd:CmdEnsure )
-      cmd.local_info.type.dispatch( this )
-      cmd.cmd_read = cmd.cmd_read.dispatch( this )
-      cmd.cmd_write = cmd.cmd_write.dispatch( this )
+      cmd.operand = cmd.operand.dispatch( this )
+      if (cmd.args) cmd.args.dispatch( this )
+      if (cmd.named_args)
+        forEach (arg in cmd.named_args) arg.dispatch( this )
+      endIf
 
     method dispatch( cmd:CmdEscape )
       noAction

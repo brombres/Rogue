@@ -5475,11 +5475,6 @@ class CmdEnsure : Cmd
     args       : CmdArgs
     named_args : CmdNamedArg[]
 
-    # The following are only present when 'ensure' is used in an expression rather than as a standalone statement.
-    local_info : Local
-    cmd_read   : Cmd
-    cmd_write  : Cmd
-
   METHODS
     method init( t, operand, args, named_args=null )
 
@@ -5500,34 +5495,22 @@ class CmdEnsure : Cmd
       return true
 
     method resolve( scope:Scope )->Cmd
-      cmd_read = operand.cloned.resolve( scope ).require_value
+      local cmd_read = operand.cloned.resolve( scope ).require_value
       if (not cmd_read.type.is_reference) throw t.error( "'ensure' can only be used with reference-type variables." )
 
       local cmd_new = CmdAccess( t, cmd_read.type.name, args )
       cmd_new.named_args = named_args
-      cmd_write = CmdAssign( t, operand, cmd_new )
-
-      #{
-      if (local_info)
-        # This ensure is being used as an expression.
-        cmd_write = cmd_write.resolve( scope )
-        return this
-
-      else
-      }#
 
       # We can convert this statement-level ensure into a simple 'if'.
-      local cmd_read = operand.cloned.resolve( scope ).require_value
+      cmd_read = operand.cloned.resolve( scope ).require_value
 
       local cmd_if = CmdIf( t, CmdLogicalNot(t,cmd_read) )
       cmd_if.statements.add( CmdAssign( t, operand, cmd_new ) )
 
       return cmd_if.resolve( scope )
 
-      #endIf
-
     method type->Type
-      return require(local_info).type
+      return null
 
 endClass
 

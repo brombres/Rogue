@@ -1220,7 +1220,7 @@ class Parser
         return
 
       elseIf (next_is(TokenType.keyword_ensure))
-        cur_statement_list.add( parse_ensure )
+        cur_statement_list.add( parse_ensure_statement )
         return
 
         #{
@@ -2842,6 +2842,9 @@ class Parser
       elseIf (next_is(TokenType.keyword_try))
         return parse_try_expression
 
+      elseIf (next_is(TokenType.keyword_ensure))
+        return parse_ensure_expression
+
       elseIf (consume(TokenType.keyword_assert))
         consume_eols
         local has_parens = consume( TokenType.symbol_open_paren )
@@ -2912,7 +2915,7 @@ class Parser
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
 
-    method parse_ensure->Cmd
+    method parse_ensure_statement->Cmd
       local t = read  # 'ensure'
 
       local has_parens = consume( TokenType.symbol_open_paren )
@@ -2959,6 +2962,43 @@ class Parser
 
       if (cmd_block.statements.count == 1) return cmd_block.statements.first
       else                                 return cmd_block
+
+    method parse_ensure_expression->Cmd
+      local t = read  # 'ensure'
+
+      local has_parens = consume( TokenType.symbol_open_paren )
+
+      local expr = parse_expression
+
+      local cmd_ensure : CmdEnsure
+      if (next_is(TokenType.symbol_open_paren))
+        # The args haven't been parsed yet because they're invalid outside the context
+        # of this ensure command.
+        local args = CmdArgs()
+        local named_args = parse_args( args )
+        cmd_ensure = CmdEnsure( t, expr, args, named_args )
+
+      else
+        local access = expr as CmdAccess
+        if (access)
+          local args = access.args
+          if (not args) args = CmdArgs()
+          local named_args = access.named_args
+          access.args = null
+          access.named_args = null
+          cmd_ensure = CmdEnsure( t, access, args, named_args )
+        else
+          cmd_ensure = CmdEnsure( t, expr, CmdArgs() )
+        endIf
+      endIf
+
+      if (has_parens) must_consume( TokenType.symbol_close_paren )
+
+      # The actual 'ensure' operation goes before the current statement.  This
+      # current expression resolves to just the variable being ensured.
+      cur_statement_list.add( cmd_ensure )
+
+      return cmd_ensure.operand.cloned
 
     method parse_function( t:Token )->Cmd
       local parameters : FnParam[]

@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.21 - January 19, 2017
+- [Rogue] `ensure <var>` can now be used as an expression.  Example: `if (not list) list = Int32[](5); list.add( n )` becomes `(ensure list(5)).add( n )`.
+
 ###v1.1.20 - January 19, 2017
 - [RogueC] Fixed compiled switch-case fall-through error when calling aspect methods that don't return values.
 - [RogueC] Decoupled the introspection framework from the core CPP code, allowing it to be fully culled out when unused.
