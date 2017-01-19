@@ -137,9 +137,12 @@ augment Program
         forEach (m in type.method_list)  m.assign_cpp_name
       endForEach
 
+      local base_cpp_filepath = filepath
+      if (RogueC.compile_targets["Cython"]) base_cpp_filepath += "_module"
+
       # .H header -------------------------------------------------------------
-      println "Writing $.h..." (filepath)
-      local writer = CPPWriter( filepath + ".h" )
+      println "Writing $.h..." (base_cpp_filepath)
+      local writer = CPPWriter( base_cpp_filepath + ".h" )
 
       # Header
       writer.println "//-----------------------------------------------------------------------------"
@@ -280,10 +283,10 @@ augment Program
       # .CPP/.MM implementation ---------------------------------------------------
       local extension = "cpp"
       if (RogueC.compile_targets["ObjC"]) extension = "mm"
-      println "Writing $.$..." (filepath,extension)
-      writer = CPPWriter( "$.$" (filepath,extension) )
+      println "Writing $.$..." (base_cpp_filepath,extension)
+      writer = CPPWriter( "$.$" (base_cpp_filepath,extension) )
 
-      local base_filename = filepath
+      local base_filename = base_cpp_filepath
       if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
       writer.println "#include <stdio.h>"
       writer.println "namespace std {}"
@@ -1488,12 +1491,20 @@ augment RogueC
       if (output_filepath is null)
         output_filepath = File.filename(first_filepath)
         if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
+
+        if (RogueC.compile_targets["Cython"]) output_filepath = output_filepath.to_lowercase
+
       else
         if (File.is_folder(output_filepath))
           output_filepath += "/"
+
           local filename = File.filename( first_filepath )
-          if (filename.to_lowercase.ends_with(".rogue")) output_filepath += filename.leftmost(-6)
-          else                                           output_filepath += "RogueProgram"
+          if (filename.to_lowercase.ends_with(".rogue")) filename = filename.leftmost(-6)
+          else                                           filename = "RogueProgram"
+
+          if (RogueC.compile_targets["Cython"]) output_filepath = output_filepath.to_lowercase
+
+          output_filepath += filename
 
         elseIf (output_filepath.to_lowercase.ends_with(".cpp"))
           output_filepath = output_filepath.leftmost(-4)

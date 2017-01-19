@@ -36,6 +36,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [RogueC] Fixed compiled switch-case fall-through error when calling aspect methods that don't return values.
 - [RogueC] Decoupled the introspection framework from the core CPP code, allowing it to be fully culled out when unused.
 - [Rogue] Added `[nonessential]` method attribute that prevents a method from being automatically considered `[essential]` when the context type has the `[api]` attribute.
+- [Cython] Compiling `SomeFile.rogue` using `--target=Cython` now generates the following files: `somefile.pyx`, `somefile_module.h`, `somefile_module.cpp`.  The `.pyx` file should by Cython-compiled to `somefile.cpp` and then all .cpp files should be compiled and builded as `somefile.so`.  In Python the module can then be imported with `import somefile`.
 - [Cython] Tweaks - added a placeholder 'pass', removed call to type Exception `make_api()`.
 
 ###v1.1.19 - January 17, 2017

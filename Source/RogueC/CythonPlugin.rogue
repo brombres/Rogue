@@ -1551,8 +1551,12 @@ augment Program
 
       if (cyclasses.count == 0) return
 
-      println "Writing $_module.pyx..." (filepath)
-      local writer = CPPWriter( filepath + "_module.pyx" )
+      println "Writing $.pyx..." (filepath)
+      local writer = CPPWriter( filepath + ".pyx" )
+
+      # From this point on filepath is used to refer to the RogueC-generated
+      # .cpp and .h files which will have the _module extension.
+      filepath += "_module"
 
       cy_write_cy_header(writer, filepath)
 

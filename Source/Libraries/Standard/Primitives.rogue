@@ -553,11 +553,17 @@ class Character [primitive]
       return (this >= 'a' and this <= 'z') or
              (this >= 'A' and this <= 'Z')
 
+    method is_lowercase->Logical
+      return (this >= 'a' and this <= 'z')
+
     method is_number( base=10:Int32 )->Logical
       return to_number(base) != -1
 
     method is_power_of_two->Logical
       return this->Int32.is_power_of_two
+
+    method is_uppercase->Logical
+      return (this >= 'A' and this <= 'Z')
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
