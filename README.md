@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.19
-Date      | January 17, 2017
+Version   | v1.1.20
+Date      | January 19, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -38,6 +38,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Added `[nonessential]` method attribute that prevents a method from being automatically considered `[essential]` when the context type has the `[api]` attribute.
 - [Cython] Compiling `SomeFile.rogue` using `--target=Cython` now generates the following files: `somefile.pyx`, `somefile_module.h`, `somefile_module.cpp`.  The `.pyx` file should by Cython-compiled to `somefile.cpp` and then all .cpp files should be compiled and builded as `somefile.so`.  In Python the module can then be imported with `import somefile`.
 - [Cython] Tweaks - added a placeholder 'pass', removed call to type Exception `make_api()`.
+- [Character] Added `Character.is_uppercase()->Logical` and `Character.is_lowercase()->Logical`.  Only works for ASCII.
 
 ###v1.1.19 - January 17, 2017
 - [Rogue] Function types are now aspects rather than class types, meaning any class with an appropriate call() method can also incorporate the appropriate Function type.  For example, class X with a method `call(Int32)->Logical` can now be declared as `class X : Base, Function(Int32)->(Logical)` and objects of type X can be passed using `Function(Int32)->(Logical)` parameters.
