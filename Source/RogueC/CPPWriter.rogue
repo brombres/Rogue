@@ -1918,6 +1918,7 @@ augment Method
                   writer.print( ", " ).print( param.cpp_name )
                 endForEach
                 writer.println( " );" )
+                if (not return_type) writer.println "return;"
               endIf
             endIf
           endForEach

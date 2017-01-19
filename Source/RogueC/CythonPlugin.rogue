@@ -521,9 +521,6 @@ augment Program
     method cy_create_delegates->Logical
       if cy_delegate_construction_pass == 0
 
-        # Force some things to be essential/API
-        Program.type_lookup["Exception"].make_api()
-
         if Preprocessor.definitions.contains("PYROGUEFUNCTYPE")
           throw Error("[INTERNAL] Did not expect PYROGUEFUNCTYPE to be defined")
         endIf
@@ -1565,6 +1562,7 @@ augment Program
       # Write the externs of the thunk function pointers (we populate them
       # later).
       writer.println 'cdef extern from "$.h":' (filepath)
+      writer.println '  pass'
       cy_write_delegate_thunk_pointers(writer, &prefix="  cdef ", &suffix="")
 
       # Rogeue "PyDelegates" call these thunks via function pointer, and then

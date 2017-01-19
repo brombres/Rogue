@@ -32,8 +32,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.20 - January 18, 2017
-- [RogueC] Made introspection framework more loosely coupled, allowing it to be fully culled out when unused for overall code size savings.
+###v1.1.20 - January 19, 2017
+- [RogueC] Fixed compiled switch-case fall-through error when calling aspect methods that don't return values.
+- [RogueC] Decoupled the introspection framework from the core CPP code, allowing it to be fully culled out when unused.
+- [Rogue] Added `[nonessential]` method attribute that prevents a method from being automatically considered `[essential]` when the context type has the `[api]` attribute.
+- [Cython] Tweaks - added a placeholder 'pass', removed call to type Exception `make_api()`.
 
 ###v1.1.19 - January 17, 2017
 - [Rogue] Function types are now aspects rather than class types, meaning any class with an appropriate call() method can also incorporate the appropriate Function type.  For example, class X with a method `call(Int32)->Logical` can now be declared as `class X : Base, Function(Int32)->(Logical)` and objects of type X can be passed using `Function(Int32)->(Logical)` parameters.

@@ -427,6 +427,12 @@
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>
+				<dict>
+					<key>match</key>
+					<string>\b(api|nonessential)\b</string>
+					<key>name</key>
+					<string>storage.modifier.rogue</string>
+				</dict>
 			</array>
 		</dict>
 		<key>strings</key>

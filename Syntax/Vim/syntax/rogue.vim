@@ -51,6 +51,7 @@ syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro essential abstract final compound propagated foreign preferred
+syn keyword rogueStorageClass api nonessential
 syn keyword rogueExceptions   throw try catch endTry
 "syn match  roguegPreProc      "^\[.*]"
 syn match   rogueDirective    "\$define\>"

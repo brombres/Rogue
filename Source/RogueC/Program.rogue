@@ -44,6 +44,7 @@ class Program [essential singleton]
     type_Exception   : Type
     type_WeakReference : Type
     type_Value       : Type
+    type_TypeInfo    : Type
 
     type_StringBuilder : Type
 
@@ -130,6 +131,7 @@ class Program [essential singleton]
       type_Exception     = create_built_in_type( "Exception", Attribute.is_class )
       type_WeakReference = create_built_in_type( "WeakReference", Attribute.is_class )
       type_Value         = create_built_in_type( "Value", Attribute.is_class )
+      type_TypeInfo      = create_built_in_type( "TypeInfo", Attribute.is_class )
 
       # `simplify_name` means e.g. `RogueObject` instead of `RogueClassObject`.
       type_Exception.simplify_name = true
@@ -137,6 +139,7 @@ class Program [essential singleton]
       type_String.simplify_name = true
       type_StringBuilder.simplify_name = true
       type_WeakReference.simplify_name = true
+      type_TypeInfo.simplify_name = true
 
       type_null.organized = true
       type_null.defined   = true
@@ -262,6 +265,8 @@ class Program [essential singleton]
       return type
 
     method make_fully_essential( m:Method )->Logical
+      if (m.is_nonessential) return false
+
       local r = m.is_essential == false
       if (m.is_api and not m.type_context.is_essential)
         r = true
