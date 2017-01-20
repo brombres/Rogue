@@ -30,7 +30,7 @@ class Attribute
     is_dynamic          = 4194304
     returns_this        = 8388608
     is_preferred        = 16777216
-    is_nonessential     = 33554432
+    is_nonAPI           = 33554432
 endClass
 
 

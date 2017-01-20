@@ -265,7 +265,7 @@ class Program [essential singleton]
       return type
 
     method make_fully_essential( m:Method )->Logical
-      if (m.is_nonessential) return false
+      if (m.is_nonAPI) return false
 
       local r = m.is_essential == false
       if (m.is_api and not m.type_context.is_essential)

@@ -195,8 +195,8 @@ class Method
     method is_global->Logical
       return (attributes.flags & Attribute.is_global)
 
-    method is_nonessential->Logical
-      return (attributes.flags & Attribute.is_nonessential)
+    method is_nonAPI->Logical
+      return (attributes.flags & Attribute.is_nonAPI)
 
     method is_propagated->Logical
       return (attributes.flags & Attribute.is_propagated)

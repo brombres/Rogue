@@ -369,8 +369,8 @@ class Type
     method is_essential->Logical
       return (attributes.flags & Attribute.is_essential) or is_api
 
-    method is_nonessential->Logical
-      return (attributes.flags & Attribute.is_nonessential)
+    method is_nonAPI->Logical
+      return (attributes.flags & Attribute.is_nonAPI)
 
     method is_routine->Logical
       return (attributes.flags & Attribute.is_routine)

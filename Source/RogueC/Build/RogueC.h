@@ -6413,7 +6413,7 @@ RogueLogical RogueMethod__is_overridden( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_api( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_essential( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_global( RogueClassMethod* THIS );
-RogueLogical RogueMethod__is_nonessential( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_nonAPI( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_propagated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_task( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_task_conversion( RogueClassMethod* THIS );

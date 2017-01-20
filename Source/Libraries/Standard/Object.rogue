@@ -6,10 +6,10 @@ class Object [native]
     method init
       noAction
 
-    method get_property( name:String )->Value [nonessential]
+    method get_property( name:String )->Value [nonAPI]
       return introspector[ name ]
 
-    method get_property<<$PropertyType>>( name:String )->$PropertyType [nonessential]
+    method get_property<<$PropertyType>>( name:String )->$PropertyType [nonAPI]
       forEach (i in 0..<property_count)
         if (property_name(i) == name)
           if ($PropertyType isReference)
@@ -26,7 +26,7 @@ class Object [native]
     method hash_code->Int32
       return object_id->Int32
 
-    method introspector->Introspector [nonessential]
+    method introspector->Introspector [nonAPI]
       return Introspector( this )
 
     method object_id->Int64
@@ -43,11 +43,11 @@ class Object [native]
     method property_name( index:Int32 )->String
       return native( "Rogue_literal_strings[$this->type->property_name_indices[$index]]" )->String
 
-    method set_properties( value:Value )->this [nonessential]
+    method set_properties( value:Value )->this [nonAPI]
       introspector.set( value )
       return this
 
-    method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this [nonessential]
+    method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this [nonAPI]
       forEach (i in 0..<property_count)
         if (property_name(i) == name)
           if ($PropertyType isReference)
@@ -61,23 +61,23 @@ class Object [native]
 
       return this
 
-    method set_property( name:String, value:Value )->this [nonessential]
+    method set_property( name:String, value:Value )->this [nonAPI]
       introspector.set( name, value )
       return this
 
-    method to->String [nonessential]
+    method to->String [nonAPI]
       return "($ 0x$)" (type_name, object_id.to_hex_string)
 
-    method to->Value [nonessential]
+    method to->Value [nonAPI]
       return introspector->Value
 
-    method to->ValueList [nonessential]
+    method to->ValueList [nonAPI]
       return @[ this->Value ]
 
-    method to->ValueTable [nonessential]
+    method to->ValueTable [nonAPI]
       return introspector->Value
 
-    method type_info->TypeInfo [nonessential]
+    method type_info->TypeInfo [nonAPI]
       native @|return RogueType_type_info( $this->type );
 
 endClass

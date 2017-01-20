@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.21 - January 19, 2017
 - [Rogue] `ensure <var>` can now be used as an expression.  Example: `if (not list) list = Int32[](5); list.add( n )` becomes `(ensure list(5)).add( n )`.
+- [Rogue] Renamed `[nonessential]` to `[nonAPI]`.
 - [RogueC] Fixed `[api]` attribute to work on classes that are totally unreferenced by the rest of the program, making it and all of its `[nonAPI]` methods [essential]`.
 
 ###v1.1.20 - January 19, 2017
