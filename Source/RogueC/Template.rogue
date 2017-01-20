@@ -189,6 +189,9 @@ class Template
 
       Parser(augmented_tokens).parse_type_def( type )
 
+    method is_essential->Logical
+      return (this.attributes.flags & (Attribute.is_essential | Attribute.is_api))
+
     method is_routine->Logical [macro]
       (this.attributes.flags & Attribute.is_routine)
 

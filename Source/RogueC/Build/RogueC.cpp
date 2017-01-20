@@ -35639,7 +35639,7 @@ RogueLogical RogueType__is_api( RogueClassType* THIS )
 
 RogueLogical RogueType__is_essential( RogueClassType* THIS )
 {
-  return (RogueLogical)((RogueLogical__create__Int32( ROGUE_ARG(((THIS->attributes->flags) & (8192))) )));
+  return (RogueLogical)(((!!(((THIS->attributes->flags) & (8192)))) || (((RogueType__is_api( ROGUE_ARG(THIS) ))))));
 }
 
 RogueLogical RogueType__is_routine( RogueClassType* THIS )
@@ -38291,6 +38291,11 @@ void RogueTemplate__instantiate_standard_type__Type_Token_List( RogueClassTempla
   RogueParser__parse_type_def__Type( ROGUE_ARG(((RogueParser__init__Token_List_Logical( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassParser*,ROGUE_CREATE_OBJECT(Parser))), augmented_tokens_1, false )))), type_0 );
 }
 
+RogueLogical RogueTemplate__is_essential( RogueClassTemplate* THIS )
+{
+  return (RogueLogical)((RogueLogical__create__Int32( ROGUE_ARG(((THIS->attributes->flags) & (8208))) )));
+}
+
 RogueInt32 RogueTemplate__type_parameter_count( RogueClassTemplate* THIS )
 {
   if (!!(THIS->type_parameters))
@@ -40622,7 +40627,7 @@ RogueLogical RogueMethod__is_api( RogueClassMethod* THIS )
 
 RogueLogical RogueMethod__is_essential( RogueClassMethod* THIS )
 {
-  return (RogueLogical)(((!!(((THIS->attributes->flags) & (8192)))) || (((RogueMethod__is_api( ROGUE_ARG(THIS) ))))));
+  return (RogueLogical)(((((!!(((THIS->attributes->flags) & (8192)))) || (((RogueMethod__is_api( ROGUE_ARG(THIS) )))))) || (((RogueType__is_api( ROGUE_ARG(THIS->type_context) ))))));
 }
 
 RogueLogical RogueMethod__is_global( RogueClassMethod* THIS )
@@ -44745,7 +44750,7 @@ void RogueProgram__resolve( RogueClassProgram* THIS )
             RogueType__configure__Scope( t_3, ROGUE_ARG(((RogueClassScope*)(NULL))) );
           }
         }
-        if (((!!(((templ_12->attributes->flags) & (8192)))) && (!(!!(templ_12->type_parameters)))))
+        if (((((RogueTemplate__is_essential( templ_12 )))) && (!(!!(templ_12->type_parameters)))))
         {
           RogueType__resolve( ROGUE_ARG(((RogueProgram__get_type_reference__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(templ_12->t), ROGUE_ARG(templ_12->name) )))) );
         }
@@ -72454,7 +72459,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[275] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[276] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[277] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[278] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.21.0", 8 ) ); 
+  Rogue_literal_strings[278] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.21.1", 8 ) ); 
   Rogue_literal_strings[279] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "January 19, 2017", 16 ) ); 
   Rogue_literal_strings[280] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[281] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --compile[=<compiler invocation>]\n    Creates an executable from the compiled .rogue code - for example, compiles\n    and links the .cpp code generated from the .rogue program.  Automatically\n    enables the --main option.  If <compiler invocation> is omitted then a\n    language-specific default is used - for a C++ code target this is the\n    Makefile-default $(CXX) compiler with certain options - see DEFAULT_CXX in\n    the Rogue source folder's Makefile.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=auto|manual|boehm]\n    Set the garbage collection mode:\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=manual - Rogue_collect_garbage() must be manually called in-between\n                    calls into the Rogue runtime.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --ide[=<IDE Name>]\n    Indicates that roguec is being invoked from an IDE.  Currently this causes\n    error messages to print out in a \"classic\" C style, which Xcode (and\n    possibly other IDEs') will automatically pick up and display.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --main\n    Include a main() function in the output file.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2702 ) ); 

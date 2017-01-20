@@ -6209,6 +6209,7 @@ void RogueTemplate__instantiate_list__Type_Token_List( RogueClassTemplate* THIS,
 void RogueTemplate__instantiate_optional__Type_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1 );
 void RogueTemplate__instantiate_parameterized_type__Type_Token_List_Scope( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1, RogueClassScope* scope_2 );
 void RogueTemplate__instantiate_standard_type__Type_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1 );
+RogueLogical RogueTemplate__is_essential( RogueClassTemplate* THIS );
 RogueInt32 RogueTemplate__type_parameter_count( RogueClassTemplate* THIS );
 RogueTypeParameter_List* RogueTypeParameter_List__init_object( RogueTypeParameter_List* THIS );
 RogueTypeParameter_List* RogueTypeParameter_List__init( RogueTypeParameter_List* THIS );

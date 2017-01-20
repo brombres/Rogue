@@ -370,7 +370,7 @@ class Program [essential singleton]
               t.configure
             endIf
           endIf
-          if ((templ.attributes.flags & Attribute.is_essential) and not templ.type_parameters)
+          if ((templ.is_essential) and not templ.type_parameters)
             get_type_reference( templ.t, templ.name ).resolve
           endIf
         endForEach
