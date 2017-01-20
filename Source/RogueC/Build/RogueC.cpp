@@ -32057,19 +32057,22 @@ void RogueParser__parse_statement__Logical( RogueClassParser* THIS, RogueLogical
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_keyword_swapValues) ))))
   {
     RogueParser__consume_eols( ROGUE_ARG(THIS) );
-    RogueParser__must_consume__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_open_paren), ROGUE_ARG(((RogueString*)(NULL))) );
+    RogueLogical has_parens_25 = (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_open_paren) ))));
     RogueParser__consume_eols( ROGUE_ARG(THIS) );
-    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,a_25,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
+    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,a_26,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
     RogueParser__consume_eols( ROGUE_ARG(THIS) );
     RogueParser__must_consume__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_comma), ROGUE_ARG(((RogueString*)(NULL))) );
     RogueParser__consume_eols( ROGUE_ARG(THIS) );
-    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,b_26,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
+    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,b_27,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
     RogueParser__consume_eols( ROGUE_ARG(THIS) );
-    RogueParser__must_consume__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_close_paren), ROGUE_ARG(((RogueString*)(NULL))) );
-    ROGUE_DEF_LOCAL_REF(RogueClassLocal*,v_27,(((RogueMethod__add_local__Token_String_Type_Cmd( ROGUE_ARG(THIS->this_method), t_1, ROGUE_ARG(((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) )))), ROGUE_ARG(((RogueClassType*)(NULL))), a_25 )))));
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdLocalDeclaration__init__Token_Local_Logical( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLocalDeclaration*,ROGUE_CREATE_OBJECT(CmdLocalDeclaration))), t_1, v_27, ROGUE_ARG((Rogue_call_ROGUEM138( 50, a_25 ))) )))))) );
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAssign__init__Token_Cmd_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAssign*,ROGUE_CREATE_OBJECT(CmdAssign))), t_1, ROGUE_ARG((Rogue_call_ROGUEM134( 24, a_25, ROGUE_ARG(((RogueClassCloneArgs*)(NULL))) ))), b_26 )))))) );
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAssign__init__Token_Cmd_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAssign*,ROGUE_CREATE_OBJECT(CmdAssign))), t_1, ROGUE_ARG((Rogue_call_ROGUEM134( 24, b_26, ROGUE_ARG(((RogueClassCloneArgs*)(NULL))) ))), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), t_1, ROGUE_ARG(v_27->name) )))))) )))))) );
+    if (has_parens_25)
+    {
+      RogueParser__must_consume__TokenType_String( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_close_paren), ROGUE_ARG(((RogueString*)(NULL))) );
+    }
+    ROGUE_DEF_LOCAL_REF(RogueClassLocal*,v_28,(((RogueMethod__add_local__Token_String_Type_Cmd( ROGUE_ARG(THIS->this_method), t_1, ROGUE_ARG(((RogueProgram__create_unique_id( ((RogueClassProgram*)ROGUE_SINGLETON(Program)) )))), ROGUE_ARG(((RogueClassType*)(NULL))), a_26 )))));
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdLocalDeclaration__init__Token_Local_Logical( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdLocalDeclaration*,ROGUE_CREATE_OBJECT(CmdLocalDeclaration))), t_1, v_28, ROGUE_ARG((Rogue_call_ROGUEM138( 50, a_26 ))) )))))) );
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAssign__init__Token_Cmd_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAssign*,ROGUE_CREATE_OBJECT(CmdAssign))), t_1, ROGUE_ARG((Rogue_call_ROGUEM134( 24, a_26, ROGUE_ARG(((RogueClassCloneArgs*)(NULL))) ))), b_27 )))))) );
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAssign__init__Token_Cmd_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAssign*,ROGUE_CREATE_OBJECT(CmdAssign))), t_1, ROGUE_ARG((Rogue_call_ROGUEM134( 24, b_27, ROGUE_ARG(((RogueClassCloneArgs*)(NULL))) ))), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAccess__init__Token_String( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAccess*,ROGUE_CREATE_OBJECT(CmdAccess))), t_1, ROGUE_ARG(v_28->name) )))))) )))))) );
     return;
   }
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_plus_plus) ))))
@@ -32082,52 +32085,52 @@ void RogueParser__parse_statement__Logical( RogueClassParser* THIS, RogueLogical
     RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAdjust__init__Token_Cmd_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAdjust*,ROGUE_CREATE_OBJECT(CmdAdjust))), t_1, ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))), -1 )))))) );
     return;
   }
-  ROGUE_DEF_LOCAL_REF(RogueClassCmd*,expression_28,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
+  ROGUE_DEF_LOCAL_REF(RogueClassCmd*,expression_29,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
   t_1 = ((RogueClassToken*)((RogueParser__peek( ROGUE_ARG(THIS) ))));
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_equals) ))))
   {
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAssign__init__Token_Cmd_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAssign*,ROGUE_CREATE_OBJECT(CmdAssign))), t_1, expression_28, ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))) )))))) );
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAssign__init__Token_Cmd_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAssign*,ROGUE_CREATE_OBJECT(CmdAssign))), t_1, expression_29, ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))) )))))) );
     return;
   }
   if ((Rogue_call_ROGUEM100( 28, ROGUE_ARG(t_1->_type) )))
   {
     RogueParser__read( ROGUE_ARG(THIS) );
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdModifyAndAssign__init__Token_Cmd_TokenType_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdModifyAndAssign*,ROGUE_CREATE_OBJECT(CmdModifyAndAssign))), t_1, expression_28, ROGUE_ARG(t_1->_type), ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))) )))))) );
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdModifyAndAssign__init__Token_Cmd_TokenType_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdModifyAndAssign*,ROGUE_CREATE_OBJECT(CmdModifyAndAssign))), t_1, expression_29, ROGUE_ARG(t_1->_type), ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))) )))))) );
     return;
   }
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_plus_plus) ))))
   {
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAdjust__init__Token_Cmd_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAdjust*,ROGUE_CREATE_OBJECT(CmdAdjust))), t_1, expression_28, 1 )))))) );
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAdjust__init__Token_Cmd_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAdjust*,ROGUE_CREATE_OBJECT(CmdAdjust))), t_1, expression_29, 1 )))))) );
     return;
   }
   if (((RogueParser__consume__TokenType( ROGUE_ARG(THIS), ROGUE_ARG(RogueTokenType_symbol_minus_minus) ))))
   {
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAdjust__init__Token_Cmd_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAdjust*,ROGUE_CREATE_OBJECT(CmdAdjust))), t_1, expression_28, -1 )))))) );
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdAdjust__init__Token_Cmd_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdAdjust*,ROGUE_CREATE_OBJECT(CmdAdjust))), t_1, expression_29, -1 )))))) );
     return;
   }
-  ROGUE_DEF_LOCAL_REF(RogueClassTokenType*,t_type_29,(t_1->_type));
-  if ((Rogue_call_ROGUEM100( 28, t_type_29 )))
+  ROGUE_DEF_LOCAL_REF(RogueClassTokenType*,t_type_30,(t_1->_type));
+  if ((Rogue_call_ROGUEM100( 28, t_type_30 )))
   {
     RogueParser__read( ROGUE_ARG(THIS) );
-    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,target_30,(expression_28));
-    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,new_value_31,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
-    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdModifyAndAssign__init__Token_Cmd_TokenType_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdModifyAndAssign*,ROGUE_CREATE_OBJECT(CmdModifyAndAssign))), t_1, target_30, t_type_29, new_value_31 )))))) );
+    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,target_31,(expression_29));
+    ROGUE_DEF_LOCAL_REF(RogueClassCmd*,new_value_32,(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))));
+    RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), ROGUE_ARG(((RogueClassCmd*)(((RogueCmdModifyAndAssign__init__Token_Cmd_TokenType_Cmd( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdModifyAndAssign*,ROGUE_CREATE_OBJECT(CmdModifyAndAssign))), t_1, target_31, t_type_30, new_value_32 )))))) );
     return;
   }
   if (((!(((RogueParser__next_is_end_command( ROGUE_ARG(THIS) ))))) && (((RogueParser__next_is_statement( ROGUE_ARG(THIS) ))))))
   {
-    ROGUE_DEF_LOCAL_REF(RogueClassCmdAccess*,access_32,(((RogueClassCmdAccess*)(RogueObject_as(expression_28,RogueTypeCmdAccess)))));
-    if (((!!(access_32)) && (((void*)access_32->args) == ((void*)NULL))))
+    ROGUE_DEF_LOCAL_REF(RogueClassCmdAccess*,access_33,(((RogueClassCmdAccess*)(RogueObject_as(expression_29,RogueTypeCmdAccess)))));
+    if (((!!(access_33)) && (((void*)access_33->args) == ((void*)NULL))))
     {
-      ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,args_33,(((RogueCmdArgs__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))) )))));
+      ROGUE_DEF_LOCAL_REF(RogueClassCmdArgs*,args_34,(((RogueCmdArgs__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassCmdArgs*,ROGUE_CREATE_OBJECT(CmdArgs))) )))));
       while (((!(((RogueParser__next_is_end_command( ROGUE_ARG(THIS) ))))) && (!(((RogueToken__is_structure( ROGUE_ARG(((RogueParser__peek( ROGUE_ARG(THIS) )))) )))))))
       {
-        RogueCmd_List__add__Cmd( ((RogueCmd_List*)args_33), ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))) );
+        RogueCmd_List__add__Cmd( ((RogueCmd_List*)args_34), ROGUE_ARG(((RogueParser__parse_expression( ROGUE_ARG(THIS) )))) );
       }
-      access_32->args = args_33;
+      access_33->args = args_34;
     }
   }
-  RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), expression_28 );
+  RogueCmd_List__add__Cmd( ROGUE_ARG(((RogueCmd_List*)THIS->cur_statement_list)), expression_29 );
 }
 
 RogueClassCmdWhich* RogueParser__parse_which( RogueClassParser* THIS )
@@ -72459,7 +72462,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[275] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[276] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[277] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[278] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.21.2", 8 ) ); 
+  Rogue_literal_strings[278] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.21.3", 8 ) ); 
   Rogue_literal_strings[279] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "January 19, 2017", 16 ) ); 
   Rogue_literal_strings[280] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[281] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --compile[=<compiler invocation>]\n    Creates an executable from the compiled .rogue code - for example, compiles\n    and links the .cpp code generated from the .rogue program.  Automatically\n    enables the --main option.  If <compiler invocation> is omitted then a\n    language-specific default is used - for a C++ code target this is the\n    Makefile-default $(CXX) compiler with certain options - see DEFAULT_CXX in\n    the Rogue source folder's Makefile.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=auto|manual|boehm]\n    Set the garbage collection mode:\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=manual - Rogue_collect_garbage() must be manually called in-between\n                    calls into the Rogue runtime.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --ide[=<IDE Name>]\n    Indicates that roguec is being invoked from an IDE.  Currently this causes\n    error messages to print out in a \"classic\" C style, which Xcode (and\n    possibly other IDEs') will automatically pick up and display.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --main\n    Include a main() function in the output file.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2702 ) ); 
