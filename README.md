@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.20
-Date      | January 19, 2017
+Version   | v1.1.21
+Date      | January 22, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.21 - January 19, 2017
+###v1.1.21 - January 22, 2017
 - [Rogue] `ensure <var>` can now be used as an expression.  Example: `if (not list) list = Int32[](5); list.add( n )` becomes `(ensure list(5)).add( n )`.
 - [Rogue] Renamed `[nonessential]` to `[nonAPI]`.
 - [Rogue] Operand parens are now optional on `swapValues a,b`
