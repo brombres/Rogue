@@ -2547,6 +2547,7 @@ class Parser
           # a (generic,function)=>definition.
           if (consume(TokenType.symbol_close_paren))
             sufficient (next_is(TokenType.symbol_fat_arrow))
+            sufficient (next_is(TokenType.keyword_with))
             throw t.error( "Value expected, found empty parentheses ()." )
           endIf
 
