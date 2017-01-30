@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.21
-Date      | January 22, 2017
+Version   | v1.1.22
+Date      | January 30, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.22 - January 29, 2017
+###v1.1.22 - January 30, 2017
 - [RogueC] A generic function with no parameters and a `with` clause is now parsed correctly (`() with(x) => ...`).
 
 ###v1.1.21 - January 22, 2017
