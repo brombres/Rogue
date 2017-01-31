@@ -2,6 +2,42 @@
 #  Random
 #------------------------------------------------------------------------------
 class Random [singleton]
+  # This random number generator produces evenly distributed 
+  # pseudo-random values.  
+  #
+  # Use any the following methods:
+  #
+  #   random_Real64().Real64:
+  #     Returns a real number n where 0.0 < n < 1.0.
+  #
+  #   random_Real64(low,high).Real64:
+  #     Returns a real number n where low < n < high.
+  #
+  #   random_Int32().Int32
+  #     Returns a number between 0 and 0xffffffff (-1).
+  #
+  #   random_Int32(limit).Int32
+  #     Returns an integer n where 0 <= n < limit.
+  #
+  #   random_Int32(low,high).Int32
+  #     Returns an integer n where low <= n <= high.
+  #
+  #   random_Logical().Logical:
+  #     Returns either "true" or "false" with a 50/50 chance.
+  #
+  # You may create a RandomNumberGenerator object with a 'seed' 
+  # value; generators created with the same seed always return
+  # the same sequence of random numbers.
+  #
+  # Underneath, the RandomNumberGenerator operates on a 48-bit 
+  # integer using the linear congruence formula with most of
+  # the "drand48" parameters:
+  #
+  #   next = (a * prev + c) mod (2^48)
+  #
+  # Where a=0x5DEECE66D, c=11, and bits 31:0 of
+  # 'next' are retrieved with each read call.
+
   GLOBAL METHODS
     method next_state( state:Int64 )->Int64 [macro]
       # Kludge until Int64 literals work in compiler
@@ -12,36 +48,71 @@ class Random [singleton]
 
   METHODS
     method init
+      # Since this is a singleton we need a default constructor
+      # if we want anything to happen.
       reset( (System.time * 1000)->Int64 )
 
     method init( seed:Int64 )
       reset( seed )
 
     method advance_state()->Int64
+      # Calculates the internal 'next_random' raw integer.
       state = next_state( state )
       return state
 
     method reset( state )
       advance_state
 
-    method next_real64->Real64
+    method next_real64->Real64 #ToBeDepricated
       return (advance_state->Real64 + 1.0) / 281474976710657.0
 
-    method next_real64( low:Real64, high:Real64 )->Real64
+    method next_real64( low:Real64, high:Real64 )->Real64 #ToBeDepricated
       return (next_real64 * (high-low)) + low
 
-    method next_int32->Int32
+    method next_int32->Int32 #ToBeDepricated
       return (next_real64 * (2.0^31))->Int32
 
-    method next_int32( limit:Int32 )->Int32
+    method next_int32( limit:Int32 )->Int32 #ToBeDepricated
       if (limit == 0) return 0
       return next_int32 % limit
 
-    method next_int32( low:Int32, high:Int32 )->Int32
+    method next_int32( low:Int32, high:Int32 )->Int32 #ToBeDepricated
       return next_int32( (high-low)+1 ) + low
 
-    method next_logical->Logical
+    method next_logical->Logical #ToBeDepricated
       return (next_real64 > 0.5)
 
+
+
+    method real64->Real64
+      # Calculates the internal 'next_random' raw integer.
+      return (advance_state->Real64 + 1.0) / 281474976710657.0
+
+    method real64( low:Real64, high:Real64 )->Real64
+      # Returns an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      return (real64 * (high-low)) + low
+
+    method int32->Int32
+      # Returns a normalized, evenly distributed random integer in
+      # the range [-2^31,2^31-1] inclusive.
+      return (real64 * (2.0^31))->Int32
+
+    method int32( limit:Int32 )->Int32
+      # Returns an evenly distributed random integer in
+      # the range [0,limit) - includes 0 but does not include limit.
+      #
+      # Example:
+      #   println( random_Int32(100) )  #prints a number 0..99
+      if (limit == 0) return 0
+      return int32 % limit
+
+    method int32( low:Int32, high:Int32 )->Int32
+      # Returns a random integer between low and high, inclusive.
+      return int32( (high-low)+1 ) + low
+
+    method logical->Logical
+      # Returns either "true" or "false" with equal likelihood.
+      return (real64 > 0.5)
 endClass
 
