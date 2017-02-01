@@ -70,6 +70,8 @@ class Type
 
     dependencies : CmdStatementList
 
+    deprecated_message : String
+
   METHODS
     method init( t, name )
 
@@ -297,6 +299,9 @@ class Type
 
       if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
+
+    method is_deprecated->Logical
+      return (attributes.flags & Attribute.is_deprecated)
 
     method is_real->Logical
       return this is Program.type_Real64 or this is Program.type_Real32

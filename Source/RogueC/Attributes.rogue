@@ -31,6 +31,7 @@ class Attribute
     returns_this        = 8388608
     is_preferred        = 16777216
     is_nonAPI           = 33554432
+    is_deprecated       = 67108864
 endClass
 
 

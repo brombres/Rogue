@@ -437,6 +437,44 @@ class Program [essential singleton]
       # Perform miscellaneous program structure validation
       forEach (type in type_list) type.validate
 
+      # Warn on use of deprecated classes and methods
+      local deprecated_types : Set<<Type>>
+      local deprecated_methods : Set<<Method>>
+      forEach (type in type_list)
+        if (type.is_used)
+          if (type.is_deprecated)
+            if (not (ensure deprecated_types).contains(type))
+              deprecated_types.add( type )
+              print( "**WARNING** Using deprecated type " ).print( type.name )
+              if (type.deprecated_message) print( ", " ).print( type.deprecated_message )
+              println( '.' )
+            endIf
+          endIf
+
+          forEach (m in type.global_method_list)
+            if (m.is_used and m.is_deprecated)
+              if (not (ensure deprecated_methods).contains(m))
+                deprecated_methods.add( m )
+                print( "**WARNING** Using deprecated method " ).print( m.type_context.name ).print( '.' ).print( m.signature )
+                if (m.deprecated_message) print( ", " ).print( m.deprecated_message )
+                println( '.' )
+              endIf
+            endIf
+          endForEach
+
+          forEach (m in type.method_list)
+            if (m.is_used and m.is_deprecated)
+              if (not (ensure deprecated_methods).contains(m))
+                deprecated_methods.add( m )
+                print( "**WARNING** Using deprecated method " ).print( m.type_context.name ).print( '.' ).print( m.signature )
+                if (m.deprecated_message) print( ", " ).print( m.deprecated_message )
+                println( '.' )
+              endIf
+            endIf
+          endForEach
+        endIf
+      endForEach
+
     method reorder_compounds
       # Source code for compounds and exception types is generated in the same order that they
       # appear in the type_list.  If compound B is defined before A *and* B has properties of

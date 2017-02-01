@@ -146,6 +146,7 @@ class Tokenizer
       TokenType.keyword_block               = define( TokenType("block") )
       TokenType.keyword_compileError        = define( TokenType("compileError") )
       TokenType.keyword_contingent          = define( TokenType("contingent") )
+      TokenType.keyword_deprecated          = define( TokenType("deprecated") )
       TokenType.keyword_ensure              = define( TokenType("ensure") )
       TokenType.keyword_escapeBlock         = define( TokenType("escapeBlock") )
       TokenType.keyword_escapeContingent    = define( TokenType("escapeContingent") )

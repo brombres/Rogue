@@ -32,6 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.23 - January 30, 2017
+- [Random] Deprecated `next_int32` and renamed to `int32` etc.
+- [Rogue] Added `[deprecated]` attribute and `deprected ["Message"]` statement (the latter implying the former) that causes Rogue to generate compile warnings if a deprecated type or method is used.
+
 ###v1.1.22 - January 30, 2017
 - [RogueC] A generic function with no parameters and a `with` clause is now parsed correctly (`() with(x) => ...`).
 

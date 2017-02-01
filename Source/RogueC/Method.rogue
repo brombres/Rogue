@@ -43,6 +43,8 @@ class Method
     specializer_count : Int32
     unspecialized_name  : String
 
+    deprecated_message : String
+
   METHODS
     method init( t, type_context, name )
 
@@ -158,6 +160,9 @@ class Method
 
     method is_augment->Logical
       return (attributes.flags & Attribute.is_augment)
+
+    method is_deprecated->Logical
+      return (attributes.flags & Attribute.is_deprecated)
 
     method is_dynamic->Logical
       return (overridden_method or overriding_methods.count or (attributes.flags & Attribute.is_dynamic))

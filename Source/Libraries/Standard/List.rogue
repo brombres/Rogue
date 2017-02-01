@@ -303,7 +303,7 @@ class List<<$DataType>> : GenericList
       local default_value : $DataType
       if (not count) return default_value
 
-      return this[ generator.next_int32(this.count) ]
+      return this[ generator.int32(this.count) ]
 
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, 0 )
@@ -428,7 +428,7 @@ class List<<$DataType>> : GenericList
 
     method shuffle( generator=Random:Random )->this
       local n = count
-      forEach (i of this) swap( i, generator.next_int32(n) )
+      forEach (i of this) swap( i, generator.int32(n) )
       return this
 
     method shuffled( generator=Random:Random )->$DataType[]

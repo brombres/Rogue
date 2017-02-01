@@ -45,7 +45,7 @@ syn keyword rogueConstant     null infinity NaN
 syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield
-syn keyword rogueStatement    compileError
+syn keyword rogueStatement    compileError deprecated
 syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global

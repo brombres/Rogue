@@ -384,6 +384,8 @@ class Parser
         local t = peek
         if (consume(TokenType.keyword_native))
           attributes.add( Attribute.is_native )
+        elseIf (consume(TokenType.keyword_deprecated))
+          attributes.add( Attribute.is_deprecated )
 
         elseIf (consume("abstract"))
           attributes.add( Attribute.is_abstract )
@@ -524,6 +526,14 @@ class Parser
 
     method parse_section->Logical
       consume_eols
+
+      local message = parse_deprecated
+      if (message)
+        this_type.attributes.add( Attribute.is_deprecated )
+        this_type.attributes.add( Attribute.is_nonAPI )
+        this_type.deprecated_message = message
+        return true
+      endIf
 
       if (consume(TokenType.keyword_DEPENDENCIES))
         while (parse_dependency) noAction
@@ -965,6 +975,14 @@ class Parser
 
     method parse_statement( allow_control_structures:Logical )
       if (parse_unit_test) return
+
+      local deprecated_message = parse_deprecated
+      if (deprecated_message)
+        this_method.attributes.add( Attribute.is_deprecated )
+        this_method.attributes.add( Attribute.is_nonAPI )
+        this_method.deprecated_message = deprecated_message
+        return
+      endIf
 
       local t = peek
 
@@ -1430,6 +1448,11 @@ class Parser
         return false
       endIf
 
+    method parse_deprecated->String
+      consume_eols
+      if (not consume(TokenType.keyword_deprecated)) return null
+      if (not next_is(TokenType.literal_string)) return ""
+      return read->String
 
     method parse_unit_test->Logical
       consume_eols
