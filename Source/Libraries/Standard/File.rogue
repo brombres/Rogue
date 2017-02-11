@@ -824,10 +824,15 @@ class FileWriter : Writer<<Byte>>
       close
 
     method close->this
+      $if ("Web") nativeHeader extern "C" void Rogue_sync_local_storage();
+
       flush
 
       if (fp)
-        native( "fclose( $this->fp ); $this->fp = 0;" )
+        native @|fclose( $this->fp ); $this->fp = 0;
+                |#ifdef EMSCRIPTEN
+                |  Rogue_sync_local_storage();
+                |#endif
       endIf
 
       return this
