@@ -5559,6 +5559,7 @@ void RoguePreprocessor__define__String_Token_List( RogueString* name_0, RogueTok
 void RoguePreprocessor__init_class();
 void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
 RogueInt32 RogueSystem__run__String( RogueString* command_0 );
+void RogueSystem__sync_storage();
 RogueReal64 RogueSystem__time();
 void RogueSystem__init_class();
 void RogueStringValue__init_class();

@@ -32,8 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.24 - February 11, 2017
-- [FileWriter] On `close()`, native function `Rogue_sync_local_storage()` is called if `emscripten` is the compile target.
+###v1.1.24 - February 12, 2017
+- [FileWriter] `close()` calls `System.sync_storage()`, which is a `noAction` in Rogue but can be augmented as needed in Plasmacore etc.
 
 ###v1.1.23 - February 1, 2017
 - [Random] Deprecated `next_int32` and renamed to `int32` etc.

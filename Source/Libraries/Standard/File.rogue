@@ -830,9 +830,7 @@ class FileWriter : Writer<<Byte>>
 
       if (fp)
         native @|fclose( $this->fp ); $this->fp = 0;
-                |#ifdef EMSCRIPTEN
-                |  Rogue_sync_local_storage();
-                |#endif
+        System.sync_storage
       endIf
 
       return this

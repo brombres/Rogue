@@ -63,6 +63,9 @@ class System [essential]
               |sleep_time.tv_nsec = (long) $nanoseconds;
               |nanosleep( &sleep_time, NULL );
 
+    method sync_storage
+      noAction
+
     method time->Real64
       $if ("C++")
         native @|#if defined(_WIN32)
