@@ -616,6 +616,14 @@ class Character [primitive]
 
       if (value < base) return value
       else              return -1
+
+    method to_lowercase->Character
+      if (not is_uppercase) return this
+      return Character( this + ('a'-'A') )
+
+    method to_uppercase->Character
+      if (not is_lowercase) return this
+      return Character( this + ('A'-'a') )
 endClass
 
 class Byte [primitive]
