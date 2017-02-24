@@ -3,8 +3,8 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.23
-Date      | February 1, 2017
+Version   | v1.1.24
+Date      | February 23, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.24 - February 12, 2017
+###v1.1.24 - February 23, 2017
 - [Int32] Added `to->Int64(&unsigned)`.
 - [DataReader] Fixed sign extention error in `DataReader.read_Int64()` and `read_Int64X()`.
 - [Character] Added `to_uppercase->Character` and `to_lowercase->Character`.
