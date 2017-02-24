@@ -446,6 +446,10 @@ class Int32 [primitive]
     method to->Int64 [macro]
       $if ("C++") native "((RogueInt64)$this)"
 
+    method to->Int64( unsigned:Logical )
+      if (unsigned) return this & 0x0FFFFffff
+      else          return this->Int64
+
     method to->Object
       return Boxed<<Int32>>(this)
 

@@ -36,11 +36,11 @@ class DataReader : Reader<<Byte>>
 
     method read_int64->Int64
       local result = read_int32 : Int64
-      return (result :<<: 32) | read_int32
+      return (result :<<: 32) | read_int32->Int64(&unsigned)
 
     method read_int64x->Int64
       local result = read_int32x : Int64
-      return (result :<<: 32) | read_int32x
+      return (result :<<: 32) | read_int32->Int64(&unsigned)
 
     method read_int32->Int32
       local result = read : Int32

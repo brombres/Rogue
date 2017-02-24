@@ -33,6 +33,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ###v1.1.24 - February 12, 2017
+- [Int32] Added `to->Int64(&unsigned)`.
+- [DataReader] Fixed sign extention error in `DataReader.read_Int64()` and `read_Int64X()`.
 - [Character] Added `to_uppercase->Character` and `to_lowercase->Character`.
 - [FileWriter] `close()` calls `System.sync_storage()`, which is a `noAction` in Rogue but can be augmented as needed in Plasmacore etc.
 
