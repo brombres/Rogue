@@ -586,7 +586,7 @@ bool Rogue_update_tasks();  // returns true if tasks are still active
 //-----------------------------------------------------------------------------
 struct RogueDebugTrace
 {
-  static char buffer[120];
+  static char buffer[512];
 
   const char* method_signature;
   const char* filename;

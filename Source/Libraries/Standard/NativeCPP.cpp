@@ -66,7 +66,7 @@ RogueDebugTrace*   Rogue_call_stack = 0;
 RogueCallbackInfo  Rogue_on_gc_begin;
 RogueCallbackInfo  Rogue_on_gc_trace_finished;
 RogueCallbackInfo  Rogue_on_gc_end;
-char               RogueDebugTrace::buffer[120];
+char               RogueDebugTrace::buffer[512];
 
 struct RogueWeakReference;
 RogueWeakReference* Rogue_weak_references = 0;
@@ -100,7 +100,7 @@ int RogueDebugTrace::count()
 
 char* RogueDebugTrace::to_c_string()
 {
-  sprintf( buffer, "[%s %s:%d]", method_signature, filename, line );
+  snprintf( buffer, 512, "[%s %s:%d]", method_signature, filename, line );
   return buffer;
 }
 
