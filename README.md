@@ -32,7 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.25 - February 25, 2017
+###v1.1.25 - March 30, 2017
+- [RogueC] Compiler now reports error messages with better line locations for `DEFINITIONS` and `[macro]` methods.
 - [C++ Runtime] Expanded debug stack trace print buffer from 120 to 512 characters and now using snprintf() instead of sprintf().
 
 

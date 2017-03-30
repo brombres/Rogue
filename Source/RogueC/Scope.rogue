@@ -150,7 +150,7 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local inline_statement = statement.cloned( macro_args )
+            local inline_statement = statement.cloned( macro_args, &new_t=t )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
@@ -198,7 +198,7 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local inline_statement = statement.cloned( macro_args )
+            local inline_statement = statement.cloned( macro_args, &new_t=t )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
 
