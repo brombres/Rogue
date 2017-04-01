@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.26 - April 1, 2017
 - [RogueC] `--essential` flag no longer causes errors in types that extend a `Function` type that specifies a `$PlaceholderType` return type.
+- [Random] Removed deprecated methods.
 
 ###v1.1.25 - March 30, 2017
 - [RogueC] Compiler now reports error messages with better line locations for `DEFINITIONS` and `[macro]` methods.

@@ -63,32 +63,6 @@ class Random [singleton]
     method reset( state )
       advance_state
 
-    method next_real64->Real64 [deprecated]
-      deprecated "use Random.real64() instead"
-      return (advance_state->Real64 + 1.0) / 281474976710657.0
-
-    method next_real64( low:Real64, high:Real64 )->Real64 [deprecated]
-      deprecated "use Random.real64(Real64,Real64) instead"
-      return (next_real64 * (high-low)) + low
-
-    method next_int32->Int32 [deprecated]
-      deprecated "use Random.int32() instead"
-      return (next_real64 * (2.0^31))->Int32
-
-    method next_int32( limit:Int32 )->Int32 [deprecated]
-      deprecated "use Random.int32(Int32) instead"
-      if (limit == 0) return 0
-      return next_int32 % limit
-
-    method next_int32( low:Int32, high:Int32 )->Int32 [deprecated]
-      deprecated "use Random.int32(Int32,Int32) instead"
-      return next_int32( (high-low)+1 ) + low
-
-    method next_logical->Logical [deprecated]
-      deprecated "use Random.logical() instead"
-      return (next_real64 > 0.5)
-
-
     method real64->Real64
       # Calculates the internal 'next_random' raw integer.
       return (advance_state->Real64 + 1.0) / 281474976710657.0
