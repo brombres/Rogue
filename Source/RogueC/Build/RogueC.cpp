@@ -44942,7 +44942,10 @@ void RogueProgram__resolve( RogueClassProgram* THIS )
         for (;_auto_457_8 < _auto_456_7->count;++_auto_457_8)
         {
           ROGUE_DEF_LOCAL_REF(RogueClassType*,t_9,(((RogueTable_String_Type___at__Int32( _auto_456_7, _auto_457_8 )))));
-          RogueType__configure__Scope( t_9, ROGUE_ARG(((RogueClassScope*)(NULL))) );
+          if (!(((RogueString__contains__Character( ROGUE_ARG(t_9->name), (RogueCharacter)'$' )))))
+          {
+            RogueType__configure__Scope( t_9, ROGUE_ARG(((RogueClassScope*)(NULL))) );
+          }
         }
       }
     }
@@ -44952,23 +44955,26 @@ void RogueProgram__resolve( RogueClassProgram* THIS )
       for (;_auto_459_11 < _auto_458_10->count;++_auto_459_11)
       {
         ROGUE_DEF_LOCAL_REF(RogueClassTemplate*,templ_12,(((RogueClassTemplate*)(_auto_458_10->data->as_objects[_auto_459_11]))));
-        if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->all_api)
+        if (!(((RogueString__contains__Character( ROGUE_ARG(templ_12->name), (RogueCharacter)'$' )))))
         {
-          RogueAttributes__add__Int32( ROGUE_ARG(templ_12->attributes), 16 );
-        }
-        if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->all_essential)
-        {
-          RogueAttributes__add__Int32( ROGUE_ARG(templ_12->attributes), 16 );
-          RogueAttributes__add__Int32( ROGUE_ARG(templ_12->attributes), 8192 );
-          if (!(!!(templ_12->type_parameters)))
+          if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->all_api)
           {
-            ROGUE_DEF_LOCAL_REF(RogueClassType*,t_3,(((RogueProgram__get_type_reference__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(templ_12->t), ROGUE_ARG(templ_12->name) )))));
-            RogueType__configure__Scope( t_3, ROGUE_ARG(((RogueClassScope*)(NULL))) );
+            RogueAttributes__add__Int32( ROGUE_ARG(templ_12->attributes), 16 );
           }
-        }
-        if (((((RogueTemplate__is_essential( templ_12 )))) && (!(!!(templ_12->type_parameters)))))
-        {
-          RogueType__resolve( ROGUE_ARG(((RogueProgram__get_type_reference__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(templ_12->t), ROGUE_ARG(templ_12->name) )))) );
+          if (((RogueClassRogueC*)ROGUE_SINGLETON(RogueC))->all_essential)
+          {
+            RogueAttributes__add__Int32( ROGUE_ARG(templ_12->attributes), 16 );
+            RogueAttributes__add__Int32( ROGUE_ARG(templ_12->attributes), 8192 );
+            if (!(!!(templ_12->type_parameters)))
+            {
+              ROGUE_DEF_LOCAL_REF(RogueClassType*,t_3,(((RogueProgram__get_type_reference__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(templ_12->t), ROGUE_ARG(templ_12->name) )))));
+              RogueType__configure__Scope( t_3, ROGUE_ARG(((RogueClassScope*)(NULL))) );
+            }
+          }
+          if (((((RogueTemplate__is_essential( templ_12 )))) && (!(!!(templ_12->type_parameters)))))
+          {
+            RogueType__resolve( ROGUE_ARG(((RogueProgram__get_type_reference__Token_String( ROGUE_ARG(THIS), ROGUE_ARG(templ_12->t), ROGUE_ARG(templ_12->name) )))) );
+          }
         }
       }
     }

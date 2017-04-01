@@ -354,24 +354,30 @@ class Program [essential singleton]
       local types_resolved = false
       while (not types_resolved)
         if (RogueC.all_essential)
-          forEach (t in type_lookup) t.configure
+          forEach (t in type_lookup)
+            if (not t.name.contains('$'))
+              t.configure
+            endIf
+          endForEach
         endIf
 
         # Reference and resolve all essential type templates
         forEach (templ in template_list)
-          if (RogueC.all_api)
-            templ.attributes.add( Attribute.is_api )
-          endIf
-          if (RogueC.all_essential)
-            templ.attributes.add( Attribute.is_api )
-            templ.attributes.add( Attribute.is_essential )
-            if (not templ.type_parameters)
-              local t = get_type_reference( templ.t, templ.name )
-              t.configure
+          if (not templ.name.contains('$'))
+            if (RogueC.all_api)
+              templ.attributes.add( Attribute.is_api )
             endIf
-          endIf
-          if ((templ.is_essential) and not templ.type_parameters)
-            get_type_reference( templ.t, templ.name ).resolve
+            if (RogueC.all_essential)
+              templ.attributes.add( Attribute.is_api )
+              templ.attributes.add( Attribute.is_essential )
+              if (not templ.type_parameters)
+                local t = get_type_reference( templ.t, templ.name )
+                t.configure
+              endIf
+            endIf
+            if ((templ.is_essential) and not templ.type_parameters)
+              get_type_reference( templ.t, templ.name ).resolve
+            endIf
           endIf
         endForEach
 
