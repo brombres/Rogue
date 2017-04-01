@@ -501,7 +501,9 @@ augment Program
       if (not writer) return
       forEach (cyclass in cy_delegates.value_reader)
         local m = cyclass.funcs["call"][0]
-        writer.println "$$ (*PyRogue_delegate_$)($)$" (prefix, m.cproto_return, cyclass.type.base_class.cpp_name, ",".join(m.cproto_params), suffix)
+        local func = find_function_aspect(cyclass.type)
+        require func
+        writer.println "$$ (*PyRogue_delegate_$)($)$" (prefix, m.cproto_return, func.cpp_name, ",".join(m.cproto_params), suffix)
       endForEach
 
     method cy_inject_rogue_classes
@@ -537,14 +539,6 @@ augment Program
           endIf
           if t.method_lookup_by_name["call"].count != 1
             throw Error("[INTERNAL] Function type callable in multiple ways?")
-          endIf
-
-          if t.base_class is not type_Object
-            # We're only interested in the "root" Function types which correspond
-            # to the abstract signatures, and not to real code.  I'm actually
-            # not sure if those will make it this far (i.e., if their names
-            # pass the name check above), but we want to ignore them anyway.
-            nextIteration
           endIf
 
           # Check if it's something we can wrap
@@ -642,8 +636,9 @@ augment Program
 
           m.cproto_params.remove_first()
           m.cproto_params.insert("void*")
-
-          cy_delegate_to_pydelegate[t.base_class] = t # Track signature->pydelegate
+          local base = find_function_aspect(t)
+          require base
+          cy_delegate_to_pydelegate[base] = t # Track signature->pydelegate
           cy_delegate_to_pydelegate[t] = t
         endForEach
 
@@ -651,6 +646,16 @@ augment Program
         return false
       endIf
       return false
+
+    method find_function_aspect (t:Type)->Type
+      local ot : Type
+      forEach (tt in t.base_types)
+        if (tt.is_function)
+          if (ot) return null # Does this ever happen?  We should maybe handle it?
+          ot = tt
+        endIf
+      endForEach
+      return ot
 
     method configure
       if (RogueC.compile_targets["Cython"])
@@ -1293,7 +1298,9 @@ augment Program
           params.add( p + " param" + j )
           ++j
         endForEach
-        writer.println "cdef $ PyRogue_delegate_$_thunk ($):" (m.cproto_return, ccls.type.base_class.cpp_name, ",".join(params))
+        local func = find_function_aspect(ccls.type)
+        require func
+        writer.println "cdef $ PyRogue_delegate_$_thunk ($):" (m.cproto_return, func.cpp_name, ",".join(params))
         j = 0
         writer.println @|  cdef PyRogueDelegateContext* context
                         |  context = <PyRogueDelegateContext*>param0
@@ -1316,7 +1323,7 @@ augment Program
                         |    tb = traceback.format_exc()
                         |    context.exception = (<PyRogueBase>PyRogueError( str(e[0].__name__), str(e[1]), tb )).thisptr
 
-        writer.println "PyRogue_delegate_$ = PyRogue_delegate_$_thunk" (ccls.type.base_class.cpp_name, ccls.type.base_class.cpp_name)
+        writer.println "PyRogue_delegate_$ = PyRogue_delegate_$_thunk" (func.cpp_name, func.cpp_name)
       endForEach
 
     method cy_sort_cyclasses ( cyclasses:Table<<Type, CyClass>> )->CyClass[]
