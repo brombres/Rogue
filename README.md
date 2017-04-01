@@ -3,7 +3,7 @@ Rogue
 
           | Current Release
 ----------|-----------------------
-Version   | v1.1.26
+Version   | v1.1.27
 Date      | April 1, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
@@ -31,6 +31,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.1.27 - April 1, 2017
+- [Cython] Fixed Functions in Cython.  `c42d4d0` changed Functions from classes to aspects, which required changes
+to the Function thunking for Python bindings.
 
 ###v1.1.26 - April 1, 2017
 - [RogueC] `--essential` flag no longer causes errors in types that extend a `Function` type that specifies a `$PlaceholderType` return type.
