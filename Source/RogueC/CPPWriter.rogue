@@ -1388,6 +1388,8 @@ class CPPWriter
           endIf
         case "type"
           print( type )
+        case "type_name"
+          print_type_name( type )
         case ""
           print( default )
         others

@@ -32,6 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.28 - April 1, 2017
+- [Rogue] Changed root function types from aspects to classes and Task from a class to an aspect.
+- [Rogue] Added inline native command `$(obj.type_name)` which prints out the C++ type name used for the given object.
+
 ###v1.1.27 - April 1, 2017
 - [Cython] Fixed Functions in Cython.  `c42d4d0` changed Functions from classes to aspects, which required changes
 to the Function thunking for Python bindings.
