@@ -662,15 +662,6 @@ augment Program
         cy_plugin = Plugin("Cython")
         RogueC.plugins.add( cy_plugin )
 
-        local ptr_size = native("sizeof(intptr_t)")->Int32
-        if ptr_size == 4
-          Preprocessor.definitions["PointerInt"] = Tokenizer().tokenize(("compiler-generated"), "Int32")
-        elseIf ptr_size == 8
-          Preprocessor.definitions["PointerInt"] = Tokenizer().tokenize(("compiler-generated"), "Int64")
-        else
-          throw Error("Unsupported platform pointer size")
-        endIf
-
         cy_plugin.on_generate_additional_types( this=>cy_create_delegates )
         cy_plugin.on_finish_header_file( this=>cy_on_header_end )
         cy_plugin.on_finish_code_file( this=>cy_on_code_end )

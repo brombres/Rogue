@@ -3,6 +3,18 @@
 #------------------------------------------------------------------------------
 augment Program
   METHODS
+    method configure
+      block
+        local ptr_size = native("sizeof(intptr_t)")->Int32
+        if ptr_size == 4
+          Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), "Int32")
+        elseIf ptr_size == 8
+          Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), "Int64")
+        else
+          throw Error("Unsupported platform pointer size")
+        endIf
+      endBlock
+
     method validate_cpp_name( name:String )->String
       local begins_with_code_prefix = false
       if (name.begins_with(code_prefix))

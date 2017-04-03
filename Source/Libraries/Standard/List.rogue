@@ -505,8 +505,8 @@ $if ("Cython")
       endIf
       set(index, new_value)
 
-    method _get_base_address()->PointerInt [essential]
-      return native("&($this->data->as_bytes)")->PointerInt
+    method _get_base_address()->IntPtr [essential]
+      return native("&($this->data->as_bytes)")->IntPtr
 $endIf
 endClass
 
