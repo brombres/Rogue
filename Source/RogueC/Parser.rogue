@@ -672,10 +672,10 @@ class Parser
             if (p.type is null)
               #println p.initial_value.type_name
               throw p.initial_value.t.error(
-                ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Object" '' (name) )
+                ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Int32" '' (name) )
             endIf
           else
-            throw p.t.error( ''An initial value or $ type (for example, ": Object") must be specified.'' (name) )
+            throw p.t.error( ''An initial value or $ type (for example, ": Int32") must be specified.'' (name) )
           endIf
         endForEach
       endIf
@@ -1629,7 +1629,16 @@ class Parser
       else
         # global properties
         forEach (v in local_declarations)
-          Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type,v.initial_value) )
+          if (v.type is null)
+            if (v.initial_value)
+              throw v.t.error( ''Cannot determine global variable type from initial value; append an explicit type declaration such as ": Int32" '' )
+            else
+              throw v.t.error( ''An initial value or global variable type (for example, ": Int32") must be specified.'' )
+            endIf
+          endIf
+          cur_statement_list.add( CmdAssign( v.t, CmdAccess(v.t,"Global",v.name), v.initial_value ) )
+          v.initial_value = null
+          Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type) )
         endForEach
       endIf
 

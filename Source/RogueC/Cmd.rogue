@@ -1929,6 +1929,9 @@ class CmdAccess : Cmd
       args = CmdArgs()
       args.add( arg )
 
+    method init( t, context_name:String, name )
+      context = CmdAccess( t, context_name )
+
     method init( t, local_info:Local )
       init( t, local_info.name )
 
