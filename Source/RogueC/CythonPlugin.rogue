@@ -501,7 +501,7 @@ augment Program
       if (not writer) return
       forEach (cyclass in cy_delegates.value_reader)
         local m = cyclass.funcs["call"][0]
-        local func = find_function_aspect(cyclass.type)
+        local func = find_function_root(cyclass.type)
         require func
         writer.println "$$ (*PyRogue_delegate_$)($)$" (prefix, m.cproto_return, func.cpp_name, ",".join(m.cproto_params), suffix)
       endForEach
@@ -540,6 +540,8 @@ augment Program
           if t.method_lookup_by_name["call"].count != 1
             throw Error("[INTERNAL] Function type callable in multiple ways?")
           endIf
+
+          assert t.base_class is type_Object
 
           # Check if it's something we can wrap
           local ccls = CyClass(t, true)
@@ -636,7 +638,7 @@ augment Program
 
           m.cproto_params.remove_first()
           m.cproto_params.insert("void*")
-          local base = find_function_aspect(t)
+          local base = find_function_root(t)
           require base
           cy_delegate_to_pydelegate[base] = t # Track signature->pydelegate
           cy_delegate_to_pydelegate[t] = t
@@ -647,15 +649,11 @@ augment Program
       endIf
       return false
 
-    method find_function_aspect (t:Type)->Type
-      local ot : Type
-      forEach (tt in t.base_types)
-        if (tt.is_function)
-          if (ot) return null # Does this ever happen?  We should maybe handle it?
-          ot = tt
-        endIf
-      endForEach
-      return ot
+    method find_function_root (t:Type)->Type
+      # Get the "abstract" type of this function.
+      # This is currently just the base class, but there was a period when
+      # Functions were aspects.
+      return t.base_class
 
     method configure
       if (RogueC.compile_targets["Cython"])
@@ -1298,7 +1296,7 @@ augment Program
           params.add( p + " param" + j )
           ++j
         endForEach
-        local func = find_function_aspect(ccls.type)
+        local func = find_function_root(ccls.type)
         require func
         writer.println "cdef $ PyRogue_delegate_$_thunk ($):" (m.cproto_return, func.cpp_name, ",".join(params))
         j = 0
