@@ -1,4 +1,4 @@
-class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
+class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
     nativeHeader #include <termios.h>
     nativeHeader #include <unistd.h>
@@ -19,23 +19,21 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
   PROPERTIES
     error             = ConsoleErrorPrinter()
 
+    immediate_mode    = false
 
-    output_buffer     = StringBuilder()
-    input_buffer      = StringBuilder()
-    next_input_byte   : Int32?
-    io_handler        : ConsoleIOHandler
+    output_buffer        = StringBuilder()
+    input_buffer         = StringBuilder()
+    next_input_character : Int32?
 
     native "termios original_terminal_settings;"
+    native "int     original_stdin_flags;"
 
   METHODS
     method init
       native @|tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+              |$this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
 
-      on_exit( function with (console=this)
-        native @|tcsetattr( STDIN_FILENO, TCSANOW, &$console->original_terminal_settings );
-      endFunction )
-
-      io_handler = BlockingConsoleIOHandler()
+      on_exit( function with (console=this) => console.reset_input_mode )
 
     method clear
       print( "\e[2J" ).flush
@@ -44,7 +42,14 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       print( "\e[K" ).flush
 
     method has_another->Logical
-      return io_handler.has_another
+      if (not next_input_character.exists)
+        next_input_character = native( "(RogueInt32)getc(stdin)" )->Int32
+        if (next_input_character.value == -1)
+          native @|clearerr( stdin );
+          next_input_character = null
+        endIf
+      endIf
+      return next_input_character.exists
 
     method height->Int32
       nativeHeader #include <sys/ioctl.h>
@@ -66,11 +71,15 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       endIf
       Global.flush
 
-    method peek->Byte
-      return io_handler.peek
+    method peek->Character
+      if (has_another) return next_input_character.value
+      else             return 0
 
-    method read->Byte
-      return io_handler.read
+    method read->Character
+      if (not has_another) return 0
+      local result = next_input_character.value
+      next_input_character = null
+      return result
 
     method read_line->String
       input_buffer.clear
@@ -88,6 +97,10 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
       write prompt
       return read_line
 
+    method reset_input_mode
+      native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+              |fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+
     method restore_cursor_position
       print( "\e[u" ).flush
 
@@ -97,10 +110,24 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
     method set_cursor( x:Int32, y:Int32 )
       print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
 
-    method set_io_handler( new_io_handler:ConsoleIOHandler )
-      if (@io_handler) @io_handler.uninstall
-      @io_handler = new_io_handler
-      if (@io_handler) @io_handler.install
+    method set_immediate_mode( setting:Logical )->this
+      if (@immediate_mode != setting)
+        @immediate_mode = setting
+        if (@immediate_mode)
+          # Turn off blocking and line buffering
+          native @|termios new_settings;
+                  |tcgetattr( STDIN_FILENO, &new_settings );
+                  |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
+                  |new_settings.c_cc[VMIN] = 0;
+                  |new_settings.c_cc[VTIME] = 0;
+                  |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+                  |fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
+        else
+          # Restore original settings
+          reset_input_mode
+        endIf
+      endIf
+      return this
 
     method width->Int32
       nativeHeader #include <sys/ioctl.h>
@@ -112,11 +139,12 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
               |return sz.ws_col;
 
     method write( value:String )->this
-      io_handler.write( value )
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
+              |fflush( stdout );
       return this
 
     method write( buffer:StringBuilder )->this
-      io_handler.write( buffer.utf8.data, buffer.utf8.count )
+      native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stdout );
       return this
 
 endClass
@@ -127,130 +155,14 @@ class ConsoleErrorPrinter : PrintWriter<<output_buffer>>
 
   METHODS
     method write( value:String )->this
-      Console.io_handler.write_error( value )
+      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
+              |fflush( stderr );
       return this
 
     method write( buffer:StringBuilder )->this
-      Console.io_handler.write_error( buffer.utf8.data, buffer.utf8.count )
+      native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stderr );
+              |fflush( stderr );
       return this
-endClass
 
-class ConsoleIOHandler [abstract]
-  METHODS
-    method has_another->Logical                      [abstract]
-    method install
-    method peek->Byte                                [abstract]
-    method read->Byte                                [abstract]
-    method uninstall
-    method write( value:String )                     [abstract]
-    method write( bytes:Array<<Byte>>, count:Int32 ) [abstract]
-    method write_error( value:String )                     [abstract]
-    method write_error( bytes:Array<<Byte>>, count:Int32 ) [abstract]
-endClass
-
-class BlockingConsoleIOHandler : ConsoleIOHandler
-  PROPERTIES
-    next_input_byte   : Int32?
-
-  METHODS
-    method has_another->Logical
-      if (not next_input_byte.exists)
-        next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
-        if (next_input_byte.value == -1)
-          native @|clearerr( stdin );
-          next_input_byte = null
-        endIf
-      endIf
-      return next_input_byte.exists
-
-    method peek->Byte
-      if (has_another) return next_input_byte.value
-      else             return 0
-
-    method read->Byte
-      if (not has_another) return 0
-      local result = next_input_byte.value
-      next_input_byte = null
-      return result
-
-    method write( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
-
-    method write( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
-
-    method write_error( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
-
-    method write_error( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stderr );
-endClass
-
-class ImmediateConsoleIOHandler : ConsoleIOHandler
-  DEPENDENCIES
-    nativeHeader #include <poll.h>
-
-  PROPERTIES
-    next_input_byte   : Int32?
-
-    native "termios original_terminal_settings;"
-    native "int     original_stdin_flags;"
-
-  METHODS
-    method init
-
-    method install
-      native @|tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
-              |termios new_settings;
-              |tcgetattr( STDIN_FILENO, &new_settings );
-              |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
-              |new_settings.c_cc[VMIN] = 0;
-              |new_settings.c_cc[VTIME] = 0;
-              |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
-              |$this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
-              |fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
-
-    method has_another->Logical
-      if (not next_input_byte.exists)
-        local b : Byte
-        local n : Int32
-        native @|char ch;
-                |$n = (RogueInt32) read( STDIN_FILENO, &ch, 1 );
-                |$b = (RogueByte) ch;
-        if (n)
-          next_input_byte = b
-        endIf
-      endIf
-      return next_input_byte.exists
-
-    method peek->Byte
-      if (has_another) return next_input_byte.value
-      else             return 0
-
-    method read->Byte
-      if (not has_another) return 0
-      local result = next_input_byte.value
-      next_input_byte = null
-      return result
-
-    method uninstall
-      native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
-              |fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
-
-    method write( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
-              |fflush( stdout );
-
-    method write( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stdout );
-              |fflush( stdout );
-
-    method write_error( value:String )
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
-              |fflush( stderr );
-
-    method write_error( bytes:Array<<Byte>>, count:Int32 )
-      native @|fwrite( $bytes->as_bytes, 1, $count, stderr );
-              |fflush( stderr );
 endClass
 
