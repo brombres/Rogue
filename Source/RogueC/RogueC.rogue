@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.1.28.2"
-$define RELEASE_DATE    "April 3, 2017"
+$define RELEASE_VERSION "1.1.28.3"
+$define RELEASE_DATE    "April 5, 2017"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons

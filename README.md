@@ -32,11 +32,12 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.28 - April 3, 2017
+###v1.1.28 - April 5, 2017
 - [Rogue] Changed root function types from aspects to classes and Task from a class to an aspect.
 - [Rogue] Added inline native command `$(obj.type_name)` which prints out the C++ type name used for the given object.
 - [Rogue] `global` variables now evaluate their initial expressions in the calling context instead of the `Global` class context.  For example, `local a = 3; global b = a` now works correctly.
 - [Rogue] Added built-in define to map `IntPtr` to `Int64` or `Int32` as appropriate.
+- [Console] Reworked ImmediateConsoleIOHandler to be more robust - using `read()` instead of `poll()`.
 
 ###v1.1.27 - April 1, 2017
 - [Cython] Fixed Functions in Cython.  `c42d4d0` changed Functions from classes to aspects, which required changes

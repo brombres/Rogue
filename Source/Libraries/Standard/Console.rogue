@@ -19,6 +19,7 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
   PROPERTIES
     error             = ConsoleErrorPrinter()
 
+
     output_buffer     = StringBuilder()
     input_buffer      = StringBuilder()
     next_input_byte   : Int32?
@@ -96,6 +97,11 @@ class Console : Reader<<Byte>>, PrintWriter<<output_buffer>> [singleton]
     method set_cursor( x:Int32, y:Int32 )
       print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
 
+    method set_io_handler( new_io_handler:ConsoleIOHandler )
+      if (@io_handler) @io_handler.uninstall
+      @io_handler = new_io_handler
+      if (@io_handler) @io_handler.install
+
     method width->Int32
       nativeHeader #include <sys/ioctl.h>
       nativeHeader #include <unistd.h>
@@ -132,8 +138,10 @@ endClass
 class ConsoleIOHandler [abstract]
   METHODS
     method has_another->Logical                      [abstract]
+    method install
     method peek->Byte                                [abstract]
     method read->Byte                                [abstract]
+    method uninstall
     method write( value:String )                     [abstract]
     method write( bytes:Array<<Byte>>, count:Int32 ) [abstract]
     method write_error( value:String )                     [abstract]
@@ -185,27 +193,32 @@ class ImmediateConsoleIOHandler : ConsoleIOHandler
   PROPERTIES
     next_input_byte   : Int32?
 
+    native "termios original_terminal_settings;"
+    native "int     original_stdin_flags;"
+
   METHODS
     method init
-      native @|termios new_settings;
+
+    method install
+      native @|tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+              |termios new_settings;
               |tcgetattr( STDIN_FILENO, &new_settings );
               |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
               |new_settings.c_cc[VMIN] = 0;
               |new_settings.c_cc[VTIME] = 0;
               |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+              |$this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
+              |fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
 
     method has_another->Logical
       if (not next_input_byte.exists)
-        native @|pollfd file_descriptors[1];
-                |file_descriptors[0].fd = STDIN_FILENO;
-                |file_descriptors[0].events = POLLIN;
-                |fflush( stdin );
-        if (native("poll(file_descriptors,1,0)")->Logical)
-          next_input_byte = native( "(RogueInt32)getc(stdin)" )->Int32
-          if (next_input_byte.value == -1)
-            native @|clearerr( stdin );
-            next_input_byte = null
-          endIf
+        local b : Byte
+        local n : Int32
+        native @|char ch;
+                |$n = (RogueInt32) read( STDIN_FILENO, &ch, 1 );
+                |$b = (RogueByte) ch;
+        if (n)
+          next_input_byte = b
         endIf
       endIf
       return next_input_byte.exists
@@ -219,6 +232,10 @@ class ImmediateConsoleIOHandler : ConsoleIOHandler
       local result = next_input_byte.value
       next_input_byte = null
       return result
+
+    method uninstall
+      native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+              |fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
 
     method write( value:String )
       native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
