@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.1.28.6"
+$define RELEASE_VERSION "1.1.28"
 $define RELEASE_DATE    "April 5, 2017"
 
 # TODO:
