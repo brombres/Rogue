@@ -3,6 +3,12 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
     nativeHeader #include <termios.h>
     nativeHeader #include <unistd.h>
 
+  ENUMERATE
+    UP_ARROW    = 17
+    DOWN_ARROW  = 18
+    RIGHT_ARROW = 19
+    LEFT_ARROW  = 20
+
   GLOBAL METHODS
     method input( prompt=null:String )->String
       if (prompt) Global.print( prompt ).flush
@@ -19,11 +25,18 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
   PROPERTIES
     error             = ConsoleErrorPrinter()
 
-    immediate_mode    = false
+    immediate_mode       = false
+    # Setting to true/false automatically sets is_blocking to false/true
+
+    is_blocking          = true
+
+    decode_bytes         = true
 
     output_buffer        = StringBuilder()
     input_buffer         = StringBuilder()
+
     next_input_character : Int32?
+    input_bytes          = Byte[]
 
     native "termios original_terminal_settings;"
     native "int     original_stdin_flags;"
@@ -41,12 +54,85 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
     method clear_to_eol
       print( "\e[K" ).flush
 
+    method fill_input_queue
+      # Internal use
+      local n : Int32
+      native @|char bytes[8];
+              |$n = (RogueInt32) read( STDIN_FILENO, &bytes, 8 );
+      if (n > 0)
+        forEach (i in 0..<n)
+          input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
+        endForEach
+      endIf
+
     method has_another->Logical
       if (not next_input_character.exists)
-        next_input_character = native( "(RogueInt32)getc(stdin)" )->Int32
-        if (next_input_character.value == -1)
-          native @|clearerr( stdin );
-          next_input_character = null
+        fill_input_queue
+        if (input_bytes.count)
+          local b1 = input_bytes.remove_first
+          contingent
+            necessary (decode_bytes)
+            necessary (input_bytes.count)  # more available?
+
+            # More available
+            if (b1 == 27)
+              # Escape sequence
+              necessary (input_bytes.count >= 2 and input_bytes.first == 91)
+              input_bytes.remove_first
+              next_input_character = (input_bytes.remove_first - 65) + Console.UP_ARROW
+
+            else
+              necessary (b1 >= 0xC0)
+
+              local result : Int32
+
+              # UTF-8
+              if ((b1 & 0b1110_0000) == 0b1100_0000)
+                necessary (input_bytes.count >= 1)
+                result = b1 & 0b0001_1111
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              elseIf ((b1 & 0b1111_0000) == 0b1110_0000)
+                necessary (input_bytes.count >= 2)
+                result = b1 & 0b0000_1111
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              elseIf ((b1 & 0b1111_1000) == 0b1111_0000)
+                necessary (input_bytes.count >= 3)
+                result = b1 & 0b0000_0111
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              elseIf ((b1 & 0b1111_1100) == 0b1111_1000)
+                necessary (input_bytes.count >= 4)
+                result = b1 & 0b0000_0011
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              else
+                necessary (input_bytes.count >= 5)
+                result = b1 & 0b0000_0001
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
+              endIf
+
+              next_input_character = result
+            endIf
+
+          unsatisfied
+            next_input_character = b1
+
+          endContingent
+
+          if (input_bytes.count > 0 and input_bytes.count < 6)
+            # If there are more bytes left then characters are getting piped or redirected in.
+            # Read enough to make sure we have a full UTF-8 sequence for next time.
+            fill_input_queue
+          endIf
+
         endIf
       endIf
       return next_input_character.exists
@@ -104,6 +190,17 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
     method restore_cursor_position
       print( "\e[u" ).flush
 
+    method set_is_blocking( setting:Logical )->this
+      if (@is_blocking != setting)
+        @is_blocking = setting
+        if (@is_blocking)
+          native @|fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
+        else
+          native @|fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+        endIf
+      endIf
+      return this
+
     method save_cursor_position
       print( "\e[s" ).flush
 
@@ -115,16 +212,16 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
         @immediate_mode = setting
         if (@immediate_mode)
           # Turn off blocking and line buffering
+          is_blocking = false
           native @|termios new_settings;
                   |tcgetattr( STDIN_FILENO, &new_settings );
                   |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
                   |new_settings.c_cc[VMIN] = 0;
                   |new_settings.c_cc[VTIME] = 0;
                   |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
-                  |fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
         else
-          # Restore original settings
-          reset_input_mode
+          is_blocking = true
+          native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
         endIf
       endIf
       return this
