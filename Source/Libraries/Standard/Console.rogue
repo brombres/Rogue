@@ -242,6 +242,7 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
 
     method write( buffer:StringBuilder )->this
       native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stdout );
+              |fflush( stdout );
       return this
 
 endClass
