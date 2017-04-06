@@ -728,12 +728,11 @@ class Tokenizer
       reader.read  # '0'
       reader.read  # [b,c,x] = [2,8,16]
 
-      local allow_underscore = false
       local count = 0
       local n = 0 : Int64
       local ch = reader.peek
       local digit = ch.to_number( base )
-      while (reader.has_another and (digit != -1 or (allow_underscore and ch == '_')))
+      while (reader.has_another and (digit != -1 or ch == '_'))
         if (ch != '_')
           if (digit >= base) throw error( "Digit out of range for base " + base + "." )
           ++count
@@ -742,7 +741,6 @@ class Tokenizer
         reader.read
         ch = reader.peek
         digit = ch.to_number( base )
-        allow_underscore = true
       endWhile
 
       if (count == 0) throw error( "One or more digits expected." )

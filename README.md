@@ -1,7 +1,7 @@
 Rogue
 =====
 
-          | Current Release
+About     | Current Release
 ----------|-----------------------
 Version   | v1.1.27
 Date      | April 1, 2017
@@ -37,6 +37,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 - [Rogue] Added inline native command `$(obj.type_name)` which prints out the C++ type name used for the given object.
 - [Rogue] `global` variables now evaluate their initial expressions in the calling context instead of the `Global` class context.  For example, `local a = 3; global b = a` now works correctly.
 - [Rogue] Added built-in define to map `IntPtr` to `Int64` or `Int32` as appropriate.
+- [Rogue] Literal integers in bases 2, 8, and 16 (beginning with 0b, 0c, 0x) can now have underscores (`_`) immediately after `0x` etc. as well as later.  Underscores are visual separators only and do not change the value of the number.
 - [Console] Revamped class `Console`.  Now write `Console.immediate_mode = true/false` to enter or leave immediate mode.  `Console.read()` now returns a Character instead of a Byte.  UTF-8 is automatically translated unless `Console.decode_bytes = false`.  Likewise arrow keys are automatically translated into Unicode 17-20, `Console.UP_ARROW` etc.
 
 ###v1.1.27 - April 1, 2017
