@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.29 - April 8, 2017
+- [RogueC] When an abstract method is called but no extended classes implement the method, a dummy method is generated to prevent a C++ compile error.  Previously the call to the method would be generated but the method itself would not be.
+
 ###v1.1.28 - April 5, 2017
 - [Rogue] Changed root function types from aspects to classes and Task from a class to an aspect.
 - [Rogue] Added inline native command `$(obj.type_name)` which prints out the C++ type name used for the given object.

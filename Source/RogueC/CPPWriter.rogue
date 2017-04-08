@@ -1913,7 +1913,19 @@ augment Method
       print_signature( writer )
       writer.println
       writer.println "{"
+
+      if (is_abstract and not type_context.is_aspect and overriding_methods.count == 0)
+        # Empty abstract method
+        if (return_type)
+          writer.print( "  return " ).print_default_value( return_type ).println( ";" )
+        endIf
+        writer.println "}"
+        writer.println
+        return
+      endIf
+
       writer.indent += 2
+
       forEach (param in parameters)
         if (param.parameter_needs_gc)
           writer.print("ROGUE_DEF_LOCAL_REF(").print(param.type).print(",").print(param.cpp_name).print(",").print(param.parameter_cpp_name).println(");")
