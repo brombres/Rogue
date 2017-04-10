@@ -32,7 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.29 - April 8, 2017
+###v1.1.29 - April 10, 2017
+- [RogueC] Added `use/escapeUse/endUse` control structure.
+- [RogueC] Aspects `Reader`, `Writer`, and `PrintWriter` now implement the `use` API.
+- [RogueC] Fixed call resolution issue when an aspect defines a method with the exact same signature as one of the methods in class `Object`.
 - [RogueC] When an abstract method is called but no extended classes implement the method, a dummy method is generated to prevent a C++ compile error.  Previously the call to the method would be generated but the method itself would not be.
 
 ###v1.1.28 - April 5, 2017

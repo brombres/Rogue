@@ -462,6 +462,8 @@ class CmdControlStructure : CmdStatement
     type_while
     type_forEach
 
+    type_use
+
   PROPERTIES
     statements          : CmdStatementList
     control_type        : Int32

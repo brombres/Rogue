@@ -890,6 +890,8 @@ struct RogueClassCmdSufficient; // CmdSufficient
 struct RogueClassCmdAssign; // CmdAssign
 struct RogueClassCmdAdjust; // CmdAdjust
 struct RogueClassCmdModifyAndAssign; // CmdModifyAndAssign
+struct RogueClassCmdLogicalize; // CmdLogicalize
+struct RogueClassCmdUnary; // CmdUnary
 struct RogueClassCmdTryExpression; // CmdTryExpression
 struct RogueClassCmdReadLocal; // CmdReadLocal
 struct RogueClassCmdAdjustLocal; // CmdAdjustLocal
@@ -917,7 +919,6 @@ struct RogueClassCmdCompare; // CmdCompare
 struct RogueClassCmdInstanceOf; // CmdInstanceOf
 struct RogueClassCmdTypeOperator; // CmdTypeOperator
 struct RogueClassCmdLogicalNot; // CmdLogicalNot
-struct RogueClassCmdUnary; // CmdUnary
 struct RogueClassCmdBitwiseXor; // CmdBitwiseXor
 struct RogueClassCmdBitwiseOp; // CmdBitwiseOp
 struct RogueClassCmdBitwiseOr; // CmdBitwiseOr
@@ -932,7 +933,6 @@ struct RogueClassCmdMod; // CmdMod
 struct RogueClassCmdPower; // CmdPower
 struct RogueClassCmdNegate; // CmdNegate
 struct RogueClassCmdBitwiseNot; // CmdBitwiseNot
-struct RogueClassCmdLogicalize; // CmdLogicalize
 struct RogueClassCmdIsReference; // CmdIsReference
 struct RogueClassCmdElementAccess; // CmdElementAccess
 struct RogueClassCmdConvertToType; // CmdConvertToType
@@ -1019,8 +1019,8 @@ struct RogueClassCmdCallInlineNativeMethod; // CmdCallInlineNativeMethod
 struct RogueClassCmdCallNativeMethod; // CmdCallNativeMethod
 struct RogueClassCmdCallAspectMethod; // CmdCallAspectMethod
 struct RogueClassCandidateMethods; // CandidateMethods
-struct RogueClassFunction_3290; // Function_3290
-struct RogueClassFunction_3291; // Function_3291
+struct RogueClassFunction_3294; // Function_3294
+struct RogueClassFunction_3295; // Function_3295
 struct RogueClassIOError; // IOError
 struct RogueClassFileReader; // FileReader
 struct RogueClassFileWriter; // FileWriter
@@ -1325,6 +1325,7 @@ extern RogueClassTokenType* RogueTokenType_keyword_endLoop;
 extern RogueClassTokenType* RogueTokenType_keyword_endRoutine;
 extern RogueClassTokenType* RogueTokenType_keyword_endTry;
 extern RogueClassTokenType* RogueTokenType_keyword_endUnitTest;
+extern RogueClassTokenType* RogueTokenType_keyword_endUse;
 extern RogueClassTokenType* RogueTokenType_keyword_endWhich;
 extern RogueClassTokenType* RogueTokenType_keyword_endWhile;
 extern RogueClassTokenType* RogueTokenType_keyword_ENUMERATE;
@@ -1362,6 +1363,7 @@ extern RogueClassTokenType* RogueTokenType_keyword_escapeForEach;
 extern RogueClassTokenType* RogueTokenType_keyword_escapeIf;
 extern RogueClassTokenType* RogueTokenType_keyword_escapeLoop;
 extern RogueClassTokenType* RogueTokenType_keyword_escapeTry;
+extern RogueClassTokenType* RogueTokenType_keyword_escapeUse;
 extern RogueClassTokenType* RogueTokenType_keyword_escapeWhich;
 extern RogueClassTokenType* RogueTokenType_keyword_escapeWhile;
 extern RogueClassTokenType* RogueTokenType_keyword_forEach;
@@ -1392,6 +1394,7 @@ extern RogueClassTokenType* RogueTokenType_keyword_trace;
 extern RogueClassTokenType* RogueTokenType_keyword_trace_args_only;
 extern RogueClassTokenType* RogueTokenType_keyword_try;
 extern RogueClassTokenType* RogueTokenType_keyword_unitTest;
+extern RogueClassTokenType* RogueTokenType_keyword_use;
 extern RogueClassTokenType* RogueTokenType_keyword_which;
 extern RogueClassTokenType* RogueTokenType_keyword_while;
 extern RogueClassTokenType* RogueTokenType_keyword_yield;
@@ -3850,6 +3853,22 @@ struct RogueClassCmdModifyAndAssign : RogueObject
 
 };
 
+struct RogueClassCmdLogicalize : RogueObject
+{
+  // PROPERTIES
+  RogueClassToken* t;
+  RogueClassCmd* operand;
+
+};
+
+struct RogueClassCmdUnary : RogueObject
+{
+  // PROPERTIES
+  RogueClassToken* t;
+  RogueClassCmd* operand;
+
+};
+
 struct RogueClassCmdTryExpression : RogueObject
 {
   // PROPERTIES
@@ -4119,14 +4138,6 @@ struct RogueClassCmdLogicalNot : RogueObject
 
 };
 
-struct RogueClassCmdUnary : RogueObject
-{
-  // PROPERTIES
-  RogueClassToken* t;
-  RogueClassCmd* operand;
-
-};
-
 struct RogueClassCmdBitwiseXor : RogueObject
 {
   // PROPERTIES
@@ -4244,14 +4255,6 @@ struct RogueClassCmdNegate : RogueObject
 };
 
 struct RogueClassCmdBitwiseNot : RogueObject
-{
-  // PROPERTIES
-  RogueClassToken* t;
-  RogueClassCmd* operand;
-
-};
-
-struct RogueClassCmdLogicalize : RogueObject
 {
   // PROPERTIES
   RogueClassToken* t;
@@ -5059,13 +5062,13 @@ struct RogueClassCandidateMethods : RogueObject
 
 };
 
-struct RogueClassFunction_3290 : RogueObject
+struct RogueClassFunction_3294 : RogueObject
 {
   // PROPERTIES
 
 };
 
-struct RogueClassFunction_3291 : RogueObject
+struct RogueClassFunction_3295 : RogueObject
 {
   // PROPERTIES
 
@@ -5420,6 +5423,8 @@ extern RogueType* RogueTypeCmdSufficient;
 extern RogueType* RogueTypeCmdAssign;
 extern RogueType* RogueTypeCmdAdjust;
 extern RogueType* RogueTypeCmdModifyAndAssign;
+extern RogueType* RogueTypeCmdLogicalize;
+extern RogueType* RogueTypeCmdUnary;
 extern RogueType* RogueTypeCmdTryExpression;
 extern RogueType* RogueTypeCmdReadLocal;
 extern RogueType* RogueTypeCmdAdjustLocal;
@@ -5447,7 +5452,6 @@ extern RogueType* RogueTypeCmdCompare;
 extern RogueType* RogueTypeCmdInstanceOf;
 extern RogueType* RogueTypeCmdTypeOperator;
 extern RogueType* RogueTypeCmdLogicalNot;
-extern RogueType* RogueTypeCmdUnary;
 extern RogueType* RogueTypeCmdBitwiseXor;
 extern RogueType* RogueTypeCmdBitwiseOp;
 extern RogueType* RogueTypeCmdBitwiseOr;
@@ -5462,7 +5466,6 @@ extern RogueType* RogueTypeCmdMod;
 extern RogueType* RogueTypeCmdPower;
 extern RogueType* RogueTypeCmdNegate;
 extern RogueType* RogueTypeCmdBitwiseNot;
-extern RogueType* RogueTypeCmdLogicalize;
 extern RogueType* RogueTypeCmdIsReference;
 extern RogueType* RogueTypeCmdElementAccess;
 extern RogueType* RogueTypeCmdConvertToType;
@@ -5549,8 +5552,8 @@ extern RogueType* RogueTypeCmdCallInlineNativeMethod;
 extern RogueType* RogueTypeCmdCallNativeMethod;
 extern RogueType* RogueTypeCmdCallAspectMethod;
 extern RogueType* RogueTypeCandidateMethods;
-extern RogueType* RogueTypeFunction_3290;
-extern RogueType* RogueTypeFunction_3291;
+extern RogueType* RogueTypeFunction_3294;
+extern RogueType* RogueTypeFunction_3295;
 extern RogueType* RogueTypeIOError;
 extern RogueType* RogueTypeFileReader;
 extern RogueType* RogueTypeFileWriter;
@@ -5613,7 +5616,7 @@ RogueReal64 RogueSystem__time();
 void RogueSystem__init_class();
 void RogueStringValue__init_class();
 RogueString* RogueFile__absolute_filepath__String( RogueString* filepath_0 );
-RogueLogical RogueFile__create_folder__String( RogueString* _auto_6055 );
+RogueLogical RogueFile__create_folder__String( RogueString* _auto_6059 );
 RogueLogical RogueFile__exists__String( RogueString* filepath_0 );
 RogueString* RogueFile__filename__String( RogueString* filepath_0 );
 RogueString* RogueFile__folder__String( RogueString* filepath_0 );
@@ -5961,10 +5964,10 @@ RogueString* RogueRogueC__type_name( RogueClassRogueC* THIS );
 void RogueRogueC__launch( RogueClassRogueC* THIS );
 void RogueRogueC__write_output( RogueClassRogueC* THIS );
 void RogueRogueC__on_compile_finished( RogueClassRogueC* THIS );
-RogueClassFile* RogueRogueC__find_source_file__Token_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_6056 );
+RogueClassFile* RogueRogueC__find_source_file__Token_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_6060 );
 void RogueRogueC__include_source__String_Logical( RogueClassRogueC* THIS, RogueString* filepath_0, RogueLogical do_not_save_prefix_1 );
-void RogueRogueC__include_source__Token_String_Logical( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_6057, RogueLogical do_not_save_prefix_2 );
-void RogueRogueC__include_native__Token_String_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_6058, RogueString* native_type_2 );
+void RogueRogueC__include_source__Token_String_Logical( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_6061, RogueLogical do_not_save_prefix_2 );
+void RogueRogueC__include_native__Token_String_String( RogueClassRogueC* THIS, RogueClassToken* t_0, RogueString* _auto_6062, RogueString* native_type_2 );
 void RogueRogueC__process_command_line_arguments( RogueClassRogueC* THIS );
 void RogueRogueC__write_cpp( RogueClassRogueC* THIS );
 RogueClassSet_String_* RogueSet_String___init_object( RogueClassSet_String_* THIS );
@@ -5987,7 +5990,7 @@ void RogueTable_String_Logical___clear( RogueClassTable_String_Logical_* THIS );
 RogueLogical RogueTable_String_Logical___contains__String( RogueClassTable_String_Logical_* THIS, RogueString* key_0 );
 RogueClassTableEntry_String_Logical_* RogueTable_String_Logical___find__String( RogueClassTable_String_Logical_* THIS, RogueString* key_0 );
 RogueLogical RogueTable_String_Logical___get__String( RogueClassTable_String_Logical_* THIS, RogueString* key_0 );
-RogueString_List* RogueTable_String_Logical___keys__String_List( RogueClassTable_String_Logical_* THIS, RogueString_List* _auto_6059 );
+RogueString_List* RogueTable_String_Logical___keys__String_List( RogueClassTable_String_Logical_* THIS, RogueString_List* _auto_6063 );
 RogueStringBuilder* RogueTable_String_Logical___print_to__StringBuilder( RogueClassTable_String_Logical_* THIS, RogueStringBuilder* buffer_0 );
 RogueClassTable_String_Logical_* RogueTable_String_Logical___set__String_Logical( RogueClassTable_String_Logical_* THIS, RogueString* key_0, RogueLogical value_1 );
 void RogueTable_String_Logical____adjust_entry_order__TableEntry_String_Logical_( RogueClassTable_String_Logical_* THIS, RogueClassTableEntry_String_Logical_* entry_0 );
@@ -6015,7 +6018,7 @@ RogueString* RogueParser__type_name( RogueClassParser* THIS );
 RogueClassParser* RogueParser__init__String( RogueClassParser* THIS, RogueString* _auto_367_0 );
 RogueClassParser* RogueParser__init__String_String( RogueClassParser* THIS, RogueString* _auto_368_0, RogueString* content_1 );
 RogueClassParser* RogueParser__init__Token_String_String_Int32( RogueClassParser* THIS, RogueClassToken* t_0, RogueString* _auto_369_1, RogueString* data_2, RogueInt32 column_delta_3 );
-RogueClassParser* RogueParser__init__Token_List_Logical( RogueClassParser* THIS, RogueToken_List* _auto_6060, RogueLogical skip_reprocess_1 );
+RogueClassParser* RogueParser__init__Token_List_Logical( RogueClassParser* THIS, RogueToken_List* _auto_6064, RogueLogical skip_reprocess_1 );
 void RogueParser__add_used_module__String( RogueClassParser* THIS, RogueString* module_name_0 );
 RogueLogical RogueParser__consume__TokenType( RogueClassParser* THIS, RogueClassTokenType* type_0 );
 RogueLogical RogueParser__consume__String( RogueClassParser* THIS, RogueString* identifier_0 );
@@ -6023,7 +6026,7 @@ RogueLogical RogueParser__consume_end_commands( RogueClassParser* THIS );
 RogueLogical RogueParser__consume_eols( RogueClassParser* THIS );
 RogueClassRogueError* RogueParser__error__String( RogueClassParser* THIS, RogueString* message_0 );
 void RogueParser__insert_module_prefixes( RogueClassParser* THIS );
-void RogueParser__must_consume__TokenType_String( RogueClassParser* THIS, RogueClassTokenType* type_0, RogueString* _auto_6061 );
+void RogueParser__must_consume__TokenType_String( RogueClassParser* THIS, RogueClassTokenType* type_0, RogueString* _auto_6065 );
 void RogueParser__must_consume_eols( RogueClassParser* THIS );
 RogueClassToken* RogueParser__must_read__TokenType( RogueClassParser* THIS, RogueClassTokenType* type_0 );
 RogueLogical RogueParser__next_is__TokenType( RogueClassParser* THIS, RogueClassTokenType* type_0 );
@@ -6058,6 +6061,7 @@ RogueLogical RogueParser__parse_unit_test( RogueClassParser* THIS );
 RogueLogical RogueParser__parse_native_element( RogueClassParser* THIS );
 RogueClassCmdContingent* RogueParser__parse_contingent( RogueClassParser* THIS );
 RogueClassCmdTry* RogueParser__parse_try_statement( RogueClassParser* THIS );
+RogueClassCmdBlock* RogueParser__parse_use_statement( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_try_expression( RogueClassParser* THIS );
 void RogueParser__parse_local_or_global__Logical( RogueClassParser* THIS, RogueLogical is_local_0 );
 RogueClassType* Rogue_Parser__parse_type( RogueClassParser* THIS );
@@ -6101,7 +6105,7 @@ RogueClassCmd* RogueParser__parse_post_unary( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_post_unary__Cmd( RogueClassParser* THIS, RogueClassCmd* operand_0 );
 RogueClassCmd* RogueParser__parse_member_access( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_member_access__Cmd( RogueClassParser* THIS, RogueClassCmd* context_0 );
-RogueClassCmd* RogueParser__parse_access__Token_Cmd( RogueClassParser* THIS, RogueClassToken* _auto_6062, RogueClassCmd* context_1 );
+RogueClassCmd* RogueParser__parse_access__Token_Cmd( RogueClassParser* THIS, RogueClassToken* _auto_6066, RogueClassCmd* context_1 );
 RogueCmdNamedArg_List* RogueParser__parse_args__CmdArgs( RogueClassParser* THIS, RogueClassCmdArgs* args_0 );
 RogueClassCmd* RogueParser__parse_expression_allowing_query( RogueClassParser* THIS );
 RogueString* RogueParser__parse_specialization_string( RogueClassParser* THIS );
@@ -6114,9 +6118,9 @@ RogueClassCmd* RogueParser__parse_term( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_ensure_statement( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_ensure_expression( RogueClassParser* THIS );
 RogueClassCmd* RogueParser__parse_function__Token( RogueClassParser* THIS, RogueClassToken* t_0 );
-RogueClassCmd* RogueParser__parse_value_table__Token( RogueClassParser* THIS, RogueClassToken* _auto_6063 );
-RogueClassCmd* RogueParser__parse_value_list__Token( RogueClassParser* THIS, RogueClassToken* _auto_6064 );
-RogueClassCmd* RogueParser__parse_typed_literal_list__Token_String( RogueClassParser* THIS, RogueClassToken* _auto_6065, RogueString* list_type_name_1 );
+RogueClassCmd* RogueParser__parse_value_table__Token( RogueClassParser* THIS, RogueClassToken* _auto_6067 );
+RogueClassCmd* RogueParser__parse_value_list__Token( RogueClassParser* THIS, RogueClassToken* _auto_6068 );
+RogueClassCmd* RogueParser__parse_typed_literal_list__Token_String( RogueClassParser* THIS, RogueClassToken* _auto_6069, RogueString* list_type_name_1 );
 RogueClassTokenReader* RogueTokenReader__init_object( RogueClassTokenReader* THIS );
 RogueString* RogueTokenReader__type_name( RogueClassTokenReader* THIS );
 RogueClassTokenReader* RogueTokenReader__init__Token_List( RogueClassTokenReader* THIS, RogueToken_List* _auto_765_0 );
@@ -6215,8 +6219,8 @@ void RogueType__dispatch__Visitor( RogueClassType* THIS, RogueClassVisitor* v_0 
 void RogueType__collect_aspect_base_classes( RogueClassType* THIS );
 RogueClassMethod* RogueType__find_method__String( RogueClassType* THIS, RogueString* signature_0 );
 RogueClassMethod* RogueType__find_global_method__String( RogueClassType* THIS, RogueString* signature_0 );
-RogueClassProperty* RogueType__find_property__String( RogueClassType* THIS, RogueString* _auto_6066 );
-RogueClassProperty* RogueType__find_global__String( RogueClassType* THIS, RogueString* _auto_6067 );
+RogueClassProperty* RogueType__find_property__String( RogueClassType* THIS, RogueString* _auto_6070 );
+RogueClassProperty* RogueType__find_global__String( RogueClassType* THIS, RogueString* _auto_6071 );
 RogueLogical RogueType__has_extended_class( RogueClassType* THIS );
 RogueLogical RogueType__has_method_named__String_OptionalInt32( RogueClassType* THIS, RogueString* m_name_0, RogueOptionalInt32 arg_count_1 );
 RogueLogical RogueType__has_compatible_method_named__String_Type( RogueClassType* THIS, RogueString* m_name_0, RogueClassType* arg_type_1 );
@@ -6248,13 +6252,13 @@ RogueLogical RogueType__has_object_references( RogueClassType* THIS );
 RogueLogical RogueType__is_reference_array( RogueClassType* THIS );
 void RogueType__inherit_definitions__Type( RogueClassType* THIS, RogueClassType* from_type_0 );
 void RogueType__inherit_properties__Property_List_Table_String_Property_( RogueClassType* THIS, RogueProperty_List* list_0, RogueClassTable_String_Property_* lookup_1 );
-void RogueType__inherit_property__Property_Property_List_Table_String_Property_( RogueClassType* THIS, RogueClassProperty* _auto_6068, RogueProperty_List* list_1, RogueClassTable_String_Property_* lookup_2 );
+void RogueType__inherit_property__Property_Property_List_Table_String_Property_( RogueClassType* THIS, RogueClassProperty* _auto_6072, RogueProperty_List* list_1, RogueClassTable_String_Property_* lookup_2 );
 void RogueType__create_introspection_methods__Scope( RogueClassType* THIS, RogueClassScope* scope_0 );
 void RogueType__inherit_methods__Scope( RogueClassType* THIS, RogueClassScope* scope_0 );
 void RogueType__check_abstract_methods__Method_List( RogueClassType* THIS, RogueMethod_List* list_0 );
 void RogueType__inherit_methods__Method_List_Table_String_Method_( RogueClassType* THIS, RogueMethod_List* list_0, RogueClassTable_String_Method_* lookup_1 );
-void RogueType__inherit_method__Method_Method_List_Table_String_Method_( RogueClassType* THIS, RogueClassMethod* _auto_6069, RogueMethod_List* list_1, RogueClassTable_String_Method_* lookup_2 );
-void RogueType__override_inherited_propagated_method__Method_Method_List_Table_String_Method_( RogueClassType* THIS, RogueClassMethod* _auto_6070, RogueMethod_List* list_1, RogueClassTable_String_Method_* lookup_2 );
+void RogueType__inherit_method__Method_Method_List_Table_String_Method_( RogueClassType* THIS, RogueClassMethod* _auto_6073, RogueMethod_List* list_1, RogueClassTable_String_Method_* lookup_2 );
+void RogueType__override_inherited_propagated_method__Method_Method_List_Table_String_Method_( RogueClassType* THIS, RogueClassMethod* _auto_6074, RogueMethod_List* list_1, RogueClassTable_String_Method_* lookup_2 );
 void RogueType__inherit_global_methods__Method_List_Table_String_Method_( RogueClassType* THIS, RogueMethod_List* list_0, RogueClassTable_String_Method_* lookup_1 );
 void RogueType__inherit_global_method__Method_Method_List_Table_String_Method_( RogueClassType* THIS, RogueClassMethod* m_0, RogueMethod_List* list_1, RogueClassTable_String_Method_* lookup_2 );
 void RogueType__inject_global_method__Method_OptionalInt32( RogueClassType* THIS, RogueClassMethod* m_0, RogueOptionalInt32 at_index_1 );
@@ -6313,7 +6317,7 @@ RogueString* RogueTemplate__type_name( RogueClassTemplate* THIS );
 RogueClassTemplate* RogueTemplate__init__Token_String_Int32( RogueClassTemplate* THIS, RogueClassToken* _auto_318_0, RogueString* _auto_319_1, RogueInt32 attribute_flags_2 );
 RogueClassTypeParameter* RogueTemplate__add_type_parameter__Token_String( RogueClassTemplate* THIS, RogueClassToken* p_t_0, RogueString* p_name_1 );
 void RogueTemplate__instantiate__Type_Scope( RogueClassTemplate* THIS, RogueClassType* type_0, RogueClassScope* scope_1 );
-RogueToken_List* RogueTemplate__add_augmented_tokens__Type_String_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueString* augment_name_1, RogueToken_List* _auto_6071 );
+RogueToken_List* RogueTemplate__add_augmented_tokens__Type_String_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueString* augment_name_1, RogueToken_List* _auto_6075 );
 void RogueTemplate__instantiate_list__Type_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1 );
 void RogueTemplate__instantiate_optional__Type_Token_List( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1 );
 void RogueTemplate__instantiate_parameterized_type__Type_Token_List_Scope( RogueClassTemplate* THIS, RogueClassType* type_0, RogueToken_List* augmented_tokens_1, RogueClassScope* scope_2 );
@@ -6839,7 +6843,7 @@ void RogueProgram__collect_compound_dependencies__Type_Type_List( RogueClassProg
 RogueLogical RogueProgram__cull_unused_code( RogueClassProgram* THIS );
 void RogueProgram__trace_overridden_methods( RogueClassProgram* THIS );
 RogueLogical RogueProgram__using_introspection( RogueClassProgram* THIS );
-RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, RogueString* _auto_6072 );
+RogueString* RogueProgram__validate_cpp_name__String( RogueClassProgram* THIS, RogueString* _auto_6076 );
 RogueOptionalInt32 RogueProgram__locate_matching_close_specialize__String_OptionalInt32( RogueClassProgram* THIS, RogueString* st_0, RogueOptionalInt32 i1_1 );
 void RogueProgram__write_cpp__String( RogueClassProgram* THIS, RogueString* filepath_0 );
 void RogueProgram__print_property_trace_code__Type_CPPWriter( RogueClassProgram* THIS, RogueClassType* type_0, RogueClassCPPWriter* writer_1 );
@@ -6860,7 +6864,7 @@ void RogueProgram__cy_write_method__CPPWriter_CyClass_CyMethod_List_Logical( Rog
 void RogueProgram__cy_write_delegate_thunks__CPPWriter( RogueClassProgram* THIS, RogueClassCPPWriter* writer_0 );
 RogueCyClass_List* RogueProgram__cy_sort_cyclasses__Table_Type_CyClass_( RogueClassProgram* THIS, RogueClassTable_Type_CyClass_* cyclasses_0 );
 void RogueProgram__cy_write_classes__CPPWriter_Table_Type_CyClass_( RogueClassProgram* THIS, RogueClassCPPWriter* writer_0, RogueClassTable_Type_CyClass_* cyclasses_1 );
-void RogueProgram__cy_write__String( RogueClassProgram* THIS, RogueString* _auto_6073 );
+void RogueProgram__cy_write__String( RogueClassProgram* THIS, RogueString* _auto_6077 );
 RogueTemplate_List* RogueTemplate_List__init_object( RogueTemplate_List* THIS );
 RogueTemplate_List* RogueTemplate_List__init( RogueTemplate_List* THIS );
 RogueString* RogueTemplate_List__to_String( RogueTemplate_List* THIS );
@@ -6973,7 +6977,7 @@ RogueString* RogueTable_String_String_List___type_name( RogueClassTable_String_S
 RogueClassTable_String_String_List_* RogueTable_String_String_List___init__Int32( RogueClassTable_String_String_List_* THIS, RogueInt32 bin_count_0 );
 RogueClassTableEntry_String_String_List_* RogueTable_String_String_List___find__String( RogueClassTable_String_String_List_* THIS, RogueString* key_0 );
 RogueString_List* RogueTable_String_String_List___get__String( RogueClassTable_String_String_List_* THIS, RogueString* key_0 );
-RogueString_List* RogueTable_String_String_List___keys__String_List( RogueClassTable_String_String_List_* THIS, RogueString_List* _auto_6074 );
+RogueString_List* RogueTable_String_String_List___keys__String_List( RogueClassTable_String_String_List_* THIS, RogueString_List* _auto_6078 );
 RogueStringBuilder* RogueTable_String_String_List___print_to__StringBuilder( RogueClassTable_String_String_List_* THIS, RogueStringBuilder* buffer_0 );
 RogueClassTable_String_String_List_* RogueTable_String_String_List___set__String_String_List( RogueClassTable_String_String_List_* THIS, RogueString* key_0, RogueString_List* value_1 );
 void RogueTable_String_String_List____adjust_entry_order__TableEntry_String_String_List_( RogueClassTable_String_String_List_* THIS, RogueClassTableEntry_String_String_List_* entry_0 );
@@ -7330,7 +7334,7 @@ RogueClassType* RogueScope__find_type__String( RogueClassScope* THIS, RogueStrin
 void RogueScope__push_local__Local_Logical( RogueClassScope* THIS, RogueClassLocal* v_0, RogueLogical validate_name_1 );
 void RogueScope__pop_local( RogueClassScope* THIS );
 RogueClassType* RogueScope__set_implicit_type__Type( RogueClassScope* THIS, RogueClassType* new_implicit_type_0 );
-RogueClassCmd* RogueScope__resolve_call__Type_CmdAccess_Logical_Int32( RogueClassScope* THIS, RogueClassType* _auto_6075, RogueClassCmdAccess* access_1, RogueLogical error_on_fail_2, RogueInt32 flags_3 );
+RogueClassCmd* RogueScope__resolve_call__Type_CmdAccess_Logical_Int32( RogueClassScope* THIS, RogueClassType* _auto_6079, RogueClassCmdAccess* access_1, RogueLogical error_on_fail_2, RogueInt32 flags_3 );
 RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Int32( RogueClassScope* THIS, RogueClassType* type_context_0, RogueClassCmdAccess* access_1, RogueLogical error_on_fail_2, RogueInt32 flags_3 );
 RogueClassSet_Type_* RogueSet_Type___init_object( RogueClassSet_Type_* THIS );
 RogueClassSet_Type_* RogueSet_Type___init( RogueClassSet_Type_* THIS );
@@ -7357,7 +7361,7 @@ RogueClassTable_Type_Logical_* RogueTable_Type_Logical___add__Table_Type_Logical
 RogueClassTable_Type_Logical_* RogueTable_Type_Logical___cloned( RogueClassTable_Type_Logical_* THIS );
 RogueLogical RogueTable_Type_Logical___contains__Type( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0 );
 RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical___find__Type( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0 );
-RogueType_List* RogueTable_Type_Logical___keys__Type_List( RogueClassTable_Type_Logical_* THIS, RogueType_List* _auto_6076 );
+RogueType_List* RogueTable_Type_Logical___keys__Type_List( RogueClassTable_Type_Logical_* THIS, RogueType_List* _auto_6080 );
 RogueStringBuilder* RogueTable_Type_Logical___print_to__StringBuilder( RogueClassTable_Type_Logical_* THIS, RogueStringBuilder* buffer_0 );
 RogueLogical RogueTable_Type_Logical___remove__Type( RogueClassTable_Type_Logical_* THIS, RogueClassType* key_0 );
 RogueClassTableEntry_Type_Logical_* RogueTable_Type_Logical___remove__TableEntry_Type_Logical_( RogueClassTable_Type_Logical_* THIS, RogueClassTableEntry_Type_Logical_* entry_0 );
@@ -7388,7 +7392,7 @@ RogueString* RogueTable_Method_Logical___type_name( RogueClassTable_Method_Logic
 RogueClassTable_Method_Logical_* RogueTable_Method_Logical___init__Int32( RogueClassTable_Method_Logical_* THIS, RogueInt32 bin_count_0 );
 RogueLogical RogueTable_Method_Logical___contains__Method( RogueClassTable_Method_Logical_* THIS, RogueClassMethod* key_0 );
 RogueClassTableEntry_Method_Logical_* RogueTable_Method_Logical___find__Method( RogueClassTable_Method_Logical_* THIS, RogueClassMethod* key_0 );
-RogueMethod_List* RogueTable_Method_Logical___keys__Method_List( RogueClassTable_Method_Logical_* THIS, RogueMethod_List* _auto_6077 );
+RogueMethod_List* RogueTable_Method_Logical___keys__Method_List( RogueClassTable_Method_Logical_* THIS, RogueMethod_List* _auto_6081 );
 RogueStringBuilder* RogueTable_Method_Logical___print_to__StringBuilder( RogueClassTable_Method_Logical_* THIS, RogueStringBuilder* buffer_0 );
 RogueClassTable_Method_Logical_* RogueTable_Method_Logical___set__Method_Logical( RogueClassTable_Method_Logical_* THIS, RogueClassMethod* key_0, RogueLogical value_1 );
 void RogueTable_Method_Logical____adjust_entry_order__TableEntry_Method_Logical_( RogueClassTable_Method_Logical_* THIS, RogueClassTableEntry_Method_Logical_* entry_0 );
@@ -7436,7 +7440,7 @@ RogueClassCPPWriter* RogueCPPWriter__print_hex_pair__Int32( RogueClassCPPWriter*
 RogueClassCPPWriter* RogueCPPWriter__print_literal_character__Character_Logical( RogueClassCPPWriter* THIS, RogueCharacter ch_0, RogueLogical in_string_1 );
 RogueClassCPPWriter* RogueCPPWriter__print_literal_string__String( RogueClassCPPWriter* THIS, RogueString* st_0 );
 RogueClassCPPWriter* RogueCPPWriter__print_native_code__Token_Type_Method_Local_List_String_Type( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueLocal_List* locals_3, RogueString* code_4, RogueClassType* result_type_5 );
-RogueClassCPPWriter* RogueCPPWriter__print_native_marker__Token_Type_Method_Local_List_String( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueLocal_List* locals_3, RogueString* _auto_6078 );
+RogueClassCPPWriter* RogueCPPWriter__print_native_marker__Token_Type_Method_Local_List_String( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueClassType* type_context_1, RogueClassMethod* method_context_2, RogueLocal_List* locals_3, RogueString* _auto_6082 );
 void RogueCPPWriter__print_native_code_marker_value__Token_String_String_String_Type( RogueClassCPPWriter* THIS, RogueClassToken* t_0, RogueString* name_1, RogueString* operation_2, RogueString* default_3, RogueClassType* type_4 );
 void RogueCPPWriter__print_arg__Cmd_Type_Type( RogueClassCPPWriter* THIS, RogueClassCmd* arg_0, RogueClassType* param_type_1, RogueClassType* cast_to_2 );
 void RogueCPPWriter__mark_statement_start__String_Int32_Int32( RogueClassCPPWriter* THIS, RogueString* statement_filepath_0, RogueInt32 start_line_1, RogueInt32 end_line_2 );
@@ -7604,7 +7608,7 @@ RogueClassCmd* RogueCmdAdd__cloned__CloneArgs_Token( RogueClassCmdAdd* THIS, Rog
 RogueClassCmd* RogueCmdAdd__combine_literal_operands__Type( RogueClassCmdAdd* THIS, RogueClassType* common_type_0 );
 RogueClassCmd* RogueCmdAdd__dispatch__Visitor( RogueClassCmdAdd* THIS, RogueClassVisitor* v_0 );
 RogueString* RogueCmdAdd__fn_name( RogueClassCmdAdd* THIS );
-RogueClassCmd* RogueCmdAdd__resolve_operator_method__String_Scope_Cmd_Type_Cmd_Type_Logical( RogueClassCmdAdd* THIS, RogueString* method_name_0, RogueClassScope* scope_1, RogueClassCmd* _auto_6079, RogueClassType* _auto_6080, RogueClassCmd* rhs_4, RogueClassType* right_type_5, RogueLogical is_optional_6 );
+RogueClassCmd* RogueCmdAdd__resolve_operator_method__String_Scope_Cmd_Type_Cmd_Type_Logical( RogueClassCmdAdd* THIS, RogueString* method_name_0, RogueClassScope* scope_1, RogueClassCmd* _auto_6083, RogueClassType* _auto_6084, RogueClassCmd* rhs_4, RogueClassType* right_type_5, RogueLogical is_optional_6 );
 RogueString* RogueCmdAdd__symbol( RogueClassCmdAdd* THIS );
 RogueClassCmdBinary* RogueCmdBinary__init_object( RogueClassCmdBinary* THIS );
 RogueString* RogueCmdBinary__to_String( RogueClassCmdBinary* THIS );
@@ -7820,6 +7824,7 @@ RogueClassCmd* RogueCmdAssign__cloned__CloneArgs_Token( RogueClassCmdAssign* THI
 RogueClassCmd* RogueCmdAssign__dispatch__Visitor( RogueClassCmdAssign* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdAssign__resolve__Scope( RogueClassCmdAssign* THIS, RogueClassScope* scope_0 );
 RogueClassCmdAssign* RogueCmdAssign__init__Token_Cmd_Cmd( RogueClassCmdAssign* THIS, RogueClassToken* _auto_1441_0, RogueClassCmd* _auto_1442_1, RogueClassCmd* _auto_1443_2 );
+RogueClassCmdAssign* RogueCmdAssign__init__Token_Local_Cmd( RogueClassCmdAssign* THIS, RogueClassToken* _auto_1444_0, RogueClassLocal* local_info_1, RogueClassCmd* _auto_1445_2 );
 RogueClassCmdAdjust* RogueCmdAdjust__init_object( RogueClassCmdAdjust* THIS );
 RogueString* RogueCmdAdjust__type_name( RogueClassCmdAdjust* THIS );
 RogueClassCmd* RogueCmdAdjust__cloned__CloneArgs_Token( RogueClassCmdAdjust* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
@@ -7832,13 +7837,40 @@ RogueClassCmd* RogueCmdModifyAndAssign__cloned__CloneArgs_Token( RogueClassCmdMo
 RogueClassCmd* RogueCmdModifyAndAssign__dispatch__Visitor( RogueClassCmdModifyAndAssign* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdModifyAndAssign__resolve__Scope( RogueClassCmdModifyAndAssign* THIS, RogueClassScope* scope_0 );
 RogueClassCmdModifyAndAssign* RogueCmdModifyAndAssign__init__Token_Cmd_TokenType_Cmd( RogueClassCmdModifyAndAssign* THIS, RogueClassToken* _auto_1449_0, RogueClassCmd* _auto_1450_1, RogueClassTokenType* _auto_1451_2, RogueClassCmd* _auto_1452_3 );
+RogueClassCmdLogicalize* RogueCmdLogicalize__init_object( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__type_name( RogueClassCmdLogicalize* THIS );
+RogueClassCmd* RogueCmdLogicalize__cloned__CloneArgs_Token( RogueClassCmdLogicalize* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
+RogueClassCmd* RogueCmdLogicalize__dispatch__Visitor( RogueClassCmdLogicalize* THIS, RogueClassVisitor* v_0 );
+RogueClassCmd* RogueCmdLogicalize__resolve__Scope( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
+RogueClassType* Rogue_CmdLogicalize__type( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__prefix_symbol( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__fn_name( RogueClassCmdLogicalize* THIS );
+RogueClassCmd* RogueCmdLogicalize__resolve_for_literal_operand__Scope( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
+RogueString* RogueCmdLogicalize__suffix_symbol( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__cpp_prefix_symbol( RogueClassCmdLogicalize* THIS );
+RogueString* RogueCmdLogicalize__cpp_suffix_symbol( RogueClassCmdLogicalize* THIS );
+RogueClassCmdUnary* RogueCmdUnary__init_object( RogueClassCmdUnary* THIS );
+RogueString* RogueCmdUnary__to_String( RogueClassCmdUnary* THIS );
+RogueString* RogueCmdUnary__type_name( RogueClassCmdUnary* THIS );
+RogueClassCmd* RogueCmdUnary__dispatch__Visitor( RogueClassCmdUnary* THIS, RogueClassVisitor* v_0 );
+RogueClassCmd* RogueCmdUnary__resolve__Scope( RogueClassCmdUnary* THIS, RogueClassScope* scope_0 );
+RogueClassType* Rogue_CmdUnary__type( RogueClassCmdUnary* THIS );
+void RogueCmdUnary__write_cpp__CPPWriter_Logical( RogueClassCmdUnary* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
+RogueClassCmdUnary* RogueCmdUnary__init__Token_Cmd( RogueClassCmdUnary* THIS, RogueClassToken* _auto_1460_0, RogueClassCmd* _auto_1461_1 );
+RogueString* RogueCmdUnary__prefix_symbol( RogueClassCmdUnary* THIS );
+RogueString* RogueCmdUnary__fn_name( RogueClassCmdUnary* THIS );
+RogueClassCmd* RogueCmdUnary__resolve_for_literal_operand__Scope( RogueClassCmdUnary* THIS, RogueClassScope* scope_0 );
+RogueClassCmd* RogueCmdUnary__resolve_for_operand_type__Scope_Type( RogueClassCmdUnary* THIS, RogueClassScope* scope_0, RogueClassType* operand_type_1 );
+RogueString* RogueCmdUnary__suffix_symbol( RogueClassCmdUnary* THIS );
+RogueString* RogueCmdUnary__cpp_prefix_symbol( RogueClassCmdUnary* THIS );
+RogueString* RogueCmdUnary__cpp_suffix_symbol( RogueClassCmdUnary* THIS );
 RogueClassCmdTryExpression* RogueCmdTryExpression__init_object( RogueClassCmdTryExpression* THIS );
 RogueString* RogueCmdTryExpression__type_name( RogueClassCmdTryExpression* THIS );
 RogueClassCmd* RogueCmdTryExpression__cloned__CloneArgs_Token( RogueClassCmdTryExpression* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
 RogueClassCmd* RogueCmdTryExpression__dispatch__Visitor( RogueClassCmdTryExpression* THIS, RogueClassVisitor* v_0 );
 RogueClassType* RogueCmdTryExpression__implicit_type__Scope( RogueClassCmdTryExpression* THIS, RogueClassScope* scope_0 );
 RogueClassCmd* RogueCmdTryExpression__resolve__Scope( RogueClassCmdTryExpression* THIS, RogueClassScope* scope_0 );
-RogueClassCmdTryExpression* RogueCmdTryExpression__init__Token_Cmd_Cmd_Local( RogueClassCmdTryExpression* THIS, RogueClassToken* _auto_1460_0, RogueClassCmd* _auto_1461_1, RogueClassCmd* _auto_1462_2, RogueClassLocal* _auto_1463_3 );
+RogueClassCmdTryExpression* RogueCmdTryExpression__init__Token_Cmd_Cmd_Local( RogueClassCmdTryExpression* THIS, RogueClassToken* _auto_1462_0, RogueClassCmd* _auto_1463_1, RogueClassCmd* _auto_1464_2, RogueClassLocal* _auto_1465_3 );
 RogueClassCmdReadLocal* RogueCmdReadLocal__init_object( RogueClassCmdReadLocal* THIS );
 RogueString* RogueCmdReadLocal__to_String( RogueClassCmdReadLocal* THIS );
 RogueString* RogueCmdReadLocal__type_name( RogueClassCmdReadLocal* THIS );
@@ -7848,7 +7880,7 @@ RogueClassCmd* RogueCmdReadLocal__resolve__Scope( RogueClassCmdReadLocal* THIS, 
 RogueClassCmd* RogueCmdReadLocal__resolve_adjust__Scope_Int32( RogueClassCmdReadLocal* THIS, RogueClassScope* scope_0, RogueInt32 delta_1 );
 RogueClassType* Rogue_CmdReadLocal__type( RogueClassCmdReadLocal* THIS );
 void RogueCmdReadLocal__write_cpp__CPPWriter_Logical( RogueClassCmdReadLocal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdReadLocal* RogueCmdReadLocal__init__Token_Local( RogueClassCmdReadLocal* THIS, RogueClassToken* _auto_1464_0, RogueClassLocal* _auto_1465_1 );
+RogueClassCmdReadLocal* RogueCmdReadLocal__init__Token_Local( RogueClassCmdReadLocal* THIS, RogueClassToken* _auto_1466_0, RogueClassLocal* _auto_1467_1 );
 RogueClassCmdAdjustLocal* RogueCmdAdjustLocal__init_object( RogueClassCmdAdjustLocal* THIS );
 RogueString* RogueCmdAdjustLocal__to_String( RogueClassCmdAdjustLocal* THIS );
 RogueString* RogueCmdAdjustLocal__type_name( RogueClassCmdAdjustLocal* THIS );
@@ -7857,7 +7889,7 @@ RogueClassCmd* RogueCmdAdjustLocal__dispatch__Visitor( RogueClassCmdAdjustLocal*
 RogueClassCmd* RogueCmdAdjustLocal__resolve__Scope( RogueClassCmdAdjustLocal* THIS, RogueClassScope* scope_0 );
 RogueClassType* Rogue_CmdAdjustLocal__type( RogueClassCmdAdjustLocal* THIS );
 void RogueCmdAdjustLocal__write_cpp__CPPWriter_Logical( RogueClassCmdAdjustLocal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdAdjustLocal* RogueCmdAdjustLocal__init__Token_Local_Int32( RogueClassCmdAdjustLocal* THIS, RogueClassToken* _auto_1478_0, RogueClassLocal* _auto_1479_1, RogueInt32 _auto_1480_2 );
+RogueClassCmdAdjustLocal* RogueCmdAdjustLocal__init__Token_Local_Int32( RogueClassCmdAdjustLocal* THIS, RogueClassToken* _auto_1480_0, RogueClassLocal* _auto_1481_1, RogueInt32 _auto_1482_2 );
 RogueClassCmdCompareLE* RogueCmdCompareLE__init_object( RogueClassCmdCompareLE* THIS );
 RogueString* RogueCmdCompareLE__type_name( RogueClassCmdCompareLE* THIS );
 RogueClassCmd* RogueCmdCompareLE__cloned__CloneArgs_Token( RogueClassCmdCompareLE* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
@@ -7876,14 +7908,14 @@ RogueClassCmdRange* RogueCmdRange__init_object( RogueClassCmdRange* THIS );
 RogueString* RogueCmdRange__type_name( RogueClassCmdRange* THIS );
 RogueClassCmd* RogueCmdRange__dispatch__Visitor( RogueClassCmdRange* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdRange__resolve__Scope( RogueClassCmdRange* THIS, RogueClassScope* scope_0 );
-RogueClassCmdRange* RogueCmdRange__init__Token_Cmd_Cmd_Cmd( RogueClassCmdRange* THIS, RogueClassToken* _auto_1483_0, RogueClassCmd* _auto_1484_1, RogueClassCmd* _auto_1485_2, RogueClassCmd* _auto_1486_3 );
+RogueClassCmdRange* RogueCmdRange__init__Token_Cmd_Cmd_Cmd( RogueClassCmdRange* THIS, RogueClassToken* _auto_1485_0, RogueClassCmd* _auto_1486_1, RogueClassCmd* _auto_1487_2, RogueClassCmd* _auto_1488_3 );
 RogueInt32 RogueCmdRange__default_step_size( RogueClassCmdRange* THIS );
 RogueClassCmdForEach* RogueCmdForEach__init_object( RogueClassCmdForEach* THIS );
 RogueString* RogueCmdForEach__type_name( RogueClassCmdForEach* THIS );
 RogueClassCmd* RogueCmdForEach__cloned__CloneArgs_Token( RogueClassCmdForEach* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
 RogueClassCmd* RogueCmdForEach__dispatch__Visitor( RogueClassCmdForEach* THIS, RogueClassVisitor* v_0 );
 RogueClassCmd* RogueCmdForEach__resolve__Scope( RogueClassCmdForEach* THIS, RogueClassScope* scope_0 );
-RogueClassCmdForEach* RogueCmdForEach__init__Token_String_String_Cmd_Cmd_CmdStatementList( RogueClassCmdForEach* THIS, RogueClassToken* _auto_1487_0, RogueString* _auto_1488_1, RogueString* _auto_1489_2, RogueClassCmd* _auto_1490_3, RogueClassCmd* _auto_1491_4, RogueClassCmdStatementList* _auto_1492_5 );
+RogueClassCmdForEach* RogueCmdForEach__init__Token_String_String_Cmd_Cmd_CmdStatementList( RogueClassCmdForEach* THIS, RogueClassToken* _auto_1489_0, RogueString* _auto_1490_1, RogueString* _auto_1491_2, RogueClassCmd* _auto_1492_3, RogueClassCmd* _auto_1493_4, RogueClassCmdStatementList* _auto_1494_5 );
 RogueClassCmdModifyAndAssignLocal* RogueCmdModifyAndAssignLocal__init_object( RogueClassCmdModifyAndAssignLocal* THIS );
 RogueString* RogueCmdModifyAndAssignLocal__type_name( RogueClassCmdModifyAndAssignLocal* THIS );
 RogueClassCmd* RogueCmdModifyAndAssignLocal__cloned__CloneArgs_Token( RogueClassCmdModifyAndAssignLocal* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
@@ -7891,7 +7923,7 @@ RogueClassCmd* RogueCmdModifyAndAssignLocal__dispatch__Visitor( RogueClassCmdMod
 RogueClassCmd* RogueCmdModifyAndAssignLocal__resolve__Scope( RogueClassCmdModifyAndAssignLocal* THIS, RogueClassScope* scope_0 );
 RogueClassType* Rogue_CmdModifyAndAssignLocal__type( RogueClassCmdModifyAndAssignLocal* THIS );
 void RogueCmdModifyAndAssignLocal__write_cpp__CPPWriter_Logical( RogueClassCmdModifyAndAssignLocal* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdModifyAndAssignLocal* RogueCmdModifyAndAssignLocal__init__Token_Local_TokenType_Cmd( RogueClassCmdModifyAndAssignLocal* THIS, RogueClassToken* _auto_1495_0, RogueClassLocal* _auto_1496_1, RogueClassTokenType* _auto_1497_2, RogueClassCmd* _auto_1498_3 );
+RogueClassCmdModifyAndAssignLocal* RogueCmdModifyAndAssignLocal__init__Token_Local_TokenType_Cmd( RogueClassCmdModifyAndAssignLocal* THIS, RogueClassToken* _auto_1497_0, RogueClassLocal* _auto_1498_1, RogueClassTokenType* _auto_1499_2, RogueClassCmd* _auto_1500_3 );
 RogueClassCmdResolvedModifyAndAssign* RogueCmdResolvedModifyAndAssign__init_object( RogueClassCmdResolvedModifyAndAssign* THIS );
 RogueString* RogueCmdResolvedModifyAndAssign__type_name( RogueClassCmdResolvedModifyAndAssign* THIS );
 RogueClassCmd* RogueCmdResolvedModifyAndAssign__dispatch__Visitor( RogueClassCmdResolvedModifyAndAssign* THIS, RogueClassVisitor* v_0 );
@@ -8010,7 +8042,7 @@ RogueClassCmdTypeOperator* RogueCmdTypeOperator__init_object( RogueClassCmdTypeO
 RogueString* RogueCmdTypeOperator__type_name( RogueClassCmdTypeOperator* THIS );
 RogueClassCmd* RogueCmdTypeOperator__dispatch__Visitor( RogueClassCmdTypeOperator* THIS, RogueClassVisitor* v_0 );
 RogueClassType* Rogue_CmdTypeOperator__type( RogueClassCmdTypeOperator* THIS );
-RogueClassCmdTypeOperator* RogueCmdTypeOperator__init__Token_Cmd_Type( RogueClassCmdTypeOperator* THIS, RogueClassToken* _auto_1499_0, RogueClassCmd* _auto_1500_1, RogueClassType* _auto_1501_2 );
+RogueClassCmdTypeOperator* RogueCmdTypeOperator__init__Token_Cmd_Type( RogueClassCmdTypeOperator* THIS, RogueClassToken* _auto_1501_0, RogueClassCmd* _auto_1502_1, RogueClassType* _auto_1503_2 );
 RogueClassCmdLogicalNot* RogueCmdLogicalNot__init_object( RogueClassCmdLogicalNot* THIS );
 RogueString* RogueCmdLogicalNot__type_name( RogueClassCmdLogicalNot* THIS );
 RogueClassCmd* RogueCmdLogicalNot__cloned__CloneArgs_Token( RogueClassCmdLogicalNot* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
@@ -8020,21 +8052,6 @@ RogueClassType* Rogue_CmdLogicalNot__type( RogueClassCmdLogicalNot* THIS );
 RogueString* RogueCmdLogicalNot__prefix_symbol( RogueClassCmdLogicalNot* THIS );
 RogueClassCmd* RogueCmdLogicalNot__resolve_for_literal_operand__Scope( RogueClassCmdLogicalNot* THIS, RogueClassScope* scope_0 );
 RogueString* RogueCmdLogicalNot__cpp_prefix_symbol( RogueClassCmdLogicalNot* THIS );
-RogueClassCmdUnary* RogueCmdUnary__init_object( RogueClassCmdUnary* THIS );
-RogueString* RogueCmdUnary__to_String( RogueClassCmdUnary* THIS );
-RogueString* RogueCmdUnary__type_name( RogueClassCmdUnary* THIS );
-RogueClassCmd* RogueCmdUnary__dispatch__Visitor( RogueClassCmdUnary* THIS, RogueClassVisitor* v_0 );
-RogueClassCmd* RogueCmdUnary__resolve__Scope( RogueClassCmdUnary* THIS, RogueClassScope* scope_0 );
-RogueClassType* Rogue_CmdUnary__type( RogueClassCmdUnary* THIS );
-void RogueCmdUnary__write_cpp__CPPWriter_Logical( RogueClassCmdUnary* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdUnary* RogueCmdUnary__init__Token_Cmd( RogueClassCmdUnary* THIS, RogueClassToken* _auto_1502_0, RogueClassCmd* _auto_1503_1 );
-RogueString* RogueCmdUnary__prefix_symbol( RogueClassCmdUnary* THIS );
-RogueString* RogueCmdUnary__fn_name( RogueClassCmdUnary* THIS );
-RogueClassCmd* RogueCmdUnary__resolve_for_literal_operand__Scope( RogueClassCmdUnary* THIS, RogueClassScope* scope_0 );
-RogueClassCmd* RogueCmdUnary__resolve_for_operand_type__Scope_Type( RogueClassCmdUnary* THIS, RogueClassScope* scope_0, RogueClassType* operand_type_1 );
-RogueString* RogueCmdUnary__suffix_symbol( RogueClassCmdUnary* THIS );
-RogueString* RogueCmdUnary__cpp_prefix_symbol( RogueClassCmdUnary* THIS );
-RogueString* RogueCmdUnary__cpp_suffix_symbol( RogueClassCmdUnary* THIS );
 RogueClassCmdBitwiseXor* RogueCmdBitwiseXor__init_object( RogueClassCmdBitwiseXor* THIS );
 RogueString* RogueCmdBitwiseXor__type_name( RogueClassCmdBitwiseXor* THIS );
 RogueClassCmd* RogueCmdBitwiseXor__cloned__CloneArgs_Token( RogueClassCmdBitwiseXor* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
@@ -8141,18 +8158,6 @@ RogueString* RogueCmdBitwiseNot__prefix_symbol( RogueClassCmdBitwiseNot* THIS );
 RogueString* RogueCmdBitwiseNot__fn_name( RogueClassCmdBitwiseNot* THIS );
 RogueClassCmd* RogueCmdBitwiseNot__resolve_for_literal_operand__Scope( RogueClassCmdBitwiseNot* THIS, RogueClassScope* scope_0 );
 RogueString* RogueCmdBitwiseNot__cpp_prefix_symbol( RogueClassCmdBitwiseNot* THIS );
-RogueClassCmdLogicalize* RogueCmdLogicalize__init_object( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__type_name( RogueClassCmdLogicalize* THIS );
-RogueClassCmd* RogueCmdLogicalize__cloned__CloneArgs_Token( RogueClassCmdLogicalize* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
-RogueClassCmd* RogueCmdLogicalize__dispatch__Visitor( RogueClassCmdLogicalize* THIS, RogueClassVisitor* v_0 );
-RogueClassCmd* RogueCmdLogicalize__resolve__Scope( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
-RogueClassType* Rogue_CmdLogicalize__type( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__prefix_symbol( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__fn_name( RogueClassCmdLogicalize* THIS );
-RogueClassCmd* RogueCmdLogicalize__resolve_for_literal_operand__Scope( RogueClassCmdLogicalize* THIS, RogueClassScope* scope_0 );
-RogueString* RogueCmdLogicalize__suffix_symbol( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__cpp_prefix_symbol( RogueClassCmdLogicalize* THIS );
-RogueString* RogueCmdLogicalize__cpp_suffix_symbol( RogueClassCmdLogicalize* THIS );
 RogueClassCmdIsReference* RogueCmdIsReference__init_object( RogueClassCmdIsReference* THIS );
 RogueString* RogueCmdIsReference__type_name( RogueClassCmdIsReference* THIS );
 RogueClassCmd* RogueCmdIsReference__cloned__CloneArgs_Token( RogueClassCmdIsReference* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
@@ -8982,7 +8987,7 @@ RogueClassCmd* RogueTaskArgs__cmd_read_context__Token( RogueClassTaskArgs* THIS,
 RogueString* RogueTaskArgs__convert_local_name__Local( RogueClassTaskArgs* THIS, RogueClassLocal* local_info_0 );
 RogueClassCmd* RogueTaskArgs__cmd_read__Token_Local( RogueClassTaskArgs* THIS, RogueClassToken* t_0, RogueClassLocal* local_info_1 );
 RogueClassCmd* RogueTaskArgs__cmd_write__Token_Local_Cmd( RogueClassTaskArgs* THIS, RogueClassToken* t_0, RogueClassLocal* local_info_1, RogueClassCmd* new_value_2 );
-RogueClassCmd* RogueTaskArgs__replace_write_local__Token_Local_Cmd( RogueClassTaskArgs* THIS, RogueClassToken* t_0, RogueClassLocal* local_info_1, RogueClassCmd* _auto_6081 );
+RogueClassCmd* RogueTaskArgs__replace_write_local__Token_Local_Cmd( RogueClassTaskArgs* THIS, RogueClassToken* t_0, RogueClassLocal* local_info_1, RogueClassCmd* _auto_6085 );
 RogueClassTaskArgs* RogueTaskArgs__set_next_ip__Token_CmdTaskControlSection( RogueClassTaskArgs* THIS, RogueClassToken* t_0, RogueClassCmdTaskControlSection* to_section_1 );
 RogueToken_List_List* RogueToken_List_List__init_object( RogueToken_List_List* THIS );
 RogueToken_List_List* RogueToken_List_List__init( RogueToken_List_List* THIS );
@@ -9112,13 +9117,13 @@ RogueClassMethod* RogueCandidateMethods__match( RogueClassCandidateMethods* THIS
 RogueLogical RogueCandidateMethods__refine_matches( RogueClassCandidateMethods* THIS );
 RogueLogical RogueCandidateMethods__update_matches( RogueClassCandidateMethods* THIS );
 RogueLogical RogueCandidateMethods__update__Logical( RogueClassCandidateMethods* THIS, RogueLogical require_compatible_0 );
-RogueString* RogueCandidateMethods__remove_module_names__String( RogueClassCandidateMethods* THIS, RogueString* _auto_6082 );
-RogueClassFunction_3290* RogueFunction_3290__init_object( RogueClassFunction_3290* THIS );
-RogueString* RogueFunction_3290__type_name( RogueClassFunction_3290* THIS );
-RogueLogical RogueFunction_3290__call__CmdNamedArg( RogueClassFunction_3290* THIS, RogueClassCmdNamedArg* arg_0 );
-RogueClassFunction_3291* RogueFunction_3291__init_object( RogueClassFunction_3291* THIS );
-RogueString* RogueFunction_3291__type_name( RogueClassFunction_3291* THIS );
-RogueLogical RogueFunction_3291__call__CmdNamedArg_CmdNamedArg( RogueClassFunction_3291* THIS, RogueClassCmdNamedArg* a_0, RogueClassCmdNamedArg* b_1 );
+RogueString* RogueCandidateMethods__remove_module_names__String( RogueClassCandidateMethods* THIS, RogueString* _auto_6086 );
+RogueClassFunction_3294* RogueFunction_3294__init_object( RogueClassFunction_3294* THIS );
+RogueString* RogueFunction_3294__type_name( RogueClassFunction_3294* THIS );
+RogueLogical RogueFunction_3294__call__CmdNamedArg( RogueClassFunction_3294* THIS, RogueClassCmdNamedArg* arg_0 );
+RogueClassFunction_3295* RogueFunction_3295__init_object( RogueClassFunction_3295* THIS );
+RogueString* RogueFunction_3295__type_name( RogueClassFunction_3295* THIS );
+RogueLogical RogueFunction_3295__call__CmdNamedArg_CmdNamedArg( RogueClassFunction_3295* THIS, RogueClassCmdNamedArg* a_0, RogueClassCmdNamedArg* b_1 );
 RogueClassIOError* RogueIOError__init_object( RogueClassIOError* THIS );
 RogueString* RogueIOError__type_name( RogueClassIOError* THIS );
 RogueClassFileReader* RogueFileReader__init_object( RogueClassFileReader* THIS );
@@ -9129,7 +9134,7 @@ RogueByte RogueFileReader__peek( RogueClassFileReader* THIS );
 RogueByte RogueFileReader__read( RogueClassFileReader* THIS );
 RogueClassFileReader* RogueFileReader__init__String( RogueClassFileReader* THIS, RogueString* _filepath_0 );
 void RogueFileReader__on_cleanup( RogueClassFileReader* THIS );
-RogueLogical RogueFileReader__open__String( RogueClassFileReader* THIS, RogueString* _auto_3646_0 );
+RogueLogical RogueFileReader__open__String( RogueClassFileReader* THIS, RogueString* _auto_3650_0 );
 RogueClassFileWriter* RogueFileWriter__init_object( RogueClassFileWriter* THIS );
 RogueString* RogueFileWriter__type_name( RogueClassFileWriter* THIS );
 RogueClassFileWriter* RogueFileWriter__close( RogueClassFileWriter* THIS );
@@ -9137,14 +9142,14 @@ RogueClassFileWriter* RogueFileWriter__flush( RogueClassFileWriter* THIS );
 RogueClassFileWriter* RogueFileWriter__write__Byte( RogueClassFileWriter* THIS, RogueByte ch_0 );
 RogueClassFileWriter* RogueFileWriter__init__String_Logical( RogueClassFileWriter* THIS, RogueString* _filepath_0, RogueLogical append_1 );
 void RogueFileWriter__on_cleanup( RogueClassFileWriter* THIS );
-RogueLogical RogueFileWriter__open__String_Logical( RogueClassFileWriter* THIS, RogueString* _auto_3648_0, RogueLogical append_1 );
+RogueLogical RogueFileWriter__open__String_Logical( RogueClassFileWriter* THIS, RogueString* _auto_3652_0, RogueLogical append_1 );
 RogueClassFileWriter* RogueFileWriter__write__String( RogueClassFileWriter* THIS, RogueString* data_0 );
 RogueClassUTF8Reader* RogueUTF8Reader__init_object( RogueClassUTF8Reader* THIS );
 RogueString* RogueUTF8Reader__type_name( RogueClassUTF8Reader* THIS );
 RogueLogical RogueUTF8Reader__has_another( RogueClassUTF8Reader* THIS );
 RogueCharacter RogueUTF8Reader__peek( RogueClassUTF8Reader* THIS );
 RogueCharacter RogueUTF8Reader__read( RogueClassUTF8Reader* THIS );
-RogueClassUTF8Reader* RogueUTF8Reader__init__Reader_Byte_( RogueClassUTF8Reader* THIS, RogueClassReader_Byte_* _auto_3653_0 );
+RogueClassUTF8Reader* RogueUTF8Reader__init__Reader_Byte_( RogueClassUTF8Reader* THIS, RogueClassReader_Byte_* _auto_3657_0 );
 RogueClassCmdLiteralReal32* RogueCmdLiteralReal32__init_object( RogueClassCmdLiteralReal32* THIS );
 RogueString* RogueCmdLiteralReal32__to_String( RogueClassCmdLiteralReal32* THIS );
 RogueString* RogueCmdLiteralReal32__type_name( RogueClassCmdLiteralReal32* THIS );
@@ -9156,7 +9161,7 @@ RogueInt32 RogueCmdLiteralReal32__to_Int32( RogueClassCmdLiteralReal32* THIS );
 RogueLogical RogueCmdLiteralReal32__to_Logical( RogueClassCmdLiteralReal32* THIS );
 RogueClassType* Rogue_CmdLiteralReal32__type( RogueClassCmdLiteralReal32* THIS );
 void RogueCmdLiteralReal32__write_cpp__CPPWriter_Logical( RogueClassCmdLiteralReal32* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdLiteralReal32* RogueCmdLiteralReal32__init__Token_Real32( RogueClassCmdLiteralReal32* THIS, RogueClassToken* _auto_3872_0, RogueReal32 _auto_3873_1 );
+RogueClassCmdLiteralReal32* RogueCmdLiteralReal32__init__Token_Real32( RogueClassCmdLiteralReal32* THIS, RogueClassToken* _auto_3876_0, RogueReal32 _auto_3877_1 );
 RogueClassCmdLiteralByte* RogueCmdLiteralByte__init_object( RogueClassCmdLiteralByte* THIS );
 RogueString* RogueCmdLiteralByte__to_String( RogueClassCmdLiteralByte* THIS );
 RogueString* RogueCmdLiteralByte__type_name( RogueClassCmdLiteralByte* THIS );
@@ -9168,7 +9173,7 @@ RogueInt32 RogueCmdLiteralByte__to_Int32( RogueClassCmdLiteralByte* THIS );
 RogueLogical RogueCmdLiteralByte__to_Logical( RogueClassCmdLiteralByte* THIS );
 RogueClassType* Rogue_CmdLiteralByte__type( RogueClassCmdLiteralByte* THIS );
 void RogueCmdLiteralByte__write_cpp__CPPWriter_Logical( RogueClassCmdLiteralByte* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-RogueClassCmdLiteralByte* RogueCmdLiteralByte__init__Token_Byte( RogueClassCmdLiteralByte* THIS, RogueClassToken* _auto_3874_0, RogueByte _auto_3875_1 );
+RogueClassCmdLiteralByte* RogueCmdLiteralByte__init__Token_Byte( RogueClassCmdLiteralByte* THIS, RogueClassToken* _auto_3878_0, RogueByte _auto_3879_1 );
 RogueClassQueryToGenericFunctionConversionVisitor* RogueQueryToGenericFunctionConversionVisitor__init_object( RogueClassQueryToGenericFunctionConversionVisitor* THIS );
 RogueString* RogueQueryToGenericFunctionConversionVisitor__type_name( RogueClassQueryToGenericFunctionConversionVisitor* THIS );
 RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdAccess( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdAccess* cmd_0 );
@@ -9176,13 +9181,13 @@ RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdThisConte
 RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdReadLocal( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdReadLocal* cmd_0 );
 RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdImplicitAccess( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdImplicitAccess* cmd_0 );
 RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdImplicitIDAccess( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdImplicitIDAccess* cmd_0 );
-void RogueQueryToGenericFunctionConversionVisitor__convert__Cmd_CmdCreateFunction( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmd* cmd_0, RogueClassCmdCreateFunction* _auto_4084_1 );
+void RogueQueryToGenericFunctionConversionVisitor__convert__Cmd_CmdCreateFunction( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmd* cmd_0, RogueClassCmdCreateFunction* _auto_4088_1 );
 RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__convert_to_fn_with_arg__Cmd( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmd* cmd_0 );
 RogueClassListReader_CmdSelectCase_* RogueListReader_CmdSelectCase___init_object( RogueClassListReader_CmdSelectCase_* THIS );
 RogueString* RogueListReader_CmdSelectCase___type_name( RogueClassListReader_CmdSelectCase_* THIS );
 RogueLogical RogueListReader_CmdSelectCase___has_another( RogueClassListReader_CmdSelectCase_* THIS );
 RogueClassCmdSelectCase* RogueListReader_CmdSelectCase___read( RogueClassListReader_CmdSelectCase_* THIS );
-RogueClassListReader_CmdSelectCase_* RogueListReader_CmdSelectCase___init__CmdSelectCase_List_Int32( RogueClassListReader_CmdSelectCase_* THIS, RogueCmdSelectCase_List* _auto_4164_0, RogueInt32 _auto_4165_1 );
+RogueClassListReader_CmdSelectCase_* RogueListReader_CmdSelectCase___init__CmdSelectCase_List_Int32( RogueClassListReader_CmdSelectCase_* THIS, RogueCmdSelectCase_List* _auto_4168_0, RogueInt32 _auto_4169_1 );
 RogueClassCmdCallStaticMethod* RogueCmdCallStaticMethod__init_object( RogueClassCmdCallStaticMethod* THIS );
 RogueString* RogueCmdCallStaticMethod__to_String( RogueClassCmdCallStaticMethod* THIS );
 RogueString* RogueCmdCallStaticMethod__type_name( RogueClassCmdCallStaticMethod* THIS );
@@ -9194,7 +9199,7 @@ RogueClassNativeCodeToken* RogueNativeCodeToken__init_object( RogueClassNativeCo
 RogueString* RogueNativeCodeToken__to_String( RogueClassNativeCodeToken* THIS );
 RogueString* RogueNativeCodeToken__type_name( RogueClassNativeCodeToken* THIS );
 RogueString* RogueNativeCodeToken__quoted_name( RogueClassNativeCodeToken* THIS );
-RogueClassNativeCodeToken* RogueNativeCodeToken__init__TokenType_String( RogueClassNativeCodeToken* THIS, RogueClassTokenType* _auto_5520_0, RogueString* _auto_5521_1 );
+RogueClassNativeCodeToken* RogueNativeCodeToken__init__TokenType_String( RogueClassNativeCodeToken* THIS, RogueClassTokenType* _auto_5524_0, RogueString* _auto_5525_1 );
 RogueClassContainsImplicitAccessVisitor* RogueContainsImplicitAccessVisitor__init_object( RogueClassContainsImplicitAccessVisitor* THIS );
 RogueString* RogueContainsImplicitAccessVisitor__type_name( RogueClassContainsImplicitAccessVisitor* THIS );
 RogueClassCmd* RogueContainsImplicitAccessVisitor__visit__CmdImplicitAccess( RogueClassContainsImplicitAccessVisitor* THIS, RogueClassCmdImplicitAccess* cmd_0 );

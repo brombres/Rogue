@@ -37,7 +37,7 @@ syn keyword rogueLoop         await
 syn keyword rogueLoop         while endWhile forEach endForEach in of step downTo
 syn keyword rogueLoop         loop endLoop
 syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
-syn keyword rogueBranch       escapeTry
+syn keyword rogueBranch       escapeTry escapeUse
 syn keyword rogueBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
 syn keyword rogueBranch       nextIteration
 syn keyword rogueBoolean      true false pi
@@ -52,7 +52,7 @@ syn keyword rogueScopeDecl    readOnly writeOnly public private limited const lo
 syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro essential abstract final compound propagated foreign preferred
 syn keyword rogueStorageClass api nonessential
-syn keyword rogueExceptions   throw try catch endTry
+syn keyword rogueExceptions   throw try catch endTry use endUse
 "syn match  roguegPreProc      "^\[.*]"
 syn match   rogueDirective    "\$define\>"
 syn match   rogueDirective    "\$defined\>"

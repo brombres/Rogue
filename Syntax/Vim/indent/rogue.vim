@@ -23,6 +23,8 @@ setlocal indentkeys&
 setlocal indentkeys+=forEach,=endForEach,=while,=endWhile,=nextIteration,=escapeForEach,=escapeWhile
 setlocal indentkeys+=if,=elseIf,=endIf
 setlocal indentkeys+=block,=endBlock
+setlocal indentkeys+=try,=catch,=endTry
+setlocal indentkeys+=use,=endUse
 setlocal indentkeys+=which,=case,=others,=endWhich
 setlocal indentkeys+==method,=class,=endClass,=augment,=endAugment
 setlocal indentkeys+==routine,=endRoutine
@@ -156,10 +158,31 @@ function! FindIndentOfPrevTry(startline)
   let s:lnum = a:startline
   let s:depth=0
   while s:lnum > 1
-    if getline(s:lnum) =~ '\C^\s*endTry\>'  "we found a nested while
+    if getline(s:lnum) =~ '\C^\s*endTry\>'  "we found a nested try
       let s:depth=s:depth + 1
     endif
     if getline(s:lnum) =~ '\C^\s*try\>'
+      if(s:depth>0)
+        let s:depth= s:depth-1
+        let s:lnum=s:lnum-1
+      else
+        return indent(s:lnum)
+      endif
+    else
+      let s:lnum=s:lnum-1
+    endif
+  endwhile
+  return 0
+endfunction
+
+function! FindIndentOfPrevUse(startline)
+  let s:lnum = a:startline
+  let s:depth=0
+  while s:lnum > 1
+    if getline(s:lnum) =~ '\C^\s*endUse\>'  "we found a nested use
+      let s:depth=s:depth + 1
+    endif
+    if getline(s:lnum) =~ '\C^\s*use\>'
       if(s:depth>0)
         let s:depth= s:depth-1
         let s:lnum=s:lnum-1
@@ -471,6 +494,10 @@ function! GetRogueIndent( line_num )
     return FindIndentOfPrevTry(a:line_num-1)
   endif
 
+  if s:this_codeline =~ '\C^\s*\(endUse\)\>'
+    return FindIndentOfPrevUse(a:line_num-1)
+  endif
+
   if s:this_codeline =~ '\C^\s*\(endForEach\)\>'
     return FindIndentOfPrevForEach(a:line_num-1)
   endif
@@ -495,7 +522,11 @@ function! GetRogueIndent( line_num )
     return s:indnt + s:sw
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(block\|if\|while\|forEach\|loop\|else\|elseIf\|try\|catch\)\>'
+  if s:prev_codeline =~ '\C^\s*\(use\)\>'
+    return s:indnt + s:sw
+  endif
+
+  if s:prev_codeline =~ '\C^\s*\(block\|if\|while\|forEach\|loop\|else\|elseIf\|try\|catch\|use\)\>'
       "echo('Previous is conditional')
     if IsSingleLineCond(s:prev_codeline)>0
       "echo('Prev is Single line cond')

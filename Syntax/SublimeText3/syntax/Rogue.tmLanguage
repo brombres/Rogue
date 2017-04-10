@@ -243,6 +243,12 @@
 				</dict>
 				<dict>
 					<key>match</key>
+					<string>\b(use|endUse)\b</string>
+					<key>name</key>
+					<string>keyword.control.rogue</string>
+				</dict>
+				<dict>
+					<key>match</key>
 					<string>\b(return|select|necessary|sufficient|noAction|yield|compileError|deprecated)\b</string>
 					<key>name</key>
 					<string>keyword.control.rogue</string>
@@ -303,7 +309,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(escapeForEach|escapeWhile|escapeLoop|escapeTry)\b</string>
+					<string>\b(escapeForEach|escapeWhile|escapeLoop|escapeTry|escapeUse)\b</string>
 					<key>name</key>
 					<string>keyword.other.rogue</string>
 				</dict>

@@ -41,6 +41,7 @@ class TokenType
     keyword_endRoutine            : TokenType
     keyword_endTry                : TokenType
     keyword_endUnitTest           : TokenType
+    keyword_endUse                : TokenType
     keyword_endWhich              : TokenType
     keyword_endWhile              : TokenType
     keyword_ENUMERATE             : TokenType
@@ -83,6 +84,7 @@ class TokenType
     keyword_escapeIf              : TokenType
     keyword_escapeLoop            : TokenType
     keyword_escapeTry             : TokenType
+    keyword_escapeUse             : TokenType
     keyword_escapeWhich           : TokenType
     keyword_escapeWhile           : TokenType
     keyword_forEach               : TokenType
@@ -113,6 +115,7 @@ class TokenType
     keyword_trace_args_only       : TokenType
     keyword_try                   : TokenType
     keyword_unitTest              : TokenType
+    keyword_use                   : TokenType
     keyword_which                 : TokenType
     keyword_while                 : TokenType
     keyword_yield                 : TokenType

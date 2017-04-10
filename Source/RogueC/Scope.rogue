@@ -247,15 +247,6 @@ class Scope
         endForEach
       endIf
 
-      if (type_context.is_aspect)
-        list = Program.type_Object.method_lookup_by_name[ access.name ]
-        if (list)
-          forEach (m in list)
-            candidates.available.add( m )
-          endForEach
-        endIf
-      endIf
-
       if (suppress_inherited and is_initializer)
         # Object constructor.  Also add global create() methods.
         list = type_context.global_method_lookup_by_name[ "create" ]
@@ -272,6 +263,24 @@ class Scope
           candidates.available.add( m )
         endForEach
       endIf
+
+      if (type_context.is_aspect)
+        # For aspects, add methods from type Object as long as they are not
+        # an exact signature match to any aspect methods
+        list = Program.type_Object.method_lookup_by_name[ access.name ]
+        if (list)
+          forEach (m in list)
+            contingent
+              forEach (m2 in candidates.available)
+                necessary (m.signature != m2.signature)
+              endForEach
+            satisfied
+              candidates.available.add( m )
+            endContingent
+          endForEach
+        endIf
+      endIf
+
 
       if (candidates.available.count == 0)
         if (type_context.method_templates.instantiate(access.t, access.name))

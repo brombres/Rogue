@@ -34,6 +34,12 @@ class Object [native]
       native "$addr = (RogueInt64)(intptr_t)$this;"
       return addr
 
+    method on_end_use
+
+    method on_end_use( err:Exception )->Exception
+      on_end_use
+      return err
+
     method operator==( other:Object )->Logical
       return this is other
 
