@@ -1,7 +1,7 @@
 class Tokenizer
   PROPERTIES
     filepath    : String
-    reader      : ParseReader
+    reader      : Scanner
     tokens      = Token[]
     buffer      = StringBuilder()
 
@@ -11,18 +11,18 @@ class Tokenizer
 
   METHODS
     method tokenize( filepath )->Token[]
-      return tokenize( ParseReader(File(filepath),2) )
+      return tokenize( Scanner(File(filepath),2) )
 
     method tokenize( filepath, content:String )->Token[]
-      return tokenize( ParseReader(content,2) )
+      return tokenize( Scanner(content,2) )
 
     method tokenize( reference_t:Token, filepath, data:String, column_delta=0:Int32 )->Token[]
       local characters = Character[]( data.count )
       forEach (ch in data) characters.add( ch )
-      return tokenize( ParseReader(characters,2).set_location(reference_t.line,reference_t.column+column_delta) )
+      return tokenize( Scanner(characters,2).set_location(reference_t.line,reference_t.column+column_delta) )
 
     method tokenize( reader )->Token[]
-      RogueC.parsereaders_by_filepath[ filepath ] = reader
+      RogueC.scanners_by_filepath[ filepath ] = reader
 
       configure_token_types
       while (tokenize_another) noAction

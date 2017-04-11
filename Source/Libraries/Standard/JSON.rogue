@@ -40,11 +40,11 @@ class JSONParserBuffer : StringBuilder [singleton];
 
 class JSONParser
   PROPERTIES
-    reader : ParseReader
+    reader : Scanner
 
   METHODS
     method init( json:String )
-      reader = ParseReader( json )
+      reader = Scanner( json )
 
     method parse_value->Value
       _consume_spaces_and_eols
@@ -271,7 +271,7 @@ class JSONParser
 
       return Real64Value( n )
 
-    method _consume_spaces_and_eols->ParseReader
+    method _consume_spaces_and_eols->Scanner
       while (reader.consume_spaces or reader.consume_eols) noAction
       return reader
 

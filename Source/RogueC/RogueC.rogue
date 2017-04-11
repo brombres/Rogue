@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.1.29"
-$define RELEASE_DATE    "April 10, 2017"
+$define RELEASE_VERSION "1.1.30.0"
+$define RELEASE_DATE    "April 11, 2017"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -86,7 +86,7 @@ class RogueC [singleton]
     # before any parser parses its elements.  This allows all tokens to be filtered
     # a final time after tokenization to facilitate 'module' and 'using' directives.
 
-    parsereaders_by_filepath = Table<<String,ParseReader>>()
+    scanners_by_filepath = Table<<String,Scanner>>()
     stopwatch : Stopwatch
 
     gc_mode = GCMode.AUTO    : Int32

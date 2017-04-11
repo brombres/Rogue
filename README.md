@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.30 - April 11, 2017
+- [Scanner/ParseReader] Renamed standard library class `ParseReader` to `Scanner`.
+
 ###v1.1.29 - April 10, 2017
 - [RogueC] Added `use/escapeUse/endUse` control structure.
 - [RogueC] Aspects `Reader`, `Writer`, and `PrintWriter` now implement the `use` API.

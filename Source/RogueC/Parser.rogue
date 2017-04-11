@@ -1177,7 +1177,7 @@ class Parser
             if (needs_space) buffer.print(' ')
             local end_t = peek
 
-            local parse_reader = RogueC.parsereaders_by_filepath[ start_t.filepath ]
+            local parse_reader = RogueC.scanners_by_filepath[ start_t.filepath ]
             if (parse_reader and start_t.line and start_t.column and start_t.filepath == end_t.filepath)
               parse_reader.seek_location( start_t.line, start_t.column )
               while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
@@ -1224,7 +1224,7 @@ class Parser
 
         if (not message)
           local buffer = StringBuilder()
-          local parse_reader = RogueC.parsereaders_by_filepath[ start_t.filepath ]
+          local parse_reader = RogueC.scanners_by_filepath[ start_t.filepath ]
           if (parse_reader and start_t.line and start_t.column and start_t.filepath == end_t.filepath)
             parse_reader.seek_location( start_t.line, start_t.column )
             while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
@@ -2962,7 +2962,7 @@ class Parser
 
         if (not message)
           local buffer = StringBuilder()
-          local parse_reader = RogueC.parsereaders_by_filepath[ start_t.filepath ]
+          local parse_reader = RogueC.scanners_by_filepath[ start_t.filepath ]
           if (parse_reader and start_t.line and start_t.column and start_t.filepath == end_t.filepath)
             parse_reader.seek_location( start_t.line, start_t.column )
             while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
@@ -2992,7 +2992,7 @@ class Parser
 
         if (not message)
           local buffer = StringBuilder()
-          local parse_reader = RogueC.parsereaders_by_filepath[ start_t.filepath ]
+          local parse_reader = RogueC.scanners_by_filepath[ start_t.filepath ]
           if (parse_reader and start_t.line and start_t.column and start_t.filepath == end_t.filepath)
             parse_reader.seek_location( start_t.line, start_t.column )
             while (parse_reader.has_another and (parse_reader.line < end_t.line or ...
