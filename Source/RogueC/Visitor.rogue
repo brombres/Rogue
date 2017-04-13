@@ -1029,7 +1029,9 @@ class Visitor
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdImplicitAccess )
-      cmd.access = cmd.access.dispatch( this ) as CmdAccess
+      if (cmd.access)
+        cmd.access = cmd.access.dispatch( this ) as CmdAccess
+      endIf
 
     method dispatch( cmd:CmdImplicitIDAccess )
 

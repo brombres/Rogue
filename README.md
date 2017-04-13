@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.31 - April 13, 2017
+- [Implicit Queries] Fixed crash bug when `.this` is used in implicit query functions, e.g. `local nums = [3,4,5]; nums.discard(.this%2==1)`.
+
 ###v1.1.30 - April 11, 2017
 - [Scanner/ParseReader] Renamed standard library class `ParseReader` to `Scanner`.
 
