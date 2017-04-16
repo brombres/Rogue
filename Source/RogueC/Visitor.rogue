@@ -443,12 +443,6 @@ class Visitor
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdImplicitIDAccess )->Cmd
-      on_enter( cmd )
-      dispatch( cmd )
-      on_leave( cmd )
-      return cmd
-
     method visit( cmd:CmdInlineNative )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -533,7 +527,6 @@ class Visitor
     method on_enter( cmd:CmdGenericLoop )
     method on_enter( cmd:CmdIf )
     method on_enter( cmd:CmdImplicitAccess )
-    method on_enter( cmd:CmdImplicitIDAccess )
     method on_enter( cmd:CmdInlineNative )
     method on_enter( cmd:CmdIsReference )
     method on_enter( cmd:CmdLabel )
@@ -621,7 +614,6 @@ class Visitor
     method on_leave( cmd:CmdGenericLoop )
     method on_leave( cmd:CmdIf )
     method on_leave( cmd:CmdImplicitAccess )
-    method on_leave( cmd:CmdImplicitIDAccess )
     method on_leave( cmd:CmdInlineNative )
     method on_leave( cmd:CmdIsReference )
     method on_leave( cmd:CmdLabel )
@@ -1029,11 +1021,7 @@ class Visitor
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdImplicitAccess )
-      if (cmd.access)
-        cmd.access = cmd.access.dispatch( this ) as CmdAccess
-      endIf
-
-    method dispatch( cmd:CmdImplicitIDAccess )
+      noAction
 
     method dispatch( cmd:CmdInlineNative )
       if (cmd.new_value)

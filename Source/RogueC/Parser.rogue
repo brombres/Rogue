@@ -2900,19 +2900,10 @@ class Parser
 
         return cmd_select
 
-      elseIf (consume(TokenType.symbol_slash_slash))
-        # Implicit identifier access for a query
+      elseIf (consume(TokenType.symbol_dollar))
+        # Implicit query arg access.  E.g. list.discard( $.is_dead ) -> list.discard( (x)=>x.is_dead )
         implicit_access_used = true
-        return CmdImplicitIDAccess( t, read_identifier )
-
-      elseIf (consume(TokenType.symbol_dot))
-        # Implicit access for a query
-        implicit_access_used = true
-        if (consume(TokenType.keyword_this)) return CmdImplicitAccess( t, null )
-        local cmd = parse_access( t )
-        local access = cmd as CmdAccess
-        if (access) return CmdImplicitAccess( t, access )
-        else        return cmd
+        return CmdImplicitAccess( t )
 
       elseIf (consume(TokenType.keyword_forEach))
         # Implicit loop

@@ -3,7 +3,7 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.1.31
+Version   | v1.1.32
 Date      | April 11, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
@@ -31,6 +31,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+###v1.1.32 - April 16, 2017
+- [Rogue] Changed syntax for implicit query functions.  Now, using `$` in an expression will cause the expression to be wrapped in a generic function `(value) => ...` and `$` changed to `value` (the generic function parameter).  For example, `list.discard($ is null)` is equivalent to writing `list.discard( (value)=>value is null )`.
 
 ###v1.1.31 - April 15, 2017
 - [Implicit Queries] Fixed crash bug when `.this` is used in implicit query functions, e.g. `local nums = [3,4,5]; nums.discard(.this%2==1)`.

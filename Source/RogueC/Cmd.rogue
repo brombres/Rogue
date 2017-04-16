@@ -5645,34 +5645,15 @@ class CmdEnsure : Cmd
 endClass
 
 
-class CmdImplicitAccess( t, access:CmdAccess ) : Cmd
+class CmdImplicitAccess( t ) : Cmd
   # Null access signifies "this" access AKA query value
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdImplicitAccess( t, clone(access,clone_args,new_t) as CmdAccess )
+      return CmdImplicitAccess( t )
 
     method convert_to_explicit_access->Cmd
-      if (access)
-        access.context = CmdAccess( t, "value" )
-        return access
-      else
-        return CmdAccess( t, "value" )
-      endIf
-
-    method resolve( scope:Scope )->Cmd
-      throw t.error( "Illegal use of implicit access; can only be used as a query argument in a call." )
-endClass
-
-
-class CmdImplicitIDAccess( t, name:String ) : Cmd
-  METHODS
-    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
-      if (new_t) t = new_t
-      return CmdImplicitIDAccess( t, name )
-
-    method convert_to_explicit_access->Cmd
-      return CmdElementAccess( t, CmdAccess(t,"value"), CmdLiteralString(t,name) )
+      return CmdAccess( t, "value" )
 
     method resolve( scope:Scope )->Cmd
       throw t.error( "Illegal use of implicit access; can only be used as a query argument in a call." )

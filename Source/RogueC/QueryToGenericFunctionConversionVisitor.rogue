@@ -28,9 +28,6 @@ class QueryToGenericFunctionConversionVisitor : Visitor [singleton]
     method visit( cmd:CmdImplicitAccess )->Cmd
       return cmd.convert_to_explicit_access
 
-    method visit( cmd:CmdImplicitIDAccess )->Cmd
-      return cmd.convert_to_explicit_access
-
 endClass
 
 class ContainsImplicitAccessVisitor : Visitor [singleton]
@@ -44,10 +41,6 @@ class ContainsImplicitAccessVisitor : Visitor [singleton]
       return contains_implicit_identifier_access
 
     method visit( cmd:CmdImplicitAccess )->Cmd
-      contains_implicit_identifier_access = true
-      return prior.visit( cmd )
-
-    method visit( cmd:CmdImplicitIDAccess )->Cmd
       contains_implicit_identifier_access = true
       return prior.visit( cmd )
 

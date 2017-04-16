@@ -156,6 +156,7 @@ class TokenType
     symbol_colon                  : TokenType
     symbol_comma                  : TokenType
     symbol_compare                : TokenType
+    symbol_dollar                 : TokenType
     symbol_dot                    : TokenType
     symbol_dot_equals             : TokenType
     symbol_downToGreaterThan      : TokenType

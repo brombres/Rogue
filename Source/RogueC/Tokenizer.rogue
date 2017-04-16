@@ -230,6 +230,7 @@ class Tokenizer
       TokenType.symbol_caret_equals          = define( ModifyAndAssignTokenType("^=") )
       TokenType.symbol_colon                 = define( TokenType(":") )
       TokenType.symbol_compare               = define( TokenType("<>") )
+      TokenType.symbol_dollar                = define( TokenType("$") )
       TokenType.symbol_dot                   = define( TokenType(".") )
       TokenType.symbol_dot_equals            = define( ModifyAndAssignTokenType(".=") )
       TokenType.symbol_downToGreaterThan     = define( TokenType("..>") )
@@ -305,6 +306,9 @@ class Tokenizer
         else              return TokenType.symbol_exclamation_point
 
       elseIf (ch == '$' )
+        ch = reader.peek
+        if (not (ch.is_letter or ch == '_')) return TokenType.symbol_dollar
+
         local id = read_identifier
         which (id)
           case "define"
