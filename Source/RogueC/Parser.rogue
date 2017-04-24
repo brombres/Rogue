@@ -683,7 +683,9 @@ class Parser
 
       if (consume(TokenType.keyword_GLOBAL))
         if (consume(TokenType.keyword_PROPERTIES))
-          while (parse_properties(true)) noAction
+          local attributes = Attributes()
+          parse_attributes( attributes )
+          while (parse_properties(true, attributes)) noAction
           return true
         elseIf (consume(TokenType.keyword_METHODS))
           while (parse_method(true)) noAction
@@ -776,7 +778,7 @@ class Parser
 
       return true
 
-    method parse_properties( as_global=false:Logical )->Logical
+    method parse_properties( as_global=false:Logical, default_attributes=null:Attributes )->Logical
       consume_eols
 
       if (consume(TokenType.keyword_native))
@@ -786,7 +788,9 @@ class Parser
         endIf
 
         local native_t = read
-        this_type.add_property( native_t, native_t->String, Program.type_Int64 ).mark_native
+        local p = this_type.add_property( native_t, native_t->String, Program.type_Int64 )
+        p.mark_native
+        if (default_attributes) p.attributes |= default_attributes.flags
 
         must_consume_eols
         return true
@@ -808,6 +812,10 @@ class Parser
         if (as_global) p = this_type.add_global( t, name )
         else           p = this_type.add_property( t, name )
         property_list.add( p )
+
+        # Default (section) attributes
+        if (default_attributes) p.attributes |= default_attributes.flags
+
         if (consume(TokenType.symbol_equals))
           p.initial_value = parse_expression
         endIf
