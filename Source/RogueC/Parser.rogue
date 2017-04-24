@@ -499,8 +499,9 @@ class Parser
 
 
 
-    method parse_attributes( attributes:Attributes )
-      if (not consume(TokenType.symbol_open_bracket)) return
+    method parse_attributes( attributes=null:Attributes )->Attributes
+      if (not consume(TokenType.symbol_open_bracket)) return attributes
+      if (attributes is null) attributes = Attributes()
 
       while (reader.has_another and not next_is(TokenType.symbol_close_bracket))
         local t = peek
@@ -551,6 +552,8 @@ class Parser
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
+
+      return attributes
 
     method ensure_unspecialized_element_type( t:Token, attributes:Attributes )
       if ((attributes.flags & Attribute.type_mask) != Attribute.is_class)
@@ -683,23 +686,25 @@ class Parser
 
       if (consume(TokenType.keyword_GLOBAL))
         if (consume(TokenType.keyword_PROPERTIES))
-          local attributes = Attributes()
-          parse_attributes( attributes )
-          while (parse_properties(true, attributes)) noAction
+          local attributes = parse_attributes
+          while (parse_properties(true, &default_attributes=attributes)) noAction
           return true
         elseIf (consume(TokenType.keyword_METHODS))
-          while (parse_method(true)) noAction
+          local attributes = parse_attributes
+          while (parse_method(true, &default_attributes=attributes)) noAction
           return true
         endIf
       endIf
 
       if (consume(TokenType.keyword_PROPERTIES))
-        while (parse_properties) noAction
+        local attributes = parse_attributes
+        while (parse_properties(&default_attributes=attributes)) noAction
         return true
       endIf
 
       if (consume(TokenType.keyword_METHODS))
-        while (parse_method) noAction
+        local attributes = parse_attributes
+        while (parse_method(&default_attributes=attributes)) noAction
         return true
       endIf
 
@@ -846,12 +851,12 @@ class Parser
 
       return true
 
-    method parse_method( as_global=false:Logical, &skip_add_to_type )->Logical
+    method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type )->Logical
       consume_eols
 
       if (not next_is(TokenType.keyword_method)) return false
 
-      if (parse_method_header(as_global) is null) return true
+      if (parse_method_header(as_global, default_attributes) is null) return true
 
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
@@ -910,7 +915,7 @@ class Parser
 
       return true
 
-    method parse_method_header( as_global=false:Logical )->Method
+    method parse_method_header( as_global=false:Logical, default_attributes=null:Attributes )->Method
       local t = read  # 'routine' or 'method'
       local name = read_identifier
       local return_type : Type
@@ -938,6 +943,7 @@ class Parser
       endIf
 
       this_method = Method( t, this_type, name )
+      if (default_attributes) this_method.attributes.add(default_attributes)
       if (as_global)
         this_method.attributes.add( Attribute.is_global )
       endIf
