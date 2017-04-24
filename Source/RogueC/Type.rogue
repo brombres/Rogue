@@ -436,6 +436,10 @@ class Type
           rewriter.write( base_type )
         endIf
 
+        if (base_type is this)
+          throw t.error( "Class $ cannot extend itself." (this) )
+        endIf
+
         if (base_type.instance_of(this))
           throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
               (this,base_type,base_type,this) )

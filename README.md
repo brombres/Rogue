@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.33 - April 24, 2017
+- [RogueC] Better error message when a class attempts to extend itself.
+
 ###v1.1.32 - April 16, 2017
 - [Rogue] Changed syntax for implicit query functions.  Now, using `$` in an expression will cause the expression to be wrapped in a generic function `(value) => ...` and `$` changed to `value` (the generic function parameter).  For example, `list.discard($ is null)` is equivalent to writing `list.discard( (value)=>value is null )`.
 
