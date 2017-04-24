@@ -251,8 +251,42 @@ T rogue_ptr (T p)
 
 #define ROGUE_THREAD_LOCAL thread_local
 
+static inline void _rogue_init_mutex (pthread_mutex_t * mutex)
+{
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+  pthread_mutex_init(mutex, &attr);
+}
+
+class RogueUnlocker
+{
+  pthread_mutex_t & mutex;
+public:
+  RogueUnlocker(pthread_mutex_t & mutex)
+  : mutex(mutex)
+  {
+    pthread_mutex_lock(&mutex);
+  }
+  ~RogueUnlocker (void)
+  {
+    pthread_mutex_unlock(&mutex);
+  }
+};
+
+#define ROGUE_SYNC_OBJECT_TYPE pthread_mutex_t
+#define ROGUE_SYNC_OBJECT_INIT _rogue_init_mutex(&THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_CLEANUP pthread_mutex_destroy(&THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_EXIT
+
 #else
 
+#define ROGUE_SYNC_OBJECT_TYPE
+#define ROGUE_SYNC_OBJECT_INIT
+#define ROGUE_SYNC_OBJECT_CLEANUP
+#define ROGUE_SYNC_OBJECT_ENTER
+#define ROGUE_SYNC_OBJECT_EXIT
 #define ROGUE_THREAD_LOCAL
 
 #endif

@@ -216,6 +216,9 @@ class Method
     method is_task_conversion->Logical
       return (attributes.flags & Attribute.is_task_conversion)
 
+    method is_synchronized->Logical
+      return (attributes.flags & Attribute.is_synchronized)
+
     method make_propagated->this
       attributes.add( Attribute.is_propagated )
       return this
@@ -316,6 +319,10 @@ class Method
       while (min_args >= 1 and parameters[min_args-1].initial_value)
         --min_args
       endWhile
+
+      if (is_global and is_synchronized)
+        throw t.error( "Global methods cannot be synchronized." )
+      endIf
 
       return this
 

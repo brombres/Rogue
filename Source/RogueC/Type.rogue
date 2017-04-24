@@ -311,6 +311,9 @@ class Type
       if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
 
+    method is_synchronizable->Logical
+      return (attributes.flags & Attribute.is_synchronizable)
+
     method is_deprecated->Logical
       return (attributes.flags & Attribute.is_deprecated)
 
@@ -408,6 +411,10 @@ class Type
       attributes.add( Attribute.is_essential )
       return this
 
+    method make_synchronizable->this
+      attributes.add( Attribute.is_synchronizable )
+      return this
+
     method configure( scope=null:Scope )->Type
       if (configured) return this
       configured = true
@@ -485,7 +492,23 @@ class Type
           base_types.insert( base_class )
         endIf
 
-        if (base_class) base_types.insert( base_types.remove(base_class) )
+        if (base_class)
+          base_types.insert( base_types.remove(base_class) )
+          if (base_class.is_synchronizable)
+            make_synchronizable
+          endIf
+        endIf
+        forEach (m in method_list)
+          if (m.is_synchronized)
+            make_synchronizable
+            escapeForEach
+          endIf
+        endForEach
+
+        if (is_topmost_synchronizable and RogueC.thread_mode != ThreadMode.NONE)
+          # We need to add the synchronization type
+          add_property( t, "_object_mutex", Program.type_NativeLock )
+        endIf
       endIf
 
       # Mark classes that are extended
@@ -976,17 +999,47 @@ class Type
         # Append return this
         m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
+        # Add synchronization object initialization if required
+        if (is_topmost_synchronizable)
+          m.statements.insert( CmdSyncObjectInit(t) )
+        endIf
+
         m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
       endIf
 
       # Mark any on_cleanup() method as essential
       if (is_class and not is_native)
         local m = find_method( "on_cleanup()" )
+        local prior_m = m
         if (m and m.type_context is this)
           if (m.return_type)
             throw m.t.error( "on_cleanup() cannot return a value." )
           endIf
           m.make_essential
+        elseIf (is_topmost_synchronizable)
+          m = add_method( t, "on_cleanup" ).organize( scope )
+          m.make_essential
+
+          # The regular system won't figure out that on_cleanup() is
+          # dynamically called so give it a flag.
+          m.attributes.add( Attribute.is_dynamic )
+
+          if (prior_m)
+            method_list.remove( m )
+            method_list[ method_list.locate( prior_m ).value ] = m
+            method_lookup_by_name[ m.name ].remove( prior_m )
+            method_lookup_by_signature[ m.signature ] = m
+            m.overridden_method = prior_m
+            prior_m.overriding_methods.add( m )
+          endIf
+
+          # Insert prior.on_cleanup()
+          if (m.overridden_method)
+            m.statements.insert( CmdCallPriorMethod(t, "on_cleanup", null, null) )
+          endIf
+          m.statements.insert( CmdSyncObjectCleanup(t) )
+
+          m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
         endIf
       endIf
 
@@ -1755,4 +1808,8 @@ class Type
       # Perform miscellaneous validation
       forEach (m in method_list) m.validate
 
+    method is_topmost_synchronizable->Logical
+      # True if we require synchronization, but no parent does
+      if (base_class and base_class.is_synchronizable) return true
+      return is_synchronizable
 endClass

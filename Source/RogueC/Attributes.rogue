@@ -34,6 +34,8 @@ class Attribute
     is_deprecated       = (1 :<<: 26)
     is_enum             = (1 :<<: 27)
     is_thread_local     = (1 :<<: 28)
+    is_synchronized     = (1 :<<: 29)
+    is_synchronizable   = (1 :<<: 30)
 endClass
 
 

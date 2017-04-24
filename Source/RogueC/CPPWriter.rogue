@@ -143,6 +143,7 @@ augment Program
         type.assign_cpp_name
       endForEach
       type_NativeArray.cpp_class_name = "RogueArray"
+      type_NativeLock.cpp_class_name = "ROGUE_SYNC_OBJECT_TYPE"
 
       forEach (type in type_list)
         forEach (r in type.global_method_list) r.assign_cpp_name
@@ -1965,6 +1966,13 @@ augment Method
 
       writer.indent += 2
 
+      local do_sync = is_synchronized
+      if ( is_global ) do_sync = false
+      elseIf ( name == "init_object" ) do_sync = false
+      elseIf ( name == "on_cleanup" ) do_sync = false
+      if ( do_sync )
+        writer.println "ROGUE_SYNC_OBJECT_ENTER"
+      endIf
       forEach (param in parameters)
         if (param.parameter_needs_gc)
           writer.print("ROGUE_DEF_LOCAL_REF(").print(param.type).print(",").print(param.cpp_name).print(",").print(param.parameter_cpp_name).println(");")
@@ -2016,6 +2024,9 @@ augment Method
         statements.write_cpp( writer )
       endIf
 
+      if ( do_sync )
+        writer.println "ROGUE_SYNC_OBJECT_EXIT"
+      endIf
       writer.indent -= 2
       writer.println "}"
       writer.println
@@ -3374,11 +3385,27 @@ augment CmdRequire
       writer.print( ")" )
 endAugment
 
+
 augment CmdMacroGenerated
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       noAction
 endAugment
+
+
+augment CmdSyncObjectInit
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "ROGUE_SYNC_OBJECT_INIT" )
+endAugment
+
+
+augment CmdSyncObjectCleanup
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "ROGUE_SYNC_OBJECT_CLEANUP" )
+endAugment
+
 
 #{
 augment CmdEnsure

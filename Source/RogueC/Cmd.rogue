@@ -5819,3 +5819,34 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
       return of_type
 endClass
 
+
+class CmdSyncObjectInit : CmdStatement
+  METHODS
+    method init( t )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSyncObjectInit
+      if (new_t) t = new_t
+      return CmdSyncObjectInit( t )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+endClass
+
+
+class CmdSyncObjectCleanup : CmdStatement
+  METHODS
+    method init( t )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSyncObjectCleanup
+      if (new_t) t = new_t
+      return CmdSyncObjectCleanup( t )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+endClass
