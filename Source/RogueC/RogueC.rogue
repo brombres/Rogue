@@ -624,6 +624,8 @@ class RogueC [singleton]
         endIf
       endForEach
 
+      Preprocessor.define( "DEBUG", debug_mode->String )
+
     method require_valueless( arg:String, expecting:String )
       if (arg == expecting) return
       if (arg.contains('=')) throw RogueError( "Unexpected value for command line argument '$'." (expecting) )
