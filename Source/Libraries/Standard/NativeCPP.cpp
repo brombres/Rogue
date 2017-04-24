@@ -62,11 +62,11 @@ RogueLogical       Rogue_configured = 0;
 int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
-RogueDebugTrace*   Rogue_call_stack = 0;
 RogueCallbackInfo  Rogue_on_gc_begin;
 RogueCallbackInfo  Rogue_on_gc_trace_finished;
 RogueCallbackInfo  Rogue_on_gc_end;
 char               RogueDebugTrace::buffer[512];
+ROGUE_THREAD_LOCAL RogueDebugTrace* Rogue_call_stack = 0;
 
 struct RogueWeakReference;
 RogueWeakReference* Rogue_weak_references = 0;

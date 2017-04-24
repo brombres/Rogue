@@ -242,6 +242,23 @@ T rogue_ptr (T p)
 
 
 //-----------------------------------------------------------------------------
+//  Threading
+//-----------------------------------------------------------------------------
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#include <pthread.h>
+
+#define ROGUE_THREAD_LOCAL thread_local
+
+#else
+
+#define ROGUE_THREAD_LOCAL
+
+#endif
+
+
+//-----------------------------------------------------------------------------
 //  Basics (Primitive types, macros, etc.)
 //-----------------------------------------------------------------------------
 #if defined(ROGUE_PLATFORM_WINDOWS)
