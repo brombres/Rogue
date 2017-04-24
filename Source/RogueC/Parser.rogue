@@ -818,6 +818,12 @@ class Parser
         else           p = this_type.add_property( t, name )
         property_list.add( p )
 
+        # Allow per-property attributes
+        if (next_is(TokenType.symbol_open_bracket))
+          local attributes = Attributes()
+          parse_attributes( attributes )
+          p.attributes |= attributes.flags
+        endIf
         # Default (section) attributes
         if (default_attributes) p.attributes |= default_attributes.flags
 
