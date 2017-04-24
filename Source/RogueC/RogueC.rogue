@@ -37,6 +37,12 @@ class GCMode
     BOEHM
 endClass
 
+class ThreadMode
+  ENUMERATE
+    NONE
+    PTHREADS
+endClass
+
 
 class RogueC [singleton]
   PROPERTIES
@@ -91,6 +97,8 @@ class RogueC [singleton]
 
     gc_mode = GCMode.AUTO    : Int32
     gc_threshold = 1024*1024 : Int32
+
+    thread_mode = ThreadMode.NONE : Int32
 
     plugins = Plugin[]
 
@@ -211,6 +219,11 @@ class RogueC [singleton]
                     |  --test
                     |    Compiled program includes any defined unit tests and runs them on launch.
                     |    Enables --debug automatically.
+                    |
+                    |  --threads=[none|pthreads]
+                    |    Set the threading mode:
+                    |      --threads=none     - No multithreading support.
+                    |      --threads=pthreads - Multithreading based on pthreads.
                     |
                     |  --version
                     |    Print the version number and release date.
@@ -550,6 +563,16 @@ class RogueC [singleton]
               local thresh = n->Int32
               if (thresh < 1) thresh = 0x7fffffff
               gc_threshold = thresh
+
+            case "--threads"
+              if ((not value.count) or value == "pthreads")
+                # Default to pthreads if nothing specified
+                thread_mode = ThreadMode.PTHREADS
+              elseIf (value == "none")
+                thread_mode = ThreadMode.NONE
+              else
+                throw RogueError( 'Unknown threads mode (--threads=$)' (value) )
+              endIf
 
             case "--plugin-test"
               plugins.add(
