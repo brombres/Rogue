@@ -1058,26 +1058,26 @@ void Rogue_print_stack_trace ( bool leading_newline )
 
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
-    if (si->si_addr < (void*)4096)
-    {
-      // Probably a null pointer dereference.
-      printf( "Null reference error (accessing memory at %p)\n",
-              si->si_addr );
-    }
+  if (si->si_addr < (void*)4096)
+  {
+    // Probably a null pointer dereference.
+    printf( "Null reference error (accessing memory at %p)\n",
+            si->si_addr );
+  }
+  else
+  {
+    if (si->si_code == SEGV_MAPERR)
+      printf( "Access to unmapped memory at " );
+    else if (si->si_code == SEGV_ACCERR)
+      printf( "Access to forbidden memory at " );
     else
-    {
-      if (si->si_code == SEGV_MAPERR)
-        printf( "Access to unmapped memory at " );
-      else if (si->si_code == SEGV_ACCERR)
-        printf( "Access to forbidden memory at " );
-      else
-        printf( "Unknown segfault accessing " );
-      printf("%p\n", si->si_addr);
-    }
+      printf( "Unknown segfault accessing " );
+    printf("%p\n", si->si_addr);
+  }
 
-    Rogue_print_stack_trace( true );
+  Rogue_print_stack_trace( true );
 
-    exit(1);
+  exit(1);
 }
 
 void Rogue_update_weak_references_during_gc()
