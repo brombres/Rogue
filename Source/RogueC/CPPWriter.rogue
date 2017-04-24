@@ -227,7 +227,9 @@ augment Program
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
-          writer.print( "extern " ).print( g.type ).print( " Rogue" )
+          writer.print( "extern " )
+          if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
+          writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name ).println( ";" )
         endForEach
       endForEach
@@ -360,6 +362,7 @@ augment Program
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
+          if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
           writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
           writer.print( " = " ).print_default_value( g.type )
@@ -886,6 +889,23 @@ augment Program
       writer.println( "}" )
       writer.println
 
+      # init_thread()
+      writer.println( "void Rogue_init_thread()" )
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (type in type_list)
+        if (type.is_used)
+          local m = type.find_global_method( "init_class_thread_local()" )
+          if (m and m.type_context is type)
+            writer.print( m.cpp_name ).println( "();" )
+          endIf
+        endIf
+      endForEach
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+
       # launch()
       writer.println( "void Rogue_launch()" )
       writer.println( "{" )
@@ -900,6 +920,10 @@ augment Program
           endIf
         endIf
       endForEach
+      writer.println
+
+      # Call thread-local initialization
+      writer.println( "Rogue_init_thread();" );
       writer.println
 
       # Copy command line args to System class

@@ -871,21 +871,63 @@ class Type
         endIf
       endIf
 
-      if (global_list.count)
-        # Create or locate init_class() to initialize global properties
-        local m = find_global_method( "init_class()" )
-        if (not m or m.type_context is not this) m = add_global_method( t, "init_class" ).organize( scope )
-        m.make_essential
+      # Mark any existing init_class_thread_local() as essential
+      local m_init_class_thread_local = find_global_method( "init_class_thread_local()" )
+      if (m_init_class_thread_local)
+        if (m_init_class_thread_local.type_context is this)
+          m_init_class_thread_local.make_essential
+        endIf
+      else
+        m_init_class_thread_local = find_method( "init_class_thread_local()" )
+        if (m_init_class_thread_local)
+          throw m_init_class_thread_local.t.error( "$::init_class_thread_local() must be declared under GLOBAL METHODS." (name) )
+        endIf
+      endIf
 
-        # Insert global initializations
-        local i = global_list.count - 1
-        while (i >= 0)
-          local s = global_list[i]
+      if (global_list.count)
+        # We may or may not need init_class or init_class_thread_local to initialize global properties
+        local needs_ic = false
+        local needs_tl = false
+        forEach (s in global_list)
           if (s.initial_value)
-            m.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+            if (s.is_thread_local)
+              needs_tl = true
+            else
+              needs_ic = true
+            endIf
+            if (needs_tl and needs_ic) escapeForEach
           endIf
-          --i
-        endWhile
+        endForEach
+
+        if (needs_tl or needs_ic)
+          local m,mtl : Method
+
+          if (needs_ic)
+            # Create or locate init_class() to initialize global properties
+            m = find_global_method( "init_class()" )
+            if (not m or m.type_context is not this) m = add_global_method( t, "init_class" ).organize( scope )
+            m.make_essential
+          endIf
+          if (needs_tl)
+            mtl = find_global_method( "init_class_thread_local()" )
+            if (not mtl or mtl.type_context is not this) mtl = add_global_method( t, "init_class_thread_local" ).organize( scope )
+            mtl.make_essential
+          endIf
+
+          # Insert global initializations
+          local i = global_list.count - 1
+          while (i >= 0)
+            local s = global_list[i]
+            if (s.initial_value)
+              if (s.is_thread_local)
+                mtl.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+              else
+                m.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+              endIf
+            endIf
+            --i
+          endWhile
+        endIf
       endIf
 
       # Create or find init_object() method to initialize properties
@@ -917,6 +959,9 @@ class Type
         local i = property_list.count - 1
         while (i >= 0)
           local p = property_list[i]
+          if (p.is_thread_local)
+            throw p.t.error( "only global properties can be thread local." )
+          endIf
           if (p.initial_value and p.type_context is this)
             m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.cloned) )
           endIf

@@ -84,7 +84,7 @@ class CyMethod
         pyclass = builder.get_p_type(context)
       endIf
 
-      if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object")
+      if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object" or m.name == "init_class_thread_local")
         return this # Hide
       endIf
 

@@ -28,6 +28,9 @@ class Property
     method is_native->Logical
       return (attributes & Attribute.is_native)?
 
+    method is_thread_local->Logical
+      return (attributes & Attribute.is_thread_local)?
+
     method mark_incorporated->this
       attributes |= Attribute.is_incorporated
       return this

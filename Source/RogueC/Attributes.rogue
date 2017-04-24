@@ -33,6 +33,7 @@ class Attribute
     is_nonAPI           = (1 :<<: 25)
     is_deprecated       = (1 :<<: 26)
     is_enum             = (1 :<<: 27)
+    is_thread_local     = (1 :<<: 28)
 endClass
 
 

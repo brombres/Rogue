@@ -544,6 +544,8 @@ class Parser
           attributes.add( Attribute.is_task )
         elseIf (consume("api"))
           attributes.add( Attribute.is_api )
+        elseIf (consume("threadLocal"))
+          attributes.add( Attribute.is_thread_local )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else
