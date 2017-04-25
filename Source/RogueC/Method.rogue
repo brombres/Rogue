@@ -27,6 +27,7 @@ class Method
     overridden_method  : Method
     overriding_methods = Method[]
     native_code        : String
+    native_return_type : Type
 
     organized : Logical
     resolved  : Logical

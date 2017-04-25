@@ -2218,6 +2218,7 @@ struct RogueClassMethod : RogueObject
   RogueClassMethod* overridden_method;
   RogueMethod_List* overriding_methods;
   RogueString* native_code;
+  RogueClassType* _native_return_type;
   RogueLogical organized;
   RogueLogical resolved;
   RogueInt32 index;
@@ -9055,6 +9056,7 @@ RogueClassCmdCallInlineNative* RogueCmdCallInlineNative__init_object( RogueClass
 RogueString* RogueCmdCallInlineNative__to_String( RogueClassCmdCallInlineNative* THIS );
 RogueString* RogueCmdCallInlineNative__type_name( RogueClassCmdCallInlineNative* THIS );
 RogueClassCmd* RogueCmdCallInlineNative__dispatch__Visitor( RogueClassCmdCallInlineNative* THIS, RogueClassVisitor* v_0 );
+RogueClassCmd* RogueCmdCallInlineNative__resolve__Scope( RogueClassCmdCallInlineNative* THIS, RogueClassScope* scope_0 );
 RogueClassCmd* RogueCmdCallInlineNative__resolve_adjust__Scope_Int32( RogueClassCmdCallInlineNative* THIS, RogueClassScope* scope_0, RogueInt32 _auto_3241_1 );
 void RogueCmdCallInlineNative__write_cpp__CPPWriter_Logical( RogueClassCmdCallInlineNative* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
 void RogueCmdCallInlineNative__print_this__CPPWriter( RogueClassCmdCallInlineNative* THIS, RogueClassCPPWriter* writer_0 );

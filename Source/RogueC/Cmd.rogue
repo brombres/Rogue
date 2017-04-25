@@ -2990,6 +2990,10 @@ class CmdCallInlineNative : CmdCall
 
     method resolve_adjust( scope:Scope, adjust_delta )->Cmd
       return this
+
+    method resolve( scope:Scope )->Cmd
+      if (method_info.native_return_type) method_info.native_return_type.organize(scope)
+      return this
 endClass
 
 class CmdCallInlineNativeRoutine : CmdCallInlineNative

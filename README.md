@@ -32,7 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.33 - April 24, 2017
+###v1.1.33 - April 25, 2017
+- [RogueC] Improved handling of inline `native()` blocks in `[macro]` methods.
 - [RogueC] Better error message when a class attempts to extend itself.
 
 ###v1.1.32 - April 16, 2017

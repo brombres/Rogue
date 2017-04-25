@@ -801,18 +801,12 @@ class Parser
 
           if (next_is(TokenType.symbol_arrow))
             consume( TokenType.symbol_arrow )
-            local type = parse_type
-            throw peek.error( ''Native expression types cannot be specified in macro methods - remove the "->$".'' (type) )
+            this_method.native_return_type = parse_type
           endIf
 
         else
           # macro this.fn(arg)
           # macro ...
-          if (StackTrace().entries.count > 100)
-            trace
-            println StackTrace()
-            throw RogueError("Recursion limit")
-          endIf
           parse_single_line_statements( this_method.statements )
         endIf
 

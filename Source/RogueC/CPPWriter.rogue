@@ -2740,6 +2740,7 @@ augment CmdCallInlineNative
         writer.print( st.from(0,dollar.value-1) )
         st = st.from( dollar.value+1 )
 
+        local is_handled = false
         local name  : String
         local param : Local
         if (st.begins_with('('))
@@ -2747,12 +2748,17 @@ augment CmdCallInlineNative
           name = st.before_first(')').from(1)
           st = st.after_first( ')' )
 
-          forEach (p in method_info.parameters)
-            if (p.name == name)
-              param = p
-              escapeForEach
-            endIf
-          endForEach
+          if (name == "this")
+            is_handled = true
+            print_this( writer )
+          else
+            forEach (p in method_info.parameters)
+              if (p.name == name)
+                param = p
+                escapeForEach
+              endIf
+            endForEach
+          endIf
 
         else
           # $name
@@ -2768,15 +2774,24 @@ augment CmdCallInlineNative
             name = param.name
             st = st.from( best_match.name.count )
           elseIf (st.begins_with("this"))
+            is_handled = true
             print_this( writer )
             st = st.from( 4 )
           endIf
         endIf
 
-        if (param)
-          args[ param.index ].write_cpp( writer )
-        elseIf (name)
-          writer.print_native_marker( t, method_info.type_context, method_info, null, name )
+        if (not is_handled)
+          if (param)
+            args[ param.index ].write_cpp( writer )
+          elseIf (name)
+            writer.print_native_marker( t, method_info.type_context, method_info, null, name )
+          else
+            local i2 = 1
+            while (i2 < st.count and st[i2].is_identifier) ++i2
+            name = st.from( 0, i2-1 )
+            st = st.from( i2 )
+            writer.print_native_marker( t, method_info.type_context, method_info, null, name )
+          endIf
         endIf
 
         dollar = st.locate('$')

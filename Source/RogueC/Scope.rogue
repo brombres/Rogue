@@ -139,6 +139,7 @@ class Scope
             context = context.resolve( this )
             context.require_type_context
             cmd = CmdCallInlineNativeRoutine( t, m, args )
+            if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
           else
             cmd = CmdCallNativeRoutine( t, m, args )
           endIf
@@ -187,6 +188,7 @@ class Scope
 
           if (m.native_code)
             cmd = CmdCallInlineNativeMethod( t, context, m, args )
+            if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
           else
             cmd = CmdCallNativeMethod( t, context, m, args )
           endIf
