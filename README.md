@@ -32,6 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.34 - April 26, 2017
+- [CompoundIntrospection] Added `.set_property(String,Value)` and `.get_property(String)` to make compound introspection symmetrical with Object introspection.  Compound introspection methods are injected into compounds automatically.
+- [Object] Removed introspection method `Object.set_properties(Value)` (which works with a `ValueTable`) because when a developer-specific property named `properties` is declared the method inadvertently acts as a setter.  `Object.introspector.set(Value)` can be called instead to accomplish the same thing.
+
 ###v1.1.33 - April 25, 2017
 - [RogueC] Improved handling of inline `native()` blocks in `[macro]` methods.
 - [RogueC] Better error message when a class attempts to extend itself.

@@ -49,10 +49,6 @@ class Object [native]
     method property_name( index:Int32 )->String
       return native( "Rogue_literal_strings[$this->type->property_name_indices[$index]]" )->String
 
-    method set_properties( value:Value )->this [nonAPI]
-      introspector.set( value )
-      return this
-
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this [nonAPI]
       forEach (i in 0..<property_count)
         if (property_name(i) == name)

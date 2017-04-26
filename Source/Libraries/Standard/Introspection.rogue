@@ -160,6 +160,9 @@ endClass
 
 class CompoundIntrospection<<$ValueType>> [aspect]
   METHODS
+    method get_property( name:String )->Value [nonAPI]
+      return introspector[ name ]
+
     method get_property<<$PropertyType>>( name:String )->$PropertyType
       forEach (i in 0..<property_count)
         if (property_name(i) == name)
@@ -179,6 +182,10 @@ class CompoundIntrospection<<$ValueType>> [aspect]
 
     method property_name( index:Int32 )->String
       return type_info.properties[ index ].name
+
+    method set_property( name:String, value:Value )->this [nonAPI]
+      introspector.set( name, value )
+      return this
 
     method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
       forEach (i in 0..<property_count)
