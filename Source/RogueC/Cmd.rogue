@@ -2764,6 +2764,9 @@ class CmdReadProperty : Cmd
       endIf
       return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
 
+    method to->String
+      return "$.$" (context,property_info)
+
     method type->Type
       return property_info.type
 endClass
@@ -4478,7 +4481,9 @@ class CmdReadArrayElement : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdReadArrayElement( t, context.cloned( clone_args, new_t ), index.cloned( clone_args, new_t ) )
+      local result = CmdReadArrayElement( t, context.cloned( clone_args, new_t ), index.cloned( clone_args, new_t ) )
+      result.array_type = array_type
+      return result
 
     method resolve( scope:Scope )->Cmd
       if (array_type) return this

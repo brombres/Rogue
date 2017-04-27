@@ -978,7 +978,7 @@ class Visitor
 
     method dispatch( cmd:CmdReadArrayElement )
       cmd.context = cmd.context.dispatch( this )
-      cmd.array_type.dispatch( this )
+      if (cmd.array_type) cmd.array_type.dispatch( this )
       cmd.index = cmd.index.dispatch( this )
 
     method dispatch( cmd:CmdReadArrayCount )
