@@ -32,7 +32,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-###v1.1.36 - April 27, 2017
+###v1.1.36 - April 28, 2017
+- [Random] Added `Random.int64()` methods and a `Random.byte()` method.
+- [Random] Replaced vestigial inline C with pure Rogue code.
+- [List] Added two additional constructors `init(capacity,fn)` where `fn` is either `Function()->($Type)` or `Function(index:Int32)->($Type)`.  Example: `Byte[]( 16, ()=>Random.byte )`.
 - [TypeInfo] Added `TypeInfo.instance_of(other:TypeInfo)->Logical`.  E.g. `obj.type_info.instance_of(@SomeClass)`.
 
 ###v1.1.35 - April 27, 2017

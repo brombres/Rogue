@@ -7,22 +7,31 @@ class Random [singleton]
   #
   # Use any the following methods:
   #
-  #   random_Real64().Real64:
+  #   Random.real64().Real64:
   #     Returns a real number n where 0.0 < n < 1.0.
   #
-  #   random_Real64(low,high).Real64:
+  #   Random.real64(low,high).Real64:
   #     Returns a real number n where low < n < high.
   #
-  #   random_Int32().Int32
-  #     Returns a number between 0 and 0xffffffff (-1).
+  #   Random.int64().Int64
+  #     Returns a number between 0 and 0xFFFFFFFFffffffff (-1).
   #
-  #   random_Int32(limit).Int32
+  #   Random.int64(limit).Int64
   #     Returns an integer n where 0 <= n < limit.
   #
-  #   random_Int32(low,high).Int32
+  #   Random.int64(low,high).Int64
   #     Returns an integer n where low <= n <= high.
   #
-  #   random_Logical().Logical:
+  #   Random.int32().Int32
+  #     Returns a number between 0 and 0xffffffff (-1).
+  #
+  #   Random.int32(limit).Int32
+  #     Returns an integer n where 0 <= n < limit.
+  #
+  #   Random.int32(low,high).Int32
+  #     Returns an integer n where low <= n <= high.
+  #
+  #   random.logical().Logical:
   #     Returns either "true" or "false" with a 50/50 chance.
   #
   # You may create a RandomNumberGenerator object with a 'seed'
@@ -38,11 +47,6 @@ class Random [singleton]
   # Where a=0x5DEECE66D, c=11, and bits 31:0 of
   # 'next' are retrieved with each read call.
 
-  GLOBAL METHODS
-    method next_state( state:Int64 )->Int64 [macro]
-      # Kludge until Int64 literals work in compiler
-      $if ("C++") native "((THIS->state * 0x5DEECe66dLL + 11LL) & 0xFFFFffffFFFFLL)"
-
   PROPERTIES
     state : Int64
 
@@ -57,7 +61,7 @@ class Random [singleton]
 
     method advance_state()->Int64
       # Calculates the internal 'next_random' raw integer.
-      state = next_state( state )
+      state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
       return state
 
     method reset( state )
@@ -72,9 +76,28 @@ class Random [singleton]
       # the range (low,high) exclusive (does not include low or high).
       return (real64 * (high-low)) + low
 
+    method int64->Int32
+      # Returns a normalized, evenly distributed random integer in
+      # the range [0,2^63-1] inclusive.
+      local result = int32->Int64 :<<: 32
+      return (result | (int32->Int64 & 0x0FFFFffff))
+
+    method int64( limit:Int64 )->Int64
+      # Returns an evenly distributed random integer in
+      # the range [0,limit) - includes 0 but does not include limit.
+      #
+      # Example:
+      #   println( Random.int64(100) )  #prints a number 0..99
+      if (limit == 0) return 0
+      return int64 % limit
+
+    method int64( low:Int64, high:Int64 )->Int64
+      # Returns a random integer between low and high, inclusive.
+      return int64( (high-low)+1 ) + low
+
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
-      # the range [-2^31,2^31-1] inclusive.
+      # the range [0,2^31-1] inclusive.
       return (real64 * (2.0^31))->Int32
 
     method int32( limit:Int32 )->Int32
@@ -89,6 +112,10 @@ class Random [singleton]
     method int32( low:Int32, high:Int32 )->Int32
       # Returns a random integer between low and high, inclusive.
       return int32( (high-low)+1 ) + low
+
+    method byte->Byte
+      # Returns a random byte between 0 and 255.
+      return Byte(real64 * 256)
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.

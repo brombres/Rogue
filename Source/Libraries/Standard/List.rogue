@@ -20,6 +20,20 @@ class List<<$DataType>> : GenericList
         forEach (i in 0..<initial_capacity) data[i] = initial_value
       endIf
 
+    method init( initial_capacity:Int32, fn:Function()->($DataType) )
+      if (initial_capacity)
+        data = Array<<$DataType>>( initial_capacity )
+        count = initial_capacity
+        forEach (i in 0..<initial_capacity) data[i] = fn()
+      endIf
+
+    method init( initial_capacity:Int32, fn:Function(Int32)->($DataType) )
+      if (initial_capacity)
+        data = Array<<$DataType>>( initial_capacity )
+        count = initial_capacity
+        forEach (i in 0..<initial_capacity) data[i] = fn( i )
+      endIf
+
     method apply( fn:Function($DataType) )->this
       forEach (item in this) fn( item )
       return this
