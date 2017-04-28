@@ -242,6 +242,11 @@ class Scope
       local named_arg_count = select{ access.named_args:access.named_args.count || 0 }
       local total_arg_count = arg_count + named_arg_count
 
+      if (args)
+        args.resolve( this )
+        forEach (arg in args) arg.type.organize
+      endIf
+
       local list = type_context.global_method_lookup_by_name[ access.name ]
       if (list)
         forEach (m in list)
@@ -333,11 +338,6 @@ class Scope
           if (not candidates.update_matches) return null
         endIf
 
-      endIf
-
-      if (args)
-        args.resolve( this )
-        forEach (arg in args) arg.type.organize
       endIf
 
       forEach (m in candidates.available)
