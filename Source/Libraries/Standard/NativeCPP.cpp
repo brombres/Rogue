@@ -134,6 +134,26 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
   else                             return obj;
 }
 
+RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type )
+{
+  if (THIS == ancestor_type)
+  {
+    return true;
+  }
+
+  int count = THIS->base_type_count;
+  RogueType** base_type_ptr = THIS->base_types - 1;
+  while (--count >= 0)
+  {
+    if (ancestor_type == *(++base_type_ptr))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 RogueString* RogueType_name( RogueType* THIS )
 {
   return Rogue_literal_strings[ THIS->name_index ];
@@ -200,30 +220,12 @@ RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type )
 
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type )
 {
-  RogueType* this_type;
-
   if ( !THIS )
   {
     return false;
   }
 
-  this_type = THIS->type;
-  if (this_type == ancestor_type)
-  {
-    return true;
-  }
-
-  int count = this_type->base_type_count;
-  RogueType** base_type_ptr = this_type->base_types - 1;
-  while (--count >= 0)
-  {
-    if (ancestor_type == *(++base_type_ptr))
-    {
-      return true;
-    }
-  }
-
-  return false;
+  return RogueType_instance_of( THIS->type, ancestor_type );
 }
 
 void* RogueObject_retain( RogueObject* THIS )

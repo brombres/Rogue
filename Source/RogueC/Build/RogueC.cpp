@@ -139,6 +139,26 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
   else                             return obj;
 }
 
+RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type )
+{
+  if (THIS == ancestor_type)
+  {
+    return true;
+  }
+
+  int count = THIS->base_type_count;
+  RogueType** base_type_ptr = THIS->base_types - 1;
+  while (--count >= 0)
+  {
+    if (ancestor_type == *(++base_type_ptr))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 RogueString* RogueType_name( RogueType* THIS )
 {
   return Rogue_literal_strings[ THIS->name_index ];
@@ -205,30 +225,12 @@ RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type )
 
 RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type )
 {
-  RogueType* this_type;
-
   if ( !THIS )
   {
     return false;
   }
 
-  this_type = THIS->type;
-  if (this_type == ancestor_type)
-  {
-    return true;
-  }
-
-  int count = this_type->base_type_count;
-  RogueType** base_type_ptr = this_type->base_types - 1;
-  while (--count >= 0)
-  {
-    if (ancestor_type == *(++base_type_ptr))
-    {
-      return true;
-    }
-  }
-
-  return false;
+  return RogueType_instance_of( THIS->type, ancestor_type );
 }
 
 void* RogueObject_retain( RogueObject* THIS )
@@ -74822,7 +74824,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[279] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Unknown option '", 16 ) ); 
   Rogue_literal_strings[280] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[281] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[282] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.35", 6 ) ); 
+  Rogue_literal_strings[282] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.1.36.0", 8 ) ); 
   Rogue_literal_strings[283] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "April 27, 2017", 14 ) ); 
   Rogue_literal_strings[284] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[285] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --compile[=<compiler invocation>]\n    Creates an executable from the compiled .rogue code - for example, compiles\n    and links the .cpp code generated from the .rogue program.  Automatically\n    enables the --main option.  If <compiler invocation> is omitted then a\n    language-specific default is used - for a C++ code target this is the\n    Makefile-default $(CXX) compiler with certain options - see DEFAULT_CXX in\n    the Rogue source folder's Makefile.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=auto|manual|boehm]\n    Set the garbage collection mode:\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=manual - Rogue_collect_garbage() must be manually called in-between\n                    calls into the Rogue runtime.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --ide[=<IDE Name>]\n    Indicates that roguec is being invoked from an IDE.  Currently this causes\n    error messages to print out in a \"classic\" C style, which Xcode (and\n    possibly other IDEs') will automatically pick up and display.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --main\n    Include a main() function in the output file.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2702 ) ); 

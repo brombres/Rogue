@@ -368,6 +368,7 @@ struct RogueType
 
 RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
+RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
 RogueString* RogueType_name( RogueType* THIS );
 bool         RogueType_name_equals( RogueType* THIS, const char* name );
 void         RogueType_print_name( RogueType* THIS );

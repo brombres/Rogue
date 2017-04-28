@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+###v1.1.36 - April 27, 2017
+- [TypeInfo] Added `TypeInfo.instance_of(other:TypeInfo)->Logical`.  E.g. `obj.type_info.instance_of(@SomeClass)`.
+
 ###v1.1.35 - April 27, 2017
 - [RogueC] Fixed a compiler crash that could happen with a certain combination of an array access in an internally cloned method.
 

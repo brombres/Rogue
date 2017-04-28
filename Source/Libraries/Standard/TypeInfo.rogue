@@ -82,6 +82,9 @@ class TypeInfo
       endForEach
       return null
 
+    method instance_of( other:TypeInfo )->Logical
+      return native( "RogueType_instance_of( &Rogue_types[$index], &Rogue_types[$other->index] )" )->Logical
+
     method is_aspect->Logical
       return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_ASPECT" )->Logical
 
