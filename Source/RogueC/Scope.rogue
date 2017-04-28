@@ -283,8 +283,13 @@ class Scope
         endIf
       endIf
 
-
       if (candidates.available.count == 0)
+        if (type_context.method_templates.has_template(access.name))
+          if (not access.name.contains('<')
+          if (args)
+            args.resolve( this )
+            forEach (arg in args) arg.type.organize
+          endIf
         if (type_context.method_templates.instantiate(access.t, access.name))
           # Try again now that one or more new methods have been added
           return find_method( type_context, access, error_on_fail, flags )

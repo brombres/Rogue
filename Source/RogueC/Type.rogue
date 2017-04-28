@@ -847,10 +847,7 @@ class Type
     method inherit_methods( scope=null:Scope )
       # Inherit method templates
       forEach (base_type in base_types)
-        if (base_type.method_templates)
-          ensure this.method_templates( this )
-          method_templates.inherit( base_type.method_templates, this )
-        endIf
+        method_templates.inherit( base_type.method_templates )
       endForEach
 
       # Organize methods and create signatures
@@ -867,7 +864,7 @@ class Type
       method_lookup_by_signature.clear
       method_lookup_by_name.clear
 
-      # Inherit global methdos and methods
+      # Inherit methods and global methods
       local full_routine_list = Method[]
       inherit_global_methods( full_routine_list, global_method_lookup_by_signature )
       global_method_list = full_routine_list

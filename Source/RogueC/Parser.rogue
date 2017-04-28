@@ -840,53 +840,7 @@ class Parser
         tokens.add( reader.read )
       endWhile
 
-      # Replace all placeholder id's with "Object" just so we can parse out
-      # the method signature and get a parameter count.
-      local temp_tokens = Token[]( tokens.count )
-      forEach (t2 in tokens)
-        if (t2.type is TokenType.placeholder_id)
-          temp_tokens.add( TokenType.identifier.create_token(t2,"Object") )
-        else
-          temp_tokens.add( t2 )
-        endIf
-      endForEach
-      m.parameter_count = Parser( temp_tokens ).parse_method_template_parameter_count
-
-      ensure this_type.method_templates( this_type )
       this_type.method_templates.add( m )
-
-    method parse_method_template_parameter_count->Int32
-      if (not consume(TokenType.symbol_open_paren)) return 0
-      if (consume(TokenType.symbol_close_paren)) return 0
-
-      local parameter_count = 0
-
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        first = false
-        consume_eols
-
-        ++parameter_count
-
-        consume( TokenType.symbol_ampersand )  # flag parameter
-
-        # identifier
-        read_identifier(true)
-
-        if (consume(TokenType.symbol_equals))
-          # = default_value
-          parse_expression
-        endIf
-
-        if (consume(TokenType.symbol_colon))
-          # : Type
-          parse_type
-        endIf
-
-      endWhile
-
-      must_consume( TokenType.symbol_close_paren )
-      return parameter_count
 
     method parse_single_or_multi_line_statements( statements:CmdStatementList, end_type:TokenType )
       if (consume_eols)

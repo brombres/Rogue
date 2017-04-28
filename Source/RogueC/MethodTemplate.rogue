@@ -8,12 +8,6 @@ class MethodTemplate
     type_parameters    = TypeParameter[]
     template_tokens    = Token[]
 
-    parameter_count    : Int32
-    # Regular parameters, not type parameters
-
-    overridden_m       : MethodTemplate
-    overrides          = MethodTemplate[]
-
   METHODS
     method init( t, type_context, name, is_global )
 
@@ -21,22 +15,44 @@ class MethodTemplate
       local result = MethodTemplate( t, type_context, name, is_global )
       result.type_parameters = type_parameters
       result.template_tokens = template_tokens
-      result.parameter_count = parameter_count
       return result
 
-    method instantiate( ref_t:Token, ref_name:String )
-      local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
-
-      parser.read  # '<<'
+    method instantiate( ref_t:Token, ref_name:String, param_1_type:Type, param_2_type:Type )
+      local known_parameter_types = 0
+      if (param_1_type) ++known_parameter_types
+      if (param_2_type) ++known_parameter_types
 
       local specializer_tokens = Token[][]()
-      local buffer = StringBuilder()
-      local first = true
-      while (first or parser.consume(TokenType.symbol_comma))
-        first = false
-        specializer_tokens.add( Token[] )
-        parser.parse_specializer( buffer.clear, specializer_tokens.last )
-      endWhile
+      if (ref_name.contains('<'))
+        local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
+
+        parser.read  # '<<'
+
+        local buffer = StringBuilder()  # just a dummy to satisfy the requirements of parse_specializer()
+        local first = true
+        while (first or parser.consume(TokenType.symbol_comma))
+          first = false
+          specializer_tokens.add( Token[] )
+          parser.parse_specializer( buffer.clear, specializer_tokens.last )
+        endWhile
+
+      elseIf (known_parameter_types == type_parameters.count)
+        local buffer = StringBuilder()  # dummy
+
+        if (param_1_type)
+          specializer_tokens.add( Token[] )
+          Parser( ref_t, param_1_type.name, param_1_type.name ).parse_specializer( buffer.clear, specializer_tokens.last )
+        endIf
+
+        if (param_2_type)
+          specializer_tokens.add( Token[] )
+          Parser( ref_t, param_2_type.name, param_2_type.name ).parse_specializer( buffer.clear, specializer_tokens.last )
+        endIf
+
+      else
+        throw ref_t.error( "Unable to infer method template specializer types - list them explicitly ('$<<Int32,...>>(...)')." (name) )
+
+      endIf
 
       local mappings = Table<<String,Token[]>>()
       forEach (type_param at i in type_parameters)
@@ -73,62 +89,48 @@ class MethodTemplate
       type_context.inject_method( m )
 
     method to->String
-      return "$.$<<{$}>>({$})" (type_context.name,name,type_parameters.count,parameter_count)
+      return "$.$<<$>>()" (type_context.name,name,type_parameters.count)
 
+endClass
+
+
+class MethodTemplateOverloads
+  PROPERTIES
+    overloads    = MethodTemplate[]
+    overridden_m : MethodTemplateOverloads
+    overrides    = MethodTemplateOverloads[]
+
+  METHODS
+    method add( m:MethodTemplate )->this
+      overloads.add( m )
+      return this
 endClass
 
 
 class MethodTemplates( type_context:Type )
   # A table of method names to lookup-by-specializer-count to list of templates.
   PROPERTIES
-    templates = MethodTemplate[]
+    templates = StringTable<<MethodTemplateOverloads>>()
 
   METHODS
     method add( m:MethodTemplate )
-      if (has_template(m.name,m.type_parameters.count,m.parameter_count))
-        throw m.t.error( "Method template $<<{$}>>({$}) is already defined." (m.name,m.type_parameters.count,m.parameter_count) )
-      endIf
-      templates.add( m )
+      local sig = "$<<$>>" (m.name,m.type_parameters.count)
+      (ensure templates[ sig ]).add( m )
 
-    method find( name:String, specializer_count:Int32, parameter_count:Int32 )->MethodTemplate
-      forEach (template in templates)
-        if (template.type_parameters.count == specializer_count and template.parameter_count == parameter_count...
-            and template.name == name)
-          return template
-        endIf
-      endForEach
-      return null
-
-    method has_template( name:String, specializer_count:Int32, parameter_count:Int32 )->Logical
-      return find(name,specializer_count,parameter_count)?
-
-    method has_templates_named( name:String )->Logical
-      forEach (m in templates)
-        if (m.name == name) return true
-      endForEach
-
-      return false
+    method has_template( name:String )->Logical
+      return templates.contains( name.before_first('<') )
 
     method inherit( other:MethodTemplates, extended_type:Type )
       if (not other) return
 
       forEach (base_m in other.templates)
-        local m = find( base_m.name, base_m.type_parameters.count, base_m.parameter_count )
-
-        if (not m and base_m.type_context.is_aspect and not extended_type.is_aspect)
+        if (base_m.type_context.is_aspect and not extended_type.is_aspect)
           # We have to clone aspect method templates for non-aspects
           m = base_m.cloned
           m.type_context = extended_type
         endIf
 
-        if (m)
-          m.overridden_m = base_m
-          base_m.overrides.add( m )
-          templates.add( m )
-        else
-          # No overrides found, just inherit base_m
-          templates.add( base_m )
-        endIf
+        templates.add( base_m )
 
       endForEach
 
