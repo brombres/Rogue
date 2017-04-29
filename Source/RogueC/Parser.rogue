@@ -986,6 +986,9 @@ class Parser
             if (consume(TokenType.symbol_colon))
               # : Type
               param.type = parse_type
+              if (consume(TokenType.symbol_at))
+                param.is_alias = true
+              endIf
             endIf
 
             if (is_flag)
