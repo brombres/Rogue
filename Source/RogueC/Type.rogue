@@ -118,6 +118,7 @@ class Type
 
     method add_global( s_t:Token, s_name:String )->Property
       local s = Property( s_t, this, s_name )
+      s.attributes |= Attribute.is_global
       global_list.add( s )
       global_lookup[s_name] = s
       return s

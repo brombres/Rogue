@@ -6468,6 +6468,7 @@ RogueClassType* RogueCmd__find_operation_result_type__Type_Type( RogueClassCmd* 
 RogueClassType* RogueCmd__find_common_type__Type_Type( RogueClassCmd* THIS, RogueClassType* left_type_0, RogueClassType* right_type_1 );
 RogueLogical RogueCmd__generates_output( RogueClassCmd* THIS );
 RogueLogical RogueCmd__is_generic_function( RogueClassCmd* THIS );
+RogueLogical RogueCmd__is_global( RogueClassCmd* THIS );
 RogueClassType* RogueCmd__must_find_common_type__Type_Type( RogueClassCmd* THIS, RogueClassType* left_type_0, RogueClassType* right_type_1 );
 RogueClassType* RogueCmd__implicit_type__Scope( RogueClassCmd* THIS, RogueClassScope* scope_0 );
 RogueLogical RogueCmd__is_literal( RogueClassCmd* THIS );
@@ -8847,6 +8848,7 @@ RogueClassCmdReadSingleton* RogueCmdReadSingleton__init_object( RogueClassCmdRea
 RogueString* RogueCmdReadSingleton__type_name( RogueClassCmdReadSingleton* THIS );
 RogueClassCmd* RogueCmdReadSingleton__cloned__CloneArgs_Token( RogueClassCmdReadSingleton* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );
 RogueClassCmd* RogueCmdReadSingleton__dispatch__Visitor( RogueClassCmdReadSingleton* THIS, RogueClassVisitor* v_0 );
+RogueLogical RogueCmdReadSingleton__is_global( RogueClassCmdReadSingleton* THIS );
 void RogueCmdReadSingleton__require_type_context( RogueClassCmdReadSingleton* THIS );
 RogueClassCmd* RogueCmdReadSingleton__resolve__Scope( RogueClassCmdReadSingleton* THIS, RogueClassScope* scope_0 );
 RogueClassType* Rogue_CmdReadSingleton__type( RogueClassCmdReadSingleton* THIS );

@@ -155,6 +155,9 @@ trace Type.resolve_chain
     method is_generic_function->Logical
       return false
 
+    method is_global->Logical
+      return false
+
     method must_find_common_type( left_type:Type, right_type:Type )->Type
       local common_type = find_common_type( left_type, right_type )
       if (common_type) return common_type
@@ -2156,6 +2159,9 @@ class CmdAccess : Cmd
       p = context_type.find_property( name )
       if (p)
         if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+        if (context.is_global)
+          throw t.error( "Cannot access object property '$' using a non-object context." (name) )
+        endIf
         return CmdReadProperty( t, context, p )
       endIf
 
@@ -2184,8 +2190,6 @@ class CmdAccess : Cmd
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
       if (args) throw t.error( "The result of a call cannot be assigned a value." )
-
-      local explicit_context = context?
 
       local setter_name = select(name[0]) { '@':null || "set_"+name } : String
 
@@ -2244,8 +2248,8 @@ class CmdAccess : Cmd
 
       p = context_type.find_property( name )
       if (p)
-        if (scope.this_method.is_global and not explicit_context)
-          throw t.error( "Cannot access object property '$' from a global method." (name) )
+        if (context.is_global)
+          throw t.error( "Cannot access object property '$' from a non-object context." (name) )
         else
           return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
         endIf
@@ -2325,7 +2329,7 @@ class CmdAccess : Cmd
       p = context_type.find_property( name )
       if (p)
         if (not context) context = CmdThisContext( t, context_type )
-        if (scope.this_method.is_global)
+        if (context.is_global and scope.this_method.is_global)
           throw t.error( "Cannot access object property '$' from a global method." (name) )
         endIf
         return CmdModifyAndAssignProperty( t, context, p, op, new_value ).resolve(scope)
@@ -2603,6 +2607,9 @@ class CmdReadSingleton : Cmd
       if (new_t) t = new_t
       return CmdReadSingleton( t, of_type )
 
+    method is_global->Logical
+      return (not of_type.is_singleton)
+
     method require_type_context
       noAction
 
@@ -2829,6 +2836,9 @@ class CmdCall : Cmd
 
   METHODS
     method init( t, context, method_info, args )
+      if (context and context.is_global and not method_info.is_global)
+        throw t.error( "Cannot call object method $.$ on a non-object." (method_info.type_context,method_info.signature) )
+      endIf
 
     method is_scoped_read_access->Logical
       return true

@@ -19,6 +19,9 @@ class Property
       if (initial_value) result.initial_value = initial_value.cloned
       return result
 
+    method is_global->Logical
+      return (attributes & Attribute.is_global)?
+
     method is_incorporated->Logical
       return (attributes & Attribute.is_incorporated)?
 

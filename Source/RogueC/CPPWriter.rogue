@@ -2513,6 +2513,7 @@ augment CmdReadSingleton
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not of_type.is_singleton)
+        println StackTrace()
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
 
