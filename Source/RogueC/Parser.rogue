@@ -2964,6 +2964,13 @@ class Parser
       elseIf (consume(TokenType.meta_methodSignature))
         return CmdMetaMethodSignature( t )
 
+      elseIf (consume(TokenType.symbol_lt))
+        local type = parse_type
+        type.make_essential
+        local result = CmdTypeSelector( t, type )
+        must_consume( TokenType.symbol_gt )
+        return result
+
       else
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf

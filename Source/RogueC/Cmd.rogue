@@ -5714,3 +5714,20 @@ class CmdMetaMethodSignature( t ) : Cmd
 endClass
 
 
+class CmdTypeSelector( t, of_type:Type ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdTypeSelector( t, of_type )
+
+    method implicit_type->Type
+      return of_type
+
+    method resolve( scope:Scope )->Cmd
+      of_type.organize( scope )
+      return CmdAccess( t, CmdAccess(t,"Runtime"), "type_info", CmdArgs(CmdLiteralString(t,of_type)) ).resolve( scope )
+
+    method type->Type
+      return of_type
+endClass
+
