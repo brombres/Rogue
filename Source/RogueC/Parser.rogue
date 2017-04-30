@@ -285,7 +285,11 @@ class Parser
 
         # Skip the return type if it exists
         if (consume(TokenType.symbol_arrow))
-          template.routine_return_type = parse_type
+          if (consume(TokenType.placeholder_id))
+            template.routine_return_type = null
+          else
+            template.routine_return_type = parse_type
+          endIf
         endIf
 
         parse_attributes( template.attributes )
@@ -687,83 +691,7 @@ class Parser
 
       if (not next_is(TokenType.keyword_method)) return false
 
-      local t = read  # 'routine' or 'method'
-      local name = read_identifier
-      local return_type : Type
-      which (name)
-        case "operator"
-          name += reader.read->String
-        case "to"
-          if (consume(TokenType.symbol_arrow))
-            return_type = parse_type
-            name = "to_" + return_type.name
-          endIf
-        others
-      endWhich
-
-      local specialization_info : ValueTable
-      local unspecialized_name = name
-      if (next_is(TokenType.symbol_open_specialize))
-        if (reader.peek(1).type is TokenType.placeholder_id)
-          parse_method_template( t, name, as_global )
-          return true
-        else
-          specialization_info = parse_specialization_info
-          name += specialization_info[ "string" ]->String
-        endIf
-      endIf
-
-      this_method = Method( t, this_type, name )
-      this_method.return_type = return_type
-      if (specialization_info)
-        this_method.specializer_count = specialization_info[ "count" ]->Int32
-        this_method.unspecialized_name = unspecialized_name
-      endIf
-
-      # Parse parameters
-      if (consume(TokenType.symbol_open_paren))
-        if (not consume(TokenType.symbol_close_paren))
-          local first = true
-          while (first or consume(TokenType.symbol_comma))
-            first = false
-            consume_eols
-
-            local is_flag = consume( TokenType.symbol_ampersand )
-
-            # identifier
-            t = peek
-            local param = this_method.add_parameter( t, read_identifier(true) )
-
-            if (consume(TokenType.symbol_equals))
-              # = default_value
-              param.initial_value = parse_expression
-            endIf
-
-            if (consume(TokenType.symbol_colon))
-              # : Type
-              param.type = parse_type
-            endIf
-
-            if (is_flag)
-              if (not param.type) param.type = Program.type_Logical
-              if (not param.initial_value) param.initial_value = param.type.create_default_value( param.t )
-            endIf
-          endWhile
-          must_consume( TokenType.symbol_close_paren )
-        endIf
-      endIf
-
-      # Optional ->ReturnType
-      if (not return_type)
-        if (consume(TokenType.symbol_arrow))
-          if (consume(TokenType.keyword_this))
-            this_method.return_type = this_type
-            this_method.attributes.add( Attribute.returns_this )
-          else
-            this_method.return_type = parse_type
-          endIf
-        endIf
-      endIf
+      if (parse_method_header(as_global) is null) return true
 
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
@@ -821,6 +749,91 @@ class Parser
       endIf
 
       return true
+
+    method parse_method_header( as_global=false:Logical )->Method
+      local t = read  # 'routine' or 'method'
+      local name = read_identifier
+      local return_type : Type
+      which (name)
+        case "operator"
+          name += reader.read->String
+        case "to"
+          if (consume(TokenType.symbol_arrow))
+            return_type = parse_type
+            name = "to_" + return_type.name
+          endIf
+        others
+      endWhich
+
+      local specialization_info : ValueTable
+      local unspecialized_name = name
+      if (next_is(TokenType.symbol_open_specialize))
+        if (reader.peek(1).type is TokenType.placeholder_id)
+          parse_method_template( t, name, as_global )
+          return null
+        else
+          specialization_info = parse_specialization_info
+          name += specialization_info[ "string" ]->String
+        endIf
+      endIf
+
+      this_method = Method( t, this_type, name )
+      if (as_global)
+        this_method.attributes.add( Attribute.is_global )
+      endIf
+
+      this_method.return_type = return_type
+      if (specialization_info)
+        this_method.specializer_count = specialization_info[ "count" ]->Int32
+        this_method.unspecialized_name = unspecialized_name
+      endIf
+
+      # Parse parameters
+      if (consume(TokenType.symbol_open_paren))
+        if (not consume(TokenType.symbol_close_paren))
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+            consume_eols
+
+            local is_flag = consume( TokenType.symbol_ampersand )
+
+            # identifier
+            t = peek
+            local param = this_method.add_parameter( t, read_identifier(true) )
+
+            if (consume(TokenType.symbol_equals))
+              # = default_value
+              param.initial_value = parse_expression
+            endIf
+
+            if (consume(TokenType.symbol_colon))
+              # : Type
+              param.type = parse_type
+            endIf
+
+            if (is_flag)
+              if (not param.type) param.type = Program.type_Logical
+              if (not param.initial_value) param.initial_value = param.type.create_default_value( param.t )
+            endIf
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+        endIf
+      endIf
+
+      # Optional ->ReturnType
+      if (not return_type)
+        if (consume(TokenType.symbol_arrow))
+          if (consume(TokenType.keyword_this))
+            this_method.return_type = this_type
+            this_method.attributes.add( Attribute.returns_this )
+          else
+            this_method.return_type = parse_type
+          endIf
+        endIf
+      endIf
+
+      return this_method
 
     method parse_method_template( t:Token, name:String, is_global:Logical )
       read  # '<<'

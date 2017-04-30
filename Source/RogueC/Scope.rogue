@@ -293,7 +293,18 @@ class Scope
           contingent
             sufficient (access.name.contains('<'))
             necessary (arg_count)
-            access.name += "<<$>>" (args.first.type.name)
+
+            local common_type = args.first.type
+            forEach (arg at index in args)
+              if (index > 0)
+                common_type = access.find_common_type( common_type, arg.type )
+                if (not common_type)
+                  throw access.t.error( "Unable to infer specializing type for method template - explicitly write $<<TypeName>>(...) instead." (access.name) )
+                endIf
+              endIf
+            endForEach
+
+            access.name += "<<$>>" (common_type.name)
 
           satisfied
             type_context.method_templates.instantiate( access.t, access.name )

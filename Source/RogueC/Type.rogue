@@ -1146,7 +1146,7 @@ class Type
         inherit_method( m, global_method_list, global_method_lookup_by_signature )
         global_method_list.insert( global_method_list.remove_last, at_index.value )
         forEach (adjust_i in at_index.value..<global_method_list.count) global_method_list[ adjust_i ].index = adjust_i
-        global_method_lookup_by_name[m.name].add( m )
+        (ensure global_method_lookup_by_name[m.name]).add( m )
 
         if (extended_types.count)
           forEach (extended_class in extended_types)
@@ -1160,7 +1160,7 @@ class Type
         m.index = global_method_list.count
         at_index = global_method_list.count
         inherit_method( m, global_method_list, global_method_lookup_by_signature )
-        global_method_lookup_by_name[m.name].add( m )
+        (ensure global_method_lookup_by_name[m.name]).add( m )
         if (extended_types.count)
           forEach (extended_class in extended_types)
             if (extended_class.organized)

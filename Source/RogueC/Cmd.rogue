@@ -1960,7 +1960,7 @@ class CmdAccess : Cmd
       local template = Program.find_template( name )
       if (template)
         if (template.is_task) return null
-        if (template.routine_return_type) return template.routine_return_type
+        if (template.routine_return_type.exists) return template.routine_return_type.value
         throw t.error( "Routine '$' does not return a value." (name) )
       endIf
 
@@ -1992,6 +1992,26 @@ class CmdAccess : Cmd
         local new_type = scope.find_type( name.after_any('@') )
         if (new_type)
           # new TypeName(...)
+          if (new_type.is_routine and not new_type.defined and not name.contains('<') and args and args.count)
+            local template = Program.find_template( name )
+            if (template.type_parameters)
+              # Infer specializer types from args and adjust name
+              if (template.type_parameters.count == 1)
+                args.resolve( scope )
+                local common_type = args.first.type
+                forEach (arg at index in args)
+                  if (index > 0)
+                    common_type = find_common_type( common_type, arg.type )
+                    if (not common_type)
+                      throw t.error( "Unable to infer specializing type for routine template - explicitly write $<<TypeName>>(...) instead." (name) )
+                    endIf
+                  endIf
+                endForEach
+                name += "<<$>>" (common_type.name)
+              endIf
+              new_type = scope.find_type( name.after_any('@') )
+            endIf
+          endIf
           new_type.organize(scope)
 
           if (new_type.is_routine)

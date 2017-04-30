@@ -5,6 +5,8 @@ class MethodTemplate
     name               : String
     is_global          : Logical
 
+    generic_signature  : String
+
     type_parameters    = TypeParameter[]
     template_tokens    = Token[]
 
@@ -17,19 +19,40 @@ class MethodTemplate
       result.template_tokens = template_tokens
       return result
 
-    method instantiate( ref_t:Token, ref_name:String )
+    method generic_signature->String
+      if (not @generic_signature)
+        local m = instantiate( t, "", &make_generic )
+        if (m) generic_signature = m.signature
+      endIf
+      return @generic_signature
+
+    method instantiate( ref_t:Token, ref_name:String, &make_generic )->Method
       local specializer_tokens = Token[][]()
-      local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
 
-      parser.read  # '<<'
+      if (make_generic)
+        ref_name = ""
+        forEach (index in 1..type_parameters.count)
+          specializer_tokens.add( Token[] )
+          specializer_tokens.last.add( TokenType.identifier.create_token( t, "T"+index ) )
+          if (ref_name.count > 0) ref_name += ","
+          ref_name += "T"+index
+        endForEach
+        ref_name = "$<<$>>" (name,ref_name)
 
-      local buffer = StringBuilder()  # just a dummy to satisfy the requirements of parse_specializer()
-      local first = true
-      while (first or parser.consume(TokenType.symbol_comma))
-        first = false
-        specializer_tokens.add( Token[] )
-        parser.parse_specializer( buffer.clear, specializer_tokens.last )
-      endWhile
+      else
+        local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
+
+        parser.read  # '<<'
+
+        local buffer = StringBuilder()  # just a dummy to satisfy the requirements of parse_specializer()
+        local first = true
+        while (first or parser.consume(TokenType.symbol_comma))
+          first = false
+          specializer_tokens.add( Token[] )
+          parser.parse_specializer( buffer.clear, specializer_tokens.last )
+        endWhile
+
+      endIf
 
       local mappings = Table<<String,Token[]>>()
       forEach (type_param at i in type_parameters)
@@ -55,22 +78,33 @@ class MethodTemplate
         endIf
       endForEach
 
-      parser = Parser( tokens )
+      local parser = Parser( tokens )
       parser.this_type = type_context
-      parser.parse_method( is_global, &skip_add_to_type )
+
+      if (make_generic)
+        parser.parse_method_header( is_global )
+      else
+        parser.parse_method( is_global, &skip_add_to_type )
+      endIf
+
       local m = parser.this_method
       m.source_template = this
       m.specializer_count = type_parameters.count
       m.unspecialized_name = name
       m.assign_signature
 
-      # Classes can define specialized template methods with specific types;
-      # only add this method to the class if it doesn't define a method
-      # with the same signature already.
-      local existing_m = type_context.method_lookup_by_signature[ m.signature ]
-      if (not existing_m or existing_m.type_context is not type_context)
-        type_context.inject_method( m )
+      if (not make_generic)
+        # Classes can define specialized template methods with specific types;
+        # only add this method to the class if it doesn't define a method
+        # with the same signature already.
+        local existing_m = type_context.method_lookup_by_signature[ m.signature ]
+        if (not existing_m or existing_m.type_context is not type_context)
+          #println "Instantiating $.$" (m.type_context,m.signature)
+          type_context.inject_method( m )
+        endIf
       endIf
+
+      return m
 
     method signature->String
       return "$<<$>>" (name,type_parameters.count)
@@ -84,7 +118,6 @@ endClass
 class MethodTemplateOverloads
   PROPERTIES
     overloads       = MethodTemplate[]
-    is_instantiated = false
 
   METHODS
     method add( m:MethodTemplate )->this
@@ -106,7 +139,18 @@ class MethodTemplates
     method add( m:MethodTemplate )
       has_names[ m.name ] = true
       local sig = "$<<$>>" (m.name,m.type_parameters.count)
-      (ensure templates[ sig ]).add( m )
+      local group = (ensure templates[ sig ])
+      forEach (existing_m at index in group.overloads)
+        if (existing_m.type_context is not m.type_context and existing_m.generic_signature == m.generic_signature)
+          if (m.type_context is this.type_context)
+            # Replace existing with override
+            group.overloads[ index ] = m
+          #else existing method overrides new one; don't add the new one
+          endIf
+          return
+        endIf
+      endForEach
+      group.add( m )
 
     method has_template( name:String )->Logical
       return has_names.contains( name.before_first('<') )
@@ -138,8 +182,7 @@ class MethodTemplates
       # matching the name and number of specializers.
       local key = "$<<$>>" (name,specializer_count)
       local group = templates[ key ]
-      if (group and not group.is_instantiated)
-        group.is_instantiated = true
+      if (group)
         forEach (m in group.overloads)
           m.instantiate( t, specialized_name )
 
@@ -150,10 +193,9 @@ class MethodTemplates
 
     method instantiate_overrides( key:String, t:Token, specialized_name:String )
       local group = templates[ key ]
-      if (group and not group.is_instantiated)
-        group.is_instantiated = true
+      if (group)
         forEach (m in group.overloads)
-          if (m.type_context is not type_context)
+          if (m.type_context is type_context)
             m.instantiate( t, specialized_name )
 
             # Recursively instantiate overrides
