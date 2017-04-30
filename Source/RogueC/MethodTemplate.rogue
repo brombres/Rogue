@@ -17,42 +17,19 @@ class MethodTemplate
       result.template_tokens = template_tokens
       return result
 
-    method instantiate( ref_t:Token, ref_name:String, param_1_type:Type, param_2_type:Type )
-      local known_parameter_types = 0
-      if (param_1_type) ++known_parameter_types
-      if (param_2_type) ++known_parameter_types
-
+    method instantiate( ref_t:Token, ref_name:String )
       local specializer_tokens = Token[][]()
-      if (ref_name.contains('<'))
-        local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
+      local parser = Parser( ref_t, ref_name, ref_name.from_first('<') )
 
-        parser.read  # '<<'
+      parser.read  # '<<'
 
-        local buffer = StringBuilder()  # just a dummy to satisfy the requirements of parse_specializer()
-        local first = true
-        while (first or parser.consume(TokenType.symbol_comma))
-          first = false
-          specializer_tokens.add( Token[] )
-          parser.parse_specializer( buffer.clear, specializer_tokens.last )
-        endWhile
-
-      elseIf (known_parameter_types == type_parameters.count)
-        local buffer = StringBuilder()  # dummy
-
-        if (param_1_type)
-          specializer_tokens.add( Token[] )
-          Parser( ref_t, param_1_type.name, param_1_type.name ).parse_specializer( buffer.clear, specializer_tokens.last )
-        endIf
-
-        if (param_2_type)
-          specializer_tokens.add( Token[] )
-          Parser( ref_t, param_2_type.name, param_2_type.name ).parse_specializer( buffer.clear, specializer_tokens.last )
-        endIf
-
-      else
-        throw ref_t.error( "Unable to infer method template specializer types - list them explicitly ('$<<Int32,...>>(...)')." (name) )
-
-      endIf
+      local buffer = StringBuilder()  # just a dummy to satisfy the requirements of parse_specializer()
+      local first = true
+      while (first or parser.consume(TokenType.symbol_comma))
+        first = false
+        specializer_tokens.add( Token[] )
+        parser.parse_specializer( buffer.clear, specializer_tokens.last )
+      endWhile
 
       local mappings = Table<<String,Token[]>>()
       forEach (type_param at i in type_parameters)
@@ -86,7 +63,17 @@ class MethodTemplate
       m.specializer_count = type_parameters.count
       m.unspecialized_name = name
       m.assign_signature
-      type_context.inject_method( m )
+
+      # Classes can define specialized template methods with specific types;
+      # only add this method to the class if it doesn't define a method
+      # with the same signature already.
+      local existing_m = type_context.method_lookup_by_signature[ m.signature ]
+      if (not existing_m or existing_m.type_context is not type_context)
+        type_context.inject_method( m )
+      endIf
+
+    method signature->String
+      return "$<<$>>" (name,type_parameters.count)
 
     method to->String
       return "$.$<<$>>()" (type_context.name,name,type_parameters.count)
@@ -96,9 +83,8 @@ endClass
 
 class MethodTemplateOverloads
   PROPERTIES
-    overloads    = MethodTemplate[]
-    overridden_m : MethodTemplateOverloads
-    overrides    = MethodTemplateOverloads[]
+    overloads       = MethodTemplate[]
+    is_instantiated = false
 
   METHODS
     method add( m:MethodTemplate )->this
@@ -107,81 +93,73 @@ class MethodTemplateOverloads
 endClass
 
 
-class MethodTemplates( type_context:Type )
+class MethodTemplates
   # A table of method names to lookup-by-specializer-count to list of templates.
   PROPERTIES
-    templates = StringTable<<MethodTemplateOverloads>>()
+    type_context : Type
+    templates    = StringTable<<MethodTemplateOverloads>>()
+    has_names    = StringTable<<Logical>>()
 
   METHODS
+    method init( type_context )
+
     method add( m:MethodTemplate )
+      has_names[ m.name ] = true
       local sig = "$<<$>>" (m.name,m.type_parameters.count)
       (ensure templates[ sig ]).add( m )
 
     method has_template( name:String )->Logical
-      return templates.contains( name.before_first('<') )
+      return has_names.contains( name.before_first('<') )
 
-    method inherit( other:MethodTemplates, extended_type:Type )
-      if (not other) return
+    method inherit( base_templates:MethodTemplates )
+      forEach (group in base_templates.templates)
+        forEach (base_m in group.overloads)
+          if (base_m.type_context.is_aspect and not type_context.is_aspect)
+            # We have to clone aspect method templates for non-aspects
+            base_m = base_m.cloned
+            base_m.type_context = type_context
+          endIf
 
-      forEach (base_m in other.templates)
-        if (base_m.type_context.is_aspect and not extended_type.is_aspect)
-          # We have to clone aspect method templates for non-aspects
-          m = base_m.cloned
-          m.type_context = extended_type
-        endIf
-
-        templates.add( base_m )
-
+          add( base_m )
+        endForEach
       endForEach
 
-    method instantiate( t:Token, specialized_name:String )->Logical
-      if (not specialized_name.contains("<<")) return false
-
+    method instantiate( t:Token, specialized_name:String )
       local base_name = specialized_name.before_first( "<<" )
-      if (not has_templates_named(base_name)) return false
+      require has_template( base_name )
 
       local specializer_count = Parser(t,specialized_name,specialized_name.from_first("<<")).parse_specializer_count
-      return instantiate( base_name, specializer_count, t, specialized_name )
+      instantiate( base_name, specializer_count, t, specialized_name )
 
-    method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String )->Logical
+    method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String )
       # This version with no parameter count is used during call resolution and only called when
       # no methods matching the specialized name (such as `get_property<<Int32>>`) are found.
       # The possibility of default args or a wrong number of args means we instantiate all templates
       # matching the name and number of specializers.
-      local found_any = false
-
-      forEach (m in templates)
-        if (m.type_parameters.count == specializer_count and m.name == name)
-          found_any = true
+      local key = "$<<$>>" (name,specializer_count)
+      local group = templates[ key ]
+      if (group and not group.is_instantiated)
+        group.is_instantiated = true
+        forEach (m in group.overloads)
           m.instantiate( t, specialized_name )
-        endIf
-      endForEach
 
-      return found_any
+          # Recursively instantiate overrides
+          (forEach in type_context.extended_types).method_templates.instantiate_overrides( key, t, specialized_name )
+        endForEach
+      endIf
 
-    method instantiate( name:String, specializer_count:Int32, parameter_count:Int32, t:Token, specialized_name:String )
-      #@trace name, specialized_name, specializer_count, parameter_count
-      if (not type_context.organized) return
+    method instantiate_overrides( key:String, t:Token, specialized_name:String )
+      local group = templates[ key ]
+      if (group and not group.is_instantiated)
+        group.is_instantiated = true
+        forEach (m in group.overloads)
+          if (m.type_context is not type_context)
+            m.instantiate( t, specialized_name )
 
-      local m = find( name, specializer_count, parameter_count )
-
-      if (m)
-        # First make sure a specialized method of this name doesn't exist in the type already.
-        local possible_existing = type_context.method_lookup_by_name[ specialized_name ]
-        if (possible_existing)
-          forEach (existing_m in possible_existing)
-            if (existing_m.parameters.count == parameter_count) return  # already exists
-          endForEach
-        endIf
-        m.instantiate( t, specialized_name )
-
-        # Instantiate overrides in extended classes
-        if (m.overrides.count)
-          forEach (override_m in m.overrides)
-            override_m.type_context.method_templates.instantiate( name, specializer_count, parameter_count,
-              t, specialized_name )
-          endForEach
-        endIf
+            # Recursively instantiate overrides
+            (forEach in type_context.extended_types).method_templates.instantiate_overrides( key, t, specialized_name )
+          endIf
+        endForEach
       endIf
 
 endClass
