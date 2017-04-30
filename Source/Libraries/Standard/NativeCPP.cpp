@@ -1308,3 +1308,4 @@ void Rogue_terminate_handler()
   printf( "Uncaught exception.\n" );
   exit(1);
 }
+//=============================================================================
