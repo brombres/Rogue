@@ -13,7 +13,7 @@ class List<<$DataType>> : GenericList
     method init( initial_capacity:Int32 )
       if (initial_capacity) data = Array<<$DataType>>( initial_capacity )
 
-    method init( initial_capacity:Int32, initial_value:$DataType )
+    method init( initial_capacity:Int32, initial_value:$DataType ) [preferred]
       if (initial_capacity)
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
