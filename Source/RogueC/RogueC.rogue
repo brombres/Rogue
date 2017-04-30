@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.1.36.2"
+$define RELEASE_VERSION "1.1.36.3"
 $define RELEASE_DATE    "April 30, 2017"
 
 # TODO:
@@ -110,7 +110,7 @@ class RogueC [singleton]
       try
         process_command_line_arguments
 
-        <<collect_supported_targets>>
+        <collect_supported_targets>
         forEach (plugin in plugins) plugin.collect_supported_targets
 
         if (source_files.count == 0)
@@ -219,7 +219,7 @@ class RogueC [singleton]
         endIf
 
         if (target_list.count == 0) target_list.add( "C++" )
-        <<validate_target_list>>
+        <validate_target_list>
 
         forEach (target in target_list)
           compile_targets[target] = true
@@ -265,7 +265,7 @@ class RogueC [singleton]
       endTry
 
     method write_output
-      <<target_specific_code>>
+      <target_specific_code>
       throw RogueError( ''Compile target "$" is not supported.'' (target_list) )
 
     method on_compile_finished

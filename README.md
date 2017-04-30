@@ -34,7 +34,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ###v1.1.36 - April 30, 2017
 - [Method Templates] Revamped method templates system.  Templates can now be overloaded and single type parameters can be inferred.  Fixed errors calling global method templates.  As before, method templates can be overridden by methods with generic and/or specialized type parameters - for instance, `method m<<$DataType>>` can be overridden with `method m<<$DataType>>` and by `method m<<Int32>>`.
-- [Rogue] Changed syntax for obtaining runtime type info by name from `@TypeName` to `<TypeName>`.
+- [Rogue] Changed augment secction label syntax from `<<label_name>>` to `<label_name>`.
+- [Rogue] Changed syntax for obtaining runtime type info by name from `@TypeName` to `<<TypeName>>`.
 - [RogueC] Fixed bugs in global vs. object access checking.
 - [Random] Added `Random.int64()` methods and a `Random.byte()` method.
 - [Random] Replaced vestigial inline C with pure Rogue code.

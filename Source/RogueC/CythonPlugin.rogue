@@ -15,10 +15,10 @@ TODO
 augment RogueC
   METHODS
     method launch
-      <<collect_supported_targets>>
+      <collect_supported_targets>
       supported_targets.add( "Cython" )
 
-      <<validate_target_list>>
+      <validate_target_list>
       if (target_list.contains("Cython") and not target_list.contains("C++"))
         # Automatically add C++ target if Cython target is present.
         target_list.add( "C++" )
@@ -1582,7 +1582,7 @@ augment Program
       writer.close
 
     method write_cpp ( filepath:String )
-      <<append>>
+      <append>
 
       if (RogueC.compile_targets["Cython"])
         cy_write(filepath)

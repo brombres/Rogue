@@ -17,7 +17,7 @@ class Local
       local result = Local( t, name )
       result.original_name = original_name
 
-      <<init_result>>
+      <init_result>
       result.type = type
       result.index = index
       if (initial_value) result.initial_value = initial_value.cloned( clone_args )

@@ -886,10 +886,10 @@ class Parser
 
         local t = peek
 
-        if (consume(TokenType.symbol_open_specialize))
+        if (consume(TokenType.symbol_lt))
           cur_label = this_method.begin_label( t, read_identifier, true )
           cur_statement_list = cur_label.statements
-          must_consume( TokenType.symbol_close_specialize )
+          must_consume( TokenType.symbol_gt )
           consume_end_commands
           nextIteration
         endIf
@@ -1218,13 +1218,13 @@ class Parser
 
       endIf
 
-      if (consume(TokenType.symbol_open_specialize))
+      if (consume(TokenType.symbol_lt))
         if (parsing_augment)
           throw t.error( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." )
         else
           cur_statement_list.add( this_method.begin_label(t,read_identifier,false) )
         endIf
-        must_consume( TokenType.symbol_close_specialize )
+        must_consume( TokenType.symbol_gt )
         return
       endIf
 
@@ -2964,11 +2964,11 @@ class Parser
       elseIf (consume(TokenType.meta_methodSignature))
         return CmdMetaMethodSignature( t )
 
-      elseIf (consume(TokenType.symbol_lt))
+      elseIf (consume(TokenType.symbol_open_specialize))
         local type = parse_type
         type.make_essential
         local result = CmdTypeSelector( t, type )
-        must_consume( TokenType.symbol_gt )
+        must_consume( TokenType.symbol_close_specialize )
         return result
 
       else

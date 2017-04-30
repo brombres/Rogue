@@ -1494,11 +1494,11 @@ endClass
 augment RogueC
   METHODS
     method launch
-      <<collect_supported_targets>>
+      <collect_supported_targets>
       supported_targets.add( "C++" )
 
     method write_output
-      <<target_specific_code>>
+      <target_specific_code>
       if (compile_targets["C++"]) write_cpp; return
 
     method write_cpp
@@ -1852,7 +1852,7 @@ augment Method
 
   METHODS
     method cloned->Method
-      <<initialize_result>>
+      <initialize_result>
       result.cpp_name = cpp_name
       result.cpp_typedef = cpp_typedef
 
@@ -1871,7 +1871,7 @@ augment Method
       cpp_name = "Rogue" + Program.validate_cpp_name( buffer->String )
 
     method incorporate( into_type:Type )->Method
-      <<initialize_m>>
+      <initialize_m>
       m.cpp_name = null
 
     method print_prototype( writer:CPPWriter )
@@ -1992,7 +1992,7 @@ augment Property
 
   METHODS
     method cloned->Property
-      <<init_result>>
+      <init_result>
       result.cpp_name = cpp_name
 endAugment
 
@@ -2006,7 +2006,7 @@ augment Local
 
   METHODS
     method cloned( clone_args=null:CloneArgs )->Local
-      <<init_result>>
+      <init_result>
       result._cpp_name = _cpp_name
       result._parameter_cpp_name = _parameter_cpp_name
 

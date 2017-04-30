@@ -52,7 +52,7 @@ class Method
     method cloned->Method
       local result = Method( t, type_context, name )
 
-      <<initialize_result>>
+      <initialize_result>
       result.signature = signature
       result.attributes = attributes.cloned
       result.return_type = return_type
@@ -88,7 +88,7 @@ class Method
     method incorporate( into_type:Type )->Method
       local m = cloned.set_type_context( into_type ).set_incorporated
 
-      <<initialize_m>>
+      <initialize_m>
       if (aspect_statements)
         # If aspect_statements is non-null then the aspect method was already resolved
         # prior to the cloned() above and we need to copy the statements.

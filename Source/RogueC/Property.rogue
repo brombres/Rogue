@@ -13,7 +13,7 @@ class Property
     method cloned->Property
       local result = Property( t, type_context, name )
 
-      <<init_result>>
+      <init_result>
       result.type = type
       result.attributes = attributes
       if (initial_value) result.initial_value = initial_value.cloned

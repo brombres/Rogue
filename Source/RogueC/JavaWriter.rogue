@@ -828,11 +828,11 @@ endClass
 augment RogueC
   METHODS
     method launch
-      <<collect_supported_targets>>
+      <collect_supported_targets>
       supported_targets.add( "Java" )
 
     method write_output
-      <<target_specific_code>>
+      <target_specific_code>
       if (compile_targets["Java"]) write_java; return
 
     method write_java
@@ -1063,7 +1063,7 @@ augment Method
 
   METHODS
     method cloned->Method
-      <<initialize_result>>
+      <initialize_result>
       result.java_name = java_name
       result.java_typedef = java_typedef
 
@@ -1082,7 +1082,7 @@ augment Method
       java_name = Program.validate_java_name( buffer->String )
 
     method incorporate( into_type:Type )->Method
-      <<initialize_m>>
+      <initialize_m>
       m.java_name = null
 
     method print_prototype( writer:JavaWriter )
@@ -1167,7 +1167,7 @@ augment Property
 
   METHODS
     method cloned->Property
-      <<init_result>>
+      <init_result>
       result.java_name = java_name
 endAugment
 
@@ -1180,7 +1180,7 @@ augment Local
 
   METHODS
     method cloned( clone_args=null:CloneArgs )->Local
-      <<init_result>>
+      <init_result>
       result._java_name = _java_name
 
     method java_name->String
