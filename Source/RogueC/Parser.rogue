@@ -210,6 +210,15 @@ class Parser
         parse_multi_line_statements( this_method.statements )
         return true
 
+      elseIf (next_is(TokenType.keyword_global))
+        this_type = Program.get_type_reference( peek, "Global" )
+        this_method = Program.get_on_launch_method( t )
+        local prev_statement_list = cur_statement_list
+        cur_statement_list = this_method.statements
+        parse_local_or_global
+        cur_statement_list = prev_statement_list
+        return true
+
       endIf
 
       return false
@@ -525,7 +534,11 @@ class Parser
       consume_eols
 
       if (reader.has_another)
-        throw peek.error( "Syntax error: unexpected $." (peek.quoted_name) )
+        if (next_is(TokenType.keyword_global))
+          throw peek.error( "Global variables must be declared in global scope outside of any class or routine definitions." )
+        else
+          throw peek.error( "Syntax error: unexpected $." (peek.quoted_name) )
+        endIf
       endIf
 
     method parse_section->Logical
@@ -1042,10 +1055,6 @@ class Parser
 
         elseIf (next_is(TokenType.keyword_local))
           parse_local_or_global( &is_local )
-          return
-
-        elseIf (next_is(TokenType.keyword_global))
-          parse_local_or_global
           return
 
         endIf
@@ -1664,10 +1673,14 @@ class Parser
             else
               throw v.t.error( ''An initial value or global variable type (for example, ": Int32") must be specified.'' )
             endIf
+          else
+            if (not v.initial_value)
+              v.initial_value = v.type.create_default_value( v.t )
+            endIf
           endIf
           cur_statement_list.add( CmdAssign( v.t, CmdAccess(v.t,"Global",v.name), v.initial_value ) )
           v.initial_value = null
-          Program.global_properties.add( Property(v.t,Program.type_Global,v.name,v.type) )
+          Program.add_global_var( Property(v.t,Program.type_Global,v.name,v.type) )
         endForEach
       endIf
 

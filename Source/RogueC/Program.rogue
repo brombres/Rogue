@@ -15,9 +15,9 @@ class Program [essential singleton]
     augment_lookup = Table<<String,Augment[]>>()
     #essential_list = essentialItem[]
 
-    m_on_launch              : Method
-    m_run_tests              : Method
-    global_properties        = Property[]
+    m_on_launch        : Method
+    m_run_tests        : Method
+    global_vars        = StringTable<<Property>>()
 
     native_header = String[]
     native_code   = String[]
@@ -297,26 +297,33 @@ class Program [essential singleton]
       t.attributes.add( Attribute.is_essential )
       return r
 
+    method add_global_var( p:Property )
+      if (global_vars.contains(p.name))
+        throw p.t.error( "A global variable named $ already exists." (p.name) )
+      endIf
+      global_vars[ p.name ] = p
+
+    method process_global_var( p:Property )
+      if (not p.type)
+        if (p.initial_value)
+          p.type = p.initial_value.implicit_type( Scope(type_Global,null) )
+          if (not p.type)
+            local mesg = "Cannot infer the type of the global property from its initial value.  Assign a type by appending ': TypeName' to the end of the declaration."
+            throw p.t.error( mesg )
+          endIf
+        else
+          local mesg = "Cannot determine the type of the global property - either assign an initial value (global $ = ...) or assign a type (global $ : Int32)." (p.name,p.name)
+          throw p.t.error( mesg )
+        endIf
+      endIf
+      type_Global.add_property( p )
+
     method resolve
       type_Global.add_method( get_on_launch_method(type_Global.t) )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
       type_Global.add_method( get_run_tests_method(type_Global.t) )
 
-      forEach (p in global_properties)
-        if (not p.type)
-          if (p.initial_value)
-            p.type = p.initial_value.implicit_type( Scope(type_Global,null) )
-            if (not p.type)
-              local mesg = "Cannot infer the type of the global property from its initial value.  Assign a type by appending ': TypeName' to the end of the declaration."
-              throw p.t.error( mesg )
-            endIf
-          else
-            local mesg = "Cannot determine the type of the global property - either assign an initial value (global $ = ...) or assign a type (global $ : Int32)." (p.name,p.name)
-            throw p.t.error( mesg )
-          endIf
-        endIf
-        type_Global.add_property( p )
-      endForEach
+      process_global_var( forEach in global_vars )
 
       type_null.configure
       type_Global.configure

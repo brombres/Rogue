@@ -123,6 +123,7 @@ class Tokenizer
       TokenType.keyword_endWhich      = define( StructureTokenType("endWhich") )
       TokenType.keyword_endWhile      = define( StructureTokenType("endWhile") )
       TokenType.keyword_ENUMERATE     = define( StructureTokenType("ENUMERATE").mark_non_method )
+      TokenType.keyword_global        = define( StructureTokenType("global").mark_non_method )
       TokenType.keyword_GLOBAL        = define( StructureTokenType("GLOBAL").mark_non_method )
       TokenType.keyword_instance      = define( StructureTokenType("instance") )
       TokenType.keyword_method        = define( StructureTokenType("method").mark_non_method )  # new method ends the old one
@@ -160,7 +161,6 @@ class Tokenizer
       TokenType.keyword_escapeWhile         = define( TokenType("escapeWhile") )
       TokenType.keyword_forEach             = define( TokenType("forEach") )
       TokenType.keyword_function            = define( TokenType("function") )
-      TokenType.keyword_global              = define( TokenType("global") )
       TokenType.keyword_if                  = define( TokenType("if") )
       TokenType.keyword_in                  = define( TokenType("in") )
       TokenType.keyword_includeNativeCode   = define( TokenType("includeNativeCode") )
