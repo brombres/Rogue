@@ -3,8 +3,8 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.1.37
-Date      | May 4, 2017
+Version   | v1.1.38
+Date      | May 6, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -31,6 +31,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+### v1.1.38 - May 6, 2017
+- [Dim] Added `Dim` utility class for creating fixed-size multidimensional lists.  E.g. `Dim<<Int32>>(3,4)` creates an `Int32[][]` of 3 by 4 dimensions, all initialized to the default `Int32` value of 0.  Specify 1 to 3 dimensions with 1 to 3 integer parameters.  An additional function parameter may be sent which accepts either zero argumemts or one integer index for each dimension and returns the element that should be place at the corresponding spot.  For example `Dim<<Int32>>(3,4,()=>-1)` returns a 3x4 2D list initialized with `-1` in all elements.  `Dim<<Int32>>(3,4,(i,j)=>i*10+j` returns a list initialized with element `[0]` containing `[0,1,2,3]` and element `[1]` containing `[10,11,12,13]`.
 
 ### v1.1.37 - May 4, 2017
 - [RogueC] Fixed `global` vars to work correctly when declared without an initial value.
