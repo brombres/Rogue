@@ -2120,25 +2120,24 @@ class CmdAccess : Cmd
           return result
         endIf
 
-        local p = scope.this_type.find_global( name )
+        local p = scope.this_type.find_property( name )
+        if (p)
+          block
+            if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+
+            if (scope.this_method.is_global)
+              if (scope.this_type.find_global(name)) escapeBlock  # we'll get to the global later
+              throw t.error( "Cannot access object property '$' from a global method." (name) )
+            endIf
+            context = CmdThisContext( t, scope.this_type )
+            return CmdReadProperty( t, context, p )
+          endBlock
+        endIf
+
+        p = scope.this_type.find_global( name )
         if (p)
           if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
           else      return CmdReadGlobal( t, p )
-        endIf
-
-        p = scope.this_type.find_property( name )
-        if (p)
-          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
-
-          #if (scope.this_type.is_singleton)
-          #  context = CmdReadSingleton( t, scope.this_type )
-          #else
-          if (scope.this_method.is_global)
-            throw t.error( "Cannot access object property '$' from a global method." (name) )
-          endIf
-          context = CmdThisContext( t, scope.this_type )
-          #endIf
-          return CmdReadProperty( t, context, p )
         endIf
 
         if (not args)
@@ -2162,20 +2161,23 @@ class CmdAccess : Cmd
       local result = scope.resolve_call( context_type, this, false )
       if (result) return result
 
-      local p = context_type.find_global( name )
+      local p = context_type.find_property( name )
+      if (p)
+        block
+          if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
+          if (context.is_global)
+            if (context_type.find_global(name)) escapeBlock
+            throw t.error( "Cannot access object property '$' using a non-object context." (name) )
+          endIf
+          return CmdReadProperty( t, context, p )
+        endBlock
+      endIf
+
+      p = context_type.find_global( name )
       if (p)
         if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
         context.require_type_context
         return CmdReadGlobal( t, p).resolve(scope)
-      endIf
-
-      p = context_type.find_property( name )
-      if (p)
-        if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
-        if (context.is_global)
-          throw t.error( "Cannot access object property '$' using a non-object context." (name) )
-        endIf
-        return CmdReadProperty( t, context, p )
       endIf
 
       if (not args)
@@ -2232,7 +2234,9 @@ class CmdAccess : Cmd
         if (def) return def.expression.cloned(&new_t=t).resolve_assignment( scope, new_value )
 
         local p = scope.this_method.type_context.find_global( name )
-        if (p) return CmdWriteGlobal( t, p, new_value ).resolve( scope )
+        if (p and (scope.this_method.is_global or not scope.this_method.type_context.find_property(name)))
+          return CmdWriteGlobal( t, p, new_value ).resolve( scope )
+        endIf
 
         if (scope.this_method.is_global)
           p = scope.this_method.type_context.find_property( name )
@@ -2252,19 +2256,22 @@ class CmdAccess : Cmd
         if (setter) return setter
       endIf
 
-      local p = context_type.find_global( name )
+      local p = context_type.find_property( name )
+      if (p)
+        block
+          if (context.is_global)
+            if (context_type.find_global(name)) escapeBlock
+            throw t.error( "Cannot access object property '$' from a non-object context." (name) )
+          else
+            return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
+          endIf
+        endBlock
+      endIf
+
+      p = context_type.find_global( name )
       if (p)
         context.require_type_context
         return CmdWriteGlobal( t, p, new_value ).resolve(scope)
-      endIf
-
-      p = context_type.find_property( name )
-      if (p)
-        if (context.is_global)
-          throw t.error( "Cannot access object property '$' from a non-object context." (name) )
-        else
-          return CmdWriteProperty( t, context, p, new_value ).resolve(scope)
-        endIf
       endIf
 
       local def = context_type.definition_lookup[ name ]
@@ -2332,19 +2339,24 @@ class CmdAccess : Cmd
         endIf
       endIf
 
-      local p = context_type.find_global( name )
+      local p = context_type.find_property( name )
+      if (p)
+        block
+          local new_context = context
+          if (not new_context) new_context = CmdThisContext( t, context_type )
+          if (new_context.is_global and scope.this_method.is_global)
+            if (context_type.find_global(name)) escapeBlock
+            throw t.error( "Cannot access object property '$' from a global method." (name) )
+          endIf
+          context = new_context
+          return CmdModifyAndAssignProperty( t, context, p, op, new_value ).resolve(scope)
+        endBlock
+      endIf
+
+      p = context_type.find_global( name )
       if (p)
         if (context) context.require_type_context
         return CmdModifyAndAssignGlobal( t, p, op, new_value ).resolve(scope)
-      endIf
-
-      p = context_type.find_property( name )
-      if (p)
-        if (not context) context = CmdThisContext( t, context_type )
-        if (context.is_global and scope.this_method.is_global)
-          throw t.error( "Cannot access object property '$' from a global method." (name) )
-        endIf
-        return CmdModifyAndAssignProperty( t, context, p, op, new_value ).resolve(scope)
       endIf
 
       local def = context_type.definition_lookup[ name ]
