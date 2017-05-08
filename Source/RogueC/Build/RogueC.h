@@ -4033,6 +4033,8 @@ struct RogueClassCmdForEach : RogueObject
   RogueString* index_var_name;
   RogueString* collection_var_name;
   RogueClassCmd* collection;
+  RogueClassCmd* first_cmd;
+  RogueClassCmd* last_cmd;
   RogueClassCmd* step_cmd;
 
 };
@@ -8041,6 +8043,7 @@ RogueClassCmd* RogueCmdRange__dispatch__Visitor( RogueClassCmdRange* THIS, Rogue
 RogueClassCmd* RogueCmdRange__resolve__Scope( RogueClassCmdRange* THIS, RogueClassScope* scope_0 );
 RogueClassCmdRange* RogueCmdRange__init__Token_Cmd_Cmd_Cmd( RogueClassCmdRange* THIS, RogueClassToken* _auto_1881_0, RogueClassCmd* _auto_1882_1, RogueClassCmd* _auto_1883_2, RogueClassCmd* _auto_1884_3 );
 RogueInt32 RogueCmdRange__default_step_size( RogueClassCmdRange* THIS );
+RogueClassCmd* RogueCmdRange__step_cmd( RogueClassCmdRange* THIS );
 RogueClassCmdForEach* RogueCmdForEach__init_object( RogueClassCmdForEach* THIS );
 RogueString* RogueCmdForEach__type_name( RogueClassCmdForEach* THIS );
 RogueClassCmd* RogueCmdForEach__cloned__CloneArgs_Token( RogueClassCmdForEach* THIS, RogueClassCloneArgs* clone_args_0, RogueClassToken* new_t_1 );

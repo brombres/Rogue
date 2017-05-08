@@ -768,9 +768,9 @@ class Visitor
     method dispatch( cmd:CmdForEach )
       cmd.statements.dispatch( this )
       cmd.collection = cmd.collection.dispatch( this )
-      if (cmd.step_cmd)
-        cmd.step_cmd = cmd.step_cmd.dispatch( this )
-      endIf
+      if (cmd.first_cmd) cmd.first_cmd = cmd.first_cmd.dispatch( this )
+      if (cmd.last_cmd) cmd.last_cmd = cmd.last_cmd.dispatch( this )
+      if (cmd.step_cmd) cmd.step_cmd = cmd.step_cmd.dispatch( this )
 
     method dispatch( cmd:CmdFormattedString )
       forEach (arg at index in cmd.args)

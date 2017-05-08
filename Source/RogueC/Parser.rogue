@@ -1980,14 +1980,29 @@ class Parser
               return cmd_for_each
 
             else
-              local step_cmd : Cmd
-              if (consume(TokenType.keyword_step))
+              local first_cmd, last_cmd, step_cmd : Cmd
+
+              if (consume("from"))
+                local from_cmd = parse_expression
+                local from_range = from_cmd as CmdRange
+                if (from_range)
+                  first_cmd = from_range.first
+                  last_cmd = from_range.last
+                  step_cmd = from_range.step_cmd
+                else
+                  first_cmd = from_cmd
+                endIf
+              endIf
+
+              if (not step_cmd and consume(TokenType.keyword_step))
                 step_cmd = parse_expression
               endIf
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
               local cmd_for_each = CmdForEach( t, access.name, index_var_name, collection, step_cmd )
+              cmd_for_each.first_cmd = first_cmd
+              cmd_for_each.last_cmd = last_cmd
               cmd_for_each.collection_var_name = collection_var_name
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
               return cmd_for_each
@@ -2013,14 +2028,29 @@ class Parser
             if (range)
               throw t.error( "Use forEach-in with a literal range instead of forEach-of." )
             else
-              local step_cmd : Cmd
-              if (consume(TokenType.keyword_step))
+              local first_cmd, last_cmd, step_cmd : Cmd
+
+              if (consume("from"))
+                local from_cmd = parse_expression
+                local from_range = from_cmd as CmdRange
+                if (from_range)
+                  first_cmd = from_range.first
+                  last_cmd = from_range.last
+                  step_cmd = from_range.step_cmd
+                else
+                  first_cmd = from_cmd
+                endIf
+              endIf
+
+              if (not step_cmd and consume(TokenType.keyword_step))
                 step_cmd = parse_expression
               endIf
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
               local cmd_for_each = CmdForEach( t, null, access.name, collection, step_cmd )
+              cmd_for_each.first_cmd = first_cmd
+              cmd_for_each.last_cmd = last_cmd
               cmd_for_each.collection_var_name = collection_var_name
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
               return cmd_for_each
@@ -2895,11 +2925,27 @@ class Parser
           implicit_loop_stack.add( cmd_for_each )
 
         else
-          local step_cmd : Cmd
-          if (consume(TokenType.keyword_step))
+          local first_cmd, last_cmd, step_cmd : Cmd
+
+          if (consume("from"))
+            local from_cmd = parse_expression
+            local from_range = from_cmd as CmdRange
+            if (from_range)
+              first_cmd = from_range.first
+              last_cmd = from_range.last
+              step_cmd = from_range.step_cmd
+            else
+              first_cmd = from_cmd
+            endIf
+          endIf
+
+          if (not step_cmd and consume(TokenType.keyword_step))
             step_cmd = parse_expression
           endIf
+
           local cmd_for_each = CmdForEach( t, control_var_name, index_var_name, collection, step_cmd )
+          cmd_for_each.first_cmd = first_cmd
+          cmd_for_each.last_cmd = last_cmd
           implicit_loop_stack.add( cmd_for_each )
         endIf
 
