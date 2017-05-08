@@ -205,7 +205,15 @@ class Type
 
     method find_global( s_name:String )->Property
       if (s_name[0] == '@') s_name = s_name.rightmost(-1)
-      return global_lookup[s_name]
+      local result = global_lookup[s_name]
+      if (result) return result
+
+      forEach (base_type in base_types)
+        result = base_type.find_global( s_name )
+        if (result) return result
+      endForEach
+
+      return null
 
     method has_extended_class->Logical
       return extended_types.count?
