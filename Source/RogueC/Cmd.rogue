@@ -1047,10 +1047,13 @@ class CmdForEach : CmdControlStructure
 
         if (not index_var_name) index_var_name = Program.create_unique_id
         local index_var = scope.this_method.add_local( t, index_var_name, Program.type_Int32 )
+        local last_var : Local
         local last_cmd : Cmd
         if (step_size >= 0)
           index_var.initial_value = CmdLiteralInt32( t, 0 )
-          last_cmd = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
+          last_var = scope.this_method.add_local( t, Program.create_unique_id, Program.type_Int32 )
+          last_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), "count" )
+          last_cmd = CmdReadLocal( t, last_var )
         else
           index_var.initial_value = CmdSubtract( t, CmdAccess(t,CmdReadLocal(t,collection_var), "count"), CmdLiteralInt32(t,1) )
           last_cmd = CmdLiteralInt32( t, 0 )
@@ -1080,6 +1083,7 @@ class CmdForEach : CmdControlStructure
         result.set_control_logic( this )
         result.add_control_var( collection_var )
         result.add_control_var( index_var )
+        if (last_var) result.add_control_var( last_var )
         result.add_upkeep( modifier )
 
         scope.control_stack.remove_last
