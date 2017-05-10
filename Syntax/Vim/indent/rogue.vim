@@ -28,7 +28,7 @@ setlocal indentkeys+=use,=endUse
 setlocal indentkeys+=which,=case,=others,=endWhich
 setlocal indentkeys+==method,=class,=endClass,=augment,=endAugment
 setlocal indentkeys+==routine,=endRoutine
-setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=ENUMERATE,=PROPERTIES,=METHODS
+setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=CATEGORIES,=ENUMERATE,=PROPERTIES,=METHODS
 setlocal indentkeys+=0\|
 
 function! GetPrevNonBlank(startline)
@@ -400,7 +400,7 @@ function! GetRogueIndent( line_num )
     return 0
   endif
 
-  if s:this_codeline =~ '\C^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|ENUMERATE\|PROPERTIES\|METHODS\)'
+  if s:this_codeline =~ '\C^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\)'
     return 2
   endif
 
@@ -412,7 +412,7 @@ function! GetRogueIndent( line_num )
     return 0
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|ENUMERATE\|PROPERTIES\|METHODS\)'
+  if s:prev_codeline =~ '\C^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\)'
     return 4
   endif
 

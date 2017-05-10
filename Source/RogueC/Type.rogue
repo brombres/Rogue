@@ -41,6 +41,8 @@ class Type
       # RogueInt32 instead of RoguePrimitiveInt32, etc. - used for classes that are predefined
       # in the infrastructure and that developers will often use directly.
 
+    categories        : Definition[] # For enums
+
     definition_list   = Definition[]
     definition_lookup = Table<<String,Definition>>()
     prev_enum_cmd     : Cmd
@@ -312,6 +314,9 @@ class Type
     method is_deprecated->Logical
       return (attributes.flags & Attribute.is_deprecated)
 
+    method is_enum->Logical
+      return (attributes.flags & Attribute.is_enum)
+
     method is_real->Logical
       return this is Program.type_Real64 or this is Program.type_Real32
 
@@ -426,6 +431,11 @@ class Type
         endIf
       endIf
 
+      if (is_enum)
+        add_global( t, "names" ).type = Program.get_type_reference( t, "String[]" )
+        add_property( t, "value", Program.type_Int32 )
+      endIf
+
       forEach (base_type in rewriter=base_types.rewriter)
         base_type.configure( scope )
 
@@ -490,6 +500,296 @@ class Type
       configure_chain.remove_last
       return this
 
+    method organize_enum( scope:Scope )
+      # create(Int32)
+      local m_create = add_global_method( t, "create" )
+      m_create.attributes.add( Attribute.is_generated )
+      m_create.return_type = this
+      m_create.add_parameter( t, "value", Program.type_Int32 )
+
+      ensure categories
+      local category_scope = Scope( this, m_create )
+
+      # First turn categories into integer definitions
+      local cur_value = 0
+      forEach (def in categories)
+        if (def.expression)
+          def.expression = def.expression.resolve( category_scope )
+          if (def.expression not instanceOf CmdLiteralInt32)
+            throw def.t.error( "Assigned value must resolve to a literal Int32." )
+          endIf
+          cur_value = (def.expression as CmdLiteralInt32).value
+          def.value = cur_value
+        else
+          def.value = cur_value
+          def.expression = CmdLiteralInt32( t, cur_value )
+        endIf
+
+        definition_lookup[ def.name ] = def
+        definition_list.add( def )
+
+        ++cur_value
+      endForEach
+
+      # Make a second pass and replace the integer value definitions with EnumType(value)
+      # constructors.
+      forEach (def in categories)
+        def.expression = CmdAccess( t, name, def.expression )
+      endForEach
+
+      block
+        local def = Definition( t, "count", CmdLiteralInt32(t,categories.count) )
+        definition_lookup[ def.name ] = def
+        definition_list.add( def )
+      endBlock
+
+      block
+        # create(String)
+        local m_create_with_name = add_global_method( t, "create" )
+        m_create_with_name.add_parameter( t, "name", Program.type_String )
+        m_create_with_name.return_type = this
+        local cmd_which = CmdWhich( t, CmdAccess(t,"name") )
+        m_create_with_name.statements.add( cmd_which )
+        forEach (def in categories)
+          local cmd_case = cmd_which.add_case( def.t )
+          cmd_case.conditions.add( CmdLiteralString(def.t,def.name) )
+          cmd_case.statements.add( CmdReturn(def.t,CmdAccess(def.t,name,CmdLiteralInt32(def.t,def.value))) )
+        endForEach
+        local cmd_others = cmd_which.add_case_others( t )
+        if (categories.count)
+          cmd_others.statements.add( CmdReturn(t,CmdAccess(t,name,CmdLiteralInt32(t,categories.first.value))) )
+        else
+          cmd_others.statements.add( CmdReturn(t,CmdAccess(t,name,CmdLiteralInt32(t,0))) )
+        endIf
+        m_create_with_name.organize( scope )
+      endBlock
+
+      block
+        # get(Int32)->ThisType
+        local m_get = add_global_method( t, "get" )
+        m_get.add_parameter( t, "index", Program.type_Int32 )
+        m_get.return_type = this
+        local cmd_which = CmdWhich( t, CmdAccess(t,"index") )
+        m_get.statements.add( cmd_which )
+        forEach (def at index in categories)
+          local cmd_case = cmd_which.add_case( def.t )
+          cmd_case.conditions.add( CmdLiteralInt32(def.t,index) )
+          cmd_case.statements.add( CmdReturn(def.t,CmdAccess(def.t,name,CmdLiteralInt32(def.t,def.value))) )
+        endForEach
+        local cmd_others = cmd_which.add_case_others( t )
+        if (categories.count)
+          cmd_others.statements.add( CmdReturn(t,CmdAccess(t,name,CmdLiteralInt32(t,categories.first.value))) )
+        else
+          cmd_others.statements.add( CmdReturn(t,CmdAccess(t,name,CmdLiteralInt32(t,0))) )
+        endIf
+        m_get.organize( scope )
+      endBlock
+
+      block
+        # index()->Int32?
+        local m_index = add_method( t, "index" )
+        m_index.attributes.add( Attribute.is_generated )
+        m_index.return_type = Program.get_type_reference( t, "Int32?" )
+        m_index.statements.add( CmdReturn( t, CmdAccess( t, "names", "locate", CmdAccess(t,"to_String")) ) )
+        m_index.organize( scope )
+      endBlock
+
+      block
+        # name()->String
+        local m_name = add_method( t, "name" )
+        m_name.attributes.add( Attribute.is_generated )
+        m_name.return_type = Program.get_type_reference( t, "String" )
+        m_name.statements.add( CmdReturn( t, CmdAccess(t,"to_String")) )
+        m_name.organize( scope )
+      endBlock
+
+      block
+        # operator+(Int32)->ThisType
+        local m_plus = add_method( t, "operator+" )
+        m_plus.attributes.add( Attribute.is_generated )
+        m_plus.add_parameter( t, "offset", Program.type_Int32 )
+        m_plus.return_type = this
+        m_plus.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdAdd(t,CmdAccess(t,"value"),CmdAccess(t,"offset"))
+        )) )
+        m_plus.organize( scope )
+      endBlock
+
+      block
+        # operator-(Int32)->ThisType
+        local m_minus = add_method( t, "operator-" )
+        m_minus.attributes.add( Attribute.is_generated )
+        m_minus.add_parameter( t, "offset", Program.type_Int32 )
+        m_minus.return_type = this
+        m_minus.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"offset"))
+        )) )
+        m_minus.organize( scope )
+      endBlock
+
+      block
+        # operator|(Int32)->ThisType
+        local m_op = add_method( t, "operator|" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "n", Program.type_Int32 )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdBitwiseOr(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # operator&(Int32)->ThisType
+        local m_op = add_method( t, "operator&" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "n", Program.type_Int32 )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdBitwiseAnd(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # operator~(Int32)->ThisType
+        local m_op = add_method( t, "operator~" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "n", Program.type_Int32 )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdBitwiseXor(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # operator!()->ThisType
+        local m_op = add_method( t, "operator!" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdBitwiseNot(t,CmdAccess(t,"value"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # operator+(ThisType)->ThisType
+        local m_plus = add_method( t, "operator+" )
+        m_plus.attributes.add( Attribute.is_generated )
+        m_plus.add_parameter( t, "other", this )
+        m_plus.return_type = this
+        m_plus.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdAdd(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_plus.organize( scope )
+      endBlock
+
+      block
+        # operator-(ThisType)->ThisType
+        local m_minus = add_method( t, "operator-" )
+        m_minus.attributes.add( Attribute.is_generated )
+        m_minus.add_parameter( t, "other", this )
+        m_minus.return_type = this
+        m_minus.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_minus.organize( scope )
+      endBlock
+
+      block
+        # operator|(ThisType)->ThisType
+        local m_op = add_method( t, "operator|" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdBitwiseOr(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # operator&(ThisType)->ThisType
+        local m_op = add_method( t, "operator&" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdBitwiseAnd(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # operator~(ThisType)->ThisType
+        local m_op = add_method( t, "operator~" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdBitwiseXor(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
+        # names()->String[]
+        local m_names = add_global_method( t, "names" )
+        m_names.attributes.add( Attribute.is_generated )
+        m_names.return_type = Program.get_type_reference( t, "String[]" )
+        local names_list_args = CmdArgs()
+        forEach (def in categories)
+          names_list_args.add( CmdLiteralString(def.t,def.name) )
+        endForEach
+        local cmd_if = CmdIf( t, CmdLogicalNot(t,CmdAccess(t,"@names")) )
+        cmd_if.statements.add( CmdAssign(t, CmdAccess(t,"names"), CmdCreateList(t,names_list_args)) )
+        m_names.statements.add( cmd_if )
+        m_names.statements.add( CmdReturn(t,CmdAccess(t,"@names")) )
+        m_names.organize( scope )
+      endBlock
+
+      block
+        # contains(String)->Logical
+        local m_contains = add_global_method( t, "contains" )
+        m_contains.return_type = Program.type_Logical
+        m_contains.add_parameter( t, "name", Program.type_String )
+        m_contains.statements.add( CmdReturn( t,
+            CmdAccess( t, CmdAccess(t,"names","locate",CmdAccess(t,"name")), "exists" ) ) )
+        m_contains.organize( scope )
+      endBlock
+
+      block
+        # to->Int32
+        local m_to_Int32 = add_method( t, "to_Int32" )
+        m_to_Int32.attributes.add( Attribute.is_generated )
+        m_to_Int32.return_type = Program.type_Int32
+        m_to_Int32.statements.add( CmdReturn(t,CmdAccess(t,"value")) )
+        m_to_Int32.organize( scope )
+      endBlock
+
+      block
+        # to->String
+        local m_to_String = add_method( t, "to_String" )
+        m_to_String.attributes.add( Attribute.is_generated )
+        m_to_String.return_type = Program.type_String
+        if (categories.is_empty)
+          m_to_String.statements.add( CmdReturn(t,CmdLiteralString(t,name)) )
+        else
+          local cmd_which = CmdWhich( t, CmdAccess(t,"value") )
+          m_to_String.statements.add( cmd_which )
+          forEach (def in categories)
+            local cmd_case = cmd_which.add_case( def.t )
+            cmd_case.conditions.add( CmdLiteralInt32(def.t,def.value) )
+            cmd_case.statements.add( CmdReturn(def.t,CmdLiteralString(def.t,def.name)) )
+          endForEach
+          local cmd_others = cmd_which.add_case_others( t )
+          cmd_others.statements.add( CmdReturn(t,CmdLiteralString(t,"(undefined)")) )
+        endIf
+        m_to_String.organize( scope )
+      endBlock
+
     method organize( scope=null:Scope )->Type
       if (organized) return this
       organize_chain.add( this )
@@ -522,6 +822,8 @@ class Type
       # Clear base_types list for compounds - they can incorporate aspects for
       # modularization but compounds are not polymorphic.
       if (this.is_compound) base_types.clear
+
+      if (is_enum) organize_enum( scope )
 
       # Mark any existing init_class() as essential
       local m_init_class = find_global_method( "init_class()" )

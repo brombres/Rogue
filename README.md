@@ -3,8 +3,8 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.2.1
-Date      | May 8, 2017
+Version   | v1.2.2
+Date      | May 9, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -31,6 +31,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+### v1.2.2 - May 9, 2017
+- [Rogue] Added new `enum` types, described further here: https://github.com/AbePralle/Rogue/wiki/enum
 
 ### v1.2.1 - May 8, 2017
 - [Rogue] Access commands now attempt to resolve to locals, properties, and then global properties, in that order.  This allows properties to shadow global properties and locals to shadow either.

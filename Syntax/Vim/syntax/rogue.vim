@@ -18,7 +18,7 @@ endif
 
 " keyword definitions
 syn keyword rogueClassDecl   module
-syn keyword rogueClassDecl   class endClass routine endRoutine aspect
+syn keyword rogueClassDecl   class endClass routine endRoutine aspect enum endEnum
 syn keyword rogueClassDecl   function endFunction
 syn keyword rogueClassDecl   with
 syn keyword rogueClassDecl   instance endInstance

@@ -654,6 +654,9 @@ class CmdWhich : CmdControlStructure
       scope.control_stack.add( this )
 
       expression = expression.resolve( scope )
+      if (expression.require_type.is_enum)
+        expression = CmdAccess( t, expression, "value" ).resolve( scope )
+      endIf
 
       local all_literal_cases = true
 
@@ -667,7 +670,7 @@ class CmdWhich : CmdControlStructure
       endIf
 
       forEach (c in cases)
-        c.conditions.resolve( scope )
+        c.resolve_conditions( scope )
         if (all_literal_cases)
           forEach (condition in c.conditions)
             if (not condition.is_literal or condition instanceOf CmdLiteralString)
@@ -794,6 +797,21 @@ class CmdWhichCase : Cmd
         endIf
       endForEach
       return cmd
+
+    method resolve_conditions( scope:Scope )->CmdWhichCase
+      conditions.resolve( scope )
+      forEach (condition at index in conditions)
+        if (condition.require_type.is_enum)
+          local cmd_create_compound = condition as CmdCreateCompound
+          if (cmd_create_compound)
+            conditions[ index ] = cmd_create_compound.args.first
+          else
+            conditions[ index ] = CmdAccess( t, condition,"value" )
+          endIf
+        endIf
+      endForEach
+      return this
+
 
 endClass
 
@@ -1944,6 +1962,9 @@ class CmdAccess : Cmd
 
     method init( t, name, args )
 
+    method init( t, name, arg:Cmd )
+      args = CmdArgs( arg )
+
     method init( t, name, args, named_args )
 
     method init( t, context, name )
@@ -1957,6 +1978,13 @@ class CmdAccess : Cmd
       args.add( arg )
 
     method init( t, context_name:String, name )
+      context = CmdAccess( t, context_name )
+
+    method init( t, context_name:String, name, arg:Cmd )
+      context = CmdAccess( t, context_name )
+      args = CmdArgs( arg )
+
+    method init( t, context_name:String, name, args )
       context = CmdAccess( t, context_name )
 
     method init( t, local_info:Local )
@@ -2210,7 +2238,7 @@ class CmdAccess : Cmd
       local context_was_null = context is null
       if (context is null)
         if (setter_name)
-          local setter = scope.resolve_call( scope.this_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
+          local setter = scope.resolve_call( scope.this_type, CmdAccess(t,setter_name,CmdArgs(new_value)), false )
           if (setter)
             if (scope.this_method.name == setter_name)
               throw t.error( "Recursive call to setter set_" + name + "() - write \"@" + name + " = ...\" instead." )
@@ -2333,7 +2361,7 @@ class CmdAccess : Cmd
       local setter_name : String
       if (name[0] != '@')
         setter_name = "set_" + name
-        local setter = scope.resolve_call( context_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), false )
+        local setter = scope.resolve_call( context_type, CmdAccess(t,setter_name,CmdArgs(new_value)), false )
         if (setter)
           return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
         endIf
@@ -2364,7 +2392,7 @@ class CmdAccess : Cmd
       if (def) return def.expression.cloned(&new_t=t).resolve_modify_and_assign( scope, op, new_value )
 
       if (setter_name)
-        local setter = scope.resolve_call( context_type, CmdAccess(t,null,setter_name,CmdArgs(new_value)), true )
+        local setter = scope.resolve_call( context_type, CmdAccess(t,setter_name,CmdArgs(new_value)), true )
         if (setter) return expand_modify_and_assign( scope, op, new_value ).resolve( scope )
       endIf
 
@@ -4703,6 +4731,11 @@ class CmdInstanceOf : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
+      if (operand.type is Program.type_Logical)
+        throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type' instead." )
+      elseIf (not operand.type.is_reference)
+        throw t.error( "Illegal 'instanceOf' on non-reference." )
+      endIf
       target_type.organize(scope)
       return this
 

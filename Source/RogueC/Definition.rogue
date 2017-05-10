@@ -3,8 +3,13 @@ class Definition
     t              : Token
     name           : String
     expression     : Cmd
-    is_enumeration : Logical
+
+    # for enums
+    value          : Int32
 
   METHODS
-    method init( t, name, expression, is_enumeration )
+    method init( t, name, expression=null )
+
+    method to->String
+      return "$=$" (name,expression)
 endClass

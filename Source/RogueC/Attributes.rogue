@@ -9,29 +9,30 @@ class Attribute
     is_direct           = 2
     # AKA by-value type; not a reference type
 
-    is_api              = 16
-    is_native           = 32
-    is_macro            = 64
-    is_initializer      = 128
-    is_immutable        = 256
-    is_global           = 512
-    is_singleton        = 1024
-    is_incorporated     = 2048
-    is_generated        = 4096
-    is_essential        = 8192
-    is_task             = 16384
-    is_task_conversion  = 32768
-    is_augment          = 65536
-    is_abstract         = 131072
-    is_routine          = 262144
-    is_fallback         = 524288
-    is_special          = 1048576
-    is_propagated       = 2097152
-    is_dynamic          = 4194304
-    returns_this        = 8388608
-    is_preferred        = 16777216
-    is_nonAPI           = 33554432
-    is_deprecated       = 67108864
+    is_api              = (1 :<<: 4)
+    is_native           = (1 :<<: 5)
+    is_macro            = (1 :<<: 6)
+    is_initializer      = (1 :<<: 7)
+    is_immutable        = (1 :<<: 8)
+    is_global           = (1 :<<: 9)
+    is_singleton        = (1 :<<: 10)
+    is_incorporated     = (1 :<<: 11)
+    is_generated        = (1 :<<: 12)
+    is_essential        = (1 :<<: 13)
+    is_task             = (1 :<<: 14)
+    is_task_conversion  = (1 :<<: 15)
+    is_augment          = (1 :<<: 16)
+    is_abstract         = (1 :<<: 17)
+    is_routine          = (1 :<<: 18)
+    is_fallback         = (1 :<<: 19)
+    is_special          = (1 :<<: 20)
+    is_propagated       = (1 :<<: 21)
+    is_dynamic          = (1 :<<: 22)
+    returns_this        = (1 :<<: 23)
+    is_preferred        = (1 :<<: 24)
+    is_nonAPI           = (1 :<<: 25)
+    is_deprecated       = (1 :<<: 26)
+    is_enum             = (1 :<<: 27)
 endClass
 
 

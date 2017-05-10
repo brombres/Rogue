@@ -25,6 +25,7 @@ class TokenType
     keyword_case                  : TokenType
     keyword_catch                 : TokenType
     keyword_class                 : TokenType
+    keyword_CATEGORIES            : TokenType
     keyword_DEFINITIONS           : TokenType
     keyword_DEPENDENCIES          : TokenType
     keyword_else                  : TokenType
@@ -33,6 +34,7 @@ class TokenType
     keyword_endBlock              : TokenType
     keyword_endClass              : TokenType
     keyword_endContingent         : TokenType
+    keyword_endEnum               : TokenType
     keyword_endForEach            : TokenType
     keyword_endFunction           : TokenType
     keyword_endIf                 : TokenType
@@ -45,6 +47,7 @@ class TokenType
     keyword_endWhich              : TokenType
     keyword_endWhile              : TokenType
     keyword_ENUMERATE             : TokenType
+    keyword_enum                  : TokenType
     keyword_GLOBAL                : TokenType
     keyword_includeNativeCode     : TokenType
     keyword_includeNativeHeader   : TokenType
