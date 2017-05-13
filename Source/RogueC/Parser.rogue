@@ -707,23 +707,30 @@ class Parser
         endIf
 
         read  # CATEGORIES
-        while (parse_category) noAction
+        while (parse_categories) noAction
         return true
       endIf
 
       return false
 
-    method parse_category->Logical
+    method parse_categories->Logical
       consume_eols
       if (not next_is_identifier) return false
 
       ensure this_type.categories
-      local t = peek
-      local def = Definition( t, read_identifier )
-      if (consume(TokenType.symbol_equals))
-        def.expression = parse_expression
-      endIf
-      this_type.categories.add( def )
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        consume_eols
+        first = false
+        local t = peek
+        local def = Definition( t, read_identifier )
+        if (consume(TokenType.symbol_equals))
+          def.expression = parse_expression
+        endIf
+        this_type.categories.add( def )
+        consume_eols
+      endWhile
       return true
 
 

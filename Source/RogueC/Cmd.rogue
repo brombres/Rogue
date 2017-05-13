@@ -2006,6 +2006,17 @@ class CmdAccess : Cmd
       return result
 
     method implicit_type( scope:Scope )->Type
+      if (context)
+        local context_type = context.implicit_type( scope )
+        if (context_type and context_type.is_enum)
+          context_type.configure( scope )
+          if (context_type.categories)
+            if ((forEach in context_type.categories).name == name) return context_type
+          endIf
+        endIf
+        return null
+      endIf
+
       local result = scope.find_type( name )
       if (not result) return null
       if (not result.is_routine) return result
