@@ -628,6 +628,18 @@ class Type
       endBlock
 
       block
+        # operator%(Int32)->ThisType
+        local m_op = add_method( t, "operator%" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "n", Program.type_Int32 )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdMod(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
+        )) )
+        m_op.organize( scope )
+      endBlock
+
+      block
         # operator|(Int32)->ThisType
         local m_op = add_method( t, "operator|" )
         m_op.attributes.add( Attribute.is_generated )
@@ -693,9 +705,21 @@ class Type
         m_minus.add_parameter( t, "other", this )
         m_minus.return_type = this
         m_minus.statements.add( CmdReturn(t,CmdAccess(t,name,
-        CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+          CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
         )) )
         m_minus.organize( scope )
+      endBlock
+
+      block
+        # operator%(ThisType)->ThisType
+        local m_op = add_method( t, "operator%" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdMod(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
       endBlock
 
       block

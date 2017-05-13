@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+### v1.2.5 - May 13, 2017
+- [enum] Added operator support for modulo (`%`).
+
 ### v1.2.4 - May 13, 2017
 - [enum] Comma-separated enum categories are now supported.
 - [enum] Implicit typing now works with enumeration categories in more places - for example, a propery can be declared as `state = State.START` rather than requiring `state = State.START : State`.
