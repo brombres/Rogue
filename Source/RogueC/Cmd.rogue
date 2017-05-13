@@ -3232,6 +3232,14 @@ class CmdLogicalize : CmdUnary
       elseIf (operand_type.has_global_method_named("operator?"))
         return CmdAccess( t, CmdAccess(t,operand_type.name),
           "operator?", CmdArgs(operand) ).resolve( scope, &ignore_question_mark )
+      elseIf (operand_type.is_compound)
+        if (operand_type.has_method_named("to_Logical"))
+          return CmdAccess( t, operand, "to_Logical" ).resolve( scope )
+        else
+          local name = operand_type.name
+          throw t.error( "Cannot convert type $ to required type Logical.  Define method '$.to->Logical' or global method `$.operator?($)`." (name,name,name,name) )
+        endIf
+
       else
         return this
       endIf

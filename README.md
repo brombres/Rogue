@@ -3,8 +3,8 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.2.2
-Date      | May 9, 2017
+Version   | v1.2.3
+Date      | May 13, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -31,6 +31,10 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+### v1.2.3 - May 13, 2017
+- [enum] All enums now have a `to->Logical` method that returns `true` when `value != 0`.
+- [RogueC] An attempt to logicalize a compound, either explicitly with the `?` operator or implicitly by using it as an `if` condition etc., now requires that either method `Type.to->Logical` or global method `Type.operator?(Type)->Logical` be defined.
 
 ### v1.2.2 - May 9, 2017
 - [Rogue] Added new `enum` types, described further here: https://github.com/AbePralle/Rogue/wiki/enum

@@ -770,6 +770,15 @@ class Type
       endBlock
 
       block
+        # to->Logical
+        local m_to_Logical = add_method( t, "to_Logical" )
+        m_to_Logical.attributes.add( Attribute.is_generated )
+        m_to_Logical.return_type = Program.type_Logical
+        m_to_Logical.statements.add( CmdReturn(t,CmdLogicalize(t,CmdAccess(t,"value"))) )
+        m_to_Logical.organize( scope )
+      endBlock
+
+      block
         # to->String
         local m_to_String = add_method( t, "to_String" )
         m_to_String.attributes.add( Attribute.is_generated )
