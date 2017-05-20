@@ -32,8 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-### v1.2.5 - May 13, 2017
+### v1.2.5 - May 20, 2017
 - [enum] Added operator support for modulo (`%`).
+- [List] Added utility method `List.expand(additional_count:Int32)->this` which adds additional null/0/false elements.
 
 ### v1.2.4 - May 13, 2017
 - [enum] Comma-separated enum categories are now supported.

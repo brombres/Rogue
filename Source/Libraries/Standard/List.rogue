@@ -83,6 +83,13 @@ class List<<$DataType>> : GenericList
     method ensure_capacity( desired_capacity:Int32 )->this
       return reserve( desired_capacity - count )
 
+    method expand( additional_count:Int32 )->this
+      # Adds 'additional_count' items to this list, each with the default
+      # value of null/0/false.
+      reserve( additional_count )
+      count += additional_count
+      return this
+
     method expand_to_count( minimum_count:Int32 )->this
       # Expands the list if necessary to have at least 'minimum_count' elements.
       if (count < minimum_count)

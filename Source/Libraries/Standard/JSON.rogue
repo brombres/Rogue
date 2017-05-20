@@ -167,7 +167,7 @@ class JSONParser
           elseIf (ch == 'n') buffer.print( '\n' )
           elseIf (ch == 'r') buffer.print( '\r' )
           elseIf (ch == 't') buffer.print( '\t' )
-          elseIf (ch == 'u') println "parsing hex quad"; buffer.print( parse_hex_quad )
+          elseIf (ch == 'u') buffer.print( parse_hex_quad )
           else               buffer.print( ch )
         else
           buffer.print( ch )
