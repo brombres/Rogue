@@ -625,6 +625,7 @@ class RogueC [singleton]
       endForEach
 
       Preprocessor.define( "DEBUG", debug_mode->String )
+      Preprocessor.define( "THREAD_MODE", thread_mode->String )
 
     method require_valueless( arg:String, expecting:String )
       if (arg == expecting) return
