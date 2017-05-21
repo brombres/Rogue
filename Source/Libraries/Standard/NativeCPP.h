@@ -251,6 +251,14 @@ T rogue_ptr (T p)
 
 #define ROGUE_THREAD_LOCAL thread_local
 
+#if ROGUE_GC_MODE_BOEHM
+  #define ROGUE_THREAD_LOCALS_INIT(__first, __last) GC_add_roots((void*)&(__first), (void*)((&(__last))+1));
+  #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last) GC_remove_roots((void*)&(__first), (void*)((&(__last))+1));
+#else
+  #define ROGUE_THREAD_LOCALS_INIT(__first, __last)
+  #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
+#endif
+
 static inline void _rogue_init_mutex (pthread_mutex_t * mutex)
 {
   pthread_mutexattr_t attr;
@@ -288,6 +296,8 @@ public:
 #define ROGUE_SYNC_OBJECT_ENTER
 #define ROGUE_SYNC_OBJECT_EXIT
 #define ROGUE_THREAD_LOCAL
+#define ROGUE_THREAD_LOCALS_INIT(__first, __last)
+#define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
 
 #endif
 
@@ -630,6 +640,7 @@ void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
 void Rogue_init_thread();
+void Rogue_deinit_thread();
 void Rogue_quit();
 bool Rogue_update_tasks();  // returns true if tasks are still active
 

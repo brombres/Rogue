@@ -360,14 +360,33 @@ augment Program
       writer.println
 
       # Global declarations
+      # We first do ones which aren't references (and compounds which don't contain references),
+      # and then do reference-y ones next.  The idea is to pack all the ones that can be GC
+      # roots next to each other.
+      local first_thread_local : String
+      local last_thread_local : String
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
+          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) ) nextIteration
           if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
           writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
           writer.print( " = " ).print_default_value( g.type )
           writer.println( ";" )
+        endForEach
+      endForEach
+      forEach (type in type_list)
+        forEach (g in type.global_list)
+          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) )
+            writer.print( "ROGUE_THREAD_LOCAL " )
+            writer.print( g.type ).print( " Rogue" )
+            writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
+            writer.print( " = " ).print_default_value( g.type )
+            writer.println( ";" )
+            last_thread_local = "Rogue$_$" (type.cpp_name, g.cpp_name)
+            if (first_thread_local is null) first_thread_local = last_thread_local
+          endIf
         endForEach
       endForEach
       writer.println
@@ -894,6 +913,9 @@ augment Program
       writer.println( "void Rogue_init_thread()" )
       writer.println( "{" )
       writer.indent += 2
+      if (first_thread_local)
+        writer.println("ROGUE_THREAD_LOCALS_INIT($, $);" (first_thread_local, last_thread_local))
+      endIf
       forEach (type in type_list)
         if (type.is_used)
           local m = type.find_global_method( "init_class_thread_local()" )
@@ -906,6 +928,16 @@ augment Program
       writer.println( "}" )
       writer.println
 
+      # deinit_thread()
+      writer.println( "void Rogue_deinit_thread()" )
+      writer.println( "{" )
+      writer.indent += 2
+      if (first_thread_local)
+        writer.println("ROGUE_THREAD_LOCALS_DEINIT($, $);" (first_thread_local, last_thread_local))
+      endIf
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
 
       # launch()
       writer.println( "void Rogue_launch()" )
