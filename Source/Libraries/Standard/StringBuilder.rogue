@@ -1,6 +1,10 @@
 class StringBuilder [essential]
   GLOBAL PROPERTIES
-    work_bytes = Byte[]
+    $if (THREAD_MODE)
+      work_bytes [threadLocal] = Byte[]
+    $else
+      work_bytes = Byte[]
+    $endIf
 
   PROPERTIES
     utf8          : Byte[]
