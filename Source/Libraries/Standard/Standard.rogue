@@ -40,6 +40,10 @@ $include "Standard/Value.rogue"
 $include "Standard/WeakReference.rogue"
 $include "Standard/Writer.rogue"
 
+$if (THREAD_MODE)
+$include "Standard/Thread.rogue"
+$endIf
+
 # Ensure String[] exists so that command line arguments may be set by native code.
 $essential String[].add(String)
 
