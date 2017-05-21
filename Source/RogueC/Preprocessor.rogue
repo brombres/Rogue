@@ -193,6 +193,19 @@ class Preprocessor
           return RogueC.compile_targets[target]
         endIf
 
+        if (t.type is TokenType.symbol_minus)
+          reader.read
+          t = reader.peek
+          if (not (t.type is TokenType.literal_int32 or t.type is TokenType.literal_int64))
+            throw t.error( "Syntax error: unexpected '-'." )
+          endIf
+          return (reader.read->Int32)?
+        endIf
+
+        if (t.type is TokenType.literal_int32 or t.type is TokenType.literal_int64)
+          return (reader.read->Int32)?
+        endIf
+
         if (consume(TokenType.identifier))
           # If the parser finds an identifier here it means it's undefined.
           return false

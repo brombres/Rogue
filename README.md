@@ -35,6 +35,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ### v1.2.5 - May 20, 2017
 - [enum] Added operator support for modulo (`%`).
 - [List] Added utility method `List.expand(additional_count:Int32)->this` which adds additional null/0/false elements.
+- [RogueC] Preprocessor now allows and logicalizes integer values for conditional compilation directives; e.g. `$if (N)` for any non-zero value of `N` is equivalent to `$if (true)`.
 
 ### v1.2.4 - May 13, 2017
 - [enum] Comma-separated enum categories are now supported.
