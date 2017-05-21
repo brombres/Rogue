@@ -146,7 +146,7 @@ augment Program
 
       forEach (type in type_list)
         forEach (r in type.global_method_list) r.assign_cpp_name
-        forEach (m in type.method_list)  m.assign_cpp_name
+        forEach (m in type.method_list) m.assign_cpp_name
       endForEach
 
       local base_cpp_filepath = filepath
