@@ -403,6 +403,17 @@ class Type
     method is_special->Logical
       return (attributes.flags & Attribute.is_special)
 
+    method contains_reference->Logical
+      forEach (p in property_list)
+        if (p.type.is_reference) return true
+        if (p.type.contains_reference) return true
+      endForEach
+      forEach (p in global_list)
+        if (p.type.is_reference) return true
+        if (p.type.contains_reference) return true
+      endForEach
+      return false
+
     method make_api->this
       attributes.add( Attribute.is_api )
       return this
