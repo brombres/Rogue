@@ -3,8 +3,8 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.2.4
-Date      | May 13, 2017
+Version   | v1.2.5
+Date      | May 21, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -32,7 +32,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-### v1.2.5 - May 20, 2017
+### v1.2.5 - May 21, 2017
 - [enum] Added operator support for modulo (`%`).
 - [List] Added utility method `List.expand(additional_count:Int32)->this` which adds additional null/0/false elements.
 - [RogueC] Preprocessor now allows and logicalizes integer values for conditional compilation directives; e.g. `$if (N)` for any non-zero value of `N` is equivalent to `$if (true)`.
