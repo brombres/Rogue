@@ -180,6 +180,9 @@ class RogueC [singleton]
                    |    Default is 1MB.  If neither MB nor K is specified then the number is
                    |    assumed to be bytes.
                    |
+                   |  --help
+                   |    Shows help (you're reading it).
+                   |
                    |  --ide[=<IDE Name>]
                    |    Indicates that roguec is being invoked from an IDE.  Currently this causes
                    |    error messages to print out in a "classic" C style, which Xcode (and
@@ -431,6 +434,10 @@ class RogueC [singleton]
         if (arg.begins_with("--"))
           # Option
           which (arg)
+            case "--help"
+              source_files.clear
+              return
+
             case "--output"
               if (value.count == 0) throw RogueError( ''Output filepath expected after "--output=".'' )
               output_filepath = value
