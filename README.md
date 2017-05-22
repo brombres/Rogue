@@ -32,6 +32,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+### v1.2.7 - May 22, 2017
+- [String] `String.capitalized()->String` now capitalizes the first letter no matter how far it is into the string - useful when capitalizing strings starting with quotes or other punctuation.
+
 ### v1.2.6 - May 21, 2017
 - [RogueC] Fixed command tree resolve bug exposed by compiling with `--essential`.
 

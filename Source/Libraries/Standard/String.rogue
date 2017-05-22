@@ -163,10 +163,17 @@ class String
 
     method capitalized->String
       if (count == 0) return this
-      local ch = this[0]
-      if (ch < 'a' or ch > 'z') return this
 
-      return (ch + ('A'-'a'))->Character + this.from( 1 )
+      # Find the first letter
+      forEach (ch at index in this)
+        if (ch.is_letter)
+          if (ch.is_uppercase) return this  # Already capitalized
+          return this.leftmost(index) + Character(ch + ('A'-'a')) + this.from( index+1 )
+        endIf
+      endForEach
+
+      # No letters found
+      return this
 
     method clipped( &left=0:Int32, &right=0:Int32 )->String
       return from( left, count-(right+1) )
