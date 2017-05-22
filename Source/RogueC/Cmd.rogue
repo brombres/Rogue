@@ -288,7 +288,8 @@ class CmdStatementList : Cmd[]
 
       forEach (cmd in this)
         scope.this_statement = cmd
-        cmd.resolve( scope ).add_to( result )
+        cmd = cmd.resolve( scope )
+        cmd.add_to( result )
       endForEach
 
       clear.add( result )
@@ -2584,6 +2585,9 @@ class CmdAssign : Cmd
 
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
+
+    method to->String
+      return "CmdAssign($ = $)" (target,new_value)
 endClass
 
 #------------------------------------------------------------------------------
@@ -2885,6 +2889,9 @@ class CmdWriteProperty : Cmd
 
       new_value = new_value.resolve(scope).require_value.cast_to( property_info.type, scope ).resolve( scope )
       return this
+
+    method to->String
+      return "CmdWriteProperty($ = $)" (context,new_value)
 
 endClass
 
@@ -4591,8 +4598,6 @@ class CmdReadArrayElement : Cmd
       return result
 
     method resolve( scope:Scope )->Cmd
-      if (array_type) return this
-
       context = context.resolve(scope)
       array_type = context.require_type
       index = index.resolve(scope).require_integer
@@ -4600,6 +4605,9 @@ class CmdReadArrayElement : Cmd
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
       return CmdWriteArrayElement( t, context, index.cloned, CmdAdd(t,this,CmdLiteralInt32(t,delta)) ).resolve( scope )
+
+    method to->String
+      return "CmdReadArrayElement($[$])" (context,index)
 
     method type->Type
       return array_type.element_type

@@ -3,7 +3,7 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.2.5
+Version   | v1.2.6
 Date      | May 21, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
@@ -31,6 +31,9 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 
 ## Change Log
+
+### v1.2.6 - May 21, 2017
+- [RogueC] Fixed command tree resolve bug exposed by compiling with `--essential`.
 
 ### v1.2.5 - May 21, 2017
 - [enum] Added operator support for modulo (`%`).
