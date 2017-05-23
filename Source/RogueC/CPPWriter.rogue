@@ -1331,31 +1331,35 @@ class CPPWriter
         others
           if (name.begins_with('$'))
             # Probably a specializer name like $DataType
-            if (type_context.specializers)
-              forEach (specializer in type_context.specializers)
-                if (specializer.name == name)
-                  which (operation)
-                    case ""
-                      local type = Parser(specializer.tokens).parse_type.organize
-                      print( type )
-                      return this
-                  endWhich
-                endIf
-              endForEach
-            endIf
-            if (method_context.source_template)
-              forEach (specializer at i in method_context.source_template.type_parameters)
-                if (specializer.name == name)
-                  which (operation)
-                    case ""
-                      local type = Parser(t,method_context.name,method_context.name.from_first("<<"))...
-                        .parse_specialization_type(i).organize
-                      print( type )
-                      return this
-                  endWhich
-                endIf
-              endForEach
-            endIf
+            local cur_type = type_context
+            while (cur_type)
+              if (cur_type.specializers)
+                forEach (specializer in cur_type.specializers)
+                  if (specializer.name == name)
+                    which (operation)
+                      case ""
+                        local type = Parser(specializer.tokens).parse_type.organize
+                        print( type )
+                        return this
+                    endWhich
+                  endIf
+                endForEach
+              endIf
+              if (method_context and method_context.source_template)
+                forEach (specializer at i in method_context.source_template.type_parameters)
+                  if (specializer.name == name)
+                    which (operation)
+                      case ""
+                        local type = Parser(t,method_context.name,method_context.name.from_first("<<"))...
+                          .parse_specialization_type(i).organize
+                        print( type )
+                        return this
+                    endWhich
+                  endIf
+                endForEach
+              endIf
+              cur_type = cur_type.base_class
+            endWhile
             throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
           endIf
 

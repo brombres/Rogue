@@ -3,8 +3,8 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.2.6
-Date      | May 21, 2017
+Version   | v1.2.7
+Date      | May 22, 2017
 Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
@@ -34,6 +34,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ### v1.2.7 - May 22, 2017
 - [String] `String.capitalized()->String` now capitalizes the first letter no matter how far it is into the string - useful when capitalizing strings starting with quotes or other punctuation.
+- [RogueC] Compiler now properly supports inherited native properties with meta markers that refer to base class template type parameters.
 
 ### v1.2.6 - May 21, 2017
 - [RogueC] Fixed command tree resolve bug exposed by compiling with `--essential`.
