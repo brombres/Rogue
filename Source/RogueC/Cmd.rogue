@@ -2993,7 +2993,7 @@ class CmdCallMethod : CmdCall
           # the corresponding method template in the base class.  If successful it
           # will change method_info.overridden_method.
           method_info.type_context.base_class.method_templates.instantiate( method_info.unspecialized_name,
-              method_info.specializer_count, t, method_info.name )
+              method_info.specializer_count, t, method_info.name, null )
         endIf
 
         if (not method_info.overridden_method)
@@ -5451,7 +5451,7 @@ class CmdMakeRequisite : Cmd
           local m = req_type.find_method( sig )
           if (not m and req_type.method_templates.has_template(sig.before_first('(')))
             # Try again after instantiating new method templates
-            req_type.method_templates.instantiate( t, sig.before_first('(') )
+            req_type.method_templates.instantiate( t, sig.before_first('('), null )
             m = req_type.find_method( sig )
           endIf
 

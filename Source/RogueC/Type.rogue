@@ -1348,7 +1348,7 @@ class Type
           if (m.type_context is not this)
             local st = m.source_template
             if (st)
-              method_templates.instantiate( st.name, st.type_parameters.count, st.t, m.name )
+              method_templates.instantiate( st.name, st.type_parameters.count, st.t, m.name, null )
             endIf
           endIf
         endForEach

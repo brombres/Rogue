@@ -232,44 +232,26 @@ class Scope
     method find_method( type_context:Type, access:CmdAccess, error_on_fail:Logical, flags=0:Int32 )->Method
       local is_initializer = (access.name == "init")
       local suppress_inherited  = (flags & SUPPRESS_INHERITED)?
-      local calling_prior_init  = (flags & CALLING_PRIOR_INIT)?
-
-      local candidates = CandidateMethods( type_context, access, error_on_fail )
 
       local args = access.args
-
-      local arg_count = select{ args:args.count || 0 }
-      local named_arg_count = select{ access.named_args:access.named_args.count || 0 }
-      local total_arg_count = arg_count + named_arg_count
-
       if (args)
         args.resolve( this )
         forEach (arg in args) arg.type.organize
       endIf
 
+      local candidates = Method[]
+
       local list = type_context.global_method_lookup_by_name[ access.name ]
-      if (list)
-        forEach (m in list)
-          candidates.available.add( m )
-        endForEach
-      endIf
+      if (list) candidates.add(list)
 
       if (suppress_inherited and is_initializer)
         # Object constructor.  Also add global create() methods.
         list = type_context.global_method_lookup_by_name[ "create" ]
-        if (list)
-          forEach (m in list)
-            candidates.available.add( m )
-          endForEach
-        endIf
+        if (list) candidates.add(list)
       endIf
 
       list = type_context.method_lookup_by_name[ access.name ]
-      if (list)
-        forEach (m in list)
-          candidates.available.add( m )
-        endForEach
-      endIf
+      if (list) candidates.add(list)
 
       if (type_context.is_aspect)
         # For aspects, add methods from type Object as long as they are not
@@ -278,43 +260,61 @@ class Scope
         if (list)
           forEach (m in list)
             contingent
-              forEach (m2 in candidates.available)
+              forEach (m2 in candidates)
                 necessary (m.signature != m2.signature)
               endForEach
             satisfied
-              candidates.available.add( m )
+              candidates.add( m )
             endContingent
           endForEach
         endIf
       endIf
 
-      if (candidates.available.count == 0)
-        if (type_context.method_templates.has_template(access.name))
-          contingent
-            sufficient (access.name.contains('<'))
-            necessary (arg_count)
+      local m = _real_find_method(candidates, type_context, access, false, flags, false)
+      if (m) return m
 
-            local common_type = args.first.type
-            forEach (arg at index in args)
-              if (index > 0)
-                common_type = access.find_common_type( common_type, arg.type )
-                if (not common_type)
-                  throw access.t.error( "Unable to infer specializing type for method template - explicitly write $<<TypeName>>(...) instead." (access.name) )
-                endIf
-              endIf
-            endForEach
+      candidates.clear
 
-            access.name += "<<$>>" (common_type.name)
-
-          satisfied
-            type_context.method_templates.instantiate( access.t, access.name )
-
-            # Try again now that one or more new methods have been added
-            return find_method( type_context, access, error_on_fail, flags )
-
-          endContingent
-        endIf
+      if (not type_context.method_templates.has_template(access.name))
+        # No method templates to try to specialize -- we're done.
+        # Call _real_find_method() with an empty list just to get the desired error behavior.
+        return _real_find_method(null, type_context, access, error_on_fail, flags, false)
       endIf
+
+      if (access.name.contains('<'))
+        # Direct call to specialized method
+        type_context.method_templates.instantiate( access.t, access.name, candidates )
+
+        # Try again with any new methods
+        return _real_find_method( candidates, type_context, access, error_on_fail, flags, false )
+      endIf
+
+      # Can we infer arguments to a method template?
+      if (args is null or args.count == 0)
+        # Nope -- no method arguments, so no basis for template parameter inference.
+        # Call _real_find_method() with an empty list just to get the desired error behavior.
+        return _real_find_method(null, type_context, access, error_on_fail, flags, false)
+      endIf
+
+      local types = Type[]
+      types.add((forEach in args).type)
+
+      type_context.method_templates.instantiate( access.t, access.name, types, candidates )
+      return _real_find_method( candidates, type_context, access, error_on_fail, flags, true )
+
+    method _real_find_method( list:Method[], type_context:Type, access:CmdAccess, error_on_fail:Logical, flags:Int32, inferring_templates:Logical )->Method
+      local suppress_inherited  = (flags & SUPPRESS_INHERITED)?
+      local calling_prior_init  = (flags & CALLING_PRIOR_INIT)?
+
+      local candidates = CandidateMethods( type_context, access, error_on_fail, inferring_templates )
+
+      local args = access.args
+
+      local arg_count = select{ args:args.count || 0 }
+      local named_arg_count = select{ access.named_args:access.named_args.count || 0 }
+      local total_arg_count = arg_count + named_arg_count
+
+      if (list) candidates.available.add( list )
 
       if (not candidates.refine_matches) return null
 
@@ -711,9 +711,10 @@ class CandidateMethods
     available=Method[]  : Method[]
     compatible=Method[] : Method[]
     error_on_fail       : Logical
+    inferring_templates : Logical
 
   METHODS
-    method init( type_context, access, error_on_fail )
+    method init( type_context, access, error_on_fail, inferring_templates )
 
     method has_match->Logical
       return (available.count == 1)
@@ -745,7 +746,8 @@ class CandidateMethods
             throw access.t.error( ''No such variable "$" or method "$" exists in current scope of type $.''...
               (base_name,access.name,scope_type) )
           else
-            throw access.t.error( ''No such method or variable "$" exists in current scope of type $.'' (access.name,scope_type) )
+            throw access.t.error( ''No such method or variable "$" exists in current scope of type $$.'' (access.name,scope_type, ...
+                                  select{inferring_templates: ", and no existing template method could be instantiated via inference" || ""}) )
           endIf
 
         elseIf (require_compatible)
