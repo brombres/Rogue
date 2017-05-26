@@ -234,10 +234,15 @@ class Parser
       parse_template_tokens( template, TokenType.keyword_endClass )
 
     method parse_routine
-      local t = read  # 'routine'
-      local name = read_identifier
-      local template = Template( t, name, Attribute.is_class | Attribute.is_routine )
-      parse_template_tokens( template, TokenType.keyword_endRoutine )
+      local t = peek # 'routine'
+      local original_type = this_type
+      this_type = Program.get_type_reference( peek, "Global" )
+      parse_method( true, &first_token=TokenType.keyword_routine)
+      must_consume( TokenType.keyword_endRoutine )
+      if (not this_method and not this_type.method_templates)
+        throw t.error("Failed to parse routine")
+      endIf
+      this_type = original_type
 
     method parse_template_tokens( template:Template, end_type:TokenType )
       local first_t = peek
@@ -861,10 +866,10 @@ class Parser
 
       return true
 
-    method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type )->Logical
+    method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type, first_token=TokenType.keyword_method:TokenType )->Logical
       consume_eols
 
-      if (not next_is(TokenType.keyword_method)) return false
+      if (not next_is(first_token)) return false
 
       if (parse_method_header(as_global, default_attributes) is null) return true
 
