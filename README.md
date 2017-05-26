@@ -32,6 +32,174 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
+### v1.2.8 - May 26, 2017
+- Merge pull request #16 from MurphyMc/cleanup4
+- New template method specializer inference, rewritten routines, multithreading, alias parameters, Cython fixes, RAP1 starter
+- Cython: Expose methods on Global globally
+
+    Previously, to access members of the Rogue Global object from
+    Python, you had to do so explicitly (mod.Global.foo()).  But
+    now that routines are methods on Global, this meant that you
+    had to do so for routines, which seemed unfortunate.  This
+    commit exposes methods on Global as the module level in
+    Python.  In particular, this means routines act like they
+    used to (mod.foo() works again for a routine named foo).
+
+- Cython: Fix wrapping of template methods
+- Remove remants of old routine implementation
+- Make routines global methods of Global
+
+    This significantly simplifies routines by just turning them into
+    global methods of Global.  The normal Global access mechanism
+    means you don't need to qualify their names, and since they're
+    now just methods, the normal method template stuff just works.
+    A subsequent commit will remove some of the special cases
+    previously required for routines.
+
+- stdlib: Add Atomics
+- stdlib: Add Thread
+
+    This is the first version of the Thread class and various utility
+    classes for multithreading.
+
+- New method template specifier inference
+
+    Previously, method template type specifiers could be inferred from
+    method arguments in very limited cases (method templates with only
+    a single type specifier when all method arguments had a common
+    type).  This commit makes template inference far more flexible and
+    (hopefully) lays groundwork to make it even *more* flexible.
+
+    This currently only works for method templates -- routine
+    templates have the same constraints as before (though this
+    should probably be addressed).
+
+- First step towards Tuple implementation (see RAP1)
+
+- Add alias parameters
+
+    Adding a "@" to the end of a type in a parameter list now makes it
+    an alias parameter, which is akin to a C++ reference.  This means
+    that whatever you pass in for the parameter must be something like
+    a variable.
+
+    A limitation of the current implementation is that references
+    and array elements cannot be aliased in the "auto" GC mode.
+
+    This commit also ends support for changing GC modes by editing the
+    output C++; you now need to recompile the Rogue.
+
+- Add GC roots for thread local storage
+
+    Apparently the BDW garbage collector doesn't look at thread local
+    storage for roots automatically.  So now we tell it where to look.
+    This involves a few things:
+    * Write all the thread local variables which might be GC roots
+      out next to each other, with the assumption that the C++
+      compiler will actually put them in memory contiguously.
+      These are the variables which are either references or are
+      compounds which contain references (or contain compounds
+      which contain references..).
+    * On thread init, tell the GC to add the range as roots.
+    * On thread de-init, tell the GC to remove the roots -- this
+      required adding thread de-init, which we didn't have before.
+
+- Type: Add .contains_reference()
+
+    This helper returns true if the given type has properties which are
+    references or which contain references.
+
+- StringBuilder: Make work buffer threadLocal
+
+    This commit uses conditional compilation to make the work buffer
+    threadLocal when compiling with multithreading or not threadLocal
+    otherwise.  This shouldn't really be necessary -- if not compiling
+    for threading, [threadLocal] should have no real effect.  The
+    reason it's done here is for the sake of bootstrapping, since
+    old versions of roguec would choke on the property attribute.
+    Someday we can get rid of the conditional compilation.
+
+- Add [synchronized] methods
+
+    These are like Java synchronized methods.
+
+    Unlike Java, where all objects always come with a lock, we add a lock
+    to a class hierarchy wherever the first synchronized method is.  Also
+    unlike Java, we currently only support these for instance methods
+    (though we could add them for global methods too...).
+
+- Add [threadLocal] global properties
+
+    This works by collecting global properties with a new [threadLocal]
+    attribute and putting them into an init_class_thread_local() method
+    instead of init_class().  Then it generates a Rogue_init_thread()
+    which calls all of these and should be called by every new thread
+    (it's automatically called by Rogue_launch()).
+
+    This commit also prevents the generation of empty init_class methods,
+    which could happen previously if there were global properties but
+    none had initial values.
+
+- Add per-property attributes
+
+    Individual properties can now have attributes.  The attributes list
+    should follow the property name immediately (before any initial
+    value or type.
+
+- Add "section level" attributes to METHODS and PROPERTIES
+
+    A previous commit added the ability to put attributes on the GLOBAL
+    PROPERTIES section itself.  We now can put them on both global and
+    non-global properties and methods sections.  This allows, for
+    example, having a section for synchronized methods.
+
+- Add "section level" attributes to GLOBAL PROPERTIES
+
+    Global properties can now have attributes applied to them, e.g.
+    "GLOBAL PROPERTIES [someAttribute]"; the properties apply to all
+    the properties in the section.  This same methodology can
+    be applied to other sections (e.g., METHODS).
+
+- native: Make call stack tracing thread-local
+
+    The call stack tracing definitely needs to be thread-local!  It'd be
+    nice if we had a way to look at the traces from other threads, but
+    we can leave that for the future.
+
+- Add Preprocessor symbol THREAD_MODE
+
+    The previous commit added the preprocessor definition DEBUG, which
+    is true when compiled with --debug.  This is similar, but it
+    reflects the thread mode.  It's 0 when compiled without threading,
+    or some number otherwise (e.g., 1 = pthreads).
+
+- Add Preprocessor symbol DEBUG
+
+    You can now do conditional compilation in Rogue that depends on the
+    value of debug_mode (e.g., set by the --debug argument).
+
+- CPPWriter: Remove an extra space (cosmetic)
+
+- native: Add marker at end of NativeCPP.cpp
+
+    When looking at the output of the Rogue compiler, this makes it
+    easier to tell where NativeCPP.cpp stops and the generated code
+    begins.  This mirrors NativeCPP.h.
+
+- native: Adjust indenting of segfault handler
+
+    This was inconsistent with the rest of the file
+
+- Add --help
+
+- Add --threads argument
+
+    This doesn't actually *do* much yet, but there's now a way to
+    specify what multithreading features you want, the mode is
+    written into the output header file, and if we're compiling
+    the output C++, we tack on necessary commandline arguments.
+
+
 ### v1.2.7 - May 22, 2017
 - [String] `String.capitalized()->String` now capitalizes the first letter no matter how far it is into the string - useful when capitalizing strings starting with quotes or other punctuation.
 - [RogueC] Compiler now properly supports inherited native properties with meta markers that refer to base class template type parameters.
