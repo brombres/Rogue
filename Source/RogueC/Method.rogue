@@ -216,6 +216,9 @@ class Method
     method is_task_conversion->Logical
       return (attributes.flags & Attribute.is_task_conversion)
 
+    method is_synchronized->Logical
+      return (attributes.flags & Attribute.is_synchronized)
+
     method make_propagated->this
       attributes.add( Attribute.is_propagated )
       return this
@@ -295,9 +298,8 @@ class Method
         if (is_global)
           local existing_m = type_context.global_method_lookup_by_signature[signature]
           if (existing_m and existing_m.type_context is type_context)
-            if (type_context.is_routine)
-              throw t.error( "A routine with the signature $$ is already defined." ...
-                             (type_context.name,signature.from_first('(')))
+            if (type_context == Program.get_type_reference(t, "Global"))
+              throw t.error( "A routine with the signature $ is already defined." (signature) )
             else
               throw t.error( "A global method with the signature $ is already defined." (signature) )
             endIf
@@ -316,6 +318,10 @@ class Method
       while (min_args >= 1 and parameters[min_args-1].initial_value)
         --min_args
       endWhile
+
+      if (is_global and is_synchronized)
+        throw t.error( "Global methods cannot be synchronized." )
+      endIf
 
       return this
 

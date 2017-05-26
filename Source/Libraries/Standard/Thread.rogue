@@ -1,0 +1,349 @@
+# Rogue thread library
+
+# Currently only supports pthreads and g++-like compilers.
+
+nativeHeader
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#include "gc.h"
+#include <pthread.h>
+#include <assert.h>
+#include <functional>
+#include <semaphore.h>
+
+pthread_t create_thread (void * (*f)(void *), void * arg)
+{
+  pthread_t tid;
+  int r = pthread_create(&tid, NULL, f, arg);
+  if (r) return 0;
+  assert(tid != 0);
+  return tid;
+}
+
+struct thread_start_info
+{
+  std::function<void()> thread_function;
+  sem_t sem;
+};
+
+
+static inline void * roguethread_entry (void * tsi_)
+{
+  thread_start_info * tsi = (thread_start_info *)tsi_;
+  // We're not currently really using the semaphore, but it might
+  // be useful in the future.
+  thread_start_info si = *tsi;
+  sem_post(&tsi->sem); // We've got it.
+  si.thread_function();
+  return NULL;
+}
+
+
+pthread_t roguethread_create ( std::function<void()> f )
+{
+  thread_start_info si = {};
+  si.thread_function = f;
+  sem_init(&si.sem, 0, 0);
+  auto r = create_thread(roguethread_entry, &si);
+  sem_wait(&si.sem);
+  sem_destroy(&si.sem);
+  return r;
+}
+
+#endif
+
+endNativeHeader
+
+
+nativeCode
+
+inline void roguethread_simple_spin_lock(int *p)
+{
+    while(!__sync_bool_compare_and_swap(p, 0, 1));
+}
+
+inline void roguethread_simple_spin_unlock(int volatile *p)
+{
+    asm volatile ("" : : : "memory");
+    *p = 0;
+}
+
+
+#define ROGUE_THREAD_LAMBDA_START \
+  std::function<void()> f = [=] () {                                                              \
+    Rogue_init_thread();                                                                          \
+    ROGUE_THREAD_DEBUG_STATEMENT(RogueDebugTrace __trace( "Thread.lambda()", "thread.rogue", 1)); \
+    try                                                                                           \
+    {
+#define ROGUE_THREAD_LAMBDA_END \
+    }                                                                                             \
+    catch (RogueException* err)                                                                   \
+    {                                                                                             \
+      printf( "Uncaught exception\n" );                                                           \
+      RogueException__display( err );                                                             \
+    }                                                                                             \
+    Rogue_deinit_thread();                                                                        \
+  };
+
+endNativeCode
+
+
+$if (DEBUG)
+  nativeCode
+    #define ROGUE_THREAD_DEBUG_STATEMENT(_s) _s
+  endNativeCode
+$else
+  nativeCode
+    #define ROGUE_THREAD_DEBUG_STATEMENT(_s)
+  endNativeCode
+$endIf
+
+
+# A limitation of the current implementation is that it assumes that a
+# pthread_t can safely be cast back and forth with an Int64.
+
+class Thread (id:Int64) [compound]
+  METHODS
+    method join ()
+      native @|pthread_join((pthread_t)$this.id, NULL);
+
+    method detach ()
+      native @|pthread_detach((pthread_t)$this.id);
+
+    method is_current () -> Logical
+      return this == Thread.current
+
+    method to -> String
+      return "($ $)" (type_info.name, id)
+
+    method pin_to_core (core:Int32) -> Logical
+      local ok = 0
+      native @|#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+              |  $ok = 1;
+              |  cpu_set_t cpus;
+              |  CPU_ZERO(&cpus);
+              |  CPU_SET($core, &cpus);
+              |  pthread_setaffinity_np((pthread_t)$this.id, sizeof(cpus), &cpus);
+              |#endif
+      return ok
+
+  GLOBAL METHODS
+    method create (f:Function()) -> Thread
+      local r : Int64
+      native @|ROGUE_THREAD_LAMBDA_START
+      f()
+      native @|ROGUE_THREAD_LAMBDA_END
+              |$r = (RogueInt64)roguethread_create(f);
+      return Thread(r)
+
+    method create <<$T1>> (f:Function($T1), a1:$T1) -> Thread
+      local r : Int64
+      native @|ROGUE_THREAD_LAMBDA_START
+        f(a1)
+      native @|ROGUE_THREAD_LAMBDA_END
+              |$r = (RogueInt64)roguethread_create(f);
+      return Thread(r)
+
+    method create <<$T1,$T2>> (f:Function($T1,$T2), a1:$T1, a2:$T2) -> Thread
+      local r : Int64
+      native @|ROGUE_THREAD_LAMBDA_START
+        f(a1,a2)
+      native @|ROGUE_THREAD_LAMBDA_END
+              |$r = (RogueInt64)roguethread_create(f);
+      return Thread(r)
+
+    method create <<$T1,$T2,$T3>> (f:Function($T1,$T2,$T3), a1:$T1, a2:$T2, a3:$T3) -> Thread
+      local r : Int64
+      native @|ROGUE_THREAD_LAMBDA_START
+        f(a1,a2,a3)
+      native @|ROGUE_THREAD_LAMBDA_END
+              |$r = (RogueInt64)roguethread_create(f);
+      return Thread(r)
+
+    method create () -> Thread [essential]
+      local r : Int64
+      native @|$r = (RogueInt64)pthread_self();
+      return Thread(r)
+
+    method current () -> Thread [essential]
+      return Thread()
+
+endClass
+
+
+augment Exception
+  METHODS
+    method display
+      message = "In thread " + Thread.current.id->Int32 + "\n" + message
+endAugment
+
+
+#{
+  FastBarrier is a lightweight barrier *that cannot be copied*.
+
+  Since it cannot be copied, FastBarrier is suitable for cases where you
+  don't need to pass it as an argument or things like that.
+
+  To use it, someone must create it and then call .initialize on it,
+  passing the number of threads that must be "waiting behind the barrier"
+  before they are released.
+}#
+class FastBarrier [compound]
+  PROPERTIES
+    native "pthread_barrier_t _barrier;"
+  METHODS
+    method initialize (n:Int32) [macro]
+      native "pthread_barrier_init(&$this._barrier, 0, $n);"
+    method destroy [macro]
+      native "pthread_barrier_destroy(&$this._barrier);"
+    method wait -> Logical [macro]
+      native("(RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD)")
+endClass
+
+
+class Barrier
+  PROPERTIES
+    native "pthread_barrier_t _barrier;"
+  METHODS
+    method initialize (n:Int32)
+      native "pthread_barrier_init(&$this->_barrier, 0, $n);"
+    method destroy
+      native "pthread_barrier_destroy(&$this->_barrier);"
+    method wait -> Logical [macro]
+      native("(RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD)")
+endClass
+
+
+class Mutex
+  PROPERTIES
+    native "pthread_mutex_t _lock;"
+
+  METHODS
+    method init
+      native "pthread_mutex_init(&$this->_lock, NULL);"
+
+    method on_cleanup
+      native "pthread_mutex_destroy(&$this->_lock);"
+
+    method on_use -> this
+      lock
+      return this
+
+    method lock [macro]
+      native "pthread_mutex_lock(&$this->_lock);"
+
+    method on_end_use
+      unlock
+
+    method unlock [macro]
+      native "pthread_mutex_unlock(&$this->_lock);"
+endClass
+
+
+class SpinLock
+  PROPERTIES
+    native "pthread_spinlock_t _lock;"
+
+  METHODS
+    method init
+      native "pthread_spin_init(&$this->_lock, 0);"
+
+    method on_cleanup
+      native "pthread_spin_destroy(&$this->_lock);"
+
+    method on_use -> this
+      lock
+      return this
+
+    method lock [macro]
+      native "pthread_spin_lock(&$this->_lock);"
+
+    method on_end_use
+      unlock
+
+    method unlock [macro]
+      native "pthread_spin_unlock(&$this->_lock);"
+endClass
+
+
+class SimpleSpinLock [compound]
+  PROPERTIES
+    native "int _lock = 0;"
+
+  METHODS
+    method on_use -> this
+      lock
+      return this
+
+    method lock [macro]
+      native "roguethread_simple_spin_lock(&$this._lock);"
+
+    method on_end_use
+      unlock
+
+    method unlock [macro]
+      native "roguethread_simple_spin_unlock(&$this._lock);"
+endClass
+
+
+#{
+  A Semaphore
+
+  The best way to think of a semaphore is as a pool of n resources (where n
+  is the "value" parameter of the constructor).  You say you want to acquire
+  a resource, and if any are available, you get it immediately.  You release
+  it when you're done.  If there weren't any of the resource available, you
+  generally block waiting for it, though you can also just *try* to acquire
+  it, in which case you continue immediately whether you got it or not.
+
+  In actuality, it's really just like an integer.  "Acquiring" it requires
+  that it be positive.  If it's not, it blocks.  When it acquires, the
+  integer is decremented.  When it's released, it's incremented.
+
+  Most other semaphore documentation seems to try to make this as confusing
+  as possible.
+
+  This class implements the "use protocol".  Using a Semaphore acquires it
+  for the duration of the block.
+}#
+class Semaphore
+  PROPERTIES
+    native "sem_t _sem;"
+  METHODS
+    method init (value : Int32)
+      # Technically the initial value is an int, so it might be that
+      # Int64 is a better choice.  But Int32 should be safe.
+      native "sem_init(&$this->_sem, 0, $value);"
+
+    method on_cleanup
+      native "sem_destroy(&$this->_sem);"
+
+    method acquire
+      local r : Int64
+      native "$r = sem_wait(&$this->_sem);"
+      require(r == 0)
+
+    method try_acquire -> Logical
+      # Returns true if you got it
+      local r : Int64
+      native "$r = sem_trywait(&$this->_sem);"
+      return r == 0
+
+    method release
+      local r : Int64
+      native "$r = sem_post(&$this->_sem);"
+      require(r == 0)
+
+    method release (n : Int32)
+      forEach (_ in 1..n)
+        release
+      endForEach
+
+    method on_use -> this
+      acquire
+      return this
+
+    method on_end_use
+      release
+endClass

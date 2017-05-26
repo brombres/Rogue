@@ -242,6 +242,67 @@ T rogue_ptr (T p)
 
 
 //-----------------------------------------------------------------------------
+//  Threading
+//-----------------------------------------------------------------------------
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#include <pthread.h>
+
+#define ROGUE_THREAD_LOCAL thread_local
+
+#if ROGUE_GC_MODE_BOEHM
+  #define ROGUE_THREAD_LOCALS_INIT(__first, __last) GC_add_roots((void*)&(__first), (void*)((&(__last))+1));
+  #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last) GC_remove_roots((void*)&(__first), (void*)((&(__last))+1));
+#else
+  #define ROGUE_THREAD_LOCALS_INIT(__first, __last)
+  #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
+#endif
+
+static inline void _rogue_init_mutex (pthread_mutex_t * mutex)
+{
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+  pthread_mutex_init(mutex, &attr);
+}
+
+class RogueUnlocker
+{
+  pthread_mutex_t & mutex;
+public:
+  RogueUnlocker(pthread_mutex_t & mutex)
+  : mutex(mutex)
+  {
+    pthread_mutex_lock(&mutex);
+  }
+  ~RogueUnlocker (void)
+  {
+    pthread_mutex_unlock(&mutex);
+  }
+};
+
+#define ROGUE_SYNC_OBJECT_TYPE pthread_mutex_t
+#define ROGUE_SYNC_OBJECT_INIT _rogue_init_mutex(&THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_CLEANUP pthread_mutex_destroy(&THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_EXIT
+
+#else
+
+#define ROGUE_SYNC_OBJECT_TYPE
+#define ROGUE_SYNC_OBJECT_INIT
+#define ROGUE_SYNC_OBJECT_CLEANUP
+#define ROGUE_SYNC_OBJECT_ENTER
+#define ROGUE_SYNC_OBJECT_EXIT
+#define ROGUE_THREAD_LOCAL
+#define ROGUE_THREAD_LOCALS_INIT(__first, __last)
+#define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
+
+#endif
+
+
+//-----------------------------------------------------------------------------
 //  Basics (Primitive types, macros, etc.)
 //-----------------------------------------------------------------------------
 #if defined(ROGUE_PLATFORM_WINDOWS)
@@ -578,6 +639,8 @@ extern RogueWeakReference* Rogue_weak_references;
 void Rogue_configure( int argc=0, const char* argv[]=0 );
 bool Rogue_collect_garbage( bool forced=false );
 void Rogue_launch();
+void Rogue_init_thread();
+void Rogue_deinit_thread();
 void Rogue_quit();
 bool Rogue_update_tasks();  // returns true if tasks are still active
 

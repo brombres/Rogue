@@ -311,6 +311,9 @@ class Type
       if (this.is_aspect and other is Program.type_Object) return true
       return (this.instance_of(other))
 
+    method is_synchronizable->Logical
+      return (attributes.flags & Attribute.is_synchronizable)
+
     method is_deprecated->Logical
       return (attributes.flags & Attribute.is_deprecated)
 
@@ -391,14 +394,22 @@ class Type
     method is_nonAPI->Logical
       return (attributes.flags & Attribute.is_nonAPI)
 
-    method is_routine->Logical
-      return (attributes.flags & Attribute.is_routine)
-
     method is_singleton->Logical
       return (attributes.flags & Attribute.is_singleton)
 
     method is_special->Logical
       return (attributes.flags & Attribute.is_special)
+
+    method contains_reference->Logical
+      forEach (p in property_list)
+        if (p.type.is_reference) return true
+        if (p.type.contains_reference) return true
+      endForEach
+      forEach (p in global_list)
+        if (p.type.is_reference) return true
+        if (p.type.contains_reference) return true
+      endForEach
+      return false
 
     method make_api->this
       attributes.add( Attribute.is_api )
@@ -406,6 +417,10 @@ class Type
 
     method make_essential->this
       attributes.add( Attribute.is_essential )
+      return this
+
+    method make_synchronizable->this
+      attributes.add( Attribute.is_synchronizable )
       return this
 
     method configure( scope=null:Scope )->Type
@@ -485,7 +500,23 @@ class Type
           base_types.insert( base_class )
         endIf
 
-        if (base_class) base_types.insert( base_types.remove(base_class) )
+        if (base_class)
+          base_types.insert( base_types.remove(base_class) )
+          if (base_class.is_synchronizable)
+            make_synchronizable
+          endIf
+        endIf
+        forEach (m in method_list)
+          if (m.is_synchronized)
+            make_synchronizable
+            escapeForEach
+          endIf
+        endForEach
+
+        if (is_topmost_synchronizable and RogueC.thread_mode != ThreadMode.NONE)
+          # We need to add the synchronization type
+          add_property( t, "_object_mutex", Program.type_NativeLock )
+        endIf
       endIf
 
       # Mark classes that are extended
@@ -871,21 +902,63 @@ class Type
         endIf
       endIf
 
-      if (global_list.count)
-        # Create or locate init_class() to initialize global properties
-        local m = find_global_method( "init_class()" )
-        if (not m or m.type_context is not this) m = add_global_method( t, "init_class" ).organize( scope )
-        m.make_essential
+      # Mark any existing init_class_thread_local() as essential
+      local m_init_class_thread_local = find_global_method( "init_class_thread_local()" )
+      if (m_init_class_thread_local)
+        if (m_init_class_thread_local.type_context is this)
+          m_init_class_thread_local.make_essential
+        endIf
+      else
+        m_init_class_thread_local = find_method( "init_class_thread_local()" )
+        if (m_init_class_thread_local)
+          throw m_init_class_thread_local.t.error( "$::init_class_thread_local() must be declared under GLOBAL METHODS." (name) )
+        endIf
+      endIf
 
-        # Insert global initializations
-        local i = global_list.count - 1
-        while (i >= 0)
-          local s = global_list[i]
+      if (global_list.count)
+        # We may or may not need init_class or init_class_thread_local to initialize global properties
+        local needs_ic = false
+        local needs_tl = false
+        forEach (s in global_list)
           if (s.initial_value)
-            m.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+            if (s.is_thread_local)
+              needs_tl = true
+            else
+              needs_ic = true
+            endIf
+            if (needs_tl and needs_ic) escapeForEach
           endIf
-          --i
-        endWhile
+        endForEach
+
+        if (needs_tl or needs_ic)
+          local m,mtl : Method
+
+          if (needs_ic)
+            # Create or locate init_class() to initialize global properties
+            m = find_global_method( "init_class()" )
+            if (not m or m.type_context is not this) m = add_global_method( t, "init_class" ).organize( scope )
+            m.make_essential
+          endIf
+          if (needs_tl)
+            mtl = find_global_method( "init_class_thread_local()" )
+            if (not mtl or mtl.type_context is not this) mtl = add_global_method( t, "init_class_thread_local" ).organize( scope )
+            mtl.make_essential
+          endIf
+
+          # Insert global initializations
+          local i = global_list.count - 1
+          while (i >= 0)
+            local s = global_list[i]
+            if (s.initial_value)
+              if (s.is_thread_local)
+                mtl.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+              else
+                m.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+              endIf
+            endIf
+            --i
+          endWhile
+        endIf
       endIf
 
       # Create or find init_object() method to initialize properties
@@ -917,6 +990,9 @@ class Type
         local i = property_list.count - 1
         while (i >= 0)
           local p = property_list[i]
+          if (p.is_thread_local)
+            throw p.t.error( "only global properties can be thread local." )
+          endIf
           if (p.initial_value and p.type_context is this)
             m.statements.insert( CmdWriteProperty(p.t, CmdLiteralThis(p.t,p.type_context), p, p.initial_value.cloned) )
           endIf
@@ -931,17 +1007,47 @@ class Type
         # Append return this
         m.statements.add( CmdReturn(t,CmdLiteralThis(t,this)) )
 
+        # Add synchronization object initialization if required
+        if (is_topmost_synchronizable)
+          m.statements.insert( CmdSyncObjectInit(t) )
+        endIf
+
         m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
       endIf
 
       # Mark any on_cleanup() method as essential
       if (is_class and not is_native)
         local m = find_method( "on_cleanup()" )
+        local prior_m = m
         if (m and m.type_context is this)
           if (m.return_type)
             throw m.t.error( "on_cleanup() cannot return a value." )
           endIf
           m.make_essential
+        elseIf (is_topmost_synchronizable)
+          m = add_method( t, "on_cleanup" ).organize( scope )
+          m.make_essential
+
+          # The regular system won't figure out that on_cleanup() is
+          # dynamically called so give it a flag.
+          m.attributes.add( Attribute.is_dynamic )
+
+          if (prior_m)
+            method_list.remove( m )
+            method_list[ method_list.locate( prior_m ).value ] = m
+            method_lookup_by_name[ m.name ].remove( prior_m )
+            method_lookup_by_signature[ m.signature ] = m
+            m.overridden_method = prior_m
+            prior_m.overriding_methods.add( m )
+          endIf
+
+          # Insert prior.on_cleanup()
+          if (m.overridden_method)
+            m.statements.insert( CmdCallPriorMethod(t, "on_cleanup", null, null) )
+          endIf
+          m.statements.insert( CmdSyncObjectCleanup(t) )
+
+          m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
         endIf
       endIf
 
@@ -1239,7 +1345,7 @@ class Type
           if (m.type_context is not this)
             local st = m.source_template
             if (st)
-              method_templates.instantiate( st.name, st.type_parameters.count, st.t, m.name )
+              method_templates.instantiate( st.name, st.type_parameters.count, st.t, m.name, null )
             endIf
           endIf
         endForEach
@@ -1710,4 +1816,8 @@ class Type
       # Perform miscellaneous validation
       forEach (m in method_list) m.validate
 
+    method is_topmost_synchronizable->Logical
+      # True if we require synchronization, but no parent does
+      if (base_class and base_class.is_synchronizable) return true
+      return is_synchronizable
 endClass

@@ -143,10 +143,11 @@ augment Program
         type.assign_cpp_name
       endForEach
       type_NativeArray.cpp_class_name = "RogueArray"
+      type_NativeLock.cpp_class_name = "ROGUE_SYNC_OBJECT_TYPE"
 
       forEach (type in type_list)
         forEach (r in type.global_method_list) r.assign_cpp_name
-        forEach (m in type.method_list)  m.assign_cpp_name
+        forEach (m in type.method_list) m.assign_cpp_name
       endForEach
 
       local base_cpp_filepath = filepath
@@ -180,6 +181,14 @@ augment Program
       writer.print(  "  #define ROGUE_GC_THRESHOLD_DEFAULT " ).println( RogueC.gc_threshold )
       writer.println "#endif"
       writer.println
+
+      # Thread mode stuff
+      writer.println "#define ROGUE_THREAD_MODE_NONE 0"
+      writer.println "#define ROGUE_THREAD_MODE_PTHREADS 1"
+      writer.println "#ifndef ROGUE_THREAD_MODE"
+      writer.print   "  #define ROGUE_THREAD_MODE ROGUE_THREAD_MODE_"
+      writer.println select{RogueC.thread_mode == ThreadMode.NONE: "NONE" || "PTHREADS"}
+      writer.println "#endif"
 
       # Enable Introspection?
       if (Program.using_introspection)
@@ -219,7 +228,9 @@ augment Program
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
-          writer.print( "extern " ).print( g.type ).print( " Rogue" )
+          writer.print( "extern " )
+          if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
+          writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name ).println( ";" )
         endForEach
       endForEach
@@ -349,13 +360,33 @@ augment Program
       writer.println
 
       # Global declarations
+      # We first do ones which aren't references (and compounds which don't contain references),
+      # and then do reference-y ones next.  The idea is to pack all the ones that can be GC
+      # roots next to each other.
+      local first_thread_local : String
+      local last_thread_local : String
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
+          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) ) nextIteration
+          if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
           writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
           writer.print( " = " ).print_default_value( g.type )
           writer.println( ";" )
+        endForEach
+      endForEach
+      forEach (type in type_list)
+        forEach (g in type.global_list)
+          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) )
+            writer.print( "ROGUE_THREAD_LOCAL " )
+            writer.print( g.type ).print( " Rogue" )
+            writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
+            writer.print( " = " ).print_default_value( g.type )
+            writer.println( ";" )
+            last_thread_local = "Rogue$_$" (type.cpp_name, g.cpp_name)
+            if (first_thread_local is null) first_thread_local = last_thread_local
+          endIf
         endForEach
       endForEach
       writer.println
@@ -878,6 +909,36 @@ augment Program
       writer.println( "}" )
       writer.println
 
+      # init_thread()
+      writer.println( "void Rogue_init_thread()" )
+      writer.println( "{" )
+      writer.indent += 2
+      if (first_thread_local)
+        writer.println("ROGUE_THREAD_LOCALS_INIT($, $);" (first_thread_local, last_thread_local))
+      endIf
+      forEach (type in type_list)
+        if (type.is_used)
+          local m = type.find_global_method( "init_class_thread_local()" )
+          if (m and m.type_context is type)
+            writer.print( m.cpp_name ).println( "();" )
+          endIf
+        endIf
+      endForEach
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
+      # deinit_thread()
+      writer.println( "void Rogue_deinit_thread()" )
+      writer.println( "{" )
+      writer.indent += 2
+      if (first_thread_local)
+        writer.println("ROGUE_THREAD_LOCALS_DEINIT($, $);" (first_thread_local, last_thread_local))
+      endIf
+      writer.indent -= 2
+      writer.println( "}" )
+      writer.println
+
       # launch()
       writer.println( "void Rogue_launch()" )
       writer.println( "{" )
@@ -892,6 +953,10 @@ augment Program
           endIf
         endIf
       endForEach
+      writer.println
+
+      # Call thread-local initialization
+      writer.println( "Rogue_init_thread();" );
       writer.println
 
       # Copy command line args to System class
@@ -1147,6 +1212,13 @@ class CPPWriter
       buffer.print( '\n' )
       ++line_number
       needs_indent = true
+      return this
+
+    method print_param ( param:Local )->CPPWriter
+      print( param.type )
+      if (param.is_alias)
+        print(" &")
+      endIf
       return this
 
     method print( type:Type )->CPPWriter
@@ -1412,7 +1484,7 @@ class CPPWriter
           throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
       endWhich
 
-  method print_arg ( arg:Cmd, param_type=null:Type, cast_to=null:Type )
+  method print_arg ( arg:Cmd, param_info=null:Local, cast_to=null:Type )
     # Prints an argument to a call
     #
     # Note that the argument here may not be an argument as far as *Rogue*
@@ -1420,6 +1492,29 @@ class CPPWriter
     # it may be the "this" pointer).
     # If param_type is given and is an aspect, we do an aspect-wrap.
     # If cast_to is given, we'll insert a cast to this type.
+
+    local param_type = select{param_info : param_info.type || null}->Type
+    local is_alias = param_info and param_info.is_alias
+    if (is_alias)
+      if (arg instanceOf CmdReadLocal or arg instanceOf CmdReadSingleton)
+        noAction # These are always okay
+      elseIf (arg instanceOf CmdReadArrayElement)
+        # It's possible to shoot oneself in the foot with this, but it's
+        # potentially useful, so we allow it when it's easy.
+        if (RogueC.gc_mode == GCMode.AUTO)
+          throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
+                            "are not currently supported in the active garbage collection mode." (param_info.name))
+        endIf
+      else
+        throw arg.t.error("The argument for parameter '$' cannot be aliased." (param_info.name))
+      endIf
+      if (RogueC.gc_mode == GCMode.AUTO)
+        if (not (param_type.is_primitive or param_type.is_compound))
+          throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
+                            "currently only supports primitive and compound aliases." (param_info.name))
+        endIf
+      endIf
+    endIf
 
     local close_paren = 0
 
@@ -1540,6 +1635,9 @@ augment RogueC
                   |#else
                   |  $compiler_name = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
                   |#endif
+          if (RogueC.thread_mode == ThreadMode.PTHREADS)
+            compiler_name += " -pthreads"
+          endIf
         endIf
 
         local exe = output_filepath
@@ -1902,9 +2000,9 @@ augment Method
           if (first) writer.print( " " ); first = false
           else       writer.print( ", " )
           if (param.parameter_needs_gc)
-            writer.print( param.type ).print( " " ).print( param.parameter_cpp_name )
+            writer.print_param( param ).print( " " ).print( param.parameter_cpp_name )
           else
-            writer.print( param.type ).print( " " ).print( param.cpp_name )
+            writer.print_param( param ).print( " " ).print( param.cpp_name )
           endIf
         endForEach
       endIf
@@ -1930,6 +2028,13 @@ augment Method
 
       writer.indent += 2
 
+      local do_sync = is_synchronized
+      if ( is_global ) do_sync = false
+      elseIf ( name == "init_object" ) do_sync = false
+      elseIf ( name == "on_cleanup" ) do_sync = false
+      if ( do_sync )
+        writer.println "ROGUE_SYNC_OBJECT_ENTER"
+      endIf
       forEach (param in parameters)
         if (param.parameter_needs_gc)
           writer.print("ROGUE_DEF_LOCAL_REF(").print(param.type).print(",").print(param.cpp_name).print(",").print(param.parameter_cpp_name).println(");")
@@ -1981,6 +2086,9 @@ augment Method
         statements.write_cpp( writer )
       endIf
 
+      if ( do_sync )
+        writer.println "ROGUE_SYNC_OBJECT_EXIT"
+      endIf
       writer.indent -= 2
       writer.println "}"
       writer.println
@@ -2023,11 +2131,7 @@ augment Local
       return _parameter_cpp_name
 
     method parameter_needs_gc->Logical
-      #NOTE: We could always return false here if not in auto GC mode.  This
-      #      might be slightly more efficient (especially if there was no C++
-      #      optimization), but would mean that you couldn't switch GC mode
-      #      by just tweaking defines in the output .h file.
-      return is_modified and type.is_reference
+      return is_modified and type.is_reference and RogueC.gc_mode == GCMode.AUTO
 endAugment
 
 #------------------------------------------------------------------------------
@@ -2625,7 +2729,7 @@ augment CmdCallRoutine
         local i = 0
         forEach (arg in args)
           if (i > 0) writer.print( ", " )
-          writer.print_arg( arg, method_info.parameters[i].type )
+          writer.print_arg( arg, method_info.parameters[i] )
           ++i
         endForEach
         writer.print( " " )
@@ -2644,7 +2748,7 @@ augment CmdCallAspectMethod
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        writer.print_arg( arg, method_info.parameters[i].type )
+        writer.print_arg( arg, method_info.parameters[i] )
         ++i
       endForEach
       writer.print( " )" )
@@ -2664,7 +2768,7 @@ augment CmdCallDynamicMethod
         local i = 0
         forEach (arg in args)
           writer.print( ", " )
-          writer.print_arg( arg, method_info.parameters[i].type )
+          writer.print_arg( arg, method_info.parameters[i] )
           ++i
         endForEach
         writer.print( " )" )
@@ -2686,7 +2790,7 @@ augment CmdCallStaticMethod
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        writer.print_arg( arg, method_info.parameters[i].type )
+        writer.print_arg( arg, method_info.parameters[i] )
         ++i
       endForEach
       writer.print( " )" )
@@ -2703,7 +2807,7 @@ augment CmdCallNativeRoutine
       local i = 0
       forEach (arg in args)
         if (i > 0) writer.print( ", " )
-        writer.print_arg( arg, method_info.parameters[i].type )
+        writer.print_arg( arg, method_info.parameters[i] )
         ++i
       endForEach
       writer.print( " )" )
@@ -2720,7 +2824,7 @@ augment CmdCallNativeMethod
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
-        writer.print_arg( arg, method_info.parameters[i].type )
+        writer.print_arg( arg, method_info.parameters[i] )
         ++i
       endForEach
       writer.print( " )" )
@@ -3339,11 +3443,27 @@ augment CmdRequire
       writer.print( ")" )
 endAugment
 
+
 augment CmdMacroGenerated
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       noAction
 endAugment
+
+
+augment CmdSyncObjectInit
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "ROGUE_SYNC_OBJECT_INIT" )
+endAugment
+
+
+augment CmdSyncObjectCleanup
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.println( "ROGUE_SYNC_OBJECT_CLEANUP" )
+endAugment
+
 
 #{
 augment CmdEnsure

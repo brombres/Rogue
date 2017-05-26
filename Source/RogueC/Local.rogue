@@ -7,6 +7,7 @@ class Local
     index         : Int32
     initial_value : Cmd
     is_modified   : Logical # set if ever assigned a new value
+    is_alias      : Logical
       # Also serves as default_value for parameters
 
   METHODS
@@ -20,6 +21,7 @@ class Local
       <init_result>
       result.type = type
       result.index = index
+      result.is_alias = is_alias
       if (initial_value) result.initial_value = initial_value.cloned( clone_args )
 
       return result

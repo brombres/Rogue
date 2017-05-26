@@ -48,6 +48,8 @@ class Program [essential singleton]
 
     type_StringBuilder : Type
 
+    type_NativeLock  : Type
+
     literal_string_lookup = Table<<String,Int32>>() : Table<<String,Int32>>
     literal_string_list   = String[]
 
@@ -97,17 +99,8 @@ class Program [essential singleton]
         template_lookup[ template.name ] = template
 
       unsatisfied
-        # We have an illegal standard class.  Could be two overloaded routines.
-        if (template.is_routine and existing_template.is_routine)
-          # Merge the routines and worry about exact duplicate routines later
-          existing_template.tokens.add( template.tokens )
-        else
-          if (existing_template.is_routine)
-            throw template.t.error( "A routine named $ already exists." (template.name) )
-          else
-            throw template.t.error( "A class named $ already exists." (template.name) )
-          endIf
-        endIf
+        # We have an illegal standard class.
+        throw template.t.error( "A class named $ already exists." (template.name) )
 
       endContingent
 
@@ -121,6 +114,7 @@ class Program [essential singleton]
       type_Character     = create_built_in_type( "Character", Attribute.is_primitive )
       type_Byte          = create_built_in_type( "Byte",      Attribute.is_primitive )
       type_Logical       = create_built_in_type( "Logical",   Attribute.is_primitive )
+      type_NativeLock    = create_built_in_type( "NativeLock",Attribute.is_primitive )
 
       type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
       type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class )
@@ -143,6 +137,8 @@ class Program [essential singleton]
 
       type_null.organized = true
       type_null.defined   = true
+
+      type_NativeLock.defined = true
 
       # Ensure that "" is the first literal string
       literal_string_list.add( "" )
@@ -338,6 +334,7 @@ class Program [essential singleton]
       type_Global.configure
       type_Object.configure
       type_NativeArray.configure
+      type_NativeLock.configure
       type_GenericList.configure
       type_String.configure
 
@@ -355,6 +352,7 @@ class Program [essential singleton]
 
       type_Object.resolve
       type_NativeArray.resolve
+      type_NativeLock.resolve
       type_GenericList.resolve
       type_String.resolve
 
@@ -389,6 +387,14 @@ class Program [essential singleton]
         endForEach
 
         types_resolved = resolve_types
+
+        # In non-threaded mode, make sure NativeLock isn't essential.  This
+        # should cause it to get culled, which is important because the
+        # underlying C++ type isn't defined in this case!
+        if (RogueC.thread_mode == ThreadMode.NONE)
+          type_NativeLock.attributes.flags &= !Attribute.is_essential
+          type_NativeLock.attributes.flags &= !Attribute.is_api
+        endIf
 
         # Give plug-ins a chance to generate new classes before we're done
         forEach (plugin in RogueC.plugins)

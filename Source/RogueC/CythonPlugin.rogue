@@ -38,7 +38,6 @@ class CyMethod
 
     is_initializer : Logical
 
-    is_routine : Logical
     is_static_method : Logical
 
     valid : Logical
@@ -73,40 +72,24 @@ class CyMethod
       if (m.omit_output and not force) return this
 
       # Basic setup
-      if (context.is_routine)
-        pyname = context.name
-        if (m.name != "call")
-          return this
-        endIf
-        pyclass = ""
-      else
-        pyname = m.name
-        pyclass = builder.get_p_type(context)
-      endIf
+      pyname = m.name.before_first("<")
+      pyclass = builder.get_p_type(context)
 
-      if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object")
+      if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object" or m.name == "init_class_thread_local")
         return this # Hide
       endIf
 
       cname = m.cpp_name
       is_initializer = m.is_initializer
-      is_routine = context.is_routine
       pyname = builder.fix_name(pyname)
       if (pyname == "") return this
 
       if (static_dispatch)
-        noAction
+        is_static_method = true
       else
-        if (not is_routine or m.called_dynamically) # Is the last part right??
-          call_args.add( "(<$*>check_type(self, $))" (m.type_context.cpp_class_name, builder.pytype) )
-          # Probably don't need to check type for the this pointer...
-          cproto_params.add( context.cpp_class_name + "*" )
-        endIf
-      endIf
-      if (not is_routine)
-        if (static_dispatch)
-          is_static_method = true
-        endIf
+        call_args.add( "(<$*>check_type(self, $))" (m.type_context.cpp_class_name, builder.pytype) )
+        # Probably don't need to check type for the this pointer...
+        cproto_params.add( context.cpp_class_name + "*" )
       endIf
 
       # Return type
@@ -251,7 +234,6 @@ class CyClass
     pytype : String
     type : Type
     funcs = Table<<String, CyMethod[]>>()
-    is_routine : Logical
     properties = Table<<String, CyProperty>>()
 
   GLOBAL PROPERTIES
@@ -353,7 +335,6 @@ class CyClass
       initialize()
 
       if (not type.is_class and not type.is_aspect and not force) return this
-      is_routine = type.is_routine
 
       pytype = get_p_type(type)
 
@@ -367,7 +348,6 @@ class CyClass
         local f = CyMethod( this, type, m, true, &force=force )
         if (f.is_initializer) nextIteration # Not useful
         if (not f.valid) nextIteration
-        if (f.is_routine != is_routine) throw Error("[INTERNAL] Dubious routine $.$" (type.name, m.name))
         local dname = f.pyname
         if (not funcs.contains(dname)) funcs[dname] = CyMethod[]
         funcs[dname].add(f)
@@ -376,7 +356,6 @@ class CyClass
       forEach (m in type.method_list)
         local f = CyMethod( this, type, m, &force=force )
         if (not f.valid) nextIteration
-        if (f.is_routine != is_routine) throw Error("[INTERNAL] Dubious routine $.$" (type.name, m.name))
         if (f.is_initializer) f.pyname = "_init_"
         local dname = f.pyname
         if (not funcs.contains(dname)) funcs[dname] = CyMethod[]
@@ -1378,79 +1357,65 @@ augment Program
       # Now write out each wrapped class/routine in an order such that a class
       # comes before all of its child classes.
       forEach (cyclass in cy_sort_cyclasses(cyclasses))
-        if not cyclass.is_routine
-          writer.println "# --- Wrapper for Class $ ---" (cyclass.pytype)
-          local bases = String[]
-          forEach (b in cyclass.type.base_types)
-            if (cyclasses.contains(b))
-              bases.add(cyclasses[b].pytype)
-            endIf
-          endForEach
-          if (bases.count == 0) bases.add("PyRogueBase")
-          if (cyclass.type.is_function) bases.add("_PyDelegate")
-          local base = ", ".join(bases)
-
-          writer.println "class $ ($):" (cyclass.pytype, base)
-          writer.println @|  __metaclass__ = _PyRogueMetaclass
-                          |  def __init__ (self, *args, **kwargs):
-                          |    cdef PyRogueBase base
-                          |    cdef PyRogueBase other
-                          |    base = self
-                          |    if '__pyrogue_new_instance' in kwargs:
-                          |      base.thisptr = <RogueObject*><intptr_t>kwargs['__pyrogue_new_instance']
-                          |      RogueObject_retain(<RogueObject*>base.thisptr)
-                          |    else:
-          writer.println  "      base.thisptr = RogueType_create_object(RogueType$, 0)" (cyclass.type.cpp_name)
-          writer.println @|      if not base.thisptr: raise RuntimeError("Could not create object")
-                          |      RogueObject_retain(<RogueObject*>base.thisptr)
-                          |      try:
-                          |        other = self._init_(*args, **kwargs)
-                          |        if other.thisptr != base.thisptr:
-                          |          RogueObject_release(<RogueObject*>base.thisptr)
-                          |          base.thisptr = other.thisptr
-                          |          RogueObject_retain(<RogueObject*>base.thisptr)
-                          |      except (AttributeError, OverloadException) as e:
-                          |        # Old behavior -- always allow default constructor: if args or kwargs:
-                          |        if True: # New behavior; correct constructor required
-                          |          RogueObject_release(<RogueObject*>base.thisptr)
-                          |          raise e
-          if cyclass.type.is_function
-            local pydelegate = cy_delegate_to_pydelegate[cyclass.type]
-            if (pydelegate is not null)
-              pydelegates.add("$._pyrogue_pydelegate_type = $" (cyclass.pytype, cy_delegates[pydelegate].pytype))
-            else
-              #throw Error("[INTERNAL] No Python delegate for signature type $" (cyclass.type.name))
-              # This case happens when there's no Python delegate because, e.g., there are compound
-              # paramters.
-              #FIXME: Support Python/Rogue marshalling of compounds!
-            endIf
+        writer.println "# --- Wrapper for Class $ ---" (cyclass.pytype)
+        local bases = String[]
+        forEach (b in cyclass.type.base_types)
+          if (cyclasses.contains(b))
+            bases.add(cyclasses[b].pytype)
           endIf
-          writer.indent+=2
-          if cyclass.type.is_singleton
-            writer.println "singleton = _SingletonDescriptor(lambda:$(__pyrogue_new_instance=<intptr_t>RogueType_singleton(RogueType$)))" (cyclass.pytype, cyclass.type.cpp_name)
-          endIf
+        endForEach
+        if (bases.count == 0) bases.add("PyRogueBase")
+        if (cyclass.type.is_function) bases.add("_PyDelegate")
+        local base = ", ".join(bases)
 
-          # Properties
-          if (not cyclass.type.is_aspect) # Aspects don't really have properties
-            writer.println "# --- Property wrappers ---"
-            forEach (p in cyclass.properties)
-              cy_write_property(writer, p)
-            endForEach
+        writer.println "class $ ($):" (cyclass.pytype, base)
+        writer.println @|  __metaclass__ = _PyRogueMetaclass
+                        |  def __init__ (self, *args, **kwargs):
+                        |    cdef PyRogueBase base
+                        |    cdef PyRogueBase other
+                        |    base = self
+                        |    if '__pyrogue_new_instance' in kwargs:
+                        |      base.thisptr = <RogueObject*><intptr_t>kwargs['__pyrogue_new_instance']
+                        |      RogueObject_retain(<RogueObject*>base.thisptr)
+                        |    else:
+        writer.println  "      base.thisptr = RogueType_create_object(RogueType$, 0)" (cyclass.type.cpp_name)
+        writer.println @|      if not base.thisptr: raise RuntimeError("Could not create object")
+                        |      RogueObject_retain(<RogueObject*>base.thisptr)
+                        |      try:
+                        |        other = self._init_(*args, **kwargs)
+                        |        if other.thisptr != base.thisptr:
+                        |          RogueObject_release(<RogueObject*>base.thisptr)
+                        |          base.thisptr = other.thisptr
+                        |          RogueObject_retain(<RogueObject*>base.thisptr)
+                        |      except (AttributeError, OverloadException) as e:
+                        |        # Old behavior -- always allow default constructor: if args or kwargs:
+                        |        if True: # New behavior; correct constructor required
+                        |          RogueObject_release(<RogueObject*>base.thisptr)
+                        |          raise e
+        if cyclass.type.is_function
+          local pydelegate = cy_delegate_to_pydelegate[cyclass.type]
+          if (pydelegate is not null)
+            pydelegates.add("$._pyrogue_pydelegate_type = $" (cyclass.pytype, cy_delegates[pydelegate].pytype))
+          else
+            #throw Error("[INTERNAL] No Python delegate for signature type $" (cyclass.type.name))
+            # This case happens when there's no Python delegate because, e.g., there are compound
+            # paramters.
+            #FIXME: Support Python/Rogue marshalling of compounds!
           endIf
-          writer.println
-
-        else # is_routine
-          # This isn't the most elegant way we could do routines, but it's
-          # fairly easy and should handle overloading.  We create a class
-          # for the routine and stock it with methods in the normal way, which
-          # a) requires no special case code, and b) handles overloads.
-          # Later, we make this class callable by adding a __call__ that
-          # just calls the method we added (or the overload dispatcher),
-          # and then replace the class with an instance of itself.
-          writer.println "# --- Wrapper for Routine $ ---" (cyclass.pytype)
-          writer.println "class $ (object):" (cyclass.pytype)
-          writer.indent+=2
         endIf
+        writer.indent+=2
+        if cyclass.type.is_singleton
+          writer.println "singleton = _SingletonDescriptor(lambda:$(__pyrogue_new_instance=<intptr_t>RogueType_singleton(RogueType$)))" (cyclass.pytype, cyclass.type.cpp_name)
+        endIf
+
+        # Properties
+        if (not cyclass.type.is_aspect) # Aspects don't really have properties
+          writer.println "# --- Property wrappers ---"
+          forEach (p in cyclass.properties)
+            cy_write_property(writer, p)
+          endForEach
+        endIf
+        writer.println
 
         # Iterate over each method name; write the method (and its overloads)
         forEach (fi in cyclass.funcs.value_reader)
@@ -1497,24 +1462,17 @@ augment Program
           endIf
         endForEach
 
-        if not cyclass.is_routine
-          writer.println "@staticmethod"
-          writer.println "def _pyrogue_type ():"
-          writer.println "  return <intptr_t>RogueType$" (cyclass.type.cpp_name)
+        writer.println "@staticmethod"
+        writer.println "def _pyrogue_type ():"
+        writer.println "  return <intptr_t>RogueType$" (cyclass.type.cpp_name)
 
-          if cyclass.type.is_function
-            if cyclass.funcs.contains("call")
-              writer.println "__call__ = call"
-            endIf
+        if cyclass.type.is_function
+          if cyclass.funcs.contains("call")
+            writer.println "__call__ = call"
           endIf
-
-          writer.indent-=2
-        else
-          writer.println "def __call__ (self, *args, **kw):"
-          writer.println "  return self.$(*args, **kw)" (cyclass.pytype)
-          writer.indent-=2
-          writer.println "$ = $()" (cyclass.pytype, cyclass.pytype)
         endIf
+
+        writer.indent-=2
 
         writer.println "_rogue_type_index_to_pyclass[$] = $" (cyclass.type.index, cyclass.pytype)
       endForEach
@@ -1578,6 +1536,19 @@ augment Program
 
       # Write out the Python wrapper classes and overload table
       cy_write_classes(writer, cyclasses)
+
+      # Expose methods on Global
+      writer.println "\n# --- Exposing Global methods ---"
+      local rglobal = Program.type_lookup["Global"]
+      local cyglobal = cyclasses[rglobal]
+      if rglobal and cyglobal
+        forEach (fi in cyglobal.funcs.value_reader)
+          local constructor = fi[0].is_initializer
+          if (constructor) nextIteration
+          writer.println "def $ (*args, **kwargs):" (fi[0].pyname)
+          writer.println "  return Global.$(*args, **kwargs)" (fi[0].pyname)
+        endForEach
+      endIf
 
       writer.close
 

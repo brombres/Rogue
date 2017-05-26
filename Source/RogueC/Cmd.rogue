@@ -2018,18 +2018,7 @@ class CmdAccess : Cmd
         return null
       endIf
 
-      local result = scope.find_type( name )
-      if (not result) return null
-      if (not result.is_routine) return result
-
-      local template = Program.find_template( name )
-      if (template)
-        if (template.is_task) return null
-        if (template.routine_return_type.exists) return template.routine_return_type.value
-        throw t.error( "Routine '$' does not return a value." (name) )
-      endIf
-
-      return null
+      return scope.find_type( name )
 
     method is_scoped_read_access->Logical
       return true
@@ -2057,52 +2046,7 @@ class CmdAccess : Cmd
         local new_type = scope.find_type( name.after_any('@') )
         if (new_type)
           # new TypeName(...)
-          if (new_type.is_routine and not new_type.defined and not name.contains('<') and args and args.count)
-            local template = Program.find_template( name )
-            if (template.type_parameters)
-              # Infer specializer types from args and adjust name
-              if (template.type_parameters.count == 1)
-                args.resolve( scope )
-                local common_type = args.first.type
-                forEach (arg at index in args)
-                  if (index > 0)
-                    common_type = find_common_type( common_type, arg.type )
-                    if (not common_type)
-                      throw t.error( "Unable to infer specializing type for routine template - explicitly write $<<TypeName>>(...) instead." (name) )
-                    endIf
-                  endIf
-                endForEach
-                name += "<<$>>" (common_type.name)
-              endIf
-              new_type = scope.find_type( name.after_any('@') )
-            endIf
-          endIf
           new_type.organize(scope)
-
-          if (new_type.is_routine)
-            # MyRoutine(args) -> MyRoutine.call(args)
-            if (name.begins_with('@'))
-              local m_call_list = new_type.global_method_lookup_by_name[ "call" ]
-              if (m_call_list and m_call_list.count == 1)
-                local m_call = m_call_list.first
-                local parameters = FnParam[]( m_call.parameters.count )
-                local args = CmdArgs()
-                forEach (param in m_call.parameters)
-                  parameters.add( FnParam( param.name ) )
-                  parameters.last.type = param.type
-                  args.add( CmdAccess(t,param.name) )
-                endForEach
-                local statements = CmdStatementList(1)
-                if (m_call.return_type) statements.add( CmdReturn( t, CmdAccess( t, new_type.name, args ) ) )
-                else                    statements.add( CmdAccess( t, new_type.name, args ) )
-                return CmdCreateFunction( t, parameters, m_call.return_type, null, statements, null, false ).resolve( scope )
-              endIf
-            else
-              local cmd = CmdAccess( t, CmdThisContext(t,new_type), "call", args )
-              cmd.named_args = named_args
-              return cmd.resolve( scope )
-            endIf
-          endIf
 
           if (args is null)
             if (name.ends_with(']'))
@@ -2993,7 +2937,7 @@ class CmdCallMethod : CmdCall
           # the corresponding method template in the base class.  If successful it
           # will change method_info.overridden_method.
           method_info.type_context.base_class.method_templates.instantiate( method_info.unspecialized_name,
-              method_info.specializer_count, t, method_info.name )
+              method_info.specializer_count, t, method_info.name, null )
         endIf
 
         if (not method_info.overridden_method)
@@ -5451,7 +5395,7 @@ class CmdMakeRequisite : Cmd
           local m = req_type.find_method( sig )
           if (not m and req_type.method_templates.has_template(sig.before_first('(')))
             # Try again after instantiating new method templates
-            req_type.method_templates.instantiate( t, sig.before_first('(') )
+            req_type.method_templates.instantiate( t, sig.before_first('('), null )
             m = req_type.find_method( sig )
           endIf
 
@@ -5819,3 +5763,34 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
       return of_type
 endClass
 
+
+class CmdSyncObjectInit : CmdStatement
+  METHODS
+    method init( t )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSyncObjectInit
+      if (new_t) t = new_t
+      return CmdSyncObjectInit( t )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+endClass
+
+
+class CmdSyncObjectCleanup : CmdStatement
+  METHODS
+    method init( t )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSyncObjectCleanup
+      if (new_t) t = new_t
+      return CmdSyncObjectCleanup( t )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+endClass

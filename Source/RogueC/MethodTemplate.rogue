@@ -26,16 +26,73 @@ class MethodTemplate
       endIf
       return @generic_signature
 
-    method instantiate( ref_t:Token, ref_name:String, &make_generic )->Method
+    method instantiate_inferred ( ref_t:Token, ref_name:String, arg_types:Type[] )->Method
+      local mappings = Table<<String,Token[]>>()
+      local m = instantiate(ref_t, ref_name, true, mappings)
+      if (arg_types.count > m.parameters.count) return null # Too many args!
+
+      local inf = MethodInferencer(this, mappings)
+
+      forEach (p at arg_index in m.parameters)
+        if (arg_index >= arg_types.count) escapeForEach # No more inference possible
+
+        # The arg at arg_index *may* be based on one of the template parameters.  If it is,
+        # we can infer the template argument based on the argument type.  The simple case
+        # is when the parameter type is exactly a template parameter, e.g., "arg1:$T1".
+        # However, we handle a couple cases of derived types too, e.g., "arg1:$T1[]" and
+        # "arg1:Function($T1)".  We could probably handle even more types (for example
+        # by recursively handling derivations or examining method arguments which are
+        # themselves based on class templates), but we currently don't.
+
+        local type = p.type
+        local inferred_type = arg_types[arg_index]
+
+        if (inf.contains(type.t))
+          if (not inf.try_inference(type, inferred_type)) return null
+        elseIf (type.is_function)
+          if (inferred_type.name.begins_with("Function_") and inferred_type.base_class and inferred_type.base_class.is_function)
+            #TODO: FIXME if and when .is_function gets set to true on all extended function types
+
+            inferred_type = inferred_type.base_class # Base function type
+            if (type.callback_parameter_types and inferred_type.callback_parameter_types)
+              forEach (cbp at i in type.callback_parameter_types)
+                if (inf.contains(cbp.t))
+                  type = cbp
+                  if (inferred_type.callback_parameter_types.count > i)
+                    if (not inf.try_inference(type, inferred_type.callback_parameter_types[i])) return null
+                  endIf
+                endIf
+              endForEach
+            endIf
+            if (type.callback_return_type and inferred_type.callback_return_type)
+              if (inf.contains(type.callback_return_type.t))
+                type = type.callback_return_type
+                inferred_type = inferred_type.callback_return_type
+                if (not inf.try_inference(type, inferred_type)) return null
+              endIf
+            endIf
+          endIf
+        endIf
+      endForEach
+
+      local templ_param_string = inf.method_name
+      if (not templ_param_string) return null
+      local full_name = ref_name.before_first('<') + templ_param_string
+
+      m = instantiate(ref_t, full_name)
+      #println "Via inference: $ $" (full_name, m.signature)
+      return m
+
+    method instantiate( ref_t:Token, ref_name:String, &make_generic, mappings=null:Table<<String,Token[]>> )->Method
       local specializer_tokens = Token[][]()
 
       if (make_generic)
         ref_name = ""
         forEach (index in 1..type_parameters.count)
           specializer_tokens.add( Token[] )
-          specializer_tokens.last.add( TokenType.identifier.create_token( t, "T"+index ) )
+          specializer_tokens.last.add( TokenType.identifier.create_token( t, "$T"+index ) )
           if (ref_name.count > 0) ref_name += ","
-          ref_name += "T"+index
+          ref_name += "$T"+index
         endForEach
         ref_name = "$<<$>>" (name,ref_name)
 
@@ -54,7 +111,9 @@ class MethodTemplate
 
       endIf
 
-      local mappings = Table<<String,Token[]>>()
+      if (mappings is null)
+        mappings = Table<<String,Token[]>>()
+      endIf
       forEach (type_param at i in type_parameters)
         mappings[ type_param.name ] = specializer_tokens[i]
       endForEach
@@ -91,7 +150,14 @@ class MethodTemplate
       m.source_template = this
       m.specializer_count = type_parameters.count
       m.unspecialized_name = name
-      m.assign_signature
+
+      contingent
+        forEach (param in m.parameters)
+          necessary param.type is not null
+        endForEach
+      satisfied
+        m.assign_signature
+      endContingent
 
       if (not make_generic)
         # Classes can define specialized template methods with specific types;
@@ -112,6 +178,62 @@ class MethodTemplate
     method to->String
       return "$.$<<$>>()" (type_context.name,name,type_parameters.count)
 
+endClass
+
+
+class MethodInferencer
+  PROPERTIES
+    inferred_types = Type[]
+    rev_map = Table<<String,Int32>>()
+
+  METHODS
+    method init (template : MethodTemplate, mappings : Table<<String,Token[]>>)
+      local index = 0
+      forEach (kv in mappings.reader)
+        rev_map[kv.value.last] = index
+        index++
+      endForEach
+
+      inferred_types.expand_to_count(template.type_parameters.count)
+
+    method _add_inferred (templ_index:Int32, inferred_type:Type)->Logical
+      # Tries to add inferred_type to inferred_types at templ_index
+      # Returns true on success or false if we've already tried to infer this template
+      # parameter and the new type isn't the same as the previous one.
+      if (inferred_types[templ_index] and inferred_types[templ_index] != inferred_type) return false
+      inferred_types[templ_index] = inferred_type
+      #println "INFERRED $ -> $" (templ_index, inferred_type)
+      return true
+
+    method contains (param_name:String)->Logical
+      return rev_map.contains(param_name)
+
+    method try_inference (type:Type, inferred_type:Type)->Logical
+      if ( (type.t as StringDataToken) is not null )
+        local placeholder = (type.t as StringDataToken).value
+
+        if ( placeholder == type.name )
+          return _add_inferred(rev_map[type.t], inferred_type)
+        elseIf ( placeholder + "[]" == type.name )
+          if (inferred_type.is_list)
+            inferred_type = inferred_type.element_type
+            return _add_inferred(rev_map[type.t], inferred_type)
+          endIf
+        elseIf ( placeholder + "?" == type.name )
+          return _add_inferred(rev_map[type.t], inferred_type)
+        endIf
+      endIf
+      return false
+
+    method method_name ()->String
+      local name = "<<"
+      forEach (t at i in inferred_types)
+        if (t is null) return null # Couldn't infer this parameter
+        if (i != 0) name += ","
+        name += t
+      endForEach
+      name += ">>"
+      return name
 endClass
 
 
@@ -168,23 +290,38 @@ class MethodTemplates
         endForEach
       endForEach
 
-    method instantiate( t:Token, specialized_name:String )
+    method instantiate( t:Token, specialized_name:String, methods:Method[] )
+      # Called by CmdMakeRequisite
       local base_name = specialized_name.before_first( "<<" )
       require has_template( base_name )
 
       local specializer_count = Parser(t,specialized_name,specialized_name.from_first("<<")).parse_specializer_count
-      instantiate( base_name, specializer_count, t, specialized_name )
+      instantiate( base_name, specializer_count, t, specialized_name, methods )
 
-    method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String )
+    method instantiate( t:Token, name:String, arg_types:Type[], methods:Method[] )
+      forEach (group in templates.values)
+        forEach (m in group.overloads)
+          if (m.name.before_first("<<") != name) nextIteration
+          local new_method = m.instantiate_inferred(t, name, arg_types)
+          if (new_method and methods) methods.add(new_method)
+
+          local key = "$<<$>>" (name,m.type_parameters.count)
+          (forEach in type_context.extended_types).method_templates.instantiate_overrides( key, t, m.name )
+        endForEach
+      endForEach
+
+    method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String, methods:Method[] )
       # This version with no parameter count is used during call resolution and only called when
       # no methods matching the specialized name (such as `get_property<<Int32>>`) are found.
       # The possibility of default args or a wrong number of args means we instantiate all templates
       # matching the name and number of specializers.
+      # This is also called by Type and CmdCallMethod
       local key = "$<<$>>" (name,specializer_count)
       local group = templates[ key ]
       if (group)
         forEach (m in group.overloads)
-          m.instantiate( t, specialized_name )
+          local new_method = m.instantiate( t, specialized_name )
+          if (methods) methods.add(new_method)
 
           # Recursively instantiate overrides
           (forEach in type_context.extended_types).method_templates.instantiate_overrides( key, t, specialized_name )

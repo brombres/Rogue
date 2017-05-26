@@ -1,0 +1,11 @@
+class Tuple <<$T1,$T2>> (e1:$T1,e2:$T2) [compound]
+  METHODS
+    method to->String
+      return "($,$)" (e1,e2)
+endClass
+
+class Tuple <<$T1,$T2,$T3>> (e1:$T1,e2:$T2,e3:$T3) [compound]
+  METHODS
+    method to->String
+      return "($,$,$)" (e1,e2,e3)
+endClass
