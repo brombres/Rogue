@@ -99,17 +99,8 @@ class Program [essential singleton]
         template_lookup[ template.name ] = template
 
       unsatisfied
-        # We have an illegal standard class.  Could be two overloaded routines.
-        if (template.is_routine and existing_template.is_routine)
-          # Merge the routines and worry about exact duplicate routines later
-          existing_template.tokens.add( template.tokens )
-        else
-          if (existing_template.is_routine)
-            throw template.t.error( "A routine named $ already exists." (template.name) )
-          else
-            throw template.t.error( "A class named $ already exists." (template.name) )
-          endIf
-        endIf
+        # We have an illegal standard class.
+        throw template.t.error( "A class named $ already exists." (template.name) )
 
       endContingent
 

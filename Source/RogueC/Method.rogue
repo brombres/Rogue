@@ -298,9 +298,8 @@ class Method
         if (is_global)
           local existing_m = type_context.global_method_lookup_by_signature[signature]
           if (existing_m and existing_m.type_context is type_context)
-            if (type_context.is_routine)
-              throw t.error( "A routine with the signature $$ is already defined." ...
-                             (type_context.name,signature.from_first('(')))
+            if (type_context == Program.get_type_reference(t, "Global"))
+              throw t.error( "A routine with the signature $ is already defined." (signature) )
             else
               throw t.error( "A global method with the signature $ is already defined." (signature) )
             endIf

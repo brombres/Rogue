@@ -245,10 +245,6 @@ class Parser
       this_type = original_type
 
     method parse_template_tokens( template:Template, end_type:TokenType )
-      local first_t = peek
-
-      local is_routine = (end_type is TokenType.keyword_endRoutine)
-
       if (consume(TokenType.symbol_open_specialize))
         local first = true
         while (first or consume(TokenType.symbol_comma))
@@ -295,47 +291,17 @@ class Parser
       local final_pos = reader.position
       allow_placeholder_ids = false
 
-      if (is_routine)
-        # routine MyRoutine<<type>>(args)...
-        #   -> class MyRoutine<<type>>
-        #        GLOBAL METHODS
-        #          method call(args)...
+      reader.position = starting_pos
+      while (reader.position < final_pos) template.tokens.add( read )
 
-        # Skip the return type if it exists
-        if (consume(TokenType.symbol_arrow))
-          if (consume(TokenType.placeholder_id))
-            template.routine_return_type = null
-          else
-            template.routine_return_type = parse_type
-          endIf
-        endIf
+      # Parse out attributes
+      parse_attributes( template.attributes )
 
-        parse_attributes( template.attributes )
-
-        reader.position = starting_pos
-
-        consume_eols
-        template.tokens.add( EOLToken(first_t) )
-        template.tokens.add( TokenType.keyword_GLOBAL.create_token(first_t) )
-        template.tokens.add( TokenType.keyword_METHODS.create_token(first_t) )
-        template.tokens.add( EOLToken(first_t) )
-        template.tokens.add( TokenType.keyword_method.create_token(first_t) )
-        template.tokens.add( TokenType.identifier.create_token(first_t,"call") )
-
-      else
-        reader.position = starting_pos
-        while (reader.position < final_pos) template.tokens.add( read )
-
-        # Parse out attributes
-        parse_attributes( template.attributes )
-
-        local semi_t = peek
-        if (consume(TokenType.symbol_semicolon))
-          if (template.tokens.count == 0) template.tokens.add( TokenType.eol.create_token(semi_t) )
-          Program.add_template( template )
-          return
-        endIf
-
+      local semi_t = peek
+      if (consume(TokenType.symbol_semicolon))
+        if (template.tokens.count == 0) template.tokens.add( TokenType.eol.create_token(semi_t) )
+        Program.add_template( template )
+        return
       endIf
 
       while (reader.has_another)
