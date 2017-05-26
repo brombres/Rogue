@@ -1537,6 +1537,19 @@ augment Program
       # Write out the Python wrapper classes and overload table
       cy_write_classes(writer, cyclasses)
 
+      # Expose methods on Global
+      writer.println "\n# --- Exposing Global methods ---"
+      local rglobal = Program.type_lookup["Global"]
+      local cyglobal = cyclasses[rglobal]
+      if rglobal and cyglobal
+        forEach (fi in cyglobal.funcs.value_reader)
+          local constructor = fi[0].is_initializer
+          if (constructor) nextIteration
+          writer.println "def $ (*args, **kwargs):" (fi[0].pyname)
+          writer.println "  return Global.$(*args, **kwargs)" (fi[0].pyname)
+        endForEach
+      endIf
+
       writer.close
 
     method write_cpp ( filepath:String )
