@@ -275,7 +275,7 @@ class Parser
             if (consume(TokenType.symbol_equals)) parse_expression
             consume_eols
             if (consume(TokenType.symbol_colon))
-              if (not consume(TokenType.placeholder_id)) parse_possible_type
+              if (not consume(TokenType.placeholder_id)) parse_type_name
             endIf
             consume_eols
           endWhile
@@ -284,8 +284,8 @@ class Parser
       endIf
 
       if (consume(TokenType.symbol_colon))
-        parse_possible_type
-        while (consume(TokenType.symbol_comma)) parse_possible_type
+        parse_type_name
+        while (consume(TokenType.symbol_comma)) parse_type_name
       endIf
 
       local final_pos = reader.position
@@ -320,7 +320,7 @@ class Parser
     method parse_augment
       local t = reader.read  # 'augment'
 
-      local name = parse_possible_type
+      local name = parse_type_name
       if (name.contains('$'))
         local base_name = name.before_first( '<' )
         throw t.error( "Illegal placeholder type in augment.  Write '$' without the specializers (<<...>>) to apply the augment to all template instances or write specific types such as $<<String>> to restrict the augment to that type." (base_name,base_name) )
@@ -1672,7 +1672,7 @@ class Parser
           consume_eols
           must_consume( TokenType.symbol_open_paren )
           local error_t = peek
-          local error_name = parse_possible_type
+          local error_name = parse_type_name
           consume_eols
           if (consume(TokenType.symbol_colon))
             cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
@@ -1835,35 +1835,10 @@ class Parser
       endIf
 
     method parse_type->Type
-      local name : String
-
       local t = peek
-      if (t->Type)
-        local type = read->Type
-        if (next_is(TokenType.symbol_empty_brackets) or next_is(TokenType.symbol_question_mark))
-          name = type.name
-          loop
-            if (consume(TokenType.symbol_empty_brackets))
-              name += "[]"
-            elseIf (consume(TokenType.symbol_question_mark))
-              name += "?"
-            else
-              escapeLoop
-            endIf
-          endLoop
-        else
-          return type
-        endIf
+      return Program.get_type_reference( t, parse_type_name )
 
-      else
-        name = parse_possible_type
-
-      endIf
-
-      local type = Program.get_type_reference( t, name )
-      return type
-
-    method parse_possible_type( allow_at_sign=false:Logical )->String
+    method parse_type_name( allow_at_sign=false:Logical )->String
       local t = peek
       local name : String
 
@@ -1873,7 +1848,7 @@ class Parser
         # type lists.  For example, in Template<<$X>> with a method m->$X?, if $X is
         # Function()->Logical, then $X? reads as Function()->(Logical?) when you may
         # want Function()->(Logical)?.  We can write ->($X)? as an alternative.
-        name = parse_possible_type
+        name = parse_type_name
         if (next_is(TokenType.symbol_comma))
           while (next_is(TokenType.symbol_comma))
             read # comma
@@ -1913,7 +1888,7 @@ class Parser
               while (first or consume(TokenType.symbol_comma))
                 first = false
                 local type_t = peek
-                local type_name = parse_possible_type
+                local type_name = parse_type_name
                 if (consume(TokenType.symbol_colon))
                   # Discard the name of the callback parameter
                   parameter_types.add( parse_type )
@@ -2626,7 +2601,7 @@ class Parser
       endIf
 
       # In parse_access()
-      local access = CmdAccess( t, parse_possible_type(true) )
+      local access = CmdAccess( t, parse_type_name(true) )
       if (next_is(TokenType.symbol_open_paren))
         access.args = CmdArgs()
         access.named_args = parse_args( access.args )
