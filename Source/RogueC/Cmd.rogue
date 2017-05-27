@@ -1013,7 +1013,10 @@ endClass
 
 class CmdForEach : CmdControlStructure
   PROPERTIES
+    # At most one of control_var_name and control_var_tuple will be set.
+    # In the latter case, it's because you're doing a destructuring assignment of the control variable.
     control_var_name    : String
+    control_var_tuple   : CmdTuple
     index_var_name      : String
     collection_var_name : String
     collection          : Cmd
@@ -1025,9 +1028,14 @@ class CmdForEach : CmdControlStructure
     method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
       control_type = CmdControlStructure.type_forEach
 
+    method init( t, control_var_tuple, index_var_name, collection, step_cmd, statements=CmdStatementList() )
+      control_type = CmdControlStructure.type_forEach
+      control_var_tuple.synthesize_variables = true
+
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       local result = CmdForEach( t, control_var_name, index_var_name, collection.cloned( clone_args, new_t ), clone(step_cmd,clone_args,new_t), null )
+      result.control_var_tuple = clone( control_var_tuple, clone_args, new_t ) as CmdTuple
       result.first_cmd = clone( first_cmd, clone_args, new_t )
       result.last_cmd = clone( last_cmd, clone_args, new_t )
       result.set_control_logic( this )
@@ -1097,6 +1105,10 @@ class CmdForEach : CmdControlStructure
           control_var = scope.this_method.add_local( t, control_var_name )
           control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, CmdArgs(CmdReadLocal(t,index_var)) )
           statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
+        elseIf (control_var_tuple)
+          local control_tuple = CmdAssign(control_var_tuple.t, control_var_tuple, ...
+            CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, CmdArgs(CmdReadLocal(t,index_var)) ))
+          statements.insert(control_tuple)
         endIf
 
         local modifier : Cmd
@@ -1155,6 +1167,10 @@ class CmdForEach : CmdControlStructure
           local control_var = scope.this_method.add_local( t, control_var_name, m_read.return_type,
             CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
           statements.insert( CmdLocalDeclaration(collection.t,control_var) )
+        elseIf (control_var_tuple)
+          local control_tuple = CmdAssign(control_var_tuple.t, control_var_tuple, ...
+            CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+          statements.insert(control_tuple)
         else
           statements.insert( CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
         endIf
