@@ -432,6 +432,13 @@ class TableEntry<<$KeyType,$ValueType>>
 
     method to->String
       return "($ $:$)" (type_name, key, value)
+
+    # Support tuple-like protocol for destructuring assignment
+    method _1->$KeyType
+      return key
+
+    method _2->$ValueType
+      return value
 endClass
 
 

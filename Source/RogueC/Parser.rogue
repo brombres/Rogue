@@ -2101,12 +2101,13 @@ class Parser
 
       local expr = parse_expression
       local access = expr as CmdAccess
-      if (access)
-        if (access.context or access.args)
+      local access_tuple = expr as CmdTuple
+      if (access or access_tuple)
+        if (access and (access.context or access.args))
           throw access.t.error( "Single identifier expected for control variable name." )
         else
           local index_var_name : String
-          if (access.name == "at")
+          if (access and access.name == "at")
             # forEach (at index in list) - variant of forEach (value at index in list)
             throw access.t.error( "Missing element name before 'at'." )
           elseIf (consume("at"))
@@ -2132,6 +2133,7 @@ class Parser
             local range = collection as CmdRange
             if (range)
               if (index_var_name ) throw range.t.error( "Cannot use 'at' with a range." )
+              if (not access) throw range.t.error( "Cannot use 'at' with destructuring." )
 
               local cmd_for_each = create_generic_loop_from_range( t, access.name, range )
 
@@ -2161,7 +2163,12 @@ class Parser
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
-              local cmd_for_each = CmdForEach( t, access.name, index_var_name, collection, step_cmd )
+              local cmd_for_each : CmdForEach
+              if (access)
+                cmd_for_each = CmdForEach( t, access.name, index_var_name, collection, step_cmd )
+              else
+                cmd_for_each = CmdForEach( t, access_tuple, index_var_name, collection, step_cmd )
+              endIf
               cmd_for_each.first_cmd = first_cmd
               cmd_for_each.last_cmd = last_cmd
               cmd_for_each.collection_var_name = collection_var_name
@@ -2209,7 +2216,7 @@ class Parser
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
 
-              local cmd_for_each = CmdForEach( t, null, access.name, collection, step_cmd )
+              local cmd_for_each = CmdForEach( t, null as String, access.name, collection, step_cmd )
               cmd_for_each.first_cmd = first_cmd
               cmd_for_each.last_cmd = last_cmd
               cmd_for_each.collection_var_name = collection_var_name
@@ -2852,9 +2859,20 @@ class Parser
           sufficient (next_is(TokenType.keyword_with))
           sufficient (next_is(TokenType.symbol_fat_arrow))
 
+          if (result instanceOf CmdTuple)
+            sufficient (next_is(TokenType.symbol_empty_brackets))
+            sufficient (next_is(TokenType.symbol_question_mark))
+          endIf
+
           return result
 
         satisfied
+          if (next_is(TokenType.symbol_empty_brackets) or next_is(TokenType.symbol_question_mark))
+            # Rewind and parse a type instead
+            reader.position = rewind_pos
+            return parse_access( t )
+          endIf
+
           # Rewind and parse a generic function instead.
           reader.position = rewind_pos
           return parse_function( t )
