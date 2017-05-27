@@ -3149,11 +3149,11 @@ class CmdTuple : Cmd
     # synthesize the variables (e.g., it was done with "local (a,b) = (1,2)").
 
   METHODS
-    method init( t, elements )
+    method init( t, elements, synthesize_variables=false )
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->this
       if (new_t) t = new_t
-      return CmdTuple( t, elements.cloned )
+      return CmdTuple( t, elements.cloned, synthesize_variables )
 
     method resolve( scope:Scope )->Cmd
       local args = CmdArgs()
@@ -3175,10 +3175,17 @@ class CmdTuple : Cmd
       endForEach
       return CmdAccess( t, "Tuple<<$>>"(type_string), args ).resolve( scope )
 
+    method _get_element_type ( rht:Type, index:Int32 ) -> Type
+        local prop = rht.find_property("_$" (1+index))
+        if (prop) return prop.type
+        local meth = rht.find_method("_$()" (1+index))
+        if (meth) return meth.return_type
+        return null
+
     method _create_variables ( scope:Scope, rht:Type )
       forEach (el at el_index in elements)
         if (el instanceOf CmdNoAction) nextIteration # They are skipping this one
-        local type = rht.property_lookup["_"+(el_index+1)].type
+        local type = _get_element_type(rht, el_index)
         if (el instanceOf CmdTuple)
           # synthesizing for nested destructuring
           (el as CmdTuple)._create_variables(scope, type)
@@ -3195,12 +3202,23 @@ class CmdTuple : Cmd
       local rht = new_value.require_type # Type of right-hand tuple
       rht.organize(scope)
 
-      if (not rht.is_tuple)
-        throw t.error("Cannot perform destructuring assignment from non-tuple type $." (rht.name))
-      endIf
-      require(rht.property_list.count >= rht.specializers.count)
-      if (rht.specializers.count != elements.count)
-        throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, rht.specializers.count))
+      if (rht.is_tuple)
+        require(rht.property_list.count >= rht.specializers.count)
+        if (rht.specializers.count != elements.count)
+          throw t.error("Cannot assign $ elements because the right-hand tuple has $." (elements.count, rht.specializers.count))
+        endIf
+      else
+        # Maybe it supports something vaguely tuple-like.  Let's check...
+        # This doesn't support semi-odd things like "method _1(param=false)->t" which could
+        # theoretically work.
+        forEach (el_index in 0..<elements.count)
+          if (_get_element_type(rht, el_index) == null)
+            throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, el_index))
+          endIf
+        endForEach
+        if (_get_element_type(rht, elements.count))
+          throw t.error("Cannot assign $ elements because the right-hand side has more than that." (elements.count))
+        endIf
       endIf
 
       # We assign the RHS to a temporary variable inside a block.
