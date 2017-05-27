@@ -2830,9 +2830,20 @@ class Parser
           sufficient (next_is(TokenType.keyword_with))
           sufficient (next_is(TokenType.symbol_fat_arrow))
 
+          if (result instanceOf CmdTuple)
+            sufficient (next_is(TokenType.symbol_empty_brackets))
+            sufficient (next_is(TokenType.symbol_question_mark))
+          endIf
+
           return result
 
         satisfied
+          if (next_is(TokenType.symbol_empty_brackets) or next_is(TokenType.symbol_question_mark))
+            # Rewind and parse a type instead
+            reader.position = rewind_pos
+            return parse_access( t )
+          endIf
+
           # Rewind and parse a generic function instead.
           reader.position = rewind_pos
           return parse_function( t )
