@@ -3160,29 +3160,53 @@ class CmdTuple : Cmd
       return CmdAccess( t, "Tuple<<$>>"(type_string), args ).resolve( scope )
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
-      local temp_var = scope.this_method.add_local( t, Program.create_unique_id, null, new_value )
-      local temp_var_decl = CmdLocalDeclaration(t,temp_var).resolve(scope) as CmdLocalDeclaration
-      scope.this_body.add( temp_var_decl )
-      local rht = temp_var_decl.local_info.type
-      if (rht.is_tuple)
-        if (rht.specializers.count != elements.count)
-          throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, rht.specializers.count))
-        endIf
-        forEach (el at el_index in elements)
-          if (el instanceOf CmdNoAction) nextIteration # They are skipping this one
-          local rhs_part = CmdAccess(t, CmdAccess(t, temp_var), "e"+(el_index+1)).resolve(scope)
-          if (synthesize_variables)
-            require(el as CmdAccess)
-            local part_var = scope.this_method.add_local( t, (el as CmdAccess).name, null, rhs_part )
-            local part_decl = CmdLocalDeclaration(t,part_var)
-            scope.this_body.add( part_decl.resolve(scope) )
-          else
-            scope.this_body.add( CmdAssign(t, el, rhs_part).resolve(scope) )
-          endIf
-        endForEach
-      else
+      new_value = new_value.resolve(scope)
+      local rht = new_value.require_type # Type of right-hand tuple
+      rht.organize(scope)
+
+      if (not rht.is_tuple)
         throw t.error("Cannot perform destructuring assignment from non-tuple type $." (rht.name))
       endIf
+      require(rht.property_list.count >= rht.specializers.count)
+      if (rht.specializers.count != elements.count)
+        throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, rht.specializers.count))
+      endIf
+
+      # We assign the RHS to a temporary variable inside a block.
+      # Inside the block, we assign elements of the temporary to the individual
+      # variables.
+      # By having the temporary inside a block, it gets destroyed right after
+      # all the assignments, which lets the temporary expire at the correct
+      # time.  This may be important for garbage collection, for example.
+      # Since the temporary and assignments are inside a block, if we are
+      # synthesizing variables, we need to do it in the current scope first.
+
+      if (synthesize_variables)
+        forEach (el at el_index in elements)
+          if (el instanceOf CmdNoAction) nextIteration # They are skipping this one
+          if (synthesize_variables)
+            require(el instanceOf CmdAccess)
+            local type = rht.property_lookup["e"+(el_index+1)].type
+            local part_var = scope.this_method.add_local( t, (el as CmdAccess).name, type )
+            local part_decl = CmdLocalDeclaration(t,part_var)
+            scope.this_body.add( part_decl.resolve(scope) )
+          endIf
+        endForEach
+      endIf
+
+      local temp_block = CmdBlock( t )
+
+      local temp_var = scope.this_method.add_local( t, Program.create_unique_id, null, new_value )
+      local temp_var_decl = CmdLocalDeclaration(t,temp_var)
+      temp_block.statements.add( temp_var_decl )
+
+      forEach (el at el_index in elements)
+        if (el instanceOf CmdNoAction) nextIteration # They are skipping this one
+        local rhs_part = CmdAccess(t, CmdAccess(t, temp_var), "e"+(el_index+1))
+        temp_block.statements.add( CmdAssign(t, el, rhs_part) )
+      endForEach
+
+      scope.this_body.add( temp_block.resolve(scope) )
       return CmdNoAction(t)
 endClass
 
