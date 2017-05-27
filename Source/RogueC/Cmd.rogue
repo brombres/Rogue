@@ -3125,6 +3125,58 @@ class CmdRangeDownTo : CmdRange
       return -1
 endClass
 
+class CmdTuple : Cmd
+  PROPERTIES
+    elements   : Cmd[]
+    synthesize_variables : Logical
+    # If above is true, this is a tuple for destructuring assignment and we should
+    # synthesize the variables (e.g., it was done with "local (a,b) = (1,2)").
+
+  METHODS
+    method init( t, elements )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->this
+      if (new_t) t = new_t
+      return CmdTuple( t, elements.cloned )
+
+    method resolve( scope:Scope )->Cmd
+      local args = CmdArgs()
+      local type_string = ""
+      forEach (el at i in elements)
+        elements[i] = el.resolve( scope )
+        elements[i].require_type.organize( scope )
+        elements[i] = elements[i].require_value
+        args.add(elements[i])
+        if (i > 0) type_string += ","
+        type_string += elements[i].type.name
+      endForEach
+      return CmdAccess( t, "Tuple<<$>>"(type_string), args ).resolve( scope )
+
+    method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
+      local temp_var = scope.this_method.add_local( t, Program.create_unique_id, null, new_value )
+      local temp_var_decl = CmdLocalDeclaration(t,temp_var).resolve(scope) as CmdLocalDeclaration
+      scope.this_body.add( temp_var_decl )
+      local rht = temp_var_decl.local_info.type
+      if (rht.is_tuple)
+        if (rht.specializers.count != elements.count)
+          throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, rht.specializers.count))
+        endIf
+        forEach (el at el_index in elements)
+          local rhs_part = CmdAccess(t, CmdAccess(t, temp_var), "e"+(el_index+1)).resolve(scope)
+          if (synthesize_variables)
+            require(el as CmdAccess)
+            local part_var = scope.this_method.add_local( t, (el as CmdAccess).name, null, rhs_part )
+            local part_decl = CmdLocalDeclaration(t,part_var)
+            scope.this_body.add( part_decl.resolve(scope) )
+          else
+            scope.this_body.add( CmdAssign(t, el, rhs_part).resolve(scope) )
+          endIf
+        endForEach
+      else
+        throw t.error("Cannot perform destructuring assignment from non-tuple type $." (rht.name))
+      endIf
+      return CmdNoAction(t)
+endClass
 
 #------------------------------------------------------------------------------
 # Unary Operators

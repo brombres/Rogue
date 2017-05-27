@@ -323,6 +323,9 @@ class Type
     method is_real->Logical
       return this is Program.type_Real64 or this is Program.type_Real32
 
+    method is_tuple->Logical
+      return name.begins_with("Tuple<<")
+
     method widening_distance_to( other:Type )->Int32
       if (this is other) return 0
       if (this.is_primitive and other.is_primitive)
