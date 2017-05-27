@@ -33,8 +33,11 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ### v1.2.8 - May 26, 2017
-- Merge pull request #16 from MurphyMc/cleanup4
-- New template method specializer inference, rewritten routines, multithreading, alias parameters, Cython fixes, RAP1 starter
+- Merged pull requests #16 and #17 from MurphyM
+- Tuples, New template method specializer inference, rewritten routines, multithreading, alias parameters, Cython fixes
+- Tuples: Two or more comma-separated, parenthesized types are convenience syntax for a tuple type.  `(Int32,String)` is shorthand for `Tuple<<Int32,String>>`.
+- Tuples: Destructure tuples with `local (a,b) = tuple` or use existing variables `(a,b) = tuple`.
+- Tuples: Tuple elements can be accessed individually with `tuple._1,`, `tuple._2`, etc.
 - Cython: Expose methods on Global globally
 
     Previously, to access members of the Rogue Global object from
