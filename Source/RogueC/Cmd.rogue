@@ -3143,6 +3143,13 @@ class CmdTuple : Cmd
       local args = CmdArgs()
       local type_string = ""
       forEach (el at i in elements)
+        if (el instanceOf CmdNoAction )
+          # CmdNoAction is used as a placeholder for elements that are to be
+          # skipped when doing destructuring assignment, and is illegal for
+          # value tuples.  We could use them for doing Python-style
+          # single-element tuples: "(1,)", but we don't presently.
+          throw el.t.error("Expected a value, but got '$'." (el.t))
+        endIf
         elements[i] = el.resolve( scope )
         elements[i].require_type.organize( scope )
         elements[i] = elements[i].require_value
@@ -3162,6 +3169,7 @@ class CmdTuple : Cmd
           throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, rht.specializers.count))
         endIf
         forEach (el at el_index in elements)
+          if (el instanceOf CmdNoAction) nextIteration # They are skipping this one
           local rhs_part = CmdAccess(t, CmdAccess(t, temp_var), "e"+(el_index+1)).resolve(scope)
           if (synthesize_variables)
             require(el as CmdAccess)

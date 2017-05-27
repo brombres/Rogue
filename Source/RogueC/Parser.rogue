@@ -2812,15 +2812,32 @@ class Parser
             throw t.error( "Value expected, found empty parentheses ()." )
           endIf
 
-          local result = parse_expression
-          consume_eols
+          local result = null : Cmd
+          if (not next_is(TokenType.symbol_comma))
+            result = parse_expression
+            consume_eols
+          endIf
 
           if (next_is(TokenType.symbol_comma))
             local elements = Cmd[]
+            if (result is null) result = CmdNoAction(peek)
             elements.add(result)
             while (consume(TokenType.symbol_comma))
-              # Could check/consume a comma here for Python-style single-element tuples
-              elements.add(parse_expression())
+              consume_eols
+              if (next_is(TokenType.symbol_comma))
+                # For skipping values in destructuring assignment.
+                # Currently illegal for value (non-assignment) tuples, but could also
+                # be used for Python-style single-element tuples: "(1,)".
+                # We insert a NoAction as a placeholder which we can identify in
+                # resolve(), and which lets us carry the token through.
+                elements.add(CmdNoAction(peek))
+              elseIf (next_is(TokenType.symbol_close_paren))
+               # They skipped the last item.
+                elements.add(CmdNoAction(peek))
+                escapeWhile
+              else
+                elements.add(parse_expression())
+              endIf
               consume_eols
             endWhile
             result = CmdTuple(t, elements)
