@@ -4745,6 +4745,9 @@ class CmdConvertToType : CmdTypeOperator
 
     method to->String
       return "CmdConvertToType($,$)" (operand,target_type)
+
+    method implicit_type( scope:Scope)->Type
+      return target_type
 endClass
 
 #{
@@ -4776,6 +4779,9 @@ class CmdAs : CmdTypeOperator
         return target_type.create_default_value( t )
       endIf
       return this
+
+    method implicit_type( scope:Scope )->Type
+      return target_type
 endClass
 
 class CmdInstanceOf : CmdTypeOperator
