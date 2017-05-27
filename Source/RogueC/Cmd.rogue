@@ -5858,6 +5858,21 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
 endClass
 
 
+class CmdPrintln( t, standard=null:Cmd, no_parens=null:Cmd) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdPrintln( t, standard.cloned(clone_args,new_t), no_parens.cloned(clone_args,new_t) )
+
+    method resolve( scope:Scope )->Cmd
+      try
+        return standard.resolve( scope )
+      catch ( err:RogueError )
+        return no_parens.resolve( scope )
+      endTry
+endClass
+
+
 class CmdSyncObjectInit : CmdStatement
   METHODS
     method init( t )

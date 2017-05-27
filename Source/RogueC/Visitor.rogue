@@ -479,6 +479,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdPrintln )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdSelect )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -486,6 +492,18 @@ class Visitor
       return cmd
 
     method visit( cmd:CmdSelectCase )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdSyncObjectInit )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdSyncObjectCleanup )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -555,6 +573,7 @@ class Visitor
     method on_enter( cmd:CmdNecessary )
     method on_enter( cmd:CmdNextIteration )
     method on_enter( cmd:CmdNoAction )
+    method on_enter( cmd:CmdPrintln )
     method on_enter( cmd:CmdRange )
     method on_enter( cmd:CmdReadArrayCount )
     method on_enter( cmd:CmdReadArrayElement )
@@ -567,6 +586,8 @@ class Visitor
     method on_enter( cmd:CmdYield )
     method on_enter( cmd:CmdSelect )
     method on_enter( cmd:CmdSelectCase )
+    method on_enter( cmd:CmdSyncObjectInit )
+    method on_enter( cmd:CmdSyncObjectCleanup )
     method on_enter( cmd:CmdStatement )
     method on_enter( cmd:CmdSufficient )
     method on_enter( cmd:CmdSwitch )
@@ -644,6 +665,7 @@ class Visitor
     method on_leave( cmd:CmdNecessary )
     method on_leave( cmd:CmdNextIteration )
     method on_leave( cmd:CmdNoAction )
+    method on_leave( cmd:CmdPrintln )
     method on_leave( cmd:CmdRange )
     method on_leave( cmd:CmdReadArrayCount )
     method on_leave( cmd:CmdReadArrayElement )
@@ -656,6 +678,8 @@ class Visitor
     method on_leave( cmd:CmdYield )
     method on_leave( cmd:CmdSelect )
     method on_leave( cmd:CmdSelectCase )
+    method on_leave( cmd:CmdSyncObjectInit )
+    method on_leave( cmd:CmdSyncObjectCleanup )
     method on_leave( cmd:CmdStatement )
     method on_leave( cmd:CmdSufficient )
     method on_leave( cmd:CmdSwitch )
@@ -1058,6 +1082,10 @@ class Visitor
 
     method dispatch( cmd:CmdNoAction )
 
+    method dispatch( cmd:CmdPrintln )
+      cmd.standard = cmd.standard.dispatch( this )
+      cmd.no_parens = cmd.no_parens.dispatch( this )
+
     method dispatch( cmd:CmdSelect )
       if (cmd.expression)
         cmd.expression = cmd.expression.dispatch( this )
@@ -1073,6 +1101,12 @@ class Visitor
       if (cmd.value)
         cmd.value = cmd.value.dispatch( this )
       endIf
+
+    method dispatch( cmd:CmdSyncObjectInit )
+      noAction
+
+    method dispatch( cmd:CmdSyncObjectCleanup )
+      noAction
 
     method dispatch( cmd:CmdNamedArg )
       noAction

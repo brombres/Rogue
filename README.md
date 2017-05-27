@@ -33,6 +33,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ### v1.2.8 - May 26, 2017
+- [println] Improved println no-parens support by parsing two variations of each println statement and trying the alternate if the first one generates a runtime exception.
 - Merged pull requests #16-19 from MurphyM.
 - Tuples, New template method specializer inference, rewritten routines, multithreading, alias parameters, Cython fixes
 - Tuples: Two or more comma-separated, parenthesized types are convenience syntax for a tuple type.  `(Int32,String)` is shorthand for `Tuple<<Int32,String>>`.
