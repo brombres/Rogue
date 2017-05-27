@@ -186,7 +186,7 @@ class RogueC [singleton]
                    |  --ide[=<IDE Name>]
                    |    Indicates that roguec is being invoked from an IDE.  Currently this causes
                    |    error messages to print out in a "classic" C style, which Xcode (and
-                   |    possibly other IDEs') will automatically pick up and display.
+                   |    possibly other IDEs) will automatically pick up and display.
                    |
                    |  --libraries="path1[;path2...]"
                    |    Add one or more additional library folders to the search path.
