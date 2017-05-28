@@ -113,6 +113,11 @@ class Method
       locals.add( v )
       return v
 
+    method add_local( v:Local )->Local
+      v.index = locals.count
+      locals.add( v )
+      return v
+
     method add_parameter( p_t:Token, p_name:String, p_type=null:Type )->Local
       local p = add_local( p_t, p_name, p_type )
       parameters.add( p )

@@ -5691,6 +5691,7 @@ class CmdSelect : Cmd
     expression : Cmd
     cases      : CmdSelectCase[]
     value_type : Type
+    undeclared_locals : Local[]
 
   METHODS
     method init( t, local_info=null, expression=null, cases=CmdSelectCase[] )
@@ -5711,6 +5712,11 @@ class CmdSelect : Cmd
       return common_type
 
     method resolve( scope:Scope )->Cmd
+      if (undeclared_locals)
+        scope.this_method.add_local( forEach in undeclared_locals )
+        undeclared_locals = null
+      endIf
+
       if (value_type) return this
 
       if (not cases.count)

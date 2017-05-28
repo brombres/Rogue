@@ -33,12 +33,17 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ### v1.2.8 - May 26, 2017
-- [println] Improved println no-parens support by parsing two variations of each println statement and trying the alternate if the first one generates a runtime exception.
-- Merged pull requests #16-19 from MurphyM.
+- Merged pull requests #16-20 from MurphyM.
 - Tuples, New template method specializer inference, rewritten routines, multithreading, alias parameters, Cython fixes
 - Tuples: Two or more comma-separated, parenthesized types are convenience syntax for a tuple type.  `(Int32,String)` is shorthand for `Tuple<<Int32,String>>`.
 - Tuples: Destructure tuples with `local (a,b) = tuple` or use existing variables `(a,b) = tuple`.
 - Tuples: Tuple elements can be accessed individually with `tuple._1,`, `tuple._2`, etc.
+- Destructuring in forEach; tuple-like protocol; tuple-list/optional expressions
+- stdlib: TableEntry supports tuple-like protocol.  This lets you do forEach((key,value) in table.reader).
+- Add destructuring of tuple-like protocol.  Things that have tuple-like properties or getters can now be used with destructuring assignment.
+- Allow tuple lists/optional in expressions.  This allows things like "local v = (Int32,Int32)[]" to work.
+- Allow destructuring forEach control variables.  This doesn't handle all variations of forEach, but we can add additional types later following this same approach.
+
 - Cython: Expose methods on Global globally
 
     Previously, to access members of the Rogue Global object from

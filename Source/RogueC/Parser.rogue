@@ -1456,12 +1456,12 @@ class Parser
 
       consume_eols
 
-      local println_pos : Int32
-      local cmd_println : CmdPrintln
-      if (next_is_identifier("println") or next_is_identifier("print"))
-        ensure cmd_println( peek )
-        println_pos = reader.position
-      endIf
+      #local println_pos : Int32
+      #local cmd_println : CmdPrintln
+      #if (next_is_identifier("println") or next_is_identifier("print"))
+      #  ensure cmd_println( peek )
+      #  println_pos = reader.position
+      #endIf
 
       local expression = parse_expression
 
@@ -1523,25 +1523,25 @@ class Parser
         endIf
       endIf
 
-      if (cmd_println)
-        # Try an alternate variation of print/println.
-        local final_pos = reader.position
-        cmd_println.standard = expression
-        reader.position = println_pos
-        t = read
-        local access = CmdAccess( t, t->String, CmdArgs() )
-        try
-          while (not next_is_end_command and not peek.is_structure) access.args.add( parse_expression )
-          cmd_println.no_parens = access
-          if (reader.position == final_pos)
-            # Looking for an alternate interpretation of the same parse tree and only proceed
-            # if the two parsing approaches consume the same tokens.
-            expression = cmd_println
-          endIf
-        catch ( its_not_working:RogueError )
-        endTry
-        reader.position = final_pos
-      endIf
+      #if (cmd_println)
+      #  # Try an alternate variation of print/println.
+      #  local final_pos = reader.position
+      #  cmd_println.standard = expression
+      #  reader.position = println_pos
+      #  t = read
+      #  local access = CmdAccess( t, t->String, CmdArgs() )
+      #  try
+      #    while (not next_is_end_command and not peek.is_structure) access.args.add( parse_expression )
+      #    cmd_println.no_parens = access
+      #    if (reader.position == final_pos)
+      #      # Looking for an alternate interpretation of the same parse tree and only proceed
+      #      # if the two parsing approaches consume the same tokens.
+      #      expression = cmd_println
+      #    endIf
+      #  catch ( its_not_working:RogueError )
+      #  endTry
+      #  reader.position = final_pos
+      #endIf
 
       cur_statement_list.add( expression )
 
@@ -3035,7 +3035,8 @@ class Parser
 
         if (consume(TokenType.symbol_open_paren))
           consume_eols
-          local comparison_var = this_method.add_local( t, Program.create_unique_id )
+          local comparison_var = Local( t, Program.create_unique_id )
+          (ensure cmd_select.undeclared_locals).add( comparison_var )
           cur_statement_list.add( CmdLocalDeclaration(t,comparison_var,&skip_initialization) )
           comparison_var.initial_value = parse_expression
           cmd_select.local_info = comparison_var
@@ -3087,7 +3088,8 @@ class Parser
         forEach (i in 0..<cmd_select.cases.count - 1)
           local select_case = cmd_select.cases[i]
           if (not select_case.value)
-            local temp_var = this_method.add_local( t, Program.create_unique_id )
+            local temp_var = Local( t, Program.create_unique_id )
+            (ensure cmd_select.undeclared_locals).add( temp_var )
             temp_var.initial_value = select_case.conditions.remove_last
             cur_statement_list.add( CmdLocalDeclaration(t,temp_var) )
             select_case.local_info = temp_var
