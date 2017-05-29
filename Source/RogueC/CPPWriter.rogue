@@ -174,6 +174,8 @@ augment Program
       writer.println select{RogueC.gc_mode == GCMode.AUTO: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_BOEHM "
       writer.println select{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_BOEHM_TYPED "
+      writer.println select{RogueC.gc_mode == GCMode.BOEHM_TYPED: "1" || "0"}
       writer.println
 
       # GC Threshold
@@ -945,6 +947,10 @@ augment Program
       writer.println( "}" )
       writer.println
 
+      if (RogueC.gc_mode == GCMode.BOEHM_TYPED)
+        write_boehm_type_info writer
+      endIf
+
       # launch()
       writer.println( "void Rogue_launch()" )
       writer.println( "{" )
@@ -1054,6 +1060,48 @@ augment Program
 
       writer.close
 
+    method _write_boehm_type_info( writer:CPPWriter, type:Type, type_name=null:String, leader=null:String )
+      if (not type_name) type_name = type.cpp_class_name
+      if (leader) leader = leader + "."
+      else leader = ""
+      forEach (p in type.property_list)
+        if (p.type.is_reference)
+          writer.println( "GC_set_bit(bitmap, GC_WORD_OFFSET($, $$));" (type_name, leader, p.cpp_name) )
+        elseIf (p.type.is_compound)
+          _write_boehm_type_info( writer, p.type, type_name, leader + p.cpp_name )
+        endIf
+      endForEach
+
+    method write_boehm_type_info( writer:CPPWriter )
+      writer.println @|#if ROGUE_GC_MODE_BOEHM_TYPED
+                      |void Rogue_init_boehm_type_info()
+                      |{
+      writer.indent += 2
+      writer.println @|int largest = 0;
+                      |for (int i = 0; i < sizeof(Rogue_object_size_table) / sizeof(Rogue_object_size_table[0]); ++i)
+                      |{
+                      |  if (Rogue_types[i].object_size > largest) largest = Rogue_types[i].object_size;
+                      |}
+                      |int bitmap_size = sizeof(GC_word)*( ((largest/sizeof(GC_word)) + GC_WORDSZ - 1) / GC_WORDSZ );
+                      |GC_word * bitmap = (GC_word*)alloca(bitmap_size);
+
+      forEach (type in type_list)
+        if (type.is_used)
+          #NOTE: The decision of whether or not to write type info should be matched
+          #      with the writing of the type_info field "gc_alloc_type".
+          if (type.has_object_references)
+            writer.println "memset(bitmap, 0, bitmap_size);"
+            _write_boehm_type_info( writer, type )
+            writer.println "Rogue_types[$].gc_type_descr = GC_make_descriptor(bitmap, Rogue_types[$].object_size / sizeof(GC_word));" ...
+                           (type.index, type.index)
+          endIf
+        endIf
+      endForEach
+      writer.indent -= 2
+      writer.println @|}
+                      |#endif
+      writer.println
+
     method collect_type_info( type:Type, info:Int32[] )
       info.add( 0 )  # allocator 0
 
@@ -1079,6 +1127,19 @@ augment Program
       info.add( type.property_list.count )
       forEach (p in type.property_list) info.add( Program.add_literal_string(p.name) )
       forEach (p in type.property_list) info.add( p.type.index )
+
+      if (RogueC.gc_mode == GCMode.BOEHM_TYPED)
+        # Write the gc_alloc_type field
+        # These same conditions should be used in write_boehm_type_info()
+        if (not type.has_object_references)
+          info.add( 1 ) # ROGUE_GC_ALLOC_TYPE_ATOMIC
+        else
+          info.add( 2 ) # ROGUE_GC_ALLOC_TYPE_TYPED
+        endIf
+        #NOTE: We could consider using ROGUE_GC_ALLOC_TYPE_UNTYPED (0) for, e.g.,
+        #      objects which are entirely made of references, though the collector
+        #      actually catches a number of such cases.
+      endIf
 
     method print_property_trace_code( type:Type, writer:CPPWriter )
       forEach (p in type.property_list)
@@ -3182,7 +3243,8 @@ augment CmdCreateArray
       writer.print( "RogueType_create_array( " )
       count_cmd.write_cpp( writer )
       writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
-      if (array_type.element_type.is_reference) writer.print( ", true" )
+      if (array_type.element_type.is_reference) writer.print( ", true" ) else writer.print(", false" )
+      writer.print( ", " ).print( array_type.element_type.index )
       writer.print( " )" )
 endAugment
 

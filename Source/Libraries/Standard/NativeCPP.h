@@ -71,6 +71,16 @@ extern void Rogue_configure_gc();
   #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) _t_ _n_
 #endif
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  #undef ROGUE_GC_MODE_BOEHM
+  #define ROGUE_GC_MODE_BOEHM 1
+  #include "gc_typed.h"
+  void Rogue_init_boehm_type_info();
+  #define ROGUE_GC_ALLOC_TYPE_UNTYPED 0
+  #define ROGUE_GC_ALLOC_TYPE_ATOMIC 1
+  #define ROGUE_GC_ALLOC_TYPE_TYPED 2
+#endif
+
 #if ROGUE_GC_MODE_BOEHM
   #define GC_NAME_CONFLICT
   #include "gc.h"
@@ -426,9 +436,14 @@ struct RogueType
   RogueInitFn       init_fn;
   RogueCleanUpFn    on_cleanup_fn;
   RogueToStringFn   to_string_fn;
+
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  int          gc_alloc_type;
+  GC_descr     gc_type_descr;
+#endif
 };
 
-RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
+RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false, int element_type_index=-1 ) ;
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
 RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
 RogueString* RogueType_name( RogueType* THIS );
@@ -514,6 +529,19 @@ struct RogueArray : RogueObject
   int  element_size;
   bool is_reference_array;
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  union
+  {
+    RogueObject**   as_objects;
+    RogueByte*      as_logicals;
+    RogueByte*      as_bytes;
+    RogueCharacter* as_characters;
+    RogueInt32*     as_int32s;
+    RogueInt64*     as_int64s;
+    RogueReal32*    as_real32s;
+    RogueReal64*    as_real64s;
+  };
+#else
   union
   {
     RogueObject*   as_objects[];
@@ -525,6 +553,7 @@ struct RogueArray : RogueObject
     RogueReal32    as_real32s[];
     RogueReal64    as_real64s[];
   };
+#endif
 };
 
 RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, RogueInt32 other_i1, RogueInt32 copy_count );
@@ -599,7 +628,7 @@ RogueAllocator* RogueAllocator_create();
 RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS );
 
 void*        RogueAllocator_allocate( int size );
-RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size );
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index=-1 );
 void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );

@@ -35,6 +35,7 @@ class GCMode
     MANUAL
     AUTO
     BOEHM
+    BOEHM_TYPED
 endClass
 
 class ThreadMode
@@ -166,14 +167,15 @@ class RogueC [singleton]
                    |  --exhaustive
                    |    Make every class and method [essential].
                    |
-                   |  --gc[=auto|manual|boehm]
+                   |  --gc[=auto|manual|boehm|boehm-typed]
                    |    Set the garbage collection mode:
-                   |      --gc=auto   - Rogue collects garbage as it executes.  Slower than
-                   |                    'manual' without optimizations enabled.
-                   |      --gc=manual - Rogue_collect_garbage() must be manually called in-between
-                   |                    calls into the Rogue runtime.
-                   |      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library
-                   |                    must be obtained separately and linked in.
+                   |      --gc=auto        - Rogue collects garbage as it executes.  Slower than
+                   |                         'manual' without optimizations enabled.
+                   |      --gc=manual      - Rogue_collect_garbage() must be manually called
+                   |                         in-between calls into the Rogue runtime.
+                   |      --gc=boehm       - Uses the Boehm garbage collector.  The Boehm's GC
+                   |                         library must be obtained separately and linked in.
+                   |      --gc=boehm-typed - Like boehm, but provides type info to the collector.
                    |
                    |  --gc-threshold={number}[MB|K]
                    |    Specifies the default garbage collection threshold of the compiled program.
@@ -555,6 +557,8 @@ class RogueC [singleton]
                 gc_mode = GCMode.MANUAL
               elseIf (value == "boehm")
                 gc_mode = GCMode.BOEHM
+              elseIf (value == "boehm-typed")
+                gc_mode = GCMode.BOEHM_TYPED
               else
                 throw RogueError( 'Unknown GC mode (--gc=$)' (value) )
               endIf
