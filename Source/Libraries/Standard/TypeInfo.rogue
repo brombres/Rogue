@@ -103,6 +103,31 @@ class TypeInfo
     method is_reference->Logical
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
 
+    method base_class->TypeInfo
+      local base_count : Int32
+      native "$base_count = Rogue_types[$index].base_type_count;"
+      forEach (i in 0..<base_count)
+        local ti : TypeInfo
+        native @|RogueType * base = Rogue_types[$this->index].base_types[$i];
+                |RogueType_type_info(base);
+                |$ti = (RogueTypeInfo*)base->type_info;
+        if (not ti.is_aspect) return ti
+      endForEach
+      return null
+
+    method aspects->TypeInfo[]
+      local r = TypeInfo[]
+      local base_count : Int32
+      native "$base_count = Rogue_types[$index].base_type_count;"
+      forEach (i in 0..<base_count)
+        local ti : TypeInfo
+        native @|RogueType * base = Rogue_types[$this->index].base_types[$i];
+                |RogueType_type_info(base);
+                |$ti = (RogueTypeInfo*)base->type_info;
+        if (ti.is_aspect) r.add(ti)
+      endForEach
+      return r
+
     method property_info( property_name:String )->PropertyInfo
       forEach (i in 0..<properties.count)
         if (properties[i].name == property_name)
