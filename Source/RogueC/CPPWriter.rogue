@@ -730,26 +730,25 @@ augment Program
       writer.println
 
       # Base class info table
-      local info = Int32[]
-      forEach (type in type_list)
-        type.collect_type_info( info )
-      endForEach
-
-      writer.print(   "int Rogue_type_info_table[" ).print( info.count ).println( "] =" )
+      writer.print(   "int Rogue_type_info_table[] =" )
       writer.println "{"
       writer.indent += 2
       writer.println "// allocator_index, dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
 
-      first = true
+      local info = Int32[]
       local items = 0
-      forEach (n in info)
-        if (first) first = false
-        else       writer.print_literal_character( ',', false )  # fix
+      forEach (type in type_list)
+        info.count = 0
+        collect_type_info( type, info )
+        #writer.println( "/* $ */" (type.name) )
 
-        ++items
-        if (items == 25) writer.println; items = 0
+        forEach (n in info)
+          writer.print n
+          writer.print_literal_character( ',', false )  # fix
 
-        writer.print n
+          ++items
+          if (items == 25) writer.println; items = 0
+        endForEach
       endForEach
 
       if (items > 0) writer.println
@@ -818,7 +817,7 @@ augment Program
         writer.print( "(int) sizeof(" ).print( type.cpp_class_name ).print( ")" )
       endForEach
 
-      if (items > 0) writer.println
+      writer.println
       writer.indent -= 2
       writer.println( "};" )
       writer.println
@@ -837,7 +836,7 @@ augment Program
           writer.print( type.attributes.flags )
         endForEach
 
-        if (items > 0) writer.println
+        writer.println
         writer.indent -= 2
         writer.println( "};" )
         writer.println
@@ -1051,6 +1050,32 @@ augment Program
       endForEach
 
       writer.close
+
+    method collect_type_info( type:Type, info:Int32[] )
+      info.add( 0 )  # allocator 0
+
+      if (type.is_primitive)
+        info.add( 0 )
+      else
+        info.add( type.dynamic_method_table_index )
+      endIf
+
+      local flat_base_types = Type[]
+      if (type.base_class) type.base_class.collect_base_types( flat_base_types )
+      forEach (base_type in type.base_types)
+        base_type.collect_base_types( flat_base_types )
+      endForEach
+
+      info.add( flat_base_types.count )
+      forEach (base_type in flat_base_types) info.add( base_type.index )
+
+      info.add( type.global_list.count )
+      forEach (p in type.global_list) info.add( Program.add_literal_string(p.name) )
+      forEach (p in type.global_list) info.add( p.type.index )
+
+      info.add( type.property_list.count )
+      forEach (p in type.property_list) info.add( Program.add_literal_string(p.name) )
+      forEach (p in type.property_list) info.add( p.type.index )
 
     method print_property_trace_code( type:Type, writer:CPPWriter )
       forEach (p in type.property_list)
