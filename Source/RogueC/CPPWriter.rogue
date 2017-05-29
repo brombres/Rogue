@@ -372,7 +372,7 @@ augment Program
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
-          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) ) nextIteration
+          if ( g.is_thread_local and (g.type.is_reference or g.type.has_object_references ) ) nextIteration
           if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
           writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
@@ -382,7 +382,7 @@ augment Program
       endForEach
       forEach (type in type_list)
         forEach (g in type.global_list)
-          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) )
+          if ( g.is_thread_local and (g.type.is_reference or g.type.has_object_references ) )
             writer.print( "ROGUE_THREAD_LOCAL " )
             writer.print( g.type ).print( " Rogue" )
             writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
