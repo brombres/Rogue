@@ -6,6 +6,7 @@
 
 #if defined(ROGUE_DEBUG_BUILD)
   #define ROGUE_DEBUG_STATEMENT(_s_) _s_
+  #include <assert>
 #else
   #define ROGUE_DEBUG_STATEMENT(_s_)
 #endif

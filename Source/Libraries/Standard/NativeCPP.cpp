@@ -1099,7 +1099,7 @@ void Rogue_update_weak_references_during_gc()
 void Rogue_configure_types()
 {
   int i;
-  int* type_info = Rogue_type_info_table;
+  int* next_type_info = Rogue_type_info_table;
 
   // Install seg fault handler
   struct sigaction sa;
@@ -1119,11 +1119,18 @@ void Rogue_configure_types()
   int property_offset_cursor = 0;
 #endif
 
+#ifdef ROGUE_OLD_TYPE_INFO
+  int* type_info = next_type_info;
+#endif
   // Initialize types
   for (i=0; i<Rogue_type_count; ++i)
   {
     int j;
     RogueType* type = &Rogue_types[i];
+#ifndef ROGUE_OLD_TYPE_INFO
+    int* type_info = next_type_info;
+    next_type_info += *(type_info++) + 1;
+#endif
 
     memset( type, 0, sizeof(RogueType) );
 
@@ -1177,6 +1184,10 @@ void Rogue_configure_types()
     type->init_fn        = Rogue_init_fn_table[i];
     type->on_cleanup_fn  = Rogue_on_cleanup_fn_table[i];
     type->to_string_fn   = Rogue_to_string_fn_table[i];
+
+#ifndef ROGUE_OLD_TYPE_INFO
+    ROGUE_DEBUG_STATEMENT(assert(type_info <= next_type_info));
+#endif
   }
 
   Rogue_on_gc_trace_finished.add( Rogue_update_weak_references_during_gc );

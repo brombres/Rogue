@@ -740,8 +740,10 @@ augment Program
       forEach (type in type_list)
         info.count = 0
         collect_type_info( type, info )
-        #writer.println( "/* $ */" (type.name) )
+        #writer.print( "/* $ */" (type.cpp_class_name) )
 
+        writer.print info.count
+        writer.print_literal_character( ',', false )  # fix
         forEach (n in info)
           writer.print n
           writer.print_literal_character( ',', false )  # fix
@@ -749,6 +751,7 @@ augment Program
           ++items
           if (items == 25) writer.println; items = 0
         endForEach
+        #writer.println; items = 0
       endForEach
 
       if (items > 0) writer.println
