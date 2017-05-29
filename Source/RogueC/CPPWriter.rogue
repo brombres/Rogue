@@ -903,7 +903,7 @@ augment Program
         local st = Program.literal_string_list[i]
         writer.print_literal_string( st )
         writer.print( ", " ).print( st.byte_count )
-        writer.println( " ) ); " )
+        writer.println( " ) );" )
       endForEach
       writer.println
 
@@ -1181,7 +1181,7 @@ class CPPWriter
           if (needs_newline)
             println
           endIf
-          print_indent
+          if (line.count) print_indent
           buffer.print( line )
           needs_newline = true
         endForEach
