@@ -32,7 +32,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ## Change Log
 
-### v1.2.8 - May 26, 2017
+### v1.2.8 - May 30, 2017
+- Fixed error messages to include method candidates once more.
 - Merged pull requests #16-20 from MurphyM.
 - Tuples, New template method specializer inference, rewritten routines, multithreading, alias parameters, Cython fixes
 - Tuples: Two or more comma-separated, parenthesized types are convenience syntax for a tuple type.  `(Int32,String)` is shorthand for `Tuple<<Int32,String>>`.

@@ -273,12 +273,10 @@ class Scope
       local m = _real_find_method(candidates, type_context, access, false, flags, false)
       if (m) return m
 
-      candidates.clear
-
       if (not type_context.method_templates.has_template(access.name))
         # No method templates to try to specialize -- we're done.
-        # Call _real_find_method() with an empty list just to get the desired error behavior.
-        return _real_find_method(null, type_context, access, error_on_fail, flags, false)
+        # Call _real_find_method() allowing 'error_on_fail' to get the desired error behavior.
+        return _real_find_method(candidates, type_context, access, error_on_fail, flags, false)
       endIf
 
       if (access.name.contains('<'))
