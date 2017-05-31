@@ -290,8 +290,8 @@ class Scope
       # Can we infer arguments to a method template?
       if (args is null or args.count == 0)
         # Nope -- no method arguments, so no basis for template parameter inference.
-        # Call _real_find_method() with an empty list just to get the desired error behavior.
-        return _real_find_method(null, type_context, access, error_on_fail, flags, false)
+        # Call _real_find_method() allowing 'error_on_fail' to get the desired error behavior.
+        return _real_find_method(candidates, type_context, access, error_on_fail, flags, false)
       endIf
 
       local types = Type[]
