@@ -128,7 +128,7 @@ class Preprocessor
           endIf
         endIf
 
-        if (t.type is TokenType.keyword_class or t.type is TokenType.keyword_routine)
+        if (t.type is TokenType.keyword_class or t.type is TokenType.keyword_routine or t.type is TokenType.keyword_enum)
           if (cur_module and reader.peek.type is TokenType.identifier)
             if (keep_tokens) tokens.add( t )
             t = reader.read

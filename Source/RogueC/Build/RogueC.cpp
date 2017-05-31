@@ -55200,7 +55200,7 @@ void RoguePreprocessor__process__Logical_Int32_Logical( RogueClassPreprocessor* 
         continue;
       }
     }
-    if (((((void*)t_3->_type) == ((void*)RogueTokenType_keyword_class)) || (((void*)t_3->_type) == ((void*)RogueTokenType_keyword_routine))))
+    if (((((((void*)t_3->_type) == ((void*)RogueTokenType_keyword_class)) || (((void*)t_3->_type) == ((void*)RogueTokenType_keyword_routine)))) || (((void*)t_3->_type) == ((void*)RogueTokenType_keyword_enum))))
     {
       if (((!!(THIS->cur_module)) && (((void*)((RoguePreprocessorTokenReader__peek( ROGUE_ARG(THIS->reader) )))->_type) == ((void*)RogueTokenType_identifier))))
       {
@@ -59231,7 +59231,7 @@ RogueClassMethod* RogueScope__find_method__Type_CmdAccess_Logical_Int32( RogueCl
   }
   if (((((void*)args_6) == ((void*)NULL)) || (args_6->count == 0)))
   {
-    return (RogueClassMethod*)(((RogueScope___real_find_method__Method_List_Type_CmdAccess_Logical_Int32_Logical( ROGUE_ARG(THIS), ROGUE_ARG(((RogueMethod_List*)(NULL))), type_context_0, access_1, error_on_fail_2, flags_3, false ))));
+    return (RogueClassMethod*)(((RogueScope___real_find_method__Method_List_Type_CmdAccess_Logical_Int32_Logical( ROGUE_ARG(THIS), candidates_7, type_context_0, access_1, error_on_fail_2, flags_3, false ))));
   }
   ROGUE_DEF_LOCAL_REF(RogueType_List*,types_10,(((RogueType_List__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueType_List*,ROGUE_CREATE_OBJECT(Type_List))) )))));
   {
@@ -78662,7 +78662,7 @@ void Rogue_configure( int argc, const char* argv[] )
   Rogue_literal_strings[289] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "THREAD_MODE", 11 ) ); 
   Rogue_literal_strings[290] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "C++", 3 ) ); 
   Rogue_literal_strings[291] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Cython", 6 ) ); 
-  Rogue_literal_strings[292] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.2.8.3", 7 ) ); 
+  Rogue_literal_strings[292] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "1.3.0.0", 7 ) ); 
   Rogue_literal_strings[293] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "May 30, 2017", 12 ) ); 
   Rogue_literal_strings[294] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "Rogue Compiler v", 16 ) ); 
   Rogue_literal_strings[295] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( "\nUSAGE\n  roguec [options] file1.rogue [file2.rogue ...]\n\nOPTIONS\n  --api\n    Mark all classes as [api] - all methods of any referenced class are included\n    in the compiled program whether they're used or not.\n\n  --compile[=<compiler invocation>]\n    Creates an executable from the compiled .rogue code - for example, compiles\n    and links the .cpp code generated from the .rogue program.  Automatically\n    enables the --main option.  If <compiler invocation> is omitted then a\n    language-specific default is used - for a C++ code target this is the\n    Makefile-default $(CXX) compiler with certain options - see DEFAULT_CXX in\n    the Rogue source folder's Makefile.\n\n  --debug\n    Enables exception stack traces.\n\n  --define=\"name[:value]\"\n    Adds a single preprocessor define.\n    Defining \"name:value\" is equivalent to: $define name value\n    Defining \"name\" is equivalent to:       $define name true\n\n  --execute[=\"args\"]\n    Use command line directives to compile and run the output of the\n    compiled .rogue program.  Automatically enables the --main option.\n\n  --exhaustive\n    Make every class and method [essential].\n\n  --gc[=auto|manual|boehm]\n    Set the garbage collection mode:\n      --gc=auto   - Rogue collects garbage as it executes.  Slower than\n                    'manual' without optimizations enabled.\n      --gc=manual - Rogue_collect_garbage() must be manually called in-between\n                    calls into the Rogue runtime.\n      --gc=boehm  - Uses the Boehm garbage collector.  The Boehm's GC library\n                    must be obtained separately and linked in.\n\n  --gc-threshold={number}[MB|K]\n    Specifies the default garbage collection threshold of the compiled program.\n    Default is 1MB.  If neither MB nor K is specified then the number is\n    assumed to be bytes.\n\n  --help\n    Shows help (you're reading it).\n\n  --ide[=<IDE Name>]\n    Indicates that roguec is being invoked from an IDE.  Currently this causes\n    error messages to print out in a \"classic\" C style, which Xcode (and\n    possibly other IDEs) will automatically pick up and display.\n\n  --libraries=\"path1[;path2...]\"\n    Add one or more additional library folders to the search path.\n\n  --main\n    Include a main() function in the output file.\n\n  --output=destpath/[filename]\n    Specify the destination folder and optionally the base filename for the\n    output.\n\n  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...\n    Makes the given class or method essential (\"do not cull if unused\").\n    See also: --exhaustive\n\n  --essential-file[=file.rogue]\n    With an argument, makes the entire file essential.  With no argument,\n    all files explicitly listed on the commandline become essential.\n\n  --target=", 2747 ) ); 
