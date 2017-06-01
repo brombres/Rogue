@@ -428,6 +428,7 @@ struct RogueType
 
   RogueObject* _singleton;
   const void** methods; // first function pointer in Rogue_dynamic_method_table
+  int          method_count;
 
   RogueAllocator*   allocator;
 

@@ -1236,6 +1236,12 @@ void Rogue_configure_types()
       type->property_offsets = Rogue_property_offsets + property_offset_cursor;
       property_offset_cursor += type->property_count;
     }
+    if (((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
+      || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND)
+      || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_ASPECT))
+    {
+      type->method_count = *(type_info++);
+    }
 #endif
 
     type->trace_fn = Rogue_trace_fn_table[i];

@@ -63,6 +63,7 @@ class Type
     method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
 
     dynamic_method_table_index : Int32
+    dynamic_method_table_count : Int32
 
     is_function = false
     callback_parameter_types : Type[]
