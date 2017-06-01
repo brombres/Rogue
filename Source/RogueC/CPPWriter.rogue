@@ -484,7 +484,7 @@ augment Program
       writer.println
 
       # Type name index in literal string table
-      writer.println "int Rogue_type_name_index_table[] ="
+      writer.println "const int Rogue_type_name_index_table[] ="
       writer.println "{"
       writer.indent += 2
       forEach (i of type_list)
@@ -717,7 +717,7 @@ augment Program
       #writer.println "*/"
 
       # dynamic method table
-      writer.println( "void* Rogue_dynamic_method_table[] =" )
+      writer.println( "const void* Rogue_dynamic_method_table[] =" )
       writer.println( "{" )
       writer.indent += 2
       local table_index = 0
@@ -732,7 +732,7 @@ augment Program
       writer.println
 
       # Base class info table
-      writer.print(   "int Rogue_type_info_table[] =" )
+      writer.print(   "const int Rogue_type_info_table[] =" )
       writer.println "{"
       writer.indent += 2
       writer.println "// allocator_index, dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
@@ -763,7 +763,7 @@ augment Program
 
       if (Program.using_introspection)
         # Global property pointers
-        writer.println(  "void* Rogue_global_property_pointers[] =" )
+        writer.println(  "const void* Rogue_global_property_pointers[] =" )
         writer.println "{"
         writer.indent += 2
 
@@ -786,7 +786,7 @@ augment Program
         writer.println
 
         # Property offsets
-        writer.println(  "int Rogue_property_offsets[] =" )
+        writer.println(  "const int Rogue_property_offsets[] =" )
         writer.println "{"
         writer.indent += 2
 
@@ -810,7 +810,7 @@ augment Program
 
 
       # Object size table
-      writer.print(   "int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
+      writer.print(   "const int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
       writer.println "{"
       writer.indent += 2
 
@@ -829,7 +829,7 @@ augment Program
 
       if (Program.using_introspection)
         # Attributes table
-        writer.print(   "int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
+        writer.print(   "const int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
         writer.println "{"
         writer.indent += 2
 

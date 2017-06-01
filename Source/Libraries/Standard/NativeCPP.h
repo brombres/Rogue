@@ -417,17 +417,17 @@ struct RogueType
   int          attributes;
 
   int          global_property_count;
-  int*         global_property_name_indices;
-  int*         global_property_type_indices;
-  void**       global_property_pointers;
+  const int*   global_property_name_indices;
+  const int*   global_property_type_indices;
+  const void** global_property_pointers;
 
   int          property_count;
-  int*         property_name_indices;
-  int*         property_type_indices;
-  int*         property_offsets;
+  const int*   property_name_indices;
+  const int*   property_type_indices;
+  const int*   property_offsets;
 
   RogueObject* _singleton;
-  void**       methods;
+  const void** methods; // first function pointer in Rogue_dynamic_method_table
 
   RogueAllocator*   allocator;
 
@@ -637,13 +637,13 @@ extern int                Rogue_allocator_count;
 extern RogueAllocator     Rogue_allocators[];
 extern int                Rogue_type_count;
 extern RogueType          Rogue_types[];
-extern int                Rogue_type_info_table[];
-extern int                Rogue_type_name_index_table[];
-extern int                Rogue_object_size_table[];
-extern void*              Rogue_global_property_pointers[];
-extern int                Rogue_property_offsets[];
-extern int                Rogue_attributes_table[];
-extern void*              Rogue_dynamic_method_table[];
+extern const int          Rogue_type_info_table[];
+extern const int          Rogue_type_name_index_table[];
+extern const int          Rogue_object_size_table[];
+extern const void*        Rogue_global_property_pointers[];
+extern const int          Rogue_property_offsets[];
+extern const int          Rogue_attributes_table[];
+extern const void*        Rogue_dynamic_method_table[];
 //extern int                Rogue_property_info_table[][];
 extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];
