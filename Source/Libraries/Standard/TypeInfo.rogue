@@ -31,6 +31,15 @@ class TypeInfo
       }
     endNativeCode
 
+  GLOBAL METHODS
+    method get ( index : Int32 ) -> TypeInfo
+      assert(index >= 0)
+      assert(index < type_count)
+      return native("RogueType_type_info(&Rogue_types[$index])")->TypeInfo
+
+    method type_count -> Int32
+      return native("Rogue_type_count")->Int32
+
   PROPERTIES
     index             : Int32
     name              : String
