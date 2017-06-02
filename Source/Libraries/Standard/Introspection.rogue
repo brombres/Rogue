@@ -1,12 +1,12 @@
 class Introspector
   PROPERTIES
     context : Object
-    address : Int64
+    address : IntPtr
     info    : TypeInfo
 
   METHODS
     method init( context )
-      address = native( "((RogueInt64)(intptr_t)$context)" )->Int64
+      address = native( "((intptr_t)$context)" )->IntPtr
       info = context.type_info
 
     method init( context, address, info )
