@@ -16,7 +16,7 @@ class Introspector
       if (not property_info) return NullValue
 
       if (property_info.type.is_reference)
-        return Value( native( "*((RogueObject**)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Object->Value )
+        return Value( native( "*((RogueObject**)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Object )
       endIf
 
       which (property_info.type.name)
