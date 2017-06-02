@@ -1,4 +1,26 @@
 class Introspector
+  GLOBAL METHODS
+    method _ret_Object (p:IntPtr)->Value
+      return native("*(RogueObject**)$p")->Object
+    method _ret_Real64 (p:IntPtr)->Value
+      return native("*(RogueReal64*)$p")->Real64
+    method _ret_Real32 (p:IntPtr)->Value
+      return native("*(RogueReal32*)$p")->Real32
+    method _ret_Int64 (p:IntPtr)->Value
+      return native("*(RogueInt64*)$p")->Int64
+    method _ret_Int32 (p:IntPtr)->Value
+      return native("*(RogueInt32*)$p")->Int32
+    method _ret_Character (p:IntPtr)->Value
+      return native("*(RogueCharacter*)$p")->Character
+    method _ret_Byte (p:IntPtr)->Value
+      return native("*(RogueByte*)$p")->Byte
+    method _ret_String (p:IntPtr)->Value
+      return native("*(RogueString**)$p")->String
+    method _ret_Logical (p:IntPtr)->Value
+      return native("*(RogueLogical*)$p")->Logical
+    method _ret_undefined (p:IntPtr)->Value
+      return UndefinedValue
+
   PROPERTIES
     context : Object
     address : IntPtr
@@ -140,6 +162,211 @@ class Introspector
         result[ p.name ] = this[ p.name ]
       endForEach
       return result
+
+    method call ( name:String, args:ValueList )->Value
+      return call(name, args.data)
+
+    method call ( name:String, args:Value[] )->Value
+      local methods = context.type_info.method_info( name )
+      #TODO: We can do better method selection than this, but for now, we go simple:
+      #      pick the first one with the matching number of parameters.  If we end
+      #      up not being able to convert an argument, we try the next one.
+      #local msgs = String[]
+      forEach (m in methods)
+        if (m.param_count == args.count)
+          try
+            return call(m, args)
+          catch (ex : NoMatchingMethodError)
+            noAction # Try the next one
+            #msgs.add(ex.message)
+          endTry
+        endIf
+      endForEach
+      #println msgs
+      throw Error("No matching method '$' ($ candidate(s))" (name, methods.count))
+
+    method call ( m:MethodInfo, args:Value[] )->Value
+      nativeHeader
+        #include <ffi.h>
+      endNativeHeader
+
+      assert m.param_count == args.count
+      local cargs = ValueList() # Args cast to correct types
+      local build = true
+      local r_buf_ptr : IntPtr
+      native @|ffi_cif cif;
+              |ffi_type ** types = (ffi_type **)alloca(sizeof(ffi_type *) * ($args->count + 1));
+              |ffi_type ** next_type = types;
+              |void ** cargs = (void **)alloca(sizeof(void *) * ($args->count + 1));
+              |void ** next_carg = cargs;
+              |#define ROGUE_ARG_PUSH(_t,_f,_v) { \
+              |  _t * tmp = (_t *) alloca( sizeof(_t) ); \
+              |  *tmp = _v; \
+              |  *(next_carg++) = tmp; \
+              |  if ($build) *(next_type++) = &_f; \
+              |}
+              |char r_buf[16]; // Return buffer, must be large enough for largest type
+              |$r_buf_ptr = (intptr_t)(void *)r_buf;
+
+      native "ROGUE_ARG_PUSH(RogueObject*, ffi_type_pointer, $this->context);"
+
+      forEach (p at index in m.param_types)
+        local a = args[index]
+        which (p.name)
+          case "String"
+            _check_param(index, p, a.is_string)
+            block
+              local c = a->String
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_pointer, $c);"
+            endBlock
+            nextIteration
+
+          case "Real64"
+            _check_param(index, p, a.is_number)
+            block
+              local c = a->Real64
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_double, $c);"
+            endBlock
+            nextIteration
+          case "Real32"
+            _check_param(index, p, a.is_number)
+            block
+              local c = a->Real32
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_float, $c);"
+            endBlock
+            nextIteration
+          case "Int64"
+            #_check_param(index, p, a.is_int64 or a.is_int32)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Int64
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_sint64, $c);"
+            endBlock
+            nextIteration
+          case "Int32"
+            #_check_param(index, p, a.is_int32)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Int32
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_sint32, $c);"
+            endBlock
+            nextIteration
+          case "Character"
+            #_check_param(index, p, a.is_character)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Character
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_sint32, $c);"
+            endBlock
+            nextIteration
+          case "Byte"
+            #_check_param(index, p, a.is_byte)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Byte
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_uint8, $c);"
+            endBlock
+            nextIteration
+          case "Logical"
+            _check_param(index, p, a.is_logical)
+            block
+              local c = a->Logical
+              native @|static_assert(sizeof($c) == 4 || sizeof($c) == 8 || sizeof($c) == 1, "Logicals are of unhandled size on this platform");
+                      |if (sizeof($c) == 4) {
+                      |  int32_t cc = (int32_t)$c;
+                      |  ROGUE_ARG_PUSH(int32_t, ffi_type_sint32, cc);
+                      |} else if (sizeof($c) == 8) {
+                      |  int64_t cc = (int64_t)$c;
+                      |  ROGUE_ARG_PUSH(int64_t, ffi_type_sint32, cc);
+                      |} else {
+                      |  int8_t cc = (int8_t)$c;
+                      |  ROGUE_ARG_PUSH(int8_t, ffi_type_sint8, cc);
+                      |}
+            endBlock
+            nextIteration
+          others
+            if (p.is_reference)
+              _check_param(index, p, a.is_object)
+              local c = a->Object
+              native "ROGUE_ARG_PUSH($(c.type), ffi_type_pointer, $c);"
+              nextIteration
+            endIf
+        endWhich
+
+        throw NoMatchingMethodError("Argument $ is of unhandled type $" (index+1, p.name))
+      endForEach
+
+      native "#undef ROGUE_ARG_PUSH"
+      native "ffi_type * ret_type = &ffi_type_void;"
+
+      local rt = m.return_type
+      local ret_func = this=>_ret_undefined : Function(IntPtr)->(Value)
+      block
+        if (rt is null)
+          escapeBlock
+        endIf
+
+        which (rt.name)
+          case "Real64"
+            native "ret_type = &ffi_type_double;"
+            ret_func = this=>_ret_Real64
+          case "Real32"
+            native "ret_type = &ffi_type_float;"
+            ret_func = this=>_ret_Real32
+          case "Int64"
+            native "ret_type = &ffi_type_sint64;"
+            ret_func = this=>_ret_Int64
+          case "Int32"
+            native "ret_type = &ffi_type_sint32;"
+            ret_func = this=>_ret_Int32
+          case "Character"
+            native "ret_type = &ffi_type_sint32;"
+            ret_func = this=>_ret_Character
+          case "Byte"
+            native "ret_type = &ffi_type_uint8;"
+            ret_func = this=>_ret_Byte
+          case "Logical"
+            block
+              local c : Logical
+              native @|static_assert(sizeof($c) == 4 || sizeof($c) == 8 || sizeof($c) == 1, "Logicals are of unhandled size on this platform");
+                      |if (sizeof($c) == 4) {
+                      |  ret_type = &ffi_type_sint32;
+                      |} else if (sizeof($c) == 8) {
+                      |  ret_type = &ffi_type_sint64;
+                      |} else {
+                      |  ret_type = &ffi_type_sint8;
+                      |}
+            endBlock
+            ret_func = this=>_ret_Logical
+          case "String"
+            native "ret_type = &ffi_type_pointer;"
+            ret_func = this=>_ret_String
+          others
+            if (rt.is_reference)
+              native "ret_type = &ffi_type_pointer;"
+              ret_func = this=>_ret_Object
+              escapeBlock
+            endIf
+            throw NoMatchingMethodError("Return type is of unhandled type $" (rt.name))
+        endWhich
+      endBlock
+
+      local failed = false
+      native @|ffi_status s = ffi_prep_cif(&cif, FFI_DEFAULT_ABI, $args->count + 1, ret_type, types);
+              |if (s != FFI_OK) $failed = 1;
+      if (failed) throw NoMatchingMethodError("CIF creation failed")
+
+      # Should (or can) we cache the cif?
+      local fn_ptr = m.fn_ptr
+
+      #native @|ffi_call (&cif, (void*)$fn_ptr, void *rvalue, cargs); #FIXME
+      native "ffi_call (&cif, (void(*)())$fn_ptr, r_buf, cargs);"
+      return ret_func(r_buf_ptr)
+
+  method _check_param (index:Int32, ptype:TypeInfo, condition:Logical)
+    if (not condition)
+      throw NoMatchingMethodError("Argument $ is incompatible with paramter type $" (index+1, ptype))
+    endIf
 endClass
 
 
@@ -200,4 +427,8 @@ class CompoundIntrospection<<$ValueType>> [aspect]
 
     method to->Value
       return introspector->Value
+endClass
+
+
+class NoMatchingMethodError : Exception
 endClass
