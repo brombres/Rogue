@@ -6,6 +6,7 @@
 
 #if defined(ROGUE_DEBUG_BUILD)
   #define ROGUE_DEBUG_STATEMENT(_s_) _s_
+  #include <assert>
 #else
   #define ROGUE_DEBUG_STATEMENT(_s_)
 #endif
@@ -68,6 +69,16 @@ extern void Rogue_configure_gc();
 #ifdef ROGUE_GC_UNSAFE_COMPOUNDS
   #undef ROGUE_DEF_COMPOUND_REF_PROP
   #define ROGUE_DEF_COMPOUND_REF_PROP(_t_,_n_) _t_ _n_
+#endif
+
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  #undef ROGUE_GC_MODE_BOEHM
+  #define ROGUE_GC_MODE_BOEHM 1
+  #include "gc_typed.h"
+  void Rogue_init_boehm_type_info();
+  #define ROGUE_GC_ALLOC_TYPE_UNTYPED 0
+  #define ROGUE_GC_ALLOC_TYPE_ATOMIC 1
+  #define ROGUE_GC_ALLOC_TYPE_TYPED 2
 #endif
 
 #if ROGUE_GC_MODE_BOEHM
@@ -406,17 +417,18 @@ struct RogueType
   int          attributes;
 
   int          global_property_count;
-  int*         global_property_name_indices;
-  int*         global_property_type_indices;
-  void**       global_property_pointers;
+  const int*   global_property_name_indices;
+  const int*   global_property_type_indices;
+  const void** global_property_pointers;
 
   int          property_count;
-  int*         property_name_indices;
-  int*         property_type_indices;
-  int*         property_offsets;
+  const int*   property_name_indices;
+  const int*   property_type_indices;
+  const int*   property_offsets;
 
   RogueObject* _singleton;
-  void**       methods;
+  const void** methods; // first function pointer in Rogue_dynamic_method_table
+  int          method_count;
 
   RogueAllocator*   allocator;
 
@@ -425,9 +437,14 @@ struct RogueType
   RogueInitFn       init_fn;
   RogueCleanUpFn    on_cleanup_fn;
   RogueToStringFn   to_string_fn;
+
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  int          gc_alloc_type;
+  GC_descr     gc_type_descr;
+#endif
 };
 
-RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false );
+RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false, int element_type_index=-1 ) ;
 RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
 RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
 RogueString* RogueType_name( RogueType* THIS );
@@ -513,6 +530,19 @@ struct RogueArray : RogueObject
   int  element_size;
   bool is_reference_array;
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  union
+  {
+    RogueObject**   as_objects;
+    RogueByte*      as_logicals;
+    RogueByte*      as_bytes;
+    RogueCharacter* as_characters;
+    RogueInt32*     as_int32s;
+    RogueInt64*     as_int64s;
+    RogueReal32*    as_real32s;
+    RogueReal64*    as_real64s;
+  };
+#else
   union
   {
     RogueObject*   as_objects[];
@@ -524,6 +554,7 @@ struct RogueArray : RogueObject
     RogueReal32    as_real32s[];
     RogueReal64    as_real64s[];
   };
+#endif
 };
 
 RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, RogueInt32 other_i1, RogueInt32 copy_count );
@@ -598,7 +629,7 @@ RogueAllocator* RogueAllocator_create();
 RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS );
 
 void*        RogueAllocator_allocate( int size );
-RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size );
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index=-1 );
 void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
@@ -607,13 +638,13 @@ extern int                Rogue_allocator_count;
 extern RogueAllocator     Rogue_allocators[];
 extern int                Rogue_type_count;
 extern RogueType          Rogue_types[];
-extern int                Rogue_type_info_table[];
-extern int                Rogue_type_name_index_table[];
-extern int                Rogue_object_size_table[];
-extern void*              Rogue_global_property_pointers[];
-extern int                Rogue_property_offsets[];
-extern int                Rogue_attributes_table[];
-extern void*              Rogue_dynamic_method_table[];
+extern const int          Rogue_type_info_table[];
+extern const int          Rogue_type_name_index_table[];
+extern const int          Rogue_object_size_table[];
+extern const void*        Rogue_global_property_pointers[];
+extern const int          Rogue_property_offsets[];
+extern const int          Rogue_attributes_table[];
+extern const void*        Rogue_dynamic_method_table[];
 //extern int                Rogue_property_info_table[][];
 extern RogueInitFn        Rogue_init_object_fn_table[];
 extern RogueInitFn        Rogue_init_fn_table[];

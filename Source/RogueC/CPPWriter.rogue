@@ -174,6 +174,8 @@ augment Program
       writer.println select{RogueC.gc_mode == GCMode.AUTO: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_BOEHM "
       writer.println select{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_BOEHM_TYPED "
+      writer.println select{RogueC.gc_mode == GCMode.BOEHM_TYPED: "1" || "0"}
       writer.println
 
       # GC Threshold
@@ -372,7 +374,7 @@ augment Program
       writer.println "// GLOBAL PROPERTIES"
       forEach (type in type_list)
         forEach (g in type.global_list)
-          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) ) nextIteration
+          if ( g.is_thread_local and (g.type.is_reference or g.type.has_object_references ) ) nextIteration
           if ( g.is_thread_local ) writer.print( "ROGUE_THREAD_LOCAL " )
           writer.print( g.type ).print( " Rogue" )
           writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
@@ -382,7 +384,7 @@ augment Program
       endForEach
       forEach (type in type_list)
         forEach (g in type.global_list)
-          if ( g.is_thread_local and (g.type.is_reference or g.type.contains_reference) )
+          if ( g.is_thread_local and (g.type.is_reference or g.type.has_object_references ) )
             writer.print( "ROGUE_THREAD_LOCAL " )
             writer.print( g.type ).print( " Rogue" )
             writer.print( type.cpp_name ).print( "_" ).print( g.cpp_name )
@@ -482,7 +484,7 @@ augment Program
       writer.println
 
       # Type name index in literal string table
-      writer.println "int Rogue_type_name_index_table[] ="
+      writer.println "const int Rogue_type_name_index_table[] ="
       writer.println "{"
       writer.indent += 2
       forEach (i of type_list)
@@ -715,7 +717,7 @@ augment Program
       #writer.println "*/"
 
       # dynamic method table
-      writer.println( "void* Rogue_dynamic_method_table[] =" )
+      writer.println( "const void* Rogue_dynamic_method_table[] =" )
       writer.println( "{" )
       writer.indent += 2
       local table_index = 0
@@ -730,26 +732,30 @@ augment Program
       writer.println
 
       # Base class info table
-      local info = Int32[]
-      forEach (type in type_list)
-        type.collect_type_info( info )
-      endForEach
-
-      writer.print(   "int Rogue_type_info_table[" ).print( info.count ).println( "] =" )
+      writer.print(   "const int Rogue_type_info_table[] =" )
       writer.println "{"
       writer.indent += 2
-      writer.println "// allocator_index, dynamic_method_table_index, base_class_count, base_class_index[base_class_count], ..."
+      writer.println "// allocator_index, dynamic_method_table_index, base_type_count, base_type_index[base_type_count],"
+      writer.println "// global_property_count, global_property_name_indices[global_property_count], global_property_type_indices[global_property_count],"
+      writer.println "// property_count, property_name_indices[property_count], property_type_indices[property_count] ..."
 
-      first = true
+      local info = Int32[]
       local items = 0
-      forEach (n in info)
-        if (first) first = false
-        else       writer.print_literal_character( ',', false )  # fix
+      forEach (type in type_list)
+        info.count = 0
+        collect_type_info( type, info )
+        #writer.print( "/* $ */" (type.cpp_class_name) )
 
-        ++items
-        if (items == 25) writer.println; items = 0
+        writer.print info.count
+        writer.print_literal_character( ',', false )  # fix
+        forEach (n in info)
+          writer.print n
+          writer.print_literal_character( ',', false )  # fix
 
-        writer.print n
+          ++items
+          if (items == 25) writer.println; items = 0
+        endForEach
+        #writer.println; items = 0
       endForEach
 
       if (items > 0) writer.println
@@ -758,8 +764,77 @@ augment Program
       writer.println
 
       if (Program.using_introspection)
+        # Method names
+        #NOTE: Must use exact same algorithm as for generating Rogue_dynamic_method_table!
+        #      (that code is in type.print_dynamic_method_table_entries)
+        local method_names = Table<<String,Int32>>()
+        local method_sigs = Table<<String,Int32>>()
+        local method_param_types = Int32[]
+        forEach (type in type_list)
+          forEach (m in type.method_list)
+            if (not m.is_macro)
+              if (m.store_dynamically and m.is_used and not m.is_abstract)
+                if (not method_names.contains(m.name))
+                  method_names[m.name] = method_names.count
+                endIf
+                local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+                if (not method_sigs.contains(sig))
+                  method_sigs[sig] = method_param_types.count
+                  method_param_types.add(m.parameters.mapped<<Int32>>( (l)=>(l.type.index) ))
+                endIf
+              endIf
+            endIf
+          endForEach
+        endForEach
+        writer.println(  "const char* Rogue_method_name_strings[] =" )
+        writer.println "{"
+        writer.indent += 2
+        forEach (item at index in method_names.reader)
+          assert index == item.value
+          writer.println '/* $ */ "$",' (item.value, item.key)
+        endForEach
+        writer.indent -= 2
+        writer.println "};"
+        writer.println
+        writer.println(  "const int Rogue_method_param_types[] =" )
+        writer.println "{"
+        writer.indent += 2
+        block
+          local count = 0
+          forEach (item in method_param_types)
+            writer.println "$," (item)
+            count += 1
+            if (count >= 25) writer.println; count = 0
+          endForEach
+          if (count) writer.println
+        endBlock
+        writer.indent -= 2
+        writer.println "};"
+        writer.println
+        writer.println "// name_string, arg_count, first_param_type, return_type"
+        writer.println(  "const int Rogue_method_info_table[][4] =" )
+        writer.println "{"
+        writer.indent += 2
+        forEach (type in type_list)
+          forEach (m at index in type.method_list)
+            if (index >= type.dynamic_method_table_count) escapeForEach
+            if (not m.is_macro)
+              if (m.store_dynamically and m.is_used and not m.is_abstract)
+                local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+
+                writer.println '{$,$,$,$}, // $.$' (method_names[m.name], m.parameters.count, method_sigs[sig], select{m.return_type:m.return_type.index || -1}, type.name, m.signature)
+              else
+                writer.println '{-1,-1,-1,-1},'
+              endIf
+            endIf
+          endForEach
+        endForEach
+        writer.indent -= 2
+        writer.println "};"
+        writer.println
+
         # Global property pointers
-        writer.println(  "void* Rogue_global_property_pointers[] =" )
+        writer.println(  "const void* Rogue_global_property_pointers[] =" )
         writer.println "{"
         writer.indent += 2
 
@@ -782,7 +857,7 @@ augment Program
         writer.println
 
         # Property offsets
-        writer.println(  "int Rogue_property_offsets[] =" )
+        writer.println(  "const int Rogue_property_offsets[] =" )
         writer.println "{"
         writer.indent += 2
 
@@ -806,7 +881,7 @@ augment Program
 
 
       # Object size table
-      writer.print(   "int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
+      writer.print(   "const int Rogue_object_size_table[" ).print( type_list.count ).println( "] =" )
       writer.println "{"
       writer.indent += 2
 
@@ -818,14 +893,14 @@ augment Program
         writer.print( "(int) sizeof(" ).print( type.cpp_class_name ).print( ")" )
       endForEach
 
-      if (items > 0) writer.println
+      writer.println
       writer.indent -= 2
       writer.println( "};" )
       writer.println
 
       if (Program.using_introspection)
         # Attributes table
-        writer.print(   "int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
+        writer.print(   "const int Rogue_attributes_table[" ).print( type_list.count ).println( "] =" )
         writer.println "{"
         writer.indent += 2
 
@@ -837,7 +912,7 @@ augment Program
           writer.print( type.attributes.flags )
         endForEach
 
-        if (items > 0) writer.println
+        writer.println
         writer.indent -= 2
         writer.println( "};" )
         writer.println
@@ -904,7 +979,7 @@ augment Program
         local st = Program.literal_string_list[i]
         writer.print_literal_string( st )
         writer.print( ", " ).print( st.byte_count )
-        writer.println( " ) ); " )
+        writer.println( " ) );" )
       endForEach
       writer.println
 
@@ -942,6 +1017,10 @@ augment Program
       writer.indent -= 2
       writer.println( "}" )
       writer.println
+
+      if (RogueC.gc_mode == GCMode.BOEHM_TYPED)
+        write_boehm_type_info writer
+      endIf
 
       # launch()
       writer.println( "void Rogue_launch()" )
@@ -1052,6 +1131,93 @@ augment Program
 
       writer.close
 
+    method _write_boehm_type_info( writer:CPPWriter, type:Type, type_name=null:String, leader=null:String )
+      if (not type_name) type_name = type.cpp_class_name
+      if (leader) leader = leader + "."
+      else leader = ""
+      forEach (p in type.property_list)
+        if (p.type.is_reference)
+          writer.println( "GC_set_bit(bitmap, GC_WORD_OFFSET($, $$));" (type_name, leader, p.cpp_name) )
+        elseIf (p.type.is_compound)
+          _write_boehm_type_info( writer, p.type, type_name, leader + p.cpp_name )
+        endIf
+      endForEach
+
+    method write_boehm_type_info( writer:CPPWriter )
+      writer.println @|#if ROGUE_GC_MODE_BOEHM_TYPED
+                      |void Rogue_init_boehm_type_info()
+                      |{
+      writer.indent += 2
+      writer.println @|int largest = 0;
+                      |for (int i = 0; i < sizeof(Rogue_object_size_table) / sizeof(Rogue_object_size_table[0]); ++i)
+                      |{
+                      |  if (Rogue_types[i].object_size > largest) largest = Rogue_types[i].object_size;
+                      |}
+                      |int bitmap_size = sizeof(GC_word)*( ((largest/sizeof(GC_word)) + GC_WORDSZ - 1) / GC_WORDSZ );
+                      |GC_word * bitmap = (GC_word*)alloca(bitmap_size);
+
+      forEach (type in type_list)
+        if (type.is_used)
+          #NOTE: The decision of whether or not to write type info should be matched
+          #      with the writing of the type_info field "gc_alloc_type".
+          if (type.has_object_references)
+            writer.println "memset(bitmap, 0, bitmap_size);"
+            _write_boehm_type_info( writer, type )
+            writer.println "Rogue_types[$].gc_type_descr = GC_make_descriptor(bitmap, Rogue_types[$].object_size / sizeof(GC_word));" ...
+                           (type.index, type.index)
+          endIf
+        endIf
+      endForEach
+      writer.indent -= 2
+      writer.println @|}
+                      |#endif
+      writer.println
+
+    method collect_type_info( type:Type, info:Int32[] )
+      info.add( 0 )  # allocator 0
+
+      if (type.is_primitive)
+        info.add( 0 )
+      else
+        info.add( type.dynamic_method_table_index )
+      endIf
+
+      local flat_base_types = Type[]
+      if (type.base_class) type.base_class.collect_base_types( flat_base_types )
+      forEach (base_type in type.base_types)
+        base_type.collect_base_types( flat_base_types )
+      endForEach
+
+      info.add( flat_base_types.count )
+      forEach (base_type in flat_base_types) info.add( base_type.index )
+
+      info.add( type.global_list.count )
+      forEach (p in type.global_list) info.add( Program.add_literal_string(p.name) )
+      forEach (p in type.global_list) info.add( p.type.index )
+
+      info.add( type.property_list.count )
+      forEach (p in type.property_list) info.add( Program.add_literal_string(p.name) )
+      forEach (p in type.property_list) info.add( p.type.index )
+
+      if (RogueC.gc_mode == GCMode.BOEHM_TYPED)
+        # Write the gc_alloc_type field
+        # These same conditions should be used in write_boehm_type_info()
+        if (not type.has_object_references)
+          info.add( 1 ) # ROGUE_GC_ALLOC_TYPE_ATOMIC
+        else
+          info.add( 2 ) # ROGUE_GC_ALLOC_TYPE_TYPED
+        endIf
+        #NOTE: We could consider using ROGUE_GC_ALLOC_TYPE_UNTYPED (0) for, e.g.,
+        #      objects which are entirely made of references, though the collector
+        #      actually catches a number of such cases.
+      endIf
+
+      if (type.is_aspect or type.is_compound or type.is_class)
+        info.add( type.dynamic_method_table_count )
+      else
+        info.add( 0 )
+      endIf
+
     method print_property_trace_code( type:Type, writer:CPPWriter )
       forEach (p in type.property_list)
 
@@ -1156,7 +1322,7 @@ class CPPWriter
           if (needs_newline)
             println
           endIf
-          print_indent
+          if (line.count) print_indent
           buffer.print( line )
           needs_newline = true
         endForEach
@@ -1540,7 +1706,7 @@ class CPPWriter
     # guaranteed to have a lifetime at least as long as the call we're
     # making, we can skip this.
     if (arg.type.is_compound)
-      noAction
+      noAction # Compound lifetime is tied to stack frame!
     elseIf (arg instanceOf CmdReadLocal)
       noAction # Current frame won't die before call
     elseIf (arg instanceOf CmdReadSingleton)
@@ -1882,7 +2048,7 @@ augment Type
     method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
       local buffer = StringBuilder()
       forEach (m in method_list)
-        if (not m.is_macro and m.is_dynamic and m.is_used)
+        if (not m.is_macro and m.store_dynamically and m.is_used)
           buffer.clear
           if (m.return_type)
             buffer.print( m.return_type.cpp_class_name )
@@ -1923,25 +2089,28 @@ augment Type
       local i2 = method_list.count - 1
       while (i2 > 0)
         local m = method_list[ i2 ]
-        if (not m.is_macro and m.is_dynamic and m.is_used) escapeWhile
+        if (not m.is_macro and m.store_dynamically and m.is_used) escapeWhile
         --i2
       endWhile
 
       local print_type_name = true
       forEach (i in 0..i2)
         local m = method_list[i]
+        #NOTE: The writing of method names for introspection must use exactly these same conditions!
         if (not m.is_macro)
-          if (m.is_dynamic and m.is_used and not m.is_abstract)
+          if (m.store_dynamically and m.is_used and not m.is_abstract)
             # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
             writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
           else
-            writer.print( "0," ) #.print( " // " ).print(m.type_context.name).print(".").print( m.signature )
+            writer.print( "0," ).print( " // " ).print(m.type_context.name).print(".").print( m.signature )
           endIf
           if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
           writer.println
           ++at_index
         endIf
       endForEach
+
+      dynamic_method_table_count = at_index - dynamic_method_table_index
 
       return at_index
 
@@ -2112,6 +2281,9 @@ augment Method
       writer.indent -= 2
       writer.println "}"
       writer.println
+
+    method store_dynamically -> Logical
+      return is_dynamic or (Program.using_introspection and type_context.is_reference)
 
 endAugment
 
@@ -3167,7 +3339,8 @@ augment CmdCreateArray
       writer.print( "RogueType_create_array( " )
       count_cmd.write_cpp( writer )
       writer.print( ", sizeof(" ).print( array_type.element_type ).print( ")" )
-      if (array_type.element_type.is_reference) writer.print( ", true" )
+      if (array_type.element_type.is_reference) writer.print( ", true" ) else writer.print(", false" )
+      writer.print( ", " ).print( array_type.element_type.index )
       writer.print( " )" )
 endAugment
 

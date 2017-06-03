@@ -107,15 +107,19 @@ char* RogueDebugTrace::to_c_string()
 //-----------------------------------------------------------------------------
 //  RogueType
 //-----------------------------------------------------------------------------
-RogueArray* RogueType_create_array( int count, int element_size, bool is_reference_array )
+RogueArray* RogueType_create_array( int count, int element_size, bool is_reference_array, int element_type_index )
 {
   if (count < 0) count = 0;
   int data_size  = count * element_size;
   int total_size = sizeof(RogueArray) + data_size;
 
-  RogueArray* array = (RogueArray*) RogueAllocator_allocate_object( RogueTypeArray->allocator, RogueTypeArray, total_size );
+  RogueArray* array = (RogueArray*) RogueAllocator_allocate_object( RogueTypeArray->allocator, RogueTypeArray, total_size, element_type_index);
 
+#if ROGUE_GC_MODE_BOEHM
+  // Already zeroed.
+#else
   memset( array->as_bytes, 0, data_size );
+#endif
   array->count = count;
   array->element_size = element_size;
   array->is_reference_array = is_reference_array;
@@ -127,6 +131,9 @@ RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size )
 {
   ROGUE_DEF_LOCAL_REF_NULL(RogueObject*, obj);
   RogueInitFn  fn;
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  ROGUE_DEBUG_STATEMENT(assert(size == 0 || size == THIS->object_size));
+#endif
 
   obj = RogueAllocator_allocate_object( THIS->allocator, THIS, size ? size : THIS->object_size );
 
@@ -812,28 +819,80 @@ void Rogue_Boehm_Finalizer( void* obj, void* data )
   o->type->on_cleanup_fn(o);
 }
 
-RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index )
 {
-  // If we had more type information (e.g., whether the data contained
-  // references), we could make better decisions here.
-  // Also, it seems like we could probably use the small allocator too.
-  RogueObject* obj = (RogueObject*)GC_MALLOC( size );
+  // We use the "off page" allocations here, which require that somewhere there's a pointer
+  // to something within the first 256 bytes.  Since someone should always be holding a
+  // reference to the absolute start of the allocation (a reference!), this should always
+  // be true.
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  RogueObject * obj;
+  if (of_type->gc_alloc_type == ROGUE_GC_ALLOC_TYPE_TYPED)
+  {
+    obj = (RogueObject*)GC_malloc_explicitly_typed_ignore_off_page(of_type->object_size, of_type->gc_type_descr);
+  }
+  else if (of_type->gc_alloc_type == ROGUE_GC_ALLOC_TYPE_ATOMIC)
+  {
+    obj = (RogueObject*)GC_malloc_atomic_ignore_off_page( of_type->object_size );
+    if (obj) memset( obj, 0, size );
+  }
+  else
+  {
+    obj = (RogueObject*)GC_malloc_ignore_off_page( of_type->object_size );
+  }
+  if (!obj)
+  {
+    Rogue_collect_garbage( true );
+    obj = (RogueObject*)GC_MALLOC( of_type->object_size );
+  }
+#else
+  RogueObject * obj = (RogueObject*)GC_malloc_ignore_off_page( size );
   if (!obj)
   {
     Rogue_collect_garbage( true );
     obj = (RogueObject*)GC_MALLOC( size );
   }
+#endif
+
   ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
   ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
   ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  // In typed mode, we allocate the array object and the actual data independently so that
+  // they can have different GC types.
+  if (element_type_index != -1)
+  {
+    RogueType* el_type = &Rogue_types[element_type_index];
+    int data_size = size - of_type->object_size;
+    int elements = data_size / el_type->object_size;
+    void * data;
+    if (el_type->gc_alloc_type == ROGUE_GC_ALLOC_TYPE_TYPED)
+    {
+      data = GC_calloc_explicitly_typed(elements, el_type->object_size, el_type->gc_type_descr);
+    }
+    else if (of_type->gc_alloc_type == ROGUE_GC_ALLOC_TYPE_ATOMIC)
+    {
+      data = GC_malloc_atomic_ignore_off_page( data_size );
+      if (data) memset( obj, 0, data_size );
+    }
+    else
+    {
+      data = GC_malloc_ignore_off_page( data_size );
+    }
+    ((RogueArray*)obj)->as_bytes = (RogueByte*)data;
+    ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
+    ROGUE_GCDEBUG_STATEMENT( printf( "  Elements " ) );
+    ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(el_type) );
+    ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)data ) );
+  }
+#endif
+
   if (of_type->on_cleanup_fn)
   {
     GC_REGISTER_FINALIZER_IGNORE_SELF( obj, Rogue_Boehm_Finalizer, 0, 0, 0 );
   }
-
-  memset( obj, 0, size );
 
   obj->type = of_type;
   obj->object_size = size;
@@ -841,7 +900,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   return obj;
 }
 #else
-RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size )
+RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index )
 {
   ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*) RogueAllocator_allocate( THIS, size ));
 
@@ -1099,7 +1158,7 @@ void Rogue_update_weak_references_during_gc()
 void Rogue_configure_types()
 {
   int i;
-  int* type_info = Rogue_type_info_table;
+  const int* next_type_info = Rogue_type_info_table;
 
   // Install seg fault handler
   struct sigaction sa;
@@ -1119,11 +1178,18 @@ void Rogue_configure_types()
   int property_offset_cursor = 0;
 #endif
 
+#ifdef ROGUE_OLD_TYPE_INFO
+  const int* type_info = next_type_info;
+#endif
   // Initialize types
   for (i=0; i<Rogue_type_count; ++i)
   {
     int j;
     RogueType* type = &Rogue_types[i];
+#ifndef ROGUE_OLD_TYPE_INFO
+    const int* type_info = next_type_info;
+    next_type_info += *(type_info++) + 1;
+#endif
 
     memset( type, 0, sizeof(RogueType) );
 
@@ -1170,6 +1236,12 @@ void Rogue_configure_types()
       type->property_offsets = Rogue_property_offsets + property_offset_cursor;
       property_offset_cursor += type->property_count;
     }
+    if (((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
+      || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND)
+      || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_ASPECT))
+    {
+      type->method_count = *(type_info++);
+    }
 #endif
 
     type->trace_fn = Rogue_trace_fn_table[i];
@@ -1177,9 +1249,17 @@ void Rogue_configure_types()
     type->init_fn        = Rogue_init_fn_table[i];
     type->on_cleanup_fn  = Rogue_on_cleanup_fn_table[i];
     type->to_string_fn   = Rogue_to_string_fn_table[i];
+
+#ifndef ROGUE_OLD_TYPE_INFO
+    ROGUE_DEBUG_STATEMENT(assert(type_info <= next_type_info));
+#endif
   }
 
   Rogue_on_gc_trace_finished.add( Rogue_update_weak_references_during_gc );
+
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  Rogue_init_boehm_type_info();
+#endif
 }
 
 #if ROGUE_GC_MODE_BOEHM

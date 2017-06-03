@@ -151,6 +151,14 @@ class MethodTemplate
       m.specializer_count = type_parameters.count
       m.unspecialized_name = name
 
+      #TODO: Is it possible that we .organize() the method here?  This would
+      #      take care of setting min_args correctly rather than us
+      #      duplicating that functionality here.
+      m.min_args = m.parameters.count
+      while (m.min_args >= 1 and m.parameters[m.min_args-1].initial_value)
+        --m.min_args
+      endWhile
+
       contingent
         forEach (param in m.parameters)
           necessary param.type is not null

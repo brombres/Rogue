@@ -25,17 +25,49 @@ class TypeInfo
             RogueTypeInfo__add_property_info__Int32_Int32( (RogueTypeInfo*) THIS->type_info,
                 THIS->property_name_indices[i], THIS->property_type_indices[i] );
           }
+
+          for (int i=0; i<THIS->method_count; ++i)
+          {
+            RogueTypeInfo__add_method_info__Int32( (RogueTypeInfo*) THIS->type_info,
+                THIS->methods - Rogue_dynamic_method_table + i);
+          }
         }
 
         return (RogueTypeInfo*) THIS->type_info;
       }
     endNativeCode
 
+  GLOBAL METHODS
+    method get ( index : Int32 ) -> TypeInfo
+      if ((index < 0) or (index >= type_count)) return null
+      return native("RogueType_type_info(&Rogue_types[$index])")->TypeInfo
+
+    method get ( name : String ) -> TypeInfo
+      local result = RuntimeTypeInfoLookup[ name ]
+      if (result) return result
+
+      native @|for (int i=Rogue_type_count; --i>=0; )
+              |{
+              |  RogueType* cur_type = &Rogue_types[ i ];
+              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
+              |  {
+              |    $result = RogueType_type_info( cur_type );
+              |    break;
+              |  }
+              |}
+
+      if (result) RuntimeTypeInfoLookup[ name ] = result
+      return result
+
+    method type_count -> Int32
+      return native("Rogue_type_count")->Int32
+
   PROPERTIES
     index             : Int32
     name              : String
     global_properties = PropertyInfo[]
     properties        = PropertyInfo[]
+    methods           = MethodInfo[]
 
   METHODS
     method init( index, name ) [essential]
@@ -45,6 +77,22 @@ class TypeInfo
 
     method add_property_info( property_name_index:Int32, property_type_index:Int32 ) [essential]
       properties.add( PropertyInfo(properties.count,property_name_index, property_type_index) )
+
+    method add_method_info( method_index:Int32 ) [essential]
+      local first_param : Int32
+      local param_count : Int32
+      local return_type : Int32
+      local success = false
+      native @|if (Rogue_method_info_table[$method_index][0] >= 0)
+              |{
+              |  $success = 1;
+              |  $param_count = Rogue_method_info_table[$method_index][1];
+              |  $first_param = Rogue_method_info_table[$method_index][2];
+              |  $return_type = Rogue_method_info_table[$method_index][3];
+              |}
+      if (success)
+        methods.add( MethodInfo(method_index, param_count, first_param, return_type) )
+      endIf
 
     method create_object->Object
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
@@ -103,6 +151,31 @@ class TypeInfo
     method is_reference->Logical
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
 
+    method base_class->TypeInfo
+      local base_count : Int32
+      native "$base_count = Rogue_types[$index].base_type_count;"
+      forEach (i in 0..<base_count)
+        local ti : TypeInfo
+        native @|RogueType * base = Rogue_types[$this->index].base_types[$i];
+                |RogueType_type_info(base);
+                |$ti = (RogueTypeInfo*)base->type_info;
+        if (not ti.is_aspect) return ti
+      endForEach
+      return null
+
+    method aspects->TypeInfo[]
+      local r = TypeInfo[]
+      local base_count : Int32
+      native "$base_count = Rogue_types[$index].base_type_count;"
+      forEach (i in 0..<base_count)
+        local ti : TypeInfo
+        native @|RogueType * base = Rogue_types[$this->index].base_types[$i];
+                |RogueType_type_info(base);
+                |$ti = (RogueTypeInfo*)base->type_info;
+        if (ti.is_aspect) r.add(ti)
+      endForEach
+      return r
+
     method property_info( property_name:String )->PropertyInfo
       forEach (i in 0..<properties.count)
         if (properties[i].name == property_name)
@@ -110,6 +183,22 @@ class TypeInfo
         endIf
       endForEach
       return null
+
+    method method_info( method_name:String )->MethodInfo[]
+      local r = MethodInfo[]
+      forEach (i in 0..<methods.count)
+        if (methods[i].name == method_name)
+          r.add( methods[ i ] )
+        else
+          local n = methods[i].name
+          if (n.contains("<<")) n = n.before_first("<<")
+          if (n.contains("(")) n = n.before_first("(")
+          if (n == method_name)
+            r.add( methods[ i ] )
+          endIf
+        endIf
+      endForEach
+      return r
 
     method set_global_property<<$PropertyType>>( property_name:String, value:$PropertyType )->this
       forEach (i in 0..<global_property_count)
@@ -129,6 +218,10 @@ class TypeInfo
       return name
 endClass
 
+
+class RuntimeTypeInfoLookup : Table<<String,TypeInfo>> [singleton];
+
+
 class PropertyInfo
   PROPERTIES
     index               : Int32
@@ -142,10 +235,142 @@ class PropertyInfo
       return Runtime.literal_string( property_name_index )
 
     method type->TypeInfo
-      return Runtime.type_info( property_type_index )
+      return TypeInfo.get( property_type_index )
 
     method to->String
       return "$:$" (name,type.name)
-
 endClass
 
+
+class MethodWithReturnValueCaller <<$R>>
+  PROPERTIES
+    fn_ptr : IntPtr
+    parent : MethodInfo
+
+  METHODS
+    method init (parent)
+      fn_ptr = parent.fn_ptr
+
+    method call (o:Object) -> $R
+      parent._check_count(0)
+      local r : $R
+      native "$r = ($(r.type) (*)(RogueObject*)($this->fn_ptr)($o);"
+      return r
+
+    method call<<$T1>> (o:Object,t1:$T1) -> $R
+      parent._check_count(1)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+      return r
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2) -> $R
+      parent._check_count(2)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+      return r
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3) -> $R
+      parent._check_count(3)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4) -> $R
+      parent._check_count(4)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5) -> $R
+      parent._check_count(5)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+      return r
+endClass
+
+
+class MethodInfo
+  GLOBAL PROPERTIES
+    _method_name_strings = Table<<Int32,String>>()
+
+  GLOBAL METHODS
+    method _get_method_name ( method_index : Int32 ) -> String
+      local name = _method_name_strings[method_index]
+      if (not name)
+        native @|int name_index = Rogue_method_info_table[$method_index][0];
+                |if (name_index >= 0) $name = RogueString_create_from_utf8(Rogue_method_name_strings[name_index]);
+        require(name)
+        _method_name_strings[method_index] = name
+      endIf
+      return name
+
+  PROPERTIES
+    index               : Int32
+    name                : String
+    fn_ptr              : IntPtr
+    _first_param_type   : Int32
+    param_count         : Int32
+    _return_type        : Int32
+    param_types         : TypeInfo[]
+
+  METHODS
+    method init( index, param_count, first_param_type:Int32, return_type:Int32 )
+      _first_param_type = first_param_type
+      _return_type = return_type
+      fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
+
+    method _check_count (c : Int32)
+      if (c != param_count) throw Error("$ arguments passed to method taking $ arguments" (c, param_count))
+
+    method name->String
+      if (@name) return @name
+      @name = _get_method_name(index)
+      return @name
+
+    method return_type->TypeInfo
+      if (_return_type == -1) return null
+      return TypeInfo.get(_return_type)
+
+    method param_types->TypeInfo[]
+      if (@param_types) return @param_types
+      local r = TypeInfo[]
+      forEach (i in 0..<param_count)
+        r.add(TypeInfo.get( native("Rogue_method_param_types[$this->__first_param_type + $i]")->Int32 ))
+      endForEach
+      @param_types = r
+      return r
+
+    method to->String
+      local r = name
+      r += "(" + ",".join(param_types.mapped<<String>>( (x)=>(x.name) )) + ")"
+      if (return_type) r += "->" + return_type.name
+      return r
+
+    method call (o:Object)
+      _check_count(0)
+      native "((void (*)(RogueObject*))($this->fn_ptr))($o);"
+
+    method call<<$T1>> (o:Object,t1:$T1)
+      _check_count(1)
+      native "((void (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2)
+      _check_count(2)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3)
+      _check_count(3)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4)
+      _check_count(4)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
+      _check_count(5)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+
+    method returns<<$RT>> () -> MethodWithReturnValueCaller<<$RT>>
+      assert(<<$RT>> is return_type)
+      return MethodWithReturnValueCaller<<$RT>>(this)
+endClass
