@@ -33,7 +33,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ### v1.3.0 - June 3, 2017
-- [Rogue] Added `[mutating]` method attribute which, when used with a compound or primtive method, passes the context by reference so that changes to the properties made within the method will be reflected in the original compound or primitive.  Note that chaining a mutating method at the end of other calls will cause a C++ compile error; it is up to the developer to avoid this.
+- [Rogue] Added `[mutating]` method attribute which, when used a a compound or primtive method, passes the context by reference so that changes to compound properties or primitive `this` made within the method will be reflected in the original compound or primitive.
 - [RogueC] Removed stray instance of a compound argument being unnecessarily wrapped in a `ROGUE_ARG()`.
 - [RogueC] `enum` types are now properly namespaced within their module.
 - [RogueC] Fixed error messages to include method candidates once more.

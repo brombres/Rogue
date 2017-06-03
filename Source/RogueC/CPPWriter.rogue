@@ -1488,7 +1488,7 @@ class CPPWriter
           throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
       endWhich
 
-  method print_arg ( arg:Cmd, param_info=null:Local, cast_to=null:Type )
+  method print_arg ( arg:Cmd, param_info=null:Local, cast_to=null:Type, &is_mutating )
     # Prints an argument to a call
     #
     # Note that the argument here may not be an argument as far as *Rogue*
@@ -1497,8 +1497,8 @@ class CPPWriter
     # If param_type is given and is an aspect, we do an aspect-wrap.
     # If cast_to is given, we'll insert a cast to this type.
 
-    local param_type = select{param_info : param_info.type || null}->Type
-    local is_alias = param_info and param_info.is_alias
+    local param_type = select{param_info : param_info.type || arg.type}->Type
+    local is_alias = is_mutating or (param_info and param_info.is_alias)
     if (is_alias)
       if (arg instanceOf CmdReadLocal or arg instanceOf CmdReadSingleton)
         noAction # These are always okay
@@ -1506,16 +1506,29 @@ class CPPWriter
         # It's possible to shoot oneself in the foot with this, but it's
         # potentially useful, so we allow it when it's easy.
         if (RogueC.gc_mode == GCMode.AUTO)
-          throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
-                            "are not currently supported in the active garbage collection mode." (param_info.name))
+          if (param_info)
+            throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
+                              "are not currently supported in the active garbage collection mode." (param_info.name))
+          else
+            throw arg.t.error("Cannot call a [mutating] method on an element access because it is " ...
+                              "not currently supported in the active garbage collection mode." )
+          endIf
         endIf
       else
-        throw arg.t.error("The argument for parameter '$' cannot be aliased." (param_info.name))
+        if (param_info)
+          throw arg.t.error("The argument for parameter '$' cannot be aliased because it is produced by evaluating an expression - only local variable and singleton accesses can be aliased." (param_info.name))
+        else
+          throw arg.t.error("Cannot call a [mutating] method on a context produced by evaluating an expression - mutating methods can only be called only local variable and singleton contexts.")
+        endIf
       endIf
       if (RogueC.gc_mode == GCMode.AUTO)
         if (not (param_type.is_primitive or param_type.is_compound))
-          throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
-                            "currently only supports primitive and compound aliases." (param_info.name))
+          if (param_info)
+            throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
+                              "currently only supports primitive and compound aliases." (param_info.name))
+          else
+            throw arg.t.error("Cannot call a [mutating] method on a reference type due to the active garbage collection mode - only calls to mutating primitive and compound methods are supported.")
+          endIf
         endIf
       endIf
     endIf
@@ -2751,7 +2764,7 @@ augment CmdCallAspectMethod
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       writer.print( method_info.cpp_name )
       writer.print( "( " )
-      writer.print_arg( context, &cast_to=Program.type_Object )
+      writer.print_arg( context, &cast_to=Program.type_Object, &is_mutating=method_info.is_mutating )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
@@ -2771,7 +2784,7 @@ augment CmdCallDynamicMethod
         writer.print( "Rogue_call_" ).print( method_info.cpp_typedef )
         writer.print( "( " )
         writer.print( method_info.index ).print( ", " )
-        writer.print_arg( context, &cast_to = method_info.type_context )
+        writer.print_arg( context, &cast_to = method_info.type_context, &is_mutating=method_info.is_mutating )
         local i = 0
         forEach (arg in args)
           writer.print( ", " )
@@ -2793,7 +2806,7 @@ augment CmdCallStaticMethod
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       writer.print( method_info.cpp_name )
       writer.print( "( " )
-      writer.print_arg( context, &cast_to = method_info.type_context )
+      writer.print_arg( context, &cast_to = method_info.type_context, &is_mutating=method_info.is_mutating )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
@@ -2827,7 +2840,7 @@ augment CmdCallNativeMethod
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
       writer.print( method_info.cpp_name )
       writer.print( "( " )
-      writer.print_arg( context )
+      writer.print_arg( context, &is_mutating=method_info.is_mutating )
       local i = 0
       forEach (arg in args)
         writer.print( ", " )
