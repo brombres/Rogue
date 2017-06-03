@@ -39,9 +39,25 @@ class TypeInfo
 
   GLOBAL METHODS
     method get ( index : Int32 ) -> TypeInfo
-      assert(index >= 0)
-      assert(index < type_count)
+      if ((index < 0) or (index >= type_count)) return null
       return native("RogueType_type_info(&Rogue_types[$index])")->TypeInfo
+
+    method get ( name : String ) -> TypeInfo
+      local result = RuntimeTypeInfoLookup[ name ]
+      if (result) return result
+
+      native @|for (int i=Rogue_type_count; --i>=0; )
+              |{
+              |  RogueType* cur_type = &Rogue_types[ i ];
+              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
+              |  {
+              |    $result = RogueType_type_info( cur_type );
+              |    break;
+              |  }
+              |}
+
+      if (result) RuntimeTypeInfoLookup[ name ] = result
+      return result
 
     method type_count -> Int32
       return native("Rogue_type_count")->Int32
@@ -203,6 +219,9 @@ class TypeInfo
 endClass
 
 
+class RuntimeTypeInfoLookup : Table<<String,TypeInfo>> [singleton];
+
+
 class PropertyInfo
   PROPERTIES
     index               : Int32
@@ -216,7 +235,7 @@ class PropertyInfo
       return Runtime.literal_string( property_name_index )
 
     method type->TypeInfo
-      return Runtime.type_info( property_type_index )
+      return TypeInfo.get( property_type_index )
 
     method to->String
       return "$:$" (name,type.name)

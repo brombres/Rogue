@@ -85,26 +85,8 @@ class Runtime [essential]
     method set_gc_logging( setting:Logical )
       native "Rogue_gc_logging = $setting;"
 
-    method type_info( name:String )->TypeInfo
-      local result = RuntimeTypeInfoLookup[ name ]
-      if (result) return result
-
-      native @|for (int i=Rogue_type_count; --i>=0; )
-              |{
-              |  RogueType* cur_type = &Rogue_types[ i ];
-              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
-              |  {
-              |    $result = RogueType_type_info( cur_type );
-              |    break;
-              |  }
-              |}
-
-      if (result) RuntimeTypeInfoLookup[ name ] = result
-      return result
-
-    method type_info( type_index:Int32 )->TypeInfo
-      native @|if ($type_index < 0 || $type_index >= Rogue_type_count) return 0;
-              |return RogueType_type_info( &Rogue_types[$type_index] );
+    method type_info ( name:String )->TypeInfo [deprecated]
+      return TypeInfo.get(name)
 
     method collect_garbage ( force=false:Logical )->Logical
       # Runs the garbage collector if possible
@@ -123,6 +105,3 @@ class Runtime [essential]
       return result
 
 endClass
-
-class RuntimeTypeInfoLookup : Table<<String,TypeInfo>> [singleton];
-

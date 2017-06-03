@@ -5891,7 +5891,7 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
 
     method resolve( scope:Scope )->Cmd
       of_type.organize( scope )
-      return CmdAccess( t, CmdAccess(t,"Runtime"), "type_info", CmdArgs(CmdLiteralString(t,of_type)) ).resolve( scope )
+      return CmdAccess( t, CmdAccess(t,"TypeInfo"), "get", CmdArgs(CmdLiteralString(t,of_type)) ).resolve( scope )
 
     method type->Type
       return of_type

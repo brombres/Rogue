@@ -1257,7 +1257,7 @@ class Type
       if (this.is_compound or this.is_primitive)
         local m_type_info = add_method( t, "type_info" )
         m_type_info.return_type = Program.get_type_reference( t, "TypeInfo" )
-        m_type_info.statements.add( CmdReturn( t, CmdAccess( t, CmdAccess(t,"Runtime"), "type_info",
+        m_type_info.statements.add( CmdReturn( t, CmdAccess( t, CmdAccess(t,"TypeInfo"), "get",
           CmdArgs(CmdLiteralString(t,name)) ) ) )
       endIf
 
