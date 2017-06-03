@@ -3657,6 +3657,18 @@ augment CmdSyncObjectCleanup
       writer.println( "ROGUE_SYNC_OBJECT_CLEANUP" )
 endAugment
 
+augment CmdNativeCode
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      noAction
+endAugment
+
+augment CmdNativeHeader
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      noAction
+endAugment
+
 
 #{
 augment CmdEnsure

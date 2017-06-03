@@ -556,10 +556,25 @@ class Program [essential singleton]
       # Activate any dependencies - native code, essentials
       local injected_dependencies = false
       forEach (type in type_list)
-        if (type.is_used and type.dependencies)
-          injected_dependencies = true
-          type.dependencies.resolve( Scope(type,null) )
-          type.dependencies = null
+        if (type.is_used)
+          if (type.dependencies)
+            type.dependencies.resolve( Scope(type,null) )
+            if (DependencyInjectionVisitor().inject_dependencies( type.dependencies )) injected_dependencies = true
+            type.dependencies = null
+          endIf
+
+          forEach (m in type.global_method_list)
+            if (m.is_used)
+              if (DependencyInjectionVisitor().inject_dependencies( m.statements )) injected_dependencies = true
+            endIf
+          endForEach
+
+          forEach (m in type.method_list)
+            if (m.is_used)
+              if (DependencyInjectionVisitor().inject_dependencies( m.statements )) injected_dependencies = true
+            endIf
+          endForEach
+
         endIf
       endForEach
       if (injected_dependencies) return false

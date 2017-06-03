@@ -521,6 +521,24 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdNativeCode )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdNativeHeader )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdIncludeNative )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method on_enter( cmd:Cmd )
       throw RogueError( "$ does not overload method on_enter($)." (type_name,cmd.type_name) )
 
@@ -570,6 +588,9 @@ class Visitor
     method on_enter( cmd:CmdModifyAndAssignLocal )
     method on_enter( cmd:CmdModifyAndAssignProperty )
     method on_enter( cmd:CmdNativeSource )
+    method on_enter( cmd:CmdNativeCode )
+    method on_enter( cmd:CmdNativeHeader )
+    method on_enter( cmd:CmdIncludeNative )
     method on_enter( cmd:CmdNecessary )
     method on_enter( cmd:CmdNextIteration )
     method on_enter( cmd:CmdNoAction )
@@ -662,6 +683,9 @@ class Visitor
     method on_leave( cmd:CmdModifyAndAssignLocal )
     method on_leave( cmd:CmdModifyAndAssignProperty )
     method on_leave( cmd:CmdNativeSource )
+    method on_leave( cmd:CmdNativeCode )
+    method on_leave( cmd:CmdNativeHeader )
+    method on_leave( cmd:CmdIncludeNative )
     method on_leave( cmd:CmdNecessary )
     method on_leave( cmd:CmdNextIteration )
     method on_leave( cmd:CmdNoAction )
@@ -843,6 +867,15 @@ class Visitor
       noAction
 
     method dispatch( cmd:CmdNativeSource )
+      noAction
+
+    method dispatch( cmd:CmdNativeCode )
+      noAction
+
+    method dispatch( cmd:CmdNativeHeader )
+      noAction
+
+    method dispatch( cmd:CmdIncludeNative )
       noAction
 
     method dispatch( cmd:CmdNecessary )

@@ -1,4 +1,4 @@
-$define RELEASE_VERSION "1.3.0.2"
+$define RELEASE_VERSION "1.3.0.3"
 $define RELEASE_DATE    "June 3, 2017"
 
 # TODO:
@@ -10,7 +10,7 @@ $include "CPPWriter.rogue"
 $include "CythonPlugin.rogue"
 $include "CloneArgs.rogue"
 $include "Cmd.rogue"
-#$include "JavaWriter.rogue"
+$include "DependencyInjectionVisitor.rogue"
 $include "Local.rogue"
 $include "Method.rogue"
 $include "Parser.rogue"
