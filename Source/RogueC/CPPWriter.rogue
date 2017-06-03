@@ -1527,7 +1527,7 @@ class CPPWriter
     # guaranteed to have a lifetime at least as long as the call we're
     # making, we can skip this.
     if (arg.type.is_compound)
-      noAction
+      noAction # Compound lifetime is tied to stack frame!
     elseIf (arg instanceOf CmdReadLocal)
       noAction # Current frame won't die before call
     elseIf (arg instanceOf CmdReadSingleton)
