@@ -496,6 +496,8 @@ class Parser
         elseIf (consume("macro"))
           attributes.add( Attribute.is_macro )
           attributes.add( Attribute.is_propagated )
+        elseIf (consume("mutating"))
+          attributes.add( Attribute.is_mutating )
         elseIf (consume("nonAPI"))
           attributes.add( Attribute.is_nonAPI )
         elseIf (consume("preferred"))

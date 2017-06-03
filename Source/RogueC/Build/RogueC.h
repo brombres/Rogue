@@ -6781,6 +6781,7 @@ RogueLogical RogueMethod__is_generated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_incorporated( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_initializer( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_macro( RogueClassMethod* THIS );
+RogueLogical RogueMethod__is_mutating( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_native( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_preferred( RogueClassMethod* THIS );
 RogueLogical RogueMethod__is_overridden( RogueClassMethod* THIS );

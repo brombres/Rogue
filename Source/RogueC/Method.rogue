@@ -188,6 +188,9 @@ class Method
     method is_macro->Logical
       return (attributes.flags & Attribute.is_macro)
 
+    method is_mutating->Logical
+      return (attributes.flags & Attribute.is_mutating)
+
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)
 

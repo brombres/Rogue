@@ -286,7 +286,9 @@ augment Program
           local m = native_method_signature_lookup[sig]  # one of the methods using this signature
           if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
             writer.print( "extern ").print( m.return_type ).print( " Rogue_call_" ).print( m.cpp_typedef )
-            writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+            writer.print( "( int i, " ).print( m.type_context )
+            if (m.is_mutating) writer.print( '&' )
+            writer.print( " THIS" )
             forEach (i of m.parameters)
               local p = m.parameters[i]
               writer.print( ", " ).print(p.type).print( " p" ).print( i )
@@ -333,12 +335,14 @@ augment Program
       endForEach
       writer.println
 
-      # write dynamic dipatch methods
+      # write dynamic dispatch methods
       forEach (sig in native_method_signature_list)
         local m = native_method_signature_lookup[sig]  # one of the methods using this signature
         if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
           writer.print( m.return_type ).print( " Rogue_call_" ).print( m.cpp_typedef )
-          writer.print( "( int i, " ).print( m.type_context ).print( " THIS" )
+          writer.print( "( int i, " ).print( m.type_context )
+          if (m.is_mutating) writer.print( '&' )
+          writer.print( " THIS" )
           forEach (i of m.parameters)
             local p = m.parameters[i]
             writer.print( ", " ).print(p.type).print( " p" ).print( i )
@@ -1522,7 +1526,9 @@ class CPPWriter
     # which happens by wrapping them in ROGUE_ARG.  If this argument is
     # guaranteed to have a lifetime at least as long as the call we're
     # making, we can skip this.
-    if (arg instanceOf CmdReadLocal)
+    if (arg.type.is_compound)
+      noAction
+    elseIf (arg instanceOf CmdReadLocal)
       noAction # Current frame won't die before call
     elseIf (arg instanceOf CmdReadSingleton)
       noAction # Singletons live forever
@@ -1992,6 +1998,7 @@ augment Method
           writer.print( Program.type_Object )
         else
           writer.print( type_context )
+          if (is_mutating) writer.print( '&' )
         endIf
         writer.print( " THIS" )
       endIf
