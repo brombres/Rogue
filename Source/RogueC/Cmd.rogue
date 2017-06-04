@@ -1255,7 +1255,7 @@ class CmdCatch : Cmd
       endIf
 
       if (not err_type.instance_of(Program.type_Exception))
-        throw t.error( "Caught value must be instanceOf class Error." )
+        throw t.error( "Caught value must be instanceOf class Exception." )
       endIf
 
       if (error_var)
