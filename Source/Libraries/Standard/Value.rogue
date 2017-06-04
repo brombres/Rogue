@@ -665,19 +665,15 @@ class StringValue( value:String ) : Value
       else                 return object_id < other.object_id
 
     method operator+( other:Value )->Value
-      if (not other) return Value(0)
       return StringValue( value + other->String )
 
     method operator*( other:Value )->Value
-      if (not other) return Value(0)
       return StringValue( value * other->Int32 )
 
     method operator+( other:Real64 )->Value
-      if (not other) return Value(0)
       return StringValue( value + other )
 
     method operator+( other:String )->Value
-      if (not other) return Value(0)
       return StringValue( value + other )
 
     method to->Character
