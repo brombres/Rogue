@@ -176,6 +176,13 @@ class TypeInfo
       endForEach
       return r
 
+    method is_subclass( other:TypeInfo )->Logical
+      #NOTE: This doesn't consider aspects
+      if (this is other) return true
+      if (other is null) return false
+      if (base_class is null) return false
+      return base_class.is_subclass(other)
+
     method property_info( property_name:String )->PropertyInfo
       forEach (i in 0..<properties.count)
         if (properties[i].name == property_name)
