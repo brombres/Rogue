@@ -29,7 +29,7 @@ class TypeInfo
           for (int i=0; i<THIS->method_count; ++i)
           {
             RogueTypeInfo__add_method_info__Int32( (RogueTypeInfo*) THIS->type_info,
-                THIS->methods - Rogue_dynamic_method_table + i);
+              (RogueInt32)(THIS->methods - Rogue_dynamic_method_table + i) );
           }
         }
 
