@@ -2957,6 +2957,27 @@ class CmdCallMethod : CmdCall
       endIf
 
       return CmdCallStaticMethod( t, context, method_info.overridden_method, args )
+
+    method _is_call_via_methodinfo->Logical
+      return (method_info.type_context.name == "MethodInfo" and method_info.name.begins_with("call<<"))
+
+    method require_type->Type
+      if (_is_call_via_methodinfo)
+        if (type is null)
+          throw t.error( "Invocation via MethodInfo.call must use '->' to define the return type if there is one." )
+        endIf
+      endIf
+      return prior.require_type
+
+    method cast_to( target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
+      if (_is_call_via_methodinfo)
+        # This turns a call like:
+        #   f.type_info.method_info("foo")[0].call(f)->Real64
+        # Into:
+        #   f.type_info.method_info("foo")[0].returns<<Real64>>.call(f)
+        return CmdAccess(t, CmdAccess(t, context, "returns<<$>>" (target_type.name)), "call", args)
+      endIf
+      return prior.cast_to( target_type, scope, allow_implicit_narrowing, is_conversion )
 endClass
 
 class CmdCallDynamicMethod : CmdCallMethod
@@ -2964,7 +2985,6 @@ class CmdCallDynamicMethod : CmdCallMethod
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdCallDynamicMethod( t, clone(context,clone_args,new_t), method_info, args.cloned( clone_args, new_t ) )
-
 
     method to->String
       return "CmdCallDynamicMethod($.$,$,$)->$" (method_info.type_context,method_info.signature,context,args,method_info.return_type)
@@ -4761,8 +4781,13 @@ class CmdConvertToType : CmdTypeOperator
       return CmdConvertToType( t, operand.cloned( clone_args, new_t ), target_type )
 
     method resolve( scope:Scope )->Cmd
-      operand = operand.resolve( scope ).require_value
-      return operand.cast_to( target_type, scope, &is_conversion ).resolve( scope )
+      operand = operand.resolve( scope )
+      if ((operand instanceOf CmdCallMethod) and (operand as CmdCallMethod)._is_call_via_methodinfo)
+        noAction
+      else
+        operand = operand.require_value
+      endIf
+      return operand.cast_to( target_type, scope, &is_conversion ).resolve( scope ).resolve( scope )
       #{
       operand = operand.resolve( scope )
       local operand_type = operand.require_type
