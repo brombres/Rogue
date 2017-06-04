@@ -197,9 +197,7 @@ class TypeInfo
         if (methods[i].name == method_name)
           r.add( methods[ i ] )
         else
-          local n = methods[i].name
-          if (n.contains("<<")) n = n.before_first("<<")
-          if (n.contains("(")) n = n.before_first("(")
+          local n = methods[i].name.before_first("<<").before_first("(")
           if (n == method_name)
             r.add( methods[ i ] )
           endIf
