@@ -254,7 +254,7 @@ class MethodWithReturnValueCaller <<$R>>
     method call (o:Object) -> $R
       parent._check_count(0)
       local r : $R
-      native "$r = ($(r.type) (*)(RogueObject*)($this->fn_ptr)($o);"
+      native "$r = (($(r.type) (*)(RogueObject*))($this->fn_ptr))($o);"
       return r
 
     method call<<$T1>> (o:Object,t1:$T1) -> $R
