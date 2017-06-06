@@ -34,6 +34,8 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 
 ### v1.3.0 - June 3, 2017
 - [Rogue] Added `[mutating]` method attribute which, when used a a compound or primtive method, passes the context by reference so that changes to compound properties or primitive `this` made within the method will be reflected in the original compound or primitive.
+- [RogueC] Methods no longer maintain a `locals:Local[]` list, making it much easier to dynamically add and remove locals via `CmdLocalDeclaration` command nodes.  `Method.locals()->Local[]` can be used to fetch a list of all locals (including parameters) but it is dynamically generated on-demand using a Visitor.
+- [RogueC] Consolidated all extended visitors in `Visitors.rogue`.
 - [RogueC] Removed stray instance of a compound argument being unnecessarily wrapped in a `ROGUE_ARG()`.
 - [RogueC] `enum` types are now properly namespaced within their module.
 - [RogueC] Fixed error messages to include method candidates once more.

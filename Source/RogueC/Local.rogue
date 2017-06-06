@@ -11,7 +11,7 @@ class Local
       # Also serves as default_value for parameters
 
   METHODS
-    method init( t, name )
+    method init( t, name, type=null, initial_value=null )
       original_name = name
 
     method cloned( clone_args=null:CloneArgs )->Local

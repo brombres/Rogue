@@ -1,0 +1,180 @@
+class DependencyInjectionVisitor : Visitor
+  PROPERTIES
+    injected_dependencies : Logical
+
+  METHODS
+    method inject_dependencies( statements:CmdStatementList )->Logical
+      statements.dispatch( this )
+      return injected_dependencies
+
+    method on_enter( cmd:CmdNativeCode )
+      if (cmd.code)
+        if (not Program.native_code.contains(cmd.code))
+          Program.native_code.add( cmd.code )
+          injected_dependencies = true
+        endIf
+        cmd.code = null
+      endIf
+
+    method on_enter( cmd:CmdNativeHeader )
+      if (cmd.code)
+        if (not Program.native_header.contains(cmd.code))
+          Program.native_header.add( cmd.code )
+          injected_dependencies = true
+        endIf
+        cmd.code = null
+      endIf
+
+    method on_enter( cmd:CmdIncludeNative )
+      if (cmd.filepath)
+        RogueC.include_native( cmd.t, cmd.filepath, cmd.file_type )
+        cmd.filepath = null
+        injected_dependencies = true
+      endIf
+
+    method on_enter( cmd:CmdMakeRequisite )
+      if (not cmd.pattern) return
+      injected_dependencies = true
+
+      local t = cmd.t
+      local pattern = cmd.pattern
+      if (pattern.contains('.'))
+        local req_type = Program.get_type_reference( t, pattern.before_first('.') )
+        req_type.make_essential.organize
+        local sig = pattern.after_first('.')
+
+        if (sig == "*")
+          forEach (r in req_type.global_method_list) r.make_essential
+          forEach (m in req_type.method_list)        m.make_essential
+
+        elseIf (sig.contains('('))
+          local m = req_type.find_method( sig )
+          if (not m and req_type.method_templates.has_template(sig.before_first('(')))
+            # Try again after instantiating new method templates
+            req_type.method_templates.instantiate( t, sig.before_first('('), null )
+            m = req_type.find_method( sig )
+          endIf
+
+          if (m) m.make_essential
+          else   throw t.error( "No such method $ in type $." (sig,req_type.name) )
+
+        else
+          local list = req_type.global_method_lookup_by_name[ sig ]
+          if (list)
+            forEach (m in list) m.make_essential
+          endIf
+
+          list = req_type.method_lookup_by_name[ sig ]
+          if (list)
+            forEach (m in list) m.make_essential
+          endIf
+        endIf
+
+      else
+        local req_type = Program.get_type_reference( t, pattern )
+        req_type.make_essential.organize
+      endIf
+
+      cmd.pattern = null
+endClass
+
+
+
+class QueryToGenericFunctionConversionVisitor : Visitor [singleton]
+  PROPERTIES
+    cmd_create_fn : CmdCreateFunction
+
+  METHODS
+    method convert( cmd:Cmd, cmd_create_fn )
+      cmd_create_fn.statements.add( cmd.dispatch(this) )
+
+    method convert_to_fn_with_arg( cmd:Cmd )->Cmd
+      ensure cmd_create_fn.with_args
+      local name = "p" + cmd_create_fn.with_args.count + 1
+      cmd_create_fn.with_args.add( FnArg(name,cmd) )
+      return CmdAccess( cmd.t, name )
+
+    method visit( cmd:CmdAccess )->Cmd
+      if (ContainsImplicitAccessVisitor.check(cmd))
+        return prior.visit( cmd )
+      else
+        return convert_to_fn_with_arg( cmd )
+      endIf
+
+    method visit( cmd:CmdReadLocal )->Cmd
+      return convert_to_fn_with_arg( cmd )
+
+    method visit( cmd:CmdThisContext )->Cmd
+      return convert_to_fn_with_arg( cmd )
+
+    method visit( cmd:CmdImplicitAccess )->Cmd
+      return cmd.convert_to_explicit_access
+
+endClass
+
+class ContainsImplicitAccessVisitor : Visitor [singleton]
+  PROPERTIES
+    contains_implicit_identifier_access : Logical
+
+  METHODS
+    method check( cmd:Cmd )->Logical
+      contains_implicit_identifier_access = false
+      cmd.dispatch( this )
+      return contains_implicit_identifier_access
+
+    method visit( cmd:CmdImplicitAccess )->Cmd
+      contains_implicit_identifier_access = true
+      return prior.visit( cmd )
+
+endClass
+
+
+class TraceUsedCodeVisitor : Visitor [singleton]
+  METHODS
+    method on_enter( type:Type )
+      type.trace_used_code
+
+    method on_enter( m:Method )
+      m.trace_used_code
+
+    method on_enter( cmd:CmdLiteralString )
+      cmd.index = Program.add_literal_string( cmd.value )
+
+    method on_leave( cmd:CmdCallDynamicMethod )
+      if (cmd.method_info.is_overridden) cmd.method_info.called_dynamically = true
+
+endClass
+
+
+class CollectLocalsVisitor : Visitor
+  PROPERTIES
+    locals = Local[]
+
+  METHODS
+    method collect_locals( m:Method )->Local[]
+      locals.add( forEach in m.parameters )
+      m.statements.dispatch( this )
+      return locals
+
+    method on_enter( cmd:CmdLocalDeclaration )
+      locals.add( cmd.local_info )
+
+    method on_enter( cmd:CmdCatch )
+      if (cmd.error_var) locals.add( cmd.error_var )
+endClass
+
+
+class UpdateThisTypeVisitor : Visitor
+  PROPERTIES
+    this_type   : Type
+    this_method : Method
+
+  METHODS
+    method init( this_type, this_method )
+      if (this_method.returns_this)
+        this_method.return_type = this_type
+      endIf
+
+    method on_enter( cmd:CmdThisContext )
+      cmd.this_type = this_type
+endClass

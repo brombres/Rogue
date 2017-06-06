@@ -1344,7 +1344,7 @@ class Parser
           message = CmdLiteralString( t, buffer->String )
         endIf
 
-        local temp_var = this_method.add_local( t, Program.create_unique_id )
+        local temp_var = Local( t, Program.create_unique_id )
         temp_var.type = Program.type_Int32  # temporary placeholder until CmdAssert resolves
         cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
         cur_statement_list.add( CmdAssert(t, expr, message, temp_var) )
@@ -1439,7 +1439,7 @@ class Parser
         local b = parse_expression
         consume_eols
         if (has_parens) must_consume( TokenType.symbol_close_paren )
-        local v = this_method.add_local( t, Program.create_unique_id, null, a )
+        local v = Local( t, Program.create_unique_id, null, a )
         cur_statement_list.add( CmdLocalDeclaration(t,v,a) )
         cur_statement_list.add( CmdAssign(t,a.cloned,b) )
         cur_statement_list.add( CmdAssign(t,b.cloned,CmdAccess(t,v.name)) )
@@ -1706,7 +1706,7 @@ class Parser
           local error_name = parse_type_name
           consume_eols
           if (consume(TokenType.symbol_colon))
-            cmd_catch.error_var = this_method.add_local( error_t, error_name, parse_type )
+            cmd_catch.error_var = Local( error_t, error_name, parse_type )
             consume_eols
           else
             cmd_catch.error_type = Program.get_type_reference( t, error_name )
@@ -1763,15 +1763,15 @@ class Parser
       cmd_try.control_type = CmdControlStructure.type_use
       parse_multi_line_statements( cmd_try.statements )
 
-      local err_v = this_method.add_local( t, Program.create_unique_id, Program.type_Exception )
+      local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
 
       local cmd_catch = cmd_try.add_catch( t )
-      cmd_catch.error_var = this_method.add_local( t, Program.create_unique_id, Program.type_Exception )
+      cmd_catch.error_var = Local( t, Program.create_unique_id, Program.type_Exception )
       cmd_catch.statements.add( CmdAssign(t,err_v,CmdAccess(t,cmd_catch.error_var)) )
 
       local cmd_block = CmdBlock( t )
       cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
-      local v = this_method.add_local( t, v_name, null, CmdAccess(expr.t,expr,"on_use") )
+      local v = Local( t, v_name, null, CmdAccess(expr.t,expr,"on_use") )
       cmd_block.statements.add( CmdLocalDeclaration(t,v) )
       cmd_block.statements.add( cmd_try )
 
@@ -1794,7 +1794,7 @@ class Parser
       local else_expression = parse_expression
 
       # type_Object here is a placeholder to prevent an error message
-      local result_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
+      local result_var = Local( t, Program.create_unique_id, Program.type_Object )
       cur_statement_list.add( CmdLocalDeclaration(t,result_var) )
       cur_statement_list.add( CmdTryExpression( t, try_expression, else_expression, result_var ) )
       return CmdReadLocal( t, result_var )
@@ -1822,7 +1822,7 @@ class Parser
         first = false
         t = peek
         local name = read_identifier
-        local v = this_method.add_local( t, name )
+        local v = Local( t, name )
         local_declarations.add( v )
         if (consume(TokenType.symbol_equals)) v.initial_value = parse_expression
       endWhile
@@ -2045,10 +2045,10 @@ class Parser
         # loop N
         #   ...
         # endLoop
-        local control_var = this_method.add_local( t, Program.create_unique_id )
+        local control_var = Local( t, Program.create_unique_id )
         control_var.initial_value = CmdLiteralInt32( t, 1 )
 
-        local last_var = this_method.add_local( t, Program.create_unique_id )
+        local last_var = Local( t, Program.create_unique_id )
         last_var.initial_value = parse_expression
 
         local step_cmd = CmdAdjustLocal( t, control_var, 1 )
@@ -2251,10 +2251,10 @@ class Parser
       throw expr.t.error( "[INTERNAL ERROR]" )
 
     method create_generic_loop_from_range( t:Token, control_var_name:String, range:CmdRange )->CmdGenericLoop
-      local control_var = this_method.add_local( t, control_var_name )
+      local control_var = Local( t, control_var_name )
       control_var.initial_value = range.first
 
-      local last_var = this_method.add_local( t, Program.create_unique_id )
+      local last_var = Local( t, Program.create_unique_id )
       last_var.initial_value = range.last
 
       local step_cmd = null : Cmd
@@ -2999,7 +2999,7 @@ class Parser
         #   }
         #   x = result
         #
-        local result_var = this_method.add_local( t, Program.create_unique_id, Program.type_Object )
+        local result_var = Local( t, Program.create_unique_id, Program.type_Object )
         local statement_list = CmdStatementList()
         cur_statement_list.add( CmdLocalDeclaration(t,result_var) )
         cur_statement_list.add( CmdAwait(t,parse_expression,statement_list,result_var) )
@@ -3038,7 +3038,6 @@ class Parser
         if (consume(TokenType.symbol_open_paren))
           consume_eols
           local comparison_var = Local( t, Program.create_unique_id )
-          (ensure cmd_select.undeclared_locals).add( comparison_var )
           cur_statement_list.add( CmdLocalDeclaration(t,comparison_var,&skip_initialization) )
           comparison_var.initial_value = parse_expression
           cmd_select.local_info = comparison_var
@@ -3091,7 +3090,6 @@ class Parser
           local select_case = cmd_select.cases[i]
           if (not select_case.value)
             local temp_var = Local( t, Program.create_unique_id )
-            (ensure cmd_select.undeclared_locals).add( temp_var )
             temp_var.initial_value = select_case.conditions.remove_last
             cur_statement_list.add( CmdLocalDeclaration(t,temp_var) )
             select_case.local_info = temp_var
@@ -3194,7 +3192,7 @@ class Parser
           message = CmdLiteralString( t, buffer->String )
         endIf
 
-        local temp_var = this_method.add_local( t, Program.create_unique_id )
+        local temp_var = Local( t, Program.create_unique_id )
         temp_var.type = Program.type_Int32  # temporary placeholder until CmdAssert resolves
         cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
         return CmdAssert(t, expr, message, temp_var)
@@ -3225,7 +3223,7 @@ class Parser
           message = CmdLiteralString( t, buffer->String )
         endIf
 
-        local temp_var = this_method.add_local( t, Program.create_unique_id )
+        local temp_var = Local( t, Program.create_unique_id )
         temp_var.type = Program.type_Int32  # temporary placeholder until CmdRequire resolves
         cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
         return CmdRequire(t, expr, message, temp_var)
@@ -3279,11 +3277,6 @@ class Parser
         endIf
 
         cmd_block.statements.add( cmd_ensure )
-
-        #local temp_var = this_method.add_local( t, Program.create_unique_id )
-        #cur_statement_list.add( CmdLocalDeclaration(t,temp_var,&skip_initialization) )
-        #temp_var.initial_value = cmd_ensure.operand.cloned
-        #cmd_ensure.local_info = temp_var
 
       endWhile
 

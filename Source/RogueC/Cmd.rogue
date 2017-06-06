@@ -1,8 +1,3 @@
-$include "Visitor.rogue"
-$include "QueryToGenericFunctionConversionVisitor.rogue"
-$include "TraceUsedCodeVisitor.rogue"
-$include "UpdateThisTypeVisitor.rogue"
-
 class Cmd
   PROPERTIES
     t : Token
@@ -705,7 +700,7 @@ class CmdWhich : CmdControlStructure
         var_name = expression_var.name
       else
         var_name = Program.create_unique_id
-        expression_var = scope.this_method.add_local( t, var_name, expression.require_type, expression )
+        expression_var = Local( t, var_name, expression.require_type, expression )
         result.statements.add( CmdLocalDeclaration(t,expression_var) )
       endIf
 
@@ -1074,15 +1069,15 @@ class CmdForEach : CmdControlStructure
         if (m_at) m_get = m_at  # prefer at(Int32) over get(Int32)
 
         collection = collection.resolve( scope )
-        local collection_var = scope.this_method.add_local( t, collection_var_name, collection.require_type, collection )
+        local collection_var = Local( t, collection_var_name, collection.require_type, collection )
 
         if (not index_var_name) index_var_name = Program.create_unique_id
-        local index_var = scope.this_method.add_local( t, index_var_name, Program.type_Int32 )
+        local index_var = Local( t, index_var_name, Program.type_Int32 )
         local last_var : Local
         if (step_size >= 0)
           if (first_cmd) index_var.initial_value = first_cmd
           else           index_var.initial_value = CmdLiteralInt32( t, 0 )
-          last_var = scope.this_method.add_local( t, Program.create_unique_id, Program.type_Int32 )
+          last_var = Local( t, Program.create_unique_id, Program.type_Int32 )
           if (last_cmd)
             last_var.initial_value = last_cmd
             last_cmd = CmdReadLocal( t, last_var )
@@ -1102,7 +1097,7 @@ class CmdForEach : CmdControlStructure
 
         local control_var : Local
         if (control_var_name)
-          control_var = scope.this_method.add_local( t, control_var_name )
+          control_var = Local( t, control_var_name )
           control_var.initial_value = CmdAccess( t, CmdReadLocal(t,collection_var), m_get.name, CmdArgs(CmdReadLocal(t,index_var)) )
           statements.insert( CmdLocalDeclaration(control_var.t,control_var) )
         elseIf (control_var_tuple)
@@ -1157,14 +1152,14 @@ class CmdForEach : CmdControlStructure
           throw step_cmd.t.error( "Cannot specify a step size for a reader - only for an indexed collection." )
         endIf
 
-        local reader_var = scope.this_method.add_local( t, collection_var_name, collection_type, collection  )
+        local reader_var = Local( t, collection_var_name, collection_type, collection  )
         local index_var : Local
         if (index_var_name)
-          index_var = scope.this_method.add_local( t, index_var_name, Program.type_Int32, CmdLiteralInt32(t,0) )
+          index_var = Local( t, index_var_name, Program.type_Int32, CmdLiteralInt32(t,0) )
         endIf
 
         if (control_var_name)
-          local control_var = scope.this_method.add_local( t, control_var_name, m_read.return_type,
+          local control_var = Local( t, control_var_name, m_read.return_type,
             CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
           statements.insert( CmdLocalDeclaration(collection.t,control_var) )
         elseIf (control_var_tuple)
@@ -3192,7 +3187,7 @@ class CmdTuple : Cmd
           nextIteration
         endIf
         require(el instanceOf CmdAccess)
-        local part_var = scope.this_method.add_local( t, (el as CmdAccess).name, type )
+        local part_var = Local( t, (el as CmdAccess).name, type )
         local part_decl = CmdLocalDeclaration(t,part_var)
         scope.this_body.add( part_decl.resolve(scope) )
       endForEach
@@ -3234,7 +3229,7 @@ class CmdTuple : Cmd
 
       local temp_block = CmdBlock( t )
 
-      local temp_var = scope.this_method.add_local( t, Program.create_unique_id, null, new_value )
+      local temp_var = Local( t, Program.create_unique_id, null, new_value )
       local temp_var_decl = CmdLocalDeclaration(t,temp_var)
       temp_block.statements.add( temp_var_decl )
 
@@ -4952,7 +4947,7 @@ class CmdAwait : Cmd
         endIf
       endIf
 
-      local task_var = scope.this_method.add_local( t, Program.create_unique_id )
+      local task_var = Local( t, Program.create_unique_id )
       task_var.initial_value = expression
       statement_list.add( CmdLocalDeclaration(t, task_var) )
       statement_list.add( CmdAssign( t, CmdAccess(t,CmdReadLocal(t,task_var),"has_result"), CmdLiteralLogical(t,false) ) )
@@ -5546,7 +5541,7 @@ class CmdTypedLiteralList : Cmd
 
     method resolve( scope:Scope )->Cmd
       local list_type = Program.get_type_reference( t, list_type_name )
-      local list_var = scope.this_method.add_local( t, Program.create_unique_id, list_type )
+      local list_var = Local( t, Program.create_unique_id, list_type )
       list_var.initial_value = CmdAccess( t, list_type_name, CmdArgs(CmdLiteralInt32(t,elements.count)) )
       local declaration = CmdLocalDeclaration( t, list_var )
       scope.this_body.add( declaration.resolve(scope) )
@@ -5617,7 +5612,7 @@ class CmdTypedLiteralTable : Cmd
       return type
 
     method resolve( scope:Scope )->Cmd
-      local table_var = scope.this_method.add_local( t, Program.create_unique_id, type )
+      local table_var = Local( t, Program.create_unique_id, type )
       table_var.initial_value = CmdAccess( t, table_type_name, CmdArgs() )
       scope.this_body.add( CmdLocalDeclaration(t,table_var).resolve(scope) )
 
@@ -5643,7 +5638,6 @@ class CmdSelect : Cmd
     expression : Cmd
     cases      : CmdSelectCase[]
     value_type : Type
-    undeclared_locals : Local[]
 
   METHODS
     method init( t, local_info=null, expression=null, cases=CmdSelectCase[] )
@@ -5664,11 +5658,6 @@ class CmdSelect : Cmd
       return common_type
 
     method resolve( scope:Scope )->Cmd
-      if (undeclared_locals)
-        scope.this_method.add_local( forEach in undeclared_locals )
-        undeclared_locals = null
-      endIf
-
       if (value_type) return this
 
       if (not cases.count)

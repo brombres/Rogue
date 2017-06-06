@@ -16,7 +16,6 @@ class Method
       # and return_type gets set to Task or TaskWithResult<<ResultType>>
 
     parameters = Local[] : Local[]
-    locals     = Local[] : Local[]
 
     min_args     : Int32
 
@@ -61,10 +60,8 @@ class Method
       result.specializer_count = this.specializer_count
       result.unspecialized_name = this.unspecialized_name
 
-      result.locals = Local[]
-      forEach (v in locals) result.locals.add( v.cloned )
       result.parameters = Local[]
-      forEach (i of parameters) result.parameters.add( locals[i] )
+      forEach (p in parameters) result.parameters.add( p.cloned )
 
       # Label list and lookup will be filled in by the CmdLabel nodes being
       # cloned.
@@ -105,21 +102,8 @@ class Method
     method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
 
-    method add_local( v_t:Token, v_name:String, v_type=null:Type, v_initial_value=null:Cmd )->Local
-      local v = Local( v_t, v_name )
-      v.index = locals.count
-      v.type = v_type
-      v.initial_value = v_initial_value
-      locals.add( v )
-      return v
-
-    method add_local( v:Local )->Local
-      v.index = locals.count
-      locals.add( v )
-      return v
-
     method add_parameter( p_t:Token, p_name:String, p_type=null:Type )->Local
-      local p = add_local( p_t, p_name, p_type )
+      local p = Local( p_t, p_name, p_type )
       parameters.add( p )
       return p
 
@@ -160,6 +144,9 @@ class Method
       if (not label_lookup) return null
       return label_lookup[ label_name ]
       }#
+
+    method get_locals->Local[]
+      return CollectLocalsVisitor().collect_locals( this )
 
     method is_abstract->Logical
       return (attributes.flags & Attribute.is_abstract)
@@ -348,6 +335,9 @@ class Method
         statements = CmdStatementList()
       endIf
 
+      # Assign indices to local variables
+      forEach (v at i in get_locals) v.index = i
+
       if (is_task) convert_to_task
 
       local scope = Scope( type_context, this )
@@ -428,18 +418,14 @@ class Method
       # Move the Local var objects to the temp method (since Cmd code might reference them directly)
       # along with the statements and resolve the temp method
       m_temp.parameters = parameters
-      m_temp.locals = locals
       m_temp.statements = statements
       m_temp.organize( null, false )  # organize but don't add to type's method tables
       m_temp.resolve
 
       # Now come back and fix up this method's parameters and statements
-      locals = Local[]
       parameters = Local[]
-      forEach (v in m_temp.locals)
-        if (v.index < m_temp.parameters.count)
-          add_parameter( v.t, v.name, v.type )
-        endIf
+      forEach (v in m_temp.parameters)
+        add_parameter( v.t, v.name, v.type )
       endForEach
 
       # Original method gets a "return TaskObjectName()"
@@ -450,7 +436,7 @@ class Method
       statements.add( CmdReturn( t, CmdAccess(t,task_type.name,args) ) )
 
       # Convert resolved method into task "functor"
-      forEach (v in m_temp.locals)
+      forEach (v in m_temp.get_locals)
         local p_name = v.name + "_" + v.index
         task_type.add_property( v.t, p_name, v.type )
       endForEach

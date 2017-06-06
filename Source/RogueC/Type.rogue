@@ -1034,19 +1034,6 @@ class Type
           m.organize( scope )
         endIf
 
-        #{
-        m = find_method( "to_Value()" )
-        if (not m)
-          m = add_method( t, "to_Value" )
-          m.return_type = Program.get_type_reference( t, "Value" )
-          local result_var = m.add_local( t, Program.create_unique_id )
-          result_var.initial_value = CmdAccess( t, "ValueTable", CmdArgs() )
-          forEach (p in property_list)
-          endForEach
-          m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
-          m.organize( scope )
-        endIf
-        }#
       endIf
 
       # Add a default to->Object to compounds, primitives, and functional types
