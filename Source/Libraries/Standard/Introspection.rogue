@@ -191,7 +191,6 @@ class Introspector
       endNativeHeader
 
       assert m.param_count == args.count
-      local cargs = ValueList() # Args cast to correct types
       local build = true
       local r_buf_ptr : IntPtr
       native @|ffi_cif cif;
@@ -359,7 +358,6 @@ class Introspector
       # Should (or can) we cache the cif?
       local fn_ptr = m.fn_ptr
 
-      #native @|ffi_call (&cif, (void*)$fn_ptr, void *rvalue, cargs); #FIXME
       native "ffi_call (&cif, (void(*)())$fn_ptr, r_buf, cargs);"
       return ret_func(r_buf_ptr)
 
