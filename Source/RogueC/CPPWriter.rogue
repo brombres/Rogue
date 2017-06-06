@@ -3669,16 +3669,9 @@ augment CmdNativeHeader
       noAction
 endAugment
 
-
-#{
-augment CmdEnsure
+augment CmdInsertionPoint
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "(" ).print( local_info.cpp_name ).print( "=" )
-      cmd_read.write_cpp( writer )
-      writer.print( ") ? " ).print( local_info.cpp_name ).print( " : (" )
-      cmd_write.write_cpp( writer )
-      writer.print( ")" )
-
+      if (content) content.write_cpp( writer, is_statement )
 endAugment
-}#
+

@@ -1458,12 +1458,13 @@ class Parser
 
       consume_eols
 
-      #local println_pos : Int32
-      #local cmd_println : CmdPrintln
-      #if (next_is_identifier("println") or next_is_identifier("print"))
-      #  ensure cmd_println( peek )
-      #  println_pos = reader.position
-      #endIf
+      local println_pos : Int32
+      local println_statement_count = cur_statement_list.count
+      local cmd_println : CmdPrintln
+      if (next_is_identifier("println") or next_is_identifier("print"))
+        ensure cmd_println( peek )
+        println_pos = reader.position
+      endIf
 
       local expression = parse_expression
 
@@ -1525,25 +1526,26 @@ class Parser
         endIf
       endIf
 
-      #if (cmd_println)
-      #  # Try an alternate variation of print/println.
-      #  local final_pos = reader.position
-      #  cmd_println.standard = expression
-      #  reader.position = println_pos
-      #  t = read
-      #  local access = CmdAccess( t, t->String, CmdArgs() )
-      #  try
-      #    while (not next_is_end_command and not peek.is_structure) access.args.add( parse_expression )
-      #    cmd_println.no_parens = access
-      #    if (reader.position == final_pos)
-      #      # Looking for an alternate interpretation of the same parse tree and only proceed
-      #      # if the two parsing approaches consume the same tokens.
-      #      expression = cmd_println
-      #    endIf
-      #  catch ( its_not_working:RogueError )
-      #  endTry
-      #  reader.position = final_pos
-      #endIf
+      if (cmd_println and println_statement_count == cur_statement_list.count)
+        # Try an alternate variation of print/println as long as no new commands or locals
+        # have been added to the statement list as a side-effect of parsing other commands.
+        local final_pos = reader.position
+        cmd_println.standard = expression
+        reader.position = println_pos
+        t = read
+        local access = CmdAccess( t, t->String, CmdArgs() )
+        try
+          while (not next_is_end_command and not peek.is_structure) access.args.add( parse_expression )
+          cmd_println.no_parens = access
+          if (reader.position == final_pos)
+            # Looking for an alternate interpretation of the same parse tree and only proceed
+            # if the two parsing approaches consume the same tokens.
+            expression = cmd_println
+          endIf
+        catch ( its_not_working:RogueError )
+        endTry
+        reader.position = final_pos
+      endIf
 
       cur_statement_list.add( expression )
 

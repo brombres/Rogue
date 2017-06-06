@@ -4844,7 +4844,7 @@ class CmdIsReference( t, operand:Cmd ) : Cmd
       if (new_t) t = new_t
       return CmdIsReference( t, operand.cloned( clone_args, new_t ) )
 
-    method implicit_type->Type
+    method implicit_type( scope:Scope )->Type
       return Program.type_Logical
 
     method resolve( scope:Scope )->Cmd
@@ -5827,8 +5827,8 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
       if (new_t) t = new_t
       return CmdTypeSelector( t, of_type )
 
-    method implicit_type->Type
-      return of_type
+    method implicit_type( scope:Scope )->Type
+      return Program.get_type_reference( t, "TypeInfo" )
 
     method resolve( scope:Scope )->Cmd
       of_type.organize( scope )
@@ -5882,5 +5882,27 @@ class CmdSyncObjectCleanup : CmdStatement
       return this
 
     method type->Type
+      return null
+endClass
+
+
+class CmdInsertionPoint( t, content=null:Cmd ) : CmdStatement
+  # Placeholder spot for another command.  'content' can be set or nulled at any
+  # point to add or remove a command at this point in the code.
+  METHODS
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdInsertionPoint
+      if (new_t) t = new_t
+      return CmdInsertionPoint( t, clone(content,clone_args) )
+
+    method implicit_type( scope:Scope )->Type
+      if (content) return content.implicit_type( scope )
+      return null
+
+    method resolve( scope:Scope )->Cmd
+      if (content) content = content.resolve( scope )
+      return this
+
+    method type->Type
+      if (content) return content.type
       return null
 endClass
