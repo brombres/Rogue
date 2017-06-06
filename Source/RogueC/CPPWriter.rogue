@@ -2602,6 +2602,9 @@ augment CmdTry
       forEach (c in catches)
         c.write_cpp( writer )
       endForEach
+      if (catches.count == 0)
+        writer.println "} catch (...) {"
+      endIf
 
       writer.println( "ROGUE_END_TRY" )
 
