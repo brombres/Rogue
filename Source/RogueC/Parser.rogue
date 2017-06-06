@@ -1461,7 +1461,15 @@ class Parser
       local println_pos : Int32
       local println_statement_count = cur_statement_list.count
       local cmd_println : CmdPrintln
-      if (next_is_identifier("println") or next_is_identifier("print"))
+      if ((next_is_identifier("println") or next_is_identifier("print")) and reader.peek(1).type is TokenType.symbol_open_paren)
+        # Prepare to parse the print/println two different ways to allow a special syntax exception.
+        #
+        #   println (a+b)/c
+        #
+        # is parsed as both:
+        #
+        #   1.  println( (a + b) ) / c   # technically correct but probably unintended
+        #   2.  println( (a + b) / c )   # probably what developer intended
         ensure cmd_println( peek )
         println_pos = reader.position
       endIf
