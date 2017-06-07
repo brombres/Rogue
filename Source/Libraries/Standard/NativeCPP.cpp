@@ -297,9 +297,17 @@ RogueString* RogueString_create_with_byte_count( int byte_count )
 {
   if (byte_count < 0) byte_count = 0;
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, RogueTypeString->object_size );
+  char * data = (char *)GC_malloc_atomic_ignore_off_page( byte_count + 1 );
+  data[0] = 0;
+  data[byte_count] = 0;
+  st->utf8 = (RogueByte*)data;
+#else
   int total_size = sizeof(RogueString) + (byte_count+1);
 
   RogueString* st = (RogueString*) RogueAllocator_allocate_object( RogueTypeString->allocator, RogueTypeString, total_size );
+#endif
   st->byte_count = byte_count;
 
   return st;
@@ -834,7 +842,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   else if (of_type->gc_alloc_type == ROGUE_GC_ALLOC_TYPE_ATOMIC)
   {
     obj = (RogueObject*)GC_malloc_atomic_ignore_off_page( of_type->object_size );
-    if (obj) memset( obj, 0, size );
+    if (obj) memset( obj, 0, of_type->object_size );
   }
   else
   {
@@ -845,6 +853,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
     Rogue_collect_garbage( true );
     obj = (RogueObject*)GC_MALLOC( of_type->object_size );
   }
+  obj->object_size = of_type->object_size;
 #else
   RogueObject * obj = (RogueObject*)GC_malloc_ignore_off_page( size );
   if (!obj)
@@ -852,6 +861,7 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
     Rogue_collect_garbage( true );
     obj = (RogueObject*)GC_MALLOC( size );
   }
+  obj->object_size = size;
 #endif
 
   ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
@@ -895,7 +905,6 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   }
 
   obj->type = of_type;
-  obj->object_size = size;
 
   return obj;
 }

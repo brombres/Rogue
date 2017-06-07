@@ -506,7 +506,11 @@ struct RogueString : RogueObject
   RogueInt32 cursor_offset;
   RogueInt32 cursor_index;
   RogueInt32 hash_code;
+#if ROGUE_GC_MODE_BOEHM_TYPED
+  RogueByte  *utf8;
+#else
   RogueByte  utf8[];
+#endif
 };
 
 RogueString* RogueString_create_with_byte_count( int byte_count );
