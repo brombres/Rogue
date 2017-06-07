@@ -3390,13 +3390,6 @@ augment CmdReadArrayElement
       if (not is_statement) writer.print_close_cast( element_type, element_type )
 endAugment
 
-augment CmdReadArrayCount
-  METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      context.write_cpp( writer )
-      writer.print( "->count" )
-endAugment
-
 augment CmdWriteArrayElement
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )

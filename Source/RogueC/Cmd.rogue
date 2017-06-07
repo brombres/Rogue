@@ -4694,29 +4694,6 @@ class CmdReadArrayElement : Cmd
       return array_type.element_type
 endClass
 
-class CmdReadArrayCount : Cmd
-  PROPERTIES
-    context      : Cmd
-    array_type   : Type
-
-  METHODS
-    method init( t, context )
-
-    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
-      if (new_t) t = new_t
-      return CmdReadArrayCount( t, context.cloned( clone_args, new_t ) )
-
-    method resolve( scope:Scope )->Cmd
-      if (array_type) return this
-
-      context = context.resolve(scope)
-      array_type = context.require_type
-      return this
-
-    method type->Type
-      return Program.type_Int32
-endClass
-
 class CmdWriteArrayElement : Cmd
   PROPERTIES
     context    : Cmd

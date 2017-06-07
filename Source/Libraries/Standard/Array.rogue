@@ -1,6 +1,7 @@
 class NativeArray [native]
   METHODS
-    method count->Int32 [native]
+    method count->Int32 [macro]
+      native( "$this->count" )->Int32
 
     $if ("C++")
 

@@ -33,6 +33,7 @@ Rogue is released into the Public Domain under the terms of the [Unlicense](http
 ## Change Log
 
 ### v1.3.0 - June 6, 2017
+- [RogueC] Removed special handling of array `count`; now using a standard native macro instead.
 - [Rogue] Added `[mutating]` method attribute which, when used a a compound or primtive method, passes the context by reference so that changes to compound properties or primitive `this` made within the method will be reflected in the original compound or primitive.
 - [RogueC] Methods no longer maintain a `locals:Local[]` list, making it much easier to dynamically add and remove locals via `CmdLocalDeclaration` command nodes.  `Method.locals()->Local[]` can be used to fetch a list of all locals (including parameters) but it is dynamically generated on-demand using a Visitor.
 - [RogueC] 'print' and 'println' are more robust when it comes to parenthesized expressions.

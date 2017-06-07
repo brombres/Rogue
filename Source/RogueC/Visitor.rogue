@@ -413,12 +413,6 @@ class Visitor
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdReadArrayCount )->Cmd
-      on_enter( cmd )
-      dispatch( cmd )
-      on_leave( cmd )
-      return cmd
-
     method visit( cmd:CmdWriteArrayElement )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -603,7 +597,6 @@ class Visitor
     method on_enter( cmd:CmdNoAction )
     method on_enter( cmd:CmdPrintln )
     method on_enter( cmd:CmdRange )
-    method on_enter( cmd:CmdReadArrayCount )
     method on_enter( cmd:CmdReadArrayElement )
     method on_enter( cmd:CmdReadGlobal )
     method on_enter( cmd:CmdReadLocal )
@@ -699,7 +692,6 @@ class Visitor
     method on_leave( cmd:CmdNoAction )
     method on_leave( cmd:CmdPrintln )
     method on_leave( cmd:CmdRange )
-    method on_leave( cmd:CmdReadArrayCount )
     method on_leave( cmd:CmdReadArrayElement )
     method on_leave( cmd:CmdReadGlobal )
     method on_leave( cmd:CmdReadLocal )
@@ -1069,10 +1061,6 @@ class Visitor
       cmd.context = cmd.context.dispatch( this )
       if (cmd.array_type) cmd.array_type.dispatch( this )
       cmd.index = cmd.index.dispatch( this )
-
-    method dispatch( cmd:CmdReadArrayCount )
-      cmd.context = cmd.context.dispatch( this )
-      cmd.array_type.dispatch( this )
 
     method dispatch( cmd:CmdWriteArrayElement )
       cmd.context = cmd.context.dispatch( this )

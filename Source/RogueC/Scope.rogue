@@ -176,16 +176,6 @@ class Scope
       else
         # method
         if (m.is_native)
-          if (type_context.is_array)
-            which (m.name)
-              case "count"
-                if (args and args.count) throw t.error( "Invalid arguments to array count." )
-                return CmdReadArrayCount( t, context ).resolve( this )
-              #others
-                #throw t.error( "[INTERNAL] No compiler support for native Array call $." (m.signature) )
-            endWhich
-          endIf
-
           if (m.native_code)
             cmd = CmdCallInlineNativeMethod( t, context, m, args )
             if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
