@@ -1,6 +1,6 @@
 .PHONY: test
 
-ROGUEC_SRC = $(shell find Source/RogueC | grep .rogue)
+ROGUEC_SRC = $(shell find Source/RogueC | grep ".rogue$$" )
 ROGUEC_ROGUE_FLAGS =
 ROGUEC_CPP_FLAGS = -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
@@ -47,8 +47,20 @@ exhaustive: libraries
 
 roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
 
+update_bootstrap:
+	mkdir -p Source/RogueC/Bootstrap
+	cp Source/RogueC/Build/RogueC.h Source/RogueC/Build/RogueC.cpp Source/RogueC/Bootstrap
+
 touch_roguec:
 	touch Source/RogueC/RogueC.rogue
+
+bootstrap:
+	@echo -------------------------------------------------------------------------------
+	@echo Recompiling Programs/RogueC/$(PLATFORM)/roguec from C++ bootstrap source...
+	@echo -------------------------------------------------------------------------------
+	mkdir -p Programs/RogueC/$(PLATFORM);
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
+
 
 bootstrap_roguec:
 	@if [ ! -f "Programs/RogueC/$(PLATFORM)/roguec" ]; \
@@ -66,11 +78,11 @@ bootstrap_roguec:
 	    $(SUDO_CMD) rm $(BINDIR)/roguec; \
 	  fi; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo Compiling Programs/RogueC/$(PLATFORM)/roguec from C++ source...; \
+	  echo Compiling Programs/RogueC/$(PLATFORM)/roguec from C++ bootstrap source...; \
 	  echo -------------------------------------------------------------------------------; \
-	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
+	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
 	  mkdir -p Programs/RogueC/$(PLATFORM); \
-	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
+	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
 	fi;
 
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
@@ -144,6 +156,7 @@ revert_cpp_source:
 .PHONY: clean
 clean:
 	rm -rf Programs/RogueC/$(PLATFORM)
+	rm -rf Source/RogueC/Build
 	rm -f Hello.cpp
 	rm -f Hello.h
 	rm -f ./a.out
