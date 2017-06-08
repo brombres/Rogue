@@ -43,6 +43,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef ROGUE_EXPORT_C
+#  define ROGUE_EXPORT_C extern "C"
+#endif
+#ifndef ROGUE_EXPORT
+#  define ROGUE_EXPORT extern
+#endif
 
 //-----------------------------------------------------------------------------
 //  Garbage Collection
@@ -454,14 +460,14 @@ struct RogueType
 #endif
 };
 
-RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false, int element_type_index=-1 ) ;
-RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
-RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
-RogueString* RogueType_name( RogueType* THIS );
-bool         RogueType_name_equals( RogueType* THIS, const char* name );
-void         RogueType_print_name( RogueType* THIS );
-RogueType*   RogueType_retire( RogueType* THIS );
-RogueObject* RogueType_singleton( RogueType* THIS );
+ROGUE_EXPORT_C RogueArray*  RogueType_create_array( int count, int element_size, bool is_reference_array=false, int element_type_index=-1 ) ;
+ROGUE_EXPORT_C RogueObject* RogueType_create_object( RogueType* THIS, RogueInt32 size );
+ROGUE_EXPORT_C RogueLogical RogueType_instance_of( RogueType* THIS, RogueType* ancestor_type );
+ROGUE_EXPORT_C RogueString* RogueType_name( RogueType* THIS );
+ROGUE_EXPORT_C bool         RogueType_name_equals( RogueType* THIS, const char* name );
+ROGUE_EXPORT_C void         RogueType_print_name( RogueType* THIS );
+ROGUE_EXPORT_C RogueType*   RogueType_retire( RogueType* THIS );
+ROGUE_EXPORT_C RogueObject* RogueType_singleton( RogueType* THIS );
 
 
 //-----------------------------------------------------------------------------
@@ -494,15 +500,15 @@ ROGUE_CUSTOM_OBJECT_PROPERTY
   // long as it is visible to the memory manager.
 };
 
-RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
-RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
-void*        RogueObject_retain( RogueObject* THIS );
-void*        RogueObject_release( RogueObject* THIS );
-RogueString* RogueObject_to_string( RogueObject* THIS );
+ROGUE_EXPORT_C RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
+ROGUE_EXPORT_C RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
+ROGUE_EXPORT_C void*        RogueObject_retain( RogueObject* THIS );
+ROGUE_EXPORT_C void*        RogueObject_release( RogueObject* THIS );
+ROGUE_EXPORT_C RogueString* RogueObject_to_string( RogueObject* THIS );
 
-void RogueObject_trace( void* obj );
-void RogueString_trace( void* obj );
-void RogueArray_trace( void* obj );
+ROGUE_EXPORT_C void RogueObject_trace( void* obj );
+ROGUE_EXPORT_C void RogueString_trace( void* obj );
+ROGUE_EXPORT_C void RogueArray_trace( void* obj );
 
 
 //-----------------------------------------------------------------------------
@@ -523,9 +529,9 @@ struct RogueString : RogueObject
 #endif
 };
 
-RogueString* RogueString_create_with_byte_count( int byte_count );
-RogueString* RogueString_create_from_utf8( const char* utf8, int count=-1 );
-RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
+ROGUE_EXPORT_C RogueString* RogueString_create_with_byte_count( int byte_count );
+ROGUE_EXPORT_C RogueString* RogueString_create_from_utf8( const char* utf8, int count=-1 );
+ROGUE_EXPORT_C RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
 void         RogueString_print_utf8( RogueByte* utf8, int count );
@@ -681,13 +687,13 @@ extern RogueCallbackInfo  Rogue_on_gc_end;
 struct RogueWeakReference;
 extern RogueWeakReference* Rogue_weak_references;
 
-void Rogue_configure( int argc=0, const char* argv[]=0 );
-bool Rogue_collect_garbage( bool forced=false );
-void Rogue_launch();
-void Rogue_init_thread();
-void Rogue_deinit_thread();
-void Rogue_quit();
-bool Rogue_update_tasks();  // returns true if tasks are still active
+ROGUE_EXPORT_C void Rogue_configure( int argc=0, const char* argv[]=0 );
+ROGUE_EXPORT_C bool Rogue_collect_garbage( bool forced=false );
+ROGUE_EXPORT_C void Rogue_launch();
+ROGUE_EXPORT_C void Rogue_init_thread();
+ROGUE_EXPORT_C void Rogue_deinit_thread();
+ROGUE_EXPORT_C void Rogue_quit();
+ROGUE_EXPORT_C bool Rogue_update_tasks();  // returns true if tasks are still active
 
 
 //-----------------------------------------------------------------------------

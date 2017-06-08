@@ -287,7 +287,7 @@ augment Program
         forEach (sig in native_method_signature_list)
           local m = native_method_signature_lookup[sig]  # one of the methods using this signature
           if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
-            writer.print( "extern ")
+            writer.print_export( m )
             if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
             else                                              writer.print( m.return_type )
             writer.print( " Rogue_call_" ).print( m.cpp_typedef )
@@ -1745,6 +1745,11 @@ class CPPWriter
         print( ")" )
       endWhile
 
+    method print_export ( m:Method )->CPPWriter
+      if (m.is_c_compatible()) print("ROGUE_EXPORT_C ")
+      else                     print("ROGUE_EXPORT   ")
+      return this
+
     method mark_statement_start( statement_filepath:String, start_line:Int32, end_line:Int32 )
       #@trace "STATEMENT ", this.filepath, this.line_number, statement_filepath, start_line, end_line
 
@@ -2173,6 +2178,7 @@ augment Method
 
     method print_prototype( writer:CPPWriter )
       if (omit_output) return
+      writer.print_export( this )
       print_signature( writer )
       writer.println( ";" )
 
@@ -2292,6 +2298,15 @@ augment Method
     method store_dynamically -> Logical
       return is_dynamic or (Program.using_introspection and type_context.is_reference)
 
+    method is_c_compatible ( )->Logical
+      # Returns true if C linkage is okay for this method
+      if (return_type and return_type.is_compound) return false
+      if (parameters)
+        forEach (p in parameters)
+          if (p.type.is_compound) return false
+        endForEach
+      endIf
+      return true
 endAugment
 
 #------------------------------------------------------------------------------
