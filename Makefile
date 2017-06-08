@@ -60,6 +60,7 @@ bootstrap:
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs/RogueC/$(PLATFORM);
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
+	touch Source/RogueC/RogueC.rogue
 
 
 bootstrap_roguec:
@@ -145,15 +146,10 @@ x3:
 	sleep 1
 	make remake
 
-revert: revert_cpp_source libraries
-	@echo -------------------------------------------------------------------------------
-	@echo "Recompiling RogueC.cpp -> Programs/RogueC/$(PLATFORM)/roguec..."
-	@echo -------------------------------------------------------------------------------
-	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
+revert: revert_cpp_source libraries bootstrap
 
 revert_cpp_source:
-	git checkout Source/RogueC/Build && rm -f Programs/RogueC/$(PLATFORM)/roguec
+	git checkout Source/RogueC/Bootstrap && rm -f Programs/RogueC/$(PLATFORM)/roguec
 
 .PHONY: clean
 clean:
