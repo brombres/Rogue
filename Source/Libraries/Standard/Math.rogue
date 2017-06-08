@@ -130,6 +130,20 @@ class Degrees( value:Real64 ) [compound]
       return Degrees( (degrees.value / pi) * 180.0 )
 
   METHODS
+    method clamped( min:Degrees, max:Degrees )->Degrees
+      local delta_min_max = min.delta_to( max ).value
+      local delta_this_min = this.delta_to( min ).value
+      local delta_this_max = this.delta_to( max ).value
+      if (delta_min_max > 0)
+        if (delta_this_min <= 0 and delta_this_max >= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      else
+        if (delta_this_min >= 0 and delta_this_max <= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      endIf
+
     method cos->Real64 [macro]
       Math.cos( (this.value / 180.0) * pi )
 
@@ -214,6 +228,20 @@ class Radians( value:Real64 ) [compound]
       return Radians( (degrees.value / 180.0) * pi )
 
   METHODS
+    method clamped( min:Radians, max:Radians )->Radians
+      local delta_min_max = min.delta_to( max ).value
+      local delta_this_min = this.delta_to( min ).value
+      local delta_this_max = this.delta_to( max ).value
+      if (delta_min_max > 0)
+        if (delta_this_min <= 0 and delta_this_max >= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      else
+        if (delta_this_min >= 0 and delta_this_max <= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      endIf
+
     method cos->Real64 [macro]
       Math.cos( this.value )
 
