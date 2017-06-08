@@ -83,6 +83,8 @@ bootstrap_roguec:
 	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
 	  mkdir -p Programs/RogueC/$(PLATFORM); \
 	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec; \
+	  echo touch Source/RogueC/RogueC.rogue; \
+	  touch Source/RogueC/RogueC.rogue; \
 	fi;
 
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
