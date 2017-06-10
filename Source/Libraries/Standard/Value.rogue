@@ -4,6 +4,9 @@ class Value
     OMIT_COMMAS = 2
 
   GLOBAL METHODS
+    method create( value:Character )->Value
+      return Value( value->String )
+
     method create( value:Logical )->Value
       return select{ value:LogicalValue.true_value || LogicalValue.false_value }
 
