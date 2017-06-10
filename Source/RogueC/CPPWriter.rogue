@@ -162,7 +162,7 @@ augment Program
       endForEach
 
       local base_cpp_filepath = filepath
-      if (RogueC.compile_targets["Cython"]) base_cpp_filepath += "_module"
+      if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) base_cpp_filepath += "_module"
 
       # .H header -------------------------------------------------------------
       println "Writing $.h..." (base_cpp_filepath)
@@ -1833,7 +1833,7 @@ augment RogueC
         output_filepath = File.filename(first_filepath)
         if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
 
-        if (RogueC.compile_targets["Cython"]) output_filepath = output_filepath.to_lowercase
+        if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) output_filepath = output_filepath.to_lowercase
 
       else
         if (File.is_folder(output_filepath))
@@ -1843,7 +1843,7 @@ augment RogueC
           if (filename.to_lowercase.ends_with(".rogue")) filename = filename.leftmost(-6)
           else                                           filename = "RogueProgram"
 
-          if (RogueC.compile_targets["Cython"]) output_filepath = output_filepath.to_lowercase
+          if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) output_filepath = output_filepath.to_lowercase
 
           output_filepath += filename
 

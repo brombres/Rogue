@@ -1,0 +1,1806 @@
+#{
+TODO
+====
+- (Optionally?) Put a slot in the RogueObject structure that holds a reference
+  to a Python object wrapping it so that we don't need to keep creating new
+  wrappers.
+- Force to_Strings to be essential?
+- Have PyClass gather definitions and enumerations
+- Support compounds
+- Support more types of CmdAccess for default arguments (except just Global)
+- Convert readers to iterators?
+- Make more useful stuff essential? (e.g., table.count)
+- Handle the GIL correctly / attribute for releasing it
+}#
+
+augment RogueC
+  METHODS
+    method launch
+      <collect_supported_targets>
+      supported_targets.add( "Python" )
+
+      <validate_target_list>
+      if (target_list.contains("Python") and not target_list.contains("C++"))
+        # Automatically add C++ target if Python target is present.
+        target_list.add( "C++" )
+      endIf
+      if (target_list.contains("Python"))
+        Method.store_all_dynamically = true
+      endIf
+endAugment
+
+
+augment Method
+  GLOBAL PROPERTIES
+    store_all_dynamically : Logical
+
+  METHODS
+    method store_dynamically -> Logical
+      <insert>
+      # We always want to call via vtable (requires fewer imports)
+      if (store_all_dynamically and type_context.is_reference) return true
+endAugment
+
+
+class PyMethod
+  PROPERTIES
+    cname : String             # True name of C function being wrapped (i.e., includes class name if any, etc.)
+    pyname : String            # Name of method to expose to Python
+    pyclass : String           # Name of class on which this method resides (or null for free functions)
+    return_converter = "" : String  # Python code to convert Rogue return value to Python return value
+    call_args = String[]       # Python code to construct each argument in a call to the Rogue code
+
+    # Stuff for Functions
+    cproto_params = String[]   # Python/C versions of each type in the param list of the Rogue function
+    cproto_return : String     # C type of return value or null
+    thunk_number : Int32
+
+    py_params = String[]       # The name of each parameter of the exposed Python wrapper
+
+    is_initializer : Logical
+
+    is_static_method : Logical
+
+    valid : Logical
+
+    defaults = String[]        # Default values of params
+    py_types = String[]        # Types of params for overloading
+
+    prologue = String[]        # Stuff that appears at top of Python method
+
+    real_method : Method
+
+  METHODS
+    method get_param_name (param:Local)->String
+      if param.original_name.begins_with("@") return param.original_name.after(0)
+      return param.original_name
+
+    method to->String
+      return "$($)->$" (full_name, cproto_params, cproto_return)
+
+    method thunk_sig->String
+      return "$->$" (cproto_params, cproto_return)
+
+    method full_name -> String
+      if (pyclass) return "$.$" (pyclass, pyname)
+      return pyname
+
+    method init ( builder:PyClass, context:Type, m:Method, static_dispatch=false:Logical, force=false:Logical )
+      if (m.is_macro) return this
+      if (m.is_task) return this
+      if (m.is_abstract) return this
+      if (m.is_task_conversion) return this
+      if (m.omit_output and not force) return this
+
+      # Basic setup
+      pyname = m.name.before_first("<")
+      pyclass = builder.get_p_type(context)
+
+      if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object" or m.name == "init_class_thread_local")
+        return this # Hide
+      endIf
+
+      cname = m.cpp_name
+      is_initializer = m.is_initializer
+      pyname = builder.fix_name(pyname)
+      if (pyname == "") return this
+
+      if (static_dispatch)
+        is_static_method = true
+      else
+        call_args.add( "(check_type(self, $))" (builder.pytype) )
+        # Probably don't need to check type for the this pointer...
+        #cproto_params.add( context.cpp_class_name + "*" )
+      endIf
+      cproto_params.add( "PyRogueDelegateContextPtr" )
+
+      # Return type
+      return_converter = "%"
+      if (not m.return_type)
+        #cproto_return = "void"
+        return_converter = null
+      else
+        return_converter = builder.get_c_to_py(m.return_type)
+        if (return_converter == "") return this # Not supported
+        cproto_return = builder.get_ct_type(m.return_type)
+      endIf
+
+      # Arguments
+      forEach (param in m.parameters)
+        local default = param.initial_value
+        local negate = default and default instanceOf CmdNegate
+        if (negate) default = (default as CmdNegate).operand
+        local negatable = false
+        if default is null
+          defaults.add "_NO_DEFAULT"
+        elseIf default instanceOf CmdLiteralReal64
+          defaults.add((default as CmdLiteralReal64).value)
+          negatable = true
+        #elseIf default instanceOf CmdLiteralReal32
+        #  defaults.add (default as CmdLiteralReal32).value
+        #  negatable = true
+        elseIf default instanceOf CmdLiteralString
+          defaults.add(''"""'' + (default as CmdLiteralString.value) + ''"""'') # Probably needs some special escaping
+        elseIf default instanceOf CmdLiteralInt32
+          defaults.add((default as CmdLiteralInt32).value)
+          negatable = true
+        elseIf default instanceOf CmdLiteralInt64
+          defaults.add((default as CmdLiteralInt64).value)
+          negatable = true
+        elseIf default instanceOf CmdLiteralLogical
+          defaults.add(select{(default as CmdLiteralLogical).value: "True" || "False"})
+        elseIf default instanceOf CmdLiteralNull
+          defaults.add("None") # Probably doesn't actually work right yet...
+        elseIf default instanceOf CmdLiteralCharacter
+          defaults.add((default as CmdLiteralCharacter).value->Int32)
+        elseIf default instanceOf CmdAccess
+          local cmd = (default as CmdAccess).resolve(Scope(context,m), true)
+          if cmd instanceOf CmdReadProperty and (cmd as CmdReadProperty).property_info.type_context == Program.type_Global
+            #TODO: Do this for all singletons and/or other types of Access?
+            local rp = (cmd as CmdReadProperty)
+            defaults.add "_PYROGUE_ACCESS"
+            prologue.add "if $ is _PYROGUE_ACCESS: $ = Global.singleton.$" (param.name, param.name, rp.property_info.name)
+            #TODO: With a little work, these could be negatable...
+          else
+            defaults.add "_NO_DEFAULT"
+          endIf
+        else
+          defaults.add "_NO_DEFAULT"
+        endIf
+
+        if negate
+          if negatable
+            defaults[defaults.count-1] = "-" + defaults[defaults.count-1]
+          else
+            defaults[defaults.count-1] = "_NO_DEFAULT"
+          endIf
+        endIf
+
+        py_types.add( builder.get_p_type(param.type) )
+
+        py_params.add( get_param_name(param) )
+        cproto_params.add( builder.get_ct_type(param.type) )
+
+        local a = builder.get_py_to_c(param.type)
+        if (a == "") return this
+        call_args.add a.replacing("%", get_param_name(param))
+      endForEach
+
+      # Fix defaults so they're all on the right.  This may mean the Python
+      # bindings require more parameters than in Rogue.
+      if defaults.count
+        local no_defaults = false
+        forEach i in 1..defaults.count
+          local j = defaults.count - i
+          if defaults[j] == "_NO_DEFAULT"
+            no_defaults = true
+          elseIf no_defaults
+            defaults[j] = "_NO_DEFAULT"
+          endIf
+        endForEach
+      endIf
+
+      real_method = m
+      valid = true
+
+    method hash_code->Int32
+      return this->String.hash_code
+endClass
+
+
+class PyProperty
+  PROPERTIES
+    valid = false
+    pyname = ""
+    context : Type
+    is_static = false
+    prop : Property
+    ctype = ""
+    cname = ""
+
+    read_c_code = ""
+    write_c_code = ""
+  METHODS
+    method init (pycls:PyClass, context, p:Property, is_static)
+      pyname = pycls.fix_name(p.name)
+      if (not pyname or pyname == "") return this
+
+      this.prop = p
+      this.ctype = pycls.get_c_type(p.type)
+
+      cname = "Rogue$_$" (context.cpp_name, p.cpp_name)
+
+      local access : String
+      if (is_static)
+        access = "_$.in_dll(_lib, '$').value" (pycls.get_ct_type(p.type), cname)
+      else
+        # This definitely won't work as-is for the Python plugin.  It's left over from
+        # the Cython version.  But the Python/ctypes plugin doesn't use this code for
+        # non-static properties.
+        access = "(<$*>check_type(self, $)).$" (context.cpp_class_name, pycls.pytype, p.cpp_name)
+        cname = p.cpp_name
+      endIf
+
+      read_c_code = pycls.get_c_to_py(p.type).replacing("%", access)
+      if (read_c_code == "") return this
+
+      local call_code = pycls.get_py_to_c(p.type).replacing("%", "value")
+      if (call_code == "") return this # Not supported
+      write_c_code = "$ = $" (access, call_code)
+
+      if (p.is_native) return # Not currently supported
+
+      valid = true
+endClass
+
+
+class PyClass
+  PROPERTIES
+    pytype : String
+    type : Type
+    funcs = Table<<String, PyMethod[]>>()
+    properties = Table<<String, PyProperty>>()
+
+  GLOBAL PROPERTIES
+    ctypes : Table<<String, String>> # RogueType -> C type
+    bad_names = Set<<String>>()
+
+  GLOBAL METHODS
+    method initialize
+      # We steer clear of these names (by mangling)
+      local keywords = @|and       del       from      not       while
+                        |as        elif      global    or        with
+                        |assert    else      if        pass      yield
+                        |break     except    import    print
+                        |class     exec      in        raise
+                        |continue  finally   is        return
+                        |def       for       lambda    try
+      forEach (k in keywords.split())
+        bad_names.add(k)
+      endForEach
+
+    method fix_name ( n:String ) -> String
+      if (bad_names.contains(n))
+        return n + "_"
+      endIf
+      if (n == 'to_String') return '__str__'
+      if (n == 'operator==') return '_eq_'
+      if (n == 'operator<=') return '_le_'
+      if (n == 'operator>=') return '_ge_'
+      if (n == 'operator!=') return '_ne_'
+      if (n == 'operator<') return '_lt_'
+      if (n == 'operator>') return '_gt_'
+      if (n == 'operator+') return '_add_'
+      #if (n == 'operator<>') return '_cmp_' # Doesn't work in Rogue yet?
+      #if (n == 'hash_code') return '__hash__' # Handle this in Py base class
+      if (n.begins_with('operator'))
+        #println "** Unhandled operator: $ **" (n)
+        #TODO: Handle this?
+        return ""
+      endIf
+      if n.begins_with('to_') and n.ends_with('[]')
+        # This probably isn't general enough (list of lists?)
+        return n.clipped(&right=2) + '_array'
+      endIf
+      return n
+
+    method get_ct_type ( t:Type ) -> String
+      # This gets a type name to be used in both C++ and ctypes.
+      # It flattens all references to the same type.
+      # It's sort of sloppy; we should aspire to never have to use the same
+      # type name across both.  The fact that we do is the reason for the
+      # sloppy RogueObjectPtr/PyRogueDelegateContext macros on the C side.
+      if (t.is_reference)
+        return "RogueObjectPtr"
+      endIf
+      return t.cpp_class_name
+
+    method get_c_type ( t:Type ) -> String
+      if (t.is_reference)
+        return t.cpp_class_name + "*"
+      endIf
+      return t.cpp_class_name
+
+    method get_c_to_py ( t:Type ) -> String
+      # Creates a code template that turns the argument (a C expression of
+      # type t) into a Python value or throws an exception
+      # Returns empty string if conversion not possible
+      if (get_p_type(t) == "") return ""
+      if (t is Program.type_String)
+        return "pyrogue_get_string(%)"
+      endIf
+      if (t.is_reference)
+        #local tn = get_p_type(t)
+        #return tn + '(__pyrogue_new_instance=<intptr_t>%)'
+        return "get_wrapper(%)"
+      endIf
+      return '%'
+
+    method get_py_to_c ( t:Type ) -> String
+      # Creates a code template that turns the argument (a Python expression)
+      # into a C value consistent with t, or throws an exception
+      # Returns empty string if conversion not possible
+      if (get_p_type(t) == "") return ""
+      local pass_ctype = get_c_type(t)
+      if (pass_ctype == "") return ""
+      if t.is_reference
+        local pass_ptype = get_p_type(t)
+        return "cast_object(%, $)" (pass_ptype)
+      endIf
+      return "%"
+
+    method get_p_type ( type:Type ) -> String
+      # Gets the name of the equivalent/wrapped typed in Python, or
+      # empty string if there is no such type.
+      if (type is null) return ""
+      if (type.is_array) return ""
+      if (type.is_compound) return ""
+      local pytype = type.name
+      if pytype.ends_with("[]")
+        return type.cpp_name
+      elseIf pytype.contains("<<")
+        if (not type.cpp_name) type.assign_cpp_name
+        return type.cpp_name
+      elseIf pytype.contains("(")
+        return type.cpp_name
+      endIf
+      return type.name
+
+  METHODS
+    method init (type, force=false:Logical, do_properties=true:Logical)
+      initialize()
+
+      if (not type.is_class and not type.is_aspect and not force) return this
+
+      pytype = get_p_type(type)
+
+      if (pytype is null) return this
+
+      this.type = type
+
+      #TODO: Go through aspects? (Maybe not necessary?)
+
+      forEach (m in type.global_method_list)
+        local f = PyMethod( this, type, m, true, &force=force )
+        if (f.is_initializer) nextIteration # Not useful
+        if (not f.valid) nextIteration
+        local dname = f.pyname
+        if (not funcs.contains(dname)) funcs[dname] = PyMethod[]
+        funcs[dname].add(f)
+      endForEach
+
+      forEach (m in type.method_list)
+        local f = PyMethod( this, type, m, &force=force )
+        if (not f.valid) nextIteration
+        if (f.is_initializer) f.pyname = "_init_"
+        local dname = f.pyname
+        if (not funcs.contains(dname)) funcs[dname] = PyMethod[]
+        funcs[dname].add(f)
+      endForEach
+
+      if do_properties
+        # Unlike the Cython plugin, we don't build these for non-global properties.  Those
+        # get added on at runtime in _config_properties().
+        #forEach (p in type.property_list)
+        #  local prop = PyProperty(this, type, p, false)
+        #  if (prop.valid)
+        #    properties[prop.pyname] = prop
+        #  endIf
+        #endForEach
+
+        forEach (p in type.global_list)
+          local prop = PyProperty(this, type, p, true)
+          if (prop.valid)
+            properties[prop.pyname] = prop
+          endIf
+        endForEach
+      endIf
+
+  method to -> String
+    return "($:$)" (type_name, type)
+endClass
+
+
+augment Program
+  PROPERTIES
+    py_delegate_construction_pass = 0
+    # Constructing delegate types takes two passes, each being a call to
+    # py_create_delegates() (which is invoked by the plugin type creation
+    # hook).
+    # In pass 0, we scan all types looking for existing delegates -- types
+    # whose names start with "Function(".  For each of these, we create a
+    # "pydelegate" type.  This is a subclass of the original, which will have
+    # an overridden call() method that calls a Python callable.  The new type
+    # gets parsed in pass 0, but it's not actually a type yet, which is why
+    # we need pass 1.
+    # In pass 1, the new pydelegate types will acually have been created, so
+    # in this phase, we collect them into py_delegates, creating a PyType
+    # for them along the way.
+    # Later passes do nothing, but we need to be prepared for them because
+    # other plugins may result in us getting called more.
+
+    py_first_code_file = true
+    # We may generate some C++ code, but we only need to do it once, so we
+    # put it in the first C++ file and ignore the others.
+
+    py_delegates = Table<<Type, PyClass>>()
+    # All Python delegates, both as their Type and a corresponding PyClass
+
+    py_delegate_to_pydelegate = Table<<Type, Type>>()
+    # Maps from the basic "signature" type to the Python-specific subclass
+
+    py_overload_count = 0
+    # Overload data for all classes is kept in a single table.  This tracks
+    # how many entries it has so that we can generate code which refers to
+    # the correct one.
+
+    py_plugin : Plugin
+  METHODS
+    method py_on_header_end (code:Object)
+      local writer = code as CPPWriter
+      if (writer is null) return
+
+      writer.println @|// Stuff from Rogue Python plugin
+                      |ROGUE_EXPORT_C RogueType * pyrogue_object_type (RogueObject * o);
+                      |ROGUE_EXPORT_C int pyrogue_type_index (RogueType * t);
+                      |ROGUE_EXPORT_C int pyrogue_object_type_index (RogueObject * o);
+                      |ROGUE_EXPORT_C bool pyrogue_string_is_ascii (RogueString * str);
+                      |ROGUE_EXPORT_C void * pyrogue_string_utf8 (RogueString * str);
+                      |ROGUE_EXPORT_C size_t pyrogue_string_byte_count (RogueString * str);
+                      |ROGUE_EXPORT_C RogueType * pyrogue_get_type (int type_index);
+                      |ROGUE_EXPORT_C bool pyrogue_type_is_reference (int type_index);
+                      |ROGUE_EXPORT_C int pyrogue_get_property_offset (int type_index, int property_index);
+                      |ROGUE_EXPORT_C int pyrogue_get_property_type_index (int type_index, int property_index);
+                      |ROGUE_EXPORT_C int pyrogue_get_property_count (int type_index);
+                      |ROGUE_EXPORT_C void * pyrogue_get_property_name (int type_index, int property_index);
+                      |
+                      |#include <Python.h> //TODO: Include this only in the .cpp file
+                      |
+                      |#define RogueObjectPtr void *
+                      |
+                      |struct PyRogueDelegateContext
+                      |{
+                      |  void * f;
+                      |  RogueObject * exception;
+                      |  void * rv; // Pointer to return value if used and exception not set
+                      |  PyRogueDelegateContext (void * f)
+                      |  : f(f), exception(NULL), rv(NULL)
+                      |  {
+                      |  }
+                      |  PyRogueDelegateContext (void * f, void * rv)
+                      |  : f(f), exception(NULL), rv(rv)
+                      |  {
+                      |  }
+                      |};
+                      |#define PyRogueDelegateContextPtr PyRogueDelegateContext*
+
+    method py_on_code_end (code:Object)
+      local writer = code as CPPWriter
+      if (writer is null) return
+
+      if (not py_first_code_file) return
+      py_first_code_file = false
+
+      writer.println @|// Stuff from Rogue Python plugin
+                      |// We use these accessors to access fields of various structures rather than
+                      |// defining the various structs using ctypes, because that would be more work
+                      |// to maintain.
+                      |RogueType * pyrogue_object_type (RogueObject * o)
+                      |{
+                      |  return o->type;
+                      |}
+                      |
+                      |int pyrogue_type_index (RogueType * t)
+                      |{
+                      |  return t->index;
+                      |}
+                      |
+                      |int pyrogue_object_type_index (RogueObject * o)
+                      |{
+                      |  return o->type->index;
+                      |}
+                      |
+                      |
+                      |bool pyrogue_string_is_ascii (RogueString * str)
+                      |{
+                      |  return str->is_ascii;
+                      |}
+                      |void * pyrogue_string_utf8 (RogueString * str)
+                      |{
+                      |  return str->utf8;
+                      |}
+                      |size_t pyrogue_string_byte_count (RogueString * str)
+                      |{
+                      |  return str->byte_count;
+                      |}
+                      |RogueType * pyrogue_get_type (int type_index)
+                      |{
+                      |  return Rogue_types + type_index;
+                      |}
+                      |bool pyrogue_type_is_reference (int type_index)
+                      |{
+                      |  switch (Rogue_types[type_index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK)
+                      |  {
+                      |    case ROGUE_ATTRIBUTE_IS_CLASS:
+                      |    case ROGUE_ATTRIBUTE_IS_ASPECT:
+                      |      return true;
+                      |  }
+                      |  return false;
+                      |}
+                      |int pyrogue_get_property_offset (int type_index, int property_index)
+                      |{
+                      |  if (!Rogue_types[type_index].property_offsets) return -1;
+                      |  return Rogue_types[type_index].property_offsets[property_index];
+                      |}
+                      |void * pyrogue_get_property_name (int type_index, int property_index)
+                      |{
+                      |  return Rogue_literal_strings[Rogue_types[type_index].property_name_indices[property_index]];
+                      |}
+                      |int pyrogue_get_property_type_index (int type_index, int property_index)
+                      |{
+                      |  return Rogue_types[type_index].property_type_indices[property_index];
+                      |}
+                      |int pyrogue_get_property_count (int type_index)
+                      |{
+                      |  return Rogue_types[type_index].property_count;
+                      |}
+                      |
+                      |void pyrogue_translate_exception (RogueException * e)
+                      |{
+                      |  RogueString * msg = RogueException__format(e);
+                      |  char buf[2048];
+                      |  buf[2047] = 0;
+                      |  if (msg && msg->character_count)
+                      |    strncpy(buf, (char*)msg->utf8, 2047);
+                      |  else
+                      |    strcpy(buf, "Unknown Rogue exception");
+                      |  PyErr_SetString(PyExc_RuntimeError, buf);
+                      |}
+                      |
+
+      local done = Set<<String>>()
+      forEach (type in type_list)
+        if (type.method_list)
+          forEach (m in type.method_list)
+            if (not m.cpp_typedef) nextIteration
+            if (not m.is_c_compatible) nextIteration
+            if (not m.type_context.is_reference) nextIteration
+            if (done.contains(m.cpp_typedef)) nextIteration
+            done.add(m.cpp_typedef)
+
+            writer.print_export( m )
+            if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
+            else                                              writer.print( m.return_type )
+            writer.print( " _PyRogue_call_" ).print( m.cpp_typedef ).print( "_" )
+            writer.print( "( int i, void* THIS" )
+            forEach (i of m.parameters)
+              local p = m.parameters[i]
+              writer.print( ", " )
+              if (p.type.is_reference) writer.print( "void*" )
+              else                     writer.print(p.type)
+              writer.print( " p" ).print( i )
+            endForEach
+            writer.println( " )" )
+            writer.println( "{" )
+            writer.indent += 2
+            writer.println @|try
+                            |{
+            if (m.return_type) writer.print( "  return " )
+            writer.print( "Rogue_call_$(i, THIS" (m.cpp_typedef) )
+            forEach (i of m.parameters)
+              writer.print( ", p" ).print( i )
+            endForEach
+            writer.println( ");" )
+            writer.println @|}
+                            |catch (RogueException * e)
+                            |{
+                            |  pyrogue_translate_exception(e);
+            if (m.return_type) writer.println("  return 0;")
+            writer.println @|}
+                            |catch (const std::exception& e)
+                            |{
+                            |  PyErr_SetString(PyExc_RuntimeError, e.what());
+            if (m.return_type) writer.println("  return 0;")
+            writer.println @|}
+            writer.indent -= 2
+            writer.println( "}" )
+          endForEach
+        endIf
+      endForEach
+
+      # Static methods
+      done.clear()
+      forEach (type in type_list)
+        if (type.method_list)
+          forEach (m in type.global_method_list)
+            local cname = m.cpp_name
+            if (done.contains(cname)) nextIteration
+            done.add(cname)
+            if (not m.is_c_compatible) nextIteration
+            if (m.is_macro) nextIteration
+            if (not m.is_used) nextIteration
+            writer.print_export( m )
+            writer.print( m.return_type )
+            writer.print( " _PyRogue_" + cname + "_(" )
+            forEach (i of m.parameters)
+              local p = m.parameters[i]
+              if (i > 0) writer.print( ", " )
+              writer.print(p.type).print( " p" ).print( i )
+            endForEach
+            writer.println( " )" )
+            writer.println( "{" )
+            writer.indent += 2
+            writer.println @|try
+                            |{
+            if (m.return_type) writer.print( "  return " )
+            writer.print( cname + "(" )
+            forEach (i of m.parameters)
+              if (i > 0) writer.print( ", " )
+              writer.print( "p" ).print( i )
+            endForEach
+            writer.println( ");" )
+            writer.println @|}
+                            |catch (RogueException * e)
+                            |{
+                            |  pyrogue_translate_exception(e);
+            if (m.return_type) writer.println("  return 0;")
+            writer.println @|}
+                            |catch (const std::exception& e)
+                            |{
+                            |  PyErr_SetString(PyExc_RuntimeError, e.what());
+            if (m.return_type) writer.println("  return 0;")
+            writer.println @|}
+            writer.indent -= 2
+            writer.println( "}" )
+          endForEach
+        endIf
+      endForEach
+
+    method py_inject_rogue_classes
+      # We smash in some new Rogue code.  This should probably be included
+      # from the Rogue Python library, but that doesn't exist yet. :)
+      local src = @|class PyRogueError : Error [essential]
+                   |  PROPERTIES
+                   |    exc_type : String
+                   |    exc_value : String
+                   |    exc_traceback : String
+                   |  METHODS
+                   |    method init (exc_type, exc_value, exc_traceback) [essential]
+                   |      prior.init("Python $: $" (exc_type, exc_value))
+                   |endClass
+      Parser( "(compiler-generated-error)", src ).parse_elements
+
+    method py_create_delegates->Logical
+      if py_delegate_construction_pass == 0
+
+        if Preprocessor.definitions.contains("PYROGUEFUNCTYPE")
+          throw Error("[INTERNAL] Did not expect PYROGUEFUNCTYPE to be defined")
+        endIf
+        forEach (t in type_list)
+          t.assign_cpp_name
+          if (t.name.begins_with("PyFunction"))
+            throw Error("[INTERNAL] We can't currently handle type names that start with 'PyFunction'")
+          endIf
+        endForEach
+        forEach (t in type_list)
+          if (not t.is_function) nextIteration
+          if not t.method_lookup_by_name.contains("call")
+            throw Error("[INTERNAL] Function type $ not callable?" (t))
+          endIf
+          if t.method_lookup_by_name["call"].count != 1
+            throw Error("[INTERNAL] Function type callable in multiple ways?")
+          endIf
+
+          assert t.base_class is type_Object
+
+          # Check if it's something we can wrap
+          local ccls = PyClass(t, true)
+          if (not ccls.funcs.contains('call')) nextIteration
+
+          # Make all functions callable
+          t.method_lookup_by_name["call"][0].make_essential
+
+          # So t here is a Function type in Rogue.  We are going to create a
+          # "PyFunction" -- a subclass of the Function type (t) where the call()
+          # method calls into Python code.
+          # The Python code is a callable Python object, which we keep track
+          # of as a property of this subclass.
+          # The actual code to call Python is easier to write in Python, so
+          # we do so -- Python has a "thunk" for each signature.  The first
+          # parameter, rather than being a "this" pointer, is the Python
+          # callable.
+          # Since I don't know how to create an extern with an unmangled name
+          # from Cython, we instead generate a function pointer for each
+          # thunk in the output C++ code, and these PyFunction classes call
+          # via those.  We generate Python code which actually implements the
+          # thunks, and fills all of the function pointers to point to them.
+          local m = t.method_lookup_by_name["call"][0]
+          local params = String[]
+          local args = String[]
+          local fp_params = String[] # types of function pointer params
+          fp_params.add("PyRogueDelegateContext*")
+          args.add( "&ctxt" )
+          local i = 0
+          forEach (p in m.parameters)
+            i++
+            params.add("param$:$" (i, p.type.name))
+            args.add("$param$" ("$", i))
+            fp_params.add(ccls.get_ct_type(p.type))
+          endForEach
+
+          local ret = ""         # Return type suffix if any, e.g., "->Foo"
+          local thunk_call = ""  # Code to call the thunk
+          local return_var = ""
+          local do_return = ""
+          local init_return = ""
+
+          if (t.callback_return_type)
+            init_return = ", &$return_val"
+            ret = "->" + t.callback_return_type.name
+            return_var = "local return_val : " + t.callback_return_type.name
+            do_return = "return return_val"
+          endIf
+
+          thunk_call += ''native("((void (*)($))($this->_calladdr))($);")'' (",".join(fp_params), "$", ",".join(args))
+
+          local src = "class PyFunction$ : PYROGUEFUNCTYPE [essential]\n" (t.cpp_type_name)
+          src +=      "  PROPERTIES\n"
+          src +=      "    _callable : IntPtr\n"
+          src +=      "    _calladdr : IntPtr\n"
+          src +=      "  METHODS\n"
+          src +=      "    method call ($)$ [essential]\n" (",".join(params),ret)
+          src +=      "      $\n" (return_var)
+          src +=      "      native \"PyRogueDelegateContext ctxt((void*)(intptr_t)$this->_callable" + init_return + ");\"\n"
+          src +=      "      $\n" (thunk_call)
+          src +=     @|      local err : Error
+                      |      native "$err = (RogueClassError*)(ctxt.exception);"
+                      |      if (err is not null) throw err
+          src +=      "      $\n" (do_return)
+          src +=     @|    method release
+                      |      native "Py_XDECREF((void*)(intptr_t)$this->_callable);"
+                      |      _callable = 0
+                      |    method on_cleanup
+                      |      release()
+                      |endClass
+
+          # Function type names with a return value can't directly be parsed as
+          # a superclass name, so we don't put it directly in the string above,
+          # and have the preprocessor insert it instead, which works fine.
+          local filepath = "(compiler-generated)"
+          Preprocessor.definitions["PYROGUEFUNCTYPE"] = Tokenizer().tokenize(filepath,t.name)
+          Parser( filepath, src ).parse_elements
+        endForEach
+
+        py_delegate_construction_pass++
+        return true
+
+      elseIf py_delegate_construction_pass == 1
+        # Now that our new function types have been created, we gather them
+        # up into py_delegates, creating a PyClass for them as we go, since
+        # we'll need it later anyway.
+        forEach (t in type_list)
+          if (not t.name.begins_with("PyFunction")) nextIteration
+          t.assign_cpp_name
+
+          local ccls = PyClass(t, true)
+          if (not ccls.funcs.contains('call')) nextIteration
+          py_delegates[t] = ccls
+          #local m = ccls.funcs['call'][0]
+
+          local base = py_find_function_root(t)
+          require base
+          py_delegate_to_pydelegate[base] = t # Track signature->pydelegate
+          py_delegate_to_pydelegate[t] = t
+        endForEach
+
+        py_delegate_construction_pass++
+        return false
+      endIf
+      return false
+
+    method py_find_function_root (t:Type)->Type
+      # Get the "abstract" type of this function.
+      # This is currently just the base class, but there was a period when
+      # Functions were aspects.
+      return t.base_class
+
+    method configure
+      if (RogueC.compile_targets["Python"])
+        RogueC.all_methods_callable_dynamically = true
+
+        py_plugin = Plugin("Python")
+        RogueC.plugins.add( py_plugin )
+
+        py_plugin.on_generate_additional_types( this=>py_create_delegates )
+        py_plugin.on_finish_header_file( this=>py_on_header_end )
+        py_plugin.on_finish_code_file( this=>py_on_code_end )
+
+        py_inject_rogue_classes()
+      endIf
+
+    method py_write_py_header (writer:CPPWriter, filepath:String)
+      writer.println @|# Generated by the Rogue compiler
+                      |import sys,os
+                      |
+                      |import ctypes
+                      |
+                      |def _load ():
+                      |  global _lib
+                      |  global _plib
+                      |  name = os.path.splitext(__file__)[0] + "_module"
+                      |  name = os.path.abspath(name)
+                      |  for ext in (".so", ".dll"):
+                      |    try:
+                      |      _lib = ctypes.cdll.LoadLibrary(name + ext)
+                      |      _plib = ctypes.pydll.LoadLibrary(name + ext) # Could do better?
+                      |      break
+                      |    except:
+                      |      pass
+                      |  else:
+                      |    raise RuntimeError("Could not load " + name)
+                      |
+                      |_load()
+                      |
+                      |def _config_types ():
+                      |  global c_int64, c_int32, c_intptr
+                      |  if ctypes.c_ulonglong(-1).value == 0xffFFffFFffFFffFF:
+                      |    c_int64 = ctypes.c_longlong
+                      |  else:
+                      |    raise RuntimeError("Couldn't get all required types")
+                      |  if ctypes.c_uint(-1).value == 0xffFFffFF:
+                      |    c_int32 = ctypes.c_int
+                      |  else:
+                      |    raise RuntimeError("Couldn't get all required types")
+                      |  if ctypes.c_void_p(-1).value == 0xffFFffFFffFFffFF:
+                      |    c_intptr = ctypes.c_longlong
+                      |  elif ctypes.c_void_p(-1).value == 0xffFFffFF:
+                      |    c_intptr = ctypes.c_int
+                      |  else:
+                      |    raise RuntimeError("Couldn't get all required types")
+                      |
+                      |_config_types()
+                      |_char_ptr = ctypes.POINTER(ctypes.c_char)
+                      |
+                      |_NULL = ctypes.c_void_p(0)
+                      |_RogueObjectPtr = ctypes.c_void_p
+                      |_RogueStringPtr = ctypes.c_void_p
+                      |_RogueTypePtr = ctypes.c_void_p
+                      |_RogueLogical = ctypes.c_bool
+                      |_RogueCharacter = c_int32
+                      |_RogueByte = ctypes.c_byte
+                      |_RogueInt32 = c_int32
+                      |_RogueInt64 = c_int64
+                      |_RogueReal32 = ctypes.c_float
+                      |_RogueReal64 = ctypes.c_double
+                      |
+                      |class _PyRogueDelegateContext (ctypes.Structure):
+                      |  _fields_ = [("f", ctypes.c_void_p), # callable
+                      |              ("exception", ctypes.c_void_p), # rogue exception or null
+                      |              ("rv", ctypes.c_void_p)] # return value if used and exception not set
+                      |_PyRogueDelegateContextPtr = ctypes.POINTER(_PyRogueDelegateContext)
+                      |
+                      |def _perform_callback (context, *args):
+                      |  f = ctypes.cast(context.f, ctypes.py_object).value
+                      |  assert f, 'Delegate has no callable'
+                      |  try:
+                      |    return f(*args)
+                      |  except:
+                      |    import traceback
+                      |    e = sys.exc_info()
+                      |    tb = traceback.format_exc()
+                      |    #TODO: We should maybe lock the object in memory.
+                      |    context.exception = (PyRogueError( str(e[0].__name__), str(e[1]), tb )).thisptr
+                      |
+                      |# These are just type indicators for the overloading mechanism
+                      |# We should probably use something else (maybe just strings?),
+                      |# and we should hide their names.
+                      |class Int32:
+                      |  pass
+                      |class Int64:
+                      |  pass
+                      |class Logical:
+                      |  pass
+                      |class Real32:
+                      |  pass
+                      |class Real64:
+                      |  pass
+                      |class Character:
+                      |  pass
+                      |class Byte:
+                      |  pass
+                      |
+                      |def _conf_func(f, rt, *argt):
+                      |  if rt: f.restype = rt
+                      |  f.argtypes = list(argt)
+                      |
+                      |_conf_func(_lib.RogueObject_instance_of, _RogueLogical, _RogueObjectPtr, _RogueTypePtr)
+                      |_conf_func(_lib.RogueObject_retain, ctypes.c_void_p, _RogueObjectPtr)
+                      |_conf_func(_lib.RogueObject_release, ctypes.c_void_p, _RogueObjectPtr)
+                      |_conf_func(_lib.RogueString_create_from_utf8, _RogueObjectPtr, ctypes.c_char_p, ctypes.c_int)
+                      |_conf_func(_lib.RogueType_print_name, None, _RogueTypePtr)
+                      |_conf_func(_lib.RogueType_name, _RogueStringPtr, _RogueTypePtr)
+                      |_conf_func(_lib.RogueType_create_object, _RogueObjectPtr, _RogueTypePtr, ctypes.c_int)
+                      |_conf_func(_lib.RogueType_singleton, _RogueObjectPtr, _RogueTypePtr)
+                      |
+                      |_conf_func(_lib.pyrogue_type_is_reference, ctypes.c_bool, ctypes.c_int)
+                      |_conf_func(_lib.pyrogue_get_type, _RogueTypePtr, ctypes.c_int)
+                      |_conf_func(_lib.pyrogue_object_type_index, ctypes.c_int, _RogueObjectPtr)
+                      |_conf_func(_lib.pyrogue_get_property_offset, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+                      |_conf_func(_lib.pyrogue_get_property_type_index, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+                      |_conf_func(_lib.pyrogue_get_property_count, ctypes.c_int, ctypes.c_int)
+                      |_conf_func(_lib.pyrogue_get_property_name, _RogueStringPtr, ctypes.c_int, ctypes.c_int)
+                      |
+                      |_conf_func(_lib.pyrogue_string_is_ascii, ctypes.c_bool, _RogueStringPtr)
+                      |_conf_func(_lib.pyrogue_string_utf8, _char_ptr, _RogueStringPtr)
+                      |_conf_func(_lib.pyrogue_string_byte_count, ctypes.c_size_t, _RogueStringPtr)
+                      |
+                      |
+                      |def pyrogue_get_string (s):
+                      |  # May return bytes or Unicode string.  For Python 3,
+                      |  # we probably should always do the latter.
+                      |  d = _lib.pyrogue_string_utf8(s)[:_lib.pyrogue_string_byte_count(s)]
+                      |  if _lib.pyrogue_string_is_ascii(s): return d
+                      |  return d.decode('UTF-8')
+                      |
+                      |
+                      |_lib.Rogue_configure(0, _NULL)
+                      |_lib.Rogue_launch()
+                      |
+                      |class _PyRogueMetaclass (type):
+                      |  def __setattr__ (self, key, value):
+                      |    obj = self.__dict__.get(key)
+                      |    if obj and isinstance(obj, _StaticProperty):
+                      |      return obj.__set__(self, value)
+                      |    return super(_PyRogueMetaclass, self).__setattr__(key, value)
+                      |
+                      |class PyRogueBase (object): #Should this merge into Object?
+                      |  __metaclass__ = _PyRogueMetaclass
+                      |  thisptr = _RogueObjectPtr(0)
+                      |  def __init__ (self, *args, **kwargs):
+                      |    base = self
+                      |    if '__pyrogue_new_instance' in kwargs:
+                      |      base.thisptr = kwargs['__pyrogue_new_instance']
+                      |      _lib.RogueObject_retain(base.thisptr)
+                      |    else:
+                      |      base.thisptr = _lib.RogueType_create_object(_lib.pyrogue_get_type(self._rogue_type_index_), 0)
+                      |      if not base.thisptr: raise RuntimeError("Could not create object")
+                      |      _lib.RogueObject_retain(base.thisptr)
+                      |      try:
+                      |        other = self._init_(*args, **kwargs)
+                      |        if other.thisptr != base.thisptr:
+                      |          _lib.RogueObject_release(base.thisptr)
+                      |          base.thisptr = other.thisptr
+                      |          _lib.RogueObject_retain(base.thisptr)
+                      |      except (AttributeError, OverloadException) as e:
+                      |        _lib.RogueObject_release(base.thisptr)
+                      |        raise
+                      |  @classmethod
+                      |  def _pyrogue_type (cls):
+                      |    return pyrogue_get_type(cls._rogue_type_index_)
+                      |  def __del__ (self):
+                      |    if (self.thisptr and _lib): _lib.RogueObject_release(self.thisptr)
+                      |    self.thisptr = _NULL
+                      |  def __add__ (self, other):
+                      |    if hasattr(self, '_add_'):
+                      |      return self._add_(other)
+                      |    return TypeError("unsupported operand type(s) for +: '%s' and '%s'", type(self).__name__, type(other).__name__)
+                      |  # We can't really copy Rogue objects, so don't try...
+                      |  def __deepcopy__ (self, memo):
+                      |    return self
+                      |  def __copy__ (self):
+                      |    return self
+                      |  def __hash__ (self):
+                      |    try:
+                      |      return self.hash_code()
+                      |    except:
+                      |      return self.hash_code
+                      |  def __getitem__ (self, key):
+                      |    if hasattr(self, '_get_element'):
+                      |      try:
+                      |        return self._get_element(key)
+                      |      except:
+                      |        raise IndexError(str(sys.exc_info()[1]))
+                      |    return self.get(key)
+                      |  def __setitem__ (self, key, value):
+                      |    if hasattr(self, '_set_element'):
+                      |      try:
+                      |        self._set_element(key, value)
+                      |      except:
+                      |        raise IndexError(str(sys.exc_info()[1]))
+                      |      return
+                      |    self.set(key, value)
+                      |  def __len__ (self):
+                      |    length = self.count
+                      |    if callable(length): return length()
+                      |    return length
+                      |  def __repr__ (self):
+                      |    return "<%s at %s (%s)>" % (type(self).__name__, hex(self.thisptr.value), hex(id(self)))
+                      |  def cast_to (self, othertype):
+                      |    other_ctype = othertype._pyrogue_type()
+                      |    if _lib.RogueObject_instance_of(this.thisptr, other_ctype):
+                      |      return othertype(__pyrogue_new_instance=this.thisptr)
+                      |    raise TypeError("Object of type %s not compatible with type %s" % (type(self).__name__, othertype.__name__))
+                      |
+                      |def check_type (o, t):
+                      |  if isinstance(o, t): return o.thisptr
+                      |  raise RuntimeError("Object %s is not of type %s" % (o, t))
+                      |
+                      |_rogue_type_index_to_pyclass = {}
+                      |def get_wrapper (raw_object_ptr):
+                      |  cls = _rogue_type_index_to_pyclass[_lib.pyrogue_object_type_index(raw_object_ptr)]
+                      |  return cls(__pyrogue_new_instance=raw_object_ptr)
+                      |
+                      |def cast_object (python_object, t):
+                      |  """Cast a Python object to Rogue type t"""
+                      |  if t is String:
+                      |    if isinstance(python_object, str):
+                      |      return _lib.RogueString_create_from_utf8(python_object, -1)
+                      |    raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
+                      |  if python_object is None:
+                      |    return None # Null pointers okay
+                      |  if issubclass(t, _PyDelegate):
+                      |    if hasattr(python_object, "__call__"):
+                      |      return (t._from_callable(python_object)).thisptr
+                      |  if isinstance(python_object, t):
+                      |    return python_object.thisptr
+                      |  raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
+                      |
+                      |def _config_properties ():
+                      |  _tn_to_ct = { # type name to ctype
+                      |    "Int32" : ctypes.c_int32,
+                      |    "Int64" : ctypes.c_int64,
+                      |    "Real32" : ctypes.c_float,
+                      |    "Real64" : ctypes.c_double,
+                      |    "Logical" : ctypes.c_bool,
+                      |    "Byte" : ctypes.c_byte,
+                      |    "Character" : ctypes.c_int32
+                      |  }
+                      |
+                      |  def _make_accessors (n, t, o):
+                      |    def accessor (self):
+                      |      return ctypes.cast(self.thisptr + o, t).contents.value
+                      |    def mutator (self, value):
+                      |      ctypes.cast(self.thisptr + o, t).contents.value = value
+                      |    return (accessor,mutator)
+                      |
+                      |  for i,t in _rogue_type_index_to_pyclass.iteritems():
+                      |    for pi in xrange(0, _lib.pyrogue_get_property_count(i)):
+                      |      n = pyrogue_get_string(_lib.pyrogue_get_property_name(i, pi))
+                      |      o = _lib.pyrogue_get_property_offset(i, pi)
+                      |      if o == -1: continue # It should be an aspect
+                      |      ti = _lib.pyrogue_get_property_type_index(i, pi)
+                      |      if _lib.pyrogue_type_is_reference(ti):
+                      |        ct = _RogueObjectPtr
+                      |      else:
+                      |        tt = _lib.pyrogue_get_type(ti)
+                      |        tn = pyrogue_get_string(_lib.RogueType_name(tt))
+                      |        ct = ctypes.POINTER(_tn_to_ct.get(tn))
+                      |        if ct is None: continue
+                      |      setattr(t, n, property(*_make_accessors(n, ct, o)))
+                      |
+                      |# Method overload machinery
+                      |class OverloadException (RuntimeError):
+                      |  pass
+                      |
+                      |class _PyDelegate (object):
+                      |  """We mark all function types with this"""
+                      |  @classmethod
+                      |  def _from_callable (cls, f):
+                      |    # Create a Rogue function of this type which wraps the given
+                      |    # Python callable.
+                      |    assert f
+                      |    #print "_from_callable", f, cls
+                      |    d = cls._pyrogue_pydelegate_type_()
+                      |    fo = ctypes.py_object(f)
+                      |    ctypes.pythonapi.Py_IncRef(fo)
+                      |    d._callable = ctypes.cast(ctypes.pointer(fo), ctypes.POINTER(c_intptr)).contents.value
+                      |    #d._callable = id(f) # Same as above, practically speaking
+                      |    d._calladdr = ctypes.cast(cls._pyrogue_thunk_, ctypes.c_void_p).value
+                      |    return d
+                      |
+                      |def _objptr(o):
+                      |  return o.thisptr
+                      |
+                      |class _NOTHING:
+                      |  pass
+                      |
+                      |class _NO_DEFAULT:
+                      |  pass
+                      |
+                      |class _PYROGUE_ACCESS:
+                      |  pass
+                      |
+                      |_M_PERFECT = 4
+                      |_M_WIDEN = 3
+                      |_M_NARROW = 1
+                      |class _Overload (object):
+                      |  def __init__ (self, types, keywords, defaults, func, static):
+                      |    self.num_args = len(keywords)
+                      |    self.types = types
+                      |    self.keywords = keywords
+                      |    self.defaults = defaults
+                      |    self.func = func
+                      |    self.static = static
+                      |    nodefault = False
+                      |    for i in range(len(defaults)-1, -1, -1):
+                      |      if nodefault:
+                      |        defaults[i] = _NO_DEFAULT
+                      |      elif defaults[i] is _NO_DEFAULT:
+                      |        nodefault = True
+                      |  @property
+                      |  def max_args_count (self):
+                      |    return self.num_args
+                      |  @property
+                      |  def min_arg_count (self):
+                      |    num_with_defaults = len(x for x in self.defaults if x is not _NO_DEFAULT)
+                      |    return self.max_args_count - num_with_defaults
+                      |  def keyword_index (self, kw):
+                      |    return self.keywords.index(kw)
+                      |  def is_compatible (self, arg, param_type):
+                      |    # The match system is a bit funny, but I didn't immediately
+                      |    # have better ideas given the availability of types in
+                      |    # Python and Rogue.
+                      |    if isinstance(arg, param_type): return _M_PERFECT
+                      |    if param_type is Int32:
+                      |      if type(arg) is int: return _M_PERFECT
+                      |    elif param_type is Int64:
+                      |      if type(arg) is long: return _M_PERFECT # Not really, but as good as it gets
+                      |      if type(arg) is int: return _M_PERFECT # Close enough, and there's no better
+                      |    elif param_type is Real64:
+                      |      if type(arg) is float: return _M_PERFECT
+                      |      if type(arg) is int: return _M_WIDEN #?
+                      |      if type(arg) is long: return _M_NARROW
+                      |    elif param_type is Real32:
+                      |      if type(arg) is float: return _M_NARROW
+                      |      if type(arg) is int: return _M_NARROW
+                      |      if type(arg) is long: return _M_NARROW
+                      |    elif param_type is Logical:
+                      |      if arg is True or arg is False: return _M_PERFECT
+                      |    elif param_type is Byte:
+                      |      if type(arg) is int: return _M_NARROW
+                      |    elif param_type is String:
+                      |      if type(arg) is str: return _M_PERFECT
+                      |    elif issubclass(param_type, _PyDelegate):
+                      |      if hasattr(arg, '__call__'): return _M_PERFECT
+                      |    elif arg is None and issubclass(param_type, PyRogueBase):
+                      |      return _M_PERFECT
+                      |    return False
+                      |  def format (self):
+                      |    r = []
+                      |    for i,n in enumerate(self.keywords):
+                      |      s = "%s %s" % (self.types[i], n)
+                      |      if self.defaults[i] != _NO_DEFAULT: n += "=" + self.defaults[i]
+                      |    return ", ".join(r)
+                      |  def map_args (self, args, kws):
+                      |    # Checks if an overload is acceptable.
+                      |    # Returns a match "score".  Higher is a closer match.  False if
+                      |    # it flat out doesn't match.
+                      |    # Also returns the "mapped" args (e.g., actual args to use to
+                      |    # call this overload).
+                      |    try:
+                      |      if len(args) > self.num_args: return False,False
+                      |      if len(kws) > self.num_args: return False,False
+                      |      if self.max_args_count == 0: return _M_PERFECT,[]
+                      |      mapping = [_NOTHING] * self.max_args_count
+                      |      for kwname,kwvalue in kws.items():
+                      |        kwindex = self.keyword_index(kwname)
+                      |        # The above will throw an exception if we don't have the keyword;
+                      |        # we treat exceptions as meaning a non-match, so that's fine.
+                      |        mapping[kwindex] = kwvalue
+                      |      for i,arg in enumerate(args):
+                      |        if mapping[i] is not _NOTHING:
+                      |          return False,False # Can't specify same param with keyword and positional
+                      |        mapping[i] = arg
+                      |      score = 0
+                      |      for i,value in enumerate(mapping):
+                      |        if value is _NOTHING:
+                      |          if self.defaults[i] is _NO_DEFAULT:
+                      |            return False,False # Didn't have an argument or a default
+                      |          mapping[i] = self.defaults[i]
+                      |        else:
+                      |          arg_score = self.is_compatible(value, self.types[i])
+                      |          if arg_score is False: return False,False
+                      |          score += arg_score
+                      |      score /= float(self.max_args_count)
+                      |      return score,mapping
+                      |    except:
+                      |      #import traceback
+                      |      #traceback.print_exc()
+                      |      return False,False
+                      |
+                      |def _call_overload (target, num, args, kw):
+                      |  candidates = []
+                      |  for o in _overloads[num]:
+                      |    score,mapped = o.map_args(args, kw)
+                      |    if mapped is not False:
+                      |      candidates.append((score,-o.max_args_count,mapped,o))
+                      |  if not candidates:
+                      |    if args and kw: argstr = "%s %s" % (args, kw)
+                      |    elif args: argstr = str(args)
+                      |    elif kw: argstr = str(args)
+                      |    else: argstr = "<Empty>"
+                      |    raise OverloadException("No overload for compatible with given arguments: " + argstr)
+                      |  candidates.sort()
+                      |  _,_,mapped,o = candidates[-1]
+                      |  if o.static:
+                      |    return o.func(*mapped)
+                      |  else:
+                      |    if target is None:
+                      |      raise RuntimeError("Instance method called with no 'self'")
+                      |    return o.func(target, *mapped)
+                      |
+                      |class _OverloadMethod (object):
+                      |  """
+                      |  Decorator for overloaded methods which may be either static or dynamic
+                      |  """
+                      |  def __init__ (self, f):
+                      |    self.f = f
+                      |  def __get__ (self, obj, cls):
+                      |    def function (*args, **kw):
+                      |      return self.f(obj, *args, **kw)
+                      |    return function
+                      |
+                      |_overloads = []
+                      |
+                      |class _SingletonDescriptor (object):
+                      |  def __init__ (self, f):
+                      |    self.f = f
+                      |  def __get__ (self, obj, cls):
+                      |    return self.f()
+                      |
+                      |# We do some magic here so that we can expose Rogue global properties
+                      |# in a way that seems natural.
+                      |class _StaticProperty (object):
+                      |  def __init__ (self, getter, setter=None):
+                      |    self._getter = getter
+                      |    self._setter = setter
+                      |  def setter (self, setter):
+                      |    self._setter = setter
+                      |    return self
+                      |  def __get__ (self, obj, cls=None):
+                      |    return self._getter()
+                      |  def __set__ (self, obj, value):
+                      |    if self._setter is None:
+                      |      raise AttributeError("Property is read-only")
+                      |    self._setter(value)
+
+    method py_write_rogue_method_prototypes (writer:CPPWriter, filepath:String, wrapped_types:Table<<Type, PyClass>>)
+      # Prototypes for methods of wrapped types
+      #
+      # Methods in Rogue end up as flat functions which take an explicit "this"
+      # parameter.  We write out prototypes of them in Python here.
+
+      writer.println "# --- Prototypes of Rogue Methods ---"
+      local signatures = Set<<String>>()
+      forEach (cyclass in wrapped_types.value_reader)
+        forEach (fi in cyclass.funcs.value_reader)
+          forEach (f in fi)
+            local m = f.real_method
+            local sig = m.cpp_typedef
+            if (sig is null) nextIteration
+            if (signatures.contains(sig)) nextIteration
+            if (not m.type_context.is_reference) nextIteration
+            if (m.is_global) nextIteration
+            signatures.add(sig)
+            if (m.return_type)
+              writer.print("_plib._PyRogue_call_").print(m.cpp_typedef).print("_.restype = ")
+              if (m.return_type.is_reference)
+                writer.print( "_RogueObjectPtr" )
+              else
+                writer.print( "_" ).print( m.return_type )
+              endIf
+              writer.println()
+            endIf
+            writer.print("_plib._PyRogue_call_").print(m.cpp_typedef).print("_.argtypes = [ctypes.c_int, ").print("_RogueObjectPtr") # Last part is m.type_context
+            forEach (i of m.parameters)
+              local p = m.parameters[i]
+              writer.print( ", " )
+              if (p.type.is_reference)
+                writer.print( "_RogueObjectPtr" )
+              else
+                writer.print( "_" ).print( p.type )
+              endIf
+            endForEach
+            writer.print( "]" ).println()
+          endForEach
+        endForEach
+      endForEach
+
+      # Static methods get actual names
+      signatures.clear
+      forEach (cyclass in wrapped_types.value_reader)
+        local printed_comment = false
+        forEach (fi in cyclass.funcs.value_reader)
+          forEach (f in fi)
+            local m = f.real_method
+            local sig = f.cname
+            if (signatures.contains(sig)) nextIteration
+            signatures.add(sig)
+            if (not m.is_global) nextIteration
+            if (not printed_comment)
+              writer.println('# cyclass $ $' (cyclass.pytype, cyclass.type))
+              printed_comment = true
+            endIf
+            if (m.return_type)
+              writer.print "_plib." + f.cname + ".restype = "
+              if (m.return_type.is_reference)
+                writer.print( "_RogueObjectPtr" )
+              else
+                writer.print( "_" ).print( m.return_type )
+              endIf
+              writer.println()
+            endIf
+            writer.print("_plib." + f.cname + ".argtypes = [" )
+            forEach (i of m.parameters)
+              local p = m.parameters[i]
+              if (i > 0) writer.print( ", " )
+              if (p.type.is_reference)
+                writer.print( "_RogueObjectPtr" )
+              else
+                writer.print( "_" ).print( p.type )
+              endIf
+            endForEach
+            writer.print( "]" ).println()
+          endForEach
+        endForEach
+      endForEach
+
+    method py_write_property (writer:CPPWriter, p:PyProperty)
+      if (p.is_static)
+        writer.println "@_StaticProperty"
+        writer.println "def $ ():" (p.pyname)
+        writer.println "  return $" (p.read_c_code)
+        writer.println "@$.setter" (p.pyname)
+        writer.println "def $ (value):" (p.pyname)
+        writer.println "  $" (p.write_c_code)
+      else
+        # Currently never used in Python plugin
+        writer.println "@property"
+        writer.println "def $ (self):" (p.pyname)
+        writer.println "  return $" (p.read_c_code)
+        writer.println "@$.setter" (p.pyname)
+        writer.println "def $ (self, value):" (p.pyname)
+        writer.println "  $" (p.write_c_code)
+      endIf
+
+    method py_find_constructor_context (cyclasses:Table<<Type, PyClass>>, t:PyClass) -> Type
+      # Find the "constructor context" type for a given type.  That is, find the
+      # most-subclassed subclass of t (inclusive -- it might be t itself) which
+      # has any constructors.
+      if t.funcs.contains("_init_") return t.type
+      require t.type.base_class
+      if not cyclasses.contains(t.type.base_class) return null
+      return py_find_constructor_context(cyclasses, cyclasses[t.type.base_class])
+
+    method py_write_overload_table (writer:CPPWriter, overloads:PyMethod[][], context_constraints:Type[])
+      # Writes overload tables for each set of methods in overloads.
+      # overloads is a list of lists of methods (all methods in a list being overloads of each other)
+      # For each overload, there is also a context_constraint entry.  This is usually null.  If it's
+      # not null, only methods with that type_context will be written.  This is used to limit the
+      # writing of overloaded constructors to the "topmost" ones.
+      local count = -1
+      while true
+        count++
+        if (count >= overloads.count) escapeWhile
+        local funcs = overloads[count]
+        local context_constraint = context_constraints[count]
+        writer.println "# Overloads for $ (#$)" (funcs[0].full_name, count)
+        writer.println "_overloads.append( ["
+        writer.indent += 2
+        local fnum = -1
+        local first = true
+        forEach (func in funcs)
+          fnum++
+          if (context_constraint is not null) and (func.real_method.type_context is not context_constraint)
+            nextIteration
+          endIf
+          if not first
+            writer.println(",")
+          else
+            first = false
+          endIf
+          writer.print " _Overload( "
+          local names = String[]
+          forEach n in func.py_params
+            names.add ''"'' + n + ''"''
+          endForEach
+          local fname = func.pyname
+          if (not fname.begins_with("_")) fname = "_" + fname
+          fname = "$.$_$_" (func.pyclass, fname, fnum)
+          writer.print "[$], [$], [$], $, $ )" (",".join(func.py_types), ",".join(names), ",".join(func.defaults), fname, select{func.is_static_method:"True" || "False"})
+        endForEach
+        writer.indent -= 2
+        writer.println
+        writer.println "] )"
+      endWhile
+
+    method py_write_method (writer:CPPWriter, cyclass:PyClass, fi:PyMethod[], overloading:Logical)
+      # Writes a single method or method name.
+      #
+      # When overloading=true, this writes a method for each entry using a
+      # name like "_methodname_overloadnumber_", with the presumption that
+      # someone else will write a single "interface" method which dispatches
+      # to these.
+      # Rather than just decide ourself whether we want to overload or not
+      # based on the list length being 1 or >1, we take that as a parameter
+      # so that the caller can decide (because there are cases where we may
+      # want to force the overloading mechanism... like for constructors).
+      local fnum = -1
+      forEach (f in fi) # For each method with same name
+        fnum++
+        local fname = f.pyname
+        if overloading
+          fname = "$_$_" (fname, fnum)
+          if (not fname.begins_with("_")) fname = "_" + fname # Don't double-underscore a method name
+        endIf
+
+        local params = String[]
+
+        if (f.is_static_method)
+          writer.println "@staticmethod"
+        else
+          params.add( "self" )
+        endIf
+
+        local cname = f.cname
+        local args = f.call_args
+        #if f.real_method.is_overridden
+        if (not f.real_method.is_global)
+          args = args.cloned()
+          args.insert(f.real_method.index)
+          cname = "_plib._PyRogue_call_" + f.real_method.cpp_typedef + "_"
+        else
+          cname = "_plib._PyRogue_" + cname + "_"
+        endIf
+
+        local i = 0
+        forEach (p in f.py_params)
+          local ptext = p
+          if f.defaults[i] != "_NO_DEFAULT"
+            ptext += "=" + f.defaults[i]
+          endIf
+          params.add(ptext)
+          i++
+        endForEach
+        writer.println "def $ ($):" (fname, ", ".join(params))
+        writer.indent+=2
+        forEach (s in f.prologue)
+          writer.println s
+        endForEach
+        local call_code = "$($)" (cname, ", ".join(args))
+        if f.return_converter is null
+          writer.println call_code
+        else
+          writer.println "return " + f.return_converter.replacing("%", call_code)
+        endIf
+        writer.indent-=2
+        writer.println
+      endForEach
+
+    method py_write_delegate_thunks (writer:CPPWriter)
+      writer.println "# Delegate thunks"
+      local thunks = Table<<String,Int32>>()  # thunk_sig to number
+      forEach (ccls in py_delegates.value_reader)
+        local m = ccls.funcs['call'][0]
+        local sig = m.thunk_sig.before_first("->") # Return type doesn't factor in here, since it's handled by pointer
+        if (thunks.contains(sig))
+          m.thunk_number = thunks[sig]
+          nextIteration
+        endIf
+        m.thunk_number = thunks.count
+        thunks[sig] = thunks.count
+
+        #writer.println "# " + sig #.real_method.signature
+        #if (m.real_method.return_type) writer.print("->" + m.real_method.return_type)
+        #writer.println
+
+        writer.print "_thunktype_" + (thunks.count-1) + " = ctypes.CFUNCTYPE(None"
+
+        #if (m.real_method.return_type) writer.print("_" + m.cproto_return)
+        #else                           writer.print("None")
+        forEach (p in m.cproto_params)
+          writer.print ", _"
+          writer.print p
+        endForEach
+        writer.println ")"
+      endForEach
+
+      # Some functions get identical treatment, since references are all mostly treated
+      # exactly the same (Strings are special cased).  This means we can reuse code.
+      # To identify which ones are the same, we actually generate the code, and put it
+      # in a table.  If it's already *in* the table, we can just reuse the old one.
+      # Kind of hacky, but works okay.
+      local thunk_bodies = Table<<String, Int32>>()
+      forEach (ccls at i in py_delegates.value_reader)
+        local m = ccls.funcs['call'][0]
+        local params = String[]
+        params.add("context")
+        forEach (j in 1..<m.cproto_params.count) # Skip first ("this")
+          params.add( " param" + j )
+        endForEach
+        local func = py_find_function_root(ccls.type)
+        require func
+
+        local body = "  # using " + m.thunk_number + "\n" # Meaninful!  Ensures we collapse only with same thunk number!
+        body += "  retval = _perform_callback(context,\n"
+        forEach (j in 0 ..< m.real_method.parameters.count)
+          body += "    " + ccls.get_c_to_py(m.real_method.parameters[j].type).replacing("%", "param"+(j+1)) + ",\n"
+        endForEach
+        body += "  )\n"
+        if (m.real_method.return_type)
+          body += "  if not context.exception:\n"
+          local r = ccls.get_py_to_c(m.real_method.return_type).replacing("%", "retval")
+          if (r != "retval") body += "    retval = $\n" (r)
+          body += "    ctypes.cast(context.rv, ctypes.POINTER(_$)).contents.value = " (m.cproto_return)
+          body += ccls.get_py_to_c(m.real_method.return_type).replacing("%", "retval")
+          body += "\n"
+        endIf
+
+        writer.print "# " + m.real_method.signature
+        if (m.real_method.return_type) writer.print("->" + m.real_method.return_type)
+        writer.println
+
+        if (not thunk_bodies.contains(body))
+          thunk_bodies[body] = i
+          writer.println "def _PyRogue_delegate_$_thunk ($):" (i, ",".join(params))
+          writer.println "  context = context.contents"
+          writer.println body
+          writer.println "_pyrogue_thunk_$_c = _thunktype_$(_PyRogue_delegate_$_thunk)" (i, m.thunk_number, i)
+          writer.println "$._pyrogue_thunk_ = _pyrogue_thunk_$_c" (func.cpp_name, i)
+        else
+          writer.println "$._pyrogue_thunk_ = _pyrogue_thunk_$_c # Reuse" (func.cpp_name, thunk_bodies[body])
+        endIf
+      endForEach
+
+    method py_sort_cyclasses ( cyclasses:Table<<Type, PyClass>> )->PyClass[]
+      # This is a really inefficient topological sort of the types, such
+      # that a type should appear in the resulting list after all of its
+      # supertypes.  It gives up if it can't make forward progress, which
+      # could happen either because the types don't form a hierarchy
+      # (which hopefully can't happen) or because some types are not
+      # available (e.g., some type that the Python backend doesn't wrap
+      # appears as a superclass -- this currently happens with lists).
+      local sorted_types = PyClass[]
+      local done = Set<<Type>>()
+      local prev = -1
+      while (sorted_types.count < cyclasses.count)
+        if (cyclasses.count - sorted_types.count == prev)
+          # Hope for the best
+          escapeWhile
+        endIf
+        prev = cyclasses.count - sorted_types.count
+        local ss = Set<<Type>>()
+        forEach (t in cyclasses.value_reader)
+          ss.add(t.type)
+        endForEach
+        ss = ss.difference(done)
+        #forEach (t in ss)
+        #  println t
+        #endForEach
+        #trace sorted_types.count, cyclasses.count
+        forEach (t in cyclasses.value_reader)
+          if (done.contains(t.type)) nextIteration
+          local ok = false
+          if (t.type.base_types.count == 0)
+            ok = true
+          else
+            ok = true
+            forEach (bt in t.type.base_types)
+              if (not done.contains(bt))
+                ok = false
+                escapeForEach
+              endIf
+            endForEach
+          endIf
+          if (ok)
+            done.add(t.type)
+            sorted_types.add(t)
+          endIf
+        endForEach
+      endWhile
+
+      return sorted_types
+
+    method py_write_classes (writer:CPPWriter, cyclasses:Table<<Type, PyClass>>)
+      # We save up all overloads until the end because when they actually occur,
+      # they may refer to types which haven't been defined yet.
+      local overloads = PyMethod[][]
+      local overload_constraints = Type[]
+
+      # Similarly, we need to set the _pyrogue_pydelegate_type of a signature
+      # type to its concrete PyDelegate type, which always comes *later* in the
+      # type hierarchy.  So we save them all up for the end.
+      local pydelegates = String[]
+
+      # Now write out each wrapped class/routine in an order such that a class
+      # comes before all of its child classes.
+      forEach (cyclass in py_sort_cyclasses(cyclasses))
+        writer.println "# --- Wrapper for Class $ ---" (cyclass.pytype)
+        local bases = String[]
+        forEach (b in cyclass.type.base_types)
+          if (cyclasses.contains(b))
+            bases.add(cyclasses[b].pytype)
+          endIf
+        endForEach
+        if (bases.count == 0) bases.add("PyRogueBase")
+        if (cyclass.type.is_function) bases.add("_PyDelegate")
+        local base = ", ".join(bases)
+
+        writer.println "class $ ($):" (cyclass.pytype, base)
+        writer.println  "  _rogue_type_index_ = $" (cyclass.type.index)
+
+        if cyclass.type.is_function
+          local pydelegate = py_delegate_to_pydelegate[cyclass.type]
+          if (pydelegate is not null)
+            pydelegates.add("$._pyrogue_pydelegate_type_ = $" (cyclass.pytype, py_delegates[pydelegate].pytype))
+          else
+            #throw Error("[INTERNAL] No Python delegate for signature type $" (cyclass.type.name))
+            # This case happens when there's no Python delegate because, e.g., there are compound
+            # paramters.
+            #FIXME: Support Python/Rogue marshalling of compounds!
+          endIf
+        endIf
+        writer.indent+=2
+        if cyclass.type.is_singleton
+          writer.println "singleton = _SingletonDescriptor(lambda:$(__pyrogue_new_instance=_lib.RogueType_singleton(_lib.pyrogue_get_type($._rogue_type_index_))))" (cyclass.pytype, cyclass.pytype)
+        endIf
+
+        # Properties (just the static ones)
+        if (not cyclass.type.is_aspect) # Aspects don't really have properties
+          writer.println "# --- Property wrappers ---"
+          forEach (p in cyclass.properties)
+            py_write_property(writer, p)
+          endForEach
+        endIf
+        writer.println
+
+        # Iterate over each method name; write the method (and its overloads)
+        forEach (fi in cyclass.funcs.value_reader)
+          local constructor = fi[0].is_initializer
+          local overloading = fi.count > 1 or constructor
+          # We always overload constructors.  Why?  I don't remember anymore!
+
+          # The methods in this class may be inherited, in which case we don't
+          # need to write them here.  However, the overload mechanism doesn't
+          # work right (yet?) if some of the methods are implemented in this
+          # class and some in a parent class.  So we implement the following:
+          # If all methods with the same name are all inherited, we skip.
+          # If any methods with the same name are implemented *here*, we write.
+          #TODO: Could be more efficient if we didn't have to do this?
+          local must_write = false
+          forEach f in fi
+            local m = f.real_method
+            if cyclass.type is m.type_context
+              # It's implemented here.  We need to write.
+              must_write = true
+              escapeForEach
+            endIf
+          endForEach
+
+          if must_write
+            py_write_method(writer, cyclass, fi, overloading)
+            if overloading
+              # Create the "interface" method which calls the overloads
+              writer.println "@_OverloadMethod"
+              writer.println "def $ (self, *args, **kwargs):" (fi[0].pyname)
+              writer.println "  return _call_overload(self, $, args, kwargs)" (overloads.count)
+              writer.println
+              overloads.add(fi)
+              if constructor
+                local constraint = py_find_constructor_context(cyclasses, cyclass)
+                require constraint
+                overload_constraints.add(constraint)
+              else
+                overload_constraints.add(null)
+              endIf
+            endIf
+          else
+            writer.println "# Skipped inherited method $" (fi[0].real_method.name)
+          endIf
+        endForEach
+
+        # Can this be put in PyDelegate?
+        if cyclass.type.is_function
+          if cyclass.funcs.contains("call")
+            writer.println "__call__ = call"
+          endIf
+        endIf
+
+        writer.indent-=2
+
+        writer.println "_rogue_type_index_to_pyclass[$] = $" (cyclass.type.index, cyclass.pytype)
+      endForEach
+
+      # Now we write the table full of overload information used by _call_overload()
+      py_write_overload_table(writer, overloads, overload_constraints)
+
+      # Write out the signature-to-concrete delegate info
+      forEach d in pydelegates
+        writer.println d
+      endForEach
+
+    method py_write ( filepath:String )
+
+      # All the types that Python needs to know about (excluding primitives
+      # which are hardwired).
+      local all_type_list = Type[]
+
+      forEach (t in type_list)
+        if (not t.is_reference) nextIteration
+        if (t.omit_output and not t.is_native) nextIteration
+        all_type_list.add(t)
+      endForEach
+
+      local cyclasses = Table<<Type, PyClass>>() # Type -> PyClass
+      forEach (type in all_type_list)
+        local cyclass = PyClass(type)
+        if (cyclass.pytype != "") cyclasses[cyclass.type] = cyclass
+      endForEach
+
+      if (cyclasses.count == 0) return
+
+      println "Writing $.py..." (filepath)
+      local writer = CPPWriter( filepath + ".py" )
+
+      # From this point on filepath is used to refer to the RogueC-generated
+      # .cpp and .h files which will have the _module extension.
+      filepath += "_module"
+
+      py_write_py_header(writer, filepath)
+
+      # Write extern prototypes all the C++ functions representing Rogue methods.
+      py_write_rogue_method_prototypes(writer, filepath, cyclasses)
+
+      # Write out the Python wrapper classes and overload table
+      py_write_classes(writer, cyclasses)
+
+      # Rogue "PyDelegates" call these thunks via function pointer, and then
+      # the actual thunks (generated in Python) call Python.  Write them out
+      # here.
+      py_write_delegate_thunks(writer)
+
+      # Tell it to build properties dynamically at runtime
+      writer.println("_config_properties()")
+
+      # Expose methods on Global
+      writer.println "\n# --- Exposing Global methods ---"
+      local rglobal = Program.type_lookup["Global"]
+      local cyglobal = cyclasses[rglobal]
+      if rglobal and cyglobal
+        forEach (fi in cyglobal.funcs.value_reader)
+          local constructor = fi[0].is_initializer
+          if (constructor) nextIteration
+          writer.println "def $ (*args, **kwargs):" (fi[0].pyname)
+          writer.println "  return Global.$(*args, **kwargs)" (fi[0].pyname)
+        endForEach
+      endIf
+
+      writer.close
+
+    method write_cpp ( filepath:String )
+      <append>
+
+      if (RogueC.compile_targets["Python"])
+        py_write(filepath)
+      endIf
+endAugment
