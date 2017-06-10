@@ -395,7 +395,7 @@ class List<<$DataType>> : GenericList
       #
       # If this list is empty then an empty list is returned.
       ensure result_list
-      result_list.reserve( (count-1).clamped(0) )
+      result_list.reserve( (count-1).clamped_low(0) )
 
       forEach (index of this)
         if (index > 0) result_list.add( this[index] )

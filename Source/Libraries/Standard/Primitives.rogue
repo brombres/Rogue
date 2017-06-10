@@ -31,9 +31,17 @@ class Real64 [primitive]
     method ceiling->Real64 [macro]
       Math.ceiling( this )
 
-    method clamped( &low=null:Real64?, &high=null:Real64? )->Real64
-      if (low.exists and this < low.value)  return low.value
-      if (high.exists and this > high.value) return high.value
+    method clamped( low:Real64, high:Real64 )->Real64
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Real64 )->Real64
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Real64 )->Real64
+      if (this > high) return high
       return this
 
     method decimal_digit_count->Int32
@@ -169,9 +177,17 @@ class Real32 [primitive]
     method ceiling->Real32 [macro]
       Real32( Math.ceiling(this) )
 
-    method clamped( &low=null:Real32?, &high=null:Real32? )->Real32
-      if (low.exists and this < low.value)  return low.value
-      if (high.exists and this > high.value) return high.value
+    method clamped( low:Real32, high:Real32 )->Real32
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Real32 )->Real32
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Real32 )->Real32
+      if (this > high) return high
       return this
 
     method digit_count->Int32
@@ -293,9 +309,17 @@ class Int64 [primitive]
         native "return *((RogueReal64*)&$this);"
       $endIf
 
-    method clamped( &low=null:Int64?, &high=null:Int64? )->Int64
-      if (low.exists and this < low.value)  return low.value
-      if (high.exists and this > high.value) return high.value
+    method clamped( low:Int64, high:Int64 )->Int64
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Int64 )->Int64
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Int64 )->Int64
+      if (this > high) return high
       return this
 
     method digit_count->Int32
@@ -411,9 +435,17 @@ class Int32 [primitive]
         native "return *((RogueReal32*)&$this);"
       $endIf
 
-    method clamped( &low=null:Int32?, &high=null:Int32? )->Int32
-      if (low.exists and this < low.value)  return low.value
-      if (high.exists and this > high.value) return high.value
+    method clamped( low:Int32, high:Int32 )->Int32
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Int32 )->Int32
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Int32 )->Int32
+      if (this > high) return high
       return this
 
     method digit_count->Int32
@@ -528,9 +560,17 @@ class Character [primitive]
       return select{ value:1 || 0 }
 
   METHODS
-    method clamped( &low=null:Character?, &high=null:Character? )->Character
-      if (low.exists and this < low.value)  return low.value
-      if (high.exists and this > high.value) return high.value
+    method clamped( low:Character, high:Character )->Character
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Character )->Character
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Character )->Character
+      if (this > high) return high
       return this
 
     method digit_count->Int32
@@ -654,9 +694,17 @@ class Byte [primitive]
       return select{ value:1 || 0 }
 
   METHODS
-    method clamped( &low=null:Byte?, &high=null:Byte? )->Byte
-      if (low.exists and this < low.value)  return low.value
-      if (high.exists and this > high.value) return high.value
+    method clamped( low:Byte, high:Byte )->Byte
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Byte )->Byte
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Byte )->Byte
+      if (this > high) return high
       return this
 
     method digit_count->Int32

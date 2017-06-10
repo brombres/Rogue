@@ -357,7 +357,7 @@ class Value
       # If this `Value` is not a collection or if it is empty then an empty list is
       # returned.
       if (not result_list) result_list = @[]
-      result_list.reserve( (count-1).clamped(0) )
+      result_list.reserve( (count-1).clamped_low(0) )
 
       forEach (index of this)
         if (index > 0) result_list.add( this[index] )
