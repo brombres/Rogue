@@ -1036,7 +1036,19 @@ class Type
 
       endIf
 
-      # Add a default to->Object to compounds, primitives, and functional types
+      # Add a default to->Object to compounds that returns a Boxed<<CompoundType>>
+      if (is_compound)
+        local m = find_method( "to_Object()" )
+        if (not m)
+          m = add_method( t, "to_Object" )
+          local boxed_name = "Boxed<<$>>" (name)
+          m.return_type = Program.get_type_reference( t, boxed_name )
+          m.statements.add( CmdReturn(t,CmdAccess(t,boxed_name,CmdArgs(CmdLiteralThis(t,this)))) )
+          m.organize( scope )
+        endIf
+      endIf
+
+      # Add fallback property getters and setters to aspects
       if (is_aspect)
         forEach (p in property_list)
           local m = find_method( p.name + "()" )
