@@ -1024,7 +1024,7 @@ class Type
         if (m) m.make_essential
       endIf
 
-      # Add a default to->String and to->Value to compounds
+      # Add a default to->String to compounds
       if (is_compound or is_primitive)
         local m = find_method( "to_String()" )
         if (not m)
@@ -1034,6 +1034,54 @@ class Type
           m.organize( scope )
         endIf
 
+      endIf
+
+      # Add a default global from_value(Value) to compounds
+      if (is_compound)
+        local m = find_global_method( "from_value(Value)" )
+        if (not m)
+          m = add_global_method( t, "from_value" )
+          m.add_parameter( t, "value", Program.type_Value )
+          m.return_type = this
+
+          # if (value.is_object and value->Object instanceOf Boxed<<CompoundType>>)
+          #   return value->Object as Boxed<<CompoundType>>->CompoundType
+          # endIf
+          local boxed_type = Program.get_type_reference( t, "Boxed<<$>>" (name) )
+          local cmd_lhs = CmdConvertToType( t, CmdAccess(t,"value"), Program.type_Object ) : Cmd
+          local cmd_rhs = CmdInstanceOf( t, cmd_lhs, boxed_type )
+          local cmd_condition = CmdLogicalAnd( t, CmdAccess( t, "value", "is_object" ), cmd_rhs )
+          local cmd_if = CmdIf( t, cmd_condition )
+
+          local cmd_return = CmdConvertToType( t, CmdAccess(t,"value"), Program.type_Object ) : Cmd
+          cmd_return = CmdAs( t, cmd_return, boxed_type )
+          cmd_return = CmdConvertToType( t, cmd_return, this )
+          cmd_if.statements.add( CmdReturn(t,cmd_return) )
+
+          m.statements.add( cmd_if )
+
+          # return CompoundType(args)
+          local args = CmdArgs()
+          forEach (p in property_list)
+            if (not p.is_native)
+              local arg = CmdAccess( t, "value", "get", CmdArgs(CmdLiteralString(t,p.name)) )
+              if (p.type is Program.type_String)
+                args.add( CmdAccess( t, arg, "to_String" ) )
+              elseIf (p.type.is_reference)
+                args.add( CmdAs( t, CmdAccess(t,arg,"to_Object"), p.type ) )
+              elseIf (p.type.is_primitive)
+                args.add( CmdAccess(t,p.type.name,CmdArgs(arg)) )
+              else
+                # compound
+                args.add( CmdAccess(t,p.type.name,"from_value",CmdArgs(arg)) )
+              endIf
+            endIf
+          endForEach
+
+          m.statements.add( CmdReturn( t, CmdCreateCompound(t,this,args) ) )
+
+          m.organize( scope )
+        endIf
       endIf
 
       # Add a default to->Object to compounds that returns a Boxed<<CompoundType>>
