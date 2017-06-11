@@ -39,7 +39,6 @@ class Template
 
       type.t = t
       # replace location of first reference to type with location of type definition
-
       type.attributes.add( attributes )
       type.source_template = this
 

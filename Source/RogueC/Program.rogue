@@ -210,6 +210,8 @@ class Program [essential singleton]
 
       type = Type( t, name )
       type_lookup[name] = type
+      local template = find_template( name )
+      if (template) type.attributes.add( template.attributes )
 
       return type
 
@@ -315,6 +317,14 @@ class Program [essential singleton]
       type_Global.add_property( p )
 
     method resolve
+      # Bring attributes up to date for dummy types in type_lookup
+      forEach (type in type_lookup)
+        if (not type.defined)
+          local template = Program.find_template( type.name )
+          if (template) type.attributes.add( template.attributes )
+        endIf
+      endForEach
+
       type_Global.add_method( get_on_launch_method(type_Global.t) )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
       type_Global.add_method( get_run_tests_method(type_Global.t) )
