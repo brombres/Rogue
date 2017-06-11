@@ -287,13 +287,17 @@ augment Program
         forEach (sig in native_method_signature_list)
           local m = native_method_signature_lookup[sig]  # one of the methods using this signature
           if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
-            writer.print( "extern ").print( m.return_type ).print( " Rogue_call_" ).print( m.cpp_typedef )
-            writer.print( "( int i, " ).print( m.type_context )
-            if (m.is_mutating) writer.print( '&' )
-            writer.print( " THIS" )
+            writer.print( "extern ")
+            if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
+            else                                              writer.print( m.return_type )
+            writer.print( " Rogue_call_" ).print( m.cpp_typedef )
+            writer.print( "( int i, void* THIS" )
             forEach (i of m.parameters)
               local p = m.parameters[i]
-              writer.print( ", " ).print(p.type).print( " p" ).print( i )
+              writer.print( ", " )
+              if (p.type.is_reference) writer.print( "void*" )
+              else                     writer.print(p.type)
+              writer.print( " p" ).print( i )
             endForEach
             writer.println( " );" )
           endIf
@@ -341,20 +345,24 @@ augment Program
       forEach (sig in native_method_signature_list)
         local m = native_method_signature_lookup[sig]  # one of the methods using this signature
         if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
-          writer.print( m.return_type ).print( " Rogue_call_" ).print( m.cpp_typedef )
-          writer.print( "( int i, " ).print( m.type_context )
-          if (m.is_mutating) writer.print( '&' )
-          writer.print( " THIS" )
+          writer.print( "extern ")
+          if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
+          else                                              writer.print( m.return_type )
+          writer.print( " Rogue_call_" ).print( m.cpp_typedef )
+          writer.print( "( int i, void* THIS" )
           forEach (i of m.parameters)
             local p = m.parameters[i]
-            writer.print( ", " ).print(p.type).print( " p" ).print( i )
+            writer.print( ", " )
+            if (p.type.is_reference) writer.print( "void*" )
+            else                     writer.print(p.type)
+            writer.print( " p" ).print( i )
           endForEach
           writer.println( " )" )
           writer.println( "{" )
           writer.print( "  " )
           if (m.return_type) writer.print( "return " )
           writer.print( "((" ).print( m.cpp_typedef )
-          writer.print( ")(THIS->type->methods[i]))( THIS" )
+          writer.print( ")(((RogueObject*)THIS)->type->methods[i]))( THIS" )
           forEach (i of m.parameters)
             writer.print( ", p" ).print( i )
           endForEach
@@ -2051,18 +2059,17 @@ augment Type
         if (not m.is_macro and m.store_dynamically and m.is_used)
           buffer.clear
           if (m.return_type)
-            buffer.print( m.return_type.cpp_class_name )
-            if (m.return_type.is_reference) buffer.print('*')
+            if (m.return_type.is_reference) buffer.print( "void*" )
+            else                            buffer.print( m.return_type.cpp_class_name )
           else
             buffer.print( "void" )
           endIf
-          buffer.print( "(*)(" )
-          buffer.print( m.type_context.cpp_class_name ).print("*")
+          buffer.print( "(*)(void*" )
           forEach (i of m.parameters)
             buffer.print(',')
             local param_type = m.parameters[i].type
-            buffer.print( param_type.cpp_class_name )
-            if (param_type.is_reference) buffer.print('*')
+            if (param_type.is_reference) buffer.print("void*")
+            else                         buffer.print( param_type.cpp_class_name )
           endForEach
           buffer.print( ")" )
           local sig = buffer->String
@@ -2954,7 +2961,14 @@ endAugment
 augment CmdCallDynamicMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+      if (not is_statement)
+        writer.print("(")
+        if (method_info.return_type.is_reference)
+          writer.print( "(" ).print( method_info.return_type ).print( ")" )
+        else
+          writer.print_cast( method_info.return_type, method_info.return_type )
+        endIf
+      endIf
       if (method_info.is_overridden)
         writer.print( "Rogue_call_" ).print( method_info.cpp_typedef )
         writer.print( "( " )
