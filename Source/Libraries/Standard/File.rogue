@@ -524,6 +524,11 @@ class File
     method options->FileOptions [macro]
       FileOptions()
 
+    method parent( filepath:String, level=1:Int32 )->String
+      if (level <= 0) return filepath
+      if (level == 1) return folder( filepath )
+      return parent( folder(filepath), level-1 )
+
     method path( filepath:String )->String
       return folder( filepath )
 
@@ -684,6 +689,9 @@ class File
 
     method matches_wildcard_pattern( pattern:String )->Logical [macro]
       File.matches_wildcard_pattern( this.filepath, pattern )
+
+    method parent( level=1:Int32 )->String
+      File.parent( this.filepath, level )
 
     method path->String [macro]
       File.folder( this.filepath )
