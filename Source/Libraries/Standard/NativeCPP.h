@@ -130,23 +130,33 @@ extern void Rogue_configure_gc();
 // AKA by-value type; not a reference type
 #define ROGUE_ATTRIBUTE_IS_DIRECT           2
 
-#define ROGUE_ATTRIBUTE_IS_NATIVE           32
-#define ROGUE_ATTRIBUTE_IS_MACRO            64
-#define ROGUE_ATTRIBUTE_IS_INITIALIZER      128
-#define ROGUE_ATTRIBUTE_IS_IMMUTABLE        256
-#define ROGUE_ATTRIBUTE_IS_GLOBAL           512
-#define ROGUE_ATTRIBUTE_IS_SINGLETON        1024
-#define ROGUE_ATTRIBUTE_IS_INCORPORATED     2048
-#define ROGUE_ATTRIBUTE_IS_GENERATED        4096
-#define ROGUE_ATTRIBUTE_IS_REQUISITE        8192
-#define ROGUE_ATTRIBUTE_IS_TASK             16384
-#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION  32768
-#define ROGUE_ATTRIBUTE_IS_AUGMENT          65536
-#define ROGUE_ATTRIBUTE_IS_ABSTRACT         131072
-#define ROGUE_ATTRIBUTE_IS_ROUTINE          262144
-#define ROGUE_ATTRIBUTE_IS_FALLBACK         524288
-#define ROGUE_ATTRIBUTE_IS_SPECIAL          1048576
-#define ROGUE_ATTRIBUTE_IS_PROPAGATED       2097152
+#define ROGUE_ATTRIBUTE_IS_API               (1 << 4)
+#define ROGUE_ATTRIBUTE_IS_NATIVE            (1 << 5)
+#define ROGUE_ATTRIBUTE_IS_MACRO             (1 << 6)
+#define ROGUE_ATTRIBUTE_IS_INITIALIZER       (1 << 7)
+#define ROGUE_ATTRIBUTE_IS_IMMUTABLE         (1 << 8)
+#define ROGUE_ATTRIBUTE_IS_GLOBAL            (1 << 9)
+#define ROGUE_ATTRIBUTE_IS_SINGLETON         (1 << 10)
+#define ROGUE_ATTRIBUTE_IS_INCORPORATED      (1 << 11)
+#define ROGUE_ATTRIBUTE_IS_GENERATED         (1 << 12)
+#define ROGUE_ATTRIBUTE_IS_ESSENTIAL         (1 << 13)
+#define ROGUE_ATTRIBUTE_IS_TASK              (1 << 14)
+#define ROGUE_ATTRIBUTE_IS_TASK_CONVERSION   (1 << 15)
+#define ROGUE_ATTRIBUTE_IS_AUGMENT           (1 << 16)
+#define ROGUE_ATTRIBUTE_IS_ABSTRACT          (1 << 17)
+#define ROGUE_ATTRIBUTE_IS_MUTATING          (1 << 18)
+#define ROGUE_ATTRIBUTE_IS_FALLBACK          (1 << 19)
+#define ROGUE_ATTRIBUTE_IS_SPECIAL           (1 << 20)
+#define ROGUE_ATTRIBUTE_IS_PROPAGATED        (1 << 21)
+#define ROGUE_ATTRIBUTE_IS_DYNAMIC           (1 << 22)
+#define ROGUE_ATTRIBUTE_RETURNS_THIS         (1 << 23)
+#define ROGUE_ATTRIBUTE_IS_PREFERRED         (1 << 24)
+#define ROGUE_ATTRIBUTE_IS_NONapi            (1 << 25)
+#define ROGUE_ATTRIBUTE_IS_DEPRECATED        (1 << 26)
+#define ROGUE_ATTRIBUTE_IS_ENUM              (1 << 27)
+#define ROGUE_ATTRIBUTE_IS_THREAD_LOCAL      (1 << 28)
+#define ROGUE_ATTRIBUTE_IS_SYNCHRONIZED      (1 << 29)
+#define ROGUE_ATTRIBUTE_IS_SYNCHRONIZABLE    (1 << 30)
 
 template <class T>
 struct RoguePtr
