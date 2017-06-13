@@ -435,7 +435,8 @@ class Tokenizer
         else                   return TokenType.symbol_gt
 
       elseIf (ch == '?')
-        return TokenType.symbol_question_mark
+        if   (consume(':')) return TokenType.keyword_select
+        else                return TokenType.symbol_question_mark
 
       elseIf (ch == '@' )
         if (consume_id("trace")) return TokenType.keyword_trace_args_only
