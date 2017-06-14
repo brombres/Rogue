@@ -2296,6 +2296,7 @@ augment Method
       writer.println
 
     method store_dynamically -> Logical
+      <append> # Append so that other things (plugins) can alter behavior using <insert>
       return is_dynamic or (Program.using_introspection and type_context.is_reference)
 
     method is_c_compatible ( )->Logical
