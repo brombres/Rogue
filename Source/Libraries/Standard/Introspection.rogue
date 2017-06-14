@@ -49,7 +49,7 @@ class Introspector
           return Value( native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Real32 )
 
         case "Int64"
-          return Value( native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int64->Real64 )
+          return Value( native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int64 )
 
         case "Int32"
           return Value( native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int32 )
