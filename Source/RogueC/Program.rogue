@@ -136,9 +136,9 @@ class Program [essential singleton]
       type_TypeInfo.simplify_name = true
 
       type_null.organized = true
-      type_null.defined   = true
+      type_null.is_defined   = true
 
-      type_NativeLock.defined = true
+      type_NativeLock.is_defined = true
 
       # Ensure that "" is the first literal string
       literal_string_list.add( "" )
@@ -233,9 +233,9 @@ class Program [essential singleton]
       if (return_type) name += "->($)" (return_type.name)
 
       local type = get_type_reference( t, name )
-      if (type.defined) return type
+      if (type.is_defined) return type
 
-      type.defined = true
+      type.is_defined = true
       type.callback_parameter_types = parameter_types
       type.callback_return_type = return_type
       type.is_function = true
@@ -254,7 +254,7 @@ class Program [essential singleton]
     method is_type_used( name:String )->Logical
       local type = type_lookup[ name ]
       if (not type) return false
-      return type.defined and type.is_used
+      return type.is_defined and type.is_used
 
     method create_built_in_type( name:String, attributes=0:Int32 )->Type
       local t = TokenType("Internal").create_token( "[Built-in Type]", 0, 0 )
@@ -319,7 +319,7 @@ class Program [essential singleton]
     method resolve
       # Bring attributes up to date for dummy types in type_lookup
       forEach (type in type_lookup)
-        if (not type.defined)
+        if (not type.is_defined)
           local template = Program.find_template( type.name )
           if (template) type.attributes.add( template.attributes )
         endIf

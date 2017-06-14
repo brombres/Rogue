@@ -5068,8 +5068,8 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
       local callback_type_name = context_type.name + "." + name + Program.get_callback_type_signature(parameter_types)
       local callback_type = Program.get_type_reference( t, callback_type_name )
 
-      if (not callback_type.defined)
-        callback_type.defined = true
+      if (not callback_type.is_defined)
+        callback_type.is_defined = true
         callback_type.attributes.add( Attribute.is_class )
 
         local base_type = Program.get_callback_type_reference( t, parameter_types, m.return_type )
@@ -5162,7 +5162,7 @@ class CmdCreateFunction( t, parameters:FnParam[], return_type:Type, with_args:Fn
       local fn_name = "Function_" + Program.next_unique_integer
       local fn_type = Program.get_type_reference( t, fn_name )
 
-      fn_type.defined = true
+      fn_type.is_defined = true
       fn_type.attributes.add( Attribute.is_class )
 
       local base_type = Program.get_callback_type_reference( t, parameter_types, return_type )

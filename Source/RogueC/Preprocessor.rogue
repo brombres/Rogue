@@ -213,6 +213,10 @@ class Preprocessor
           return (reader.read->Int32)?
         endIf
 
+        if (consume(TokenType.directive_defined))
+          return (definitions.contains(t->String))
+        endIf
+
         if (consume(TokenType.identifier))
           # If the parser finds an identifier here it means it's undefined.
           return false

@@ -405,7 +405,7 @@ class Method
 
       local m_execute = task_type.add_method( t, "execute" )
       m_execute.return_type = Program.type_Logical
-      task_type.defined = true
+      task_type.is_defined = true
 
       # Create a temporary method to store the task body and resolve all statements and variable
       # binding.  Then convert the resolved method to a task - locals to properties, this.properties

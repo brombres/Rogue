@@ -16,7 +16,7 @@ class Type
     source_template : Template
     specializers    : TypeSpecializer[]
 
-    defined           : Logical
+    is_defined        : Logical
     configured        : Logical
     organized         : Logical
     organizing        : Logical
@@ -403,8 +403,8 @@ class Type
         attributes.add( Attribute.is_essential )
       endIf
 
-      if (not defined)
-        defined = true
+      if (not is_defined)
+        is_defined = true
         local template = Program.find_template( name )
         if (template)
           template.instantiate( this, scope )
