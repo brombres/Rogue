@@ -40,14 +40,21 @@ class Preprocessor
 
         if (t.is_directive)
           if (t.type is TokenType.directive_define)
-            local defined_word = reader.read_identifier
-            local defined_tokens = Token[]()
-            while (reader.has_another)
-              local def_t = reader.read
-              if (def_t.type is TokenType.eol) escapeWhile
-              defined_tokens.add( def_t )
-            endWhile
-            if (keep_tokens) define( defined_word, defined_tokens )
+            if (keep_tokens)
+              local defined_word = reader.read_identifier
+              local defined_tokens = Token[]()
+              while (reader.has_another)
+                local def_t = reader.read
+                if (def_t.type is TokenType.eol) escapeWhile
+                defined_tokens.add( def_t )
+              endWhile
+              define( defined_word, defined_tokens )
+            else
+              # Skip this directive due to conditional compilation - discard tokens to EOL
+              while (reader.has_another)
+                if (reader.read.type is TokenType.eol) escapeWhile
+              endWhile
+            endIf
             nextIteration
 
           elseIf (t.type is TokenType.directive_defined)
