@@ -477,7 +477,7 @@ class Value
         return this
       endIf
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       throw Error("This Value is not indexable")
 $endIf
@@ -959,7 +959,7 @@ class ValueList : Value
       buffer.print( ']' )
       return buffer
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
@@ -1219,7 +1219,7 @@ class ValueTable : Value
 
       return list
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->Value [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")
