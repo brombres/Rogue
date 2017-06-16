@@ -5589,6 +5589,7 @@ class CmdTypedLiteralTable : Cmd
     table_type_name : String
     keys            : CmdArgs
     values          : CmdArgs
+    table_var       : Local
 
   METHODS
     method init( t, table_type_name, keys=CmdArgs(), values=CmdArgs() )
@@ -5614,18 +5615,21 @@ class CmdTypedLiteralTable : Cmd
       return type
 
     method resolve( scope:Scope )->Cmd
-      local table_var = Local( t, Program.create_unique_id, type )
-      table_var.initial_value = CmdAccess( t, table_type_name, CmdArgs() )
-      scope.this_body.add( CmdLocalDeclaration(t,table_var).resolve(scope) )
+      if (not table_var)
+        table_var = Local( t, Program.create_unique_id, type )
+        table_var.initial_value = CmdAccess( t, table_type_name, CmdArgs() )
 
-      local init_block = CmdBlock( t )
-      scope.this_body.add( init_block )
+        scope.this_body.add( CmdLocalDeclaration(t,table_var).resolve(scope) )
 
-      forEach (key at index in keys)
-        local item = CmdAccess( t,CmdAccess(t,table_var.name), "set", CmdArgs(key,values[index]) )
-        init_block.statements.add( item )
-      endForEach
-      init_block = init_block.resolve( scope )
+        local init_block = CmdBlock( t )
+        scope.this_body.add( init_block )
+
+        forEach (key at index in keys)
+          local item = CmdAccess( t,CmdAccess(t,table_var.name), "set", CmdArgs(key,values[index]) )
+          init_block.statements.add( item )
+        endForEach
+        init_block = init_block.resolve( scope )
+      endIf
 
       return CmdAccess( t, table_var ).resolve( scope )
 
