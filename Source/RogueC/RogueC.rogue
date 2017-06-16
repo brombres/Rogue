@@ -521,15 +521,13 @@ class RogueC [singleton]
               endIf
 
             case "--essential"
-              if (value.count)
-                if (value == "*" or value == "**")
-                  all_essential = true
-                  all_api = true
-                else
-                  essential_declarations.add( value.split(',') )
-                endIf
-              else
+              if (value.count == 0 or value == "*")
                 all_essential = true
+              elseIf (value == "**")
+                all_essential = true
+                all_api = true
+              else
+                essential_declarations.add( value.split(',') )
               endIf
 
             case "--essential-file"

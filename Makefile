@@ -36,12 +36,12 @@ debug: libraries
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
-exhaustive: libraries
+exhaustive: roguec
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --exhaustive..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
-	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS)
+	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS) --define=NO_LIBFFI
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
