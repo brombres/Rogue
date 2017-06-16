@@ -690,7 +690,7 @@ class File
     method matches_wildcard_pattern( pattern:String )->Logical [macro]
       File.matches_wildcard_pattern( this.filepath, pattern )
 
-    method parent( level=1:Int32 )->String
+    method parent( level=1:Int32 )->String [macro]
       File.parent( this.filepath, level )
 
     method path->String [macro]

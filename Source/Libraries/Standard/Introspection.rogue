@@ -197,8 +197,13 @@ $if (NO_LIBFFI)
       __asm__(
         ".text \n"
         ".align 0 \n"
+#ifdef __APPLE__
+        ".globl _rogue_call_func \n"
+        "_rogue_call_func :\n"
+#else
         ".globl rogue_call_func \n"
         "rogue_call_func :\n"
+#endif
 
         "pushq %r10 \n" // Push an extra to align the stack
 
