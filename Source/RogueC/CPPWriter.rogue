@@ -287,7 +287,7 @@ augment Program
         forEach (sig in native_method_signature_list)
           local m = native_method_signature_lookup[sig]  # one of the methods using this signature
           if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
-            writer.print( "extern ")
+            writer.print_export( m )
             if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
             else                                              writer.print( m.return_type )
             writer.print( " Rogue_call_" ).print( m.cpp_typedef )
@@ -1662,121 +1662,126 @@ class CPPWriter
           throw t.error( "Unrecognized native code insertion marker: $$.$" ('$',name,operation) )
       endWhich
 
-  method print_arg ( arg:Cmd, param_info=null:Local, cast_to=null:Type, &is_mutating )
-    # Prints an argument to a call
-    #
-    # Note that the argument here may not be an argument as far as *Rogue*
-    # is concerned, but it's an argument as far as C++ is concerned (e.g.,
-    # it may be the "this" pointer).
-    # If param_type is given and is an aspect, we do an aspect-wrap.
-    # If cast_to is given, we'll insert a cast to this type.
+    method print_arg ( arg:Cmd, param_info=null:Local, cast_to=null:Type, &is_mutating )
+      # Prints an argument to a call
+      #
+      # Note that the argument here may not be an argument as far as *Rogue*
+      # is concerned, but it's an argument as far as C++ is concerned (e.g.,
+      # it may be the "this" pointer).
+      # If param_type is given and is an aspect, we do an aspect-wrap.
+      # If cast_to is given, we'll insert a cast to this type.
 
-    local param_type = select{param_info : param_info.type || arg.type}->Type
-    local is_alias = is_mutating or (param_info and param_info.is_alias)
-    if (is_alias)
-      if (arg instanceOf CmdReadLocal or arg instanceOf CmdReadSingleton)
-        noAction # These are always okay
-      elseIf (arg instanceOf CmdReadArrayElement)
-        # It's possible to shoot oneself in the foot with this, but it's
-        # potentially useful, so we allow it when it's easy.
-        if (RogueC.gc_mode == GCMode.AUTO)
-          if (param_info)
-            throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
-                              "are not currently supported in the active garbage collection mode." (param_info.name))
-          else
-            throw arg.t.error("Cannot call a [mutating] method on an element access because it is " ...
-                              "not currently supported in the active garbage collection mode." )
+      local param_type = select{param_info : param_info.type || arg.type}->Type
+      local is_alias = is_mutating or (param_info and param_info.is_alias)
+      if (is_alias)
+        if (arg instanceOf CmdReadLocal or arg instanceOf CmdReadSingleton)
+          noAction # These are always okay
+        elseIf (arg instanceOf CmdReadArrayElement)
+          # It's possible to shoot oneself in the foot with this, but it's
+          # potentially useful, so we allow it when it's easy.
+          if (RogueC.gc_mode == GCMode.AUTO)
+            if (param_info)
+              throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
+                                "are not currently supported in the active garbage collection mode." (param_info.name))
+            else
+              throw arg.t.error("Cannot call a [mutating] method on an element access because it is " ...
+                                "not currently supported in the active garbage collection mode." )
+            endIf
           endIf
-        endIf
-      else
-        if (param_info)
-          throw arg.t.error("The argument for parameter '$' cannot be aliased because it is produced by evaluating an expression - only local variable and singleton accesses can be aliased." (param_info.name))
         else
-          throw arg.t.error("Cannot call a [mutating] method on a context produced by evaluating an expression - mutating methods can only be called only local variable and singleton contexts.")
-        endIf
-      endIf
-      if (RogueC.gc_mode == GCMode.AUTO)
-        if (not (param_type.is_primitive or param_type.is_compound))
           if (param_info)
-            throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
-                              "currently only supports primitive and compound aliases." (param_info.name))
+            throw arg.t.error("The argument for parameter '$' cannot be aliased because it is produced by evaluating an expression - only local variable and singleton accesses can be aliased." (param_info.name))
           else
-            throw arg.t.error("Cannot call a [mutating] method on a reference type due to the active garbage collection mode - only calls to mutating primitive and compound methods are supported.")
+            throw arg.t.error("Cannot call a [mutating] method on a context produced by evaluating an expression - mutating methods can only be called only local variable and singleton contexts.")
+          endIf
+        endIf
+        if (RogueC.gc_mode == GCMode.AUTO)
+          if (not (param_type.is_primitive or param_type.is_compound))
+            if (param_info)
+              throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
+                                "currently only supports primitive and compound aliases." (param_info.name))
+            else
+              throw arg.t.error("Cannot call a [mutating] method on a reference type due to the active garbage collection mode - only calls to mutating primitive and compound methods are supported.")
+            endIf
           endIf
         endIf
       endIf
-    endIf
 
-    local close_paren = 0
+      local close_paren = 0
 
-    # We want to increase the reference count of arguments we're passing,
-    # which happens by wrapping them in ROGUE_ARG.  If this argument is
-    # guaranteed to have a lifetime at least as long as the call we're
-    # making, we can skip this.
-    if (arg.type.is_compound)
-      noAction # Compound lifetime is tied to stack frame!
-    elseIf (arg instanceOf CmdReadLocal)
-      noAction # Current frame won't die before call
-    elseIf (arg instanceOf CmdReadSingleton)
-      noAction # Singletons live forever
-    elseIf (arg instanceOf CmdLiteral)
-      noAction # Literals live forever
-    else
-      # Can't be sure.  Increase the ref count.
-      print( "ROGUE_ARG(" )
-      ++ close_paren
-    endIf
-
-    if (param_type and param_type.is_aspect)
-      print( "(" ).print_cast(arg.type, param_type).print("(")
-      close_paren += 2
-    endIf
-
-    if (cast_to)
-      print_cast( arg.type, cast_to, arg )
-    elseIf (arg.type is not param_type)
-      print_cast( arg.type, param_type, arg )
-    else
-      arg.write_cpp( this )
-    endIf
-
-    while (close_paren)
-      -- close_paren
-      print( ")" )
-    endWhile
-
-  method mark_statement_start( statement_filepath:String, start_line:Int32, end_line:Int32 )
-    #@trace "STATEMENT ", this.filepath, this.line_number, statement_filepath, start_line, end_line
-
-  method mark_statement_end
-    noAction
-
-  method mark_method_start( t:Type, m:Method )
-    if (m.omit_output) return
-    #@trace "METHOD ", this.filepath, this.line_number, t.name, m.name
-
-  method mark_method_end
-    noAction
-
-  method mark_routine_start ( m:Method )
-    if (m.omit_output) return
-    #@trace "ROUTINE ", this.filepath, this.line_number, m.name
-
-  method mark_routine_end
-    noAction
-
-  method update_trace_info( t:Token )
-    if (trace_token and t and t.filepath)
-      if (t.filepath is not trace_token.filepath)
-        if (RogueC.debug_mode)
-          print( ";__trace.filename = \"" ).print( t.filename ).println( "\";" )
-          print( ";__trace.line = " ).print( t.line ).println( ";" )
-        endIf
-      elseIf (t.line != trace_token.line)
-        if (RogueC.debug_mode) print( ";__trace.line = " ).print( t.line ).println( ";" )
+      # We want to increase the reference count of arguments we're passing,
+      # which happens by wrapping them in ROGUE_ARG.  If this argument is
+      # guaranteed to have a lifetime at least as long as the call we're
+      # making, we can skip this.
+      if (arg.type.is_compound)
+        noAction # Compound lifetime is tied to stack frame!
+      elseIf (arg instanceOf CmdReadLocal)
+        noAction # Current frame won't die before call
+      elseIf (arg instanceOf CmdReadSingleton)
+        noAction # Singletons live forever
+      elseIf (arg instanceOf CmdLiteral)
+        noAction # Literals live forever
+      else
+        # Can't be sure.  Increase the ref count.
+        print( "ROGUE_ARG(" )
+        ++ close_paren
       endIf
-    endIf
-    trace_token = t
+
+      if (param_type and param_type.is_aspect)
+        print( "(" ).print_cast(arg.type, param_type).print("(")
+        close_paren += 2
+      endIf
+
+      if (cast_to)
+        print_cast( arg.type, cast_to, arg )
+      elseIf (arg.type is not param_type)
+        print_cast( arg.type, param_type, arg )
+      else
+        arg.write_cpp( this )
+      endIf
+
+      while (close_paren)
+        -- close_paren
+        print( ")" )
+      endWhile
+
+    method print_export ( m:Method )->CPPWriter
+      if (m.is_c_compatible()) print("ROGUE_EXPORT_C ")
+      else                     print("ROGUE_EXPORT   ")
+      return this
+
+    method mark_statement_start( statement_filepath:String, start_line:Int32, end_line:Int32 )
+      #@trace "STATEMENT ", this.filepath, this.line_number, statement_filepath, start_line, end_line
+
+    method mark_statement_end
+      noAction
+
+    method mark_method_start( t:Type, m:Method )
+      if (m.omit_output) return
+      #@trace "METHOD ", this.filepath, this.line_number, t.name, m.name
+
+    method mark_method_end
+      noAction
+
+    method mark_routine_start ( m:Method )
+      if (m.omit_output) return
+      #@trace "ROUTINE ", this.filepath, this.line_number, m.name
+
+    method mark_routine_end
+      noAction
+
+    method update_trace_info( t:Token )
+      if (trace_token and t and t.filepath)
+        if (t.filepath is not trace_token.filepath)
+          if (RogueC.debug_mode)
+            print( ";__trace.filename = \"" ).print( t.filename ).println( "\";" )
+            print( ";__trace.line = " ).print( t.line ).println( ";" )
+          endIf
+        elseIf (t.line != trace_token.line)
+          if (RogueC.debug_mode) print( ";__trace.line = " ).print( t.line ).println( ";" )
+        endIf
+      endIf
+      trace_token = t
 endClass
 
 
@@ -2173,6 +2178,7 @@ augment Method
 
     method print_prototype( writer:CPPWriter )
       if (omit_output) return
+      writer.print_export( this )
       print_signature( writer )
       writer.println( ";" )
 
@@ -2290,8 +2296,18 @@ augment Method
       writer.println
 
     method store_dynamically -> Logical
+      <append> # Append so that other things (plugins) can alter behavior using <insert>
       return is_dynamic or (Program.using_introspection and type_context.is_reference)
 
+    method is_c_compatible ( )->Logical
+      # Returns true if C linkage is okay for this method
+      if (return_type and return_type.is_compound) return false
+      if (parameters)
+        forEach (p in parameters)
+          if (p.type.is_compound) return false
+        endForEach
+      endIf
+      return true
 endAugment
 
 #------------------------------------------------------------------------------

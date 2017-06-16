@@ -14,11 +14,15 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
       if (prompt) Global.print( prompt ).flush
 
       native @|char st[4096];
-              |fgets( st, 4096, stdin );
+              |if (!fgets( st, 4096, stdin ))
+              |{
+              |  return RogueString_create_from_utf8( st, 0 );
+              |}
               |
               |// discard \n
               |int len = strlen( st );
               |if (len) st[--len] = 0;
+              |else st[0] = 0;
               |
               |return RogueString_create_from_utf8( st, len );
 

@@ -513,7 +513,7 @@ class List<<$DataType>> : GenericList
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
 
-$if ("Cython")
+$if (SCRIPT_HELPERS)
     method _get_element( index:Int32 )->$DataType [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")

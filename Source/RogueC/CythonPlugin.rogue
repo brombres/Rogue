@@ -464,6 +464,7 @@ augment Program
                       |  {
                       |    RogueString * msg = RogueException__format(e);
                       |    char buf[2048];
+                      |    buf[2047] = 0;
                       |    if (msg && msg->character_count)
                       |      strncpy(buf, (char*)msg->utf8, 2047);
                       |    else
@@ -571,7 +572,7 @@ augment Program
           local src = "class PyFunction$ : PYROGUEFUNCTYPE [essential]\n" (t.cpp_type_name)
           src +=      "  PROPERTIES\n"
           #src +=      ''    native "void * _py_callable;"\n'' # Should be a pointer type
-          src +=      "    _callable : Int64\n"
+          src +=      "    _callable : IntPtr\n"
           src +=      "  METHODS\n"
           src +=      "    method call ($)$ [essential]\n" (",".join(params),ret)
           src +=      "      $" (return_var)
@@ -1523,7 +1524,7 @@ augment Program
       writer.println '  pass'
       cy_write_delegate_thunk_pointers(writer, &prefix="  cdef ", &suffix="")
 
-      # Rogeue "PyDelegates" call these thunks via function pointer, and then
+      # Rogue "PyDelegates" call these thunks via function pointer, and then
       # the actual thunks (generated in Cython) call Python.  Write them out
       # here.
       cy_write_delegate_thunks(writer)

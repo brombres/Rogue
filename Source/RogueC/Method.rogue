@@ -270,7 +270,8 @@ class Method
               param.name = new_name
               param.type = property.type
             elseIf (property.type_context is type_context and property.is_incorporated == this.is_incorporated)
-              throw param.t.error( ''A property named "$" already exists.'' (param.name) )
+              # Previously, parameters couldn't shadow properties.  We allow it now, so the following isn't commented out.
+              #throw param.t.error( ''"$" may not be used as a parameter name, because a property with this name already exists.'' (param.name) )
             endIf
           endIf
         endIf

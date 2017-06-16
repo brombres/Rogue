@@ -49,7 +49,7 @@ class Introspector
           return Value( native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Real32 )
 
         case "Int64"
-          return Value( native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int64->Real64 )
+          return Value( native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int64 )
 
         case "Int32"
           return Value( native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$info->index].property_offsets[$property_info->index]))" )->Int32 )
@@ -185,6 +185,287 @@ class Introspector
       #println msgs
       throw Error("No matching method '$' ($ candidate(s))" (name, methods.count))
 
+$if (NO_LIBFFI)
+    # This allows for the use of dynamic function invocation without libffi.
+    # It currently only supports the System V AMD64 ABI.
+    # This code is pretty awful and you're better off using libffi!
+
+    #TODO: Integrate this with the FFI code (there's a lot of commonality).
+
+    nativeCode
+      extern "C" void rogue_call_func (void * fn_ptr, /*ROGUE_ARG_TYPE ret_type,*/ void * ret_buf, /*ROGUE_ARG_TYPE*/ int * types, int64_t * cargs, int64_t * fargs);
+      __asm__(
+        ".text \n"
+        ".align 0 \n"
+        ".globl rogue_call_func \n"
+        "rogue_call_func :\n"
+
+        "pushq %r10 \n" // Push an extra to align the stack
+
+        "pushq %r10 \n"
+        "pushq %r11 \n"
+
+        "pushq %rdi \n"
+        "pushq %rsi \n"
+        "pushq %rdx \n"
+        "pushq %rcx \n"
+        "pushq %r8 \n"
+        "pushq %r9 \n"
+
+        "movq %xmm0, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm1, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm2, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm3, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm4, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm5, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm6, %r10 \n"
+        "pushq %r10 \n"
+        "movq %xmm7, %r10 \n"
+        "pushq %r10 \n"
+
+        "movq %rdi, %r11 \n"
+
+        "movq %r8, %r10 \n" // fargs
+        "movq 0(%r10), %xmm0 \n"
+        "movq 8(%r10), %xmm1 \n"
+        "movq 16(%r10), %xmm2 \n"
+        "movq 24(%r10), %xmm3 \n"
+        "movq 32(%r10), %xmm4 \n"
+        "movq 40(%r10), %xmm5 \n"
+        "movq 48(%r10), %xmm6 \n"
+        "movq 56(%r10), %xmm7 \n"
+
+        "movq %rcx, %r10 \n" // cargs
+        "movq 0(%r10), %rdi \n"
+        "movq 8(%r10), %rsi \n"
+        "movq 16(%r10), %rdx \n"
+        "movq 24(%r10), %rcx \n"
+        "movq 32(%r10), %r8 \n"
+        "movq 40(%r10), %r9 \n"
+
+        "call *%r11 \n"
+
+        "movq %xmm0, %r11 \n"
+
+        "popq %r10 \n"
+        "movq %r10, %xmm7 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm6 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm5 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm4 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm3 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm2 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm1 \n"
+        "popq %r10 \n"
+        "movq %r10, %xmm0 \n"
+
+        "popq %r9 \n"
+        "popq %r8 \n"
+        "popq %rcx \n"
+        "popq %rdx \n"
+        "popq %rsi \n"
+        "popq %rdi \n"
+
+        "movq %rax, 0( %rsi ) \n" // ret_buf
+        "movq %r11, 8( %rsi ) \n" // ret_buf
+
+        "popq %r11 \n"
+        "popq %r10 \n"
+
+        "popq %r10 \n"
+
+        "ret \n"
+        ".previous \n"
+      );
+    endNativeCode
+
+    method call ( m:MethodInfo, args:Value[] )->Value
+      require args.count < 8+6 || "Too many arguments for dynamic invocation without libffi"
+
+      assert m.param_count == args.count
+      local r_buf_ptr : IntPtr
+      native @|#define ROGUE_ARG_PTR 0
+              |#define ROGUE_ARG_INT8 0
+              |#define ROGUE_ARG_INT32 0
+              |#define ROGUE_ARG_INT64 0
+              |#define ROGUE_ARG_FLOAT32 1
+              |#define ROGUE_ARG_FLOAT64 2
+              |#define ROGUE_ARG_VOID 3
+              |
+              |#define ROGUE_ARG_TYPE int
+              |int types[8+6];
+              |int * next_type = types;
+              |int64_t fargs[8+6]; // Allocate too much space because we don't check the counts
+              |int64_t cargs[8+6]; // until later
+              |int64_t * next_farg = fargs;
+              |int64_t * next_carg = cargs;
+              |#define ROGUE_ARG_PUSH(_t,_f,_v) { \
+              |  if ((_f) == ROGUE_ARG_FLOAT32 || (_f) == ROGUE_ARG_FLOAT64) *(next_farg++) = *(int64_t*)(&(_v)); \
+              |  else *(next_carg++) = *(int64_t*)(&(_v)); \
+              |  *(next_type++) = _f; \
+              |}
+              |char r_buf[16]; // Return buffer, must be large enough for largest type
+              |$r_buf_ptr = (intptr_t)(void *)r_buf;
+
+      native "ROGUE_ARG_PUSH(RogueObject*, ROGUE_ARG_PTR, $this->context);"
+
+      forEach (p at index in m.param_types)
+        local a = args[index]
+        which (p.name)
+          case "String"
+            _check_param(index, p, a.is_string)
+            block
+              local c = a->String
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_PTR, $c);"
+            endBlock
+            nextIteration
+
+          case "Real64"
+            _check_param(index, p, a.is_number)
+            block
+              local c = a->Real64
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_FLOAT64, $c);"
+            endBlock
+            nextIteration
+          case "Real32"
+            _check_param(index, p, a.is_number)
+            block
+              local c = a->Real32
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_FLOAT32, $c);"
+            endBlock
+            nextIteration
+          case "Int64"
+            #_check_param(index, p, a.is_int64 or a.is_int32)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Int64
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_INT64, $c);"
+            endBlock
+            nextIteration
+          case "Int32"
+            #_check_param(index, p, a.is_int32)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Int32
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_INT32, $c);"
+            endBlock
+            nextIteration
+          case "Character"
+            #_check_param(index, p, a.is_character)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Character
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_INT32, $c);"
+            endBlock
+            nextIteration
+          case "Byte"
+            #_check_param(index, p, a.is_byte)
+            _check_param(index, p, a.is_number and a->Real64.fractional_part==0)
+            block
+              local c = a->Byte
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_INT8, $c);"
+            endBlock
+            nextIteration
+          case "Logical"
+            _check_param(index, p, a.is_logical)
+            block
+              local c = a->Logical->Int64
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_INT64, $c);"
+            endBlock
+            nextIteration
+          others
+            if (p.is_reference)
+              _check_param(index, p, a.is_object)
+              local c = a->Object
+              native "ROGUE_ARG_PUSH($(c.type), ROGUE_ARG_PTR, $c);"
+              nextIteration
+            endIf
+        endWhich
+
+        throw NoMatchingMethodError("Argument $ is of unhandled type $" (index+1, p.name))
+      endForEach
+
+      require(native("next_carg-cargs")->Int32 <= 6 || "Too many non-floating-point arguments for dynamic invocation without libffi")
+      require(native("next_farg-fargs")->Int32 <= 8 || "Too many floating-point arguments for dynamic invocation without libffi")
+
+      native "ROGUE_ARG_TYPE ret_type = ROGUE_ARG_VOID;"
+
+      local rt = m.return_type
+      local ret_func = this=>_ret_undefined : Function(IntPtr)->(Value)
+      block
+        if (rt is null)
+          escapeBlock
+        endIf
+
+        which (rt.name)
+          case "Real64"
+            native "ret_type = ROGUE_ARG_FLOAT64;"
+            ret_func = this=>_ret_Real64
+          case "Real32"
+            native "ret_type = ROGUE_ARG_FLOAT32;"
+            ret_func = this=>_ret_Real32
+          case "Int64"
+            native "ret_type = ROGUE_ARG_INT64;"
+            ret_func = this=>_ret_Int64
+          case "Int32"
+            native "ret_type = ROGUE_ARG_INT32;"
+            ret_func = this=>_ret_Int32
+          case "Character"
+            native "ret_type = ROGUE_ARG_INT32;"
+            ret_func = this=>_ret_Character
+          case "Byte"
+            native "ret_type = ROGUE_ARG_INT8;"
+            ret_func = this=>_ret_Byte
+          case "Logical"
+            block
+              native "ret_type = ROGUE_ARG_INT64;"
+            endBlock
+            ret_func = this=>_ret_Logical
+          case "String"
+            native "ret_type = ROGUE_ARG_PTR;"
+            ret_func = this=>_ret_String
+          others
+            if (rt.is_reference)
+              native "ret_type = ROGUE_ARG_PTR;"
+              ret_func = this=>_ret_Object
+              escapeBlock
+            endIf
+            throw NoMatchingMethodError("Return type is of unhandled type $" (rt.name))
+        endWhich
+      endBlock
+
+      local fn_ptr = m.fn_ptr
+
+      native "rogue_call_func((void*)$fn_ptr, r_buf, types, cargs, fargs);"
+
+      if (native("ret_type")->Int32 == native("ROGUE_ARG_FLOAT32")->Int32 or native("ret_type")->Int32 == native("ROGUE_ARG_FLOAT64")->Int32)
+        r_buf_ptr += 8
+      endIf
+
+      return ret_func(r_buf_ptr)
+
+      native @|#undef ROGUE_ARG_PUSH
+              |#undef ROGUE_ARG_PTR
+              |#undef ROGUE_ARG_INT8
+              |#undef ROGUE_ARG_INT32
+              |#undef ROGUE_ARG_INT64
+              |#undef ROGUE_ARG_FLOAT32
+              |#undef ROGUE_ARG_FLOAT64
+              |#undef ROGUE_ARG_VOID
+              |#undef ROGUE_ARG_TYPE
+
+$else
     method call ( m:MethodInfo, args:Value[] )->Value
       nativeHeader
         #include <ffi.h>
@@ -360,6 +641,7 @@ class Introspector
 
       native "ffi_call (&cif, (void(*)())$fn_ptr, r_buf, cargs);"
       return ret_func(r_buf_ptr)
+$endIf
 
   method _check_param (index:Int32, ptype:TypeInfo, condition:Logical)
     if (not condition)

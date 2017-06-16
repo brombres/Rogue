@@ -1,3 +1,7 @@
+$if ("Cython")
+$define SCRIPT_HELPERS true
+$endIf
+
 $include "Standard/Array.rogue"
 $include "Standard/Atomics.rogue"
 $include "Standard/Boxed.rogue"

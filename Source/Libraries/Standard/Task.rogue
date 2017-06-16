@@ -39,7 +39,7 @@ class NilTask : Task, Function()
       while (update) noAction
 endClass
 
-class TaskWithResult<<$ResultType>> : Task, Function()->($ResultType)
+class TaskWithResult<<$ResultType>> : Task, Function()->($ResultType), Reader<<$ResultType>>
   PROPERTIES
     result : $ResultType
 
@@ -54,6 +54,21 @@ class TaskWithResult<<$ResultType>> : Task, Function()->($ResultType)
       # "await task" instead of "task.finish" to allow it to finish
       # concurrently.
       while (update) noAction
+      return result
+
+    method has_another->Logical
+      has_result = false
+      loop
+        if (not update()) return false
+        if (stop_requested) return false
+        if (has_result) return true
+      endLoop
+
+    method read->$ResultType
+      position++
+      return result
+
+    method peek->$ResultType
       return result
 endClass
 
