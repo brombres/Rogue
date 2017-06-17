@@ -219,6 +219,18 @@ class TypeInfo
 
       return this
 
+    method set_singleton( new_singleton:Object )->this
+      if ((index < 0) or (index >= type_count)) return this
+      native @|Rogue_types[$index]._singleton = $new_singleton;
+      return this
+
+    method singleton->Object
+      if ((index < 0) or (index >= type_count)) return null
+      return native("RogueType_singleton(&Rogue_types[$index])")->Object
+
+    method singleton<<$OfType>>->$OfType
+      return singleton as $OfType
+
     method to->String
       return name
 endClass
