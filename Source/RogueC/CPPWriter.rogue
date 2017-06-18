@@ -3748,7 +3748,7 @@ augment CmdIntrospectionCall
       local typedef = handler.methods.first.cpp_typedef
       writer.print( '(' )
       if (handler.return_type and handler.return_type.is_reference)
-        writer.print( "(RogueObject*)" )
+        writer.print( '(' ).print( handler.return_type ).print( ')' )
       endIf
       writer.print( "((" ).print( typedef ).print( ")(intptr_t)fn_0)(" )
       local first = true
