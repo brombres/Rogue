@@ -637,6 +637,11 @@ class CmdWhich : CmdControlStructure
       cases.add( result )
       return result
 
+    method add_case( case_t:Token, condition:Cmd )->CmdWhichCase
+      local result = CmdWhichCase( case_t, CmdArgs(condition) )
+      cases.add( result )
+      return result
+
     method add_case_others( case_t:Token )->CmdWhichCase
       local result = CmdWhichCase( case_t )
       case_others = result
@@ -2389,6 +2394,12 @@ class CmdElementAccess : Cmd
 
   METHODS
     method init( t, context, index )
+
+    method init( t, name:String, index )
+      init( t, CmdAccess(t,name), index )
+
+    method init( t, name:String, i:Int32 )
+      init( t, CmdAccess(t,name), CmdLiteralInt32(t,i) )
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -4828,7 +4839,7 @@ class CmdInstanceOf : CmdTypeOperator
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
       if (operand.type is Program.type_Logical)
-        throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type' instead." )
+        throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type'." )
       elseIf (not operand.type.is_reference)
         throw t.error( "Illegal 'instanceOf' on non-reference." )
       endIf
@@ -5912,3 +5923,22 @@ class CmdInsertionPoint( t, content=null:Cmd ) : CmdStatement
       if (content) return content.type
       return null
 endClass
+
+
+class CmdIntrospectionCall( t, handler:IntrospectionCallHandler, args:CmdArgs ) : Cmd
+  METHODS
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdIntrospectionCall
+      if (new_t) t = new_t
+      return CmdIntrospectionCall( t, handler, args.cloned(clone_args,new_t) )
+
+    method implicit_type( scope:Scope )->Type
+      return type
+
+    method resolve( scope:Scope )->Cmd
+      args.resolve( scope )
+      return this
+
+    method type->Type
+      return handler.return_type
+endClass
+

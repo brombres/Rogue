@@ -589,6 +589,12 @@ class Program [essential singleton]
       endForEach
       if (injected_dependencies) return false
 
+      if (Program.using_introspection)
+        if (IntrospectionCallManager.generate_call_handlers)
+          return false
+        endIf
+      endIf
+
       forEach (type in type_list)
         type.cull_unused_methods
       endForEach
@@ -689,8 +695,6 @@ class Program [essential singleton]
       endForEach
 
     method using_introspection->Logical
-      local type_TypeInfo = Program.find_type( "TypeInfo" )
-      if (not type_TypeInfo) return false
       return type_TypeInfo.is_used
 
 endClass

@@ -79,9 +79,10 @@ class TypeInfo
       properties.add( PropertyInfo(properties.count,property_name_index, property_type_index) )
 
     method add_method_info( method_index:Int32 ) [essential]
-      local first_param : Int32
-      local param_count : Int32
-      local return_type : Int32
+      local first_param  : Int32
+      local param_count  : Int32
+      local return_type  : Int32
+      local call_handler : Int32
       local success = false
       native @|if (Rogue_method_info_table[$method_index][0] >= 0)
               |{
@@ -89,9 +90,10 @@ class TypeInfo
               |  $param_count = Rogue_method_info_table[$method_index][1];
               |  $first_param = Rogue_method_info_table[$method_index][2];
               |  $return_type = Rogue_method_info_table[$method_index][3];
+              |  $call_handler = Rogue_method_info_table[$method_index][4];
               |}
       if (success)
-        methods.add( MethodInfo(method_index, param_count, first_param, return_type) )
+        methods.add( MethodInfo(method_index, param_count, first_param, return_type, call_handler) )
       endIf
 
     method create_object->Object
@@ -190,6 +192,15 @@ class TypeInfo
         endIf
       endForEach
       return null
+
+    method find_method( signature:String )->MethodInfo
+      forEach (m in methods)
+        if (m.signature == signature) return m
+      endForEach
+      return null
+
+    method find_methods( method_name:String )->MethodInfo[] [macro]
+      this.method_info( method_name )
 
     method method_info( method_name:String )->MethodInfo[]
       local r = MethodInfo[]
@@ -324,14 +335,16 @@ class MethodInfo
   PROPERTIES
     index               : Int32
     name                : String
+    signature           : String
     fn_ptr              : IntPtr
     _first_param_type   : Int32
     param_count         : Int32
     _return_type        : Int32
     param_types         : TypeInfo[]
+    call_handler        : Int32
 
   METHODS
-    method init( index, param_count, first_param_type:Int32, return_type:Int32 )
+    method init( index, param_count, first_param_type:Int32, return_type:Int32, call_handler )
       _first_param_type = first_param_type
       _return_type = return_type
       fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
@@ -377,11 +390,17 @@ class MethodInfo
       @param_types = r
       return r
 
+    method signature->String
+      if (@signature) return @signature
+      signature = name + "(" + ",".join(param_types.mapped<<String>>( (x)=>(x.name) )) + ")"
+      return @signature
+
     method to->String
-      local r = name
-      r += "(" + ",".join(param_types.mapped<<String>>( (x)=>(x.name) )) + ")"
-      if (return_type) r += "->" + return_type.name
-      return r
+      if (return_type) return signature + "->" + return_type.name
+      return signature
+
+    method call( args:Value )->Value
+      return Introspector._call( native("$this->fn_ptr")->IntPtr, call_handler, args )
 
     method call (o:Object)
       _check_noreturn()

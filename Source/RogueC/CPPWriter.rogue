@@ -2,18 +2,29 @@
 # Program
 #------------------------------------------------------------------------------
 augment Program
+  PROPERTIES
+    intptr_name : String
+    intptr_size : Int32
+
   METHODS
-    method configure
+    method init
       block
-        local ptr_size = native("sizeof(intptr_t)")->Int32
+        $if defined(INTPTR_SIZE)
+          local ptr_size = INTPTR_SIZE  # may be defined when compile platform is different architecture
+        $else
+          local ptr_size = native("sizeof(intptr_t)")->Int32
+        $endIf
         if ptr_size == 4
-          Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), "Int32")
+          intptr_name = "Int32"
         elseIf ptr_size == 8
-          Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), "Int64")
+          intptr_name = "Int64"
         else
           throw Error("Unsupported platform pointer size")
         endIf
       endBlock
+
+    method configure
+      Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), intptr_name )
 
     method validate_cpp_name( name:String )->String
       local begins_with_code_prefix = false
@@ -281,6 +292,10 @@ augment Program
           type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
         endIf
       endForEach
+
+      if (Program.using_introspection)
+        IntrospectionCallManager.index_handlers
+      endIf
 
       # write dynamic dispatch method prototypes
       if (RogueC.all_methods_callable_dynamically)
@@ -819,8 +834,8 @@ augment Program
         writer.indent -= 2
         writer.println "};"
         writer.println
-        writer.println "// name_string, arg_count, first_param_type, return_type"
-        writer.println(  "const int Rogue_method_info_table[][4] =" )
+        writer.println "// name_string, arg_count, first_param_type, return_type, introspection call handler index"
+        writer.println(  "const int Rogue_method_info_table[][5] =" )
         writer.println "{"
         writer.indent += 2
         forEach (type in type_list)
@@ -829,10 +844,16 @@ augment Program
             if (not m.is_macro)
               if (m.store_dynamically and m.is_used and not m.is_abstract)
                 local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+                local handler_index = -1
+                if (Program.using_introspection)
+                  local handler = IntrospectionCallManager.roguem_to_handler[ m.cpp_typedef ]
+                  if (handler) handler_index = handler.index
+                  else println "No handler for $ $.$ ($)" (m.cpp_typedef,type.name,m.signature,m.is_used)
+                endIf
 
-                writer.println '{$,$,$,$}, // $.$' (method_names[m.name], m.parameters.count, method_sigs[sig], select{m.return_type:m.return_type.index || -1}, type.name, m.signature)
+                writer.println '{$,$,$,$,$}, // $.$' (method_names[m.name], m.parameters.count, method_sigs[sig], select{m.return_type:m.return_type.index || -1}, handler_index, type.name, m.signature)
               else
-                writer.println '{-1,-1,-1,-1},'
+                writer.println '{-1,-1,-1,-1,-1},'
               endIf
             endIf
           endForEach
@@ -2060,42 +2081,48 @@ augment Type
 
     method determine_cpp_method_typedefs( list:String[], lookup:Table<<String,Method>> )
       local buffer = StringBuilder()
-      forEach (m in method_list)
-        if (not m.is_macro and m.store_dynamically and m.is_used)
-          buffer.clear
-          if (m.return_type)
-            if (m.return_type.is_reference) buffer.print( "void*" )
-            else                            buffer.print( m.return_type.cpp_class_name )
-          else
-            buffer.print( "void" )
-          endIf
-          buffer.print( "(*)(void*" )
-          forEach (i of m.parameters)
-            buffer.print(',')
-            local param_type = m.parameters[i].type
-            if (param_type.is_reference) buffer.print("void*")
-            else                         buffer.print( param_type.cpp_class_name )
-          endForEach
-          buffer.print( ")" )
-          local sig = buffer->String
-          local mapping = lookup[sig]
-          if (mapping)
-            m.cpp_typedef = mapping.cpp_typedef
-            if (not mapping.called_dynamically and m.called_dynamically)
-              #list[ list.locate(mapping)! ] = m
-              lookup[ sig ] = m
-            endIf
-          else
-            m.cpp_typedef = "ROGUEM" + list.count
-            lookup[sig] = m
-            list.add( sig )
-          endIf
+      forEach (m in method_list)        determine_cpp_method_typedefs( m, buffer, list, lookup )
+      forEach (m in global_method_list) determine_cpp_method_typedefs( m, buffer, list, lookup )
+
+    method determine_cpp_method_typedefs( m:Method, buffer:StringBuilder, list:String[], lookup:Table<<String,Method>> )
+      if (not m.is_macro and m.store_dynamically and m.is_used)
+        buffer.clear
+        if (m.return_type)
+          if (m.return_type.is_reference) buffer.print( "void*" )
+          else                            buffer.print( m.return_type.cpp_class_name )
+        else
+          buffer.print( "void" )
         endIf
-      endForEach
+        buffer.print( "(*)(" )
+        local first = true
+        if (not m.is_global)
+          if (this.is_reference) buffer.print( "void*" )
+          else                   buffer.print( cpp_class_name )
+          first = false
+        endIf
+        forEach (i of m.parameters)
+          if (first) first = false
+          else       buffer.print(',')
+          local param_type = m.parameters[i].type
+          if (param_type.is_reference) buffer.print("void*")
+          else                         buffer.print( param_type.cpp_class_name )
+        endForEach
+        buffer.print( ")" )
+        local sig = buffer->String
+        local mapping = lookup[sig]
+        if (mapping)
+          m.cpp_typedef = mapping.cpp_typedef
+          if (not mapping.called_dynamically and m.called_dynamically)
+            lookup[ sig ] = m
+          endIf
+        else
+          m.cpp_typedef = "ROGUEM" + list.count
+          lookup[sig] = m
+          list.add( sig )
+        endIf
+      endIf
 
     method print_dynamic_method_table_entries( at_index:Int32, writer:CPPWriter )->Int32
-      if (not is_reference) return at_index
-
       dynamic_method_table_index = at_index
 
       local i2 = method_list.count - 1
@@ -2297,7 +2324,7 @@ augment Method
 
     method store_dynamically -> Logical
       <append> # Append so that other things (plugins) can alter behavior using <insert>
-      return is_dynamic or (Program.using_introspection and type_context.is_reference)
+      return is_dynamic or Program.using_introspection
 
     method is_c_compatible ( )->Logical
       # Returns true if C linkage is okay for this method
@@ -2492,7 +2519,9 @@ augment CmdSwitch
         writer.println "{"
         writer.indent += 2
         c.statements.write_cpp( writer )
-        writer.println "break;"
+        if (c.statements.count and c.statements.first not instanceOf CmdReturn)
+          writer.println "break;"
+        endIf
         writer.indent -= 2
         writer.println "}"
       endForEach
@@ -3699,5 +3728,35 @@ augment CmdInsertionPoint
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (content) content.write_cpp( writer, is_statement )
+endAugment
+
+augment IntrospectionCallManager
+  PROPERTIES
+    roguem_to_handler = StringTable<<IntrospectionCallHandler>>()
+
+  METHODS
+    method index_handlers
+      forEach (handler in handlers)
+        local roguem = handler.methods.first.cpp_typedef
+        roguem_to_handler[ roguem ] = handler
+      endForEach
+endAugment
+
+augment CmdIntrospectionCall
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local typedef = handler.methods.first.cpp_typedef
+      writer.print( '(' )
+      if (handler.return_type and handler.return_type.is_reference)
+        writer.print( "(RogueObject*)" )
+      endIf
+      writer.print( "((" ).print( typedef ).print( ")(intptr_t)fn_0)(" )
+      local first = true
+      forEach (arg in args)
+        if (first) first = false
+        else       writer.print( ',' )
+        writer.print_arg( arg )
+      endForEach
+      writer.print( "))" )
 endAugment
 

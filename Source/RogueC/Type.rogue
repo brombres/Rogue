@@ -1787,6 +1787,13 @@ class Type
       resolve_chain.remove_last
       return this
 
+    method root_name->String
+      return root_type.name
+
+    method root_type->Type
+      if (this.is_reference) return Program.type_Object
+      return this
+
     method should_cull->Logical
       return not is_used
 

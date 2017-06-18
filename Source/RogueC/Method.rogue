@@ -1,3 +1,4 @@
+$include "IntrospectionCall.rogue"
 $include "MethodTemplate.rogue"
 
 class Method
@@ -34,6 +35,7 @@ class Method
 
     is_used            : Logical
     called_dynamically : Logical
+    introspection_call_handler : IntrospectionCallHandler
 
     label_list   = CmdLabel[]
     label_lookup = Table<<String,CmdLabel>>()
@@ -219,7 +221,13 @@ class Method
       return this
 
     method make_essential->this
-      attributes.add( Attribute.is_essential )
+      if (not is_essential)
+        attributes.add( Attribute.is_essential )
+        if (type_context.is_used)
+          # Containing type already traced; trace this method now
+          trace_used_code
+        endIf
+      endIf
       return this
 
     method omit_output->Logical
@@ -341,19 +349,29 @@ class Method
 
       if (is_task) convert_to_task
 
+      resolve_statements
+
+      if (not is_macro)
+        introspection_call_handler = IntrospectionCallManager.handler( this )
+      endIf
+
+      if (is_initializer)
+        local return_t = t
+        if (statements.count) return_t = statements.last.t
+        local scope = Scope( type_context, this )
+        statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
+      endIf
+
+    method resolve_statements
+      if (not resolved) resolve
+
       local scope = Scope( type_context, this )
       forEach (p in parameters) scope.push_local( p )
 
       statements.resolve( scope, this is Program.m_on_launch )
 
-      if (scope.local_list.count > parameters.count) throw t.error( "locals left on scope stack" )
-      if (scope.control_stack.count) throw t.error( "control stucture left on scope stack" )
-
-      if (is_initializer)
-        local return_t = t
-        if (statements.count) return_t = statements.last.t
-        statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
-      endIf
+      if (scope.local_list.count > parameters.count) throw t.error( "[INTERNAL] Locals left on scope stack." )
+      if (scope.control_stack.count) throw t.error( "[INTERNAL] Control stucture left on scope stack." )
 
     method returns_this->Logical
       return (attributes.flags & Attribute.returns_this)
@@ -478,6 +496,8 @@ class Method
       if (return_type) return_type.trace_used_code
 
       statements.trace_used_code
+
+      if (introspection_call_handler) introspection_call_handler.is_used = true
 
     method address->Int64 [macro]
       native "(RogueInt64)(intptr_t)$this"

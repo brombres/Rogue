@@ -869,6 +869,9 @@ class StringValue( value:String ) : Value
     method to->Real64
       return value->Real64
 
+    method to->Object
+      return value
+
     method to->String
       return value
 
@@ -1008,7 +1011,9 @@ class ValueList : Value
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= data.count) return UndefinedValue
-      return select{ data[index] || UndefinedValue }
+      local result = data[ index ]
+      if (result is null) return UndefinedValue
+      return result
 
     method get( query:Function(Value)->(Logical) )->Value
       local results : ValueList
@@ -1248,10 +1253,14 @@ class ValueTable : Value
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
-      return select{ data[ keys[index] ] || UndefinedValue }
+      local result = data[ keys[index] ]
+      if (result is null) return UndefinedValue
+      return result
 
     method get( key:String )->Value
-      return select{ data[ key ] || UndefinedValue }
+      local result = data[ key ]
+      if (result is null) return UndefinedValue
+      return result
 
     method get( query:Function(Value)->(Logical) )->Value
       local results : ValueList
@@ -1263,8 +1272,8 @@ class ValueTable : Value
         endIf
       endForEach
 
-      if (results) return results
-      else         return UndefinedValue
+      if (results is null) return UndefinedValue
+      return results
 
     method is_collection->Logical
       return true
@@ -1319,7 +1328,7 @@ class ValueTable : Value
         endIf
       endForEach
 
-      if (not remove_keys) return UndefinedValue
+      if (remove_keys is null) return UndefinedValue
       forEach (key in remove_keys) remove( key )
       return results
 
