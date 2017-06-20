@@ -3493,7 +3493,9 @@ augment CmdCastToType
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (is_statement)
-        operand.write_cpp( writer )
+        # Skip the cast if this is a statement-level expression and the result
+        # will be unused.
+        operand.write_cpp( writer, true )
       else
         writer.print( "((" ).print( target_type ).print( ")(" )
         operand.write_cpp( writer )
