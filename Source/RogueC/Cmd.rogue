@@ -2026,9 +2026,15 @@ class CmdAccess : Cmd
       if (context)
         local context_type = context.implicit_type( scope )
         if (context_type and context_type.is_enum)
-          context_type.configure( scope )
-          if (context_type.categories)
-            if ((forEach in context_type.categories).name == name) return context_type
+          if (Program.is_resolving)
+            # Can safely configure
+            context_type.configure( scope )
+            if (context_type.categories)
+              if ((forEach in context_type.categories).name == name) return context_type
+            endIf
+          else
+            # Still parsing; assume that an enum access is returning an enum category.
+            return context_type
           endIf
         endIf
         return null

@@ -601,7 +601,7 @@ class Type
         m_name.organize( scope )
       endBlock
 
-      block
+      if (not has_method_named( "operator+" ))
         # operator+(Int32)->ThisType
         local m_plus = add_method( t, "operator+" )
         m_plus.attributes.add( Attribute.is_generated )
@@ -611,9 +611,19 @@ class Type
           CmdAdd(t,CmdAccess(t,"value"),CmdAccess(t,"offset"))
         )) )
         m_plus.organize( scope )
-      endBlock
 
-      block
+        # operator+(ThisType)->ThisType
+        m_plus = add_method( t, "operator+" )
+        m_plus.attributes.add( Attribute.is_generated )
+        m_plus.add_parameter( t, "other", this )
+        m_plus.return_type = this
+        m_plus.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdAdd(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_plus.organize( scope )
+      endIf
+
+      if (not has_method_named( "operator-" ))
         # operator-(Int32)->ThisType
         local m_minus = add_method( t, "operator-" )
         m_minus.attributes.add( Attribute.is_generated )
@@ -623,9 +633,19 @@ class Type
           CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"offset"))
         )) )
         m_minus.organize( scope )
-      endBlock
 
-      block
+        # operator-(ThisType)->ThisType
+        m_minus = add_method( t, "operator-" )
+        m_minus.attributes.add( Attribute.is_generated )
+        m_minus.add_parameter( t, "other", this )
+        m_minus.return_type = this
+        m_minus.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_minus.organize( scope )
+      endIf
+
+      if (not has_method_named( "operator%" ))
         # operator%(Int32)->ThisType
         local m_op = add_method( t, "operator%" )
         m_op.attributes.add( Attribute.is_generated )
@@ -635,9 +655,19 @@ class Type
           CmdMod(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
         )) )
         m_op.organize( scope )
-      endBlock
 
-      block
+        # operator%(ThisType)->ThisType
+        m_op = add_method( t, "operator%" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+          CmdMod(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endIf
+
+      if (not has_method_named( "operator|" ))
         # operator|(Int32)->ThisType
         local m_op = add_method( t, "operator|" )
         m_op.attributes.add( Attribute.is_generated )
@@ -647,9 +677,19 @@ class Type
           CmdBitwiseOr(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
         )) )
         m_op.organize( scope )
-      endBlock
 
-      block
+        # operator|(ThisType)->ThisType
+        m_op = add_method( t, "operator|" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdBitwiseOr(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endIf
+
+      if (not has_method_named( "operator&" ))
         # operator&(Int32)->ThisType
         local m_op = add_method( t, "operator&" )
         m_op.attributes.add( Attribute.is_generated )
@@ -659,9 +699,19 @@ class Type
           CmdBitwiseAnd(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
         )) )
         m_op.organize( scope )
-      endBlock
 
-      block
+        # operator&(ThisType)->ThisType
+        m_op = add_method( t, "operator&" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdBitwiseAnd(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endIf
+
+      if (not has_method_named( "operator~" ))
         # operator~(Int32)->ThisType
         local m_op = add_method( t, "operator~" )
         m_op.attributes.add( Attribute.is_generated )
@@ -671,9 +721,19 @@ class Type
           CmdBitwiseXor(t,CmdAccess(t,"value"),CmdAccess(t,"n"))
         )) )
         m_op.organize( scope )
-      endBlock
 
-      block
+        # operator~(ThisType)->ThisType
+        m_op = add_method( t, "operator~" )
+        m_op.attributes.add( Attribute.is_generated )
+        m_op.add_parameter( t, "other", this )
+        m_op.return_type = this
+        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
+        CmdBitwiseXor(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
+        )) )
+        m_op.organize( scope )
+      endIf
+
+      if (not has_method_named( "operator!" ))
         # operator!()->ThisType
         local m_op = add_method( t, "operator!" )
         m_op.attributes.add( Attribute.is_generated )
@@ -682,79 +742,7 @@ class Type
           CmdBitwiseNot(t,CmdAccess(t,"value"))
         )) )
         m_op.organize( scope )
-      endBlock
-
-      block
-        # operator+(ThisType)->ThisType
-        local m_plus = add_method( t, "operator+" )
-        m_plus.attributes.add( Attribute.is_generated )
-        m_plus.add_parameter( t, "other", this )
-        m_plus.return_type = this
-        m_plus.statements.add( CmdReturn(t,CmdAccess(t,name,
-          CmdAdd(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
-        )) )
-        m_plus.organize( scope )
-      endBlock
-
-      block
-        # operator-(ThisType)->ThisType
-        local m_minus = add_method( t, "operator-" )
-        m_minus.attributes.add( Attribute.is_generated )
-        m_minus.add_parameter( t, "other", this )
-        m_minus.return_type = this
-        m_minus.statements.add( CmdReturn(t,CmdAccess(t,name,
-          CmdSubtract(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
-        )) )
-        m_minus.organize( scope )
-      endBlock
-
-      block
-        # operator%(ThisType)->ThisType
-        local m_op = add_method( t, "operator%" )
-        m_op.attributes.add( Attribute.is_generated )
-        m_op.add_parameter( t, "other", this )
-        m_op.return_type = this
-        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
-          CmdMod(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
-        )) )
-        m_op.organize( scope )
-      endBlock
-
-      block
-        # operator|(ThisType)->ThisType
-        local m_op = add_method( t, "operator|" )
-        m_op.attributes.add( Attribute.is_generated )
-        m_op.add_parameter( t, "other", this )
-        m_op.return_type = this
-        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
-        CmdBitwiseOr(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
-        )) )
-        m_op.organize( scope )
-      endBlock
-
-      block
-        # operator&(ThisType)->ThisType
-        local m_op = add_method( t, "operator&" )
-        m_op.attributes.add( Attribute.is_generated )
-        m_op.add_parameter( t, "other", this )
-        m_op.return_type = this
-        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
-        CmdBitwiseAnd(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
-        )) )
-        m_op.organize( scope )
-      endBlock
-
-      block
-        # operator~(ThisType)->ThisType
-        local m_op = add_method( t, "operator~" )
-        m_op.attributes.add( Attribute.is_generated )
-        m_op.add_parameter( t, "other", this )
-        m_op.return_type = this
-        m_op.statements.add( CmdReturn(t,CmdAccess(t,name,
-        CmdBitwiseXor(t,CmdAccess(t,"value"),CmdAccess(t,"other","value"))
-        )) )
-        m_op.organize( scope )
-      endBlock
+      endIf
 
       block
         # names()->String[]
@@ -772,7 +760,7 @@ class Type
         m_names.organize( scope )
       endBlock
 
-      block
+      if (not has_method_named( "contains" ))
         # contains(String)->Logical
         local m_contains = add_global_method( t, "contains" )
         m_contains.return_type = Program.type_Logical
@@ -780,7 +768,7 @@ class Type
         m_contains.statements.add( CmdReturn( t,
             CmdAccess( t, CmdAccess(t,"names","locate",CmdAccess(t,"name")), "exists" ) ) )
         m_contains.organize( scope )
-      endBlock
+      endIf
 
       block
         # to->Int32

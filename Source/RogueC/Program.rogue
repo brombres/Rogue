@@ -9,6 +9,8 @@ class Program [essential singleton]
 
     unique_integer : Int32
 
+    is_resolving   : Logical
+
     template_list   = Template[]
     template_lookup = Table<<String,Template>>()
 
@@ -317,6 +319,8 @@ class Program [essential singleton]
       type_Global.add_property( p )
 
     method resolve
+      is_resolving = true
+
       # Bring attributes up to date for dummy types in type_lookup
       forEach (type in type_lookup)
         if (not type.is_defined)
