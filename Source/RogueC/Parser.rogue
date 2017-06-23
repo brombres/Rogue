@@ -240,7 +240,7 @@ class Parser
       local t = peek # 'routine'
       local original_type = this_type
       this_type = Program.get_type_reference( peek, "Global" )
-      parse_method( true, &first_token=TokenType.keyword_routine)
+      parse_method( false, &first_token=TokenType.keyword_routine)
       must_consume( TokenType.keyword_endRoutine )
       if (not this_method and not this_type.method_templates)
         throw t.error("Failed to parse routine")

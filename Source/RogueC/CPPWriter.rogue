@@ -1052,9 +1052,15 @@ augment Program
       endIf
 
       # launch()
+      writer.println @|#ifdef ROGUE_AUTO_LAUNCH
+                      |__attribute__((constructor))
+                      |#endif
       writer.println( "void Rogue_launch()" )
       writer.println( "{" )
       writer.indent += 2
+
+      # Call configure; if it has already been called, this won't do anything.
+      writer.println( "Rogue_configure(0, NULL);" )
 
       # Call all init_class() methods
       forEach (type in type_list)
@@ -1859,6 +1865,10 @@ augment RogueC
           endIf
         endIf
 
+        if (RogueC.compiler_options.count)
+          compiler_name += " " + " ".join(RogueC.compiler_options)
+        endIf
+
         local exe = output_filepath
         if (exe.contains('/'))
           exe = File.path(exe) + "/" + File.filename(exe).to_lowercase
@@ -2328,6 +2338,11 @@ augment Method
 
     method is_c_compatible ( )->Logical
       # Returns true if C linkage is okay for this method
+      # In theory, this should be okay for compounds that don't has_object_references...
+      # except that their constructors keep them from being POD types.  They should
+      # actually probably work fine *anyway*, and we could also rewrite compounds
+      # to not use constructors (and use factories and aggregation initialization
+      # instead).  But for now... compounds are out.
       if (return_type and return_type.is_compound) return false
       if (parameters)
         forEach (p in parameters)
