@@ -1865,6 +1865,10 @@ augment RogueC
           endIf
         endIf
 
+        if (RogueC.compiler_options.count)
+          compiler_name += " " + " ".join(RogueC.compiler_options)
+        endIf
+
         local exe = output_filepath
         if (exe.contains('/'))
           exe = File.path(exe) + "/" + File.filename(exe).to_lowercase

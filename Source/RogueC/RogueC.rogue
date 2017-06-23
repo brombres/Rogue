@@ -81,6 +81,7 @@ class RogueC [singleton]
 
     compile_output    : Logical
     compiler_name     : String
+    compiler_options  = String[]
     execute_args      : String
 
     package_name      : String
@@ -152,6 +153,13 @@ class RogueC [singleton]
                    |    language-specific default is used - for a C++ code target this is the
                    |    Makefile-default $(CXX) compiler with certain options - see DEFAULT_CXX in
                    |    the Rogue source folder's Makefile.
+                   |
+                   |  --compile-arg[=<addendum to compiler invocation>]
+                   |    Like --compile, this passes the output of compiling the .rogue code to, e.g,
+                   |    the C++ compiler.  There are two differences.  First, it does not imply
+                   |    the --main option.  Second, the argument is appended to the current compiler
+                   |    commandline rather than replacing it.  You may specify this more than once,
+                   |    and you may specify it in conjunction with --compile.
                    |
                    |  --debug
                    |    Enables exception stack traces.
@@ -449,6 +457,10 @@ class RogueC [singleton]
               generate_main = true
               compile_output = true
               if (value.count) compiler_name = value
+
+            case "--compile-arg"
+              compile_output = true
+              if (value.count) compiler_options.add( value )
 
             case "--execute"
               generate_main = true
