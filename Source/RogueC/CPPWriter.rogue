@@ -1052,6 +1052,9 @@ augment Program
       endIf
 
       # launch()
+      writer.println @|#ifdef ROGUE_AUTO_LAUNCH
+                      |__attribute__((constructor))
+                      |#endif
       writer.println( "void Rogue_launch()" )
       writer.println( "{" )
       writer.indent += 2
