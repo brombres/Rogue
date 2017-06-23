@@ -735,7 +735,7 @@ class CandidateMethods
               (base_name,access.name,scope_type) )
           else
             throw access.t.error( ''No such method or variable "$" exists in current scope of type $$.'' (access.name,scope_type, ...
-                                  select{inferring_templates: ", and no existing template method could be instantiated via inference" || ""}) )
+                                  select{inferring_templates: ", and no existing method template could be instantiated via inference" || ""}) )
           endIf
 
         elseIf (require_compatible)
