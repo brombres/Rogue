@@ -2338,6 +2338,11 @@ augment Method
 
     method is_c_compatible ( )->Logical
       # Returns true if C linkage is okay for this method
+      # In theory, this should be okay for compounds that don't has_object_references...
+      # except that their constructors keep them from being POD types.  They should
+      # actually probably work fine *anyway*, and we could also rewrite compounds
+      # to not use constructors (and use factories and aggregation initialization
+      # instead).  But for now... compounds are out.
       if (return_type and return_type.is_compound) return false
       if (parameters)
         forEach (p in parameters)
