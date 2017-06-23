@@ -1056,6 +1056,9 @@ augment Program
       writer.println( "{" )
       writer.indent += 2
 
+      # Call configure; if it has already been called, this won't do anything.
+      writer.println( "Rogue_configure(0, NULL);" )
+
       # Call all init_class() methods
       forEach (type in type_list)
         if (type.is_used)
