@@ -30,7 +30,7 @@ class Task [aspect]
       return false  # false stops the task; return "true" to continue the task next time
 endClass
 
-class NilTask : Task, Function()
+class NilTask : Task, (Function)
   METHODS
     method call
       while (execute) noAction
@@ -39,7 +39,7 @@ class NilTask : Task, Function()
       while (update) noAction
 endClass
 
-class TaskWithResult<<$ResultType>> : Task, Function()->($ResultType), Reader<<$ResultType>>
+class TaskWithResult<<$ResultType>> : Task, (Function()->$ResultType), Reader<<$ResultType>>
   PROPERTIES
     result : $ResultType
 

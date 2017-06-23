@@ -3,13 +3,13 @@ class Plugin
   PROPERTIES
     name : String  # Name of this plug-in for debugging purposes
 
-    collect_supported_types_callback : Function()
-    generate_additonal_types_callback : Function()->(Logical)
+    collect_supported_types_callback : (Function)
+    generate_additonal_types_callback : (Function()->Logical)
 
-    start_header_file_callback : Function(Object)
-    finish_header_file_callback : Function(Object)
-    start_code_file_callback : Function(Object)
-    finish_code_file_callback : Function(Object)
+    start_header_file_callback : (Function(Object))
+    finish_header_file_callback : (Function(Object))
+    start_code_file_callback : (Function(Object))
+    finish_code_file_callback : (Function(Object))
 
   METHODS
     method init( name )

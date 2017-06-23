@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.3.0.19"
-$define RELEASE_DATE    "June 20, 2017"
+$define RELEASE_VERSION "1.3.0.20"
+$define RELEASE_DATE    "June 22, 2017"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -587,7 +587,7 @@ class RogueC [singleton]
             case "--plugin-test"
               plugins.add(
                 Plugin( "Test" ).on_generate_additional_types(
-                  function->(Logical)
+                  function->Logical
                   @trace "All types resolved - generate additional types?"
                     if (not Program.find_type("Alpha"))
                       local src = @|class Alpha [essential singleton]

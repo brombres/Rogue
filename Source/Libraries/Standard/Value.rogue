@@ -91,13 +91,13 @@ class Value
     method contains( table_key_or_list_value:Value )->Logical
       return false
 
-    method contains( query:Function(Value)->(Logical) )->Logical
+    method contains( query:(Function(Value)->Logical) )->Logical
       return first( query ) not instanceOf UndefinedValue
 
     method count->Int32
       return 0
 
-    method count( query:Function(Value)->(Logical) )->Int32
+    method count( query:(Function(Value)->Logical) )->Int32
       return 0
 
     method compressed->Value
@@ -138,7 +138,7 @@ class Value
     method first->Value
       return this[ 0 ]
 
-    method first( query:Function(Value)->(Logical) )->Value
+    method first( query:(Function(Value)->Logical) )->Value
       return UndefinedValue
 
     method get( index:Int32 )->Value
@@ -147,7 +147,7 @@ class Value
     method get( key:String )->Value
       return UndefinedValue
 
-    method get( query:Function(Value)->(Logical) )->Value
+    method get( query:(Function(Value)->Logical) )->Value
       return UndefinedValue
 
     method insert( value:Int32, before_index=0:Int32 )->this [macro]
@@ -236,19 +236,19 @@ class Value
     method last->Value
       return this[ count - 1 ]
 
-    method last( query:Function(Value)->(Logical) )->Value
+    method last( query:(Function(Value)->Logical) )->Value
       return UndefinedValue
 
     method locate( value:Value )->Value
       return UndefinedValue
 
-    method locate( query:Function(Value)->(Logical) )->Value
+    method locate( query:(Function(Value)->Logical) )->Value
       return UndefinedValue
 
     method locate_last( value:Value )->Value
       return UndefinedValue
 
-    method locate_last( query:Function(Value)->(Logical) )->Value
+    method locate_last( query:(Function(Value)->Logical) )->Value
       return UndefinedValue
 
     method operator==( other:Value )->Logical
@@ -356,7 +356,7 @@ class Value
     method remove( key:String )->Value
       return remove( Value(key) )
 
-    method remove( query:Function(Value)->(Logical) )->Value
+    method remove( query:(Function(Value)->Logical) )->Value
       return UndefinedValue
 
     method remove_at( index:Int32 )->Value
@@ -437,10 +437,10 @@ class Value
     method set( key:String, value:Value )->this
       return this
 
-    method sort( compare_fn:Function(a:Value,b:Value)->(Logical) )->this
+    method sort( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
       return this
 
-    method sorted( compare_fn:Function(a:Value,b:Value)->(Logical) )->Value
+    method sorted( compare_fn:(Function(a:Value,b:Value)->Logical) )->Value
       return cloned
 
     method to->Byte
@@ -993,7 +993,7 @@ class ValueList : Value
     method count->Int32
       return data.count
 
-    method count( query:Function(Value)->(Logical) )->Int32
+    method count( query:(Function(Value)->Logical) )->Int32
       local result = 0
       forEach (v in data)
         if (query(v)) ++result
@@ -1003,7 +1003,7 @@ class ValueList : Value
     method first->Value
       return this.get(0)
 
-    method first( query:Function(Value)->(Logical) )->Value
+    method first( query:(Function(Value)->Logical) )->Value
       forEach (v in data)
         if (query(v)) return v
       endForEach
@@ -1015,7 +1015,7 @@ class ValueList : Value
       if (result is null) return UndefinedValue
       return result
 
-    method get( query:Function(Value)->(Logical) )->Value
+    method get( query:(Function(Value)->Logical) )->Value
       local results : ValueList
       forEach (value in this)
         if (query(value))
@@ -1036,7 +1036,7 @@ class ValueList : Value
     method last->Value
       return this.get( data.count - 1 )
 
-    method last( query:Function(Value)->(Logical) )->Value
+    method last( query:(Function(Value)->Logical) )->Value
       forEach (v in data step -1)
         if (query(v)) return v
       endForEach
@@ -1048,7 +1048,7 @@ class ValueList : Value
       endForEach
       return UndefinedValue
 
-    method locate( query:Function(Value)->(Logical) )->Value
+    method locate( query:(Function(Value)->Logical) )->Value
       forEach (value at index in this)
         if (query(value)) return index
       endForEach
@@ -1060,7 +1060,7 @@ class ValueList : Value
       endForEach
       return UndefinedValue
 
-    method locate_last( query:Function(Value)->(Logical) )->Value
+    method locate_last( query:(Function(Value)->Logical) )->Value
       forEach (value at index in this step -1)
         if (query(value)) return index
       endForEach
@@ -1069,7 +1069,7 @@ class ValueList : Value
     method remove( value:Value )->Value
       return data.remove( value )
 
-    method remove( query:Function(Value)->(Logical) )->Value
+    method remove( query:(Function(Value)->Logical) )->Value
       local results = this[ query ]
       if (not results) return results
 
@@ -1097,11 +1097,11 @@ class ValueList : Value
 
       return this
 
-    method sort( compare_fn:Function(a:Value,b:Value)->(Logical) )->this
+    method sort( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
       data.sort( compare_fn )
       return this
 
-    method sorted( compare_fn:Function(a:Value,b:Value)->(Logical) )->ValueList
+    method sorted( compare_fn:(Function(a:Value,b:Value)->Logical) )->ValueList
       return cloned.sort( compare_fn ) as ValueList
 
     method to->Logical
@@ -1193,7 +1193,7 @@ class ValueTable : Value
     method count->Int32
       return data.count
 
-    method count( query:Function(Value)->(Logical) )->Int32
+    method count( query:(Function(Value)->Logical) )->Int32
       local result = 0
       forEach (v in data.value_reader)
         if (query(v)) ++result
@@ -1244,7 +1244,7 @@ class ValueTable : Value
       this[ key ] = table
       return table
 
-    method first( query:Function(Value)->(Logical) )->Value
+    method first( query:(Function(Value)->Logical) )->Value
       forEach (key in keys)
         local v = this[ key ]
         if (query(v)) return v
@@ -1262,7 +1262,7 @@ class ValueTable : Value
       if (result is null) return UndefinedValue
       return result
 
-    method get( query:Function(Value)->(Logical) )->Value
+    method get( query:(Function(Value)->Logical) )->Value
       local results : ValueList
       forEach (key in keys)
         local value = this[key]
@@ -1284,7 +1284,7 @@ class ValueTable : Value
     method keys->String[]
       return data.keys
 
-    method last( query:Function(Value)->(Logical) )->Value
+    method last( query:(Function(Value)->Logical) )->Value
       forEach (key in keys step -1)
         local v = this[ key ]
         if (query(v)) return v
@@ -1299,7 +1299,7 @@ class ValueTable : Value
       endWhile
       return UndefinedValue
 
-    method locate( query:Function(Value)->(Logical) )->Value
+    method locate( query:(Function(Value)->Logical) )->Value
       forEach (key in keys)
         if (query(this[key])) return key
       endForEach
@@ -1308,13 +1308,13 @@ class ValueTable : Value
     method locate_last( value:Value )->Value
       return locate( value )
 
-    method locate_last( query:Function(Value)->(Logical) )->Value
+    method locate_last( query:(Function(Value)->Logical) )->Value
       return locate( query )
 
     method remove( key:String )->Value
       return data.remove( key )
 
-    method remove( query:Function(Value)->(Logical) )->Value
+    method remove( query:(Function(Value)->Logical) )->Value
       local remove_keys : String[]
       local results : @[]
 
@@ -1343,7 +1343,7 @@ class ValueTable : Value
       data.set( key, new_value )
       return this
 
-    method sort( compare_fn:Function(a:Value,b:Value)->(Logical) )->this
+    method sort( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
       data.sort( function(a,b) with(compare_fn) => compare_fn(a.value,b.value) )
       return this
 

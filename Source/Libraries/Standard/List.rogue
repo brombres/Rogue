@@ -20,25 +20,25 @@ class List<<$DataType>> : GenericList
         forEach (i in 0..<initial_capacity) data[i] = initial_value
       endIf
 
-    method init( initial_capacity:Int32, fn:Function()->($DataType) )
+    method init( initial_capacity:Int32, fn:(Function()->$DataType) )
       if (initial_capacity)
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
         forEach (i in 0..<initial_capacity) data[i] = fn()
       endIf
 
-    method init( initial_capacity:Int32, fn:Function(Int32)->($DataType) )
+    method init( initial_capacity:Int32, fn:(Function(Int32)->$DataType) )
       if (initial_capacity)
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
         forEach (i in 0..<initial_capacity) data[i] = fn( i )
       endIf
 
-    method apply( fn:Function($DataType) )->this
+    method apply( fn:(Function($DataType)) )->this
       forEach (item in this) fn( item )
       return this
 
-    method applying( fn:Function($DataType) )->$DataType[]
+    method applying( fn:(Function($DataType)) )->$DataType[]
       return cloned.apply( fn )
 
     method cloned->$DataType[]
@@ -69,10 +69,10 @@ class List<<$DataType>> : GenericList
     method contains( value:$DataType )->Logical [macro]
       this.locate( value )?
 
-    method contains( query:Function($DataType)->(Logical) )->Logical
+    method contains( query:(Function($DataType)->Logical) )->Logical
       return first( query ).exists
 
-    method count( query:Function($DataType)->(Logical) )->Int32
+    method count( query:(Function($DataType)->Logical) )->Int32
       # Counts the number of items that pass the query function.
       local result = 0
       forEach (value in this)
@@ -105,7 +105,7 @@ class List<<$DataType>> : GenericList
     method first->$DataType [macro]
       this.data[0]
 
-    method first( query:Function($DataType)->(Logical) )->$DataType?
+    method first( query:(Function($DataType)->Logical) )->$DataType?
       forEach (value in this)
         if (query(value)) return value
       endForEach
@@ -123,7 +123,7 @@ class List<<$DataType>> : GenericList
       data.set( i1, data, i2, (count-i2) )
       return discard_from( count-n )
 
-    method discard( discard_if:Function($DataType)->(Logical) )->this
+    method discard( discard_if:(Function($DataType)->Logical) )->this
       # Discards any item that passes the query function.
       local rewriter = this.rewriter
       forEach (value in rewriter)
@@ -141,16 +141,16 @@ class List<<$DataType>> : GenericList
       count = c
       return this
 
-    method filter( keep_if:Function($DataType)->(Logical) )->this [macro]
+    method filter( keep_if:(Function($DataType)->Logical) )->this [macro]
       this.keep( keep_if )
 
-    method filtered( keep_if:Function($DataType)->(Logical) )->$DataType[] [macro]
+    method filtered( keep_if:(Function($DataType)->Logical) )->$DataType[] [macro]
       this.keeping( keep_if )
 
     method get( index:Int32 )->$DataType [macro]
       this.data[index]
 
-    method get( query:Function($DataType)->(Logical) )->$DataType[]
+    method get( query:(Function($DataType)->Logical) )->$DataType[]
       local results = $DataType[]
 
       forEach (value in this)
@@ -159,7 +159,7 @@ class List<<$DataType>> : GenericList
 
       return results
 
-    method heapsort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
+    method heapsort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
       Heapsort<<$DataType>>.sort( this, compare_fn )
 
     method insert( value:$DataType, before_index=0:Int32 )->this
@@ -199,13 +199,13 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method insertion_sort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
+    method insertion_sort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
       InsertionSort<<$DataType>>.sort( this, compare_fn )
 
     method is_empty->Logical
       return count == 0
 
-    method keep( keep_if:Function($DataType)->(Logical) )->this
+    method keep( keep_if:(Function($DataType)->Logical) )->this
       local write_pos = 0
       forEach (i of this)
         local value = this[i]
@@ -217,13 +217,13 @@ class List<<$DataType>> : GenericList
       discard_from( write_pos )
       return this
 
-    method keeping( keep_if:Function($DataType)->(Logical) )->$DataType[]
+    method keeping( keep_if:(Function($DataType)->Logical) )->$DataType[]
       return cloned.keep( keep_if )
 
     method last->$DataType
       return this.data[ count - 1 ]
 
-    method last( query:Function($DataType)->(Logical) )->$DataType?
+    method last( query:(Function($DataType)->Logical) )->$DataType?
       forEach (value in this step -1)
         if (query(value)) return value
       endForEach
@@ -245,7 +245,7 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method locate( query:Function($DataType)->(Logical) )->Int32?
+    method locate( query:(Function($DataType)->Logical) )->Int32?
       forEach (value at index in this)
         if (query(value)) return index
       endForEach
@@ -266,22 +266,22 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method locate_last( query:Function($DataType)->(Logical) )->Int32?
+    method locate_last( query:(Function($DataType)->Logical) )->Int32?
       forEach (value at index in this step -1)
         if (query(value)) return index
       endForEach
       return null
 
-    method mapped<<$ToType>>( map_fn:Function($DataType)->($ToType) )->$ToType[]
+    method mapped<<$ToType>>( map_fn:(Function($DataType)->$ToType) )->$ToType[]
       local result = $ToType[]( capacity )
       forEach (element in this) result.add( map_fn(element) )
       return result
 
-    method modify( fn:Function($DataType)->($DataType) )->this
+    method modify( fn:(Function($DataType)->$DataType) )->this
       forEach (index of this) this[index] = fn(this[index])
       return this
 
-    method modified( fn:Function($DataType)->($DataType) )->$DataType[]
+    method modified( fn:(Function($DataType)->$DataType) )->$DataType[]
       return cloned.modify( fn )
 
     method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
@@ -316,7 +316,7 @@ class List<<$DataType>> : GenericList
 
       return c
 
-    method quicksort( compare_fn:Function($DataType,$DataType)->(Logical) )->this [macro]
+    method quicksort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
       Quicksort<<$DataType>>.sort( this, compare_fn )
 
     method random( generator=Random:Random )->$DataType
@@ -332,7 +332,7 @@ class List<<$DataType>> : GenericList
     method rebuilder->ListRewriter<<$DataType>>
       return ListRewriter<<$DataType>>( this )
 
-    method reduced<<$ToType>>( reduce_fn:Function(Int32,$DataType,$ToType)->($ToType) )->$ToType
+    method reduced<<$ToType>>( reduce_fn:(Function(Int32,$DataType,$ToType)->$ToType) )->$ToType
       local result : $ToType
       forEach (index of this)
         result = reduce_fn( index, this[index], result )
@@ -363,7 +363,7 @@ class List<<$DataType>> : GenericList
         return value
       endIf
 
-    method remove( query:Function($DataType)->(Logical) )->$DataType[]
+    method remove( query:(Function($DataType)->Logical) )->$DataType[]
       # Returns the list of items that pass the query function while removing
       # them from this list.
       local result = $DataType[]
@@ -455,10 +455,10 @@ class List<<$DataType>> : GenericList
     method shuffled( generator=Random:Random )->$DataType[]
       return cloned.shuffle( generator )
 
-    method sort( compare_fn:Function($DataType,$DataType)->(Logical) )->this
+    method sort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
       return this.quicksort( compare_fn )
 
-    method sorted( compare_fn:Function($DataType,$DataType)->(Logical) )->$DataType[]
+    method sorted( compare_fn:(Function($DataType,$DataType)->Logical) )->$DataType[]
       return cloned.sort( compare_fn )
 
     method subset( i1:Int32 )->$DataType[]

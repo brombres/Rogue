@@ -416,7 +416,7 @@ $if (NO_LIBFFI)
       native "ROGUE_ARG_TYPE ret_type = ROGUE_ARG_VOID;"
 
       local rt = m.return_type
-      local ret_func = this=>_ret_undefined : Function(IntPtr)->(Value)
+      local ret_func = this=>_ret_undefined : (Function(IntPtr)->Value)
       block
         if (rt is null)
           escapeBlock
@@ -594,7 +594,7 @@ $else
       native "ffi_type * ret_type = &ffi_type_void;"
 
       local rt = m.return_type
-      local ret_func = this=>_ret_undefined : Function(IntPtr)->(Value)
+      local ret_func = this=>_ret_undefined : (Function(IntPtr)->Value)
       block
         if (rt is null)
           escapeBlock

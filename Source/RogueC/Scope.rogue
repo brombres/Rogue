@@ -443,7 +443,7 @@ class Scope
                   if (not first_generic_fn_t) first_generic_fn_t = arg.t
                   local fn = arg as CmdCreateFunction
                   local param_type = m.parameters[index].type
-                  necessary (param_type.name.begins_with("Function("))
+                  necessary (param_type.name.begins_with("(Function"))
 
                   local callback_param_count = 0
                   if (param_type.callback_parameter_types) callback_param_count = param_type.callback_parameter_types.count
