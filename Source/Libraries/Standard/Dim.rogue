@@ -4,11 +4,11 @@ routine Dim<<$DataType>>( n:Int32 )->$DataType[]
   return $DataType[]( n, default_value )
 endRoutine
 
-routine Dim<<$DataType>>( n:Int32, fn:Function()->($DataType) )->$DataType[]
+routine Dim<<$DataType>>( n:Int32, fn:Function()->$DataType )->$DataType[]
   return $DataType[]( n, fn )
 endRoutine
 
-routine Dim<<$DataType>>( n:Int32, fn:Function(Int32)->($DataType) )->$DataType[]
+routine Dim<<$DataType>>( n:Int32, fn:Function(Int32)->$DataType )->$DataType[]
   return $DataType[]( n, fn )
 endRoutine
 
@@ -19,13 +19,13 @@ routine Dim<<$DataType>>( n:Int32, o:Int32 )->$DataType[][]
   return result
 endRoutine
 
-routine Dim<<$DataType>>( n:Int32, o:Int32, fn:Function()->($DataType) )->$DataType[][]
+routine Dim<<$DataType>>( n:Int32, o:Int32, fn:Function()->$DataType )->$DataType[][]
   local result = $DataType[][](n)
   forEach (1..n) result.add( Dim<<$DataType>>(o,fn) )
   return result
 endRoutine
 
-routine Dim<<$DataType>>( n:Int32, o:Int32, fn:Function(Int32,Int32)->($DataType) )->$DataType[][]
+routine Dim<<$DataType>>( n:Int32, o:Int32, fn:Function(Int32,Int32)->$DataType )->$DataType[][]
   local result = $DataType[][](n)
   forEach (1..n) result.add( Dim<<$DataType>>(o) )
   forEach (j in 0..<o)
@@ -41,14 +41,14 @@ routine Dim<<$DataType>>( n:Int32, o:Int32, p:Int32 )->$DataType[][][]
   return result
 endRoutine
 
-routine Dim<<$DataType>>( n:Int32, o:Int32, p:Int32, fn:Function()->($DataType) )->$DataType[][][]
+routine Dim<<$DataType>>( n:Int32, o:Int32, p:Int32, fn:Function()->$DataType )->$DataType[][][]
   local result = $DataType[][][](n)
   forEach (1..n) result.add( Dim<<$DataType>>(o,p,fn) )
   return result
 endRoutine
 
 routine Dim<<$DataType>>( n:Int32, o:Int32, p:Int32,
-    fn:Function(Int32,Int32,Int32)->($DataType) )->$DataType[][][]
+    fn:Function(Int32,Int32,Int32)->$DataType )->$DataType[][][]
   local result = $DataType[][][](n)
   forEach (1..n) result.add( Dim<<$DataType>>(o,p) )
   forEach (k in 0..<p)
