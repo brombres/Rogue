@@ -18,6 +18,12 @@ class System [essential]
                 |exit( $result_code );
       $endIf
 
+    method launch( command:String, &readable, &writable )->Process
+      return launch( ["sh","-c",command], &readable=readable, &writable=writable )
+
+    method launch( args:String[], &readable, &writable )->Process
+      return Process( args, &readable=readable, &writable=writable )
+
     method os->String
       # Returns one of:
       #   macOS

@@ -929,3 +929,163 @@ class FileWriter : Writer<<Byte>>
     method write( builder:StringBuilder )->this
       return write( builder.utf8 )
 endClass
+
+
+class FDReader : Reader<<Byte>>
+  GLOBAL METHODS
+    method stderr->FDReader
+      return FDReader( native("STDERR_FILENO")->Int32, &!auto_close )
+
+    method stdin->FDReader
+      return FDReader( native("STDIN_FILENO")->Int32, &!auto_close )
+
+  PROPERTIES
+    fd              : Int32
+    position        : Int32
+    buffer_position : Int32
+    auto_close      : Logical
+    buffer          = Byte[](1024)
+
+  METHODS
+    method init( fd, auto_close=true )
+
+    method on_cleanup
+      if (auto_close) close
+
+    method buffer_more->Logical
+      # Used by Process which needs to keep buffering from both the stdout and stderr of a process
+      # to make sure the process doesn't get blocked.
+      if (not has_another) return false
+
+      buffer.reserve( 1024 )
+      local cur_count = buffer.count
+
+      local n : Int32
+      native @|$n = (RogueInt32) read( $fd, $buffer->data->as_bytes+$cur_count, 1024 );
+      if (n <= 0)
+        if (auto_close) close
+        fd = -1
+        return false
+      endIf
+      buffer.count += n
+
+      return true
+
+    method close->this
+      if (fd >= 0)
+        native @|close( $fd );
+        fd = -1
+      endIf
+      return this
+
+    method has_another->Logical
+      return (fd >= 0 or buffer_position < buffer.count)
+
+    method peek->Byte
+      if (not has_another) return 0
+
+      if (buffer_position == buffer.count)
+        buffer.clear
+        buffer_position = 0
+        if (not buffer_more) return 0
+      endIf
+
+      return buffer[ buffer_position ]
+
+    method read->Byte
+      if (not has_another) return 0
+
+      local result = peek
+
+      ++position
+      ++buffer_position
+
+      return result
+
+endClass
+
+
+class FDWriter : Writer<<Byte>>
+  GLOBAL METHODS
+    method stdout->FDWriter
+      return FDWriter( native("STDOUT_FILENO")->Int32, &!auto_close )
+
+  PROPERTIES
+    fd         : Int32
+    auto_close : Logical
+    error      : Logical
+    buffer     = Byte[](1024)
+
+  METHODS
+    method init( fd, auto_close=true )
+
+    method on_cleanup
+      if (auto_close) close
+
+    method close->this
+      flush
+
+      if (fd != -1)
+        native @|close( $fd )
+        fd = -1
+      endIf
+
+      return this
+
+    method flush->this
+      if (buffer.count == 0 or fd == -1) return this
+
+      native @|if (-1 == write( $fd, $buffer->data->as_bytes, $buffer->count ))
+              |{
+              |  if ($auto_close) close( $fd );
+              |  $fd = -1;
+              |}
+
+      buffer.clear
+      return this
+
+    method write( ch:Byte )->this
+      ++position
+      buffer.add( ch )
+      if (buffer.count == 1024) return flush
+
+      return this
+
+    method write( bytes:Byte[] )->this
+      if (fd == -1 or bytes.count == 0) return this
+
+      if (bytes.count < 1024)
+        forEach (byte in bytes) write( byte )
+      else
+        flush
+        position += bytes.count
+        native @|if (-1 == write( $fd, $bytes->data->as_bytes, $bytes->count ))
+                |{
+                |  if ($auto_close) close( $fd );
+                |  $fd = -1;
+                |}
+      endIf
+
+      return this
+
+    method write( data:String )->this
+      if (fd == -1 or data.count == 0) return this
+
+      if (data.count < 1024)
+        forEach (i in 0..<data.byte_count) write( data.byte(i) )
+      else
+        flush
+        position += data.byte_count
+        native @|if (-1 == write( $fd, $data->utf8, $data->byte_count ))
+                |{
+                |  if ($auto_close) close( $fd );
+                |  $fd = -1;
+                |}
+      endIf
+
+      return this
+
+    method write( builder:StringBuilder )->this
+      return write( builder.utf8 )
+endClass
+

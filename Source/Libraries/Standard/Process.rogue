@@ -1,0 +1,202 @@
+class Process
+  # Loosely based on:
+  # https://stackoverflow.com/questions/13893085/posix-spawnp-and-piping-child-output-to-a-string/27328610
+  DEPENDENCIES
+    nativeHeader #include <spawn.h>
+    nativeHeader #include <poll.h>
+
+  PROPERTIES
+    args          : String[]
+    output_reader : ProcessReader
+    error_reader  : ProcessReader
+    input_writer  : FDWriter
+    error         : Logical
+    is_finished   : Logical
+    exit_code     : Int32
+
+    native "pid_t pid;"
+    native "int cin_pipe[2];"
+    native "int cout_pipe[2];"
+    native "int cerr_pipe[2];"
+    native "posix_spawn_file_actions_t actions;"
+    native "pollfd poll_list[2];"
+
+  METHODS
+    method init( args, &readable, &writable )
+      if (not launch(readable,writable))
+        native @|if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
+                |if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
+                |if ($this->cerr_pipe[0] != -1) close( $this->cerr_pipe[0] );
+                |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
+                |if ($this->cin_pipe[0] != -1)  close( $this->cin_pipe[0] );
+                |if ($this->cin_pipe[1] != -1)  close( $this->cin_pipe[1] );
+                |$this->cin_pipe[0]  = $this->cin_pipe[1]  = -1;
+                |$this->cout_pipe[0] = $this->cout_pipe[1] = -1;
+                |$this->cerr_pipe[0] = $this->cerr_pipe[1] = -1;
+        if (readable)
+          output_reader = ProcessReader( this, -1 )
+          error_reader = ProcessReader( this, -1 )
+        endIf
+        if (writable) input_writer = FDWriter( -1 )
+        error = true
+        is_finished = true
+        exit_code = -1
+      endIf
+
+    method launch( &readable, &writable )->Logical
+      native @|$this->cin_pipe[0]  = $this->cin_pipe[1]  = -1;
+              |$this->cout_pipe[0] = $this->cout_pipe[1] = -1;
+              |$this->cerr_pipe[0] = $this->cerr_pipe[1] = -1;
+              |
+              |if ($readable)
+              |{
+              |  if (0 != pipe($this->cout_pipe) || 0 != pipe($this->cerr_pipe)) return false;
+              |}
+              |
+              |if ($writable)
+              |{
+              |  if (0 != pipe($this->cin_pipe)) return false;
+              |}
+
+      local n = args.count
+      native @|char** args = new char*[ $n+1 ];
+              |args[ $n ] = 0;
+      forEach (arg at index in args)
+        native @|args[ $index ] = (char*) $arg->utf8;
+      endForEach
+
+      native @|posix_spawn_file_actions_init( &$this->actions );
+
+      if (readable)
+        # These commands run in the forked process
+        native @|  posix_spawn_file_actions_addclose( &$this->actions, $this->cout_pipe[0] );
+                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cerr_pipe[0] );
+                |  posix_spawn_file_actions_adddup2( &$this->actions, $this->cout_pipe[1], STDOUT_FILENO );
+                |  posix_spawn_file_actions_adddup2( &$this->actions, $this->cerr_pipe[1], STDERR_FILENO );
+                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cout_pipe[1] );
+                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cerr_pipe[1] );
+                |  $this->poll_list[0].fd = $this->cout_pipe[0];
+                |  $this->poll_list[1].fd = $this->cerr_pipe[0];
+                |  $this->poll_list[0].events = POLLIN;
+                |  $this->poll_list[1].events = POLLIN;
+      endIf
+
+      if (writable)
+        # These commands run in the forked process
+        native @|  posix_spawn_file_actions_addclose( &$this->actions, $this->cin_pipe[1] );
+                |  posix_spawn_file_actions_adddup2( &$this->actions, $this->cin_pipe[0], STDIN_FILENO );
+                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cin_pipe[0] );
+      endIf
+
+      native @|int result = posix_spawnp( &$this->pid, args[0], &$this->actions, NULL, &args[0], NULL );
+              |delete [] args;
+              |if (0 != result) return false;
+
+      if (readable)
+        output_reader = ProcessReader( this, native("$this->cout_pipe[0]")->Int32 )
+        error_reader = ProcessReader( this, native("$this->cerr_pipe[0]")->Int32 )
+      endIf
+
+      if (writable)
+        input_writer = FDWriter( native("$this->cin_pipe[1]")->Int32 )
+      endIf
+
+      return true
+
+    method close->this
+      return finish
+
+    method error_character_reader->UTF8Reader
+      return UTF8Reader( error_reader )
+
+    method exit_code->Int32
+      return finish.@exit_code
+
+    method finish->this
+      if (not @is_finished)
+        is_finished = true
+
+        if (input_writer) input_writer.close
+
+        native @|waitpid( $this->pid, &$exit_code, 0 );
+
+        while (update_readers) noAction
+
+        if (output_reader)
+          output_reader.fd_reader.close
+          error_reader.fd_reader.close
+
+          native @|if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
+                  |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
+                  |if ($this->cin_pipe[0] != -1)  close( $this->cin_pipe[0] );
+                  |$this->cout_pipe[1] = -1;
+                  |$this->cerr_pipe[1] = -1;
+                  |$this->cin_pipe[0] = -1;
+        endIf
+
+        native @|posix_spawn_file_actions_destroy( &$this->actions );
+      endIf
+      return this
+
+    method on_cleanup
+      finish
+
+    method output_character_reader->UTF8Reader
+      return UTF8Reader( output_reader )
+
+    method run->Int32
+      return finish.@exit_code
+
+    method update_readers->Logical
+      if (output_reader)
+        if (output_reader.fd_reader.fd == -1 or error_reader.fd_reader.fd == -1) return false
+
+        native @|int status = poll( $this->poll_list, 2, 0 );
+                |if (status > 0)
+                |{
+                |  if ($this->poll_list[0].revents & POLLIN)
+                |  {
+                     output_reader.fd_reader.buffer_more
+                     return true
+        native @|  }
+                |  else if ($this->poll_list[1].revents & POLLIN)
+                |  {
+                     error_reader.fd_reader.buffer_more
+                     return true
+        native @|  }
+                |}
+      endIf
+      return false
+
+endClass
+
+
+class ProcessReader : Reader<<Byte>>
+  PROPERTIES
+    process   : Process
+    fd_reader : FDReader
+
+  METHODS
+    method init( process, fd:Int32 )
+      fd_reader = FDReader( fd, &!auto_close )
+
+    method close->this
+      fd_reader.fd = -1
+      position = 0
+      return this
+
+    method has_another->Logical
+      if (fd_reader.buffer_position >= fd_reader.buffer.count) process.update_readers
+      return (fd_reader.buffer_position < fd_reader.buffer.count)
+
+    method peek->Byte
+      if (not has_another) return 0
+      return fd_reader.peek
+
+    method read->Byte
+      if (not has_another) return 0
+
+      ++position
+      return fd_reader.read
+
+endClass
