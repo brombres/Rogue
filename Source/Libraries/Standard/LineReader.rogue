@@ -9,8 +9,11 @@ class LineReader : Reader<<String>>
     method init( source )
       next = prepare_next
 
+    method init( reader:Reader<<Byte>> )
+      init( UTF8Reader(reader) )
+
     method init( file:File )
-      init( file.character_reader )
+      init( file.reader )
 
     method init( string:String )
       init( string.reader )

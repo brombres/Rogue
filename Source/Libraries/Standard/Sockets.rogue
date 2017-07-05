@@ -13,8 +13,6 @@ class Socket [abstract]
   METHODS
     method close->this [abstract]
 
-    method character_reader->Reader<<Character>> [abstract]
-
     method remote_ip->String
       return "0.0.0.0"
 
@@ -155,7 +153,6 @@ class BasicSocket : Socket
     remote_address   : String
     port             : Int32
     reader           = BasicSocketReader( this )
-    character_reader = UTF8Reader( reader )
     writer           = BasicSocketWriter( this )
     printer          = PrintWriterAdapter( writer )
 
@@ -205,9 +202,6 @@ class BasicSocket : Socket
       if (using_mutex) native @|pthread_mutex_unlock( &$this->thread_mutex );
 
       return this
-
-    method character_reader->Reader<<Character>>
-      return @character_reader
 
     method is_closed->Logical
       return (state == CLOSED)

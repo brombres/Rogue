@@ -106,12 +106,6 @@ class Process
     method close->this
       return finish
 
-    method error_character_reader->UTF8Reader
-      return UTF8Reader( error_reader )
-
-    method error_line_reader->LineReader
-      return LineReader( error_character_reader )
-
     method exit_code->Int32
       return finish.@exit_code
 
@@ -168,12 +162,6 @@ class Process
 
     method on_cleanup
       finish
-
-    method output_character_reader->UTF8Reader
-      return UTF8Reader( output_reader )
-
-    method output_line_reader->LineReader
-      return LineReader( output_character_reader )
 
     method run->Int32
       return finish.@exit_code
