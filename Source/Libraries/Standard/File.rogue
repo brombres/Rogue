@@ -1026,7 +1026,7 @@ class FDWriter : Writer<<Byte>>
       flush
 
       if (fd != -1)
-        native @|close( $fd )
+        native @|close( $fd );
         fd = -1
       endIf
 
