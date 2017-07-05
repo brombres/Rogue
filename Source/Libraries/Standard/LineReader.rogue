@@ -20,7 +20,8 @@ class LineReader : Reader<<String>>
       return this
 
     method has_another->Logical
-      return next
+      if (next is null) next = prepare_next
+      return next?
 
     method peek->String
       return next

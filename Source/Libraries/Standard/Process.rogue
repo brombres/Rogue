@@ -109,8 +109,30 @@ class Process
     method error_character_reader->UTF8Reader
       return UTF8Reader( error_reader )
 
+    method error_line_reader->LineReader
+      return LineReader( error_character_reader )
+
     method exit_code->Int32
       return finish.@exit_code
+
+    method is_finished->Logical
+      if (@is_finished) return true
+      native @|int status;
+              |if ($this->pid)
+              |{
+              |  int wstatus;
+              |  wstatus = waitpid( $this->pid,&status,WNOHANG );
+              |  if ($this->pid == wstatus && WIFEXITED(status))
+              |  {
+              |    $this->pid = 0;
+              |    $exit_code = WEXITSTATUS( status );
+                   finish
+      native @|  }
+              |}
+      return false;
+
+    method is_running->Logical
+      return (not is_finished)
 
     method finish->this
       if (not @is_finished)
@@ -119,10 +141,11 @@ class Process
         if (input_writer) input_writer.close
 
         native @|int status;
-                |waitpid( $this->pid, &status, 0 );
-                |if (WIFEXITED(status))
+                |if ($this->pid)
                 |{
+                |  waitpid( $this->pid, &status, 0 );
                 |  $exit_code = WEXITSTATUS( status );
+                |  $this->pid = 0;
                 |}
 
         while (update_readers) noAction
@@ -149,6 +172,9 @@ class Process
     method output_character_reader->UTF8Reader
       return UTF8Reader( output_reader )
 
+    method output_line_reader->LineReader
+      return LineReader( output_character_reader )
+
     method run->Int32
       return finish.@exit_code
 
@@ -170,6 +196,10 @@ class Process
                      return true
         native @|  }
                 |}
+                |else if ($this->pid)
+                |{
+                   is_finished
+        native @|}
       endIf
       return false
 
