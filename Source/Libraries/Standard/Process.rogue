@@ -118,7 +118,12 @@ class Process
 
         if (input_writer) input_writer.close
 
-        native @|waitpid( $this->pid, &$exit_code, 0 );
+        native @|int status;
+                |waitpid( $this->pid, &status, 0 );
+                |if (WIFEXITED(status))
+                |{
+                |  $exit_code = WEXITSTATUS( status );
+                |}
 
         while (update_readers) noAction
 
