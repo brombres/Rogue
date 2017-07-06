@@ -69,6 +69,35 @@ class Real64 [primitive]
       local digits = select{ decimal_digits || decimal_digit_count }
       return StringBuilder().print( this, digits )->String
 
+    method format( fmt:String )->String
+      # fmt
+      #   C-style "0N.D" (everything is optional)
+      #   '0' - pad with 0's instead of spaces
+      #   'N' - Minimum digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      local zero_fill = fmt.begins_with( '0' )
+      if (zero_fill) fmt = fmt.after_first( '0' )
+      local whole_digits = fmt.before_first( '.' )->Int32
+      local decimal_digits = 0
+      local has_decimal = fmt.contains( '.' )
+      if (has_decimal)
+        fmt = fmt.after_first( '.' )
+        if (fmt.count) decimal_digits = fmt->Int32
+        else           has_decimal = false
+      endIf
+
+      local result : String
+      if (has_decimal) result = format( decimal_digits )
+      else             result = this->String
+
+      local whole_count = ?:{ result.locate('.') || result.count }
+      if (whole_count < whole_digits)
+        result = ?:{ zero_fill:"0" || " " } * (whole_digits - whole_count) + result
+      endIf
+
+      return result
+
     method fractional_part->Real64
       if (this >= 0) return this - whole_part
       else           return whole_part - this
@@ -202,6 +231,9 @@ class Real32 [primitive]
     method format( decimal_digits=null:Int32? )->String
       return Real64(this).format( decimal_digits )
 
+    method format( fmt:String )->String
+      return Real64( this ).format( fmt )
+
     method fractional_part->Real32
       if (this >= 0) return this - whole_part
       else           return whole_part - this
@@ -325,6 +357,28 @@ class Int64 [primitive]
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
 
+    method format( fmt:String )->String
+      # fmt
+      #   Semi-C-style "$%0N", where everything is optional except N.
+      #   '$' - make hexadecimal
+      #   '%' - make binary
+      #   '0' - pad with 0's instead of spaces
+      #   'N' - Minimum digits
+      local is_hex = fmt.begins_with( '$' )
+      if (is_hex) fmt = fmt.rightmost( -1 )
+      local is_binary = fmt.begins_with( '%' )
+      if (is_binary) fmt = fmt.rightmost( -1 )
+      local zero_fill = fmt.begins_with( '0' )
+      if (zero_fill) fmt = fmt.rightmost( -1 )
+      local digits = fmt->Int32
+
+      local result : String
+      if (is_hex)        result = this->String( 1, &hex )
+      elseIf (is_binary) result = this->String( 1, &binary )
+      else               result = this->String
+
+      return result.right_justified( digits, ?:{zero_fill:'0'||' '} )
+
     method hash_code->Int32
       return this
 
@@ -348,7 +402,8 @@ class Int64 [primitive]
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
 
-      if (digits > 1) (this:>>>:bits).print_in_power2_base( base, digits-1, buffer )
+      local remaining = this :>>: bits
+      if (digits > 1 or remaining) remaining.print_in_power2_base( base, digits-1, buffer )
       buffer.print( (this & (base-1)).to_digit )
       return buffer
 
@@ -378,7 +433,7 @@ class Int64 [primitive]
       if (hex)    return to_hex_string( select{digits||16} )
       if (octal)  return to_octal_string( select{digits||22} )
       if (binary) return to_binary_string( select{digits||64} )
-      return this
+      return this->String.right_justified( digits )
 
     method to->Value
       return Value( Real64(this) )
@@ -450,6 +505,9 @@ class Int32 [primitive]
 
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt )
 
     method hash_code->Int32
       return this
@@ -709,6 +767,9 @@ class Byte [primitive]
 
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
+
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt )
 
     method hash_code->Int32
       return this->Int32
