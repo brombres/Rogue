@@ -71,32 +71,26 @@ class Real64 [primitive]
 
     method format( fmt:String )->String
       # fmt
-      #   C-style "0N.D" (everything is optional)
+      #   C-style ",0N.D" (everything is optional)
       #   '0' - pad with 0's instead of spaces
       #   'N' - Minimum digits before decimal point
       #   '.' - Include decimal (fractional) value in output.
       #   'D' - Number of digits after decimal point.
-      local zero_fill = fmt.begins_with( '0' )
-      if (zero_fill) fmt = fmt.after_first( '0' )
-      local whole_digits = fmt.before_first( '.' )->Int32
-      local decimal_digits = 0
-      local has_decimal = fmt.contains( '.' )
-      if (has_decimal)
-        fmt = fmt.after_first( '.' )
-        if (fmt.count) decimal_digits = fmt->Int32
-        else           has_decimal = false
+      if (fmt.contains(','))
+        # Move comma to beginning
+        fmt = "," + fmt.before_first(',') + fmt.after_first(',')
       endIf
 
-      local result : String
-      if (has_decimal) result = format( decimal_digits )
-      else             result = this->String
-
-      local whole_count = ?:{ result.locate('.') || result.count }
-      if (whole_count < whole_digits)
-        result = ?:{ zero_fill:"0" || " " } * (whole_digits - whole_count) + result
+      local decimal_fmt = fmt.from_first( '.' )
+      local result = Int64(this.floor).format( fmt.before_first('.') )
+      local decimal_st : String
+      if (decimal_fmt.count > 1)
+        decimal_st = this.format( decimal_fmt.from(1)->Int32 )
+      else
+        decimal_st = this->String
       endIf
 
-      return result
+      return result + decimal_st.from_first( '.' )
 
     method fractional_part->Real64
       if (this >= 0) return this - whole_part
@@ -359,25 +353,56 @@ class Int64 [primitive]
 
     method format( fmt:String )->String
       # fmt
-      #   Semi-C-style "$%0N", where everything is optional except N.
+      #   Semi-C-style "$%,0N" - attributes can come in any order
       #   '$' - make hexadecimal
       #   '%' - make binary
+      #   ',' - add commas (decimal formatting only)
       #   '0' - pad with 0's instead of spaces
       #   'N' - Minimum digits
-      local is_hex = fmt.begins_with( '$' )
-      if (is_hex) fmt = fmt.rightmost( -1 )
-      local is_binary = fmt.begins_with( '%' )
-      if (is_binary) fmt = fmt.rightmost( -1 )
-      local zero_fill = fmt.begins_with( '0' )
-      if (zero_fill) fmt = fmt.rightmost( -1 )
-      local digits = fmt->Int32
+      local is_hex = false
+      local is_binary = false
+      local add_commas = false
+      local zero_fill = false
+      local number_start : Int32?
+      forEach (ch at index in fmt)
+        which (ch)
+          case '$': is_hex = true
+          case '%': is_binary = true
+          case ',': add_commas = true
+          case '0': zero_fill = true
+          others:   number_start = index; escapeForEach
+        endWhich
+      endForEach
+
+      if (is_hex or is_binary or zero_fill) add_commas = false
+
+      local digits = 0
+      if (number_start.exists) digits = fmt.from( number_start.value )->String
 
       local result : String
       if (is_hex)        result = this->String( 1, &hex )
       elseIf (is_binary) result = this->String( 1, &binary )
       else               result = this->String
 
-      return result.right_justified( digits, ?:{zero_fill:'0'||' '} )
+      if (zero_fill) result = result.right_justified( digits, '0' )
+
+      if (add_commas)
+        local work = result
+        result = ""
+        while (work.count > 3)
+          if (result.count) result = ',' + result
+          result = work.rightmost( 3 ) + result
+          work = work.leftmost( -3 )
+        endWhile
+        if (work.count)
+          if (result.count) result = work + ',' + result
+          else              result = work
+        endIf
+      endIf
+
+      if (not zero_fill) result = result.right_justified( digits, ' ' )
+
+      return result
 
     method hash_code->Int32
       return this
