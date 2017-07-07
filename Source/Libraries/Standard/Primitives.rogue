@@ -82,7 +82,7 @@ class Real64 [primitive]
       endIf
 
       local decimal_fmt = fmt.from_first( '.' )
-      local result = Int64(this.floor).format( fmt.before_first('.') )
+      local result = Int64(this).format( fmt.before_first('.') )
       local decimal_st : String
       if (decimal_fmt.count > 1)
         decimal_st = this.format( decimal_fmt.from(1)->Int32 )
@@ -351,7 +351,7 @@ class Int64 [primitive]
     method digit_count->Int32
       return PrimitiveWorkBuffer.clear.print( this ).count
 
-    method format( fmt:String )->String
+    method format( fmt:String, bits=64:Int32 )->String
       # fmt
       #   Semi-C-style "$%,0N" - attributes can come in any order
       #   '$' - make hexadecimal
@@ -374,14 +374,38 @@ class Int64 [primitive]
         endWhich
       endForEach
 
-      if (is_hex or is_binary or zero_fill) add_commas = false
-
       local digits = 0
       if (number_start.exists) digits = fmt.from( number_start.value )->String
 
+      if (is_hex)
+        add_commas = false
+        if (this < 0)
+          digits = bits / 4
+        else
+          local n = 1
+          local value = this :>>>: 4
+          while (value) ++n; value = value :>>>: 4
+          digits = digits.or_larger( n )
+        endIf
+
+      elseIf (is_binary)
+        add_commas = false
+        if (this < 0)
+          digits = bits
+        else
+          local n = 1
+          local value = this :>>>: 1
+          while (value) ++n; value = value :>>>: 1
+          digits = digits.or_larger( n )
+        endIf
+
+      endIf
+
+      if (zero_fill) add_commas = false
+
       local result : String
-      if (is_hex)        result = this->String( 1, &hex )
-      elseIf (is_binary) result = this->String( 1, &binary )
+      if (is_hex)        result = this->String( digits, &hex )
+      elseIf (is_binary) result = this->String( digits, &binary )
       else               result = this->String
 
       if (zero_fill) result = result.right_justified( digits, '0' )
@@ -427,8 +451,7 @@ class Int64 [primitive]
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
 
-      local remaining = this :>>: bits
-      if (digits > 1 or remaining) remaining.print_in_power2_base( base, digits-1, buffer )
+      if (digits > 1) (this:>>>:bits).print_in_power2_base( base, digits-1, buffer )
       buffer.print( (this & (base-1)).to_digit )
       return buffer
 
@@ -532,7 +555,7 @@ class Int32 [primitive]
       return PrimitiveWorkBuffer.clear.print( this ).count
 
     method format( fmt:String )->String
-      return Int64( this ).format( fmt )
+      return Int64( this ).format( fmt, 32 )
 
     method hash_code->Int32
       return this
@@ -794,7 +817,7 @@ class Byte [primitive]
       return PrimitiveWorkBuffer.clear.print( this ).count
 
     method format( fmt:String )->String
-      return Int64( this ).format( fmt )
+      return Int64( this ).format( fmt, 8 )
 
     method hash_code->Int32
       return this->Int32
