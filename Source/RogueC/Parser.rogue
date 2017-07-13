@@ -2614,7 +2614,13 @@ class Parser
       elseIf (consume(TokenType.symbol_slash_slash))
         # Identifier access, e.g. table//key -> table["key"]
         local name = read_identifier
-        return parse_member_access( CmdElementAccess(t, context, CmdLiteralString(t,name)) )
+        local result = parse_member_access( CmdElementAccess(t, context, CmdLiteralString(t,name)) ) : Cmd
+        if (next_is(TokenType.symbol_open_paren))
+          local args = CmdArgs()
+          parse_args( args )
+          result = CmdAccess( t, result, "call", args )
+        endIf
+        return result
 
       elseIf (consume(TokenType.symbol_open_bracket))
         # context[index]
