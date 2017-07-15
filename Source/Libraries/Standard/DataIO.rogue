@@ -11,6 +11,9 @@ class DataReader : Reader<<Byte>>
 
     method init( source )
 
+    method init( file:File )
+      init( file.reader )
+
     method init( list:Byte[] )
       init( list.reader )
 
@@ -122,6 +125,9 @@ class DataWriter : Writer<<Byte>>
 
   METHODS
     method init( output )
+
+    method init( file:File )
+      init( file.writer )
 
     method init( list:Byte[] )
       init( list.writer )
