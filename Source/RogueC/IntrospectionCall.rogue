@@ -124,6 +124,12 @@ class IntrospectionCallHandler
     method discard_unused_methods
       methods.discard( not $.is_used )
 
+      if (return_type and methods.count)
+        # The original placeholder return type may have been culled from the program;
+        # update it.
+        return_type = methods.first.return_type
+      endIf
+
     method generate_call( t:Token )->Cmd
       local args = CmdArgs()
       forEach (type at i in parameter_types)
