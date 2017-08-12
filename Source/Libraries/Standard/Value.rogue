@@ -1092,7 +1092,9 @@ class ValueList : Value
     method set( index:Int32, new_value:Value )->Value [preferred]
       if (index < 0) return this
 
-      while (index >= data.count) add( null as Value )
+      while (index >= data.count) add( NullValue )
+
+      if (new_value is null) new_value = NullValue
       data.set( index, new_value )
 
       return this
@@ -1129,8 +1131,8 @@ class ValueList : Value
           if (pretty_print) buffer.println
         endIf
 
-        if (value or value.is_logical) value.to_json( buffer, flags )
-        else                           buffer.print( "null" )
+        if (value is not null and (value or value.is_logical)) value.to_json( buffer, flags )
+        else                                                   buffer.print( "null" )
       endForEach
 
       if (pretty_print)
@@ -1340,6 +1342,7 @@ class ValueTable : Value
       return set( ""+index, value )
 
     method set( key:String, new_value:Value )->this [preferred]
+      if (new_value is null) new_value = NullValue
       data.set( key, new_value )
       return this
 
@@ -1383,8 +1386,8 @@ class ValueTable : Value
           if (indent) buffer.indent += 2
         endIf
 
-        if (value or value.is_logical) value.to_json( buffer, flags )
-        else                           buffer.print( "null" )
+        if (value is not null and (value or value.is_logical)) value.to_json( buffer, flags )
+        else                                                   buffer.print( "null" )
 
         if (indent) buffer.indent -= 2
       endForEach
