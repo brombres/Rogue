@@ -528,6 +528,12 @@ class Int32 [primitive]
     method create( value:Logical )->Int32
       return select{ value:1 || 0 }
 
+    method maximum->Int32 [macro]
+      2147483647
+
+    method minimum->Int32 [macro]
+      native "(-2147483647 - 1)"
+
   METHODS
     method abs->Int32
       if (this >= 0) return this
@@ -627,12 +633,6 @@ class Int32 [primitive]
       local p2 = 1
       while (p2 < this) p2 = p2 :<<: 1
       return p2
-
-    method maximum->Int32 [macro]
-      2147483647
-
-    method minimum->Int32 [macro]
-      native "(-2147483647 - 1)"
 
     method sign->Int32
       return select{ this>0:1 || this<0:-1 || 0 }
