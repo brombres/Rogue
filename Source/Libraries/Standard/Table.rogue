@@ -91,6 +91,15 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
+    method discard( query:(Function(TableEntry<<$KeyType,$ValueType>>)->Logical) )
+      local discard_list : $KeyType[]
+      local cur = first_entry
+      while (cur)
+        if (query(cur)) (ensure discard_list).add( cur.key )
+        cur = cur.next_entry
+      endWhile
+      if (discard_list) remove( forEach in discard_list )
+
     method entries( list=null:TableEntry<<$KeyType,$ValueType>>[] )->TableEntry<<$KeyType,$ValueType>>[]
       # Returns a list of table entries.
       ensure list( count )
@@ -188,6 +197,19 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       buffer.print( '}' )
       return buffer
+
+    method random->TableEntry<<$KeyType,$ValueType>>
+      if (count == 0) return null
+
+      local r = Random.int32( count )
+      local cur = first_entry
+      while (cur)
+        --r
+        if (r < 0) return cur
+        cur = cur.next_entry
+      endWhile
+
+      return first_entry  # shouldn't ever happen
 
     method remove( key:$KeyType )->$ValueType
       local entry = find( key )
@@ -431,7 +453,7 @@ class TableEntry<<$KeyType,$ValueType>>
       hash = _hash
 
     method to->String
-      return "($ $:$)" (type_name, key, value)
+      return "($:$)" (key, value)
 
     # Support tuple-like protocol for destructuring assignment
     method _1->$KeyType
