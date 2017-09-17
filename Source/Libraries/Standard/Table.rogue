@@ -511,12 +511,20 @@ class TableValueReader<<$KeyType,$ValueType>> : Reader<<$ValueType>>
 endClass
 
 class StringTable<<$ValueType>> : Table<<String,$ValueType>>
-  # Adds support for StringBuilder keys.
+  # Adds support for StringBuilder and Character[] keys.
   METHODS
     method contains( key:StringBuilder )->Logical
       return find_key( key )?
 
+    method contains( key:Character[] )->Logical
+      return find_key( key )?
+
     method find( key:StringBuilder )->TableEntry<<String,$ValueType>>
+      local key_string = find_key( key )
+      if (not key_string) return null
+      return find( key_string )
+
+    method find( key:Character[] )->TableEntry<<String,$ValueType>>
       local key_string = find_key( key )
       if (not key_string) return null
       return find( key_string )
@@ -534,7 +542,38 @@ class StringTable<<$ValueType>> : Table<<String,$ValueType>>
 
       return null
 
+    method find_key( key:Character[] )->String
+      local len  = key.count
+      local hash = 0
+      forEach (ch in key)
+        hash = ((hash:<<:3) - hash) + ch
+      endForEach
+
+      local cur = first_entry
+      while (cur)
+        local k = cur.key
+        if (k.hash_code == hash and k.count == len)
+          contingent
+            forEach (ch at index in key)
+              necessary (ch == k[index])
+            endForEach
+            return k
+          endContingent
+        endIf
+        cur = cur.next_entry
+      endWhile
+
+      return null
+
     method get( key:StringBuilder )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return get( key_string )
+
+    method get( key:Character[] )->$ValueType
       local key_string = find_key( key )
       if (not key_string)
         local default_value : $ValueType
@@ -550,9 +589,23 @@ class StringTable<<$ValueType>> : Table<<String,$ValueType>>
       endIf
       return remove( key_string )
 
+    method remove( key:Character[] )->$ValueType
+      local key_string = find_key( key )
+      if (not key_string)
+        local default_value : $ValueType
+        return default_value
+      endIf
+      return remove( key_string )
+
     method set( key:StringBuilder, value:$ValueType )->this
       local key_string = find_key( key )
-      if (not key_string) return this
+      if (not key_string) key_string = key->String
+      set( key_string, value )
+      return this
+
+    method set( key:Character[], value:$ValueType )->this
+      local key_string = find_key( key )
+      if (not key_string) key_string = String( key )
       set( key_string, value )
       return this
 
