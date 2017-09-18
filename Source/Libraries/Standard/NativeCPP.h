@@ -523,9 +523,9 @@ struct RogueString : RogueObject
   RogueInt32 cursor_index;
   RogueInt32 hash_code;
 #if ROGUE_GC_MODE_BOEHM_TYPED
-  RogueByte  *utf8;
+  char       *utf8;
 #else
-  RogueByte  utf8[];
+  char       utf8[];
 #endif
 };
 
@@ -534,7 +534,7 @@ ROGUE_EXPORT_C RogueString* RogueString_create_from_utf8( const char* utf8, int 
 ROGUE_EXPORT_C RogueString* RogueString_create_from_characters( RogueCharacterList* characters );
 void         RogueString_print_string( RogueString* st );
 void         RogueString_print_characters( RogueCharacter* characters, int count );
-void         RogueString_print_utf8( RogueByte* utf8, int count );
+void         RogueString_print_utf8( char* utf8, int count );
 
 RogueCharacter RogueString_character_at( RogueString* THIS, int index );
 RogueInt32     RogueString_set_cursor( RogueString* THIS, int index );

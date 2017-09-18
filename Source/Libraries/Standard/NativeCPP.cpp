@@ -339,7 +339,7 @@ RogueString* RogueString_create_from_characters( RogueCharacter_List* characters
   }
 
   RogueString* result = RogueString_create_with_byte_count( utf8_count );
-  RogueByte*   dest = result->utf8;
+  char*   dest = result->utf8;
   for (int i=0; i<count; ++i)
   {
     RogueCharacter ch = data[i];
@@ -439,7 +439,7 @@ void RogueString_print_characters( RogueCharacter* characters, int count )
   }
 }
 
-void RogueString_print_utf8( RogueByte* utf8, int count )
+void RogueString_print_utf8( char* utf8, int count )
 {
   --utf8;
   while (--count >= 0)
@@ -453,7 +453,7 @@ RogueCharacter RogueString_character_at( RogueString* THIS, int index )
   if (THIS->is_ascii) return (RogueCharacter) THIS->utf8[ index ];
 
   RogueInt32 offset = RogueString_set_cursor( THIS, index );
-  RogueByte* utf8 = THIS->utf8;
+  char* utf8 = THIS->utf8;
 
   RogueCharacter ch = utf8[ offset ];
   if (ch & 0x80)
@@ -494,7 +494,7 @@ RogueInt32 RogueString_set_cursor( RogueString* THIS, int index )
     return THIS->cursor_offset = THIS->cursor_index = index;
   }
 
-  RogueByte* utf8 = THIS->utf8;
+  char* utf8 = THIS->utf8;
 
   RogueInt32 c_offset;
   RogueInt32 c_index;
@@ -538,7 +538,7 @@ RogueString* RogueString_validate( RogueString* THIS )
   int character_count = 0;
   int byte_count = THIS->byte_count;
   int i;
-  RogueByte* utf8 = THIS->utf8;
+  char* utf8 = THIS->utf8;
   for (i=0; i<byte_count; ++character_count)
   {
     int b = utf8[ i ];
@@ -591,7 +591,7 @@ RogueString* RogueString_validate( RogueString* THIS )
 
   int code = 0;
   int len = THIS->byte_count;
-  RogueByte* src = THIS->utf8 - 1;
+  char* src = THIS->utf8 - 1;
   while (--len >= 0)
   {
     code = ((code<<3) - code) + *(++src);
