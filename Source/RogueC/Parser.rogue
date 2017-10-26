@@ -95,6 +95,16 @@ class Parser
       while (consume(TokenType.eol)) found_any = true
       return found_any
 
+    method consume_optional->Logical
+      if (not consume(TokenType.symbol_open_bracket)) return false
+      local is_optional = false
+      while (consume("optional")) is_optional = true
+      if (not next_is(TokenType.symbol_close_bracket))
+        throw peek.error( "Keyword 'optional' or closing ']' expected." )
+      endIf
+      must_consume( TokenType.symbol_close_bracket )
+      return is_optional
+
     method error( message:String )->RogueError
       throw reader.peek.error( message )
 
@@ -1125,7 +1135,7 @@ class Parser
           throw peek.error( "Filepath expected." )
         endIf
         local filepath = read->String
-        cur_statement_list.add( CmdIncludeNative(t,filepath,"code") )
+        cur_statement_list.add( CmdIncludeNative(t,filepath,"code",consume_optional) )
         return
       endIf
 
@@ -1134,7 +1144,7 @@ class Parser
           throw peek.error( "Filepath expected." )
         endIf
         local filepath = read->String
-        cur_statement_list.add( CmdIncludeNative(t,filepath,"header") )
+        cur_statement_list.add( CmdIncludeNative(t,filepath,"header",consume_optional) )
         return
       endIf
 
@@ -1662,7 +1672,7 @@ class Parser
           throw peek.error( "Filepath expected." )
         endIf
         local filepath = read->String
-        RogueC.include_native( t, filepath, "code" )
+        RogueC.include_native( t, filepath, "code", consume_optional )
         return true
 
       elseIf (consume(TokenType.keyword_includeNativeHeader))
@@ -1670,7 +1680,7 @@ class Parser
           throw peek.error( "Filepath expected." )
         endIf
         local filepath = read->String
-        RogueC.include_native( t, filepath, "header" )
+        RogueC.include_native( t, filepath, "header", consume_optional )
         return true
 
       elseIf (consume(TokenType.directive_essential))

@@ -5380,16 +5380,17 @@ endClass
 
 class CmdIncludeNative : CmdNativeSource
   PROPERTIES
-    filepath  : String
-    file_type : String
+    filepath    : String
+    file_type   : String
+    is_optional : Logical
 
   METHODS
-    method init( t, filepath, file_type )
+    method init( t, filepath, file_type, is_optional )
       require (file_type == "code" or file_type == "header")
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdIncludeNative
       if (new_t) t = new_t
-      return CmdIncludeNative( t, filepath, file_type )
+      return CmdIncludeNative( t, filepath, file_type, is_optional )
 
     method resolve( scope:Scope )->Cmd
       return this

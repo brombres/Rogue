@@ -27,9 +27,10 @@ class DependencyInjectionVisitor : Visitor
 
     method on_enter( cmd:CmdIncludeNative )
       if (cmd.filepath)
-        RogueC.include_native( cmd.t, cmd.filepath, cmd.file_type )
+        if (RogueC.include_native( cmd.t, cmd.filepath, cmd.file_type, cmd.is_optional ))
+          injected_dependencies = true
+        endIf
         cmd.filepath = null
-        injected_dependencies = true
       endIf
 
     method on_enter( cmd:CmdMakeRequisite )

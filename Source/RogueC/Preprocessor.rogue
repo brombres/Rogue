@@ -33,6 +33,13 @@ class Preprocessor
       reader.read
       return true
 
+    method consume( identifier:String )->Logical
+      local t = reader.peek
+      if (t.type is not TokenType.identifier) return false
+      if (t->String != identifier) return false
+      reader.read
+      return true
+
     method process( keep_tokens:Logical, depth:Int32, stop_on_eol:Logical )
       ++depth
       while (reader.has_another)
@@ -70,11 +77,12 @@ class Preprocessor
 
           elseIf (t.type is TokenType.directive_include)
             local filepath_t = reader.read
+            local is_optional = consume_optional
             if (keep_tokens)
               if (filepath_t.type is not TokenType.literal_string)
                 throw reader.error( "Filepath expected." )
               endIf
-              RogueC.include_source( t, filepath_t->String )
+              RogueC.include_source( t, filepath_t->String, &is_optional=is_optional )
             endIf
             nextIteration
 
@@ -159,11 +167,24 @@ class Preprocessor
 
       endWhile
 
+    method consume_optional->Logical
+      if (not consume(TokenType.symbol_open_bracket)) return false
+      local is_optional = false
+      while (consume("optional")) is_optional = true
+      if (not next_is(TokenType.symbol_close_bracket))
+        throw reader.peek.error( "Keyword 'optional' or closing ']' expected." )
+      endIf
+      must_consume( TokenType.symbol_close_bracket )
+      return is_optional
+
     method must_consume( type:TokenType )
       local message = "Expected '$'." (type.name)
       if (not reader.has_another) throw RogueError( message )
       local t = reader.read
       if (t.type is not type) throw t.error( message )
+
+    method next_is( type:TokenType )->Logical
+      return reader.next_is( type )
 
     method parse_logical_expression->Logical
       return parse_logical_or
