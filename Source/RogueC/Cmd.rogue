@@ -3203,7 +3203,12 @@ class CmdTuple : Cmd
         elements[i] = elements[i].require_value
         args.add(elements[i])
         if (i > 0) type_string += ","
-        type_string += elements[i].type.name
+
+        local element_type = elements[i].type
+        if (element_type is Program.type_null)
+          throw el.t.error( "Ambiguous 'null' in tuple creation. Specify a datatype with 'null as String' etc." )
+        endIf
+        type_string += element_type.name
       endForEach
       return CmdAccess( t, "Tuple<<$>>"(type_string), args ).resolve( scope )
 
