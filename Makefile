@@ -97,7 +97,7 @@ Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
-Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC)
+Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo.rogue
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling Rogo.rogue -> Rogo.cpp..."
 	@echo -------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ Programs/RogueC/$(PLATFORM)/rogo: Source/RogueC/Build/Rogo.cpp
 	@echo "Compiling Rogo.cpp -> Programs/RogueC/$(PLATFORM)/rogo..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
 
 libraries:
 	@mkdir -p Programs/RogueC/$(PLATFORM)

@@ -9,10 +9,101 @@ endIf
 
 if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("BuildCore.rogue",".rogo/build"))
   println "Recompiling build script..."
-  if (0 != System.run( "roguec $ --compile --output=.rogo/build" (source_file) ))
+
+  local cmd = "roguec $ --main --output=.rogo/build" (source_file)
+  println cmd
+  if (0 != System.run(cmd))
     println "ERROR compiling $." (source_file)
     System.exit 1
   endIf
+
+  local compiler_invocation : String
+  native @|#if defined(DEFAULT_CXX)
+          |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
+          |#else
+          |  $compiler_invocation = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
+          |#endif
+
+
+  if (System.os == "macOS")
+    install_brew
+    install_library( "sox --with-libvorbis" )
+
+    local png_folder = library_location( "libpng" )
+    local jpeg_folder = library_location( "libjpeg" )
+    local freetype_folder = library_location( "freetype" )
+    cmd = ''$ .rogo/Build.cpp ''...
+        ''-I "$/include" -L "$/lib" -lpng ''...
+        ''-I "$/include" -L "$/lib" -ljpeg ''...
+        ''-I "$/include/freetype2" -L "$/lib" -lfreetype ''...
+        ''-o .rogo/build ''...
+        (compiler_invocation,png_folder,png_folder,jpeg_folder,jpeg_folder,freetype_folder,freetype_folder)
+  else
+    cmd = ''$ .rogo/Build.cpp -lpng -ljpeg -lfreetype ''...
+        ''-I /usr/include/freetype2 ''...
+        ''-o .rogo/build ''...
+        (compiler_invocation)
+  endIf
+
+  println cmd
+  if (0 != System.run(cmd)) System.exit( 1 )
 endIf
 
 System.exit( System.run(".rogo/build " + System.command_line_arguments.join) )
+
+routine require_command_line
+  if (System.environment["IDE"])
+    throw Error( "$:$: error:Run 'make $' from the command line to install necessary libraries."...
+    ($sourceFilepath,$sourceLine,select{System.environment["TARGET"]||""}.to_lowercase) )
+  endIf
+endRoutine
+
+
+routine install_brew
+  if (0 == System.run("which brew >& /dev/null")) return
+
+  require_command_line
+  println "Installing brew"
+  if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+    local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    println cmd
+    if (0 == System.run(cmd)) return
+    throw Error( "Failed to install Homebrew." )
+  endIf
+
+  throw Error( "Missing required dependency 'brew' (Homebrew)." )
+endRoutine
+
+
+routine install_library( library_name:String )
+  if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
+
+  require_command_line
+  if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
+    throw Error( "Missing required library '$'." (library_name) )
+  endIf
+
+  local cmd = "brew install $" (library_name)
+  println cmd
+  if (0 != System.run(cmd)) throw Error( "Failed to install library '$'." (library_name) )
+endRoutine
+
+
+routine library_location( library_name:String )->String
+  install_library( library_name )
+
+  if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+
+  local reader = LineReader( File.reader( ".build.temp" ) )
+  forEach (line in reader)
+    if (line.contains("/include/"))
+      reader.close
+      File.delete( ".build.temp" )
+      return line.before_first( "/include/" )
+    endIf
+  endForEach
+
+  throw Error( "Library not installed: '$'." (library_name) )
+
+endRoutine
+
