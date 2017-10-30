@@ -182,16 +182,26 @@ class File
       if (File.is_folder(to_filepath))
         to_filepath += "/" + File.filename(from_filepath)
       else
-        local folder = File.folder( to_filepath )
-        File.create_folder( folder )
+        File.create_folder( File.folder(to_filepath) )
       endIf
 
-      local reader = File.reader( from_filepath )
-      local writer = File.writer( to_filepath )
+      if (File.is_folder(from_filepath))
+        File.create_folder( to_filepath )
+      else
+        local reader = File.reader( from_filepath )
+        local writer = File.writer( to_filepath )
 
-      while (reader.has_another) writer.write( reader.read )
+        while (reader.has_another) writer.write( reader.read )
 
-      writer.close
+        writer.close
+      endIf
+
+    method copy_newer( from_filepath:String, to_filepath:String )
+      if (File.is_folder(to_filepath))
+        copy_newer( from_filepath, to_filepath + "/" + File.filename(from_filepath) )
+      elseIf (File.is_newer_than(from_filepath,to_filepath))
+        copy( from_filepath, to_filepath )
+      endIf
 
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
@@ -284,8 +294,8 @@ class File
               |#endif
 
     method is_newer_than( filepath:String, other_filepath:String )->Logical
-      if (not File.exists(other_filepath)) return true
       if (not File.exists(filepath))       return false
+      if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath) > File.timestamp(other_filepath))
 
     method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path )->String[]

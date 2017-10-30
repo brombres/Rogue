@@ -1,0 +1,18 @@
+local source_file = "BuildCore.rogue"
+if (not File.exists(source_file))
+  source_file = "Build.rogue"
+  if (not File.exists(source_file))
+    println "ERROR: Neither Build.rogue nor BuildCore.rogue exists."
+    System.exit 1
+  endIf
+endIf
+
+if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("BuildCore.rogue",".rogo/build"))
+  println "Recompiling build script..."
+  if (0 != System.run( "roguec $ --compile --output=.rogo/build" (source_file) ))
+    println "ERROR compiling $." (source_file)
+    System.exit 1
+  endIf
+endIf
+
+System.exit( System.run(".rogo/build " + System.command_line_arguments.join) )

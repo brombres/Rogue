@@ -1,0 +1,102 @@
+class Files
+  # Manages a set of filepath strings.
+  PROPERTIES
+    base_folder : String
+    filepaths   = String[]
+    lookup      = Set<<String>>()
+
+  METHODS
+    method init( base_folder, &ignore_hidden )
+      if (File.is_folder(base_folder))
+        base_folder = File.before_wildcard_pattern( base_folder ) + "/"
+        add( "**", &ignore_hidden=ignore_hidden )
+      else
+        local filename = File.filename( base_folder )
+        base_folder = File.folder( base_folder )
+        if (base_folder == "") base_folder = "."
+        base_folder += "/"
+        add( filename )
+      endIf
+
+    method init( base_folder, pattern:String, &ignore_hidden )
+      add( pattern, &ignore_hidden=ignore_hidden )
+
+    method add( pattern:String, &ignore_hidden )->this
+      forEach (listing_filepath in File.listing(base_folder+pattern,&recursive,&ignore_hidden=ignore_hidden))
+        if (not lookup.contains(listing_filepath))
+          filepaths.add( listing_filepath )
+          lookup.add( listing_filepath )
+        endIf
+      endForEach
+
+      return this
+
+    method any_newer_than( filepath:String )->Logical
+      if (not File.exists(filepath)) return true
+      local timestamp = newest_timestamp
+      if (not timestamp.exists) return false
+      return (timestamp.value > File.timestamp(filepath))
+
+    method contains( filepath:String )->Logical
+      return lookup.contains( filepath )
+
+    method copy( to_folder:String )
+      File.create_folder( to_folder )
+      to_folder += "/"
+      local base_count = base_folder.count
+      forEach (filepath in filepaths)
+        local to_filepath = to_folder + filepath.rightmost(-base_count)
+        File.copy( filepath, to_filepath )
+      endForEach
+
+    method copy_newer( to_folder:String )
+      File.create_folder( to_folder )
+      to_folder += "/"
+      local base_count = base_folder.count
+      forEach (filepath in filepaths)
+        local to_filepath = to_folder + filepath.rightmost(-base_count)
+        File.copy_newer( filepath, to_filepath )
+      endForEach
+
+    method count->Int32
+      return filepaths.count
+
+    method get( index:Int32 )->String
+      return filepaths[ index ]
+
+    method newest_timestamp->Real64?
+      local result : Real64?
+      forEach (filepath in filepaths)
+        if (File.exists(filepath))
+          local timestamp = File.timestamp( filepath )
+          if (not result.exists or timestamp > result.value) result = timestamp
+        endIf
+      endForEach
+      return result
+
+    method oldest_timestamp->Real64?
+      local result : Real64?
+      forEach (filepath in filepaths)
+        if (File.exists(filepath))
+          local timestamp = File.timestamp( filepath )
+          if (not result.exists or timestamp < result.value) result = timestamp
+        endIf
+      endForEach
+      return result
+
+    method remove( pattern:String )->this
+      local write_pos = 0
+      forEach (filepath in filepaths)
+        if (File.matches_wildcard_pattern(filepath,pattern))
+          lookup.remove( filepath )
+        else
+          filepaths[ write_pos ] = filepath
+          ++write_pos
+        endIf
+      endForEach
+      filepaths.discard_from( write_pos )
+      return this
+
+    method to->String
+      return filepaths->String
+endClass

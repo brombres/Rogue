@@ -21,7 +21,7 @@ else
   endif
 endif
 
-all: roguec
+all: roguec rogo
 
 -include Local.mk
 
@@ -46,6 +46,8 @@ exhaustive: roguec
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
 roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
+
+rogo: Source/RogueC/Build/Rogo.cpp Programs/RogueC/$(PLATFORM)/rogo $(BINDIR)/rogo
 
 update_bootstrap:
 	mkdir -p Source/RogueC/Bootstrap
@@ -95,12 +97,26 @@ Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	cd Source/RogueC && mkdir -p Build
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
+Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC)
+	@echo -------------------------------------------------------------------------------
+	@echo "Recompiling Rogo.rogue -> Rogo.cpp..."
+	@echo -------------------------------------------------------------------------------
+	mkdir -p Source/RogueC/Build
+	roguec Source/Tools/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
+
 Programs/RogueC/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/$(PLATFORM)/roguec..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
+
+Programs/RogueC/$(PLATFORM)/rogo: Source/RogueC/Build/Rogo.cpp
+	@echo -------------------------------------------------------------------------------
+	@echo "Compiling Rogo.cpp -> Programs/RogueC/$(PLATFORM)/rogo..."
+	@echo -------------------------------------------------------------------------------
+	mkdir -p Programs
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Build/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
 
 libraries:
 	@mkdir -p Programs/RogueC/$(PLATFORM)
@@ -130,6 +146,16 @@ $(BINDIR)/roguec:
 	@echo "    println '\"Hello World!\"' > Hello.rogue"
 	@echo '    roguec Hello.rogue --execute'
 	@echo
+
+$(BINDIR)/rogo:
+	@echo -------------------------------------------------------------------------------
+	@echo Creating $(BINDIR)/rogo linked to Programs/RogueC/$(PLATFORM)/rogo
+	@echo -------------------------------------------------------------------------------
+	printf "%s\nexec \"%s/Programs/RogueC/$(PLATFORM)/rogo\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > rogo.script
+	@echo Copying rogo.script to $(BINDIR)/rogo
+	$(SUDO_CMD) cp rogo.script $(BINDIR)/rogo; \
+	$(SUDO_CMD) chmod a+x $(BINDIR)/rogo; \
+	rm rogo.script
 
 test:
 	roguec Test.rogue --execute --debug --test

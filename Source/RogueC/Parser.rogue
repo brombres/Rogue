@@ -1473,6 +1473,7 @@ class Parser
 
       local println_pos : Int32
       local println_statement_count = cur_statement_list.count
+      local implicit_loop_stack_count = implicit_loop_stack.count
       local cmd_println : CmdPrintln
       if ((next_is_identifier("println") or next_is_identifier("print")) and reader.peek(1).type is TokenType.symbol_open_paren)
         # Prepare to parse the print/println two different ways to allow a special syntax exception.
@@ -1483,6 +1484,9 @@ class Parser
         #
         #   1.  println( (a + b) ) / c   # technically correct but probably unintended
         #   2.  println( (a + b) / c )   # probably what developer intended
+        #
+        # If an implicit loop is parsed using Method 1 then we stop; otherwise a second implicit loop
+        # is generated when Method 2 is used. 'implicit_loop_stack_count' is used to check this.
         ensure cmd_println( peek )
         println_pos = reader.position
       endIf
@@ -1547,9 +1551,10 @@ class Parser
         endIf
       endIf
 
-      if (cmd_println and println_statement_count == cur_statement_list.count)
-        # Try an alternate variation of print/println as long as no new commands or locals
-        # have been added to the statement list as a side-effect of parsing other commands.
+      if (cmd_println and println_statement_count == cur_statement_list.count and implicit_loop_stack_count == implicit_loop_stack.count)
+        # Try an alternate variation of print/println as long as no new commands, locals,
+        # or implicit loops have been added to the statement list as a side-effect of
+        # parsing other commands.
         local final_pos = reader.position
         cmd_println.standard = expression
         reader.position = println_pos
