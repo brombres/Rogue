@@ -10,7 +10,7 @@ endIf
 if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("BuildCore.rogue",".rogo/build"))
   println "Recompiling build script..."
 
-  local cmd = "roguec $ --main --output=.rogo/build" (source_file)
+  local cmd = "roguec --target=C++,Console $ --main --output=.rogo/build" (source_file)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling $." (source_file)
@@ -49,7 +49,7 @@ if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("Build
   if (0 != System.run(cmd)) System.exit( 1 )
 endIf
 
-System.exit( System.run(".rogo/build " + System.command_line_arguments.join) )
+System.exit( System.run(''.rogo/build $'' (System.command_line_arguments.join(" "))) )
 
 routine require_command_line
   if (System.environment["IDE"])
