@@ -1,19 +1,15 @@
-local source_file = "BuildCore.rogue"
-if (not File.exists(source_file))
-  source_file = "Build.rogue"
-  if (not File.exists(source_file))
-    println "ERROR: Neither Build.rogue nor BuildCore.rogue exists."
-    System.exit 1
-  endIf
+if (not File.exists("Build.rogue"))
+  println "ERROR: Build.rogue does not exist."
+  System.exit 1
 endIf
 
 if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("BuildCore.rogue",".rogo/build"))
   println "Recompiling build script..."
 
-  local cmd = "roguec --target=C++,Console $ --main --output=.rogo/build" (source_file)
+  local cmd = "roguec --target=C++,Console Build.rogue --main --output=.rogo/build"
   println cmd
   if (0 != System.run(cmd))
-    println "ERROR compiling $." (source_file)
+    println "ERROR compiling Build.rogue."
     System.exit 1
   endIf
 
