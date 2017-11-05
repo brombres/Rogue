@@ -958,7 +958,7 @@ class Parser
             first = false
             consume_eols
 
-            local is_flag = consume( TokenType.symbol_ampersand )
+            local is_flag = consume( TokenType.symbol_ampersand )                  # &x
 
             # identifier
             t = peek
@@ -2746,14 +2746,18 @@ class Parser
         while (first or consume(TokenType.symbol_comma))
           first = false
           consume_eols
-          if (consume(TokenType.symbol_ampersand))
+          local is_passthrough_arg = consume( TokenType.symbol_ampersand_equals )
+          local is_named_arg = is_passthrough_arg or consume( TokenType.symbol_ampersand )
+          if (is_named_arg)
             if (not named_args) named_args = CmdNamedArg[]
             local is_negative = consume( TokenType.symbol_exclamation_point )
             local arg_t = peek
             local arg = CmdNamedArg( arg_t, read_identifier )
             arg.is_negative = is_negative
             named_args.add( arg )
-            if (consume(TokenType.symbol_equals))
+            if (is_passthrough_arg)
+              arg.value = CmdAccess( arg.t, arg.name )   # &=x -> &x=x
+            elseIf (consume(TokenType.symbol_equals))
               arg.value = parse_expression_allowing_query
             endIf
           else

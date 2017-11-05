@@ -375,8 +375,8 @@ class Scope
 
         # Go ahead and place any named args that we've been able to infer the index of.
         # This only works if the arg belongs in the middle or at the end of existing
-        # args - otherwise we have to wait until the end of the method so that default
-        # parameter values can be filled in correctly.
+        # args, not beyond the end - otherwise we have to wait until the end of the method
+        # so that default parameter values can be filled in correctly.
         local named_args = access.named_args.remove( function(arg)=>arg.inferred_index.exists and arg.inferred_index.value != -1 )
         named_args.sort( function(a,b)=>a.inferred_index.value < b.inferred_index.value )
         forEach (named_arg in named_args)
