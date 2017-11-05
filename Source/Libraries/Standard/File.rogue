@@ -298,12 +298,14 @@ class File
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath) > File.timestamp(other_filepath))
 
-    method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path )->String[]
+    method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
       local options = FileOptions()
       if (ignore_hidden) options = options.ignore_hidden
       if (recursive)     options = options.recursive
       if (absolute)      options = options.absolute
       if (omit_path)     options = options.omit_path
+      if (files)         options = options.files
+      if (folders)       options = options.folders
       return listing( folder, options )
 
     method listing( folder:String, options:FileOptions )->String[]
@@ -673,8 +675,8 @@ class File
     method is_newer_than( other_filepath:String )->Logical [macro]
       File.is_newer_than( this.filepath, other_filepath )
 
-    method listing( &ignore_hidden, &recursive, &absolute )->String[] [macro]
-      File.listing( this.filepath, ignore_hidden, recursive, absolute )
+    method listing( &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[] [macro]
+      File.listing( this.filepath, ignore_hidden, recursive, absolute, omit_path, files, folders )
 
     method listing( options:FileOptions )->String[] [macro]
       File.listing( this.filepath, options )
