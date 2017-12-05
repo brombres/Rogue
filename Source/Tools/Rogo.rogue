@@ -6,7 +6,18 @@ endIf
 if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("BuildCore.rogue",".rogo/build"))
   println "Recompiling build script..."
 
-  local cmd = "roguec --target=C++,Console Build.rogue --main --output=.rogo/build"
+  local defs = @{ "ROGUEC":"roguec" }
+  scan_defs( File("BuildCore.rogue"), defs )
+  scan_defs( File("Build.rogue"), defs )
+
+  #println "DEFINITIONS (change with meta-directives in build file: #$ NAME = VALUE)"
+  #forEach (key in defs.keys)
+  #println "$ = $" (key,defs[key])
+  #endForEach
+
+  local libraries = ""
+  if (defs.contains("LIBRARIES")) libraries = ''--libraries="$"'' (defs//LIBRARIES->String.replacing("\"", "\\\""))
+  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/build $" (defs//ROGUEC,libraries)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
@@ -100,6 +111,21 @@ routine library_location( library_name:String )->String
   endForEach
 
   throw Error( "Library not installed: '$'." (library_name) )
+
+endRoutine
+
+routine scan_defs( file:File, defs:Value )
+  if (not file.exists) return
+
+  forEach (line in LineReader(file))
+    line = line.trimmed
+    if (line.begins_with("#$"))
+      local cmd = line.rightmost( -2 )
+      local args = cmd.after_first( "=" ).trimmed
+      cmd = cmd.before_first( "=" ).trimmed
+      defs[ cmd ] = args
+    endIf
+  endForEach
 
 endRoutine
 
