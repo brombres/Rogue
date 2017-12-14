@@ -4,6 +4,7 @@ class Process
   DEPENDENCIES
     nativeHeader #include <spawn.h>
     nativeHeader #include <poll.h>
+    nativeHeader #include <sys/wait.h>
 
   PROPERTIES
     args          : String[]
