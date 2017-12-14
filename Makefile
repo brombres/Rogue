@@ -186,6 +186,10 @@ clean:
 	rm -f ./a.out
 	rm -f ./hello
 
+unlink:
+	echo "\nUnlinking program by removing $(BINDIR)/roguec"; \
+	$(SUDO_CMD) rm $(BINDIR)/roguec;
+
 docs:
 	cd Source/DocGen && make
 
