@@ -187,8 +187,20 @@ clean:
 	rm -f ./hello
 
 unlink:
-	echo "\nUnlinking program by removing $(BINDIR)/roguec"; \
-	$(SUDO_CMD) rm $(BINDIR)/roguec;
+	@if [ -f "$$(which roguec)" ]; \
+	then \
+	  echo "Unlinking program by removing $$(which roguec)'"; \
+	  $(SUDO_CMD) rm -f $$(which roguec); \
+	  $(SUDO_CMD) rm -f $(BINDIR)/roguec; \
+	else \
+	  if [ -f "$(BINDIR)/roguec" ]; \
+	  then \
+	    echo "Unlinking program by removing $(BINDIR)/roguec'"; \
+	    $(SUDO_CMD) rm -f $(BINDIR)/roguec; \
+	  else \
+	    echo "Nothing to unlink" ; \
+	  fi \
+	fi
 
 docs:
 	cd Source/DocGen && make
