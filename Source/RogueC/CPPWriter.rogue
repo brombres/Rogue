@@ -359,7 +359,10 @@ augment Program
       # write dynamic dispatch methods
       forEach (sig in native_method_signature_list)
         local m = native_method_signature_lookup[sig]  # one of the methods using this signature
-        if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
+        if (m.called_dynamically or (RogueC.all_methods_callable_dynamically ...
+                                     and not m.is_global ...
+                                     and m.type_context.is_reference))
+          writer.println( "// " + m )
           writer.print( "extern ")
           if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
           else                                              writer.print( m.return_type )
