@@ -5,6 +5,8 @@ augment Program
   PROPERTIES
     intptr_name : String
     intptr_size : Int32
+    int_name : String
+    int_size : Int32
 
   METHODS
     method init
@@ -21,10 +23,23 @@ augment Program
         else
           throw Error("Unsupported platform pointer size")
         endIf
+        $if defined(INT_SIZE)
+          local int_size = INT_SIZE  # may be defined when compile platform is different architecture
+        $else
+          local int_size = native("sizeof(int)")->Int32
+        $endIf
+        if int_size == 4
+          int_name = "Int32"
+        elseIf int_size == 8
+          int_name = "Int64"
+        else
+          throw Error("Unsupported platform int size")
+        endIf
       endBlock
 
     method configure
       Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), intptr_name )
+      Preprocessor.definitions["Int"] = Tokenizer().tokenize(("compiler-generated"), int_name )
 
     method validate_cpp_name( name:String )->String
       local begins_with_code_prefix = false
