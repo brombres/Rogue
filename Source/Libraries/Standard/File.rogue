@@ -750,7 +750,7 @@ class FileReader : Reader<<Byte>>
       count = 0
       return this
 
-    method fp->Int32 [macro]
+    method fp->IntPtr [macro]
       native "$this->fp"
 
     method has_another->Logical
@@ -852,7 +852,7 @@ class FileWriter : Writer<<Byte>>
       buffer.clear
       return this
 
-    method fp->Int32 [macro]
+    method fp->IntPtr [macro]
       native( "$this->fp" )
 
     method open( filepath, append=false:Logical )->Logical
