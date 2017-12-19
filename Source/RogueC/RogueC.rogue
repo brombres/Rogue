@@ -8,6 +8,7 @@ $define RELEASE_DATE    "November 5, 2017"
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CythonPlugin.rogue"
+$include "PythonPlugin.rogue"
 $include "CloneArgs.rogue"
 $include "Cmd.rogue"
 $include "Local.rogue"
@@ -227,8 +228,8 @@ class RogueC [singleton]
 
           usage += @|    Specify one or more compile targets that are used with conditional code
                     |    compilation ('$if ("C++") ...').  C++ is the only supported language
-                    |    target.  "Cython" is an optional plug-in target.  Arbitrary platforms
-                    |    may be added at will, e.g. "iOS", "macOS", etc.
+                    |    target.  "Python" and "Cython" are optional plug-in targets.  Arbitrary
+                    |    platforms may be added at will, e.g. "iOS", "macOS", etc.
                     |
                     |  --test
                     |    Compiled program includes any defined unit tests and runs them on launch.

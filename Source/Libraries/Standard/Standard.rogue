@@ -1,4 +1,4 @@
-$if ("Cython")
+$if ("Cython" or "Python")
 $define SCRIPT_HELPERS true
 $endIf
 

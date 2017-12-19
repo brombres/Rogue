@@ -5,6 +5,8 @@ augment Program
   PROPERTIES
     intptr_name : String
     intptr_size : Int32
+    int_name : String
+    int_size : Int32
 
   METHODS
     method init
@@ -21,10 +23,23 @@ augment Program
         else
           throw Error("Unsupported platform pointer size")
         endIf
+        $if defined(INT_SIZE)
+          local int_size = INT_SIZE  # may be defined when compile platform is different architecture
+        $else
+          local int_size = native("sizeof(int)")->Int32
+        $endIf
+        if int_size == 4
+          int_name = "Int32"
+        elseIf int_size == 8
+          int_name = "Int64"
+        else
+          throw Error("Unsupported platform int size")
+        endIf
       endBlock
 
     method configure
       Preprocessor.definitions["IntPtr"] = Tokenizer().tokenize(("compiler-generated"), intptr_name )
+      Preprocessor.definitions["Int"] = Tokenizer().tokenize(("compiler-generated"), int_name )
 
     method validate_cpp_name( name:String )->String
       local begins_with_code_prefix = false
@@ -162,7 +177,7 @@ augment Program
       endForEach
 
       local base_cpp_filepath = filepath
-      if (RogueC.compile_targets["Cython"]) base_cpp_filepath += "_module"
+      if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) base_cpp_filepath += "_module"
 
       # .H header -------------------------------------------------------------
       println "Writing $.h..." (base_cpp_filepath)
@@ -359,7 +374,10 @@ augment Program
       # write dynamic dispatch methods
       forEach (sig in native_method_signature_list)
         local m = native_method_signature_lookup[sig]  # one of the methods using this signature
-        if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
+        if (m.called_dynamically or (RogueC.all_methods_callable_dynamically ...
+                                     and not m.is_global ...
+                                     and m.type_context.is_reference))
+          writer.println( "// " + m )
           writer.print( "extern ")
           if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
           else                                              writer.print( m.return_type )
@@ -1830,7 +1848,7 @@ augment RogueC
         output_filepath = File.filename(first_filepath)
         if (output_filepath.to_lowercase.ends_with(".rogue")) output_filepath = output_filepath.leftmost(-6)
 
-        if (RogueC.compile_targets["Cython"]) output_filepath = output_filepath.to_lowercase
+        if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) output_filepath = output_filepath.to_lowercase
 
       else
         if (File.is_folder(output_filepath))
@@ -1840,7 +1858,7 @@ augment RogueC
           if (filename.to_lowercase.ends_with(".rogue")) filename = filename.leftmost(-6)
           else                                           filename = "RogueProgram"
 
-          if (RogueC.compile_targets["Cython"]) output_filepath = output_filepath.to_lowercase
+          if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) output_filepath = output_filepath.to_lowercase
 
           output_filepath += filename
 

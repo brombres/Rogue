@@ -139,23 +139,23 @@ class AtomicLogical
     method init (value : Logical)
       set_value(value)
 
-    method and_get (other : Logical) -> Logical [macro]
-      native "($this->_value &= $other)"
+    #method and_get (other : Logical) -> Logical [macro]
+    #  native "($this->_value &= $other)"
 
-    method get_and (other : Logical) -> Logical [macro]
-      native "($this->_value.fetch_and($other))"
+    #method get_and (other : Logical) -> Logical [macro]
+    #  native "($this->_value.fetch_and($other))"
 
-    method or_get (other : Logical) -> Logical [macro]
-      native "($this->_value |= $other)"
+    #method or_get (other : Logical) -> Logical [macro]
+    #  native "($this->_value |= $other)"
 
-    method get_or (other : Logical) -> Logical [macro]
-      native "($this->_value.fetch_or($other))"
+    #method get_or (other : Logical) -> Logical [macro]
+    #  native "($this->_value.fetch_or($other))"
 
-    method xor_get (other : Logical) -> Logical [macro]
-      native "($this->_value ^= $other)"
+    #method xor_get (other : Logical) -> Logical [macro]
+    #  native "($this->_value ^= $other)"
 
-    method get_xor (other : Logical) -> Logical [macro]
-      native "($this->_value.fetch_xor($other))"
+    #method get_xor (other : Logical) -> Logical [macro]
+    #  native "($this->_value.fetch_xor($other))"
 
     method exchange (other : Logical) -> Logical [macro]
       native "($this->_value.exchange($other))"
