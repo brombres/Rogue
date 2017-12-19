@@ -94,6 +94,10 @@ class PyMethod
 
       # Basic setup
       pyname = m.name.before_first("<")
+      if (pyname.begins_with("_pyrogue_macro_") and pyname.ends_with("_"))
+        # De-mangle a wraped macro
+        pyname = pyname.after_first("macro_").before_last("_")
+      endIf
       pyclass = builder.get_p_type(context)
 
       if (m.name == "init_class" or m.name == "on_cleanup" or m.name == "init_object" or m.name == "init_class_thread_local")
@@ -691,6 +695,10 @@ augment Program
       Parser( "(compiler-generated-error)", src ).parse_elements
 
     method py_create_delegates->Logical
+      # Not actually related to delegate creation, but this is a good place to
+      # do macro wrappers.
+      py_pythonize_macros
+
       if py_delegate_construction_pass == 0
 
         if Preprocessor.definitions.contains("PYROGUEFUNCTYPE")
@@ -1803,4 +1811,60 @@ augment Program
       if (RogueC.compile_targets["Python"])
         py_write(filepath)
       endIf
+
+    method py_pythonize_macros ()
+      # When we see a macro, we also generate a method with a mangled name
+      # which does nothing more than call the macro.  In the generated
+      # ctypes code, we recognize these special mangled names and
+      # unmangle them.  This way, Python can access the macros, but within
+      # Rogue, nothing changes (it still uses the macros).
+      forEach (type in type_list)
+        forEach (m in type.method_list)
+          if (not m.is_macro) nextIteration
+          if (m.is_native and m.statements.count == 0)
+            noAction
+          elseIf (not m.is_native and m.statements.count == 1)
+            noAction
+          else
+            nextIteration
+          endIf
+          if (not m.type_context) nextIteration
+
+          local m2 = Method(m.t, m.type_context, "_pyrogue_macro_" + m.name + "_")
+          m2.return_type = m.return_type
+
+          if (m.returns_this and m.overridden_method)
+            # Since macros don't override, we always want to use the return
+            # type of the least-derived class.
+            m2.return_type = m.overridden_method.return_type
+          endIf
+
+          local args = CmdArgs()
+          forEach (p in m.parameters)
+            args.add(CmdAccess(p.t, p.name))
+            m2.parameters.add(p)
+          endForEach
+          m2.assign_signature
+          if (m.type_context.find_method(m2.signature)) nextIteration
+
+          if (m.is_api or m.type_context.is_api)
+            make_fully_essential(m2)
+            m2.attributes.flags |= Attribute.is_api
+          endIf
+          if (m.is_essential)
+            make_fully_essential(m2)
+            m2.attributes.flags |= Attribute.is_essential
+          endIf
+
+          if (m.return_type)
+            m2.statements.add(CmdReturn(m.t, CmdAccess(m.t, m.name, args)))
+          else
+            m2.statements.add(CmdAccess(m.t, m.name, args))
+          endIf
+
+          type.add_method(m2)
+          m2.organize
+          m2.resolve
+        endForEach
+      endForEach
 endAugment
