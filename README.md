@@ -27,7 +27,7 @@ Platforms | macOS, Linux (Ubuntu+), Cygwin
 
 
 ## License
-Rogue is released into the Public Domain under the terms of the [Unlicense](http://unlicense.org/).
+Rogue is released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 
 ## Change Log
