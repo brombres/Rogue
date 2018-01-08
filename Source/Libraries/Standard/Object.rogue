@@ -6,23 +6,6 @@ class Object [native]
     method init
       noAction
 
-    method get_property( name:String )->Value [nonAPI]
-      return introspector[ name ]
-
-    method get_property<<$PropertyType>>( name:String )->$PropertyType [nonAPI]
-      forEach (i in 0..<property_count)
-        if (property_name(i) == name)
-          if ($PropertyType isReference)
-            return native( "*((RogueObject**)(((RogueByte*)$this) + $this->type->property_offsets[$i]))" )->Object as $PropertyType
-          else
-            return native( "*(($($PropertyType)*)(((RogueByte*)$this) + $this->type->property_offsets[$i]))" )->$PropertyType
-          endIf
-        endIf
-      endForEach
-
-      local default_value : $PropertyType
-      return default_value
-
     method hash_code->Int32
       return object_id->Int32
 
@@ -42,30 +25,6 @@ class Object [native]
 
     method operator==( other:Object )->Logical
       return this is other
-
-    method property_count->Int32
-      return native( "$this->type->property_count" )->Int32
-
-    method property_name( index:Int32 )->String
-      return native( "Rogue_literal_strings[$this->type->property_name_indices[$index]]" )->String
-
-    method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this [nonAPI]
-      forEach (i in 0..<property_count)
-        if (property_name(i) == name)
-          if ($PropertyType isReference)
-            native( "*((RogueObject**)(((RogueByte*)$this) + $this->type->property_offsets[$i])) = $value;" )
-          else
-            native( "*(($($PropertyType)*)(((RogueByte*)$this) + $this->type->property_offsets[$i])) = $value;" )
-          endIf
-          return this
-        endIf
-      endForEach
-
-      return this
-
-    method set_property( name:String, value:Value )->this [nonAPI]
-      introspector.set( name, value )
-      return this
 
     method to->String [nonAPI]
       return "($ 0x$)" (type_name, object_id.to_hex_string)
