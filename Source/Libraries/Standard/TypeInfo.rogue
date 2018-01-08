@@ -102,7 +102,7 @@ class TypeInfo
     method create_object<<$AsType>>->$AsType
       return create_object as $AsType
 
-    method get_global_property<<$PropertyType>>( property_name:String )->$PropertyType
+    method global_property<<$PropertyType>>( property_name:String )->$PropertyType
       forEach (i in 0..<global_property_count)
         if (global_property_name(i) == property_name)
           if ($PropertyType isReference)
