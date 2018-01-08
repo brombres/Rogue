@@ -21,15 +21,6 @@ class Introspector
     method _ret_undefined (p:IntPtr)->Value
       return UndefinedValue
 
-    method _call( fn:IntPtr, i:Int32, args:Value )->Value
-      # fn: function pointer
-      # i:  IntrospectionCallHandler index
-      # Send a @[list] as the value args.
-
-      # Note: compiler relies on parameters having specific names (fn,i,args)
-      # Compiler will insert generated code here
-      return UndefinedValue
-
   PROPERTIES
     context : Object
     address : IntPtr

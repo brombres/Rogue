@@ -12,13 +12,13 @@ class IntrospectionCallManager : StringTable<<IntrospectionCallHandler>> [single
       if (finished_generating_handlers) return false
       finished_generating_handlers = true
 
-      local type_Introspector = Program.find_type( "Introspector" )
-      if (not type_Introspector) return true  # done
+      local type_MethodInfo = Program.find_type( "MethodInfo" )
+      if (not type_MethodInfo) return true  # done
 
-      type_Introspector.make_essential
-      type_Introspector.resolve
+      type_MethodInfo.make_essential
+      type_MethodInfo.resolve
 
-      local m = type_Introspector.find_global_method( "_call($,Int32,Value)" (Program.intptr_name) )
+      local m = type_MethodInfo.find_global_method( "call($,Int32,Value)" (Program.intptr_name) )
       if (not m) return true
       m.make_essential
 

@@ -390,5 +390,17 @@ class MethodInfo
       return signature
 
     method call( args:Value )->Value
-      return Introspector._call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+      return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+
+
+  GLOBAL METHODS
+    method call( fn:IntPtr, i:Int32, args:Value )->Value
+      # CAUTION: leave parameter names as they are - compiler relies on these specific parameter names
+      #
+      # fn: function pointer
+      # i:  IntrospectionCallHandler index
+      # Send a @[list] as the value args.
+
+      # <Compiler will insert generated code here>
+      return UndefinedValue
 endClass
