@@ -131,6 +131,16 @@ class Introspector
         return this
       endIf
 
+      local boxed = new_value->Object as Boxed
+      if (boxed and info is boxed.type)
+        local boxed_address = boxed.address
+        local size = boxed.size
+        if (size)
+          native @|memcpy( (void*)(intptr_t)$address, (void*)(intptr_t)$boxed_address, $size );
+        endIf
+        return this
+      endIf
+
       if (info.is_reference)
         native( "*(RogueObject**)((RogueByte*)(intptr_t)$address)" )->Object = new_value->Object
         return this

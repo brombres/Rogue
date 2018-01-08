@@ -102,19 +102,43 @@ class TypeInfo
     method create_object<<$AsType>>->$AsType
       return create_object as $AsType
 
-    method global_property<<$PropertyType>>( property_name:String )->$PropertyType
-      forEach (i in 0..<global_property_count)
-        if (global_property_name(i) == property_name)
-          if ($PropertyType isReference)
-            return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object as $PropertyType
-          else
-            return native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i]))" )->$PropertyType
-          endIf
-        endIf
-      endForEach
+    method global_property( property_name:String )->Value
+      local property_info = global_property_info( property_name )
+      if (not property_info) return NullValue
 
-      local default_value : $PropertyType
-      return default_value
+      local i = property_info.index
+
+      if (property_info.type.is_reference)
+        return Value( native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object )
+      endIf
+
+      which (property_info.type.name)
+        case "Real64"
+          return Value( native( "*((RogueReal64*)(Rogue_types[$index].global_property_pointers[$i]))" )->Real64 )
+
+        case "Real32"
+          return Value( native( "*((RogueReal32*)(Rogue_types[$index].global_property_pointers[$i]))" )->Real32 )
+
+        case "Int64"
+          return Value( native( "*((RogueInt64*)(Rogue_types[$index].global_property_pointers[$i]))" )->Int64 )
+
+        case "Int32"
+          return Value( native( "*((RogueInt32*)(Rogue_types[$index].global_property_pointers[$i]))" )->Int32 )
+
+        case "Character"
+          return Value( native( "*((RogueCharacter*)(Rogue_types[$index].global_property_pointers[$i]))" )->Character + "" )
+
+        case "Byte"
+          return Value( native( "*((RogueByte*)(Rogue_types[$index].global_property_pointers[$i]))" )->Byte )
+
+        case "Logical"
+          return Value( native( "*((RogueLogical*)(Rogue_types[$index].global_property_pointers[$i]))" )->Logical )
+
+        others
+          # Must be a compound
+          return Introspector( null, native("(RogueInt64)(intptr_t)(Rogue_types[$index].global_property_pointers[$i])")->Int64,
+              property_info.type )->Value
+      endWhich
 
     method global_property_count->Int32
       # Convenience method to provide symmetric interface with per-object `property_count` methods.
@@ -216,17 +240,53 @@ class TypeInfo
       endForEach
       return r
 
-    method set_global_property<<$PropertyType>>( property_name:String, value:$PropertyType )->this
-      forEach (i in 0..<global_property_count)
-        if (global_property_name(i) == property_name)
-          if ($PropertyType isReference)
-            native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $value;" )
-          else
-            native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i])) = $value;" )
-          endIf
-          return this
-        endIf
-      endForEach
+    method set_global_property( property_name:String, value:Value )->this
+      local property_info = global_property_info( property_name )
+      if (not property_info) return this
+
+      local i = property_info.index
+
+      if (property_info.type.is_reference)
+        local v = value->Object
+        native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+      else
+        which (property_info.type.name)
+          case "Real64"
+            local v = value->Real64
+            native( "*((RogueReal64*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          case "Real32"
+            local v = value->Real32
+            native( "*((RogueReal32*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          case "Int64"
+            local v = value->Int64
+            native( "*((RogueInt64*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          case "Int32"
+            local v = value->Int32
+            native( "*((RogueInt32*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          case "Character"
+            local v = value->Character
+            native( "*((RogueCharacter*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          case "Byte"
+            local v = value->Byte
+            native( "*((RogueByte*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          case "Logical"
+            local v = value->Logical
+            native( "*((RogueLogical*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
+
+          others
+            # Must be a compound
+            Introspector( null, native("(RogueInt64)(intptr_t)(Rogue_types[$index].global_property_pointers[$i])")->Int64,
+              property_info.type ).set( value )
+        endWhich
+
+      endIf
 
       return this
 
