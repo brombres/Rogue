@@ -270,53 +270,6 @@ class PropertyInfo
 endClass
 
 
-class MethodWithReturnValueCaller <<$R>>
-  PROPERTIES
-    fn_ptr : IntPtr
-    parent : MethodInfo
-
-  METHODS
-    method init (parent)
-      fn_ptr = parent.fn_ptr
-
-    method call (o:Object) -> $R
-      parent._check_count(0)
-      local r : $R
-      native "$r = (($(r.type) (*)(RogueObject*))($this->fn_ptr))($o);"
-      return r
-
-    method call<<$T1>> (o:Object,t1:$T1) -> $R
-      parent._check_count(1)
-      local r : $R
-      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
-      return r
-
-    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2) -> $R
-      parent._check_count(2)
-      local r : $R
-      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
-      return r
-
-    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3) -> $R
-      parent._check_count(3)
-      local r : $R
-      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
-      return r
-
-    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4) -> $R
-      parent._check_count(4)
-      local r : $R
-      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
-      return r
-
-    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5) -> $R
-      parent._check_count(5)
-      local r : $R
-      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
-      return r
-endClass
-
-
 class MethodInfo
   GLOBAL PROPERTIES
     _method_name_strings = Table<<Int32,String>>()
@@ -349,29 +302,6 @@ class MethodInfo
       _return_type = return_type
       fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
 
-    method _check_count (c : Int32)
-      if (c != param_count) throw Error("$ arguments passed to method taking $ arguments." (c, param_count))
-
-    method _check_return<<$RT>> ()
-      if (_return_type == -1)
-        throw Error("Method does not return a value; Do not specify one using '->' or 'returns<<...>>'.")
-      else
-        if ($RT isReference)
-          if (not return_type.is_subclass(<<$RT>>))
-            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
-          endIf
-        else
-          if (<<$RT>> is not return_type)
-            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
-          endIf
-        endIf
-      endIf
-
-    method _check_noreturn ()
-      if (_return_type != -1)
-        throw Error("Explicit return type required.  Use .call(...)->$." (return_type.name))
-      endIf
-
     method name->String
       if (@name) return @name
       @name = _get_method_name(index)
@@ -401,38 +331,4 @@ class MethodInfo
 
     method call( args:Value )->Value
       return Introspector._call( native("$this->fn_ptr")->IntPtr, call_handler, args )
-
-    method call (o:Object)
-      _check_noreturn()
-      _check_count(0)
-      native "((void (*)(RogueObject*))($this->fn_ptr))($o);"
-
-    method call<<$T1>> (o:Object,t1:$T1)
-      _check_noreturn()
-      _check_count(1)
-      native "((void (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
-
-    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2)
-      _check_noreturn()
-      _check_count(2)
-      native "((void (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
-
-    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3)
-      _check_noreturn()
-      _check_count(3)
-      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
-
-    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4)
-      _check_noreturn()
-      _check_count(4)
-      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
-
-    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
-      _check_noreturn()
-      _check_count(5)
-      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
-
-    method returns<<$RT>> () -> MethodWithReturnValueCaller<<$RT>>
-      _check_return<<$RT>>()
-      return MethodWithReturnValueCaller<<$RT>>(this)
 endClass
