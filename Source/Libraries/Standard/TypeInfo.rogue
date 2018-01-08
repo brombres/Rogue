@@ -96,6 +96,97 @@ class TypeInfo
         methods.add( MethodInfo(method_index, param_count, first_param, return_type, call_handler) )
       endIf
 
+    method call( context:Value, name_or_sig:String, args=NullValue:Value )->Value
+      # Note: can throw NoMatchingMethodError
+      local selected_m : MethodInfo
+
+      if (not args.is_list) args = @[]
+
+      if (name_or_sig.contains('('))
+        local m = find_method( name_or_sig )
+        if (m)
+          args.insert( context )
+          local result = m.call( args )
+          args.remove_first
+          return result
+        else
+          throw NoMatchingMethodError( "$.$" (name,name_or_sig) )
+        endIf
+      endIf
+
+      # Find first close match among overloads, falling back to last compatible match
+      # (e.g. an integer arg is a close match with Int64 and Int32 and a real arg is
+      # a compatible match with Int64 and Int32).
+      local best_m : MethodInfo
+
+      forEach (m in methods)
+        contingent
+          necessary (m.param_count == args.count)
+
+          forEach (arg at i in args)
+            local p = m.param_types[ i ]
+
+            if (p.is_primitive)
+              if (p.name == "Logical")
+                necessary (arg.is_logical)
+              elseIf (p.name == "Character")
+                necessary (arg.is_number or (arg.is_string and arg.count == 1))
+              else
+                necessary (arg.is_number)
+              endIf
+
+            elseIf (p.name == "String")
+              necessary (arg.is_string)
+
+            elseIf (p.is_reference)
+              necessary (arg.is_object)
+              local obj = arg->Object
+              if (obj) necessary (obj.type_info.instance_of(p))
+
+            endIf
+          endForEach
+
+        satisfied
+          # This is a compatible method
+          best_m = m
+
+          # Now see if it's a close match by checking primitive types
+          contingent
+            forEach (arg at i in args)
+              local p = m.param_types[ i ]
+
+              if (arg.is_number)
+                which (p.name)
+                  case "Int64", "Int32", "Character", "Byte"
+                    necessary (arg->Real64.fractional_part == 0)
+                endWhich
+              endIf
+
+            endForEach
+
+          satisfied
+            # Close match - go ahead and call it
+            args.insert( context )
+            local result = m.call( args )
+            args.remove_first
+            return result
+
+          endContingent
+
+        endContingent
+      endForEach
+
+      if (best_m)
+        args.insert( context )
+        local result = best_m.call( args )
+        args.remove_first
+        return result
+
+      else
+        throw NoMatchingMethodError( "$.$($)" (name,name_or_sig,args.count) )
+
+      endIf
+
     method create_object->Object
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
 
@@ -231,7 +322,7 @@ class TypeInfo
       forEach (i in 0..<methods.count)
         if (methods[i].name == method_name)
           r.add( methods[ i ] )
-        else
+        elseIf (methods[i].name.begins_with(method_name))
           local n = methods[i].name.before_first("<<").before_first("(")
           if (n == method_name)
             r.add( methods[ i ] )
@@ -348,6 +439,7 @@ class MethodInfo
   PROPERTIES
     index               : Int32
     name                : String
+    base_name           : String
     signature           : String
     fn_ptr              : IntPtr
     _first_param_type   : Int32
@@ -361,6 +453,11 @@ class MethodInfo
       _first_param_type = first_param_type
       _return_type = return_type
       fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
+
+    method base_name->String
+      if (@base_name) return @base_name
+      @base_name = name.before_first('<')
+      return @base_name
 
     method name->String
       if (@name) return @name
@@ -404,3 +501,10 @@ class MethodInfo
       # <Compiler will insert generated code here>
       return UndefinedValue
 endClass
+
+class NoMatchingMethodError : Error
+  METHODS
+    method init( sig:String )
+      prior.init( "No such method for introspection call: $." (sig) )
+endClass
+
