@@ -201,43 +201,8 @@ endClass
 
 class CompoundIntrospection<<$ValueType>> [aspect]
   METHODS
-    method get_property( name:String )->Value [nonAPI]
-      return introspector[ name ]
-
-    method get_property<<$PropertyType>>( name:String )->$PropertyType
-      forEach (i in 0..<property_count)
-        if (property_name(i) == name)
-          local type_index = this.type_info.index
-          return native( "*(($($PropertyType)*)(((RogueByte*)&$this) + Rogue_types[$type_index].property_offsets[$i]))" )->$PropertyType
-        endIf
-      endForEach
-
-      local default_value : $PropertyType
-      return default_value
-
     method introspector->Introspector
       return ValueTypeIntrospector<<$ValueType>>( this )
-
-    method property_count->Int32
-      return type_info.properties.count
-
-    method property_name( index:Int32 )->String
-      return type_info.properties[ index ].name
-
-    method set_property( name:String, value:Value )->this [nonAPI]
-      introspector.set( name, value )
-      return this
-
-    method set_property<<$PropertyType>>( name:String, value:$PropertyType )->this
-      forEach (i in 0..<property_count)
-        if (property_name(i) == name)
-          local type_index = this.type_info.index
-          native( "*(($($PropertyType)*)(((RogueByte*)&$this) + Rogue_types[$type_index].property_offsets[$i])) = $value;" )
-          return this
-        endIf
-      endForEach
-
-      return this
 
     method to->Value
       return Value( Boxed<<$ValueType>>(this) )

@@ -3397,11 +3397,11 @@ class CmdLogicalNot : CmdUnary
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal64)
-        return CmdLiteralLogical( t, not (operand as CmdLiteralReal64).value )
+        return CmdLiteralLogical( t, not ((operand as CmdLiteralReal64).value) )
       elseIf (operand instanceOf CmdLiteralInt32)
-        return CmdLiteralLogical( t, not (operand as CmdLiteralInt32).value )
+        return CmdLiteralLogical( t, not ((operand as CmdLiteralInt32).value) )
       elseIf (operand instanceOf CmdLiteralLogical)
-        return CmdLiteralLogical( t, not (operand as CmdLiteralLogical).value )
+        return CmdLiteralLogical( t, not ((operand as CmdLiteralLogical).value) )
       else
         operand = operand.require_logical( scope )
       endIf
