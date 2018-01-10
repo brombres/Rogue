@@ -188,7 +188,23 @@ class TypeInfo
       endIf
 
     method create_object->Object
+      if (is_primitive or is_compound)
+        local boxed_name = "Boxed<<$>>" (name)
+        local boxed_type = TypeInfo[ boxed_name ]
+        if (boxed_type) return boxed_type.create_object
+        else            throw InstanceError( "Error creating primitive or compound object: cannot find type $." (boxed_name) )
+      endIf
+
+      if (is_aspect)
+        throw InstanceError( "Cannot create an object from an aspect type - aspects are abstract." )
+      endIf
+
       native @|return RogueType_create_object( &Rogue_types[$index], 0 );
+
+    method create_object( initial_values:Value )->Object
+      local obj = create_object
+      obj.unpack( initial_values )
+      return obj
 
     method create_object<<$AsType>>->$AsType
       return create_object as $AsType
@@ -506,5 +522,8 @@ class NoMatchingMethodError : Error
   METHODS
     method init( sig:String )
       prior.init( "No such method for introspection call: $." (sig) )
+endClass
+
+class InstanceError : Error
 endClass
 

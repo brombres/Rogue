@@ -97,7 +97,12 @@ class TokenType
     keyword_in                    : TokenType
     keyword_infinity              : TokenType
     keyword_is                    : TokenType
+    keyword_isAspect              : TokenType
+    keyword_isClass               : TokenType
+    keyword_isCompound            : TokenType
+    keyword_isPrimitive           : TokenType
     keyword_isReference           : TokenType
+    keyword_isString              : TokenType
     keyword_local                 : TokenType
     keyword_loop                  : TokenType
     keyword_NaN                   : TokenType

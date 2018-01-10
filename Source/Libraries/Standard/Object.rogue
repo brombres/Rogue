@@ -41,5 +41,19 @@ class Object [native]
     method type_info->TypeInfo [nonAPI]
       native @|return RogueType_type_info( $this->type );
 
+    method unpack( values:Value )
+      local i = introspector
+      forEach (p in i.type.properties)
+        local name = p.name
+        if (values.contains(name))
+          if (p.type.is_primitive or p.type.is_compound or p.type.name == "String")
+            i[ name ] = values[ name ]
+          elseIf (p.type.is_class)
+            # Wrap created object in ObjectValue() to avoid converting Int32[] -> ValueList etc.
+            i[ name ] = ObjectValue( p.type.create_object(values[name]) )
+          endIf
+        endIf
+      endForEach
+
 endClass
 

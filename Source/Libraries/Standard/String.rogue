@@ -15,6 +15,9 @@ class String
     method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
       return create( characters.utf8, i1, count )
 
+    method create( value:Value )->String
+      return value->String
+
     method operator==( a:String, b:String )->Logical
       if (a is null) return (b is null)
       else           return a.operator==( b )

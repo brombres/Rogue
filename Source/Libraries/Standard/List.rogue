@@ -510,6 +510,17 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
+    method unpack( values:Value )
+      clear.reserve( values.count )
+
+      if (not ($DataType isAspect))
+        # Can't unpack aspect values because they're abstract types
+
+        forEach (value in values)
+          add( $DataType.from_value(value) )
+        endForEach
+      endIf
+
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
 

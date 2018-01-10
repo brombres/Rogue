@@ -1028,7 +1028,8 @@ class Type
 
       endIf
 
-      # Add a default global from_value(Value) to compounds
+
+      # Add a default global from_value(Value) to compounds and classes
       if (is_compound)
         local m = find_global_method( "from_value(Value)" )
         if (not m)
@@ -1074,6 +1075,41 @@ class Type
 
           m.organize( scope )
         endIf
+
+      elseIf (is_class)
+        local m = find_global_method( "from_value(Value)" )
+        if (not m or m.type_context is not this)
+          local prior_m = m
+
+          m = add_global_method( t, "from_value" )
+          m.add_parameter( t, "values", Program.type_Value )
+          m.return_type = this
+
+          m.statements.add(
+            CmdReturn( t,
+              CmdAs( t,
+                CmdAccess( t,
+                  CmdAccess( t,
+                    CmdAccess(t,"TypeInfo"),
+                    "get", CmdArgs(CmdLiteralString(t,name))
+                  ),
+                  "create_object", CmdAccess(t,"values")
+                ),
+                this
+              )
+            )
+          )
+
+          m.organize( scope )
+
+          if (prior_m)
+            global_method_list.remove( m )
+            global_method_list[ global_method_list.locate( prior_m ).value ] = m
+            global_method_lookup_by_name[ m.name ].remove( prior_m )
+            global_method_lookup_by_signature[ m.signature ] = m
+          endIf
+        endIf
+
       endIf
 
       # Add a default to->Object to compounds that returns a Boxed<<CompoundType>>

@@ -143,7 +143,37 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdIsAspect )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdIsClass )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdIsCompound )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdIsPrimitive )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdIsReference )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdIsString )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -584,7 +614,12 @@ class Visitor
     method on_enter( cmd:CmdInsertionPoint )
     method on_enter( cmd:CmdImplicitAccess )
     method on_enter( cmd:CmdInlineNative )
+    method on_enter( cmd:CmdIsAspect )
+    method on_enter( cmd:CmdIsClass )
+    method on_enter( cmd:CmdIsCompound )
+    method on_enter( cmd:CmdIsPrimitive )
     method on_enter( cmd:CmdIsReference )
+    method on_enter( cmd:CmdIsString )
     method on_enter( cmd:CmdLabel )
     method on_enter( cmd:CmdLiteral )
     method on_enter( cmd:CmdLiteralString )
@@ -680,7 +715,12 @@ class Visitor
     method on_leave( cmd:CmdInsertionPoint )
     method on_leave( cmd:CmdImplicitAccess )
     method on_leave( cmd:CmdInlineNative )
+    method on_leave( cmd:CmdIsAspect )
+    method on_leave( cmd:CmdIsClass )
+    method on_leave( cmd:CmdIsCompound )
+    method on_leave( cmd:CmdIsPrimitive )
     method on_leave( cmd:CmdIsReference )
+    method on_leave( cmd:CmdIsString )
     method on_leave( cmd:CmdLabel )
     method on_leave( cmd:CmdLiteral )
     method on_leave( cmd:CmdLiteralString )
@@ -1154,7 +1194,22 @@ class Visitor
     method dispatch( cmd:CmdNamedArg )
       noAction
 
+    method dispatch( cmd:CmdIsAspect )
+      cmd.operand = cmd.operand.dispatch( this )
+
+    method dispatch( cmd:CmdIsClass )
+      cmd.operand = cmd.operand.dispatch( this )
+
+    method dispatch( cmd:CmdIsCompound )
+      cmd.operand = cmd.operand.dispatch( this )
+
+    method dispatch( cmd:CmdIsPrimitive )
+      cmd.operand = cmd.operand.dispatch( this )
+
     method dispatch( cmd:CmdIsReference )
+      cmd.operand = cmd.operand.dispatch( this )
+
+    method dispatch( cmd:CmdIsString )
       cmd.operand = cmd.operand.dispatch( this )
 
 endClass

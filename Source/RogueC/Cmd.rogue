@@ -3400,6 +3400,8 @@ class CmdLogicalNot : CmdUnary
         return CmdLiteralLogical( t, not (operand as CmdLiteralReal64).value )
       elseIf (operand instanceOf CmdLiteralInt32)
         return CmdLiteralLogical( t, not (operand as CmdLiteralInt32).value )
+      elseIf (operand instanceOf CmdLiteralLogical)
+        return CmdLiteralLogical( t, not (operand as CmdLiteralLogical).value )
       else
         operand = operand.require_logical( scope )
       endIf
@@ -4862,6 +4864,70 @@ class CmdInstanceOf : CmdTypeOperator
 endClass
 
 
+class CmdIsAspect( t, operand:Cmd ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsAspect( t, operand.cloned( clone_args, new_t ) )
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_aspect )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdIsClass( t, operand:Cmd ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsClass( t, operand.cloned( clone_args, new_t ) )
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_class )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdIsCompound( t, operand:Cmd ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsCompound( t, operand.cloned( clone_args, new_t ) )
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_compound )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdIsPrimitive( t, operand:Cmd ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsPrimitive( t, operand.cloned( clone_args, new_t ) )
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_primitive )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
 class CmdIsReference( t, operand:Cmd ) : Cmd
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
@@ -4873,6 +4939,22 @@ class CmdIsReference( t, operand:Cmd ) : Cmd
 
     method resolve( scope:Scope )->Cmd
       return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_reference )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdIsString( t, operand:Cmd ) : Cmd
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsString( t, operand.cloned( clone_args, new_t ) )
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      return CmdLiteralLogical( t, operand.resolve(scope).require_type is Program.type_String )
 
     method type->Type
       return Program.type_Logical

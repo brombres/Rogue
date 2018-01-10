@@ -322,6 +322,18 @@ class Table<<$KeyType,$ValueType>>
     method to->ValueTable
       return this->Value
 
+    method unpack( values:Value )
+      init
+
+      if ($KeyType isString and not ($ValueType isAspect))
+        # Value tables only have string keys
+        # Can't unpack aspect values because they're abstract types
+
+        forEach (key in values.keys)
+          this[ key ] = $ValueType.from_value( values[key] )
+        endForEach
+      endIf
+
     method values( list=null:$ValueType[] )->$ValueType[]
       # Returns a list of table keys.
       ensure list( count )

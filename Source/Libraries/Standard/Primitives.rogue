@@ -23,6 +23,9 @@ class Real64 [primitive]
     method create( value:Logical )->Real64
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Real64
+      return value->Real64
+
   METHODS
     method abs->Real64
       if (this >= 0) return this
@@ -192,6 +195,9 @@ class Real32 [primitive]
     method create( value:Logical )->Real32
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Real32
+      return value->Real32
+
   METHODS
     method abs->Real32
       if (this >= 0) return this
@@ -324,6 +330,10 @@ class Int64 [primitive]
 
     method create( value:Logical )->Int64
       return select{ value:1 || 0 }
+
+    method from_value( value:Value )->Int64
+      return value->Int64
+
 
   METHODS
     method abs->Int64
@@ -528,6 +538,9 @@ class Int32 [primitive]
     method create( value:Logical )->Int32
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Int32
+      return value->Int32
+
     method maximum->Int32 [macro]
       2147483647
 
@@ -665,6 +678,9 @@ class Character [primitive]
     method create( value:Logical )->Character
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Character
+      return value->Character
+
   METHODS
     method clamped( low:Character, high:Character )->Character
       if (this < low)  return low
@@ -799,6 +815,9 @@ class Byte [primitive]
     method create( value:Logical )->Byte
       return select{ value:1 || 0 }
 
+    method from_value( value:Value )->Byte
+      return value->Byte
+
   METHODS
     method clamped( low:Byte, high:Byte )->Byte
       if (this < low)  return low
@@ -900,6 +919,9 @@ class Logical [primitive]
 
     method create( value:Logical )->Logical
       return value
+
+    method from_value( value:Value )->Logical
+      return value->Logical
 
   METHODS
     method digit_count->Int32

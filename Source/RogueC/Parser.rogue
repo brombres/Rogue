@@ -2611,8 +2611,18 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
+      elseIf (consume(TokenType.keyword_isAspect))
+        return parse_post_unary( CmdIsAspect(t,operand) )
+      elseIf (consume(TokenType.keyword_isClass))
+        return parse_post_unary( CmdIsClass(t,operand) )
+      elseIf (consume(TokenType.keyword_isCompound))
+        return parse_post_unary( CmdIsCompound(t,operand) )
+      elseIf (consume(TokenType.keyword_isPrimitive))
+        return parse_post_unary( CmdIsPrimitive(t,operand) )
       elseIf (consume(TokenType.keyword_isReference))
         return parse_post_unary( CmdIsReference(t,operand) )
+      elseIf (consume(TokenType.keyword_isString))
+        return parse_post_unary( CmdIsString(t,operand) )
       endIf
       return operand
 
