@@ -30,7 +30,7 @@ class Object [native]
       return "($ 0x$)" (type_name, object_id.to_hex_string)
 
     method to->Value [nonAPI]
-      return introspector->Value
+      return Value( this )
 
     method to->ValueList [nonAPI]
       return @[ this->Value ]

@@ -21,6 +21,9 @@ class Boxed<<$DataType>>( value:$DataType ) : Boxed
     method to->String
       return value->String
 
+    method to->ValueTable
+      return value.introspector->ValueTable
+
     method type->TypeInfo
       return value.type_info
 endClass

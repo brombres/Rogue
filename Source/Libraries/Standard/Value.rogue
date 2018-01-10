@@ -473,10 +473,10 @@ class Value
       return this
 
     method to->ValueList
-      return select{ this.is_list:this as ValueList || @[] }
+      return @[ this ]
 
     method to->ValueTable
-      return select{ this.is_table:this as ValueTable || @{} }
+      return @{}
 
     method to<<$AsType>>()->$AsType [macro]
       (this->Object as $AsType)
@@ -541,6 +541,9 @@ class UndefinedValue : NullValue [singleton]
 
     method to->String
       return ""
+
+    method to->ValueList
+      return @[]
 endClass
 
 class LogicalValue( value:Logical ) : Value
@@ -809,6 +812,9 @@ class ObjectValue( value:Object ) : Value
 
     method to->String
       return value->String
+
+    method to->ValueTable
+      return value->ValueTable
 
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       buffer.print( value->String )
@@ -1112,6 +1118,9 @@ class ValueList : Value
     method to->String
       return data->String
 
+    method to->ValueList
+      return this
+
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
 
@@ -1355,6 +1364,9 @@ class ValueTable : Value
 
     method to->String
       return data->String
+
+    method to->ValueTable
+      return this
 
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
