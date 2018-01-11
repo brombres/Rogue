@@ -68,6 +68,14 @@ class Introspector
           return Introspector( context, native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])" )->Int64, property_info.type )->Value
       endWhich
 
+    method has_inner->Logical
+      return (context instanceOf Boxed)
+
+    method inner->Introspector
+      local boxed = context as Boxed
+      if (boxed) return boxed.inner_introspector
+      return null
+
     method set( name:String, new_value:Value )->this
       local property_info = type.property_info( name )
       if (not property_info) return this
@@ -93,6 +101,7 @@ class Introspector
 
         case "Int32"
           local value = new_value->Int32
+          trace value
           native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
         case "Character"
@@ -182,27 +191,29 @@ class Introspector
 endClass
 
 
-class ValueTypeIntrospector<<$ValueType>> : Introspector
-  PROPERTIES
-    value_context : $ValueType
-
+class BoxedIntrospector<<$ValueType>> : Introspector
   METHODS
-    method init( value_context )
-      address = native( "(RogueInt64)(intptr_t)&$value_context" )->Int64
-      type = value_context.type_info
+    method init( context )
+      local boxed = context as Boxed
+      address = boxed.address
+      type = <<$ValueType>>
 
-    method to->Value
-      #if (type.is_compound) return prior.to_Value
-      #else                  return Value( value_context )
-      if (type.is_compound) return Value( value_context->Object )
-      else                  return Value( value_context )
+    method has_inner->Logical
+      return false
+
+    method inner->Introspector
+      return null
+
+    method to->$ValueType
+      return (context as Boxed<<$ValueType>>).value
+
 endClass
 
 
 class CompoundIntrospection<<$ValueType>> [aspect]
   METHODS
-    method introspector->Introspector
-      return ValueTypeIntrospector<<$ValueType>>( this )
+    method introspector->BoxedIntrospector<<$ValueType>>
+      return BoxedIntrospector<<$ValueType>>( this->Object )
 
     method to->Value
       return Value( Boxed<<$ValueType>>(this) )

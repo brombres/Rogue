@@ -2,15 +2,22 @@ class Boxed [abstract]
   METHODS
     method address->IntPtr [abstract]
 
+    method inner_introspector->Introspector [abstract]
+
     method size->Int32  [abstract]
 
     method type->TypeInfo [abstract]
+
+    method unpack( values:Value ) [abstract]
 endClass
 
 class Boxed<<$DataType>>( value:$DataType ) : Boxed
   METHODS
     method address->IntPtr
       return native( "(intptr_t)&$value" )->IntPtr
+
+    method inner_introspector->BoxedIntrospector<<$DataType>>
+      return BoxedIntrospector<<$DataType>>( this )
 
     method size->Int32
       return native( "(RogueInt32)(int)sizeof($value)" )->Int32
@@ -26,5 +33,12 @@ class Boxed<<$DataType>>( value:$DataType ) : Boxed
 
     method type->TypeInfo
       return value.type_info
+
+    method unpack( values:Value )
+      local i = value.introspector
+      forEach (p in i.type.properties)
+        trace p.name
+        i.set( p.name, values[p.name] )
+      endForEach
 endClass
 

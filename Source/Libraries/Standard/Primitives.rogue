@@ -108,7 +108,7 @@ class Real64 [primitive]
       $endIf
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Real64>>( this )
+      return BoxedIntrospector<<Real64>>( this->Object )
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -244,7 +244,7 @@ class Real32 [primitive]
       $endIf
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Real32>>( this )
+      return BoxedIntrospector<<Real32>>( this->Object )
 
     method is_finite->Logical
       return (this == this) and (this - this == 0)
@@ -442,7 +442,7 @@ class Int64 [primitive]
       return this
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Int64>>( this )
+      return BoxedIntrospector<<Int64>>( this->Object )
 
     method is_power_of_two->Logical
       return ((this & (this-1)) == 0)
@@ -580,7 +580,7 @@ class Int32 [primitive]
       return this
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Int32>>( this )
+      return BoxedIntrospector<<Int32>>( this->Object )
 
     method is_power_of_two->Logical
       return ((this & (this-1)) == 0)
@@ -702,7 +702,7 @@ class Character [primitive]
       return this->Int32
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Character>>( this )
+      return BoxedIntrospector<<Character>>( this->Object )
 
     method is_alphanumeric->Logical
       return (this >= '0' and this <= '9') or
@@ -842,7 +842,7 @@ class Byte [primitive]
       return this->Int32
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Byte>>( this )
+      return BoxedIntrospector<<Byte>>( this->Object )
 
     method is_power_of_two->Logical
       return ((this & (this-1)) == 0)
@@ -933,7 +933,7 @@ class Logical [primitive]
       else      return 0
 
     method introspector->Introspector
-      return ValueTypeIntrospector<<Logical>>( this )
+      return BoxedIntrospector<<Logical>>( this->Object )
 
     method to->Object
       return Boxed<<Logical>>(this)
