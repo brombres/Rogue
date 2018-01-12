@@ -58,6 +58,10 @@ class IntrospectionCallManager : StringTable<<IntrospectionCallHandler>> [single
       forEach (handler in handlers)
         local cmd_case = cmd_which.add_case( t, CmdLiteralInt32(t,handler.index) )
         cmd_case.statements.add( handler.code )
+#@trace handler.index, handler.signature
+#forEach (m2 in handler.methods)
+#  println "  $.$" (m2.type_context,m2.signature)
+#endForEach
       endForEach
       staging_block.statements.insert( cmd_which )
 
@@ -134,25 +138,35 @@ class IntrospectionCallHandler
       local args = CmdArgs()
       forEach (type at i in parameter_types)
         local arg = CmdElementAccess( t, "args", i ) : Cmd
-        if (type is Program.type_String)
-          arg = CmdAccess( t, arg, "to_String" )
-        elseIf (type.is_reference)
-          arg = CmdConvertToType( t, arg, Program.type_Object )
-        elseIf (type.is_compound)
-          arg = CmdAccess( t, type.name, "from_value", arg )
-        else
-          # Primitive
-          arg = CmdAccess( t, arg, "to_" + type.name )
+        if (not type.instance_of(Program.type_Value))
+          if (type is Program.type_String)
+            arg = CmdAccess( t, arg, "to_String" )
+          elseIf (type.is_reference)
+            arg = CmdConvertToType( t, arg, Program.type_Object )
+          elseIf (type.is_compound)
+            arg = CmdAccess( t, type.name, "from_value", arg )
+          else
+            # Primitive
+            arg = CmdAccess( t, arg, "to_" + type.name )
+          endIf
         endIf
         args.add( arg )
       endForEach
       local cmd_call = CmdIntrospectionCall( t, this, args )
       if (return_type)
-        if (return_type.is_compound) code = CmdReturn( t, CmdConvertToType(t,cmd_call,Program.type_Value) )
-        else                         code = CmdReturn( t, CmdAccess(t, "Value", cmd_call) )
+        if (return_type.instance_of(Program.type_Value))
+          code = CmdReturn( t, cmd_call )
+        elseIf (return_type.is_compound)
+          code = CmdReturn( t, CmdConvertToType(t,cmd_call,Program.type_Value) )
+        else
+          code = CmdReturn( t, CmdAccess(t, "Value", cmd_call) )
+        endIf
       else
         code = cmd_call
       endIf
       return code
+
+    method to->String
+      return signature
 
 endClass

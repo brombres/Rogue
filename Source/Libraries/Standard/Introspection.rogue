@@ -65,7 +65,16 @@ class Introspector
 
         others
           # Must be a compound
-          return Introspector( context, native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])" )->Int64, property_info.type )->Value
+          local boxed_type = TypeInfo[ "Boxed<<$>>"(property_info.type.name) ]
+          local boxed = boxed_type.create_object as Boxed
+          local dest_addr = boxed.address
+          local size = boxed.size
+          native @|memcpy(
+                  |  (void*)(intptr_t)$dest_addr,
+                  |  (void*)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]),
+                  |  $size
+                  |);
+          return ObjectValue( boxed )
       endWhich
 
     method has_inner->Logical
@@ -74,6 +83,20 @@ class Introspector
     method inner->Introspector
       local boxed = context as Boxed
       if (boxed) return boxed.inner_introspector
+      return null
+
+    method inspect( property_name:String )->Introspector
+      forEach (p in type.properties)
+        if (p.name == property_name)
+          local new_addr = native( "(RogueInt64)(intptr_t)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$p->index])" )->IntPtr
+          if (p.type.is_reference)
+            local new_context = native( "*((RogueObject**)(intptr_t)$new_addr)" )->Object
+            return ?:{ new_context:Introspector(new_context) || null }
+          else
+            return Introspector( context, new_addr, p.type )
+          endIf
+        endIf
+      endForEach
       return null
 
     method set( name:String, new_value:Value )->this
@@ -101,7 +124,6 @@ class Introspector
 
         case "Int32"
           local value = new_value->Int32
-          trace value
           native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
         case "Character"
@@ -176,17 +198,49 @@ class Introspector
       return this->Value->String
 
     method to->Value
-      local result = @{}
-      forEach (p in type.properties)
-        result[ p.name ] = this[ p.name ]
-      endForEach
-      return result
+      return value
+
+    method value->Value
+      if (type.is_reference) return ObjectValue( context )
+
+      which (type.name)
+        case "Real64"
+          return Value( native("*((RogueReal64*)((RogueByte*)(intptr_t)$address))" )->Real64 )
+
+        case "Real32"
+          return Value( native("*((RogueReal32*)((RogueByte*)(intptr_t)$address))" )->Real32 )
+
+        case "Int64"
+          return Value( native("*((RogueInt64*)((RogueByte*)(intptr_t)$address))" )->Int64 )
+
+        case "Int32"
+          return Value( native("*((RogueInt32*)((RogueByte*)(intptr_t)$address))" )->Int32 )
+
+        case "Character"
+          return Value( native("*((RogueCharacter*)((RogueByte*)(intptr_t)$address))" )->Character )
+
+        case "Byte"
+          return Value( native("*((RogueByte*)((RogueByte*)(intptr_t)$address))" )->Byte )
+
+        case "Logical"
+          return Value( native("*((RogueLogical*)((RogueByte*)(intptr_t)$address))" )->Logical )
+
+        others
+          # Must be a compound
+          local boxed_name = "Boxed<<$>>" (type.name)
+          local boxed_type = TypeInfo[ boxed_name ]
+          local boxed = boxed_type.create_object as Boxed
+          local dest_addr = boxed.address
+          local size = boxed.size
+          native @|memcpy( (void*)(intptr_t)$dest_addr, (void*)(intptr_t)$address, $size );
+          return ObjectValue( boxed )
+      endWhich
 
     method call ( name:String, args:Value[] )->Value
       return call(name, ValueList(args) )
 
     method call ( name:String, args=NullValue:Value )->Value
-      # Note: can throw NoMatchingMethodError
+      # Note: can throw NoSuchMethodError
       return type.call( context, name, args )
 endClass
 
@@ -203,6 +257,10 @@ class BoxedIntrospector<<$ValueType>> : Introspector
 
     method inner->Introspector
       return null
+
+    method set( name:String, new_value:Value )->this
+      prior.set( name, new_value )
+      return this
 
     method to->$ValueType
       return (context as Boxed<<$ValueType>>).value

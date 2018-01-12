@@ -97,7 +97,7 @@ class TypeInfo
       endIf
 
     method call( context:Value, name_or_sig:String, args=NullValue:Value )->Value
-      # Note: can throw NoMatchingMethodError
+      # Note: can throw NoSuchMethodError
       local selected_m : MethodInfo
 
       if (not args.is_list) args = @[]
@@ -110,7 +110,7 @@ class TypeInfo
           args.remove_first
           return result
         else
-          throw NoMatchingMethodError( "$.$" (name,name_or_sig) )
+          throw NoSuchMethodError( "$.$" (name,name_or_sig) )
         endIf
       endIf
 
@@ -121,6 +121,7 @@ class TypeInfo
 
       forEach (m in methods)
         contingent
+          necessary (m.name == name_or_sig)
           necessary (m.param_count == args.count)
 
           forEach (arg at i in args)
@@ -166,6 +167,7 @@ class TypeInfo
 
           satisfied
             # Close match - go ahead and call it
+            #trace name, m, m.call_handler
             args.insert( context )
             local result = m.call( args )
             args.remove_first
@@ -183,7 +185,7 @@ class TypeInfo
         return result
 
       else
-        throw NoMatchingMethodError( "$.$($)" (name,name_or_sig,args.count) )
+        throw NoSuchMethodError( "$.$($)" (name,name_or_sig,args.count) )
 
       endIf
 
@@ -317,10 +319,8 @@ class TypeInfo
       return base_class.is_subclass(other)
 
     method property_info( property_name:String )->PropertyInfo
-      forEach (i in 0..<properties.count)
-        if (properties[i].name == property_name)
-          return properties[ i ]
-        endIf
+      forEach (p in properties)
+        if (p.name == property_name) return p
       endForEach
       return null
 
@@ -515,10 +515,11 @@ class MethodInfo
       # Send a @[list] as the value args.
 
       # <Compiler will insert generated code here>
+
       return UndefinedValue
 endClass
 
-class NoMatchingMethodError : Error
+class NoSuchMethodError : Error
   METHODS
     method init( sig:String )
       prior.init( "No such method for introspection call: $." (sig) )

@@ -4789,18 +4789,6 @@ class CmdConvertToType : CmdTypeOperator
         operand = operand.require_value
       endIf
       return operand.cast_to( target_type, scope, &is_conversion ).resolve( scope ).resolve( scope )
-      #{
-      operand = operand.resolve( scope )
-      local operand_type = operand.require_type
-      target_type.organize(scope)
-      if (operand_type is target_type) return operand
-
-      if (operand_type.is_primitive and target_type.is_primitive)
-        return CmdConvertToPrimitiveType( t, operand, target_type ).resolve( scope )
-      else
-        return CmdAccess( t, operand, "to_" + target_type.name ).resolve( scope )
-      endIf
-      }#
 
     method to->String
       return "CmdConvertToType($,$)" (operand,target_type)
@@ -4808,19 +4796,6 @@ class CmdConvertToType : CmdTypeOperator
     method implicit_type( scope:Scope)->Type
       return target_type
 endClass
-
-#{
-class CmdConvertToPrimitiveType : CmdConvertToType
-  METHODS
-    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
-      if (new_t) t = new_t
-      return CmdConvertToPrimitiveType( t, operand.cloned( clone_args, new_t ), target_type )
-
-    method resolve( scope:Scope )->Cmd
-      operand = operand.resolve(scope).require_value
-      return this
-endClass
-}#
 
 class CmdAs : CmdTypeOperator
   METHODS
@@ -6031,6 +6006,9 @@ class CmdIntrospectionCall( t, handler:IntrospectionCallHandler, args:CmdArgs ) 
     method resolve( scope:Scope )->Cmd
       args.resolve( scope )
       return this
+
+    method to->String
+      return "CmdIntrospectionCall:$$" (handler,args)
 
     method type->Type
       return handler.return_type

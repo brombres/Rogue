@@ -308,9 +308,9 @@ augment Program
         endIf
       endForEach
 
-      if (Program.using_introspection)
-        IntrospectionCallManager.index_handlers
-      endIf
+      #if (Program.using_introspection)
+      ##IntrospectionCallManager.index_handlers
+      #endIf
 
       # write dynamic dispatch method prototypes
       if (RogueC.all_methods_callable_dynamically)
@@ -864,9 +864,10 @@ augment Program
                 local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
                 local handler_index = -1
                 if (Program.using_introspection)
-                  local handler = IntrospectionCallManager.roguem_to_handler[ m.cpp_typedef ]
-                  if (handler) handler_index = handler.index
-                  else println "No handler for $ $.$ ($)" (m.cpp_typedef,type.name,m.signature,m.is_used)
+                  handler_index = m.introspection_call_handler.index
+                  #local handler = IntrospectionCallManager.roguem_to_handler[ m.cpp_typedef ]
+                  #if (handler) handler_index = handler.index
+                  #else println "No handler for $ $.$ ($)" (m.cpp_typedef,type.name,m.signature,m.is_used)
                 endIf
 
                 writer.println '{$,$,$,$,$}, // $.$' (method_names[m.name], m.parameters.count, method_sigs[sig], select{m.return_type:m.return_type.index || -1}, handler_index, type.name, m.signature)
@@ -3764,6 +3765,7 @@ augment CmdInsertionPoint
       if (content) content.write_cpp( writer, is_statement )
 endAugment
 
+#{
 augment IntrospectionCallManager
   PROPERTIES
     roguem_to_handler = StringTable<<IntrospectionCallHandler>>()
@@ -3775,6 +3777,7 @@ augment IntrospectionCallManager
         roguem_to_handler[ roguem ] = handler
       endForEach
 endAugment
+}#
 
 augment CmdIntrospectionCall
   METHODS
