@@ -559,14 +559,14 @@ class File
       outfile.close
       return not outfile.error
 
-    method size( filepath:String )->Int32
+    method size( filepath:String )->Int64
       native @|if ( !$filepath ) return 0;
               |
               |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !fp ) return 0;
               |
               |fseek( fp, 0, SEEK_END );
-              |RogueInt32 size = (RogueInt32) ftell( fp );
+              |RogueInt64 size = (RogueInt64) ftell( fp );
               |fclose( fp );
               |
               |return size;
@@ -708,7 +708,7 @@ class File
     method save( data:StringBuilder )->Logical [macro]
       File.save( this.filepath, data )
 
-    method size->Int32 [macro]
+    method size->Int64 [macro]
       File.size( this.filepath )
 
     method timestamp->Real64 [macro]
