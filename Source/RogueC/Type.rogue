@@ -1031,15 +1031,13 @@ class Type
 
       # Add a default global from_value(Value) to compounds and classes
       if (is_compound)
-        # Give every compound a Boxed wrapper for introspection purposes
-        local boxed_type = Program.get_type_reference( t, "Boxed<<$>>" (name) )
-        boxed_type.make_essential
-
         local m = find_global_method( "from_value(Value)" )
         if (not m)
           m = add_global_method( t, "from_value" )
           m.add_parameter( t, "value", Program.type_Value )
           m.return_type = this
+
+          local boxed_type = Program.get_type_reference( t, "Boxed<<$>>" (name) )
 
           # if (value.is_object and value->Object instanceOf Boxed<<CompoundType>>)
           #   return value->Object as Boxed<<CompoundType>>->CompoundType

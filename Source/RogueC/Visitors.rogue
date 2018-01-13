@@ -9,19 +9,15 @@ class DependencyInjectionVisitor : Visitor
 
     method on_enter( cmd:CmdNativeCode )
       if (cmd.code)
-        if (not Program.native_code.contains(cmd.code))
-          Program.native_code.add( cmd.code )
-          injected_dependencies = true
-        endIf
+        Program.native_code.add( cmd.code )
+        injected_dependencies = true
         cmd.code = null
       endIf
 
     method on_enter( cmd:CmdNativeHeader )
       if (cmd.code)
-        if (not Program.native_header.contains(cmd.code))
-          Program.native_header.add( cmd.code )
-          injected_dependencies = true
-        endIf
+        Program.native_header.add( cmd.code )
+        injected_dependencies = true
         cmd.code = null
       endIf
 

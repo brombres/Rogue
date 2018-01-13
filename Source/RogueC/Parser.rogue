@@ -1659,17 +1659,11 @@ class Parser
       local t = peek
 
       if (consume(TokenType.keyword_nativeHeader))
-        local code = t->String
-        if (not Program.native_header.contains(code))
-          Program.native_header.add( code )
-        endIf
+        Program.native_header.add( t->String )
         return true
 
       elseIf (consume(TokenType.keyword_nativeCode))
-        local code = t->String
-        if (not Program.native_header.contains(code))
-          Program.native_code.add( code )
-        endIf
+        Program.native_code.add( t->String )
         return true
 
       elseIf (consume(TokenType.keyword_includeNativeCode))

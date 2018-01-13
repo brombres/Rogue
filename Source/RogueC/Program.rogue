@@ -595,6 +595,16 @@ class Program [essential singleton]
       if (injected_dependencies) return false
 
       if (Program.using_introspection)
+        # Make sure the Boxed version of any used compound is made essential
+        local added_new_boxed_types = false
+        forEach (type in type_list)
+          if (type.is_used and type.is_compound)
+            local boxed_type = Program.get_type_reference( type.t, "Boxed<<$>>" (type.name) )
+            boxed_type.make_essential
+          endIf
+        endForEach
+        if (added_new_boxed_types) return false
+
         if (IntrospectionCallManager.generate_call_handlers)
           return false
         endIf
