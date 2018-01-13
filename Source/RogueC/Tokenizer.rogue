@@ -509,13 +509,14 @@ class Tokenizer
         elseIf (consume('v')) value = 11
         elseIf (consume('0')) value = '\0'
         elseIf (consume('/')) value = '/'
+        elseIf (consume('?')) value = '?'
         elseIf (consume('\''))value = '\''
         elseIf (consume('\\'))value = '\\'
         elseIf (consume('"')) value = '"'
         elseIf (consume('x')) value = read_hex_value(2)
         elseIf (consume('u')) value = read_hex_value(4)
         elseIf (consume('[')) read_hex_sequence; return
-        else throw error( "Invalid escape sequence.  Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\/ \\' \\\\ \\\" \\" + "xHH \\" + "uHHHH \\" + "[H*]." )
+        else throw error( "Invalid escape sequence.  Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\? \\/ \\' \\\\ \\\" \\" + "xHH \\" + "uHHHH \\" + "[H*]." )
 
         buffer.print( value->Character )
 
