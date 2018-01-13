@@ -121,6 +121,9 @@ routine scan_defs( file:File, defs:Value )
     line = line.trimmed
     if (line.begins_with("#$"))
       local cmd = line.rightmost( -2 )
+
+      cmd = cmd.replacing( "$OS", System.os )
+
       local args = cmd.after_first( "=" ).trimmed
       cmd = cmd.before_first( "=" ).trimmed
       defs[ cmd ] = args
