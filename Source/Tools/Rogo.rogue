@@ -3,7 +3,7 @@ if (not File.exists("Build.rogue"))
   System.exit 1
 endIf
 
-if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("BuildCore.rogue",".rogo/build"))
+if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("BuildCore.rogue",".rogo/Build"))
   println "Recompiling build script..."
 
   local defs = @{ "ROGUEC":"roguec" }
@@ -17,7 +17,7 @@ if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("Build
 
   local libraries = ""
   if (defs.contains("LIBRARIES")) libraries = ''--libraries="$"'' (defs//LIBRARIES->String.replacing("\"", "\\\""))
-  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/build $" (defs//ROGUEC,libraries)
+  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (defs//ROGUEC,libraries)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
@@ -43,12 +43,12 @@ if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("Build
         ''-I "$/include" -L "$/lib" -lpng ''...
         ''-I "$/include" -L "$/lib" -ljpeg ''...
         ''-I "$/include/freetype2" -L "$/lib" -lfreetype ''...
-        ''-o .rogo/build ''...
+        ''-o .rogo/Build ''...
         (compiler_invocation,png_folder,png_folder,jpeg_folder,jpeg_folder,freetype_folder,freetype_folder)
   else
     cmd = ''$ .rogo/Build.cpp -lpng -ljpeg -lfreetype ''...
         ''-I /usr/include/freetype2 ''...
-        ''-o .rogo/build ''...
+        ''-o .rogo/Build ''...
         (compiler_invocation)
   endIf
 
@@ -56,7 +56,7 @@ if (File.is_newer_than("Build.rogue",".rogo/build") or File.is_newer_than("Build
   if (0 != System.run(cmd)) System.exit( 1 )
 endIf
 
-System.exit( System.run(''.rogo/build $'' (System.command_line_arguments.join(" "))) )
+System.exit( System.run(''.rogo/Build $'' (System.command_line_arguments.join(" "))) )
 
 routine require_command_line
   if (System.environment["IDE"])
