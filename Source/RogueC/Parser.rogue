@@ -27,6 +27,8 @@ class Parser
 
     allow_placeholder_ids : Logical
 
+    is_api_module : Logical
+
   METHODS
     method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
@@ -128,7 +130,17 @@ class Parser
           endIf
 
         elseIf (t.type is TokenType.directive_module)
-          add_used_module( read_identifier )
+          if (next_is_identifier)
+            add_used_module( read_identifier )
+          endIf
+          is_api_module = false
+          if (consume(TokenType.symbol_open_bracket))
+            while (not next_is(TokenType.symbol_close_bracket))
+              if (consume("api")) is_api_module = true
+              else throw read.error( "The only available module option is [api]." )
+            endWhile
+            must_consume( TokenType.symbol_close_bracket )
+          endIf
 
         elseIf (t.type is TokenType.directive_using)
           add_used_module( read_identifier )
@@ -210,7 +222,13 @@ class Parser
       elseIf (t.type is TokenType.directive_module)
         # We've already processed this in insert_module_prefixes(), skip it here
         read
-        read_identifier
+        if (next_is_identifier) read_identifier
+        if (consume(TokenType.symbol_open_bracket))
+          while (not next_is(TokenType.symbol_close_bracket))
+            reader.read
+          endWhile
+          must_consume( TokenType.symbol_close_bracket )
+        endIf
         must_consume_eols
         return true
 
@@ -258,6 +276,8 @@ class Parser
       this_type = original_type
 
     method parse_template_tokens( template:Template, end_type:TokenType )
+      if (is_api_module) (ensure template.attributes).add( Attribute.is_api )
+
       if (consume(TokenType.symbol_open_specialize))
         local first = true
         while (first or consume(TokenType.symbol_comma))
@@ -384,6 +404,7 @@ class Parser
       local template = Template( t, name, Attribute.is_compound | Attribute.is_enum )
 
       parse_attributes( template.attributes )
+      if (is_api_module) template.attributes.add( Attribute.is_api )
 
       t = peek
       if (consume(TokenType.symbol_semicolon))

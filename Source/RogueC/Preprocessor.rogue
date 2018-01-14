@@ -134,11 +134,31 @@ class Preprocessor
             nextIteration
 
           elseIf (t.type is TokenType.directive_module)
-            if (keep_tokens)
-              tokens.add( t )
-              tokens.add( reader.peek )
+            if (keep_tokens) tokens.add( t )
+
+            if (next_is(TokenType.identifier))
+              if (keep_tokens) tokens.add( reader.peek )
+              cur_module = reader.read_identifier
+            else
+              cur_module = null
             endIf
-            cur_module = reader.read_identifier
+
+            if (next_is(TokenType.symbol_open_bracket))
+              if (keep_tokens)
+                tokens.add( reader.read )
+                while (reader.has_another)
+                  tokens.add( reader.read )
+                  if (tokens.last.type is TokenType.symbol_close_bracket) escapeWhile
+                endWhile
+              else
+                reader.read
+                while (reader.has_another)
+                  local next_token = reader.read
+                  if (next_token.type is TokenType.symbol_close_bracket) escapeWhile
+                endWhile
+              endIf
+            endIf
+
             nextIteration
           endIf
         endIf
