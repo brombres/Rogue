@@ -898,7 +898,7 @@ class Tokenizer
       else
         # Single line native code to EOL
         while (reader.has_another)
-          if (reader.consume('\n')) escapeWhile
+          if (reader.peek == '\n') escapeWhile
           buffer.print( reader.read )
         endWhile
       endIf
@@ -928,7 +928,7 @@ class Tokenizer
       else
         # Single line native code to EOL
         while (reader.has_another)
-          if (reader.consume('\n')) escapeWhile
+          if (reader.peek == '\n') escapeWhile
           buffer.print( reader.read )
         endWhile
       endIf
