@@ -235,10 +235,7 @@ class JSONParser
         ch = reader.peek
       endWhile
 
-      local is_real = false
-
       if (reader.consume( '.' ))
-        is_real = true
         local decimal = 0.0
         local power = 0.0
         ch = reader.peek
