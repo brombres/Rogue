@@ -1,5 +1,5 @@
-$define RELEASE_VERSION "1.3.0.35"
-$define RELEASE_DATE    "January 13, 2018"
+$define RELEASE_VERSION "1.3.0.36"
+$define RELEASE_DATE    "January 15, 2018"
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -50,7 +50,6 @@ endClass
 class RogueC [singleton]
   PROPERTIES
     included_files              = String[]
-    manually_included_files     = Set<<String>>() # Full paths of files that were on commandline
     prefix_path_list   = String[]
     prefix_path_lookup = Table<<String,Logical>>()
     compile_targets    = Table<<String,Logical>>()
@@ -71,14 +70,20 @@ class RogueC [singleton]
     all_api = false
     # If true everything is marked as an API
 
-    essential_files        = Set<<String>>()
-    # Everything in these files will be essential
+    api_files        = Set<<String>>()
+    # Everything in these files will be marked [api]
 
-    manual_files_essential = false
-    # If true, all files in commandline will be essential
+    api_classes      = Set<<String>>()
+    # These classes will be marked [api]
+
+    api_file_patterns = String[]
+    api_class_patterns = String[]
+
+    manual_files_api = false
+    # If true, all files in command line will be essential
 
     all_methods_callable_dynamically = false
-    # When true, all methods can be called dynamically
+    # When true, all methods can be called dynamically. Set by the Python and Cython plug-ins.
 
     compile_output    : Logical
     compiler_name     : String
@@ -143,9 +148,32 @@ class RogueC [singleton]
                    |  roguec [options] file1.rogue [file2.rogue ...]
                    |
                    |OPTIONS
-                   |  --api
-                   |    Mark all classes as [api] - all methods of any referenced class are included
-                   |    in the compiled program whether they're used or not.
+                   |  --api[=<class, filepath, or wildcard pattern>]
+                   |    Give one or more classes or the contents of one or more files the [api] attribute.
+                   |    An API class or routine is included in compiled code even if it is not directly
+                   |    used, for the purpose of either invocation by C++ or introspection. All methods
+                   |    of an [api] class are also compiled, even if unreferenced, except for methods
+                   |    with the [noAPI] attribute.
+                   |
+                   |    VARIATIONS
+                   |      --api
+                   |        Applies [api] to all filenames included on the command line.
+                   |      --api=<ClassName>
+                   |        Gives the specified class the [api] attribute.
+                   |      --api=<Filepath.rogue>
+                   |        Includes the given file and marks its content as [api].
+                   |
+                   |      A wildcard pattern can be used to specify classes and filepaths. If the pattern
+                   |      ends with '.rogue' it is treated as a filepath pattern and otherwise as a
+                   |      class name pattern. Unlike the behavior of an explicit filepath, filepath
+                   |      patterns do not actually include the given files, they only match filepaths that
+                   |      are included on the command line or in Rogue source.
+                   |
+                   |        *   - Match any characters but does not span folder separators (/).
+                   |        **  - Match any characters, spanning folder separators.
+                   |        ?   - Match any single character.
+                   |
+                   |    See also: --essential
                    |
                    |  --compile[=<compiler invocation>]
                    |    Creates an executable from the compiled .rogue code - for example, compiles
@@ -159,7 +187,7 @@ class RogueC [singleton]
                    |    Like --compile, this passes the output of compiling the .rogue code to, e.g,
                    |    the C++ compiler.  There are two differences.  First, it does not imply
                    |    the --main option.  Second, the argument is appended to the current compiler
-                   |    commandline rather than replacing it.  You may specify this more than once,
+                   |    command line rather than replacing it.  You may specify this more than once,
                    |    and you may specify it in conjunction with --compile.
                    |
                    |  --debug
@@ -172,18 +200,11 @@ class RogueC [singleton]
                    |
                    |  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
                    |    Makes the given class or method essential ("do not cull if unused").
-                   |    See also: --exhaustive
-                   |
-                   |  --essential-file[=file.rogue]
-                   |    With an argument, makes the entire file essential.  With no argument,
-                   |    all files explicitly listed on the commandline become essential.
+                   |    See also: --api
                    |
                    |  --execute[="args"]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
-                   |
-                   |  --exhaustive
-                   |    Make every class and method [essential].
                    |
                    |  --gc[=auto|manual|boehm|boehm-typed]
                    |    Set the garbage collection mode:
@@ -260,7 +281,7 @@ class RogueC [singleton]
         first_filepath = source_files.first
         include_source( "Standard/NativeCode.rogue", &do_not_save_prefix )
         forEach (filepath in source_files)
-          include_source( filepath )
+          include_source( filepath, &from_command_line )
         endForEach
         include_source( "Standard" )
 
@@ -272,8 +293,6 @@ class RogueC [singleton]
         forEach (declaration in essential_declarations)
           Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,declaration) )
         endForEach
-
-        if (manual_files_essential) essential_files.union_update( manually_included_files )
 
         Program.resolve
         local type_TypeInfo = Program.find_type( "TypeInfo" )
@@ -362,10 +381,10 @@ class RogueC [singleton]
 
       return file
 
-    method include_source( filepath:String, &is_optional, &do_not_save_prefix )
-      include_source( null, filepath, is_optional, do_not_save_prefix )
+    method include_source( filepath:String, &is_optional, &do_not_save_prefix, &from_command_line )
+      include_source( null, filepath, is_optional, do_not_save_prefix, from_command_line )
 
-    method include_source( t:Token, filepath:String, &is_optional, &do_not_save_prefix )
+    method include_source( t:Token, filepath:String, &is_optional, &do_not_save_prefix, &from_command_line )
       # Preemptively (immediately) parses the given file.
       local file = find_source_file(t,filepath)
 
@@ -380,7 +399,9 @@ class RogueC [singleton]
       if (included_files.contains(filepath)) return
 
       included_files.add( filepath )
-      if (t is null) manually_included_files.add( filepath )
+      if (from_command_line and manual_files_api)
+        api_files.add( filepath )
+      endIf
 
       if (not do_not_save_prefix)
         local prefix = filepath.before_last('/') + "/"
@@ -484,14 +505,6 @@ class RogueC [singleton]
                 Preprocessor.define( value.before_first(':'), value.after_first(':') )
               endIf
 
-            case "--exhaustive"
-              if (value.count)
-                throw RogueError( ''"--exhaustive" takes no arguments.'' )
-              else
-                all_essential = true
-                all_api = true
-              endIf
-
             case "--ide"
               if (value.count)
                 using_ide = value
@@ -532,9 +545,23 @@ class RogueC [singleton]
 
             case "--api"
               if (value.count)
-                throw RogueError( ''"--api" takes no arguments.'' )
+                local is_pattern = value.contains('*') or value.contains('?')
+                if (is_pattern)
+                  if (value == "*") all_api = true
+                  elseIf (value.ends_with(".rogue")) api_file_patterns.add( "**/" + value )
+                  else                               api_class_patterns.add( value )
+                elseIf (value.ends_with(".rogue"))
+                  local file = find_source_file(null,value)
+                  if (file is null)
+                    throw RogueError( ''Can not find file "$" for "--api=<filepath>".'' (value) )
+                  endIf
+                  api_files.add( file.absolute_filepath )
+                  source_files.add( file.absolute_filepath )
+                else
+                  api_classes.add( value )
+                endIf
               else
-                all_api = true
+                manual_files_api = true
               endIf
 
             case "--essential"
@@ -545,18 +572,6 @@ class RogueC [singleton]
                 all_api = true
               else
                 essential_declarations.add( value.split(',') )
-              endIf
-
-            case "--essential-file"
-              if (value.count)
-                local file = find_source_file(null,value)
-                if (file is null)
-                  throw RogueError( ''Can not find file "$" for "--essential-file".'' (value) )
-                endIf
-                essential_files.add( file.absolute_filepath )
-                source_files.add( file.absolute_filepath )
-              else
-                manual_files_essential = true
               endIf
 
             case "--target"

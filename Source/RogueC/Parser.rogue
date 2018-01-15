@@ -27,6 +27,9 @@ class Parser
 
     allow_placeholder_ids : Logical
 
+    is_api_module : Logical
+    is_api_file   : Logical
+
   METHODS
     method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
@@ -40,6 +43,19 @@ class Parser
     method init( tokens:Token[], &skip_reprocess )
       if (not skip_reprocess) tokens = Preprocessor( this ).reprocess( tokens )
       reader = TokenReader( tokens )
+      is_api_file = RogueC.all_api
+      if (not is_api_file and filepath and filepath.ends_with(".rogue"))
+        is_api_file = RogueC.api_files.contains( filepath )
+        if (not is_api_file)
+          forEach (pattern in RogueC.api_file_patterns)
+            if (File.matches_wildcard_pattern(filepath,pattern))
+              is_api_file = true
+              escapeForEach
+            endIf
+          endForEach
+        endIf
+      endIf
+      is_api_module = is_api_file
 
     method add_used_module( module_name:String )
       if (used_modules.contains(module_name)) return
@@ -128,7 +144,19 @@ class Parser
           endIf
 
         elseIf (t.type is TokenType.directive_module)
-          add_used_module( read_identifier )
+          if (next_is_identifier)
+            add_used_module( read_identifier )
+          endIf
+          is_api_module = false
+          if (consume(TokenType.symbol_open_bracket))
+            while (not next_is(TokenType.symbol_close_bracket))
+              if (consume("api")) is_api_module = true
+              else throw read.error( "The only available module option is [api]." )
+            endWhile
+            must_consume( TokenType.symbol_close_bracket )
+          endIf
+
+          if (is_api_file) is_api_module = true
 
         elseIf (t.type is TokenType.directive_using)
           add_used_module( read_identifier )
@@ -210,7 +238,13 @@ class Parser
       elseIf (t.type is TokenType.directive_module)
         # We've already processed this in insert_module_prefixes(), skip it here
         read
-        read_identifier
+        if (next_is_identifier) read_identifier
+        if (consume(TokenType.symbol_open_bracket))
+          while (not next_is(TokenType.symbol_close_bracket))
+            reader.read
+          endWhile
+          must_consume( TokenType.symbol_close_bracket )
+        endIf
         must_consume_eols
         return true
 
@@ -258,6 +292,18 @@ class Parser
       this_type = original_type
 
     method parse_template_tokens( template:Template, end_type:TokenType )
+      local is_api_class = is_api_module
+      if (not is_api_class)
+        forEach (pattern in RogueC.api_class_patterns)
+          if (File.matches_wildcard_pattern(template.name,pattern))
+            is_api_class = true
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (is_api_class) (ensure template.attributes).add( Attribute.is_api )
+
       if (consume(TokenType.symbol_open_specialize))
         local first = true
         while (first or consume(TokenType.symbol_comma))
@@ -384,6 +430,18 @@ class Parser
       local template = Template( t, name, Attribute.is_compound | Attribute.is_enum )
 
       parse_attributes( template.attributes )
+
+
+      local is_api_enum = is_api_module
+      if (not is_api_enum)
+        forEach (pattern in RogueC.api_class_patterns)
+          if (File.matches_wildcard_pattern(template.name,pattern))
+            is_api_enum = true
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+      if (is_api_enum) template.attributes.add( Attribute.is_api )
 
       t = peek
       if (consume(TokenType.symbol_semicolon))
@@ -858,8 +916,12 @@ class Parser
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
 
       if (not skip_add_to_type)
-        if (as_global) this_type.add_global_method( this_method )
-        else           this_type.add_method( this_method )
+        if (as_global)
+          this_type.add_global_method( this_method )
+        else
+          if (is_api_module and this_type is Program.type_Global) this_type.attributes.add( Attribute.is_api )
+          this_type.add_method( this_method )
+        endIf
       endIf
 
       consume( TokenType.symbol_colon )
