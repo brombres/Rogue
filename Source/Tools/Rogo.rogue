@@ -1,4 +1,20 @@
-global config = @{ ROGUEC:"roguec", FILEPATH:".rogo_config" }
+# ROGUEC        = roguec
+# FILEPATH      = .rogo/Config.json
+# ROGUE_OPTIONS = --whatever
+# CXX           = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+# CXXFLAGS      = -a -b -c
+# LIBRARIES     = libalpha(include:"$/include/alpha" library:"$/lib") libbeta
+# LINK          = -lalpha -lbeta
+
+global config = @{ roguec:"roguec", filepath:".rogo/Config.json" }
+
+local compiler_invocation : String
+native @|#if defined(DEFAULT_CXX)
+        |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
+        |#else
+        |  $compiler_invocation = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
+        |#endif
+config//cxx = compiler_invocation
 
 if (not File.exists("Build.rogue"))
   println "ERROR: Build.rogue does not exist."
@@ -11,71 +27,60 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
   scan_config( File("BuildCore.rogue") )
   scan_config( File("Build.rogue") )
 
-  # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
-  local os_arg = "($)" (System.os)
+  # Select roguec(macos) or roguec(linux) etc. based on the OS and copy to roguec, etc.
+  local os_arg = "($)" (System.os.to_lowercase)
   forEach (key in config.keys)
     if (key.contains(os_arg))
       config[ key.before_first(os_arg) ] = config[ key ]
     endIf
   endForEach
 
-  config//cache = JSON.load_table( File(config//FILEPATH->String) )
+  config//cache = JSON.load_table( File(config//filepath->String) )
 
   #trace config.to_json(&formatted)
 
-  local rogue_options = config//ROGUE_OPTIONS->String
-  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (config//ROGUEC,rogue_options)
+  local rogue_options = config//rogue_options->String
+  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (config//roguec,rogue_options)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
     System.exit 1
   endIf
 
-  #{
-  local compiler_invocation : String
-  native @|#if defined(DEFAULT_CXX)
-          |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
-          |#else
-          |  $compiler_invocation = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
-          |#endif
+  cmd = "$ $ .rogo/Build.cpp" (config//cxx,config//cxxflags)
 
+  install_library_manager
+  forEach (library in config//libraries)
+    # Three install options:
+    #   libname                 - install libname
+    #   libname(install:"cmd")  - install cmd
+    #   libname(install:null)   - skip installation
+    local arg = ?:{ library.contains("install"):library//install || library//name }
+    if (arg.count) install_library( library//name, arg )
 
-  if (System.os == "macOS")
-    install_brew
-    install_library( "sox --with-libvorbis" )
+    local loc = library_location( library//name )
 
-    local cpp_options = ""
-    if (config.contains("LIBRARIES"))
-      forEach (library in config//LIBRARIES->String.split(" "))
-        library = library.trimmed
-        if (library.count)
-          local folder = library_location( library )
-          cpp_options += ''-I "$/include" -L "$/lib" '' (folder,folder)
-        endIf
-      endForEach
+    if (library.contains("include"))
+      if (library//include.count)
+        cmd += '' -I "$"'' (library//include->String.replacing('$',loc))
+      endIf
+    else
+      cmd += '' -I "$/include"'' (loc)
     endIf
 
-    if (config.contains("CPP_OPTIONS")) cpp_options += config//CPP_OPTIONS->String + " "
+    if (library.contains("library"))
+      if (library//library.count)
+        cmd += '' -L "$"'' (library//library->String.replacing('$',loc))
+      endIf
+    else
+      cmd += '' -L "$/lib"'' (loc)
+    endIf
+  endForEach
 
-    local png_folder = library_location( "libpng" )
-    local jpeg_folder = library_location( "libjpeg" )
-    local freetype_folder = library_location( "freetype" )
-    cmd = ''$ .rogo/Build.cpp ''...
-        ''-I "$/include" -L "$/lib" -lpng ''...
-        ''-I "$/include" -L "$/lib" -ljpeg ''...
-        ''-I "$/include/freetype2" -L "$/lib" -lfreetype ''...
-        ''-o .rogo/Build ''...
-        (compiler_invocation,png_folder,png_folder,jpeg_folder,jpeg_folder,freetype_folder,freetype_folder)
-  else
-    cmd = ''$ .rogo/Build.cpp -lpng -ljpeg -lfreetype ''...
-        ''-I /usr/include/freetype2 ''...
-        ''-o .rogo/Build ''...
-        (compiler_invocation)
-  endIf
+  cmd += " -o .rogo/Build " + config//link
 
   println cmd
   if (0 != System.run(cmd)) System.exit( 1 )
-  }#
 endIf
 
 System.exit( System.run(''.rogo/Build $'' (System.command_line_arguments.join(" "))) )
@@ -89,12 +94,23 @@ endRoutine
 
 
 routine save_cache
-  config//cache.save( File(config//FILEPATH->String) )
+  config//cache.save( File(config//filepath->String) )
+endRoutine
+
+routine install_library_manager
+  which (System.os)
+    case "macOS"
+      install_brew
+  endWhich
 endRoutine
 
 routine install_brew
   if (config//cache//brew_installed) return
-  if (0 == System.run("which brew >& /dev/null")) return
+  if (0 == System.run("which brew >& /dev/null"))
+    config//cache//brew_installed = true
+    save_cache
+    return
+  endIf
 
   require_command_line
   println "Installing brew"
@@ -113,25 +129,25 @@ routine install_brew
 endRoutine
 
 
-routine install_library( library_name:String )
+routine install_library( library_name:String, install_cmd:String )
   if (config//cache//library_locations.contains(library_name)) return
-  if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
 
-  require_command_line
-  if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
-    throw Error( "Missing required library '$'." (library_name) )
+  if (0 != System.run( ''brew list $ >& /dev/null'' (library_name) ) )
+    # Install library
+    require_command_line
+    if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
+      throw Error( "Missing required library '$'." (library_name) )
+    endIf
+
+    local cmd = "brew install $" (install_cmd)
+    println cmd
+    if (0 == System.run(cmd))
+    else
+      throw Error( "Failed to install library '$'." (library_name) )
+    endIf
   endIf
 
-  local cmd = "brew install $" (library_name)
-  println cmd
-  if (0 != System.run(cmd)) throw Error( "Failed to install library '$'." (library_name) )
-endRoutine
-
-
-routine library_location( library_name:String )->String
-  if (config//cache//library_locations.contains(library_name)) return
-  install_library( library_name )
-
+  # Save location in cache
   if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
 
   local reader = LineReader( File.reader( ".build.temp" ) )
@@ -140,14 +156,21 @@ routine library_location( library_name:String )->String
       reader.close
       File.delete( ".build.temp" )
       local location = line.before_first( "/include/" )
-      config//cache//library_locations[ library_name ] = location
+      config//cache.ensure_table( "library_locations" )[ library_name ] = location
       save_cache
-      return location
+      return
     endIf
   endForEach
 
   throw Error( "Library not installed: '$'." (library_name) )
 
+endRoutine
+
+routine library_location( library_name:String )->String
+  if (not config//cache//library_locations.contains(library_name))
+    install_library( library_name, library_name )
+  endIf
+  return config//cache//library_locations[ library_name ]
 endRoutine
 
 routine scan_config( file:File )
@@ -158,25 +181,26 @@ routine scan_config( file:File )
     if (line.begins_with("#$"))
       local cmd = line.rightmost( -2 )
 
-      cmd = cmd.replacing( "$OS", System.os )
+      cmd = cmd.replacing( "$OS", System.os ).to_lowercase
 
       local args = cmd.after_first( "=" ).trimmed
       cmd = cmd.before_first( "=" ).trimmed
 
       which (cmd.before_first('('))
-        case "CONFIG", "ROGUEC"
+        case "config", "roguec"
+          if (args.begins_with('"')) args = args.after_first('"').before_last('"')
           config[ cmd ] = args
 
           #config.ensure_list( cmd ).add( args )
 
-        case "LIBRARIES"
+        case "libraries"
           if (args.count)
             local parser = JSONParser( Scanner(args) )
             parser.consume_spaces
             while (parser.has_another)
-              local name = parser.parse_identifier
+              local name = ?:{ parser.next_is('"'):parser.parse_string || parser.parse_identifier }
               local entry = @{ name:name }
-              config.ensure_list( "LIBRARIES" ).add( entry )
+              config.ensure_list( "libraries" ).add( entry )
               parser.consume_spaces
               if (parser.consume('('))
                 parser.consume_spaces
@@ -186,8 +210,8 @@ routine scan_config( file:File )
                   parser.consume_spaces
                   if (parser.consume(':'))
                     parser.consume_spaces
-                    local value = parser.parse_string
-                    entry.ensure_table("options").set( key, value )
+                    local value = ?:{ parser.next_is('"'):parser.parse_string || parser.parse_identifier }
+                    entry[ key ] = value
                   endIf
                   parser.consume_spaces
                 endWhile
