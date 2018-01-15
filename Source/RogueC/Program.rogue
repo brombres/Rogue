@@ -441,7 +441,7 @@ class Program [essential singleton]
         local t  = type_list[i]
         t.resolve
 
-        if ( t.is_api or (t.t and RogueC.essential_files.contains( t.t.filepath )) )
+        if (t.is_api)
           if ( make_fully_essential( type_list[i]) ) types_resolved = false
 
           if (make_fully_essential( t.global_method_list )) types_resolved = false
