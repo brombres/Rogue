@@ -1,3 +1,5 @@
+global config = @{ ROGUEC:"roguec", FILEPATH:".rogo_config" }
+
 if (not File.exists("Build.rogue"))
   println "ERROR: Build.rogue does not exist."
   System.exit 1
@@ -6,24 +8,30 @@ endIf
 if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("BuildCore.rogue",".rogo/Build"))
   println "Recompiling build script..."
 
-  local defs = @{ "ROGUEC":"roguec" }
-  scan_defs( File("BuildCore.rogue"), defs )
-  scan_defs( File("Build.rogue"), defs )
+  scan_config( File("BuildCore.rogue") )
+  scan_config( File("Build.rogue") )
 
-  #println "DEFINITIONS (change with meta-directives in build file: #$ NAME = VALUE)"
-  #forEach (key in defs.keys)
-  #println "$ = $" (key,defs[key])
-  #endForEach
+  # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
+  local os_arg = "($)" (System.os)
+  forEach (key in config.keys)
+    if (key.contains(os_arg))
+      config[ key.before_first(os_arg) ] = config[ key ]
+    endIf
+  endForEach
 
-  local libraries = ""
-  if (defs.contains("LIBRARIES")) libraries = ''--libraries="$"'' (defs//LIBRARIES->String.replacing("\"", "\\\""))
-  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (defs//ROGUEC,libraries)
+  config//cache = JSON.load_table( File(config//FILEPATH->String) )
+
+  #trace config.to_json(&formatted)
+
+  local rogue_options = config//ROGUE_OPTIONS->String
+  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (config//ROGUEC,rogue_options)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
     System.exit 1
   endIf
 
+  #{
   local compiler_invocation : String
   native @|#if defined(DEFAULT_CXX)
           |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
@@ -35,6 +43,19 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
   if (System.os == "macOS")
     install_brew
     install_library( "sox --with-libvorbis" )
+
+    local cpp_options = ""
+    if (config.contains("LIBRARIES"))
+      forEach (library in config//LIBRARIES->String.split(" "))
+        library = library.trimmed
+        if (library.count)
+          local folder = library_location( library )
+          cpp_options += ''-I "$/include" -L "$/lib" '' (folder,folder)
+        endIf
+      endForEach
+    endIf
+
+    if (config.contains("CPP_OPTIONS")) cpp_options += config//CPP_OPTIONS->String + " "
 
     local png_folder = library_location( "libpng" )
     local jpeg_folder = library_location( "libjpeg" )
@@ -54,6 +75,7 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
 
   println cmd
   if (0 != System.run(cmd)) System.exit( 1 )
+  }#
 endIf
 
 System.exit( System.run(''.rogo/Build $'' (System.command_line_arguments.join(" "))) )
@@ -66,7 +88,12 @@ routine require_command_line
 endRoutine
 
 
+routine save_cache
+  config//cache.save( File(config//FILEPATH->String) )
+endRoutine
+
 routine install_brew
+  if (config//cache//brew_installed) return
   if (0 == System.run("which brew >& /dev/null")) return
 
   require_command_line
@@ -74,7 +101,11 @@ routine install_brew
   if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
     local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     println cmd
-    if (0 == System.run(cmd)) return
+    if (0 == System.run(cmd))
+      config//cache//brew_installed = true
+      save_cache
+      return
+    endIf
     throw Error( "Failed to install Homebrew." )
   endIf
 
@@ -83,6 +114,7 @@ endRoutine
 
 
 routine install_library( library_name:String )
+  if (config//cache//library_locations.contains(library_name)) return
   if (0 == System.run( ''brew list $ >& /dev/null'' (library_name) ) ) return
 
   require_command_line
@@ -97,6 +129,7 @@ endRoutine
 
 
 routine library_location( library_name:String )->String
+  if (config//cache//library_locations.contains(library_name)) return
   install_library( library_name )
 
   if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
@@ -106,7 +139,10 @@ routine library_location( library_name:String )->String
     if (line.contains("/include/"))
       reader.close
       File.delete( ".build.temp" )
-      return line.before_first( "/include/" )
+      local location = line.before_first( "/include/" )
+      config//cache//library_locations[ library_name ] = location
+      save_cache
+      return location
     endIf
   endForEach
 
@@ -114,7 +150,7 @@ routine library_location( library_name:String )->String
 
 endRoutine
 
-routine scan_defs( file:File, defs:Value )
+routine scan_config( file:File )
   if (not file.exists) return
 
   forEach (line in LineReader(file))
@@ -126,7 +162,56 @@ routine scan_defs( file:File, defs:Value )
 
       local args = cmd.after_first( "=" ).trimmed
       cmd = cmd.before_first( "=" ).trimmed
-      defs[ cmd ] = args
+
+      which (cmd.before_first('('))
+        case "CONFIG", "ROGUEC"
+          config[ cmd ] = args
+
+          #config.ensure_list( cmd ).add( args )
+
+        case "LIBRARIES"
+          if (args.count)
+            local parser = JSONParser( Scanner(args) )
+            parser.consume_spaces
+            while (parser.has_another)
+              local name = parser.parse_identifier
+              local entry = @{ name:name }
+              config.ensure_list( "LIBRARIES" ).add( entry )
+              parser.consume_spaces
+              if (parser.consume('('))
+                parser.consume_spaces
+                while (parser.has_another)
+                  if (parser.consume(')')) escapeWhile
+                  local key = parser.parse_identifier
+                  parser.consume_spaces
+                  if (parser.consume(':'))
+                    parser.consume_spaces
+                    local value = parser.parse_string
+                    entry.ensure_table("options").set( key, value )
+                  endIf
+                  parser.consume_spaces
+                endWhile
+              endIf
+              parser.consume_spaces
+            endWhile
+          endIf
+
+        others
+          # Join into single space-separated string
+          if (config.contains(cmd))
+            config[ cmd ] = "$ $" (config[ cmd ],args)
+          else
+            config[ cmd ] = args
+          endIf
+
+          #{
+        others
+          forEach (arg in args.split(' '))
+            arg = arg.trimmed
+            config.ensure_list( cmd ).add( arg )
+          endForEach
+          }#
+      endWhich
     endIf
   endForEach
 

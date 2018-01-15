@@ -46,8 +46,19 @@ class JSONParser
     method init( json:String )
       reader = Scanner( json )
 
+    method init( reader )
+
+    method consume( ch:Character )->Logical
+      return reader.consume( ch )
+
+    method has_another->Logical
+      return reader.has_another
+
+    method next_is( ch:Character )->Logical
+      return (reader.peek == ch)
+
     method parse_value->Value
-      _consume_spaces_and_eols
+      consume_spaces_and_eols
 
       if (not reader.has_another) return UndefinedValue
 
@@ -83,72 +94,72 @@ class JSONParser
         return UndefinedValue
       endIf
 
-    method parse_table->Value
-      _consume_spaces_and_eols
+    method parse_table( open_ch='{':Character, close_ch='}':Character )->Value
+      consume_spaces_and_eols
 
-      if (not reader.consume('{')) return UndefinedValue
+      if (not reader.consume(open_ch)) return UndefinedValue
 
-      _consume_spaces_and_eols
+      consume_spaces_and_eols
 
       local table = ValueTable()
-      if (reader.consume('}')) return table
+      if (reader.consume(close_ch)) return table
 
       local prev_pos = reader.position
       local first = true
-      while (first or reader.consume(',') or (reader.has_another and reader.peek!='}' and reader.position>prev_pos))
+      while (first or reader.consume(',') or (reader.has_another and reader.peek!=close_ch and reader.position>prev_pos))
         first = false
         prev_pos = reader.position
 
-        _consume_spaces_and_eols
+        consume_spaces_and_eols
 
         if (next_is_identifier)
           local key = parse_identifier
-          _consume_spaces_and_eols
+          consume_spaces_and_eols
 
           if (key.count)
             if (reader.consume(':'))
-              _consume_spaces_and_eols
+              consume_spaces_and_eols
               local value = parse_value
               table.set( key, value )
             else
               table.set( key, true )
             endIf
-            _consume_spaces_and_eols
+            consume_spaces_and_eols
           endIf
         endIf
       endWhile
 
-      if (not reader.consume('}')) throw JSONParseError( "'}' expected." )
+      if (not reader.consume(close_ch)) throw JSONParseError( "'$' expected."(close_ch) )
 
       return table
 
-    method parse_list->Value
-      _consume_spaces_and_eols
+    method parse_list( open_ch='[':Character, close_ch=']':Character )->Value
+      consume_spaces_and_eols
 
-      if (not reader.consume('[')) return UndefinedValue
+      if (not reader.consume(open_ch)) return UndefinedValue
 
-      _consume_spaces_and_eols
+      consume_spaces_and_eols
 
       local list = ValueList()
-      if (reader.consume(']')) return list
+      if (reader.consume(close_ch)) return list
 
       local prev_pos = reader.position
       local first = true
-      while (first or reader.consume(',') or (reader.has_another and reader.peek!=']' and reader.position>prev_pos))
+      while (first or reader.consume(',') or (reader.has_another and reader.peek!=close_ch and reader.position>prev_pos))
         first = false
         prev_pos = reader.position
-        _consume_spaces_and_eols
-        if (reader.peek == ']') escapeWhile
+        consume_spaces_and_eols
+        if (reader.peek == close_ch) escapeWhile
         list.add( parse_value )
-        _consume_spaces_and_eols
+        consume_spaces_and_eols
       endWhile
 
-      if (not reader.consume(']')) throw JSONParseError( "']' expected." )
+      if (not reader.consume(close_ch)) throw JSONParseError( "'$' expected." (close_ch) )
 
       return list
 
     method parse_string->String
-      _consume_spaces_and_eols
+      consume_spaces_and_eols
 
       local terminator = '"'
       if     (reader.consume( '"' ))  terminator = '"'
@@ -190,7 +201,7 @@ class JSONParser
       return code->Character
 
     method parse_identifier->String
-      _consume_spaces_and_eols
+      consume_spaces_and_eols
 
       local ch = reader.peek
       if (ch == '"' or ch == '\'')
@@ -219,12 +230,12 @@ class JSONParser
       return (ch == '"' or ch == '\'')
 
     method parse_number->Value
-      _consume_spaces_and_eols
+      consume_spaces_and_eols
 
       local sign = 1.0
       if (reader.consume( '-' ))
         sign = -1.0
-        _consume_spaces_and_eols
+        consume_spaces_and_eols
       endIf
 
       local n = 0.0
@@ -268,9 +279,11 @@ class JSONParser
 
       return Real64Value( n )
 
-    method _consume_spaces_and_eols->Scanner
+    method consume_spaces
+      while (reader.consume_spaces) noAction
+
+    method consume_spaces_and_eols
       while (reader.consume_spaces or reader.consume_eols) noAction
-      return reader
 
 endClass
 
