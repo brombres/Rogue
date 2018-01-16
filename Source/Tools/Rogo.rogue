@@ -57,24 +57,8 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
 
     if (not is_linux)
       # Linux generally doesn't need to specify -I include paths and -L library paths
-      local loc = header_location( library )
-      if (library.contains("include"))
-        if (library//include.count)
-          cmd += '' -I "$/$"'' (loc,library//include)
-        endIf
-      else
-        cmd += '' -I "$/include"'' (loc)
-      endIf
-
-      loc = library_location( library )
-
-      if (library.contains("library"))
-        if (library//library.count)
-          cmd += '' -L "$/$"'' (loc,library//library)
-        endIf
-      else
-        cmd += '' -L "$/lib"'' (loc)
-      endIf
+      cmd += '' -I "$"'' (header_location(library))
+      cmd += '' -L "$"'' (library_location(library))
     endIf
   endForEach
 
@@ -206,11 +190,7 @@ routine install_macos_library( library:Value )
   if (library.contains("library"))
     lib_name = library//library->String
   else
-    lib_name = library_name
-    which (System.os)
-      case "macOS": lib_name += ".so"
-      case "Linux": lib_name += ".a"
-    endWhich
+    lib_name = library_name + ".a"
     if (not lib_name.begins_with("lib")) lib_name = "lib" + lib_name
   endIf
 

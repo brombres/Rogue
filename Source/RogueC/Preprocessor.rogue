@@ -227,7 +227,8 @@ class Preprocessor
       loop
         local t = reader.peek
         if (consume(TokenType.keyword_not))
-          return (not parse_logical_term)
+          local result = (not parse_logical_term)
+          return result
         endIf
 
         if (consume(TokenType.symbol_open_paren))
@@ -238,7 +239,8 @@ class Preprocessor
 
         if (t.type is TokenType.literal_string)
           local target = reader.read->String
-          return RogueC.compile_targets[target]
+          local result = RogueC.compile_targets[target]->Logical
+          return result
         endIf
 
         if (t.type is TokenType.symbol_minus)
