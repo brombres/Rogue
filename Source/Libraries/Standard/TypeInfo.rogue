@@ -502,6 +502,16 @@ class MethodInfo
       if (return_type) return signature + "->" + return_type.name
       return signature
 
+    method call( context:Object, args=null:Value )->Value
+      if (args is not null)
+        args.insert( context->Value )
+        local result = call( args )
+        args.remove_first
+        return result
+      else
+        return call( @[ context->Value ] )
+      endIf
+
     method call( args:Value )->Value
       return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
 

@@ -128,18 +128,24 @@ class Parser
       if (inserted_module_prefixes) return
       inserted_module_prefixes = true
 
+      local skip_next_id = false
       while (reader.has_another)
 
         local t = reader.read
+
         if (t.type is TokenType.identifier)
-          local name = t->String
-          if (name[0] == ':')
-            # ::Name -> Name
-            reader.tokens[ reader.position - 1 ] = t.type.create_token( t, name.from(2) )
-          elseIf (module_id_map)
-            local mapping = module_id_map[ name ]
-            if (mapping)
-              reader.tokens[ reader.position - 1 ] = t.type.create_token( t, mapping )
+          if (skip_next_id)
+            skip_next_id = false
+          else
+            local name = t->String
+            if (name[0] == ':')
+              # ::Name -> Name
+              reader.tokens[ reader.position - 1 ] = t.type.create_token( t, name.from(2) )
+            elseIf (module_id_map)
+              local mapping = module_id_map[ name ]
+              if (mapping)
+                reader.tokens[ reader.position - 1 ] = t.type.create_token( t, mapping )
+              endIf
             endIf
           endIf
 
@@ -160,6 +166,13 @@ class Parser
 
         elseIf (t.type is TokenType.directive_using)
           add_used_module( read_identifier )
+
+        elseIf (t.type is TokenType.symbol_slash_slash)
+          # The 'x' in 'obj//x' should be left alone
+          skip_next_id = true
+
+        else
+          skip_next_id = false
 
         endIf
 
