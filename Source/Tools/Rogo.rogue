@@ -1,12 +1,12 @@
 # ROGUEC         = roguec
-# FILEPATH       = .rogo/Config.json
+# FILEPATH       = .rogo/Cache.json
 # ROGUEC_OPTIONS = --whatever
 # CXX            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 # CXXFLAGS       = -a -b -c
 # LIBRARIES      = libalpha(header:"alpha.h" library:"libalpha.a") libbeta
 # LINK           = -lalpha -lbeta
 
-global config = @{ roguec:"roguec", filepath:".rogo/Config.json" }
+global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -79,7 +79,7 @@ endRoutine
 
 
 routine save_cache
-  config//cache.save( File(config//filepath->String) )
+  config//cache.save( File(config//filepath->String), &formatted )
 endRoutine
 
 routine install_library_manager
