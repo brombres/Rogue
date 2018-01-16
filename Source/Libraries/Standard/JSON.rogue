@@ -224,6 +224,9 @@ class JSONParser
         return buffer->String.consolidated
       endIf
 
+    method peek->Character
+      return reader.peek
+
     method next_is_identifier->Logical
       local ch = reader.peek
       if (ch.is_identifier(&start,&allow_dollar)) return true
@@ -278,6 +281,9 @@ class JSONParser
       n = n * sign
 
       return Real64Value( n )
+
+    method read->Character
+      return reader.read
 
     method consume_spaces
       while (reader.consume_spaces) noAction

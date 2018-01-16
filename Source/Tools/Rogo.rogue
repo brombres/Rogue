@@ -3,7 +3,7 @@
 # ROGUEC_OPTIONS = --whatever
 # CXX            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 # CXXFLAGS       = -a -b -c
-# LIBRARIES      = libalpha(include:"$/include/alpha" library:"$/lib") libbeta
+# LIBRARIES      = libalpha(header:"alpha.h" library:"libalpha.a") libbeta
 # LINK           = -lalpha -lbeta
 
 global config = @{ roguec:"roguec", filepath:".rogo/Config.json" }
@@ -40,7 +40,7 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
   #trace config.to_json(&formatted)
 
   local roguec_options = config//roguec_options->String
-  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (config//roguec,roguec_options)
+  local cmd = "$ --target=C++,Console,$ Build.rogue --main --output=.rogo/Build $" (config//roguec,System.os,roguec_options)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
@@ -49,31 +49,32 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
 
   cmd = "$ $ .rogo/Build.cpp" (config//cxx,config//cxxflags)
 
+  local is_linux = (System.os == "Linux")
+
   install_library_manager
   forEach (library in config//libraries)
-    # Three install options:
-    #   libname                 - install libname
-    #   libname(install:"cmd")  - install cmd
-    #   libname(install:null)   - skip installation
-    local arg = ?:{ library.contains("install"):library//install || library//name }
-    if (arg.count) install_library( library//name, arg )
+    install_library( library )
 
-    local loc = library_location( library//name )
-
-    if (library.contains("include"))
-      if (library//include.count)
-        cmd += '' -I "$"'' (library//include->String.replacing('$',loc))
+    if (not is_linux)
+      # Linux generally doesn't need to specify -I include paths and -L library paths
+      local loc = header_location( library )
+      if (library.contains("include"))
+        if (library//include.count)
+          cmd += '' -I "$/$"'' (loc,library//include)
+        endIf
+      else
+        cmd += '' -I "$/include"'' (loc)
       endIf
-    else
-      cmd += '' -I "$/include"'' (loc)
-    endIf
 
-    if (library.contains("library"))
-      if (library//library.count)
-        cmd += '' -L "$"'' (library//library->String.replacing('$',loc))
+      loc = library_location( library )
+
+      if (library.contains("library"))
+        if (library//library.count)
+          cmd += '' -L "$/$"'' (loc,library//library)
+        endIf
+      else
+        cmd += '' -L "$/lib"'' (loc)
       endIf
-    else
-      cmd += '' -L "$/lib"'' (loc)
     endIf
   endForEach
 
@@ -108,7 +109,7 @@ endRoutine
 
 routine install_brew
   if (config//cache//brew_installed) return
-  if (0 == System.run("which brew >&2 /dev/null"))
+  if (0 == System.run("which brew > /dev/null 2>&1"))
     config//cache//brew_installed = true
     save_cache
     return
@@ -132,7 +133,7 @@ endRoutine
 #{
 routine install_apt_file
   if (config//cache//apt_file_installed) return
-  if (0 == System.run("which apt-file >&2 /dev/null"))
+  if (0 == System.run("which apt-file > /dev/null 2>&1"))
     config//cache//apt_file_installed = true
     save_cache
     return
@@ -154,26 +155,34 @@ routine install_apt_file
 endRoutine
 }#
 
-routine install_library( library_name:String, install_cmd:String )
+routine install_library( library:Value )
+  if (config//cache//installed_libraries.contains(library//name)) return
+
   which (System.os)
     case "macOS"
-      install_macos_library( library_name, install_cmd )
+      install_macos_library( library )
     case "Linux"
-      install_ubuntu_library( library_name, install_cmd )
+      install_ubuntu_library( library )
     others
       throw Error( ''Rogo does not know how to install a library for "$".'' (System.os) )
   endWhich
 endRoutine
 
-routine install_macos_library( library_name:String, install_cmd:String )
-  if (config//cache//library_locations.contains(library_name)) return
+routine install_macos_library( library:Value )
+  local library_name = library//name->String
 
-  if (0 != System.run( ''brew list $ >&2 /dev/null'' (library_name) ) )
+  if (0 != System.run( ''brew list $ > /dev/null 2>&1'' (library_name) ) )
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
       throw Error( "Missing required library '$'." (library_name) )
     endIf
+
+    # Two install options:
+    #   libname                 - install libname
+    #   libname(install:"cmd")  - install cmd
+    local install_cmd = library//name
+    if (library.contains("install")) install_cmd = library//install
 
     local cmd = "brew install $" (install_cmd)
     println cmd
@@ -185,71 +194,159 @@ routine install_macos_library( library_name:String, install_cmd:String )
   # Save location in cache
   if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
 
+  local header_name, lib_name : String
+
+  if (library.contains("header"))
+    header_name = library//header->String
+  else
+    header_name = library_name + ".h"
+    if (header_name.begins_with("lib")) header_name = header_name.rightmost( -3 )
+  endIf
+
+  if (library.contains("library"))
+    lib_name = library//library->String
+  else
+    lib_name = library_name
+    which (System.os)
+      case "macOS": lib_name += ".so"
+      case "Linux": lib_name += ".a"
+    endWhich
+    if (not lib_name.begins_with("lib")) lib_name = "lib" + lib_name
+  endIf
+
+  local found_header = false
+  local found_library = false
   local reader = LineReader( File.reader( ".rogo/build.temp" ) )
   forEach (line in reader)
-    if (line.contains("/include/"))
-      reader.close
-      File.delete( ".rogo/build.temp" )
-      local location = line.before_first( "/include/" )
-      config//cache.ensure_table( "library_locations" )[ library_name ] = location
-      save_cache
-      return
+    if (not found_header)
+      if (line.ends_with(header_name))
+        config//cache.ensure_table( "header_locations" )[ library_name ] = line.before_last( header_name )
+        found_header = true
+        if (found_library) escapeForEach
+      endIf
+    endIf
+
+    if (not found_library)
+      if (line.ends_with(lib_name))
+        config//cache.ensure_table( "library_locations" )[ library_name ] = line.before_last( lib_name )
+        found_library = true
+        if (found_header) escapeForEach
+      endIf
     endIf
   endForEach
+
+  reader.close
+  File.delete( ".rogo/build.temp" )
+
+  if (found_header and found_library)
+    config//cache.ensure_table("installed_libraries")[ library_name ] = true
+    save_cache
+    return
+  endIf
 
   throw Error( "Library not installed: '$'." (library_name) )
 
 endRoutine
 
+routine install_ubuntu_library( library:Value )
+  local library_name = library//name->String
 
-routine install_ubuntu_library( library_name:String, install_cmd:String )
-  if (config//cache//library_locations.contains(library_name)) return
-
-  local cmd = ''sudo dpkg -L $ >&2 /dev/null'' (library_name)
+  local cmd = ''sudo dpkg -L $ > /dev/null 2>&1'' (library_name)
   println "Checking for library $..." (library_name)
-  println cmd
+  println(cmd).flush
   if (0 != System.run(cmd))
-    #{
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
       throw Error( "Missing required library '$'." (library_name) )
     endIf
 
-    local cmd = "sudo apt-get install $" (install_cmd)
+    # Two install options:
+    #   libname                 - install libname
+    #   libname(install:"cmd")  - install cmd
+    local install_cmd = library//name
+    if (library.contains("install")) install_cmd = library//install
+
+    cmd = "sudo apt-get install $" (install_cmd)
     println cmd
     if (0 != System.run(cmd))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
-    }#
   endIf
 
-  #{
-  # Save location in cache
-  if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+  config//cache.ensure_table("installed_libraries")[ library_name ] = true
+  save_cache
 
-  local reader = LineReader( File.reader( ".build.temp" ) )
+  # Save location in cache
+  #{
+  if (0 != System.run("sudo dpkg -L $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+
+  local header_name, lib_name : String
+
+  if (library.contains("header"))
+    header_name = library//header->String
+  else
+    header_name = library_name.before_last( "-dev" ) + ".h"
+    if (header_name.begins_with("lib")) header_name = header_name.rightmost( -3 )
+  endIf
+
+  if (library.contains("library"))
+    lib_name = library//library->String
+  else
+    lib_name = library_name.before_last( "-dev" )
+    which (System.os)
+      case "macOS": lib_name += ".so"
+      case "Linux": lib_name += ".a"
+    endWhich
+    if (not lib_name.begins_with("lib")) lib_name = "lib" + lib_name
+  endIf
+
+  local found_header = false
+  local found_library = false
+  local reader = LineReader( File.reader( ".rogo/build.temp" ) )
   forEach (line in reader)
-    if (line.contains("/include/"))
-      reader.close
-      File.delete( ".build.temp" )
-      local location = line.before_first( "/include/" )
-      config//cache.ensure_table( "library_locations" )[ library_name ] = location
-      save_cache
-      return
+    if (not found_header)
+      if (line.ends_with(header_name))
+        config//cache.ensure_table( "header_locations" )[ library_name ] = line.before_last( header_name )
+        found_header = true
+        if (found_library) escapeForEach
+      endIf
+    endIf
+
+    if (not found_library)
+      if (line.ends_with(lib_name))
+        config//cache.ensure_table( "library_locations" )[ library_name ] = line.before_last( lib_name )
+        found_library = true
+        if (found_header) escapeForEach
+      endIf
     endIf
   endForEach
-  }#
+
+  reader.close
+  File.delete( ".rogo/build.temp" )
+
+  if (found_header and found_library)
+    save_cache
+    return
+  endIf
 
   throw Error( "Library not installed: '$'." (library_name) )
+  }#
 
 endRoutine
 
-routine library_location( library_name:String )->String
-  if (not config//cache//library_locations.contains(library_name))
-    install_library( library_name, library_name )
+routine library_location( library:Value )->String
+  if (not config//cache//installed_libraries.contains(library//name))
+    install_library( library )
   endIf
-  return config//cache//library_locations[ library_name ]
+  return config//cache//library_locations[ library//name ]
+endRoutine
+
+routine header_location( library:Value )->String
+  if (not config//cache//installed_libraries.contains(library//name))
+    install_library( library )
+  endIf
+  return config//cache//header_locations[ library//name ]
 endRoutine
 
 routine scan_config( file:File )
@@ -273,7 +370,7 @@ routine scan_config( file:File )
             local parser = JSONParser( Scanner(args) )
             parser.consume_spaces
             while (parser.has_another)
-              local name = parse_library_name( parser )
+              local name = parse_filepath( parser )
               local entry = @{ name:name }
               config.ensure_list( cmd ).add( entry )
               parser.consume_spaces
@@ -285,7 +382,7 @@ routine scan_config( file:File )
                   parser.consume_spaces
                   if (parser.consume(':'))
                     parser.consume_spaces
-                    local value = parse_library_name( parser )
+                    local value = parse_filepath( parser )
                     entry[ key ] = value
                   endIf
                   parser.consume_spaces
@@ -316,14 +413,14 @@ routine scan_config( file:File )
 
 endRoutine
 
-routine parse_library_name( parser:JSONParser )->String
+routine parse_filepath( parser:JSONParser )->String
   if (parser.next_is('"')) return parser.parse_string
 
-  local name = parser.parse_identifier
-  while (parser.consume('-'))
-    name += '-'
-    name += parser.parse_identifier
-  endWhile
-  return name
+  local buffer = StringBuilder()
+  while (parser.has_another and not " \n()".contains(parser.peek)) buffer.print( parser.read )
+
+  if (buffer.count == 0) buffer.print( parser.read )
+
+  return buffer->String
 endRoutine
 
