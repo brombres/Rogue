@@ -1,10 +1,10 @@
-# ROGUEC        = roguec
-# FILEPATH      = .rogo/Config.json
-# ROGUE_OPTIONS = --whatever
-# CXX           = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
-# CXXFLAGS      = -a -b -c
-# LIBRARIES     = libalpha(include:"$/include/alpha" library:"$/lib") libbeta
-# LINK          = -lalpha -lbeta
+# ROGUEC         = roguec
+# FILEPATH       = .rogo/Config.json
+# ROGUEC_OPTIONS = --whatever
+# CXX            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+# CXXFLAGS       = -a -b -c
+# LIBRARIES      = libalpha(include:"$/include/alpha" library:"$/lib") libbeta
+# LINK           = -lalpha -lbeta
 
 global config = @{ roguec:"roguec", filepath:".rogo/Config.json" }
 
@@ -27,7 +27,7 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
   scan_config( File("BuildCore.rogue") )
   scan_config( File("Build.rogue") )
 
-  # Select roguec(macos) or roguec(linux) etc. based on the OS and copy to roguec, etc.
+  # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
   forEach (key in config.keys)
     if (key.contains(os_arg))
@@ -39,8 +39,8 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
 
   #trace config.to_json(&formatted)
 
-  local rogue_options = config//rogue_options->String
-  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (config//roguec,rogue_options)
+  local roguec_options = config//roguec_options->String
+  local cmd = "$ --target=C++,Console Build.rogue --main --output=.rogo/Build $" (config//roguec,roguec_options)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
@@ -101,19 +101,20 @@ routine install_library_manager
   which (System.os)
     case "macOS"
       install_brew
+    case "Linux"
+      #install_apt_file
   endWhich
 endRoutine
 
 routine install_brew
   if (config//cache//brew_installed) return
-  if (0 == System.run("which brew >& /dev/null"))
+  if (0 == System.run("which brew >&2 /dev/null"))
     config//cache//brew_installed = true
     save_cache
     return
   endIf
 
   require_command_line
-  println "Installing brew"
   if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
     local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     println cmd
@@ -128,11 +129,46 @@ routine install_brew
   throw Error( "Missing required dependency 'brew' (Homebrew)." )
 endRoutine
 
+#{
+routine install_apt_file
+  if (config//cache//apt_file_installed) return
+  if (0 == System.run("which apt-file >&2 /dev/null"))
+    config//cache//apt_file_installed = true
+    save_cache
+    return
+  endIf
+
+  require_command_line
+  if (Console.input( "\napt-file must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+    local cmd = @|sudo apt-get install apt-file
+    println cmd
+    if (0 == System.run(cmd))
+      config//cache//apt_file_installed = true
+      save_cache
+      return
+    endIf
+    throw Error( "Failed to install apt-file." )
+  endIf
+
+  throw Error( "Missing required dependency 'apt-file'." )
+endRoutine
+}#
 
 routine install_library( library_name:String, install_cmd:String )
+  which (System.os)
+    case "macOS"
+      install_macos_library( library_name, install_cmd )
+    case "Linux"
+      install_ubuntu_library( library_name, install_cmd )
+    others
+      throw Error( ''Rogo does not know how to install a library for "$".'' (System.os) )
+  endWhich
+endRoutine
+
+routine install_macos_library( library_name:String, install_cmd:String )
   if (config//cache//library_locations.contains(library_name)) return
 
-  if (0 != System.run( ''brew list $ >& /dev/null'' (library_name) ) )
+  if (0 != System.run( ''brew list $ >&2 /dev/null'' (library_name) ) )
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
@@ -141,12 +177,54 @@ routine install_library( library_name:String, install_cmd:String )
 
     local cmd = "brew install $" (install_cmd)
     println cmd
-    if (0 == System.run(cmd))
-    else
+    if (0 != System.run(cmd))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
   endIf
 
+  # Save location in cache
+  if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+
+  local reader = LineReader( File.reader( ".rogo/build.temp" ) )
+  forEach (line in reader)
+    if (line.contains("/include/"))
+      reader.close
+      File.delete( ".rogo/build.temp" )
+      local location = line.before_first( "/include/" )
+      config//cache.ensure_table( "library_locations" )[ library_name ] = location
+      save_cache
+      return
+    endIf
+  endForEach
+
+  throw Error( "Library not installed: '$'." (library_name) )
+
+endRoutine
+
+
+routine install_ubuntu_library( library_name:String, install_cmd:String )
+  if (config//cache//library_locations.contains(library_name)) return
+
+  local cmd = ''sudo dpkg -L $ >&2 /dev/null'' (library_name)
+  println "Checking for library $..." (library_name)
+  println cmd
+  if (0 != System.run(cmd))
+    #{
+    # Install library
+    require_command_line
+    if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
+      throw Error( "Missing required library '$'." (library_name) )
+    endIf
+
+    local cmd = "sudo apt-get install $" (install_cmd)
+    println cmd
+    if (0 != System.run(cmd))
+      throw Error( "Failed to install library '$'." (library_name) )
+    endIf
+    }#
+  endIf
+
+  #{
   # Save location in cache
   if (0 != System.run("brew list $ > .build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
 
@@ -161,6 +239,7 @@ routine install_library( library_name:String, install_cmd:String )
       return
     endIf
   endForEach
+  }#
 
   throw Error( "Library not installed: '$'." (library_name) )
 
@@ -181,26 +260,22 @@ routine scan_config( file:File )
     if (line.begins_with("#$"))
       local cmd = line.rightmost( -2 )
 
-      cmd = cmd.replacing( "$OS", System.os ).to_lowercase
-
       local args = cmd.after_first( "=" ).trimmed
-      cmd = cmd.before_first( "=" ).trimmed
+      cmd = cmd.before_first( "=" ).trimmed.to_lowercase
 
       which (cmd.before_first('('))
         case "config", "roguec"
           if (args.begins_with('"')) args = args.after_first('"').before_last('"')
           config[ cmd ] = args
 
-          #config.ensure_list( cmd ).add( args )
-
         case "libraries"
           if (args.count)
             local parser = JSONParser( Scanner(args) )
             parser.consume_spaces
             while (parser.has_another)
-              local name = ?:{ parser.next_is('"'):parser.parse_string || parser.parse_identifier }
+              local name = parse_library_name( parser )
               local entry = @{ name:name }
-              config.ensure_list( "libraries" ).add( entry )
+              config.ensure_list( cmd ).add( entry )
               parser.consume_spaces
               if (parser.consume('('))
                 parser.consume_spaces
@@ -210,7 +285,7 @@ routine scan_config( file:File )
                   parser.consume_spaces
                   if (parser.consume(':'))
                     parser.consume_spaces
-                    local value = ?:{ parser.next_is('"'):parser.parse_string || parser.parse_identifier }
+                    local value = parse_library_name( parser )
                     entry[ key ] = value
                   endIf
                   parser.consume_spaces
@@ -239,5 +314,16 @@ routine scan_config( file:File )
     endIf
   endForEach
 
+endRoutine
+
+routine parse_library_name( parser:JSONParser )->String
+  if (parser.next_is('"')) return parser.parse_string
+
+  local name = parser.parse_identifier
+  while (parser.consume('-'))
+    name += '-'
+    name += parser.parse_identifier
+  endWhile
+  return name
 endRoutine
 
