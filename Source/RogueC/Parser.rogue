@@ -167,8 +167,8 @@ class Parser
         elseIf (t.type is TokenType.directive_using)
           add_used_module( read_identifier )
 
-        elseIf (t.type is TokenType.symbol_slash_slash)
-          # The 'x' in 'obj//x' should be left alone
+        elseIf (t.type is TokenType.symbol_dot or t.type is TokenType.symbol_slash_slash)
+          # The 'x' in 'obj.x' and 'obj//x' is not a candidate for module (namespace) qualification
           skip_next_id = true
 
         else
