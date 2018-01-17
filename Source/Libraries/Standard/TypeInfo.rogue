@@ -263,13 +263,15 @@ class TypeInfo
       # (e.g. an integer arg is a close match with Int64 and Int32 and a real arg is
       # a compatible match with Int64 and Int32).
       local best_m : MethodInfo
-      local fallback_m : MethodInfo
+      local fallback_m_matching_param_count : MethodInfo
+      local fallback_m_matching_name        : MethodInfo
 
       forEach (m in methods)
         contingent
           necessary (m.name == name_or_sig)
+          fallback_m_matching_name = m
           necessary (m.parameter_count == args.count)
-          fallback_m = m   # save the method with the right name and parameter count if we don't find anything else
+          fallback_m_matching_param_count = m
 
           forEach (arg at i in args)
             local p = m.parameter_type( i )
@@ -321,7 +323,8 @@ class TypeInfo
         endContingent
       endForEach
 
-      if (not best_m) best_m = fallback_m
+      if (not best_m) best_m = fallback_m_matching_param_count
+      if (not best_m) best_m = fallback_m_matching_name
 
       if (best_m)
         return best_m

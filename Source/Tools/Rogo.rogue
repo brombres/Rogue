@@ -40,7 +40,7 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
   #trace config.to_json(&formatted)
 
   local roguec_options = config//roguec_options->String
-  local cmd = "$ --target=C++,Console,$ Build.rogue --main --output=.rogo/Build $" (config//roguec,System.os,roguec_options)
+  local cmd = "$ --target=C++,Console,$ Build.rogue --debug --main --output=.rogo/Build $" (config//roguec,System.os,roguec_options)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
