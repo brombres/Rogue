@@ -79,115 +79,42 @@ class TypeInfo
       properties.add( PropertyInfo(properties.count,property_name_index, property_type_index) )
 
     method add_method_info( method_index:Int32 ) [essential]
-      local first_param  : Int32
-      local param_count  : Int32
+      local first_param_name  : Int32
+      local first_param_type  : Int32
+      local parameter_count  : Int32
       local return_type  : Int32
       local call_handler : Int32
       local success = false
       native @|if (Rogue_method_info_table[$method_index][0] >= 0)
               |{
               |  $success = 1;
-              |  $param_count = Rogue_method_info_table[$method_index][1];
-              |  $first_param = Rogue_method_info_table[$method_index][2];
-              |  $return_type = Rogue_method_info_table[$method_index][3];
-              |  $call_handler = Rogue_method_info_table[$method_index][4];
+              |  $parameter_count = Rogue_method_info_table[$method_index][1];
+              |  $first_param_name = Rogue_method_info_table[$method_index][2];
+              |  $first_param_type = Rogue_method_info_table[$method_index][3];
+              |  $return_type      = Rogue_method_info_table[$method_index][4];
+              |  $call_handler     = Rogue_method_info_table[$method_index][5];
               |}
       if (success)
-        methods.add( MethodInfo(method_index, param_count, first_param, return_type, call_handler) )
+        methods.add( MethodInfo(method_index, parameter_count, first_param_name, first_param_type, return_type, call_handler) )
       endIf
 
-    method call( context:Value, name_or_sig:String, args=NullValue:Value )->Value
+    method call( context:Object, name_or_sig:String, args=NullValue:Value )->Value
       # Note: can throw NoSuchMethodError
-      local selected_m : MethodInfo
-
-      if (not args.is_list) args = @[]
-
-      if (name_or_sig.contains('('))
-        local m = find_method( name_or_sig )
-        if (m)
-          args.insert( context )
-          local result = m.call( args )
-          args.remove_first
-          return result
-        else
+      local m = find_method( name_or_sig, args )
+      if (not m)
+        if (name_or_sig.contains('('))
           throw NoSuchMethodError( "$.$" (name,name_or_sig) )
+        else
+          throw NoSuchMethodError( "$.$($)" (name,name_or_sig,args.count) )
         endIf
       endIf
 
-      # Find first close match among overloads, falling back to last compatible match
-      # (e.g. an integer arg is a close match with Int64 and Int32 and a real arg is
-      # a compatible match with Int64 and Int32).
-      local best_m : MethodInfo
+      if (not args.is_list) args = @[]
 
-      forEach (m in methods)
-        contingent
-          necessary (m.name == name_or_sig)
-          necessary (m.param_count == args.count)
-
-          forEach (arg at i in args)
-            local p = m.param_types[ i ]
-
-            if (p.is_primitive)
-              if (p.name == "Logical")
-                necessary (arg.is_logical)
-              elseIf (p.name == "Character")
-                necessary (arg.is_number or (arg.is_string and arg.count == 1))
-              else
-                necessary (arg.is_number)
-              endIf
-
-            elseIf (p.name == "String")
-              necessary (arg.is_string)
-
-            elseIf (p.is_reference)
-              necessary (arg.is_object)
-              local obj = arg->Object
-              if (obj) necessary (obj.type_info.instance_of(p))
-
-            endIf
-          endForEach
-
-        satisfied
-          # This is a compatible method
-          best_m = m
-
-          # Now see if it's a close match by checking primitive types
-          contingent
-            forEach (arg at i in args)
-              local p = m.param_types[ i ]
-
-              if (arg.is_number)
-                which (p.name)
-                  case "Int64", "Int32", "Character", "Byte"
-                    necessary (arg->Real64.fractional_part == 0)
-                endWhich
-              endIf
-
-            endForEach
-
-          satisfied
-            # Close match - go ahead and call it
-            #trace name, m, m.call_handler
-            args.insert( context )
-            local result = m.call( args )
-            args.remove_first
-            return result
-
-          endContingent
-
-        endContingent
-      endForEach
-
-      if (best_m)
-        args.insert( context )
-        local result = best_m.call( args )
-        args.remove_first
-        return result
-
-      else
-        throw NoSuchMethodError( "$.$($)" (name,name_or_sig,args.count) )
-
-      endIf
+      args.insert( context->Value )
+      local result = m.call( args )
+      args.remove_first
+      return result
 
     method create_object->Object
       if (is_primitive or is_compound)
@@ -324,11 +251,83 @@ class TypeInfo
       endForEach
       return null
 
-    method find_method( signature:String )->MethodInfo
+    method find_method( name_or_sig:String, args=NullValue:Value )->MethodInfo
+      if (name_or_sig.contains('('))
+        forEach (m in methods)
+          if (m.signature == name_or_sig) return m
+        endForEach
+        return null
+      endIf
+
+      # Find first close match among overloads, falling back to last compatible match
+      # (e.g. an integer arg is a close match with Int64 and Int32 and a real arg is
+      # a compatible match with Int64 and Int32).
+      local best_m : MethodInfo
+      local fallback_m : MethodInfo
+
       forEach (m in methods)
-        if (m.signature == signature) return m
+        contingent
+          necessary (m.name == name_or_sig)
+          necessary (m.parameter_count == args.count)
+          fallback_m = m   # save the method with the right name and parameter count if we don't find anything else
+
+          forEach (arg at i in args)
+            local p = m.parameter_type( i )
+
+            if (p.is_primitive)
+              if (p.name == "Logical")
+                necessary (arg.is_logical)
+              elseIf (p.name == "Character")
+                necessary (arg.is_number or (arg.is_string and arg.count == 1))
+              else
+                necessary (arg.is_number)
+              endIf
+
+            elseIf (p.name == "String")
+              necessary (arg.is_string)
+
+            elseIf (p.is_reference)
+              necessary (arg.is_object)
+              local obj = arg->Object
+              if (obj) necessary (obj.type_info.instance_of(p))
+
+            endIf
+          endForEach
+
+        satisfied
+          # This is a compatible method
+          best_m = m
+
+          # Now see if it's a close match by checking primitive types
+          contingent
+            forEach (arg at i in args)
+              local p = m.parameter_type( i )
+
+              if (arg.is_number)
+                which (p.name)
+                  case "Int64", "Int32", "Character", "Byte"
+                    necessary (arg->Real64.fractional_part == 0)
+                endWhich
+              endIf
+
+            endForEach
+
+          satisfied
+            # Close match - go ahead and return it
+            return m
+
+          endContingent
+
+        endContingent
       endForEach
-      return null
+
+      if (not best_m) best_m = fallback_m
+
+      if (best_m)
+        return best_m
+      else
+        return null
+      endIf
 
     method find_methods( method_name:String )->MethodInfo[] [macro]
       this.method_info( method_name )
@@ -458,16 +457,14 @@ class MethodInfo
     base_name           : String
     signature           : String
     fn_ptr              : IntPtr
-    _first_param_type   : Int32
-    param_count         : Int32
-    _return_type        : Int32
-    param_types         : TypeInfo[]
+    parameter_count     : Int32
     call_handler        : Int32
+    _first_param_name   : Int32
+    _first_param_type   : Int32
+    _return_type        : Int32
 
   METHODS
-    method init( index, param_count, first_param_type:Int32, return_type:Int32, call_handler )
-      _first_param_type = first_param_type
-      _return_type = return_type
+    method init( index, parameter_count, _first_param_name, _first_param_type, _return_type, call_handler )
       fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
 
     method base_name->String
@@ -484,18 +481,23 @@ class MethodInfo
       if (_return_type == -1) return null
       return TypeInfo.get(_return_type)
 
-    method param_types->TypeInfo[]
-      if (@param_types) return @param_types
-      local r = TypeInfo[]
-      forEach (i in 0..<param_count)
-        r.add(TypeInfo.get( native("Rogue_method_param_types[$this->__first_param_type + $i]")->Int32 ))
-      endForEach
-      @param_types = r
-      return r
+    method parameter_name( index:Int32 )->String [essential]
+      if (index < 0 or index >= parameter_count) return null
+      return native( "Rogue_literal_strings[ Rogue_method_param_names[$_first_param_name + $index] ]" )->String
+
+    method parameter_type( index:Int32 )->TypeInfo
+      if (index < 0 or index >= parameter_count) return null
+      return TypeInfo.get( native("Rogue_method_param_types[$_first_param_type + $index]")->Int32 )
 
     method signature->String
       if (@signature) return @signature
-      signature = name + "(" + ",".join(param_types.mapped<<String>>( (x)=>(x.name) )) + ")"
+      local buffer = StringBuilder().print( name ).print( '(' )
+      forEach (i in 0..<parameter_count)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( parameter_type(i).name )
+      endForEach
+      buffer.print( ')' )
+      signature = buffer->String
       return @signature
 
     method to->String

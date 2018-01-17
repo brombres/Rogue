@@ -745,5 +745,4 @@ void Rogue_print_stack_trace ( bool leading_newline=false);
 
 extern void Rogue_terminate_handler ();
 
-
 //=============================================================================

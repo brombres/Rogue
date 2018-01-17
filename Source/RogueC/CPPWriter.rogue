@@ -809,8 +809,10 @@ augment Program
         #NOTE: Must use exact same algorithm as for generating Rogue_dynamic_method_table!
         #      (that code is in type.print_dynamic_method_table_entries)
         local method_names = Table<<String,Int32>>()
-        local method_sigs = Table<<String,Int32>>()
+        local method_param_type_sigs = Table<<String,Int32>>()
         local method_param_types = Int32[]
+        local method_param_name_sigs = Table<<String,Int32>>()
+        local method_param_names = Int32[]
         forEach (type in type_list)
           forEach (m in type.method_list)
             if (not m.is_macro)
@@ -818,10 +820,19 @@ augment Program
                 if (not method_names.contains(m.name))
                   method_names[m.name] = method_names.count
                 endIf
+
+                # parameter types
                 local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
-                if (not method_sigs.contains(sig))
-                  method_sigs[sig] = method_param_types.count
+                if (not method_param_type_sigs.contains(sig))
+                  method_param_type_sigs[sig] = method_param_types.count
                   method_param_types.add(m.parameters.mapped<<Int32>>( (l)=>(l.type.index) ))
+                endIf
+
+                # parameter names
+                sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+                if (not method_param_name_sigs.contains(sig))
+                  method_param_name_sigs[sig] = method_param_names.count
+                  method_param_names.add(m.parameters.mapped<<Int32>>( (l)=>(Program.add_literal_string(l.name)) ))
                 endIf
               endIf
             endIf
@@ -837,13 +848,14 @@ augment Program
         writer.indent -= 2
         writer.println "};"
         writer.println
-        writer.println(  "const int Rogue_method_param_types[] =" )
+
+        writer.println(  "const int Rogue_method_param_names[] =" )
         writer.println "{"
         writer.indent += 2
         block
           local count = 0
-          forEach (item in method_param_types)
-            writer.println "$," (item)
+          forEach (item in method_param_names)
+            writer.print "$," (item)
             count += 1
             if (count >= 25) writer.println; count = 0
           endForEach
@@ -852,8 +864,25 @@ augment Program
         writer.indent -= 2
         writer.println "};"
         writer.println
-        writer.println "// name_string, arg_count, first_param_type, return_type, introspection call handler index"
-        writer.println(  "const int Rogue_method_info_table[][5] =" )
+
+        writer.println(  "const int Rogue_method_param_types[] =" )
+        writer.println "{"
+        writer.indent += 2
+        block
+          local count = 0
+          forEach (item in method_param_types)
+            writer.print "$," (item)
+            count += 1
+            if (count >= 25) writer.println; count = 0
+          endForEach
+          if (count) writer.println
+        endBlock
+        writer.indent -= 2
+        writer.println "};"
+        writer.println
+
+        writer.println "// name_string, arg_count, first_param_name, first_param_type, return_type, introspection call handler index"
+        writer.println(  "const int Rogue_method_info_table[][6] =" )
         writer.println "{"
         writer.indent += 2
         forEach (type in type_list)
@@ -861,18 +890,16 @@ augment Program
             if (index >= type.dynamic_method_table_count) escapeForEach
             if (not m.is_macro)
               if (m.store_dynamically and m.is_used and not m.is_abstract)
-                local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+                local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+                local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
                 local handler_index = -1
                 if (Program.using_introspection)
                   handler_index = m.introspection_call_handler.index
-                  #local handler = IntrospectionCallManager.roguem_to_handler[ m.cpp_typedef ]
-                  #if (handler) handler_index = handler.index
-                  #else println "No handler for $ $.$ ($)" (m.cpp_typedef,type.name,m.signature,m.is_used)
                 endIf
 
-                writer.println '{$,$,$,$,$}, // $.$' (method_names[m.name], m.parameters.count, method_sigs[sig], select{m.return_type:m.return_type.index || -1}, handler_index, type.name, m.signature)
+                writer.println '{$,$,$,$,$,$}, // $.$' (method_names[m.name], m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index, type.name, m.signature)
               else
-                writer.println '{-1,-1,-1,-1,-1},'
+                writer.println '{-1,-1,-1,-1,-1,1},'
               endIf
             endIf
           endForEach

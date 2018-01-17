@@ -68,7 +68,23 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
   if (0 != System.run(cmd)) System.exit( 1 )
 endIf
 
-System.exit( System.run(''.rogo/Build $'' (System.command_line_arguments.join(" "))) )
+System.exit( System.run(''.rogo/Build $'' (System.command_line_arguments.mapped<<String>>( (arg)=>prep_arg(arg) ).join(" "))) )
+
+routine prep_arg( arg:String )->String
+  # Quotes and escapes string if necessary
+  if (not (arg.contains(' ') or arg.contains('"') or arg.contains('\\'))) return arg
+  local quoted = StringBuilder()
+  quoted.print( '"' )
+  forEach (ch in arg)
+    which (ch)
+      case '"':  quoted.print( "\\\"" )
+      case '\\': quoted.print( "\\\\" )
+      others:    quoted.print( ch )
+    endWhich
+  endForEach
+  quoted.print( '"' )
+  return quoted
+endRoutine
 
 routine require_command_line
   if (System.environment["IDE"])
