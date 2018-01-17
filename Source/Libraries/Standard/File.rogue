@@ -644,6 +644,9 @@ class File
     method copy( to_filepath:String ) [macro]
       File.copy( this.filepath, to_filepath )
 
+    method copy_newer( to_filepath:String ) [macro]
+      File.copy_newer( this.filepath, to_filepath )
+
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )
 
