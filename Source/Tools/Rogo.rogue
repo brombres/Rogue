@@ -3,7 +3,8 @@
 # ROGUEC_OPTIONS = --whatever
 # CXX            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 # CXXFLAGS       = -a -b -c
-# LIBRARIES      = libalpha(header:"alpha.h" library:"libalpha.a") libbeta
+# LIBRARIES      = libalpha( headers:"/path/to/include/" libraries:"/path/to/lib/" )
+# LIBRARIES      = libbeta
 # LINK           = -lalpha -lbeta
 
 global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
@@ -192,56 +193,61 @@ routine install_macos_library( library:Value )
   endIf
 
   # Save location in cache
-  if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+  local header_path, library_path : String
+  if (library.contains("headers"))   header_path = library//headers
+  if (library.contains("libraries")) library_path = library//libraries
 
-  local header_name, lib_name : String
-
-  if (library.contains("header"))
-    header_name = library//header->String
-  else
-    header_name = library_name + ".h"
-    if (header_name.begins_with("lib")) header_name = header_name.rightmost( -3 )
-  endIf
-
-  if (library.contains("library"))
-    lib_name = library//library->String
-  else
-    lib_name = library_name + ".a"
-    if (not lib_name.begins_with("lib")) lib_name = "lib" + lib_name
-  endIf
-
-  local found_header = false
-  local found_library = false
-  local reader = LineReader( File.reader( ".rogo/build.temp" ) )
-  forEach (line in reader)
-    if (not found_header)
-      if (line.ends_with(header_name))
-        config//cache.ensure_table( "header_locations" )[ library_name ] = line.before_last( header_name )
-        found_header = true
-        if (found_library) escapeForEach
-      endIf
+  if (not (header_path and library_path))
+    if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+    if (not header_path) header_path = find_path( library, ".h" )
+    if (not header_path)
+      println '-' * 79
+      local cmd = "Unable to determine $ header path. " (library_name)
+      cmd += "Specify it in the LIBRARIES declaration as follows:"
+      println cmd.word_wrapped( 79 )
+      println
+      println ''$ LIBRARIES = $( header:"/path/to/include/" )'' ("#$",library_name)
+      println
+      println '-' * 79
     endIf
 
-    if (not found_library)
-      if (line.ends_with(lib_name))
-        config//cache.ensure_table( "library_locations" )[ library_name ] = line.before_last( lib_name )
-        found_library = true
-        if (found_header) escapeForEach
-      endIf
+    if (not library_path) library_path = find_path( library, ".a" )
+    if (not library_path) library_path = find_path( library, ".dylib" )
+    if (not library_path) library_path = find_path( library, ".so" )
+    if (not library_path)
+      println '-' * 79
+      local cmd = "Unable to determine $ library path. " (library_name)
+      cmd += "Specify it in the LIBRARIES declaration as follows:"
+      println cmd.word_wrapped( 79 )
+      println
+      println ''$ LIBRARIES = $( library:"/path/to/lib/" )'' ("#$",library_name)
+      println
+      println '-' * 79
     endIf
-  endForEach
 
-  reader.close
-  File.delete( ".rogo/build.temp" )
+    File.delete( ".rogo/build.temp" )
+  endIf
 
-  if (found_header and found_library)
-    config//cache.ensure_table("installed_libraries")[ library_name ] = true
+  if (library_path and header_path)
+    config//cache.ensure_table( "header_locations" )[ library_name ] = header_path
+    config//cache.ensure_table( "library_locations" )[ library_name ] = library_path
     save_cache
     return
   endIf
 
   throw Error( "Library not installed: '$'." (library_name) )
 
+endRoutine
+
+routine find_path( library:Value, pattern:String )->String
+  #{
+  pattern = "**/*" + pattern
+  reader = LineReader( File(".rogo/build.temp") )
+  forEach (line in reader)
+  endForEach
+  reader.close
+  }#
+  return null
 endRoutine
 
 routine install_ubuntu_library( library:Value )
@@ -272,62 +278,6 @@ routine install_ubuntu_library( library:Value )
 
   config//cache.ensure_table("installed_libraries")[ library_name ] = true
   save_cache
-
-  # Save location in cache
-  #{
-  if (0 != System.run("sudo dpkg -L $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
-
-  local header_name, lib_name : String
-
-  if (library.contains("header"))
-    header_name = library//header->String
-  else
-    header_name = library_name.before_last( "-dev" ) + ".h"
-    if (header_name.begins_with("lib")) header_name = header_name.rightmost( -3 )
-  endIf
-
-  if (library.contains("library"))
-    lib_name = library//library->String
-  else
-    lib_name = library_name.before_last( "-dev" )
-    which (System.os)
-      case "macOS": lib_name += ".so"
-      case "Linux": lib_name += ".a"
-    endWhich
-    if (not lib_name.begins_with("lib")) lib_name = "lib" + lib_name
-  endIf
-
-  local found_header = false
-  local found_library = false
-  local reader = LineReader( File.reader( ".rogo/build.temp" ) )
-  forEach (line in reader)
-    if (not found_header)
-      if (line.ends_with(header_name))
-        config//cache.ensure_table( "header_locations" )[ library_name ] = line.before_last( header_name )
-        found_header = true
-        if (found_library) escapeForEach
-      endIf
-    endIf
-
-    if (not found_library)
-      if (line.ends_with(lib_name))
-        config//cache.ensure_table( "library_locations" )[ library_name ] = line.before_last( lib_name )
-        found_library = true
-        if (found_header) escapeForEach
-      endIf
-    endIf
-  endForEach
-
-  reader.close
-  File.delete( ".rogo/build.temp" )
-
-  if (found_header and found_library)
-    save_cache
-    return
-  endIf
-
-  throw Error( "Library not installed: '$'." (library_name) )
-  }#
 
 endRoutine
 

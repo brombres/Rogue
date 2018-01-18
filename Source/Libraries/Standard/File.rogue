@@ -490,39 +490,67 @@ class File
       # *  - Matches any number of characters but does not match '/' or '\'
       # ** - Matches any number of characters including slashes
       # ?  - Matches any one character except '/' and '\'
-      local c = filepath.count
-      if (pattern.count == 0) return (c == 0)
 
-      local remaining_pattern = pattern.from( 1 )
-      local ch = pattern[0]
+      # Check non-wildcard characters at the end of pattern first as an easy out
+      local last_wildcard = -1
+      forEach (ch at i in pattern step -1)
+        if (ch == '*' or ch == '?')
+          last_wildcard = i
+          escapeForEach
+        endIf
+      endForEach
+
+      if (last_wildcard != -1)
+        local end_count = pattern.count - (last_wildcard+1)
+        if (end_count > 0)
+          if (end_count > filepath.count) return false
+
+          local i = last_wildcard + 1
+          forEach (ch in filepath from filepath.count-end_count)
+            if (ch != pattern[i]) return false
+            ++i
+          endForEach
+        endIf
+      endIf
+
+      return _matches_wildcard_pattern( filepath, 0, filepath.count, pattern, 0, pattern.count )
+
+    method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32 )->Logical
+      if (pcount == 0) return (fcount == 0)
+
+      local remaining_pattern = pattern
+      local r0 = p0 + 1
+      local rcount = pcount - 1
+      local ch = pattern[p0]
       which (ch)
         case '*':
-          if (remaining_pattern.count and remaining_pattern[0] == '*')
+          if (rcount and remaining_pattern[r0] == '*')
             # Double asterisk - match all characters including '/' and '\'
-            remaining_pattern = remaining_pattern.from( 1 )
-            forEach (n in 0..c)
-              if (matches_wildcard_pattern(filepath.from(n),remaining_pattern)) return true
+            ++r0
+            --rcount
+            forEach (n in 0..fcount)
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
             endForEach
           else
             # Single asterisk - match any characters except '/' and '\'
-            forEach (n in 0..<c)
-              ch = filepath[ n ]
-              if (matches_wildcard_pattern(filepath.from(n),remaining_pattern)) return true
+            forEach (n in 0..<fcount)
+              ch = filepath[ f0+n ]
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
               if (ch == '/' or ch == '\\') return false
             endForEach
-            return matches_wildcard_pattern( "", remaining_pattern )
+            return _matches_wildcard_pattern( "", 0, 0, remaining_pattern, r0, rcount )
           endIf
 
         case '?':
-          if (c == 0) return false
-          ch = filepath[ 0 ]
+          if (fcount == 0) return false
+          ch = filepath[ f0 ]
           if (ch == '/' or ch == '\\') return false
-          return matches_wildcard_pattern( filepath.from(1), remaining_pattern )
+          return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount )
 
         others:
-          if (c == 0) return false
-          if (ch == filepath[0])
-            return matches_wildcard_pattern( filepath.from(1), remaining_pattern )
+          if (fcount == 0) return false
+          if (ch == filepath[f0])
+            return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount )
           endIf
       endWhich
       return false
