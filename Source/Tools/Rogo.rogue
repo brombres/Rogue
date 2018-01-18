@@ -3,11 +3,12 @@
 # ROGUEC_OPTIONS = --whatever
 # CXX            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 # CXXFLAGS       = -a -b -c
-# LIBRARIES      = libalpha( headers:"/path/to/include/" libraries:"/path/to/lib/" )
+# LIBRARIES      = libalpha( header_path:"/path/to/include/" library_path:"/path/to/lib/" )
 # LIBRARIES      = libbeta
 # LINK           = -lalpha -lbeta
 
 global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
+global new_automatic_paths = false
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -62,6 +63,19 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
       cmd += '' -L "$"'' (library_location(library))
     endIf
   endForEach
+
+  #{
+  if (new_automatic_paths)
+    local st = "If any detected paths are incorrect - and for example include a subfolder they shouldn't, "
+    st += "delete the .rogo folder and redo, specifying header and library filepaths as follows. The filepaths should exist relative to the base paths but will not be part of them. You can type 'brew list <library-name> | less' to see all the filepaths of the library. Patterns may be used. Example:"
+    println st.word_wrapped(79)
+    println
+    println ''  #$ LIBRARIES = mylib( header:"mylib/*.h" library:"mylib/libmylib.a" )''
+    println
+    println "Note: you can type 'brew list <library-name> | less' to see all the filepaths"
+    println "of a library."
+  endIf
+  }#
 
   cmd += " -o .rogo/Build " + config//link
 
@@ -172,6 +186,7 @@ endRoutine
 routine install_macos_library( library:Value )
   local library_name = library//name->String
 
+  local performed_install = false
   if (0 != System.run( ''brew list $ > /dev/null 2>&1'' (library_name) ) )
     # Install library
     require_command_line
@@ -190,45 +205,40 @@ routine install_macos_library( library:Value )
     if (0 != System.run(cmd))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
+
+    performed_install = true
+  endIf
+
+  if (not performed_install)
+    println "Finding $ library..." (library_name)
   endIf
 
   # Save location in cache
+  if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+
+  new_automatic_paths = true
+
   local header_path, library_path : String
-  if (library.contains("headers"))   header_path = library//headers
-  if (library.contains("libraries")) library_path = library//libraries
+  if (library.contains("header"))   header_path = find_path( library, library//header )
+  if (library.contains("library")) library_path = find_path( library, library//library )
 
-  if (not (header_path and library_path))
-    if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
-    if (not header_path) header_path = find_path( library, ".h" )
-    if (not header_path)
-      println '-' * 79
-      local cmd = "Unable to determine $ header path. " (library_name)
-      cmd += "Specify it in the LIBRARIES declaration as follows:"
-      println cmd.word_wrapped( 79 )
-      println
-      println ''$ LIBRARIES = $( header:"/path/to/include/" )'' ("#$",library_name)
-      println
-      println '-' * 79
-    endIf
-
-    if (not library_path) library_path = find_path( library, ".a" )
-    if (not library_path) library_path = find_path( library, ".dylib" )
-    if (not library_path) library_path = find_path( library, ".so" )
-    if (not library_path)
-      println '-' * 79
-      local cmd = "Unable to determine $ library path. " (library_name)
-      cmd += "Specify it in the LIBRARIES declaration as follows:"
-      println cmd.word_wrapped( 79 )
-      println
-      println ''$ LIBRARIES = $( library:"/path/to/lib/" )'' ("#$",library_name)
-      println
-      println '-' * 79
-    endIf
-
-    File.delete( ".rogo/build.temp" )
+  if (not header_path) header_path = find_path( library, "*.h" )
+  if (header_path)
+    println "  Header path:  $" (header_path)
   endIf
 
+  if (not library_path) library_path = find_path( library, "*.a" )
+  if (not library_path) library_path = find_path( library, "*.dylib" )
+  if (not library_path) library_path = find_path( library, "*.so" )
+  if (library_path)
+    println "  Library path: $" (library_path)
+    println
+  endIf
+
+  File.delete( ".rogo/build.temp" )
+
   if (library_path and header_path)
+    config//cache.ensure_table("installed_libraries")[ library_name ] = true
     config//cache.ensure_table( "header_locations" )[ library_name ] = header_path
     config//cache.ensure_table( "library_locations" )[ library_name ] = library_path
     save_cache
@@ -240,13 +250,22 @@ routine install_macos_library( library:Value )
 endRoutine
 
 routine find_path( library:Value, pattern:String )->String
-  #{
-  pattern = "**/*" + pattern
-  reader = LineReader( File(".rogo/build.temp") )
+  local original_pattern = pattern
+  if (not pattern.begins_with('/')) pattern = "**/" + pattern
+  local reader = LineReader( File(".rogo/build.temp") )
   forEach (line in reader)
+    line = line.trimmed
+    if (File.matches_wildcard_pattern(line,pattern))
+      local path_len = 0
+      while (not File._matches_wildcard_pattern(line,path_len,line.count-path_len,original_pattern,0,original_pattern.count))
+        ++path_len
+      endWhile
+      reader.close
+      return line.leftmost( path_len )
+    endIf
   endForEach
   reader.close
-  }#
+
   return null
 endRoutine
 
