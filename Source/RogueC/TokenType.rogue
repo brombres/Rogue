@@ -3,6 +3,7 @@ class TokenType
     lookup                        : Table<<String,TokenType>>
 
     # Directives
+    directive_compileArg          : TokenType
     directive_define              : TokenType
     directive_defined             : TokenType
     directive_include             : TokenType
