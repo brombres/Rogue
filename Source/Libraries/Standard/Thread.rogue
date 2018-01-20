@@ -4,13 +4,95 @@
 
 nativeHeader
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+//#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
-#include "gc.h"
+// #include "gc.h" - included elsewhere
 #include <pthread.h>
 #include <assert.h>
 #include <functional>
-#include <semaphore.h>
+
+// Platform-appropriate semaphore
+// Based on https://stackoverflow.com/a/27847103/135791
+#ifdef __APPLE__
+  #include <dispatch/dispatch.h>
+#else
+  #include <semaphore.h>
+#endif
+
+struct RogueSemaphore
+{
+#ifdef __APPLE__
+    dispatch_semaphore_t sem;
+#else
+    sem_t                sem;
+#endif
+};
+
+
+static inline void
+RogueSemaphore_init( struct RogueSemaphore *s, uint32_t value )
+{
+#ifdef __APPLE__
+    dispatch_semaphore_t *sem = &s->sem;
+
+    *sem = dispatch_semaphore_create(value);
+#else
+    sem_init(&s->sem, 0, value);
+#endif
+}
+
+static inline void
+RogueSemaphore_wait( struct RogueSemaphore *s )
+{
+
+#ifdef __APPLE__
+    dispatch_semaphore_wait(s->sem, DISPATCH_TIME_FOREVER);
+#else
+    int r;
+
+    do
+    {
+      r = sem_wait(&s->sem);
+    } while (r == -1 && errno == EINTR);
+#endif
+}
+
+static inline void
+RogueSemaphore_try_wait( struct RogueSemaphore *s )
+{
+
+#ifdef __APPLE__
+    dispatch_semaphore_wait(s->sem, DISPATCH_TIME_NOW);
+#else
+    int r;
+
+    do
+    {
+      r = sem_trywait(&s->sem);
+    } while (r == -1 && errno == EINTR);
+#endif
+}
+
+static inline void
+RogueSemaphore_post(struct RogueSemaphore *s)
+{
+
+#ifdef __APPLE__
+    dispatch_semaphore_signal(s->sem);
+#else
+    sem_post(&s->sem);
+#endif
+}
+
+static inline void
+RogueSemaphore_destroy( struct RogueSemaphore *s )
+{
+#ifdef __APPLE__
+    dispatch_release( s->sem );
+#else
+    sem_destroy( &s->sem );
+#endif
+}
 
 pthread_t create_thread (void * (*f)(void *), void * arg)
 {
@@ -24,7 +106,7 @@ pthread_t create_thread (void * (*f)(void *), void * arg)
 struct thread_start_info
 {
   std::function<void()> thread_function;
-  sem_t sem;
+  RogueSemaphore sem;
 };
 
 
@@ -34,7 +116,7 @@ static inline void * roguethread_entry (void * tsi_)
   // We're not currently really using the semaphore, but it might
   // be useful in the future.
   thread_start_info si = *tsi;
-  sem_post(&tsi->sem); // We've got it.
+  RogueSemaphore_post(&tsi->sem); // We've got it.
   si.thread_function();
   return NULL;
 }
@@ -44,14 +126,14 @@ pthread_t roguethread_create ( std::function<void()> f )
 {
   thread_start_info si = {};
   si.thread_function = f;
-  sem_init(&si.sem, 0, 0);
+  RogueSemaphore_init( &si.sem, 0 );
   auto r = create_thread(roguethread_entry, &si);
-  sem_wait(&si.sem);
-  sem_destroy(&si.sem);
+  RogueSemaphore_wait(&si.sem);
+  RogueSemaphore_destroy(&si.sem);
   return r;
 }
 
-#endif
+//#endif
 
 endNativeHeader
 
@@ -119,13 +201,13 @@ class Thread (id:Int64) [compound]
 
     method pin_to_core (core:Int32) -> Logical
       local ok = 0
-      native @|#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+      native @|//#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
               |  $ok = 1;
               |  cpu_set_t cpus;
               |  CPU_ZERO(&cpus);
               |  CPU_SET($core, &cpus);
               |  pthread_setaffinity_np((pthread_t)$this.id, sizeof(cpus), &cpus);
-              |#endif
+              |//#endif
       return ok
 
   GLOBAL METHODS
@@ -309,30 +391,30 @@ endClass
 }#
 class Semaphore
   PROPERTIES
-    native "sem_t _sem;"
+    native "RogueSemaphore _sem;"
   METHODS
     method init (value : Int32)
       # Technically the initial value is an int, so it might be that
       # Int64 is a better choice.  But Int32 should be safe.
-      native "sem_init(&$this->_sem, 0, $value);"
+      native "RogueSemaphore_init(&$this->_sem, $value);"
 
     method on_cleanup
-      native "sem_destroy(&$this->_sem);"
+      native "RogueSemaphore_destroy(&$this->_sem);"
 
     method acquire
       local r : Int64
-      native "$r = sem_wait(&$this->_sem);"
+      native "$r = RogueSemaphore_wait(&$this->_sem);"
       require(r == 0)
 
     method try_acquire -> Logical
       # Returns true if you got it
       local r : Int64
-      native "$r = sem_trywait(&$this->_sem);"
+      native "$r = RogueSemaphore_try_wait(&$this->_sem);"
       return r == 0
 
     method release
       local r : Int64
-      native "$r = sem_post(&$this->_sem);"
+      native "$r = RogueSemaphore_post(&$this->_sem);"
       require(r == 0)
 
     method release (n : Int32)

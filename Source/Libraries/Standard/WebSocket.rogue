@@ -1,0 +1,30 @@
+class WebSocket
+$if ("Console")
+  DEPENDENCIES
+
+  GLOBAL METHODS
+    method is_supported->Logical
+      return true
+
+$else
+  DEPENDENCIES
+
+  GLOBAL METHODS
+    method is_supported->Logical
+      return false
+$endIf
+
+  PROPERTIES
+    url : String
+    id  : Int32
+
+  METHODS
+    method init( url:String )
+      if (not is_supported)
+        println "WebSocket not supported on $." (url)
+      endIf
+
+    method on_create( m:Message )
+      if (m.logical("success"))
+endClass
+

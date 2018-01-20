@@ -1,11 +1,11 @@
-# ROGUEC         = roguec
-# FILEPATH       = .rogo/Cache.json
-# ROGUEC_OPTIONS = --whatever
-# CXX            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
-# CXXFLAGS       = -a -b -c
-# LIBRARIES      = libalpha( header_path:"/path/to/include/" library_path:"/path/to/lib/" )
-# LIBRARIES      = libbeta
-# LINK           = -lalpha -lbeta
+#$ ROGUEC         = roguec
+#$ FILEPATH       = .rogo/Cache.json
+#$ ROGUEC_OPTIONS = --whatever
+#$ CPP            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+#$ CPPFLAGS       = -a -b -c
+#$ LIBRARIES      = libalpha( header_path:"/path/to/include/" library_path:"/path/to/lib/" )
+#$ LIBRARIES      = libbeta
+#$ LINK           = -lalpha -lbeta
 
 global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
 global new_automatic_paths = false
@@ -16,7 +16,7 @@ native @|#if defined(DEFAULT_CXX)
         |#else
         |  $compiler_invocation = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
         |#endif
-config//cxx = compiler_invocation
+config//cpp = compiler_invocation
 
 if (not File.exists("Build.rogue"))
   println "ERROR: Build.rogue does not exist."
@@ -28,6 +28,9 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
 
   scan_config( File("BuildCore.rogue") )
   scan_config( File("Build.rogue") )
+
+  if (config.contains("cxx"))      config//cpp = config//cxx
+  if (config.contains("cxxflags")) config//cppflags = config//cxxflags
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
@@ -49,7 +52,7 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
     System.exit 1
   endIf
 
-  cmd = "$ $ .rogo/Build.cpp" (config//cxx,config//cxxflags)
+  cmd = "$ $ .rogo/Build.cpp" (config//cpp,config//cppflags)
 
   local is_linux = (System.os == "Linux")
 
