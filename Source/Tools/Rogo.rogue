@@ -1,14 +1,18 @@
-#$ ROGUEC         = roguec
-#$ FILEPATH       = .rogo/Cache.json
-#$ ROGUEC_OPTIONS = --whatever
-#$ CPP            = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
-#$ CPPFLAGS       = -a -b -c
-#$ LIBRARIES      = libalpha( header_path:"/path/to/include/" library_path:"/path/to/lib/" )
-#$ LIBRARIES      = libbeta
-#$ LINK           = -lalpha -lbeta
+#$ ROGUEC      = roguec
+#$ ROGUEC_ARGS = --whatever
+#$ CPP         = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+#$ CPP_ARGS    = -a -b -c
+#$ LIBRARIES   = libalpha( header:"name.h" library:"libname.a" )
+#$ LIBRARIES   = libbeta
+#$ LINK        = -lalpha -lbeta
 
+# Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
+#   $HEADER(library-name)  -> path/to/library-name/include
+#   $LIBRARY(library-name) -> path/to/library-name/lib
+
+File.create_folder( ".rogo" )
 global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
-global new_automatic_paths = false
+global cache  = JSON.load_table( File(".rogo/Cache.json") ) : Value
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -18,19 +22,27 @@ native @|#if defined(DEFAULT_CXX)
         |#endif
 config//cpp = compiler_invocation
 
+local has_build_core = File.exists( "BuildCore.rogue" )
+
 if (not File.exists("Build.rogue"))
-  println "ERROR: Build.rogue does not exist."
+  if (has_build_core)
+    println "Creating skeleton Build.rogue..."
+    File( "Build.rogue" ).save( "module Build\n" )
+    #elseIf (System.command_line_arguments.contains("--create"))
+    #println "Creating default Build.rogue..."
+    #create_default_build_file
+  else
+    println "ERROR: Build.rogue does not exist." # Run 'rogo --create' to create a default Build.rogue file."
+  endIf
   System.exit 1
 endIf
 
 if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("BuildCore.rogue",".rogo/Build"))
   println "Recompiling build script..."
 
+  # Scanning places copies in .rogo/
   scan_config( File("BuildCore.rogue") )
   scan_config( File("Build.rogue") )
-
-  if (config.contains("cxx"))      config//cpp = config//cxx
-  if (config.contains("cxxflags")) config//cppflags = config//cxxflags
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
@@ -40,19 +52,19 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
     endIf
   endForEach
 
-  config//cache = JSON.load_table( File(config//filepath->String) )
-
   #trace config.to_json(&formatted)
 
-  local roguec_options = config//roguec_options->String
-  local cmd = "$ --target=C++,Console,$ Build.rogue --debug --main --output=.rogo/Build $" (config//roguec,System.os,roguec_options)
+  local roguec_args = config//roguec_args->String
+  local cmd =  "$ --target=C++,Console,$ .rogo/Build.rogue" (config//roguec,System.os)
+  if (has_build_core) cmd += " BuildCore.rogue "
+  cmd += " --debug --main --output=.rogo/Build $" (roguec_args)
   println cmd
   if (0 != System.run(cmd))
     println "ERROR compiling Build.rogue."
     System.exit 1
   endIf
 
-  cmd = "$ $ .rogo/Build.cpp" (config//cpp,config//cppflags)
+  cmd = "$ $ .rogo/Build.cpp" (config//cpp,config//cpp_args)
 
   local is_linux = (System.os == "Linux")
 
@@ -66,19 +78,6 @@ if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("Build
       cmd += '' -L "$"'' (library_location(library))
     endIf
   endForEach
-
-  #{
-  if (new_automatic_paths)
-    local st = "If any detected paths are incorrect - and for example include a subfolder they shouldn't, "
-    st += "delete the .rogo folder and redo, specifying header and library filepaths as follows. The filepaths should exist relative to the base paths but will not be part of them. You can type 'brew list <library-name> | less' to see all the filepaths of the library. Patterns may be used. Example:"
-    println st.word_wrapped(79)
-    println
-    println ''  #$ LIBRARIES = mylib( header:"mylib/*.h" library:"mylib/libmylib.a" )''
-    println
-    println "Note: you can type 'brew list <library-name> | less' to see all the filepaths"
-    println "of a library."
-  endIf
-  }#
 
   cmd += " -o .rogo/Build " + config//link
 
@@ -113,7 +112,7 @@ endRoutine
 
 
 routine save_cache
-  config//cache.save( File(config//filepath->String), &formatted )
+  cache.save( File(".rogo/Cache.rogue"), &formatted )
 endRoutine
 
 routine install_library_manager
@@ -126,9 +125,9 @@ routine install_library_manager
 endRoutine
 
 routine install_brew
-  if (config//cache//brew_installed) return
+  if (cache//brew_installed) return
   if (0 == System.run("which brew > /dev/null 2>&1"))
-    config//cache//brew_installed = true
+    cache//brew_installed = true
     save_cache
     return
   endIf
@@ -138,7 +137,7 @@ routine install_brew
     local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     println cmd
     if (0 == System.run(cmd))
-      config//cache//brew_installed = true
+      cache//brew_installed = true
       save_cache
       return
     endIf
@@ -150,9 +149,9 @@ endRoutine
 
 #{
 routine install_apt_file
-  if (config//cache//apt_file_installed) return
+  if (cache//apt_file_installed) return
   if (0 == System.run("which apt-file > /dev/null 2>&1"))
-    config//cache//apt_file_installed = true
+    cache//apt_file_installed = true
     save_cache
     return
   endIf
@@ -162,7 +161,7 @@ routine install_apt_file
     local cmd = @|sudo apt-get install apt-file
     println cmd
     if (0 == System.run(cmd))
-      config//cache//apt_file_installed = true
+      cache//apt_file_installed = true
       save_cache
       return
     endIf
@@ -174,7 +173,7 @@ endRoutine
 }#
 
 routine install_library( library:Value )
-  if (config//cache//installed_libraries.contains(library//name)) return
+  if (cache//installed_libraries.contains(library//name)) return
 
   which (System.os)
     case "macOS"
@@ -217,9 +216,7 @@ routine install_macos_library( library:Value )
   endIf
 
   # Save location in cache
-  if (0 != System.run("brew list $ > .rogo/build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
-
-  new_automatic_paths = true
+  if (0 != System.run("brew list $ > .rogo/Build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
 
   local header_path, library_path : String
   if (library.contains("header"))   header_path = find_path( library, library//header )
@@ -238,12 +235,12 @@ routine install_macos_library( library:Value )
     println
   endIf
 
-  File.delete( ".rogo/build.temp" )
+  File.delete( ".rogo/Build.temp" )
 
   if (library_path and header_path)
-    config//cache.ensure_table("installed_libraries")[ library_name ] = true
-    config//cache.ensure_table( "header_locations" )[ library_name ] = header_path
-    config//cache.ensure_table( "library_locations" )[ library_name ] = library_path
+    cache.ensure_table("installed_libraries")[ library_name ] = true
+    cache.ensure_table( "header_locations" )[ library_name ] = header_path
+    cache.ensure_table( "library_locations" )[ library_name ] = library_path
     save_cache
     return
   endIf
@@ -255,7 +252,7 @@ endRoutine
 routine find_path( library:Value, pattern:String )->String
   local original_pattern = pattern
   if (not pattern.begins_with('/')) pattern = "**/" + pattern
-  local reader = LineReader( File(".rogo/build.temp") )
+  local reader = LineReader( File(".rogo/Build.temp") )
   forEach (line in reader)
     line = line.trimmed
     if (File.matches_wildcard_pattern(line,pattern))
@@ -298,30 +295,45 @@ routine install_ubuntu_library( library:Value )
     endIf
   endIf
 
-  config//cache.ensure_table("installed_libraries")[ library_name ] = true
+  cache.ensure_table("installed_libraries")[ library_name ] = true
   save_cache
 
 endRoutine
 
 routine library_location( library:Value )->String
-  if (not config//cache//installed_libraries.contains(library//name))
+  if (not cache//installed_libraries.contains(library//name))
     install_library( library )
   endIf
-  return config//cache//library_locations[ library//name ]
+
+  local path = cache//library_locations[ library//name ]
+  if (File.exists(path)) return path
+
+  println "Finding $ library..." (library//name)
+  cache//installed_libraries.remove( library//name )
+  save_cache
+  return library_location( library )
 endRoutine
 
 routine header_location( library:Value )->String
-  if (not config//cache//installed_libraries.contains(library//name))
+  if (not cache//installed_libraries.contains(library//name))
     install_library( library )
   endIf
-  return config//cache//header_locations[ library//name ]
+
+  local path = cache//header_locations[ library//name ]
+  if (File.exists(path)) return path
+
+  println "Finding $ library..." (library//name)
+  cache//installed_libraries.remove( library//name )
+  save_cache
+  return header_location( library )
 endRoutine
 
 routine scan_config( file:File )
   if (not file.exists) return
 
-  forEach (line in LineReader(file))
-    line = line.trimmed
+  local writer = PrintWriter( File(".rogo/$"(file.filename)).writer )
+  forEach (original_line in LineReader(file))
+    local line = original_line.trimmed
     if (line.begins_with("#$"))
       local cmd = line.rightmost( -2 )
 
@@ -377,7 +389,48 @@ routine scan_config( file:File )
           }#
       endWhich
     endIf
+
+    line = original_line
+    local dollar = line.locate( '$' )
+    while (dollar.exists)
+      if (line.contains_at("$HEADER(",dollar.value))
+        local close_paren = line.locate( ')', dollar.value + 1 )
+        if (close_paren.exists)
+          local library_name = line.from(dollar.value+8,close_paren.value-1).trimmed
+          local library : Value
+          block
+            forEach (lib in config//libraries)
+              if (lib//name == library_name)
+                library = lib
+                escapeBlock
+              endIf
+            endForEach
+            library = @{ name:library_name }
+          endBlock
+          line = "$$$" (line.before(dollar.value),header_location(library),line.after(close_paren.value))
+        endIf
+      elseIf (line.contains_at("$LIBRARY(",dollar.value))
+        local close_paren = line.locate( ')', dollar.value + 1 )
+        if (close_paren.exists)
+          local library_name = line.from(dollar.value+9,close_paren.value-1).trimmed
+          local library : Value
+          block
+            forEach (lib in config//libraries)
+              if (lib//name == library_name)
+                library = lib
+                escapeBlock
+              endIf
+            endForEach
+            library = @{ name:library_name }
+          endBlock
+          line = "$$$" (line.before(dollar.value),library_location(library),line.after(close_paren.value))
+        endIf
+      endIf
+      dollar = line.locate( '$', dollar.value+1 )
+    endWhile
+    writer.println( line )
   endForEach
+  writer.close
 
 endRoutine
 
@@ -392,3 +445,10 @@ routine parse_filepath( parser:JSONParser )->String
   return buffer->String
 endRoutine
 
+routine create_default_build_file
+  #{
+  local content = @|module Build
+                   |
+                   |
+  }#
+endRoutine

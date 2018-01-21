@@ -1,6 +1,11 @@
 class WebSocket
 $if ("Console")
   DEPENDENCIES
+    nativeHeader #include "libwebsockets.h"
+    #$compileArg "-L"
+    $compileArg "-lwebsockets"
+    $compileArg "-Wno-c++1z-compat-mangling"
+    $compileArg "-Wno-macro-redefined"
 
   GLOBAL METHODS
     method is_supported->Logical
@@ -23,8 +28,5 @@ $endIf
       if (not is_supported)
         println "WebSocket not supported on $." (url)
       endIf
-
-    method on_create( m:Message )
-      if (m.logical("success"))
 endClass
 

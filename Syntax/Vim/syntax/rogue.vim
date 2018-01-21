@@ -55,6 +55,7 @@ syn keyword rogueStorageClass threadLocal synchronized synchronizable
 syn keyword rogueStorageClass api nonessential
 syn keyword rogueExceptions   throw try catch endTry use endUse
 "syn match  roguegPreProc      "^\[.*]"
+syn match   rogueDirective    "\$compileArg\>"
 syn match   rogueDirective    "\$define\>"
 syn match   rogueDirective    "\$defined\>"
 syn match   rogueDirective    "\$include\>"
