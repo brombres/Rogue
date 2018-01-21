@@ -1,0 +1,42 @@
+class NativeArray<<$DataType>>( address:IntPtr, count:Int32 ) [compound]
+  GLOBAL METHODS
+    method create( count:Int32 )->NativeArray<<$DataType>>
+      local ptr : IntPtr
+      if (count) ptr = native( "(intptr_t)malloc( $count * sizeof($($DataType)) )" )->IntPtr
+      return NativeArray<<$DataType>>( ptr, count )
+
+  METHODS
+    method free [mutating]
+      if (address)
+        native @|free( (void*)(intptr_t)$address );
+        address = 0
+        count = 0
+      endIf
+
+    method get( index:Int32 )->$DataType
+      local result : $DataType
+      native @|size_t size = sizeof( $($DataType) );
+              |memcpy( &$result, ((RogueByte*)(intptr_t)($address))+$index*size, size );
+      return result
+
+    method set( index:Int32, value:$DataType )->this
+      native @|size_t size = sizeof( $($DataType) );
+              |memcpy( ((RogueByte*)(intptr_t)($address))+$index*size, &$value, size );
+      return this
+
+    method set( index:Int32, data:NativeArray<<$DataType>> )->this
+      native @|size_t size = sizeof( $($DataType) );
+              |memmove( ((RogueByte*)(intptr_t)($address))+$index*size, (void*)(intptr_t)$data.address, $data.count*size );
+      return this
+
+    method subset( index:Int32, count:Int32 )->NativeArray<<$DataType>>
+      # Result shares data with original array - changing the result changes the original.
+      # Do not free() the result. This operation has minimal overhead.
+      local size : Int32
+      native @|$size = (RogueInt32)sizeof( $($DataType) );
+      return NativeArray<<$DataType>>( address + index*size, count )
+
+    method to->String
+      # Not thread-safe
+      return "$[$]" (<<$DataType>>.name,count)
+endClass
