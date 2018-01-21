@@ -3,7 +3,5 @@
 $if ("C++")
   includeNativeHeader "NativeCPP.h"
   includeNativeCode   "NativeCPP.cpp"
-$elseIf ("Java")
-  includeNativeCode   "NativeJava.java"
 $endIf
 

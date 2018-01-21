@@ -30,3 +30,5 @@ $endIf
       endIf
 endClass
 
+class WebSocketProtocol
+endClass

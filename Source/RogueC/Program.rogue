@@ -40,7 +40,7 @@ class Program [essential singleton]
 
     type_Object      : Type
     type_String      : Type
-    type_NativeArray : Type
+    type_Array       : Type
     type_GenericList : Type
     type_Global      : Type
     type_Exception   : Type
@@ -121,7 +121,7 @@ class Program [essential singleton]
       type_Object        = create_built_in_type( "Object", Attribute.is_native | Attribute.is_class )
       type_String        = create_built_in_type( "String", Attribute.is_native | Attribute.is_class )
       type_StringBuilder = create_built_in_type( "StringBuilder", Attribute.is_class )
-      type_NativeArray   = create_built_in_type( "NativeArray", Attribute.is_native | Attribute.is_class )
+      type_Array         = create_built_in_type( "Array", Attribute.is_native | Attribute.is_class )
       type_GenericList   = create_built_in_type( "GenericList", Attribute.is_class )
       type_Global        = create_built_in_type( "Global", Attribute.is_class )
       type_Exception     = create_built_in_type( "Exception", Attribute.is_class )
@@ -348,7 +348,7 @@ class Program [essential singleton]
       type_Logical.configure
       type_Global.configure
       type_Object.configure
-      type_NativeArray.configure
+      type_Array.configure
       type_NativeLock.configure
       type_GenericList.configure
       type_String.configure
@@ -366,7 +366,7 @@ class Program [essential singleton]
       type_Global.resolve
 
       type_Object.resolve
-      type_NativeArray.resolve
+      type_Array.resolve
       type_NativeLock.resolve
       type_GenericList.resolve
       type_String.resolve

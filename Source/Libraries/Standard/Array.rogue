@@ -1,4 +1,4 @@
-class NativeArray [native]
+class Array [native]
   METHODS
     method count->Int32 [macro]
       native( "$this->count" )->Int32
@@ -8,13 +8,13 @@ class NativeArray [native]
     method element_size->Int32 [macro]
       native '$this->element_size'
 
-    method set( i1:Int32, other:NativeArray, other_i1=0:Int32, copy_count=-1:Int32 )->NativeArray [macro]
+    method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
       native 'RogueArray_set($this,$i1,$other,$other_i1,$copy_count)'
 
     $endIf
 endClass
 
-class Array<<$DataType>> : NativeArray [native]
+class Array<<$DataType>> : Array [native]
   METHODS
     method cloned->Array<<$DataType>>
       local result = Array<<$DataType>>( count )

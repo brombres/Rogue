@@ -38,7 +38,7 @@ if (not File.exists("Build.rogue"))
 endIf
 
 if (File.is_newer_than("Build.rogue",".rogo/Build") or File.is_newer_than("BuildCore.rogue",".rogo/Build"))
-  println "Recompiling build script..."
+  println "Recompiling Build.rogue..."
 
   # Scanning places copies in .rogo/
   scan_config( File("BuildCore.rogue") )

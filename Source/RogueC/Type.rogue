@@ -1149,13 +1149,13 @@ class Type
         endForEach
       endIf
 
-      if (this is not Program.type_NativeArray)
-        is_array = this.instance_of( Program.type_NativeArray )
+      if (this is not Program.type_Array)
+        is_array = this.instance_of( Program.type_Array )
         if (is_array)
           local cur_type = this
           while (not cur_type.name.begins_with("Array<<"))
             cur_type = cur_type.base_class
-            if (cur_type is null) throw t.error( "A class that is instanceOf NativeArray must also be instanceOf Array<<DataType>>." )
+            if (cur_type is null) throw t.error( "A class that is instanceOf Array must also be instanceOf Array<<DataType>>." )
           endWhile
 
           local element_type_name = cur_type.name.after_first("<<").before_last(">>")
