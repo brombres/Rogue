@@ -1,0 +1,50 @@
+class ThreadWorker : Task
+  # Performs arbitrary work on a platform-appropriate thread, optionally executing a function when finished.
+  # Extend this class and override the following methods:
+  #
+  #   run
+  #     Perform the actual work. This is called automatically and will be happening on a separate
+  #     thread. This class is intended for native thread-safe blocking calls, but a limited set of
+  #     Rogue code can be used.  Rogue is not thread-safe by default, so no objects should be directly or
+  #     indirectly created.
+  #
+  #   on_start
+  #     Called on the worker thread, not the main thread.  Calls run() and then on_finish()
+  #
+  #   on_finish
+  DEPENDENCIES
+    $include "Standard/Thread.rogue"
+
+  PROPERTIES
+    is_finished : Logical
+    on_finished : Function
+
+  METHODS
+    method start->this
+      return start( null )
+
+    method start( on_finished )->this
+      # Runs on the main thread
+      TaskManager.add( this )
+      Thread( this=>handle_run )
+      return this
+
+    method run
+      # Override this. Runs on the worker thread
+
+    method on_finish
+      # Runs on main thread
+
+    method handle_run
+      # Runs on the worker thread
+      run
+      is_finished = true
+
+    method update->Logical
+      # Runs on the main thread
+      if (not is_finished) return true
+      on_finish
+      if (on_finished) on_finished()
+      return false
+endClass
+
