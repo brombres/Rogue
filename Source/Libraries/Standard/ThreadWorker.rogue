@@ -17,9 +17,14 @@ class ThreadWorker : Task
 
   PROPERTIES
     is_finished : Logical
+    on_run      : Function
     on_finished : Function
 
   METHODS
+    method init
+
+    method init( on_run )
+
     method start->this
       return start( null )
 
@@ -38,6 +43,7 @@ class ThreadWorker : Task
     method handle_run
       # Runs on the worker thread
       run
+      if (on_run) on_run()
       is_finished = true
 
     method update->Logical
