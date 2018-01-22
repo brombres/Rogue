@@ -1765,7 +1765,11 @@ class CPPWriter
       local param_type = select{param_info : param_info.type || arg.type}->Type
       local is_alias = is_mutating or (param_info and param_info.is_alias)
       if (is_alias)
-        if (arg instanceOf CmdReadLocal or arg instanceOf CmdReadSingleton)
+        if (arg.is_safely_mutable)
+          # CmdReadLocal
+          # CmdReadSingleton
+          # CmdThisContext
+          # CmdReadProperty where context.is_safely_mutable
           noAction # These are always okay
         elseIf (arg instanceOf CmdReadArrayElement)
           # It's possible to shoot oneself in the foot with this, but it's

@@ -6,6 +6,9 @@ class Cmd
     method add_to( statements:CmdStatementList )
       statements.add( this )
 
+    method is_safely_mutable->Logical
+      return false
+
     method call_prior( scope:Scope )->Cmd
       throw t.error( "Illegal target - 'prior' can only be used to call overridden methods." )
 
@@ -2588,6 +2591,9 @@ class CmdThisContext : Cmd
     method implicit_type( scope:Scope )->Type
       return this_type
 
+    method is_safely_mutable->Logical
+      return true
+
     method is_scoped_read_access->Logical
       return true
 
@@ -2649,6 +2655,9 @@ class CmdReadSingleton : Cmd
     method is_global->Logical
       return (not of_type.is_singleton)
 
+    method is_safely_mutable->Logical
+      return true
+
     method require_type_context
       noAction
 
@@ -2701,6 +2710,9 @@ class CmdReadLocal : Cmd
       endIf
 
       return CmdReadLocal( t, local_info )
+
+    method is_safely_mutable->Logical
+      return true
 
     method is_scoped_read_access->Logical
       return true
@@ -2809,6 +2821,9 @@ class CmdReadProperty : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdReadProperty( t, context.cloned( clone_args, new_t ), property_info )
+
+    method is_safely_mutable->Logical
+      return context.is_safely_mutable
 
     method is_scoped_read_access->Logical
       return true
