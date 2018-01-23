@@ -784,6 +784,20 @@ class CandidateMethods
             buffer.println( remove_module_names("$.$" (m.type_context.name,sig)) )
           endForEach
           buffer.indent -= 2
+
+          if (call_sig.contains("null"))
+            if (call_sig.contains("operator==("))
+              buffer.println
+              buffer.println "To check whether or not a reference is null, write either of the following:"
+              buffer.println
+              buffer.println "  <ref> is null"
+              buffer.println "  <ref> is not null"
+            else
+              buffer.println
+              buffer.println "Write 'null as TypeName' to qualify the type of a null reference."
+            endIf
+          endIf
+
           throw access.t.error( buffer->String )
 
         endIf

@@ -1,5 +1,24 @@
 class WebSocket
+  GLOBAL METHODS
+    method create( url:String, port=null:Int32?, protocols=null:String[] )->WebSocket
 $if ("Console")
+      return LWSWebSocket( url, port, protocols )
+$else
+      return WebSocket().init( url, port, protocols )
+$endIf
+
+  PROPERTIES
+    url       : String
+    port      : Int32?
+    protocols : String[]
+
+  METHODS
+    method init( url, port, protocols )
+      println "WebSocket is not supported on $." (System.os)
+endClass
+
+
+class LWSWebSocket : WebSocket
   DEPENDENCIES
     nativeHeader #include "libwebsockets.h"
     #$compileArg "-L"
@@ -7,28 +26,54 @@ $if ("Console")
     $compileArg "-Wno-c++1z-compat-mangling"
     $compileArg "-Wno-macro-redefined"
 
-  GLOBAL METHODS
-    method is_supported->Logical
-      return true
-
-$else
-  DEPENDENCIES
-
-  GLOBAL METHODS
-    method is_supported->Logical
-      return false
-$endIf
+    nativeHeader int Rogue_web_socket_handler( lws*, lws_callback_reasons, void*, void*, size_t );
 
   PROPERTIES
-    url : String
-    id  : Int32
+    mutex = Mutex()
+
+    native "lws_context*   context;"
+    native "lws*           web_socket;"
+    native "lws_protocols* protocols;"
 
   METHODS
-    method init( url:String )
-      if (not is_supported)
-        println "WebSocket not supported on $." (url)
+    method init( url, port, protocols )
+      native @|lws_context_creation_info info;
+              |memset( &info, 0, sizeof(info) );
+              |info.gid = -1;
+              |info.uid = -1;
+
+      if (port.exists) native @|info.port = $port.value;
+      else                     |info.port = CONTEXT_PORT_NO_LISTEN;
+
+      if (protocols)
+        native @||protocols = new lws_protocols[ ($protocols->count+1) * sizeof(lws_protocols) ];
+                |memset( protocols, 0, ($protocols->count+1) * sizeof(lws_protocols) );
+                |lws_protocols* protocol = lws_protocols;
+        forEach (protocol at index in protocols)
+          native @|protocol->name = $protocol->utf8_string;
+                  |protocol->callback = Rogue_web_socket_handler;
+                  |protocol->id = $index;
+                  |++protocol;
+        endForEach
       endIf
+
+      native @|context = lws_create_context( &info );
+
+    method on_cleanup
+      native @|if (context)
+              |{
+              |  lws_context_destroy( context );
+              |  context = 0;
+              |}
+              |
+              |if (protocols)
+              |{
+              |  delete [] protocols;
+              |  protocols = 0;
+              |}
+
 endClass
 
-class WebSocketProtocol
+
+class WebSocketHandler
 endClass
