@@ -388,6 +388,12 @@ class List<<$DataType>> : GenericList
     method remove_last->$DataType
       return remove_at( count - 1 )
 
+    method resize( new_count:Int32 )->this
+      if (count != new_count)
+        expand_to_count( new_count ).discard_from( new_count )
+      endIf
+      return this
+
     method rest( result_list=null:$DataType[] )->$DataType[]
       # Returns the "rest" of this list: a list containing all of the items
       # in this list after the first item.  The `result_list` parameter is
