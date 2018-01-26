@@ -132,13 +132,13 @@ class List<<$DataType>> : GenericList
       return this
 
     method discard_from( index:Int32 )->this
-      local zero_value : $DataType
-      local c = count
-      while (c > index)
-        --c
-        data[c] = zero_value
-      endWhile
-      count = c
+      if (data)
+        local n = (count - index)
+        if (n > 0)
+          data.zero( index, n )
+          count = index
+        endIf
+      endIf
       return this
 
     method filter( keep_if:(Function($DataType)->Logical) )->this [macro]

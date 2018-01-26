@@ -3,15 +3,16 @@ class Array [native]
     method count->Int32 [macro]
       native( "$this->count" )->Int32
 
-    $if ("C++")
-
     method element_size->Int32 [macro]
       native '$this->element_size'
 
     method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
       native 'RogueArray_set($this,$i1,$other,$other_i1,$copy_count)'
 
-    $endIf
+    method zero( i1:Int32, n:Int32 )
+      local size = element_size
+      native @|memset( $this->as_bytes + $i1*$size, 0, $n*$size );
+
 endClass
 
 class Array<<$DataType>> : Array [native]
