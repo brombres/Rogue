@@ -2602,7 +2602,7 @@ augment CmdSwitch
         writer.println "{"
         writer.indent += 2
         c.statements.write_cpp( writer )
-        if (c.statements.count and c.statements.first not instanceOf CmdReturn)
+        if (c.statements.count == 0 or c.statements.last not instanceOf CmdReturn)
           writer.println "break;"
         endIf
         writer.indent -= 2
