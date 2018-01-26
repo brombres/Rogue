@@ -1,0 +1,76 @@
+# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
+
+#$ ROGUEC_ARGS = --api
+#$ LIBRARIES   = openssl( header:openssl/ssl.h )
+
+# Optional comment directives - remove leading '#' (leaving '#$') to activate.
+# In most cases the same directive can be specified multiple times for a cumulative effect.
+# #$ ROGUEC      = path/to/roguec
+# #$ ROGUEC_ARGS = --whatever
+# #$ CPP         = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+# #$ CPP_ARGS    = -a -b -c
+# #$ LIBRARIES   = libalpha( header:"name.h" library:"libname.a" )
+# #$ LIBRARIES   = libbeta
+# #$ LINK        = -lalpha -lbeta
+
+module Build
+global method_prefix = "Build::on_"
+
+routine on_default
+  on_help
+endRoutine
+
+routine on_clean
+  System.run( "rm -rf .rogo" )
+endRoutine
+
+routine on_test
+  System.run(
+    @|roguec Test.rogue --execute --debug --test --target="C++,Console" --compile-arg="-I '$HEADER(openssl)'"
+  )
+endRoutine
+
+routine on_help
+  println "USAGE"
+  local lines = String[]
+  forEach (m in <<Global>>.methods)
+    if (m.name.begins_with(method_prefix))
+      local line = "  rogo $" (m.name.after_first(method_prefix))
+      line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
+      lines.add( line )
+    endIf
+  endForEach
+  lines.sort( (a,b)=>(a<b) )
+  println (forEach in lines)
+endRoutine
+
+
+#------------------------------------------------------------------------------
+# Process command line arguments and invoke appropriate function
+#------------------------------------------------------------------------------
+local args = @[]
+args.add( forEach in System.command_line_arguments )
+
+if (args.count)
+  run( args.remove_first, args )
+else
+  on_default
+endIf
+
+routine run( cmd:String, args:Value )
+  try
+    local m = <<Global>>.find_method( method_prefix + cmd )
+    if (m)
+      if (m.parameter_count == 1 and args.count > 1)
+        # Wrap all args in a ValueList.
+        args = @[ args ]
+      endIf
+      m.call( Global, args )
+    else
+      on_help
+    endIf
+  catch (err:Error)
+    on_help
+  endTry
+endRoutine
+
