@@ -766,7 +766,9 @@ class FileReader : Reader<<Byte>>
 
   METHODS
     method init( _filepath:String )
-      open( _filepath )
+      if (not open(_filepath))
+        throw IOError( "Unable to open $ for reading." (_filepath) )
+      endIf
 
     method on_cleanup
       close
@@ -791,18 +793,17 @@ class FileReader : Reader<<Byte>>
       close
 
       native @|$this->fp = fopen( (char*)$filepath->utf8, "rb" );
-              |if ($this->fp)
-              |{
-              |  fseek( $this->fp, 0, SEEK_END );
-              |  $count = (RogueInt32) ftell( $this->fp );
-              |  fseek( $this->fp, 0, SEEK_SET );
-              |}
+              |if ( !$this->fp ) return false;
+              |
+              |fseek( $this->fp, 0, SEEK_END );
+              |$count = (RogueInt32) ftell( $this->fp );
+              |fseek( $this->fp, 0, SEEK_SET );
 
       # Always close after the last byte is read, so if there are no
       # bytes then close right away.
       if (count == 0) close
 
-      return (position < count)
+      return true
 
     method peek->Byte
       if (position == count) return 0
@@ -857,7 +858,9 @@ class FileWriter : Writer<<Byte>>
 
   METHODS
     method init( _filepath:String, append=false:Logical )
-      open( _filepath, append )
+      if (not open(_filepath,append))
+        throw IOError( "Unable to open $ for writing." (_filepath) )
+      endIf
 
     method on_cleanup
       close
@@ -898,7 +901,7 @@ class FileWriter : Writer<<Byte>>
 
       native "$this->error = !($this->fp);"
 
-      return error
+      return not error
 
     method reset->this
       if (not fp) return this
