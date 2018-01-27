@@ -152,7 +152,7 @@ $(BINDIR)/roguec:
 	@echo
 	@echo You can execute the following as a simple test:
 	@echo
-	@echo "    println '\"Hello World!\"' > Hello.rogue"
+	@echo "    echo println '\"Hello World!\"' > Hello.rogue"
 	@echo '    roguec Hello.rogue --execute'
 	@echo
 
@@ -198,16 +198,31 @@ clean:
 unlink:
 	@if [ -f "$$(which roguec)" ]; \
 	then \
-	  echo "Unlinking program by removing $$(which roguec)'"; \
+	  echo "Unlinking roguec by removing $$(which roguec)'"; \
 	  $(SUDO_CMD) rm -f $$(which roguec); \
 	  $(SUDO_CMD) rm -f $(BINDIR)/roguec; \
 	else \
 	  if [ -f "$(BINDIR)/roguec" ]; \
 	  then \
-	    echo "Unlinking program by removing $(BINDIR)/roguec'"; \
+	    echo "Unlinking roguec by removing $(BINDIR)/roguec'"; \
 	    $(SUDO_CMD) rm -f $(BINDIR)/roguec; \
 	  else \
-	    echo "Nothing to unlink" ; \
+	    echo "No roguec to unlink" ; \
+	  fi \
+	fi; \
+	\
+	if [ -f "$$(which rogo)" ]; \
+	then \
+	  echo "Unlinking rogo by removing $$(which rogo)'"; \
+	  $(SUDO_CMD) rm -f $$(which rogo); \
+	  $(SUDO_CMD) rm -f $(BINDIR)/rogo; \
+	else \
+	  if [ -f "$(BINDIR)/rogo" ]; \
+	  then \
+	    echo "Unlinking rogo by removing $(BINDIR)/rogo'"; \
+	    $(SUDO_CMD) rm -f $(BINDIR)/rogo; \
+	  else \
+	    echo "No rogo to unlink" ; \
 	  fi \
 	fi
 
