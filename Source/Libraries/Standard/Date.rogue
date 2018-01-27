@@ -23,6 +23,10 @@ class Date( timestamp=System.time:Real64 ) [compound]
     method ymd( year:Int32, month:Int32, day:Int32 )->Date
       return Date( year, month, day )
 
+  GLOBAL PROPERTIES
+    month_names = [ "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December" ]
+
   METHODS
     method year->Int32
       native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
@@ -51,6 +55,9 @@ class Date( timestamp=System.time:Real64 ) [compound]
       native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_mon + 1;
+
+    method month_name->String
+      return month_names[ month.clamped(1,month_names.count) - 1 ]
 
     method second->Int32
       native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);

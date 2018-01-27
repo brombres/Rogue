@@ -257,6 +257,9 @@ class ProcessOutput
       if (not @output_string) @output_string = String( output_bytes )
       return @output_string
 
+    method success->Logical
+      return 0 == exit_code
+
     method to->Int32
       return exit_code
 

@@ -32,22 +32,38 @@ routine make_test
   endIf
 endRoutine
 
-routine make_remake
-  #make_libraries
-endRoutine
+routine make_version
+  local build = 1
+  local commit_id : String
 
-routine make_x2
-  make_remake
-  System.sleep 1
-  make_remake
-endRoutine
+  block
+    local output = Process.run( "git rev-list --count HEAD" )
+    if (output.success)
+      build = output->String.trimmed->Int32
+    endIf
+  endBlock
 
-routine make_x3
-  make_x2
-  System.sleep 1
-  make_remake
-endRoutine
+  block
+    forEach (line in LineReader(Process.run("git status --porcelain")->String))
+      if (not line.begins_with("??"))
+        ++build
+        commit_id = "develop"
+        escapeBlock
+      endIf
+    endForEach
+  endBlock
 
+  if (not commit_id)
+    commit_id = Process.run( "git rev-parse --short HEAD" )->String.trimmed
+  endIf
+
+  local printer = PrintWriter( File("Source/RogueC/Version.rogue").writer )
+  printer.println( "$define ROGUE_RELEASE_BUILD " + build )
+  printer.println( "$define ROGUE_RELEASE_COMMIT_ID " + '"$"'(commit_id) )
+  printer.println( "$define ROGUE_RELEASE_TIMESTAMP " + Process.run("git show -s --format=%ct HEAD") )
+  printer.close
+
+endRoutine
 
 routine make_help
   println "USAGE"

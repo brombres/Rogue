@@ -1,5 +1,7 @@
-$define RELEASE_VERSION "1.3.0.42"
+$define ROGUE_RELEASE_VERSION "1.3.0"
 $define RELEASE_DATE    "January 26, 2018"
+
+$include "Version.rogue" [optional]
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
@@ -94,7 +96,7 @@ class RogueC [singleton]
 
     debug_mode    : Logical
     run_tests     : Logical
-    print_version : Logical
+    should_print_version : Logical
 
     parsers = Parser[]
     # One parser is created for every file and all parsers are prepped with tokens
@@ -131,16 +133,15 @@ class RogueC [singleton]
         forEach (plugin in plugins) plugin.collect_supported_targets
 
         if (source_files.count == 0)
-          if (print_version)
+          if (should_print_version)
             # Print version and date only and exit
-            print( 'v' ).println( RELEASE_VERSION )
-            println RELEASE_DATE
+            print_version
             System.exit( 0 )
           endIf
 
           println
-          println "Rogue Compiler v" + RELEASE_VERSION
-          println RELEASE_DATE
+          print   "Rogue Compiler "
+          print_version
 
           local usage =
                   @|
@@ -464,6 +465,26 @@ class RogueC [singleton]
 
       return true
 
+    method print_version
+      print( 'v' ).print( ROGUE_RELEASE_VERSION )
+      print( " (" )
+$if defined(ROGUE_RELEASE_BUILD)
+        print( ROGUE_RELEASE_BUILD )
+        print( ' ' )
+        print( ROGUE_RELEASE_COMMIT_ID )
+$else
+        print "develop"
+$endIf
+      print( ')' )
+      println
+$if defined(ROGUE_RELEASE_TIMESTAMP)
+      local timestamp = ROGUE_RELEASE_TIMESTAMP
+$else
+      local timestamp = System.time
+$endIf
+      local date = Date( timestamp )
+      println "$ $, $" (date.month_name, date.day, date.year)
+
     method process_command_line_arguments
       forEach (arg in System.command_line_arguments)
         local value = arg.after_first('=')
@@ -647,7 +668,7 @@ class RogueC [singleton]
               if (value.count)
                 throw RogueError( ''Unexpected argument to --version option.'' )
               endIf
-              print_version = true
+              should_print_version = true
 
             others
               throw RogueError( "Unknown option '$'." (arg) )

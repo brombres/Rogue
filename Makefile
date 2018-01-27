@@ -32,6 +32,7 @@ debug: libraries
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --debug..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
+	rogo version
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --debug $(ROGUEC_ROGUE_FLAGS)
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
@@ -41,11 +42,12 @@ exhaustive: roguec
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --exhaustive..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
+	rogo version
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS) --define=NO_LIBFFI
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
-roguec: bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
+roguec: bootstrap_roguec $(BINDIR)/roguec libraries rogo Source/RogueC/Version.rogue Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
 
 rogo: Source/RogueC/Build/Rogo.cpp Programs/RogueC/$(PLATFORM)/rogo $(BINDIR)/rogo
 
@@ -90,11 +92,18 @@ bootstrap_roguec:
 	  touch Source/RogueC/RogueC.rogue; \
 	fi;
 
+version:
+	rogo version
+
+Source/RogueC/Version.rogue:
+	rogo version
+
 Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.rogue -> RogueC.cpp..."
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
+	rogo version
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
 Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo.rogue
