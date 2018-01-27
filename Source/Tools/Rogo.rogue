@@ -112,7 +112,7 @@ endRoutine
 
 
 routine save_cache
-  cache.save( File(".rogo/Cache.rogue"), &formatted )
+  cache.save( File(".rogo/Cache.json"), &formatted )
 endRoutine
 
 routine install_library_manager

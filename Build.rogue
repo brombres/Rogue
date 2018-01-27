@@ -25,9 +25,12 @@ routine on_clean
 endRoutine
 
 routine on_test
-  System.run(
-    @|roguec Test.rogue --execute --debug --test --target="C++,Console" --compile-arg="-I '$HEADER(openssl)'"
-  )
+  if (File.is_newer_than("Test.rogue","test"))
+    System.run @|roguec Test.rogue --execute --debug --test --target="C++,Console"
+  else
+    System.run @|./test
+  endIf
+
 endRoutine
 
 routine on_help

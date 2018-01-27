@@ -158,7 +158,7 @@ $(BINDIR)/rogo:
 	rm rogo.script
 
 test:
-	roguec Test.rogue --execute --debug --test --target="C++,Console"
+	rogo test
 
 x2:
 	make remake
