@@ -22,7 +22,20 @@ class Process
     native "posix_spawn_file_actions_t actions;"
     native "pollfd poll_list[2];"
 
+  GLOBAL METHODS
+    method run( cmd:String )->ProcessOutput
+      local process = Process( cmd, &readable )
+      process.finish
+      local output_bytes = Byte[]
+      while (process.output_reader.has_another) output_bytes.add( process.output_reader.read )
+      local error_bytes = Byte[]
+      while (process.error_reader.has_another) output_bytes.add( process.error_reader.read )
+      return ProcessOutput( process.exit_code, output_bytes, error_bytes )
+
   METHODS
+    method init( cmd:String, &readable, &writable )
+      init( ["sh","-c",cmd], &readable, &writable )
+
     method init( args, &readable, &writable )
       if (not launch(readable,writable))
         native @|if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
@@ -224,3 +237,30 @@ class ProcessReader : Reader<<Byte>>
       return fd_reader.read
 
 endClass
+
+class ProcessOutput
+  PROPERTIES
+    exit_code     : Int32
+    output_bytes  : Byte[]
+    error_bytes   : Byte[]
+    output_string : String
+    error_string  : String
+
+  METHODS
+    method init( exit_code, output_bytes, error_bytes )
+
+    method error_string->String
+      if (not @error_string) @error_string = String( error_bytes )
+      return @error_string
+
+    method output_string->String
+      if (not @output_string) @output_string = String( output_bytes )
+      return @output_string
+
+    method to->Int32
+      return exit_code
+
+    method to->String
+      return output_string
+endClass
+

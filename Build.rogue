@@ -14,26 +14,42 @@
 # #$ LINK        = -lalpha -lbeta
 
 module Build
-global method_prefix = "Build::on_"
+global method_prefix = "Build::make_"
 
-routine on_default
-  on_help
+routine make_default
+  make_help
 endRoutine
 
-routine on_clean
+routine make_clean
   System.run( "rm -rf .rogo" )
 endRoutine
 
-routine on_test
+routine make_test
   if (File.is_newer_than("Test.rogue","test"))
     System.run @|roguec Test.rogue --execute --debug --test --target="C++,Console"
   else
     System.run @|./test
   endIf
-
 endRoutine
 
-routine on_help
+routine make_remake
+  #make_libraries
+endRoutine
+
+routine make_x2
+  make_remake
+  System.sleep 1
+  make_remake
+endRoutine
+
+routine make_x3
+  make_x2
+  System.sleep 1
+  make_remake
+endRoutine
+
+
+routine make_help
   println "USAGE"
   local lines = String[]
   forEach (m in <<Global>>.methods)
@@ -57,7 +73,7 @@ args.add( forEach in System.command_line_arguments )
 if (args.count)
   run( args.remove_first, args )
 else
-  on_default
+  make_default
 endIf
 
 routine run( cmd:String, args:Value )
@@ -70,10 +86,10 @@ routine run( cmd:String, args:Value )
       endIf
       m.call( Global, args )
     else
-      on_help
+      make_help
     endIf
   catch (err:Error)
-    on_help
+    make_help
   endTry
 endRoutine
 
