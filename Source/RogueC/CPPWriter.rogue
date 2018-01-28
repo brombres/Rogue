@@ -2119,8 +2119,13 @@ augment Type
                             |  else              return true;
                             |}
           else
-            writer.print( "return (0 == memcmp(this,&other,sizeof(" ).print( this ).println( ")));" )
+            forEach (p in property_list)
+              writer.print( "if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
+            endForEach
+            writer.println( "return true;" )
+            #writer.print( "return (0 == memcmp(this,&other,sizeof(" ).print( this ).println( ")));" )
           endIf
+
           writer.indent -= 2
           writer.println( "}" )
           writer.println
