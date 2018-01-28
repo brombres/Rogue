@@ -212,6 +212,17 @@ class String
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count))
 
+    method equals( other:String, &ignore_case )->Logical
+      if (ignore_case)
+        if (count != other.count) return false
+        forEach (ch at i in this)
+          if (ch.to_lowercase != other[i].to_lowercase) return false
+        endForEach
+        return true
+      else
+        return this == other
+      endIf
+
     method from( i1:Int32 )->String
       return from( i1, count-1 )
 
