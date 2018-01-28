@@ -25,7 +25,7 @@ all: roguec rogo
 
 -include Local.mk
 
-remake: libraries touch_roguec roguec
+remake: libraries touch_roguec roguec rogo
 
 debug: libraries
 	@echo -------------------------------------------------------------------------------
