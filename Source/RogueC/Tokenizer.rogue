@@ -747,9 +747,37 @@ class Tokenizer
         while (reader.has_another and reader.peek != '\n') buffer.print( reader.read )
       endIf
 
+      local comment = buffer->String
+      local keyword : String
+      contingent
+        forEach (todo_keyword in RogueC.todo_keywords)
+          keyword = todo_keyword
+          sufficient (comment.contains(keyword))
+        endForEach
+        escapeContingent
+
+      satisfied
+        local original_position = reader.position
+        reader.seek_location( reader.line, 1 )
+        print ''[$][$:$] '' (keyword,File.filename(filepath),reader.line)
+        local consecutive_spaces = 0
+        while (reader.has_another)
+          local ch = reader.read
+          if (ch == ' ')
+            ++consecutive_spaces
+            if (consecutive_spaces == 1) print ch
+          else
+            consecutive_spaces = 0
+            print ch
+          endIf
+          if (ch == '\n') escapeWhile
+        endWhile
+        reader.seek( original_position )
+      endContingent
+
       if (tokens.count and tokens.last.type is TokenType.eol)
         # Store comments in preceding EOL, if any.
-        (tokens.last as EOLToken).comment += buffer->String
+        (tokens.last as EOLToken).comment += comment
       endIf
 
       return true

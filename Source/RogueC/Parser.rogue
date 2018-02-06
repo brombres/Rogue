@@ -2003,7 +2003,7 @@ class Parser
 
           if (consume(TokenType.symbol_arrow))
             consume_eols
-            local has_parens = consume( TokenType.symbol_open_paren )  # for compatibility, can remove later FIXME
+            local has_parens = consume( TokenType.symbol_open_paren )
             consume_eols
             return_type = parse_type
             consume_eols

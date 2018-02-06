@@ -726,7 +726,7 @@ class CandidateMethods
           if (not error_on_fail) return false
           local scope_type = type_context
           while (scope_type.name.begins_with("Function_") and scope_type.base_class)
-            # TODO: FIXME if and when .is_function gets set to true on all extended function types
+            # TODO: fixme if and when .is_function gets set to true on all extended function types
             scope_type = scope_type.base_class
           endWhile
           if (access.name.begins_with("set_"))
@@ -750,7 +750,7 @@ class CandidateMethods
               if (printed_arg) call_sig_buffer.print(',')
               local arg_type = arg.require_type
               while (arg_type.name.begins_with("Function_") and arg_type.base_class)
-                # TODO: FIXME if and when .is_function gets set to true on all extended function types
+                # TODO: fixme if and when .is_function gets set to true on all extended function types
                 arg_type = arg_type.base_class
               endWhile
               call_sig_buffer.print( arg_type.name )

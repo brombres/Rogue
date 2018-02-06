@@ -146,7 +146,7 @@ class Scanner : Reader<<Character>>
       if (pos < 0)         pos = 0
       elseIf (pos > count) pos = count
 
-      if (pos > position)
+      if (pos < position)
         position = 0
         line = 1
         column = 1

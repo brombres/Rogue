@@ -1665,7 +1665,7 @@ augment Program
             #throw Error("[INTERNAL] No Python delegate for signature type $" (cyclass.type.name))
             # This case happens when there's no Python delegate because, e.g., there are compound
             # paramters.
-            #FIXME: Support Python/Rogue marshalling of compounds!
+            #TODO: Support Python/Rogue marshalling of compounds!
           endIf
         endIf
         writer.indent+=2

@@ -25,11 +25,14 @@ routine make_clean
 endRoutine
 
 routine make_test
+  local cmd : String
   if (File.is_newer_than("Test.rogue","test"))
-    System.run @|roguec Test.rogue --execute --debug --test --target="C++,Console"
+    cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
   else
-    System.run @|./test
+    cmd = @|./test
   endIf
+  println "> " + cmd
+  System.run( cmd )
 endRoutine
 
 routine make_version

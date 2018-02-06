@@ -51,7 +51,7 @@ class MethodTemplate
           if (not inf.try_inference(type, inferred_type)) return null
         elseIf (type.is_function)
           if (inferred_type.name.begins_with("Function_") and inferred_type.base_class and inferred_type.base_class.is_function)
-            #TODO: FIXME if and when .is_function gets set to true on all extended function types
+            #TODO: fixme if and when .is_function gets set to true on all extended function types
 
             inferred_type = inferred_type.base_class # Base function type
             if (type.callback_parameter_types and inferred_type.callback_parameter_types)
