@@ -433,6 +433,14 @@ class List<<$DataType>> : GenericList
     method set( index:Int32, new_value:$DataType ) [macro]
       this.data[ index ] = new_value
 
+    method set_first( new_value:$DataType )->this
+      data[ 0 ] = new_value
+      return this
+
+    method set_last( new_value:$DataType )->this
+      data[ count - 1 ] = new_value
+      return this
+
     method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this
       if (delta == 0) return this
 
