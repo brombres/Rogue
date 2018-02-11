@@ -6,16 +6,29 @@ class Files
     lookup      = Set<<String>>()
 
   METHODS
-    method init( base_folder, &ignore_hidden )
-      if (File.is_folder(base_folder))
-        base_folder = File.before_wildcard_pattern( base_folder ) + "/"
-        add( "**", &ignore_hidden=ignore_hidden )
+    method init( pattern:String, &ignore_hidden )
+      if (File.is_folder(pattern))
+        base_folder = File.ensure_ends_with_separator( pattern )
+        add( "**" )
       else
-        local filename = File.filename( base_folder )
-        base_folder = File.folder( base_folder )
-        if (base_folder == "") base_folder = "."
-        base_folder += "/"
-        add( filename )
+        base_folder = File.before_wildcard_pattern( pattern )
+        if (base_folder.contains('/'))  base_folder = base_folder.before_last( '/' )
+        if (base_folder.contains('\\')) base_folder = base_folder.before_last( '\\' )
+        base_folder += File.separator
+
+        if (base_folder.count < pattern.count)
+          pattern = pattern.from( base_folder.count )
+
+          if (File.is_folder(base_folder))
+            add( pattern, &ignore_hidden=ignore_hidden )
+          else
+            local filename = File.filename( base_folder )
+            base_folder = File.folder( base_folder )
+            if (base_folder == "") base_folder = "."
+            base_folder += File.separator
+            add( filename )
+          endIf
+        endIf
       endIf
 
     method init( base_folder, pattern:String, &ignore_hidden )

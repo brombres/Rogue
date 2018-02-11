@@ -170,6 +170,7 @@ class File
       return return_value
 
     method before_wildcard_pattern( filepath:String )->String
+      # Example: alpha/beta/image*.png -> alpha/beta
       while (filepath.contains('?') or filepath.contains('*'))
         filepath = File.folder( filepath )
       endWhile
@@ -309,6 +310,8 @@ class File
       return listing( folder, options )
 
     method listing( folder:String, options:FileOptions )->String[]
+      if (folder.begins_with("./") or folder.begins_with(".\\")) folder = folder.from( 2 )
+
       if (folder.contains('*') or folder.contains('?'))
         local full_pattern = folder
 
@@ -586,6 +589,9 @@ class File
       outfile.write( data )
       outfile.close
       return not outfile.error
+
+    method separator->Character
+      return '/'
 
     method size( filepath:String )->Int64
       native @|if ( !$filepath ) return 0;
