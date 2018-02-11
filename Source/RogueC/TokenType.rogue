@@ -6,11 +6,13 @@ class TokenType
     directive_compileArg          : TokenType
     directive_define              : TokenType
     directive_defined             : TokenType
+    directive_error               : TokenType
     directive_include             : TokenType
     directive_if                  : TokenType
     directive_elseIf              : TokenType
     directive_else                : TokenType
     directive_endIf               : TokenType
+    directive_warning             : TokenType
     directive_module              : TokenType
     directive_essential           : TokenType
     directive_using               : TokenType

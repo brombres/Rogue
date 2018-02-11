@@ -85,13 +85,23 @@ class Preprocessor
             endIf
             nextIteration
 
+          elseIf (t.type is TokenType.directive_error)
+            local message_t = reader.read
+            if (message_t.type is not TokenType.literal_string)
+              throw t.error( "Literal string error message expected." )
+            endIf
+            if (keep_tokens)
+              throw message_t.error( message_t->String )
+            endIf
+            nextIteration
+
           elseIf (t.type is TokenType.directive_include)
             local filepath_t = reader.read
+            if (filepath_t.type is not TokenType.literal_string)
+              throw reader.error( "Filepath expected." )
+            endIf
             local is_optional = consume_optional
             if (keep_tokens)
-              if (filepath_t.type is not TokenType.literal_string)
-                throw reader.error( "Filepath expected." )
-              endIf
               RogueC.include_source( t, filepath_t->String, &is_optional=is_optional )
             # else next literal string will be discarded anyway
             endIf
@@ -142,6 +152,16 @@ class Preprocessor
             endIf
 
             if (not single_line) must_consume( TokenType.directive_endIf )
+            nextIteration
+
+          elseIf (t.type is TokenType.directive_warning)
+            local message_t = reader.read
+            if (message_t.type is not TokenType.literal_string)
+              throw t.error( "Literal string warning message expected." )
+            endIf
+            if (keep_tokens)
+              Console.error.println message_t.warning( message_t->String )
+            endIf
             nextIteration
 
           elseIf (t.type is TokenType.directive_module)

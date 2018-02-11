@@ -13,7 +13,7 @@ class RogueError : Error
       if (filepath)
         builder.println( "=" * ((Console.width-1).or_smaller(79)) )
         builder.print( ''ERROR in "'' ).print( File.filename(filepath) )
-        builder.print( ''"  line '' ).print( line ).print( ", column " ).println( column )
+        builder.print( ''" line '' ).print( line ).print( ", column " ).println( column )
         builder.println
         builder.println( m )
         builder.println( "=" * ((Console.width-1).or_smaller(79)) )

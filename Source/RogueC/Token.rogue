@@ -67,6 +67,22 @@ class Token
       local buffer = StringBuilder().print( filepath ).print( " line " ).print( line )
       if (column) buffer.print( ", column " ).print( column )
       return buffer->String
+
+    method warning( message:String )->String
+      local builder = StringBuilder()
+      if (filepath)
+        builder.print( ''WARNING in "'' ).print( File.filename(filepath) )
+        builder.print( ''" line '' ).print( line ).print( ", column " ).println( column )
+        forEach (line in message.word_wrap(77,","))
+          builder.print( "  " ).println( line )
+        endForEach
+      else
+        builder.println( "WARNING" )
+        forEach (line in message.word_wrap(77,","))
+          builder.print( "  " ).println( line )
+        endForEach
+      endIf
+      return builder->String
 endClass
 
 class EOLToken : Token

@@ -79,11 +79,13 @@ class Tokenizer
       TokenType.directive_compileArg           = define( DirectiveTokenType("$compileArg") )
       TokenType.directive_define               = define( DirectiveTokenType("$define") )
       TokenType.directive_defined              = define( DirectiveTokenType("defined") )
+      TokenType.directive_error                = define( DirectiveTokenType("$error") )
       TokenType.directive_include              = define( DirectiveTokenType("$include") )
       TokenType.directive_if                   = define( DirectiveTokenType("$if") )
       TokenType.directive_elseIf               = define( DirectiveTokenType("$elseIf") )
       TokenType.directive_else                 = define( DirectiveTokenType("$else") )
       TokenType.directive_endIf                = define( DirectiveTokenType("$endIf") )
+      TokenType.directive_warning              = define( DirectiveTokenType("$warning") )
       TokenType.directive_essential            = define( DirectiveTokenType("$essential") )
       TokenType.directive_module               = define( StructuralDirectiveTokenType("module") )
       TokenType.directive_using                = define( StructuralDirectiveTokenType("using") )
@@ -335,11 +337,13 @@ class Tokenizer
             if (has_parens and not consume(')')) throw error( "Closing ')' expected." )
             return null
 
+          case "error":               add_new_token( TokenType.directive_error )
           case "include":             add_new_token( TokenType.directive_include )
           case "if":                  add_new_token( TokenType.directive_if )
           case "elseIf":              add_new_token( TokenType.directive_elseIf )
           case "else":                add_new_token( TokenType.directive_else )
           case "endIf":               add_new_token( TokenType.directive_endIf )
+          case "warning":             add_new_token( TokenType.directive_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
           case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
