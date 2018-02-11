@@ -42,6 +42,7 @@ class Preprocessor
 
     method process( keep_tokens:Logical, depth:Int32, stop_on_eol:Logical )
       ++depth
+      local repeat_string_concatenation = false
       while (reader.has_another)
         local t = reader.read
 
@@ -175,6 +176,7 @@ class Preprocessor
             endIf
 
             if (next_is(TokenType.symbol_open_bracket))
+              # [essential]
               if (keep_tokens)
                 tokens.add( reader.read )
                 while (reader.has_another)
@@ -190,6 +192,14 @@ class Preprocessor
               endIf
             endIf
 
+            nextIteration
+
+          elseIf (t.type is TokenType.meta_moduleName)
+            if (keep_tokens)
+              if (cur_module) tokens.add( TokenType.literal_string.create_token(t,cur_module) )
+              else            tokens.add( TokenType.literal_string.create_token(t,"") )
+              repeat_string_concatenation = true
+            endIf
             nextIteration
           endIf
         endIf
@@ -214,9 +224,20 @@ class Preprocessor
         endIf
 
         if (keep_tokens) tokens.add( t )
-        if (stop_on_eol and t.type is TokenType.eol) return
+        if (stop_on_eol and t.type is TokenType.eol) escapeWhile
 
       endWhile
+
+      if (repeat_string_concatenation)
+        forEach (t in rewriter=tokens.rewriter)
+          if (t.type is TokenType.literal_string)
+            while (rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
+              t = t.type.create_token( t, t->String + rewriter.read->String )
+            endWhile
+          endIf
+          rewriter.write( t )
+        endForEach
+      endIf
 
     method consume_optional->Logical
       if (not consume(TokenType.symbol_open_bracket)) return false

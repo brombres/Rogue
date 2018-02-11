@@ -76,21 +76,22 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
-      TokenType.directive_compileArg           = define( DirectiveTokenType("$compileArg") )
-      TokenType.directive_define               = define( DirectiveTokenType("$define") )
-      TokenType.directive_defined              = define( DirectiveTokenType("defined") )
-      TokenType.directive_error                = define( DirectiveTokenType("$error") )
-      TokenType.directive_include              = define( DirectiveTokenType("$include") )
-      TokenType.directive_if                   = define( DirectiveTokenType("$if") )
-      TokenType.directive_elseIf               = define( DirectiveTokenType("$elseIf") )
-      TokenType.directive_else                 = define( DirectiveTokenType("$else") )
-      TokenType.directive_endIf                = define( DirectiveTokenType("$endIf") )
-      TokenType.directive_warning              = define( DirectiveTokenType("$warning") )
-      TokenType.directive_essential            = define( DirectiveTokenType("$essential") )
-      TokenType.directive_module               = define( StructuralDirectiveTokenType("module") )
-      TokenType.directive_using                = define( StructuralDirectiveTokenType("using") )
+      TokenType.directive_compileArg = define( DirectiveTokenType("$compileArg") )
+      TokenType.directive_define     = define( DirectiveTokenType("$define") )
+      TokenType.directive_defined    = define( DirectiveTokenType("defined") )
+      TokenType.directive_error      = define( DirectiveTokenType("$error") )
+      TokenType.directive_include    = define( DirectiveTokenType("$include") )
+      TokenType.directive_if         = define( DirectiveTokenType("$if") )
+      TokenType.directive_elseIf     = define( DirectiveTokenType("$elseIf") )
+      TokenType.directive_else       = define( DirectiveTokenType("$else") )
+      TokenType.directive_endIf      = define( DirectiveTokenType("$endIf") )
+      TokenType.directive_warning    = define( DirectiveTokenType("$warning") )
+      TokenType.directive_essential  = define( DirectiveTokenType("$essential") )
+      TokenType.directive_module     = define( StructuralDirectiveTokenType("module") )
+      TokenType.directive_using      = define( StructuralDirectiveTokenType("using") )
 
-      TokenType.meta_methodSignature           = define( DirectiveTokenType("$methodSignature") )
+      TokenType.meta_methodSignature = define( DirectiveTokenType("$methodSignature") )
+      TokenType.meta_moduleName      = define( DirectiveTokenType("$moduleName") )
 
       # The following exist but are immediately converted by the tokenizer
       # $sourceFilepath
@@ -348,6 +349,7 @@ class Tokenizer
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
           case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
           case "methodSignature":     add_new_token( TokenType.meta_methodSignature )
+          case "moduleName":          add_new_token( TokenType.meta_moduleName )
           others
             add_new_token( TokenType.placeholder_id, "$" + id )
         endWhich
@@ -391,7 +393,7 @@ class Tokenizer
       elseIf (ch == '.' )
         if (consume('.'))
           if (consume('.'))
-            # ellipsis
+            # ellipsis (line continuation) - just consume EOL and continue parsing without creating a token
             while (consume(' ')) noAction
             if (not consume('\n')) throw error( "End of line expected after '...'." )
             return null

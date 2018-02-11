@@ -731,7 +731,12 @@ class ListRewriter<<$DataType>>
         list.count = list.capacity
       endIf
 
-      list[ write_index ] = value
+      if (write_index == list.count)
+        # Values can be written after has_another initially finalizes the list
+        list.add( value )
+      else
+        list[ write_index ] = value
+      endIf
       ++write_index
 
       return this
