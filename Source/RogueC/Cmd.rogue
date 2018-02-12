@@ -2488,6 +2488,9 @@ class CmdCreateObject : Cmd
 
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope)
+      if (of_type.is_abstract)
+        throw t.error( "$ cannot be instantiated because it is an [abstract] type." (of_type.name) )
+      endIf
       return this
 
     method to->String

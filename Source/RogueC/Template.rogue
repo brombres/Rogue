@@ -20,6 +20,21 @@ class Template
     method element_type->Int32
       return (attributes.flags & Attribute.type_mask)
 
+    method best_alternate_for_type( type_name:String )->Template
+      if (not alternates_by_param_count) return this
+
+      local specializer_count = 0
+      if (type_name.contains('<'))
+        specializer_count = Parser(t,type_name,type_name.from_first('<')).parse_specializer_count()
+      endIf
+
+      if (type_parameter_count == specializer_count) return this
+
+      local alternate = alternates_by_param_count[ specializer_count ]
+      if (alternate) return alternate
+
+      return this
+
     method instantiate( type:Type, scope:Scope )
       if (alternates_by_param_count)
         local specializer_count = 0

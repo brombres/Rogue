@@ -714,6 +714,7 @@ class Parser
         endIf
       endIf
 
+
     method parse_section->Logical
       consume_eols
 

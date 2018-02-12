@@ -188,7 +188,7 @@ class Program [essential singleton]
           template = template_lookup[ name.before_first('<') ]
       endWhich
 
-      if (template) return template
+      if (template) return template.best_alternate_for_type( name )
 
       return null
 
