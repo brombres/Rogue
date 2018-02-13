@@ -1235,6 +1235,14 @@ class Parser
         return
       endIf
 
+      if (consume(TokenType.keyword_compileArg))
+        if (not next_is(TokenType.literal_string))
+          throw peek.error( "Literal string expected (e.g. \"-pthread\")." )
+        endIf
+        RogueC.compiler_options.add( read->String )
+        return
+      endIf
+
       if (consume(TokenType.directive_essential))
         # Turn this $essential directive into a Cmd node so that it only takes effect
         # if the method is actually used in the program.
@@ -1698,22 +1706,6 @@ class Parser
 
       return parse_native_element
 
-      #{
-      if (next_is(TokenType.keyword_nativeHeader) or
-          next_is(TokenType.keyword_nativeCode) or
-          next_is(TokenType.keyword_includeNativeCode) or
-          next_is(TokenType.keyword_includeNativeHeader) or
-          next_is(TokenType.keyword_includeSource) or
-          next_is(TokenType.directive_essential))
-        ensure this_type.dependencies
-        parse_statement( this_type.dependencies, false )
-        return true
-
-      else
-        return false
-      endIf
-      }#
-
     method parse_deprecated->String
       consume_eols
       if (not consume(TokenType.keyword_deprecated)) return null
@@ -1782,6 +1774,13 @@ class Parser
         if (RogueC.include_source(t, filepath, consume_optional))
           RogueC.parse_pending_files
         endIf
+        return true
+
+      elseIf (consume(TokenType.keyword_compileArg))
+        if (not next_is(TokenType.literal_string))
+          throw peek.error( "Literal string expected (e.g. \"-pthread\")." )
+        endIf
+        RogueC.compiler_options.add( read->String )
         return true
 
       elseIf (consume(TokenType.directive_essential))

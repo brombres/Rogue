@@ -3,7 +3,6 @@ class TokenType
     lookup                        : Table<<String,TokenType>>
 
     # Directives
-    directive_compileArg          : TokenType
     directive_define              : TokenType
     directive_defined             : TokenType
     directive_error               : TokenType
@@ -33,6 +32,7 @@ class TokenType
     keyword_catch                 : TokenType
     keyword_class                 : TokenType
     keyword_CATEGORIES            : TokenType
+    keyword_compileArg            : TokenType
     keyword_DEFINITIONS           : TokenType
     keyword_DEPENDENCIES          : TokenType
     keyword_else                  : TokenType

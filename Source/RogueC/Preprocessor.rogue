@@ -48,17 +48,7 @@ class Preprocessor
         local t = reader.read
 
         if (t.is_directive)
-          if (t.type is TokenType.directive_compileArg)
-            if (keep_tokens)
-              local def_t = reader.read
-              if (def_t.type is not TokenType.literal_string)
-                throw reader.error( "Literal string expected (e.g. \"-pthread\"." )
-              endIf
-              RogueC.compiler_options.add( def_t->String )
-            endIf
-            nextIteration
-
-          elseIf (t.type is TokenType.directive_define)
+          if (t.type is TokenType.directive_define)
             if (keep_tokens)
               local defined_word = reader.read_identifier_unfiltered
               local defined_tokens = Token[]()

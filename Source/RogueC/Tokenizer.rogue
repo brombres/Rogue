@@ -76,7 +76,6 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
-      TokenType.directive_compileArg = define( DirectiveTokenType("$compileArg") )
       TokenType.directive_define     = define( DirectiveTokenType("$define") )
       TokenType.directive_defined    = define( DirectiveTokenType("defined") )
       TokenType.directive_error      = define( DirectiveTokenType("$error") )
@@ -111,6 +110,7 @@ class Tokenizer
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
       TokenType.keyword_class         = define( StructureTokenType("class").mark_non_method )
       TokenType.keyword_CATEGORIES    = define( StructureTokenType("CATEGORIES").mark_non_method )
+      TokenType.keyword_compileArg    = define( StructureTokenType("compileArg") )
       TokenType.keyword_DEFINITIONS   = define( StructureTokenType("DEFINITIONS").mark_non_method )
       TokenType.keyword_DEPENDENCIES  = define( StructureTokenType("DEPENDENCIES").mark_non_method )
       TokenType.keyword_else          = define( StructureTokenType("else") )
@@ -327,9 +327,6 @@ class Tokenizer
 
         local id = read_identifier
         which (id)
-          case "compileArg"
-            add_new_token( TokenType.directive_compileArg )
-
           case "define"
             add_new_token( TokenType.directive_define )
 
