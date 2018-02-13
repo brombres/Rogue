@@ -22,9 +22,9 @@ class LWSWebSocket : WebSocket
   DEPENDENCIES
     nativeHeader #include "libwebsockets.h"
     #$compileArg "-L"
-    $compileArg "-lwebsockets"
-    $compileArg "-Wno-c++1z-compat-mangling"
-    $compileArg "-Wno-macro-redefined"
+    compileArg "-lwebsockets"
+    compileArg "-Wno-c++1z-compat-mangling"
+    compileArg "-Wno-macro-redefined"
 
     nativeHeader int Rogue_web_socket_handler( lws*, lws_callback_reasons, void*, void*, size_t );
 
