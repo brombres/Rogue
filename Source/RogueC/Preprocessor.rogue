@@ -1,6 +1,6 @@
 class Preprocessor
   GLOBAL PROPERTIES
-    definitions = Table<<String,Token[]>>()
+    definitions = StringTable<<Token[]>>()
 
   GLOBAL METHODS
     method define( name:String, definition:String )
@@ -15,6 +15,7 @@ class Preprocessor
     tokens : Token[]
 
     cur_module : String
+    metablock_stack = Token[]
 
   METHODS
     method init( parser )
@@ -59,10 +60,10 @@ class Preprocessor
 
           elseIf (t.type is TokenType.directive_define)
             if (keep_tokens)
-              local defined_word = reader.read_identifier
+              local defined_word = reader.read_identifier_unfiltered
               local defined_tokens = Token[]()
               while (reader.has_another)
-                if (reader.peek.type is TokenType.eol) defined_tokens.add( reader.peek ); escapeWhile
+                if (reader.peek.type is TokenType.eol) escapeWhile
                 defined_tokens.add( reader.read )
               endWhile
               define( defined_word, defined_tokens )
@@ -194,6 +195,40 @@ class Preprocessor
 
             nextIteration
 
+          elseIf (t.type is TokenType.meta_block)
+            if (keep_tokens)
+              metablock_stack.add( t )
+              reader.local_definitions.add( StringTable<<Token[]>>() )
+            endIf
+            nextIteration
+
+          elseIf (t.type is TokenType.meta_endBlock)
+            if (keep_tokens)
+              if (metablock_stack.is_empty) throw t.error( "$endBlock without preceding $block" )
+              metablock_stack.remove_last
+              reader.local_definitions.remove_last
+            endIf
+            nextIteration
+
+          elseIf (t.type is TokenType.meta_localDefine)
+            if (keep_tokens)
+              local defined_word = reader.read_identifier_unfiltered
+              local defined_tokens = Token[]()
+              while (reader.has_another)
+                if (reader.peek.type is TokenType.eol) escapeWhile
+                defined_tokens.add( reader.read )
+              endWhile
+              if (reader.local_definitions.is_empty) reader.local_definitions.add( StringTable<<Token[]>>() )
+              reader.local_definitions.last[ defined_word ] = defined_tokens
+            else
+              # Skip this directive due to conditional compilation - discard tokens to EOL
+              while (reader.has_another)
+                if (reader.peek.type is TokenType.eol) escapeWhile
+                reader.read
+              endWhile
+            endIf
+            nextIteration
+
           elseIf (t.type is TokenType.meta_moduleName)
             if (keep_tokens)
               if (cur_module) tokens.add( TokenType.literal_string.create_token(t,cur_module) )
@@ -201,6 +236,7 @@ class Preprocessor
               repeat_string_concatenation = true
             endIf
             nextIteration
+
           endIf
         endIf
 
@@ -227,6 +263,10 @@ class Preprocessor
         if (stop_on_eol and t.type is TokenType.eol) escapeWhile
 
       endWhile
+
+      if (metablock_stack.count)
+        throw metablock_stack.last.error( "Unclosed $block; no matching $endBlock found." )
+      endIf
 
       if (repeat_string_concatenation)
         forEach (t in rewriter=tokens.rewriter)

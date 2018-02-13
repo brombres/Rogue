@@ -13,7 +13,7 @@ class ThreadWorker : Task
   #
   #   on_finish
   DEPENDENCIES
-    $include "Standard/Thread.rogue"
+    includeSource "Standard/Thread.rogue"
 
   PROPERTIES
     is_finished : Logical

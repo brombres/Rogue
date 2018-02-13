@@ -90,6 +90,9 @@ class Tokenizer
       TokenType.directive_module     = define( StructuralDirectiveTokenType("module") )
       TokenType.directive_using      = define( StructuralDirectiveTokenType("using") )
 
+      TokenType.meta_block           = define( DirectiveTokenType("$block") )
+      TokenType.meta_endBlock        = define( DirectiveTokenType("$endBlock") )
+      TokenType.meta_localDefine     = define( DirectiveTokenType("$localDefine") )
       TokenType.meta_methodSignature = define( DirectiveTokenType("$methodSignature") )
       TokenType.meta_moduleName      = define( DirectiveTokenType("$moduleName") )
 
@@ -172,6 +175,7 @@ class Tokenizer
       TokenType.keyword_in                  = define( TokenType("in") )
       TokenType.keyword_includeNativeCode   = define( TokenType("includeNativeCode") )
       TokenType.keyword_includeNativeHeader = define( TokenType("includeNativeHeader") )
+      TokenType.keyword_includeSource       = define( TokenType("includeSource") )
       TokenType.keyword_is                  = define( TokenType("is") )
       TokenType.keyword_isAspect            = define( TokenType("isAspect") )
       TokenType.keyword_isClass             = define( TokenType("isClass") )
@@ -348,6 +352,9 @@ class Tokenizer
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
           case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
+          case "block":               add_new_token( TokenType.meta_block )
+          case "endBlock":            add_new_token( TokenType.meta_endBlock )
+          case "localDefine":         add_new_token( TokenType.meta_localDefine )
           case "methodSignature":     add_new_token( TokenType.meta_methodSignature )
           case "moduleName":          add_new_token( TokenType.meta_moduleName )
           others

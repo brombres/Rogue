@@ -48,6 +48,8 @@ class PreprocessorTokenReader
     position : Int32
     count    : Int32
 
+    local_definitions = StringTable<<Token[]>>[]
+
   METHODS
     method init( tokens )
       count = tokens.count
@@ -58,8 +60,18 @@ class PreprocessorTokenReader
       return RogueError( message )
 
     method expand_definition( t:Token )
-      local entry = Preprocessor.definitions.find( t->String )
-      if (entry)
+      local entry : TableEntry<<String,Token[]>>
+
+      contingent
+        forEach (local_def in local_definitions step -1)
+          entry = local_def.find( t->String )
+          sufficient (entry)
+        endForEach
+
+        entry = Preprocessor.definitions.find( t->String )
+        necessary (entry)
+
+      satisfied
         if (entry.value)
           local def_tokens = entry.value
           entry.value = null   # temporarily null to prevent infinite recursion
@@ -72,9 +84,11 @@ class PreprocessorTokenReader
         else
           throw t.error( ''Recursive definition for "$".'' (t->String) )
         endIf
-      else
+
+      unsatisfied
         queue.add( t )
-      endIf
+
+      endContingent
 
     method has_another->Logical
       peek
@@ -84,9 +98,17 @@ class PreprocessorTokenReader
       if (position == count and queue.count == 0) return false
       return (peek.type is type)
 
+    method next_is_unfiltered( type:TokenType )->Logical
+      if (position == count and queue.count == 0) return false
+      return (peek_unfiltered.type is type)
+
     method peek->Token
       if (queue.count) return queue.last
       return peek(0)
+
+    method peek_unfiltered->Token
+      if (queue.count) return queue.last
+      return peek_unfiltered(0)
 
     method peek( num_ahead:Int32 )->Token
       if (position + num_ahead >= count + queue.count)
@@ -103,6 +125,18 @@ class PreprocessorTokenReader
         else
           queue.add( t )
         endIf
+      endWhile
+
+      return queue[ (queue.count - num_ahead) - 1 ]
+
+    method peek_unfiltered( num_ahead:Int32 )->Token
+      if (position + num_ahead >= count + queue.count)
+        return TokenType.eoi.create_token( tokens.last )
+      endIf
+
+      while (queue.count <= num_ahead)
+        queue.add( tokens[position] )
+        ++position
       endWhile
 
       return queue[ (queue.count - num_ahead) - 1 ]
@@ -125,6 +159,12 @@ class PreprocessorTokenReader
     method read_identifier->String
       if (not next_is(TokenType.identifier))
         throw error( "Identifier expected, found $." (peek.quoted_name) )
+      endIf
+      return read->String
+
+    method read_identifier_unfiltered->String
+      if (not next_is_unfiltered(TokenType.identifier))
+        throw error( "Identifier expected, found $." (peek_unfiltered.quoted_name) )
       endIf
       return read->String
 

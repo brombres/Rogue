@@ -58,6 +58,8 @@ class Program [essential singleton]
     string_buffer = StringBuilder()
     ids_by_module = Table<<String,String[]>>()
 
+    types_resolved : Logical
+
   METHODS
     method add_literal_string( value:String )->Int32
       if (not value) return 0
@@ -371,7 +373,7 @@ class Program [essential singleton]
       type_GenericList.resolve
       type_String.resolve
 
-      local types_resolved = false
+      types_resolved = false
       while (not types_resolved)
         if (RogueC.all_essential)
           forEach (t in type_lookup)

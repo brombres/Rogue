@@ -17,6 +17,9 @@ class TokenType
     directive_essential           : TokenType
     directive_using               : TokenType
 
+    meta_block                    : TokenType
+    meta_endBlock                 : TokenType
+    meta_localDefine              : TokenType
     meta_methodSignature          : TokenType
     meta_moduleName               : TokenType
 
@@ -55,6 +58,7 @@ class TokenType
     keyword_GLOBAL                : TokenType
     keyword_includeNativeCode     : TokenType
     keyword_includeNativeHeader   : TokenType
+    keyword_includeSource         : TokenType
     keyword_instance              : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType
