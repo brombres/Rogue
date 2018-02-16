@@ -142,7 +142,7 @@ nativeCode
 
 inline void roguethread_simple_spin_lock(int *p)
 {
-    while(!__sync_bool_compare_and_swap(p, 0, 1));
+    while(!__sync_bool_compare_and_swap(p, 0, 1)) {};
 }
 
 inline void roguethread_simple_spin_unlock(int volatile *p)
