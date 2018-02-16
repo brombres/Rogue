@@ -196,8 +196,16 @@ augment Program
       # It'd be nice to be able to override these with a C++ -D arg...
       writer.print "#define ROGUE_GC_MODE_MANUAL "
       writer.println select{RogueC.gc_mode == GCMode.MANUAL: "1" || "0"}
-      writer.print "#define ROGUE_GC_MODE_AUTO "
-      writer.println select{RogueC.gc_mode == GCMode.AUTO: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO_ST "
+      writer.println select{RogueC.gc_mode == GCMode.AUTO_ST: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO_MT "
+      writer.println select{RogueC.gc_mode == GCMode.AUTO_MT: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO_ANY "
+      if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
+        writer.println "1"
+      else
+        writer.println "0"
+      endIf
       writer.print "#define ROGUE_GC_MODE_BOEHM "
       writer.println select{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_BOEHM_TYPED "
@@ -1778,7 +1786,7 @@ class CPPWriter
         elseIf (arg instanceOf CmdReadArrayElement)
           # It's possible to shoot oneself in the foot with this, but it's
           # potentially useful, so we allow it when it's easy.
-          if (RogueC.gc_mode == GCMode.AUTO)
+          if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
             if (param_info)
               throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
                                 "are not currently supported in the active garbage collection mode." (param_info.name))
@@ -1794,7 +1802,7 @@ class CPPWriter
             throw arg.t.error("Cannot call a [mutating] method on a context produced by evaluating an expression - mutating methods can only be called only local variable and singleton contexts.")
           endIf
         endIf
-        if (RogueC.gc_mode == GCMode.AUTO)
+        if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
           if (not (param_type.is_primitive or param_type.is_compound))
             if (param_info)
               throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
@@ -2465,7 +2473,11 @@ augment Local
       return _parameter_cpp_name
 
     method parameter_needs_gc->Logical
-      return is_modified and type.is_reference and RogueC.gc_mode == GCMode.AUTO
+      if (is_modified and type.is_reference)
+        if (RogueC.gc_mode == GCMode.AUTO_ST) return true
+        if (RogueC.gc_mode == GCMode.AUTO_MT) return true
+      endIf
+      return false
 endAugment
 
 #------------------------------------------------------------------------------
