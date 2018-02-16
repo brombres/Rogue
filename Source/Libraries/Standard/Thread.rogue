@@ -4,7 +4,7 @@
 
 nativeHeader
 
-//#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
 // #include "gc.h" - included elsewhere
 #include <pthread.h>
@@ -133,7 +133,7 @@ pthread_t roguethread_create ( std::function<void()> f )
   return r;
 }
 
-//#endif
+#endif
 
 endNativeHeader
 
