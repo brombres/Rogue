@@ -544,6 +544,11 @@ RogueString*   RogueString_validate( RogueString* THIS );
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
+#if defined(__clang__)
+#define ROGUE_EMPTY_ARRAY
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define ROGUE_EMPTY_ARRAY 0
+#endif
 struct RogueArray : RogueObject
 {
   int  count;
@@ -565,14 +570,14 @@ struct RogueArray : RogueObject
 #else
   union
   {
-    RogueObject*   as_objects[];
-    RogueByte      as_logicals[];
-    RogueByte      as_bytes[];
-    RogueCharacter as_characters[];
-    RogueInt32     as_int32s[];
-    RogueInt64     as_int64s[];
-    RogueReal32    as_real32s[];
-    RogueReal64    as_real64s[];
+    RogueObject*   as_objects[ROGUE_EMPTY_ARRAY];
+    RogueByte      as_logicals[ROGUE_EMPTY_ARRAY];
+    RogueByte      as_bytes[ROGUE_EMPTY_ARRAY];
+    RogueCharacter as_characters[ROGUE_EMPTY_ARRAY];
+    RogueInt32     as_int32s[ROGUE_EMPTY_ARRAY];
+    RogueInt64     as_int64s[ROGUE_EMPTY_ARRAY];
+    RogueReal32    as_real32s[ROGUE_EMPTY_ARRAY];
+    RogueReal64    as_real64s[ROGUE_EMPTY_ARRAY];
   };
 #endif
 };
