@@ -80,9 +80,12 @@ RogueWeakReference* Rogue_weak_references = 0;
 // Thread mutex locks around creation and destruction of threads
 static pthread_mutex_t Rogue_mt_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int Rogue_mt_tc = 0; // Thread count.  Always set under above lock.
+static std::atomic_bool Rogue_mt_terminating(false); // True when terminating.
 
 static void Rogue_thread_register ()
 {
+  // If we're shutting down, no new threads!
+  if (Rogue_mt_terminating.load()) pthread_exit(NULL);
   pthread_mutex_lock(&Rogue_mt_thread_mutex);
   int n = (int)Rogue_mt_tc;
   ++Rogue_mt_tc;
@@ -104,6 +107,7 @@ static void Rogue_thread_unregister ()
 
 void Rogue_threads_wait_for_all ()
 {
+  Rogue_mt_terminating = true;
   int wait = 2; // Initial Xms
   int wait_step = 1;
   while (true)
