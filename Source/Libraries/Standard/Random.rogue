@@ -76,7 +76,7 @@ class Random [singleton]
       # the range (low,high) exclusive (does not include low or high).
       return (real64 * (high-low)) + low
 
-    method int64->Int32
+    method int64->Int64
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^63-1] inclusive.
       local result = int32->Int64 :<<: 32
