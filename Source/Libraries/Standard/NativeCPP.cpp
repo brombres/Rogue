@@ -161,6 +161,8 @@ int Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 #define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc <= 0)
 #define ROGUE_GC_RESET_COUNT Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 
+#define ROGUE_LINKED_LIST_INSERT(__OLD,__NEW,__NEW_NEXT) do {__NEW_NEXT = __OLD; __OLD = __NEW;} while(false)
+
 //-----------------------------------------------------------------------------
 //  RogueDebugTrace
 //-----------------------------------------------------------------------------
@@ -1029,18 +1031,17 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 
   memset( obj, 0, size );
 
+  obj->type = of_type;
+  obj->object_size = size;
+
   if (of_type->on_cleanup_fn)
   {
-    obj->next_object = THIS->objects_requiring_cleanup;
-    THIS->objects_requiring_cleanup = obj;
+    ROGUE_LINKED_LIST_INSERT(THIS->objects_requiring_cleanup, obj, obj->next_object);
   }
   else
   {
-    obj->next_object = THIS->objects;
-    THIS->objects = obj;
+    ROGUE_LINKED_LIST_INSERT(THIS->objects, obj, obj->next_object);
   }
-  obj->type = of_type;
-  obj->object_size = size;
 
   return obj;
 }
