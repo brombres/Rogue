@@ -681,7 +681,6 @@ extern RogueString*       Rogue_literal_strings[];
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
-extern int                Rogue_allocation_bytes_until_gc;
 extern bool               Rogue_gc_logging;
 extern int                Rogue_gc_threshold;
 extern bool               Rogue_gc_requested;
