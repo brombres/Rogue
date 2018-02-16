@@ -154,6 +154,7 @@ inline void roguethread_simple_spin_unlock(int volatile *p)
 
 #define ROGUE_THREAD_LAMBDA_START \
   std::function<void()> f = [=] () {                                                              \
+    Rogue_thread_register();                                                                      \
     Rogue_init_thread();                                                                          \
     ROGUE_THREAD_DEBUG_STATEMENT(RogueDebugTrace __trace( "Thread.lambda()", "thread.rogue", 1)); \
     try                                                                                           \
@@ -166,6 +167,7 @@ inline void roguethread_simple_spin_unlock(int volatile *p)
       RogueException__display( err );                                                             \
     }                                                                                             \
     Rogue_deinit_thread();                                                                        \
+    Rogue_thread_unregister();                                                                    \
   };
 
 endNativeCode
