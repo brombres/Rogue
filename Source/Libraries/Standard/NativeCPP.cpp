@@ -127,6 +127,23 @@ static void Rogue_thread_register ()
 static void Rogue_thread_unregister ()
 {
 }
+
+#endif
+
+// Singleton handling
+#if ROGUE_THREAD_MODE
+#define ROGUE_GET_SINGLETON(_S) (_S)->_singleton.load()
+#define ROGUE_SET_SINGLETON(_S,_V) (_S)->_singleton.store(_V);
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+pthread_mutex_t Rogue_thread_singleton_lock;
+#define ROGUE_SINGLETON_LOCK pthread_mutex_lock(&Rogue_thread_singleton_lock);
+#define ROGUE_SINGLETON_UNLOCK pthread_mutex_unlock(&Rogue_thread_singleton_lock);
+#endif
+#else
+#define ROGUE_GET_SINGLETON(_S) (_S)->_singleton
+#define ROGUE_SET_SINGLETON(_S,_V) (_S)->_singleton = _V;
+#define ROGUE_SINGLETON_LOCK
+#define ROGUE_SINGLETON_UNLOCK
 #endif
 //-----------------------------------------------------------------------------
 //  RogueDebugTrace
@@ -253,19 +270,39 @@ RogueType* RogueType_retire( RogueType* THIS )
 RogueObject* RogueType_singleton( RogueType* THIS )
 {
   RogueInitFn fn;
+  RogueObject * r = ROGUE_GET_SINGLETON(THIS);
+  if (r) return r;
 
-  if (THIS->_singleton) return THIS->_singleton;
+  ROGUE_SINGLETON_LOCK;
 
-  // NOTE: _singleton must be assigned before calling init_object()
-  // so we can't just call RogueType_create_object().
-  THIS->_singleton = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
+#if ROGUE_THREAD_MODE // Very minor optimization: don't check twice if unthreaded
+  // We probably need to initialize the singleton, but now that we have the
+  // lock, we double check.
+  r = ROGUE_GET_SINGLETON(THIS);
+  if (r)
+  {
+    // Ah, someone else just initialized it.  We'll use that.
+    ROGUE_SINGLETON_UNLOCK;
+  }
+  else
+#endif
+  {
+    // Yes, we'll be the one doing the initializing.
 
-  if ((fn = THIS->init_object_fn)) THIS->_singleton = fn( THIS->_singleton );
+    // NOTE: _singleton must be assigned before calling init_object()
+    // so we can't just call RogueType_create_object().
+    r = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
 
-  if ((fn = THIS->init_fn)) return fn( THIS->_singleton );
-  else                      return THIS->_singleton;
+    if ((fn = THIS->init_object_fn)) r = fn( r );
 
-  return THIS->_singleton;
+    ROGUE_SET_SINGLETON(THIS, r);
+
+    ROGUE_SINGLETON_UNLOCK;
+
+    if ((fn = THIS->init_fn)) r = fn( THIS->_singleton );
+  }
+
+  return r;
 }
 
 //-----------------------------------------------------------------------------
@@ -1222,6 +1259,10 @@ void Rogue_update_weak_references_during_gc()
 
 void Rogue_configure_types()
 {
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+_rogue_init_mutex(&Rogue_thread_singleton_lock);
+#endif
+
   int i;
   const int* next_type_info = Rogue_type_info_table;
 
