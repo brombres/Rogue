@@ -1929,7 +1929,7 @@ augment RogueC
                   |  $compiler_name = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
                   |#endif
           if (RogueC.thread_mode == ThreadMode.PTHREADS)
-            compiler_name += " -pthreads"
+            compiler_name += " -pthread"
           endIf
         endIf
 
