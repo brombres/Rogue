@@ -1045,6 +1045,15 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
     ROGUE_GCDEBUG_STATEMENT(memset(data,0,size));
     if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
     {
+      // When debugging GC, it can be very useful to lock the object types of
+      // freed objects.  When valgrind points out access to freed memory, you
+      // can then see what it was.
+      #if 0
+      RogueObject* obj = (RogueObject*) data;
+      printf("DEL %i %p ", (int)pthread_self(), data);
+      RogueType_print_name( obj-> type );
+      printf("\n");
+      #endif
       ROGUE_DEL_BYTES( data );
     }
     else
