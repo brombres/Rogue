@@ -156,6 +156,9 @@ pthread_mutex_t Rogue_thread_singleton_lock;
 //-----------------------------------------------------------------------------
 //  GC
 //-----------------------------------------------------------------------------
+#define ROGUE_GC_SOA_LOCK
+#define ROGUE_GC_SOA_UNLOCK
+
 int Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 #define ROGUE_GC_COUNT_BYTES(__x) Rogue_allocation_bytes_until_gc -= (__x);
 #define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc <= 0)
@@ -885,6 +888,8 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
     return mem;
   }
 
+  ROGUE_GC_SOA_LOCK;
+
   size = (size > 0) ? (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK : ROGUEMM_GRANULARITY_SIZE;
 
   ROGUE_GC_COUNT_BYTES(size);
@@ -896,6 +901,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   {
     //printf( "found free object\n");
     THIS->available_objects[slot] = obj->next_object;
+    ROGUE_GC_SOA_UNLOCK;
     return obj;
   }
 
@@ -905,7 +911,11 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
   if (THIS->pages )
   {
     obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, size );
-    if (obj) return obj;
+    if (obj)
+    {
+      ROGUE_GC_SOA_UNLOCK;
+      return obj;
+    }
 
     // Not enough room on allocation page.  Allocate any smaller blocks
     // we're able to and then move on to a new page.
@@ -928,7 +938,9 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   // New page; this will work for sure.
   THIS->pages = RogueAllocationPage_create( THIS->pages );
-  return RogueAllocationPage_allocate( THIS->pages, size );
+  void * r = RogueAllocationPage_allocate( THIS->pages, size );
+  ROGUE_GC_SOA_UNLOCK;
+  return r;
 }
 
 #if ROGUE_GC_MODE_BOEHM
