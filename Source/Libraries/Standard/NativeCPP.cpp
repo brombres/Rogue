@@ -703,11 +703,13 @@ RogueAllocationPage* RogueAllocationPage_create( RogueAllocationPage* next_page 
   return result;
 }
 
+#if 0 // This is currently done statically.  Code likely to be removed.
 RogueAllocationPage* RogueAllocationPage_delete( RogueAllocationPage* THIS )
 {
   if (THIS) ROGUE_DEL_BYTES( THIS );
   return 0;
 };
+#endif
 
 void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 {
@@ -730,6 +732,7 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 //-----------------------------------------------------------------------------
 //  RogueAllocator
 //-----------------------------------------------------------------------------
+#if 0 // This is currently done statically.  Code likely to be removed.
 RogueAllocator* RogueAllocator_create()
 {
   RogueAllocator* result = (RogueAllocator*) ROGUE_NEW_BYTES( sizeof(RogueAllocator) );
@@ -749,6 +752,7 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
   }
   return 0;
 }
+#endif
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
