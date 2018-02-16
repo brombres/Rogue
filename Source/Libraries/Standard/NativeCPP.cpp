@@ -57,6 +57,7 @@
 //-----------------------------------------------------------------------------
 bool               Rogue_gc_logging   = false;
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
+int                Rogue_gc_count     = 0; // Purely informational
 bool               Rogue_gc_requested = false;
 RogueLogical       Rogue_configured = 0;
 int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
@@ -1324,6 +1325,7 @@ bool Rogue_collect_garbage( bool forced )
 
   if (Rogue_allocation_bytes_until_gc > 0 && !forced && !Rogue_gc_requested) return false;
   Rogue_gc_requested = false;
+  ++ Rogue_gc_count;
 
   Rogue_on_gc_begin.call();
 
