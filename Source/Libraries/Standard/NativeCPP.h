@@ -666,6 +666,7 @@ void*        RogueAllocator_allocate( int size );
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index=-1 );
 void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
+void         RogueAllocator_free_all();
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
 extern int                Rogue_allocator_count;

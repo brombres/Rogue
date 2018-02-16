@@ -1077,6 +1077,14 @@ void RogueAllocator_free_objects( RogueAllocator* THIS )
   THIS->objects = 0;
 }
 
+void RogueAllocator_free_all( )
+{
+  for (int i=0; i<Rogue_allocator_count; ++i)
+  {
+    RogueAllocator_free_objects( &Rogue_allocators[i] );
+  }
+}
+
 void RogueAllocator_collect_garbage( RogueAllocator* THIS )
 {
   // Global program objects have already been traced through.
@@ -1465,10 +1473,7 @@ void Rogue_quit()
   Rogue_collect_garbage( true );
   Rogue_collect_garbage( true );
 
-  for (i=0; i<Rogue_allocator_count; ++i)
-  {
-    RogueAllocator_free_objects( &Rogue_allocators[i] );
-  }
+  RogueAllocator_free_all();
 
   for (i=0; i<Rogue_type_count; ++i)
   {
