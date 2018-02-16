@@ -142,7 +142,9 @@ nativeCode
 
 inline void roguethread_simple_spin_lock(int *p)
 {
+    ROGUE_EXIT;
     while(!__sync_bool_compare_and_swap(p, 0, 1)) {};
+    ROGUE_ENTER;
 }
 
 inline void roguethread_simple_spin_unlock(int volatile *p)
@@ -191,7 +193,9 @@ $endIf
 class Thread (id:Int64) [compound]
   METHODS
     method join ()
-      native @|pthread_join((pthread_t)$this.id, NULL);
+      native @|ROGUE_EXIT;
+              |pthread_join((pthread_t)$this.id, NULL);
+              |ROGUE_ENTER;
 
     method detach ()
       native @|pthread_detach((pthread_t)$this.id);
@@ -284,7 +288,7 @@ class FastBarrier [compound]
     method destroy [macro]
       native "pthread_barrier_destroy(&$this._barrier);"
     method wait -> Logical [macro]
-      native("(RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD)")
+      native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
 endClass
 
 
@@ -297,7 +301,7 @@ class Barrier
     method destroy
       native "pthread_barrier_destroy(&$this->_barrier);"
     method wait -> Logical [macro]
-      native("(RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD)")
+      native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
 endClass
 
 
@@ -317,7 +321,7 @@ class Mutex
       return this
 
     method lock [macro]
-      native "pthread_mutex_lock(&$this->_lock);"
+      native "ROGUE_BLOCKING_CALL(pthread_mutex_lock(&$this->_lock));"
 
     method on_end_use
       unlock
@@ -343,7 +347,7 @@ class SpinLock
       return this
 
     method lock [macro]
-      native "pthread_spin_lock(&$this->_lock);"
+      native "ROGUE_BLOCKING_CALL(pthread_spin_lock(&$this->_lock));"
 
     method on_end_use
       unlock
@@ -407,13 +411,13 @@ class Semaphore
 
     method acquire
       local r : Int64
-      native "$r = RogueSemaphore_wait(&$this->_sem);"
+      native "$r = ROGUE_BLOCKING_CALL(RogueSemaphore_wait(&$this->_sem));"
       require(r == 0)
 
     method try_acquire -> Logical
       # Returns true if you got it
       local r : Int64
-      native "$r = RogueSemaphore_try_wait(&$this->_sem);"
+      native "$r = ROGUE_BLOCKING_CALL(RogueSemaphore_try_wait(&$this->_sem));"
       return r == 0
 
     method release

@@ -51,6 +51,32 @@
 #endif
 
 //-----------------------------------------------------------------------------
+//  Multithreading
+//-----------------------------------------------------------------------------
+// When exiting Rogue code for a nontrivial amount of time (e.g., making a
+// blocking call or returning from a native event handler), put a
+// ROGUE_EXIT in your code.  When re-entering (e.g., after the blocking call
+// or on entering a native event handler which is going to call Rogue code),
+// do ROGUE_ENTER.
+// ROGUE_BLOCKING_ENTER/EXIT do the same things but with the meanings reversed
+// in case this makes it easier to think about.  An even easier way to make
+// a blocking call is to simply wrap it in ROGUE_BLOCKING_CALL(foo(...)).
+// The FAST variants are faster, but you need to be careful that they are
+// exactly balanced.
+// Of special note is that in the event handler case, you should have
+// ROGUE_EXITed before the first event handler.  If you're using the FAST
+// variants and don't do this, things will likely go quite badly for you.
+
+#define ROGUE_ENTER
+#define ROGUE_EXIT
+#define ROGUE_ENTER_FAST
+#define ROGUE_EXIT_FAST
+
+#define ROGUE_BLOCKING_CALL(__x) __x
+#define ROGUE_BLOCKING_ENTER ROGUE_EXIT
+#define ROGUE_BLOCKING_EXIT  ROGUE_ENTER
+
+//-----------------------------------------------------------------------------
 //  Garbage Collection
 //-----------------------------------------------------------------------------
 #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
