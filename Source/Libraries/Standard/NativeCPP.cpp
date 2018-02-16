@@ -160,6 +160,343 @@ pthread_mutex_t Rogue_thread_singleton_lock;
 //-----------------------------------------------------------------------------
 //  GC
 //-----------------------------------------------------------------------------
+#define ROGUE_GC_CHECK /* Does nothing in non-auto-mt modes */
+
+#if ROGUE_GC_MODE_AUTO_MT
+// See the Rogue MT GC diagram for an explanation of some of this.
+
+#define ROGUE_GC_VAR static volatile int
+// (Curiously, volatile seems to help performance slightly.)
+
+#define ROGUE_MTGC_BARRIER asm volatile("" : : : "memory");
+
+// Atomic LL insertion
+#define ROGUE_LINKED_LIST_INSERT(__OLD,__NEW,__NEW_NEXT)            \
+  for(;;) {                                                         \
+    auto tmp = __OLD;                                               \
+    __NEW_NEXT = tmp;                                               \
+    if (__sync_bool_compare_and_swap(&(__OLD), tmp, __NEW)) break;  \
+  }
+
+// We assume malloc is safe, but the SOA needs safety if it's being used.
+#if ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT >= 0
+static pthread_mutex_t Rogue_mtgc_soa_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define ROGUE_GC_SOA_LOCK    pthread_mutex_lock(&Rogue_mtgc_soa_mutex);
+#define ROGUE_GC_SOA_UNLOCK  pthread_mutex_unlock(&Rogue_mtgc_soa_mutex);
+#else
+#define ROGUE_GC_SOA_LOCK
+#define ROGUE_GC_SOA_UNLOCK
+#endif
+
+static inline void Rogue_collect_garbage_real ();
+void Rogue_collect_garbage_real_noinline ()
+{
+  Rogue_collect_garbage_real();
+}
+
+#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_PTHREADS
+#error Currently, only --threads=pthreads is supported with --gc=auto-mt
+#endif
+
+// This is how unlikely() works in the Linux kernel
+#define ROGUE_UNLIKELY(_X) __builtin_expect(!!(_X), 0)
+
+#undef ROGUE_GC_CHECK
+#define ROGUE_GC_CHECK if (ROGUE_UNLIKELY(Rogue_mtgc_w)) Rogue_mtgc_W2_W3_W4(); // W1
+
+static pthread_mutex_t Rogue_mtgc_w_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t Rogue_mtgc_s_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t Rogue_mtgc_w_cond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t Rogue_mtgc_s_cond = PTHREAD_COND_INITIALIZER;
+
+ROGUE_GC_VAR Rogue_mtgc_w = 0;
+ROGUE_GC_VAR Rogue_mtgc_s = 0;
+
+// Only one worker can be "running" (waiting for) the GC at a time.
+// To run, set r = 1, and wait for GC to set it to 0.  If r is already
+// 1, just wait.
+static pthread_mutex_t Rogue_mtgc_r_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t Rogue_mtgc_r_cond = PTHREAD_COND_INITIALIZER;
+ROGUE_GC_VAR Rogue_mtgc_r = 0;
+
+static pthread_mutex_t Rogue_mtgc_g_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t Rogue_mtgc_g_cond = PTHREAD_COND_INITIALIZER;
+ROGUE_GC_VAR Rogue_mtgc_g = 0; // Should GC
+
+static int Rogue_mtgc_should_quit = 0; // 0:normal 1:should-quit 2:has-quit
+
+static pthread_t Rogue_mtgc_thread;
+
+static void Rogue_mtgc_W2_W3_W4 (void);
+static inline void Rogue_mtgc_W3_W4 (void);
+
+inline void Rogue_mtgc_B1 ()
+{
+  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
+  ++Rogue_mtgc_s;
+  pthread_cond_signal(&Rogue_mtgc_s_cond);
+  pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+}
+
+inline void Rogue_mtgc_B2_etc ()
+{
+  Rogue_mtgc_W3_W4();
+  // We can probably just do GC_CHECK here rather than this more expensive
+  // locking version.
+  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  auto w = Rogue_mtgc_w;
+  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+  if (ROGUE_UNLIKELY(w)) Rogue_mtgc_W2_W3_W4(); // W1
+}
+
+static inline void Rogue_mtgc_W2 ()
+{
+  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
+  ++Rogue_mtgc_s;
+  pthread_cond_signal(&Rogue_mtgc_s_cond);
+  pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+}
+
+static inline void Rogue_mtgc_W3_W4 ()
+{
+  // W3
+  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  while (Rogue_mtgc_w != 0)
+  {
+    pthread_cond_wait(&Rogue_mtgc_w_cond, &Rogue_mtgc_w_mutex);
+  }
+  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+
+  // W4
+  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
+  --Rogue_mtgc_s;
+  pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+}
+
+static void Rogue_mtgc_W2_W3_W4 ()
+{
+  Rogue_mtgc_W2();
+  Rogue_mtgc_W3_W4();
+}
+
+
+static thread_local int Rogue_mtgc_entered = 1;
+
+inline void Rogue_mtgc_enter()
+{
+  if (ROGUE_UNLIKELY(Rogue_mtgc_entered))
+#ifdef ROGUE_MTGC_DEBUG
+  {
+    printf("ALREADY ENTERED\n");
+    exit(1);
+  }
+#else
+  {
+    ++Rogue_mtgc_entered;
+    return;
+  }
+#endif
+
+  Rogue_mtgc_entered = 1;
+  Rogue_mtgc_B2_etc();
+}
+
+inline void Rogue_mtgc_exit()
+{
+  if (ROGUE_UNLIKELY(Rogue_mtgc_entered <= 0))
+  {
+    printf("Unabalanced Rogue enter/exit\n");
+    exit(1);
+  }
+
+  --Rogue_mtgc_entered;
+  Rogue_mtgc_B1();
+}
+
+static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
+{
+  // M1
+  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  Rogue_mtgc_w = 1;
+  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+
+  // M2
+  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
+  while (Rogue_mtgc_s != Rogue_mt_tc)
+  {
+#if ROGUE_MTGC_DEBUG
+    if (Rogue_mtgc_s > Rogue_mt_tc || Rogue_mtgc_s < 0)
+    {
+      printf("INVALID VALUE OF S %i %i\n", Rogue_mtgc_s, Rogue_mt_tc);
+      exit(1);
+    }
+#endif
+
+    pthread_cond_wait(&Rogue_mtgc_s_cond, &Rogue_mtgc_s_mutex);
+  }
+  // We should actually be okay holding the S lock until the
+  // very end of the function if we want, and this would prevent
+  // threads that were blocking from ever leaving B2.  But
+  // We should be okay anyway, though S may temporarily != TC.
+  //pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+
+#if ROGUE_MTGC_DEBUG
+  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  Rogue_mtgc_w = 2;
+  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+#endif
+
+  // GC
+  // Grab the SOA lock for symmetry.  It should actually never
+  // be held by another thread since they're all in GC sleep.
+  ROGUE_GC_SOA_LOCK;
+  Rogue_collect_garbage_real();
+
+  //NOTE: It's possible (Rogue_mtgc_s != Rogue_mt_tc) here, if we gave up the S
+  //      lock, though they should quickly go back to equality.
+
+  if (quit)
+  {
+    // Run a few more times to finish up
+    Rogue_collect_garbage_real_noinline();
+    Rogue_collect_garbage_real_noinline();
+
+    // Free from the SOA
+    RogueAllocator_free_all();
+  }
+  ROGUE_GC_SOA_UNLOCK;
+
+  // M3
+  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  Rogue_mtgc_w = 0;
+  pthread_cond_broadcast(&Rogue_mtgc_w_cond);
+  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+  pthread_mutex_unlock(&Rogue_mtgc_s_mutex); // Could do much earlier
+}
+
+static void * Rogue_mtgc_threadproc (void *)
+{
+  int quit = 0;
+  while (quit == 0)
+  {
+    pthread_mutex_lock(&Rogue_mtgc_g_mutex);
+    while (!Rogue_mtgc_g && !Rogue_mtgc_should_quit)
+    {
+      pthread_cond_wait(&Rogue_mtgc_g_cond, &Rogue_mtgc_g_mutex);
+    }
+    Rogue_mtgc_g = 0;
+    quit = Rogue_mtgc_should_quit;
+    pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+
+    pthread_mutex_lock(&Rogue_mt_thread_mutex);
+
+    Rogue_mtgc_M1_M2_GC_M3(quit);
+
+    pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+
+    pthread_mutex_lock(&Rogue_mtgc_r_mutex);
+    Rogue_mtgc_r = 0;
+    pthread_cond_broadcast(&Rogue_mtgc_r_cond);
+    pthread_mutex_unlock(&Rogue_mtgc_r_mutex);
+  }
+
+  pthread_mutex_lock(&Rogue_mtgc_g_mutex);
+  Rogue_mtgc_should_quit = 2;
+  Rogue_mtgc_g = 0;
+  pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+  return NULL;
+}
+
+// Cause GC to run and wait for a GC to complete.
+void Rogue_mtgc_run_gc_and_wait ()
+{
+  bool again;
+  do
+  {
+    again = false;
+    pthread_mutex_lock(&Rogue_mtgc_r_mutex);
+    if (Rogue_mtgc_r == 0)
+    {
+      Rogue_mtgc_r = 1;
+
+      // Signal GC to run
+      pthread_mutex_lock(&Rogue_mtgc_g_mutex);
+      Rogue_mtgc_g = 1;
+      pthread_cond_signal(&Rogue_mtgc_g_cond);
+      pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+    }
+    else
+    {
+      // If one or more simultaneous requests to run the GC came in, run it
+      // again.
+      again = (Rogue_mtgc_r == 1);
+      ++Rogue_mtgc_r;
+    }
+    ROGUE_EXIT;
+    while (Rogue_mtgc_r != 0)
+    {
+      pthread_cond_wait(&Rogue_mtgc_r_cond, &Rogue_mtgc_r_mutex);
+    }
+    pthread_mutex_unlock(&Rogue_mtgc_r_mutex);
+    ROGUE_ENTER;
+  }
+  while (again);
+}
+
+static void Rogue_mtgc_quit_gc_thread ()
+{
+  //NOTE: This could probably be simplified (and the quit behavior removed
+  //      from Rogue_mtgc_M1_M2_GC_M3) since we now wait for all threads
+  //      to stop before calling this.
+  ROGUE_EXIT;
+  while (true)
+  {
+    pthread_mutex_lock(&Rogue_mtgc_g_mutex);
+    if (Rogue_mtgc_should_quit == 2)
+    {
+      pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+      break;
+    }
+    Rogue_mtgc_g = 1;
+    Rogue_mtgc_should_quit = 1;
+    pthread_cond_signal(&Rogue_mtgc_g_cond);
+    pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+    for (int i = 0; i < 10; i++) pthread_yield();
+  }
+  pthread_join(Rogue_mtgc_thread, NULL);
+  ROGUE_ENTER;
+}
+
+void Rogue_configure_gc()
+{
+  int c = pthread_create(&Rogue_mtgc_thread, NULL, Rogue_mtgc_threadproc, NULL);
+  if (c != 0)
+  {
+    exit(77); //TODO: Do something better in this (hopefully) rare case.
+  }
+}
+
+// Used as part of the ROGUE_BLOCKING_CALL macro.
+template<typename RT> RT Rogue_mtgc_reenter (RT expr)
+{
+  ROGUE_ENTER;
+  return expr;
+}
+
+#include <atomic>
+
+// We do all relaxed operations on this.  It's possible this will lead to
+// something "bad", but I don't think *too* bad.  Like an extra GC.
+// And I think that'll be rare, since the reset happens when all the
+// threads are synced.  But I could be wrong.  Should probably think
+// about this harder.
+std::atomic_int Rogue_allocation_bytes_until_gc(Rogue_gc_threshold);
+#define ROGUE_GC_COUNT_BYTES(__x) Rogue_allocation_bytes_until_gc.fetch_sub(__x, std::memory_order_relaxed);
+#define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc.load(std::memory_order_relaxed) <= 0)
+#define ROGUE_GC_RESET_COUNT Rogue_allocation_bytes_until_gc.store(Rogue_gc_threshold, std::memory_order_relaxed);
+
+#else // Anything besides auto-mt
+
 #define ROGUE_GC_SOA_LOCK
 #define ROGUE_GC_SOA_UNLOCK
 
@@ -168,7 +505,11 @@ int Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 #define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc <= 0)
 #define ROGUE_GC_RESET_COUNT Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 
+
+#define ROGUE_MTGC_BARRIER
 #define ROGUE_LINKED_LIST_INSERT(__OLD,__NEW,__NEW_NEXT) do {__NEW_NEXT = __OLD; __OLD = __NEW;} while(false)
+
+#endif
 
 //-----------------------------------------------------------------------------
 //  RogueDebugTrace
@@ -875,6 +1216,18 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
 #if ROGUE_GC_MODE_AUTO_MT
+#if ROGUE_MTGC_DEBUG
+    pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+    if (Rogue_mtgc_w == 2)
+    {
+      printf("ALLOC DURING GC!\n");
+      exit(1);
+    }
+    pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+#endif
+#endif
+
+#if ROGUE_GC_MODE_AUTO_ANY
   Rogue_collect_garbage();
 #endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
@@ -1049,6 +1402,8 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 
   obj->type = of_type;
   obj->object_size = size;
+
+  ROGUE_MTGC_BARRIER; // Probably not necessary
 
   if (of_type->on_cleanup_fn)
   {
@@ -1447,6 +1802,8 @@ void Rogue_configure_gc()
   //GC_set_all_interior_pointers(0);
   GC_INIT();
 }
+#elif ROGUE_GC_MODE_AUTO_MT
+// Rogue_configure_gc already defined above.
 #else
 void Rogue_configure_gc()
 {
@@ -1472,7 +1829,11 @@ bool Rogue_collect_garbage( bool forced )
 {
   if (!forced && !Rogue_gc_requested & !ROGUE_GC_AT_THRESHOLD) return false;
 
+#if ROGUE_GC_MODE_AUTO_MT
+  Rogue_mtgc_run_gc_and_wait();
+#else
   Rogue_collect_garbage_real();
+#endif
 
   return true;
 }
@@ -1510,12 +1871,16 @@ void Rogue_quit()
 
   ROGUE_THREADS_WAIT_FOR_ALL;
 
+#if ROGUE_GC_MODE_AUTO_MT
+  Rogue_mtgc_quit_gc_thread();
+#else
   // Give a few GC's to allow objects requiring clean-up to do so.
   Rogue_collect_garbage( true );
   Rogue_collect_garbage( true );
   Rogue_collect_garbage( true );
 
   RogueAllocator_free_all();
+#endif
 
   for (i=0; i<Rogue_type_count; ++i)
   {

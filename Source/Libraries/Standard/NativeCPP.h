@@ -67,12 +67,34 @@
 // ROGUE_EXITed before the first event handler.  If you're using the FAST
 // variants and don't do this, things will likely go quite badly for you.
 
+#if ROGUE_GC_MODE_AUTO_MT
+
+#define ROGUE_ENTER Rogue_mtgc_enter();
+#define ROGUE_EXIT  Rogue_mtgc_exit();
+
+#define ROGUE_ENTER_FAST Rogue_mtgc_B2_etc()
+#define ROGUE_EXIT_FAST  Rogue_mtgc_B1()
+
+inline void Rogue_mtgc_B1 (void);
+inline void Rogue_mtgc_B2_etc (void);
+inline void Rogue_mtgc_enter (void);
+inline void Rogue_mtgc_exit (void);
+
+template<typename RT> RT Rogue_mtgc_reenter (RT expr);
+
+#define ROGUE_BLOCKING_CALL(__x) (ROGUE_EXIT, Rogue_mtgc_reenter((__x)))
+
+#else
+
 #define ROGUE_ENTER
 #define ROGUE_EXIT
 #define ROGUE_ENTER_FAST
 #define ROGUE_EXIT_FAST
 
 #define ROGUE_BLOCKING_CALL(__x) __x
+
+#endif
+
 #define ROGUE_BLOCKING_ENTER ROGUE_EXIT
 #define ROGUE_BLOCKING_EXIT  ROGUE_ENTER
 
@@ -650,6 +672,7 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 
 // Small allocation limit is 256 bytes - afterwards objects are allocated
 // from the system.
+// Set to -1 to disable the small object allocator.
 #ifndef ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT
 #  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
 #endif
