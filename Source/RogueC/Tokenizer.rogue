@@ -291,6 +291,10 @@ class Tokenizer
       TokenType.symbol_vertical_bar_equals   = define( ModifyAndAssignTokenType("|=") )
       TokenType.symbol_double_vertical_bar   = define( TokenType("||") )
 
+      # Noise words
+      TokenType.keyword_then                 = define( TokenType("then") )
+      TokenType.keyword_do                   = define( TokenType("do") )
+
     method consume( ch:Character )->Logical
       if (reader.peek != ch) return false
       reader.read
