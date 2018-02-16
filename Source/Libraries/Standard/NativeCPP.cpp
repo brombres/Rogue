@@ -1464,11 +1464,21 @@ bool Rogue_collect_garbage( bool forced )
 
   return GC_collect_a_little();
 }
-#else
+#else // Auto or manual
+
+static inline void Rogue_collect_garbage_real(void);
+
 bool Rogue_collect_garbage( bool forced )
 {
-
   if (!forced && !Rogue_gc_requested & !ROGUE_GC_AT_THRESHOLD) return false;
+
+  Rogue_collect_garbage_real();
+
+  return true;
+}
+
+static inline void Rogue_collect_garbage_real()
+{
   Rogue_gc_requested = false;
   ++ Rogue_gc_count;
 
@@ -1485,9 +1495,8 @@ bool Rogue_collect_garbage( bool forced )
   }
 
   Rogue_on_gc_end.call();
-
-  return true;
 }
+
 #endif
 
 void Rogue_quit()
