@@ -293,6 +293,8 @@ class FastBarrier [compound]
       native "pthread_barrier_destroy(&$this._barrier);"
     method wait -> Logical [macro]
       native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
+    method operator== (other:FastBarrier) -> Logical
+      return false # Not comparable
 endClass
 
 
@@ -378,6 +380,9 @@ class SimpleSpinLock [compound]
 
     method unlock [macro]
       native "roguethread_simple_spin_unlock(&$this._lock);"
+
+    method operator== (other:SimpleSpinLock) -> Logical
+      return native("$this._lock == $other._lock")->Logical
 endClass
 
 
