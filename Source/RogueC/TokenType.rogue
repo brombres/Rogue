@@ -217,6 +217,10 @@ class TokenType
     symbol_vertical_bar_equals    : TokenType
     symbol_double_vertical_bar    : TokenType
 
+    # Noise words
+    keyword_then                  : TokenType
+    keyword_do                    : TokenType
+
   PROPERTIES
     name           : String
     is_end_command : Logical
