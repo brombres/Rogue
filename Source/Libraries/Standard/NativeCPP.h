@@ -279,6 +279,7 @@ T rogue_ptr (T p)
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
 #include <pthread.h>
+#include <atomic>
 
 #define ROGUE_THREAD_LOCAL thread_local
 
@@ -446,7 +447,11 @@ struct RogueType
   const int*   property_type_indices;
   const int*   property_offsets;
 
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+  std::atomic<RogueObject*> _singleton;
+#else
   RogueObject* _singleton;
+#endif
   const void** methods; // first function pointer in Rogue_dynamic_method_table
   int          method_count;
 

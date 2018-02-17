@@ -747,7 +747,10 @@ augment Program
         writer.println @|  if (type->type_info) RogueTypeInfo_trace( type->type_info );
       endIf
 
-      writer.println @|  if (type->_singleton) type->trace_fn( type->_singleton );
+      writer.println @|  {
+                      |    auto singleton = ROGUE_GET_SINGLETON(type);
+                      |    if (singleton) type->trace_fn( singleton );
+                      |  }
                       |}
 
 
@@ -1146,7 +1149,7 @@ augment Program
 
 
       # Call Global.on_launch()
-      writer.println @|RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );
+      writer.println @|RogueGlobal__on_launch( (RogueClassGlobal*) (ROGUE_SINGLETON(Global)) );
                       |Rogue_collect_garbage();
 
       writer.indent -= 2
@@ -2939,11 +2942,11 @@ augment CmdWriteSingleton
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
-      writer.print( "RogueType" ).print( of_type.cpp_name ).print( "->_singleton = " )
+      writer.print( "ROGUE_SET_SINGLETON(RogueType" ).print( of_type.cpp_name ).print( ", " )
       if (new_value.type is not of_type) writer.print_cast( new_value.type, of_type )
       writer.print( "(" )
       new_value.write_cpp( writer )
-      writer.println( ");" )
+      writer.println( "));" )
 endAugment
 
 augment CmdReadLocal
