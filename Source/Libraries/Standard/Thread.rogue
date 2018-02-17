@@ -57,12 +57,13 @@ RogueSemaphore_wait( struct RogueSemaphore *s )
 #endif
 }
 
-static inline void
+// Returns true if semaphore was decremented.
+static inline bool
 RogueSemaphore_try_wait( struct RogueSemaphore *s )
 {
 
 #ifdef __APPLE__
-    dispatch_semaphore_wait(s->sem, DISPATCH_TIME_NOW);
+    return dispatch_semaphore_wait(s->sem, DISPATCH_TIME_NOW) == 0;
 #else
     int r;
 
@@ -70,6 +71,9 @@ RogueSemaphore_try_wait( struct RogueSemaphore *s )
     {
       r = sem_trywait(&s->sem);
     } while (r == -1 && errno == EINTR);
+
+    if (r == -1) return false;
+    return true;
 #endif
 }
 
@@ -410,9 +414,7 @@ class Semaphore
       native "RogueSemaphore_destroy(&$this->_sem);"
 
     method acquire
-      local r : Int64
-      native "$r = ROGUE_BLOCKING_CALL(RogueSemaphore_wait(&$this->_sem));"
-      require(r == 0)
+      native "ROGUE_BLOCKING_VOID_CALL(RogueSemaphore_wait(&$this->_sem));"
 
     method try_acquire -> Logical
       # Returns true if you got it
@@ -421,9 +423,7 @@ class Semaphore
       return r == 0
 
     method release
-      local r : Int64
-      native "$r = RogueSemaphore_post(&$this->_sem);"
-      require(r == 0)
+      native "RogueSemaphore_post(&$this->_sem);"
 
     method release (n : Int32)
       forEach (_ in 1..n)
