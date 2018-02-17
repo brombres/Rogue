@@ -2977,8 +2977,9 @@ augment CmdWriteSingleton
       endIf
       writer.print( "RogueType" ).print( of_type.cpp_name ).print( "->_singleton = " )
       if (new_value.type is not of_type) writer.print_cast( new_value.type, of_type )
+      writer.print( "(" )
       new_value.write_cpp( writer )
-      writer.println( ";" )
+      writer.println( ");" )
 endAugment
 
 augment CmdReadLocal
@@ -2992,9 +2993,9 @@ augment CmdWriteLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       writer.print( local_info.cpp_name ).print(" = ")
-      writer.print( "((" ).print( local_info.type ).print( ")" )
+      writer.print( "((" ).print( local_info.type ).print( ")(" )
       new_value.write_cpp( writer )
-      writer.print( ")" )
+      writer.print( "))" )
 endAugment
 
 augment CmdReadGlobal
@@ -3019,9 +3020,9 @@ augment CmdWriteGlobal
       if (global_info.type is new_value.type)
         new_value.write_cpp( writer )
       else
-        writer.print( "((" ).print( global_info.type ).print( ")" )
+        writer.print( "((" ).print( global_info.type ).print( ")(" )
         new_value.write_cpp( writer )
-        writer.print( ")" )
+        writer.print( "))" )
       endIf
 endAugment
 
@@ -3045,9 +3046,9 @@ augment CmdWriteProperty
       if (property_info.type is new_value.type)
         new_value.write_cpp( writer )
       else
-        writer.print( "((" ).print( property_info.type ).print( ")" )
+        writer.print( "((" ).print( property_info.type ).print( ")(" )
         new_value.write_cpp( writer )
-        writer.print( ")" )
+        writer.print( "))" )
       endIf
 endAugment
 
@@ -3555,7 +3556,9 @@ augment CmdWriteArrayElement
         index.write_cpp( writer )
         writer.print( "] = " )
         if (new_value.type is not element_type) writer.print_cast( new_value.type, element_type )
+        writer.print( "(" )
         new_value.write_cpp( writer )
+        writer.print( ")" )
 
       elseIf (element_type.is_reference)
         context.write_cpp( writer )
