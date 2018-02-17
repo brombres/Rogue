@@ -95,7 +95,31 @@ static void Rogue_thread_unregister ()
   pthread_mutex_unlock(&Rogue_mt_thread_mutex);
 }
 
+
+#define ROGUE_THREADS_WAIT_FOR_ALL Rogue_threads_wait_for_all();
+
+void Rogue_threads_wait_for_all ()
+{
+  int wait = 2; // Initial Xms
+  int wait_step = 1;
+  while (true)
+  {
+    pthread_mutex_lock(&Rogue_mt_thread_mutex);
+    if (Rogue_mt_tc <= 1) // Shouldn't ever really be less than 1
+    {
+      pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+      break;
+    }
+    pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+    usleep(1000 * wait);
+    wait_step++;
+    if (!(wait_step % 15) && (wait < 500)) wait *= 2; // Max backoff ~500ms
+  }
+}
+
 #else
+
+#define ROGUE_THREADS_WAIT_FOR_ALL /* no-op if there's only one thread! */
 
 static void Rogue_thread_register ()
 {
@@ -1384,6 +1408,8 @@ void Rogue_quit()
   Rogue_configured = 0;
 
   RogueGlobal__call_exit_functions( (RogueClassGlobal*) ROGUE_SINGLETON(Global) );
+
+  ROGUE_THREADS_WAIT_FOR_ALL;
 
   // Give a few GC's to allow objects requiring clean-up to do so.
   Rogue_collect_garbage( true );
