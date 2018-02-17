@@ -89,6 +89,10 @@ extern void Rogue_configure_gc();
 
 #if ROGUE_GC_MODE_BOEHM
   #define GC_NAME_CONFLICT
+  #if ROGUE_THREAD_MODE
+    // Assume GC built for the right thread mode!
+    #define GC_THREADS 1
+  #endif
   #include "gc.h"
   #include "gc_cpp.h"
   #include "gc_allocator.h"
