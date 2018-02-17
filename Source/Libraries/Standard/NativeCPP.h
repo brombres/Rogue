@@ -51,6 +51,55 @@
 #endif
 
 //-----------------------------------------------------------------------------
+//  Multithreading
+//-----------------------------------------------------------------------------
+// When exiting Rogue code for a nontrivial amount of time (e.g., making a
+// blocking call or returning from a native event handler), put a
+// ROGUE_EXIT in your code.  When re-entering (e.g., after the blocking call
+// or on entering a native event handler which is going to call Rogue code),
+// do ROGUE_ENTER.
+// ROGUE_BLOCKING_ENTER/EXIT do the same things but with the meanings reversed
+// in case this makes it easier to think about.  An even easier way to make
+// a blocking call is to simply wrap it in ROGUE_BLOCKING_CALL(foo(...)).
+// The FAST variants are faster, but you need to be careful that they are
+// exactly balanced.
+// Of special note is that in the event handler case, you should have
+// ROGUE_EXITed before the first event handler.  If you're using the FAST
+// variants and don't do this, things will likely go quite badly for you.
+
+#if ROGUE_GC_MODE_AUTO_MT
+
+#define ROGUE_ENTER Rogue_mtgc_enter()
+#define ROGUE_EXIT  Rogue_mtgc_exit()
+
+#define ROGUE_ENTER_FAST Rogue_mtgc_B2_etc()
+#define ROGUE_EXIT_FAST  Rogue_mtgc_B1()
+
+inline void Rogue_mtgc_B1 (void);
+inline void Rogue_mtgc_B2_etc (void);
+inline void Rogue_mtgc_enter (void);
+inline void Rogue_mtgc_exit (void);
+
+template<typename RT> RT Rogue_mtgc_reenter (RT expr);
+
+#define ROGUE_BLOCKING_CALL(__x) (ROGUE_EXIT, Rogue_mtgc_reenter((__x)))
+#define ROGUE_BLOCKING_VOID_CALL(__x) do {ROGUE_EXIT; __x; ROGUE_ENTER;}while(false)
+
+#else
+
+#define ROGUE_ENTER
+#define ROGUE_EXIT
+#define ROGUE_ENTER_FAST
+#define ROGUE_EXIT_FAST
+
+#define ROGUE_BLOCKING_CALL(__x) __x
+
+#endif
+
+#define ROGUE_BLOCKING_ENTER ROGUE_EXIT
+#define ROGUE_BLOCKING_EXIT  ROGUE_ENTER
+
+//-----------------------------------------------------------------------------
 //  Garbage Collection
 //-----------------------------------------------------------------------------
 #define ROGUE_DEF_LOCAL_REF(_t_,_n_, _v_) _t_ _n_ = _v_
@@ -89,6 +138,10 @@ extern void Rogue_configure_gc();
 
 #if ROGUE_GC_MODE_BOEHM
   #define GC_NAME_CONFLICT
+  #if ROGUE_THREAD_MODE
+    // Assume GC built for the right thread mode!
+    #define GC_THREADS 1
+  #endif
   #include "gc.h"
   #include "gc_cpp.h"
   #include "gc_allocator.h"
@@ -116,7 +169,7 @@ extern void Rogue_configure_gc();
   #define ROGUE_XDECREF(_o_) Rogue_Boehm_DecRef(_o_)
 #endif
 
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_ANY
   #undef ROGUE_DEF_LOCAL_REF_NULL
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
   #undef ROGUE_DEF_LOCAL_REF
@@ -275,6 +328,7 @@ T rogue_ptr (T p)
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
 #include <pthread.h>
+#include <atomic>
 
 #define ROGUE_THREAD_LOCAL thread_local
 
@@ -442,7 +496,11 @@ struct RogueType
   const int*   property_type_indices;
   const int*   property_offsets;
 
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+  std::atomic<RogueObject*> _singleton;
+#else
   RogueObject* _singleton;
+#endif
   const void** methods; // first function pointer in Rogue_dynamic_method_table
   int          method_count;
 
@@ -544,6 +602,11 @@ RogueString*   RogueString_validate( RogueString* THIS );
 //-----------------------------------------------------------------------------
 //  RogueArray
 //-----------------------------------------------------------------------------
+#if defined(__clang__)
+#define ROGUE_EMPTY_ARRAY
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define ROGUE_EMPTY_ARRAY 0
+#endif
 struct RogueArray : RogueObject
 {
   int  count;
@@ -565,14 +628,14 @@ struct RogueArray : RogueObject
 #else
   union
   {
-    RogueObject*   as_objects[];
-    RogueByte      as_logicals[];
-    RogueByte      as_bytes[];
-    RogueCharacter as_characters[];
-    RogueInt32     as_int32s[];
-    RogueInt64     as_int64s[];
-    RogueReal32    as_real32s[];
-    RogueReal64    as_real64s[];
+    RogueObject*   as_objects[ROGUE_EMPTY_ARRAY];
+    RogueByte      as_logicals[ROGUE_EMPTY_ARRAY];
+    RogueByte      as_bytes[ROGUE_EMPTY_ARRAY];
+    RogueCharacter as_characters[ROGUE_EMPTY_ARRAY];
+    RogueInt32     as_int32s[ROGUE_EMPTY_ARRAY];
+    RogueInt64     as_int64s[ROGUE_EMPTY_ARRAY];
+    RogueReal32    as_real32s[ROGUE_EMPTY_ARRAY];
+    RogueReal64    as_real64s[ROGUE_EMPTY_ARRAY];
   };
 #endif
 };
@@ -610,6 +673,7 @@ RogueArray* RogueArray_set( RogueArray* THIS, RogueInt32 i1, RogueArray* other, 
 
 // Small allocation limit is 256 bytes - afterwards objects are allocated
 // from the system.
+// Set to -1 to disable the small object allocator.
 #ifndef ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT
 #  define ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT  ((ROGUEMM_SLOT_COUNT-1) << ROGUEMM_GRANULARITY_BITS)
 #endif
@@ -652,6 +716,7 @@ void*        RogueAllocator_allocate( int size );
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index=-1 );
 void*        RogueAllocator_free( RogueAllocator* THIS, void* data, int size );
 void         RogueAllocator_free_objects( RogueAllocator* THIS );
+void         RogueAllocator_free_all();
 void         RogueAllocator_collect_garbage( RogueAllocator* THIS );
 
 extern int                Rogue_allocator_count;
@@ -676,7 +741,6 @@ extern RogueString*       Rogue_literal_strings[];
 extern RogueLogical       Rogue_configured;
 extern int                Rogue_argc;
 extern const char**       Rogue_argv;
-extern int                Rogue_allocation_bytes_until_gc;
 extern bool               Rogue_gc_logging;
 extern int                Rogue_gc_threshold;
 extern bool               Rogue_gc_requested;

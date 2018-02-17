@@ -18,6 +18,19 @@ class Runtime [essential]
       native "$n = Rogue_gc_threshold;"
       return n
 
+    method gc_count->Int
+      # Return the number of times the GC has run.
+      # Note that this may wrap!
+      local r : Int
+      native @|#if ROGUE_GC_MODE_BOEHM
+              |  GC_prof_stats_s stats = {0};
+              |  GC_get_prof_stats(&stats, sizeof(stats));
+              |  $r = stats.gc_no;
+              |#else
+              |  $r = Rogue_gc_count;
+              |#endif
+      return r
+
     method literal_string( string_index:Int32 )->String
       if (string_index < 0 or string_index >= literal_string_count) return null
       return native("Rogue_literal_strings[$string_index]")->String

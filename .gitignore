@@ -24,3 +24,5 @@ Source/DocGen/Build
 Local.mk
 Hello.rogue
 .rogo
+*.patch
+*.diff

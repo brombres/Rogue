@@ -196,8 +196,16 @@ augment Program
       # It'd be nice to be able to override these with a C++ -D arg...
       writer.print "#define ROGUE_GC_MODE_MANUAL "
       writer.println select{RogueC.gc_mode == GCMode.MANUAL: "1" || "0"}
-      writer.print "#define ROGUE_GC_MODE_AUTO "
-      writer.println select{RogueC.gc_mode == GCMode.AUTO: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO_ST "
+      writer.println select{RogueC.gc_mode == GCMode.AUTO_ST: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO_MT "
+      writer.println select{RogueC.gc_mode == GCMode.AUTO_MT: "1" || "0"}
+      writer.print "#define ROGUE_GC_MODE_AUTO_ANY "
+      if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
+        writer.println "1"
+      else
+        writer.println "0"
+      endIf
       writer.print "#define ROGUE_GC_MODE_BOEHM "
       writer.println select{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_BOEHM_TYPED "
@@ -747,7 +755,10 @@ augment Program
         writer.println @|  if (type->type_info) RogueTypeInfo_trace( type->type_info );
       endIf
 
-      writer.println @|  if (type->_singleton) type->trace_fn( type->_singleton );
+      writer.println @|  {
+                      |    auto singleton = ROGUE_GET_SINGLETON(type);
+                      |    if (singleton) type->trace_fn( singleton );
+                      |  }
                       |}
 
 
@@ -1033,6 +1044,7 @@ augment Program
                       |Rogue_argc = argc;
                       |Rogue_argv = argv;
                       |
+                      |Rogue_thread_register();
                       |Rogue_configure_gc();
                       |Rogue_configure_types();
                       |set_terminate( Rogue_terminate_handler );
@@ -1145,7 +1157,7 @@ augment Program
 
 
       # Call Global.on_launch()
-      writer.println @|RogueGlobal__on_launch( (RogueClassGlobal*) (RogueType_singleton(RogueTypeGlobal)) );
+      writer.println @|RogueGlobal__on_launch( (RogueClassGlobal*) (ROGUE_SINGLETON(Global)) );
                       |Rogue_collect_garbage();
 
       writer.indent -= 2
@@ -1774,7 +1786,7 @@ class CPPWriter
         elseIf (arg instanceOf CmdReadArrayElement)
           # It's possible to shoot oneself in the foot with this, but it's
           # potentially useful, so we allow it when it's easy.
-          if (RogueC.gc_mode == GCMode.AUTO)
+          if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
             if (param_info)
               throw arg.t.error("The argument for parameter '$' cannot be aliased, because element access aliases " ...
                                 "are not currently supported in the active garbage collection mode." (param_info.name))
@@ -1790,7 +1802,7 @@ class CPPWriter
             throw arg.t.error("Cannot call a [mutating] method on a context produced by evaluating an expression - mutating methods can only be called only local variable and singleton contexts.")
           endIf
         endIf
-        if (RogueC.gc_mode == GCMode.AUTO)
+        if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
           if (not (param_type.is_primitive or param_type.is_compound))
             if (param_info)
               throw arg.t.error("The parameter '$' can not be an alias, because the active garbage collection mode " ...
@@ -1929,7 +1941,7 @@ augment RogueC
                   |  $compiler_name = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
                   |#endif
           if (RogueC.thread_mode == ThreadMode.PTHREADS)
-            compiler_name += " -pthreads"
+            compiler_name += " -pthread"
           endIf
         endIf
 
@@ -2037,17 +2049,27 @@ augment Type
           writer.print( this ).print( "() { memset( this, 0, sizeof(" ).print( this ).println( ") ); }" )
           writer.println
 
+          local native_property_count = 0
+          forEach (p in property_list)
+            if (p.is_native) ++native_property_count
+          endForEach
+
+          # This is sort of a strange place to do this, but we usually need to
+          # count the native properties here anyway.
+          local compare_method = find_method("operator==($)" (this.name))
+          if (compare_method is null or (compare_method.attributes.includes(Attribute.is_generated)))
+            if (native_property_count != 0)
+              throw t.error( "Compound $ contains native properties and must therefore implement operator==()" (name) )
+            endIf
+          endIf
+
           if (is_optional)
             # Value Constructor, exists->true
             writer.print( this ).print( "( " ).print( property_list.first.type )
             writer.println( " value, bool exists=true ) : value(value), exists(exists) {}" )
           else
             # Standard Constructor
-            local native_property_count = 0
             contingent
-              forEach (p in property_list)
-                if (p.is_native) ++native_property_count
-              endForEach
               necessary (native_property_count == 0)
 
             satisfied
@@ -2315,6 +2337,9 @@ augment Method
           writer.print("ROGUE_DEF_LOCAL_REF(").print(param.type).print(",").print(param.cpp_name).print(",").print(param.parameter_cpp_name).println(");")
         endIf
       endForEach
+
+      writer.println "ROGUE_GC_CHECK;"
+
       if (type_context.is_aspect and not is_global)
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
@@ -2424,7 +2449,11 @@ augment Local
       return _parameter_cpp_name
 
     method parameter_needs_gc->Logical
-      return is_modified and type.is_reference and RogueC.gc_mode == GCMode.AUTO
+      if (is_modified and type.is_reference)
+        if (RogueC.gc_mode == GCMode.AUTO_ST) return true
+        if (RogueC.gc_mode == GCMode.AUTO_MT) return true
+      endIf
+      return false
 endAugment
 
 #------------------------------------------------------------------------------
@@ -2676,6 +2705,7 @@ augment CmdGenericLoop
       endIf
       writer.println( "{" )
       writer.indent += 2
+      writer.println( "ROGUE_GC_CHECK;" )
       statements.write_cpp( writer )
       writer.indent -= 2
       writer.println( "}" )
@@ -2938,11 +2968,11 @@ augment CmdWriteSingleton
       if (not of_type.is_singleton)
         throw t.error( "$ is not a singleton." (of_type.name) )
       endIf
-      writer.print( "RogueType" ).print( of_type.cpp_name ).print( "->_singleton = " )
+      writer.print( "ROGUE_SET_SINGLETON(RogueType" ).print( of_type.cpp_name ).print( ", " )
       if (new_value.type is not of_type) writer.print_cast( new_value.type, of_type )
       writer.print( "(" )
       new_value.write_cpp( writer )
-      writer.println( ");" )
+      writer.println( "));" )
 endAugment
 
 augment CmdReadLocal
@@ -3817,3 +3847,17 @@ augment CmdIntrospectionCall
       writer.print( "))" )
 endAugment
 
+augment CmdSourceComment
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local c = comment
+      local newline = false
+      if (c.ends_with("\n"))
+        c = c.before(c.count - 1)
+        newline = true
+      endIf
+      writer.print "/* " + comment + " */"
+      if (newline)
+        writer.println
+      endIf
+endAugment

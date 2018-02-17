@@ -4,7 +4,7 @@
 
 nativeHeader
 
-//#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
 // #include "gc.h" - included elsewhere
 #include <pthread.h>
@@ -57,12 +57,13 @@ RogueSemaphore_wait( struct RogueSemaphore *s )
 #endif
 }
 
-static inline void
+// Returns true if semaphore was decremented.
+static inline bool
 RogueSemaphore_try_wait( struct RogueSemaphore *s )
 {
 
 #ifdef __APPLE__
-    dispatch_semaphore_wait(s->sem, DISPATCH_TIME_NOW);
+    return dispatch_semaphore_wait(s->sem, DISPATCH_TIME_NOW) == 0;
 #else
     int r;
 
@@ -70,6 +71,9 @@ RogueSemaphore_try_wait( struct RogueSemaphore *s )
     {
       r = sem_trywait(&s->sem);
     } while (r == -1 && errno == EINTR);
+
+    if (r == -1) return false;
+    return true;
 #endif
 }
 
@@ -133,7 +137,7 @@ pthread_t roguethread_create ( std::function<void()> f )
   return r;
 }
 
-//#endif
+#endif
 
 endNativeHeader
 
@@ -142,7 +146,9 @@ nativeCode
 
 inline void roguethread_simple_spin_lock(int *p)
 {
-    while(!__sync_bool_compare_and_swap(p, 0, 1));
+    ROGUE_EXIT;
+    while(!__sync_bool_compare_and_swap(p, 0, 1)) {};
+    ROGUE_ENTER;
 }
 
 inline void roguethread_simple_spin_unlock(int volatile *p)
@@ -151,14 +157,15 @@ inline void roguethread_simple_spin_unlock(int volatile *p)
     *p = 0;
 }
 
-
-#define ROGUE_THREAD_LAMBDA_START \
+#define ROGUE_THREAD_LAMBDA_START(__f) \
+  RogueObject_retain(__f);                                                                        \
   std::function<void()> f = [=] () {                                                              \
+    Rogue_thread_register();                                                                      \
     Rogue_init_thread();                                                                          \
     ROGUE_THREAD_DEBUG_STATEMENT(RogueDebugTrace __trace( "Thread.lambda()", "thread.rogue", 1)); \
     try                                                                                           \
     {
-#define ROGUE_THREAD_LAMBDA_END \
+#define ROGUE_THREAD_LAMBDA_END(__f) \
     }                                                                                             \
     catch (RogueException* err)                                                                   \
     {                                                                                             \
@@ -166,6 +173,8 @@ inline void roguethread_simple_spin_unlock(int volatile *p)
       RogueException__display( err );                                                             \
     }                                                                                             \
     Rogue_deinit_thread();                                                                        \
+    RogueObject_release(__f);                                                                     \
+    Rogue_thread_unregister();                                                                    \
   };
 
 endNativeCode
@@ -188,7 +197,9 @@ $endIf
 class Thread (id:Int64) [compound]
   METHODS
     method join ()
-      native @|pthread_join((pthread_t)$this.id, NULL);
+      native @|ROGUE_EXIT;
+              |pthread_join((pthread_t)$this.id, NULL);
+              |ROGUE_ENTER;
 
     method detach ()
       native @|pthread_detach((pthread_t)$this.id);
@@ -211,35 +222,36 @@ class Thread (id:Int64) [compound]
       return ok
 
   GLOBAL METHODS
+
     method create (f:Function()) -> Thread
       local r : Int64
-      native @|ROGUE_THREAD_LAMBDA_START
+      native @|ROGUE_THREAD_LAMBDA_START($f)
       f()
-      native @|ROGUE_THREAD_LAMBDA_END
+      native @|ROGUE_THREAD_LAMBDA_END($f)
               |$r = (RogueInt64)roguethread_create(f);
       return Thread(r)
 
     method create <<$T1>> (f:Function($T1), a1:$T1) -> Thread
       local r : Int64
-      native @|ROGUE_THREAD_LAMBDA_START
+      native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1)
-      native @|ROGUE_THREAD_LAMBDA_END
+      native @|ROGUE_THREAD_LAMBDA_END($f)
               |$r = (RogueInt64)roguethread_create(f);
       return Thread(r)
 
     method create <<$T1,$T2>> (f:Function($T1,$T2), a1:$T1, a2:$T2) -> Thread
       local r : Int64
-      native @|ROGUE_THREAD_LAMBDA_START
+      native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1,a2)
-      native @|ROGUE_THREAD_LAMBDA_END
+      native @|ROGUE_THREAD_LAMBDA_END($f)
               |$r = (RogueInt64)roguethread_create(f);
       return Thread(r)
 
     method create <<$T1,$T2,$T3>> (f:Function($T1,$T2,$T3), a1:$T1, a2:$T2, a3:$T3) -> Thread
       local r : Int64
-      native @|ROGUE_THREAD_LAMBDA_START
+      native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1,a2,a3)
-      native @|ROGUE_THREAD_LAMBDA_END
+      native @|ROGUE_THREAD_LAMBDA_END($f)
               |$r = (RogueInt64)roguethread_create(f);
       return Thread(r)
 
@@ -280,7 +292,9 @@ class FastBarrier [compound]
     method destroy [macro]
       native "pthread_barrier_destroy(&$this._barrier);"
     method wait -> Logical [macro]
-      native("(RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD)")
+      native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
+    method operator== (other:FastBarrier) -> Logical
+      return false # Not comparable
 endClass
 
 
@@ -293,7 +307,7 @@ class Barrier
     method destroy
       native "pthread_barrier_destroy(&$this->_barrier);"
     method wait -> Logical [macro]
-      native("(RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD)")
+      native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
 endClass
 
 
@@ -313,7 +327,7 @@ class Mutex
       return this
 
     method lock [macro]
-      native "pthread_mutex_lock(&$this->_lock);"
+      native "ROGUE_BLOCKING_CALL(pthread_mutex_lock(&$this->_lock));"
 
     method on_end_use
       unlock
@@ -339,7 +353,7 @@ class SpinLock
       return this
 
     method lock [macro]
-      native "pthread_spin_lock(&$this->_lock);"
+      native "ROGUE_BLOCKING_CALL(pthread_spin_lock(&$this->_lock));"
 
     method on_end_use
       unlock
@@ -366,6 +380,9 @@ class SimpleSpinLock [compound]
 
     method unlock [macro]
       native "roguethread_simple_spin_unlock(&$this._lock);"
+
+    method operator== (other:SimpleSpinLock) -> Logical
+      return native("$this._lock == $other._lock")->Logical
 endClass
 
 
@@ -402,20 +419,16 @@ class Semaphore
       native "RogueSemaphore_destroy(&$this->_sem);"
 
     method acquire
-      local r : Int64
-      native "$r = RogueSemaphore_wait(&$this->_sem);"
-      require(r == 0)
+      native "ROGUE_BLOCKING_VOID_CALL(RogueSemaphore_wait(&$this->_sem));"
 
     method try_acquire -> Logical
       # Returns true if you got it
       local r : Int64
-      native "$r = RogueSemaphore_try_wait(&$this->_sem);"
+      native "$r = ROGUE_BLOCKING_CALL(RogueSemaphore_try_wait(&$this->_sem));"
       return r == 0
 
     method release
-      local r : Int64
-      native "$r = RogueSemaphore_post(&$this->_sem);"
-      require(r == 0)
+      native "RogueSemaphore_post(&$this->_sem);"
 
     method release (n : Int32)
       forEach (_ in 1..n)

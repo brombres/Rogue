@@ -1017,7 +1017,7 @@ class Type
       endIf
 
       # Add a default to->String to compounds
-      if (is_compound or is_primitive)
+      if ((is_compound or is_primitive) and this is not Program.type_NativeLock)
         local m = find_method( "to_String()" )
         if (not m)
           m = add_method( t, "to_String" )
@@ -1347,6 +1347,8 @@ class Type
       endIf
 
     method create_introspection_methods( scope:Scope )
+      if (this is Program.type_NativeLock) return # Don't introspect NativeLock
+
       # Create type_name() method
       local m_type_name = add_method( t, "type_name" )
       m_type_name.return_type = Program.type_String

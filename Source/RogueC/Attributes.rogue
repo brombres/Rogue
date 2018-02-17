@@ -74,6 +74,9 @@ class Attributes
       endIf
       return this
 
+    method includes( flag:Int32 )->Logical
+      return (flags & flag) == flag
+
     method element_type_name->String
       which (flags & Attribute.type_mask)
         case Attribute.is_primitive: return "primitive"
