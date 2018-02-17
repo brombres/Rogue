@@ -1,12 +1,4 @@
-class WebSocket
-  GLOBAL METHODS
-    method create( url:String, port=null:Int32?, protocols=null:String[] )->WebSocket
-$if ("Console")
-      return LWSWebSocket( url, port, protocols )
-$else
-      return WebSocket().init( url, port, protocols )
-$endIf
-
+class WebSocketBase
   PROPERTIES
     url       : String
     port      : Int32?
@@ -14,11 +6,15 @@ $endIf
 
   METHODS
     method init( url, port, protocols )
+      _init()
+
+    method _init()
       println "WebSocket is not supported on $." (System.os)
 endClass
 
 
-class LWSWebSocket : WebSocket
+$if ("Console")
+class WebSocket : WebSocketBase
   DEPENDENCIES
     nativeHeader #include "libwebsockets.h"
     #$compileArg "-L"
@@ -36,7 +32,7 @@ class LWSWebSocket : WebSocket
     native "lws_protocols* protocols;"
 
   METHODS
-    method init( url, port, protocols )
+    method _init()
       native @|lws_context_creation_info info;
               |memset( &info, 0, sizeof(info) );
               |info.gid = -1;
@@ -73,7 +69,10 @@ class LWSWebSocket : WebSocket
               |}
 
 endClass
-
+$else
+class WebSocket : WebSocketBase
+endClass
+$endIf
 
 class WebSocketHandler
 endClass
