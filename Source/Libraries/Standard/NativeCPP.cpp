@@ -84,8 +84,19 @@ static int Rogue_mt_tc = 0; // Thread count.  Always set under above lock.
 static void Rogue_thread_register ()
 {
   pthread_mutex_lock(&Rogue_mt_thread_mutex);
+  int n = (int)Rogue_mt_tc;
   ++Rogue_mt_tc;
   pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+  char name[64];
+  sprintf(name, "Thread-%i", n); // Nice names are good for valgrind
+
+#if ROGUE_PLATFORM_MACOS
+  pthread_setname_np(name);
+#elif __linux__
+  pthread_setname_np(pthread_self(), name);
+#endif
+// It should be possible to get thread names working on lots of other
+// platforms too.  The functions just vary a bit.
 }
 
 static void Rogue_thread_unregister ()
