@@ -1125,6 +1125,28 @@ class Type
         endIf
       endIf
 
+      # Add default operator== to compounds
+      if (is_compound)
+        if (not find_method("operator==($)" (name)))
+          local m = add_method( t, "operator==" )
+          m.attributes.add( Attribute.is_generated )
+          m.return_type = Program.get_type_reference( t, "Logical" )
+          m.add_parameter( t, "other", this )
+
+          forEach (p in property_list)
+            if (not p.is_native)
+              local cmd_condition = CmdCompareNE( t, CmdAccess(t,p.name), CmdAccess(t,"other",p.name) )
+              local cmd_if = CmdIf( t, cmd_condition )
+              cmd_if.statements.add( CmdReturn(t,CmdLiteralLogical(t,false)) )
+              m.statements.add( cmd_if )
+            endIf
+          endForEach
+
+          m.statements.add( CmdReturn(t,CmdLiteralLogical(t,true)) )
+          m.organize( scope )
+        endIf
+      endIf
+
       # Add fallback property getters and setters to aspects
       if (is_aspect)
         forEach (p in property_list)

@@ -2101,43 +2101,6 @@ augment Type
             endContingent
           endIf
         endIf
-
-        if (not is_aspect)
-          # Default operator== and operator!=
-          writer.print( "bool operator==( const ").print_type_name( this ).println( " &other ) const" )
-          writer.println( "{" )
-          writer.indent += 2
-          if (is_optional)
-            writer.println @|if (exists)
-                            |{
-                            |  if (other.exists) return value == other.value;
-                            |  else              return false;
-                            |}
-                            |else
-                            |{
-                            |  if (other.exists) return false;
-                            |  else              return true;
-                            |}
-          else
-            forEach (p in property_list)
-              writer.print( "if (" ).print( p.cpp_name ).print( " != other." ).print( p.cpp_name ).println( ") return false;" )
-            endForEach
-            writer.println( "return true;" )
-            #writer.print( "return (0 == memcmp(this,&other,sizeof(" ).print( this ).println( ")));" )
-          endIf
-
-          writer.indent -= 2
-          writer.println( "}" )
-          writer.println
-
-          writer.print( "bool operator!=( const ").print_type_name( this ).println( " &other ) const" )
-          writer.println @|{
-                          |  return !(*this == other);
-                          |}
-                          |
-
-        endIf
-
       endIf
 
       writer.indent -= 2

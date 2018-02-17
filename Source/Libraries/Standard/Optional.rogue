@@ -8,6 +8,10 @@ class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
     method to->String
       if (exists) return value->String
       else        return "null"
+
+    method operator==( other:$DataType? )->Logical
+      if (exists) return ?:{ other.exists:(value==other.value) || false }
+      else        return ?:{ other.exists:false || true }
 endClass
 
 augment Real64?
