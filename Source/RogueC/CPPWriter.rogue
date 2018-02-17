@@ -2327,6 +2327,9 @@ augment Method
           writer.print("ROGUE_DEF_LOCAL_REF(").print(param.type).print(",").print(param.cpp_name).print(",").print(param.parameter_cpp_name).println(");")
         endIf
       endForEach
+
+      writer.println "ROGUE_GC_CHECK;"
+
       if (type_context.is_aspect and not is_global)
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
@@ -2692,6 +2695,7 @@ augment CmdGenericLoop
       endIf
       writer.println( "{" )
       writer.indent += 2
+      writer.println( "ROGUE_GC_CHECK;" )
       statements.write_cpp( writer )
       writer.indent -= 2
       writer.println( "}" )
