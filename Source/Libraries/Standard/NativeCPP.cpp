@@ -1440,7 +1440,6 @@ bool Rogue_collect_garbage( bool forced )
 #else
 bool Rogue_collect_garbage( bool forced )
 {
-  int i;
 
   if (Rogue_allocation_bytes_until_gc > 0 && !forced && !Rogue_gc_requested) return false;
   Rogue_gc_requested = false;
@@ -1453,7 +1452,7 @@ bool Rogue_collect_garbage( bool forced )
 
   Rogue_trace();
 
-  for (i=0; i<Rogue_allocator_count; ++i)
+  for (int i=0; i<Rogue_allocator_count; ++i)
   {
     RogueAllocator_collect_garbage( &Rogue_allocators[i] );
   }
