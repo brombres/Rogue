@@ -37,7 +37,8 @@ RogueC.launch
 class GCMode
   ENUMERATE
     MANUAL
-    AUTO
+    AUTO_ST
+    AUTO_MT
     BOEHM
     BOEHM_TYPED
 endClass
@@ -106,7 +107,7 @@ class RogueC [singleton]
     scanners_by_filepath = Table<<String,Scanner>>()
     stopwatch : Stopwatch
 
-    gc_mode = GCMode.AUTO    : Int32
+    gc_mode = GCMode.AUTO_ST : Int32
     gc_threshold = 1024*1024 : Int32
 
     thread_mode = ThreadMode.NONE : Int32
@@ -207,10 +208,12 @@ class RogueC [singleton]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
                    |
-                   |  --gc[=auto|manual|boehm|boehm-typed]
+                   |  --gc[=auto|auto-mt|manual|boehm|boehm-typed]
                    |    Set the garbage collection mode:
                    |      --gc=auto        - Rogue collects garbage as it executes.  Slower than
                    |                         'manual' without optimizations enabled.
+                   |      --gc=auto-mt     - Like auto, but works with multithreading (i.e., when
+                   |                         the --threads option is not 'none').
                    |      --gc=manual      - Rogue_collect_garbage() must be manually called
                    |                         in-between calls into the Rogue runtime.
                    |      --gc=boehm       - Uses the Boehm garbage collector.  The Boehm's GC
@@ -258,8 +261,10 @@ class RogueC [singleton]
                     |    Enables --debug automatically.
                     |
                     |  --threads=[none|pthreads]
-                    |    Set the threading mode:
-                    |      --threads=none     - No multithreading support.
+                    |    Set the threading mode.  Note that if you enable multithreading, you
+                    |    likely want to adjust the --gc mode also (e.g., to auto-mt or boehm).
+                    |    The threading mode may be one of:
+                    |      --threads=none     - No multithreading support. (Default)
                     |      --threads=pthreads - Multithreading based on pthreads.
                     |
                     |  --todo[="KEYWORD"]
@@ -628,7 +633,9 @@ $endIf
             case "--gc"
               if ((not value.count) or value == "auto")
                 # Default to AUTO if nothing specified
-                gc_mode = GCMode.AUTO
+                gc_mode = GCMode.AUTO_ST
+              elseIf (value == "auto-mt")
+                gc_mode = GCMode.AUTO_MT
               elseIf (value == "manual")
                 gc_mode = GCMode.MANUAL
               elseIf (value == "boehm")

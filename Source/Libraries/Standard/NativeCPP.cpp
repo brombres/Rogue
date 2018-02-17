@@ -881,14 +881,14 @@ RogueAllocator* RogueAllocator_delete( RogueAllocator* THIS )
 
 void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_MT
   Rogue_collect_garbage();
 #endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
     ROGUE_GC_COUNT_BYTES(size);
     void * mem = ROGUE_NEW_BYTES(size);
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_ANY
     if (!mem)
     {
       // Try hard!

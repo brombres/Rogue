@@ -146,7 +146,7 @@ extern void Rogue_configure_gc();
   #define ROGUE_XDECREF(_o_) Rogue_Boehm_DecRef(_o_)
 #endif
 
-#if ROGUE_GC_MODE_AUTO
+#if ROGUE_GC_MODE_AUTO_ANY
   #undef ROGUE_DEF_LOCAL_REF_NULL
   #define ROGUE_DEF_LOCAL_REF_NULL(_t_,_n_) RoguePtr<_t_> _n_;
   #undef ROGUE_DEF_LOCAL_REF
