@@ -116,11 +116,6 @@ RogueArray* RogueType_create_array( int count, int element_size, bool is_referen
 
   RogueArray* array = (RogueArray*) RogueAllocator_allocate_object( RogueTypeArray->allocator, RogueTypeArray, total_size, element_type_index);
 
-#if ROGUE_GC_MODE_BOEHM
-  // Already zeroed.
-#else
-  memset( array->as_bytes, 0, data_size );
-#endif
   array->count = count;
   array->element_size = element_size;
   array->is_reference_array = is_reference_array;
