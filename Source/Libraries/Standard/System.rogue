@@ -55,13 +55,16 @@ class System [essential]
 
     method sleep( seconds:Real64 )
       # Suspends execution of this program for the specified number of seconds.
+      local do_exit = seconds > 0.5 # Or should it be lower?
       local nanoseconds = Int32( seconds.fractional_part * 1000000000.0 )
       seconds = seconds.whole_part
 
       native @|timespec sleep_time;
               |sleep_time.tv_sec = (time_t) $seconds;
               |sleep_time.tv_nsec = (long) $nanoseconds;
+              |if ($do_exit) ROGUE_EXIT;
               |nanosleep( &sleep_time, NULL );
+              |if ($do_exit) ROGUE_ENTER;
 
     method sync_storage
       noAction

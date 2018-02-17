@@ -103,7 +103,9 @@ static void Rogue_thread_register ()
 
 static void Rogue_thread_unregister ()
 {
+  ROGUE_EXIT;
   pthread_mutex_lock(&Rogue_mt_thread_mutex);
+  ROGUE_ENTER;
   --Rogue_mt_tc;
   pthread_mutex_unlock(&Rogue_mt_thread_mutex);
 }
@@ -114,6 +116,7 @@ static void Rogue_thread_unregister ()
 void Rogue_threads_wait_for_all ()
 {
   Rogue_mt_terminating = true;
+  ROGUE_EXIT;
   int wait = 2; // Initial Xms
   int wait_step = 1;
   while (true)
@@ -129,6 +132,7 @@ void Rogue_threads_wait_for_all ()
     wait_step++;
     if (!(wait_step % 15) && (wait < 500)) wait *= 2; // Max backoff ~500ms
   }
+  ROGUE_ENTER;
 }
 
 #else
