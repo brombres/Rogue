@@ -12,7 +12,7 @@ class System [essential]
     environment            : SystemEnvironment
 
   GLOBAL METHODS
-    method exit( result_code:Int32 )
+    method exit( result_code=0:Int32 )
       $if ("C++")
         native @|Rogue_quit();
                 |exit( $result_code );
