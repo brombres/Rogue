@@ -6032,3 +6032,16 @@ class CmdIntrospectionCall( t, handler:IntrospectionCallHandler, args:CmdArgs ) 
       return handler.return_type
 endClass
 
+
+class CmdSourceComment( t, comment:String ) : Cmd
+  METHODS
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSourceComment
+      if (new_t) t = new_t
+      return CmdSourceComment( t, comment )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method to->String
+      return "CmdSourceComment:$" (comment)
+endClass

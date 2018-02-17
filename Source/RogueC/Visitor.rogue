@@ -575,6 +575,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdSourceComment )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method on_enter( cmd:Cmd )
       throw RogueError( "$ does not overload method on_enter($)." (type_name,cmd.type_name) )
 
@@ -674,6 +680,7 @@ class Visitor
     method on_enter( cmd:CmdWriteLocal )
     method on_enter( cmd:CmdWriteProperty )
     method on_enter( cmd:CmdWriteSingleton )
+    method on_enter( cmd:CmdSourceComment )
 
     method on_leave( cmd:Cmd )
       throw RogueError( "$ does not overload method on_enter($)." (type_name,cmd.type_name) )
@@ -775,6 +782,7 @@ class Visitor
     method on_leave( cmd:CmdWriteLocal )
     method on_leave( cmd:CmdWriteProperty )
     method on_leave( cmd:CmdWriteSingleton )
+    method on_leave( cmd:CmdSourceComment )
 
     method dispatch( cmd:Cmd )
       throw RogueError( "$ does not overload method dispatch($)." (type_name,cmd.type_name) )
@@ -1212,5 +1220,7 @@ class Visitor
     method dispatch( cmd:CmdIsString )
       cmd.operand = cmd.operand.dispatch( this )
 
+    method dispatch( cmd:CmdSourceComment )
+      noAction
 endClass
 

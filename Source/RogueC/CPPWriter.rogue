@@ -3817,3 +3817,17 @@ augment CmdIntrospectionCall
       writer.print( "))" )
 endAugment
 
+augment CmdSourceComment
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      local c = comment
+      local newline = false
+      if (c.ends_with("\n"))
+        c = c.before(c.count - 1)
+        newline = true
+      endIf
+      writer.print "/* " + comment + " */"
+      if (newline)
+        writer.println
+      endIf
+endAugment
