@@ -39,11 +39,11 @@ debug: libraries
 
 exhaustive: roguec
 	@echo -------------------------------------------------------------------------------
-	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --exhaustive..."
+	@echo "Recompiling RogueC.rogue -> RogueC.cpp with --api=* --threads"
 	@echo -------------------------------------------------------------------------------
 	cd Source/RogueC && mkdir -p Build
 	rogo version
-	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --exhaustive $(ROGUEC_ROGUE_FLAGS) --define=NO_LIBFFI
+	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --api=* $(ROGUEC_ROGUE_FLAGS) --define=NO_LIBFFI --threads
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
