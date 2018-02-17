@@ -109,6 +109,7 @@ class RogueC [singleton]
 
     gc_mode = GCMode.AUTO_ST : Int32
     gc_threshold = 1024*1024 : Int32
+    gc_mode_set = false
 
     thread_mode = ThreadMode.NONE : Int32
 
@@ -307,6 +308,10 @@ class RogueC [singleton]
         Program.resolve
         local type_TypeInfo = Program.find_type( "TypeInfo" )
         if (type_TypeInfo) type_TypeInfo.simplify_name = true  # TODO: add general mechanism for having classes simplify their names
+
+        if (thread_mode != ThreadMode.NONE and not gc_mode_set)
+          Console.error.println "NOTE: When specifying --threads, you should also specify a --gc mode."
+        endIf
 
         write_output
 
@@ -631,6 +636,7 @@ $endIf
               else             todo_keywords.add( "TODO" )
 
             case "--gc"
+              gc_mode_set = true
               if ((not value.count) or value == "auto")
                 # Default to AUTO if nothing specified
                 gc_mode = GCMode.AUTO_ST
