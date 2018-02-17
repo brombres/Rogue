@@ -13,18 +13,15 @@
 # #$ LIBRARIES   = libbeta
 # #$ LINK        = -lalpha -lbeta
 
-module Build
-global method_prefix = "Build::make_"
-
-routine make_default
-  make_help
+routine rogo_default
+  rogo_help
 endRoutine
 
-routine make_clean
+routine rogo_clean
   System.run( "rm -rf .rogo" )
 endRoutine
 
-routine make_test
+routine rogo_test
   local cmd : String
   if (File.is_newer_than("Test.rogue","test"))
     cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
@@ -35,7 +32,7 @@ routine make_test
   System.run( cmd )
 endRoutine
 
-routine make_version
+routine rogo_version
   local build = 1
   local commit_id : String
 
@@ -68,7 +65,7 @@ routine make_version
 
 endRoutine
 
-routine make_help
+routine rogo_help
   println "USAGE"
   local lines = String[]
   forEach (m in <<Global>>.methods)
@@ -86,13 +83,15 @@ endRoutine
 #------------------------------------------------------------------------------
 # Process command line arguments and invoke appropriate function
 #------------------------------------------------------------------------------
+global method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+
 local args = @[]
 args.add( forEach in System.command_line_arguments )
 
 if (args.count)
   run( args.remove_first, args )
 else
-  make_default
+  rogo_default
 endIf
 
 routine run( cmd:String, args:Value )
@@ -105,10 +104,10 @@ routine run( cmd:String, args:Value )
       endIf
       m.call( Global, args )
     else
-      make_help
+      rogo_help
     endIf
   catch (err:Error)
-    make_help
+    rogo_help
   endTry
 endRoutine
 
