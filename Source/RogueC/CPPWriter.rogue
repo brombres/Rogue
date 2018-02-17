@@ -2049,17 +2049,27 @@ augment Type
           writer.print( this ).print( "() { memset( this, 0, sizeof(" ).print( this ).println( ") ); }" )
           writer.println
 
+          local native_property_count = 0
+          forEach (p in property_list)
+            if (p.is_native) ++native_property_count
+          endForEach
+
+          # This is sort of a strange place to do this, but we usually need to
+          # count the native properties here anyway.
+          local compare_method = find_method("operator==($)" (this.name))
+          if (compare_method is null or (compare_method.attributes.includes(Attribute.is_generated)))
+            if (native_property_count != 0)
+              throw t.error( "Compound $ contains native properties and must therefore implement operator==()" (name) )
+            endIf
+          endIf
+
           if (is_optional)
             # Value Constructor, exists->true
             writer.print( this ).print( "( " ).print( property_list.first.type )
             writer.println( " value, bool exists=true ) : value(value), exists(exists) {}" )
           else
             # Standard Constructor
-            local native_property_count = 0
             contingent
-              forEach (p in property_list)
-                if (p.is_native) ++native_property_count
-              endForEach
               necessary (native_property_count == 0)
 
             satisfied
