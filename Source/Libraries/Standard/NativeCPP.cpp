@@ -73,6 +73,38 @@ struct RogueWeakReference;
 RogueWeakReference* Rogue_weak_references = 0;
 
 //-----------------------------------------------------------------------------
+//  Multithreading
+//-----------------------------------------------------------------------------
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+// Thread mutex locks around creation and destruction of threads
+static pthread_mutex_t Rogue_mt_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
+static int Rogue_mt_tc = 0; // Thread count.  Always set under above lock.
+
+static void Rogue_thread_register ()
+{
+  pthread_mutex_lock(&Rogue_mt_thread_mutex);
+  ++Rogue_mt_tc;
+  pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+}
+
+static void Rogue_thread_unregister ()
+{
+  pthread_mutex_lock(&Rogue_mt_thread_mutex);
+  --Rogue_mt_tc;
+  pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+}
+
+#else
+
+static void Rogue_thread_register ()
+{
+}
+static void Rogue_thread_unregister ()
+{
+}
+#endif
+//-----------------------------------------------------------------------------
 //  RogueDebugTrace
 //-----------------------------------------------------------------------------
 RogueDebugTrace::RogueDebugTrace( const char* method_signature, const char* filename, int line )
@@ -1367,6 +1399,8 @@ void Rogue_quit()
   {
     RogueType_retire( &Rogue_types[i] );
   }
+
+  Rogue_thread_unregister();
 }
 
 #if ROGUE_GC_MODE_BOEHM

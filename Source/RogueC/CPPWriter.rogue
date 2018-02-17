@@ -1033,6 +1033,7 @@ augment Program
                       |Rogue_argc = argc;
                       |Rogue_argv = argv;
                       |
+                      |Rogue_thread_register();
                       |Rogue_configure_gc();
                       |Rogue_configure_types();
                       |set_terminate( Rogue_terminate_handler );
