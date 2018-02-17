@@ -272,7 +272,7 @@ endRoutine
 routine install_ubuntu_library( library:Value )
   local library_name = library//name->String
 
-  local cmd = ''sudo dpkg -L $ > /dev/null 2>&1'' (library_name)
+  local cmd = ''dpkg -L $ > /dev/null 2>&1'' (library_name)
   println "Checking for library $..." (library_name)
   println(cmd).flush
   if (0 != System.run(cmd))

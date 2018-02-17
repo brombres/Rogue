@@ -111,7 +111,7 @@ Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo.rogue
 	@echo "Recompiling Rogo.rogue -> Rogo.cpp..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Source/RogueC/Build
-	roguec Source/Tools/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
+	roguec Source/Tools/Rogo.rogue --threads=pthreads --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
 
 Programs/RogueC/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ Programs/RogueC/$(PLATFORM)/rogo: Source/RogueC/Build/Rogo.cpp
 	@echo "Compiling Rogo.cpp -> Programs/RogueC/$(PLATFORM)/rogo..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
+	$(CXX) -pthread $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
 
 libraries:
 	@mkdir -p Programs/RogueC/$(PLATFORM)

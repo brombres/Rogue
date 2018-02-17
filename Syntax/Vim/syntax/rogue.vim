@@ -27,14 +27,14 @@ syn keyword rogueClassDecl   nativeCode nativeHeader endNativeCode endNativeHead
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
 syn keyword rogueMember      DEPENDENCIES PROPERTIES METHODS GLOBAL
 syn match   rogueError       "\<for\(\s\|(\)"
-syn keyword rogueConditional  if elseIf else endIf
+syn keyword rogueConditional  if elseIf else endIf then
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
 syn keyword rogueConditional  select
 syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
 syn keyword rogueConditional  block endBlock
 syn keyword rogueConditional  unitTest endUnitTest
 syn keyword rogueLoop         await
-syn keyword rogueLoop         while endWhile forEach endForEach in of step downTo
+syn keyword rogueLoop         while endWhile forEach endForEach in of step downTo do
 syn keyword rogueLoop         loop endLoop
 syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
 syn keyword rogueBranch       escapeTry escapeUse

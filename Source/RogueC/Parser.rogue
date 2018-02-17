@@ -2128,6 +2128,8 @@ class Parser
       local cmd_if = CmdIf( t )
       cmd_if.condition = parse_expression
 
+      consume(TokenType.keyword_then)
+
       if (consume_eols)
         # multi-line if
         parse_multi_line_statements( cmd_if.statements )
@@ -2206,6 +2208,16 @@ class Parser
       local t = read  # 'loop'
       local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_loop, null )
 
+      if (consume(TokenType.keyword_do))
+        if (consume_eols)
+          parse_multi_line_statements( cmd_loop.statements )
+          must_consume( TokenType.keyword_endLoop )
+        else
+          parse_single_line_statements( cmd_loop.statements )
+        endIf
+        return cmd_loop
+      endIf
+
       if (not consume_eols)
         # loop N
         #   ...
@@ -2224,6 +2236,7 @@ class Parser
         cmd_loop.add_control_var( last_var )
         cmd_loop.add_upkeep( step_cmd )
 
+        consume(TokenType.keyword_do)
         if (not consume_eols)
           parse_single_line_statements( cmd_loop.statements )
           return cmd_loop
@@ -2248,6 +2261,8 @@ class Parser
     method parse_while->CmdGenericLoop
       local t = read
       local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, parse_expression )
+
+      consume(TokenType.keyword_do)
 
       if (consume_eols)
         # multi-line while
@@ -2305,6 +2320,7 @@ class Parser
               local cmd_for_each = create_generic_loop_from_range( t, access.name, range )
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
+              consume(TokenType.keyword_do)
               parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
               return cmd_for_each
@@ -2329,6 +2345,7 @@ class Parser
               endIf
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
+              consume(TokenType.keyword_do)
 
               local cmd_for_each : CmdForEach
               if (access)
@@ -2382,6 +2399,7 @@ class Parser
               endIf
 
               if (has_parens) must_consume( TokenType.symbol_close_paren )
+              consume(TokenType.keyword_do)
 
               local cmd_for_each = CmdForEach( t, null as String, access.name, collection, step_cmd )
               cmd_for_each.first_cmd = first_cmd
@@ -2402,6 +2420,7 @@ class Parser
         if (range)
           local cmd_for_each = create_generic_loop_from_range( t, Program.create_unique_id, range )
           if (has_parens) must_consume( TokenType.symbol_close_paren )
+          consume(TokenType.keyword_do)
           parse_single_or_multi_line_statements( cmd_for_each.statements, TokenType.keyword_endForEach )
 
           return cmd_for_each
