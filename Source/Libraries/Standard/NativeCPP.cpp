@@ -60,7 +60,6 @@ int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 int                Rogue_gc_count     = 0; // Purely informational
 bool               Rogue_gc_requested = false;
 RogueLogical       Rogue_configured = 0;
-int                Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 int                Rogue_argc;
 const char**       Rogue_argv;
 RogueCallbackInfo  Rogue_on_gc_begin;
@@ -160,6 +159,15 @@ pthread_mutex_t Rogue_thread_singleton_lock;
 #define ROGUE_SINGLETON_LOCK
 #define ROGUE_SINGLETON_UNLOCK
 #endif
+
+//-----------------------------------------------------------------------------
+//  GC
+//-----------------------------------------------------------------------------
+int Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
+#define ROGUE_GC_COUNT_BYTES(__x) Rogue_allocation_bytes_until_gc -= (__x);
+#define ROGUE_GC_AT_THRESHOLD (Rogue_allocation_bytes_until_gc <= 0)
+#define ROGUE_GC_RESET_COUNT Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
+
 //-----------------------------------------------------------------------------
 //  RogueDebugTrace
 //-----------------------------------------------------------------------------
@@ -869,7 +877,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 #endif
   if (size > ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT)
   {
-    Rogue_allocation_bytes_until_gc -= size;
+    ROGUE_GC_COUNT_BYTES(size);
     void * mem = ROGUE_NEW_BYTES(size);
 #if ROGUE_GC_MODE_AUTO
     if (!mem)
@@ -884,7 +892,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   size = (size > 0) ? (size + ROGUEMM_GRANULARITY_MASK) & ~ROGUEMM_GRANULARITY_MASK : ROGUEMM_GRANULARITY_SIZE;
 
-  Rogue_allocation_bytes_until_gc -= size;
+  ROGUE_GC_COUNT_BYTES(size);
 
   int slot;
   ROGUE_DEF_LOCAL_REF(RogueObject*, obj, THIS->available_objects[(slot=(size>>ROGUEMM_GRANULARITY_BITS))]);
@@ -1450,14 +1458,14 @@ bool Rogue_collect_garbage( bool forced )
 bool Rogue_collect_garbage( bool forced )
 {
 
-  if (Rogue_allocation_bytes_until_gc > 0 && !forced && !Rogue_gc_requested) return false;
+  if (!forced && !Rogue_gc_requested & !ROGUE_GC_AT_THRESHOLD) return false;
   Rogue_gc_requested = false;
   ++ Rogue_gc_count;
 
   Rogue_on_gc_begin.call();
 
 //printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
-  Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
+  ROGUE_GC_RESET_COUNT;
 
   Rogue_trace();
 
