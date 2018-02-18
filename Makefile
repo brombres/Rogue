@@ -111,7 +111,7 @@ Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo.rogue
 	@echo "Recompiling Rogo.rogue -> Rogo.cpp..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Source/RogueC/Build
-	roguec Source/Tools/Rogo.rogue --threads=pthreads --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
+	roguec Source/Tools/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
 
 Programs/RogueC/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
