@@ -640,13 +640,15 @@ class CmdWhich : CmdControlStructure
       cases.add( result )
       return result
 
-    method add_case( case_t:Token, condition:Cmd )->CmdWhichCase
+    method add_case( case_t:Token, condition:Cmd, statement=null:Cmd )->CmdWhichCase
       local result = CmdWhichCase( case_t, CmdArgs(condition) )
+      if (statement) result.statements.add( statement )
       cases.add( result )
       return result
 
-    method add_case_others( case_t:Token )->CmdWhichCase
+    method add_case_others( case_t:Token, statement=null:Cmd )->CmdWhichCase
       local result = CmdWhichCase( case_t )
+      if (statement) result.statements.add( statement )
       case_others = result
       return result
 

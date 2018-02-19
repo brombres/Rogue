@@ -5,6 +5,7 @@ class Definition
     expression     : Cmd
 
     # for enums
+    args           : CmdArgs
     value          : Int32
 
   METHODS

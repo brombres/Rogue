@@ -506,6 +506,7 @@ class Type
       m_create.add_parameter( t, "value", Program.type_Int32 )
 
       ensure categories
+
       local category_scope = Scope( this, m_create )
 
       # First turn categories into integer definitions
@@ -812,6 +813,80 @@ class Type
         endIf
         m_to_String.organize( scope )
       endBlock
+
+      # Slice:
+      #   enum EnumName(a:A,b:B)
+      #     ALPHA(1,2)
+      #     BETA(3,4)
+      #
+      # into:
+      #   enum EnumName
+      #     CATEGORIES
+      #       ALPHA, BETA
+      #     METHODS
+      #       method a->A
+      #         which (this)
+      #           case ALPHA: 1
+      #           case BETA:  2
+      #   ...
+      #
+      local subproperties : Property[]
+      if (property_list.count > 1)
+        # Remove all subproperties except 'value' from main properties list
+        local p_value = property_lookup//value
+        property_lookup.clear
+        property_lookup//value = p_value
+        subproperties = property_list.cloned
+        subproperties.remove( p_value )
+        property_list.clear.add( p_value )
+
+        forEach (def in categories)
+          ensure def.args( subproperties.count )
+          forEach (arg at index in def.args)
+            if (arg is null)
+              # Null values passed in when dev skips expression and writes comma
+              local sub = subproperties[ index ]
+              if (sub.initial_value is null)
+                throw def.t.error( "Missing $ property argument; no default specified for '$'." ((index+1).th,sub.name) )
+              endIf
+            endIf
+          endForEach
+          while (def.args.count < subproperties.count)
+            local i = def.args.count
+            local sub = subproperties[ def.args.count ]
+            if (sub.initial_value is null)
+              throw def.t.error( "Missing $ property argument; no default specified for '$'." ((i+1).th,sub.name) )
+            endIf
+          endWhile
+          if (def.args.count > subproperties.count)
+            throw def.args[ subproperties.count ].t.error(
+                "More property arguments ($) than enum properties ($)." (def.args.count,subproperties.count) )
+          endIf
+        endForEach
+
+        forEach (sub at index in subproperties)
+          local m = find_method( sub.name + "()" )
+          if (not m)
+            local w = CmdWhich( t, CmdAccess(t,"value") )
+            forEach (def in categories)
+              local value = def.args[index]
+              if (value)
+                w.add_case( def.t, CmdLiteralInt32(def.t,def.value), CmdReturn(def.t,value) )
+              endIf
+            endForEach
+            local default_value = ?:{ sub.initial_value:sub.initial_value.cloned || sub.type.create_default_value(sub.t) }
+            w.add_case_others( sub.t, CmdReturn(sub.t,default_value) )
+
+            # property()->PropertyType
+            m = add_method( sub.t, sub.name )
+            m.return_type = sub.type
+            m.statements.add( w )
+            m.organize( scope )
+          endIf
+        endForEach
+
+      endIf
+
 
     method organize( scope=null:Scope )->Type
       if (organized) return this

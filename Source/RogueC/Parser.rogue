@@ -442,6 +442,40 @@ class Parser
       local name = read_identifier
       local template = Template( t, name, Attribute.is_compound | Attribute.is_enum )
 
+      # Skip past any args to get to the [attributes]
+      #   (autoinit) [attributes] \n
+      #   ^^leave^^^ ^parse^^^^^^ ^leave
+      local starting_pos = reader.position
+      allow_placeholder_ids = true
+
+      if (consume(TokenType.symbol_open_paren))
+        # ( name1[=value1][:Type1] [, ...] )
+        consume_eols
+        if (not consume(TokenType.symbol_close_paren))
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+            consume_eols
+            consume( TokenType.symbol_ampersand )
+            read_identifier
+            consume_eols
+            if (consume(TokenType.symbol_equals)) parse_expression
+            consume_eols
+            if (consume(TokenType.symbol_colon))
+              if (not consume(TokenType.placeholder_id)) parse_type_name
+            endIf
+            consume_eols
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+        endIf
+      endIf
+
+      local final_pos = reader.position
+      allow_placeholder_ids = false
+
+      reader.position = starting_pos
+      while (reader.position < final_pos) template.tokens.add( read )
+
       parse_attributes( template.attributes )
 
 
@@ -553,55 +587,80 @@ class Parser
         consume_eols
         if (not consume(TokenType.symbol_close_paren))
           local m : Method
-          if (this_type.is_compound)
-            compound_has_create = true
-            m = this_type.add_global_method( t, "create" )
-            m.attributes.add( Attribute.is_generated )
-          else
-            m = this_type.add_method( t, "init" )
-          endIf
-          m.return_type = this_type
-          local first = true
-          while (first or consume(TokenType.symbol_comma))
-            first = false
-            consume_eols
-
-            # [&]name[=default_value][:Type]
-            t = peek
-            local is_flag = consume( TokenType.symbol_ampersand )
-            local p_name = read_identifier
-            local param = m.add_parameter( t, p_name )
-            consume_eols
-            if (consume(TokenType.symbol_equals)) param.initial_value = parse_expression
-            consume_eols
-
-            local p_type : Type
-            if (consume(TokenType.symbol_colon))
+          if (not this_type.is_enum)
+            if (this_type.is_compound)
+              compound_has_create = true
+              m = this_type.add_global_method( t, "create" )
+              m.attributes.add( Attribute.is_generated )
+            else
+              m = this_type.add_method( t, "init" )
+            endIf
+            m.return_type = this_type
+            local first = true
+            while (first or consume(TokenType.symbol_comma))
+              first = false
               consume_eols
-              p_type = parse_type
 
-              if (this_type.is_compound)
-                param.type = p_type
+              # [&]name[=default_value][:Type]
+              t = peek
+              local is_flag = consume( TokenType.symbol_ampersand )
+              local p_name = read_identifier
+              local param = m.add_parameter( t, p_name )
+              consume_eols
+              if (consume(TokenType.symbol_equals)) param.initial_value = parse_expression
+              consume_eols
+
+              local p_type : Type
+              if (consume(TokenType.symbol_colon))
+                consume_eols
+                p_type = parse_type
+
+                if (this_type.is_compound)
+                  param.type = p_type
+                endIf
+
+                this_type.add_property( t, p_name, p_type )
+
+              elseIf (is_flag)
+                p_type = Program.type_Logical
+                if (this_type.is_compound) param.type = p_type
+                this_type.add_property( t, p_name, p_type )
               endIf
 
-              this_type.add_property( t, p_name, p_type )
-
-            elseIf (is_flag)
-              p_type = Program.type_Logical
-              if (this_type.is_compound) param.type = p_type
-              this_type.add_property( t, p_name, p_type )
-            endIf
-
-            if (is_flag and not param.initial_value)
-              if (p_type is Program.type_Logical)
-                param.initial_value = CmdLiteralLogical( t, false )
-              else
-                param.initial_value = CmdLiteralInt32( t, 0 )
+              if (is_flag and not param.initial_value)
+                if (p_type is Program.type_Logical)
+                  param.initial_value = CmdLiteralLogical( t, false )
+                else
+                  param.initial_value = CmdLiteralInt32( t, 0 )
+                endIf
               endIf
-            endIf
 
-            consume_eols
-          endWhile
+              consume_eols
+            endWhile
+          else
+            # enum - just add properties without generating an init() method
+            local first = true
+            while (first or consume(TokenType.symbol_comma))
+              first = false
+              consume_eols
+
+              # name[=default_value]:Type
+              t = peek
+              local p_name = read_identifier
+              consume_eols
+              local initial_value : Cmd
+              if (consume(TokenType.symbol_equals)) initial_value = parse_expression
+              consume_eols
+
+              must_consume( TokenType.symbol_colon )
+              consume_eols
+              local p_type = parse_type
+
+              this_type.add_property( t, p_name, p_type, initial_value )
+
+              consume_eols
+            endWhile
+          endIf
           must_consume( TokenType.symbol_close_paren )
         endIf
       endIf
@@ -717,6 +776,27 @@ class Parser
         first = false
         local t = peek
         local def = Definition( t, read_identifier )
+        if (consume(TokenType.symbol_open_paren))
+          consume_eols
+          if (not consume(TokenType.symbol_close_paren))
+            ensure def.args
+            if (next_is(TokenType.symbol_comma)) def.args.add( null )
+            else                                 def.args.add( parse_expression )
+            local expecting_arg = false
+            while (consume(TokenType.symbol_comma))
+              expecting_arg = true
+              consume_eols
+              if (next_is(TokenType.symbol_close_paren)) escapeWhile
+              expecting_arg = false
+              if (next_is(TokenType.symbol_comma)) def.args.add( null )
+              else                                 def.args.add( parse_expression )
+              consume_eols
+            endWhile
+            if (expecting_arg) def.args.add( null )
+            consume_eols
+            must_consume( TokenType.symbol_close_paren )
+          endIf
+        endIf
         if (consume(TokenType.symbol_equals))
           def.expression = parse_expression
         endIf
