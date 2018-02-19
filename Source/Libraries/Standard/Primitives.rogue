@@ -334,6 +334,11 @@ class Int64 [primitive]
     method from_value( value:Value )->Int64
       return value->Int64
 
+    method maximum->Int64 [macro]
+      0x7FFFffffFFFFffff
+
+    method minimum->Int64 [macro]
+      native("(0x8000000000000000LL)")->Int64
 
   METHODS
     method abs->Int64
@@ -478,6 +483,33 @@ class Int64 [primitive]
     method sqrt->Int64 [macro]
       Int64( Math.sqrt(this) )
 
+    method th->String
+      # Returns Xst, Xnd, Xrd, Xth as appropriate
+      # Example:
+      #   local n = 23
+      #   println n.th  # 23rd
+      if (this == 0)     return "0th"
+      if (-this == this) return "-9223372036854775808th"
+      local result = StringBuilder()
+      local n = this
+      if (n < 0)
+        result.print( '-' )
+        n = -n
+      endIf
+      result.print( n )
+      which (n % 100)
+        case 11, 12, 13
+          result.print( "th" )
+        others
+          which (n % 10)
+            case 1: result.print( "st" )
+            case 2: result.print( "nd" )
+            case 3: result.print( "rd" )
+            others: result.print( "th" )
+          endWhich
+      endWhich
+      return result->String
+
     method to_hex_character->Character
       return Int32(this).to_hex_character
 
@@ -599,6 +631,9 @@ class Int32 [primitive]
 
     method sqrt->Int32 [macro]
       Int32( Math.sqrt(this) )
+
+    method th->String
+      return this->Int64.th
 
     method to->Int64 [macro]
       $if ("C++") native "((RogueInt64)$this)"
