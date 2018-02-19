@@ -33,7 +33,7 @@ Rogue is released under the terms of the [MIT License](https://opensource.org/li
 ## Change Log
 
 ### v1.3.0 - February 17, 2018
-- Many change were not logged here. See commit history for more details.
+- Many changes were not logged here. See commit history for more details.
 - [Makefile] Removed `Source/RogueC/Build` from repo and added `Source/RogueC/Bootstrap` containing a `C++` version of RogueC sufficient to compile the current `RogueC` source.  Normally `Bootstrap/` is only used for the first compile and `roguec` thereafter reflects the version in `Build/`.  You can `make bootstrap` to recompile `roguec` from the bootstrap and `make update_bootstrap` to copy over the latest `Build/` version to be the new `Bootstrap` version.
 - [Math] Added `Degrees.clamped(min:Degrees,max:Degrees)->Degrees` that constrains an angle to the given arc, operating correctly regardless of positive/negative multiples of 360, etc.  Added `Radians.clamped(...)` as well.
 - [RogueC] Removed special handling of array `count`; now using a standard native macro instead.
