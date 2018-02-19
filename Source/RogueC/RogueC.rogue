@@ -1,5 +1,4 @@
-$define ROGUE_RELEASE_VERSION "1.3.0"
-$define RELEASE_DATE    "February 10, 2018"
+$define ROGUE_RELEASE_VERSION "1.3.1"
 
 $include "Version.rogue" [optional]
 
