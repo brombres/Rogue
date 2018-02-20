@@ -9,6 +9,68 @@ class Preprocessor
     method define( name:String, tokens:Token[] )
       definitions[ name ] = tokens
 
+    method define( name:String, value:Logical )
+      local t  = Token( ?:{ value: TokenType.keyword_true || TokenType.keyword_false } )
+      t.filepath = "compiler-generated"
+      definitions[ name ] = [t]
+
+    method logicalize( term: Value, loose = false: Logical )->Logical
+      if (not loose)
+        if (term == false) return false
+        if (term == 0) return false
+        if (term.is_null) return false
+        if (term == "") return false
+        return true
+      endIf
+      if (term.is_number)
+        return term != 0
+      endIf
+      local v = term->String.to_lowercase
+      return not (v == "" or v == "0" or v == "false" or v == "null" or v == "no")
+
+    method valueize( tok: Token )->Value
+      which (tok.type)
+        case TokenType.keyword_true
+          return true
+        case TokenType.keyword_false
+          return false
+        case TokenType.literal_int32
+          return tok->Int32
+        case TokenType.literal_int64
+          return tok->Int64
+        case TokenType.literal_real64
+          return tok->Real64
+        case TokenType.keyword_false
+          return false
+        case TokenType.keyword_true
+          return true
+        case TokenType.keyword_null
+          return null
+        case TokenType.literal_character,TokenType.literal_string
+          return tok->String
+      endWhich
+      return null
+
+    method valueize( toks: Token[] )->Value
+      if (toks.count == 2 and toks[0].type == TokenType.symbol_minus)
+        local v = valueize(toks[1])
+        if (v.is_number)
+          return v * -1
+        endIf
+        return " ".join(toks.mapped<<String>>( (x)=>x ))
+      elseIf (toks.count == 0)
+        # Count "$define FOO" as true
+        return true
+      elseIf (toks.count != 1)
+        # Just string it all out.
+        return " ".join(toks.mapped<<String>>( (x)=>x ))
+      endIf
+      local r = valueize(toks[0])
+      if (r is null)
+        return toks[0]->String
+      endIf
+      return r
+
   PROPERTIES
     parser : Parser  # the parser that will be parsing these tokens later
     reader : PreprocessorTokenReader
@@ -289,7 +351,10 @@ class Preprocessor
       return reader.next_is( type )
 
     method parse_logical_expression->Logical
-      return parse_logical_or
+      reader.push_unfiltered
+      local r = parse_logical_or
+      reader.pop_unfiltered
+      return r
 
     method parse_logical_or->Logical
       return parse_logical_or( parse_logical_and )
@@ -299,17 +364,31 @@ class Preprocessor
       return lhs
 
     method parse_logical_and->Logical
-      return parse_logical_and( parse_logical_term )
+      return parse_logical_and( parse_logical_compare )
 
     method parse_logical_and( lhs:Logical )->Logical
-      if (consume(TokenType.keyword_and)) return parse_logical_and( parse_logical_term and lhs )
+      if (consume(TokenType.keyword_and)) return parse_logical_and( parse_logical_compare and lhs )
       return lhs
 
-    method parse_logical_term->Logical
+    method parse_logical_compare->Logical
+      return parse_logical_compare( parse_logical_term )
+
+    method parse_logical_compare( lhs:Value )->Logical
+      # lhs is on the right so that we don't short circuit -- we need to parse everything one
+      # way or another!
+      if (consume(TokenType.symbol_eq)) return parse_logical_compare( parse_logical_term == lhs )
+      if (consume(TokenType.symbol_ne)) return parse_logical_compare( parse_logical_term != lhs )
+      if (consume(TokenType.symbol_ge)) return parse_logical_compare( parse_logical_term <= lhs )
+      if (consume(TokenType.symbol_gt)) return parse_logical_compare( parse_logical_term <  lhs )
+      if (consume(TokenType.symbol_le)) return parse_logical_compare( parse_logical_term >= lhs )
+      if (consume(TokenType.symbol_lt)) return parse_logical_compare( parse_logical_term >  lhs )
+      return logicalize(lhs)
+
+    method parse_logical_term->Value
       loop
         local t = reader.peek
         if (consume(TokenType.keyword_not))
-          local result = (not parse_logical_term)
+          local result = (not logicalize(parse_logical_term))
           return result
         endIf
 
@@ -319,37 +398,66 @@ class Preprocessor
           return result
         endIf
 
-        if (t.type is TokenType.literal_string)
-          local target = reader.read->String
-          local result = RogueC.compile_targets[target]->Logical
-          return result
-        endIf
-
         if (t.type is TokenType.symbol_minus)
           reader.read
-          t = reader.peek
-          if (not (t.type is TokenType.literal_int32 or t.type is TokenType.literal_int64))
+          local v = parse_logical_term
+          if (not v.is_number)
             throw t.error( "Syntax error: unexpected '-'." )
           endIf
-          return (reader.read->Int32)?
-        endIf
-
-        if (t.type is TokenType.literal_int32 or t.type is TokenType.literal_int64)
-          return (reader.read->Int32)?
+          return v * -1
         endIf
 
         if (consume(TokenType.directive_defined))
-          return (definitions.contains(t->String))
+          must_consume(TokenType.symbol_open_paren)
+          local def = reader.peek
+          must_consume(TokenType.identifier)
+          local result = definitions.contains(def->String)
+          must_consume(TokenType.symbol_close_paren)
+          return result
         endIf
 
         if (consume(TokenType.identifier))
-          # If the parser finds an identifier here it means it's undefined.
-          return false
+          if (t->String == "target")
+            must_consume(TokenType.symbol_open_paren)
+            local target = reader.peek
+            must_consume(TokenType.literal_string)
+            local result = RogueC.compile_targets[target->String]->Logical
+            must_consume(TokenType.symbol_close_paren)
+            return result
+          endIf
+
+          local maybe = false
+          if (t->String == "optional")
+            must_consume(TokenType.symbol_open_paren)
+            maybe = true
+            t = reader.peek
+            must_consume(TokenType.identifier)
+          endIf
+
+          local name = t->String
+          local v = false : Value
+          local has_value = definitions.contains(name)
+          if (has_value) v = valueize(definitions[name])
+          if (v is null) throw reader.peek.error( "Definition '$' does not have a legal value for preprocessor expressions." (name) )
+
+          if (reader.peek->String == "?")
+            reader.read
+            v = logicalize(v, &loose=true)
+          endIf
+
+          if (has_value == false and maybe == false)
+            throw t.error( "Unknown preprocessor definition: '$'." (name) )
+          endIf
+
+          if (maybe) must_consume(TokenType.symbol_close_paren)
+
+          return v
         endIf
 
-        if (consume(TokenType.keyword_true))  return true
-        if (consume(TokenType.keyword_false)) return false
-        throw reader.peek.error( "Syntax error in directive: '$'." (reader.peek) )
+        local v = valueize(t)
+        if (v is null) throw reader.peek.error( "Syntax error in directive: '$'." (reader.peek) )
+        reader.read
+        return v
       endLoop
 
     method read_identifier->String

@@ -288,6 +288,9 @@ class RogueC [singleton]
 
         Program.configure
 
+        Preprocessor.define( "DEBUG", debug_mode )
+        Preprocessor.define( "THREAD_MODE", thread_mode->String )
+
         stopwatch = Stopwatch()
 
         first_filepath = source_files.first
@@ -717,8 +720,6 @@ $endIf
         endIf
       endForEach
 
-      Preprocessor.define( "DEBUG", debug_mode->String )
-      Preprocessor.define( "THREAD_MODE", thread_mode->String )
 
     method require_valueless( arg:String, expecting:String )
       if (arg == expecting) return
