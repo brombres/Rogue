@@ -674,6 +674,24 @@ class Int32Value( value:Int32 ) : Value
       if (other.is_number)  return (value->Real64 < other->Real64)
       else                  return object_id < other.object_id
 
+    method operator==( other:Real64 )->Logical
+      return value == other
+
+    method operator==( other:Int64 )->Logical
+      return value == other
+
+    method operator==( other:Int32 )->Logical
+      return value == other
+
+    method operator<( other:Real64 )->Logical
+      return value < other
+
+    method operator<( other:Int64 )->Logical
+      return value < other
+
+    method operator<( other:Int32 )->Logical
+      return value < other
+
     method operator-()->Value
       return Int32Value( -value )
 
@@ -748,6 +766,24 @@ class Int64Value( value:Int64 ) : Value
       if (other.is_int64 or other.is_int32) return (value < other->Int64)
       if (other.is_number)                  return (value->Real64 < other->Real64)
       else                                  return object_id < other.object_id
+
+    method operator==( other:Real64 )->Logical
+      return value == other
+
+    method operator==( other:Int64 )->Logical
+      return value == other
+
+    method operator==( other:Int32 )->Logical
+      return value == other
+
+    method operator<( other:Real64 )->Logical
+      return value < other
+
+    method operator<( other:Int64 )->Logical
+      return value < other
+
+    method operator<( other:Int32 )->Logical
+      return value < other
 
     method operator-()->Value
       return Int64Value( -value )
