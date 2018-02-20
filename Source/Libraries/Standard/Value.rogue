@@ -579,8 +579,9 @@ class Real64Value( value:Real64 ) : Value
       return true
 
     method operator==( other:Value )->Logical
-      if (other.is_number) return (value == other->Real64)
-      else                 return false
+      if (other.is_number)  return (value == other->Real64)
+      if (other.is_logical) return ((value != 0) == other->Logical)
+      else                  return false
 
     method operator<( other:Value )->Logical
       if (other.is_number) return (value < other->Real64)
@@ -664,6 +665,7 @@ class Int32Value( value:Int32 ) : Value
       if (other.is_int32)   return (value == other->Int32)
       if (other.is_int64)   return (value->Int64 == other->Int64)
       if (other.is_number)  return (value->Real64 == other->Real64)
+      if (other.is_logical) return (value? == other->Logical)
       else                  return false
 
     method operator<( other:Value )->Logical
@@ -739,6 +741,7 @@ class Int64Value( value:Int64 ) : Value
     method operator==( other:Value )->Logical
       if (other.is_int64 or other.is_int32) return (value == other->Int64)
       if (other.is_number)                  return (value->Real64 == other->Real64)
+      if (other.is_logical)                 return (value? == other->Logical)
       else                                  return false
 
     method operator<( other:Value )->Logical
