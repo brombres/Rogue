@@ -17,7 +17,7 @@ class Plugin
     method collect_supported_targets
       # Add strings to RogueC.target_list e.g. "Cython" which will end up being
       # accessible as RogueC.compile_targets["Cython"]->Logical and affects source
-      # code bounded by conditional $if "Cython" ... $endIf directives.
+      # code bounded by conditional $if target("Cython") ... $endIf directives.
       if (collect_supported_types_callback) collect_supported_types_callback()
 
     method generate_additional_types->Logical
