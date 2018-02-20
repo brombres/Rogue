@@ -13,7 +13,7 @@ class WebSocketBase
 endClass
 
 
-$if ("Console")
+$if (target("Console"))
 class WebSocket : WebSocketBase
   DEPENDENCIES
     nativeHeader #include "libwebsockets.h"

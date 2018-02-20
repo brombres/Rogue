@@ -872,7 +872,7 @@ class FileWriter : Writer<<Byte>>
       close
 
     method close->this
-      $if ("Web") nativeHeader extern "C" void Rogue_sync_local_storage();
+      $if (target("Web")) nativeHeader extern "C" void Rogue_sync_local_storage();
 
       flush
 

@@ -13,7 +13,7 @@ class System [essential]
 
   GLOBAL METHODS
     method exit( result_code=0:Int32 )
-      $if ("C++")
+      $if (target("C++"))
         native @|Rogue_quit();
                 |exit( $result_code );
       $endIf
@@ -70,7 +70,7 @@ class System [essential]
       noAction
 
     method time->Real64
-      $if ("C++")
+      $if (target("C++"))
         native @|#if defined(_WIN32)
                 |  struct __timeb64 time_struct;
                 |  RogueReal64 time_seconds;

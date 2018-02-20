@@ -1,4 +1,4 @@
-$if ("Cython" or "Python")
+$if (target("Cython") or target("Python"))
 $define SCRIPT_HELPERS true
 $endIf
 
@@ -50,7 +50,7 @@ $include "Standard/WeakReference.rogue"
 $include "Standard/WebSocket.rogue"
 $include "Standard/Writer.rogue"
 
-$if (THREAD_MODE)
+$if (THREAD_MODE != "NONE")
 $include "Standard/Thread.rogue"
 $endIf
 

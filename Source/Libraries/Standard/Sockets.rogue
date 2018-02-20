@@ -52,6 +52,13 @@ class ServerSocket [abstract]
 
 endClass
 
+$if (not target("Web"))
+  $localDefine LOCK mutex.lock
+  $localDefine UNLOCK mutex.unlock
+$else
+  $localDefine LOCK
+  $localDefine UNLOCK
+$endIf
 
 class BasicSocket : Socket
   ENUMERATE
@@ -75,7 +82,7 @@ class BasicSocket : Socket
     writer           = BasicSocketWriter( this )
     printer          = PrintWriterAdapter( writer )
 
-$if (not "Web")
+$if (not target("Web"))
     mutex            = Mutex()
 $endIf
 
@@ -83,7 +90,7 @@ $endIf
 
   METHODS
     method init( remote_address, port )
-$if "Web"
+$if (target("Web"))
       # Emscripten doesn't have pthreads
       handle_connection
 $else
@@ -113,13 +120,13 @@ $endIf
               |
               |addrinfo *info, *cur;
                if (native("getaddrinfo( (char*)$remote_address->utf8, port_string, NULL, &info )")->Int32 != 0)
-                 $if (not "Web") mutex.lock
+                 LOCK
                  if (socket_id != -1)
                    native @|close( $socket_id );
                    socket_id = -1
                    state = CLOSED
                  endIf
-                 $if (not "Web") mutex.unlock
+                 UNLOCK
                  return
                endIf
 
@@ -143,7 +150,7 @@ $endIf
               |freeaddrinfo( info );
               |
 
-               $if (not "Web") mutex.lock
+               LOCK
                if (socket_id != -1 and state == 0)
                  # not closed() before we get here
                  if (socket_okay)
@@ -155,17 +162,17 @@ $endIf
                    state = CLOSED
                  endIf
                endIf
-               $if (not "Web") mutex.unlock
+               UNLOCK
 
 
     method close->this
-      $if (not "Web") mutex.lock
+      LOCK
       if (@socket_id != -1)
         native @|close( $socket_id );
         @socket_id = -1
       endIf
       state = CLOSED
-      $if (not "Web") mutex.unlock
+      UNLOCK
       return this
 
     method is_closed->Logical
