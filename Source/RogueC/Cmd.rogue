@@ -3948,7 +3948,13 @@ class CmdCompareLE : CmdComparison
       cmd = resolve_operator_method( "operator>=", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional, &!resolve )
+      local strict = "operator<"
+      cmd = resolve_operator_method( strict, scope, left, left_type, right, right_type, &is_optional, &!resolve )
+      if (not cmd)
+        swapValues left,right
+        swapValues left_type,right_type
+        strict = "operator>"
+      endIf
       if (cmd)
         local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional, &!resolve )
         if (cmd2)
@@ -3964,7 +3970,7 @@ class CmdCompareLE : CmdComparison
           local a_lhs = CmdAccess(left.t, temp_lhs)
           local a_rhs = CmdAccess(right.t, temp_rhs)
           cmd = resolve_operator_method( "operator==", scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
-          cmd2 = resolve_operator_method( "operator<", scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
+          cmd2 = resolve_operator_method( strict, scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
 
           temp_block.statements.add( CmdLogicalOr( t, cmd, cmd2 ) )
 
@@ -4045,7 +4051,14 @@ class CmdCompareGE : CmdComparison
       cmd = resolve_operator_method( "operator<=", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator>", scope, left, left_type, right, right_type, &is_optional, &!resolve )
+      local strict = "operator>"
+      cmd = resolve_operator_method( strict, scope, left, left_type, right, right_type, &is_optional, &!resolve )
+      if (not cmd)
+        swapValues left,right
+        swapValues left_type,right_type
+        strict = "operator<"
+      endIf
+      cmd = resolve_operator_method( strict, scope, left, left_type, right, right_type, &is_optional, &!resolve )
       if (cmd)
         local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional, &!resolve )
         if (cmd2)
@@ -4061,7 +4074,7 @@ class CmdCompareGE : CmdComparison
           local a_lhs = CmdAccess(left.t, temp_lhs)
           local a_rhs = CmdAccess(right.t, temp_rhs)
           cmd = resolve_operator_method( "operator==", scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
-          cmd2 = resolve_operator_method( "operator>", scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
+          cmd2 = resolve_operator_method( strict, scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
 
           temp_block.statements.add( CmdLogicalOr( t, cmd, cmd2 ) )
 
