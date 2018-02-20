@@ -47,6 +47,7 @@ class PreprocessorTokenReader
     queue    = Token[]  # stored in reverse order
     position : Int32
     count    : Int32
+    unfiltered : Int32
 
     local_definitions = StringTable<<Token[]>>[]
 
@@ -110,7 +111,13 @@ class PreprocessorTokenReader
       if (queue.count) return queue.last
       return peek_unfiltered(0)
 
-    method peek( num_ahead:Int32 )->Token
+    method push_unfiltered()
+      unfiltered++
+
+    method pop_unfiltered()
+      unfiltered--
+
+    method peek( num_ahead:Int32, unfiltered:Logical )->Token
       if (position + num_ahead >= count + queue.count)
         return TokenType.eoi.create_token( tokens.last )
       endIf
@@ -120,7 +127,7 @@ class PreprocessorTokenReader
         ++position
 
         # Possible definition expansion
-        if (t.type is TokenType.identifier)
+        if (t.type is TokenType.identifier and unfiltered == false and this.unfiltered == 0)
           expand_definition( t )
         else
           queue.add( t )
@@ -129,17 +136,11 @@ class PreprocessorTokenReader
 
       return queue[ (queue.count - num_ahead) - 1 ]
 
+    method peek( num_ahead:Int32 )->Token
+      return peek(num_ahead, false)
+
     method peek_unfiltered( num_ahead:Int32 )->Token
-      if (position + num_ahead >= count + queue.count)
-        return TokenType.eoi.create_token( tokens.last )
-      endIf
-
-      while (queue.count <= num_ahead)
-        queue.add( tokens[position] )
-        ++position
-      endWhile
-
-      return queue[ (queue.count - num_ahead) - 1 ]
+      return peek(num_ahead, true)
 
     method push( t:Token )
       queue.add( t )
