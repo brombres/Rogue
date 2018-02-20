@@ -152,6 +152,14 @@ class Table<<$KeyType,$ValueType>>
         return default_value
       endIf
 
+    method get( key:$KeyType, default_value:$ValueType )->$ValueType
+      local entry = find( key )
+      if (entry)
+        return entry.value
+      else
+        return default_value
+      endIf
+
     method get( query:(Function($ValueType)->Logical) )->$ValueType[]
       local result = $ValueType[]
       local cur = first_entry
