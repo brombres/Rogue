@@ -652,7 +652,7 @@ class Real64Value( value:Real64 ) : Value
       return buffer
 endClass
 
-class Int32Value( value:Int64 ) : Value
+class Int32Value( value:Int32 ) : Value
   METHODS
     method is_number->Logical
       return true
