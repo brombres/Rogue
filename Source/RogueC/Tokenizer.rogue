@@ -660,15 +660,6 @@ class Tokenizer
             return scan_native_header
           elseIf (keyword_type is TokenType.directive_essential)
             return scan_essential_directive
-          elseIf (keyword_type is TokenType.directive_defined)
-            consume_spaces
-            local has_parens = consume( '(' )
-            consume_spaces
-            local def_id = read_identifier
-            consume_spaces
-            if (has_parens and not consume(')')) throw error( "Closing ')' expected." )
-            return add_new_token( TokenType.directive_defined, def_id )
-
           else
             return add_new_token( keyword_type )
           endIf

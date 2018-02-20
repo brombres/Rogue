@@ -1,6 +1,6 @@
 class StringBuilder [essential]
   GLOBAL PROPERTIES
-    $if (THREAD_MODE)
+    $if (THREAD_MODE != "NONE")
       work_bytes [threadLocal] = Byte[]
     $else
       work_bytes = Byte[]

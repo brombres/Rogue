@@ -498,6 +498,7 @@ endClass
 class CmdBlock : CmdControlStructure
   PROPERTIES
     statements : CmdStatementList
+    expression_type : Type
 
   METHODS
     method init( t, control_type=CmdControlStructure.type_block )
@@ -509,6 +510,9 @@ class CmdBlock : CmdControlStructure
       t = cmd.t
       statements = CmdStatementList( cmd )
       control_type = CmdControlStructure.type_block
+
+    method type->Type
+      return expression_type
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -3501,12 +3505,16 @@ class CmdBinary : Cmd
       return this
 
     method resolve_operator_method( method_name:String, scope:Scope, lhs:Cmd, left_type:Type, rhs:Cmd, right_type:Type, &is_optional )->Cmd
+      return resolve_operator_method(method_name, scope, lhs, left_type, rhs, right_type, is_optional, true)
+
+    method resolve_operator_method( method_name:String, scope:Scope, lhs:Cmd, left_type:Type, rhs:Cmd, right_type:Type, is_optional:Logical, resolve:Logical )->Cmd
+      local r : Cmd
       if (left_type.has_compatible_global_method_named(method_name,left_type,right_type))
-        return CmdAccess( t, CmdAccess(t,left_type.name), method_name, CmdArgs(lhs,rhs) ).resolve( scope )
+        r = CmdAccess( t, CmdAccess(t,left_type.name), method_name, CmdArgs(lhs,rhs) )
       elseIf (right_type.has_compatible_global_method_named(method_name,left_type,right_type))
-        return CmdAccess( t, CmdAccess(t,right_type.name), method_name, CmdArgs(lhs,rhs) ).resolve( scope )
+        r = CmdAccess( t, CmdAccess(t,right_type.name), method_name, CmdArgs(lhs,rhs) )
       elseIf (left_type.has_compatible_method_named(method_name,right_type))
-        return CmdAccess( t, lhs, method_name, CmdArgs(rhs) ).resolve( scope )
+        r = CmdAccess( t, lhs, method_name, CmdArgs(rhs) )
       elseIf (is_optional)
         return null
       else
@@ -3521,6 +3529,8 @@ class CmdBinary : Cmd
                left_type,method_name,right_type) )
         endIf
       endIf
+      if (resolve) return r.resolve( scope )
+      return r
 
     method symbol->String
       throw t.error( "[INTERNAL] $.symbol() is not defined." (type_name) )
@@ -3940,10 +3950,34 @@ class CmdCompareLE : CmdComparison
       cmd = resolve_operator_method( "operator>=", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional )
+      local strict = "operator<"
+      cmd = resolve_operator_method( strict, scope, left, left_type, right, right_type, &is_optional, &!resolve )
+      if (not cmd)
+        swapValues left,right
+        swapValues left_type,right_type
+        strict = "operator>"
+      endIf
       if (cmd)
-        local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
-        if (cmd2) return CmdLogicalOr( t, cmd, cmd2 ).resolve( scope )
+        local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional, &!resolve )
+        if (cmd2)
+          local temp_block = CmdBlock( t )
+          temp_block.expression_type = Program.type_Logical
+
+          local temp_lhs = Local( left.t, Program.create_unique_id, null, left )
+          local temp_lhs_decl = CmdLocalDeclaration(t,temp_lhs)
+          temp_block.statements.add( temp_lhs_decl )
+          local temp_rhs = Local( right.t, Program.create_unique_id, null, right )
+          local temp_rhs_decl = CmdLocalDeclaration(t,temp_rhs)
+          temp_block.statements.add( temp_rhs_decl )
+          local a_lhs = CmdAccess(left.t, temp_lhs)
+          local a_rhs = CmdAccess(right.t, temp_rhs)
+          cmd = resolve_operator_method( "operator==", scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
+          cmd2 = resolve_operator_method( strict, scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
+
+          temp_block.statements.add( CmdLogicalOr( t, cmd, cmd2 ) )
+
+          return temp_block.resolve(scope)
+        endIf
       endIf
 
       if (force_error) resolve_operator_method( "operator<=", scope, left, left_type, right, right_type )
@@ -4019,10 +4053,35 @@ class CmdCompareGE : CmdComparison
       cmd = resolve_operator_method( "operator<=", scope, right, right_type, left, left_type, &is_optional )
       if (cmd) return cmd
 
-      cmd = resolve_operator_method( "operator>", scope, left, left_type, right, right_type, &is_optional )
+      local strict = "operator>"
+      cmd = resolve_operator_method( strict, scope, left, left_type, right, right_type, &is_optional, &!resolve )
+      if (not cmd)
+        swapValues left,right
+        swapValues left_type,right_type
+        strict = "operator<"
+      endIf
+      cmd = resolve_operator_method( strict, scope, left, left_type, right, right_type, &is_optional, &!resolve )
       if (cmd)
-        local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
-        if (cmd2) return CmdLogicalOr( t, cmd, cmd2 ).resolve( scope )
+        local cmd2 = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional, &!resolve )
+        if (cmd2)
+          local temp_block = CmdBlock( t )
+          temp_block.expression_type = Program.type_Logical
+
+          local temp_lhs = Local( left.t, Program.create_unique_id, null, left )
+          local temp_lhs_decl = CmdLocalDeclaration(t,temp_lhs)
+          temp_block.statements.add( temp_lhs_decl )
+          local temp_rhs = Local( right.t, Program.create_unique_id, null, right )
+          local temp_rhs_decl = CmdLocalDeclaration(t,temp_rhs)
+          temp_block.statements.add( temp_rhs_decl )
+          local a_lhs = CmdAccess(left.t, temp_lhs)
+          local a_rhs = CmdAccess(right.t, temp_rhs)
+          cmd = resolve_operator_method( "operator==", scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
+          cmd2 = resolve_operator_method( strict, scope, a_lhs, left_type, a_rhs, right_type, &is_optional, &!resolve )
+
+          temp_block.statements.add( CmdLogicalOr( t, cmd, cmd2 ) )
+
+          return temp_block.resolve(scope)
+        endIf
       endIf
 
       if (force_error) resolve_operator_method( "operator>=", scope, left, left_type, right, right_type )

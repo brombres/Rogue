@@ -103,7 +103,7 @@ class Real64 [primitive]
       return integer_bits->Int32
 
     method integer_bits->Int64
-      $if ("C++")
+      $if (target("C++"))
         native "return *((RogueInt64*)&$this);"
       $endIf
 
@@ -239,7 +239,7 @@ class Real32 [primitive]
       else           return whole_part - this
 
     method integer_bits->Int32
-      $if ("C++")
+      $if (target("C++"))
         native "return *((RogueInt32*)&$this);"
       $endIf
 
@@ -346,7 +346,7 @@ class Int64 [primitive]
       else           return -this
 
     method real_bits->Real64
-      $if ("C++")
+      $if (target("C++"))
         native "return *((RogueReal64*)&$this);"
       $endIf
 
@@ -585,7 +585,7 @@ class Int32 [primitive]
       else           return -this
 
     method real_bits->Real32
-      $if ("C++")
+      $if (target("C++"))
         native "return *((RogueReal32*)&$this);"
       $endIf
 
@@ -636,7 +636,7 @@ class Int32 [primitive]
       return this->Int64.th
 
     method to->Int64 [macro]
-      $if ("C++") native "((RogueInt64)$this)"
+      $if (target("C++")) native "((RogueInt64)$this)"
 
     method to->Int64( unsigned:Logical )
       if (unsigned) return this & 0x0FFFFffff

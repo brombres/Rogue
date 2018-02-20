@@ -538,7 +538,7 @@ class List<<$DataType>> : GenericList
     method writer->ListWriter<<$DataType>>
       return ListWriter<<$DataType>>( this )
 
-$if (SCRIPT_HELPERS)
+$if defined(SCRIPT_HELPERS)
     method _get_element( index:Int32 )->$DataType [essential]
       if (index < 0 or index >= count)
         throw Error("Index out of range")

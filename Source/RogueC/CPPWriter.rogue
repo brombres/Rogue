@@ -2467,10 +2467,11 @@ endAugment
 
 augment CmdStatementList
   METHODS
-    method write_cpp( writer:CPPWriter, is_statement=false:Logical, &skip_trace_update )
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical, &skip_trace_update, &return_last )
       if (count?) writer.mark_statement_start(this[0].t.filepath, this[0].t.line, this[count-1].t.line)
-      forEach (statement in this)
+      forEach (statement at index in this)
         if (not skip_trace_update and statement.generates_output) writer.update_trace_info( statement.t )
+        if (return_last and index == count-1) writer.print( " return " )
         statement.write_cpp( writer, true )
         if (statement.requires_semicolon) writer.println ";"
       endForEach
@@ -2532,12 +2533,20 @@ endAugment
 augment CmdBlock
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.println( "{" )
-      writer.indent += 2
-      statements.write_cpp( writer )
-      writer.indent -= 2
-      writer.println( "}" )
-      if (escape_label) writer.print( escape_label ).println( ":;" )
+      if (expression_type)
+        writer.print( "([&]()->" ).print( expression_type ).println( "{" )
+        writer.indent += 2
+        statements.write_cpp( writer, &return_last )
+        writer.indent -= 2
+        writer.println( "}())" )
+      else
+        writer.println( "{" )
+        writer.indent += 2
+        statements.write_cpp( writer )
+        writer.indent -= 2
+        writer.println( "}" )
+        if (escape_label) writer.print( escape_label ).println( ":;" )
+      endIf
 endAugment
 
 

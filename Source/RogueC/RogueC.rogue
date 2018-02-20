@@ -252,9 +252,9 @@ class RogueC [singleton]
           usage += supported_targets->String.replacing("]",",...]\n")
 
           usage += @|    Specify one or more compile targets that are used with conditional code
-                    |    compilation ('$if ("C++") ...').  C++ is the only supported language
-                    |    target.  "Python" and "Cython" are optional plug-in targets.  Arbitrary
-                    |    platforms may be added at will, e.g. "iOS", "macOS", etc.
+                    |    compilation ('$if target("C++") ...').  C++ is the only supported
+                    |    language target.  "Python" and "Cython" are optional plug-in targets.
+                    |    Arbitrary platforms may be added at will, e.g. "iOS", "macOS", etc.
                     |
                     |  --test
                     |    Compiled program includes any defined unit tests and runs them on launch.
@@ -286,6 +286,9 @@ class RogueC [singleton]
         endForEach
 
         Program.configure
+
+        Preprocessor.define( "DEBUG", debug_mode )
+        Preprocessor.define( "THREAD_MODE", thread_mode->String )
 
         stopwatch = Stopwatch()
 
@@ -716,8 +719,6 @@ $endIf
         endIf
       endForEach
 
-      Preprocessor.define( "DEBUG", debug_mode->String )
-      Preprocessor.define( "THREAD_MODE", thread_mode->String )
 
     method require_valueless( arg:String, expecting:String )
       if (arg == expecting) return

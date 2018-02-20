@@ -1,6 +1,6 @@
 class Math
   GLOBAL METHODS
-    $if ("C++")
+    $if (target("C++"))
     method acos( n:Real64 )->Real64 [macro]
       native 'acos((double)$n)'
 

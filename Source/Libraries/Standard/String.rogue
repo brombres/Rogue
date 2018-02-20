@@ -1,13 +1,13 @@
 class String
   GLOBAL METHODS
     method create( utf8:Byte[] )->String [macro]
-      $if ("C++") native 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )'
+      $if (target("C++")) native 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )'
 
     method create( utf8:Byte[], i1:Int32, count:Int32 )->String [macro]
-      $if ("C++") native 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )'
+      $if (target("C++")) native 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )'
 
     method create( characters:Character[] )->String [macro]
-      $if ("C++") native 'RogueString_create_from_characters( $characters )'
+      $if (target("C++")) native 'RogueString_create_from_characters( $characters )'
 
     method create( characters:StringBuilder )->String
       return create( characters.utf8 )
@@ -193,7 +193,7 @@ class String
     method contains_at( substring:String, at_index:Int32 )->Logical
       if (at_index < 0) return false
 
-      $if ("C++")
+      $if (target("C++"))
         native @|RogueInt32 offset = RogueString_set_cursor( $this, $at_index );
                 |RogueInt32 other_count = $substring->byte_count;
                 |if (offset + other_count > $this->byte_count) return false;
@@ -203,7 +203,7 @@ class String
 
 
     method count->Int32 [macro]
-      $if ("C++") native '$this->character_count'
+      $if (target("C++")) native '$this->character_count'
 
     method ends_with( ch:Character )->Logical
       return (count > 0 and this[count-1] == ch)
@@ -234,7 +234,7 @@ class String
 
       if (i1 == i2) return ""+this[i1]
 
-      $if ("C++")
+      $if (target("C++"))
         native @|RogueInt32 byte_i1 = RogueString_set_cursor( $this, $i1 );
                 |RogueInt32 byte_limit = RogueString_set_cursor( $this, $i2+1 );
                 |int new_count = (byte_limit - byte_i1);
@@ -264,10 +264,10 @@ class String
       else          return ""
 
     method get( index:Int32 )->Character [macro]
-      $if ("C++") native 'RogueString_character_at($this,$index)'
+      $if (target("C++")) native 'RogueString_character_at($this,$index)'
 
     method hash_code->Int32
-      $if ("C++") return native('$this->hash_code')->Int32
+      $if (target("C++")) return native('$this->hash_code')->Int32
 
     method indented( spaces:Int32 )->String
       local lines = split( '\n' )
@@ -420,7 +420,7 @@ class String
 
     method operator<>( other:String )->Int32
       if (other is null) return 1
-      $if ("C++")
+      $if (target("C++"))
         native @|if ($this == $other) return 0;
                 |
                 |RogueInt32 other_count = $other->byte_count;
