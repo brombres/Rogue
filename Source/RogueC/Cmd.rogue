@@ -498,6 +498,7 @@ endClass
 class CmdBlock : CmdControlStructure
   PROPERTIES
     statements : CmdStatementList
+    expression_type : Type
 
   METHODS
     method init( t, control_type=CmdControlStructure.type_block )
@@ -509,6 +510,9 @@ class CmdBlock : CmdControlStructure
       t = cmd.t
       statements = CmdStatementList( cmd )
       control_type = CmdControlStructure.type_block
+
+    method type->Type
+      return expression_type
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
