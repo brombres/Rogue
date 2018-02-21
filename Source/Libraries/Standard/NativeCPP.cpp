@@ -1924,10 +1924,10 @@ static inline void Rogue_collect_garbage_real()
   Rogue_gc_requested = false;
   ++ Rogue_gc_count;
 
-  Rogue_on_gc_begin.call();
-
 //printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
   ROGUE_GC_RESET_COUNT;
+
+  Rogue_on_gc_begin.call();
 
   Rogue_trace();
 
