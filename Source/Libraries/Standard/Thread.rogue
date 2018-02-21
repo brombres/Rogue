@@ -116,12 +116,10 @@ struct thread_start_info
 
 static inline void * roguethread_entry (void * tsi_)
 {
-  thread_start_info * tsi = (thread_start_info *)tsi_;
-  // We're not currently really using the semaphore, but it might
-  // be useful in the future.
-  thread_start_info si = *tsi;
-  RogueSemaphore_post(&tsi->sem); // We've got it.
-  si.thread_function();
+  thread_start_info & si = *(thread_start_info *)tsi_;
+  auto thread_function = si.thread_function;
+  RogueSemaphore_post(&si.sem); // We've got it.
+  thread_function();
   return NULL;
 }
 
@@ -191,75 +189,89 @@ $else
 $endIf
 
 
-# A limitation of the current implementation is that it assumes that a
-# pthread_t can safely be cast back and forth with an Int64.
+class Thread
+  PROPERTIES
+    native "pthread_t thread;" # We assume 0 is invalid
 
-class Thread (id:Int64) [compound]
   METHODS
+    method has_thread () -> Logical
+      return native("$this->thread")->Logical
+
     method join ()
+      if (not has_thread) return
       native @|ROGUE_EXIT;
-              |pthread_join((pthread_t)$this.id, NULL);
+              |pthread_join($this->thread, NULL);
               |ROGUE_ENTER;
 
     method detach ()
-      native @|pthread_detach((pthread_t)$this.id);
+      if (not has_thread) return
+      native @|pthread_detach($this->thread);
+              |$this->thread = (pthread_t)0;
 
     method is_current () -> Logical
+      # Doesn't necessarily work for all types of threads
+      if (not has_thread) return false
       return this == Thread.current
 
+    method operator== (other:Thread) -> Logical
+      # Not all kinds of threads can necessarily do this.
+      local eq = 0
+      native @|$eq = ($this->thread == $other->thread);
+      return eq
     method to -> String
+      if (not has_thread)
+        return "($ detached)" (type_info.name)
+      endIf
       return "($ $)" (type_info.name, id)
 
     method pin_to_core (core:Int32) -> Logical
+      if (not has_thread) return false
       local ok = 0
-      native @|//#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+      native @|#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
               |  $ok = 1;
               |  cpu_set_t cpus;
               |  CPU_ZERO(&cpus);
               |  CPU_SET($core, &cpus);
-              |  pthread_setaffinity_np((pthread_t)$this.id, sizeof(cpus), &cpus);
-              |//#endif
+              |  pthread_setaffinity_np($this->thread, sizeof(cpus), &cpus);
+              |#endif
       return ok
 
-  GLOBAL METHODS
-
-    method create (f:Function()) -> Thread
-      local r : Int64
+    method init (f:Function())
       native @|ROGUE_THREAD_LAMBDA_START($f)
-      f()
+        f()
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create <<$T1>> (f:Function($T1), a1:$T1) -> Thread
-      local r : Int64
+    method init <<$T1>> (f:Function($T1), a1:$T1)
       native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1)
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create <<$T1,$T2>> (f:Function($T1,$T2), a1:$T1, a2:$T2) -> Thread
-      local r : Int64
+    method init <<$T1,$T2>> (f:Function($T1,$T2), a1:$T1, a2:$T2)
       native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1,a2)
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create <<$T1,$T2,$T3>> (f:Function($T1,$T2,$T3), a1:$T1, a2:$T2, a3:$T3) -> Thread
-      local r : Int64
+    method init <<$T1,$T2,$T3>> (f:Function($T1,$T2,$T3), a1:$T1, a2:$T2, a3:$T3)
       native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1,a2,a3)
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create () -> Thread [essential]
-      local r : Int64
-      native @|$r = (RogueInt64)pthread_self();
-      return Thread(r)
+    method init () -> Thread [essential]
+      native @|$this->thread = pthread_self();
 
+    method on_cleanup ()
+      detach
+
+    method id () -> Int64
+      #TODO: Do nice (but OS-specific) stuff to get a reasonable ID
+      if (not has_thread) return 0
+      return native("$this->thread")->Int64
+
+  GLOBAL METHODS
     method current () -> Thread [essential]
       return Thread()
 
@@ -269,7 +281,7 @@ endClass
 augment Exception
   METHODS
     method display
-      message = "In thread " + Thread.current.id->Int32 + "\n" + message
+      message = "In thread " + Thread.current.id + "\n" + message
 endAugment
 
 
