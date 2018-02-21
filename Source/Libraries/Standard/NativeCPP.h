@@ -325,12 +325,7 @@ T rogue_ptr (T p)
 //  Threading
 //-----------------------------------------------------------------------------
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
-
-#include <pthread.h>
-#include <atomic>
-
-#define ROGUE_THREAD_LOCAL thread_local
+#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_NONE
 
 #if ROGUE_GC_MODE_BOEHM
   #define ROGUE_THREAD_LOCALS_INIT(__first, __last) GC_add_roots((void*)&(__first), (void*)((&(__last))+1));
@@ -339,6 +334,15 @@ T rogue_ptr (T p)
   #define ROGUE_THREAD_LOCALS_INIT(__first, __last)
   #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
 #endif
+
+#endif
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#include <pthread.h>
+#include <atomic>
+
+#define ROGUE_THREAD_LOCAL thread_local
 
 static inline void _rogue_init_mutex (pthread_mutex_t * mutex)
 {
