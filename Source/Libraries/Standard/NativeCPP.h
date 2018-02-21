@@ -81,6 +81,7 @@ template<typename RT> RT Rogue_mtgc_reenter (RT expr);
 #define ROGUE_EXIT
 
 #define ROGUE_BLOCKING_CALL(__x) __x
+#define ROGUE_BLOCKING_VOID_CALL(__x)
 
 #endif
 
