@@ -373,6 +373,35 @@ public:
 #define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
 #define ROGUE_SYNC_OBJECT_EXIT
 
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#include <thread>
+#include <mutex>
+#include <atomic>
+
+#define ROGUE_THREAD_LOCAL thread_local
+
+class RogueUnlocker
+{
+  std::recursive_mutex & mutex;
+public:
+  RogueUnlocker(std::recursive_mutex & mutex)
+  : mutex(mutex)
+  {
+    mutex.lock();
+  }
+  ~RogueUnlocker (void)
+  {
+    mutex.unlock();
+  }
+};
+
+#define ROGUE_SYNC_OBJECT_TYPE std::recursive_mutex
+#define ROGUE_SYNC_OBJECT_INIT
+#define ROGUE_SYNC_OBJECT_CLEANUP
+#define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_EXIT
+
 #else
 
 #define ROGUE_SYNC_OBJECT_TYPE
@@ -500,7 +529,7 @@ struct RogueType
   const int*   property_type_indices;
   const int*   property_offsets;
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+#if (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS) || (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP)
   std::atomic<RogueObject*> _singleton;
 #else
   RogueObject* _singleton;

@@ -104,9 +104,49 @@ RogueWeakReference* Rogue_weak_references = 0;
 #define ROGUE_THREAD_JOIN(_T) pthread_join(_T, NULL)
 #define ROGUE_THREAD_START(_T, _F) pthread_create(&(_T), NULL, _F, NULL)
 
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#include <exception>
+#include <condition_variable>
+
+class RogueThreadExitExceptionType: public exception
+{
+  virtual const char * what () const throw()
+  {
+    return "Thread exit exception";
+  }
+} RogueThreadExitException;
+
+#define ROGUE_EXIT_THREAD throw new RogueThreadExitExceptionType()
+
+#define ROGUE_MUTEX_LOCK(_M) _M.lock()
+#define ROGUE_MUTEX_UNLOCK(_M) _M.unlock()
+#define ROGUE_MUTEX_DEF(_N) std::mutex _N
+
+#define ROGUE_COND_STARTWAIT(_V,_M) { std::unique_lock<std::mutex> LK(_M);
+#define ROGUE_COND_DOWAIT(_V,_M,_C) while (_C) (_V).wait(LK);
+#define ROGUE_COND_ENDWAIT(_V,_M) }
+#define ROGUE_COND_WAIT(_V,_M,_C) \
+  ROGUE_COND_STARTWAIT(_V,_M); \
+  ROGUE_COND_DOWAIT(_V,_M,_C); \
+  ROGUE_COND_ENDWAIT(_V,_M);
+#define ROGUE_COND_DEF(_N) std::condition_variable _N
+#define ROGUE_COND_NOTIFY_ONE(_V,_M,_C) {  \
+  std::unique_lock<std::mutex> LK2(_M);    \
+  _C ;                                     \
+  (_V).notify_one(); }
+#define ROGUE_COND_NOTIFY_ALL(_V,_M,_C) {  \
+  std::unique_lock<std::mutex> LK2(_M);    \
+  _C ;                                     \
+  (_V).notify_all(); }
+
+#define ROGUE_THREAD_DEF(_N) std::thread _N
+#define ROGUE_THREAD_JOIN(_T) (_T).join()
+#define ROGUE_THREAD_START(_T, _F) (_T = std::thread([] () {_F(NULL);}),0)
+
 #endif
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_NONE
 
 // Thread mutex locks around creation and destruction of threads
 static ROGUE_MUTEX_DEF(Rogue_mt_thread_mutex);
@@ -118,7 +158,9 @@ static void Rogue_thread_register ()
   // If we're shutting down, no new threads!
   if (Rogue_mt_terminating.load()) ROGUE_EXIT_THREAD;
   ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
   int n = (int)Rogue_mt_tc;
+#endif
   ++Rogue_mt_tc;
   ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
@@ -190,6 +232,10 @@ static void Rogue_thread_unregister ()
 pthread_mutex_t Rogue_thread_singleton_lock;
 #define ROGUE_SINGLETON_LOCK ROGUE_MUTEX_LOCK(Rogue_thread_singleton_lock);
 #define ROGUE_SINGLETON_UNLOCK ROGUE_MUTEX_UNLOCK(Rogue_thread_singleton_lock);
+#else
+std::recursive_mutex Rogue_thread_singleton_lock;
+#define ROGUE_SINGLETON_LOCK Rogue_thread_singleton_lock.lock();
+#define ROGUE_SINGLETON_UNLOCK Rogue_thread_singleton_lock.unlock();
 #endif
 #else
 #define ROGUE_GET_SINGLETON(_S) (_S)->_singleton
@@ -233,8 +279,12 @@ void Rogue_collect_garbage_real_noinline ()
   Rogue_collect_garbage_real();
 }
 
-#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_PTHREADS
-#error Currently, only --threads=pthreads is supported with --gc=auto-mt
+#if ROGUE_THREAD_MODE
+#if ROGUE_THREAD_MODE_PTHREADS
+#elif ROGUE_THREAD_MODE_CPP
+#else
+#error Currently, only --threads=pthreads and --threads=cpp are supported with --gc=auto-mt
+#endif
 #endif
 
 // This is how unlikely() works in the Linux kernel
@@ -479,7 +529,11 @@ static void Rogue_mtgc_quit_gc_thread ()
       done = false;
       Rogue_mtgc_g = 1;
       Rogue_mtgc_should_quit = 1;
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
       pthread_cond_signal(&Rogue_mtgc_g_cond);
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+      Rogue_mtgc_g_cond.notify_one();
+#endif
     }
     ROGUE_COND_ENDWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
     if (done) break;
