@@ -1942,6 +1942,10 @@ augment RogueC
                   |#endif
           if (RogueC.thread_mode == ThreadMode.PTHREADS)
             compiler_name += " -pthread"
+          elseIf (RogueC.thread_mode == ThreadMode.CPP)
+            if (not RogueC.compile_targets["Windows"])
+              compiler_name += " -pthread"
+            endIf
           endIf
         endIf
 
