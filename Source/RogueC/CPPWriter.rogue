@@ -221,6 +221,7 @@ augment Program
       # Thread mode stuff
       writer.println "#define ROGUE_THREAD_MODE_NONE 0"
       writer.println "#define ROGUE_THREAD_MODE_PTHREADS 1"
+      writer.println "#define ROGUE_THREAD_MODE_CPP 2"
       writer.println "#ifndef ROGUE_THREAD_MODE"
       writer.println "  #define ROGUE_THREAD_MODE ROGUE_THREAD_MODE_" + RogueC.thread_mode->String
       writer.println "#endif"
