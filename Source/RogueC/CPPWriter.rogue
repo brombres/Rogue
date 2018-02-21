@@ -2342,8 +2342,6 @@ augment Method
         endIf
       endForEach
 
-      writer.println "ROGUE_GC_CHECK;"
-
       if (type_context.is_aspect and not is_global)
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
@@ -2387,6 +2385,7 @@ augment Method
           writer.print( t.filename ).print( ''", '' ).print( t.line )
           writer.println( '' );'' )
         endIf
+        if (statements.count > 1) writer.println "ROGUE_GC_CHECK;"
         statements.write_cpp( writer )
       endIf
 
