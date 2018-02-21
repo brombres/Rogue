@@ -42,11 +42,12 @@ class GCMode
     BOEHM_TYPED
 endClass
 
-class ThreadMode
-  ENUMERATE
+enum ThreadMode
+  CATEGORIES
     NONE
     PTHREADS
-endClass
+    CPP
+endEnum
 
 
 class RogueC [singleton]
@@ -110,7 +111,7 @@ class RogueC [singleton]
     gc_threshold = 1024*1024 : Int32
     gc_mode_set = false
 
-    thread_mode = ThreadMode.NONE : Int32
+    thread_mode = ThreadMode.NONE
 
     plugins = Plugin[]
 
