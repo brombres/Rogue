@@ -76,8 +76,6 @@ RogueWeakReference* Rogue_weak_references = 0;
 //-----------------------------------------------------------------------------
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
-#define ROGUE_EXIT_THREAD pthread_exit(NULL)
-
 #define ROGUE_MUTEX_LOCK(_M) pthread_mutex_lock(&(_M))
 #define ROGUE_MUTEX_UNLOCK(_M) pthread_mutex_unlock(&(_M))
 #define ROGUE_MUTEX_DEF(_N) pthread_mutex_t _N = PTHREAD_MUTEX_INITIALIZER
@@ -109,16 +107,6 @@ RogueWeakReference* Rogue_weak_references = 0;
 
 #include <exception>
 #include <condition_variable>
-
-class RogueThreadExitExceptionType: public exception
-{
-  virtual const char * what () const throw()
-  {
-    return "Thread exit exception";
-  }
-} RogueThreadExitException;
-
-#define ROGUE_EXIT_THREAD throw new RogueThreadExitExceptionType()
 
 #define ROGUE_MUTEX_LOCK(_M) _M.lock()
 #define ROGUE_MUTEX_UNLOCK(_M) _M.unlock()
@@ -156,8 +144,6 @@ static std::atomic_bool Rogue_mt_terminating(false); // True when terminating.
 
 static void Rogue_thread_register ()
 {
-  // If we're shutting down, no new threads!
-  if (Rogue_mt_terminating.load()) ROGUE_EXIT_THREAD;
   ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
   int n = (int)Rogue_mt_tc;
