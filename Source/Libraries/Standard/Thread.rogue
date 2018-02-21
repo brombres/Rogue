@@ -1,15 +1,13 @@
 # Rogue thread library
 
-# Currently only supports pthreads and g++-like compilers.
+$if THREAD_MODE != "NONE"
 
 nativeHeader
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
-
-// #include "gc.h" - included elsewhere
-#include <pthread.h>
-#include <assert.h>
 #include <functional>
+#include <assert.h>
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
 // Platform-appropriate semaphore
 // Based on https://stackoverflow.com/a/27847103/135791
@@ -98,6 +96,94 @@ RogueSemaphore_destroy( struct RogueSemaphore *s )
 #endif
 }
 
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#include <mutex>
+#include <condition_variable>
+
+// From https://stackoverflow.com/questions/4792449
+class RogueSemaphoreType
+{
+private:
+    std::mutex mutex_;
+    std::condition_variable condition_;
+    unsigned long count_ = 0; // Initialized as locked.
+
+public:
+    void set(unsigned long count) {
+      count_ = count;
+    }
+
+    void notify() {
+        std::unique_lock<decltype(mutex_)> lock(mutex_);
+        ++count_;
+        condition_.notify_one();
+    }
+
+    void wait() {
+        std::unique_lock<decltype(mutex_)> lock(mutex_);
+        while(!count_) // Handle spurious wake-ups.
+            condition_.wait(lock);
+        --count_;
+    }
+
+    bool try_wait() {
+        std::unique_lock<decltype(mutex_)> lock(mutex_);
+        if(count_) {
+            --count_;
+            return true;
+        }
+        return false;
+    }
+};
+
+struct RogueSemaphore
+{
+    RogueSemaphoreType sem;
+};
+
+
+static inline void
+RogueSemaphore_init( struct RogueSemaphore *s, uint32_t value )
+{
+    s->sem.set(value);
+}
+
+static inline void
+RogueSemaphore_wait( struct RogueSemaphore *s )
+{
+  s->sem.wait();
+}
+
+// Returns true if semaphore was decremented.
+static inline bool
+RogueSemaphore_try_wait( struct RogueSemaphore *s )
+{
+  return s->sem.try_wait();
+}
+
+static inline void
+RogueSemaphore_post(struct RogueSemaphore *s)
+{
+  s->sem.notify();
+}
+
+static inline void
+RogueSemaphore_destroy( struct RogueSemaphore *s )
+{
+}
+
+#endif
+
+struct thread_start_info
+{
+  std::function<void()> thread_function;
+  RogueSemaphore sem;
+};
+
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
 pthread_t create_thread (void * (*f)(void *), void * arg)
 {
   pthread_t tid;
@@ -107,26 +193,46 @@ pthread_t create_thread (void * (*f)(void *), void * arg)
   return tid;
 }
 
-struct thread_start_info
-{
-  std::function<void()> thread_function;
-  RogueSemaphore sem;
-};
-
-
 static inline void * roguethread_entry (void * tsi_)
 {
-  thread_start_info * tsi = (thread_start_info *)tsi_;
-  // We're not currently really using the semaphore, but it might
-  // be useful in the future.
-  thread_start_info si = *tsi;
-  RogueSemaphore_post(&tsi->sem); // We've got it.
-  si.thread_function();
+  thread_start_info & si = *(thread_start_info *)tsi_;
+  auto thread_function = si.thread_function;
+  RogueSemaphore_post(&si.sem); // We've got it.
+  thread_function();
   return NULL;
 }
 
-
 pthread_t roguethread_create ( std::function<void()> f )
+{
+  thread_start_info si = {};
+  si.thread_function = f;
+  RogueSemaphore_init( &si.sem, 0 );
+  auto r = create_thread(roguethread_entry, &si);
+  RogueSemaphore_wait(&si.sem);
+  RogueSemaphore_destroy(&si.sem);
+  return r;
+}
+
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#define ROGUE_THREADS_TYPE std::thread
+
+ROGUE_THREADS_TYPE create_thread (void * (*f)(void *), void * arg)
+{
+  ROGUE_THREADS_TYPE tid = std::thread(f, arg);
+  return tid;
+}
+
+static inline void * roguethread_entry (void * tsi_)
+{
+  thread_start_info & si = *(thread_start_info *)tsi_;
+  auto thread_function = si.thread_function;
+  RogueSemaphore_post(&si.sem); // We've got it.
+  thread_function();
+  return NULL;
+}
+
+ROGUE_THREADS_TYPE roguethread_create ( std::function<void()> f )
 {
   thread_start_info si = {};
   si.thread_function = f;
@@ -160,6 +266,7 @@ inline void roguethread_simple_spin_unlock(int volatile *p)
 #define ROGUE_THREAD_LAMBDA_START(__f) \
   RogueObject_retain(__f);                                                                        \
   std::function<void()> f = [=] () {                                                              \
+    if (Rogue_mt_terminating.load()) return; /* No new threads if shutting down */                \
     Rogue_thread_register();                                                                      \
     Rogue_init_thread();                                                                          \
     ROGUE_THREAD_DEBUG_STATEMENT(RogueDebugTrace __trace( "Thread.lambda()", "thread.rogue", 1)); \
@@ -191,77 +298,127 @@ $else
 $endIf
 
 
-# A limitation of the current implementation is that it assumes that a
-# pthread_t can safely be cast back and forth with an Int64.
+class Thread
+  PROPERTIES
+$if THREAD_MODE == "PTHREADS"
+    native "pthread_t thread;" # We assume 0 is invalid
+$else
+    native "std::thread thread;"
+$endIf
 
-class Thread (id:Int64) [compound]
   METHODS
+    method has_thread () -> Logical
+$if THREAD_MODE == "PTHREADS"
+      return native("$this->thread")->Logical
+$else
+      # This is really just checking if it's joinable
+      return native("$this->thread.get_id() != std::thread::id()")->Logical
+$endIf
+
     method join ()
+      if (not has_thread) return
+$if THREAD_MODE == "PTHREADS"
       native @|ROGUE_EXIT;
-              |pthread_join((pthread_t)$this.id, NULL);
+              |pthread_join($this->thread, NULL);
               |ROGUE_ENTER;
+$elseIf THREAD_MODE == "CPP"
+      native @|ROGUE_EXIT;
+              |$this->thread.join();
+              |ROGUE_ENTER;
+$endIf
 
     method detach ()
-      native @|pthread_detach((pthread_t)$this.id);
+      if (not has_thread) return
+$if THREAD_MODE == "PTHREADS"
+      native @|pthread_detach($this->thread);
+              |$this->thread = (pthread_t)0;
+$elseIf THREAD_MODE == "CPP"
+     native @|$this->thread.detach();
+$endIf
 
     method is_current () -> Logical
+      # Doesn't necessarily work for all types of threads
+$if THREAD_MODE == "PTHREADS"
+      if (not has_thread) return false
       return this == Thread.current
+$else
+      return native("std::this_thread::get_id() == $this->thread.get_id()")->Logical
+$endIf
+
+    method operator== (other:Thread) -> Logical
+      # Not all kinds of threads can necessarily do this.
+      local eq = 0
+$if THREAD_MODE == "PTHREADS"
+      native @|$eq = ($this->thread == $other->thread);
+$else
+      native @|$eq = ($this->thread.get_id() == $other->thread.get_id());
+$endIf
+      return eq
 
     method to -> String
+      if (not has_thread)
+        return "($ detached)" (type_info.name)
+      endIf
       return "($ $)" (type_info.name, id)
 
     method pin_to_core (core:Int32) -> Logical
+      if (not has_thread) return false
       local ok = 0
-      native @|//#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+      native @|#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
               |  $ok = 1;
               |  cpu_set_t cpus;
               |  CPU_ZERO(&cpus);
               |  CPU_SET($core, &cpus);
-              |  pthread_setaffinity_np((pthread_t)$this.id, sizeof(cpus), &cpus);
-              |//#endif
+              |  pthread_setaffinity_np($this->thread, sizeof(cpus), &cpus);
+              |#endif
       return ok
 
-  GLOBAL METHODS
-
-    method create (f:Function()) -> Thread
-      local r : Int64
+    method init (f:Function())
       native @|ROGUE_THREAD_LAMBDA_START($f)
-      f()
+        f()
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create <<$T1>> (f:Function($T1), a1:$T1) -> Thread
-      local r : Int64
+    method init <<$T1>> (f:Function($T1), a1:$T1)
       native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1)
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create <<$T1,$T2>> (f:Function($T1,$T2), a1:$T1, a2:$T2) -> Thread
-      local r : Int64
+    method init <<$T1,$T2>> (f:Function($T1,$T2), a1:$T1, a2:$T2)
       native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1,a2)
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create <<$T1,$T2,$T3>> (f:Function($T1,$T2,$T3), a1:$T1, a2:$T2, a3:$T3) -> Thread
-      local r : Int64
+    method init <<$T1,$T2,$T3>> (f:Function($T1,$T2,$T3), a1:$T1, a2:$T2, a3:$T3)
       native @|ROGUE_THREAD_LAMBDA_START($f)
         f(a1,a2,a3)
       native @|ROGUE_THREAD_LAMBDA_END($f)
-              |$r = (RogueInt64)roguethread_create(f);
-      return Thread(r)
+              |$this->thread = roguethread_create(f);
 
-    method create () -> Thread [essential]
-      local r : Int64
-      native @|$r = (RogueInt64)pthread_self();
-      return Thread(r)
+$if THREAD_MODE == "PTHREADS"
+    method init () -> Thread [essential]
+      native @|$this->thread = pthread_self();
+$endIf
 
+    method on_cleanup ()
+      detach
+
+    method id () -> Int64
+      #TODO: Do nice (but OS-specific) stuff to get a reasonable ID
+$if THREAD_MODE == "PTHREADS"
+      if (not has_thread) return 0
+      return native("$this->thread")->Int64
+$else
+      return native("$this")->Int64
+$endIf
+
+  GLOBAL METHODS
+$if THREAD_MODE == "PTHREADS"
     method current () -> Thread [essential]
       return Thread()
+$endIf
 
 endClass
 
@@ -269,9 +426,16 @@ endClass
 augment Exception
   METHODS
     method display
-      message = "In thread " + Thread.current.id->Int32 + "\n" + message
+$if THREAD_MODE == "PTHREADS"
+      message = "In thread " + Thread.current.id + "\n" + message
+$else
+      #TODO: It'd be nice to print some sort of thread ID!
+      message = "In thread <Unknown>\n" + message
+$endIf
 endAugment
 
+
+$if (THREAD_MODE == "PTHREADS")
 
 #{
   FastBarrier is a lightweight barrier *that cannot be copied*.
@@ -329,13 +493,16 @@ class Mutex
     method lock [macro]
       native "ROGUE_BLOCKING_CALL(pthread_mutex_lock(&$this->_lock));"
 
+    method try_lock () -> Logical
+      # Returns true if we got the lock
+      return native("pthread_mutex_trylock(&$this->_lock)")->Int == 0
+
     method on_end_use
       unlock
 
     method unlock [macro]
       native "pthread_mutex_unlock(&$this->_lock);"
 endClass
-
 
 class SpinLock
   PROPERTIES
@@ -361,6 +528,38 @@ class SpinLock
     method unlock [macro]
       native "pthread_spin_unlock(&$this->_lock);"
 endClass
+
+$elseIf THREAD_MODE == "CPP"
+
+class Mutex
+  PROPERTIES
+    native "std::mutex * _lock;"
+
+  METHODS
+    method init
+      native "$this->_lock = new std::mutex();"
+
+    method on_cleanup
+      native "delete $this->_lock;"
+
+    method on_use -> this
+      lock
+      return this
+
+    method lock [macro]
+      native "ROGUE_BLOCKING_VOID_CALL($this->_lock->lock());"
+
+    method try_lock () -> Logical
+      return native("$this->_lock->try_lock()")->Logical
+
+    method on_end_use
+      unlock
+
+    method unlock [macro]
+      native "$this->_lock->unlock();"
+endClass
+
+$endIf
 
 
 class SimpleSpinLock [compound]
@@ -442,3 +641,5 @@ class Semaphore
     method on_end_use
       release
 endClass
+
+$endIf

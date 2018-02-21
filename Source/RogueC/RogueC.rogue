@@ -42,11 +42,12 @@ class GCMode
     BOEHM_TYPED
 endClass
 
-class ThreadMode
-  ENUMERATE
+enum ThreadMode
+  CATEGORIES
     NONE
     PTHREADS
-endClass
+    CPP
+endEnum
 
 
 class RogueC [singleton]
@@ -110,7 +111,7 @@ class RogueC [singleton]
     gc_threshold = 1024*1024 : Int32
     gc_mode_set = false
 
-    thread_mode = ThreadMode.NONE : Int32
+    thread_mode = ThreadMode.NONE
 
     plugins = Plugin[]
 
@@ -266,6 +267,7 @@ class RogueC [singleton]
                     |    The threading mode may be one of:
                     |      --threads=none     - No multithreading support. (Default)
                     |      --threads=pthreads - Multithreading based on pthreads.
+                    |      --threads=cpp        Multithreading based on C++ std::thread.
                     |
                     |  --todo[="KEYWORD"]
                     |    During compilation the compiler will print out any lines containing a
@@ -670,6 +672,8 @@ $endIf
               if ((not value.count) or value == "pthreads")
                 # Default to pthreads if nothing specified
                 thread_mode = ThreadMode.PTHREADS
+              elseIf (value == "cpp")
+                thread_mode = ThreadMode.CPP
               elseIf (value == "none")
                 thread_mode = ThreadMode.NONE
               else
@@ -718,7 +722,6 @@ $endIf
           source_files.add( arg )
         endIf
       endForEach
-
 
     method require_valueless( arg:String, expecting:String )
       if (arg == expecting) return

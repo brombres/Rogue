@@ -221,9 +221,9 @@ augment Program
       # Thread mode stuff
       writer.println "#define ROGUE_THREAD_MODE_NONE 0"
       writer.println "#define ROGUE_THREAD_MODE_PTHREADS 1"
+      writer.println "#define ROGUE_THREAD_MODE_CPP 2"
       writer.println "#ifndef ROGUE_THREAD_MODE"
-      writer.print   "  #define ROGUE_THREAD_MODE ROGUE_THREAD_MODE_"
-      writer.println select{RogueC.thread_mode == ThreadMode.NONE: "NONE" || "PTHREADS"}
+      writer.println "  #define ROGUE_THREAD_MODE ROGUE_THREAD_MODE_" + RogueC.thread_mode->String
       writer.println "#endif"
 
       # Enable Introspection?
@@ -1942,6 +1942,10 @@ augment RogueC
                   |#endif
           if (RogueC.thread_mode == ThreadMode.PTHREADS)
             compiler_name += " -pthread"
+          elseIf (RogueC.thread_mode == ThreadMode.CPP)
+            if (not RogueC.compile_targets["Windows"])
+              compiler_name += " -pthread"
+            endIf
           endIf
         endIf
 
@@ -2338,8 +2342,6 @@ augment Method
         endIf
       endForEach
 
-      writer.println "ROGUE_GC_CHECK;"
-
       if (type_context.is_aspect and not is_global)
         writer.println( "switch (THIS->type->index)" );
         writer.println "{"
@@ -2383,6 +2385,7 @@ augment Method
           writer.print( t.filename ).print( ''", '' ).print( t.line )
           writer.println( '' );'' )
         endIf
+        if (statements.count > 1) writer.println "ROGUE_GC_CHECK;"
         statements.write_cpp( writer )
       endIf
 
