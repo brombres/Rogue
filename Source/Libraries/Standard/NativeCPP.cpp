@@ -26,7 +26,6 @@
 #  include <sys/stat.h>
 #  include <netdb.h>
 #  include <errno.h>
-#  include <pthread.h>
 #endif
 
 #if defined(ANDROID)
@@ -76,19 +75,53 @@ RogueWeakReference* Rogue_weak_references = 0;
 //-----------------------------------------------------------------------------
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
+#define ROGUE_EXIT_THREAD pthread_exit(NULL)
+
+#define ROGUE_MUTEX_LOCK(_M) pthread_mutex_lock(&(_M))
+#define ROGUE_MUTEX_UNLOCK(_M) pthread_mutex_unlock(&(_M))
+#define ROGUE_MUTEX_DEF(_N) pthread_mutex_t _N = PTHREAD_MUTEX_INITIALIZER
+
+#define ROGUE_COND_STARTWAIT(_V,_M) ROGUE_MUTEX_LOCK(_M);
+#define ROGUE_COND_DOWAIT(_V,_M,_C) while (_C) pthread_cond_wait(&(_V), &(_M));
+#define ROGUE_COND_ENDWAIT(_V,_M) ROGUE_MUTEX_UNLOCK(_M);
+#define ROGUE_COND_WAIT(_V,_M,_C) \
+  ROGUE_COND_STARTWAIT(_V,_M); \
+  ROGUE_COND_DOWAIT(_V,_M,_C); \
+  ROGUE_COND_ENDWAIT(_V,_M);
+#define ROGUE_COND_DEF(_N) pthread_cond_t _N = PTHREAD_COND_INITIALIZER
+#define ROGUE_COND_NOTIFY_ONE(_V,_M,_C)    \
+  ROGUE_MUTEX_LOCK(_M);                    \
+  _C ;                                     \
+  pthread_cond_signal(&(_V));              \
+  ROGUE_MUTEX_UNLOCK(_M);
+#define ROGUE_COND_NOTIFY_ALL(_V,_M,_C)    \
+  ROGUE_MUTEX_LOCK(_M);                    \
+  _C ;                                     \
+  pthread_cond_broadcast(&(_V));           \
+  ROGUE_MUTEX_UNLOCK(_M);
+
+#define ROGUE_THREAD_DEF(_N) pthread_t _N
+#define ROGUE_THREAD_JOIN(_T) pthread_join(_T, NULL)
+#define ROGUE_THREAD_START(_T, _F) pthread_create(&(_T), NULL, _F, NULL)
+
+#endif
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
 // Thread mutex locks around creation and destruction of threads
-static pthread_mutex_t Rogue_mt_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
+static ROGUE_MUTEX_DEF(Rogue_mt_thread_mutex);
 static int Rogue_mt_tc = 0; // Thread count.  Always set under above lock.
 static std::atomic_bool Rogue_mt_terminating(false); // True when terminating.
 
 static void Rogue_thread_register ()
 {
   // If we're shutting down, no new threads!
-  if (Rogue_mt_terminating.load()) pthread_exit(NULL);
-  pthread_mutex_lock(&Rogue_mt_thread_mutex);
+  if (Rogue_mt_terminating.load()) ROGUE_EXIT_THREAD;
+  ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
   int n = (int)Rogue_mt_tc;
   ++Rogue_mt_tc;
-  pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
   char name[64];
   sprintf(name, "Thread-%i", n); // Nice names are good for valgrind
 
@@ -99,15 +132,16 @@ static void Rogue_thread_register ()
 #endif
 // It should be possible to get thread names working on lots of other
 // platforms too.  The functions just vary a bit.
+#endif
 }
 
 static void Rogue_thread_unregister ()
 {
   ROGUE_EXIT;
-  pthread_mutex_lock(&Rogue_mt_thread_mutex);
+  ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
   ROGUE_ENTER;
   --Rogue_mt_tc;
-  pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
 }
 
 
@@ -121,13 +155,13 @@ void Rogue_threads_wait_for_all ()
   int wait_step = 1;
   while (true)
   {
-    pthread_mutex_lock(&Rogue_mt_thread_mutex);
+    ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
     if (Rogue_mt_tc <= 1) // Shouldn't ever really be less than 1
     {
-      pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+      ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
       break;
     }
-    pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+    ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
     usleep(1000 * wait);
     wait_step++;
     if (!(wait_step % 15) && (wait < 500)) wait *= 2; // Max backoff ~500ms
@@ -154,8 +188,8 @@ static void Rogue_thread_unregister ()
 #define ROGUE_SET_SINGLETON(_S,_V) (_S)->_singleton.store(_V);
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 pthread_mutex_t Rogue_thread_singleton_lock;
-#define ROGUE_SINGLETON_LOCK pthread_mutex_lock(&Rogue_thread_singleton_lock);
-#define ROGUE_SINGLETON_UNLOCK pthread_mutex_unlock(&Rogue_thread_singleton_lock);
+#define ROGUE_SINGLETON_LOCK ROGUE_MUTEX_LOCK(Rogue_thread_singleton_lock);
+#define ROGUE_SINGLETON_UNLOCK ROGUE_MUTEX_UNLOCK(Rogue_thread_singleton_lock);
 #endif
 #else
 #define ROGUE_GET_SINGLETON(_S) (_S)->_singleton
@@ -185,9 +219,9 @@ pthread_mutex_t Rogue_thread_singleton_lock;
 
 // We assume malloc is safe, but the SOA needs safety if it's being used.
 #if ROGUEMM_SMALL_ALLOCATION_SIZE_LIMIT >= 0
-static pthread_mutex_t Rogue_mtgc_soa_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define ROGUE_GC_SOA_LOCK    pthread_mutex_lock(&Rogue_mtgc_soa_mutex);
-#define ROGUE_GC_SOA_UNLOCK  pthread_mutex_unlock(&Rogue_mtgc_soa_mutex);
+static ROGUE_MUTEX_DEF(Rogue_mtgc_soa_mutex);
+#define ROGUE_GC_SOA_LOCK    ROGUE_MUTEX_LOCK(Rogue_mtgc_soa_mutex);
+#define ROGUE_GC_SOA_UNLOCK  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_soa_mutex);
 #else
 #define ROGUE_GC_SOA_LOCK
 #define ROGUE_GC_SOA_UNLOCK
@@ -208,10 +242,10 @@ void Rogue_collect_garbage_real_noinline ()
 
 #define ROGUE_GC_CHECK if (ROGUE_UNLIKELY(Rogue_mtgc_w)) Rogue_mtgc_W2_W3_W4(); // W1
 
-static pthread_mutex_t Rogue_mtgc_w_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t Rogue_mtgc_s_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t Rogue_mtgc_w_cond = PTHREAD_COND_INITIALIZER;
-static pthread_cond_t Rogue_mtgc_s_cond = PTHREAD_COND_INITIALIZER;
+static ROGUE_MUTEX_DEF(Rogue_mtgc_w_mutex);
+static ROGUE_MUTEX_DEF(Rogue_mtgc_s_mutex);
+static ROGUE_COND_DEF(Rogue_mtgc_w_cond);
+static ROGUE_COND_DEF(Rogue_mtgc_s_cond);
 
 ROGUE_GC_VAR Rogue_mtgc_w = 0;
 ROGUE_GC_VAR Rogue_mtgc_s = 0;
@@ -219,27 +253,24 @@ ROGUE_GC_VAR Rogue_mtgc_s = 0;
 // Only one worker can be "running" (waiting for) the GC at a time.
 // To run, set r = 1, and wait for GC to set it to 0.  If r is already
 // 1, just wait.
-static pthread_mutex_t Rogue_mtgc_r_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t Rogue_mtgc_r_cond = PTHREAD_COND_INITIALIZER;
+static ROGUE_MUTEX_DEF(Rogue_mtgc_r_mutex);
+static ROGUE_COND_DEF(Rogue_mtgc_r_cond);
 ROGUE_GC_VAR Rogue_mtgc_r = 0;
 
-static pthread_mutex_t Rogue_mtgc_g_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t Rogue_mtgc_g_cond = PTHREAD_COND_INITIALIZER;
+static ROGUE_MUTEX_DEF(Rogue_mtgc_g_mutex);
+static ROGUE_COND_DEF(Rogue_mtgc_g_cond);
 ROGUE_GC_VAR Rogue_mtgc_g = 0; // Should GC
 
 static int Rogue_mtgc_should_quit = 0; // 0:normal 1:should-quit 2:has-quit
 
-static pthread_t Rogue_mtgc_thread;
+static ROGUE_THREAD_DEF(Rogue_mtgc_thread);
 
 static void Rogue_mtgc_W2_W3_W4 (void);
 static inline void Rogue_mtgc_W3_W4 (void);
 
 inline void Rogue_mtgc_B1 ()
 {
-  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
-  ++Rogue_mtgc_s;
-  pthread_cond_signal(&Rogue_mtgc_s_cond);
-  pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+  ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
 }
 
 inline void Rogue_mtgc_B2_etc ()
@@ -247,34 +278,26 @@ inline void Rogue_mtgc_B2_etc ()
   Rogue_mtgc_W3_W4();
   // We can probably just do GC_CHECK here rather than this more expensive
   // locking version.
-  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
   auto w = Rogue_mtgc_w;
-  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
   if (ROGUE_UNLIKELY(w)) Rogue_mtgc_W2_W3_W4(); // W1
 }
 
 static inline void Rogue_mtgc_W2 ()
 {
-  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
-  ++Rogue_mtgc_s;
-  pthread_cond_signal(&Rogue_mtgc_s_cond);
-  pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+  ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
 }
 
 static inline void Rogue_mtgc_W3_W4 ()
 {
   // W3
-  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
-  while (Rogue_mtgc_w != 0)
-  {
-    pthread_cond_wait(&Rogue_mtgc_w_cond, &Rogue_mtgc_w_mutex);
-  }
-  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+  ROGUE_COND_WAIT(Rogue_mtgc_w_cond, Rogue_mtgc_w_mutex, Rogue_mtgc_w != 0);
 
   // W4
-  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_s_mutex);
   --Rogue_mtgc_s;
-  pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_s_mutex);
 }
 
 static void Rogue_mtgc_W2_W3_W4 ()
@@ -320,21 +343,20 @@ inline void Rogue_mtgc_exit()
 static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
 {
   // M1
-  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
   Rogue_mtgc_w = 1;
-  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
 
   // M2
-  pthread_mutex_lock(&Rogue_mtgc_s_mutex);
+#if (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS) && ROGUE_MTGC_DEBUG
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_s_mutex);
   while (Rogue_mtgc_s != Rogue_mt_tc)
   {
-#if ROGUE_MTGC_DEBUG
     if (Rogue_mtgc_s > Rogue_mt_tc || Rogue_mtgc_s < 0)
     {
       printf("INVALID VALUE OF S %i %i\n", Rogue_mtgc_s, Rogue_mt_tc);
       exit(1);
     }
-#endif
 
     pthread_cond_wait(&Rogue_mtgc_s_cond, &Rogue_mtgc_s_mutex);
   }
@@ -342,12 +364,16 @@ static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
   // very end of the function if we want, and this would prevent
   // threads that were blocking from ever leaving B2.  But
   // We should be okay anyway, though S may temporarily != TC.
-  //pthread_mutex_unlock(&Rogue_mtgc_s_mutex);
+  //ROGUE_MUTEX_UNLOCK(Rogue_mtgc_s_mutex);
+#else
+  ROGUE_COND_STARTWAIT(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex);
+  ROGUE_COND_DOWAIT(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, Rogue_mtgc_s != Rogue_mt_tc);
+#endif
 
 #if ROGUE_MTGC_DEBUG
-  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
   Rogue_mtgc_w = 2;
-  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
 #endif
 
   // GC
@@ -371,11 +397,10 @@ static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
   ROGUE_GC_SOA_UNLOCK;
 
   // M3
-  pthread_mutex_lock(&Rogue_mtgc_w_mutex);
-  Rogue_mtgc_w = 0;
-  pthread_cond_broadcast(&Rogue_mtgc_w_cond);
-  pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
-  pthread_mutex_unlock(&Rogue_mtgc_s_mutex); // Could do much earlier
+  ROGUE_COND_NOTIFY_ALL(Rogue_mtgc_w_cond, Rogue_mtgc_w_mutex, Rogue_mtgc_w = 0);
+
+  // Could have done this much earlier
+  ROGUE_COND_ENDWAIT(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex);
 }
 
 static void * Rogue_mtgc_threadproc (void *)
@@ -383,31 +408,25 @@ static void * Rogue_mtgc_threadproc (void *)
   int quit = 0;
   while (quit == 0)
   {
-    pthread_mutex_lock(&Rogue_mtgc_g_mutex);
-    while (!Rogue_mtgc_g && !Rogue_mtgc_should_quit)
-    {
-      pthread_cond_wait(&Rogue_mtgc_g_cond, &Rogue_mtgc_g_mutex);
-    }
+    ROGUE_COND_STARTWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+    ROGUE_COND_DOWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex, !Rogue_mtgc_g && !Rogue_mtgc_should_quit);
     Rogue_mtgc_g = 0;
     quit = Rogue_mtgc_should_quit;
-    pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+    ROGUE_COND_ENDWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
 
-    pthread_mutex_lock(&Rogue_mt_thread_mutex);
+    ROGUE_MUTEX_LOCK(Rogue_mt_thread_mutex);
 
     Rogue_mtgc_M1_M2_GC_M3(quit);
 
-    pthread_mutex_unlock(&Rogue_mt_thread_mutex);
+    ROGUE_MUTEX_UNLOCK(Rogue_mt_thread_mutex);
 
-    pthread_mutex_lock(&Rogue_mtgc_r_mutex);
-    Rogue_mtgc_r = 0;
-    pthread_cond_broadcast(&Rogue_mtgc_r_cond);
-    pthread_mutex_unlock(&Rogue_mtgc_r_mutex);
+    ROGUE_COND_NOTIFY_ALL(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex, Rogue_mtgc_r = 0);
   }
 
-  pthread_mutex_lock(&Rogue_mtgc_g_mutex);
+  ROGUE_MUTEX_LOCK(Rogue_mtgc_g_mutex);
   Rogue_mtgc_should_quit = 2;
   Rogue_mtgc_g = 0;
-  pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+  ROGUE_MUTEX_UNLOCK(Rogue_mtgc_g_mutex);
   return NULL;
 }
 
@@ -418,16 +437,13 @@ void Rogue_mtgc_run_gc_and_wait ()
   do
   {
     again = false;
-    pthread_mutex_lock(&Rogue_mtgc_r_mutex);
+    ROGUE_COND_STARTWAIT(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex);
     if (Rogue_mtgc_r == 0)
     {
       Rogue_mtgc_r = 1;
 
       // Signal GC to run
-      pthread_mutex_lock(&Rogue_mtgc_g_mutex);
-      Rogue_mtgc_g = 1;
-      pthread_cond_signal(&Rogue_mtgc_g_cond);
-      pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
+      ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex, Rogue_mtgc_g = 1);
     }
     else
     {
@@ -437,11 +453,8 @@ void Rogue_mtgc_run_gc_and_wait ()
       ++Rogue_mtgc_r;
     }
     ROGUE_EXIT;
-    while (Rogue_mtgc_r != 0)
-    {
-      pthread_cond_wait(&Rogue_mtgc_r_cond, &Rogue_mtgc_r_mutex);
-    }
-    pthread_mutex_unlock(&Rogue_mtgc_r_mutex);
+    ROGUE_COND_DOWAIT(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex, Rogue_mtgc_r != 0);
+    ROGUE_COND_ENDWAIT(Rogue_mtgc_r_cond, Rogue_mtgc_r_mutex);
     ROGUE_ENTER;
   }
   while (again);
@@ -452,31 +465,33 @@ static void Rogue_mtgc_quit_gc_thread ()
   //NOTE: This could probably be simplified (and the quit behavior removed
   //      from Rogue_mtgc_M1_M2_GC_M3) since we now wait for all threads
   //      to stop before calling this.
+  // This doesn't quite use the normal condition variable pattern, sadly.
   ROGUE_EXIT;
+  timespec ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 1000000 * 10; // 10ms
   while (true)
   {
-    pthread_mutex_lock(&Rogue_mtgc_g_mutex);
-    if (Rogue_mtgc_should_quit == 2)
+    bool done = true;
+    ROGUE_COND_STARTWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+    if (Rogue_mtgc_should_quit != 2)
     {
-      pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
-      break;
+      done = false;
+      Rogue_mtgc_g = 1;
+      Rogue_mtgc_should_quit = 1;
+      pthread_cond_signal(&Rogue_mtgc_g_cond);
     }
-    Rogue_mtgc_g = 1;
-    Rogue_mtgc_should_quit = 1;
-    pthread_cond_signal(&Rogue_mtgc_g_cond);
-    pthread_mutex_unlock(&Rogue_mtgc_g_mutex);
-    timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = 1000000 * 10; // 10ms
+    ROGUE_COND_ENDWAIT(Rogue_mtgc_g_cond, Rogue_mtgc_g_mutex);
+    if (done) break;
     nanosleep(&ts, NULL);
   }
-  pthread_join(Rogue_mtgc_thread, NULL);
+  ROGUE_THREAD_JOIN(Rogue_mtgc_thread);
   ROGUE_ENTER;
 }
 
 void Rogue_configure_gc()
 {
-  int c = pthread_create(&Rogue_mtgc_thread, NULL, Rogue_mtgc_threadproc, NULL);
+  int c = ROGUE_THREAD_START(Rogue_mtgc_thread, Rogue_mtgc_threadproc);
   if (c != 0)
   {
     exit(77); //TODO: Do something better in this (hopefully) rare case.
@@ -1226,13 +1241,13 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 {
 #if ROGUE_GC_MODE_AUTO_MT
 #if ROGUE_MTGC_DEBUG
-    pthread_mutex_lock(&Rogue_mtgc_w_mutex);
+    ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
     if (Rogue_mtgc_w == 2)
     {
       printf("ALLOC DURING GC!\n");
       exit(1);
     }
-    pthread_mutex_unlock(&Rogue_mtgc_w_mutex);
+    ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
 #endif
 #endif
 
