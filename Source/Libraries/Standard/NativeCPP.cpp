@@ -253,6 +253,8 @@ std::recursive_mutex Rogue_thread_singleton_lock;
 #define ROGUE_GC_VAR static volatile int
 // (Curiously, volatile seems to help performance slightly.)
 
+static thread_local bool Rogue_mtgc_is_gc_thread = false;
+
 #define ROGUE_MTGC_BARRIER asm volatile("" : : : "memory");
 
 // Atomic LL insertion
@@ -290,9 +292,11 @@ void Rogue_collect_garbage_real_noinline ()
 // This is how unlikely() works in the Linux kernel
 #define ROGUE_UNLIKELY(_X) __builtin_expect(!!(_X), 0)
 
-#define ROGUE_GC_CHECK if (ROGUE_UNLIKELY(Rogue_mtgc_w)) Rogue_mtgc_W2_W3_W4(); // W1
+#define ROGUE_GC_CHECK if (ROGUE_UNLIKELY(Rogue_mtgc_w) \
+  && !ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread))          \
+  Rogue_mtgc_W2_W3_W4(); // W1
 
-static ROGUE_MUTEX_DEF(Rogue_mtgc_w_mutex);
+ ROGUE_MUTEX_DEF(Rogue_mtgc_w_mutex);
 static ROGUE_MUTEX_DEF(Rogue_mtgc_s_mutex);
 static ROGUE_COND_DEF(Rogue_mtgc_w_cond);
 static ROGUE_COND_DEF(Rogue_mtgc_s_cond);
@@ -323,7 +327,7 @@ inline void Rogue_mtgc_B1 ()
   ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
 }
 
-inline void Rogue_mtgc_B2_etc ()
+static inline void Rogue_mtgc_B2_etc ()
 {
   Rogue_mtgc_W3_W4();
   // We can probably just do GC_CHECK here rather than this more expensive
@@ -332,11 +336,6 @@ inline void Rogue_mtgc_B2_etc ()
   auto w = Rogue_mtgc_w;
   ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
   if (ROGUE_UNLIKELY(w)) Rogue_mtgc_W2_W3_W4(); // W1
-}
-
-static inline void Rogue_mtgc_W2 ()
-{
-  ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
 }
 
 static inline void Rogue_mtgc_W3_W4 ()
@@ -352,7 +351,8 @@ static inline void Rogue_mtgc_W3_W4 ()
 
 static void Rogue_mtgc_W2_W3_W4 ()
 {
-  Rogue_mtgc_W2();
+  // W2
+  ROGUE_COND_NOTIFY_ONE(Rogue_mtgc_s_cond, Rogue_mtgc_s_mutex, ++Rogue_mtgc_s);
   Rogue_mtgc_W3_W4();
 }
 
@@ -361,6 +361,7 @@ static thread_local int Rogue_mtgc_entered = 1;
 
 inline void Rogue_mtgc_enter()
 {
+  if (ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread)) return;
   if (ROGUE_UNLIKELY(Rogue_mtgc_entered))
 #ifdef ROGUE_MTGC_DEBUG
   {
@@ -380,6 +381,7 @@ inline void Rogue_mtgc_enter()
 
 inline void Rogue_mtgc_exit()
 {
+  if (ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread)) return;
   if (ROGUE_UNLIKELY(Rogue_mtgc_entered <= 0))
   {
     printf("Unabalanced Rogue enter/exit\n");
@@ -455,6 +457,7 @@ static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
 
 static void * Rogue_mtgc_threadproc (void *)
 {
+  Rogue_mtgc_is_gc_thread = true;
   int quit = 0;
   while (quit == 0)
   {
