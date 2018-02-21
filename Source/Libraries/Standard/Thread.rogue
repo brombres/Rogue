@@ -341,6 +341,10 @@ class Mutex
     method lock [macro]
       native "ROGUE_BLOCKING_CALL(pthread_mutex_lock(&$this->_lock));"
 
+    method try_lock () -> Logical
+      # Returns true if we got the lock
+      return native("pthread_mutex_trylock(&$this->_lock)")->Int == 0
+
     method on_end_use
       unlock
 
