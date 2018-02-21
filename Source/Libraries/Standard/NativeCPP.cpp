@@ -1264,6 +1264,7 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
   void* result = THIS->cursor;
   THIS->cursor += size;
   THIS->remaining -= size;
+  ((RogueObject*)result)->reference_count = 0;
 
   //printf( "%d / %d\n", ROGUEMM_PAGE_SIZE - remaining, ROGUEMM_PAGE_SIZE );
   return result;
@@ -1473,14 +1474,15 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 #else
 RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of_type, int size, int element_type_index )
 {
-  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*) RogueAllocator_allocate( THIS, size ));
+  void * mem = RogueAllocator_allocate( THIS, size );
+  memset( mem, 0, size );
+
+  ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*)mem);
 
   ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
   ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
   ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
-
-  memset( obj, 0, size );
 
   obj->type = of_type;
   obj->object_size = size;
