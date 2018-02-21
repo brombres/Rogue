@@ -58,6 +58,7 @@ bool               Rogue_gc_logging   = false;
 int                Rogue_gc_threshold = ROGUE_GC_THRESHOLD_DEFAULT;
 int                Rogue_gc_count     = 0; // Purely informational
 bool               Rogue_gc_requested = false;
+bool               Rogue_gc_active    = false; // Are we collecting right now?
 RogueLogical       Rogue_configured = 0;
 int                Rogue_argc;
 const char**       Rogue_argv;
@@ -1922,6 +1923,8 @@ bool Rogue_collect_garbage( bool forced )
 static inline void Rogue_collect_garbage_real()
 {
   Rogue_gc_requested = false;
+  if (Rogue_gc_active) return;
+  Rogue_gc_active = true;
   ++ Rogue_gc_count;
 
 //printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
@@ -1937,6 +1940,7 @@ static inline void Rogue_collect_garbage_real()
   }
 
   Rogue_on_gc_end.call();
+  Rogue_gc_active = false;
 }
 
 #endif
