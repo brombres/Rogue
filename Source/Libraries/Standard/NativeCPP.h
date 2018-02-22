@@ -61,22 +61,12 @@
 // ROGUE_BLOCKING_ENTER/EXIT do the same things but with the meanings reversed
 // in case this makes it easier to think about.  An even easier way to make
 // a blocking call is to simply wrap it in ROGUE_BLOCKING_CALL(foo(...)).
-// The FAST variants are faster, but you need to be careful that they are
-// exactly balanced.
-// Of special note is that in the event handler case, you should have
-// ROGUE_EXITed before the first event handler.  If you're using the FAST
-// variants and don't do this, things will likely go quite badly for you.
 
 #if ROGUE_GC_MODE_AUTO_MT
 
 #define ROGUE_ENTER Rogue_mtgc_enter()
 #define ROGUE_EXIT  Rogue_mtgc_exit()
 
-#define ROGUE_ENTER_FAST Rogue_mtgc_B2_etc()
-#define ROGUE_EXIT_FAST  Rogue_mtgc_B1()
-
-inline void Rogue_mtgc_B1 (void);
-inline void Rogue_mtgc_B2_etc (void);
 inline void Rogue_mtgc_enter (void);
 inline void Rogue_mtgc_exit (void);
 
@@ -89,10 +79,9 @@ template<typename RT> RT Rogue_mtgc_reenter (RT expr);
 
 #define ROGUE_ENTER
 #define ROGUE_EXIT
-#define ROGUE_ENTER_FAST
-#define ROGUE_EXIT_FAST
 
 #define ROGUE_BLOCKING_CALL(__x) __x
+#define ROGUE_BLOCKING_VOID_CALL(__x)
 
 #endif
 
@@ -325,12 +314,7 @@ T rogue_ptr (T p)
 //  Threading
 //-----------------------------------------------------------------------------
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
-
-#include <pthread.h>
-#include <atomic>
-
-#define ROGUE_THREAD_LOCAL thread_local
+#if ROGUE_THREAD_MODE != ROGUE_THREAD_MODE_NONE
 
 #if ROGUE_GC_MODE_BOEHM
   #define ROGUE_THREAD_LOCALS_INIT(__first, __last) GC_add_roots((void*)&(__first), (void*)((&(__last))+1));
@@ -339,6 +323,15 @@ T rogue_ptr (T p)
   #define ROGUE_THREAD_LOCALS_INIT(__first, __last)
   #define ROGUE_THREAD_LOCALS_DEINIT(__first, __last)
 #endif
+
+#endif
+
+#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+
+#include <pthread.h>
+#include <atomic>
+
+#define ROGUE_THREAD_LOCAL thread_local
 
 static inline void _rogue_init_mutex (pthread_mutex_t * mutex)
 {
@@ -366,6 +359,35 @@ public:
 #define ROGUE_SYNC_OBJECT_TYPE pthread_mutex_t
 #define ROGUE_SYNC_OBJECT_INIT _rogue_init_mutex(&THIS->_object_mutex);
 #define ROGUE_SYNC_OBJECT_CLEANUP pthread_mutex_destroy(&THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
+#define ROGUE_SYNC_OBJECT_EXIT
+
+#elif ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP
+
+#include <thread>
+#include <mutex>
+#include <atomic>
+
+#define ROGUE_THREAD_LOCAL thread_local
+
+class RogueUnlocker
+{
+  std::recursive_mutex & mutex;
+public:
+  RogueUnlocker(std::recursive_mutex & mutex)
+  : mutex(mutex)
+  {
+    mutex.lock();
+  }
+  ~RogueUnlocker (void)
+  {
+    mutex.unlock();
+  }
+};
+
+#define ROGUE_SYNC_OBJECT_TYPE std::recursive_mutex
+#define ROGUE_SYNC_OBJECT_INIT
+#define ROGUE_SYNC_OBJECT_CLEANUP
 #define ROGUE_SYNC_OBJECT_ENTER RogueUnlocker _unlocker(THIS->_object_mutex);
 #define ROGUE_SYNC_OBJECT_EXIT
 
@@ -496,7 +518,7 @@ struct RogueType
   const int*   property_type_indices;
   const int*   property_offsets;
 
-#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
+#if (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS) || (ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_CPP)
   std::atomic<RogueObject*> _singleton;
 #else
   RogueObject* _singleton;

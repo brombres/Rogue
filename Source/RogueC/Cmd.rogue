@@ -2912,6 +2912,12 @@ class CmdCall : Cmd
     method require_type->Type
       local result = type
       if (result is null)
+        if (method_info.name.before_first("<") == "init" and method_info.type_context)
+          # init is a template method.  We let people get away without specifying the return
+          # type for init methods -- it's just the type of the class.
+          method_info.return_type = method_info.type_context
+          return method_info.type_context
+        endIf
         throw t.error( "Value expected; call to $.$ does not return a value." (method_info.type_context,method_info.signature) )
       endIf
       return result

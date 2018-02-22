@@ -242,7 +242,7 @@ class Method
       if (organized) return this
       organized = true
 
-      if (name == "init")
+      if (name.before_first('<') == "init")
         if (is_global)
           throw t.error( "init() methods cannot be global methods.  Rename your method init_class() if you need to perform class setup." )
         elseIf (type_context.is_compound)
