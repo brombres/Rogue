@@ -857,6 +857,7 @@ class Type
             if (sub.initial_value is null)
               throw def.t.error( "Missing $ property argument; no default specified for '$'." ((i+1).th,sub.name) )
             endIf
+            def.args.add( sub.initial_value.cloned )
           endWhile
           if (def.args.count > subproperties.count)
             throw def.args[ subproperties.count ].t.error(
