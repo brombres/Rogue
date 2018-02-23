@@ -292,14 +292,29 @@ class Preprocessor
           endIf
         endIf
 
-        if (t.type is TokenType.keyword_class or t.type is TokenType.keyword_routine or t.type is TokenType.keyword_enum)
-          if (cur_module and reader.peek.type is TokenType.identifier)
+        local t_type = t.type
+        if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum or
+            t_type is TokenType.keyword_global)
+
+          if (reader.peek.type is TokenType.identifier)
             if (keep_tokens) tokens.add( t )
             t = reader.read
-            local class_name = t->String
-            Program.add_module_id( cur_module, class_name )
             if (keep_tokens)
-              tokens.add( t.type.create_token(t,"$::$"(cur_module,class_name)) )
+              local unqualified_name = t->String
+              local qualified_name = unqualified_name
+              if (qualified_name.begins_with("::"))
+                # ::x -> x
+                qualified_name = unqualified_name.after_first("::")
+              elseIf (cur_module)
+                # x -> ModuleName::x
+                local prefix = cur_module + "::"
+                if (not unqualified_name.begins_with(prefix))
+                  if (t_type is not TokenType.keyword_global) Program.add_module_id( cur_module, unqualified_name )
+                  qualified_name = (prefix + unqualified_name)
+                endIf
+              endIf
+              if (qualified_name is not unqualified_name) t = t.type.create_token(t,qualified_name)
+              tokens.add( t )
             endIf
             nextIteration
           endIf

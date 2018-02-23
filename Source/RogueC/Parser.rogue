@@ -1953,6 +1953,9 @@ class Parser
         if (consume(TokenType.symbol_equals))
           v.initial_value = parse_expression
         endIf
+        if (not is_local and next_is(TokenType.symbol_comma))
+          throw peek.error( "Only one global variable can be declared at a time. Use multiple 'global' commands as needed." )
+        endIf
       endWhile
 
       # [: Type]
