@@ -3685,10 +3685,18 @@ augment CmdInlineNative
         case  1: writer.print( "++" )
       endWhich
 
+      local print_cast = (result_type and not new_value and not adjust_delta)
+
+      if (print_cast) writer.print( "((" ).print( result_type ).print( ')' )
+
       writer.print_native_code( t, this_method.type_context, this_method, local_list, code, result_type )
+
+      if (print_cast) writer.print( ')' )
+
       if (adjust_delta) writer.println( ";" ); return
 
       if (code.contains('\n') or not result_type) writer.println
+
       if (new_value)
         if (modify_op) writer.print(' ').print( modify_op->String ).print(' ')
         else           writer.print( " = " )
