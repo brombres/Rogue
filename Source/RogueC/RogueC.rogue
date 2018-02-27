@@ -95,6 +95,7 @@ class RogueC [singleton]
     compiler_name     : String
     compiler_options  = String[]
     execute_args      : String
+    pkg_config_pkgs   = String[]
 
     package_name      : String
 
@@ -243,6 +244,11 @@ class RogueC [singleton]
                    |  --output=destpath/[filename]
                    |    Specify the destination folder and optionally the base filename for the
                    |    output.
+                   |
+                   |  --pkg-config=<pkg>
+                   |    Gathers compiler flags for the given package from pkg-config and passes
+                   |    them to the backend compiler.  Can be specified more than once.  Only
+                   |    works with the C++ target.
                    |
                    |  --target=
 
@@ -542,6 +548,11 @@ $endIf
             case "--compile-arg"
               compile_output = true
               if (value.count) compiler_options.add( value )
+
+            case "--pkg-config"
+              compile_output = true
+              if (value.count == 0) throw RogueError( ''Expected a package name after "--pkg-config=".'' )
+              pkg_config_pkgs.add( value )
 
             case "--execute"
               generate_main = true
