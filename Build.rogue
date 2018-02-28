@@ -83,7 +83,7 @@ endRoutine
 #------------------------------------------------------------------------------
 # Process command line arguments and invoke appropriate function
 #------------------------------------------------------------------------------
-global method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
 
 local args = @[]
 args.add( forEach in System.command_line_arguments )

@@ -3687,11 +3687,11 @@ augment CmdInlineNative
 
       local print_cast = (result_type and not new_value and not adjust_delta)
 
-      if (print_cast) writer.print( "((" ).print( result_type ).print( ')' )
+      if (print_cast) writer.print( "((" ).print( result_type ).print( ")(" )
 
       writer.print_native_code( t, this_method.type_context, this_method, local_list, code, result_type )
 
-      if (print_cast) writer.print( ')' )
+      if (print_cast) writer.print( "))" )
 
       if (adjust_delta) writer.println( ";" ); return
 
